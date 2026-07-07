@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { login, signup } from "./actions";
+import { requestPasswordReset } from "./actions";
 
-export default async function LoginPage({
+export default async function ForgotPasswordPage({
   searchParams,
 }: {
   searchParams: Promise<{ message?: string }>;
@@ -17,9 +17,9 @@ export default async function LoginPage({
 
         <div className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold">Sign in</h1>
+            <h1 className="text-2xl font-bold">Reset password</h1>
             <p className="mt-1 text-sm text-[#766d62]">
-              Create your artist or enthusiast profile.
+              Enter your email and we will send a password reset link.
             </p>
           </div>
 
@@ -46,37 +46,18 @@ export default async function LoginPage({
               />
             </label>
 
-            <label className="block">
-              <span className="text-sm font-medium">Password</span>
-              <input
-                className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                minLength={8}
-                name="password"
-                required
-                type="password"
-              />
-            </label>
-
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <button
-                className="h-11 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
-                formAction={login}
-              >
-                Sign in
-              </button>
-              <button
-                className="h-11 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
-                formAction={signup}
-              >
-                Sign up
-              </button>
-            </div>
+            <button
+              className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+              formAction={requestPasswordReset}
+            >
+              Send reset link
+            </button>
 
             <Link
               className="block text-center text-sm font-semibold text-[#766d62]"
-              href="/forgot-password"
+              href="/login"
             >
-              Forgot password?
+              Back to sign in
             </Link>
           </form>
         </div>

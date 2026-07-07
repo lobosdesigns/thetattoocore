@@ -4,6 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+function loginMessage(message: string) {
+  return `/login?message=${encodeURIComponent(message)}`;
+}
+
 export async function login(formData: FormData) {
   const supabase = await createClient();
   const email = String(formData.get("email") ?? "");
@@ -12,7 +16,7 @@ export async function login(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    redirect("/login?message=Could not sign in");
+    redirect(loginMessage(error.message || "Could not sign in"));
   }
 
   revalidatePath("/", "layout");
@@ -34,9 +38,9 @@ export async function signup(formData: FormData) {
   });
 
   if (error) {
-    redirect("/login?message=Could not create account");
+    redirect(loginMessage(error.message || "Could not create account"));
   }
 
   revalidatePath("/", "layout");
-  redirect("/login?message=Check your email to confirm your account");
+  redirect(loginMessage("Check your email to confirm your account"));
 }
