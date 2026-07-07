@@ -11,6 +11,7 @@ import {
   ShoppingBag,
   Users,
 } from "lucide-react";
+import { MailTestForm } from "./mail-test-form";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -86,6 +87,7 @@ export default async function AdminPage() {
   }
 
   const adminProfile = profile;
+  const canSendMailTest = profile.role === "admin" || profile.role === "owner";
 
   const [
     { count: userCount },
@@ -339,6 +341,26 @@ export default async function AdminPage() {
                   <p>SMTP test email</p>
                   <p>Audit log explorer</p>
                 </div>
+              </div>
+
+              <div className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5">
+                <div className="mb-4 flex items-center gap-3">
+                  <Mail className="size-5" />
+                  <h2 className="text-lg font-bold">SMTP test</h2>
+                </div>
+                <MailTestForm
+                  defaultRecipient={claims.email}
+                  disabled={!mailSettings?.is_enabled || !canSendMailTest}
+                />
+                {!mailSettings?.is_enabled ? (
+                  <p className="mt-3 text-sm text-[#766d62]">
+                    Mail sending is disabled in settings.
+                  </p>
+                ) : !canSendMailTest ? (
+                  <p className="mt-3 text-sm text-[#766d62]">
+                    Admin or owner role required to send tests.
+                  </p>
+                ) : null}
               </div>
             </aside>
           </div>
