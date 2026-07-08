@@ -228,6 +228,8 @@ export default async function SearchPage({
               )
               .eq("is_published", true)
               .eq("moderation_status", "active")
+              .eq("visibility", "public_preview")
+              .eq("is_sensitive", false)
               .or(
                 query
                   ? `caption.ilike.${pattern},location_label.ilike.${pattern}`
@@ -245,6 +247,8 @@ export default async function SearchPage({
                 "id, body, profiles:profiles!thread_posts_author_id_fkey(display_name, username)",
               )
               .eq("moderation_status", "active")
+              .eq("visibility", "public_preview")
+              .eq("is_sensitive", false)
               .ilike("body", pattern)
               .order("created_at", { ascending: false })
               .limit(8)
@@ -258,6 +262,8 @@ export default async function SearchPage({
               )
               .eq("status", "active")
               .eq("moderation_status", "active")
+              .eq("visibility", "public_preview")
+              .eq("is_sensitive", false)
               .or(
                 query
                   ? `title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`
@@ -278,6 +284,8 @@ export default async function SearchPage({
               )
               .eq("status", "active")
               .eq("moderation_status", "active")
+              .eq("visibility", "public_preview")
+              .eq("is_sensitive", false)
               .or(
                 query
                   ? `title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern},compensation.ilike.${pattern}`

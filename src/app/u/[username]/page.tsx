@@ -40,6 +40,11 @@ type Profile = {
   created_at: string;
 };
 
+type ViewerProfile = {
+  id: string;
+  is_adult_confirmed: boolean | null;
+};
+
 type FeedMedia = {
   id: string;
   media_type: "image" | "video";
@@ -191,6 +196,28 @@ function ContentLabels({
       ))}
     </div>
   );
+}
+
+type VisibleContent = {
+  is_sensitive: boolean;
+  visibility: "public_preview" | "members" | "private";
+};
+
+function canRenderContent({
+  isOwnProfile,
+  item,
+  viewer,
+}: {
+  isOwnProfile: boolean;
+  item: VisibleContent;
+  viewer: { isSignedIn: boolean; isAdultConfirmed: boolean };
+}) {
+  if (isOwnProfile) return true;
+  if (item.visibility === "private") return false;
+  if (item.visibility === "members" && !viewer.isSignedIn) return false;
+  if (item.is_sensitive && !viewer.isAdultConfirmed) return false;
+
+  return true;
 }
 
 function ProfileReportForm({
@@ -375,9 +402,8 @@ export default async function ProfilePage({
   const [
     { count: followerCount },
     { count: followingCount },
-    { count: postCount },
-    { count: gigCount },
     { data: followRecord },
+    { data: viewerProfile },
     { data: posts },
     { data: threads },
     { data: listings },
@@ -391,18 +417,6 @@ export default async function ProfilePage({
       .from("follows")
       .select("*", { count: "exact", head: true })
       .eq("follower_id", profile.id),
-    supabase
-      .from("feed_posts")
-      .select("*", { count: "exact", head: true })
-      .eq("author_id", profile.id)
-      .eq("is_published", true)
-      .eq("moderation_status", "active"),
-    supabase
-      .from("gigs")
-      .select("*", { count: "exact", head: true })
-      .eq("poster_id", profile.id)
-      .eq("status", "active")
-      .eq("moderation_status", "active"),
     claims?.sub
       ? supabase
           .from("follows")
@@ -410,6 +424,13 @@ export default async function ProfilePage({
           .eq("follower_id", claims.sub)
           .eq("following_id", profile.id)
           .maybeSingle<{ following_id: string }>()
+      : Promise.resolve({ data: null }),
+    claims?.sub
+      ? supabase
+          .from("profiles")
+          .select("id, is_adult_confirmed")
+          .eq("id", claims.sub)
+          .maybeSingle<ViewerProfile>()
       : Promise.resolve({ data: null }),
     supabase
       .from("feed_posts")
@@ -468,6 +489,16 @@ export default async function ProfilePage({
 
   const isOwnProfile = claims?.sub === profile.id;
   const isFollowing = Boolean(followRecord);
+  const viewer = {
+    isAdultConfirmed: Boolean(viewerProfile?.is_adult_confirmed),
+    isSignedIn: Boolean(claims?.sub),
+  };
+  const canShow = (item: VisibleContent) =>
+    canRenderContent({ isOwnProfile, item, viewer });
+  const visiblePosts = (posts ?? []).filter(canShow);
+  const visibleThreads = (threads ?? []).filter(canShow);
+  const visibleListings = (listings ?? []).filter(canShow);
+  const visibleGigs = (gigs ?? []).filter(canShow);
 
   return (
     <main className="min-h-screen bg-[#f5f2eb] text-[#171412]">
@@ -548,8 +579,8 @@ export default async function ProfilePage({
                 ) : null}
               </div>
               <div className="mt-5 grid max-w-md grid-cols-4 gap-4">
-                <ProfileStat label="posts" value={postCount ?? 0} />
-                <ProfileStat label="gigs" value={gigCount ?? 0} />
+                <ProfileStat label="posts" value={visiblePosts.length} />
+                <ProfileStat label="gigs" value={visibleGigs.length} />
                 <ProfileStat label="followers" value={followerCount ?? 0} />
                 <ProfileStat label="following" value={followingCount ?? 0} />
               </div>
@@ -613,9 +644,9 @@ export default async function ProfilePage({
             <Camera className="size-5" />
             <h2 className="text-lg font-bold">Posts</h2>
           </div>
-          {posts?.length ? (
+          {visiblePosts.length ? (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {posts.map((post) => (
+              {visiblePosts.map((post) => (
                 <PostPreview key={post.id} post={post} />
               ))}
             </div>
@@ -633,8 +664,8 @@ export default async function ProfilePage({
               <h2 className="text-lg font-bold">Threads</h2>
             </div>
             <div className="space-y-3">
-              {threads?.length ? (
-                threads.map((thread) => (
+              {visibleThreads.length ? (
+                visibleThreads.map((thread) => (
                   <article
                     className="rounded-md border border-[#d8d1c6] bg-white p-4"
                     key={thread.id}
@@ -665,8 +696,8 @@ export default async function ProfilePage({
               <h2 className="text-lg font-bold">Gigs</h2>
             </div>
             <div className="space-y-3">
-              {gigs?.length ? (
-                gigs.map((gig) => (
+              {visibleGigs.length ? (
+                visibleGigs.map((gig) => (
                   <article
                     className="rounded-md border border-[#d8d1c6] bg-white p-4"
                     key={gig.id}
@@ -749,8 +780,8 @@ export default async function ProfilePage({
               <h2 className="text-lg font-bold">Marketplace</h2>
             </div>
             <div className="space-y-3">
-              {listings?.length ? (
-                listings.map((listing) => (
+              {visibleListings.length ? (
+                visibleListings.map((listing) => (
                   <article
                     className="rounded-md border border-[#d8d1c6] bg-white p-4"
                     key={listing.id}

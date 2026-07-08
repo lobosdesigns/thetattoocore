@@ -39,6 +39,7 @@ type Profile = {
   display_name: string;
   account_type: string;
   city: string | null;
+  is_adult_confirmed?: boolean | null;
   region: string | null;
   role?: string | null;
 };
@@ -290,6 +291,22 @@ function ContentLabels({
   );
 }
 
+type VisibleContent = {
+  is_sensitive: boolean;
+  visibility: "public_preview" | "members" | "private";
+};
+
+function canRenderContent(
+  item: VisibleContent,
+  viewer: { isSignedIn: boolean; isAdultConfirmed: boolean },
+) {
+  if (item.visibility === "private") return false;
+  if (item.visibility === "members" && !viewer.isSignedIn) return false;
+  if (item.is_sensitive && !viewer.isAdultConfirmed) return false;
+
+  return true;
+}
+
 function ReportForm({
   returnHash,
   subjectId,
@@ -442,7 +459,9 @@ export default async function Home({
     claims?.sub
       ? supabase
           .from("profiles")
-          .select("id, username, display_name, account_type, city, region, role")
+          .select(
+            "id, username, display_name, account_type, city, is_adult_confirmed, region, role",
+          )
           .eq("id", claims.sub)
           .maybeSingle<Profile>()
       : Promise.resolve({ data: null }),
@@ -504,6 +523,20 @@ export default async function Home({
   ]);
 
   const isSignedIn = Boolean(claims?.sub);
+  const viewer = {
+    isAdultConfirmed: Boolean(currentProfile?.is_adult_confirmed),
+    isSignedIn,
+  };
+  const visibleFeedPosts = (feedPosts ?? []).filter((post) =>
+    canRenderContent(post, viewer),
+  );
+  const visibleThreadPosts = (threadPosts ?? []).filter((thread) =>
+    canRenderContent(thread, viewer),
+  );
+  const visibleListings = (listings ?? []).filter((listing) =>
+    canRenderContent(listing, viewer),
+  );
+  const visibleGigs = (gigs ?? []).filter((gig) => canRenderContent(gig, viewer));
   const canCreate = Boolean(currentProfile);
   const adminRole = currentProfile?.role;
   const profileHref = currentProfile ? `/u/${currentProfile.username}` : "/account";
@@ -611,8 +644,8 @@ export default async function Home({
             className="min-w-full snap-start divide-y divide-[#e5ded4]"
             id="feed"
           >
-            {feedPosts?.length ? (
-              feedPosts.map((post) => (
+            {visibleFeedPosts.length ? (
+              visibleFeedPosts.map((post) => (
                 <article className="bg-[#fffdf9]" key={post.id}>
                   <div className="flex items-center justify-between px-4 py-3">
                     <Link
@@ -790,8 +823,8 @@ export default async function Home({
               <h2 className="text-lg font-bold">Threads</h2>
             </div>
             <div className="space-y-3">
-              {threadPosts?.length
-                ? threadPosts.map((thread) => (
+              {visibleThreadPosts.length
+                ? visibleThreadPosts.map((thread) => (
                     <article
                       className="rounded-md border border-[#d8d1c6] bg-white p-4"
                       key={thread.id}
@@ -922,8 +955,8 @@ export default async function Home({
               <h2 className="text-lg font-bold">Marketplace</h2>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              {listings?.length
-                ? listings.map((listing) => (
+              {visibleListings.length
+                ? visibleListings.map((listing) => (
                     <article
                       className="rounded-md border border-[#d8d1c6] bg-white p-4"
                       key={listing.id}
@@ -1032,8 +1065,8 @@ export default async function Home({
               <h2 className="text-lg font-bold">Gigs</h2>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              {gigs?.length
-                ? gigs.map((gig) => (
+              {visibleGigs.length
+                ? visibleGigs.map((gig) => (
                     <article
                       className="rounded-md border border-[#d8d1c6] bg-white p-4"
                       key={gig.id}
@@ -1204,7 +1237,7 @@ export default async function Home({
               <h2 className="text-sm font-semibold">Live Threads</h2>
             </div>
             <div className="space-y-3">
-              {(threadPosts?.length ? threadPosts.slice(0, 4) : null)?.map(
+              {(visibleThreadPosts.length ? visibleThreadPosts.slice(0, 4) : null)?.map(
                 (thread) => (
                   <a
                     className="block rounded-md border border-[#d8d1c6] bg-white p-3 text-sm leading-5"
@@ -1233,7 +1266,7 @@ export default async function Home({
               <h2 className="text-sm font-semibold">Gigs</h2>
             </div>
             <div className="space-y-3">
-              {(gigs?.length ? gigs.slice(0, 4) : null)?.map((gig) => (
+              {(visibleGigs.length ? visibleGigs.slice(0, 4) : null)?.map((gig) => (
                 <a
                   className="block rounded-md border border-[#d8d1c6] bg-white p-3"
                   href="#gigs"
@@ -1266,7 +1299,7 @@ export default async function Home({
               <h2 className="text-sm font-semibold">Marketplace</h2>
             </div>
             <div className="space-y-3">
-              {(listings?.length ? listings.slice(0, 4) : null)?.map(
+              {(visibleListings.length ? visibleListings.slice(0, 4) : null)?.map(
                 (listing) => (
                   <a
                     className="block rounded-md border border-[#d8d1c6] bg-white p-3"
