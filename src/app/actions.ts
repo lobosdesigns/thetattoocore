@@ -16,6 +16,14 @@ const MEDIA_TYPES = new Set([
   "video/quicktime",
   "video/webm",
 ]);
+const VISIBILITY_VALUES = new Set(["public_preview", "members", "private"]);
+const SENSITIVE_REASONS = new Set([
+  "body_art_nudity",
+  "healing",
+  "scar_cover",
+  "piercing",
+  "other",
+]);
 
 type Claims = {
   sub: string;
@@ -42,6 +50,34 @@ function cleanWords(value: FormDataEntryValue | null, maxWords: number) {
 
 function cleanId(value: FormDataEntryValue | null) {
   return String(value ?? "").trim();
+}
+
+function cleanVisibility(
+  value: FormDataEntryValue | null,
+  fallback: "public_preview" | "members" | "private",
+) {
+  const text = cleanText(value, 32);
+
+  return VISIBILITY_VALUES.has(text) ? text : fallback;
+}
+
+function sensitiveFields(formData: FormData) {
+  const isSensitive = formData.get("is_sensitive") === "on";
+  const reason = cleanText(formData.get("sensitive_reason"), 40);
+
+  if (!isSensitive) {
+    return {
+      is_sensitive: false,
+      sensitive_reason: null,
+    };
+  }
+
+  return {
+    is_sensitive: true,
+    sensitive_reason: SENSITIVE_REASONS.has(reason)
+      ? reason
+      : "body_art_nudity",
+  };
 }
 
 function mediaFromForm(formData: FormData, name: string) {
@@ -145,6 +181,8 @@ export async function createFeedPost(formData: FormData) {
   const caption = cleanWords(formData.get("caption"), 40);
   const locationLabel = cleanText(formData.get("location_label"), 80);
   const media = mediaFromForm(formData, "media");
+  const sensitive = sensitiveFields(formData);
+  const visibility = cleanVisibility(formData.get("visibility"), "public_preview");
   const styleTags = cleanText(formData.get("style_tags"), 160)
     .split(",")
     .map((tag) => tag.trim().toLowerCase())
@@ -164,9 +202,14 @@ export async function createFeedPost(formData: FormData) {
     .insert({
       author_id: userId,
       caption,
+      is_indexable: visibility === "public_preview" && !sensitive.is_sensitive,
+      is_sensitive: sensitive.is_sensitive,
       kind: media?.type.startsWith("video/") ? "reel" : "photo",
       location_label: locationLabel || null,
+      moderation_status: "active",
+      sensitive_reason: sensitive.sensitive_reason,
       style_tags: styleTags,
+      visibility,
     })
     .select("id")
     .single<{ id: string }>();
@@ -186,6 +229,8 @@ export async function createFeedPost(formData: FormData) {
     const { error: mediaError } = await supabase.from("feed_media").insert({
       media_type: upload.mediaType,
       post_id: post.id,
+      is_sensitive: sensitive.is_sensitive,
+      sensitive_reason: sensitive.sensitive_reason,
       storage_bucket: upload.bucket,
       storage_path: upload.path,
     });
@@ -203,6 +248,8 @@ export async function createThreadPost(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const body = cleanText(formData.get("body"), 8000);
   const media = mediaFromForm(formData, "media");
+  const sensitive = sensitiveFields(formData);
+  const visibility = cleanVisibility(formData.get("visibility"), "members");
 
   if (body.length < 3) {
     redirect(homeMessage("Thread post needs at least 3 characters."));
@@ -217,6 +264,11 @@ export async function createThreadPost(formData: FormData) {
     .insert({
       author_id: userId,
       body,
+      is_indexable: visibility === "public_preview" && !sensitive.is_sensitive,
+      is_sensitive: sensitive.is_sensitive,
+      moderation_status: "active",
+      sensitive_reason: sensitive.sensitive_reason,
+      visibility,
     })
     .select("id")
     .single<{ id: string }>();
@@ -235,6 +287,8 @@ export async function createThreadPost(formData: FormData) {
     });
     const { error: mediaError } = await supabase.from("thread_media").insert({
       media_type: "image",
+      is_sensitive: sensitive.is_sensitive,
+      sensitive_reason: sensitive.sensitive_reason,
       storage_bucket: upload.bucket,
       storage_path: upload.path,
       thread_id: thread.id,
@@ -257,6 +311,8 @@ export async function createMarketplaceListing(formData: FormData) {
   const city = cleanText(formData.get("city"), 80);
   const media = mediaFromForm(formData, "media");
   const region = cleanText(formData.get("region"), 40);
+  const sensitive = sensitiveFields(formData);
+  const visibility = cleanVisibility(formData.get("visibility"), "public_preview");
   const priceInput = cleanText(formData.get("price"), 20).replace(/[$,]/g, "");
   const priceNumber = priceInput ? Number(priceInput) : NaN;
   const priceCents = Number.isFinite(priceNumber)
@@ -276,8 +332,13 @@ export async function createMarketplaceListing(formData: FormData) {
       category,
       city: city || null,
       region: region || null,
+      is_indexable: visibility === "public_preview" && !sensitive.is_sensitive,
+      is_sensitive: sensitive.is_sensitive,
+      moderation_status: "active",
       price_cents: priceCents,
+      sensitive_reason: sensitive.sensitive_reason,
       status: "active",
+      visibility,
     })
     .select("id")
     .single<{ id: string }>();
@@ -296,6 +357,8 @@ export async function createMarketplaceListing(formData: FormData) {
     });
     const { error: mediaError } = await supabase.from("marketplace_media").insert({
       listing_id: listing.id,
+      is_sensitive: sensitive.is_sensitive,
+      sensitive_reason: sensitive.sensitive_reason,
       storage_bucket: upload.bucket,
       storage_path: upload.path,
     });

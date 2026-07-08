@@ -44,7 +44,9 @@ type FeedPost = {
   id: string;
   caption: string | null;
   created_at: string;
+  is_sensitive: boolean;
   style_tags: string[];
+  visibility: "public_preview" | "members" | "private";
   feed_media: FeedMedia[];
 };
 
@@ -52,6 +54,8 @@ type ThreadPost = {
   id: string;
   body: string;
   created_at: string;
+  is_sensitive: boolean;
+  visibility: "public_preview" | "members" | "private";
 };
 
 type ListingMedia = {
@@ -68,6 +72,8 @@ type Listing = {
   currency: string;
   category: string;
   created_at: string;
+  is_sensitive: boolean;
+  visibility: "public_preview" | "members" | "private";
   marketplace_media: ListingMedia[];
 };
 
@@ -112,6 +118,35 @@ function formatPrice(listing: Listing) {
     maximumFractionDigits: 0,
     style: "currency",
   }).format(listing.price_cents / 100);
+}
+
+function ContentLabels({
+  isSensitive,
+  visibility,
+}: {
+  isSensitive?: boolean;
+  visibility?: "public_preview" | "members" | "private";
+}) {
+  const labels = [
+    visibility === "members" ? "Members" : null,
+    visibility === "private" ? "Private" : null,
+    isSensitive ? "Sensitive" : null,
+  ].filter(Boolean);
+
+  if (!labels.length) return null;
+
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {labels.map((label) => (
+        <span
+          className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 py-1 text-[11px] font-semibold text-[#766d62]"
+          key={label}
+        >
+          {label}
+        </span>
+      ))}
+    </div>
+  );
 }
 
 function ProfileStat({ label, value }: { label: string; value: number }) {
@@ -159,6 +194,10 @@ function PostPreview({ post }: { post: FeedPost }) {
             {post.style_tags[0]}
           </span>
         ) : null}
+        <ContentLabels
+          isSensitive={post.is_sensitive}
+          visibility={post.visibility}
+        />
         <p className="line-clamp-3 text-sm leading-6">
           {post.caption || "Untitled post"}
         </p>
@@ -215,7 +254,8 @@ export default async function ProfilePage({
       .from("feed_posts")
       .select("*", { count: "exact", head: true })
       .eq("author_id", profile.id)
-      .eq("is_published", true),
+      .eq("is_published", true)
+      .eq("moderation_status", "active"),
     claims?.sub
       ? supabase
           .from("follows")
@@ -227,10 +267,11 @@ export default async function ProfilePage({
     supabase
       .from("feed_posts")
       .select(
-        "id, caption, created_at, style_tags, feed_media(id, storage_bucket, storage_path, media_type, sort_order)",
+        "id, caption, created_at, is_sensitive, style_tags, visibility, feed_media(id, storage_bucket, storage_path, media_type, sort_order)",
       )
       .eq("author_id", profile.id)
       .eq("is_published", true)
+      .eq("moderation_status", "active")
       .order("created_at", { ascending: false })
       .order("sort_order", {
         ascending: true,
@@ -240,18 +281,20 @@ export default async function ProfilePage({
       .returns<FeedPost[]>(),
     supabase
       .from("thread_posts")
-      .select("id, body, created_at")
+      .select("id, body, created_at, is_sensitive, visibility")
       .eq("author_id", profile.id)
+      .eq("moderation_status", "active")
       .order("created_at", { ascending: false })
       .limit(5)
       .returns<ThreadPost[]>(),
     supabase
       .from("marketplace_listings")
       .select(
-        "id, title, description, price_cents, currency, category, created_at, marketplace_media(id, storage_bucket, storage_path, sort_order)",
+        "id, title, description, price_cents, currency, category, created_at, is_sensitive, visibility, marketplace_media(id, storage_bucket, storage_path, sort_order)",
       )
       .eq("seller_id", profile.id)
       .eq("status", "active")
+      .eq("moderation_status", "active")
       .order("created_at", { ascending: false })
       .order("sort_order", {
         ascending: true,
@@ -427,10 +470,16 @@ export default async function ProfilePage({
                     className="rounded-md border border-[#d8d1c6] bg-white p-4"
                     key={thread.id}
                   >
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <ContentLabels
+                        isSensitive={thread.is_sensitive}
+                        visibility={thread.visibility}
+                      />
+                      <p className="shrink-0 text-xs text-[#766d62]">
+                        {timeAgo(thread.created_at)}
+                      </p>
+                    </div>
                     <p className="text-sm leading-6">{thread.body}</p>
-                    <p className="mt-2 text-xs text-[#766d62]">
-                      {timeAgo(thread.created_at)}
-                    </p>
                   </article>
                 ))
               ) : (
@@ -471,6 +520,12 @@ export default async function ProfilePage({
                       )}
                       <div className="min-w-0">
                         <p className="font-semibold">{listing.title}</p>
+                        <div className="mt-1">
+                          <ContentLabels
+                            isSensitive={listing.is_sensitive}
+                            visibility={listing.visibility}
+                          />
+                        </div>
                         <p className="text-sm font-bold">
                           {formatPrice(listing)}
                         </p>

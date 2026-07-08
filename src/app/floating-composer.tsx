@@ -7,6 +7,36 @@ import {
 import { FloatingComposerShell } from "./floating-composer-shell";
 import { startConversation } from "./messages/actions";
 
+const visibilityControl = (
+  <select
+    className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+    name="visibility"
+  >
+    <option value="public_preview">Public preview</option>
+    <option value="members">Members only</option>
+    <option value="private">Private</option>
+  </select>
+);
+
+const sensitiveControls = (
+  <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3">
+    <label className="flex items-start gap-2 text-sm font-medium">
+      <input className="mt-1 size-4" name="is_sensitive" type="checkbox" />
+      <span>Mark as sensitive body-art content</span>
+    </label>
+    <select
+      className="mt-3 h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+      name="sensitive_reason"
+    >
+      <option value="body_art_nudity">Body-art nudity</option>
+      <option value="healing">Healing or fresh work</option>
+      <option value="scar_cover">Scar cover or medical context</option>
+      <option value="piercing">Piercing or body modification</option>
+      <option value="other">Other body-art context</option>
+    </select>
+  </div>
+);
+
 export function FloatingComposer({
   canCreate,
   isSignedIn,
@@ -41,6 +71,8 @@ export function FloatingComposer({
               name="location_label"
               placeholder="Austin, TX"
             />
+            {visibilityControl}
+            {sensitiveControls}
             <input
               accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,video/webm"
               className="block w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#efe7da] file:px-3 file:py-1.5 file:text-sm file:font-semibold"
@@ -66,6 +98,8 @@ export function FloatingComposer({
               placeholder="Start a thread"
               required
             />
+            {visibilityControl}
+            {sensitiveControls}
             <input
               accept="image/jpeg,image/png,image/webp,image/gif"
               className="block w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#efe7da] file:px-3 file:py-1.5 file:text-sm file:font-semibold"
@@ -125,6 +159,8 @@ export function FloatingComposer({
                 placeholder="State"
               />
             </div>
+            {visibilityControl}
+            {sensitiveControls}
             <input
               accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,video/webm"
               className="block w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#efe7da] file:px-3 file:py-1.5 file:text-sm file:font-semibold"

@@ -42,6 +42,8 @@ type FeedPost = {
   id: string;
   caption: string | null;
   feed_media: PostMedia[];
+  is_sensitive: boolean;
+  visibility: "public_preview" | "members" | "private";
   post_comments: PostComment[];
   post_likes: PostLike[];
   style_tags: string[];
@@ -54,9 +56,11 @@ type ThreadPost = {
   id: string;
   body: string;
   created_at: string;
+  is_sensitive: boolean;
   thread_comments: ThreadComment[];
   thread_likes: ThreadLike[];
   thread_media: ThreadMedia[];
+  visibility: "public_preview" | "members" | "private";
   profiles: Profile | null;
 };
 
@@ -64,6 +68,7 @@ type MarketplaceListing = {
   id: string;
   title: string;
   description: string | null;
+  is_sensitive: boolean;
   marketplace_media: ListingMedia[];
   price_cents: number | null;
   currency: string;
@@ -71,6 +76,7 @@ type MarketplaceListing = {
   city: string | null;
   region: string | null;
   created_at: string;
+  visibility: "public_preview" | "members" | "private";
   profiles: Profile | null;
 };
 
@@ -191,6 +197,35 @@ function formatPrice(listing: MarketplaceListing) {
 
 function listingMessage(listing: MarketplaceListing) {
   return `Hi, I am interested in your marketplace listing: ${listing.title}`;
+}
+
+function ContentLabels({
+  isSensitive,
+  visibility,
+}: {
+  isSensitive?: boolean;
+  visibility?: "public_preview" | "members" | "private";
+}) {
+  const labels = [
+    visibility === "members" ? "Members" : null,
+    visibility === "private" ? "Private" : null,
+    isSensitive ? "Sensitive" : null,
+  ].filter(Boolean);
+
+  if (!labels.length) return null;
+
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {labels.map((label) => (
+        <span
+          className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 py-1 text-[11px] font-semibold text-[#766d62]"
+          key={label}
+        >
+          {label}
+        </span>
+      ))}
+    </div>
+  );
 }
 
 function mediaUrl(bucket: string, path: string) {
@@ -314,9 +349,10 @@ export default async function Home({
     supabase
       .from("feed_posts")
       .select(
-        "id, caption, style_tags, location_label, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, created_at, profiles:profiles!post_comments_author_id_fkey(display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, account_type, city, region)",
+        "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, created_at, profiles:profiles!post_comments_author_id_fkey(display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, account_type, city, region)",
       )
       .eq("is_published", true)
+      .eq("moderation_status", "active")
       .order("created_at", { ascending: false })
       .order("sort_order", {
         ascending: true,
@@ -327,8 +363,9 @@ export default async function Home({
     supabase
       .from("thread_posts")
       .select(
-        "id, body, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, body, created_at, profiles:profiles!thread_comments_author_id_fkey(display_name, username)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, account_type, city, region)",
+        "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, body, created_at, profiles:profiles!thread_comments_author_id_fkey(display_name, username)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, account_type, city, region)",
       )
+      .eq("moderation_status", "active")
       .order("created_at", { ascending: false })
       .order("sort_order", {
         ascending: true,
@@ -339,9 +376,10 @@ export default async function Home({
     supabase
       .from("marketplace_listings")
       .select(
-        "id, title, description, price_cents, currency, category, city, region, created_at, marketplace_media(id, storage_bucket, storage_path, sort_order), profiles:profiles!marketplace_listings_seller_id_fkey(id, username, display_name, account_type, city, region)",
+        "id, title, description, price_cents, currency, category, city, region, visibility, is_sensitive, created_at, marketplace_media(id, storage_bucket, storage_path, sort_order), profiles:profiles!marketplace_listings_seller_id_fkey(id, username, display_name, account_type, city, region)",
       )
       .eq("status", "active")
+      .eq("moderation_status", "active")
       .order("created_at", { ascending: false })
       .order("sort_order", {
         ascending: true,
@@ -487,12 +525,23 @@ export default async function Home({
                       <span className="rounded-md bg-[#efe7da] px-2 py-1 text-xs font-medium">
                         {post.style_tags[0]}
                       </span>
-                    ) : null}
+                    ) : (
+                      <ContentLabels
+                        isSensitive={post.is_sensitive}
+                        visibility={post.visibility}
+                      />
+                    )}
                   </div>
 
                   <MediaFrame media={post.feed_media[0]} />
 
                   <div className="space-y-3 px-4 py-4">
+                    {post.style_tags[0] ? (
+                      <ContentLabels
+                        isSensitive={post.is_sensitive}
+                        visibility={post.visibility}
+                      />
+                    ) : null}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <form action={togglePostLike}>
@@ -633,9 +682,15 @@ export default async function Home({
                         >
                           {thread.profiles?.display_name ?? "Member"}
                         </Link>
-                        <p className="text-xs text-[#766d62]">
-                          {timeAgo(thread.created_at)}
-                        </p>
+                        <div className="flex shrink-0 items-center gap-2">
+                          <ContentLabels
+                            isSensitive={thread.is_sensitive}
+                            visibility={thread.visibility}
+                          />
+                          <p className="text-xs text-[#766d62]">
+                            {timeAgo(thread.created_at)}
+                          </p>
+                        </div>
                       </div>
                       <p className="text-sm leading-6">{thread.body}</p>
                       <ThreadImage media={thread.thread_media[0]} />
@@ -749,9 +804,15 @@ export default async function Home({
                           <p className="text-sm font-semibold">
                             {listing.title}
                           </p>
-                          <p className="text-xs capitalize text-[#766d62]">
-                            {listing.category}
-                          </p>
+                          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                            <p className="text-xs capitalize text-[#766d62]">
+                              {listing.category}
+                            </p>
+                            <ContentLabels
+                              isSensitive={listing.is_sensitive}
+                              visibility={listing.visibility}
+                            />
+                          </div>
                         </div>
                       </div>
                       <p className="mb-2 text-lg font-bold">
