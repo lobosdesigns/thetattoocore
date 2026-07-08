@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { submitLicenseVerification } from "./actions";
 import { ProfileForm } from "./profile-form";
 import { createClient } from "@/lib/supabase/server";
 
@@ -10,6 +11,7 @@ type Claims = {
 };
 
 const adminRoles = ["moderator", "admin", "owner"];
+const verificationEligibleTypes = ["artist", "studio"];
 
 export const metadata: Metadata = {
   robots: {
@@ -42,6 +44,25 @@ export default async function AccountPage({
     .maybeSingle();
 
   const role = profile?.role as string | undefined;
+  const { data: verificationRequests } = await supabase
+    .from("license_verification_requests")
+    .select("id, license_name, issuing_region, status, created_at, reviewed_at")
+    .eq("profile_id", claims.sub)
+    .order("created_at", { ascending: false })
+    .limit(3)
+    .returns<
+      {
+        created_at: string;
+        id: string;
+        issuing_region: string;
+        license_name: string;
+        reviewed_at: string | null;
+        status: "pending" | "approved" | "rejected";
+      }[]
+    >();
+  const canSubmitLicense =
+    profile?.account_type &&
+    verificationEligibleTypes.includes(profile.account_type as string);
 
   return (
     <main className="min-h-screen bg-[#f7f4ef] px-4 py-8 text-[#171412]">
@@ -74,6 +95,116 @@ export default async function AccountPage({
         ) : null}
 
         <ProfileForm claims={claims} initialProfile={profile} />
+
+        {canSubmitLicense ? (
+          <section className="mt-6 rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5">
+            <div className="mb-5">
+              <h2 className="text-xl font-bold">
+                Artist/studio license verification
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-[#766d62]">
+                Upload your tattoo license, shop license, certification, or
+                local proof that you can legally tattoo or operate as a studio.
+                Documents are private and reviewed by authorized admins.
+              </p>
+            </div>
+
+            {verificationRequests?.length ? (
+              <div className="mb-5 space-y-2">
+                {verificationRequests.map((request) => (
+                  <div
+                    className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3 text-sm"
+                    key={request.id}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="font-semibold">{request.license_name}</p>
+                      <span className="rounded-md bg-white px-2 py-1 text-xs font-semibold capitalize">
+                        {request.status}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-[#766d62]">
+                      {request.issuing_region} · Submitted{" "}
+                      {new Date(request.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            <form action={submitLicenseVerification} className="grid gap-4">
+              <label className="block">
+                <span className="text-sm font-medium">
+                  License or certification name
+                </span>
+                <input
+                  className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  name="license_name"
+                  placeholder="Tattoo artist license"
+                  required
+                />
+              </label>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className="text-sm font-medium">
+                    License number
+                  </span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    name="license_number"
+                    placeholder="Optional"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-medium">
+                    Issuing city/state/country
+                  </span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    name="issuing_region"
+                    placeholder="Austin, TX"
+                    required
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className="text-sm font-medium">Expiration date</span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    name="expires_on"
+                    type="date"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-medium">
+                    License document
+                  </span>
+                  <input
+                    accept="application/pdf,image/jpeg,image/png,image/webp"
+                    className="mt-2 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm"
+                    name="license_document"
+                    required
+                    type="file"
+                  />
+                </label>
+              </div>
+
+              <button className="h-11 rounded-md bg-[#171412] px-5 text-sm font-semibold text-white">
+                Submit for review
+              </button>
+            </form>
+          </section>
+        ) : (
+          <section className="mt-6 rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5">
+            <h2 className="text-xl font-bold">Artist/studio verification</h2>
+            <p className="mt-2 text-sm leading-6 text-[#766d62]">
+              Choose Artist or Studio as your account type and save your profile
+              to submit license or certification documents.
+            </p>
+          </section>
+        )}
       </section>
     </main>
   );

@@ -47,8 +47,12 @@
 - Verification levels:
   - Email verified: user confirmed email address.
   - Profile verified: profile has enough identity/location/business info to reduce spam.
-  - Artist/studio verified: manual review of portfolio, shop, license, website, social profile, or business presence.
+  - Artist/studio verified: required manual review for artist and studio accounts before they receive a verified artist/studio badge.
+  - Artist/studio license verified: artists and studios must submit licensing or certification documentation showing they are legally allowed to tattoo or operate in their jurisdiction.
   - Advertiser verified: billing and campaign review before ads go live.
+- Artist/studio license documents must be private, stored outside public media buckets, visible only to the submitting user and authorized admins/moderators.
+- Verification review should collect license/certification file, issuing region, license or certification name/number where applicable, expiration date when applicable, and reviewer notes.
+- Profiles should show verification badges only after approval; rejected or pending verification should not be public-facing.
 - SMS or phone MFA is not the default starting path because it adds cost. Current Supabase phone MFA is a paid add-on and SMS/WhatsApp messages can add provider charges.
 - Revisit SMS/phone verification only when there is a clear anti-spam need and budget for it.
 

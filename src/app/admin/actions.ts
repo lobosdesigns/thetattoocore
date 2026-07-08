@@ -8,6 +8,7 @@ type UserRole = "user" | "moderator" | "admin" | "owner";
 type SubjectType = "feed_post" | "gig" | "thread_post" | "marketplace_listing";
 type ModerationStatus = "active" | "under_review" | "hidden" | "removed";
 type ReportStatus = "open" | "reviewing" | "resolved" | "dismissed";
+type LicenseVerificationStatus = "approved" | "rejected";
 
 const moderatorRoles = new Set<UserRole>(["moderator", "admin", "owner"]);
 const statuses = new Set<ModerationStatus>([
@@ -21,6 +22,10 @@ const reportStatuses = new Set<ReportStatus>([
   "reviewing",
   "resolved",
   "dismissed",
+]);
+const licenseStatuses = new Set<LicenseVerificationStatus>([
+  "approved",
+  "rejected",
 ]);
 
 const subjectConfig = {
@@ -234,4 +239,69 @@ export async function updateReportStatus(formData: FormData) {
 
   revalidatePath("/admin");
   redirect("/admin?message=Report status updated.#reports");
+}
+
+export async function updateLicenseVerification(formData: FormData) {
+  const requestId = cleanText(formData.get("request_id"), 80);
+  const status = cleanText(
+    formData.get("status"),
+    40,
+  ) as LicenseVerificationStatus;
+  const note = cleanText(formData.get("note"), 500);
+
+  if (!requestId || !licenseStatuses.has(status)) {
+    redirect("/admin?message=Choose a valid license decision.#verification");
+  }
+
+  const { supabase, userId } = await requireModerator();
+  const { data: request, error: requestError } = await supabase
+    .from("license_verification_requests")
+    .select("id, profile_id, status")
+    .eq("id", requestId)
+    .maybeSingle<{ id: string; profile_id: string; status: string }>();
+
+  if (requestError || !request) {
+    redirect(
+      `/admin?message=${encodeURIComponent(
+        requestError?.message || "License request was not found.",
+      )}#verification`,
+    );
+  }
+
+  if (request.status !== "pending") {
+    redirect("/admin?message=This license request was already reviewed.#verification");
+  }
+
+  const { error: updateError } = await supabase
+    .from("license_verification_requests")
+    .update({
+      reviewed_at: new Date().toISOString(),
+      reviewer_id: userId,
+      reviewer_note: note || null,
+      status,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", requestId)
+    .eq("status", "pending");
+
+  if (updateError) {
+    redirect(
+      `/admin?message=${encodeURIComponent(
+        updateError.message || "Could not update license request.",
+      )}#verification`,
+    );
+  }
+
+  await supabase.from("admin_audit_logs").insert({
+    actor_id: userId,
+    event_type: `license_${status}`,
+    metadata: { status },
+    summary: note || null,
+    target_id: request.id,
+    target_type: "license_verification_request",
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/account");
+  redirect("/admin?message=License verification updated.#verification");
 }

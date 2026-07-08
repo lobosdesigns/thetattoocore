@@ -13,7 +13,11 @@ import {
   ShoppingBag,
   Users,
 } from "lucide-react";
-import { moderateContent, updateReportStatus } from "./actions";
+import {
+  moderateContent,
+  updateLicenseVerification,
+  updateReportStatus,
+} from "./actions";
 import { MailTestForm } from "./mail-test-form";
 import { createClient } from "@/lib/supabase/server";
 
@@ -46,10 +50,23 @@ type ReportItem = {
   subjectId: string;
   subjectType: string;
 };
+type LicenseRequest = {
+  accountType: string;
+  createdAt: string;
+  expiresOn: string | null;
+  id: string;
+  issuingRegion: string;
+  licenseName: string;
+  licenseNumber: string | null;
+  profileName: string;
+  profileUsername: string;
+  status: "pending" | "approved" | "rejected";
+};
 
 const adminTabs = [
   [Activity, "Overview"],
   [Users, "Users"],
+  [ShieldCheck, "Verification"],
   [Flag, "Reports"],
   [ImageIcon, "Content"],
   [BriefcaseBusiness, "Gigs"],
@@ -204,6 +221,84 @@ function ReportCard({ report }: { report: ReportItem }) {
   );
 }
 
+function LicenseRequestCard({ request }: { request: LicenseRequest }) {
+  const isPending = request.status === "pending";
+
+  return (
+    <article className="rounded-md border border-[#e5ded4] bg-white p-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-bold">{request.profileName}</p>
+          <p className="mt-1 text-xs text-[#766d62]">
+            @{request.profileUsername} - {request.accountType} -{" "}
+            {timeAgo(request.createdAt)}
+          </p>
+        </div>
+        <span className="shrink-0 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] px-2 py-1 text-xs font-semibold capitalize text-[#4f473f]">
+          {request.status}
+        </span>
+      </div>
+      <dl className="grid gap-2 text-sm text-[#4f473f]">
+        <div>
+          <dt className="text-xs font-semibold uppercase text-[#766d62]">
+            Certification
+          </dt>
+          <dd className="mt-0.5">{request.licenseName}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase text-[#766d62]">
+            Region
+          </dt>
+          <dd className="mt-0.5">{request.issuingRegion}</dd>
+        </div>
+        {request.licenseNumber ? (
+          <div>
+            <dt className="text-xs font-semibold uppercase text-[#766d62]">
+              License number
+            </dt>
+            <dd className="mt-0.5">{request.licenseNumber}</dd>
+          </div>
+        ) : null}
+        {request.expiresOn ? (
+          <div>
+            <dt className="text-xs font-semibold uppercase text-[#766d62]">
+              Expires
+            </dt>
+            <dd className="mt-0.5">{request.expiresOn}</dd>
+          </div>
+        ) : null}
+      </dl>
+      {isPending ? (
+        <form action={updateLicenseVerification} className="mt-4 space-y-2">
+          <input name="request_id" type="hidden" value={request.id} />
+          <input
+            className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            maxLength={500}
+            name="note"
+            placeholder="Reviewer note"
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              className="h-10 rounded-md bg-[#171412] px-3 text-sm font-semibold text-white"
+              name="status"
+              value="approved"
+            >
+              Approve
+            </button>
+            <button
+              className="h-10 rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-3 text-sm font-semibold hover:bg-[#f7f4ef]"
+              name="status"
+              value="rejected"
+            >
+              Reject
+            </button>
+          </div>
+        </form>
+      ) : null}
+    </article>
+  );
+}
+
 export default async function AdminPage({
   searchParams,
 }: {
@@ -266,8 +361,10 @@ export default async function AdminPage({
   const [
     { count: userCount },
     { count: openReports },
+    { count: pendingVerifications },
     { count: marketplaceQueue },
     { count: moderationActions },
+    { data: verificationQueue },
     { data: reportQueue },
     { data: feedReview },
     { data: threadReview },
@@ -281,12 +378,37 @@ export default async function AdminPage({
       .select("*", { count: "exact", head: true })
       .eq("status", "open"),
     supabase
+      .from("license_verification_requests")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "pending"),
+    supabase
       .from("marketplace_listings")
       .select("*", { count: "exact", head: true })
       .in("status", ["draft", "active"]),
     supabase
       .from("moderation_actions")
       .select("*", { count: "exact", head: true }),
+    supabase
+      .from("license_verification_requests")
+      .select(
+        "id, account_type, license_name, license_number, issuing_region, expires_on, status, created_at, profiles:profiles!license_verification_requests_profile_id_fkey(display_name, username)",
+      )
+      .in("status", ["pending", "rejected"])
+      .order("created_at", { ascending: false })
+      .limit(8)
+      .returns<
+        {
+          account_type: string;
+          created_at: string;
+          expires_on: string | null;
+          id: string;
+          issuing_region: string;
+          license_name: string;
+          license_number: string | null;
+          profiles: { display_name: string; username: string } | null;
+          status: "pending" | "approved" | "rejected";
+        }[]
+      >(),
     supabase
       .from("content_reports")
       .select(
@@ -411,9 +533,24 @@ export default async function AdminPage({
   const metrics = [
     ["Members", userCount, "Profiles created"],
     ["Open reports", openReports, "Needs review"],
+    ["License checks", pendingVerifications, "Pending approval"],
     ["Listings", marketplaceQueue, "Draft and active"],
     ["Actions", moderationActions, "Moderation log"],
   ];
+  const licenseRequests: LicenseRequest[] = (verificationQueue ?? []).map(
+    (request) => ({
+      accountType: request.account_type,
+      createdAt: request.created_at,
+      expiresOn: request.expires_on,
+      id: request.id,
+      issuingRegion: request.issuing_region,
+      licenseName: request.license_name,
+      licenseNumber: request.license_number,
+      profileName: request.profiles?.display_name ?? "Member",
+      profileUsername: request.profiles?.username ?? "member",
+      status: request.status,
+    }),
+  );
   const reports: ReportItem[] = (reportQueue ?? []).map((report) => ({
     createdAt: report.created_at,
     details: report.details,
@@ -547,7 +684,7 @@ export default async function AdminPage({
           ) : null}
 
           <section
-            className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
+            className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5"
             id="overview"
           >
             {metrics.map(([label, value, caption]) => (
@@ -587,6 +724,33 @@ export default async function AdminPage({
                     </div>
                   ))}
                 </div>
+              </div>
+
+              <div
+                className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5"
+                id="verification"
+              >
+                <div className="mb-4 flex items-center gap-3">
+                  <ShieldCheck className="size-5" />
+                  <h2 className="text-lg font-bold">
+                    Artist and studio verification
+                  </h2>
+                </div>
+                {licenseRequests.length ? (
+                  <div className="grid gap-3">
+                    {licenseRequests.map((request) => (
+                      <LicenseRequestCard
+                        key={request.id}
+                        request={request}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-md border border-[#e5ded4] bg-white p-4 text-sm text-[#4f473f]">
+                    No artist or studio license submissions are waiting right
+                    now.
+                  </div>
+                )}
               </div>
 
               <div
