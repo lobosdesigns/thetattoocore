@@ -17,7 +17,7 @@ import {
   UserPlus,
   UserRoundMinus,
 } from "lucide-react";
-import { archiveGig, createContentReport } from "@/app/actions";
+import { acceptAdultTerms, archiveGig, createContentReport } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
 import { siteName, siteUrl } from "@/lib/site";
 import {
@@ -48,6 +48,7 @@ type Profile = {
 };
 
 type ViewerProfile = {
+  adult_terms_accepted_at: string | null;
   id: string;
   is_adult_confirmed: boolean | null;
 };
@@ -277,6 +278,32 @@ function ProfileReportForm({
   );
 }
 
+function AdultTermsGate({ username }: { username: string }) {
+  return (
+    <section className="border-b border-[#e5ded4] px-4 py-4">
+      <div className="rounded-md border border-[#171412] bg-[#171412] p-4 text-white">
+        <p className="text-sm font-bold">18+ body-art content</p>
+        <p className="mt-1 text-sm leading-5 text-white/75">
+          This profile may include sensitive tattoo, piercing, healing, or
+          placement posts. Accept the Terms to view eligible sensitive content.
+        </p>
+        <form action={acceptAdultTerms} className="mt-3 flex flex-wrap gap-2">
+          <input name="return_path" type="hidden" value={`/u/${username}`} />
+          <Link
+            className="flex h-10 items-center rounded-md border border-white/25 px-3 text-sm font-semibold"
+            href="/terms"
+          >
+            Terms
+          </Link>
+          <button className="h-10 rounded-md bg-white px-4 text-sm font-semibold text-[#171412]">
+            I am 18+
+          </button>
+        </form>
+      </div>
+    </section>
+  );
+}
+
 function ProfileStat({ label, value }: { label: string; value: number }) {
   return (
     <div>
@@ -468,7 +495,7 @@ export default async function ProfilePage({
     claims?.sub
       ? supabase
           .from("profiles")
-          .select("id, is_adult_confirmed")
+          .select("id, adult_terms_accepted_at, is_adult_confirmed")
           .eq("id", claims.sub)
           .maybeSingle<ViewerProfile>()
       : Promise.resolve({ data: null }),
@@ -532,7 +559,10 @@ export default async function ProfilePage({
   const hasPendingRequest = followRecord?.status === "pending";
   const isPrivateLocked = profile.is_private && !isOwnProfile && !isFollowing;
   const viewer = {
-    isAdultConfirmed: Boolean(viewerProfile?.is_adult_confirmed),
+    isAdultConfirmed: Boolean(
+      viewerProfile?.is_adult_confirmed &&
+        viewerProfile.adult_terms_accepted_at,
+    ),
     isSignedIn: Boolean(claims?.sub),
   };
   const canShow = (item: VisibleContent) =>
@@ -773,6 +803,10 @@ export default async function ProfilePage({
               ))}
             </div>
           </section>
+        ) : null}
+
+        {viewer.isSignedIn && !viewer.isAdultConfirmed && !isPrivateLocked ? (
+          <AdultTermsGate username={profile.username} />
         ) : null}
 
         {isPrivateLocked ? (

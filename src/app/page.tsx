@@ -17,6 +17,7 @@ import {
   UserRound,
 } from "lucide-react";
 import {
+  acceptAdultTerms,
   archiveGig,
   createContentReport,
   createPostComment,
@@ -38,6 +39,7 @@ type Profile = {
   id: string;
   username: string;
   display_name: string;
+  adult_terms_accepted_at?: string | null;
   account_type: string;
   city: string | null;
   is_adult_confirmed?: boolean | null;
@@ -462,6 +464,35 @@ function AuthCallout({ isSignedIn }: { isSignedIn: boolean }) {
   );
 }
 
+function AdultTermsGate({ returnHash = "feed" }: { returnHash?: string }) {
+  return (
+    <section className="border-b border-[#d8d1c6] bg-[#171412] px-4 py-4 text-white">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-bold">18+ body-art content</p>
+          <p className="mt-1 text-sm leading-5 text-white/75">
+            Sensitive tattoo, piercing, healing, or placement posts require
+            login and 18+ Terms acceptance.
+          </p>
+        </div>
+        <form action={acceptAdultTerms} className="flex shrink-0 gap-2">
+          <input name="return_path" type="hidden" value="/" />
+          <input name="return_hash" type="hidden" value={returnHash} />
+          <Link
+            className="flex h-10 items-center rounded-md border border-white/25 px-3 text-sm font-semibold"
+            href="/terms"
+          >
+            Terms
+          </Link>
+          <button className="h-10 rounded-md bg-white px-4 text-sm font-semibold text-[#171412]">
+            I am 18+
+          </button>
+        </form>
+      </div>
+    </section>
+  );
+}
+
 export default async function Home({
   searchParams,
 }: {
@@ -484,7 +515,7 @@ export default async function Home({
       ? supabase
           .from("profiles")
           .select(
-            "id, username, display_name, account_type, city, is_adult_confirmed, license_verified_at, region, role",
+            "id, username, display_name, account_type, city, adult_terms_accepted_at, is_adult_confirmed, license_verified_at, region, role",
           )
           .eq("id", claims.sub)
           .maybeSingle<Profile>()
@@ -555,7 +586,10 @@ export default async function Home({
 
   const isSignedIn = Boolean(claims?.sub);
   const viewer = {
-    isAdultConfirmed: Boolean(currentProfile?.is_adult_confirmed),
+    isAdultConfirmed: Boolean(
+      currentProfile?.is_adult_confirmed &&
+        currentProfile.adult_terms_accepted_at,
+    ),
     isSignedIn,
   };
   const visibleFeedPosts = (feedPosts ?? []).filter((post) =>
@@ -677,6 +711,8 @@ export default async function Home({
               {params.message}
             </p>
           ) : null}
+
+          {isSignedIn && !viewer.isAdultConfirmed ? <AdultTermsGate /> : null}
 
           <div className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto scroll-smooth">
           <section

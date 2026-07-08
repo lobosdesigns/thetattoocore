@@ -89,6 +89,51 @@ function cleanId(value: FormDataEntryValue | null) {
   return String(value ?? "").trim();
 }
 
+export async function acceptAdultTerms(formData: FormData) {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+
+  if (!claims?.sub) {
+    redirect("/login");
+  }
+
+  const returnPath = cleanText(formData.get("return_path"), 160) || "/";
+  const returnHash = cleanText(formData.get("return_hash"), 40);
+  const now = new Date().toISOString();
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .update({
+      adult_terms_accepted_at: now,
+      is_adult_confirmed: true,
+      updated_at: now,
+    })
+    .eq("id", claims.sub)
+    .select("id")
+    .maybeSingle<{ id: string }>();
+
+  if (error || !profile) {
+    redirect(
+      redirectWithMessage({
+        hash: returnHash,
+        message: error?.message || "Finish your profile before accepting 18+ terms.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  revalidatePath("/");
+  revalidatePath("/account");
+  revalidatePath(returnPath);
+  redirect(
+    redirectWithMessage({
+      hash: returnHash,
+      message: "18+ terms accepted. Sensitive body-art content can now be shown.",
+      path: returnPath,
+    }),
+  );
+}
+
 function cleanReportReason(value: FormDataEntryValue | null) {
   const reason = cleanText(value, 120);
 
