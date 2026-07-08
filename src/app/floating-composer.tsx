@@ -248,7 +248,10 @@ export function FloatingComposer({
               name="media"
               type="file"
             />
-            <button className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+            <button
+              className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+              type="submit"
+            >
               Post gig
             </button>
           </form>

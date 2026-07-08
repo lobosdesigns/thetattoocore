@@ -16,6 +16,7 @@ import {
   UserRound,
 } from "lucide-react";
 import {
+  archiveGig,
   createContentReport,
   createPostComment,
   createThreadComment,
@@ -1074,6 +1075,20 @@ export default async function Home({
                             subjectType="gig"
                           />
                         </div>
+                      ) : null}
+                      {gig.profiles?.id === claims?.sub &&
+                      gig.profiles?.username ? (
+                        <form action={archiveGig} className="mt-3">
+                          <input name="gig_id" type="hidden" value={gig.id} />
+                          <input
+                            name="username"
+                            type="hidden"
+                            value={gig.profiles.username}
+                          />
+                          <button className="flex h-9 w-full items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold">
+                            Archive gig
+                          </button>
+                        </form>
                       ) : null}
                       <div className="mt-4">
                         {gig.contact_url ? (

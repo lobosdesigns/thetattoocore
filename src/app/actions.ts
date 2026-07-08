@@ -415,84 +415,6 @@ export async function createMarketplaceListing(formData: FormData) {
   redirect(homeMessage("Marketplace listing published."));
 }
 
-export async function createGig(formData: FormData) {
-  const { supabase, userId } = await requireProfile();
-  const title = cleanText(formData.get("title"), 140);
-  const description = cleanText(formData.get("description"), 3000);
-  const category = cleanText(formData.get("category"), 40) || "job";
-  const city = cleanText(formData.get("city"), 80);
-  const region = cleanText(formData.get("region"), 40);
-  const country = cleanText(formData.get("country"), 2).toUpperCase() || "US";
-  const startsAt = cleanText(formData.get("starts_at"), 40);
-  const endsAt = cleanText(formData.get("ends_at"), 40);
-  const compensation = cleanText(formData.get("compensation"), 120);
-  const contactUrl = cleanText(formData.get("contact_url"), 300);
-  const media = mediaFromForm(formData, "media");
-  const sensitive = sensitiveFields(formData);
-  const visibility = cleanVisibility(formData.get("visibility"), "public_preview");
-
-  if (title.length < 3) {
-    redirect(homeMessage("Gig title needs at least 3 characters."));
-  }
-
-  if (media && !media.type.startsWith("image/")) {
-    redirect(homeMessage("Gigs support image uploads right now."));
-  }
-
-  const { data: gig, error } = await supabase
-    .from("gigs")
-    .insert({
-      category,
-      city: city || null,
-      compensation: compensation || null,
-      contact_url: contactUrl || null,
-      country,
-      description: description || null,
-      ends_at: endsAt || null,
-      is_indexable: visibility === "public_preview" && !sensitive.is_sensitive,
-      is_sensitive: sensitive.is_sensitive,
-      moderation_status: "active",
-      poster_id: userId,
-      sensitive_reason: sensitive.sensitive_reason,
-      starts_at: startsAt || null,
-      status: "active",
-      title,
-      visibility,
-      region: region || null,
-    })
-    .select("id")
-    .single<{ id: string }>();
-
-  if (error) {
-    redirect(homeMessage(error.message || "Could not publish gig."));
-  }
-
-  if (media && gig) {
-    const upload = await uploadPostMedia({
-      file: media,
-      id: gig.id,
-      kind: "gig",
-      supabase,
-      userId,
-    });
-    const { error: mediaError } = await supabase.from("gig_media").insert({
-      gig_id: gig.id,
-      is_sensitive: sensitive.is_sensitive,
-      media_type: "image",
-      sensitive_reason: sensitive.sensitive_reason,
-      storage_bucket: upload.bucket,
-      storage_path: upload.path,
-    });
-
-    if (mediaError) {
-      redirect(homeMessage(mediaError.message || "Image uploaded but could not attach to the gig."));
-    }
-  }
-
-  revalidatePath("/");
-  redirect(homeMessage("Gig posted."));
-}
-
 export async function createContentReport(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const subjectType = cleanText(formData.get("subject_type"), 40);
@@ -529,6 +451,50 @@ export async function createContentReport(formData: FormData) {
     redirectWithMessage({
       hash: returnHash,
       message: "Report sent to moderators.",
+      path: returnPath,
+    }),
+  );
+}
+
+export async function archiveGig(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const gigId = cleanId(formData.get("gig_id"));
+  const username = cleanText(formData.get("username"), 80);
+  const returnPath = username ? `/u/${username}` : "/";
+
+  if (!gigId) {
+    redirect(
+      redirectWithMessage({
+        message: "Choose a gig first.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  const { error } = await supabase
+    .from("gigs")
+    .update({
+      status: "archived",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", gigId)
+    .eq("poster_id", userId);
+
+  if (error) {
+    redirect(
+      redirectWithMessage({
+        message: error.message || "Could not archive gig.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  revalidatePath("/");
+  if (username) revalidatePath(`/u/${username}`);
+
+  redirect(
+    redirectWithMessage({
+      message: "Gig archived.",
       path: returnPath,
     }),
   );

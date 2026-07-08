@@ -16,7 +16,7 @@ import {
   UserPlus,
   UserRoundMinus,
 } from "lucide-react";
-import { createContentReport } from "@/app/actions";
+import { archiveGig, createContentReport } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
 import { siteName, siteUrl } from "@/lib/site";
 import { followProfile, unfollowProfile } from "./actions";
@@ -717,6 +717,19 @@ export default async function ProfilePage({
                           >
                             View details
                           </a>
+                        ) : null}
+                        {isOwnProfile ? (
+                          <form action={archiveGig} className="mt-3">
+                            <input name="gig_id" type="hidden" value={gig.id} />
+                            <input
+                              name="username"
+                              type="hidden"
+                              value={profile.username}
+                            />
+                            <button className="inline-flex h-9 items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold">
+                              Archive gig
+                            </button>
+                          </form>
                         ) : null}
                       </div>
                     </div>
