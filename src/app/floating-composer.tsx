@@ -1,6 +1,7 @@
 import { Search, Send } from "lucide-react";
 import {
   createFeedPost,
+  createGig,
   createMarketplaceListing,
   createThreadPost,
 } from "./actions";
@@ -169,6 +170,86 @@ export function FloatingComposer({
             />
             <button className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
               Publish listing
+            </button>
+          </form>
+        ),
+        gigs: (
+          <form
+            action={createGig}
+            className="space-y-3"
+            encType="multipart/form-data"
+          >
+            <input
+              className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              maxLength={140}
+              name="title"
+              placeholder="Guest spot, convention booth, artist wanted"
+              required
+            />
+            <select
+              className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              name="category"
+            >
+              <option value="job">Job</option>
+              <option value="convention">Convention</option>
+              <option value="guest_spot">Guest spot</option>
+              <option value="shop_opening">Shop opening</option>
+              <option value="apprenticeship">Apprenticeship</option>
+              <option value="event">Event</option>
+            </select>
+            <textarea
+              className="min-h-28 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+              maxLength={3000}
+              name="description"
+              placeholder="Details, dates, requirements, booth info, or contact notes."
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                name="city"
+                placeholder="City"
+              />
+              <input
+                className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                name="region"
+                placeholder="State"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                name="starts_at"
+                type="date"
+              />
+              <input
+                className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                name="ends_at"
+                type="date"
+              />
+            </div>
+            <input
+              className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              maxLength={120}
+              name="compensation"
+              placeholder="Paid, booth fee, commission split"
+            />
+            <input
+              className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              maxLength={300}
+              name="contact_url"
+              placeholder="Application or event link"
+              type="url"
+            />
+            {visibilityControl}
+            {sensitiveControls}
+            <input
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="block w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#efe7da] file:px-3 file:py-1.5 file:text-sm file:font-semibold"
+              name="media"
+              type="file"
+            />
+            <button className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+              Post gig
             </button>
           </form>
         ),

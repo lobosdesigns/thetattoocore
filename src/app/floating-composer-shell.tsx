@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
 import {
+  BriefcaseBusiness,
   Camera,
   MessageCircle,
   Plus,
@@ -11,7 +12,7 @@ import {
   X,
 } from "lucide-react";
 
-type ComposerMode = "feed" | "threads" | "marketplace" | "messages";
+type ComposerMode = "feed" | "threads" | "marketplace" | "gigs" | "messages";
 
 const modes: Record<
   ComposerMode,
@@ -36,6 +37,11 @@ const modes: Record<
     label: "Market",
     title: "Listing",
   },
+  gigs: {
+    icon: BriefcaseBusiness,
+    label: "Gigs",
+    title: "Gig",
+  },
   messages: {
     icon: Send,
     label: "Message",
@@ -46,6 +52,7 @@ const modes: Record<
 function modeFromHash(hash: string): ComposerMode {
   if (hash === "#threads") return "threads";
   if (hash === "#marketplace") return "marketplace";
+  if (hash === "#gigs") return "gigs";
   if (hash === "#messages") return "messages";
 
   return "feed";
@@ -71,7 +78,7 @@ export function FloatingComposerShell({
     const onHashChange = () => setActiveMode(modeFromHash(window.location.hash));
     window.addEventListener("hashchange", onHashChange);
 
-    const sections = ["feed", "threads", "marketplace", "messages"]
+    const sections = ["feed", "threads", "marketplace", "gigs", "messages"]
       .map((id) => document.getElementById(id))
       .filter(Boolean) as HTMLElement[];
 

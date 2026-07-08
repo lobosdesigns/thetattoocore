@@ -1,6 +1,8 @@
 import Link from "next/link";
 import {
   Bell,
+  BriefcaseBusiness,
+  CalendarDays,
   Flag,
   Heart,
   Home as HomeIcon,
@@ -82,6 +84,25 @@ type MarketplaceListing = {
   profiles: Profile | null;
 };
 
+type Gig = {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  city: string | null;
+  region: string | null;
+  country: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  compensation: string | null;
+  contact_url: string | null;
+  created_at: string;
+  gig_media: GigMedia[];
+  is_sensitive: boolean;
+  visibility: "public_preview" | "members" | "private";
+  profiles: Profile | null;
+};
+
 type PostMedia = {
   id: string;
   media_type: "image" | "video";
@@ -91,6 +112,13 @@ type PostMedia = {
 
 type ListingMedia = {
   id: string;
+  storage_bucket: string;
+  storage_path: string;
+};
+
+type GigMedia = {
+  id: string;
+  media_type: "image" | "video";
   storage_bucket: string;
   storage_path: string;
 };
@@ -162,6 +190,24 @@ const sampleListings = [
   { title: "Aftercare balm batch", price: "$14", tag: "supplies" },
 ];
 
+const sampleGigs = [
+  {
+    category: "guest spot",
+    location: "Austin, TX",
+    title: "Blackwork guest artist wanted",
+  },
+  {
+    category: "convention",
+    location: "Chicago, IL",
+    title: "Booth share for fall convention",
+  },
+  {
+    category: "job",
+    location: "Denver, CO",
+    title: "Studio hiring full-time artist",
+  },
+];
+
 function initials(name: string) {
   return name
     .split(" ")
@@ -195,6 +241,19 @@ function formatPrice(listing: MarketplaceListing) {
     maximumFractionDigits: 0,
     style: "currency",
   }).format(listing.price_cents / 100);
+}
+
+function formatGigDate(gig: Gig) {
+  if (!gig.starts_at) return "Flexible";
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(new Date(gig.starts_at));
+}
+
+function formatGigCategory(category: string) {
+  return category.replaceAll("_", " ");
 }
 
 function listingMessage(listing: MarketplaceListing) {
@@ -377,6 +436,7 @@ export default async function Home({
     { data: feedPosts },
     { data: threadPosts },
     { data: listings },
+    { data: gigs },
   ] = await Promise.all([
     claims?.sub
       ? supabase
@@ -426,6 +486,20 @@ export default async function Home({
       })
       .limit(20)
       .returns<MarketplaceListing[]>(),
+    supabase
+      .from("gigs")
+      .select(
+        "id, title, description, category, city, region, country, starts_at, ends_at, compensation, contact_url, visibility, is_sensitive, created_at, gig_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!gigs_poster_id_fkey(id, username, display_name, account_type, city, region)",
+      )
+      .eq("status", "active")
+      .eq("moderation_status", "active")
+      .order("created_at", { ascending: false })
+      .order("sort_order", {
+        ascending: true,
+        referencedTable: "gig_media",
+      })
+      .limit(20)
+      .returns<Gig[]>(),
   ]);
 
   const isSignedIn = Boolean(claims?.sub);
@@ -446,6 +520,7 @@ export default async function Home({
               [HomeIcon, "Feed", "#feed"],
               [MessageCircle, "Threads", "#threads"],
               [ShoppingBag, "Marketplace", "#marketplace"],
+              [BriefcaseBusiness, "Gigs", "#gigs"],
               [Send, "Messages", "/messages"],
               [UserRound, "Profile", profileHref],
             ].map(([Icon, label, href]) => (
@@ -499,6 +574,7 @@ export default async function Home({
               ["Feed", "#feed"],
               ["Threads", "#threads"],
               ["Marketplace", "#marketplace"],
+              ["Gigs", "#gigs"],
               ["Messages", "/messages"],
             ].map(([tab, href], index) => (
               <Link
@@ -938,6 +1014,122 @@ export default async function Home({
 
           <section
             className="min-w-full snap-start border-l border-[#e5ded4] px-4 py-5"
+            id="gigs"
+          >
+            <div className="mb-4 flex items-center gap-2">
+              <BriefcaseBusiness className="size-5" />
+              <h2 className="text-lg font-bold">Gigs</h2>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {gigs?.length
+                ? gigs.map((gig) => (
+                    <article
+                      className="rounded-md border border-[#d8d1c6] bg-white p-4"
+                      key={gig.id}
+                    >
+                      <div className="mb-3 flex items-start gap-3">
+                        <ListingThumb media={gig.gig_media[0]} />
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold">{gig.title}</p>
+                          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                            <p className="text-xs capitalize text-[#766d62]">
+                              {formatGigCategory(gig.category)}
+                            </p>
+                            <ContentLabels
+                              isSensitive={gig.is_sensitive}
+                              visibility={gig.visibility}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mb-3 flex flex-wrap gap-2 text-xs text-[#766d62]">
+                        <span className="flex items-center gap-1 rounded-md bg-[#f7f4ef] px-2 py-1">
+                          <CalendarDays className="size-3.5" />
+                          {formatGigDate(gig)}
+                        </span>
+                        <span className="rounded-md bg-[#f7f4ef] px-2 py-1">
+                          {[gig.city, gig.region].filter(Boolean).join(", ") ||
+                            gig.country ||
+                            "Remote / open"}
+                        </span>
+                      </div>
+                      <p className="line-clamp-4 text-sm leading-6 text-[#4f473f]">
+                        {gig.description || "No details yet."}
+                      </p>
+                      {gig.compensation ? (
+                        <p className="mt-3 text-sm font-semibold">
+                          {gig.compensation}
+                        </p>
+                      ) : null}
+                      <p className="mt-3 text-xs text-[#766d62]">
+                        Posted by{" "}
+                        {gig.profiles?.display_name ?? "TheTattooCore member"} -{" "}
+                        {timeAgo(gig.created_at)}
+                      </p>
+                      <div className="mt-4">
+                        {gig.contact_url ? (
+                          <a
+                            className="flex h-10 w-full items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                            href={gig.contact_url}
+                            rel="noreferrer"
+                            target="_blank"
+                          >
+                            View details
+                          </a>
+                        ) : gig.profiles?.username &&
+                          gig.profiles.id !== claims?.sub &&
+                          isSignedIn ? (
+                          <form action={startConversation}>
+                            <input
+                              name="username"
+                              type="hidden"
+                              value={gig.profiles.username}
+                            />
+                            <input
+                              name="body"
+                              type="hidden"
+                              value={`Hi, I am interested in your gig: ${gig.title}`}
+                            />
+                            <button className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+                              <Send className="size-4" />
+                              Message poster
+                            </button>
+                          </form>
+                        ) : (
+                          <Link
+                            className="flex h-10 w-full items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                            href={isSignedIn ? "/messages" : "/login"}
+                          >
+                            {isSignedIn ? "Open messages" : "Sign in to respond"}
+                          </Link>
+                        )}
+                      </div>
+                    </article>
+                  ))
+                : sampleGigs.map((gig) => (
+                    <div
+                      className="rounded-md border border-[#d8d1c6] bg-white p-4"
+                      key={gig.title}
+                    >
+                      <div className="mb-3 flex items-center gap-3">
+                        <div className="flex size-10 items-center justify-center rounded-md bg-[#efe7da]">
+                          <BriefcaseBusiness className="size-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold">{gig.title}</p>
+                          <p className="text-xs capitalize text-[#766d62]">
+                            {gig.category}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-sm text-[#4f473f]">{gig.location}</p>
+                    </div>
+                  ))}
+            </div>
+          </section>
+
+          <section
+            className="min-w-full snap-start border-l border-[#e5ded4] px-4 py-5"
             id="messages"
           >
             <div className="mb-4 flex items-center gap-2">
@@ -993,6 +1185,39 @@ export default async function Home({
                     key={thread}
                   >
                     {thread}
+                  </a>
+                ))}
+            </div>
+          </section>
+
+          <section className="mb-6">
+            <div className="mb-3 flex items-center gap-2">
+              <BriefcaseBusiness className="size-4" />
+              <h2 className="text-sm font-semibold">Gigs</h2>
+            </div>
+            <div className="space-y-3">
+              {(gigs?.length ? gigs.slice(0, 4) : null)?.map((gig) => (
+                <a
+                  className="block rounded-md border border-[#d8d1c6] bg-white p-3"
+                  href="#gigs"
+                  key={gig.id}
+                >
+                  <p className="text-sm font-semibold">{gig.title}</p>
+                  <p className="mt-1 text-xs capitalize text-[#766d62]">
+                    {formatGigCategory(gig.category)} - {formatGigDate(gig)}
+                  </p>
+                </a>
+              )) ??
+                sampleGigs.map((gig) => (
+                  <a
+                    className="block rounded-md border border-[#d8d1c6] bg-white p-3"
+                    href="#gigs"
+                    key={gig.title}
+                  >
+                    <p className="text-sm font-semibold">{gig.title}</p>
+                    <p className="mt-1 text-xs capitalize text-[#766d62]">
+                      {gig.category} - {gig.location}
+                    </p>
                   </a>
                 ))}
             </div>
