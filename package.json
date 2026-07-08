@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "postinstall": "node scripts/patch-opennext-cloudflare.mjs",
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build --webpack",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
