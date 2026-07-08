@@ -18,6 +18,7 @@ import {
   togglePostLike,
   toggleThreadLike,
 } from "./actions";
+import { startConversation } from "./messages/actions";
 import { FloatingComposer } from "./floating-composer";
 import { LogoMark } from "./logo-mark";
 import { createClient } from "@/lib/supabase/server";
@@ -186,6 +187,10 @@ function formatPrice(listing: MarketplaceListing) {
     maximumFractionDigits: 0,
     style: "currency",
   }).format(listing.price_cents / 100);
+}
+
+function listingMessage(listing: MarketplaceListing) {
+  return `Hi, I am interested in your marketplace listing: ${listing.title}`;
 }
 
 function mediaUrl(bucket: string, path: string) {
@@ -753,6 +758,42 @@ export default async function Home({
                           listing.profiles?.display_name ||
                           "TheTattooCore"}
                       </p>
+                      <div className="mt-4">
+                        {isSignedIn &&
+                        listing.profiles?.username &&
+                        listing.profiles.id !== claims?.sub ? (
+                          <form action={startConversation}>
+                            <input
+                              name="username"
+                              type="hidden"
+                              value={listing.profiles.username}
+                            />
+                            <input
+                              name="body"
+                              type="hidden"
+                              value={listingMessage(listing)}
+                            />
+                            <button className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+                              <Send className="size-4" />
+                              Message seller
+                            </button>
+                          </form>
+                        ) : isSignedIn ? (
+                          <Link
+                            className="flex h-10 w-full items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                            href="/messages"
+                          >
+                            Open messages
+                          </Link>
+                        ) : (
+                          <Link
+                            className="flex h-10 w-full items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                            href="/login"
+                          >
+                            Sign in to message
+                          </Link>
+                        )}
+                      </div>
                     </article>
                   ))
                 : sampleListings.map((listing) => (
