@@ -1,5 +1,14 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { login, signup } from "./actions";
+
+export const metadata: Metadata = {
+  robots: {
+    follow: false,
+    index: false,
+  },
+  title: "Sign in",
+};
 
 export default async function LoginPage({
   searchParams,

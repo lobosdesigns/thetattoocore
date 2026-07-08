@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
   Activity,
@@ -55,6 +56,14 @@ const adminTabs = [
 ] as const;
 
 const moderateRoles: UserRole[] = ["moderator", "admin", "owner"];
+
+export const metadata: Metadata = {
+  robots: {
+    follow: false,
+    index: false,
+  },
+  title: "Admin",
+};
 
 function formatCount(value: number | null) {
   return value == null ? "0" : Intl.NumberFormat("en-US").format(value);

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthHashRedirect } from "./auth-hash-redirect";
+import { siteDescription, siteName, siteUrl } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,8 +15,27 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TheTattooCore",
-  description: "A social network and marketplace for tattoo artists and enthusiasts.",
+  alternates: {
+    canonical: siteUrl,
+  },
+  applicationName: siteName,
+  description: siteDescription,
+  metadataBase: new URL(siteUrl),
+  openGraph: {
+    description: siteDescription,
+    siteName,
+    title: siteName,
+    type: "website",
+    url: siteUrl,
+  },
+  robots: {
+    follow: true,
+    index: true,
+  },
+  title: {
+    default: siteName,
+    template: `%s | ${siteName}`,
+  },
 };
 
 export default function RootLayout({

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   ArrowLeft,
   Inbox,
@@ -9,6 +10,14 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { MessageThread } from "./message-thread";
 import { sendMessage, startConversation } from "./actions";
+
+export const metadata: Metadata = {
+  robots: {
+    follow: false,
+    index: false,
+  },
+  title: "Messages",
+};
 
 type Claims = {
   sub: string;

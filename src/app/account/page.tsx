@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ProfileForm } from "./profile-form";
 import { createClient } from "@/lib/supabase/server";
@@ -9,6 +10,14 @@ type Claims = {
 };
 
 const adminRoles = ["moderator", "admin", "owner"];
+
+export const metadata: Metadata = {
+  robots: {
+    follow: false,
+    index: false,
+  },
+  title: "Account",
+};
 
 export default async function AccountPage({
   searchParams,

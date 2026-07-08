@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import { createContentReport } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
+import { siteName, siteUrl } from "@/lib/site";
 import { followProfile, unfollowProfile } from "./actions";
 
 type Claims = {
@@ -32,6 +34,7 @@ type Profile = {
   country: string | null;
   website_url: string | null;
   instagram_url: string | null;
+  is_private: boolean;
   created_at: string;
 };
 
@@ -241,13 +244,76 @@ function PostPreview({ post }: { post: FeedPost }) {
   );
 }
 
+type ProfilePageProps = {
+  params: Promise<{ username: string }>;
+  searchParams: Promise<{ message?: string }>;
+};
+
+export async function generateMetadata({
+  params,
+}: ProfilePageProps): Promise<Metadata> {
+  const { username } = await params;
+  const cleanUsername = username.replace(/^@/, "").toLowerCase();
+  const supabase = await createClient();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("username, display_name, account_type, bio, city, region, country, is_private")
+    .eq("username", cleanUsername)
+    .maybeSingle<Pick<
+      Profile,
+      | "account_type"
+      | "bio"
+      | "city"
+      | "country"
+      | "display_name"
+      | "is_private"
+      | "region"
+      | "username"
+    >>();
+
+  if (!profile) {
+    return {
+      robots: {
+        follow: false,
+        index: false,
+      },
+      title: "Profile not found",
+    };
+  }
+
+  const location = [profile.city, profile.region, profile.country]
+    .filter(Boolean)
+    .join(", ");
+  const title = `${profile.display_name} (@${profile.username})`;
+  const description =
+    profile.bio?.slice(0, 155) ||
+    `${profile.display_name} is a ${profile.account_type} on ${siteName}${
+      location ? ` in ${location}` : ""
+    }.`;
+
+  return {
+    alternates: {
+      canonical: `${siteUrl}/u/${profile.username}`,
+    },
+    description,
+    openGraph: {
+      description,
+      title,
+      type: "profile",
+      url: `${siteUrl}/u/${profile.username}`,
+    },
+    robots: {
+      follow: !profile.is_private,
+      index: !profile.is_private,
+    },
+    title,
+  };
+}
+
 export default async function ProfilePage({
   params,
   searchParams,
-}: {
-  params: Promise<{ username: string }>;
-  searchParams: Promise<{ message?: string }>;
-}) {
+}: ProfilePageProps) {
   const { username } = await params;
   const query = await searchParams;
   const cleanUsername = username.replace(/^@/, "").toLowerCase();
@@ -258,7 +324,7 @@ export default async function ProfilePage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, username, display_name, account_type, bio, city, region, country, website_url, instagram_url, created_at",
+      "id, username, display_name, account_type, bio, city, region, country, website_url, instagram_url, is_private, created_at",
     )
     .eq("username", cleanUsername)
     .maybeSingle<Profile>();
