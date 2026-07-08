@@ -9,6 +9,7 @@ import {
   Home as HomeIcon,
   ImageIcon,
   LogIn,
+  LoaderCircle,
   MessageCircle,
   Search,
   Send,
@@ -29,6 +30,7 @@ import {
 import { startConversation } from "./messages/actions";
 import { FloatingComposer } from "./floating-composer";
 import { LogoLockup, LogoWordmark } from "./logo-mark";
+import { PendingSubmitButton } from "./pending-submit-button";
 import { WordLimitedField } from "./word-limited-field";
 import { createClient } from "@/lib/supabase/server";
 
@@ -856,12 +858,15 @@ export default async function Home({
                             placeholder="Add a short comment"
                             required
                           />
-                          <button
+                          <PendingSubmitButton
                             aria-label="Post comment"
                             className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                            pendingChildren={
+                              <LoaderCircle className="size-4 animate-spin" />
+                            }
                           >
                             <Send className="size-4" />
-                          </button>
+                          </PendingSubmitButton>
                         </div>
                       </form>
                     ) : null}
@@ -1027,12 +1032,15 @@ export default async function Home({
                               placeholder="Reply to thread"
                               required
                             />
-                            <button
+                            <PendingSubmitButton
                               aria-label="Post thread reply"
                               className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                              pendingChildren={
+                                <LoaderCircle className="size-4 animate-spin" />
+                              }
                             >
                               <Send className="size-4" />
-                            </button>
+                            </PendingSubmitButton>
                           </div>
                         </form>
                       ) : null}

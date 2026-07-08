@@ -7,6 +7,7 @@ import {
 import { FloatingComposerShell } from "./floating-composer-shell";
 import { MediaInput } from "./media-input";
 import { startConversation } from "./messages/actions";
+import { PendingSubmitButton } from "./pending-submit-button";
 import { WordLimitedField } from "./word-limited-field";
 
 const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
@@ -81,9 +82,12 @@ export function FloatingComposer({
             {visibilityControl}
             {sensitiveControls}
             <MediaInput accept={imageVideoAccept} name="media" required />
-            <button className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+            <PendingSubmitButton
+              className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+              pendingLabel="Publishing"
+            >
               Publish
-            </button>
+            </PendingSubmitButton>
           </form>
         ),
         threads: (
@@ -104,9 +108,12 @@ export function FloatingComposer({
             {visibilityControl}
             {sensitiveControls}
             <MediaInput accept={imageAccept} name="media" videoAllowed={false} />
-            <button className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+            <PendingSubmitButton
+              className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+              pendingLabel="Posting"
+            >
               Post thread
-            </button>
+            </PendingSubmitButton>
           </form>
         ),
         marketplace: (
@@ -164,9 +171,12 @@ export function FloatingComposer({
             {visibilityControl}
             {sensitiveControls}
             <MediaInput accept={imageVideoAccept} name="media" />
-            <button className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+            <PendingSubmitButton
+              className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+              pendingLabel="Publishing"
+            >
               Publish listing
-            </button>
+            </PendingSubmitButton>
           </form>
         ),
         gigs: (
@@ -248,12 +258,13 @@ export function FloatingComposer({
             {visibilityControl}
             {sensitiveControls}
             <MediaInput accept={imageAccept} name="media" videoAllowed={false} />
-            <button
+            <PendingSubmitButton
               className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+              pendingLabel="Posting"
               type="submit"
             >
               Post gig
-            </button>
+            </PendingSubmitButton>
           </form>
         ),
         messages: (
@@ -276,10 +287,13 @@ export function FloatingComposer({
               placeholder="Message"
               required
             />
-            <button className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+            <PendingSubmitButton
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+              pendingLabel="Sending"
+            >
               <Send className="size-4" />
               Send
-            </button>
+            </PendingSubmitButton>
           </form>
         ),
       }}
