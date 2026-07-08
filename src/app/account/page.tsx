@@ -14,6 +14,12 @@ type Claims = {
 
 const adminRoles = ["moderator", "admin", "owner"];
 const verificationEligibleTypes = ["artist", "studio"];
+const accountNavItems = [
+  ["#profile-settings", "Profile"],
+  ["#privacy-settings", "Privacy"],
+  ["#notification-settings", "Notifications"],
+  ["#verification-settings", "Verification"],
+] as const;
 
 export const metadata: Metadata = {
   robots: {
@@ -97,10 +103,28 @@ export default async function AccountPage({
           </p>
         ) : null}
 
+        <nav
+          aria-label="Account settings"
+          className="mb-4 flex gap-2 overflow-x-auto rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-2"
+        >
+          {accountNavItems.map(([href, label]) => (
+            <a
+              className="flex h-10 shrink-0 items-center rounded-md border border-transparent px-3 text-sm font-semibold text-[#4f473f] hover:border-[#d8d1c6] hover:bg-[#f7f4ef]"
+              href={href}
+              key={href}
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+
         <ProfileForm claims={claims} initialProfile={profile} />
 
         {canSubmitLicense ? (
-          <section className="mt-6 rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5">
+          <section
+            className="mt-6 scroll-mt-4 rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5"
+            id="verification-settings"
+          >
             <div className="mb-5">
               <h2 className="text-xl font-bold">
                 Artist/studio license verification
@@ -214,7 +238,10 @@ export default async function AccountPage({
             </form>
           </section>
         ) : (
-          <section className="mt-6 rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5">
+          <section
+            className="mt-6 scroll-mt-4 rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5"
+            id="verification-settings"
+          >
             <h2 className="text-xl font-bold">Artist/studio verification</h2>
             <p className="mt-2 text-sm leading-6 text-[#766d62]">
               Choose Artist or Studio as your account type and save your profile

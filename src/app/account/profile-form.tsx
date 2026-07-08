@@ -126,7 +126,8 @@ export function ProfileForm({
   return (
     <form
       action={updateProfile}
-      className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5"
+      className="scroll-mt-4 rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5"
+      id="profile-settings"
     >
       <div className="mb-5">
         <h1 className="text-2xl font-bold">Profile setup</h1>
@@ -286,6 +287,17 @@ export function ProfileForm({
           </span>
         </label>
 
+        <div
+          className="border-t border-[#e5ded4] pt-4 sm:col-span-2"
+          id="privacy-settings"
+        >
+          <h2 className="text-sm font-bold">Privacy and safety</h2>
+          <p className="mt-1 text-xs leading-5 text-[#766d62]">
+            Control profile visibility, local personalization, and adult access
+            requirements.
+          </p>
+        </div>
+
         <label className="flex items-start gap-3 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3 sm:col-span-2">
           <input
             className="mt-1 size-4"
@@ -350,7 +362,10 @@ export function ProfileForm({
         </label>
       </div>
 
-      <section className="mt-5 border-t border-[#e5ded4] pt-5">
+      <section
+        className="mt-5 scroll-mt-4 border-t border-[#e5ded4] pt-5"
+        id="notification-settings"
+      >
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="text-sm font-bold">Notification preferences</h2>
