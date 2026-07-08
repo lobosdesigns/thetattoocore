@@ -20,6 +20,14 @@ async function requireUser() {
   return { supabase, userId: claims.sub };
 }
 
+function safeInternalHref(value: FormDataEntryValue | null) {
+  const href = String(value ?? "").trim();
+
+  if (!href.startsWith("/") || href.startsWith("//")) return "/notifications";
+
+  return href;
+}
+
 export async function markNotificationRead(formData: FormData) {
   const notificationId = String(formData.get("notification_id") ?? "");
   const { supabase, userId } = await requireUser();
@@ -37,6 +45,28 @@ export async function markNotificationRead(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/notifications");
   redirect("/notifications");
+}
+
+export async function openNotification(formData: FormData) {
+  const notificationId = String(formData.get("notification_id") ?? "");
+  const href = safeInternalHref(formData.get("href"));
+  const { supabase, userId } = await requireUser();
+
+  if (!notificationId) {
+    redirect(href);
+  }
+
+  await supabase
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("id", notificationId)
+    .eq("recipient_id", userId)
+    .is("read_at", null);
+
+  revalidatePath("/");
+  revalidatePath("/messages");
+  revalidatePath("/notifications");
+  redirect(href);
 }
 
 export async function markAllNotificationsRead() {

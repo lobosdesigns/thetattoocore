@@ -13,6 +13,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   markAllNotificationsRead,
   markNotificationRead,
+  openNotification,
 } from "./actions";
 
 type Claims = {
@@ -178,12 +179,21 @@ export default async function NotificationsPage() {
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {notification.href ? (
-                        <Link
-                          className="inline-flex h-9 items-center rounded-md bg-[#171412] px-3 text-sm font-semibold text-white"
-                          href={notification.href}
-                        >
-                          Open
-                        </Link>
+                        <form action={openNotification}>
+                          <input
+                            name="notification_id"
+                            type="hidden"
+                            value={notification.id}
+                          />
+                          <input
+                            name="href"
+                            type="hidden"
+                            value={notification.href}
+                          />
+                          <button className="h-9 rounded-md bg-[#171412] px-3 text-sm font-semibold text-white">
+                            Open
+                          </button>
+                        </form>
                       ) : null}
                       {!notification.read_at ? (
                         <form action={markNotificationRead}>
