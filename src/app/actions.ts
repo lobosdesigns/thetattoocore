@@ -182,6 +182,57 @@ async function requireProfile() {
   return { supabase, userId: claims.sub };
 }
 
+async function currentDisplayName({
+  supabase,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId: string;
+}) {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("id", userId)
+    .maybeSingle<{ display_name: string }>();
+
+  return profile?.display_name ?? "A member";
+}
+
+async function notifyContentOwner({
+  actorId,
+  body,
+  href,
+  ownerId,
+  subjectId,
+  subjectType,
+  supabase,
+  title,
+  type,
+}: {
+  actorId: string;
+  body: string;
+  href: string;
+  ownerId: string | null | undefined;
+  subjectId: string;
+  subjectType: "feed_post" | "thread_post";
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  title: string;
+  type: "feed_like" | "feed_comment" | "thread_like" | "thread_comment";
+}) {
+  if (!ownerId || ownerId === actorId) return;
+
+  await supabase.from("notifications").insert({
+    actor_id: actorId,
+    body: body.slice(0, 240),
+    href,
+    recipient_id: ownerId,
+    subject_id: subjectId,
+    subject_type: subjectType,
+    title,
+    type,
+  });
+}
+
 async function uploadPostMedia({
   file,
   id,
@@ -524,6 +575,29 @@ export async function togglePostLike(formData: FormData) {
     redirect(homeMessage(result.error.message || "Could not update like."));
   }
 
+  if (!liked) {
+    const [{ data: post }, actorName] = await Promise.all([
+      supabase
+        .from("feed_posts")
+        .select("author_id")
+        .eq("id", postId)
+        .maybeSingle<{ author_id: string }>(),
+      currentDisplayName({ supabase, userId }),
+    ]);
+
+    await notifyContentOwner({
+      actorId: userId,
+      body: `${actorName} liked your feed post.`,
+      href: "/#feed",
+      ownerId: post?.author_id,
+      subjectId: postId,
+      subjectType: "feed_post",
+      supabase,
+      title: "New like",
+      type: "feed_like",
+    });
+  }
+
   revalidatePath("/");
   redirect("/#feed");
 }
@@ -550,6 +624,27 @@ export async function createPostComment(formData: FormData) {
   if (error) {
     redirect(homeMessage(error.message || "Could not add comment."));
   }
+
+  const [{ data: post }, actorName] = await Promise.all([
+    supabase
+      .from("feed_posts")
+      .select("author_id")
+      .eq("id", postId)
+      .maybeSingle<{ author_id: string }>(),
+    currentDisplayName({ supabase, userId }),
+  ]);
+
+  await notifyContentOwner({
+    actorId: userId,
+    body: `${actorName}: ${body}`,
+    href: "/#feed",
+    ownerId: post?.author_id,
+    subjectId: postId,
+    subjectType: "feed_post",
+    supabase,
+    title: "New feed comment",
+    type: "feed_comment",
+  });
 
   revalidatePath("/");
   redirect("/#feed");
@@ -579,6 +674,29 @@ export async function toggleThreadLike(formData: FormData) {
     redirect(homeMessage(result.error.message || "Could not update thread like."));
   }
 
+  if (!liked) {
+    const [{ data: thread }, actorName] = await Promise.all([
+      supabase
+        .from("thread_posts")
+        .select("author_id")
+        .eq("id", threadId)
+        .maybeSingle<{ author_id: string }>(),
+      currentDisplayName({ supabase, userId }),
+    ]);
+
+    await notifyContentOwner({
+      actorId: userId,
+      body: `${actorName} liked your thread.`,
+      href: "/#threads",
+      ownerId: thread?.author_id,
+      subjectId: threadId,
+      subjectType: "thread_post",
+      supabase,
+      title: "New thread like",
+      type: "thread_like",
+    });
+  }
+
   revalidatePath("/");
   redirect("/#threads");
 }
@@ -605,6 +723,27 @@ export async function createThreadComment(formData: FormData) {
   if (error) {
     redirect(homeMessage(error.message || "Could not add thread comment."));
   }
+
+  const [{ data: thread }, actorName] = await Promise.all([
+    supabase
+      .from("thread_posts")
+      .select("author_id")
+      .eq("id", threadId)
+      .maybeSingle<{ author_id: string }>(),
+    currentDisplayName({ supabase, userId }),
+  ]);
+
+  await notifyContentOwner({
+    actorId: userId,
+    body: `${actorName}: ${body}`,
+    href: "/#threads",
+    ownerId: thread?.author_id,
+    subjectId: threadId,
+    subjectType: "thread_post",
+    supabase,
+    title: "New thread comment",
+    type: "thread_comment",
+  });
 
   revalidatePath("/");
   redirect("/#threads");

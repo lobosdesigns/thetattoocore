@@ -1,7 +1,14 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { ArrowLeft, Bell, Check, MessageCircle, UserPlus } from "lucide-react";
+import {
+  ArrowLeft,
+  Bell,
+  Check,
+  Heart,
+  MessageCircle,
+  UserPlus,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import {
   markAllNotificationsRead,
@@ -20,7 +27,14 @@ type Notification = {
   href: string | null;
   read_at: string | null;
   title: string;
-  type: "follow_request" | "follow_accepted" | "message";
+  type:
+    | "feed_comment"
+    | "feed_like"
+    | "follow_accepted"
+    | "follow_request"
+    | "message"
+    | "thread_comment"
+    | "thread_like";
   profiles: {
     display_name: string;
     username: string;
@@ -37,6 +51,10 @@ export const metadata: Metadata = {
 
 function notificationIcon(type: Notification["type"]) {
   if (type === "message") return MessageCircle;
+  if (type === "feed_like" || type === "thread_like") return Heart;
+  if (type === "feed_comment" || type === "thread_comment") {
+    return MessageCircle;
+  }
 
   return UserPlus;
 }
@@ -170,7 +188,8 @@ export default async function NotificationsPage() {
               <Bell className="mx-auto mb-3 size-9 text-[#766d62]" />
               <h2 className="text-lg font-bold">No notifications yet</h2>
               <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#766d62]">
-                Follow requests and messages will show up here.
+                Follow requests, messages, likes, and comments will show up
+                here.
               </p>
             </div>
           )}
