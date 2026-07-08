@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   BadgeCheck,
-  Bell,
   BriefcaseBusiness,
   CalendarDays,
   Flag,
@@ -31,6 +30,7 @@ import { ColumnTabs } from "./column-tabs";
 import { startConversation } from "./messages/actions";
 import { FloatingComposer } from "./floating-composer";
 import { LogoLockup, LogoWordmark } from "./logo-mark";
+import { NotificationBellLink } from "./notification-bell-link";
 import { PendingSubmitButton } from "./pending-submit-button";
 import { WordLimitedField } from "./word-limited-field";
 import { createClient } from "@/lib/supabase/server";
@@ -555,7 +555,6 @@ export default async function Home({
     { data: threadPosts },
     { data: listings },
     { data: gigs },
-    { count: unreadNotificationCount },
   ] = await Promise.all([
     claims?.sub
       ? supabase
@@ -621,13 +620,6 @@ export default async function Home({
       })
       .limit(20)
       .returns<Gig[]>(),
-    claims?.sub
-      ? supabase
-          .from("notifications")
-          .select("*", { count: "exact", head: true })
-          .eq("recipient_id", claims.sub)
-          .is("read_at", null)
-      : Promise.resolve({ count: 0 }),
   ]);
 
   const isSignedIn = Boolean(claims?.sub);
@@ -723,20 +715,7 @@ export default async function Home({
                 >
                   <Search className="size-5" />
                 </Link>
-                <Link
-                  aria-label="Notifications"
-                  className="relative flex size-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white"
-                  href={isSignedIn ? "/notifications" : "/login"}
-                >
-                  <Bell className="size-5" />
-                  {unreadNotificationCount ? (
-                    <span className="absolute -right-1 -top-1 flex min-w-5 items-center justify-center rounded-full bg-[#171412] px-1 text-[10px] font-bold text-white">
-                      {unreadNotificationCount > 9
-                        ? "9+"
-                        : unreadNotificationCount}
-                    </span>
-                  ) : null}
-                </Link>
+                <NotificationBellLink userId={claims?.sub} />
                 <AuthCallout isSignedIn={isSignedIn} />
               </div>
             </div>

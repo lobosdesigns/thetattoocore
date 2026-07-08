@@ -10,6 +10,7 @@ import {
   ShoppingBag,
   UserRound,
 } from "lucide-react";
+import { NotificationBellLink } from "@/app/notification-bell-link";
 import { createClient } from "@/lib/supabase/server";
 
 type ProfileResult = {
@@ -382,6 +383,7 @@ export default async function SearchPage({
                 Search
               </button>
             </form>
+            <NotificationBellLink className="shrink-0" />
           </div>
         </header>
 

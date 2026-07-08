@@ -19,6 +19,7 @@ import {
   Video,
 } from "lucide-react";
 import { acceptAdultTerms, archiveGig, createContentReport } from "@/app/actions";
+import { NotificationBellLink } from "@/app/notification-bell-link";
 import { createClient } from "@/lib/supabase/server";
 import { siteName, siteUrl } from "@/lib/site";
 import {
@@ -585,20 +586,23 @@ export default async function ProfilePage({
     <main className="min-h-screen bg-[#f5f2eb] text-[#171412]">
       <div className="mx-auto min-h-screen max-w-5xl bg-[#fffdf9]">
         <header className="sticky top-0 z-10 border-b border-[#e5ded4] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur">
-          <div className="flex items-center gap-3">
-            <Link
-              aria-label="Back to feed"
-              className="flex size-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white"
-              href="/"
-            >
-              <ArrowLeft className="size-5" />
-            </Link>
-            <div className="min-w-0">
-              <h1 className="truncate text-xl font-bold">
-                {profile.display_name}
-              </h1>
-              <p className="text-xs text-[#766d62]">@{profile.username}</p>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <Link
+                aria-label="Back to feed"
+                className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#d8d1c6] bg-white"
+                href="/"
+              >
+                <ArrowLeft className="size-5" />
+              </Link>
+              <div className="min-w-0">
+                <h1 className="truncate text-xl font-bold">
+                  {profile.display_name}
+                </h1>
+                <p className="text-xs text-[#766d62]">@{profile.username}</p>
+              </div>
             </div>
+            <NotificationBellLink className="shrink-0" userId={claims?.sub} />
           </div>
         </header>
 
