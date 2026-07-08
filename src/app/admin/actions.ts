@@ -9,6 +9,7 @@ type SubjectType = "feed_post" | "gig" | "thread_post" | "marketplace_listing";
 type ModerationStatus = "active" | "under_review" | "hidden" | "removed";
 type ReportStatus = "open" | "reviewing" | "resolved" | "dismissed";
 type LicenseVerificationStatus = "approved" | "rejected";
+type UserStatus = "active" | "suspended" | "banned";
 
 const moderatorRoles = new Set<UserRole>(["moderator", "admin", "owner"]);
 const statuses = new Set<ModerationStatus>([
@@ -28,6 +29,7 @@ const licenseStatuses = new Set<LicenseVerificationStatus>([
   "rejected",
 ]);
 const roleStatuses = new Set<UserRole>(["user", "moderator", "admin", "owner"]);
+const userStatuses = new Set<UserStatus>(["active", "suspended", "banned"]);
 
 const subjectConfig = {
   feed_post: {
@@ -166,6 +168,98 @@ export async function changeUserRole(formData: FormData) {
 
   revalidatePath("/admin");
   redirect("/admin?message=User role updated.#users");
+}
+
+export async function changeUserStatus(formData: FormData) {
+  const profileId = cleanText(formData.get("profile_id"), 80);
+  const status = cleanText(formData.get("status"), 40) as UserStatus;
+  const note = cleanText(formData.get("note"), 500);
+
+  if (!profileId || !userStatuses.has(status)) {
+    redirect("/admin?message=Choose a valid user and status.#users");
+  }
+
+  const { supabase, userId } = await requireModerator();
+
+  if (profileId === userId && status !== "active") {
+    redirect("/admin?message=You cannot suspend or ban your own account.#users");
+  }
+
+  const { data: target, error: targetError } = await supabase
+    .from("profiles")
+    .select("id, banned_at, suspended_at")
+    .eq("id", profileId)
+    .maybeSingle<{
+      banned_at: string | null;
+      id: string;
+      suspended_at: string | null;
+    }>();
+
+  if (targetError || !target) {
+    redirect(
+      `/admin?message=${encodeURIComponent(
+        targetError?.message || "Profile was not found.",
+      )}#users`,
+    );
+  }
+
+  const now = new Date().toISOString();
+  const updateValues =
+    status === "active"
+      ? {
+          banned_at: null,
+          moderation_note: note || null,
+          suspended_at: null,
+          updated_at: now,
+        }
+      : status === "suspended"
+        ? {
+            banned_at: null,
+            moderation_note: note || null,
+            suspended_at: now,
+            updated_at: now,
+          }
+        : {
+            banned_at: now,
+            moderation_note: note || null,
+            suspended_at: null,
+            updated_at: now,
+          };
+
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update(updateValues)
+    .eq("id", profileId);
+
+  if (updateError) {
+    redirect(
+      `/admin?message=${encodeURIComponent(
+        updateError.message || "Could not update user status.",
+      )}#users`,
+    );
+  }
+
+  await supabase.from("moderation_actions").insert({
+    action_type:
+      status === "active"
+        ? "restore_content"
+        : status === "suspended"
+          ? "suspend_user"
+          : "ban_user",
+    actor_id: userId,
+    metadata: {
+      from_banned_at: target.banned_at,
+      from_suspended_at: target.suspended_at,
+      to_status: status,
+    },
+    note: note || null,
+    subject_id: profileId,
+    subject_type: "profile",
+    target_user_id: profileId,
+  });
+
+  revalidatePath("/admin");
+  redirect("/admin?message=User status updated.#users");
 }
 
 export async function moderateContent(formData: FormData) {

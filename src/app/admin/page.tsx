@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import {
   changeUserRole,
+  changeUserStatus,
   moderateContent,
   updateLicenseVerification,
   updateReportStatus,
@@ -66,10 +67,13 @@ type LicenseRequest = {
 };
 type AdminUser = {
   accountType: string;
+  bannedAt: string | null;
   createdAt: string;
   displayName: string;
   id: string;
+  moderationNote: string | null;
   role: UserRole;
+  suspendedAt: string | null;
   username: string;
 };
 
@@ -112,6 +116,13 @@ function timeAgo(value: string) {
 
 function statusLabel(status: ModerationStatus) {
   return status.replace("_", " ");
+}
+
+function userStatus(user: Pick<AdminUser, "bannedAt" | "suspendedAt">) {
+  if (user.bannedAt) return "banned";
+  if (user.suspendedAt) return "suspended";
+
+  return "active";
 }
 
 function ReviewCard({ item }: { item: ReviewItem }) {
@@ -416,16 +427,21 @@ export default async function AdminPage({
       .select("*", { count: "exact", head: true }),
     supabase
       .from("profiles")
-      .select("id, username, display_name, account_type, role, created_at")
+      .select(
+        "id, username, display_name, account_type, role, banned_at, suspended_at, moderation_note, created_at",
+      )
       .order("created_at", { ascending: false })
       .limit(16)
       .returns<
         {
           account_type: string;
+          banned_at: string | null;
           created_at: string;
           display_name: string;
           id: string;
+          moderation_note: string | null;
           role: UserRole;
+          suspended_at: string | null;
           username: string;
         }[]
       >(),
@@ -582,10 +598,13 @@ export default async function AdminPage({
   ];
   const users: AdminUser[] = (adminUsers ?? []).map((user) => ({
     accountType: user.account_type,
+    bannedAt: user.banned_at,
     createdAt: user.created_at,
     displayName: user.display_name,
     id: user.id,
+    moderationNote: user.moderation_note,
     role: user.role,
+    suspendedAt: user.suspended_at,
     username: user.username,
   }));
   const canManageRoles = adminProfile.role === "owner";
@@ -795,10 +814,28 @@ export default async function AdminPage({
                             {new Date(user.createdAt).toLocaleDateString()}
                           </p>
                         </div>
-                        <span className="w-fit rounded-md border border-[#d8d1c6] bg-[#f7f4ef] px-2 py-1 text-xs font-semibold capitalize text-[#4f473f]">
-                          {user.role}
-                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          <span className="w-fit rounded-md border border-[#d8d1c6] bg-[#f7f4ef] px-2 py-1 text-xs font-semibold capitalize text-[#4f473f]">
+                            {user.role}
+                          </span>
+                          <span
+                            className={`w-fit rounded-md px-2 py-1 text-xs font-semibold capitalize ${
+                              userStatus(user) === "active"
+                                ? "bg-[#efe7da] text-[#4f473f]"
+                                : userStatus(user) === "suspended"
+                                  ? "bg-[#fff1c7] text-[#6f5200]"
+                                  : "bg-[#f6dfdf] text-[#8a2828]"
+                            }`}
+                          >
+                            {userStatus(user)}
+                          </span>
+                        </div>
                       </div>
+                      {user.moderationNote ? (
+                        <p className="mt-3 rounded-md bg-[#f7f4ef] px-3 py-2 text-xs text-[#766d62]">
+                          {user.moderationNote}
+                        </p>
+                      ) : null}
                       {canManageRoles ? (
                         <form
                           action={changeUserRole}
@@ -821,6 +858,31 @@ export default async function AdminPage({
                           </button>
                         </form>
                       ) : null}
+                      <form action={changeUserStatus} className="mt-3 space-y-2">
+                        <input name="profile_id" type="hidden" value={user.id} />
+                        <input
+                          className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                          maxLength={500}
+                          name="note"
+                          placeholder="Moderation note"
+                        />
+                        <div className="grid grid-cols-3 gap-2">
+                          {[
+                            ["active", "Restore"],
+                            ["suspended", "Suspend"],
+                            ["banned", "Ban"],
+                          ].map(([value, label]) => (
+                            <button
+                              className="h-10 rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 text-sm font-semibold hover:bg-[#f7f4ef]"
+                              key={value}
+                              name="status"
+                              value={value}
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                      </form>
                     </article>
                   ))}
                 </div>
