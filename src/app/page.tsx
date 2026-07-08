@@ -316,7 +316,7 @@ export default async function Home({
               [HomeIcon, "Feed", "#feed"],
               [MessageCircle, "Threads", "#threads"],
               [ShoppingBag, "Marketplace", "#marketplace"],
-              [Send, "Messages", "#messages"],
+              [Send, "Messages", "/messages"],
               [UserRound, "Profile", "/account"],
             ].map(([Icon, label, href]) => (
               <Link
@@ -372,7 +372,7 @@ export default async function Home({
               ["Feed", "#feed"],
               ["Threads", "#threads"],
               ["Marketplace", "#marketplace"],
-              ["Messages", "#messages"],
+              ["Messages", "/messages"],
             ].map(([tab, href], index) => (
               <Link
                 className={`flex h-9 shrink-0 items-center rounded-md border border-[#d8d1c6] px-4 text-sm font-medium ${
@@ -725,8 +725,15 @@ export default async function Home({
               <h2 className="text-lg font-bold">Messages</h2>
             </div>
             <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4 text-sm leading-6 text-[#4f473f]">
-              Messenger database tables are ready. The next pass will add direct
-              conversation creation, inbox list, and realtime message delivery.
+              Direct messages are live. Start conversations, view your inbox,
+              and reply from the dedicated messenger.
+              <Link
+                className="mt-3 flex h-10 w-fit items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                href="/messages"
+              >
+                <Send className="size-4" />
+                Open messages
+              </Link>
             </div>
           </section>
         </section>

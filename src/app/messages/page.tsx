@@ -1,0 +1,414 @@
+import Link from "next/link";
+import {
+  ArrowLeft,
+  Inbox,
+  MessageCircle,
+  Search,
+  Send,
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { sendMessage, startConversation } from "./actions";
+
+type Claims = {
+  sub: string;
+};
+
+type Profile = {
+  id: string;
+  username: string;
+  display_name: string;
+  account_type: string;
+  city: string | null;
+  region: string | null;
+};
+
+type Membership = {
+  conversation_id: string;
+  created_at: string;
+  last_read_at: string | null;
+};
+
+type ConversationMember = {
+  conversation_id: string;
+  user_id: string;
+};
+
+type Message = {
+  id: string;
+  body: string;
+  conversation_id: string;
+  sender_id: string;
+  created_at: string;
+};
+
+function initials(name: string) {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function timeAgo(value: string) {
+  const diffMs = Date.now() - new Date(value).getTime();
+  const minutes = Math.max(1, Math.round(diffMs / 60000));
+
+  if (minutes < 60) return `${minutes}m`;
+
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+
+  return `${Math.round(hours / 24)}d`;
+}
+
+function profileLocation(profile?: Profile) {
+  return [profile?.city, profile?.region].filter(Boolean).join(", ");
+}
+
+export default async function MessagesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ c?: string; message?: string }>;
+}) {
+  const params = await searchParams;
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+
+  if (!claims?.sub) {
+    return (
+      <main className="min-h-screen bg-[#f5f2eb] px-4 py-8 text-[#171412]">
+        <section className="mx-auto max-w-xl rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-5">
+          <h1 className="text-xl font-bold">Messages</h1>
+          <p className="mt-2 text-sm text-[#766d62]">
+            Sign in to start conversations with artists, studios, and collectors.
+          </p>
+          <Link
+            className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+            href="/login"
+          >
+            Sign in
+          </Link>
+        </section>
+      </main>
+    );
+  }
+
+  const { data: currentProfile } = await supabase
+    .from("profiles")
+    .select("id, username, display_name, account_type, city, region")
+    .eq("id", claims.sub)
+    .maybeSingle<Profile>();
+
+  if (!currentProfile) {
+    return (
+      <main className="min-h-screen bg-[#f5f2eb] px-4 py-8 text-[#171412]">
+        <section className="mx-auto max-w-xl rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-5">
+          <h1 className="text-xl font-bold">Finish profile</h1>
+          <p className="mt-2 text-sm text-[#766d62]">
+            Set up your profile before sending messages.
+          </p>
+          <Link
+            className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+            href="/account"
+          >
+            Profile
+          </Link>
+        </section>
+      </main>
+    );
+  }
+
+  const { data: memberships } = await supabase
+    .from("conversation_members")
+    .select("conversation_id, created_at, last_read_at")
+    .eq("user_id", claims.sub)
+    .order("created_at", { ascending: false })
+    .returns<Membership[]>();
+  const conversationIds =
+    memberships?.map((membership) => membership.conversation_id) ?? [];
+
+  const [{ data: members }, { data: messages }] = await Promise.all([
+    conversationIds.length
+      ? supabase
+          .from("conversation_members")
+          .select("conversation_id, user_id")
+          .in("conversation_id", conversationIds)
+          .returns<ConversationMember[]>()
+      : Promise.resolve({ data: [] as ConversationMember[] }),
+    conversationIds.length
+      ? supabase
+          .from("messages")
+          .select("id, body, conversation_id, sender_id, created_at")
+          .in("conversation_id", conversationIds)
+          .order("created_at", { ascending: true })
+          .returns<Message[]>()
+      : Promise.resolve({ data: [] as Message[] }),
+  ]);
+
+  const profileIds = Array.from(
+    new Set((members ?? []).map((member) => member.user_id)),
+  );
+  const { data: profiles } = profileIds.length
+    ? await supabase
+        .from("profiles")
+        .select("id, username, display_name, account_type, city, region")
+        .in("id", profileIds)
+        .returns<Profile[]>()
+    : { data: [] as Profile[] };
+  const profileById = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
+  const messagesByConversation = new Map<string, Message[]>();
+
+  for (const message of messages ?? []) {
+    const list = messagesByConversation.get(message.conversation_id) ?? [];
+    list.push(message);
+    messagesByConversation.set(message.conversation_id, list);
+  }
+
+  const inbox = (memberships ?? [])
+    .map((membership) => {
+      const conversationMembers =
+        members?.filter(
+          (member) => member.conversation_id === membership.conversation_id,
+        ) ?? [];
+      const otherMember =
+        conversationMembers.find((member) => member.user_id !== claims.sub) ??
+        conversationMembers[0];
+      const otherProfile = otherMember
+        ? profileById.get(otherMember.user_id)
+        : undefined;
+      const conversationMessages =
+        messagesByConversation.get(membership.conversation_id) ?? [];
+      const latestMessage =
+        conversationMessages[conversationMessages.length - 1] ?? null;
+
+      return {
+        id: membership.conversation_id,
+        latestMessage,
+        otherProfile,
+      };
+    })
+    .sort((a, b) => {
+      const aTime = new Date(a.latestMessage?.created_at ?? 0).getTime();
+      const bTime = new Date(b.latestMessage?.created_at ?? 0).getTime();
+
+      return bTime - aTime;
+    });
+
+  const selectedConversation =
+    inbox.find((conversation) => conversation.id === params.c) ?? inbox[0];
+  const selectedMessages = selectedConversation
+    ? messagesByConversation.get(selectedConversation.id) ?? []
+    : [];
+
+  return (
+    <main className="min-h-screen bg-[#f5f2eb] text-[#171412]">
+      <div className="mx-auto grid min-h-screen max-w-7xl grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)]">
+        <aside className="border-r border-[#d8d1c6] bg-[#fffdf9]">
+          <header className="sticky top-0 z-10 border-b border-[#e5ded4] bg-[#fffdf9]/95 px-4 py-4 backdrop-blur">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <Link
+                aria-label="Back to feed"
+                className="flex size-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white"
+                href="/"
+              >
+                <ArrowLeft className="size-5" />
+              </Link>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl font-bold">Messages</h1>
+                <p className="truncate text-xs text-[#766d62]">
+                  @{currentProfile.username}
+                </p>
+              </div>
+              <div className="flex size-10 items-center justify-center rounded-md bg-[#171412] text-xs font-bold text-white">
+                {initials(currentProfile.display_name)}
+              </div>
+            </div>
+
+            <form action={startConversation} className="space-y-2">
+              <div className="flex items-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3">
+                <Search className="size-4 text-[#766d62]" />
+                <input
+                  className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none"
+                  name="username"
+                  placeholder="username"
+                  required
+                />
+              </div>
+              <textarea
+                className="min-h-20 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+                maxLength={4000}
+                name="body"
+                placeholder="Start a message"
+                required
+              />
+              <button className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+                <Send className="size-4" />
+                Send
+              </button>
+            </form>
+          </header>
+
+          {params.message ? (
+            <p className="border-b border-[#e5ded4] bg-[#efe7da] px-4 py-3 text-sm font-medium">
+              {params.message}
+            </p>
+          ) : null}
+
+          <section className="divide-y divide-[#e5ded4]">
+            {inbox.length ? (
+              inbox.map((conversation) => {
+                const profile = conversation.otherProfile;
+                const active = selectedConversation?.id === conversation.id;
+
+                return (
+                  <Link
+                    className={`block px-4 py-4 ${
+                      active ? "bg-[#efe7da]" : "bg-[#fffdf9] hover:bg-[#f7f4ef]"
+                    }`}
+                    href={`/messages?c=${conversation.id}`}
+                    key={conversation.id}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-[#c8953b] text-sm font-bold text-white">
+                        {initials(profile?.display_name ?? "TC")}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="truncate text-sm font-semibold">
+                            {profile?.display_name ?? "TattooCore member"}
+                          </p>
+                          {conversation.latestMessage ? (
+                            <p className="shrink-0 text-xs text-[#766d62]">
+                              {timeAgo(conversation.latestMessage.created_at)}
+                            </p>
+                          ) : null}
+                        </div>
+                        <p className="truncate text-xs text-[#766d62]">
+                          @{profile?.username ?? "member"}{" "}
+                          {profileLocation(profile)
+                            ? `· ${profileLocation(profile)}`
+                            : ""}
+                        </p>
+                        <p className="mt-1 truncate text-sm text-[#4f473f]">
+                          {conversation.latestMessage?.body ?? "No messages yet."}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })
+            ) : (
+              <div className="px-4 py-8 text-center">
+                <Inbox className="mx-auto mb-3 size-8 text-[#766d62]" />
+                <p className="text-sm font-semibold">No conversations yet</p>
+                <p className="mt-1 text-sm text-[#766d62]">
+                  Search a username above to send the first DM.
+                </p>
+              </div>
+            )}
+          </section>
+        </aside>
+
+        <section className="flex min-h-screen flex-col bg-[#fffdf9]">
+          {selectedConversation ? (
+            <>
+              <header className="sticky top-0 z-10 border-b border-[#e5ded4] bg-[#fffdf9]/95 px-4 py-4 backdrop-blur">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-11 items-center justify-center rounded-md bg-[#c8953b] text-sm font-bold text-white">
+                    {initials(
+                      selectedConversation.otherProfile?.display_name ?? "TC",
+                    )}
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold">
+                      {selectedConversation.otherProfile?.display_name ??
+                        "TattooCore member"}
+                    </h2>
+                    <p className="text-xs text-[#766d62]">
+                      @{selectedConversation.otherProfile?.username ?? "member"}
+                    </p>
+                  </div>
+                </div>
+              </header>
+
+              <div className="flex-1 space-y-3 px-4 py-5">
+                {selectedMessages.map((message) => {
+                  const mine = message.sender_id === claims.sub;
+                  const sender = profileById.get(message.sender_id);
+
+                  return (
+                    <div
+                      className={`flex ${mine ? "justify-end" : "justify-start"}`}
+                      key={message.id}
+                    >
+                      <div
+                        className={`max-w-[78%] rounded-md px-4 py-3 ${
+                          mine
+                            ? "bg-[#171412] text-white"
+                            : "border border-[#d8d1c6] bg-white text-[#171412]"
+                        }`}
+                      >
+                        <p className="whitespace-pre-wrap text-sm leading-6">
+                          {message.body}
+                        </p>
+                        <p
+                          className={`mt-2 text-[11px] ${
+                            mine ? "text-white/70" : "text-[#766d62]"
+                          }`}
+                        >
+                          {mine
+                            ? "You"
+                            : sender?.display_name ?? "TattooCore member"}{" "}
+                          · {timeAgo(message.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <form
+                action={sendMessage}
+                className="sticky bottom-0 border-t border-[#e5ded4] bg-[#fffdf9] p-4"
+              >
+                <input
+                  name="conversation_id"
+                  type="hidden"
+                  value={selectedConversation.id}
+                />
+                <div className="flex items-end gap-2">
+                  <textarea
+                    className="min-h-12 flex-1 resize-none rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+                    maxLength={4000}
+                    name="body"
+                    placeholder="Message"
+                    required
+                  />
+                  <button
+                    aria-label="Send message"
+                    className="flex size-12 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                  >
+                    <Send className="size-5" />
+                  </button>
+                </div>
+              </form>
+            </>
+          ) : (
+            <div className="flex flex-1 items-center justify-center px-4">
+              <div className="max-w-sm text-center">
+                <MessageCircle className="mx-auto mb-3 size-10 text-[#766d62]" />
+                <h2 className="text-lg font-bold">Your messages</h2>
+                <p className="mt-2 text-sm leading-6 text-[#766d62]">
+                  Start a conversation from the inbox panel to trade booking
+                  details, flash info, guest spots, and marketplace questions.
+                </p>
+              </div>
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
+  );
+}
