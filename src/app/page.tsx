@@ -165,12 +165,18 @@ type ThreadComment = {
 };
 
 function EmptyColumnState({
+  actionHref,
+  actionLabel,
   body,
   icon: Icon,
+  tips,
   title,
 }: {
+  actionHref?: string;
+  actionLabel?: string;
   body: string;
   icon: typeof ImageIcon;
+  tips?: string[];
   title: string;
 }) {
   return (
@@ -180,6 +186,32 @@ function EmptyColumnState({
       </div>
       <h3 className="mt-4 text-base font-bold">{title}</h3>
       <p className="mt-2 text-sm leading-6 text-[#4f473f]">{body}</p>
+      {tips?.length ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {tips.map((tip) => (
+            <span
+              className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] px-2 py-1 text-xs font-semibold text-[#4f473f]"
+              key={tip}
+            >
+              {tip}
+            </span>
+          ))}
+        </div>
+      ) : null}
+      {actionLabel ? (
+        actionHref ? (
+          <Link
+            className="mt-5 inline-flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+            href={actionHref}
+          >
+            {actionLabel}
+          </Link>
+        ) : (
+          <p className="mt-5 text-sm font-semibold text-[#171412]">
+            {actionLabel}
+          </p>
+        )
+      ) : null}
     </div>
   );
 }
@@ -897,8 +929,19 @@ export default async function Home({
             ) : (
               <div className="p-4">
                 <EmptyColumnState
-                  body="Photos and one-minute reels from artists and collectors will show here."
+                  actionHref={
+                    !isSignedIn ? "/login" : canCreate ? undefined : "/account"
+                  }
+                  actionLabel={
+                    !isSignedIn
+                      ? "Sign in to post"
+                      : canCreate
+                        ? "Tap + to post to 4U"
+                        : "Set up profile to post"
+                  }
+                  body="Photos and one-minute reels from artists and collectors will show here. Keep captions tight and let the work lead."
                   icon={ImageIcon}
+                  tips={["Fresh work", "Healed pieces", "1 min reels"]}
                   title="No 4U posts yet"
                 />
               </div>
@@ -1037,8 +1080,19 @@ export default async function Home({
                   ))
                 : (
                     <EmptyColumnState
-                      body="Longer shop talk, questions, images, and community threads will collect here."
+                      actionHref={
+                        !isSignedIn ? "/login" : canCreate ? undefined : "/account"
+                      }
+                      actionLabel={
+                        !isSignedIn
+                          ? "Sign in to start gossip"
+                          : canCreate
+                            ? "Tap + to start Gossip"
+                            : "Set up profile to post"
+                      }
+                      body="Longer shop talk, questions, guest spots, images, and community threads will collect here."
                       icon={MessageCircle}
+                      tips={["Ask advice", "Talk shop", "Start a thread"]}
                       title="No Gossip yet"
                     />
                   )}
@@ -1156,8 +1210,19 @@ export default async function Home({
                 : (
                     <div className="sm:col-span-2">
                       <EmptyColumnState
-                        body="Flash, supplies, chair rentals, and studio services will appear here."
+                        actionHref={
+                          !isSignedIn ? "/login" : canCreate ? undefined : "/account"
+                        }
+                        actionLabel={
+                          !isSignedIn
+                            ? "Sign in to list stuff"
+                            : canCreate
+                              ? "Tap + to list Stuff"
+                              : "Set up profile to list"
+                        }
+                        body="Flash, supplies, chair rentals, studio services, machines, furniture, and useful local finds will appear here."
                         icon={ShoppingBag}
+                        tips={["Flash", "Supplies", "Studio gear"]}
                         title="No Stuff listings yet"
                       />
                     </div>
@@ -1303,8 +1368,19 @@ export default async function Home({
                 : (
                     <div className="sm:col-span-2">
                       <EmptyColumnState
-                        body="Jobs, conventions, guest spots, apprenticeships, and event calls will show here."
+                        actionHref={
+                          !isSignedIn ? "/login" : canCreate ? undefined : "/account"
+                        }
+                        actionLabel={
+                          !isSignedIn
+                            ? "Sign in to post gigs"
+                            : canCreate
+                              ? "Tap + to post a Gig"
+                              : "Set up profile to post"
+                        }
+                        body="Jobs, conventions, guest spots, apprenticeships, travel openings, and event calls will show here."
                         icon={BriefcaseBusiness}
+                        tips={["Jobs", "Conventions", "Guest spots"]}
                         title="No Gigs yet"
                       />
                     </div>
