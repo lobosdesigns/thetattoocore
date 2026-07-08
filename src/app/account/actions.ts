@@ -64,6 +64,7 @@ export async function updateProfile(formData: FormData) {
   const displayName = cleanText(formData.get("display_name"), 80);
   const accountType = cleanText(formData.get("account_type"), 30);
   const countryCode = cleanText(formData.get("country_code"), 2).toUpperCase();
+  const isAdultConfirmed = formData.get("is_adult_confirmed") === "on";
   const preferredLanguage = cleanText(formData.get("preferred_language"), 8);
 
   if (!/^[a-z0-9_]{3,30}$/.test(username)) {
@@ -86,8 +87,13 @@ export async function updateProfile(formData: FormData) {
     redirect(accountPath("Choose a valid language."));
   }
 
+  if (!isAdultConfirmed) {
+    redirect(accountPath("You must confirm you are 18 or older to use TheTattooCore."));
+  }
+
   const { error } = await supabase.from("profiles").upsert({
     account_type: accountType,
+    adult_terms_accepted_at: new Date().toISOString(),
     bio: cleanText(formData.get("bio"), 500) || null,
     city: cleanText(formData.get("city"), 80) || null,
     country: countryCode,
@@ -95,6 +101,7 @@ export async function updateProfile(formData: FormData) {
     display_name: displayName,
     id: claims.sub,
     instagram_url: cleanUrl(formData.get("instagram_url")),
+    is_adult_confirmed: true,
     location_personalization_enabled:
       formData.get("location_personalization_enabled") === "on",
     preferred_language: preferredLanguage,

@@ -20,14 +20,19 @@
 
 - Keep the site partly public so artists, studios, marketplace listings, public profiles, and selected public posts can be indexed by search engines.
 - Keep private areas non-indexable and login-only: direct messages, account settings, admin tools, draft listings, moderation queues, and user-private profile data.
+- Use an Instagram-style sharing model: public visitors can open shared links and see a limited preview, but must sign up or log in to continue deeper into the app.
+- Public previews should not expose full comment threads, full profile browsing, posting tools, messaging, follower lists, or full-resolution sensitive media.
+- Content marked sensitive, adult, or body-art nudity must not be visible to logged-out public visitors.
+- Sensitive content requires login plus 18+ terms acceptance before it can be viewed.
 - Add SEO-friendly public profile pages and public listing pages, while respecting profile privacy controls.
 - Add `robots.txt`, metadata, and per-route noindex rules before launch.
-- Do not expose private messages, private account data, or unpublished content to crawlers.
+- Do not expose private messages, private account data, unpublished content, or sensitive/adult content to crawlers.
 
 ## Age And Content Policy
 
 - TheTattooCore is planned as an 18+ community.
 - Add an age gate during signup requiring users to confirm they are 18 or older.
+- Store the user's 18+ self-attestation and terms acceptance timestamp on the profile.
 - Add Terms of Service language explaining that tattooing, piercing, and body art may involve adult bodies or limited nudity.
 - Allow limited non-sexual nudity only when the purpose is clearly to display tattoos, piercings, scars, healing, placement, or body art.
 - Prohibit pornography, sexual solicitation, explicit sexual content, exploitative content, and content involving minors in nudity or sexualized contexts.

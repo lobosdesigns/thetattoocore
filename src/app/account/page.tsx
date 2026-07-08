@@ -27,7 +27,7 @@ export default async function AccountPage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "username, display_name, account_type, bio, city, region, country_code, preferred_language, location_personalization_enabled, website_url, instagram_url, role",
+      "username, display_name, account_type, bio, city, region, country_code, preferred_language, location_personalization_enabled, is_adult_confirmed, adult_terms_accepted_at, website_url, instagram_url, role",
     )
     .eq("id", claims.sub)
     .maybeSingle();
