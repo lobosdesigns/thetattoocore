@@ -43,6 +43,7 @@ type Profile = {
   website_url: string | null;
   instagram_url: string | null;
   is_private: boolean;
+  license_verified_at: string | null;
   created_at: string;
 };
 
@@ -149,6 +150,13 @@ function profileLocation(profile: Profile) {
   return [profile.city, profile.region, profile.country]
     .filter(Boolean)
     .join(", ");
+}
+
+function isVerifiedProfile(profile: Profile) {
+  return Boolean(
+    profile.license_verified_at &&
+      (profile.account_type === "artist" || profile.account_type === "studio"),
+  );
 }
 
 function timeAgo(value: string) {
@@ -407,7 +415,7 @@ export default async function ProfilePage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, username, display_name, account_type, bio, city, region, country, website_url, instagram_url, is_private, created_at",
+      "id, username, display_name, account_type, bio, city, region, country, website_url, instagram_url, is_private, license_verified_at, created_at",
     )
     .eq("username", cleanUsername)
     .maybeSingle<Profile>();
@@ -573,6 +581,12 @@ export default async function ProfilePage({
                   <BadgeCheck className="size-3" />
                   {profile.account_type}
                 </span>
+                {isVerifiedProfile(profile) ? (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-[#171412] px-2 py-1 text-xs font-semibold text-white">
+                    <BadgeCheck className="size-3" />
+                    License verified
+                  </span>
+                ) : null}
                 {profile.is_private ? (
                   <span className="inline-flex items-center gap-1 rounded-md border border-[#d8d1c6] px-2 py-1 text-xs font-semibold text-[#766d62]">
                     <LockKeyhole className="size-3" />

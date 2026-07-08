@@ -292,6 +292,26 @@ export async function updateLicenseVerification(formData: FormData) {
     );
   }
 
+  if (status === "approved") {
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({
+        license_verification_request_id: request.id,
+        license_verified_at: new Date().toISOString(),
+        license_verified_by: userId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", request.profile_id);
+
+    if (profileError) {
+      redirect(
+        `/admin?message=${encodeURIComponent(
+          profileError.message || "License approved, but profile badge failed.",
+        )}#verification`,
+      );
+    }
+  }
+
   await supabase.from("admin_audit_logs").insert({
     actor_id: userId,
     event_type: `license_${status}`,

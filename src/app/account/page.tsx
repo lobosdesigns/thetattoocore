@@ -38,7 +38,7 @@ export default async function AccountPage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "username, display_name, account_type, bio, city, region, country_code, preferred_language, location_personalization_enabled, is_adult_confirmed, is_private, adult_terms_accepted_at, website_url, instagram_url, role",
+      "username, display_name, account_type, bio, city, region, country_code, preferred_language, location_personalization_enabled, is_adult_confirmed, is_private, adult_terms_accepted_at, website_url, instagram_url, license_verified_at, role",
     )
     .eq("id", claims.sub)
     .maybeSingle();
@@ -63,6 +63,7 @@ export default async function AccountPage({
   const canSubmitLicense =
     profile?.account_type &&
     verificationEligibleTypes.includes(profile.account_type as string);
+  const isLicenseVerified = Boolean(profile?.license_verified_at);
 
   return (
     <main className="min-h-screen bg-[#f7f4ef] px-4 py-8 text-[#171412]">
@@ -107,6 +108,11 @@ export default async function AccountPage({
                 local proof that you can legally tattoo or operate as a studio.
                 Documents are private and reviewed by authorized admins.
               </p>
+              {isLicenseVerified ? (
+                <p className="mt-3 rounded-md bg-[#171412] px-3 py-2 text-sm font-semibold text-white">
+                  Your {profile?.account_type} profile is license verified.
+                </p>
+              ) : null}
             </div>
 
             {verificationRequests?.length ? (
@@ -123,7 +129,7 @@ export default async function AccountPage({
                       </span>
                     </div>
                     <p className="mt-1 text-xs text-[#766d62]">
-                      {request.issuing_region} · Submitted{" "}
+                      {request.issuing_region} - Submitted{" "}
                       {new Date(request.created_at).toLocaleDateString()}
                     </p>
                   </div>

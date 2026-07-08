@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import {
   ArrowLeft,
+  BadgeCheck,
   BriefcaseBusiness,
   Camera,
   MessageCircle,
@@ -17,21 +18,33 @@ type ProfileResult = {
   display_name: string;
   account_type: string;
   city: string | null;
+  license_verified_at: string | null;
   region: string | null;
 };
+
+type SearchProfileBadge = Pick<
+  ProfileResult,
+  "account_type" | "license_verified_at"
+> | null;
 
 type FeedResult = {
   id: string;
   caption: string | null;
   location_label: string | null;
   style_tags: string[];
-  profiles: Pick<ProfileResult, "display_name" | "username"> | null;
+  profiles: Pick<
+    ProfileResult,
+    "account_type" | "display_name" | "license_verified_at" | "username"
+  > | null;
 };
 
 type ThreadResult = {
   id: string;
   body: string;
-  profiles: Pick<ProfileResult, "display_name" | "username"> | null;
+  profiles: Pick<
+    ProfileResult,
+    "account_type" | "display_name" | "license_verified_at" | "username"
+  > | null;
 };
 
 type ListingResult = {
@@ -40,7 +53,10 @@ type ListingResult = {
   category: string;
   city: string | null;
   region: string | null;
-  profiles: Pick<ProfileResult, "display_name" | "username"> | null;
+  profiles: Pick<
+    ProfileResult,
+    "account_type" | "display_name" | "license_verified_at" | "username"
+  > | null;
 };
 
 type GigResult = {
@@ -49,7 +65,10 @@ type GigResult = {
   category: string;
   city: string | null;
   region: string | null;
-  profiles: Pick<ProfileResult, "display_name" | "username"> | null;
+  profiles: Pick<
+    ProfileResult,
+    "account_type" | "display_name" | "license_verified_at" | "username"
+  > | null;
 };
 
 type SearchType = "all" | "profiles" | "feed" | "threads" | "marketplace" | "gigs";
@@ -121,6 +140,24 @@ function initials(name: string) {
     .join("")
     .slice(0, 2)
     .toUpperCase();
+}
+
+function isVerifiedProfile(profile?: SearchProfileBadge) {
+  return Boolean(
+    profile?.license_verified_at &&
+      (profile.account_type === "artist" || profile.account_type === "studio"),
+  );
+}
+
+function VerifiedBadge({ profile }: { profile?: SearchProfileBadge }) {
+  if (!isVerifiedProfile(profile)) return null;
+
+  return (
+    <span className="inline-flex items-center gap-1 rounded-md bg-[#171412] px-1.5 py-0.5 text-[11px] font-semibold text-white">
+      <BadgeCheck className="size-3" />
+      Verified
+    </span>
+  );
 }
 
 function locationText(value: { city: string | null; region: string | null }) {
@@ -209,7 +246,9 @@ export default async function SearchPage({
         shouldRunProfiles
           ? supabase
               .from("profiles")
-              .select("id, username, display_name, account_type, city, region")
+              .select(
+                "id, username, display_name, account_type, city, license_verified_at, region",
+              )
               .or(
                 `username.ilike.${pattern},display_name.ilike.${pattern},account_type.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`,
               )
@@ -224,7 +263,7 @@ export default async function SearchPage({
           ? supabase
               .from("feed_posts")
               .select(
-                "id, caption, location_label, style_tags, profiles:profiles!feed_posts_author_id_fkey(display_name, username)",
+                "id, caption, location_label, style_tags, profiles:profiles!feed_posts_author_id_fkey(display_name, username, account_type, license_verified_at)",
               )
               .eq("is_published", true)
               .eq("moderation_status", "active")
@@ -244,7 +283,7 @@ export default async function SearchPage({
           ? supabase
               .from("thread_posts")
               .select(
-                "id, body, profiles:profiles!thread_posts_author_id_fkey(display_name, username)",
+                "id, body, profiles:profiles!thread_posts_author_id_fkey(display_name, username, account_type, license_verified_at)",
               )
               .eq("moderation_status", "active")
               .eq("visibility", "public_preview")
@@ -258,7 +297,7 @@ export default async function SearchPage({
           ? supabase
               .from("marketplace_listings")
               .select(
-                "id, title, category, city, region, profiles:profiles!marketplace_listings_seller_id_fkey(display_name, username)",
+                "id, title, category, city, region, profiles:profiles!marketplace_listings_seller_id_fkey(display_name, username, account_type, license_verified_at)",
               )
               .eq("status", "active")
               .eq("moderation_status", "active")
@@ -280,7 +319,7 @@ export default async function SearchPage({
           ? supabase
               .from("gigs")
               .select(
-                "id, title, category, city, region, profiles:profiles!gigs_poster_id_fkey(display_name, username)",
+                "id, title, category, city, region, profiles:profiles!gigs_poster_id_fkey(display_name, username, account_type, license_verified_at)",
               )
               .eq("status", "active")
               .eq("moderation_status", "active")
@@ -419,9 +458,12 @@ export default async function SearchPage({
                         {initials(profile.display_name)}
                       </div>
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold">
-                          {profile.display_name}
-                        </p>
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          <p className="truncate text-sm font-semibold">
+                            {profile.display_name}
+                          </p>
+                          <VerifiedBadge profile={profile} />
+                        </div>
                         <p className="text-xs text-[#766d62]">
                           @{profile.username} - {profile.account_type}
                         </p>
@@ -450,9 +492,12 @@ export default async function SearchPage({
                       href="/#feed"
                       key={post.id}
                     >
-                      <p className="text-sm font-semibold">
-                        {post.profiles?.display_name ?? "Member"}
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-sm font-semibold">
+                          {post.profiles?.display_name ?? "Member"}
+                        </p>
+                        <VerifiedBadge profile={post.profiles} />
+                      </div>
                       <p className="mt-1 line-clamp-2 text-sm leading-6 text-[#4f473f]">
                         {post.caption || post.style_tags.join(", ") || "Feed post"}
                       </p>
@@ -475,9 +520,12 @@ export default async function SearchPage({
                       href="/#threads"
                       key={thread.id}
                     >
-                      <p className="text-sm font-semibold">
-                        {thread.profiles?.display_name ?? "Member"}
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-sm font-semibold">
+                          {thread.profiles?.display_name ?? "Member"}
+                        </p>
+                        <VerifiedBadge profile={thread.profiles} />
+                      </div>
                       <p className="mt-1 line-clamp-3 text-sm leading-6 text-[#4f473f]">
                         {thread.body}
                       </p>
@@ -505,6 +553,9 @@ export default async function SearchPage({
                         {listing.category}
                         {locationText(listing) ? ` - ${locationText(listing)}` : ""}
                       </p>
+                      <div className="mt-2">
+                        <VerifiedBadge profile={listing.profiles} />
+                      </div>
                     </Link>
                   ))}
                 </div>
@@ -529,6 +580,9 @@ export default async function SearchPage({
                         {gig.category.replaceAll("_", " ")}
                         {locationText(gig) ? ` - ${locationText(gig)}` : ""}
                       </p>
+                      <div className="mt-2">
+                        <VerifiedBadge profile={gig.profiles} />
+                      </div>
                     </Link>
                   ))}
                 </div>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  BadgeCheck,
   Bell,
   BriefcaseBusiness,
   CalendarDays,
@@ -40,6 +41,7 @@ type Profile = {
   account_type: string;
   city: string | null;
   is_adult_confirmed?: boolean | null;
+  license_verified_at?: string | null;
   region: string | null;
   role?: string | null;
 };
@@ -221,6 +223,27 @@ function initials(name: string) {
 
 function profileLocation(profile?: Profile | null) {
   return [profile?.city, profile?.region].filter(Boolean).join(", ");
+}
+
+function isVerifiedProfile(profile?: Profile | null) {
+  return Boolean(
+    profile?.license_verified_at &&
+      (profile.account_type === "artist" || profile.account_type === "studio"),
+  );
+}
+
+function VerifiedBadge({ profile }: { profile?: Profile | null }) {
+  if (!isVerifiedProfile(profile)) return null;
+
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-md bg-[#171412] px-1.5 py-0.5 text-[11px] font-semibold text-white"
+      title={`${profile?.account_type ?? "Profile"} license verified`}
+    >
+      <BadgeCheck className="size-3" />
+      Verified
+    </span>
+  );
 }
 
 function timeAgo(value: string) {
@@ -461,7 +484,7 @@ export default async function Home({
       ? supabase
           .from("profiles")
           .select(
-            "id, username, display_name, account_type, city, is_adult_confirmed, region, role",
+            "id, username, display_name, account_type, city, is_adult_confirmed, license_verified_at, region, role",
           )
           .eq("id", claims.sub)
           .maybeSingle<Profile>()
@@ -469,7 +492,7 @@ export default async function Home({
     supabase
       .from("feed_posts")
       .select(
-        "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, created_at, profiles:profiles!post_comments_author_id_fkey(display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, account_type, city, region)",
+        "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, created_at, profiles:profiles!post_comments_author_id_fkey(display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, account_type, city, license_verified_at, region)",
       )
       .eq("is_published", true)
       .eq("moderation_status", "active")
@@ -483,7 +506,7 @@ export default async function Home({
     supabase
       .from("thread_posts")
       .select(
-        "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, body, created_at, profiles:profiles!thread_comments_author_id_fkey(display_name, username)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, account_type, city, region)",
+        "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, body, created_at, profiles:profiles!thread_comments_author_id_fkey(display_name, username)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, account_type, city, license_verified_at, region)",
       )
       .eq("moderation_status", "active")
       .order("created_at", { ascending: false })
@@ -496,7 +519,7 @@ export default async function Home({
     supabase
       .from("marketplace_listings")
       .select(
-        "id, title, description, price_cents, currency, category, city, region, visibility, is_sensitive, created_at, marketplace_media(id, storage_bucket, storage_path, sort_order), profiles:profiles!marketplace_listings_seller_id_fkey(id, username, display_name, account_type, city, region)",
+        "id, title, description, price_cents, currency, category, city, region, visibility, is_sensitive, created_at, marketplace_media(id, storage_bucket, storage_path, sort_order), profiles:profiles!marketplace_listings_seller_id_fkey(id, username, display_name, account_type, city, license_verified_at, region)",
       )
       .eq("status", "active")
       .eq("moderation_status", "active")
@@ -510,7 +533,7 @@ export default async function Home({
     supabase
       .from("gigs")
       .select(
-        "id, title, description, category, city, region, country, starts_at, ends_at, compensation, contact_url, visibility, is_sensitive, created_at, gig_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!gigs_poster_id_fkey(id, username, display_name, account_type, city, region)",
+        "id, title, description, category, city, region, country, starts_at, ends_at, compensation, contact_url, visibility, is_sensitive, created_at, gig_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!gigs_poster_id_fkey(id, username, display_name, account_type, city, license_verified_at, region)",
       )
       .eq("status", "active")
       .eq("moderation_status", "active")
@@ -672,9 +695,13 @@ export default async function Home({
                         {initials(post.profiles?.display_name ?? "TC")}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold">
-                          {post.profiles?.display_name ?? "TheTattooCore member"}
-                        </p>
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          <p className="truncate text-sm font-semibold">
+                            {post.profiles?.display_name ??
+                              "TheTattooCore member"}
+                          </p>
+                          <VerifiedBadge profile={post.profiles} />
+                        </div>
                         <p className="text-xs text-[#766d62]">
                           @{post.profiles?.username ?? "member"} -{" "}
                           {post.location_label ||
@@ -847,10 +874,11 @@ export default async function Home({
                     >
                       <div className="mb-2 flex items-center justify-between gap-3">
                         <Link
-                          className="text-sm font-semibold hover:underline"
+                          className="inline-flex items-center gap-1.5 text-sm font-semibold hover:underline"
                           href={`/u/${thread.profiles?.username ?? "member"}`}
                         >
-                          {thread.profiles?.display_name ?? "Member"}
+                          <span>{thread.profiles?.display_name ?? "Member"}</span>
+                          <VerifiedBadge profile={thread.profiles} />
                         </Link>
                         <div className="flex shrink-0 items-center gap-2">
                           <ContentLabels
@@ -1005,6 +1033,9 @@ export default async function Home({
                           listing.profiles?.display_name ||
                           "TheTattooCore"}
                       </p>
+                      <div className="mt-2">
+                        <VerifiedBadge profile={listing.profiles} />
+                      </div>
                       {isSignedIn ? (
                         <div className="mt-3">
                           <ReportForm
@@ -1126,6 +1157,9 @@ export default async function Home({
                         {gig.profiles?.display_name ?? "TheTattooCore member"} -{" "}
                         {timeAgo(gig.created_at)}
                       </p>
+                      <div className="mt-2">
+                        <VerifiedBadge profile={gig.profiles} />
+                      </div>
                       {isSignedIn ? (
                         <div className="mt-3">
                           <ReportForm
