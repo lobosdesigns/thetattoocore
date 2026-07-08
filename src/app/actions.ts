@@ -40,6 +40,10 @@ function cleanWords(value: FormDataEntryValue | null, maxWords: number) {
     .join(" ");
 }
 
+function cleanId(value: FormDataEntryValue | null) {
+  return String(value ?? "").trim();
+}
+
 function mediaFromForm(formData: FormData, name: string) {
   const value = formData.get(name);
 
@@ -274,4 +278,59 @@ export async function createMarketplaceListing(formData: FormData) {
 
   revalidatePath("/");
   redirect(homeMessage("Marketplace listing published."));
+}
+
+export async function togglePostLike(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const postId = cleanId(formData.get("post_id"));
+  const liked = cleanText(formData.get("liked"), 8) === "true";
+
+  if (!postId) {
+    redirect(homeMessage("Choose a post first."));
+  }
+
+  const result = liked
+    ? await supabase
+        .from("post_likes")
+        .delete()
+        .eq("post_id", postId)
+        .eq("user_id", userId)
+    : await supabase.from("post_likes").upsert({
+        post_id: postId,
+        user_id: userId,
+      });
+
+  if (result.error) {
+    redirect(homeMessage(result.error.message || "Could not update like."));
+  }
+
+  revalidatePath("/");
+  redirect("/#feed");
+}
+
+export async function createPostComment(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const body = cleanWords(formData.get("body"), 40);
+  const postId = cleanId(formData.get("post_id"));
+
+  if (!postId) {
+    redirect(homeMessage("Choose a post first."));
+  }
+
+  if (!body) {
+    redirect(homeMessage("Comment cannot be empty."));
+  }
+
+  const { error } = await supabase.from("post_comments").insert({
+    author_id: userId,
+    body,
+    post_id: postId,
+  });
+
+  if (error) {
+    redirect(homeMessage(error.message || "Could not add comment."));
+  }
+
+  revalidatePath("/");
+  redirect("/#feed");
 }

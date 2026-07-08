@@ -12,6 +12,7 @@ import {
   Sparkles,
   UserRound,
 } from "lucide-react";
+import { createPostComment, togglePostLike } from "./actions";
 import { FloatingComposer } from "./floating-composer";
 import { createClient } from "@/lib/supabase/server";
 
@@ -34,6 +35,8 @@ type FeedPost = {
   id: string;
   caption: string | null;
   feed_media: PostMedia[];
+  post_comments: PostComment[];
+  post_likes: PostLike[];
   style_tags: string[];
   location_label: string | null;
   created_at: string;
@@ -72,6 +75,17 @@ type ListingMedia = {
   id: string;
   storage_bucket: string;
   storage_path: string;
+};
+
+type PostLike = {
+  user_id: string;
+};
+
+type PostComment = {
+  id: string;
+  body: string;
+  created_at: string;
+  profiles: Pick<Profile, "display_name" | "username"> | null;
 };
 
 const samplePosts = [
@@ -255,7 +269,7 @@ export default async function Home({
     supabase
       .from("feed_posts")
       .select(
-        "id, caption, style_tags, location_label, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, account_type, city, region)",
+        "id, caption, style_tags, location_label, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, created_at, profiles:profiles!post_comments_author_id_fkey(display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, account_type, city, region)",
       )
       .eq("is_published", true)
       .order("created_at", { ascending: false })
@@ -425,11 +439,33 @@ export default async function Home({
                   <div className="space-y-3 px-4 py-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
+                        <form action={togglePostLike}>
+                          <input name="post_id" type="hidden" value={post.id} />
+                          <input
+                            name="liked"
+                            type="hidden"
+                            value={post.post_likes.some(
+                              (like) => like.user_id === claims?.sub,
+                            )
+                              ? "true"
+                              : "false"}
+                          />
+                          <button className="flex items-center gap-2 text-sm font-medium">
+                            <Heart
+                              className={`size-5 ${
+                                post.post_likes.some(
+                                  (like) => like.user_id === claims?.sub,
+                                )
+                                  ? "fill-[#c8953b] text-[#c8953b]"
+                                  : ""
+                              }`}
+                            />
+                            {post.post_likes.length}
+                          </button>
+                        </form>
                         <button className="flex items-center gap-2 text-sm font-medium">
-                          <Heart className="size-5" />0
-                        </button>
-                        <button className="flex items-center gap-2 text-sm font-medium">
-                          <MessageCircle className="size-5" />0
+                          <MessageCircle className="size-5" />
+                          {post.post_comments.length}
                         </button>
                       </div>
                       <button className="flex items-center gap-2 text-sm font-medium">
@@ -438,6 +474,39 @@ export default async function Home({
                       </button>
                     </div>
                     <p className="text-sm leading-6">{post.caption}</p>
+                    {post.post_comments.length ? (
+                      <div className="space-y-2 border-t border-[#e5ded4] pt-3">
+                        {post.post_comments.slice(0, 2).map((comment) => (
+                          <p className="text-sm leading-5" key={comment.id}>
+                            <span className="font-semibold">
+                              {comment.profiles?.display_name ?? "Member"}
+                            </span>{" "}
+                            {comment.body}
+                          </p>
+                        ))}
+                      </div>
+                    ) : null}
+                    {canCreate ? (
+                      <form
+                        action={createPostComment}
+                        className="flex items-center gap-2 border-t border-[#e5ded4] pt-3"
+                      >
+                        <input name="post_id" type="hidden" value={post.id} />
+                        <input
+                          className="h-10 min-w-0 flex-1 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                          maxLength={300}
+                          name="body"
+                          placeholder="Add a short comment"
+                          required
+                        />
+                        <button
+                          aria-label="Post comment"
+                          className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                        >
+                          <Send className="size-4" />
+                        </button>
+                      </form>
+                    ) : null}
                   </div>
                 </article>
               ))
