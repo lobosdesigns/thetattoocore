@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
   Activity,
+  BriefcaseBusiness,
   Flag,
   Gavel,
   ImageIcon,
@@ -32,7 +33,7 @@ type ReviewItem = {
   isSensitive: boolean;
   sensitiveReason: string | null;
   status: ModerationStatus;
-  subjectType: "feed_post" | "thread_post" | "marketplace_listing";
+  subjectType: "feed_post" | "gig" | "thread_post" | "marketplace_listing";
   visibility: "public_preview" | "members" | "private";
 };
 type ReportItem = {
@@ -51,6 +52,7 @@ const adminTabs = [
   [Users, "Users"],
   [Flag, "Reports"],
   [ImageIcon, "Content"],
+  [BriefcaseBusiness, "Gigs"],
   [ShoppingBag, "Marketplace"],
   [Mail, "Mail Settings"],
 ] as const;
@@ -270,6 +272,7 @@ export default async function AdminPage({
     { data: feedReview },
     { data: threadReview },
     { data: listingReview },
+    { data: gigReview },
     { data: mailSettings },
   ] = await Promise.all([
     supabase.from("profiles").select("*", { count: "exact", head: true }),
@@ -366,6 +369,27 @@ export default async function AdminPage({
         }[]
       >(),
     supabase
+      .from("gigs")
+      .select(
+        "id, title, description, created_at, is_sensitive, sensitive_reason, moderation_status, visibility, profiles:profiles!gigs_poster_id_fkey(display_name, username)",
+      )
+      .or("is_sensitive.eq.true,moderation_status.neq.active")
+      .order("created_at", { ascending: false })
+      .limit(6)
+      .returns<
+        {
+          id: string;
+          title: string;
+          description: string | null;
+          created_at: string;
+          is_sensitive: boolean;
+          sensitive_reason: string | null;
+          moderation_status: ModerationStatus;
+          visibility: "public_preview" | "members" | "private";
+          profiles: { display_name: string; username: string } | null;
+        }[]
+      >(),
+    supabase
       .from("mail_settings")
       .select(
         "provider, from_email, from_name, smtp_host, smtp_port, smtp_username, smtp_secure, smtp_password_secret_name, reply_to_email, is_enabled",
@@ -439,6 +463,19 @@ export default async function AdminPage({
       subjectType: "marketplace_listing" as const,
       title: listing.title,
       visibility: listing.visibility,
+    })),
+    ...(gigReview ?? []).map((gig) => ({
+      authorName: gig.profiles?.display_name ?? "Member",
+      authorUsername: gig.profiles?.username ?? "member",
+      body: gig.description,
+      createdAt: gig.created_at,
+      id: gig.id,
+      isSensitive: gig.is_sensitive,
+      sensitiveReason: gig.sensitive_reason,
+      status: gig.moderation_status,
+      subjectType: "gig" as const,
+      title: gig.title,
+      visibility: gig.visibility,
     })),
   ].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
@@ -597,6 +634,20 @@ export default async function AdminPage({
             </section>
 
             <aside className="space-y-5">
+              <div
+                className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5"
+                id="gigs"
+              >
+                <div className="mb-4 flex items-center gap-3">
+                  <BriefcaseBusiness className="size-5" />
+                  <h2 className="text-lg font-bold">Gigs</h2>
+                </div>
+                <p className="text-sm leading-6 text-[#4f473f]">
+                  Gigs review covers jobs, conventions, guest spots, shop
+                  openings, apprenticeships, and event posts.
+                </p>
+              </div>
+
               <div
                 className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5"
                 id="marketplace"

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
-type SubjectType = "feed_post" | "thread_post" | "marketplace_listing";
+type SubjectType = "feed_post" | "gig" | "thread_post" | "marketplace_listing";
 type ModerationStatus = "active" | "under_review" | "hidden" | "removed";
 type ReportStatus = "open" | "reviewing" | "resolved" | "dismissed";
 
@@ -28,6 +28,11 @@ const subjectConfig = {
     idColumn: "id",
     ownerColumn: "author_id",
     table: "feed_posts",
+  },
+  gig: {
+    idColumn: "id",
+    ownerColumn: "poster_id",
+    table: "gigs",
   },
   marketplace_listing: {
     idColumn: "id",

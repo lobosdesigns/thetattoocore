@@ -294,9 +294,9 @@ function ReportForm({
   subjectId,
   subjectType,
 }: {
-  returnHash: "feed" | "threads" | "marketplace";
+  returnHash: "feed" | "threads" | "marketplace" | "gigs";
   subjectId: string;
-  subjectType: "feed_post" | "thread_post" | "marketplace_listing";
+  subjectType: "feed_post" | "thread_post" | "marketplace_listing" | "gig";
 }) {
   return (
     <form action={createContentReport} className="flex items-center gap-2">
@@ -1066,6 +1066,15 @@ export default async function Home({
                         {gig.profiles?.display_name ?? "TheTattooCore member"} -{" "}
                         {timeAgo(gig.created_at)}
                       </p>
+                      {isSignedIn ? (
+                        <div className="mt-3">
+                          <ReportForm
+                            returnHash="gigs"
+                            subjectId={gig.id}
+                            subjectType="gig"
+                          />
+                        </div>
+                      ) : null}
                       <div className="mt-4">
                         {gig.contact_url ? (
                           <a
