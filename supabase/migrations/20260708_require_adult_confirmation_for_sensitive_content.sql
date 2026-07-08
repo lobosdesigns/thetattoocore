@@ -13,6 +13,7 @@ create policy "Visible feed posts can be read"
             select 1 from public.profiles viewer
             where viewer.id = (select auth.uid())
             and viewer.is_adult_confirmed
+            and viewer.adult_terms_accepted_at is not null
           )
         )
       )
@@ -25,6 +26,7 @@ create policy "Visible feed posts can be read"
             select 1 from public.profiles viewer
             where viewer.id = (select auth.uid())
             and viewer.is_adult_confirmed
+            and viewer.adult_terms_accepted_at is not null
           )
         )
       )
@@ -49,6 +51,7 @@ create policy "Visible feed media can be read"
               select 1 from public.profiles viewer
               where viewer.id = (select auth.uid())
               and viewer.is_adult_confirmed
+              and viewer.adult_terms_accepted_at is not null
             )
           )
         )
@@ -61,6 +64,7 @@ create policy "Visible feed media can be read"
               select 1 from public.profiles viewer
               where viewer.id = (select auth.uid())
               and viewer.is_adult_confirmed
+              and viewer.adult_terms_accepted_at is not null
             )
           )
         )
@@ -87,6 +91,7 @@ create policy "Visible post likes can be read"
               select 1 from public.profiles viewer
               where viewer.id = (select auth.uid())
               and viewer.is_adult_confirmed
+              and viewer.adult_terms_accepted_at is not null
             )
           )
         )
@@ -99,6 +104,7 @@ create policy "Visible post likes can be read"
               select 1 from public.profiles viewer
               where viewer.id = (select auth.uid())
               and viewer.is_adult_confirmed
+              and viewer.adult_terms_accepted_at is not null
             )
           )
         )
@@ -119,17 +125,17 @@ create policy "Users can like visible posts"
       and feed_posts.is_published
       and feed_posts.moderation_status = 'active'
       and (
-        feed_posts.author_id = (select auth.uid())
-        or (
-          feed_posts.visibility in ('public_preview', 'members')
-          and (
-            not feed_posts.is_sensitive
-            or exists (
-              select 1 from public.profiles viewer
-              where viewer.id = (select auth.uid())
-              and viewer.is_adult_confirmed
-            )
-          )
+        feed_posts.visibility in ('public_preview', 'members')
+        or feed_posts.author_id = (select auth.uid())
+      )
+      and (
+        not feed_posts.is_sensitive
+        or feed_posts.author_id = (select auth.uid())
+        or exists (
+          select 1 from public.profiles viewer
+          where viewer.id = (select auth.uid())
+          and viewer.is_adult_confirmed
+          and viewer.adult_terms_accepted_at is not null
         )
       )
     )
@@ -153,6 +159,7 @@ create policy "Visible post comments can be read"
               select 1 from public.profiles viewer
               where viewer.id = (select auth.uid())
               and viewer.is_adult_confirmed
+              and viewer.adult_terms_accepted_at is not null
             )
           )
         )
@@ -165,6 +172,7 @@ create policy "Visible post comments can be read"
               select 1 from public.profiles viewer
               where viewer.id = (select auth.uid())
               and viewer.is_adult_confirmed
+              and viewer.adult_terms_accepted_at is not null
             )
           )
         )
@@ -185,17 +193,17 @@ create policy "Users can comment on visible posts"
       and feed_posts.is_published
       and feed_posts.moderation_status = 'active'
       and (
-        feed_posts.author_id = (select auth.uid())
-        or (
-          feed_posts.visibility in ('public_preview', 'members')
-          and (
-            not feed_posts.is_sensitive
-            or exists (
-              select 1 from public.profiles viewer
-              where viewer.id = (select auth.uid())
-              and viewer.is_adult_confirmed
-            )
-          )
+        feed_posts.visibility in ('public_preview', 'members')
+        or feed_posts.author_id = (select auth.uid())
+      )
+      and (
+        not feed_posts.is_sensitive
+        or feed_posts.author_id = (select auth.uid())
+        or exists (
+          select 1 from public.profiles viewer
+          where viewer.id = (select auth.uid())
+          and viewer.is_adult_confirmed
+          and viewer.adult_terms_accepted_at is not null
         )
       )
     )
@@ -207,7 +215,8 @@ create policy "Visible thread posts can be read"
   using (
     moderation_status = 'active'
     and (
-      (
+      author_id = (select auth.uid())
+      or (
         visibility = 'public_preview'
         and (
           not is_sensitive
@@ -215,6 +224,7 @@ create policy "Visible thread posts can be read"
             select 1 from public.profiles viewer
             where viewer.id = (select auth.uid())
             and viewer.is_adult_confirmed
+            and viewer.adult_terms_accepted_at is not null
           )
         )
       )
@@ -227,6 +237,7 @@ create policy "Visible thread posts can be read"
             select 1 from public.profiles viewer
             where viewer.id = (select auth.uid())
             and viewer.is_adult_confirmed
+            and viewer.adult_terms_accepted_at is not null
           )
         )
       )
@@ -242,7 +253,8 @@ create policy "Thread media follows thread visibility"
       where thread_posts.id = thread_media.thread_id
       and thread_posts.moderation_status = 'active'
       and (
-        (
+        thread_posts.author_id = (select auth.uid())
+        or (
           thread_posts.visibility = 'public_preview'
           and (
             not thread_posts.is_sensitive
@@ -250,6 +262,7 @@ create policy "Thread media follows thread visibility"
               select 1 from public.profiles viewer
               where viewer.id = (select auth.uid())
               and viewer.is_adult_confirmed
+              and viewer.adult_terms_accepted_at is not null
             )
           )
         )
@@ -262,10 +275,10 @@ create policy "Thread media follows thread visibility"
               select 1 from public.profiles viewer
               where viewer.id = (select auth.uid())
               and viewer.is_adult_confirmed
+              and viewer.adult_terms_accepted_at is not null
             )
           )
         )
-        or thread_posts.author_id = (select auth.uid())
       )
     )
   );
@@ -279,7 +292,8 @@ create policy "Visible thread likes can be read"
       where thread_posts.id = thread_likes.thread_id
       and thread_posts.moderation_status = 'active'
       and (
-        (
+        thread_posts.author_id = (select auth.uid())
+        or (
           thread_posts.visibility = 'public_preview'
           and (
             not thread_posts.is_sensitive
@@ -287,6 +301,7 @@ create policy "Visible thread likes can be read"
               select 1 from public.profiles viewer
               where viewer.id = (select auth.uid())
               and viewer.is_adult_confirmed
+              and viewer.adult_terms_accepted_at is not null
             )
           )
         )
@@ -299,10 +314,10 @@ create policy "Visible thread likes can be read"
               select 1 from public.profiles viewer
               where viewer.id = (select auth.uid())
               and viewer.is_adult_confirmed
+              and viewer.adult_terms_accepted_at is not null
             )
           )
         )
-        or thread_posts.author_id = (select auth.uid())
       )
     )
   );
@@ -318,17 +333,17 @@ create policy "Users can like visible threads"
       where thread_posts.id = thread_likes.thread_id
       and thread_posts.moderation_status = 'active'
       and (
-        thread_posts.author_id = (select auth.uid())
-        or (
-          thread_posts.visibility in ('public_preview', 'members')
-          and (
-            not thread_posts.is_sensitive
-            or exists (
-              select 1 from public.profiles viewer
-              where viewer.id = (select auth.uid())
-              and viewer.is_adult_confirmed
-            )
-          )
+        thread_posts.visibility in ('public_preview', 'members')
+        or thread_posts.author_id = (select auth.uid())
+      )
+      and (
+        not thread_posts.is_sensitive
+        or thread_posts.author_id = (select auth.uid())
+        or exists (
+          select 1 from public.profiles viewer
+          where viewer.id = (select auth.uid())
+          and viewer.is_adult_confirmed
+          and viewer.adult_terms_accepted_at is not null
         )
       )
     )
@@ -343,7 +358,8 @@ create policy "Visible thread comments can be read"
       where thread_posts.id = thread_comments.thread_id
       and thread_posts.moderation_status = 'active'
       and (
-        (
+        thread_posts.author_id = (select auth.uid())
+        or (
           thread_posts.visibility = 'public_preview'
           and (
             not thread_posts.is_sensitive
@@ -351,6 +367,7 @@ create policy "Visible thread comments can be read"
               select 1 from public.profiles viewer
               where viewer.id = (select auth.uid())
               and viewer.is_adult_confirmed
+              and viewer.adult_terms_accepted_at is not null
             )
           )
         )
@@ -363,10 +380,10 @@ create policy "Visible thread comments can be read"
               select 1 from public.profiles viewer
               where viewer.id = (select auth.uid())
               and viewer.is_adult_confirmed
+              and viewer.adult_terms_accepted_at is not null
             )
           )
         )
-        or thread_posts.author_id = (select auth.uid())
       )
     )
   );
@@ -382,17 +399,17 @@ create policy "Users can comment on visible threads"
       where thread_posts.id = thread_comments.thread_id
       and thread_posts.moderation_status = 'active'
       and (
-        thread_posts.author_id = (select auth.uid())
-        or (
-          thread_posts.visibility in ('public_preview', 'members')
-          and (
-            not thread_posts.is_sensitive
-            or exists (
-              select 1 from public.profiles viewer
-              where viewer.id = (select auth.uid())
-              and viewer.is_adult_confirmed
-            )
-          )
+        thread_posts.visibility in ('public_preview', 'members')
+        or thread_posts.author_id = (select auth.uid())
+      )
+      and (
+        not thread_posts.is_sensitive
+        or thread_posts.author_id = (select auth.uid())
+        or exists (
+          select 1 from public.profiles viewer
+          where viewer.id = (select auth.uid())
+          and viewer.is_adult_confirmed
+          and viewer.adult_terms_accepted_at is not null
         )
       )
     )
@@ -405,7 +422,8 @@ create policy "Visible marketplace listings can be read"
     status = 'active'
     and moderation_status = 'active'
     and (
-      (
+      seller_id = (select auth.uid())
+      or (
         visibility = 'public_preview'
         and (
           not is_sensitive
@@ -413,6 +431,7 @@ create policy "Visible marketplace listings can be read"
             select 1 from public.profiles viewer
             where viewer.id = (select auth.uid())
             and viewer.is_adult_confirmed
+            and viewer.adult_terms_accepted_at is not null
           )
         )
       )
@@ -425,10 +444,10 @@ create policy "Visible marketplace listings can be read"
             select 1 from public.profiles viewer
             where viewer.id = (select auth.uid())
             and viewer.is_adult_confirmed
+            and viewer.adult_terms_accepted_at is not null
           )
         )
       )
-      or seller_id = (select auth.uid())
     )
   );
 
@@ -442,7 +461,8 @@ create policy "Marketplace media follows listing visibility"
       and marketplace_listings.status = 'active'
       and marketplace_listings.moderation_status = 'active'
       and (
-        (
+        marketplace_listings.seller_id = (select auth.uid())
+        or (
           marketplace_listings.visibility = 'public_preview'
           and (
             not marketplace_listings.is_sensitive
@@ -450,6 +470,7 @@ create policy "Marketplace media follows listing visibility"
               select 1 from public.profiles viewer
               where viewer.id = (select auth.uid())
               and viewer.is_adult_confirmed
+              and viewer.adult_terms_accepted_at is not null
             )
           )
         )
@@ -462,10 +483,10 @@ create policy "Marketplace media follows listing visibility"
               select 1 from public.profiles viewer
               where viewer.id = (select auth.uid())
               and viewer.is_adult_confirmed
+              and viewer.adult_terms_accepted_at is not null
             )
           )
         )
-        or marketplace_listings.seller_id = (select auth.uid())
       )
     )
   );
@@ -477,7 +498,8 @@ create policy "Visible gigs can be read"
     status = 'active'
     and moderation_status = 'active'
     and (
-      (
+      poster_id = (select auth.uid())
+      or (
         visibility = 'public_preview'
         and (
           not is_sensitive
@@ -485,6 +507,7 @@ create policy "Visible gigs can be read"
             select 1 from public.profiles viewer
             where viewer.id = (select auth.uid())
             and viewer.is_adult_confirmed
+            and viewer.adult_terms_accepted_at is not null
           )
         )
       )
@@ -497,10 +520,10 @@ create policy "Visible gigs can be read"
             select 1 from public.profiles viewer
             where viewer.id = (select auth.uid())
             and viewer.is_adult_confirmed
+            and viewer.adult_terms_accepted_at is not null
           )
         )
       )
-      or poster_id = (select auth.uid())
     )
   );
 
@@ -514,7 +537,8 @@ create policy "Gig media follows gig visibility"
       and gigs.status = 'active'
       and gigs.moderation_status = 'active'
       and (
-        (
+        gigs.poster_id = (select auth.uid())
+        or (
           gigs.visibility = 'public_preview'
           and (
             not gigs.is_sensitive
@@ -522,6 +546,7 @@ create policy "Gig media follows gig visibility"
               select 1 from public.profiles viewer
               where viewer.id = (select auth.uid())
               and viewer.is_adult_confirmed
+              and viewer.adult_terms_accepted_at is not null
             )
           )
         )
@@ -534,10 +559,10 @@ create policy "Gig media follows gig visibility"
               select 1 from public.profiles viewer
               where viewer.id = (select auth.uid())
               and viewer.is_adult_confirmed
+              and viewer.adult_terms_accepted_at is not null
             )
           )
         )
-        or gigs.poster_id = (select auth.uid())
       )
     )
   );
