@@ -403,11 +403,12 @@ export async function generateMetadata({
     .filter(Boolean)
     .join(", ");
   const title = `${profile.display_name} (@${profile.username})`;
-  const description =
-    profile.bio?.slice(0, 155) ||
-    `${profile.display_name} is a ${profile.account_type} on ${siteName}${
-      location ? ` in ${location}` : ""
-    }.`;
+  const description = profile.is_private
+    ? `${profile.display_name} has a private profile on ${siteName}.`
+    : profile.bio?.slice(0, 155) ||
+      `${profile.display_name} is a ${profile.account_type} on ${siteName}${
+        location ? ` in ${location}` : ""
+      }.`;
 
   return {
     alternates: {

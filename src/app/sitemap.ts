@@ -46,6 +46,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .from("profiles")
     .select("username, updated_at")
     .eq("is_private", false)
+    .is("banned_at", null)
+    .is("suspended_at", null)
     .order("updated_at", { ascending: false })
     .limit(500)
     .returns<PublicProfile[]>();
