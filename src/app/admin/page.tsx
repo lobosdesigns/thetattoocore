@@ -150,6 +150,17 @@ function reportSubjectKey(type: string, id: string) {
   return `${type}:${id}`;
 }
 
+const reportModerationSubjectTypes = new Set<string>([
+  "feed_post",
+  "gig",
+  "thread_post",
+  "marketplace_listing",
+]);
+
+function canModerateReportedSubject(subjectType: string) {
+  return reportModerationSubjectTypes.has(subjectType);
+}
+
 function ReviewCard({ item }: { item: ReviewItem }) {
   return (
     <article className="rounded-md border border-[#e5ded4] bg-white p-4">
@@ -254,6 +265,35 @@ function ReportCard({ report }: { report: ReportItem }) {
       </p>
       {report.details ? (
         <p className="mt-3 text-sm leading-6 text-[#4f473f]">{report.details}</p>
+      ) : null}
+      {canModerateReportedSubject(report.subjectType) ? (
+        <form action={moderateContent} className="mt-4 space-y-2">
+          <input name="subject_id" type="hidden" value={report.subjectId} />
+          <input name="subject_type" type="hidden" value={report.subjectType} />
+          <input
+            className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            maxLength={500}
+            name="note"
+            placeholder="Content moderation note"
+          />
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[
+              ["under_review", "Review"],
+              ["hidden", "Hide"],
+              ["removed", "Remove"],
+              ["active", "Restore"],
+            ].map(([value, label]) => (
+              <button
+                className="h-10 rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 text-sm font-semibold hover:bg-[#f7f4ef]"
+                key={value}
+                name="moderation_status"
+                value={value}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </form>
       ) : null}
       <form action={updateReportStatus} className="mt-4 space-y-2">
         <input name="report_id" type="hidden" value={report.id} />
