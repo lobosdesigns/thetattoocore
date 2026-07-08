@@ -21,6 +21,61 @@ const accountNavItems = [
   ["#verification-settings", "Verification"],
 ] as const;
 
+function AccountSetupGuide({
+  isFirstProfile,
+}: {
+  isFirstProfile: boolean;
+}) {
+  const steps = [
+    ["1", "Save profile", "Choose a username, account type, country, language, and confirm 18+."],
+    ["2", "Start posting", "Use the bottom-right plus button from 4U, Gossip, Stuff, or Gigs."],
+    ["3", "Verify later", "Artists and studios can upload license documents for admin review."],
+  ] as const;
+
+  return (
+    <section className="mb-4 rounded-lg border border-[#d8d1c6] bg-[#171412] p-5 text-white">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/60">
+            {isFirstProfile ? "First setup" : "Account path"}
+          </p>
+          <h1 className="mt-2 text-2xl font-bold">
+            {isFirstProfile
+              ? "Set up your core profile"
+              : "Keep your account ready to post"}
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-white/75">
+            {isFirstProfile
+              ? "This one save unlocks posting, comments, DMs, follows, marketplace listings, and gigs."
+              : "Your saved profile powers posting, public discovery, DMs, local results, and verification."}
+          </p>
+        </div>
+        <Link
+          className="inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#171412]"
+          href="/"
+        >
+          Open app
+        </Link>
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        {steps.map(([number, title, body]) => (
+          <div
+            className="rounded-md border border-white/15 bg-white/5 p-3"
+            key={number}
+          >
+            <span className="inline-flex size-7 items-center justify-center rounded-md bg-white text-sm font-bold text-[#171412]">
+              {number}
+            </span>
+            <h2 className="mt-3 text-sm font-bold">{title}</h2>
+            <p className="mt-1 text-xs leading-5 text-white/70">{body}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export const metadata: Metadata = {
   robots: {
     follow: false,
@@ -72,6 +127,7 @@ export default async function AccountPage({
     profile?.account_type &&
     verificationEligibleTypes.includes(profile.account_type as string);
   const isLicenseVerified = Boolean(profile?.license_verified_at);
+  const isFirstProfile = !profile;
 
   return (
     <main className="min-h-screen bg-[#f7f4ef] px-4 py-8 text-[#171412]">
@@ -102,6 +158,8 @@ export default async function AccountPage({
             {params.message}
           </p>
         ) : null}
+
+        <AccountSetupGuide isFirstProfile={isFirstProfile} />
 
         <nav
           aria-label="Account settings"
