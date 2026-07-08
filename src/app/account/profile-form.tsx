@@ -90,6 +90,24 @@ const notificationOptions = [
   ],
 ] as const;
 
+const notificationGroups = [
+  {
+    title: "Social",
+    description: "Profile access and community requests.",
+    options: [notificationOptions[0]],
+  },
+  {
+    title: "Messages",
+    description: "DMs and conversation activity.",
+    options: [notificationOptions[1], notificationOptions[4]],
+  },
+  {
+    title: "Post activity",
+    description: "Likes and comments on your public work and gossip.",
+    options: [notificationOptions[2], notificationOptions[3]],
+  },
+] as const;
+
 function RequiredMark() {
   return <span className="text-[#a3432f]">*</span>;
 }
@@ -101,6 +119,10 @@ export function ProfileForm({
   claims: Claims;
   initialProfile: Partial<Profile> | null;
 }) {
+  const enabledNotificationCount = notificationOptions.filter(
+    ([name]) => initialProfile?.[name] ?? true,
+  ).length;
+
   return (
     <form
       action={updateProfile}
@@ -328,24 +350,53 @@ export function ProfileForm({
         </label>
       </div>
 
-      <section className="mt-5 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4">
-        <h2 className="text-sm font-bold">Notification preferences</h2>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          {notificationOptions.map(([name, label, description]) => (
-            <label className="flex items-start gap-3" key={name}>
-              <input
-                className="mt-1 size-4"
-                defaultChecked={initialProfile?.[name] ?? true}
-                name={name}
-                type="checkbox"
-              />
-              <span>
-                <span className="block text-sm font-medium">{label}</span>
-                <span className="mt-1 block text-xs leading-5 text-[#766d62]">
-                  {description}
-                </span>
-              </span>
-            </label>
+      <section className="mt-5 border-t border-[#e5ded4] pt-5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="text-sm font-bold">Notification preferences</h2>
+            <p className="mt-1 text-xs leading-5 text-[#766d62]">
+              Choose which in-app notifications create alerts and badges. Email
+              delivery can follow these same choices later.
+            </p>
+          </div>
+          <span className="w-fit rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-semibold text-[#4f473f]">
+            {enabledNotificationCount}/{notificationOptions.length} on
+          </span>
+        </div>
+
+        <div className="mt-4 grid gap-3">
+          {notificationGroups.map((group) => (
+            <div
+              className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3"
+              key={group.title}
+            >
+              <div className="mb-3">
+                <h3 className="text-sm font-semibold">{group.title}</h3>
+                <p className="mt-1 text-xs leading-5 text-[#766d62]">
+                  {group.description}
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {group.options.map(([name, label, description]) => (
+                  <label className="flex items-start gap-3" key={name}>
+                    <input
+                      className="mt-1 size-4"
+                      defaultChecked={initialProfile?.[name] ?? true}
+                      name={name}
+                      type="checkbox"
+                    />
+                    <span>
+                      <span className="block text-sm font-medium">
+                        {label}
+                      </span>
+                      <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+                        {description}
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </section>
