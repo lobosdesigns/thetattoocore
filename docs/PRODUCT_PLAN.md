@@ -71,5 +71,6 @@
 
 ## Later Columns
 
+- Gigs: jobs, conventions, guest spots, shop openings, apprenticeships, and event opportunities for artists and studios.
 - Contests: artist contests, flash challenges, sponsor prizes, and voting.
 - Streams: live tattoo sessions, shop walkthroughs, Q&A, and moderated chat.

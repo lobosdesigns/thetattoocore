@@ -11,13 +11,28 @@ import {
   ShoppingBag,
   Users,
 } from "lucide-react";
+import { moderateContent } from "./actions";
 import { MailTestForm } from "./mail-test-form";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
+type ModerationStatus = "active" | "under_review" | "hidden" | "removed";
 type Claims = {
   sub: string;
   email?: string;
+};
+type ReviewItem = {
+  id: string;
+  title: string;
+  body: string | null;
+  authorName: string;
+  authorUsername: string;
+  createdAt: string;
+  isSensitive: boolean;
+  sensitiveReason: string | null;
+  status: ModerationStatus;
+  subjectType: "feed_post" | "thread_post" | "marketplace_listing";
+  visibility: "public_preview" | "members" | "private";
 };
 
 const adminTabs = [
@@ -35,7 +50,91 @@ function formatCount(value: number | null) {
   return value == null ? "0" : Intl.NumberFormat("en-US").format(value);
 }
 
-export default async function AdminPage() {
+function timeAgo(value: string) {
+  const diffMs = Date.now() - new Date(value).getTime();
+  const minutes = Math.max(1, Math.round(diffMs / 60000));
+
+  if (minutes < 60) return `${minutes}m`;
+
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+
+  return `${Math.round(hours / 24)}d`;
+}
+
+function statusLabel(status: ModerationStatus) {
+  return status.replace("_", " ");
+}
+
+function ReviewCard({ item }: { item: ReviewItem }) {
+  return (
+    <article className="rounded-md border border-[#e5ded4] bg-white p-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-bold">{item.title}</p>
+          <p className="mt-1 text-xs text-[#766d62]">
+            @{item.authorUsername} - {timeAgo(item.createdAt)}
+          </p>
+        </div>
+        <span className="shrink-0 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] px-2 py-1 text-xs font-semibold capitalize text-[#4f473f]">
+          {statusLabel(item.status)}
+        </span>
+      </div>
+      {item.body ? (
+        <p className="line-clamp-3 text-sm leading-6 text-[#4f473f]">
+          {item.body}
+        </p>
+      ) : null}
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        <span className="rounded-md bg-[#efe7da] px-2 py-1 text-xs font-medium capitalize">
+          {item.subjectType.replace("_", " ")}
+        </span>
+        <span className="rounded-md bg-[#efe7da] px-2 py-1 text-xs font-medium capitalize">
+          {item.visibility.replace("_", " ")}
+        </span>
+        {item.isSensitive ? (
+          <span className="rounded-md bg-[#f6dfdf] px-2 py-1 text-xs font-semibold text-[#8a2828]">
+            Sensitive: {item.sensitiveReason?.replaceAll("_", " ") ?? "body art"}
+          </span>
+        ) : null}
+      </div>
+      <form action={moderateContent} className="mt-4 space-y-2">
+        <input name="subject_id" type="hidden" value={item.id} />
+        <input name="subject_type" type="hidden" value={item.subjectType} />
+        <input
+          className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+          maxLength={500}
+          name="note"
+          placeholder="Moderator note"
+        />
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {[
+            ["under_review", "Review"],
+            ["hidden", "Hide"],
+            ["removed", "Remove"],
+            ["active", "Restore"],
+          ].map(([value, label]) => (
+            <button
+              className="h-10 rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 text-sm font-semibold hover:bg-[#f7f4ef]"
+              key={value}
+              name="moderation_status"
+              value={value}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </form>
+    </article>
+  );
+}
+
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ message?: string }>;
+}) {
+  const params = await searchParams;
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -94,6 +193,9 @@ export default async function AdminPage() {
     { count: openReports },
     { count: marketplaceQueue },
     { count: moderationActions },
+    { data: feedReview },
+    { data: threadReview },
+    { data: listingReview },
     { data: mailSettings },
   ] = await Promise.all([
     supabase.from("profiles").select("*", { count: "exact", head: true }),
@@ -108,6 +210,67 @@ export default async function AdminPage() {
     supabase
       .from("moderation_actions")
       .select("*", { count: "exact", head: true }),
+    supabase
+      .from("feed_posts")
+      .select(
+        "id, caption, created_at, is_sensitive, sensitive_reason, moderation_status, visibility, profiles:profiles!feed_posts_author_id_fkey(display_name, username)",
+      )
+      .or("is_sensitive.eq.true,moderation_status.neq.active")
+      .order("created_at", { ascending: false })
+      .limit(6)
+      .returns<
+        {
+          id: string;
+          caption: string | null;
+          created_at: string;
+          is_sensitive: boolean;
+          sensitive_reason: string | null;
+          moderation_status: ModerationStatus;
+          visibility: "public_preview" | "members" | "private";
+          profiles: { display_name: string; username: string } | null;
+        }[]
+      >(),
+    supabase
+      .from("thread_posts")
+      .select(
+        "id, body, created_at, is_sensitive, sensitive_reason, moderation_status, visibility, profiles:profiles!thread_posts_author_id_fkey(display_name, username)",
+      )
+      .or("is_sensitive.eq.true,moderation_status.neq.active")
+      .order("created_at", { ascending: false })
+      .limit(6)
+      .returns<
+        {
+          id: string;
+          body: string;
+          created_at: string;
+          is_sensitive: boolean;
+          sensitive_reason: string | null;
+          moderation_status: ModerationStatus;
+          visibility: "public_preview" | "members" | "private";
+          profiles: { display_name: string; username: string } | null;
+        }[]
+      >(),
+    supabase
+      .from("marketplace_listings")
+      .select(
+        "id, title, description, created_at, is_sensitive, sensitive_reason, moderation_status, visibility, profiles:profiles!marketplace_listings_seller_id_fkey(display_name, username)",
+      )
+      .or("is_sensitive.eq.true,moderation_status.neq.active")
+      .order("created_at", { ascending: false })
+      .limit(6)
+      .returns<
+        {
+          id: string;
+          title: string;
+          description: string | null;
+          created_at: string;
+          is_sensitive: boolean;
+          sensitive_reason: string | null;
+          moderation_status: ModerationStatus;
+          visibility: "public_preview" | "members" | "private";
+          profiles: { display_name: string; username: string } | null;
+        }[]
+      >(),
     supabase
       .from("mail_settings")
       .select(
@@ -133,6 +296,49 @@ export default async function AdminPage() {
     ["Listings", marketplaceQueue, "Draft and active"],
     ["Actions", moderationActions, "Moderation log"],
   ];
+  const reviewItems: ReviewItem[] = [
+    ...(feedReview ?? []).map((post) => ({
+      authorName: post.profiles?.display_name ?? "Member",
+      authorUsername: post.profiles?.username ?? "member",
+      body: post.caption,
+      createdAt: post.created_at,
+      id: post.id,
+      isSensitive: post.is_sensitive,
+      sensitiveReason: post.sensitive_reason,
+      status: post.moderation_status,
+      subjectType: "feed_post" as const,
+      title: post.caption || "Feed post",
+      visibility: post.visibility,
+    })),
+    ...(threadReview ?? []).map((thread) => ({
+      authorName: thread.profiles?.display_name ?? "Member",
+      authorUsername: thread.profiles?.username ?? "member",
+      body: thread.body,
+      createdAt: thread.created_at,
+      id: thread.id,
+      isSensitive: thread.is_sensitive,
+      sensitiveReason: thread.sensitive_reason,
+      status: thread.moderation_status,
+      subjectType: "thread_post" as const,
+      title: "Thread post",
+      visibility: thread.visibility,
+    })),
+    ...(listingReview ?? []).map((listing) => ({
+      authorName: listing.profiles?.display_name ?? "Seller",
+      authorUsername: listing.profiles?.username ?? "seller",
+      body: listing.description,
+      createdAt: listing.created_at,
+      id: listing.id,
+      isSensitive: listing.is_sensitive,
+      sensitiveReason: listing.sensitive_reason,
+      status: listing.moderation_status,
+      subjectType: "marketplace_listing" as const,
+      title: listing.title,
+      visibility: listing.visibility,
+    })),
+  ].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 
   return (
     <main className="min-h-screen bg-[#f7f4ef] text-[#171412]">
@@ -192,6 +398,12 @@ export default async function AdminPage() {
               </Link>
             </div>
           </header>
+
+          {params.message ? (
+            <p className="mb-6 rounded-md border border-[#d8d1c6] bg-[#efe7da] px-4 py-3 text-sm font-medium">
+              {params.message}
+            </p>
+          ) : null}
 
           <section
             className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
@@ -259,16 +471,18 @@ export default async function AdminPage() {
                   <Gavel className="size-5" />
                   <h2 className="text-lg font-bold">Content moderation</h2>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-3">
-                  {["Feed posts", "Thread posts", "Comments"].map((label) => (
-                    <button
-                      className="h-12 rounded-md border border-[#d8d1c6] bg-white px-3 text-left text-sm font-semibold"
-                      key={label}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
+                {reviewItems.length ? (
+                  <div className="grid gap-3">
+                    {reviewItems.slice(0, 12).map((item) => (
+                      <ReviewCard item={item} key={`${item.subjectType}-${item.id}`} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-md border border-[#e5ded4] bg-white p-4 text-sm text-[#4f473f]">
+                    No sensitive, hidden, removed, or under-review content is
+                    waiting right now.
+                  </div>
+                )}
               </div>
             </section>
 
