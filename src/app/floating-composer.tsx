@@ -13,16 +13,37 @@ import { WordLimitedField } from "./word-limited-field";
 const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
 const imageVideoAccept = `${imageAccept},video/mp4,video/quicktime,video/webm`;
 
-const visibilityControl = (
-  <select
-    className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-    name="visibility"
-  >
-    <option value="public_preview">Public preview</option>
-    <option value="members">Members only</option>
-    <option value="private">Private</option>
-  </select>
-);
+const visibilityOptions = [
+  ["Public preview", "Searchable preview for logged-out visitors when the post is not sensitive."],
+  ["Members only", "Visible after login. Good for shop talk, community posts, and member context."],
+  ["Private", "Only you can see it for now. Useful for drafts or content you are not ready to share."],
+] as const;
+
+function VisibilityControl() {
+  return (
+    <section className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3">
+      <label className="block">
+        <span className="text-sm font-semibold">Visibility</span>
+        <select
+          className="mt-2 h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+          name="visibility"
+        >
+          <option value="public_preview">Public preview</option>
+          <option value="members">Members only</option>
+          <option value="private">Private</option>
+        </select>
+      </label>
+      <div className="mt-3 grid gap-2">
+        {visibilityOptions.map(([label, description]) => (
+          <p className="text-xs leading-5 text-[#766d62]" key={label}>
+            <span className="font-semibold text-[#4f473f]">{label}:</span>{" "}
+            {description}
+          </p>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 const sensitiveControls = (
   <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3">
@@ -81,7 +102,7 @@ export function FloatingComposer({
               name="location_label"
               placeholder="Austin, TX"
             />
-            {visibilityControl}
+            <VisibilityControl />
             {sensitiveControls}
             <MediaInput accept={imageVideoAccept} name="media" required />
             <PendingSubmitButton
@@ -109,7 +130,7 @@ export function FloatingComposer({
               required
               validationMessage="Gossip post needs at least 3 characters."
             />
-            {visibilityControl}
+            <VisibilityControl />
             {sensitiveControls}
             <MediaInput accept={imageAccept} name="media" videoAllowed={false} />
             <PendingSubmitButton
@@ -174,7 +195,7 @@ export function FloatingComposer({
                 placeholder="State"
               />
             </div>
-            {visibilityControl}
+            <VisibilityControl />
             {sensitiveControls}
             <MediaInput accept={imageVideoAccept} name="media" />
             <PendingSubmitButton
@@ -263,7 +284,7 @@ export function FloatingComposer({
               type="url"
               wrapperClassName="w-full"
             />
-            {visibilityControl}
+            <VisibilityControl />
             {sensitiveControls}
             <MediaInput accept={imageAccept} name="media" videoAllowed={false} />
             <PendingSubmitButton
