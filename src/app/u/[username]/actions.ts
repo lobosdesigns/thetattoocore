@@ -35,12 +35,24 @@ async function requireUser() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id")
+    .select("id, banned_at, suspended_at")
     .eq("id", claims.sub)
-    .maybeSingle<{ id: string }>();
+    .maybeSingle<{
+      banned_at: string | null;
+      id: string;
+      suspended_at: string | null;
+    }>();
 
   if (!profile) {
     redirect("/account");
+  }
+
+  if (profile.banned_at) {
+    redirect("/");
+  }
+
+  if (profile.suspended_at) {
+    redirect("/");
   }
 
   return { supabase, userId: claims.sub };

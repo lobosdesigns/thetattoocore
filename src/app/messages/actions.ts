@@ -36,12 +36,25 @@ async function requireProfile() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, username")
+    .select("id, username, banned_at, suspended_at")
     .eq("id", claims.sub)
-    .maybeSingle<{ id: string; username: string }>();
+    .maybeSingle<{
+      banned_at: string | null;
+      id: string;
+      suspended_at: string | null;
+      username: string;
+    }>();
 
   if (!profile) {
     redirect("/account");
+  }
+
+  if (profile.banned_at) {
+    redirect(messagesPath("This account is banned from DMs."));
+  }
+
+  if (profile.suspended_at) {
+    redirect(messagesPath("This account is suspended from DMs."));
   }
 
   return { profile, supabase, userId: claims.sub };

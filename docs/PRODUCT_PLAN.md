@@ -8,6 +8,14 @@
 - Messages: integrated direct messenger for bookings, marketplace questions, and collaboration.
 - Composer: one floating plus button that opens the correct posting form for the current column.
 
+## Visual Direction
+
+- Move toward a younger, tech-forward social app feel with more polish, motion, and energy.
+- Explore a darker overall UI direction with light grey surfaces, strong contrast, and tattoo-culture edge without becoming hard to read.
+- Add visual punch through tighter spacing, bolder active states, refined icon usage, tasteful shadows, and accent color moments.
+- Keep the app functional first: content should remain easy to scan, controls should stay obvious, and mobile layouts should feel fast.
+- Avoid a flat beige-only look; the brand should feel like a modern creative community, not a generic marketplace.
+
 ## Global Availability
 
 - Add account-level language preference and country settings early.

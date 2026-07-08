@@ -150,12 +150,25 @@ export async function submitLicenseVerification(formData: FormData) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, account_type")
+    .select("id, account_type, banned_at, suspended_at")
     .eq("id", claims.sub)
-    .maybeSingle<{ account_type: string; id: string }>();
+    .maybeSingle<{
+      account_type: string;
+      banned_at: string | null;
+      id: string;
+      suspended_at: string | null;
+    }>();
 
   if (!profile) {
     redirect("/account");
+  }
+
+  if (profile.banned_at) {
+    redirect(accountPath("This account is banned from verification submissions."));
+  }
+
+  if (profile.suspended_at) {
+    redirect(accountPath("This account is suspended from verification submissions."));
   }
 
   if (!["artist", "studio"].includes(profile.account_type)) {
