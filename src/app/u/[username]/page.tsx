@@ -9,10 +9,12 @@ import {
   Camera,
   Flag,
   LinkIcon,
+  LogIn,
   LockKeyhole,
   MapPin,
   MessageCircle,
   Send,
+  ShieldCheck,
   ShoppingBag,
   UserPlus,
   UserRoundMinus,
@@ -313,6 +315,63 @@ function AdultTermsGate({ username }: { username: string }) {
   );
 }
 
+function PublicProfileNotice({
+  hiddenCount,
+  isAdultConfirmed,
+  isSignedIn,
+}: {
+  hiddenCount: number;
+  isAdultConfirmed: boolean;
+  isSignedIn: boolean;
+}) {
+  if (isSignedIn && isAdultConfirmed && hiddenCount === 0) return null;
+
+  return (
+    <section className="border-b border-[#e5ded4] px-4 py-4">
+      <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <p className="inline-flex items-center gap-2 text-sm font-bold">
+              {isSignedIn ? (
+                <ShieldCheck className="size-4" />
+              ) : (
+                <LogIn className="size-4" />
+              )}
+              Public profile preview
+            </p>
+            <p className="mt-1 text-sm leading-6 text-[#766d62]">
+              {isSignedIn
+                ? "Some member or 18+ content may stay hidden until your account has accepted the adult body-art terms."
+                : "Visitors can discover public, non-sensitive work. Sign in to follow, DM, view member-only posts, and confirm 18+ access where allowed."}
+            </p>
+          </div>
+          {hiddenCount > 0 ? (
+            <span className="w-fit shrink-0 rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-semibold text-[#4f473f]">
+              {hiddenCount} hidden
+            </span>
+          ) : null}
+        </div>
+        {!isSignedIn ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Link
+              className="inline-flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+              href="/login"
+            >
+              Sign in
+            </Link>
+            <Link
+              className="inline-flex h-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+              href="/terms"
+            >
+              Content rules
+            </Link>
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
 function ProfileStat({ label, value }: { label: string; value: number }) {
   return (
     <div>
@@ -581,6 +640,13 @@ export default async function ProfilePage({
   const visibleThreads = (threads ?? []).filter(canShow);
   const visibleListings = (listings ?? []).filter(canShow);
   const visibleGigs = (gigs ?? []).filter(canShow);
+  const hiddenContentCount = isPrivateLocked
+    ? 0
+    : (posts?.length ?? 0) -
+      visiblePosts.length +
+      ((threads?.length ?? 0) - visibleThreads.length) +
+      ((listings?.length ?? 0) - visibleListings.length) +
+      ((gigs?.length ?? 0) - visibleGigs.length);
 
   return (
     <main className="min-h-screen bg-[#f5f2eb] text-[#171412]">
@@ -634,6 +700,12 @@ export default async function ProfilePage({
                   <span className="inline-flex items-center gap-1 rounded-md border border-[#d8d1c6] px-2 py-1 text-xs font-semibold text-[#766d62]">
                     <LockKeyhole className="size-3" />
                     Private
+                  </span>
+                ) : null}
+                {!profile.is_private && !viewer.isSignedIn ? (
+                  <span className="inline-flex items-center gap-1 rounded-md border border-[#d8d1c6] px-2 py-1 text-xs font-semibold text-[#766d62]">
+                    <LogIn className="size-3" />
+                    Public preview
                   </span>
                 ) : null}
               </div>
@@ -816,6 +888,14 @@ export default async function ProfilePage({
               ))}
             </div>
           </section>
+        ) : null}
+
+        {!isPrivateLocked && !isOwnProfile ? (
+          <PublicProfileNotice
+            hiddenCount={hiddenContentCount}
+            isAdultConfirmed={viewer.isAdultConfirmed}
+            isSignedIn={viewer.isSignedIn}
+          />
         ) : null}
 
         {viewer.isSignedIn && !viewer.isAdultConfirmed && !isPrivateLocked ? (
