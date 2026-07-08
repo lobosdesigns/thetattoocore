@@ -38,6 +38,7 @@ type Profile = {
 type FeedPost = {
   id: string;
   caption: string | null;
+  feed_media: PostMedia[];
   style_tags: string[];
   location_label: string | null;
   created_at: string;
@@ -55,6 +56,7 @@ type MarketplaceListing = {
   id: string;
   title: string;
   description: string | null;
+  marketplace_media: ListingMedia[];
   price_cents: number | null;
   currency: string;
   category: string;
@@ -62,6 +64,19 @@ type MarketplaceListing = {
   region: string | null;
   created_at: string;
   profiles: Profile | null;
+};
+
+type PostMedia = {
+  id: string;
+  media_type: "image" | "video";
+  storage_bucket: string;
+  storage_path: string;
+};
+
+type ListingMedia = {
+  id: string;
+  storage_bucket: string;
+  storage_path: string;
 };
 
 const samplePosts = [
@@ -137,6 +152,65 @@ function formatPrice(listing: MarketplaceListing) {
   }).format(listing.price_cents / 100);
 }
 
+function mediaUrl(bucket: string, path: string) {
+  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
+
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${encodedPath}`;
+}
+
+function MediaFrame({ media }: { media?: PostMedia }) {
+  if (!media) {
+    return (
+      <div className="flex aspect-[4/3] items-center justify-center bg-[#171412] text-white">
+        <div className="text-center">
+          <ImageIcon className="mx-auto mb-2 size-10 opacity-80" />
+          <p className="text-sm font-semibold">No media attached</p>
+        </div>
+      </div>
+    );
+  }
+
+  const src = mediaUrl(media.storage_bucket, media.storage_path);
+
+  if (media.media_type === "video") {
+    return (
+      <video
+        className="aspect-[4/5] w-full bg-[#171412] object-cover"
+        controls
+        playsInline
+        preload="metadata"
+        src={src}
+      />
+    );
+  }
+
+  return (
+    <div
+      className="aspect-[4/5] bg-cover bg-center"
+      style={{ backgroundImage: `url(${src})` }}
+    />
+  );
+}
+
+function ListingThumb({ media }: { media?: ListingMedia }) {
+  if (!media) {
+    return (
+      <div className="flex size-11 items-center justify-center rounded-md bg-[#efe7da]">
+        <ImageIcon className="size-5" />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="size-11 rounded-md bg-cover bg-center"
+      style={{
+        backgroundImage: `url(${mediaUrl(media.storage_bucket, media.storage_path)})`,
+      }}
+    />
+  );
+}
+
 function AuthCallout({ isSignedIn }: { isSignedIn: boolean }) {
   if (isSignedIn) {
     return (
@@ -186,10 +260,14 @@ export default async function Home({
     supabase
       .from("feed_posts")
       .select(
-        "id, caption, style_tags, location_label, created_at, profiles(id, username, display_name, account_type, city, region)",
+        "id, caption, style_tags, location_label, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), profiles(id, username, display_name, account_type, city, region)",
       )
       .eq("is_published", true)
       .order("created_at", { ascending: false })
+      .order("sort_order", {
+        ascending: true,
+        referencedTable: "feed_media",
+      })
       .limit(20)
       .returns<FeedPost[]>(),
     supabase
@@ -203,10 +281,14 @@ export default async function Home({
     supabase
       .from("marketplace_listings")
       .select(
-        "id, title, description, price_cents, currency, category, city, region, created_at, profiles(id, username, display_name, account_type, city, region)",
+        "id, title, description, price_cents, currency, category, city, region, created_at, marketplace_media(id, storage_bucket, storage_path, sort_order), profiles(id, username, display_name, account_type, city, region)",
       )
       .eq("status", "active")
       .order("created_at", { ascending: false })
+      .order("sort_order", {
+        ascending: true,
+        referencedTable: "marketplace_media",
+      })
       .limit(20)
       .returns<MarketplaceListing[]>(),
   ]);
@@ -338,6 +420,12 @@ export default async function Home({
                     name="location_label"
                     placeholder="Austin, TX"
                   />
+                  <input
+                    accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,video/webm"
+                    className="mb-3 block w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#efe7da] file:px-3 file:py-1.5 file:text-sm file:font-semibold"
+                    name="media"
+                    type="file"
+                  />
                   <button className="h-10 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
                     Publish
                   </button>
@@ -413,6 +501,12 @@ export default async function Home({
                       placeholder="State"
                     />
                   </div>
+                  <input
+                    accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,video/webm"
+                    className="mb-3 block w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#efe7da] file:px-3 file:py-1.5 file:text-sm file:font-semibold"
+                    name="media"
+                    type="file"
+                  />
                   <button className="h-10 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
                     Publish listing
                   </button>
@@ -466,12 +560,7 @@ export default async function Home({
                     ) : null}
                   </div>
 
-                  <div className="flex aspect-[4/3] items-center justify-center bg-[#171412] text-white">
-                    <div className="text-center">
-                      <ImageIcon className="mx-auto mb-2 size-10 opacity-80" />
-                      <p className="text-sm font-semibold">Media upload next</p>
-                    </div>
-                  </div>
+                  <MediaFrame media={post.feed_media[0]} />
 
                   <div className="space-y-3 px-4 py-4">
                     <div className="flex items-center justify-between">
@@ -587,9 +676,7 @@ export default async function Home({
                       key={listing.id}
                     >
                       <div className="mb-3 flex items-center gap-3">
-                        <div className="flex size-11 items-center justify-center rounded-md bg-[#efe7da]">
-                          <ImageIcon className="size-5" />
-                        </div>
+                        <ListingThumb media={listing.marketplace_media[0]} />
                         <div>
                           <p className="text-sm font-semibold">
                             {listing.title}
@@ -696,10 +783,8 @@ export default async function Home({
                     href="#marketplace"
                     key={listing.id}
                   >
-                    <div className="mb-2 flex items-center gap-3">
-                      <div className="flex size-10 items-center justify-center rounded-md bg-[#efe7da]">
-                        <ImageIcon className="size-5" />
-                      </div>
+                      <div className="mb-2 flex items-center gap-3">
+                      <ListingThumb media={listing.marketplace_media[0]} />
                       <div>
                         <p className="text-sm font-semibold">{listing.title}</p>
                         <p className="text-xs capitalize text-[#766d62]">

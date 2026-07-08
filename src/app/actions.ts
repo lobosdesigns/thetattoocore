@@ -4,6 +4,19 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+const MEDIA_BUCKET = "tattoo-media";
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+const MEDIA_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "video/mp4",
+  "video/quicktime",
+  "video/webm",
+]);
+
 type Claims = {
   sub: string;
 };
@@ -16,6 +29,43 @@ function cleanText(value: FormDataEntryValue | null, maxLength: number) {
   return String(value ?? "")
     .trim()
     .slice(0, maxLength);
+}
+
+function mediaFromForm(formData: FormData, name: string) {
+  const value = formData.get(name);
+
+  if (!(value instanceof File) || value.size === 0) {
+    return null;
+  }
+
+  return value;
+}
+
+function extensionFor(file: File) {
+  const fromName = file.name.split(".").pop()?.toLowerCase();
+
+  if (fromName && /^[a-z0-9]+$/.test(fromName)) {
+    return fromName.slice(0, 12);
+  }
+
+  return file.type.split("/")[1]?.replace("jpeg", "jpg") || "bin";
+}
+
+function validateMedia(file: File) {
+  const isVideo = file.type.startsWith("video/");
+  const maxBytes = isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
+
+  if (!MEDIA_TYPES.has(file.type)) {
+    return "Use a JPG, PNG, WebP, GIF, MP4, MOV, or WebM file.";
+  }
+
+  if (file.size > maxBytes) {
+    return isVideo
+      ? "Videos can be up to 50 MB right now."
+      : "Images can be up to 10 MB right now.";
+  }
+
+  return null;
 }
 
 async function requireProfile() {
@@ -40,10 +90,48 @@ async function requireProfile() {
   return { supabase, userId: claims.sub };
 }
 
+async function uploadPostMedia({
+  file,
+  id,
+  kind,
+  supabase,
+  userId,
+}: {
+  file: File;
+  id: string;
+  kind: "feed" | "marketplace";
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId: string;
+}) {
+  const validationMessage = validateMedia(file);
+
+  if (validationMessage) {
+    redirect(homeMessage(validationMessage));
+  }
+
+  const path = `${userId}/${kind}/${id}/${crypto.randomUUID()}.${extensionFor(file)}`;
+  const { error } = await supabase.storage.from(MEDIA_BUCKET).upload(path, file, {
+    cacheControl: "31536000",
+    contentType: file.type,
+    upsert: false,
+  });
+
+  if (error) {
+    redirect(homeMessage(error.message || "Could not upload media."));
+  }
+
+  return {
+    bucket: MEDIA_BUCKET,
+    mediaType: file.type.startsWith("video/") ? "video" : "image",
+    path,
+  };
+}
+
 export async function createFeedPost(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const caption = cleanText(formData.get("caption"), 2200);
   const locationLabel = cleanText(formData.get("location_label"), 80);
+  const media = mediaFromForm(formData, "media");
   const styleTags = cleanText(formData.get("style_tags"), 160)
     .split(",")
     .map((tag) => tag.trim().toLowerCase())
@@ -54,15 +142,40 @@ export async function createFeedPost(formData: FormData) {
     redirect(homeMessage("Feed post needs at least 3 characters."));
   }
 
-  const { error } = await supabase.from("feed_posts").insert({
-    author_id: userId,
-    caption,
-    location_label: locationLabel || null,
-    style_tags: styleTags,
-  });
+  const { data: post, error } = await supabase
+    .from("feed_posts")
+    .insert({
+      author_id: userId,
+      caption,
+      kind: media?.type.startsWith("video/") ? "reel" : "photo",
+      location_label: locationLabel || null,
+      style_tags: styleTags,
+    })
+    .select("id")
+    .single<{ id: string }>();
 
   if (error) {
     redirect(homeMessage(error.message || "Could not publish feed post."));
+  }
+
+  if (media && post) {
+    const upload = await uploadPostMedia({
+      file: media,
+      id: post.id,
+      kind: "feed",
+      supabase,
+      userId,
+    });
+    const { error: mediaError } = await supabase.from("feed_media").insert({
+      media_type: upload.mediaType,
+      post_id: post.id,
+      storage_bucket: upload.bucket,
+      storage_path: upload.path,
+    });
+
+    if (mediaError) {
+      redirect(homeMessage(mediaError.message || "Media uploaded but could not attach to the post."));
+    }
   }
 
   revalidatePath("/");
@@ -96,6 +209,7 @@ export async function createMarketplaceListing(formData: FormData) {
   const description = cleanText(formData.get("description"), 2000);
   const category = cleanText(formData.get("category"), 40) || "flash";
   const city = cleanText(formData.get("city"), 80);
+  const media = mediaFromForm(formData, "media");
   const region = cleanText(formData.get("region"), 40);
   const priceInput = cleanText(formData.get("price"), 20).replace(/[$,]/g, "");
   const priceNumber = priceInput ? Number(priceInput) : NaN;
@@ -107,19 +221,42 @@ export async function createMarketplaceListing(formData: FormData) {
     redirect(homeMessage("Listing title needs at least 3 characters."));
   }
 
-  const { error } = await supabase.from("marketplace_listings").insert({
-    seller_id: userId,
-    title,
-    description: description || null,
-    category,
-    city: city || null,
-    region: region || null,
-    price_cents: priceCents,
-    status: "active",
-  });
+  const { data: listing, error } = await supabase
+    .from("marketplace_listings")
+    .insert({
+      seller_id: userId,
+      title,
+      description: description || null,
+      category,
+      city: city || null,
+      region: region || null,
+      price_cents: priceCents,
+      status: "active",
+    })
+    .select("id")
+    .single<{ id: string }>();
 
   if (error) {
     redirect(homeMessage(error.message || "Could not publish listing."));
+  }
+
+  if (media && listing) {
+    const upload = await uploadPostMedia({
+      file: media,
+      id: listing.id,
+      kind: "marketplace",
+      supabase,
+      userId,
+    });
+    const { error: mediaError } = await supabase.from("marketplace_media").insert({
+      listing_id: listing.id,
+      storage_bucket: upload.bucket,
+      storage_path: upload.path,
+    });
+
+    if (mediaError) {
+      redirect(homeMessage(mediaError.message || "Media uploaded but could not attach to the listing."));
+    }
   }
 
   revalidatePath("/");
