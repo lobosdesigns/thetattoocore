@@ -555,6 +555,7 @@ export default async function Home({
     { data: threadPosts },
     { data: listings },
     { data: gigs },
+    { count: unreadDmCount },
   ] = await Promise.all([
     claims?.sub
       ? supabase
@@ -620,6 +621,14 @@ export default async function Home({
       })
       .limit(20)
       .returns<Gig[]>(),
+    claims?.sub
+      ? supabase
+          .from("notifications")
+          .select("*", { count: "exact", head: true })
+          .eq("recipient_id", claims.sub)
+          .eq("type", "message")
+          .is("read_at", null)
+      : Promise.resolve({ count: 0 }),
   ]);
 
   const isSignedIn = Boolean(claims?.sub);
@@ -653,6 +662,7 @@ export default async function Home({
   const canCreate = Boolean(currentProfile);
   const adminRole = currentProfile?.role;
   const profileHref = currentProfile ? `/u/${currentProfile.username}` : "/account";
+  const unreadDmBadge = unreadDmCount ?? 0;
 
   return (
     <main className="min-h-screen bg-[#f5f2eb] text-[#171412]">
@@ -679,7 +689,12 @@ export default async function Home({
                     key={label as string}
                   >
                     <Icon className="size-5" />
-                    {label as string}
+                    <span className="min-w-0 flex-1">{label as string}</span>
+                    {label === "DM" && unreadDmBadge ? (
+                      <span className="flex min-w-5 items-center justify-center rounded-full bg-[#171412] px-1.5 text-[10px] font-bold text-white">
+                        {unreadDmBadge > 9 ? "9+" : unreadDmBadge}
+                      </span>
+                    ) : null}
                   </Link>
                 ))}
               </nav>
@@ -721,7 +736,7 @@ export default async function Home({
             </div>
           </header>
 
-          <ColumnTabs />
+          <ColumnTabs unreadDmCount={unreadDmBadge} />
 
           {params.message ? (
             <p

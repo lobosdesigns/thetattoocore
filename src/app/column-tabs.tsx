@@ -21,7 +21,7 @@ function idFromHash(hash: string): ColumnId {
   return "feed";
 }
 
-export function ColumnTabs() {
+export function ColumnTabs({ unreadDmCount = 0 }: { unreadDmCount?: number }) {
   const [activeId, setActiveId] = useState<ColumnId>(() =>
     typeof window === "undefined" ? "feed" : idFromHash(window.location.hash),
   );
@@ -81,6 +81,17 @@ export function ColumnTabs() {
             }}
           >
             {tab.label}
+            {tab.label === "DM" && unreadDmCount ? (
+              <span
+                className={`ml-2 flex min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
+                  isActive
+                    ? "bg-white text-[#171412]"
+                    : "bg-[#171412] text-white"
+                }`}
+              >
+                {unreadDmCount > 9 ? "9+" : unreadDmCount}
+              </span>
+            ) : null}
           </Link>
         );
       })}
