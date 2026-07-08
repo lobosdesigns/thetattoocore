@@ -516,6 +516,29 @@ function PublicVisitorGate({ lockedCount }: { lockedCount: number }) {
   );
 }
 
+function ProfileSetupGate() {
+  return (
+    <section className="border-b border-[#d8d1c6] bg-[#efe7da] px-4 py-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-bold">Finish your profile</p>
+          <p className="mt-1 text-sm leading-5 text-[#4f473f]">
+            Choose a username and account type before posting, replying,
+            listing Stuff, adding Gigs, or sending DMs.
+          </p>
+        </div>
+        <Link
+          className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+          href="/account"
+        >
+          <UserRound className="size-4" />
+          Set up profile
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 export default async function Home({
   searchParams,
 }: {
@@ -734,7 +757,9 @@ export default async function Home({
             <PublicVisitorGate lockedCount={lockedPublicItemCount} />
           ) : null}
 
-          {isSignedIn && !viewer.isAdultConfirmed ? <AdultTermsGate /> : null}
+          {isSignedIn && !currentProfile ? <ProfileSetupGate /> : null}
+
+          {currentProfile && !viewer.isAdultConfirmed ? <AdultTermsGate /> : null}
 
           <div className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto scroll-smooth">
           <section
