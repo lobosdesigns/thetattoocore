@@ -1011,26 +1011,29 @@ export default async function Home({
                       {canCreate ? (
                         <form
                           action={createThreadComment}
-                          className="mt-3 flex items-center gap-2"
+                          className="mt-3"
                         >
                           <input
                             name="thread_id"
                             type="hidden"
                             value={thread.id}
                           />
-                          <input
-                            className="h-10 min-w-0 flex-1 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                            maxLength={2000}
-                            name="body"
-                            placeholder="Reply to thread"
-                            required
-                          />
-                          <button
-                            aria-label="Post thread reply"
-                            className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
-                          >
-                            <Send className="size-4" />
-                          </button>
+                          <div className="flex items-start gap-2">
+                            <WordLimitedField
+                              className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                              maxCharacters={2000}
+                              maxLength={2000}
+                              name="body"
+                              placeholder="Reply to thread"
+                              required
+                            />
+                            <button
+                              aria-label="Post thread reply"
+                              className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                            >
+                              <Send className="size-4" />
+                            </button>
+                          </div>
                         </form>
                       ) : null}
                     </article>

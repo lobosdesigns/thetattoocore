@@ -92,8 +92,10 @@ export function FloatingComposer({
             className="space-y-3"
             encType="multipart/form-data"
           >
-            <textarea
+            <WordLimitedField
+              as="textarea"
               className="min-h-44 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+              maxCharacters={8000}
               maxLength={8000}
               name="body"
               placeholder="Start a thread"
@@ -113,12 +115,14 @@ export function FloatingComposer({
             className="space-y-3"
             encType="multipart/form-data"
           >
-            <input
+            <WordLimitedField
               className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              maxCharacters={120}
               maxLength={120}
               name="title"
               placeholder="Flash sheet, chair rental, supplies"
               required
+              wrapperClassName="w-full"
             />
             <div className="grid grid-cols-2 gap-2">
               <input
@@ -137,8 +141,10 @@ export function FloatingComposer({
                 <option value="service">Service</option>
               </select>
             </div>
-            <textarea
+            <WordLimitedField
+              as="textarea"
               className="min-h-24 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+              maxCharacters={2000}
               maxLength={2000}
               name="description"
               placeholder="Details, terms, dates, or pickup/shipping notes."
@@ -170,12 +176,14 @@ export function FloatingComposer({
             encType="multipart/form-data"
             method="post"
           >
-            <input
+            <WordLimitedField
               className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              maxCharacters={140}
               maxLength={140}
               name="title"
               placeholder="Guest spot, convention booth, artist wanted"
               required
+              wrapperClassName="w-full"
             />
             <select
               className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
@@ -188,8 +196,10 @@ export function FloatingComposer({
               <option value="apprenticeship">Apprenticeship</option>
               <option value="event">Event</option>
             </select>
-            <textarea
+            <WordLimitedField
+              as="textarea"
               className="min-h-28 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+              maxCharacters={3000}
               maxLength={3000}
               name="description"
               placeholder="Details, dates, requirements, booth info, or contact notes."
@@ -218,18 +228,22 @@ export function FloatingComposer({
                 type="date"
               />
             </div>
-            <input
+            <WordLimitedField
               className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              maxCharacters={120}
               maxLength={120}
               name="compensation"
               placeholder="Paid, booth fee, commission split"
+              wrapperClassName="w-full"
             />
-            <input
+            <WordLimitedField
               className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              maxCharacters={300}
               maxLength={300}
               name="contact_url"
               placeholder="Application or event link"
               type="url"
+              wrapperClassName="w-full"
             />
             {visibilityControl}
             {sensitiveControls}
@@ -253,8 +267,10 @@ export function FloatingComposer({
                 required
               />
             </div>
-            <textarea
+            <WordLimitedField
+              as="textarea"
               className="min-h-28 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+              maxCharacters={4000}
               maxLength={4000}
               name="body"
               placeholder="Message"
