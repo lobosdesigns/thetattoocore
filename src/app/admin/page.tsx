@@ -8,7 +8,6 @@ import {
   Gavel,
   ImageIcon,
   Mail,
-  Settings,
   ShieldCheck,
   ShoppingBag,
   Users,
@@ -76,6 +75,16 @@ type AdminUser = {
   suspendedAt: string | null;
   username: string;
 };
+type AuditItem = {
+  actorUsername: string;
+  createdAt: string;
+  id: string;
+  kind: "audit" | "moderation";
+  label: string;
+  note: string | null;
+  subjectType: string | null;
+  targetType: string | null;
+};
 
 const adminTabs = [
   [Activity, "Overview"],
@@ -123,6 +132,10 @@ function userStatus(user: Pick<AdminUser, "bannedAt" | "suspendedAt">) {
   if (user.suspendedAt) return "suspended";
 
   return "active";
+}
+
+function activityLabel(value: string) {
+  return value.replaceAll("_", " ");
 }
 
 function ReviewCard({ item }: { item: ReviewItem }) {
@@ -408,6 +421,8 @@ export default async function AdminPage({
     { data: listingReview },
     { data: gigReview },
     { data: mailSettings },
+    { data: adminAuditLogs },
+    { data: moderationLog },
   ] = await Promise.all([
     supabase.from("profiles").select("*", { count: "exact", head: true }),
     supabase
@@ -587,6 +602,40 @@ export default async function AdminPage({
         reply_to_email: string | null;
         is_enabled: boolean;
       }>(),
+    supabase
+      .from("admin_audit_logs")
+      .select(
+        "id, event_type, target_type, summary, created_at, profiles:profiles!admin_audit_logs_actor_id_fkey(display_name, username)",
+      )
+      .order("created_at", { ascending: false })
+      .limit(8)
+      .returns<
+        {
+          created_at: string;
+          event_type: string;
+          id: string;
+          profiles: { display_name: string; username: string } | null;
+          summary: string | null;
+          target_type: string | null;
+        }[]
+      >(),
+    supabase
+      .from("moderation_actions")
+      .select(
+        "id, action_type, subject_type, note, created_at, profiles:profiles!moderation_actions_actor_id_fkey(display_name, username)",
+      )
+      .order("created_at", { ascending: false })
+      .limit(8)
+      .returns<
+        {
+          action_type: string;
+          created_at: string;
+          id: string;
+          note: string | null;
+          profiles: { display_name: string; username: string } | null;
+          subject_type: string | null;
+        }[]
+      >(),
   ]);
 
   const metrics = [
@@ -608,6 +657,33 @@ export default async function AdminPage({
     username: user.username,
   }));
   const canManageRoles = adminProfile.role === "owner";
+  const activityItems: AuditItem[] = [
+    ...(adminAuditLogs ?? []).map((item) => ({
+      actorUsername: item.profiles?.username ?? "admin",
+      createdAt: item.created_at,
+      id: item.id,
+      kind: "audit" as const,
+      label: activityLabel(item.event_type),
+      note: item.summary,
+      subjectType: null,
+      targetType: item.target_type,
+    })),
+    ...(moderationLog ?? []).map((item) => ({
+      actorUsername: item.profiles?.username ?? "moderator",
+      createdAt: item.created_at,
+      id: item.id,
+      kind: "moderation" as const,
+      label: activityLabel(item.action_type),
+      note: item.note,
+      subjectType: item.subject_type,
+      targetType: null,
+    })),
+  ]
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
+    .slice(0, 12);
   const signedDocumentUrls = await Promise.all(
     (verificationQueue ?? []).map(async (request) => {
       const { data } = await supabase.storage
@@ -1033,15 +1109,50 @@ export default async function AdminPage({
 
               <div className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5">
                 <div className="mb-4 flex items-center gap-3">
-                  <Settings className="size-5" />
-                  <h2 className="text-lg font-bold">Next controls</h2>
+                  <Activity className="size-5" />
+                  <h2 className="text-lg font-bold">Recent activity</h2>
                 </div>
-                <div className="space-y-2 text-sm text-[#4f473f]">
-                  <p>Role editor</p>
-                  <p>Report detail workflow</p>
-                  <p>SMTP test email</p>
-                  <p>Audit log explorer</p>
-                </div>
+                {activityItems.length ? (
+                  <div className="space-y-3">
+                    {activityItems.map((item) => (
+                      <article
+                        className="rounded-md border border-[#e5ded4] bg-white p-3"
+                        key={`${item.kind}-${item.id}`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold capitalize">
+                              {item.label}
+                            </p>
+                            <p className="mt-1 text-xs text-[#766d62]">
+                              @{item.actorUsername} - {timeAgo(item.createdAt)}
+                            </p>
+                          </div>
+                          <span className="shrink-0 rounded-md bg-[#efe7da] px-2 py-1 text-xs font-semibold capitalize text-[#4f473f]">
+                            {item.kind}
+                          </span>
+                        </div>
+                        {item.subjectType || item.targetType ? (
+                          <p className="mt-2 text-xs capitalize text-[#766d62]">
+                            {(item.subjectType ?? item.targetType)?.replaceAll(
+                              "_",
+                              " ",
+                            )}
+                          </p>
+                        ) : null}
+                        {item.note ? (
+                          <p className="mt-2 line-clamp-2 text-sm leading-5 text-[#4f473f]">
+                            {item.note}
+                          </p>
+                        ) : null}
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="rounded-md border border-[#e5ded4] bg-white p-4 text-sm text-[#4f473f]">
+                    No admin or moderation activity has been logged yet.
+                  </p>
+                )}
               </div>
 
               <div className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5">
