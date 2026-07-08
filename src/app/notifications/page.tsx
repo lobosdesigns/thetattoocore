@@ -14,6 +14,7 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
   openNotification,
+  respondToFollowRequest,
 } from "./actions";
 
 type Claims = {
@@ -27,6 +28,7 @@ type Notification = {
   created_at: string;
   href: string | null;
   read_at: string | null;
+  subject_id: string | null;
   subject_type: string;
   title: string;
   type:
@@ -100,7 +102,7 @@ export default async function NotificationsPage() {
   const { data: notifications } = await supabase
     .from("notifications")
     .select(
-      "id, actor_id, type, subject_type, title, body, href, read_at, created_at, profiles:profiles!notifications_actor_id_fkey(display_name, username)",
+      "id, actor_id, subject_id, type, subject_type, title, body, href, read_at, created_at, profiles:profiles!notifications_actor_id_fkey(display_name, username)",
     )
     .eq("recipient_id", claims.sub)
     .order("created_at", { ascending: false })
@@ -192,6 +194,43 @@ export default async function NotificationsPage() {
                           />
                           <button className="h-9 rounded-md bg-[#171412] px-3 text-sm font-semibold text-white">
                             Open
+                          </button>
+                        </form>
+                      ) : null}
+                      {notification.type === "follow_request" &&
+                      !notification.read_at &&
+                      (notification.actor_id || notification.subject_id) ? (
+                        <form
+                          action={respondToFollowRequest}
+                          className="flex gap-2"
+                        >
+                          <input
+                            name="notification_id"
+                            type="hidden"
+                            value={notification.id}
+                          />
+                          <input
+                            name="follower_id"
+                            type="hidden"
+                            value={
+                              notification.actor_id ??
+                              notification.subject_id ??
+                              ""
+                            }
+                          />
+                          <button
+                            className="h-9 rounded-md bg-[#171412] px-3 text-sm font-semibold text-white"
+                            name="decision"
+                            value="accept"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            className="h-9 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold"
+                            name="decision"
+                            value="decline"
+                          >
+                            Decline
                           </button>
                         </form>
                       ) : null}

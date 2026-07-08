@@ -69,6 +69,75 @@ export async function openNotification(formData: FormData) {
   redirect(href);
 }
 
+export async function respondToFollowRequest(formData: FormData) {
+  const decision = String(formData.get("decision") ?? "");
+  const followerId = String(formData.get("follower_id") ?? "");
+  const notificationId = String(formData.get("notification_id") ?? "");
+  const { supabase, userId } = await requireUser();
+  const readAt = new Date().toISOString();
+
+  if (
+    !followerId ||
+    !notificationId ||
+    (decision !== "accept" && decision !== "decline")
+  ) {
+    redirect("/notifications");
+  }
+
+  if (decision === "accept") {
+    await supabase
+      .from("follows")
+      .update({
+        responded_at: readAt,
+        status: "accepted",
+      })
+      .eq("follower_id", followerId)
+      .eq("following_id", userId)
+      .eq("status", "pending");
+
+    const { data: ownerProfile } = await supabase
+      .from("profiles")
+      .select("display_name, username")
+      .eq("id", userId)
+      .maybeSingle<{ display_name: string; username: string }>();
+    const { data: followerPreferences } = await supabase
+      .from("profiles")
+      .select("notify_follow_activity")
+      .eq("id", followerId)
+      .maybeSingle<{ notify_follow_activity: boolean }>();
+
+    if (followerPreferences?.notify_follow_activity !== false) {
+      await supabase.from("notifications").insert({
+        actor_id: userId,
+        body: `${ownerProfile?.display_name ?? "A member"} approved your follow request.`,
+        href: ownerProfile?.username ? `/u/${ownerProfile.username}` : "/",
+        recipient_id: followerId,
+        subject_id: userId,
+        subject_type: "profile",
+        title: "Follow request approved",
+        type: "follow_accepted",
+      });
+    }
+  } else if (decision === "decline") {
+    await supabase
+      .from("follows")
+      .delete()
+      .eq("follower_id", followerId)
+      .eq("following_id", userId)
+      .eq("status", "pending");
+  }
+
+  await supabase
+    .from("notifications")
+    .update({ read_at: readAt })
+    .eq("id", notificationId)
+    .eq("recipient_id", userId);
+
+  revalidatePath("/");
+  revalidatePath("/notifications");
+  redirect("/notifications");
+}
+
 export async function markAllNotificationsRead() {
   const { supabase, userId } = await requireUser();
 
