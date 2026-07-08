@@ -146,6 +146,23 @@ export async function startConversation(formData: FormData) {
     redirect(messagesPath(messageError.message, conversationId));
   }
 
+  const { data: senderProfile } = await supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("id", userId)
+    .maybeSingle<{ display_name: string }>();
+
+  await supabase.from("notifications").insert({
+    actor_id: userId,
+    body: body.slice(0, 160),
+    href: `/messages?c=${conversationId}`,
+    recipient_id: targetProfile.id,
+    subject_id: conversationId,
+    subject_type: "conversation",
+    title: `New message from ${senderProfile?.display_name ?? "a member"}`,
+    type: "message",
+  });
+
   revalidatePath("/messages");
   redirect(messagesPath("Message sent.", conversationId));
 }
@@ -171,6 +188,34 @@ export async function sendMessage(formData: FormData) {
 
   if (error) {
     redirect(messagesPath(error.message, conversationId));
+  }
+
+  const { data: recipients } = await supabase
+    .from("conversation_members")
+    .select("user_id")
+    .eq("conversation_id", conversationId)
+    .neq("user_id", userId)
+    .limit(5)
+    .returns<{ user_id: string }[]>();
+  const { data: senderProfile } = await supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("id", userId)
+    .maybeSingle<{ display_name: string }>();
+
+  if (recipients?.length) {
+    await supabase.from("notifications").insert(
+      recipients.map((recipient) => ({
+        actor_id: userId,
+        body: body.slice(0, 160),
+        href: `/messages?c=${conversationId}`,
+        recipient_id: recipient.user_id,
+        subject_id: conversationId,
+        subject_type: "conversation",
+        title: `New message from ${senderProfile?.display_name ?? "a member"}`,
+        type: "message",
+      })),
+    );
   }
 
   revalidatePath("/messages");
