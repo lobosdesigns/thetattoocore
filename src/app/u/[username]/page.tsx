@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   BadgeCheck,
+  BriefcaseBusiness,
+  CalendarDays,
   Camera,
   Flag,
   LinkIcon,
@@ -82,6 +84,30 @@ type Listing = {
   marketplace_media: ListingMedia[];
 };
 
+type GigMedia = {
+  id: string;
+  media_type: "image" | "video";
+  storage_bucket: string;
+  storage_path: string;
+};
+
+type Gig = {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  city: string | null;
+  region: string | null;
+  country: string | null;
+  starts_at: string | null;
+  compensation: string | null;
+  contact_url: string | null;
+  created_at: string;
+  is_sensitive: boolean;
+  visibility: "public_preview" | "members" | "private";
+  gig_media: GigMedia[];
+};
+
 function initials(name: string) {
   return name
     .split(" ")
@@ -123,6 +149,19 @@ function formatPrice(listing: Listing) {
     maximumFractionDigits: 0,
     style: "currency",
   }).format(listing.price_cents / 100);
+}
+
+function formatGigDate(gig: Gig) {
+  if (!gig.starts_at) return "Flexible";
+
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+  }).format(new Date(gig.starts_at));
+}
+
+function formatGigCategory(category: string) {
+  return category.replaceAll("_", " ");
 }
 
 function ContentLabels({
@@ -337,10 +376,12 @@ export default async function ProfilePage({
     { count: followerCount },
     { count: followingCount },
     { count: postCount },
+    { count: gigCount },
     { data: followRecord },
     { data: posts },
     { data: threads },
     { data: listings },
+    { data: gigs },
   ] = await Promise.all([
     supabase
       .from("follows")
@@ -355,6 +396,12 @@ export default async function ProfilePage({
       .select("*", { count: "exact", head: true })
       .eq("author_id", profile.id)
       .eq("is_published", true)
+      .eq("moderation_status", "active"),
+    supabase
+      .from("gigs")
+      .select("*", { count: "exact", head: true })
+      .eq("poster_id", profile.id)
+      .eq("status", "active")
       .eq("moderation_status", "active"),
     claims?.sub
       ? supabase
@@ -402,6 +449,21 @@ export default async function ProfilePage({
       })
       .limit(6)
       .returns<Listing[]>(),
+    supabase
+      .from("gigs")
+      .select(
+        "id, title, description, category, city, region, country, starts_at, compensation, contact_url, created_at, is_sensitive, visibility, gig_media(id, storage_bucket, storage_path, media_type, sort_order)",
+      )
+      .eq("poster_id", profile.id)
+      .eq("status", "active")
+      .eq("moderation_status", "active")
+      .order("created_at", { ascending: false })
+      .order("sort_order", {
+        ascending: true,
+        referencedTable: "gig_media",
+      })
+      .limit(6)
+      .returns<Gig[]>(),
   ]);
 
   const isOwnProfile = claims?.sub === profile.id;
@@ -485,8 +547,9 @@ export default async function ProfilePage({
                   </a>
                 ) : null}
               </div>
-              <div className="mt-5 grid max-w-sm grid-cols-3 gap-4">
+              <div className="mt-5 grid max-w-md grid-cols-4 gap-4">
                 <ProfileStat label="posts" value={postCount ?? 0} />
+                <ProfileStat label="gigs" value={gigCount ?? 0} />
                 <ProfileStat label="followers" value={followerCount ?? 0} />
                 <ProfileStat label="following" value={followingCount ?? 0} />
               </div>
@@ -591,6 +654,77 @@ export default async function ProfilePage({
               ) : (
                 <p className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4 text-sm text-[#766d62]">
                   No threads yet.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <div className="mb-4 flex items-center gap-2">
+              <BriefcaseBusiness className="size-5" />
+              <h2 className="text-lg font-bold">Gigs</h2>
+            </div>
+            <div className="space-y-3">
+              {gigs?.length ? (
+                gigs.map((gig) => (
+                  <article
+                    className="rounded-md border border-[#d8d1c6] bg-white p-4"
+                    key={gig.id}
+                  >
+                    <div className="flex gap-3">
+                      {gig.gig_media[0] ? (
+                        <div
+                          className="size-16 shrink-0 rounded-md bg-cover bg-center"
+                          style={{
+                            backgroundImage: `url(${mediaUrl(
+                              gig.gig_media[0].storage_bucket,
+                              gig.gig_media[0].storage_path,
+                            )})`,
+                          }}
+                        />
+                      ) : (
+                        <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-[#efe7da]">
+                          <BriefcaseBusiness className="size-6" />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-semibold">{gig.title}</p>
+                        <div className="mt-1 flex flex-wrap gap-1.5">
+                          <span className="rounded-md bg-[#efe7da] px-2 py-1 text-xs font-medium capitalize">
+                            {formatGigCategory(gig.category)}
+                          </span>
+                          <ContentLabels
+                            isSensitive={gig.is_sensitive}
+                            visibility={gig.visibility}
+                          />
+                        </div>
+                        <p className="mt-2 flex items-center gap-1 text-xs text-[#766d62]">
+                          <CalendarDays className="size-3.5" />
+                          {formatGigDate(gig)} -{" "}
+                          {[gig.city, gig.region, gig.country]
+                            .filter(Boolean)
+                            .join(", ") || "Remote / open"}
+                        </p>
+                        <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#766d62]">
+                          {gig.description || gig.compensation || "No details yet."}
+                        </p>
+                        {gig.contact_url ? (
+                          <a
+                            className="mt-3 inline-flex h-9 items-center justify-center rounded-md bg-[#171412] px-3 text-sm font-semibold text-white"
+                            href={gig.contact_url}
+                            rel="noreferrer"
+                            target="_blank"
+                          >
+                            View details
+                          </a>
+                        ) : null}
+                      </div>
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <p className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4 text-sm text-[#766d62]">
+                  No active gigs yet.
                 </p>
               )}
             </div>
