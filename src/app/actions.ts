@@ -274,7 +274,7 @@ async function notifyContentOwner({
 }) {
   if (!ownerId || ownerId === actorId) return;
 
-  await supabase.from("notifications").insert({
+  const { error } = await supabase.from("notifications").insert({
     actor_id: actorId,
     body: body.slice(0, 240),
     href,
@@ -284,6 +284,10 @@ async function notifyContentOwner({
     title,
     type,
   });
+
+  if (!error) {
+    revalidatePath("/notifications");
+  }
 }
 
 async function uploadPostMedia({

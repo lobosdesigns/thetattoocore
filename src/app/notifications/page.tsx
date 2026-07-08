@@ -26,6 +26,7 @@ type Notification = {
   created_at: string;
   href: string | null;
   read_at: string | null;
+  subject_type: string;
   title: string;
   type:
     | "feed_comment"
@@ -59,6 +60,15 @@ function notificationIcon(type: Notification["type"]) {
   return UserPlus;
 }
 
+function subjectLabel(type: string) {
+  if (type === "feed_post") return "4U";
+  if (type === "thread_post") return "Gossip";
+  if (type === "profile") return "Profile";
+  if (type === "message") return "DM";
+
+  return type.replaceAll("_", " ");
+}
+
 function timeAgo(date: string) {
   const seconds = Math.max(1, Math.floor((Date.now() - Date.parse(date)) / 1000));
 
@@ -86,7 +96,7 @@ export default async function NotificationsPage() {
   const { data: notifications } = await supabase
     .from("notifications")
     .select(
-      "id, actor_id, type, title, body, href, read_at, created_at, profiles:profiles!notifications_actor_id_fkey(display_name, username)",
+      "id, actor_id, type, subject_type, title, body, href, read_at, created_at, profiles:profiles!notifications_actor_id_fkey(display_name, username)",
     )
     .eq("recipient_id", claims.sub)
     .order("created_at", { ascending: false })
@@ -147,6 +157,14 @@ export default async function NotificationsPage() {
                         <p className="text-sm font-bold">
                           {notification.title}
                         </p>
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-[#766d62]">
+                          {notification.profiles ? (
+                            <span>@{notification.profiles.username}</span>
+                          ) : null}
+                          <span className="rounded-md border border-[#d8d1c6] bg-white px-1.5 py-0.5 font-semibold capitalize">
+                            {subjectLabel(notification.subject_type)}
+                          </span>
+                        </div>
                         <p className="mt-1 text-sm leading-6 text-[#4f473f]">
                           {notification.body}
                         </p>

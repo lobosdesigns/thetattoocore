@@ -34,6 +34,7 @@ export async function markNotificationRead(formData: FormData) {
     .eq("id", notificationId)
     .eq("recipient_id", userId);
 
+  revalidatePath("/");
   revalidatePath("/notifications");
   redirect("/notifications");
 }
@@ -47,6 +48,7 @@ export async function markAllNotificationsRead() {
     .eq("recipient_id", userId)
     .is("read_at", null);
 
+  revalidatePath("/");
   revalidatePath("/notifications");
   redirect("/notifications");
 }
