@@ -2,20 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import type { MediaMetadata } from "@/lib/media/metadata";
+import { inspectMediaFile, validateMediaMetadata } from "@/lib/media/metadata";
 import { createClient } from "@/lib/supabase/server";
 
 const MEDIA_BUCKET = "tattoo-media";
-const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
-const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
-const MEDIA_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-  "video/mp4",
-  "video/quicktime",
-  "video/webm",
-]);
 const VISIBILITY_VALUES = new Set(["public_preview", "members", "private"]);
 const SENSITIVE_REASONS = new Set([
   "body_art_nudity",
@@ -215,23 +206,6 @@ function extensionFor(file: File) {
   return file.type.split("/")[1]?.replace("jpeg", "jpg") || "bin";
 }
 
-function validateMedia(file: File) {
-  const isVideo = file.type.startsWith("video/");
-  const maxBytes = isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
-
-  if (!MEDIA_TYPES.has(file.type)) {
-    return "Use a JPG, PNG, WebP, GIF, MP4, MOV, or WebM file.";
-  }
-
-  if (file.size > maxBytes) {
-    return isVideo
-      ? "Videos can be up to 50 MB right now."
-      : "Images can be up to 10 MB right now.";
-  }
-
-  return null;
-}
-
 async function requireProfile() {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -333,25 +307,21 @@ async function uploadPostMedia({
   file,
   id,
   kind,
+  metadata,
   supabase,
   userId,
 }: {
   file: File;
   id: string;
   kind: "feed" | "gig" | "marketplace" | "thread";
+  metadata: MediaMetadata;
   supabase: Awaited<ReturnType<typeof createClient>>;
   userId: string;
 }) {
-  const validationMessage = validateMedia(file);
-
-  if (validationMessage) {
-    redirect(homeMessage(validationMessage));
-  }
-
   const path = `${userId}/${kind}/${id}/${crypto.randomUUID()}.${extensionFor(file)}`;
   const { error } = await supabase.storage.from(MEDIA_BUCKET).upload(path, file, {
     cacheControl: "31536000",
-    contentType: file.type,
+    contentType: metadata.mimeType,
     upsert: false,
   });
 
@@ -361,8 +331,19 @@ async function uploadPostMedia({
 
   return {
     bucket: MEDIA_BUCKET,
-    mediaType: file.type.startsWith("video/") ? "video" : "image",
+    mediaType: metadata.mediaType,
     path,
+  };
+}
+
+function mediaMetadataFields(metadata: MediaMetadata) {
+  return {
+    duration_seconds: metadata.durationSeconds,
+    file_size_bytes: metadata.fileSizeBytes,
+    height: metadata.height,
+    mime_type: metadata.mimeType,
+    original_filename: metadata.originalFilename,
+    width: metadata.width,
   };
 }
 
@@ -387,6 +368,13 @@ export async function createFeedPost(formData: FormData) {
     redirect(homeMessage("Feed posts need a photo or reel."));
   }
 
+  const metadata = await inspectMediaFile(media);
+  const validationMessage = validateMediaMetadata(metadata);
+
+  if (validationMessage) {
+    redirect(homeMessage(validationMessage));
+  }
+
   const { data: post, error } = await supabase
     .from("feed_posts")
     .insert({
@@ -394,7 +382,7 @@ export async function createFeedPost(formData: FormData) {
       caption,
       is_indexable: visibility === "public_preview" && !sensitive.is_sensitive,
       is_sensitive: sensitive.is_sensitive,
-      kind: media?.type.startsWith("video/") ? "reel" : "photo",
+      kind: metadata.mediaType === "video" ? "reel" : "photo",
       location_label: locationLabel || null,
       moderation_status: "active",
       sensitive_reason: sensitive.sensitive_reason,
@@ -413,10 +401,12 @@ export async function createFeedPost(formData: FormData) {
       file: media,
       id: post.id,
       kind: "feed",
+      metadata,
       supabase,
       userId,
     });
     const { error: mediaError } = await supabase.from("feed_media").insert({
+      ...mediaMetadataFields(metadata),
       media_type: upload.mediaType,
       post_id: post.id,
       is_sensitive: sensitive.is_sensitive,
@@ -438,6 +428,7 @@ export async function createThreadPost(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const body = cleanText(formData.get("body"), 8000);
   const media = mediaFromForm(formData, "media");
+  const metadata = media ? await inspectMediaFile(media) : null;
   const sensitive = sensitiveFields(formData);
   const visibility = cleanVisibility(formData.get("visibility"), "members");
 
@@ -445,7 +436,15 @@ export async function createThreadPost(formData: FormData) {
     redirect(homeMessage("Thread post needs at least 3 characters."));
   }
 
-  if (media && !media.type.startsWith("image/")) {
+  if (metadata) {
+    const validationMessage = validateMediaMetadata(metadata);
+
+    if (validationMessage) {
+      redirect(homeMessage(validationMessage));
+    }
+  }
+
+  if (metadata && metadata.mediaType !== "image") {
     redirect(homeMessage("Thread posts support images right now."));
   }
 
@@ -467,15 +466,17 @@ export async function createThreadPost(formData: FormData) {
     redirect(homeMessage(error.message || "Could not publish thread post."));
   }
 
-  if (media && thread) {
+  if (media && metadata && thread) {
     const upload = await uploadPostMedia({
       file: media,
       id: thread.id,
       kind: "thread",
+      metadata,
       supabase,
       userId,
     });
     const { error: mediaError } = await supabase.from("thread_media").insert({
+      ...mediaMetadataFields(metadata),
       media_type: "image",
       is_sensitive: sensitive.is_sensitive,
       sensitive_reason: sensitive.sensitive_reason,
@@ -500,6 +501,7 @@ export async function createMarketplaceListing(formData: FormData) {
   const category = cleanText(formData.get("category"), 40) || "flash";
   const city = cleanText(formData.get("city"), 80);
   const media = mediaFromForm(formData, "media");
+  const metadata = media ? await inspectMediaFile(media) : null;
   const region = cleanText(formData.get("region"), 40);
   const sensitive = sensitiveFields(formData);
   const visibility = cleanVisibility(formData.get("visibility"), "public_preview");
@@ -511,6 +513,14 @@ export async function createMarketplaceListing(formData: FormData) {
 
   if (title.length < 3) {
     redirect(homeMessage("Listing title needs at least 3 characters."));
+  }
+
+  if (metadata) {
+    const validationMessage = validateMediaMetadata(metadata);
+
+    if (validationMessage) {
+      redirect(homeMessage(validationMessage));
+    }
   }
 
   const { data: listing, error } = await supabase
@@ -537,17 +547,20 @@ export async function createMarketplaceListing(formData: FormData) {
     redirect(homeMessage(error.message || "Could not publish listing."));
   }
 
-  if (media && listing) {
+  if (media && metadata && listing) {
     const upload = await uploadPostMedia({
       file: media,
       id: listing.id,
       kind: "marketplace",
+      metadata,
       supabase,
       userId,
     });
     const { error: mediaError } = await supabase.from("marketplace_media").insert({
+      ...mediaMetadataFields(metadata),
       listing_id: listing.id,
       is_sensitive: sensitive.is_sensitive,
+      media_type: upload.mediaType,
       sensitive_reason: sensitive.sensitive_reason,
       storage_bucket: upload.bucket,
       storage_path: upload.path,

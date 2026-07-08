@@ -16,6 +16,7 @@ import {
   ShoppingBag,
   UserPlus,
   UserRoundMinus,
+  Video,
 } from "lucide-react";
 import { acceptAdultTerms, archiveGig, createContentReport } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
@@ -80,6 +81,7 @@ type ThreadPost = {
 
 type ListingMedia = {
   id: string;
+  media_type: "image" | "video";
   storage_bucket: string;
   storage_path: string;
 };
@@ -532,7 +534,7 @@ export default async function ProfilePage({
     supabase
       .from("marketplace_listings")
       .select(
-        "id, title, description, price_cents, currency, category, created_at, is_sensitive, visibility, marketplace_media(id, storage_bucket, storage_path, sort_order)",
+        "id, title, description, price_cents, currency, category, created_at, is_sensitive, visibility, marketplace_media(id, storage_bucket, storage_path, media_type, sort_order)",
       )
       .eq("seller_id", profile.id)
       .eq("status", "active")
@@ -977,7 +979,11 @@ export default async function ProfilePage({
                     key={listing.id}
                   >
                     <div className="flex gap-3">
-                      {listing.marketplace_media[0] ? (
+                      {listing.marketplace_media[0]?.media_type === "video" ? (
+                        <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white">
+                          <Video className="size-6" />
+                        </div>
+                      ) : listing.marketplace_media[0] ? (
                         <div
                           className="size-16 shrink-0 rounded-md bg-cover bg-center"
                           style={{

@@ -1,10 +1,9 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+import { inspectMediaFile, validateMediaMetadata } from "@/lib/media/metadata";
 import { createClient } from "@/lib/supabase/server";
 
 const MEDIA_BUCKET = "tattoo-media";
-const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
-const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const SENSITIVE_REASONS = new Set([
   "body_art_nudity",
   "healing",
@@ -89,6 +88,7 @@ export async function POST(request: Request) {
   const isSensitive = formData.get("is_sensitive") === "on";
   const sensitiveReason = cleanText(formData.get("sensitive_reason"), 40);
   const media = mediaFromForm(formData);
+  const metadata = media ? await inspectMediaFile(media) : null;
   const safeSensitiveReason = isSensitive
     ? SENSITIVE_REASONS.has(sensitiveReason)
       ? sensitiveReason
@@ -99,8 +99,15 @@ export async function POST(request: Request) {
     return redirectHome(request, "Gig title needs at least 3 characters.");
   }
 
-  if (media && (!IMAGE_TYPES.has(media.type) || media.size > MAX_IMAGE_BYTES)) {
-    return redirectHome(request, "Use a JPG, PNG, WebP, or GIF up to 10 MB.");
+  if (metadata) {
+    const validationMessage = validateMediaMetadata(metadata);
+
+    if (validationMessage || metadata.mediaType !== "image") {
+      return redirectHome(
+        request,
+        validationMessage || "Gigs support images right now.",
+      );
+    }
   }
 
   const { data: gig, error } = await supabase
@@ -137,7 +144,7 @@ export async function POST(request: Request) {
       .from(MEDIA_BUCKET)
       .upload(storagePath, media, {
         cacheControl: "31536000",
-        contentType: media.type,
+        contentType: metadata?.mimeType ?? media.type,
         upsert: false,
       });
 
@@ -146,12 +153,18 @@ export async function POST(request: Request) {
     }
 
     const { error: mediaError } = await supabase.from("gig_media").insert({
+      duration_seconds: metadata?.durationSeconds ?? null,
+      file_size_bytes: metadata?.fileSizeBytes ?? media.size,
       gig_id: gig.id,
+      height: metadata?.height ?? null,
       is_sensitive: isSensitive,
       media_type: "image",
+      mime_type: metadata?.mimeType ?? media.type,
+      original_filename: metadata?.originalFilename ?? media.name.slice(0, 180),
       sensitive_reason: safeSensitiveReason,
       storage_bucket: MEDIA_BUCKET,
       storage_path: storagePath,
+      width: metadata?.width ?? null,
     });
 
     if (mediaError) {

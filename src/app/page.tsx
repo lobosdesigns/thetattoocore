@@ -15,6 +15,7 @@ import {
   ShoppingBag,
   Sparkles,
   UserRound,
+  Video,
 } from "lucide-react";
 import {
   acceptAdultTerms,
@@ -118,6 +119,7 @@ type PostMedia = {
 
 type ListingMedia = {
   id: string;
+  media_type: "image" | "video";
   storage_bucket: string;
   storage_path: string;
 };
@@ -427,6 +429,14 @@ function ListingThumb({ media }: { media?: ListingMedia }) {
     );
   }
 
+  if (media.media_type === "video") {
+    return (
+      <div className="flex size-11 items-center justify-center rounded-md bg-[#171412] text-white">
+        <Video className="size-5" />
+      </div>
+    );
+  }
+
   return (
     <div
       className="size-11 rounded-md bg-cover bg-center"
@@ -559,7 +569,7 @@ export default async function Home({
     supabase
       .from("marketplace_listings")
       .select(
-        "id, title, description, price_cents, currency, category, city, region, visibility, is_sensitive, created_at, marketplace_media(id, storage_bucket, storage_path, sort_order), profiles:profiles!marketplace_listings_seller_id_fkey(id, username, display_name, account_type, city, license_verified_at, region)",
+        "id, title, description, price_cents, currency, category, city, region, visibility, is_sensitive, created_at, marketplace_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!marketplace_listings_seller_id_fkey(id, username, display_name, account_type, city, license_verified_at, region)",
       )
       .eq("status", "active")
       .eq("moderation_status", "active")
