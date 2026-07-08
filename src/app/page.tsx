@@ -27,6 +27,7 @@ import {
   togglePostLike,
   toggleThreadLike,
 } from "./actions";
+import { ColumnTabs } from "./column-tabs";
 import { startConversation } from "./messages/actions";
 import { FloatingComposer } from "./floating-composer";
 import { LogoLockup, LogoWordmark } from "./logo-mark";
@@ -708,25 +709,7 @@ export default async function Home({
             </div>
           </header>
 
-          <div className="flex gap-2 overflow-x-auto border-b border-[#e5ded4] px-4 py-3">
-            {[
-              ["4U", "#feed"],
-              ["Gossip", "#threads"],
-              ["Stuff", "#marketplace"],
-              ["Gigs", "#gigs"],
-              ["DM", "/messages"],
-            ].map(([tab, href], index) => (
-              <Link
-                className={`flex h-9 shrink-0 items-center rounded-md border border-[#d8d1c6] px-4 text-sm font-medium ${
-                  index === 0 ? "bg-[#171412] text-white" : "bg-white"
-                }`}
-                href={href}
-                key={tab}
-              >
-                {tab}
-              </Link>
-            ))}
-          </div>
+          <ColumnTabs />
 
           {params.message ? (
             <p
