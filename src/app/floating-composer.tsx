@@ -54,13 +54,23 @@ export function FloatingComposer({
           </form>
         ),
         threads: (
-          <form action={createThreadPost} className="space-y-3">
+          <form
+            action={createThreadPost}
+            className="space-y-3"
+            encType="multipart/form-data"
+          >
             <textarea
               className="min-h-44 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
-              maxLength={1000}
+              maxLength={8000}
               name="body"
               placeholder="Start a thread"
               required
+            />
+            <input
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="block w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#efe7da] file:px-3 file:py-1.5 file:text-sm file:font-semibold"
+              name="media"
+              type="file"
             />
             <button className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
               Post thread

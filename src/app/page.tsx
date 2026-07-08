@@ -12,7 +12,12 @@ import {
   Sparkles,
   UserRound,
 } from "lucide-react";
-import { createPostComment, togglePostLike } from "./actions";
+import {
+  createPostComment,
+  createThreadComment,
+  togglePostLike,
+  toggleThreadLike,
+} from "./actions";
 import { FloatingComposer } from "./floating-composer";
 import { LogoMark } from "./logo-mark";
 import { createClient } from "@/lib/supabase/server";
@@ -48,6 +53,9 @@ type ThreadPost = {
   id: string;
   body: string;
   created_at: string;
+  thread_comments: ThreadComment[];
+  thread_likes: ThreadLike[];
+  thread_media: ThreadMedia[];
   profiles: Profile | null;
 };
 
@@ -78,11 +86,29 @@ type ListingMedia = {
   storage_path: string;
 };
 
+type ThreadMedia = {
+  id: string;
+  media_type: "image";
+  storage_bucket: string;
+  storage_path: string;
+};
+
 type PostLike = {
   user_id: string;
 };
 
 type PostComment = {
+  id: string;
+  body: string;
+  created_at: string;
+  profiles: Pick<Profile, "display_name" | "username"> | null;
+};
+
+type ThreadLike = {
+  user_id: string;
+};
+
+type ThreadComment = {
   id: string;
   body: string;
   created_at: string;
@@ -221,6 +247,19 @@ function ListingThumb({ media }: { media?: ListingMedia }) {
   );
 }
 
+function ThreadImage({ media }: { media?: ThreadMedia }) {
+  if (!media) return null;
+
+  return (
+    <div
+      className="mt-3 aspect-[16/10] rounded-md border border-[#e5ded4] bg-cover bg-center"
+      style={{
+        backgroundImage: `url(${mediaUrl(media.storage_bucket, media.storage_path)})`,
+      }}
+    />
+  );
+}
+
 function AuthCallout({ isSignedIn }: { isSignedIn: boolean }) {
   if (isSignedIn) {
     return (
@@ -283,9 +322,13 @@ export default async function Home({
     supabase
       .from("thread_posts")
       .select(
-        "id, body, created_at, profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, account_type, city, region)",
+        "id, body, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, body, created_at, profiles:profiles!thread_comments_author_id_fkey(display_name, username)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, account_type, city, region)",
       )
       .order("created_at", { ascending: false })
+      .order("sort_order", {
+        ascending: true,
+        referencedTable: "thread_media",
+      })
       .limit(20)
       .returns<ThreadPost[]>(),
     supabase
@@ -583,6 +626,83 @@ export default async function Home({
                         </p>
                       </div>
                       <p className="text-sm leading-6">{thread.body}</p>
+                      <ThreadImage media={thread.thread_media[0]} />
+                      <div className="mt-3 flex items-center gap-4 border-t border-[#e5ded4] pt-3">
+                        <form action={toggleThreadLike}>
+                          <input
+                            name="thread_id"
+                            type="hidden"
+                            value={thread.id}
+                          />
+                          <input
+                            name="liked"
+                            type="hidden"
+                            value={
+                              thread.thread_likes.some(
+                                (like) => like.user_id === claims?.sub,
+                              )
+                                ? "true"
+                                : "false"
+                            }
+                          />
+                          <button className="flex items-center gap-2 text-sm font-medium">
+                            <Heart
+                              className={`size-5 ${
+                                thread.thread_likes.some(
+                                  (like) => like.user_id === claims?.sub,
+                                )
+                                  ? "fill-[#c8953b] text-[#c8953b]"
+                                  : ""
+                              }`}
+                            />
+                            {thread.thread_likes.length}
+                          </button>
+                        </form>
+                        <button className="flex items-center gap-2 text-sm font-medium">
+                          <MessageCircle className="size-5" />
+                          {thread.thread_comments.length}
+                        </button>
+                      </div>
+                      {thread.thread_comments.length ? (
+                        <div className="mt-3 space-y-2">
+                          {thread.thread_comments.slice(0, 2).map((comment) => (
+                            <p
+                              className="rounded-md bg-[#f7f4ef] px-3 py-2 text-sm leading-5"
+                              key={comment.id}
+                            >
+                              <span className="font-semibold">
+                                {comment.profiles?.display_name ?? "Member"}
+                              </span>{" "}
+                              {comment.body}
+                            </p>
+                          ))}
+                        </div>
+                      ) : null}
+                      {canCreate ? (
+                        <form
+                          action={createThreadComment}
+                          className="mt-3 flex items-center gap-2"
+                        >
+                          <input
+                            name="thread_id"
+                            type="hidden"
+                            value={thread.id}
+                          />
+                          <input
+                            className="h-10 min-w-0 flex-1 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                            maxLength={2000}
+                            name="body"
+                            placeholder="Reply to thread"
+                            required
+                          />
+                          <button
+                            aria-label="Post thread reply"
+                            className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                          >
+                            <Send className="size-4" />
+                          </button>
+                        </form>
+                      ) : null}
                     </article>
                   ))
                 : sampleThreads.map((thread) => (

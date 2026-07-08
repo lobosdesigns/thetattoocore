@@ -112,7 +112,7 @@ async function uploadPostMedia({
 }: {
   file: File;
   id: string;
-  kind: "feed" | "marketplace";
+  kind: "feed" | "marketplace" | "thread";
   supabase: Awaited<ReturnType<typeof createClient>>;
   userId: string;
 }) {
@@ -201,19 +201,48 @@ export async function createFeedPost(formData: FormData) {
 
 export async function createThreadPost(formData: FormData) {
   const { supabase, userId } = await requireProfile();
-  const body = cleanText(formData.get("body"), 1000);
+  const body = cleanText(formData.get("body"), 8000);
+  const media = mediaFromForm(formData, "media");
 
   if (body.length < 3) {
     redirect(homeMessage("Thread post needs at least 3 characters."));
   }
 
-  const { error } = await supabase.from("thread_posts").insert({
-    author_id: userId,
-    body,
-  });
+  if (media && !media.type.startsWith("image/")) {
+    redirect(homeMessage("Thread posts support images right now."));
+  }
+
+  const { data: thread, error } = await supabase
+    .from("thread_posts")
+    .insert({
+      author_id: userId,
+      body,
+    })
+    .select("id")
+    .single<{ id: string }>();
 
   if (error) {
     redirect(homeMessage(error.message || "Could not publish thread post."));
+  }
+
+  if (media && thread) {
+    const upload = await uploadPostMedia({
+      file: media,
+      id: thread.id,
+      kind: "thread",
+      supabase,
+      userId,
+    });
+    const { error: mediaError } = await supabase.from("thread_media").insert({
+      media_type: "image",
+      storage_bucket: upload.bucket,
+      storage_path: upload.path,
+      thread_id: thread.id,
+    });
+
+    if (mediaError) {
+      redirect(homeMessage(mediaError.message || "Image uploaded but could not attach to the thread."));
+    }
   }
 
   revalidatePath("/");
@@ -333,4 +362,59 @@ export async function createPostComment(formData: FormData) {
 
   revalidatePath("/");
   redirect("/#feed");
+}
+
+export async function toggleThreadLike(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const threadId = cleanId(formData.get("thread_id"));
+  const liked = cleanText(formData.get("liked"), 8) === "true";
+
+  if (!threadId) {
+    redirect(homeMessage("Choose a thread first."));
+  }
+
+  const result = liked
+    ? await supabase
+        .from("thread_likes")
+        .delete()
+        .eq("thread_id", threadId)
+        .eq("user_id", userId)
+    : await supabase.from("thread_likes").upsert({
+        thread_id: threadId,
+        user_id: userId,
+      });
+
+  if (result.error) {
+    redirect(homeMessage(result.error.message || "Could not update thread like."));
+  }
+
+  revalidatePath("/");
+  redirect("/#threads");
+}
+
+export async function createThreadComment(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const body = cleanText(formData.get("body"), 2000);
+  const threadId = cleanId(formData.get("thread_id"));
+
+  if (!threadId) {
+    redirect(homeMessage("Choose a thread first."));
+  }
+
+  if (!body) {
+    redirect(homeMessage("Thread comment cannot be empty."));
+  }
+
+  const { error } = await supabase.from("thread_comments").insert({
+    author_id: userId,
+    body,
+    thread_id: threadId,
+  });
+
+  if (error) {
+    redirect(homeMessage(error.message || "Could not add thread comment."));
+  }
+
+  revalidatePath("/");
+  redirect("/#threads");
 }
