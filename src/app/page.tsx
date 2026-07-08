@@ -296,6 +296,7 @@ export default async function Home({
   const isSignedIn = Boolean(claims?.sub);
   const canCreate = Boolean(currentProfile);
   const adminRole = currentProfile?.role;
+  const profileHref = currentProfile ? `/u/${currentProfile.username}` : "/account";
 
   return (
     <main className="min-h-screen bg-[#f5f2eb] text-[#171412]">
@@ -317,7 +318,7 @@ export default async function Home({
               [MessageCircle, "Threads", "#threads"],
               [ShoppingBag, "Marketplace", "#marketplace"],
               [Send, "Messages", "/messages"],
-              [UserRound, "Profile", "/account"],
+              [UserRound, "Profile", profileHref],
             ].map(([Icon, label, href]) => (
               <Link
                 className="flex h-11 w-full items-center gap-3 rounded-md px-3 text-left text-sm font-medium hover:bg-[#f5f2eb]"
@@ -536,23 +537,26 @@ export default async function Home({
               feedPosts.map((post) => (
                 <article className="bg-[#fffdf9]" key={post.id}>
                   <div className="flex items-center justify-between px-4 py-3">
-                    <div className="flex items-center gap-3">
+                    <Link
+                      className="flex min-w-0 items-center gap-3"
+                      href={`/u/${post.profiles?.username ?? "member"}`}
+                    >
                       <div className="flex size-11 items-center justify-center rounded-md bg-[#c8953b] text-sm font-bold text-white">
                         {initials(post.profiles?.display_name ?? "TC")}
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-sm font-semibold">
                           {post.profiles?.display_name ?? "TheTattooCore member"}
                         </p>
                         <p className="text-xs text-[#766d62]">
-                          @{post.profiles?.username ?? "member"} ·{" "}
+                          @{post.profiles?.username ?? "member"} -{" "}
                           {post.location_label ||
                             profileLocation(post.profiles) ||
                             "TattooCore"}{" "}
-                          · {timeAgo(post.created_at)}
+                          - {timeAgo(post.created_at)}
                         </p>
                       </div>
-                    </div>
+                    </Link>
                     {post.style_tags[0] ? (
                       <span className="rounded-md bg-[#efe7da] px-2 py-1 text-xs font-medium">
                         {post.style_tags[0]}
@@ -639,9 +643,12 @@ export default async function Home({
                       key={thread.id}
                     >
                       <div className="mb-2 flex items-center justify-between gap-3">
-                        <p className="text-sm font-semibold">
+                        <Link
+                          className="text-sm font-semibold hover:underline"
+                          href={`/u/${thread.profiles?.username ?? "member"}`}
+                        >
                           {thread.profiles?.display_name ?? "Member"}
-                        </p>
+                        </Link>
                         <p className="text-xs text-[#766d62]">
                           {timeAgo(thread.created_at)}
                         </p>
