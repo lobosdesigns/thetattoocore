@@ -290,6 +290,16 @@ function reportReasonClass(reason: string) {
   return "border-[#d8d1c6] bg-[#f7f4ef] text-[#4f473f]";
 }
 
+function isPriorityReport(reason: string) {
+  return [
+    "harassment or hate",
+    "illegal goods or services",
+    "minor safety concern",
+    "sexual content",
+    "unsafe practice",
+  ].includes(reason);
+}
+
 function reportStatusClass(status: ReportItem["status"]) {
   if (status === "open") return "border-[#e5c58f] bg-[#fff7ec] text-[#7a4a08]";
   if (status === "reviewing") return "border-[#b7c6e8] bg-[#eef3ff] text-[#284f8a]";
@@ -514,6 +524,31 @@ function QueueGroup({
         </p>
       )}
     </section>
+  );
+}
+
+function QueueSummary({
+  items,
+}: {
+  items: [label: string, count: number, tone?: "default" | "danger" | "warning"][];
+}) {
+  return (
+    <div className="mb-4 flex flex-wrap gap-2">
+      {items.map(([label, count, tone = "default"]) => (
+        <span
+          className={`rounded-md border px-2.5 py-1.5 text-xs font-semibold ${
+            tone === "danger"
+              ? "border-[#e5b8b8] bg-[#fff0f0] text-[#8a2828]"
+              : tone === "warning"
+                ? "border-[#e5c58f] bg-[#fff7ec] text-[#7a4a08]"
+                : "border-[#d8d1c6] bg-[#f7f4ef] text-[#4f473f]"
+          }`}
+          key={label}
+        >
+          {label}: {formatCount(count)}
+        </span>
+      ))}
+    </div>
   );
 }
 
@@ -1013,6 +1048,9 @@ export default async function AdminPage({
   const pendingLicenseRequests = licenseRequests.filter(
     (request) => request.status === "pending",
   );
+  const approvedLicenseRequests = licenseRequests.filter(
+    (request) => request.status === "approved",
+  );
   const rejectedLicenseRequests = licenseRequests.filter(
     (request) => request.status === "rejected",
   );
@@ -1180,6 +1218,12 @@ export default async function AdminPage({
     })(),
   }));
   const openReportItems = reports.filter((report) => report.status === "open");
+  const priorityOpenReportItems = openReportItems.filter((report) =>
+    isPriorityReport(report.reason),
+  );
+  const routineOpenReportItems = openReportItems.filter(
+    (report) => !isPriorityReport(report.reason),
+  );
   const reviewingReportItems = reports.filter(
     (report) => report.status === "reviewing",
   );
@@ -1438,6 +1482,13 @@ export default async function AdminPage({
                     Artist and studio verification
                   </h2>
                 </div>
+                <QueueSummary
+                  items={[
+                    ["Pending", pendingLicenseRequests.length, "warning"],
+                    ["Approved", approvedLicenseRequests.length],
+                    ["Rejected", rejectedLicenseRequests.length, "danger"],
+                  ]}
+                />
                 {licenseRequests.length ? (
                   <div className="space-y-4">
                     <QueueGroup
@@ -1485,14 +1536,30 @@ export default async function AdminPage({
                   Review red reports first, move valid reports into Reviewing,
                   and keep notes specific enough for the moderation audit log.
                 </p>
+                <QueueSummary
+                  items={[
+                    ["Priority open", priorityOpenReportItems.length, "danger"],
+                    ["Routine open", routineOpenReportItems.length, "warning"],
+                    ["In review", reviewingReportItems.length],
+                  ]}
+                />
                 {reports.length ? (
                   <div className="space-y-4">
                     <QueueGroup
-                      count={openReportItems.length}
-                      emptyText="No newly opened reports."
-                      title="Open reports"
+                      count={priorityOpenReportItems.length}
+                      emptyText="No priority reports are open."
+                      title="Priority open reports"
                     >
-                      {openReportItems.map((report) => (
+                      {priorityOpenReportItems.map((report) => (
+                        <ReportCard key={report.id} report={report} />
+                      ))}
+                    </QueueGroup>
+                    <QueueGroup
+                      count={routineOpenReportItems.length}
+                      emptyText="No routine reports are open."
+                      title="Routine open reports"
+                    >
+                      {routineOpenReportItems.map((report) => (
                         <ReportCard key={report.id} report={report} />
                       ))}
                     </QueueGroup>
