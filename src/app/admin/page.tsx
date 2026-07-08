@@ -268,6 +268,7 @@ function ReportCard({ report }: { report: ReportItem }) {
       ) : null}
       {canModerateReportedSubject(report.subjectType) ? (
         <form action={moderateContent} className="mt-4 space-y-2">
+          <input name="report_id" type="hidden" value={report.id} />
           <input name="subject_id" type="hidden" value={report.subjectId} />
           <input name="subject_type" type="hidden" value={report.subjectType} />
           <input

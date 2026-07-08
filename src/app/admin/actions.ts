@@ -265,6 +265,7 @@ export async function changeUserStatus(formData: FormData) {
 export async function moderateContent(formData: FormData) {
   const subjectType = cleanText(formData.get("subject_type"), 40) as SubjectType;
   const subjectId = cleanText(formData.get("subject_id"), 80);
+  const reportId = cleanText(formData.get("report_id"), 80);
   const moderationStatus = cleanText(
     formData.get("moderation_status"),
     40,
@@ -277,6 +278,37 @@ export async function moderateContent(formData: FormData) {
   }
 
   const { supabase, userId } = await requireModerator();
+  let linkedReport: {
+    id: string;
+    subject_id: string;
+    subject_type: string;
+  } | null = null;
+
+  if (reportId) {
+    const { data: report, error: reportError } = await supabase
+      .from("content_reports")
+      .select("id, subject_type, subject_id")
+      .eq("id", reportId)
+      .maybeSingle<{
+        id: string;
+        subject_id: string;
+        subject_type: string;
+      }>();
+
+    if (reportError || !report) {
+      redirect(
+        `/admin?message=${encodeURIComponent(
+          reportError?.message || "Linked report was not found.",
+        )}#reports`,
+      );
+    }
+
+    if (report.subject_type !== subjectType || report.subject_id !== subjectId) {
+      redirect("/admin?message=Report does not match that content.#reports");
+    }
+
+    linkedReport = report;
+  }
 
   const { data: subject, error: subjectError } = await supabase
     .from(config.table)
@@ -322,9 +354,76 @@ export async function moderateContent(formData: FormData) {
     );
   }
 
+  if (linkedReport) {
+    const nextReportStatus =
+      moderationStatus === "under_review" ? "reviewing" : "resolved";
+    const now = new Date().toISOString();
+    const reportUpdate =
+      nextReportStatus === "resolved"
+        ? {
+            assigned_to: userId,
+            resolved_at: now,
+            resolved_by: userId,
+            status: nextReportStatus,
+            updated_at: now,
+          }
+        : {
+            assigned_to: userId,
+            resolved_at: null,
+            resolved_by: null,
+            status: nextReportStatus,
+            updated_at: now,
+          };
+
+    const { error: reportUpdateError } = await supabase
+      .from("content_reports")
+      .update(reportUpdate)
+      .eq("id", reportId);
+
+    if (reportUpdateError) {
+      redirect(
+        `/admin?message=${encodeURIComponent(
+          reportUpdateError.message ||
+            "Content changed, but the report status did not update.",
+        )}#reports`,
+      );
+    }
+
+    if (nextReportStatus === "resolved") {
+      const { error: reportActionError } = await supabase
+        .from("moderation_actions")
+        .insert({
+          action_type: "resolve_report",
+          actor_id: userId,
+          metadata: {
+            moderation_status: moderationStatus,
+            report_status: nextReportStatus,
+          },
+          note: note || null,
+          report_id: reportId,
+          subject_id: subjectId,
+          subject_type: subjectType,
+          target_user_id: subject[config.ownerColumn],
+        });
+
+      if (reportActionError) {
+        redirect(
+          `/admin?message=${encodeURIComponent(
+            reportActionError.message ||
+              "Content and report changed, but report log failed.",
+          )}#reports`,
+        );
+      }
+    }
+  }
+
   revalidatePath("/admin");
   revalidatePath("/");
-  redirect(adminMessage("Moderation status updated."));
+  redirect(
+    reportId
+      ? "/admin?message=Moderation status and report updated.#reports"
+      : adminMessage("Moderation status updated."),
+  );
 }
 
 export async function updateReportStatus(formData: FormData) {
