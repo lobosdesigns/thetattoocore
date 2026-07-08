@@ -418,6 +418,61 @@ function ProfileDetailChip({
   );
 }
 
+function ProfileContentNav({
+  items,
+}: {
+  items: [href: string, label: string, count: number][];
+}) {
+  return (
+    <nav
+      aria-label="Profile content"
+      className="sticky top-[65px] z-10 flex gap-2 overflow-x-auto border-b border-[#e5ded4] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur"
+    >
+      {items.map(([href, label, count]) => (
+        <a
+          className="flex h-10 shrink-0 items-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-bold text-[#171412] hover:bg-[#f7f4ef]"
+          href={href}
+          key={href}
+        >
+          <span>{label}</span>
+          <span className="rounded-md bg-[#efe7da] px-1.5 py-0.5 text-xs text-[#4f473f]">
+            {count}
+          </span>
+        </a>
+      ))}
+    </nav>
+  );
+}
+
+function ProfileSectionHeading({
+  count,
+  description,
+  icon: Icon,
+  title,
+}: {
+  count: number;
+  description: string;
+  icon: LucideIcon;
+  title: string;
+}) {
+  return (
+    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex items-start gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white">
+          <Icon className="size-5" />
+        </span>
+        <div>
+          <h2 className="text-lg font-bold">{title}</h2>
+          <p className="mt-1 text-sm leading-5 text-[#766d62]">{description}</p>
+        </div>
+      </div>
+      <span className="w-fit rounded-md border border-[#d8d1c6] bg-white px-2.5 py-1.5 text-xs font-bold text-[#4f473f]">
+        {count} live
+      </span>
+    </div>
+  );
+}
+
 function ProfileEmptyState({
   actionHref,
   actionLabel,
@@ -1007,11 +1062,24 @@ export default async function ProfilePage({
           </section>
         ) : (
           <>
-        <section className="border-b border-[#e5ded4] px-4 py-6">
-          <div className="mb-4 flex items-center gap-2">
-            <Camera className="size-5" />
-            <h2 className="text-lg font-bold">4U</h2>
-          </div>
+        <ProfileContentNav
+          items={[
+            ["#profile-4u", "4U", visiblePosts.length],
+            ["#profile-gossip", "Gossip", visibleThreads.length],
+            ["#profile-stuff", "Stuff", visibleListings.length],
+            ["#profile-gigs", "Gigs", visibleGigs.length],
+          ]}
+        />
+        <section
+          className="scroll-mt-28 border-b border-[#e5ded4] px-4 py-6"
+          id="profile-4u"
+        >
+          <ProfileSectionHeading
+            count={visiblePosts.length}
+            description="Photos and short reels from this profile."
+            icon={Camera}
+            title="4U"
+          />
           {visiblePosts.length ? (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {visiblePosts.map((post) => (
@@ -1035,11 +1103,13 @@ export default async function ProfilePage({
         </section>
 
         <section className="grid gap-6 px-4 py-6 lg:grid-cols-2">
-          <div>
-            <div className="mb-4 flex items-center gap-2">
-              <MessageCircle className="size-5" />
-              <h2 className="text-lg font-bold">Gossip</h2>
-            </div>
+          <div className="scroll-mt-28" id="profile-gossip">
+            <ProfileSectionHeading
+              count={visibleThreads.length}
+              description="Longer posts, questions, and shop talk."
+              icon={MessageCircle}
+              title="Gossip"
+            />
             <div className="space-y-3">
               {visibleThreads.length ? (
                 visibleThreads.map((thread) => (
@@ -1076,11 +1146,82 @@ export default async function ProfilePage({
             </div>
           </div>
 
-          <div>
-            <div className="mb-4 flex items-center gap-2">
-              <BriefcaseBusiness className="size-5" />
-              <h2 className="text-lg font-bold">Gigs</h2>
+          <div className="scroll-mt-28" id="profile-stuff">
+            <ProfileSectionHeading
+              count={visibleListings.length}
+              description="Flash, supplies, studio gear, and services."
+              icon={ShoppingBag}
+              title="Stuff"
+            />
+            <div className="space-y-3">
+              {visibleListings.length ? (
+                visibleListings.map((listing) => (
+                  <article
+                    className="rounded-md border border-[#d8d1c6] bg-white p-4"
+                    key={listing.id}
+                  >
+                    <div className="flex gap-3">
+                      {listing.marketplace_media[0]?.media_type === "video" ? (
+                        <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white">
+                          <Video className="size-6" />
+                        </div>
+                      ) : listing.marketplace_media[0] ? (
+                        <div
+                          className="size-16 shrink-0 rounded-md bg-cover bg-center"
+                          style={{
+                            backgroundImage: `url(${mediaUrl(
+                              listing.marketplace_media[0].storage_bucket,
+                              listing.marketplace_media[0].storage_path,
+                            )})`,
+                          }}
+                        />
+                      ) : (
+                        <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-[#efe7da]">
+                          <ShoppingBag className="size-6" />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-semibold">{listing.title}</p>
+                        <div className="mt-1">
+                          <ContentLabels
+                            isSensitive={listing.is_sensitive}
+                            visibility={listing.visibility}
+                          />
+                        </div>
+                        <p className="text-sm font-bold">
+                          {formatPrice(listing)}
+                        </p>
+                        <p className="mt-1 line-clamp-2 text-sm leading-6 text-[#766d62]">
+                          {listing.description || listing.category}
+                        </p>
+                      </div>
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <ProfileEmptyState
+                  actionHref={isOwnProfile ? "/#gigs" : undefined}
+                  actionLabel={isOwnProfile ? "Post a Gig" : undefined}
+                  body={
+                    isOwnProfile
+                      ? "Post open chairs, guest spots, convention plans, apprenticeships, jobs, and event calls."
+                      : "Open jobs, guest spots, conventions, and event calls from this profile will appear here."
+                  }
+                  icon={BriefcaseBusiness}
+                  tips={["Guest spots", "Conventions", "Jobs"]}
+                  title="No active gigs yet"
+                />
+              )}
             </div>
+          </div>
+
+          <div className="scroll-mt-28" id="profile-gigs">
+            <ProfileSectionHeading
+              count={visibleGigs.length}
+              description="Jobs, conventions, guest spots, and events."
+              icon={BriefcaseBusiness}
+              title="Gigs"
+            />
             <div className="space-y-3">
               {visibleGigs.length ? (
                 visibleGigs.map((gig) => (
@@ -1148,73 +1289,6 @@ export default async function ProfilePage({
                             </button>
                           </form>
                         ) : null}
-                      </div>
-                    </div>
-                  </article>
-                ))
-              ) : (
-                <ProfileEmptyState
-                  actionHref={isOwnProfile ? "/#gigs" : undefined}
-                  actionLabel={isOwnProfile ? "Post a Gig" : undefined}
-                  body={
-                    isOwnProfile
-                      ? "Post open chairs, guest spots, convention plans, apprenticeships, jobs, and event calls."
-                      : "Open jobs, guest spots, conventions, and event calls from this profile will appear here."
-                  }
-                  icon={BriefcaseBusiness}
-                  tips={["Guest spots", "Conventions", "Jobs"]}
-                  title="No active gigs yet"
-                />
-              )}
-            </div>
-          </div>
-
-          <div>
-            <div className="mb-4 flex items-center gap-2">
-              <ShoppingBag className="size-5" />
-              <h2 className="text-lg font-bold">Stuff</h2>
-            </div>
-            <div className="space-y-3">
-              {visibleListings.length ? (
-                visibleListings.map((listing) => (
-                  <article
-                    className="rounded-md border border-[#d8d1c6] bg-white p-4"
-                    key={listing.id}
-                  >
-                    <div className="flex gap-3">
-                      {listing.marketplace_media[0]?.media_type === "video" ? (
-                        <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white">
-                          <Video className="size-6" />
-                        </div>
-                      ) : listing.marketplace_media[0] ? (
-                        <div
-                          className="size-16 shrink-0 rounded-md bg-cover bg-center"
-                          style={{
-                            backgroundImage: `url(${mediaUrl(
-                              listing.marketplace_media[0].storage_bucket,
-                              listing.marketplace_media[0].storage_path,
-                            )})`,
-                          }}
-                        />
-                      ) : (
-                        <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-[#efe7da]">
-                          <ShoppingBag className="size-6" />
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <p className="font-semibold">{listing.title}</p>
-                        <div className="mt-1">
-                          <ContentLabels
-                            isSensitive={listing.is_sensitive}
-                            visibility={listing.visibility}
-                          />
-                        </div>
-                        <p className="text-sm font-bold">
-                          {formatPrice(listing)}
-                        </p>
-                        <p className="mt-1 line-clamp-2 text-sm leading-6 text-[#766d62]">
-                          {listing.description || listing.category}
-                        </p>
                       </div>
                     </div>
                   </article>
