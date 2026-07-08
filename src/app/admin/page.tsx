@@ -61,6 +61,7 @@ type LicenseRequest = {
   profileName: string;
   profileUsername: string;
   status: "pending" | "approved" | "rejected";
+  signedDocumentUrl: string | null;
 };
 
 const adminTabs = [
@@ -268,6 +269,21 @@ function LicenseRequestCard({ request }: { request: LicenseRequest }) {
           </div>
         ) : null}
       </dl>
+      {request.signedDocumentUrl ? (
+        <a
+          className="mt-4 flex h-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-3 text-sm font-semibold hover:bg-[#f7f4ef]"
+          href={request.signedDocumentUrl}
+          rel="noreferrer"
+          target="_blank"
+        >
+          Open private document
+        </a>
+      ) : (
+        <p className="mt-4 rounded-md border border-[#e5ded4] bg-[#f7f4ef] px-3 py-2 text-xs text-[#766d62]">
+          Document link is unavailable. Refresh the queue or check storage
+          permissions.
+        </p>
+      )}
       {isPending ? (
         <form action={updateLicenseVerification} className="mt-4 space-y-2">
           <input name="request_id" type="hidden" value={request.id} />
@@ -391,7 +407,7 @@ export default async function AdminPage({
     supabase
       .from("license_verification_requests")
       .select(
-        "id, account_type, license_name, license_number, issuing_region, expires_on, status, created_at, profiles:profiles!license_verification_requests_profile_id_fkey(display_name, username)",
+        "id, account_type, license_name, license_number, issuing_region, expires_on, storage_bucket, storage_path, status, created_at, profiles:profiles!license_verification_requests_profile_id_fkey(display_name, username)",
       )
       .in("status", ["pending", "rejected"])
       .order("created_at", { ascending: false })
@@ -406,6 +422,8 @@ export default async function AdminPage({
           license_name: string;
           license_number: string | null;
           profiles: { display_name: string; username: string } | null;
+          storage_bucket: string;
+          storage_path: string;
           status: "pending" | "approved" | "rejected";
         }[]
       >(),
@@ -537,6 +555,16 @@ export default async function AdminPage({
     ["Listings", marketplaceQueue, "Draft and active"],
     ["Actions", moderationActions, "Moderation log"],
   ];
+  const signedDocumentUrls = await Promise.all(
+    (verificationQueue ?? []).map(async (request) => {
+      const { data } = await supabase.storage
+        .from(request.storage_bucket)
+        .createSignedUrl(request.storage_path, 300);
+
+      return [request.id, data?.signedUrl ?? null] as const;
+    }),
+  );
+  const signedDocumentUrlByRequest = new Map(signedDocumentUrls);
   const licenseRequests: LicenseRequest[] = (verificationQueue ?? []).map(
     (request) => ({
       accountType: request.account_type,
@@ -548,6 +576,7 @@ export default async function AdminPage({
       licenseNumber: request.license_number,
       profileName: request.profiles?.display_name ?? "Member",
       profileUsername: request.profiles?.username ?? "member",
+      signedDocumentUrl: signedDocumentUrlByRequest.get(request.id) ?? null,
       status: request.status,
     }),
   );
