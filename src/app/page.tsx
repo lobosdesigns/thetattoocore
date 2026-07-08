@@ -512,38 +512,47 @@ export default async function Home({
     <main className="min-h-screen bg-[#f5f2eb] text-[#171412]">
       <div className="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 lg:grid-cols-[240px_minmax(420px,620px)_320px]">
         <aside className="hidden border-r border-[#d8d1c6] bg-[#fffdf9] px-5 py-6 lg:block">
-          <div className="mb-8 flex justify-start">
-            <LogoWordmark className="h-32 w-28" />
+          <div className="flex min-h-full flex-col">
+            <div>
+              <div className="mb-8 flex justify-start">
+                <LogoWordmark className="h-32 w-28" />
+              </div>
+
+              <nav className="space-y-1">
+                {[
+                  [HomeIcon, "Feed", "#feed"],
+                  [MessageCircle, "Threads", "#threads"],
+                  [ShoppingBag, "Marketplace", "#marketplace"],
+                  [BriefcaseBusiness, "Gigs", "#gigs"],
+                  [Send, "Messages", "/messages"],
+                  [UserRound, "Profile", profileHref],
+                ].map(([Icon, label, href]) => (
+                  <Link
+                    className="flex h-11 w-full items-center gap-3 rounded-md px-3 text-left text-sm font-medium hover:bg-[#f5f2eb]"
+                    href={href as string}
+                    key={label as string}
+                  >
+                    <Icon className="size-5" />
+                    {label as string}
+                  </Link>
+                ))}
+              </nav>
+
+              {adminRole && ["moderator", "admin", "owner"].includes(adminRole) ? (
+                <Link
+                  className="mt-4 flex h-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                  href="/admin"
+                >
+                  Admin
+                </Link>
+              ) : null}
+            </div>
+
+            <div className="mt-auto flex gap-3 pt-8 text-xs font-semibold text-[#766d62]">
+              <Link href="/terms">Terms</Link>
+              <Link href="/privacy">Privacy</Link>
+            </div>
           </div>
-
-          <nav className="space-y-1">
-            {[
-              [HomeIcon, "Feed", "#feed"],
-              [MessageCircle, "Threads", "#threads"],
-              [ShoppingBag, "Marketplace", "#marketplace"],
-              [BriefcaseBusiness, "Gigs", "#gigs"],
-              [Send, "Messages", "/messages"],
-              [UserRound, "Profile", profileHref],
-            ].map(([Icon, label, href]) => (
-              <Link
-                className="flex h-11 w-full items-center gap-3 rounded-md px-3 text-left text-sm font-medium hover:bg-[#f5f2eb]"
-                href={href as string}
-                key={label as string}
-              >
-                <Icon className="size-5" />
-                {label as string}
-              </Link>
-            ))}
-          </nav>
-
-          {adminRole && ["moderator", "admin", "owner"].includes(adminRole) ? (
-            <Link
-              className="mt-4 flex h-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
-              href="/admin"
-            >
-              Admin
-            </Link>
-          ) : null}
         </aside>
 
         <section className="border-x border-[#d8d1c6] bg-[#fffdf9]">

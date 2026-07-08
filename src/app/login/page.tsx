@@ -81,6 +81,18 @@ export default async function LoginPage({
               </button>
             </div>
 
+            <p className="text-xs leading-5 text-[#766d62]">
+              By signing up, you confirm you are 18 or older and agree to the{" "}
+              <Link className="font-semibold underline" href="/terms">
+                Terms
+              </Link>{" "}
+              and{" "}
+              <Link className="font-semibold underline" href="/privacy">
+                Privacy
+              </Link>
+              .
+            </p>
+
             <Link
               className="block text-center text-sm font-semibold text-[#766d62]"
               href="/forgot-password"

@@ -16,6 +16,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
       url: siteUrl,
     },
+    {
+      changeFrequency: "monthly",
+      lastModified: now,
+      priority: 0.4,
+      url: `${siteUrl}/terms`,
+    },
+    {
+      changeFrequency: "monthly",
+      lastModified: now,
+      priority: 0.4,
+      url: `${siteUrl}/privacy`,
+    },
   ];
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

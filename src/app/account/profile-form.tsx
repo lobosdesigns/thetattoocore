@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { updateProfile } from "./actions";
 
 type Claims = {
@@ -228,7 +229,11 @@ export function ProfileForm({
               TheTattooCore is for adults. Tattoo, piercing, and body-art
               content may include limited non-sexual nudity only when it shows
               the artwork, placement, healing, or body modification.
-              Pornographic content is not allowed.
+              Pornographic content is not allowed. Review the{" "}
+              <Link className="font-semibold underline" href="/terms">
+                Terms and Content Policy
+              </Link>
+              .
             </span>
           </span>
         </label>
