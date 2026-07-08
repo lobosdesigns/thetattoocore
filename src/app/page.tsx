@@ -354,36 +354,42 @@ function ReportForm({
   return (
     <form
       action={createContentReport}
-      className="grid gap-2 sm:grid-cols-[minmax(8rem,12rem)_1fr_auto]"
+      className="rounded-md border border-[#e5ded4] bg-[#f7f4ef] p-2"
     >
       <input name="subject_id" type="hidden" value={subjectId} />
       <input name="subject_type" type="hidden" value={subjectType} />
       <input name="return_path" type="hidden" value="/" />
       <input name="return_hash" type="hidden" value={returnHash} />
-      <select
-        aria-label="Report reason"
-        className="h-9 min-w-0 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
-        name="reason"
-      >
-        <option value="body-art nudity context">Body-art nudity</option>
-        <option value="sexual content">Sexual content</option>
-        <option value="minor safety concern">Minor safety</option>
-        <option value="harassment or hate">Harassment</option>
-        <option value="scam or spam">Scam or spam</option>
-        <option value="unsafe practice">Unsafe practice</option>
-        <option value="illegal goods or services">Illegal goods</option>
-        <option value="other">Other</option>
-      </select>
-      <input
-        className="h-9 min-w-0 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
-        maxLength={500}
-        name="details"
-        placeholder="Optional details"
-      />
-      <button className="flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs font-semibold">
-        <Flag className="size-3.5" />
-        Report
-      </button>
+      <p className="mb-2 text-xs leading-5 text-[#766d62]">
+        Report content that looks unsafe, scammy, sexual, illegal, harassing,
+        or missing the right sensitive body-art context.
+      </p>
+      <div className="grid gap-2 sm:grid-cols-[minmax(10rem,14rem)_1fr_auto]">
+        <select
+          aria-label="Report reason"
+          className="h-9 min-w-0 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+          name="reason"
+        >
+          <option value="body-art nudity context">Sensitive body-art context</option>
+          <option value="sexual content">Sexual or pornographic content</option>
+          <option value="minor safety concern">Minor safety concern</option>
+          <option value="harassment or hate">Harassment, hate, or threats</option>
+          <option value="scam or spam">Scam, spam, or impersonation</option>
+          <option value="unsafe practice">Unsafe tattoo/body-art practice</option>
+          <option value="illegal goods or services">Illegal goods or services</option>
+          <option value="other">Other policy concern</option>
+        </select>
+        <input
+          className="h-9 min-w-0 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+          maxLength={500}
+          name="details"
+          placeholder="What should moderators know?"
+        />
+        <button className="flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs font-semibold">
+          <Flag className="size-3.5" />
+          Report
+        </button>
+      </div>
     </form>
   );
 }

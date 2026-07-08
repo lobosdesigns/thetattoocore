@@ -259,32 +259,41 @@ function ProfileReportForm({
   username: string;
 }) {
   return (
-    <form action={createContentReport} className="grid gap-2 sm:grid-cols-[12rem_1fr_auto]">
+    <form
+      action={createContentReport}
+      className="rounded-md border border-[#e5ded4] bg-[#f7f4ef] p-2"
+    >
       <input name="subject_id" type="hidden" value={profileId} />
       <input name="subject_type" type="hidden" value="profile" />
       <input name="return_path" type="hidden" value={`/u/${username}`} />
-      <select
-        aria-label="Report profile reason"
-        className="h-10 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
-        name="reason"
-      >
-        <option value="scam or spam">Scam or spam</option>
-        <option value="harassment or hate">Harassment</option>
-        <option value="minor safety concern">Minor safety</option>
-        <option value="sexual content">Sexual content</option>
-        <option value="illegal goods or services">Illegal goods</option>
-        <option value="other">Other</option>
-      </select>
-      <input
-        className="h-10 min-w-0 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
-        maxLength={500}
-        name="details"
-        placeholder="Optional details"
-      />
-      <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold">
-        <Flag className="size-4" />
-        Report
-      </button>
+      <p className="mb-2 text-xs leading-5 text-[#766d62]">
+        Report profiles for scams, harassment, illegal services, sexual content,
+        minor safety concerns, or impersonation.
+      </p>
+      <div className="grid gap-2 sm:grid-cols-[12rem_1fr_auto]">
+        <select
+          aria-label="Report profile reason"
+          className="h-10 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+          name="reason"
+        >
+          <option value="scam or spam">Scam, spam, or impersonation</option>
+          <option value="harassment or hate">Harassment, hate, or threats</option>
+          <option value="minor safety concern">Minor safety concern</option>
+          <option value="sexual content">Sexual or pornographic content</option>
+          <option value="illegal goods or services">Illegal goods or services</option>
+          <option value="other">Other policy concern</option>
+        </select>
+        <input
+          className="h-10 min-w-0 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+          maxLength={500}
+          name="details"
+          placeholder="What should moderators know?"
+        />
+        <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold">
+          <Flag className="size-4" />
+          Report
+        </button>
+      </div>
     </form>
   );
 }
