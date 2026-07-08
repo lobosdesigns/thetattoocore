@@ -51,6 +51,11 @@ type Message = {
   created_at: string;
 };
 
+type MessageNotification = {
+  href: string | null;
+  subject_id: string | null;
+};
+
 function initials(name: string) {
   return name
     .split(" ")
@@ -74,6 +79,16 @@ function timeAgo(value: string) {
 
 function profileLocation(profile?: Profile) {
   return [profile?.city, profile?.region].filter(Boolean).join(", ");
+}
+
+function notificationConversationId(notification: MessageNotification) {
+  if (notification.subject_id) return notification.subject_id;
+  if (!notification.href) return null;
+
+  const [, query] = notification.href.split("?");
+  if (!query) return null;
+
+  return new URLSearchParams(query).get("c");
 }
 
 export default async function MessagesPage({
@@ -139,7 +154,11 @@ export default async function MessagesPage({
   const conversationIds =
     memberships?.map((membership) => membership.conversation_id) ?? [];
 
-  const [{ data: members }, { data: messages }] = await Promise.all([
+  const [
+    { data: members },
+    { data: messages },
+    { data: unreadMessageNotifications },
+  ] = await Promise.all([
     conversationIds.length
       ? supabase
           .from("conversation_members")
@@ -155,6 +174,15 @@ export default async function MessagesPage({
           .order("created_at", { ascending: true })
           .returns<Message[]>()
       : Promise.resolve({ data: [] as Message[] }),
+    conversationIds.length
+      ? supabase
+          .from("notifications")
+          .select("subject_id, href")
+          .eq("recipient_id", claims.sub)
+          .eq("type", "message")
+          .is("read_at", null)
+          .returns<MessageNotification[]>()
+      : Promise.resolve({ data: [] as MessageNotification[] }),
   ]);
 
   const profileIds = Array.from(
@@ -174,6 +202,19 @@ export default async function MessagesPage({
     const list = messagesByConversation.get(message.conversation_id) ?? [];
     list.push(message);
     messagesByConversation.set(message.conversation_id, list);
+  }
+
+  const unreadCountByConversation = new Map<string, number>();
+
+  for (const notification of unreadMessageNotifications ?? []) {
+    const conversationId = notificationConversationId(notification);
+
+    if (conversationId && conversationIds.includes(conversationId)) {
+      unreadCountByConversation.set(
+        conversationId,
+        (unreadCountByConversation.get(conversationId) ?? 0) + 1,
+      );
+    }
   }
 
   const inbox = (memberships ?? [])
@@ -197,6 +238,8 @@ export default async function MessagesPage({
         id: membership.conversation_id,
         latestMessage,
         otherProfile,
+        unreadCount:
+          unreadCountByConversation.get(membership.conversation_id) ?? 0,
       };
     })
     .sort((a, b) => {
@@ -271,11 +314,16 @@ export default async function MessagesPage({
               inbox.map((conversation) => {
                 const profile = conversation.otherProfile;
                 const active = selectedConversation?.id === conversation.id;
+                const hasUnread = conversation.unreadCount > 0;
 
                 return (
                   <Link
                     className={`block px-4 py-4 ${
-                      active ? "bg-[#efe7da]" : "bg-[#fffdf9] hover:bg-[#f7f4ef]"
+                      active
+                        ? "bg-[#efe7da]"
+                        : hasUnread
+                          ? "bg-[#f7f4ef] hover:bg-[#efe7da]"
+                          : "bg-[#fffdf9] hover:bg-[#f7f4ef]"
                     }`}
                     href={`/messages?c=${conversation.id}`}
                     key={conversation.id}
@@ -286,14 +334,27 @@ export default async function MessagesPage({
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-3">
-                          <p className="truncate text-sm font-semibold">
+                          <p
+                            className={`truncate text-sm ${
+                              hasUnread ? "font-bold" : "font-semibold"
+                            }`}
+                          >
                             {profile?.display_name ?? "TattooCore member"}
                           </p>
-                          {conversation.latestMessage ? (
-                            <p className="shrink-0 text-xs text-[#766d62]">
-                              {timeAgo(conversation.latestMessage.created_at)}
-                            </p>
-                          ) : null}
+                          <div className="flex shrink-0 items-center gap-2">
+                            {hasUnread ? (
+                              <span className="flex min-w-5 items-center justify-center rounded-full bg-[#171412] px-1.5 text-[10px] font-bold text-white">
+                                {conversation.unreadCount > 9
+                                  ? "9+"
+                                  : conversation.unreadCount}
+                              </span>
+                            ) : null}
+                            {conversation.latestMessage ? (
+                              <p className="text-xs text-[#766d62]">
+                                {timeAgo(conversation.latestMessage.created_at)}
+                              </p>
+                            ) : null}
+                          </div>
                         </div>
                         <p className="truncate text-xs text-[#766d62]">
                           @{profile?.username ?? "member"}{" "}
@@ -301,7 +362,11 @@ export default async function MessagesPage({
                             ? ` - ${profileLocation(profile)}`
                             : ""}
                         </p>
-                        <p className="mt-1 truncate text-sm text-[#4f473f]">
+                        <p
+                          className={`mt-1 truncate text-sm ${
+                            hasUnread ? "font-semibold text-[#171412]" : "text-[#4f473f]"
+                          }`}
+                        >
                           {conversation.latestMessage?.body ?? "No DMs yet."}
                         </p>
                       </div>
