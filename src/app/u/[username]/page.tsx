@@ -381,6 +381,52 @@ function ProfileStat({ label, value }: { label: string; value: number }) {
   );
 }
 
+function ProfileEmptyState({
+  actionHref,
+  actionLabel,
+  body,
+  icon: Icon,
+  tips,
+  title,
+}: {
+  actionHref?: string;
+  actionLabel?: string;
+  body: string;
+  icon: typeof Camera;
+  tips?: string[];
+  title: string;
+}) {
+  return (
+    <div className="rounded-md border border-dashed border-[#cfc6ba] bg-[#f7f4ef] p-4">
+      <div className="flex size-10 items-center justify-center rounded-md bg-[#efe7da]">
+        <Icon className="size-5" />
+      </div>
+      <h3 className="mt-3 text-sm font-bold">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-[#766d62]">{body}</p>
+      {tips?.length ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {tips.map((tip) => (
+            <span
+              className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 py-1 text-xs font-semibold text-[#4f473f]"
+              key={tip}
+            >
+              {tip}
+            </span>
+          ))}
+        </div>
+      ) : null}
+      {actionHref && actionLabel ? (
+        <Link
+          className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+          href={actionHref}
+        >
+          {actionLabel}
+        </Link>
+      ) : null}
+    </div>
+  );
+}
+
 function PostPreview({ post }: { post: FeedPost }) {
   const media = post.feed_media[0];
 
@@ -927,9 +973,18 @@ export default async function ProfilePage({
               ))}
             </div>
           ) : (
-            <p className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4 text-sm text-[#766d62]">
-              No 4U posts yet.
-            </p>
+            <ProfileEmptyState
+              actionHref={isOwnProfile ? "/#feed" : undefined}
+              actionLabel={isOwnProfile ? "Post from 4U" : undefined}
+              body={
+                isOwnProfile
+                  ? "Start with fresh work, healed pieces, or a short reel. Use the 4U column plus button from the main feed."
+                  : "Photos and short reels from this profile will appear here when they post public 4U content."
+              }
+              icon={Camera}
+              tips={["Photos", "Healed work", "Short reels"]}
+              title="No 4U posts yet"
+            />
           )}
         </section>
 
@@ -959,9 +1014,18 @@ export default async function ProfilePage({
                   </article>
                 ))
               ) : (
-                <p className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4 text-sm text-[#766d62]">
-                  No gossip yet.
-                </p>
+                <ProfileEmptyState
+                  actionHref={isOwnProfile ? "/#threads" : undefined}
+                  actionLabel={isOwnProfile ? "Start Gossip" : undefined}
+                  body={
+                    isOwnProfile
+                      ? "Use Gossip for longer shop talk, questions, guest spots, and image-backed threads."
+                      : "Longer posts, questions, and community threads from this profile will appear here."
+                  }
+                  icon={MessageCircle}
+                  tips={["Shop talk", "Questions", "Threads"]}
+                  title="No Gossip yet"
+                />
               )}
             </div>
           </div>
@@ -1043,9 +1107,18 @@ export default async function ProfilePage({
                   </article>
                 ))
               ) : (
-                <p className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4 text-sm text-[#766d62]">
-                  No active gigs yet.
-                </p>
+                <ProfileEmptyState
+                  actionHref={isOwnProfile ? "/#gigs" : undefined}
+                  actionLabel={isOwnProfile ? "Post a Gig" : undefined}
+                  body={
+                    isOwnProfile
+                      ? "Post open chairs, guest spots, convention plans, apprenticeships, jobs, and event calls."
+                      : "Open jobs, guest spots, conventions, and event calls from this profile will appear here."
+                  }
+                  icon={BriefcaseBusiness}
+                  tips={["Guest spots", "Conventions", "Jobs"]}
+                  title="No active gigs yet"
+                />
               )}
             </div>
           </div>
@@ -1101,9 +1174,18 @@ export default async function ProfilePage({
                   </article>
                 ))
               ) : (
-                <p className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4 text-sm text-[#766d62]">
-                  No active listings yet.
-                </p>
+                <ProfileEmptyState
+                  actionHref={isOwnProfile ? "/#marketplace" : undefined}
+                  actionLabel={isOwnProfile ? "List Stuff" : undefined}
+                  body={
+                    isOwnProfile
+                      ? "List flash, supplies, studio gear, chair rentals, machines, furniture, or services."
+                      : "Marketplace listings from this profile will appear here when they have active Stuff."
+                  }
+                  icon={ShoppingBag}
+                  tips={["Flash", "Supplies", "Studio gear"]}
+                  title="No active listings yet"
+                />
               )}
             </div>
           </div>
