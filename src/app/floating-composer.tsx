@@ -1,7 +1,6 @@
 import { Search, Send } from "lucide-react";
 import {
   createFeedPost,
-  createGig,
   createMarketplaceListing,
   createThreadPost,
 } from "./actions";
@@ -175,9 +174,10 @@ export function FloatingComposer({
         ),
         gigs: (
           <form
-            action={createGig}
+            action="/api/gigs"
             className="space-y-3"
             encType="multipart/form-data"
+            method="post"
           >
             <input
               className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
