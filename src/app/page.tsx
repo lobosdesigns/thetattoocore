@@ -854,9 +854,11 @@ export default async function Home({
                             className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
                             maxLength={300}
                             maxWords={40}
+                            minTrimmedLength={1}
                             name="body"
                             placeholder="Add a short comment"
                             required
+                            validationMessage="Comment cannot be empty."
                           />
                           <PendingSubmitButton
                             aria-label="Post comment"
@@ -1028,9 +1030,11 @@ export default async function Home({
                               className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
                               maxCharacters={2000}
                               maxLength={2000}
+                              minTrimmedLength={1}
                               name="body"
                               placeholder="Reply to thread"
                               required
+                              validationMessage="Thread reply cannot be empty."
                             />
                             <PendingSubmitButton
                               aria-label="Post thread reply"

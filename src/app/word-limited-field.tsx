@@ -6,9 +6,11 @@ type SharedProps = {
   className: string;
   maxCharacters?: number;
   maxWords?: number;
+  minTrimmedLength?: number;
   name: string;
   placeholder: string;
   required?: boolean;
+  validationMessage?: string;
   wrapperClassName?: string;
 };
 
@@ -55,6 +57,16 @@ function trimToLimit(value: string, props: WordLimitedFieldProps) {
   return value;
 }
 
+function validationFor(value: string, props: WordLimitedFieldProps) {
+  const minLength = props.minTrimmedLength ?? 0;
+
+  if (minLength > 0 && value.trim().length < minLength) {
+    return props.validationMessage ?? `Enter at least ${minLength} characters.`;
+  }
+
+  return "";
+}
+
 export function WordLimitedField(props: WordLimitedFieldProps) {
   const [value, setValue] = useState("");
   const limit = getLimit(props);
@@ -66,7 +78,10 @@ export function WordLimitedField(props: WordLimitedFieldProps) {
   function onChange(
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) {
-    setValue(trimToLimit(event.target.value, props));
+    const nextValue = trimToLimit(event.target.value, props);
+
+    event.currentTarget.setCustomValidity(validationFor(nextValue, props));
+    setValue(nextValue);
   }
 
   const counter = (
@@ -89,12 +104,16 @@ export function WordLimitedField(props: WordLimitedFieldProps) {
       className,
       maxCharacters: _maxCharacters,
       maxWords: _maxWords,
+      minTrimmedLength: _minTrimmedLength,
+      validationMessage: _validationMessage,
       wrapperClassName,
       ...fieldProps
     } = props;
     void _as;
     void _maxCharacters;
     void _maxWords;
+    void _minTrimmedLength;
+    void _validationMessage;
 
     return (
       <div className={wrapperClassName}>
@@ -114,12 +133,16 @@ export function WordLimitedField(props: WordLimitedFieldProps) {
     className,
     maxCharacters: _maxCharacters,
     maxWords: _maxWords,
+    minTrimmedLength: _minTrimmedLength,
+    validationMessage: _validationMessage,
     wrapperClassName,
     ...fieldProps
   } = props;
   void _as;
   void _maxCharacters;
   void _maxWords;
+  void _minTrimmedLength;
+  void _validationMessage;
 
   return (
     <div className={wrapperClassName ?? "min-w-0 flex-1"}>

@@ -62,6 +62,7 @@ export function MediaInput({
     if (selected?.previewUrl) URL.revokeObjectURL(selected.previewUrl);
 
     if (!file) {
+      event.currentTarget.setCustomValidity("");
       setSelected(null);
       return;
     }
@@ -78,6 +79,8 @@ export function MediaInput({
                 maxBytes,
               )}.`
             : null;
+
+    event.currentTarget.setCustomValidity(error ?? "");
 
     setSelected({
       error,

@@ -65,9 +65,11 @@ export function FloatingComposer({
               className="min-h-28 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
               maxLength={360}
               maxWords={40}
+              minTrimmedLength={3}
               name="caption"
               placeholder="Short caption, 40 words max"
               required
+              validationMessage="Feed caption needs at least 3 characters."
             />
             <input
               className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
@@ -101,9 +103,11 @@ export function FloatingComposer({
               className="min-h-44 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
               maxCharacters={8000}
               maxLength={8000}
+              minTrimmedLength={3}
               name="body"
               placeholder="Start a thread"
               required
+              validationMessage="Gossip post needs at least 3 characters."
             />
             {visibilityControl}
             {sensitiveControls}
@@ -126,9 +130,11 @@ export function FloatingComposer({
               className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
               maxCharacters={120}
               maxLength={120}
+              minTrimmedLength={3}
               name="title"
               placeholder="Flash sheet, chair rental, supplies"
               required
+              validationMessage="Stuff title needs at least 3 characters."
               wrapperClassName="w-full"
             />
             <div className="grid grid-cols-2 gap-2">
@@ -190,9 +196,11 @@ export function FloatingComposer({
               className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
               maxCharacters={140}
               maxLength={140}
+              minTrimmedLength={3}
               name="title"
               placeholder="Guest spot, convention booth, artist wanted"
               required
+              validationMessage="Gig title needs at least 3 characters."
               wrapperClassName="w-full"
             />
             <select
@@ -273,9 +281,13 @@ export function FloatingComposer({
               <Search className="size-4 text-[#766d62]" />
               <input
                 className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none"
+                maxLength={30}
+                minLength={3}
                 name="username"
+                pattern="@?[a-zA-Z0-9_]{3,30}"
                 placeholder="username"
                 required
+                title="Use 3-30 letters, numbers, or underscores."
               />
             </div>
             <WordLimitedField
@@ -283,9 +295,11 @@ export function FloatingComposer({
               className="min-h-28 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
               maxCharacters={4000}
               maxLength={4000}
+              minTrimmedLength={1}
               name="body"
               placeholder="Message"
               required
+              validationMessage="Write a message before sending."
             />
             <PendingSubmitButton
               className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
