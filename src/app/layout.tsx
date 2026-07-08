@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   applicationName: siteName,
   description: siteDescription,
   icons: {
-    icon: "/icon.svg",
+    icon: "/icon.svg?v=ttc-shield",
   },
   metadataBase: new URL(siteUrl),
   openGraph: {
