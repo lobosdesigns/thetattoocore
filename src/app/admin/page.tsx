@@ -259,6 +259,45 @@ function canModerateReportedSubject(subjectType: string) {
   return reportModerationSubjectTypes.has(subjectType);
 }
 
+function reportReasonLabel(reason: string) {
+  const labels: Record<string, string> = {
+    "body-art nudity context": "Sensitive body-art context",
+    "harassment or hate": "Harassment, hate, or threats",
+    "illegal goods or services": "Illegal goods or services",
+    "minor safety concern": "Minor safety concern",
+    other: "Other policy concern",
+    "scam or spam": "Scam, spam, or impersonation",
+    "sexual content": "Sexual or pornographic content",
+    "unsafe practice": "Unsafe tattoo/body-art practice",
+  };
+
+  return labels[reason] ?? reason;
+}
+
+function reportReasonClass(reason: string) {
+  if (
+    reason === "minor safety concern" ||
+    reason === "sexual content" ||
+    reason === "illegal goods or services"
+  ) {
+    return "border-[#e5b8b8] bg-[#fff0f0] text-[#8a2828]";
+  }
+
+  if (reason === "unsafe practice" || reason === "harassment or hate") {
+    return "border-[#e5c58f] bg-[#fff7ec] text-[#7a4a08]";
+  }
+
+  return "border-[#d8d1c6] bg-[#f7f4ef] text-[#4f473f]";
+}
+
+function reportStatusClass(status: ReportItem["status"]) {
+  if (status === "open") return "border-[#e5c58f] bg-[#fff7ec] text-[#7a4a08]";
+  if (status === "reviewing") return "border-[#b7c6e8] bg-[#eef3ff] text-[#284f8a]";
+  if (status === "resolved") return "border-[#b9d7bd] bg-[#eef8ef] text-[#276231]";
+
+  return "border-[#d8d1c6] bg-[#f7f4ef] text-[#4f473f]";
+}
+
 function ReviewCard({ item }: { item: ReviewItem }) {
   return (
     <article className="rounded-md border border-[#e5ded4] bg-white p-4">
@@ -327,28 +366,41 @@ function ReportCard({ report }: { report: ReportItem }) {
     <article className="rounded-md border border-[#e5ded4] bg-white p-4">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-bold capitalize">
-            {report.reason}
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={`rounded-md border px-2 py-1 text-xs font-semibold ${reportReasonClass(
+                report.reason,
+              )}`}
+            >
+              {reportReasonLabel(report.reason)}
+            </span>
+            <span className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 py-1 text-xs font-semibold capitalize text-[#766d62]">
+              {report.subjectType.replace("_", " ")}
+            </span>
+          </div>
           <p className="mt-1 text-xs text-[#766d62]">
-            @{report.reporterUsername} - {timeAgo(report.createdAt)}
+            Reported by @{report.reporterUsername} - {timeAgo(report.createdAt)}
           </p>
         </div>
-        <span className="shrink-0 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] px-2 py-1 text-xs font-semibold capitalize">
+        <span
+          className={`shrink-0 rounded-md border px-2 py-1 text-xs font-semibold capitalize ${reportStatusClass(
+            report.status,
+          )}`}
+        >
           {report.status}
         </span>
       </div>
-      <p className="text-xs font-semibold uppercase text-[#766d62]">
-        {report.subjectType.replace("_", " ")}
-      </p>
       {report.subjectTitle || report.subjectPreview ? (
         <div className="mt-3 rounded-md border border-[#e5ded4] bg-[#f7f4ef] p-3">
+          <p className="text-xs font-semibold uppercase text-[#766d62]">
+            Reported item
+          </p>
           {report.subjectTitle ? (
-            <p className="text-sm font-semibold">{report.subjectTitle}</p>
+            <p className="mt-1 text-sm font-semibold">{report.subjectTitle}</p>
           ) : null}
           {report.subjectOwnerUsername ? (
             <p className="mt-1 text-xs text-[#766d62]">
-              @{report.subjectOwnerUsername}
+              Owner @{report.subjectOwnerUsername}
             </p>
           ) : null}
           {report.subjectPreview ? (
@@ -358,11 +410,23 @@ function ReportCard({ report }: { report: ReportItem }) {
           ) : null}
         </div>
       ) : null}
-      <p className="mt-1 break-all text-xs text-[#766d62]">
-        {report.subjectId}
-      </p>
+      <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#766d62]">
+        <span className="rounded-md bg-[#f7f4ef] px-2 py-1">
+          Report {shortId(report.id)}
+        </span>
+        <span className="rounded-md bg-[#f7f4ef] px-2 py-1">
+          Item {shortId(report.subjectId)}
+        </span>
+      </div>
       {report.details ? (
-        <p className="mt-3 text-sm leading-6 text-[#4f473f]">{report.details}</p>
+        <div className="mt-3 rounded-md border border-[#e5ded4] bg-[#fffdf9] p-3">
+          <p className="text-xs font-semibold uppercase text-[#766d62]">
+            Reporter details
+          </p>
+          <p className="mt-1 text-sm leading-6 text-[#4f473f]">
+            {report.details}
+          </p>
+        </div>
       ) : null}
       {canModerateReportedSubject(report.subjectType) ? (
         <form action={moderateContent} className="mt-4 space-y-2">
@@ -373,7 +437,7 @@ function ReportCard({ report }: { report: ReportItem }) {
             className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
             maxLength={500}
             name="note"
-            placeholder="Content moderation note"
+            placeholder="Content action note for audit log"
           />
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {[
@@ -400,7 +464,7 @@ function ReportCard({ report }: { report: ReportItem }) {
           className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
           maxLength={500}
           name="note"
-          placeholder="Report note"
+          placeholder="Report status note"
         />
         <div className="grid grid-cols-3 gap-2">
           {[
@@ -1417,6 +1481,10 @@ export default async function AdminPage({
                   <Flag className="size-5" />
                   <h2 className="text-lg font-bold">Report queue</h2>
                 </div>
+                <p className="mb-4 rounded-md border border-[#e5ded4] bg-white px-3 py-2 text-sm leading-6 text-[#4f473f]">
+                  Review red reports first, move valid reports into Reviewing,
+                  and keep notes specific enough for the moderation audit log.
+                </p>
                 {reports.length ? (
                   <div className="space-y-4">
                     <QueueGroup
