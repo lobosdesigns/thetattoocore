@@ -24,6 +24,22 @@ const SENSITIVE_REASONS = new Set([
   "piercing",
   "other",
 ]);
+const REPORT_SUBJECT_TYPES = new Set([
+  "profile",
+  "feed_post",
+  "thread_post",
+  "marketplace_listing",
+]);
+const REPORT_REASONS = new Set([
+  "body-art nudity context",
+  "sexual content",
+  "minor safety concern",
+  "harassment or hate",
+  "scam or spam",
+  "unsafe practice",
+  "illegal goods or services",
+  "other",
+]);
 
 type Claims = {
   sub: string;
@@ -31,6 +47,26 @@ type Claims = {
 
 function homeMessage(message: string) {
   return `/?message=${encodeURIComponent(message)}`;
+}
+
+function redirectWithMessage({
+  hash,
+  message,
+  path,
+}: {
+  hash?: string;
+  message: string;
+  path: string;
+}) {
+  const cleanPath =
+    path.startsWith("/") && !path.startsWith("//") && !path.includes("://")
+      ? path
+      : "/";
+  const cleanHash = hash?.replace(/[^a-z0-9_-]/gi, "");
+
+  return `${cleanPath}?message=${encodeURIComponent(message)}${
+    cleanHash ? `#${cleanHash}` : ""
+  }`;
 }
 
 function cleanText(value: FormDataEntryValue | null, maxLength: number) {
@@ -50,6 +86,12 @@ function cleanWords(value: FormDataEntryValue | null, maxWords: number) {
 
 function cleanId(value: FormDataEntryValue | null) {
   return String(value ?? "").trim();
+}
+
+function cleanReportReason(value: FormDataEntryValue | null) {
+  const reason = cleanText(value, 120);
+
+  return REPORT_REASONS.has(reason) ? reason : "other";
 }
 
 function cleanVisibility(
@@ -370,6 +412,47 @@ export async function createMarketplaceListing(formData: FormData) {
 
   revalidatePath("/");
   redirect(homeMessage("Marketplace listing published."));
+}
+
+export async function createContentReport(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const subjectType = cleanText(formData.get("subject_type"), 40);
+  const subjectId = cleanId(formData.get("subject_id"));
+  const reason = cleanReportReason(formData.get("reason"));
+  const details = cleanText(formData.get("details"), 500);
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/";
+  const returnHash = cleanText(formData.get("return_hash"), 80);
+
+  if (!REPORT_SUBJECT_TYPES.has(subjectType) || !subjectId) {
+    redirect(homeMessage("Choose something to report first."));
+  }
+
+  const { error } = await supabase.from("content_reports").insert({
+    details: details || null,
+    reason,
+    reporter_id: userId,
+    subject_id: subjectId,
+    subject_type: subjectType,
+  });
+
+  if (error) {
+    redirect(
+      redirectWithMessage({
+        hash: returnHash,
+        message: error.message || "Could not send report.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  revalidatePath("/admin");
+  redirect(
+    redirectWithMessage({
+      hash: returnHash,
+      message: "Report sent to moderators.",
+      path: returnPath,
+    }),
+  );
 }
 
 export async function togglePostLike(formData: FormData) {

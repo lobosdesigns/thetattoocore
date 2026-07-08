@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   BadgeCheck,
   Camera,
+  Flag,
   LinkIcon,
   MapPin,
   MessageCircle,
@@ -12,6 +13,7 @@ import {
   UserPlus,
   UserRoundMinus,
 } from "lucide-react";
+import { createContentReport } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
 import { followProfile, unfollowProfile } from "./actions";
 
@@ -146,6 +148,38 @@ function ContentLabels({
         </span>
       ))}
     </div>
+  );
+}
+
+function ProfileReportForm({
+  profileId,
+  username,
+}: {
+  profileId: string;
+  username: string;
+}) {
+  return (
+    <form action={createContentReport} className="flex items-center gap-2">
+      <input name="subject_id" type="hidden" value={profileId} />
+      <input name="subject_type" type="hidden" value="profile" />
+      <input name="return_path" type="hidden" value={`/u/${username}`} />
+      <select
+        aria-label="Report profile reason"
+        className="h-10 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+        name="reason"
+      >
+        <option value="scam or spam">Scam or spam</option>
+        <option value="harassment or hate">Harassment</option>
+        <option value="minor safety concern">Minor safety</option>
+        <option value="sexual content">Sexual content</option>
+        <option value="illegal goods or services">Illegal goods</option>
+        <option value="other">Other</option>
+      </select>
+      <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold">
+        <Flag className="size-4" />
+        Report
+      </button>
+    </form>
   );
 }
 
@@ -433,6 +467,12 @@ export default async function ProfilePage({
                     <Send className="size-4" />
                     Message
                   </Link>
+                ) : null}
+                {!isOwnProfile && claims?.sub ? (
+                  <ProfileReportForm
+                    profileId={profile.id}
+                    username={profile.username}
+                  />
                 ) : null}
               </div>
             </div>

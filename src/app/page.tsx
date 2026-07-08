@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   Bell,
+  Flag,
   Heart,
   Home as HomeIcon,
   ImageIcon,
@@ -13,6 +14,7 @@ import {
   UserRound,
 } from "lucide-react";
 import {
+  createContentReport,
   createPostComment,
   createThreadComment,
   togglePostLike,
@@ -225,6 +227,43 @@ function ContentLabels({
         </span>
       ))}
     </div>
+  );
+}
+
+function ReportForm({
+  returnHash,
+  subjectId,
+  subjectType,
+}: {
+  returnHash: "feed" | "threads" | "marketplace";
+  subjectId: string;
+  subjectType: "feed_post" | "thread_post" | "marketplace_listing";
+}) {
+  return (
+    <form action={createContentReport} className="flex items-center gap-2">
+      <input name="subject_id" type="hidden" value={subjectId} />
+      <input name="subject_type" type="hidden" value={subjectType} />
+      <input name="return_path" type="hidden" value="/" />
+      <input name="return_hash" type="hidden" value={returnHash} />
+      <select
+        aria-label="Report reason"
+        className="h-9 min-w-0 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+        name="reason"
+      >
+        <option value="body-art nudity context">Body-art nudity</option>
+        <option value="sexual content">Sexual content</option>
+        <option value="minor safety concern">Minor safety</option>
+        <option value="harassment or hate">Harassment</option>
+        <option value="scam or spam">Scam or spam</option>
+        <option value="unsafe practice">Unsafe practice</option>
+        <option value="illegal goods or services">Illegal goods</option>
+        <option value="other">Other</option>
+      </select>
+      <button className="flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs font-semibold">
+        <Flag className="size-3.5" />
+        Report
+      </button>
+    </form>
   );
 }
 
@@ -578,6 +617,13 @@ export default async function Home({
                         Share
                       </button>
                     </div>
+                    {isSignedIn ? (
+                      <ReportForm
+                        returnHash="feed"
+                        subjectId={post.id}
+                        subjectType="feed_post"
+                      />
+                    ) : null}
                     <p className="text-sm leading-6">{post.caption}</p>
                     {post.post_comments.length ? (
                       <div className="space-y-2 border-t border-[#e5ded4] pt-3">
@@ -730,6 +776,15 @@ export default async function Home({
                           {thread.thread_comments.length}
                         </button>
                       </div>
+                      {isSignedIn ? (
+                        <div className="mt-3">
+                          <ReportForm
+                            returnHash="threads"
+                            subjectId={thread.id}
+                            subjectType="thread_post"
+                          />
+                        </div>
+                      ) : null}
                       {thread.thread_comments.length ? (
                         <div className="mt-3 space-y-2">
                           {thread.thread_comments.slice(0, 2).map((comment) => (
@@ -826,6 +881,15 @@ export default async function Home({
                           listing.profiles?.display_name ||
                           "TheTattooCore"}
                       </p>
+                      {isSignedIn ? (
+                        <div className="mt-3">
+                          <ReportForm
+                            returnHash="marketplace"
+                            subjectId={listing.id}
+                            subjectType="marketplace_listing"
+                          />
+                        </div>
+                      ) : null}
                       <div className="mt-4">
                         {isSignedIn &&
                         listing.profiles?.username &&

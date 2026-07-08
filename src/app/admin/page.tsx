@@ -11,7 +11,7 @@ import {
   ShoppingBag,
   Users,
 } from "lucide-react";
-import { moderateContent } from "./actions";
+import { moderateContent, updateReportStatus } from "./actions";
 import { MailTestForm } from "./mail-test-form";
 import { createClient } from "@/lib/supabase/server";
 
@@ -33,6 +33,16 @@ type ReviewItem = {
   status: ModerationStatus;
   subjectType: "feed_post" | "thread_post" | "marketplace_listing";
   visibility: "public_preview" | "members" | "private";
+};
+type ReportItem = {
+  id: string;
+  createdAt: string;
+  details: string | null;
+  reason: string;
+  reporterUsername: string;
+  status: "open" | "reviewing" | "resolved" | "dismissed";
+  subjectId: string;
+  subjectType: string;
 };
 
 const adminTabs = [
@@ -129,6 +139,60 @@ function ReviewCard({ item }: { item: ReviewItem }) {
   );
 }
 
+function ReportCard({ report }: { report: ReportItem }) {
+  return (
+    <article className="rounded-md border border-[#e5ded4] bg-white p-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-bold capitalize">
+            {report.reason}
+          </p>
+          <p className="mt-1 text-xs text-[#766d62]">
+            @{report.reporterUsername} - {timeAgo(report.createdAt)}
+          </p>
+        </div>
+        <span className="shrink-0 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] px-2 py-1 text-xs font-semibold capitalize">
+          {report.status}
+        </span>
+      </div>
+      <p className="text-xs font-semibold uppercase text-[#766d62]">
+        {report.subjectType.replace("_", " ")}
+      </p>
+      <p className="mt-1 break-all text-xs text-[#766d62]">
+        {report.subjectId}
+      </p>
+      {report.details ? (
+        <p className="mt-3 text-sm leading-6 text-[#4f473f]">{report.details}</p>
+      ) : null}
+      <form action={updateReportStatus} className="mt-4 space-y-2">
+        <input name="report_id" type="hidden" value={report.id} />
+        <input
+          className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+          maxLength={500}
+          name="note"
+          placeholder="Report note"
+        />
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            ["reviewing", "Reviewing"],
+            ["resolved", "Resolve"],
+            ["dismissed", "Dismiss"],
+          ].map(([value, label]) => (
+            <button
+              className="h-10 rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 text-sm font-semibold hover:bg-[#f7f4ef]"
+              key={value}
+              name="status"
+              value={value}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </form>
+    </article>
+  );
+}
+
 export default async function AdminPage({
   searchParams,
 }: {
@@ -193,6 +257,7 @@ export default async function AdminPage({
     { count: openReports },
     { count: marketplaceQueue },
     { count: moderationActions },
+    { data: reportQueue },
     { data: feedReview },
     { data: threadReview },
     { data: listingReview },
@@ -210,6 +275,26 @@ export default async function AdminPage({
     supabase
       .from("moderation_actions")
       .select("*", { count: "exact", head: true }),
+    supabase
+      .from("content_reports")
+      .select(
+        "id, subject_type, subject_id, reason, details, status, created_at, profiles:profiles!content_reports_reporter_id_fkey(display_name, username)",
+      )
+      .in("status", ["open", "reviewing"])
+      .order("created_at", { ascending: false })
+      .limit(12)
+      .returns<
+        {
+          id: string;
+          subject_type: string;
+          subject_id: string;
+          reason: string;
+          details: string | null;
+          status: "open" | "reviewing" | "resolved" | "dismissed";
+          created_at: string;
+          profiles: { display_name: string; username: string } | null;
+        }[]
+      >(),
     supabase
       .from("feed_posts")
       .select(
@@ -296,6 +381,16 @@ export default async function AdminPage({
     ["Listings", marketplaceQueue, "Draft and active"],
     ["Actions", moderationActions, "Moderation log"],
   ];
+  const reports: ReportItem[] = (reportQueue ?? []).map((report) => ({
+    createdAt: report.created_at,
+    details: report.details,
+    id: report.id,
+    reason: report.reason,
+    reporterUsername: report.profiles?.username ?? "member",
+    status: report.status,
+    subjectId: report.subject_id,
+    subjectType: report.subject_type,
+  }));
   const reviewItems: ReviewItem[] = [
     ...(feedReview ?? []).map((post) => ({
       authorName: post.profiles?.display_name ?? "Member",
@@ -456,11 +551,17 @@ export default async function AdminPage({
                   <Flag className="size-5" />
                   <h2 className="text-lg font-bold">Report queue</h2>
                 </div>
-                <div className="rounded-md border border-[#e5ded4] bg-white p-4 text-sm text-[#4f473f]">
-                  Open reports will appear here once reporting controls are
-                  added to posts, profiles, marketplace listings, messages, and
-                  threads.
-                </div>
+                {reports.length ? (
+                  <div className="grid gap-3">
+                    {reports.map((report) => (
+                      <ReportCard key={report.id} report={report} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-md border border-[#e5ded4] bg-white p-4 text-sm text-[#4f473f]">
+                    No open reports are waiting right now.
+                  </div>
+                )}
               </div>
 
               <div
