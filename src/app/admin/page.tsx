@@ -86,13 +86,13 @@ type AdminUser = {
 type AuditItem = {
   actorUsername: string;
   createdAt: string;
+  context: string | null;
   id: string;
   kind: "audit" | "moderation";
   label: string;
   note: string | null;
-  subjectType: string | null;
-  targetType: string | null;
 };
+type ActivityMetadata = Record<string, unknown>;
 
 const adminTabs = [
   [Activity, "Overview"],
@@ -144,6 +144,83 @@ function userStatus(user: Pick<AdminUser, "bannedAt" | "suspendedAt">) {
 
 function activityLabel(value: string) {
   return value.replaceAll("_", " ");
+}
+
+function activitySubject(value: string | null) {
+  return value ? activityLabel(value) : null;
+}
+
+function shortId(value: string | null) {
+  return value ? value.slice(0, 8) : null;
+}
+
+function textMetadata(metadata: ActivityMetadata | null, key: string) {
+  const value = metadata?.[key];
+  return typeof value === "string" ? value : null;
+}
+
+function moderationActivityLabel(
+  actionType: string,
+  metadata: ActivityMetadata | null,
+) {
+  const moderationStatus = textMetadata(metadata, "moderation_status");
+  const reportStatus = textMetadata(metadata, "report_status");
+
+  if (reportStatus === "resolved" && moderationStatus) {
+    if (moderationStatus === "hidden") return "Resolved report and hid content";
+    if (moderationStatus === "removed") {
+      return "Resolved report and removed content";
+    }
+    if (moderationStatus === "active") {
+      return "Resolved report and restored content";
+    }
+  }
+
+  if (actionType === "hide_content") return "Hid content";
+  if (actionType === "remove_content") return "Removed content";
+  if (actionType === "restore_content") return "Restored content";
+  if (actionType === "suspend_user") return "Suspended user";
+  if (actionType === "ban_user") return "Banned user";
+  if (actionType === "resolve_report") return "Resolved report";
+  if (actionType === "dismiss_report") return "Dismissed report";
+
+  return activityLabel(actionType);
+}
+
+function auditActivityLabel(eventType: string, metadata: ActivityMetadata | null) {
+  if (eventType === "profile_role_changed") {
+    const fromRole = textMetadata(metadata, "from_role");
+    const toRole = textMetadata(metadata, "to_role");
+
+    return fromRole && toRole
+      ? `Changed role from ${fromRole} to ${toRole}`
+      : "Changed user role";
+  }
+
+  if (eventType === "license_approved") return "Approved artist verification";
+  if (eventType === "license_rejected") return "Rejected artist verification";
+
+  return activityLabel(eventType);
+}
+
+function activityContext({
+  reportId,
+  subjectId,
+  subjectType,
+  targetType,
+}: {
+  reportId?: string | null;
+  subjectId?: string | null;
+  subjectType?: string | null;
+  targetType?: string | null;
+}) {
+  const parts = [
+    activitySubject(subjectType ?? targetType ?? null),
+    reportId ? `report ${shortId(reportId)}` : null,
+    subjectId ? `item ${shortId(subjectId)}` : null,
+  ].filter(Boolean);
+
+  return parts.length ? parts.join(" - ") : null;
 }
 
 function reportSubjectKey(type: string, id: string) {
@@ -675,7 +752,7 @@ export default async function AdminPage({
     supabase
       .from("admin_audit_logs")
       .select(
-        "id, event_type, target_type, summary, created_at, profiles:profiles!admin_audit_logs_actor_id_fkey(display_name, username)",
+        "id, event_type, target_type, target_id, summary, metadata, created_at, profiles:profiles!admin_audit_logs_actor_id_fkey(display_name, username)",
       )
       .order("created_at", { ascending: false })
       .limit(8)
@@ -684,15 +761,17 @@ export default async function AdminPage({
           created_at: string;
           event_type: string;
           id: string;
+          metadata: ActivityMetadata | null;
           profiles: { display_name: string; username: string } | null;
           summary: string | null;
+          target_id: string | null;
           target_type: string | null;
         }[]
       >(),
     supabase
       .from("moderation_actions")
       .select(
-        "id, action_type, subject_type, note, created_at, profiles:profiles!moderation_actions_actor_id_fkey(display_name, username)",
+        "id, action_type, subject_type, subject_id, report_id, note, metadata, created_at, profiles:profiles!moderation_actions_actor_id_fkey(display_name, username)",
       )
       .order("created_at", { ascending: false })
       .limit(8)
@@ -701,8 +780,11 @@ export default async function AdminPage({
           action_type: string;
           created_at: string;
           id: string;
+          metadata: ActivityMetadata | null;
           note: string | null;
           profiles: { display_name: string; username: string } | null;
+          report_id: string | null;
+          subject_id: string | null;
           subject_type: string | null;
         }[]
       >(),
@@ -730,23 +812,28 @@ export default async function AdminPage({
   const activityItems: AuditItem[] = [
     ...(adminAuditLogs ?? []).map((item) => ({
       actorUsername: item.profiles?.username ?? "admin",
+      context: activityContext({
+        subjectId: item.target_id,
+        targetType: item.target_type,
+      }),
       createdAt: item.created_at,
       id: item.id,
       kind: "audit" as const,
-      label: activityLabel(item.event_type),
+      label: auditActivityLabel(item.event_type, item.metadata),
       note: item.summary,
-      subjectType: null,
-      targetType: item.target_type,
     })),
     ...(moderationLog ?? []).map((item) => ({
       actorUsername: item.profiles?.username ?? "moderator",
+      context: activityContext({
+        reportId: item.report_id,
+        subjectId: item.subject_id,
+        subjectType: item.subject_type,
+      }),
       createdAt: item.created_at,
       id: item.id,
       kind: "moderation" as const,
-      label: activityLabel(item.action_type),
+      label: moderationActivityLabel(item.action_type, item.metadata),
       note: item.note,
-      subjectType: item.subject_type,
-      targetType: null,
     })),
   ]
     .sort(
@@ -1355,12 +1442,9 @@ export default async function AdminPage({
                             {item.kind}
                           </span>
                         </div>
-                        {item.subjectType || item.targetType ? (
+                        {item.context ? (
                           <p className="mt-2 text-xs capitalize text-[#766d62]">
-                            {(item.subjectType ?? item.targetType)?.replaceAll(
-                              "_",
-                              " ",
-                            )}
+                            {item.context}
                           </p>
                         ) : null}
                         {item.note ? (
