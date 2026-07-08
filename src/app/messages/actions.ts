@@ -25,6 +25,21 @@ function cleanText(value: FormDataEntryValue | null, maxLength: number) {
     .slice(0, maxLength);
 }
 
+function cleanSourceType(value: FormDataEntryValue | null) {
+  const text = cleanText(value, 40);
+
+  if (text === "marketplace_listing" || text === "gig") return text;
+
+  return null;
+}
+
+function sourceLabel(sourceType: string | null) {
+  if (sourceType === "marketplace_listing") return "Stuff";
+  if (sourceType === "gig") return "Gigs";
+
+  return "DM";
+}
+
 async function requireProfile() {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -91,6 +106,9 @@ export async function startConversation(formData: FormData) {
     .replace(/^@/, "")
     .toLowerCase();
   const body = cleanText(formData.get("body"), 4000);
+  const sourceId = cleanText(formData.get("source_id"), 80);
+  const sourceTitle = cleanText(formData.get("source_title"), 120);
+  const sourceType = cleanSourceType(formData.get("source_type"));
 
   if (!/^[a-z0-9_]{3,30}$/.test(username)) {
     redirect(messagesPath("Enter a valid username."));
@@ -170,13 +188,16 @@ export async function startConversation(formData: FormData) {
     body: body.slice(0, 160),
     href: `/messages?c=${conversationId}`,
     recipient_id: targetProfile.id,
-    subject_id: conversationId,
-    subject_type: "conversation",
-    title: `New message from ${senderProfile?.display_name ?? "a member"}`,
+    subject_id: sourceId || conversationId,
+    subject_type: sourceType ?? "conversation",
+    title: `${sourceLabel(sourceType)} message from ${
+      senderProfile?.display_name ?? "a member"
+    }${sourceTitle ? ` about ${sourceTitle}` : ""}`,
     type: "message",
   });
 
   revalidatePath("/messages");
+  revalidatePath("/notifications");
   redirect(messagesPath("Message sent.", conversationId));
 }
 
@@ -232,5 +253,6 @@ export async function sendMessage(formData: FormData) {
   }
 
   revalidatePath("/messages");
+  revalidatePath("/notifications");
   redirect(messagesPath(undefined, conversationId));
 }

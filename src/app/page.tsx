@@ -1096,6 +1096,21 @@ export default async function Home({
                               type="hidden"
                               value={listingMessage(listing)}
                             />
+                            <input
+                              name="source_id"
+                              type="hidden"
+                              value={listing.id}
+                            />
+                            <input
+                              name="source_title"
+                              type="hidden"
+                              value={listing.title}
+                            />
+                            <input
+                              name="source_type"
+                              type="hidden"
+                              value="marketplace_listing"
+                            />
                             <button className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
                               <Send className="size-4" />
                               DM seller
@@ -1242,6 +1257,21 @@ export default async function Home({
                               name="body"
                               type="hidden"
                               value={`Hi, I am interested in your gig: ${gig.title}`}
+                            />
+                            <input
+                              name="source_id"
+                              type="hidden"
+                              value={gig.id}
+                            />
+                            <input
+                              name="source_title"
+                              type="hidden"
+                              value={gig.title}
+                            />
+                            <input
+                              name="source_type"
+                              type="hidden"
+                              value="gig"
                             />
                             <button className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
                               <Send className="size-4" />

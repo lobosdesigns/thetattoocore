@@ -63,8 +63,11 @@ function notificationIcon(type: Notification["type"]) {
 function subjectLabel(type: string) {
   if (type === "feed_post") return "4U";
   if (type === "thread_post") return "Gossip";
+  if (type === "marketplace_listing") return "Stuff";
+  if (type === "gig") return "Gigs";
   if (type === "profile") return "Profile";
   if (type === "message") return "DM";
+  if (type === "conversation") return "DM";
 
   return type.replaceAll("_", " ");
 }
