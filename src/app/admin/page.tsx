@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 import {
   Activity,
   BriefcaseBusiness,
@@ -419,6 +420,36 @@ function ReportCard({ report }: { report: ReportItem }) {
         </div>
       </form>
     </article>
+  );
+}
+
+function QueueGroup({
+  children,
+  count,
+  emptyText,
+  title,
+}: {
+  children: ReactNode;
+  count: number;
+  emptyText: string;
+  title: string;
+}) {
+  return (
+    <section className="rounded-md border border-[#e5ded4] bg-[#fffdf9] p-3">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h3 className="text-sm font-bold">{title}</h3>
+        <span className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] px-2 py-1 text-xs font-semibold text-[#4f473f]">
+          {count}
+        </span>
+      </div>
+      {count ? (
+        <div className="grid gap-3">{children}</div>
+      ) : (
+        <p className="rounded-md border border-[#e5ded4] bg-white p-3 text-sm text-[#4f473f]">
+          {emptyText}
+        </p>
+      )}
+    </section>
   );
 }
 
@@ -915,6 +946,12 @@ export default async function AdminPage({
       storageBucket: request.storage_bucket,
     }),
   );
+  const pendingLicenseRequests = licenseRequests.filter(
+    (request) => request.status === "pending",
+  );
+  const rejectedLicenseRequests = licenseRequests.filter(
+    (request) => request.status === "rejected",
+  );
   const reportSubjectPreviews = new Map<string, ReportSubjectPreview>();
   const reportSubjectIds = (type: string) =>
     (reportQueue ?? [])
@@ -1078,6 +1115,10 @@ export default async function AdminPage({
       };
     })(),
   }));
+  const openReportItems = reports.filter((report) => report.status === "open");
+  const reviewingReportItems = reports.filter(
+    (report) => report.status === "reviewing",
+  );
   const reviewItems: ReviewItem[] = [
     ...(feedReview ?? []).map((post) => ({
       authorName: post.profiles?.display_name ?? "Member",
@@ -1334,13 +1375,31 @@ export default async function AdminPage({
                   </h2>
                 </div>
                 {licenseRequests.length ? (
-                  <div className="grid gap-3">
-                    {licenseRequests.map((request) => (
-                      <LicenseRequestCard
-                        key={request.id}
-                        request={request}
-                      />
-                    ))}
+                  <div className="space-y-4">
+                    <QueueGroup
+                      count={pendingLicenseRequests.length}
+                      emptyText="No pending artist or studio submissions."
+                      title="Pending approval"
+                    >
+                      {pendingLicenseRequests.map((request) => (
+                        <LicenseRequestCard
+                          key={request.id}
+                          request={request}
+                        />
+                      ))}
+                    </QueueGroup>
+                    <QueueGroup
+                      count={rejectedLicenseRequests.length}
+                      emptyText="No recently rejected submissions."
+                      title="Recently rejected"
+                    >
+                      {rejectedLicenseRequests.map((request) => (
+                        <LicenseRequestCard
+                          key={request.id}
+                          request={request}
+                        />
+                      ))}
+                    </QueueGroup>
                   </div>
                 ) : (
                   <div className="rounded-md border border-[#e5ded4] bg-white p-4 text-sm text-[#4f473f]">
@@ -1359,10 +1418,25 @@ export default async function AdminPage({
                   <h2 className="text-lg font-bold">Report queue</h2>
                 </div>
                 {reports.length ? (
-                  <div className="grid gap-3">
-                    {reports.map((report) => (
-                      <ReportCard key={report.id} report={report} />
-                    ))}
+                  <div className="space-y-4">
+                    <QueueGroup
+                      count={openReportItems.length}
+                      emptyText="No newly opened reports."
+                      title="Open reports"
+                    >
+                      {openReportItems.map((report) => (
+                        <ReportCard key={report.id} report={report} />
+                      ))}
+                    </QueueGroup>
+                    <QueueGroup
+                      count={reviewingReportItems.length}
+                      emptyText="No reports are currently in review."
+                      title="In review"
+                    >
+                      {reviewingReportItems.map((report) => (
+                        <ReportCard key={report.id} report={report} />
+                      ))}
+                    </QueueGroup>
                   </div>
                 ) : (
                   <div className="rounded-md border border-[#e5ded4] bg-white p-4 text-sm text-[#4f473f]">
