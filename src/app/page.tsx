@@ -488,6 +488,34 @@ function AdultTermsGate({ returnHash = "feed" }: { returnHash?: string }) {
   );
 }
 
+function PublicVisitorGate({ lockedCount }: { lockedCount: number }) {
+  return (
+    <section className="border-b border-[#d8d1c6] bg-[#fffdf9] px-4 py-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-bold">Public preview</p>
+          <p className="mt-1 text-sm leading-5 text-[#4f473f]">
+            Sign in to post, reply, DM, follow creators, and view member-only
+            or 18+ body-art content.
+          </p>
+          {lockedCount ? (
+            <p className="mt-2 text-xs font-semibold text-[#766d62]">
+              {lockedCount} member or 18+ item{lockedCount === 1 ? "" : "s"} hidden.
+            </p>
+          ) : null}
+        </div>
+        <Link
+          className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+          href="/login"
+        >
+          <LogIn className="size-4" />
+          Sign in
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 export default async function Home({
   searchParams,
 }: {
@@ -597,6 +625,16 @@ export default async function Home({
     canRenderContent(listing, viewer),
   );
   const visibleGigs = (gigs ?? []).filter((gig) => canRenderContent(gig, viewer));
+  const lockedPublicItemCount = [
+    ...(feedPosts ?? []),
+    ...(threadPosts ?? []),
+    ...(listings ?? []),
+    ...(gigs ?? []),
+  ].filter(
+    (item) =>
+      item.visibility !== "private" &&
+      !canRenderContent(item, viewer),
+  ).length;
   const canCreate = Boolean(currentProfile);
   const adminRole = currentProfile?.role;
   const profileHref = currentProfile ? `/u/${currentProfile.username}` : "/account";
@@ -690,6 +728,10 @@ export default async function Home({
             >
               {params.message}
             </p>
+          ) : null}
+
+          {!isSignedIn ? (
+            <PublicVisitorGate lockedCount={lockedPublicItemCount} />
           ) : null}
 
           {isSignedIn && !viewer.isAdultConfirmed ? <AdultTermsGate /> : null}
