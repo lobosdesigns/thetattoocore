@@ -2,6 +2,12 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { login, signup } from "./actions";
 
+const setupSteps = [
+  ["1", "Confirm email", "New accounts get an email link before login."],
+  ["2", "Save profile", "Choose your username, account type, country, and 18+ confirmation."],
+  ["3", "Post with +", "Use the bottom-right plus button in 4U, Gossip, Stuff, or Gigs."],
+] as const;
+
 export const metadata: Metadata = {
   robots: {
     follow: false,
@@ -19,16 +25,48 @@ export default async function LoginPage({
 
   return (
     <main className="min-h-screen bg-[#f7f4ef] px-4 py-10 text-[#171412]">
-      <section className="mx-auto w-full max-w-md">
+      <section className="mx-auto w-full max-w-5xl">
         <Link className="mb-8 block text-sm font-semibold" href="/">
           TheTattooCore
         </Link>
 
+        <div className="grid gap-4 lg:grid-cols-[1fr_26rem]">
+          <section className="rounded-lg border border-[#d8d1c6] bg-[#171412] p-5 text-white">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/60">
+              The heart of the tattoo community
+            </p>
+            <h1 className="mt-3 text-3xl font-bold">Join The Tattoo Core</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-white/75">
+              Find artists, share work, start Gossip, list Stuff, post Gigs,
+              and DM other members. The community is 18+ because tattoo,
+              piercing, and body-art documentation can include adult placement
+              context without being pornographic.
+            </p>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              {setupSteps.map(([number, title, body]) => (
+                <div
+                  className="rounded-md border border-white/15 bg-white/5 p-3"
+                  key={number}
+                >
+                  <span className="inline-flex size-7 items-center justify-center rounded-md bg-white text-sm font-bold text-[#171412]">
+                    {number}
+                  </span>
+                  <h2 className="mt-3 text-sm font-bold">{title}</h2>
+                  <p className="mt-1 text-xs leading-5 text-white/70">
+                    {body}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+
         <div className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold">Sign in</h1>
+            <h2 className="text-2xl font-bold">Sign in or sign up</h2>
             <p className="mt-1 text-sm text-[#766d62]">
-              Create your artist or enthusiast profile.
+              Use email and password. New accounts confirm email first, then
+              land on profile setup.
             </p>
           </div>
 
@@ -77,8 +115,14 @@ export default async function LoginPage({
                 className="h-11 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
                 formAction={signup}
               >
-                Sign up
+                Create account
               </button>
+            </div>
+
+            <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3 text-xs leading-5 text-[#4f473f]">
+              Check inbox and junk after creating an account. After confirming
+              your email, save your profile before posting, commenting, listing
+              Stuff, adding Gigs, or sending DMs.
             </div>
 
             <p className="text-xs leading-5 text-[#766d62]">
@@ -100,6 +144,7 @@ export default async function LoginPage({
               Forgot password?
             </Link>
           </form>
+        </div>
         </div>
       </section>
     </main>
