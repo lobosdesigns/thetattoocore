@@ -24,18 +24,18 @@ const modes: Record<
 > = {
   feed: {
     icon: Camera,
-    label: "Feed",
-    title: "Feed post",
+    label: "4U",
+    title: "4U post",
   },
   threads: {
     icon: MessageCircle,
-    label: "Threads",
-    title: "Thread",
+    label: "Gossip",
+    title: "Gossip",
   },
   marketplace: {
     icon: ShoppingBag,
-    label: "Market",
-    title: "Listing",
+    label: "Stuff",
+    title: "Stuff listing",
   },
   gigs: {
     icon: BriefcaseBusiness,
@@ -44,8 +44,8 @@ const modes: Record<
   },
   messages: {
     icon: Send,
-    label: "Message",
-    title: "New message",
+    label: "DM",
+    title: "New DM",
   },
 };
 

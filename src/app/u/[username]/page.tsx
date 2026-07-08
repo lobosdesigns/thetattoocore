@@ -605,7 +605,7 @@ export default async function ProfilePage({
               {isPrivateLocked ? (
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-[#766d62]">
                   This profile is private. Follow the profile to see posts,
-                  gigs, marketplace listings, and profile details.
+                  gigs, stuff listings, and profile details.
                 </p>
               ) : null}
               {!isPrivateLocked ? (
@@ -642,7 +642,7 @@ export default async function ProfilePage({
               ) : null}
               {!isPrivateLocked ? (
               <div className="mt-5 grid max-w-md grid-cols-4 gap-4">
-                <ProfileStat label="posts" value={visiblePosts.length} />
+                <ProfileStat label="4U" value={visiblePosts.length} />
                 <ProfileStat label="gigs" value={visibleGigs.length} />
                 <ProfileStat label="followers" value={followerCount ?? 0} />
                 <ProfileStat label="following" value={followingCount ?? 0} />
@@ -702,7 +702,7 @@ export default async function ProfilePage({
                     href="/messages"
                   >
                     <Send className="size-4" />
-                    Message
+                    DM
                   </Link>
                 ) : null}
                 {!isOwnProfile && claims?.sub ? (
@@ -791,7 +791,7 @@ export default async function ProfilePage({
         <section className="border-b border-[#e5ded4] px-4 py-6">
           <div className="mb-4 flex items-center gap-2">
             <Camera className="size-5" />
-            <h2 className="text-lg font-bold">Posts</h2>
+            <h2 className="text-lg font-bold">4U</h2>
           </div>
           {visiblePosts.length ? (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -801,7 +801,7 @@ export default async function ProfilePage({
             </div>
           ) : (
             <p className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4 text-sm text-[#766d62]">
-              No feed posts yet.
+              No 4U posts yet.
             </p>
           )}
         </section>
@@ -810,7 +810,7 @@ export default async function ProfilePage({
           <div>
             <div className="mb-4 flex items-center gap-2">
               <MessageCircle className="size-5" />
-              <h2 className="text-lg font-bold">Threads</h2>
+              <h2 className="text-lg font-bold">Gossip</h2>
             </div>
             <div className="space-y-3">
               {visibleThreads.length ? (
@@ -833,7 +833,7 @@ export default async function ProfilePage({
                 ))
               ) : (
                 <p className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4 text-sm text-[#766d62]">
-                  No threads yet.
+                  No gossip yet.
                 </p>
               )}
             </div>
@@ -926,7 +926,7 @@ export default async function ProfilePage({
           <div>
             <div className="mb-4 flex items-center gap-2">
               <ShoppingBag className="size-5" />
-              <h2 className="text-lg font-bold">Marketplace</h2>
+              <h2 className="text-lg font-bold">Stuff</h2>
             </div>
             <div className="space-y-3">
               {visibleListings.length ? (

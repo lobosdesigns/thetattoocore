@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     follow: false,
     index: false,
   },
-  title: "Messages",
+  title: "DM",
 };
 
 type Claims = {
@@ -90,7 +90,7 @@ export default async function MessagesPage({
     return (
       <main className="min-h-screen bg-[#f5f2eb] px-4 py-8 text-[#171412]">
         <section className="mx-auto max-w-xl rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-5">
-          <h1 className="text-xl font-bold">Messages</h1>
+          <h1 className="text-xl font-bold">DM</h1>
           <p className="mt-2 text-sm text-[#766d62]">
             Sign in to start conversations with artists, studios, and collectors.
           </p>
@@ -226,7 +226,7 @@ export default async function MessagesPage({
                 <ArrowLeft className="size-5" />
               </Link>
               <div className="min-w-0 flex-1">
-                <h1 className="text-xl font-bold">Messages</h1>
+                <h1 className="text-xl font-bold">DM</h1>
                 <p className="truncate text-xs text-[#766d62]">
                   @{currentProfile.username}
                 </p>
@@ -302,7 +302,7 @@ export default async function MessagesPage({
                             : ""}
                         </p>
                         <p className="mt-1 truncate text-sm text-[#4f473f]">
-                          {conversation.latestMessage?.body ?? "No messages yet."}
+                          {conversation.latestMessage?.body ?? "No DMs yet."}
                         </p>
                       </div>
                     </div>
@@ -387,7 +387,7 @@ export default async function MessagesPage({
             <div className="flex flex-1 items-center justify-center px-4">
               <div className="max-w-sm text-center">
                 <MessageCircle className="mx-auto mb-3 size-10 text-[#766d62]" />
-                <h2 className="text-lg font-bold">Your messages</h2>
+                <h2 className="text-lg font-bold">Your DMs</h2>
                 <p className="mt-2 text-sm leading-6 text-[#766d62]">
                   Start a conversation from the inbox panel to trade booking
                   details, flash info, guest spots, and marketplace questions.

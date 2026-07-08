@@ -390,7 +390,7 @@ export default async function SearchPage({
           <p className="mt-1 text-sm text-[#766d62]">
             {hasSearch
               ? `${total} result${total === 1 ? "" : "s"} found`
-              : "Find artists, styles, threads, listings, and gigs."}
+              : "Find artists, styles, gossip, stuff, and gigs."}
           </p>
           <form
             action="/search"
@@ -424,9 +424,9 @@ export default async function SearchPage({
             {[
               ["all", "All"],
               ["profiles", "Profiles"],
-              ["feed", "Feed"],
-              ["threads", "Threads"],
-              ["marketplace", "Marketplace"],
+              ["feed", "4U"],
+              ["threads", "Gossip"],
+              ["marketplace", "Stuff"],
               ["gigs", "Gigs"],
             ].map(([value, label]) => (
               <Link
@@ -483,7 +483,7 @@ export default async function SearchPage({
             ) : null}
 
             {runSection(type, "feed") ? (
-            <SearchSection count={feedPosts?.length ?? 0} icon={Camera} title="Feed">
+            <SearchSection count={feedPosts?.length ?? 0} icon={Camera} title="4U">
               {feedPosts?.length ? (
                 <div className="space-y-3">
                   {feedPosts.map((post) => (
@@ -499,19 +499,19 @@ export default async function SearchPage({
                         <VerifiedBadge profile={post.profiles} />
                       </div>
                       <p className="mt-1 line-clamp-2 text-sm leading-6 text-[#4f473f]">
-                        {post.caption || post.style_tags.join(", ") || "Feed post"}
+                        {post.caption || post.style_tags.join(", ") || "4U post"}
                       </p>
                     </Link>
                   ))}
                 </div>
               ) : (
-                <EmptySection label="feed posts" />
+                <EmptySection label="4U posts" />
               )}
             </SearchSection>
             ) : null}
 
             {runSection(type, "threads") ? (
-            <SearchSection count={threads?.length ?? 0} icon={MessageCircle} title="Threads">
+            <SearchSection count={threads?.length ?? 0} icon={MessageCircle} title="Gossip">
               {threads?.length ? (
                 <div className="space-y-3">
                   {threads.map((thread) => (
@@ -533,13 +533,13 @@ export default async function SearchPage({
                   ))}
                 </div>
               ) : (
-                <EmptySection label="threads" />
+                <EmptySection label="gossip" />
               )}
             </SearchSection>
             ) : null}
 
             {runSection(type, "marketplace") ? (
-            <SearchSection count={listings?.length ?? 0} icon={ShoppingBag} title="Marketplace">
+            <SearchSection count={listings?.length ?? 0} icon={ShoppingBag} title="Stuff">
               {listings?.length ? (
                 <div className="grid gap-3 sm:grid-cols-2">
                   {listings.map((listing) => (
@@ -560,7 +560,7 @@ export default async function SearchPage({
                   ))}
                 </div>
               ) : (
-                <EmptySection label="marketplace listings" />
+                <EmptySection label="stuff" />
               )}
             </SearchSection>
             ) : null}

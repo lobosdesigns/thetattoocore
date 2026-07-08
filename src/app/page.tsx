@@ -584,11 +584,11 @@ export default async function Home({
 
               <nav className="space-y-1">
                 {[
-                  [HomeIcon, "Feed", "#feed"],
-                  [MessageCircle, "Threads", "#threads"],
-                  [ShoppingBag, "Marketplace", "#marketplace"],
+                  [HomeIcon, "4U", "#feed"],
+                  [MessageCircle, "Gossip", "#threads"],
+                  [ShoppingBag, "Stuff", "#marketplace"],
                   [BriefcaseBusiness, "Gigs", "#gigs"],
-                  [Send, "Messages", "/messages"],
+                  [Send, "DM", "/messages"],
                   [UserRound, "Profile", profileHref],
                 ].map(([Icon, label, href]) => (
                   <Link
@@ -654,11 +654,11 @@ export default async function Home({
 
           <div className="flex gap-2 overflow-x-auto border-b border-[#e5ded4] px-4 py-3">
             {[
-              ["Feed", "#feed"],
-              ["Threads", "#threads"],
-              ["Marketplace", "#marketplace"],
+              ["4U", "#feed"],
+              ["Gossip", "#threads"],
+              ["Stuff", "#marketplace"],
               ["Gigs", "#gigs"],
-              ["Messages", "/messages"],
+              ["DM", "/messages"],
             ].map(([tab, href], index) => (
               <Link
                 className={`flex h-9 shrink-0 items-center rounded-md border border-[#d8d1c6] px-4 text-sm font-medium ${
@@ -863,7 +863,7 @@ export default async function Home({
           >
             <div className="mb-4 flex items-center gap-2">
               <Sparkles className="size-5" />
-              <h2 className="text-lg font-bold">Threads</h2>
+              <h2 className="text-lg font-bold">Gossip</h2>
             </div>
             <div className="space-y-3">
               {visibleThreadPosts.length
@@ -996,7 +996,7 @@ export default async function Home({
           >
             <div className="mb-4 flex items-center gap-2">
               <ShoppingBag className="size-5" />
-              <h2 className="text-lg font-bold">Marketplace</h2>
+              <h2 className="text-lg font-bold">Stuff</h2>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {visibleListings.length
@@ -1062,7 +1062,7 @@ export default async function Home({
                             />
                             <button className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
                               <Send className="size-4" />
-                              Message seller
+                              DM seller
                             </button>
                           </form>
                         ) : isSignedIn ? (
@@ -1070,7 +1070,7 @@ export default async function Home({
                             className="flex h-10 w-full items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
                             href="/messages"
                           >
-                            Open messages
+                            Open DM
                           </Link>
                         ) : (
                           <Link
@@ -1209,7 +1209,7 @@ export default async function Home({
                             />
                             <button className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
                               <Send className="size-4" />
-                              Message poster
+                              DM poster
                             </button>
                           </form>
                         ) : (
@@ -1217,7 +1217,7 @@ export default async function Home({
                             className="flex h-10 w-full items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
                             href={isSignedIn ? "/messages" : "/login"}
                           >
-                            {isSignedIn ? "Open messages" : "Sign in to respond"}
+                            {isSignedIn ? "Open DM" : "Sign in to respond"}
                           </Link>
                         )}
                       </div>
@@ -1251,17 +1251,17 @@ export default async function Home({
           >
             <div className="mb-4 flex items-center gap-2">
               <Send className="size-5" />
-              <h2 className="text-lg font-bold">Messages</h2>
+              <h2 className="text-lg font-bold">DM</h2>
             </div>
             <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4 text-sm leading-6 text-[#4f473f]">
-              Direct messages are live. Start conversations, view your inbox,
+              DMs are live. Start conversations, view your inbox,
               and reply from the dedicated messenger.
               <Link
                 className="mt-3 flex h-10 w-fit items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
                 href="/messages"
               >
                 <Send className="size-4" />
-                Open messages
+                Open DM
               </Link>
             </div>
           </section>
@@ -1284,7 +1284,7 @@ export default async function Home({
           <section className="mb-6">
             <div className="mb-3 flex items-center gap-2">
               <Sparkles className="size-4" />
-              <h2 className="text-sm font-semibold">Live Threads</h2>
+              <h2 className="text-sm font-semibold">Live Gossip</h2>
             </div>
             <div className="space-y-3">
               {(visibleThreadPosts.length ? visibleThreadPosts.slice(0, 4) : null)?.map(
@@ -1346,7 +1346,7 @@ export default async function Home({
           <section>
             <div className="mb-3 flex items-center gap-2">
               <ShoppingBag className="size-4" />
-              <h2 className="text-sm font-semibold">Marketplace</h2>
+              <h2 className="text-sm font-semibold">Stuff</h2>
             </div>
             <div className="space-y-3">
               {(visibleListings.length ? visibleListings.slice(0, 4) : null)?.map(
