@@ -16,11 +16,14 @@ type SelectedMedia = {
   error: string | null;
   file: File;
   mediaType: "image" | "video" | "unknown";
+  originalFileSize: number | null;
   previewUrl: string | null;
 };
 
 const inputClass =
   "block w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#efe7da] file:px-3 file:py-1.5 file:text-sm file:font-semibold";
+const maxImageEdge = 2200;
+const imageCompressionQuality = 0.86;
 
 function formatBytes(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -35,6 +38,60 @@ function mediaTypeFor(file: File): SelectedMedia["mediaType"] {
   return "unknown";
 }
 
+function optimizedFilename(name: string, type: string) {
+  const extension = type === "image/webp" ? "webp" : "jpg";
+  const baseName = name.replace(/\.[^.]+$/, "") || "tattoocore-image";
+
+  return `${baseName}.${extension}`;
+}
+
+function fileFromBlob(blob: Blob, source: File) {
+  return new File([blob], optimizedFilename(source.name, blob.type), {
+    lastModified: Date.now(),
+    type: blob.type,
+  });
+}
+
+function replaceInputFile(input: HTMLInputElement, file: File) {
+  const transfer = new DataTransfer();
+  transfer.items.add(file);
+  input.files = transfer.files;
+}
+
+async function compressImageFile(file: File) {
+  if (file.type === "image/gif") return file;
+  if (!file.type.startsWith("image/")) return file;
+
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, maxImageEdge / Math.max(bitmap.width, bitmap.height));
+
+  if (scale === 1 && file.size <= 2 * 1024 * 1024) {
+    bitmap.close();
+    return file;
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    bitmap.close();
+    return file;
+  }
+
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, "image/webp", imageCompressionQuality);
+  });
+
+  if (!blob || blob.size >= file.size) return file;
+
+  return fileFromBlob(blob, file);
+}
+
 export function MediaInput({
   accept,
   maxImageBytes = 10 * 1024 * 1024,
@@ -44,6 +101,7 @@ export function MediaInput({
   videoAllowed = true,
 }: MediaInputProps) {
   const [selected, setSelected] = useState<SelectedMedia | null>(null);
+  const [isOptimizing, setIsOptimizing] = useState(false);
 
   const acceptedTypes = useMemo(
     () => new Set(accept.split(",").map((item) => item.trim()).filter(Boolean)),
@@ -56,37 +114,49 @@ export function MediaInput({
     };
   }, [selected?.previewUrl]);
 
-  function onChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0] ?? null;
+  async function onChange(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const file = input.files?.[0] ?? null;
 
     if (selected?.previewUrl) URL.revokeObjectURL(selected.previewUrl);
 
     if (!file) {
-      event.currentTarget.setCustomValidity("");
+      input.setCustomValidity("");
       setSelected(null);
       return;
     }
 
-    const mediaType = mediaTypeFor(file);
+    setIsOptimizing(file.type.startsWith("image/") && file.type !== "image/gif");
+
+    const optimizedFile = await compressImageFile(file).catch(() => file);
+    if (optimizedFile !== file) {
+      replaceInputFile(input, optimizedFile);
+    }
+
+    setIsOptimizing(false);
+
+    const mediaType = mediaTypeFor(optimizedFile);
     const maxBytes = mediaType === "video" ? maxVideoBytes : maxImageBytes;
     const error =
-      mediaType === "unknown" || !acceptedTypes.has(file.type)
+      mediaType === "unknown" || !acceptedTypes.has(optimizedFile.type)
         ? "Unsupported file type."
         : mediaType === "video" && !videoAllowed
           ? "Video is not supported here."
-          : file.size > maxBytes
+          : optimizedFile.size > maxBytes
             ? `${mediaType === "video" ? "Video" : "Image"} limit is ${formatBytes(
                 maxBytes,
               )}.`
             : null;
 
-    event.currentTarget.setCustomValidity(error ?? "");
+    input.setCustomValidity(error ?? "");
 
     setSelected({
       error,
-      file,
+      file: optimizedFile,
       mediaType,
-      previewUrl: mediaType === "image" ? URL.createObjectURL(file) : null,
+      originalFileSize: optimizedFile.size < file.size ? file.size : null,
+      previewUrl:
+        mediaType === "image" ? URL.createObjectURL(optimizedFile) : null,
     });
   }
 
@@ -102,6 +172,11 @@ export function MediaInput({
         required={required}
         type="file"
       />
+      {isOptimizing && !selected ? (
+        <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3 text-xs font-semibold text-[#766d62]">
+          Optimizing image before upload...
+        </div>
+      ) : null}
       {selected ? (
         <div
           className={`rounded-md border p-3 ${
@@ -131,8 +206,18 @@ export function MediaInput({
                 {isVideo ? "Video" : "Image"} / {formatBytes(selected.file.size)}
                 {selected.file.type ? ` / ${selected.file.type}` : ""}
               </p>
+              {selected.originalFileSize ? (
+                <p className="mt-1 text-xs text-[#766d62]">
+                  Optimized from {formatBytes(selected.originalFileSize)} before
+                  upload.
+                </p>
+              ) : null}
               {selected.error ? (
                 <p className="mt-2 text-xs font-semibold">{selected.error}</p>
+              ) : isOptimizing ? (
+                <p className="mt-2 text-xs text-[#766d62]">
+                  Optimizing image before upload...
+                </p>
               ) : (
                 <p className="mt-2 text-xs text-[#766d62]">
                   Ready to attach. Final checks run again when you publish.

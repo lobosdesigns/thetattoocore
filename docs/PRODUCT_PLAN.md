@@ -71,6 +71,17 @@
 - Use coarse location first for marketplace discovery, event/contest filtering, and ads.
 - Keep location personalization opt-in/out visible in account settings.
 
+## Media Pipeline
+
+- Add client-side image optimization early so large phone photos are resized and compressed before upload.
+- Keep generous but real upload limits to prevent runaway storage, bandwidth, moderation, and abuse costs.
+- Start with image compression to Web-friendly JPEG/WebP dimensions, around 1600-2200px max edge for feed media and smaller generated previews where needed.
+- Preserve enough image quality for tattoo detail while avoiding full-resolution camera originals in normal feed delivery.
+- Keep original-file storage optional for later verified artists or paid creator tools, not as the default MVP path.
+- Start video with short 1-minute reel limits and clear file-size caps.
+- Treat Cloudflare Stream as the preferred production video route once usage grows, because it handles encoding, adaptive playback, thumbnails, and delivery better than raw Storage video.
+- Revisit a DIY FFmpeg/R2 pipeline only if video volume makes managed video too expensive.
+
 ## Lightweight Ads
 
 - Build a simple internal ad rotator before any complex ad platform.
