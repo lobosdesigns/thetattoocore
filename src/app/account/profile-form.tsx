@@ -89,6 +89,10 @@ const notificationOptions = [
   ],
 ] as const;
 
+function RequiredMark() {
+  return <span className="text-[#a3432f]">*</span>;
+}
+
 export function ProfileForm({
   claims,
   initialProfile,
@@ -104,33 +108,55 @@ export function ProfileForm({
       <div className="mb-5">
         <h1 className="text-2xl font-bold">Profile setup</h1>
         <p className="mt-1 text-sm text-[#766d62]">{claims.email}</p>
+        <p className="mt-3 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] px-3 py-2 text-sm leading-5 text-[#4f473f]">
+          Required fields are marked with <RequiredMark />. Artists and studios
+          can post right away after saving, then submit license verification for
+          the verified badge.
+        </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="text-sm font-medium">Username</span>
+          <span className="text-sm font-medium">
+            Username <RequiredMark />
+          </span>
           <input
             className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
             defaultValue={initialProfile?.username ?? ""}
+            maxLength={30}
+            minLength={3}
             name="username"
+            pattern="[a-zA-Z0-9_]{3,30}"
             placeholder="artistname"
             required
+            title="Use 3-30 letters, numbers, or underscores."
           />
+          <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+            3-30 letters, numbers, or underscores. This becomes your public URL.
+          </span>
         </label>
 
         <label className="block">
-          <span className="text-sm font-medium">Display name</span>
+          <span className="text-sm font-medium">
+            Display name <RequiredMark />
+          </span>
           <input
             className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
             defaultValue={initialProfile?.display_name ?? ""}
+            minLength={2}
             name="display_name"
             placeholder="Artist Name"
             required
           />
+          <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+            Shown on posts, listings, comments, and DMs.
+          </span>
         </label>
 
         <label className="block">
-          <span className="text-sm font-medium">Account type</span>
+          <span className="text-sm font-medium">
+            Account type <RequiredMark />
+          </span>
           <select
             className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
             defaultValue={initialProfile?.account_type ?? "enthusiast"}
@@ -142,6 +168,9 @@ export function ProfileForm({
               </option>
             ))}
           </select>
+          <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+            Artist and Studio profiles can apply for license verification.
+          </span>
         </label>
 
         <label className="block">
@@ -165,7 +194,9 @@ export function ProfileForm({
         </label>
 
         <label className="block">
-          <span className="text-sm font-medium">Country</span>
+          <span className="text-sm font-medium">
+            Country <RequiredMark />
+          </span>
           <select
             className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
             defaultValue={initialProfile?.country_code ?? "US"}
@@ -180,7 +211,9 @@ export function ProfileForm({
         </label>
 
         <label className="block">
-          <span className="text-sm font-medium">Language</span>
+          <span className="text-sm font-medium">
+            Language <RequiredMark />
+          </span>
           <select
             className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
             defaultValue={initialProfile?.preferred_language ?? "en"}
@@ -225,6 +258,9 @@ export function ProfileForm({
             name="bio"
             placeholder="Style, booking notes, shop, favorite work..."
           />
+          <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+            Optional, 500 characters max.
+          </span>
         </label>
 
         <label className="flex items-start gap-3 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3 sm:col-span-2">

@@ -108,6 +108,9 @@ export default async function AccountPage({
                 local proof that you can legally tattoo or operate as a studio.
                 Documents are private and reviewed by authorized admins.
               </p>
+              <p className="mt-2 text-xs font-semibold text-[#766d62]">
+                Accepted files: PDF, JPG, PNG, or WebP up to 10 MB.
+              </p>
               {isLicenseVerified ? (
                 <p className="mt-3 rounded-md bg-[#171412] px-3 py-2 text-sm font-semibold text-white">
                   Your {profile?.account_type} profile is license verified.
@@ -140,7 +143,7 @@ export default async function AccountPage({
             <form action={submitLicenseVerification} className="grid gap-4">
               <label className="block">
                 <span className="text-sm font-medium">
-                  License or certification name
+                  License or certification name <span className="text-[#a3432f]">*</span>
                 </span>
                 <input
                   className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
@@ -163,7 +166,7 @@ export default async function AccountPage({
                 </label>
                 <label className="block">
                   <span className="text-sm font-medium">
-                    Issuing city/state/country
+                    Issuing city/state/country <span className="text-[#a3432f]">*</span>
                   </span>
                   <input
                     className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
@@ -185,7 +188,7 @@ export default async function AccountPage({
                 </label>
                 <label className="block">
                   <span className="text-sm font-medium">
-                    License document
+                    License document <span className="text-[#a3432f]">*</span>
                   </span>
                   <input
                     accept="application/pdf,image/jpeg,image/png,image/webp"
@@ -194,6 +197,9 @@ export default async function AccountPage({
                     required
                     type="file"
                   />
+                  <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+                    Private admin review only. Public users only see verified status after approval.
+                  </span>
                 </label>
               </div>
 
