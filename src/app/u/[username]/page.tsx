@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -19,6 +20,7 @@ import {
   UserPlus,
   UserRoundMinus,
   Video,
+  type LucideIcon,
 } from "lucide-react";
 import { acceptAdultTerms, archiveGig, createContentReport } from "@/app/actions";
 import { NotificationBellLink } from "@/app/notification-bell-link";
@@ -198,6 +200,17 @@ function formatGigDate(gig: Gig) {
 
 function formatGigCategory(category: string) {
   return category.replaceAll("_", " ");
+}
+
+function formatAccountType(value: string) {
+  return value.replaceAll("_", " ");
+}
+
+function formatJoinedDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
 }
 
 function ContentLabels({
@@ -387,6 +400,21 @@ function ProfileStat({ label, value }: { label: string; value: number }) {
       <p className="text-lg font-bold">{value}</p>
       <p className="text-xs text-[#766d62]">{label}</p>
     </div>
+  );
+}
+
+function ProfileDetailChip({
+  children,
+  icon: Icon,
+}: {
+  children: ReactNode;
+  icon: LucideIcon;
+}) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-md border border-[#d8d1c6] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#4f473f]">
+      <Icon className="size-3.5" />
+      {children}
+    </span>
   );
 }
 
@@ -741,14 +769,14 @@ export default async function ProfilePage({
             <div className="min-w-0 flex-1">
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 <h2 className="text-2xl font-bold">{profile.display_name}</h2>
-                <span className="inline-flex items-center gap-1 rounded-md bg-[#efe7da] px-2 py-1 text-xs font-semibold capitalize">
-                  <BadgeCheck className="size-3" />
-                  {profile.account_type}
+                <span className="inline-flex items-center gap-1 rounded-md bg-[#efe7da] px-2 py-1 text-xs font-semibold capitalize text-[#4f473f]">
+                  <UserPlus className="size-3" />
+                  {formatAccountType(profile.account_type)}
                 </span>
                 {isVerifiedProfile(profile) ? (
                   <span className="inline-flex items-center gap-1 rounded-md bg-[#171412] px-2 py-1 text-xs font-semibold text-white">
                     <BadgeCheck className="size-3" />
-                    License verified
+                    Verified {formatAccountType(profile.account_type)}
                   </span>
                 ) : null}
                 {profile.is_private ? (
@@ -779,41 +807,50 @@ export default async function ProfilePage({
                 </p>
               ) : null}
               {!isPrivateLocked ? (
-              <div className="mt-4 flex flex-wrap gap-4 text-sm text-[#766d62]">
+              <div className="mt-4 flex flex-wrap gap-2">
+                <ProfileDetailChip icon={CalendarDays}>
+                  Joined {formatJoinedDate(profile.created_at)}
+                </ProfileDetailChip>
+                {isVerifiedProfile(profile) ? (
+                  <ProfileDetailChip icon={ShieldCheck}>
+                    License verified
+                  </ProfileDetailChip>
+                ) : null}
                 {profileLocation(profile) ? (
-                  <span className="inline-flex items-center gap-1">
-                    <MapPin className="size-4" />
+                  <ProfileDetailChip icon={MapPin}>
                     {profileLocation(profile)}
-                  </span>
+                  </ProfileDetailChip>
                 ) : null}
                 {profile.website_url ? (
                   <a
-                    className="inline-flex items-center gap-1 font-medium text-[#171412]"
+                    className="inline-flex items-center gap-1 rounded-md border border-[#d8d1c6] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#171412]"
                     href={profile.website_url}
                     rel="noreferrer"
                     target="_blank"
                   >
-                    <LinkIcon className="size-4" />
+                    <LinkIcon className="size-3.5" />
                     Website
                   </a>
                 ) : null}
                 {profile.instagram_url ? (
                   <a
-                    className="inline-flex items-center gap-1 font-medium text-[#171412]"
+                    className="inline-flex items-center gap-1 rounded-md border border-[#d8d1c6] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#171412]"
                     href={profile.instagram_url}
                     rel="noreferrer"
                     target="_blank"
                   >
-                    <LinkIcon className="size-4" />
+                    <LinkIcon className="size-3.5" />
                     Instagram
                   </a>
                 ) : null}
               </div>
               ) : null}
               {!isPrivateLocked ? (
-              <div className="mt-5 grid max-w-md grid-cols-4 gap-4">
+              <div className="mt-5 grid max-w-xl grid-cols-3 gap-4 sm:grid-cols-6">
                 <ProfileStat label="4U" value={visiblePosts.length} />
-                <ProfileStat label="gigs" value={visibleGigs.length} />
+                <ProfileStat label="Gossip" value={visibleThreads.length} />
+                <ProfileStat label="Stuff" value={visibleListings.length} />
+                <ProfileStat label="Gigs" value={visibleGigs.length} />
                 <ProfileStat label="followers" value={followerCount ?? 0} />
                 <ProfileStat label="following" value={followingCount ?? 0} />
               </div>
