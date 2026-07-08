@@ -5,7 +5,11 @@ import {
   createThreadPost,
 } from "./actions";
 import { FloatingComposerShell } from "./floating-composer-shell";
+import { MediaInput } from "./media-input";
 import { startConversation } from "./messages/actions";
+
+const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
+const imageVideoAccept = `${imageAccept},video/mp4,video/quicktime,video/webm`;
 
 const visibilityControl = (
   <select
@@ -73,13 +77,7 @@ export function FloatingComposer({
             />
             {visibilityControl}
             {sensitiveControls}
-            <input
-              accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,video/webm"
-              className="block w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#efe7da] file:px-3 file:py-1.5 file:text-sm file:font-semibold"
-              name="media"
-              required
-              type="file"
-            />
+            <MediaInput accept={imageVideoAccept} name="media" required />
             <button className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
               Publish
             </button>
@@ -100,12 +98,7 @@ export function FloatingComposer({
             />
             {visibilityControl}
             {sensitiveControls}
-            <input
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              className="block w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#efe7da] file:px-3 file:py-1.5 file:text-sm file:font-semibold"
-              name="media"
-              type="file"
-            />
+            <MediaInput accept={imageAccept} name="media" videoAllowed={false} />
             <button className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
               Post thread
             </button>
@@ -161,12 +154,7 @@ export function FloatingComposer({
             </div>
             {visibilityControl}
             {sensitiveControls}
-            <input
-              accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,video/webm"
-              className="block w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#efe7da] file:px-3 file:py-1.5 file:text-sm file:font-semibold"
-              name="media"
-              type="file"
-            />
+            <MediaInput accept={imageVideoAccept} name="media" />
             <button className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
               Publish listing
             </button>
@@ -242,12 +230,7 @@ export function FloatingComposer({
             />
             {visibilityControl}
             {sensitiveControls}
-            <input
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              className="block w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#efe7da] file:px-3 file:py-1.5 file:text-sm file:font-semibold"
-              name="media"
-              type="file"
-            />
+            <MediaInput accept={imageAccept} name="media" videoAllowed={false} />
             <button
               className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
               type="submit"
