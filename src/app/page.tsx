@@ -22,7 +22,7 @@ import {
 } from "./actions";
 import { startConversation } from "./messages/actions";
 import { FloatingComposer } from "./floating-composer";
-import { LogoMark } from "./logo-mark";
+import { LogoLockup, LogoWordmark } from "./logo-mark";
 import { createClient } from "@/lib/supabase/server";
 
 type Claims = {
@@ -437,14 +437,8 @@ export default async function Home({
     <main className="min-h-screen bg-[#f5f2eb] text-[#171412]">
       <div className="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 lg:grid-cols-[240px_minmax(420px,620px)_320px]">
         <aside className="hidden border-r border-[#d8d1c6] bg-[#fffdf9] px-5 py-6 lg:block">
-          <div className="mb-8 flex items-center gap-3">
-            <LogoMark />
-            <div>
-              <p className="text-lg font-semibold">TheTattooCore</p>
-              <p className="text-xs text-[#766d62]">
-                The heart of the tattoo community.
-              </p>
-            </div>
+          <div className="mb-8 flex justify-start">
+            <LogoWordmark className="h-32 w-28" />
           </div>
 
           <nav className="space-y-1">
@@ -479,14 +473,8 @@ export default async function Home({
         <section className="border-x border-[#d8d1c6] bg-[#fffdf9]">
           <header className="sticky top-0 z-10 border-b border-[#e5ded4] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur">
             <div className="flex items-center justify-between gap-3">
-              <div className="flex min-w-0 items-center gap-3">
-                <LogoMark className="size-11 shrink-0" />
-                <div className="min-w-0">
-                  <h1 className="text-xl font-bold">TheTattooCore</h1>
-                  <p className="text-xs text-[#766d62]">
-                    The heart of the tattoo community.
-                  </p>
-                </div>
+              <div className="flex min-w-0 items-center">
+                <LogoLockup className="h-14 w-52 max-w-[52vw] shrink-0" />
               </div>
               <div className="flex items-center gap-2">
                 <button

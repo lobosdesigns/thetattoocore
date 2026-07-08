@@ -1,0 +1,7 @@
+<svg width="512" height="512" viewBox="0 0 144 188" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M72 0c21 14 43 19 72 21v77c0 36-28 66-72 90C28 164 0 134 0 98V21C29 19 51 14 72 0Z" fill="#171412"/>
+  <path d="M72 12c18 11 38 16 61 18v67c0 29-23 54-61 76-38-22-61-47-61-76V30c23-2 43-7 61-18Z" stroke="#C8953B" stroke-width="4"/>
+  <text x="55" y="80" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="58" font-weight="900" fill="#FFFDF9">T</text>
+  <text x="96" y="103" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="58" font-weight="900" fill="#F3C15F">T</text>
+  <text x="69" y="151" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="64" font-weight="900" fill="#FFFDF9">C</text>
+</svg>
