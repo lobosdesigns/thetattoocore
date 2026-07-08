@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { createPostComment, togglePostLike } from "./actions";
 import { FloatingComposer } from "./floating-composer";
+import { LogoMark } from "./logo-mark";
 import { createClient } from "@/lib/supabase/server";
 
 type Claims = {
@@ -312,12 +313,12 @@ export default async function Home({
       <div className="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 lg:grid-cols-[240px_minmax(420px,620px)_320px]">
         <aside className="hidden border-r border-[#d8d1c6] bg-[#fffdf9] px-5 py-6 lg:block">
           <div className="mb-8 flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-md bg-[#171412] text-sm font-bold text-white">
-              TC
-            </div>
+            <LogoMark />
             <div>
               <p className="text-lg font-semibold">TheTattooCore</p>
-              <p className="text-xs text-[#766d62]">artist network</p>
+              <p className="text-xs text-[#766d62]">
+                The heart of the tattoo community.
+              </p>
             </div>
           </div>
 
@@ -353,11 +354,14 @@ export default async function Home({
         <section className="border-x border-[#d8d1c6] bg-[#fffdf9]">
           <header className="sticky top-0 z-10 border-b border-[#e5ded4] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur">
             <div className="flex items-center justify-between gap-3">
-              <div>
-                <h1 className="text-xl font-bold">TheTattooCore</h1>
-                <p className="text-xs text-[#766d62]">
-                  feed, threads, market, messages
-                </p>
+              <div className="flex min-w-0 items-center gap-3">
+                <LogoMark className="size-11 shrink-0" />
+                <div className="min-w-0">
+                  <h1 className="text-xl font-bold">TheTattooCore</h1>
+                  <p className="text-xs text-[#766d62]">
+                    The heart of the tattoo community.
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
