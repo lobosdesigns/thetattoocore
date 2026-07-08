@@ -164,32 +164,6 @@ type ThreadComment = {
   profiles: Pick<Profile, "display_name" | "username"> | null;
 };
 
-const samplePosts = [
-  {
-    artist: "Mara Vale",
-    handle: "@maravale",
-    city: "Austin, TX",
-    style: "blackwork",
-    image:
-      "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=1200&q=80",
-    caption:
-      "Fresh ornamental forearm piece. Built for flow, healed contrast in mind.",
-    likes: "2.4k",
-    comments: "184",
-  },
-  {
-    artist: "Noah Ink",
-    handle: "@noahink",
-    city: "Chicago, IL",
-    style: "fine line",
-    image:
-      "https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&w=1200&q=80",
-    caption: "Tiny botanicals today. Booking July flash appointments now.",
-    likes: "921",
-    comments: "67",
-  },
-];
-
 const sampleThreads = [
   "What aftercare routine do you recommend for heavy blackwork in summer?",
   "Guest spot opening in Dallas first week of August. Realism artists preferred.",
@@ -219,6 +193,26 @@ const sampleGigs = [
     title: "Studio hiring full-time artist",
   },
 ];
+
+function EmptyColumnState({
+  body,
+  icon: Icon,
+  title,
+}: {
+  body: string;
+  icon: typeof ImageIcon;
+  title: string;
+}) {
+  return (
+    <div className="rounded-md border border-dashed border-[#cfc6ba] bg-[#fffdf9] p-6">
+      <div className="flex size-11 items-center justify-center rounded-md bg-[#efe7da]">
+        <Icon className="size-5" />
+      </div>
+      <h3 className="mt-4 text-base font-bold">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-[#4f473f]">{body}</p>
+    </div>
+  );
+}
 
 function initials(name: string) {
   return name
@@ -862,47 +856,13 @@ export default async function Home({
                 </article>
               ))
             ) : (
-              samplePosts.map((post) => (
-                <article className="bg-[#fffdf9]" key={post.handle}>
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="size-11 rounded-md bg-[#c8953b]" />
-                      <div>
-                        <p className="text-sm font-semibold">{post.artist}</p>
-                        <p className="text-xs text-[#766d62]">
-                          {post.handle} · {post.city}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="rounded-md bg-[#efe7da] px-2 py-1 text-xs font-medium">
-                      {post.style}
-                    </span>
-                  </div>
-                  <div
-                    className="aspect-[4/5] bg-cover bg-center"
-                    style={{ backgroundImage: `url(${post.image})` }}
-                  />
-                  <div className="space-y-3 px-4 py-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <button className="flex items-center gap-2 text-sm font-medium">
-                          <Heart className="size-5" />
-                          {post.likes}
-                        </button>
-                        <button className="flex items-center gap-2 text-sm font-medium">
-                          <MessageCircle className="size-5" />
-                          {post.comments}
-                        </button>
-                      </div>
-                      <button className="flex items-center gap-2 text-sm font-medium">
-                        <Send className="size-5" />
-                        Share
-                      </button>
-                    </div>
-                    <p className="text-sm leading-6">{post.caption}</p>
-                  </div>
-                </article>
-              ))
+              <div className="p-4">
+                <EmptyColumnState
+                  body="Photos and one-minute reels from artists and collectors will show here."
+                  icon={ImageIcon}
+                  title="No 4U posts yet"
+                />
+              </div>
             )}
           </section>
 
@@ -1036,14 +996,13 @@ export default async function Home({
                       ) : null}
                     </article>
                   ))
-                : sampleThreads.map((thread) => (
-                    <div
-                      className="rounded-md border border-[#d8d1c6] bg-white p-4 text-sm leading-6"
-                      key={thread}
-                    >
-                      {thread}
-                    </div>
-                  ))}
+                : (
+                    <EmptyColumnState
+                      body="Longer shop talk, questions, images, and community threads will collect here."
+                      icon={MessageCircle}
+                      title="No Gossip yet"
+                    />
+                  )}
             </div>
           </section>
 
@@ -1155,23 +1114,15 @@ export default async function Home({
                       </div>
                     </article>
                   ))
-                : sampleListings.map((listing) => (
-                    <div
-                      className="rounded-md border border-[#d8d1c6] bg-white p-4"
-                      key={listing.title}
-                    >
-                      <div className="mb-2 flex items-center gap-3">
-                        <div className="flex size-10 items-center justify-center rounded-md bg-[#efe7da]">
-                          <ImageIcon className="size-5" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold">{listing.title}</p>
-                          <p className="text-xs text-[#766d62]">{listing.tag}</p>
-                        </div>
-                      </div>
-                      <p className="text-sm font-bold">{listing.price}</p>
+                : (
+                    <div className="sm:col-span-2">
+                      <EmptyColumnState
+                        body="Flash, supplies, chair rentals, and studio services will appear here."
+                        icon={ShoppingBag}
+                        title="No Stuff listings yet"
+                      />
                     </div>
-                  ))}
+                  )}
             </div>
           </section>
 
@@ -1310,25 +1261,15 @@ export default async function Home({
                       </div>
                     </article>
                   ))
-                : sampleGigs.map((gig) => (
-                    <div
-                      className="rounded-md border border-[#d8d1c6] bg-white p-4"
-                      key={gig.title}
-                    >
-                      <div className="mb-3 flex items-center gap-3">
-                        <div className="flex size-10 items-center justify-center rounded-md bg-[#efe7da]">
-                          <BriefcaseBusiness className="size-5" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold">{gig.title}</p>
-                          <p className="text-xs capitalize text-[#766d62]">
-                            {gig.category}
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-sm text-[#4f473f]">{gig.location}</p>
+                : (
+                    <div className="sm:col-span-2">
+                      <EmptyColumnState
+                        body="Jobs, conventions, guest spots, apprenticeships, and event calls will show here."
+                        icon={BriefcaseBusiness}
+                        title="No Gigs yet"
+                      />
                     </div>
-                  ))}
+                  )}
             </div>
           </section>
 
