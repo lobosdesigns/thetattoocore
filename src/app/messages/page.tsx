@@ -7,6 +7,7 @@ import {
   Send,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { MessageThread } from "./message-thread";
 import { sendMessage, startConversation } from "./actions";
 
 type Claims = {
@@ -288,7 +289,7 @@ export default async function MessagesPage({
                         <p className="truncate text-xs text-[#766d62]">
                           @{profile?.username ?? "member"}{" "}
                           {profileLocation(profile)
-                            ? `· ${profileLocation(profile)}`
+                            ? ` - ${profileLocation(profile)}`
                             : ""}
                         </p>
                         <p className="mt-1 truncate text-sm text-[#4f473f]">
@@ -333,41 +334,19 @@ export default async function MessagesPage({
                 </div>
               </header>
 
-              <div className="flex-1 space-y-3 px-4 py-5">
-                {selectedMessages.map((message) => {
-                  const mine = message.sender_id === claims.sub;
-                  const sender = profileById.get(message.sender_id);
-
-                  return (
-                    <div
-                      className={`flex ${mine ? "justify-end" : "justify-start"}`}
-                      key={message.id}
-                    >
-                      <div
-                        className={`max-w-[78%] rounded-md px-4 py-3 ${
-                          mine
-                            ? "bg-[#171412] text-white"
-                            : "border border-[#d8d1c6] bg-white text-[#171412]"
-                        }`}
-                      >
-                        <p className="whitespace-pre-wrap text-sm leading-6">
-                          {message.body}
-                        </p>
-                        <p
-                          className={`mt-2 text-[11px] ${
-                            mine ? "text-white/70" : "text-[#766d62]"
-                          }`}
-                        >
-                          {mine
-                            ? "You"
-                            : sender?.display_name ?? "TattooCore member"}{" "}
-                          · {timeAgo(message.created_at)}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <MessageThread
+                conversationId={selectedConversation.id}
+                currentUserId={claims.sub}
+                initialMessages={selectedMessages}
+                key={`${selectedConversation.id}:${
+                  selectedMessages[selectedMessages.length - 1]?.id ?? "empty"
+                }`}
+                profiles={(profiles ?? []).map((profile) => ({
+                  display_name: profile.display_name,
+                  id: profile.id,
+                  username: profile.username,
+                }))}
+              />
 
               <form
                 action={sendMessage}
