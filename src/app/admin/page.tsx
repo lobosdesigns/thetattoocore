@@ -14,6 +14,7 @@ import {
   Users,
 } from "lucide-react";
 import {
+  changeUserRole,
   moderateContent,
   updateLicenseVerification,
   updateReportStatus,
@@ -62,6 +63,14 @@ type LicenseRequest = {
   profileUsername: string;
   status: "pending" | "approved" | "rejected";
   signedDocumentUrl: string | null;
+};
+type AdminUser = {
+  accountType: string;
+  createdAt: string;
+  displayName: string;
+  id: string;
+  role: UserRole;
+  username: string;
 };
 
 const adminTabs = [
@@ -380,6 +389,7 @@ export default async function AdminPage({
     { count: pendingVerifications },
     { count: marketplaceQueue },
     { count: moderationActions },
+    { data: adminUsers },
     { data: verificationQueue },
     { data: reportQueue },
     { data: feedReview },
@@ -404,6 +414,21 @@ export default async function AdminPage({
     supabase
       .from("moderation_actions")
       .select("*", { count: "exact", head: true }),
+    supabase
+      .from("profiles")
+      .select("id, username, display_name, account_type, role, created_at")
+      .order("created_at", { ascending: false })
+      .limit(16)
+      .returns<
+        {
+          account_type: string;
+          created_at: string;
+          display_name: string;
+          id: string;
+          role: UserRole;
+          username: string;
+        }[]
+      >(),
     supabase
       .from("license_verification_requests")
       .select(
@@ -555,6 +580,15 @@ export default async function AdminPage({
     ["Listings", marketplaceQueue, "Draft and active"],
     ["Actions", moderationActions, "Moderation log"],
   ];
+  const users: AdminUser[] = (adminUsers ?? []).map((user) => ({
+    accountType: user.account_type,
+    createdAt: user.created_at,
+    displayName: user.display_name,
+    id: user.id,
+    role: user.role,
+    username: user.username,
+  }));
+  const canManageRoles = adminProfile.role === "owner";
   const signedDocumentUrls = await Promise.all(
     (verificationQueue ?? []).map(async (request) => {
       const { data } = await supabase.storage
@@ -740,17 +774,54 @@ export default async function AdminPage({
                   <Users className="size-5" />
                   <h2 className="text-lg font-bold">Users and roles</h2>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {["owner", "admin", "moderator", "user"].map((role) => (
-                    <div
+                {!canManageRoles ? (
+                  <p className="mb-4 rounded-md border border-[#e5ded4] bg-white p-3 text-sm text-[#4f473f]">
+                    Owner role required to promote admins or moderators.
+                  </p>
+                ) : null}
+                <div className="grid gap-3">
+                  {users.map((user) => (
+                    <article
                       className="rounded-md border border-[#e5ded4] bg-white p-3"
-                      key={role}
+                      key={user.id}
                     >
-                      <p className="text-sm font-semibold capitalize">{role}</p>
-                      <p className="mt-1 text-xs text-[#766d62]">
-                        Role assignment is stored on profile records.
-                      </p>
-                    </div>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold">
+                            {user.displayName}
+                          </p>
+                          <p className="mt-1 text-xs text-[#766d62]">
+                            @{user.username} - {user.accountType} - joined{" "}
+                            {new Date(user.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <span className="w-fit rounded-md border border-[#d8d1c6] bg-[#f7f4ef] px-2 py-1 text-xs font-semibold capitalize text-[#4f473f]">
+                          {user.role}
+                        </span>
+                      </div>
+                      {canManageRoles ? (
+                        <form
+                          action={changeUserRole}
+                          className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]"
+                        >
+                          <input name="profile_id" type="hidden" value={user.id} />
+                          <select
+                            className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                            defaultValue={user.role}
+                            name="role"
+                          >
+                            {["user", "moderator", "admin", "owner"].map((role) => (
+                              <option key={role} value={role}>
+                                {role}
+                              </option>
+                            ))}
+                          </select>
+                          <button className="h-10 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+                            Update role
+                          </button>
+                        </form>
+                      ) : null}
+                    </article>
                   ))}
                 </div>
               </div>

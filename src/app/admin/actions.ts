@@ -27,6 +27,7 @@ const licenseStatuses = new Set<LicenseVerificationStatus>([
   "approved",
   "rejected",
 ]);
+const roleStatuses = new Set<UserRole>(["user", "moderator", "admin", "owner"]);
 
 const subjectConfig = {
   feed_post: {
@@ -91,6 +92,80 @@ async function requireModerator() {
   }
 
   return { supabase, userId };
+}
+
+async function requireOwner() {
+  const { supabase, userId } = await requireModerator();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle<{ role: UserRole }>();
+
+  if (profile?.role !== "owner") {
+    redirect("/admin?message=Owner access required.#users");
+  }
+
+  return { supabase, userId };
+}
+
+export async function changeUserRole(formData: FormData) {
+  const profileId = cleanText(formData.get("profile_id"), 80);
+  const role = cleanText(formData.get("role"), 40) as UserRole;
+
+  if (!profileId || !roleStatuses.has(role)) {
+    redirect("/admin?message=Choose a valid user and role.#users");
+  }
+
+  const { supabase, userId } = await requireOwner();
+
+  if (profileId === userId && role !== "owner") {
+    redirect("/admin?message=Owners cannot demote their own account.#users");
+  }
+
+  const { data: target, error: targetError } = await supabase
+    .from("profiles")
+    .select("id, role")
+    .eq("id", profileId)
+    .maybeSingle<{ id: string; role: UserRole }>();
+
+  if (targetError || !target) {
+    redirect(
+      `/admin?message=${encodeURIComponent(
+        targetError?.message || "Profile was not found.",
+      )}#users`,
+    );
+  }
+
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({
+      role,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", profileId);
+
+  if (updateError) {
+    redirect(
+      `/admin?message=${encodeURIComponent(
+        updateError.message || "Could not update role.",
+      )}#users`,
+    );
+  }
+
+  await supabase.from("admin_audit_logs").insert({
+    actor_id: userId,
+    event_type: "profile_role_changed",
+    metadata: {
+      from_role: target.role,
+      to_role: role,
+    },
+    target_id: profileId,
+    target_type: "profile",
+  });
+
+  revalidatePath("/admin");
+  redirect("/admin?message=User role updated.#users");
 }
 
 export async function moderateContent(formData: FormData) {
