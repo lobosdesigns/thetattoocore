@@ -46,8 +46,14 @@ type Claims = {
   sub: string;
 };
 
-function homeMessage(message: string) {
-  return `/?message=${encodeURIComponent(message)}`;
+function homeMessage(message: string, hash?: string) {
+  return `/?message=${encodeURIComponent(message)}${hash ? `#${hash}` : ""}`;
+}
+
+function hashForMediaKind(kind: "feed" | "gig" | "marketplace" | "thread") {
+  if (kind === "thread") return "threads";
+
+  return kind;
 }
 
 function redirectWithMessage({
@@ -326,7 +332,12 @@ async function uploadPostMedia({
   });
 
   if (error) {
-    redirect(homeMessage(error.message || "Could not upload media."));
+    redirect(
+      homeMessage(
+        error.message || "Could not upload media.",
+        hashForMediaKind(kind),
+      ),
+    );
   }
 
   return {
@@ -361,18 +372,18 @@ export async function createFeedPost(formData: FormData) {
     .slice(0, 6);
 
   if (caption.length < 3) {
-    redirect(homeMessage("Feed post needs at least 3 characters."));
+    redirect(homeMessage("Feed post needs at least 3 characters.", "feed"));
   }
 
   if (!media) {
-    redirect(homeMessage("Feed posts need a photo or reel."));
+    redirect(homeMessage("Feed posts need a photo or reel.", "feed"));
   }
 
   const metadata = await inspectMediaFile(media);
   const validationMessage = validateMediaMetadata(metadata);
 
   if (validationMessage) {
-    redirect(homeMessage(validationMessage));
+    redirect(homeMessage(validationMessage, "feed"));
   }
 
   const { data: post, error } = await supabase
@@ -393,7 +404,9 @@ export async function createFeedPost(formData: FormData) {
     .single<{ id: string }>();
 
   if (error) {
-    redirect(homeMessage(error.message || "Could not publish feed post."));
+    redirect(
+      homeMessage(error.message || "Could not publish feed post.", "feed"),
+    );
   }
 
   if (media && post) {
@@ -416,12 +429,17 @@ export async function createFeedPost(formData: FormData) {
     });
 
     if (mediaError) {
-      redirect(homeMessage(mediaError.message || "Media uploaded but could not attach to the post."));
+      redirect(
+        homeMessage(
+          mediaError.message || "Media uploaded but could not attach to the post.",
+          "feed",
+        ),
+      );
     }
   }
 
   revalidatePath("/");
-  redirect(homeMessage("Feed post published."));
+  redirect(homeMessage("Feed post published.", "feed"));
 }
 
 export async function createThreadPost(formData: FormData) {
@@ -433,19 +451,19 @@ export async function createThreadPost(formData: FormData) {
   const visibility = cleanVisibility(formData.get("visibility"), "members");
 
   if (body.length < 3) {
-    redirect(homeMessage("Thread post needs at least 3 characters."));
+    redirect(homeMessage("Thread post needs at least 3 characters.", "threads"));
   }
 
   if (metadata) {
     const validationMessage = validateMediaMetadata(metadata);
 
     if (validationMessage) {
-      redirect(homeMessage(validationMessage));
+      redirect(homeMessage(validationMessage, "threads"));
     }
   }
 
   if (metadata && metadata.mediaType !== "image") {
-    redirect(homeMessage("Thread posts support images right now."));
+    redirect(homeMessage("Thread posts support images right now.", "threads"));
   }
 
   const { data: thread, error } = await supabase
@@ -463,7 +481,9 @@ export async function createThreadPost(formData: FormData) {
     .single<{ id: string }>();
 
   if (error) {
-    redirect(homeMessage(error.message || "Could not publish thread post."));
+    redirect(
+      homeMessage(error.message || "Could not publish thread post.", "threads"),
+    );
   }
 
   if (media && metadata && thread) {
@@ -486,12 +506,18 @@ export async function createThreadPost(formData: FormData) {
     });
 
     if (mediaError) {
-      redirect(homeMessage(mediaError.message || "Image uploaded but could not attach to the thread."));
+      redirect(
+        homeMessage(
+          mediaError.message ||
+            "Image uploaded but could not attach to the thread.",
+          "threads",
+        ),
+      );
     }
   }
 
   revalidatePath("/");
-  redirect(homeMessage("Thread posted."));
+  redirect(homeMessage("Thread posted.", "threads"));
 }
 
 export async function createMarketplaceListing(formData: FormData) {
@@ -512,14 +538,16 @@ export async function createMarketplaceListing(formData: FormData) {
     : null;
 
   if (title.length < 3) {
-    redirect(homeMessage("Listing title needs at least 3 characters."));
+    redirect(
+      homeMessage("Listing title needs at least 3 characters.", "marketplace"),
+    );
   }
 
   if (metadata) {
     const validationMessage = validateMediaMetadata(metadata);
 
     if (validationMessage) {
-      redirect(homeMessage(validationMessage));
+      redirect(homeMessage(validationMessage, "marketplace"));
     }
   }
 
@@ -544,7 +572,9 @@ export async function createMarketplaceListing(formData: FormData) {
     .single<{ id: string }>();
 
   if (error) {
-    redirect(homeMessage(error.message || "Could not publish listing."));
+    redirect(
+      homeMessage(error.message || "Could not publish listing.", "marketplace"),
+    );
   }
 
   if (media && metadata && listing) {
@@ -567,12 +597,18 @@ export async function createMarketplaceListing(formData: FormData) {
     });
 
     if (mediaError) {
-      redirect(homeMessage(mediaError.message || "Media uploaded but could not attach to the listing."));
+      redirect(
+        homeMessage(
+          mediaError.message ||
+            "Media uploaded but could not attach to the listing.",
+          "marketplace",
+        ),
+      );
     }
   }
 
   revalidatePath("/");
-  redirect(homeMessage("Marketplace listing published."));
+  redirect(homeMessage("Marketplace listing published.", "marketplace"));
 }
 
 export async function createContentReport(formData: FormData) {

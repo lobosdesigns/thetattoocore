@@ -729,7 +729,10 @@ export default async function Home({
           </div>
 
           {params.message ? (
-            <p className="border-b border-[#e5ded4] bg-[#efe7da] px-4 py-3 text-sm font-medium">
+            <p
+              className="sticky top-0 z-20 border-b border-[#d8d1c6] bg-[#efe7da] px-4 py-3 text-sm font-semibold shadow-sm"
+              role="status"
+            >
               {params.message}
             </p>
           ) : null}
