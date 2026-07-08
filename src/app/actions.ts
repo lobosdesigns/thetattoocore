@@ -31,6 +31,15 @@ function cleanText(value: FormDataEntryValue | null, maxLength: number) {
     .slice(0, maxLength);
 }
 
+function cleanWords(value: FormDataEntryValue | null, maxWords: number) {
+  return String(value ?? "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, maxWords)
+    .join(" ");
+}
+
 function mediaFromForm(formData: FormData, name: string) {
   const value = formData.get(name);
 
@@ -129,7 +138,7 @@ async function uploadPostMedia({
 
 export async function createFeedPost(formData: FormData) {
   const { supabase, userId } = await requireProfile();
-  const caption = cleanText(formData.get("caption"), 2200);
+  const caption = cleanWords(formData.get("caption"), 40);
   const locationLabel = cleanText(formData.get("location_label"), 80);
   const media = mediaFromForm(formData, "media");
   const styleTags = cleanText(formData.get("style_tags"), 160)
@@ -140,6 +149,10 @@ export async function createFeedPost(formData: FormData) {
 
   if (caption.length < 3) {
     redirect(homeMessage("Feed post needs at least 3 characters."));
+  }
+
+  if (!media) {
+    redirect(homeMessage("Feed posts need a photo or reel."));
   }
 
   const { data: post, error } = await supabase

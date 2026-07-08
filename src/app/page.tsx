@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   Bell,
-  Camera,
   Heart,
   Home as HomeIcon,
   ImageIcon,
@@ -13,11 +12,7 @@ import {
   Sparkles,
   UserRound,
 } from "lucide-react";
-import {
-  createFeedPost,
-  createMarketplaceListing,
-  createThreadPost,
-} from "./actions";
+import { FloatingComposer } from "./floating-composer";
 import { createClient } from "@/lib/supabase/server";
 
 type Claims = {
@@ -393,145 +388,6 @@ export default async function Home({
             </p>
           ) : null}
 
-          <section className="border-b border-[#e5ded4] px-4 py-4" id="create">
-            {canCreate ? (
-              <div className="grid gap-3 md:grid-cols-3">
-                <form
-                  action={createFeedPost}
-                  className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3"
-                >
-                  <div className="mb-3 flex items-center gap-2 text-sm font-bold">
-                    <Camera className="size-4" />
-                    Feed post
-                  </div>
-                  <textarea
-                    className="mb-2 min-h-24 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
-                    maxLength={2200}
-                    name="caption"
-                    placeholder="Share fresh work, booking notes, or a healed update."
-                    required
-                  />
-                  <input
-                    className="mb-2 h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                    name="style_tags"
-                    placeholder="blackwork, fine line"
-                  />
-                  <input
-                    className="mb-3 h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                    name="location_label"
-                    placeholder="Austin, TX"
-                  />
-                  <input
-                    accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,video/webm"
-                    className="mb-3 block w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#efe7da] file:px-3 file:py-1.5 file:text-sm file:font-semibold"
-                    name="media"
-                    type="file"
-                  />
-                  <button className="h-10 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
-                    Publish
-                  </button>
-                </form>
-
-                <form
-                  action={createThreadPost}
-                  className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3"
-                >
-                  <div className="mb-3 flex items-center gap-2 text-sm font-bold">
-                    <MessageCircle className="size-4" />
-                    Thread
-                  </div>
-                  <textarea
-                    className="mb-3 min-h-36 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
-                    maxLength={1000}
-                    name="body"
-                    placeholder="Ask artists, talk shop, post guest spots, share advice."
-                    required
-                  />
-                  <button className="h-10 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
-                    Post thread
-                  </button>
-                </form>
-
-                <form
-                  action={createMarketplaceListing}
-                  className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3"
-                >
-                  <div className="mb-3 flex items-center gap-2 text-sm font-bold">
-                    <ShoppingBag className="size-4" />
-                    Listing
-                  </div>
-                  <input
-                    className="mb-2 h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                    maxLength={120}
-                    name="title"
-                    placeholder="Flash sheet, chair rental, supplies"
-                    required
-                  />
-                  <div className="mb-2 grid grid-cols-2 gap-2">
-                    <input
-                      className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                      name="price"
-                      placeholder="80"
-                    />
-                    <select
-                      className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                      name="category"
-                    >
-                      <option value="flash">Flash</option>
-                      <option value="guest-spot">Guest spot</option>
-                      <option value="chair">Chair</option>
-                      <option value="supplies">Supplies</option>
-                      <option value="service">Service</option>
-                    </select>
-                  </div>
-                  <textarea
-                    className="mb-2 min-h-20 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
-                    maxLength={2000}
-                    name="description"
-                    placeholder="Details, terms, dates, or pickup/shipping notes."
-                  />
-                  <div className="mb-3 grid grid-cols-2 gap-2">
-                    <input
-                      className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                      name="city"
-                      placeholder="City"
-                    />
-                    <input
-                      className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                      name="region"
-                      placeholder="State"
-                    />
-                  </div>
-                  <input
-                    accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,video/webm"
-                    className="mb-3 block w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#efe7da] file:px-3 file:py-1.5 file:text-sm file:font-semibold"
-                    name="media"
-                    type="file"
-                  />
-                  <button className="h-10 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
-                    Publish listing
-                  </button>
-                </form>
-              </div>
-            ) : (
-              <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4">
-                <p className="text-sm font-semibold">
-                  {isSignedIn
-                    ? "Finish your profile to start posting."
-                    : "Sign in to post, reply, list, and message."}
-                </p>
-                <div className="mt-3 flex gap-3">
-                  <Link
-                    className="flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
-                    href={isSignedIn ? "/account" : "/login"}
-                  >
-                    {isSignedIn ? "Set up profile" : "Sign in"}
-                  </Link>
-                </div>
-              </div>
-            )}
-          </section>
-
           <section className="divide-y divide-[#e5ded4]" id="feed">
             {feedPosts?.length ? (
               feedPosts.map((post) => (
@@ -832,6 +688,7 @@ export default async function Home({
           </section>
         </aside>
       </div>
+      <FloatingComposer canCreate={canCreate} isSignedIn={isSignedIn} />
     </main>
   );
 }
