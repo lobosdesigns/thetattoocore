@@ -16,6 +16,11 @@ type Profile = {
   is_adult_confirmed: boolean | null;
   is_private: boolean | null;
   location_personalization_enabled: boolean | null;
+  notify_feed_activity: boolean | null;
+  notify_follow_activity: boolean | null;
+  notify_marketplace_gig_activity: boolean | null;
+  notify_message_activity: boolean | null;
+  notify_thread_activity: boolean | null;
   preferred_language: string | null;
   region: string | null;
   username: string;
@@ -54,6 +59,34 @@ const countryOptions = [
   ["JP", "Japan"],
   ["KR", "South Korea"],
   ["AU", "Australia"],
+] as const;
+
+const notificationOptions = [
+  [
+    "notify_follow_activity",
+    "Follow activity",
+    "Follow requests and approved follow requests.",
+  ],
+  [
+    "notify_message_activity",
+    "DMs",
+    "Direct messages and ongoing conversation replies.",
+  ],
+  [
+    "notify_feed_activity",
+    "4U activity",
+    "Likes and comments on your 4U posts.",
+  ],
+  [
+    "notify_thread_activity",
+    "Gossip activity",
+    "Likes and comments on your Gossip posts.",
+  ],
+  [
+    "notify_marketplace_gig_activity",
+    "Stuff and Gigs",
+    "DMs started from your Stuff listings or Gigs posts.",
+  ],
 ] as const;
 
 export function ProfileForm({
@@ -257,6 +290,28 @@ export function ProfileForm({
           </span>
         </label>
       </div>
+
+      <section className="mt-5 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4">
+        <h2 className="text-sm font-bold">Notification preferences</h2>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          {notificationOptions.map(([name, label, description]) => (
+            <label className="flex items-start gap-3" key={name}>
+              <input
+                className="mt-1 size-4"
+                defaultChecked={initialProfile?.[name] ?? true}
+                name={name}
+                type="checkbox"
+              />
+              <span>
+                <span className="block text-sm font-medium">{label}</span>
+                <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+                  {description}
+                </span>
+              </span>
+            </label>
+          ))}
+        </div>
+      </section>
 
       <div className="mt-5 flex items-center gap-3">
         <button

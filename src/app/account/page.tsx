@@ -38,7 +38,7 @@ export default async function AccountPage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "username, display_name, account_type, bio, city, region, country_code, preferred_language, location_personalization_enabled, is_adult_confirmed, is_private, adult_terms_accepted_at, website_url, instagram_url, license_verified_at, role",
+      "username, display_name, account_type, bio, city, region, country_code, preferred_language, location_personalization_enabled, is_adult_confirmed, is_private, adult_terms_accepted_at, website_url, instagram_url, license_verified_at, role, notify_follow_activity, notify_message_activity, notify_feed_activity, notify_thread_activity, notify_marketplace_gig_activity",
     )
     .eq("id", claims.sub)
     .maybeSingle();

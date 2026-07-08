@@ -40,6 +40,12 @@ function sourceLabel(sourceType: string | null) {
   return "DM";
 }
 
+function messagePreferenceColumn(sourceType: string | null) {
+  return sourceType === "marketplace_listing" || sourceType === "gig"
+    ? "notify_marketplace_gig_activity"
+    : "notify_message_activity";
+}
+
 async function requireProfile() {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -182,19 +188,27 @@ export async function startConversation(formData: FormData) {
     .select("display_name")
     .eq("id", userId)
     .maybeSingle<{ display_name: string }>();
+  const preferenceColumn = messagePreferenceColumn(sourceType);
+  const { data: targetPreferences } = await supabase
+    .from("profiles")
+    .select(preferenceColumn)
+    .eq("id", targetProfile.id)
+    .maybeSingle<Record<string, boolean>>();
 
-  await supabase.from("notifications").insert({
-    actor_id: userId,
-    body: body.slice(0, 160),
-    href: `/messages?c=${conversationId}`,
-    recipient_id: targetProfile.id,
-    subject_id: sourceId || conversationId,
-    subject_type: sourceType ?? "conversation",
-    title: `${sourceLabel(sourceType)} message from ${
-      senderProfile?.display_name ?? "a member"
-    }${sourceTitle ? ` about ${sourceTitle}` : ""}`,
-    type: "message",
-  });
+  if (targetPreferences?.[preferenceColumn] !== false) {
+    await supabase.from("notifications").insert({
+      actor_id: userId,
+      body: body.slice(0, 160),
+      href: `/messages?c=${conversationId}`,
+      recipient_id: targetProfile.id,
+      subject_id: sourceId || conversationId,
+      subject_type: sourceType ?? "conversation",
+      title: `${sourceLabel(sourceType)} message from ${
+        senderProfile?.display_name ?? "a member"
+      }${sourceTitle ? ` about ${sourceTitle}` : ""}`.slice(0, 120),
+      type: "message",
+    });
+  }
 
   revalidatePath("/messages");
   revalidatePath("/notifications");
@@ -238,18 +252,34 @@ export async function sendMessage(formData: FormData) {
     .maybeSingle<{ display_name: string }>();
 
   if (recipients?.length) {
-    await supabase.from("notifications").insert(
-      recipients.map((recipient) => ({
-        actor_id: userId,
-        body: body.slice(0, 160),
-        href: `/messages?c=${conversationId}`,
-        recipient_id: recipient.user_id,
-        subject_id: conversationId,
-        subject_type: "conversation",
-        title: `New message from ${senderProfile?.display_name ?? "a member"}`,
-        type: "message",
-      })),
+    const recipientIds = recipients.map((recipient) => recipient.user_id);
+    const { data: recipientPreferences } = await supabase
+      .from("profiles")
+      .select("id, notify_message_activity")
+      .in("id", recipientIds)
+      .returns<{ id: string; notify_message_activity: boolean }[]>();
+    const enabledRecipientIds = new Set(
+      (recipientPreferences ?? [])
+        .filter((recipient) => recipient.notify_message_activity)
+        .map((recipient) => recipient.id),
     );
+
+    const notifications = recipients
+      .filter((recipient) => enabledRecipientIds.has(recipient.user_id))
+      .map((recipient) => ({
+          actor_id: userId,
+          body: body.slice(0, 160),
+          href: `/messages?c=${conversationId}`,
+          recipient_id: recipient.user_id,
+          subject_id: conversationId,
+          subject_type: "conversation",
+          title: `New message from ${senderProfile?.display_name ?? "a member"}`,
+          type: "message",
+        }));
+
+    if (notifications.length) {
+      await supabase.from("notifications").insert(notifications);
+    }
   }
 
   revalidatePath("/messages");

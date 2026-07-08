@@ -122,6 +122,12 @@ export async function updateProfile(formData: FormData) {
     is_private: formData.get("is_private") === "on",
     location_personalization_enabled:
       formData.get("location_personalization_enabled") === "on",
+    notify_feed_activity: formData.get("notify_feed_activity") === "on",
+    notify_follow_activity: formData.get("notify_follow_activity") === "on",
+    notify_marketplace_gig_activity:
+      formData.get("notify_marketplace_gig_activity") === "on",
+    notify_message_activity: formData.get("notify_message_activity") === "on",
+    notify_thread_activity: formData.get("notify_thread_activity") === "on",
     preferred_language: preferredLanguage,
     region: cleanText(formData.get("region"), 40) || null,
     updated_at: new Date().toISOString(),

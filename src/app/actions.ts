@@ -274,6 +274,18 @@ async function notifyContentOwner({
 }) {
   if (!ownerId || ownerId === actorId) return;
 
+  const preferenceColumn =
+    type === "feed_like" || type === "feed_comment"
+      ? "notify_feed_activity"
+      : "notify_thread_activity";
+  const { data: ownerProfile } = await supabase
+    .from("profiles")
+    .select(preferenceColumn)
+    .eq("id", ownerId)
+    .maybeSingle<Record<string, boolean>>();
+
+  if (ownerProfile?.[preferenceColumn] === false) return;
+
   const { error } = await supabase.from("notifications").insert({
     actor_id: actorId,
     body: body.slice(0, 240),

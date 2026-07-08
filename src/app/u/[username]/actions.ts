@@ -105,16 +105,24 @@ export async function followProfile(formData: FormData) {
   }
 
   if (status === "pending") {
-    await supabase.from("notifications").insert({
-      actor_id: userId,
-      body: `${actorProfile?.display_name ?? "A member"} wants to follow your private profile.`,
-      href: `/u/${targetProfile.username}`,
-      recipient_id: targetId,
-      subject_id: userId,
-      subject_type: "profile",
-      title: "New follow request",
-      type: "follow_request",
-    });
+    const { data: targetPreferences } = await supabase
+      .from("profiles")
+      .select("notify_follow_activity")
+      .eq("id", targetId)
+      .maybeSingle<{ notify_follow_activity: boolean }>();
+
+    if (targetPreferences?.notify_follow_activity !== false) {
+      await supabase.from("notifications").insert({
+        actor_id: userId,
+        body: `${actorProfile?.display_name ?? "A member"} wants to follow your private profile.`,
+        href: `/u/${targetProfile.username}`,
+        recipient_id: targetId,
+        subject_id: userId,
+        subject_type: "profile",
+        title: "New follow request",
+        type: "follow_request",
+      });
+    }
   }
 
   revalidatePath(`/u/${username}`);
@@ -178,16 +186,24 @@ export async function acceptFollowRequest(formData: FormData) {
     .eq("id", userId)
     .maybeSingle<{ display_name: string; username: string }>();
 
-  await supabase.from("notifications").insert({
-    actor_id: userId,
-    body: `${ownerProfile?.display_name ?? "A member"} approved your follow request.`,
-    href: `/u/${ownerProfile?.username ?? username}`,
-    recipient_id: followerId,
-    subject_id: userId,
-    subject_type: "profile",
-    title: "Follow request approved",
-    type: "follow_accepted",
-  });
+  const { data: followerPreferences } = await supabase
+    .from("profiles")
+    .select("notify_follow_activity")
+    .eq("id", followerId)
+    .maybeSingle<{ notify_follow_activity: boolean }>();
+
+  if (followerPreferences?.notify_follow_activity !== false) {
+    await supabase.from("notifications").insert({
+      actor_id: userId,
+      body: `${ownerProfile?.display_name ?? "A member"} approved your follow request.`,
+      href: `/u/${ownerProfile?.username ?? username}`,
+      recipient_id: followerId,
+      subject_id: userId,
+      subject_type: "profile",
+      title: "Follow request approved",
+      type: "follow_accepted",
+    });
+  }
 
   revalidatePath(`/u/${username}`);
   redirect(profilePath(username, "Follow request approved."));
