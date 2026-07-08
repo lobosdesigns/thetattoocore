@@ -62,6 +62,7 @@ type ReportSubjectPreview = {
 type LicenseRequest = {
   accountType: string;
   createdAt: string;
+  documentName: string;
   expiresOn: string | null;
   id: string;
   issuingRegion: string;
@@ -69,7 +70,10 @@ type LicenseRequest = {
   licenseNumber: string | null;
   profileName: string;
   profileUsername: string;
+  reviewedAt: string | null;
+  reviewerNote: string | null;
   status: "pending" | "approved" | "rejected";
+  storageBucket: string;
   signedDocumentUrl: string | null;
 };
 type AdminUser = {
@@ -131,8 +135,24 @@ function timeAgo(value: string) {
   return `${Math.round(hours / 24)}d`;
 }
 
+function formatDate(value: string | null) {
+  return value ? new Date(value).toLocaleDateString() : "Not provided";
+}
+
 function statusLabel(status: ModerationStatus) {
   return status.replace("_", " ");
+}
+
+function licenseStatusClass(status: LicenseRequest["status"]) {
+  if (status === "approved") return "border-[#b9d7bd] bg-[#eef8ef] text-[#276231]";
+  if (status === "rejected") return "border-[#e5b8b8] bg-[#fff0f0] text-[#8a2828]";
+
+  return "border-[#d8d1c6] bg-[#f7f4ef] text-[#4f473f]";
+}
+
+function fileNameFromPath(path: string) {
+  const name = path.split("/").filter(Boolean).at(-1);
+  return name || "License document";
 }
 
 function userStatus(user: Pick<AdminUser, "bannedAt" | "suspendedAt">) {
@@ -415,11 +435,15 @@ function LicenseRequestCard({ request }: { request: LicenseRequest }) {
             {timeAgo(request.createdAt)}
           </p>
         </div>
-        <span className="shrink-0 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] px-2 py-1 text-xs font-semibold capitalize text-[#4f473f]">
+        <span
+          className={`shrink-0 rounded-md border px-2 py-1 text-xs font-semibold capitalize ${licenseStatusClass(
+            request.status,
+          )}`}
+        >
           {request.status}
         </span>
       </div>
-      <dl className="grid gap-2 text-sm text-[#4f473f]">
+      <dl className="grid gap-3 text-sm text-[#4f473f] sm:grid-cols-2">
         <div>
           <dt className="text-xs font-semibold uppercase text-[#766d62]">
             Certification
@@ -440,15 +464,25 @@ function LicenseRequestCard({ request }: { request: LicenseRequest }) {
             <dd className="mt-0.5">{request.licenseNumber}</dd>
           </div>
         ) : null}
-        {request.expiresOn ? (
-          <div>
-            <dt className="text-xs font-semibold uppercase text-[#766d62]">
-              Expires
-            </dt>
-            <dd className="mt-0.5">{request.expiresOn}</dd>
-          </div>
-        ) : null}
+        <div>
+          <dt className="text-xs font-semibold uppercase text-[#766d62]">
+            Submitted
+          </dt>
+          <dd className="mt-0.5">{formatDate(request.createdAt)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase text-[#766d62]">
+            Expires
+          </dt>
+          <dd className="mt-0.5">{formatDate(request.expiresOn)}</dd>
+        </div>
       </dl>
+      <div className="mt-4 rounded-md border border-[#e5ded4] bg-[#f7f4ef] p-3">
+        <p className="truncate text-sm font-semibold">{request.documentName}</p>
+        <p className="mt-1 text-xs text-[#766d62]">
+          Private file - {request.storageBucket}
+        </p>
+      </div>
       {request.signedDocumentUrl ? (
         <a
           className="mt-4 flex h-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-3 text-sm font-semibold hover:bg-[#f7f4ef]"
@@ -490,7 +524,16 @@ function LicenseRequestCard({ request }: { request: LicenseRequest }) {
             </button>
           </div>
         </form>
-      ) : null}
+      ) : (
+        <div className="mt-4 rounded-md border border-[#e5ded4] bg-[#f7f4ef] px-3 py-2 text-xs text-[#766d62]">
+          <p>
+            Reviewed {request.reviewedAt ? formatDate(request.reviewedAt) : "previously"}.
+          </p>
+          {request.reviewerNote ? (
+            <p className="mt-1 text-[#4f473f]">{request.reviewerNote}</p>
+          ) : null}
+        </div>
+      )}
     </article>
   );
 }
@@ -610,7 +653,7 @@ export default async function AdminPage({
     supabase
       .from("license_verification_requests")
       .select(
-        "id, account_type, license_name, license_number, issuing_region, expires_on, storage_bucket, storage_path, status, created_at, profiles:profiles!license_verification_requests_profile_id_fkey(display_name, username)",
+        "id, account_type, license_name, license_number, issuing_region, expires_on, storage_bucket, storage_path, status, reviewer_note, reviewed_at, created_at, profiles:profiles!license_verification_requests_profile_id_fkey(display_name, username)",
       )
       .in("status", ["pending", "rejected"])
       .order("created_at", { ascending: false })
@@ -625,6 +668,8 @@ export default async function AdminPage({
           license_name: string;
           license_number: string | null;
           profiles: { display_name: string; username: string } | null;
+          reviewed_at: string | null;
+          reviewer_note: string | null;
           storage_bucket: string;
           storage_path: string;
           status: "pending" | "approved" | "rejected";
@@ -855,6 +900,7 @@ export default async function AdminPage({
     (request) => ({
       accountType: request.account_type,
       createdAt: request.created_at,
+      documentName: fileNameFromPath(request.storage_path),
       expiresOn: request.expires_on,
       id: request.id,
       issuingRegion: request.issuing_region,
@@ -862,8 +908,11 @@ export default async function AdminPage({
       licenseNumber: request.license_number,
       profileName: request.profiles?.display_name ?? "Member",
       profileUsername: request.profiles?.username ?? "member",
+      reviewedAt: request.reviewed_at,
+      reviewerNote: request.reviewer_note,
       signedDocumentUrl: signedDocumentUrlByRequest.get(request.id) ?? null,
       status: request.status,
+      storageBucket: request.storage_bucket,
     }),
   );
   const reportSubjectPreviews = new Map<string, ReportSubjectPreview>();
