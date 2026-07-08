@@ -7,6 +7,7 @@ import {
 import { FloatingComposerShell } from "./floating-composer-shell";
 import { MediaInput } from "./media-input";
 import { startConversation } from "./messages/actions";
+import { WordLimitedField } from "./word-limited-field";
 
 const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
 const imageVideoAccept = `${imageAccept},video/mp4,video/quicktime,video/webm`;
@@ -58,9 +59,11 @@ export function FloatingComposer({
             className="space-y-3"
             encType="multipart/form-data"
           >
-            <textarea
+            <WordLimitedField
+              as="textarea"
               className="min-h-28 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
               maxLength={360}
+              maxWords={40}
               name="caption"
               placeholder="Short caption, 40 words max"
               required

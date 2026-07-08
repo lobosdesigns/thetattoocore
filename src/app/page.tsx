@@ -29,6 +29,7 @@ import {
 import { startConversation } from "./messages/actions";
 import { FloatingComposer } from "./floating-composer";
 import { LogoLockup, LogoWordmark } from "./logo-mark";
+import { WordLimitedField } from "./word-limited-field";
 import { createClient } from "@/lib/supabase/server";
 
 type Claims = {
@@ -844,24 +845,24 @@ export default async function Home({
                       </div>
                     ) : null}
                     {canCreate ? (
-                      <form
-                        action={createPostComment}
-                        className="flex items-center gap-2 border-t border-[#e5ded4] pt-3"
-                      >
+                      <form action={createPostComment} className="border-t border-[#e5ded4] pt-3">
                         <input name="post_id" type="hidden" value={post.id} />
-                        <input
-                          className="h-10 min-w-0 flex-1 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                          maxLength={300}
-                          name="body"
-                          placeholder="Add a short comment"
-                          required
-                        />
-                        <button
-                          aria-label="Post comment"
-                          className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
-                        >
-                          <Send className="size-4" />
-                        </button>
+                        <div className="flex items-start gap-2">
+                          <WordLimitedField
+                            className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                            maxLength={300}
+                            maxWords={40}
+                            name="body"
+                            placeholder="Add a short comment"
+                            required
+                          />
+                          <button
+                            aria-label="Post comment"
+                            className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                          >
+                            <Send className="size-4" />
+                          </button>
+                        </div>
                       </form>
                     ) : null}
                   </div>
