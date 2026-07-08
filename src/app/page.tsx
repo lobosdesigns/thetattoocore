@@ -164,36 +164,6 @@ type ThreadComment = {
   profiles: Pick<Profile, "display_name" | "username"> | null;
 };
 
-const sampleThreads = [
-  "What aftercare routine do you recommend for heavy blackwork in summer?",
-  "Guest spot opening in Dallas first week of August. Realism artists preferred.",
-  "Shop owners: deposits through marketplace or direct invoice?",
-];
-
-const sampleListings = [
-  { title: "Dragon flash sheet", price: "$80", tag: "digital" },
-  { title: "Guest chair: Phoenix", price: "$300/day", tag: "studio" },
-  { title: "Aftercare balm batch", price: "$14", tag: "supplies" },
-];
-
-const sampleGigs = [
-  {
-    category: "guest spot",
-    location: "Austin, TX",
-    title: "Blackwork guest artist wanted",
-  },
-  {
-    category: "convention",
-    location: "Chicago, IL",
-    title: "Booth share for fall convention",
-  },
-  {
-    category: "job",
-    location: "Denver, CO",
-    title: "Studio hiring full-time artist",
-  },
-];
-
 function EmptyColumnState({
   body,
   icon: Icon,
@@ -210,6 +180,14 @@ function EmptyColumnState({
       </div>
       <h3 className="mt-4 text-base font-bold">{title}</h3>
       <p className="mt-2 text-sm leading-6 text-[#4f473f]">{body}</p>
+    </div>
+  );
+}
+
+function SidebarEmptyState({ children }: { children: string }) {
+  return (
+    <div className="rounded-md border border-dashed border-[#cfc6ba] bg-[#fffdf9] p-3 text-sm leading-5 text-[#766d62]">
+      {children}
     </div>
   );
 }
@@ -1315,8 +1293,8 @@ export default async function Home({
               <h2 className="text-sm font-semibold">Live Gossip</h2>
             </div>
             <div className="space-y-3">
-              {(visibleThreadPosts.length ? visibleThreadPosts.slice(0, 4) : null)?.map(
-                (thread) => (
+              {visibleThreadPosts.length ? (
+                visibleThreadPosts.slice(0, 4).map((thread) => (
                   <a
                     className="block rounded-md border border-[#d8d1c6] bg-white p-3 text-sm leading-5"
                     href="#threads"
@@ -1324,17 +1302,10 @@ export default async function Home({
                   >
                     {thread.body}
                   </a>
-                ),
-              ) ??
-                sampleThreads.map((thread) => (
-                  <a
-                    className="block rounded-md border border-[#d8d1c6] bg-white p-3 text-sm leading-5"
-                    href="#threads"
-                    key={thread}
-                  >
-                    {thread}
-                  </a>
-                ))}
+                ))
+              ) : (
+                <SidebarEmptyState>No Gossip yet.</SidebarEmptyState>
+              )}
             </div>
           </section>
 
@@ -1344,30 +1315,22 @@ export default async function Home({
               <h2 className="text-sm font-semibold">Gigs</h2>
             </div>
             <div className="space-y-3">
-              {(visibleGigs.length ? visibleGigs.slice(0, 4) : null)?.map((gig) => (
-                <a
-                  className="block rounded-md border border-[#d8d1c6] bg-white p-3"
-                  href="#gigs"
-                  key={gig.id}
-                >
-                  <p className="text-sm font-semibold">{gig.title}</p>
-                  <p className="mt-1 text-xs capitalize text-[#766d62]">
-                    {formatGigCategory(gig.category)} - {formatGigDate(gig)}
-                  </p>
-                </a>
-              )) ??
-                sampleGigs.map((gig) => (
+              {visibleGigs.length ? (
+                visibleGigs.slice(0, 4).map((gig) => (
                   <a
                     className="block rounded-md border border-[#d8d1c6] bg-white p-3"
                     href="#gigs"
-                    key={gig.title}
+                    key={gig.id}
                   >
                     <p className="text-sm font-semibold">{gig.title}</p>
                     <p className="mt-1 text-xs capitalize text-[#766d62]">
-                      {gig.category} - {gig.location}
+                      {formatGigCategory(gig.category)} - {formatGigDate(gig)}
                     </p>
                   </a>
-                ))}
+                ))
+              ) : (
+                <SidebarEmptyState>No Gigs yet.</SidebarEmptyState>
+              )}
             </div>
           </section>
 
@@ -1377,14 +1340,14 @@ export default async function Home({
               <h2 className="text-sm font-semibold">Stuff</h2>
             </div>
             <div className="space-y-3">
-              {(visibleListings.length ? visibleListings.slice(0, 4) : null)?.map(
-                (listing) => (
+              {visibleListings.length ? (
+                visibleListings.slice(0, 4).map((listing) => (
                   <a
                     className="block rounded-md border border-[#d8d1c6] bg-white p-3"
                     href="#marketplace"
                     key={listing.id}
                   >
-                      <div className="mb-2 flex items-center gap-3">
+                    <div className="mb-2 flex items-center gap-3">
                       <ListingThumb media={listing.marketplace_media[0]} />
                       <div>
                         <p className="text-sm font-semibold">{listing.title}</p>
@@ -1395,26 +1358,10 @@ export default async function Home({
                     </div>
                     <p className="text-sm font-bold">{formatPrice(listing)}</p>
                   </a>
-                ),
-              ) ??
-                sampleListings.map((listing) => (
-                  <a
-                    className="block rounded-md border border-[#d8d1c6] bg-white p-3"
-                    href="#marketplace"
-                    key={listing.title}
-                  >
-                    <div className="mb-2 flex items-center gap-3">
-                      <div className="flex size-10 items-center justify-center rounded-md bg-[#efe7da]">
-                        <ImageIcon className="size-5" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold">{listing.title}</p>
-                        <p className="text-xs text-[#766d62]">{listing.tag}</p>
-                      </div>
-                    </div>
-                    <p className="text-sm font-bold">{listing.price}</p>
-                  </a>
-                ))}
+                ))
+              ) : (
+                <SidebarEmptyState>No Stuff yet.</SidebarEmptyState>
+              )}
             </div>
           </section>
         </aside>
