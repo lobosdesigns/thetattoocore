@@ -217,7 +217,7 @@ export default async function MessagesPage({
     }
   }
 
-  const inbox = (memberships ?? [])
+  let inbox = (memberships ?? [])
     .map((membership) => {
       const conversationMembers =
         members?.filter(
@@ -251,6 +251,40 @@ export default async function MessagesPage({
 
   const selectedConversation =
     inbox.find((conversation) => conversation.id === params.c) ?? inbox[0];
+
+  if (selectedConversation?.unreadCount) {
+    const readAt = new Date().toISOString();
+
+    await Promise.all([
+      supabase
+        .from("notifications")
+        .update({ read_at: readAt })
+        .eq("recipient_id", claims.sub)
+        .eq("type", "message")
+        .eq("subject_id", selectedConversation.id)
+        .is("read_at", null),
+      supabase
+        .from("notifications")
+        .update({ read_at: readAt })
+        .eq("recipient_id", claims.sub)
+        .eq("type", "message")
+        .eq("href", `/messages?c=${selectedConversation.id}`)
+        .is("read_at", null),
+      supabase
+        .from("conversation_members")
+        .update({ last_read_at: readAt })
+        .eq("conversation_id", selectedConversation.id)
+        .eq("user_id", claims.sub),
+    ]);
+
+    inbox = inbox.map((conversation) =>
+      conversation.id === selectedConversation.id
+        ? { ...conversation, unreadCount: 0 }
+        : conversation,
+    );
+    selectedConversation.unreadCount = 0;
+  }
+
   const selectedMessages = selectedConversation
     ? messagesByConversation.get(selectedConversation.id) ?? []
     : [];
