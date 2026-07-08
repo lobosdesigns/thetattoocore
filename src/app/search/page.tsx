@@ -52,6 +52,8 @@ type GigResult = {
   profiles: Pick<ProfileResult, "display_name" | "username"> | null;
 };
 
+type SearchType = "all" | "profiles" | "feed" | "threads" | "marketplace" | "gigs";
+
 export const metadata: Metadata = {
   robots: {
     follow: false,
@@ -67,8 +69,49 @@ function cleanQuery(value?: string) {
     .slice(0, 80);
 }
 
+function cleanFilter(value?: string, maxLength = 40) {
+  return String(value ?? "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .slice(0, maxLength);
+}
+
+function cleanType(value?: string): SearchType {
+  const text = cleanFilter(value, 20);
+
+  if (
+    text === "profiles" ||
+    text === "feed" ||
+    text === "threads" ||
+    text === "marketplace" ||
+    text === "gigs"
+  ) {
+    return text;
+  }
+
+  return "all";
+}
+
 function searchPattern(query: string) {
   return `%${query.replaceAll("%", "").replaceAll("_", "")}%`;
+}
+
+function runSection(type: SearchType, section: Exclude<SearchType, "all">) {
+  return type === "all" || type === section;
+}
+
+function typedHref(type: SearchType, params: URLSearchParams) {
+  const next = new URLSearchParams(params);
+
+  if (type === "all") {
+    next.delete("type");
+  } else {
+    next.set("type", type);
+  }
+
+  const qs = next.toString();
+
+  return qs ? `/search?${qs}` : "/search";
 }
 
 function initials(name: string) {
@@ -122,12 +165,38 @@ function EmptySection({ label }: { label: string }) {
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{
+    category?: string;
+    city?: string;
+    q?: string;
+    region?: string;
+    type?: string;
+  }>;
 }) {
   const params = await searchParams;
   const query = cleanQuery(params.q);
+  const category = cleanFilter(params.category);
+  const city = cleanFilter(params.city);
+  const region = cleanFilter(params.region);
+  const type = cleanType(params.type);
   const pattern = searchPattern(query);
+  const cityPattern = searchPattern(city);
+  const regionPattern = searchPattern(region);
+  const categoryPattern = searchPattern(category);
+  const typedParams = new URLSearchParams();
+
+  if (query) typedParams.set("q", query);
+  if (category) typedParams.set("category", category);
+  if (city) typedParams.set("city", city);
+  if (region) typedParams.set("region", region);
+
+  const hasSearch = Boolean(query || category || city || region);
   const supabase = await createClient();
+  const shouldRunProfiles = hasSearch && runSection(type, "profiles");
+  const shouldRunFeed = hasSearch && runSection(type, "feed");
+  const shouldRunThreads = hasSearch && runSection(type, "threads");
+  const shouldRunListings = hasSearch && runSection(type, "marketplace");
+  const shouldRunGigs = hasSearch && runSection(type, "gigs");
 
   const [
     { data: profiles },
@@ -135,65 +204,92 @@ export default async function SearchPage({
     { data: threads },
     { data: listings },
     { data: gigs },
-  ] = query
+  ] = hasSearch
     ? await Promise.all([
-        supabase
-          .from("profiles")
-          .select("id, username, display_name, account_type, city, region")
-          .or(
-            `username.ilike.${pattern},display_name.ilike.${pattern},account_type.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`,
-          )
-          .eq("is_private", false)
-          .order("display_name", { ascending: true })
-          .limit(12)
-          .returns<ProfileResult[]>(),
-        supabase
-          .from("feed_posts")
-          .select(
-            "id, caption, location_label, style_tags, profiles:profiles!feed_posts_author_id_fkey(display_name, username)",
-          )
-          .eq("is_published", true)
-          .eq("moderation_status", "active")
-          .or(`caption.ilike.${pattern},location_label.ilike.${pattern}`)
-          .order("created_at", { ascending: false })
-          .limit(8)
-          .returns<FeedResult[]>(),
-        supabase
-          .from("thread_posts")
-          .select(
-            "id, body, profiles:profiles!thread_posts_author_id_fkey(display_name, username)",
-          )
-          .eq("moderation_status", "active")
-          .ilike("body", pattern)
-          .order("created_at", { ascending: false })
-          .limit(8)
-          .returns<ThreadResult[]>(),
-        supabase
-          .from("marketplace_listings")
-          .select(
-            "id, title, category, city, region, profiles:profiles!marketplace_listings_seller_id_fkey(display_name, username)",
-          )
-          .eq("status", "active")
-          .eq("moderation_status", "active")
-          .or(
-            `title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`,
-          )
-          .order("created_at", { ascending: false })
-          .limit(8)
-          .returns<ListingResult[]>(),
-        supabase
-          .from("gigs")
-          .select(
-            "id, title, category, city, region, profiles:profiles!gigs_poster_id_fkey(display_name, username)",
-          )
-          .eq("status", "active")
-          .eq("moderation_status", "active")
-          .or(
-            `title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern},compensation.ilike.${pattern}`,
-          )
-          .order("created_at", { ascending: false })
-          .limit(8)
-          .returns<GigResult[]>(),
+        shouldRunProfiles
+          ? supabase
+              .from("profiles")
+              .select("id, username, display_name, account_type, city, region")
+              .or(
+                `username.ilike.${pattern},display_name.ilike.${pattern},account_type.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`,
+              )
+              .eq("is_private", false)
+              .ilike("city", city ? cityPattern : "%")
+              .ilike("region", region ? regionPattern : "%")
+              .order("display_name", { ascending: true })
+              .limit(12)
+              .returns<ProfileResult[]>()
+          : Promise.resolve({ data: [] as ProfileResult[] }),
+        shouldRunFeed
+          ? supabase
+              .from("feed_posts")
+              .select(
+                "id, caption, location_label, style_tags, profiles:profiles!feed_posts_author_id_fkey(display_name, username)",
+              )
+              .eq("is_published", true)
+              .eq("moderation_status", "active")
+              .or(
+                query
+                  ? `caption.ilike.${pattern},location_label.ilike.${pattern}`
+                  : `caption.ilike.%,location_label.ilike.%`,
+              )
+              .ilike("location_label", city ? cityPattern : "%")
+              .order("created_at", { ascending: false })
+              .limit(8)
+              .returns<FeedResult[]>()
+          : Promise.resolve({ data: [] as FeedResult[] }),
+        shouldRunThreads && query
+          ? supabase
+              .from("thread_posts")
+              .select(
+                "id, body, profiles:profiles!thread_posts_author_id_fkey(display_name, username)",
+              )
+              .eq("moderation_status", "active")
+              .ilike("body", pattern)
+              .order("created_at", { ascending: false })
+              .limit(8)
+              .returns<ThreadResult[]>()
+          : Promise.resolve({ data: [] as ThreadResult[] }),
+        shouldRunListings
+          ? supabase
+              .from("marketplace_listings")
+              .select(
+                "id, title, category, city, region, profiles:profiles!marketplace_listings_seller_id_fkey(display_name, username)",
+              )
+              .eq("status", "active")
+              .eq("moderation_status", "active")
+              .or(
+                query
+                  ? `title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`
+                  : `title.ilike.%,description.ilike.%,category.ilike.%,city.ilike.%,region.ilike.%`,
+              )
+              .ilike("category", category ? categoryPattern : "%")
+              .ilike("city", city ? cityPattern : "%")
+              .ilike("region", region ? regionPattern : "%")
+              .order("created_at", { ascending: false })
+              .limit(8)
+              .returns<ListingResult[]>()
+          : Promise.resolve({ data: [] as ListingResult[] }),
+        shouldRunGigs
+          ? supabase
+              .from("gigs")
+              .select(
+                "id, title, category, city, region, profiles:profiles!gigs_poster_id_fkey(display_name, username)",
+              )
+              .eq("status", "active")
+              .eq("moderation_status", "active")
+              .or(
+                query
+                  ? `title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern},compensation.ilike.${pattern}`
+                  : `title.ilike.%,description.ilike.%,category.ilike.%,city.ilike.%,region.ilike.%,compensation.ilike.%`,
+              )
+              .ilike("category", category ? categoryPattern : "%")
+              .ilike("city", city ? cityPattern : "%")
+              .ilike("region", region ? regionPattern : "%")
+              .order("created_at", { ascending: false })
+              .limit(8)
+              .returns<GigResult[]>()
+          : Promise.resolve({ data: [] as GigResult[] }),
       ])
     : [
         { data: [] as ProfileResult[] },
@@ -222,7 +318,10 @@ export default async function SearchPage({
             >
               <ArrowLeft className="size-5" />
             </Link>
-            <form action="/search" className="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3">
+            <form
+              action="/search"
+              className="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3"
+            >
               <Search className="size-4 shrink-0 text-[#766d62]" />
               <input
                 autoFocus
@@ -242,19 +341,64 @@ export default async function SearchPage({
         <section className="px-4 py-5">
           <h1 className="text-2xl font-bold">Search</h1>
           <p className="mt-1 text-sm text-[#766d62]">
-            {query
-              ? `${total} result${total === 1 ? "" : "s"} for "${query}"`
+            {hasSearch
+              ? `${total} result${total === 1 ? "" : "s"} found`
               : "Find artists, styles, threads, listings, and gigs."}
           </p>
+          <form
+            action="/search"
+            className="mt-4 grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]"
+          >
+            <input name="q" type="hidden" value={query} />
+            <input name="type" type="hidden" value={type === "all" ? "" : type} />
+            <input
+              className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              defaultValue={category}
+              name="category"
+              placeholder="category"
+            />
+            <input
+              className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              defaultValue={city}
+              name="city"
+              placeholder="city"
+            />
+            <input
+              className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              defaultValue={region}
+              name="region"
+              placeholder="state / region"
+            />
+            <button className="h-10 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold">
+              Filter
+            </button>
+          </form>
+          <div className="mt-3 flex gap-2 overflow-x-auto">
+            {[
+              ["all", "All"],
+              ["profiles", "Profiles"],
+              ["feed", "Feed"],
+              ["threads", "Threads"],
+              ["marketplace", "Marketplace"],
+              ["gigs", "Gigs"],
+            ].map(([value, label]) => (
+              <Link
+                className={`flex h-9 shrink-0 items-center rounded-md border border-[#d8d1c6] px-3 text-sm font-semibold ${
+                  type === value ? "bg-[#171412] text-white" : "bg-white"
+                }`}
+                href={typedHref(value as SearchType, typedParams)}
+                key={value}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
         </section>
 
-        {!query ? null : (
+        {!hasSearch ? null : (
           <>
-            <SearchSection
-              count={profiles?.length ?? 0}
-              icon={UserRound}
-              title="Profiles"
-            >
+            {runSection(type, "profiles") ? (
+            <SearchSection count={profiles?.length ?? 0} icon={UserRound} title="Profiles">
               {profiles?.length ? (
                 <div className="grid gap-3 sm:grid-cols-2">
                   {profiles.map((profile) => (
@@ -286,12 +430,10 @@ export default async function SearchPage({
                 <EmptySection label="profiles" />
               )}
             </SearchSection>
+            ) : null}
 
-            <SearchSection
-              count={feedPosts?.length ?? 0}
-              icon={Camera}
-              title="Feed"
-            >
+            {runSection(type, "feed") ? (
+            <SearchSection count={feedPosts?.length ?? 0} icon={Camera} title="Feed">
               {feedPosts?.length ? (
                 <div className="space-y-3">
                   {feedPosts.map((post) => (
@@ -313,12 +455,10 @@ export default async function SearchPage({
                 <EmptySection label="feed posts" />
               )}
             </SearchSection>
+            ) : null}
 
-            <SearchSection
-              count={threads?.length ?? 0}
-              icon={MessageCircle}
-              title="Threads"
-            >
+            {runSection(type, "threads") ? (
+            <SearchSection count={threads?.length ?? 0} icon={MessageCircle} title="Threads">
               {threads?.length ? (
                 <div className="space-y-3">
                   {threads.map((thread) => (
@@ -340,12 +480,10 @@ export default async function SearchPage({
                 <EmptySection label="threads" />
               )}
             </SearchSection>
+            ) : null}
 
-            <SearchSection
-              count={listings?.length ?? 0}
-              icon={ShoppingBag}
-              title="Marketplace"
-            >
+            {runSection(type, "marketplace") ? (
+            <SearchSection count={listings?.length ?? 0} icon={ShoppingBag} title="Marketplace">
               {listings?.length ? (
                 <div className="grid gap-3 sm:grid-cols-2">
                   {listings.map((listing) => (
@@ -366,12 +504,10 @@ export default async function SearchPage({
                 <EmptySection label="marketplace listings" />
               )}
             </SearchSection>
+            ) : null}
 
-            <SearchSection
-              count={gigs?.length ?? 0}
-              icon={BriefcaseBusiness}
-              title="Gigs"
-            >
+            {runSection(type, "gigs") ? (
+            <SearchSection count={gigs?.length ?? 0} icon={BriefcaseBusiness} title="Gigs">
               {gigs?.length ? (
                 <div className="grid gap-3 sm:grid-cols-2">
                   {gigs.map((gig) => (
@@ -392,6 +528,7 @@ export default async function SearchPage({
                 <EmptySection label="gigs" />
               )}
             </SearchSection>
+            ) : null}
           </>
         )}
       </div>
