@@ -9,6 +9,21 @@ type Claims = {
 };
 
 const accountTypes = new Set(["artist", "enthusiast", "studio", "supplier"]);
+const languages = new Set(["en", "es", "pt", "fr", "de", "it", "ja", "ko", "zh"]);
+const countryCodes = new Set([
+  "US",
+  "CA",
+  "MX",
+  "BR",
+  "GB",
+  "FR",
+  "DE",
+  "IT",
+  "ES",
+  "JP",
+  "KR",
+  "AU",
+]);
 
 function accountPath(message: string) {
   return `/account?message=${encodeURIComponent(message)}`;
@@ -48,6 +63,8 @@ export async function updateProfile(formData: FormData) {
   const username = cleanText(formData.get("username"), 30).toLowerCase();
   const displayName = cleanText(formData.get("display_name"), 80);
   const accountType = cleanText(formData.get("account_type"), 30);
+  const countryCode = cleanText(formData.get("country_code"), 2).toUpperCase();
+  const preferredLanguage = cleanText(formData.get("preferred_language"), 8);
 
   if (!/^[a-z0-9_]{3,30}$/.test(username)) {
     redirect(accountPath("Username must be 3-30 letters, numbers, or underscores."));
@@ -61,13 +78,26 @@ export async function updateProfile(formData: FormData) {
     redirect(accountPath("Choose a valid account type."));
   }
 
+  if (!countryCodes.has(countryCode)) {
+    redirect(accountPath("Choose a valid country."));
+  }
+
+  if (!languages.has(preferredLanguage)) {
+    redirect(accountPath("Choose a valid language."));
+  }
+
   const { error } = await supabase.from("profiles").upsert({
     account_type: accountType,
     bio: cleanText(formData.get("bio"), 500) || null,
     city: cleanText(formData.get("city"), 80) || null,
+    country: countryCode,
+    country_code: countryCode,
     display_name: displayName,
     id: claims.sub,
     instagram_url: cleanUrl(formData.get("instagram_url")),
+    location_personalization_enabled:
+      formData.get("location_personalization_enabled") === "on",
+    preferred_language: preferredLanguage,
     region: cleanText(formData.get("region"), 40) || null,
     updated_at: new Date().toISOString(),
     username,

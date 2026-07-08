@@ -9,8 +9,11 @@ type Profile = {
   account_type: "artist" | "enthusiast" | "studio" | "supplier";
   bio: string | null;
   city: string | null;
+  country_code: string | null;
   display_name: string;
   instagram_url: string | null;
+  location_personalization_enabled: boolean | null;
+  preferred_language: string | null;
   region: string | null;
   username: string;
   website_url: string | null;
@@ -21,6 +24,33 @@ const accountTypes = [
   ["artist", "Artist"],
   ["studio", "Studio"],
   ["supplier", "Supplier"],
+] as const;
+
+const languageOptions = [
+  ["en", "English"],
+  ["es", "Spanish"],
+  ["pt", "Portuguese"],
+  ["fr", "French"],
+  ["de", "German"],
+  ["it", "Italian"],
+  ["ja", "Japanese"],
+  ["ko", "Korean"],
+  ["zh", "Chinese"],
+] as const;
+
+const countryOptions = [
+  ["US", "United States"],
+  ["CA", "Canada"],
+  ["MX", "Mexico"],
+  ["BR", "Brazil"],
+  ["GB", "United Kingdom"],
+  ["FR", "France"],
+  ["DE", "Germany"],
+  ["IT", "Italy"],
+  ["ES", "Spain"],
+  ["JP", "Japan"],
+  ["KR", "South Korea"],
+  ["AU", "Australia"],
 ] as const;
 
 export function ProfileForm({
@@ -99,6 +129,36 @@ export function ProfileForm({
         </label>
 
         <label className="block">
+          <span className="text-sm font-medium">Country</span>
+          <select
+            className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            defaultValue={initialProfile?.country_code ?? "US"}
+            name="country_code"
+          >
+            {countryOptions.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="block">
+          <span className="text-sm font-medium">Language</span>
+          <select
+            className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            defaultValue={initialProfile?.preferred_language ?? "en"}
+            name="preferred_language"
+          >
+            {languageOptions.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="block">
           <span className="text-sm font-medium">Website</span>
           <input
             className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
@@ -129,6 +189,26 @@ export function ProfileForm({
             name="bio"
             placeholder="Style, booking notes, shop, favorite work..."
           />
+        </label>
+
+        <label className="flex items-start gap-3 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3 sm:col-span-2">
+          <input
+            className="mt-1 size-4"
+            defaultChecked={
+              initialProfile?.location_personalization_enabled ?? true
+            }
+            name="location_personalization_enabled"
+            type="checkbox"
+          />
+          <span>
+            <span className="block text-sm font-medium">
+              Use my location for discovery and local ads
+            </span>
+            <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+              Uses your city, region, and country settings for marketplace,
+              local discovery, and future sponsored placements.
+            </span>
+          </span>
         </label>
       </div>
 
