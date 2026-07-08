@@ -20,7 +20,12 @@ import {
 import { archiveGig, createContentReport } from "@/app/actions";
 import { createClient } from "@/lib/supabase/server";
 import { siteName, siteUrl } from "@/lib/site";
-import { followProfile, unfollowProfile } from "./actions";
+import {
+  acceptFollowRequest,
+  declineFollowRequest,
+  followProfile,
+  unfollowProfile,
+} from "./actions";
 
 type Claims = {
   sub: string;
@@ -112,6 +117,17 @@ type Gig = {
   is_sensitive: boolean;
   visibility: "public_preview" | "members" | "private";
   gig_media: GigMedia[];
+};
+
+type FollowRecord = {
+  following_id: string;
+  status: "pending" | "accepted";
+};
+
+type FollowRequest = {
+  created_at: string;
+  follower_id: string;
+  profiles: Pick<Profile, "account_type" | "display_name" | "id" | "username"> | null;
 };
 
 function initials(name: string) {
@@ -404,6 +420,7 @@ export default async function ProfilePage({
     { count: followerCount },
     { count: followingCount },
     { data: followRecord },
+    { data: followRequests },
     { data: viewerProfile },
     { data: posts },
     { data: threads },
@@ -413,18 +430,32 @@ export default async function ProfilePage({
     supabase
       .from("follows")
       .select("*", { count: "exact", head: true })
-      .eq("following_id", profile.id),
+      .eq("following_id", profile.id)
+      .eq("status", "accepted"),
     supabase
       .from("follows")
       .select("*", { count: "exact", head: true })
-      .eq("follower_id", profile.id),
+      .eq("follower_id", profile.id)
+      .eq("status", "accepted"),
     claims?.sub
       ? supabase
           .from("follows")
-          .select("following_id")
+          .select("following_id, status")
           .eq("follower_id", claims.sub)
           .eq("following_id", profile.id)
-          .maybeSingle<{ following_id: string }>()
+          .maybeSingle<FollowRecord>()
+      : Promise.resolve({ data: null }),
+    claims?.sub === profile.id
+      ? supabase
+          .from("follows")
+          .select(
+            "created_at, follower_id, profiles:profiles!follows_follower_id_fkey(id, username, display_name, account_type)",
+          )
+          .eq("following_id", profile.id)
+          .eq("status", "pending")
+          .order("created_at", { ascending: true })
+          .limit(12)
+          .returns<FollowRequest[]>()
       : Promise.resolve({ data: null }),
     claims?.sub
       ? supabase
@@ -489,7 +520,8 @@ export default async function ProfilePage({
   ]);
 
   const isOwnProfile = claims?.sub === profile.id;
-  const isFollowing = Boolean(followRecord);
+  const isFollowing = followRecord?.status === "accepted";
+  const hasPendingRequest = followRecord?.status === "pending";
   const isPrivateLocked = profile.is_private && !isOwnProfile && !isFollowing;
   const viewer = {
     isAdultConfirmed: Boolean(viewerProfile?.is_adult_confirmed),
@@ -623,6 +655,19 @@ export default async function ProfilePage({
                       Following
                     </button>
                   </form>
+                ) : hasPendingRequest ? (
+                  <form action={unfollowProfile}>
+                    <input name="profile_id" type="hidden" value={profile.id} />
+                    <input
+                      name="username"
+                      type="hidden"
+                      value={profile.username}
+                    />
+                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold">
+                      <UserRoundMinus className="size-4" />
+                      Request sent
+                    </button>
+                  </form>
                 ) : (
                   <form action={followProfile}>
                     <input name="profile_id" type="hidden" value={profile.id} />
@@ -633,7 +678,7 @@ export default async function ProfilePage({
                     />
                     <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
                       <UserPlus className="size-4" />
-                      Follow
+                      {profile.is_private ? "Request follow" : "Follow"}
                     </button>
                   </form>
                 )}
@@ -656,6 +701,65 @@ export default async function ProfilePage({
             </div>
           </div>
         </section>
+
+        {isOwnProfile && profile.is_private && followRequests?.length ? (
+          <section className="border-b border-[#e5ded4] px-4 py-6">
+            <div className="mb-4 flex items-center gap-2">
+              <UserPlus className="size-5" />
+              <h2 className="text-lg font-bold">Follow requests</h2>
+            </div>
+            <div className="space-y-3">
+              {followRequests.map((request) => (
+                <article
+                  className="flex flex-col gap-3 rounded-md border border-[#d8d1c6] bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
+                  key={request.follower_id}
+                >
+                  <div>
+                    <p className="font-semibold">
+                      {request.profiles?.display_name ?? "Unknown member"}
+                    </p>
+                    <p className="text-sm text-[#766d62]">
+                      @{request.profiles?.username ?? "unknown"} ·{" "}
+                      {request.profiles?.account_type ?? "member"}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <form action={acceptFollowRequest}>
+                      <input
+                        name="follower_id"
+                        type="hidden"
+                        value={request.follower_id}
+                      />
+                      <input
+                        name="username"
+                        type="hidden"
+                        value={profile.username}
+                      />
+                      <button className="h-9 rounded-md bg-[#171412] px-3 text-sm font-semibold text-white">
+                        Approve
+                      </button>
+                    </form>
+                    <form action={declineFollowRequest}>
+                      <input
+                        name="follower_id"
+                        type="hidden"
+                        value={request.follower_id}
+                      />
+                      <input
+                        name="username"
+                        type="hidden"
+                        value={profile.username}
+                      />
+                      <button className="h-9 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold">
+                        Decline
+                      </button>
+                    </form>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {isPrivateLocked ? (
           <section className="px-4 py-8">

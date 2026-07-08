@@ -59,10 +59,22 @@ export async function followProfile(formData: FormData) {
     redirect(profilePath(username, "You cannot follow yourself."));
   }
 
+  const { data: targetProfile, error: targetError } = await supabase
+    .from("profiles")
+    .select("id, is_private")
+    .eq("id", targetId)
+    .maybeSingle<{ id: string; is_private: boolean }>();
+
+  if (targetError || !targetProfile) {
+    redirect(profilePath(username, targetError?.message || "Profile not found."));
+  }
+
+  const status = targetProfile.is_private ? "pending" : "accepted";
   const { error } = await supabase.from("follows").upsert(
     {
       follower_id: userId,
       following_id: targetId,
+      status,
     },
     {
       ignoreDuplicates: true,
@@ -75,7 +87,12 @@ export async function followProfile(formData: FormData) {
   }
 
   revalidatePath(`/u/${username}`);
-  redirect(profilePath(username, "Following."));
+  redirect(
+    profilePath(
+      username,
+      status === "pending" ? "Follow request sent." : "Following.",
+    ),
+  );
 }
 
 export async function unfollowProfile(formData: FormData) {
@@ -99,4 +116,55 @@ export async function unfollowProfile(formData: FormData) {
 
   revalidatePath(`/u/${username}`);
   redirect(profilePath(username, "Unfollowed."));
+}
+
+export async function acceptFollowRequest(formData: FormData) {
+  const username = cleanUsername(formData.get("username"));
+  const followerId = String(formData.get("follower_id") ?? "");
+  const { supabase, userId } = await requireUser();
+
+  if (!username || !followerId) {
+    redirect("/");
+  }
+
+  const { error } = await supabase
+    .from("follows")
+    .update({
+      responded_at: new Date().toISOString(),
+      status: "accepted",
+    })
+    .eq("follower_id", followerId)
+    .eq("following_id", userId)
+    .eq("status", "pending");
+
+  if (error) {
+    redirect(profilePath(username, error.message || "Could not approve request."));
+  }
+
+  revalidatePath(`/u/${username}`);
+  redirect(profilePath(username, "Follow request approved."));
+}
+
+export async function declineFollowRequest(formData: FormData) {
+  const username = cleanUsername(formData.get("username"));
+  const followerId = String(formData.get("follower_id") ?? "");
+  const { supabase, userId } = await requireUser();
+
+  if (!username || !followerId) {
+    redirect("/");
+  }
+
+  const { error } = await supabase
+    .from("follows")
+    .delete()
+    .eq("follower_id", followerId)
+    .eq("following_id", userId)
+    .eq("status", "pending");
+
+  if (error) {
+    redirect(profilePath(username, error.message || "Could not decline request."));
+  }
+
+  revalidatePath(`/u/${username}`);
+  redirect(profilePath(username, "Follow request declined."));
 }
