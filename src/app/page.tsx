@@ -553,12 +553,13 @@ export default async function Home({
                 <LogoLockup className="h-14 w-52 max-w-[52vw] shrink-0" />
               </div>
               <div className="flex items-center gap-2">
-                <button
+                <Link
                   aria-label="Search"
                   className="flex size-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white"
+                  href="/search"
                 >
                   <Search className="size-5" />
-                </button>
+                </Link>
                 <button
                   aria-label="Notifications"
                   className="flex size-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white"
@@ -1177,12 +1178,15 @@ export default async function Home({
 
         <aside className="hidden bg-[#f5f2eb] px-5 py-6 lg:block">
           <div className="mb-6">
-            <div className="flex items-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3 py-2">
+            <Link
+              className="flex items-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3 py-2"
+              href="/search"
+            >
               <Search className="size-4 text-[#766d62]" />
               <span className="text-sm text-[#766d62]">
                 Search artists, styles, shops
               </span>
-            </div>
+            </Link>
           </div>
 
           <section className="mb-6">
