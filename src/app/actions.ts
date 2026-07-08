@@ -41,6 +41,15 @@ const REPORT_REASONS = new Set([
   "illegal goods or services",
   "other",
 ]);
+const REPORT_SUBJECT_CONFIG = {
+  feed_post: { ownerColumn: "author_id", table: "feed_posts" },
+  gig: { ownerColumn: "poster_id", table: "gigs" },
+  marketplace_listing: { ownerColumn: "seller_id", table: "marketplace_listings" },
+  profile: { ownerColumn: "id", table: "profiles" },
+  thread_post: { ownerColumn: "author_id", table: "thread_posts" },
+} as const;
+
+type ReportSubjectType = keyof typeof REPORT_SUBJECT_CONFIG;
 
 type Claims = {
   sub: string;
@@ -138,6 +147,24 @@ function cleanReportReason(value: FormDataEntryValue | null) {
   const reason = cleanText(value, 120);
 
   return REPORT_REASONS.has(reason) ? reason : "other";
+}
+
+function reportRedirect({
+  hash,
+  message,
+  path,
+}: {
+  hash?: string;
+  message: string;
+  path: string;
+}): never {
+  redirect(
+    redirectWithMessage({
+      hash,
+      message,
+      path,
+    }),
+  );
 }
 
 function cleanVisibility(
@@ -537,15 +564,62 @@ export async function createMarketplaceListing(formData: FormData) {
 
 export async function createContentReport(formData: FormData) {
   const { supabase, userId } = await requireProfile();
-  const subjectType = cleanText(formData.get("subject_type"), 40);
+  const subjectType = cleanText(
+    formData.get("subject_type"),
+    40,
+  ) as ReportSubjectType;
   const subjectId = cleanId(formData.get("subject_id"));
   const reason = cleanReportReason(formData.get("reason"));
   const details = cleanText(formData.get("details"), 500);
   const returnPath = cleanText(formData.get("return_path"), 200) || "/";
   const returnHash = cleanText(formData.get("return_hash"), 80);
+  const subjectConfig = REPORT_SUBJECT_CONFIG[subjectType];
 
-  if (!REPORT_SUBJECT_TYPES.has(subjectType) || !subjectId) {
-    redirect(homeMessage("Choose something to report first."));
+  if (!REPORT_SUBJECT_TYPES.has(subjectType) || !subjectId || !subjectConfig) {
+    reportRedirect({
+      hash: returnHash,
+      message: "Choose something to report first.",
+      path: returnPath,
+    });
+  }
+
+  const { data: subject, error: subjectError } = await supabase
+    .from(subjectConfig.table)
+    .select(subjectConfig.ownerColumn)
+    .eq("id", subjectId)
+    .maybeSingle<Record<string, string>>();
+
+  if (subjectError || !subject) {
+    reportRedirect({
+      hash: returnHash,
+      message: "That item is no longer available to report.",
+      path: returnPath,
+    });
+  }
+
+  if (subject[subjectConfig.ownerColumn] === userId) {
+    reportRedirect({
+      hash: returnHash,
+      message: "You cannot report your own content.",
+      path: returnPath,
+    });
+  }
+
+  const { data: existingReport } = await supabase
+    .from("content_reports")
+    .select("id")
+    .eq("reporter_id", userId)
+    .eq("subject_type", subjectType)
+    .eq("subject_id", subjectId)
+    .in("status", ["open", "reviewing"])
+    .maybeSingle<{ id: string }>();
+
+  if (existingReport) {
+    reportRedirect({
+      hash: returnHash,
+      message: "You already have an open report for that item.",
+      path: returnPath,
+    });
   }
 
   const { error } = await supabase.from("content_reports").insert({
@@ -557,13 +631,14 @@ export async function createContentReport(formData: FormData) {
   });
 
   if (error) {
-    redirect(
-      redirectWithMessage({
-        hash: returnHash,
-        message: error.message || "Could not send report.",
-        path: returnPath,
-      }),
-    );
+    reportRedirect({
+      hash: returnHash,
+      message:
+        error.code === "23505"
+          ? "You already have an open report for that item."
+          : error.message || "Could not send report.",
+      path: returnPath,
+    });
   }
 
   revalidatePath("/admin");

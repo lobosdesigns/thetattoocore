@@ -342,7 +342,10 @@ function ReportForm({
   subjectType: "feed_post" | "thread_post" | "marketplace_listing" | "gig";
 }) {
   return (
-    <form action={createContentReport} className="flex items-center gap-2">
+    <form
+      action={createContentReport}
+      className="grid gap-2 sm:grid-cols-[minmax(8rem,12rem)_1fr_auto]"
+    >
       <input name="subject_id" type="hidden" value={subjectId} />
       <input name="subject_type" type="hidden" value={subjectType} />
       <input name="return_path" type="hidden" value="/" />
@@ -361,6 +364,12 @@ function ReportForm({
         <option value="illegal goods or services">Illegal goods</option>
         <option value="other">Other</option>
       </select>
+      <input
+        className="h-9 min-w-0 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+        maxLength={500}
+        name="details"
+        placeholder="Optional details"
+      />
       <button className="flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs font-semibold">
         <Flag className="size-3.5" />
         Report

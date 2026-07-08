@@ -254,7 +254,7 @@ function ProfileReportForm({
   username: string;
 }) {
   return (
-    <form action={createContentReport} className="flex items-center gap-2">
+    <form action={createContentReport} className="grid gap-2 sm:grid-cols-[12rem_1fr_auto]">
       <input name="subject_id" type="hidden" value={profileId} />
       <input name="subject_type" type="hidden" value="profile" />
       <input name="return_path" type="hidden" value={`/u/${username}`} />
@@ -270,6 +270,12 @@ function ProfileReportForm({
         <option value="illegal goods or services">Illegal goods</option>
         <option value="other">Other</option>
       </select>
+      <input
+        className="h-10 min-w-0 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+        maxLength={500}
+        name="details"
+        placeholder="Optional details"
+      />
       <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold">
         <Flag className="size-4" />
         Report
