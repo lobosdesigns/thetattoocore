@@ -39,3 +39,11 @@ a {
 button:active {
   transform: translateY(1px);
 }
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

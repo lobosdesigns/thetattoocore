@@ -454,7 +454,11 @@ export default async function Home({
             </p>
           ) : null}
 
-          <section className="divide-y divide-[#e5ded4]" id="feed">
+          <div className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto scroll-smooth">
+          <section
+            className="min-w-full snap-start divide-y divide-[#e5ded4]"
+            id="feed"
+          >
             {feedPosts?.length ? (
               feedPosts.map((post) => (
                 <article className="bg-[#fffdf9]" key={post.id}>
@@ -607,7 +611,10 @@ export default async function Home({
             )}
           </section>
 
-          <section className="border-t border-[#e5ded4] px-4 py-5" id="threads">
+          <section
+            className="min-w-full snap-start border-l border-[#e5ded4] px-4 py-5"
+            id="threads"
+          >
             <div className="mb-4 flex items-center gap-2">
               <Sparkles className="size-5" />
               <h2 className="text-lg font-bold">Threads</h2>
@@ -722,7 +729,7 @@ export default async function Home({
           </section>
 
           <section
-            className="border-t border-[#e5ded4] px-4 py-5"
+            className="min-w-full snap-start border-l border-[#e5ded4] px-4 py-5"
             id="marketplace"
           >
             <div className="mb-4 flex items-center gap-2">
@@ -816,7 +823,10 @@ export default async function Home({
             </div>
           </section>
 
-          <section className="border-t border-[#e5ded4] px-4 py-5" id="messages">
+          <section
+            className="min-w-full snap-start border-l border-[#e5ded4] px-4 py-5"
+            id="messages"
+          >
             <div className="mb-4 flex items-center gap-2">
               <Send className="size-5" />
               <h2 className="text-lg font-bold">Messages</h2>
@@ -833,6 +843,7 @@ export default async function Home({
               </Link>
             </div>
           </section>
+          </div>
         </section>
 
         <aside className="hidden bg-[#f5f2eb] px-5 py-6 lg:block">
