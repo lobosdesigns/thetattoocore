@@ -14,6 +14,7 @@ type Profile = {
   display_name: string;
   instagram_url: string | null;
   is_adult_confirmed: boolean | null;
+  is_private: boolean | null;
   location_personalization_enabled: boolean | null;
   preferred_language: string | null;
   region: string | null;
@@ -209,6 +210,24 @@ export function ProfileForm({
             <span className="mt-1 block text-xs leading-5 text-[#766d62]">
               Uses your city, region, and country settings for marketplace,
               local discovery, and future sponsored placements.
+            </span>
+          </span>
+        </label>
+
+        <label className="flex items-start gap-3 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3 sm:col-span-2">
+          <input
+            className="mt-1 size-4"
+            defaultChecked={initialProfile?.is_private ?? false}
+            name="is_private"
+            type="checkbox"
+          />
+          <span>
+            <span className="block text-sm font-medium">
+              Make my profile private
+            </span>
+            <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+              Hides your profile from search engines and limits profile content
+              to you and followers.
             </span>
           </span>
         </label>

@@ -102,6 +102,7 @@ export async function updateProfile(formData: FormData) {
     id: claims.sub,
     instagram_url: cleanUrl(formData.get("instagram_url")),
     is_adult_confirmed: true,
+    is_private: formData.get("is_private") === "on",
     location_personalization_enabled:
       formData.get("location_personalization_enabled") === "on",
     preferred_language: preferredLanguage,

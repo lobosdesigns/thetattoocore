@@ -9,6 +9,7 @@ import {
   Camera,
   Flag,
   LinkIcon,
+  LockKeyhole,
   MapPin,
   MessageCircle,
   Send,
@@ -489,12 +490,13 @@ export default async function ProfilePage({
 
   const isOwnProfile = claims?.sub === profile.id;
   const isFollowing = Boolean(followRecord);
+  const isPrivateLocked = profile.is_private && !isOwnProfile && !isFollowing;
   const viewer = {
     isAdultConfirmed: Boolean(viewerProfile?.is_adult_confirmed),
     isSignedIn: Boolean(claims?.sub),
   };
   const canShow = (item: VisibleContent) =>
-    canRenderContent({ isOwnProfile, item, viewer });
+    !isPrivateLocked && canRenderContent({ isOwnProfile, item, viewer });
   const visiblePosts = (posts ?? []).filter(canShow);
   const visibleThreads = (threads ?? []).filter(canShow);
   const visibleListings = (listings ?? []).filter(canShow);
@@ -539,15 +541,28 @@ export default async function ProfilePage({
                   <BadgeCheck className="size-3" />
                   {profile.account_type}
                 </span>
+                {profile.is_private ? (
+                  <span className="inline-flex items-center gap-1 rounded-md border border-[#d8d1c6] px-2 py-1 text-xs font-semibold text-[#766d62]">
+                    <LockKeyhole className="size-3" />
+                    Private
+                  </span>
+                ) : null}
               </div>
               <p className="text-sm font-medium text-[#766d62]">
                 @{profile.username}
               </p>
-              {profile.bio ? (
+              {profile.bio && !isPrivateLocked ? (
                 <p className="mt-3 max-w-2xl whitespace-pre-wrap text-sm leading-6">
                   {profile.bio}
                 </p>
               ) : null}
+              {isPrivateLocked ? (
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-[#766d62]">
+                  This profile is private. Follow the profile to see posts,
+                  gigs, marketplace listings, and profile details.
+                </p>
+              ) : null}
+              {!isPrivateLocked ? (
               <div className="mt-4 flex flex-wrap gap-4 text-sm text-[#766d62]">
                 {profileLocation(profile) ? (
                   <span className="inline-flex items-center gap-1">
@@ -578,12 +593,15 @@ export default async function ProfilePage({
                   </a>
                 ) : null}
               </div>
+              ) : null}
+              {!isPrivateLocked ? (
               <div className="mt-5 grid max-w-md grid-cols-4 gap-4">
                 <ProfileStat label="posts" value={visiblePosts.length} />
                 <ProfileStat label="gigs" value={visibleGigs.length} />
                 <ProfileStat label="followers" value={followerCount ?? 0} />
                 <ProfileStat label="following" value={followingCount ?? 0} />
               </div>
+              ) : null}
               <div className="mt-5 flex flex-wrap gap-2">
                 {isOwnProfile ? (
                   <Link
@@ -639,6 +657,19 @@ export default async function ProfilePage({
           </div>
         </section>
 
+        {isPrivateLocked ? (
+          <section className="px-4 py-8">
+            <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-5 text-center">
+              <LockKeyhole className="mx-auto mb-3 size-8 text-[#766d62]" />
+              <h2 className="text-lg font-bold">Private profile</h2>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#766d62]">
+                The owner has limited this profile to followers.
+                Public search engines can see only this limited preview.
+              </p>
+            </div>
+          </section>
+        ) : (
+          <>
         <section className="border-b border-[#e5ded4] px-4 py-6">
           <div className="mb-4 flex items-center gap-2">
             <Camera className="size-5" />
@@ -828,6 +859,8 @@ export default async function ProfilePage({
             </div>
           </div>
         </section>
+          </>
+        )}
       </div>
     </main>
   );
