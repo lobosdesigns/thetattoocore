@@ -45,24 +45,43 @@ function VisibilityControl() {
   );
 }
 
-const sensitiveControls = (
-  <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3">
-    <label className="flex items-start gap-2 text-sm font-medium">
-      <input className="mt-1 size-4" name="is_sensitive" type="checkbox" />
-      <span>Mark as sensitive body-art content</span>
-    </label>
-    <select
-      className="mt-3 h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-      name="sensitive_reason"
-    >
-      <option value="body_art_nudity">Body-art nudity</option>
-      <option value="healing">Healing or fresh work</option>
-      <option value="scar_cover">Scar cover or medical context</option>
-      <option value="piercing">Piercing or body modification</option>
-      <option value="other">Other body-art context</option>
-    </select>
-  </div>
-);
+const sensitiveExamples = [
+  "Tattoo placement includes limited non-sexual nudity.",
+  "Fresh, healing, scar cover, piercing, or body modification detail.",
+  "No pornography, sexual solicitation, or sexualized minor content.",
+] as const;
+
+function SensitiveControls() {
+  return (
+    <section className="rounded-md border border-[#d8d1c6] bg-[#fff7ec] p-3">
+      <label className="flex items-start gap-2 text-sm font-semibold">
+        <input className="mt-1 size-4" name="is_sensitive" type="checkbox" />
+        <span>Mark as sensitive body-art content</span>
+      </label>
+      <p className="mt-2 text-xs leading-5 text-[#766d62]">
+        Use this when the content is acceptable body-art documentation but
+        should require login and 18+ confirmation before viewing.
+      </p>
+      <select
+        className="mt-3 h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+        name="sensitive_reason"
+      >
+        <option value="body_art_nudity">Body-art nudity</option>
+        <option value="healing">Healing or fresh work</option>
+        <option value="scar_cover">Scar cover or medical context</option>
+        <option value="piercing">Piercing or body modification</option>
+        <option value="other">Other body-art context</option>
+      </select>
+      <div className="mt-3 grid gap-2">
+        {sensitiveExamples.map((example) => (
+          <p className="text-xs leading-5 text-[#766d62]" key={example}>
+            {example}
+          </p>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export function FloatingComposer({
   canCreate,
@@ -103,7 +122,7 @@ export function FloatingComposer({
               placeholder="Austin, TX"
             />
             <VisibilityControl />
-            {sensitiveControls}
+            <SensitiveControls />
             <MediaInput accept={imageVideoAccept} name="media" required />
             <PendingSubmitButton
               className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
@@ -131,7 +150,7 @@ export function FloatingComposer({
               validationMessage="Gossip post needs at least 3 characters."
             />
             <VisibilityControl />
-            {sensitiveControls}
+            <SensitiveControls />
             <MediaInput accept={imageAccept} name="media" videoAllowed={false} />
             <PendingSubmitButton
               className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
@@ -196,7 +215,7 @@ export function FloatingComposer({
               />
             </div>
             <VisibilityControl />
-            {sensitiveControls}
+            <SensitiveControls />
             <MediaInput accept={imageVideoAccept} name="media" />
             <PendingSubmitButton
               className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
@@ -285,7 +304,7 @@ export function FloatingComposer({
               wrapperClassName="w-full"
             />
             <VisibilityControl />
-            {sensitiveControls}
+            <SensitiveControls />
             <MediaInput accept={imageAccept} name="media" videoAllowed={false} />
             <PendingSubmitButton
               className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
