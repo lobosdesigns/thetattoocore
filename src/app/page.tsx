@@ -255,7 +255,7 @@ export default async function Home({
     supabase
       .from("feed_posts")
       .select(
-        "id, caption, style_tags, location_label, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), profiles(id, username, display_name, account_type, city, region)",
+        "id, caption, style_tags, location_label, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, account_type, city, region)",
       )
       .eq("is_published", true)
       .order("created_at", { ascending: false })
@@ -268,7 +268,7 @@ export default async function Home({
     supabase
       .from("thread_posts")
       .select(
-        "id, body, created_at, profiles(id, username, display_name, account_type, city, region)",
+        "id, body, created_at, profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, account_type, city, region)",
       )
       .order("created_at", { ascending: false })
       .limit(20)
@@ -276,7 +276,7 @@ export default async function Home({
     supabase
       .from("marketplace_listings")
       .select(
-        "id, title, description, price_cents, currency, category, city, region, created_at, marketplace_media(id, storage_bucket, storage_path, sort_order), profiles(id, username, display_name, account_type, city, region)",
+        "id, title, description, price_cents, currency, category, city, region, created_at, marketplace_media(id, storage_bucket, storage_path, sort_order), profiles:profiles!marketplace_listings_seller_id_fkey(id, username, display_name, account_type, city, region)",
       )
       .eq("status", "active")
       .order("created_at", { ascending: false })

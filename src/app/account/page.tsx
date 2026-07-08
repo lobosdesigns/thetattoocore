@@ -10,7 +10,12 @@ type Claims = {
 
 const adminRoles = ["moderator", "admin", "owner"];
 
-export default async function AccountPage() {
+export default async function AccountPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ message?: string }>;
+}) {
+  const params = await searchParams;
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -52,6 +57,12 @@ export default async function AccountPage() {
             </form>
           </div>
         </div>
+
+        {params.message ? (
+          <p className="mb-4 rounded-md border border-[#d8d1c6] bg-[#efe7da] px-4 py-3 text-sm font-medium">
+            {params.message}
+          </p>
+        ) : null}
 
         <ProfileForm claims={claims} initialProfile={profile} />
       </section>

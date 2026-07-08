@@ -1,0 +1,85 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+
+type Claims = {
+  sub: string;
+};
+
+const accountTypes = new Set(["artist", "enthusiast", "studio", "supplier"]);
+
+function accountPath(message: string) {
+  return `/account?message=${encodeURIComponent(message)}`;
+}
+
+function cleanText(value: FormDataEntryValue | null, maxLength: number) {
+  return String(value ?? "")
+    .trim()
+    .slice(0, maxLength);
+}
+
+function cleanUrl(value: FormDataEntryValue | null) {
+  const text = cleanText(value, 240);
+
+  if (!text) return null;
+
+  try {
+    const url = new URL(text);
+
+    if (!["http:", "https:"].includes(url.protocol)) return null;
+
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+export async function updateProfile(formData: FormData) {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+
+  if (!claims?.sub) {
+    redirect("/login");
+  }
+
+  const username = cleanText(formData.get("username"), 30).toLowerCase();
+  const displayName = cleanText(formData.get("display_name"), 80);
+  const accountType = cleanText(formData.get("account_type"), 30);
+
+  if (!/^[a-z0-9_]{3,30}$/.test(username)) {
+    redirect(accountPath("Username must be 3-30 letters, numbers, or underscores."));
+  }
+
+  if (displayName.length < 2) {
+    redirect(accountPath("Display name needs at least 2 characters."));
+  }
+
+  if (!accountTypes.has(accountType)) {
+    redirect(accountPath("Choose a valid account type."));
+  }
+
+  const { error } = await supabase.from("profiles").upsert({
+    account_type: accountType,
+    bio: cleanText(formData.get("bio"), 500) || null,
+    city: cleanText(formData.get("city"), 80) || null,
+    display_name: displayName,
+    id: claims.sub,
+    instagram_url: cleanUrl(formData.get("instagram_url")),
+    region: cleanText(formData.get("region"), 40) || null,
+    updated_at: new Date().toISOString(),
+    username,
+    website_url: cleanUrl(formData.get("website_url")),
+  });
+
+  if (error) {
+    redirect(accountPath(error.message || "Could not save profile."));
+  }
+
+  revalidatePath("/");
+  revalidatePath("/account");
+  revalidatePath(`/u/${username}`);
+  redirect(accountPath("Profile saved."));
+}
