@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { updateProfile } from "./actions";
+import { PendingSubmitButton } from "../pending-submit-button";
 
 type Claims = {
   email?: string;
@@ -350,12 +351,13 @@ export function ProfileForm({
       </section>
 
       <div className="mt-5 flex items-center gap-3">
-        <button
+        <PendingSubmitButton
           className="h-11 rounded-md bg-[#171412] px-5 text-sm font-semibold text-white"
+          pendingLabel="Saving"
           type="submit"
         >
           Save profile
-        </button>
+        </PendingSubmitButton>
       </div>
     </form>
   );

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { submitLicenseVerification } from "./actions";
 import { ProfileForm } from "./profile-form";
+import { PendingSubmitButton } from "../pending-submit-button";
 import { createClient } from "@/lib/supabase/server";
 
 type Claims = {
@@ -203,9 +204,12 @@ export default async function AccountPage({
                 </label>
               </div>
 
-              <button className="h-11 rounded-md bg-[#171412] px-5 text-sm font-semibold text-white">
+              <PendingSubmitButton
+                className="h-11 rounded-md bg-[#171412] px-5 text-sm font-semibold text-white"
+                pendingLabel="Submitting"
+              >
                 Submit for review
-              </button>
+              </PendingSubmitButton>
             </form>
           </section>
         ) : (
