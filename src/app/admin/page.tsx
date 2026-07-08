@@ -49,7 +49,15 @@ type ReportItem = {
   reporterUsername: string;
   status: "open" | "reviewing" | "resolved" | "dismissed";
   subjectId: string;
+  subjectOwnerUsername: string | null;
+  subjectPreview: string | null;
+  subjectTitle: string | null;
   subjectType: string;
+};
+type ReportSubjectPreview = {
+  ownerUsername: string | null;
+  preview: string | null;
+  title: string | null;
 };
 type LicenseRequest = {
   accountType: string;
@@ -138,6 +146,10 @@ function activityLabel(value: string) {
   return value.replaceAll("_", " ");
 }
 
+function reportSubjectKey(type: string, id: string) {
+  return `${type}:${id}`;
+}
+
 function ReviewCard({ item }: { item: ReviewItem }) {
   return (
     <article className="rounded-md border border-[#e5ded4] bg-white p-4">
@@ -220,6 +232,23 @@ function ReportCard({ report }: { report: ReportItem }) {
       <p className="text-xs font-semibold uppercase text-[#766d62]">
         {report.subjectType.replace("_", " ")}
       </p>
+      {report.subjectTitle || report.subjectPreview ? (
+        <div className="mt-3 rounded-md border border-[#e5ded4] bg-[#f7f4ef] p-3">
+          {report.subjectTitle ? (
+            <p className="text-sm font-semibold">{report.subjectTitle}</p>
+          ) : null}
+          {report.subjectOwnerUsername ? (
+            <p className="mt-1 text-xs text-[#766d62]">
+              @{report.subjectOwnerUsername}
+            </p>
+          ) : null}
+          {report.subjectPreview ? (
+            <p className="mt-2 line-clamp-3 text-sm leading-5 text-[#4f473f]">
+              {report.subjectPreview}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       <p className="mt-1 break-all text-xs text-[#766d62]">
         {report.subjectId}
       </p>
@@ -709,15 +738,168 @@ export default async function AdminPage({
       status: request.status,
     }),
   );
+  const reportSubjectPreviews = new Map<string, ReportSubjectPreview>();
+  const reportSubjectIds = (type: string) =>
+    (reportQueue ?? [])
+      .filter((report) => report.subject_type === type)
+      .map((report) => report.subject_id);
+
+  await Promise.all([
+    (async () => {
+      const ids = reportSubjectIds("feed_post");
+      if (!ids.length) return;
+
+      const { data } = await supabase
+        .from("feed_posts")
+        .select(
+          "id, caption, profiles:profiles!feed_posts_author_id_fkey(username)",
+        )
+        .in("id", ids)
+        .returns<
+          {
+            caption: string | null;
+            id: string;
+            profiles: { username: string } | null;
+          }[]
+        >();
+
+      for (const post of data ?? []) {
+        reportSubjectPreviews.set(reportSubjectKey("feed_post", post.id), {
+          ownerUsername: post.profiles?.username ?? null,
+          preview: post.caption,
+          title: "4U post",
+        });
+      }
+    })(),
+    (async () => {
+      const ids = reportSubjectIds("thread_post");
+      if (!ids.length) return;
+
+      const { data } = await supabase
+        .from("thread_posts")
+        .select(
+          "id, body, profiles:profiles!thread_posts_author_id_fkey(username)",
+        )
+        .in("id", ids)
+        .returns<
+          {
+            body: string;
+            id: string;
+            profiles: { username: string } | null;
+          }[]
+        >();
+
+      for (const thread of data ?? []) {
+        reportSubjectPreviews.set(reportSubjectKey("thread_post", thread.id), {
+          ownerUsername: thread.profiles?.username ?? null,
+          preview: thread.body,
+          title: "Gossip post",
+        });
+      }
+    })(),
+    (async () => {
+      const ids = reportSubjectIds("marketplace_listing");
+      if (!ids.length) return;
+
+      const { data } = await supabase
+        .from("marketplace_listings")
+        .select(
+          "id, title, description, profiles:profiles!marketplace_listings_seller_id_fkey(username)",
+        )
+        .in("id", ids)
+        .returns<
+          {
+            description: string | null;
+            id: string;
+            profiles: { username: string } | null;
+            title: string;
+          }[]
+        >();
+
+      for (const listing of data ?? []) {
+        reportSubjectPreviews.set(
+          reportSubjectKey("marketplace_listing", listing.id),
+          {
+            ownerUsername: listing.profiles?.username ?? null,
+            preview: listing.description,
+            title: listing.title,
+          },
+        );
+      }
+    })(),
+    (async () => {
+      const ids = reportSubjectIds("gig");
+      if (!ids.length) return;
+
+      const { data } = await supabase
+        .from("gigs")
+        .select(
+          "id, title, description, profiles:profiles!gigs_poster_id_fkey(username)",
+        )
+        .in("id", ids)
+        .returns<
+          {
+            description: string | null;
+            id: string;
+            profiles: { username: string } | null;
+            title: string;
+          }[]
+        >();
+
+      for (const gig of data ?? []) {
+        reportSubjectPreviews.set(reportSubjectKey("gig", gig.id), {
+          ownerUsername: gig.profiles?.username ?? null,
+          preview: gig.description,
+          title: gig.title,
+        });
+      }
+    })(),
+    (async () => {
+      const ids = reportSubjectIds("profile");
+      if (!ids.length) return;
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, username, display_name, bio")
+        .in("id", ids)
+        .returns<
+          {
+            bio: string | null;
+            display_name: string;
+            id: string;
+            username: string;
+          }[]
+        >();
+
+      for (const profile of data ?? []) {
+        reportSubjectPreviews.set(reportSubjectKey("profile", profile.id), {
+          ownerUsername: profile.username,
+          preview: profile.bio,
+          title: profile.display_name,
+        });
+      }
+    })(),
+  ]);
   const reports: ReportItem[] = (reportQueue ?? []).map((report) => ({
-    createdAt: report.created_at,
-    details: report.details,
-    id: report.id,
-    reason: report.reason,
-    reporterUsername: report.profiles?.username ?? "member",
-    status: report.status,
-    subjectId: report.subject_id,
-    subjectType: report.subject_type,
+    ...(() => {
+      const subjectPreview = reportSubjectPreviews.get(
+        reportSubjectKey(report.subject_type, report.subject_id),
+      );
+
+      return {
+        createdAt: report.created_at,
+        details: report.details,
+        id: report.id,
+        reason: report.reason,
+        reporterUsername: report.profiles?.username ?? "member",
+        status: report.status,
+        subjectId: report.subject_id,
+        subjectOwnerUsername: subjectPreview?.ownerUsername ?? null,
+        subjectPreview: subjectPreview?.preview ?? null,
+        subjectTitle: subjectPreview?.title ?? null,
+        subjectType: report.subject_type,
+      };
+    })(),
   }));
   const reviewItems: ReviewItem[] = [
     ...(feedReview ?? []).map((post) => ({
