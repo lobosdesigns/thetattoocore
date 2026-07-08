@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { submitLicenseVerification } from "./actions";
+import { LicenseDocumentInput } from "./license-document-input";
 import { ProfileForm } from "./profile-form";
 import { PendingSubmitButton } from "../pending-submit-button";
 import { createClient } from "@/lib/supabase/server";
@@ -191,13 +192,13 @@ export default async function AccountPage({
                   <span className="text-sm font-medium">
                     License document <span className="text-[#a3432f]">*</span>
                   </span>
-                  <input
-                    accept="application/pdf,image/jpeg,image/png,image/webp"
-                    className="mt-2 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm"
-                    name="license_document"
-                    required
-                    type="file"
-                  />
+                  <div className="mt-2">
+                    <LicenseDocumentInput
+                      accept="application/pdf,image/jpeg,image/png,image/webp"
+                      name="license_document"
+                      required
+                    />
+                  </div>
                   <span className="mt-1 block text-xs leading-5 text-[#766d62]">
                     Private admin review only. Public users only see verified status after approval.
                   </span>
