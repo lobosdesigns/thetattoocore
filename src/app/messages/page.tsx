@@ -103,8 +103,8 @@ export default async function MessagesPage({
 
   if (!claims?.sub) {
     return (
-      <main className="min-h-screen bg-[#f5f2eb] px-4 py-8 text-[#171412]">
-        <section className="mx-auto max-w-xl rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-5">
+      <main className="min-h-screen bg-[#202020] px-4 py-8 text-[#171412]">
+        <section className="ttc-card mx-auto max-w-xl rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-5">
           <h1 className="text-xl font-bold">DM</h1>
           <p className="mt-2 text-sm text-[#766d62]">
             Sign in to start conversations with artists, studios, and collectors.
@@ -128,8 +128,8 @@ export default async function MessagesPage({
 
   if (!currentProfile) {
     return (
-      <main className="min-h-screen bg-[#f5f2eb] px-4 py-8 text-[#171412]">
-        <section className="mx-auto max-w-xl rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-5">
+      <main className="min-h-screen bg-[#202020] px-4 py-8 text-[#171412]">
+        <section className="ttc-card mx-auto max-w-xl rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-5">
           <h1 className="text-xl font-bold">Finish profile</h1>
           <p className="mt-2 text-sm text-[#766d62]">
             Set up your profile before sending messages.
@@ -290,14 +290,14 @@ export default async function MessagesPage({
     : [];
 
   return (
-    <main className="min-h-screen bg-[#f5f2eb] text-[#171412]">
-      <div className="mx-auto grid min-h-screen max-w-7xl grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="border-r border-[#d8d1c6] bg-[#fffdf9]">
-          <header className="sticky top-0 z-10 border-b border-[#e5ded4] bg-[#fffdf9]/95 px-4 py-4 backdrop-blur">
+    <main className="min-h-screen bg-[#202020] text-[#171412]">
+      <div className="mx-auto grid min-h-screen max-w-7xl grid-cols-1 shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)] lg:grid-cols-[320px_minmax(0,1fr)]">
+        <aside className="border-r border-[#cfc8bd] bg-[#f2f1ee]">
+          <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-4 backdrop-blur">
             <div className="mb-4 flex items-center justify-between gap-3">
               <Link
                 aria-label="Back to feed"
-                className="flex size-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white"
+                className="flex size-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
                 href="/"
               >
                 <ArrowLeft className="size-5" />
@@ -308,13 +308,13 @@ export default async function MessagesPage({
                   @{currentProfile.username}
                 </p>
               </div>
-              <div className="flex size-10 items-center justify-center rounded-md bg-[#171412] text-xs font-bold text-white">
+              <div className="flex size-10 items-center justify-center rounded-md bg-[#171412] text-xs font-bold text-[#c8953b]">
                 {initials(currentProfile.display_name)}
               </div>
             </div>
 
             <form action={startConversation} className="space-y-2">
-              <div className="flex items-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3">
+              <div className="flex items-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3">
                 <Search className="size-4 text-[#766d62]" />
                 <input
                   className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none"
@@ -324,7 +324,7 @@ export default async function MessagesPage({
                 />
               </div>
               <textarea
-                className="min-h-20 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+                className="min-h-20 w-full rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-sm outline-none focus:border-[#171412]"
                 maxLength={4000}
                 name="body"
                 placeholder="Start a message"
@@ -338,12 +338,12 @@ export default async function MessagesPage({
           </header>
 
           {params.message ? (
-            <p className="border-b border-[#e5ded4] bg-[#efe7da] px-4 py-3 text-sm font-medium">
+            <p className="border-b border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 text-sm font-medium">
               {params.message}
             </p>
           ) : null}
 
-          <section className="divide-y divide-[#e5ded4]">
+          <section className="divide-y divide-[#cfc8bd]">
             {inbox.length ? (
               inbox.map((conversation) => {
                 const profile = conversation.otherProfile;
@@ -354,16 +354,16 @@ export default async function MessagesPage({
                   <Link
                     className={`block px-4 py-4 ${
                       active
-                        ? "bg-[#efe7da]"
+                        ? "bg-[#e8e4dc]"
                         : hasUnread
-                          ? "bg-[#f7f4ef] hover:bg-[#efe7da]"
-                          : "bg-[#fffdf9] hover:bg-[#f7f4ef]"
+                          ? "bg-[#fffdf9] hover:bg-[#e8e4dc]"
+                          : "bg-[#f2f1ee] hover:bg-[#fffdf9]"
                     }`}
                     href={`/messages?c=${conversation.id}`}
                     key={conversation.id}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-[#c8953b] text-sm font-bold text-white">
+                      <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-[#171412] text-sm font-bold text-[#c8953b]">
                         {initials(profile?.display_name ?? "TC")}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -420,12 +420,12 @@ export default async function MessagesPage({
           </section>
         </aside>
 
-        <section className="flex min-h-screen flex-col bg-[#fffdf9]">
+        <section className="flex min-h-screen flex-col bg-[#f2f1ee]">
           {selectedConversation ? (
             <>
-              <header className="sticky top-0 z-10 border-b border-[#e5ded4] bg-[#fffdf9]/95 px-4 py-4 backdrop-blur">
+              <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-4 backdrop-blur">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-11 items-center justify-center rounded-md bg-[#c8953b] text-sm font-bold text-white">
+                  <div className="flex size-11 items-center justify-center rounded-md bg-[#171412] text-sm font-bold text-[#c8953b]">
                     {initials(
                       selectedConversation.otherProfile?.display_name ?? "TC",
                     )}
@@ -458,7 +458,7 @@ export default async function MessagesPage({
 
               <form
                 action={sendMessage}
-                className="sticky bottom-0 border-t border-[#e5ded4] bg-[#fffdf9] p-4"
+                className="sticky bottom-0 border-t border-[#cfc8bd] bg-[#f2f1ee] p-4"
               >
                 <input
                   name="conversation_id"
@@ -467,7 +467,7 @@ export default async function MessagesPage({
                 />
                 <div className="flex items-end gap-2">
                   <textarea
-                    className="min-h-12 flex-1 resize-none rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+                    className="min-h-12 flex-1 resize-none rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-sm outline-none focus:border-[#171412]"
                     maxLength={4000}
                     name="body"
                     placeholder="Message"

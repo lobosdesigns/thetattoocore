@@ -203,14 +203,14 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
   const media = gig.gig_media[0];
 
   return (
-    <main className="min-h-screen bg-[#f5f2eb] text-[#171412]">
-      <div className="mx-auto min-h-screen max-w-5xl bg-[#fffdf9]">
-        <header className="sticky top-0 z-10 border-b border-[#e5ded4] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur">
+    <main className="min-h-screen bg-[#202020] text-[#171412]">
+      <div className="mx-auto min-h-screen max-w-5xl bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
+        <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <Link
                 aria-label="Back to Gigs"
-                className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#d8d1c6] bg-white"
+                className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
                 href="/#gigs"
               >
                 <ArrowLeft className="size-5" />
@@ -227,14 +227,14 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
         </header>
 
         {message ? (
-          <div className="border-b border-[#d8d1c6] bg-[#efe7da] px-4 py-2 text-sm font-semibold">
+          <div className="border-b border-[#cfc8bd] bg-[#e8e4dc] px-4 py-2 text-sm font-semibold">
             {message}
           </div>
         ) : null}
 
         <section className="grid gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div>
-            <div className="overflow-hidden rounded-md border border-[#d8d1c6] bg-[#171412]">
+            <div className="overflow-hidden rounded-md border border-[#3a332d] bg-[#171412] shadow-[0_12px_30px_rgba(23,20,18,0.22)]">
               {media ? (
                 media.media_type === "video" ? (
                   <video
@@ -259,7 +259,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
               )}
             </div>
 
-            <section className="mt-5 rounded-md border border-[#d8d1c6] bg-white p-5">
+            <section className="ttc-card mt-5 rounded-md border border-[#cfc8bd] bg-white p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h1 className="text-2xl font-bold">{gig.title}</h1>
@@ -322,14 +322,14 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
           </div>
 
           <aside className="space-y-4">
-            <section className="rounded-md border border-[#d8d1c6] bg-white p-4">
+            <section className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4">
               <p className="text-xs font-semibold uppercase text-[#766d62]">
                 Posted by
               </p>
               {gig.profiles ? (
                 <>
                   <div className="mt-3 flex items-center gap-3">
-                    <div className="flex size-12 shrink-0 items-center justify-center rounded-md bg-[#171412] text-sm font-bold text-white">
+                    <div className="flex size-12 shrink-0 items-center justify-center rounded-md bg-[#171412] text-sm font-bold text-[#c8953b]">
                       {gig.profiles.display_name
                         .split(" ")
                         .map((part) => part[0])
@@ -350,7 +350,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
                     </div>
                   </div>
                   <Link
-                    className="mt-4 flex h-10 items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                    className="mt-4 flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
                     href={`/u/${gig.profiles.username}`}
                   >
                     <LinkIcon className="size-4" />
@@ -364,7 +364,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
               )}
             </section>
 
-            <section className="rounded-md border border-[#d8d1c6] bg-white p-4">
+            <section className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4">
               {gig.contact_url ? (
                 <a
                   className="flex h-11 w-full items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
@@ -388,7 +388,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
                 </form>
               ) : claims?.sub ? (
                 <Link
-                  className="flex h-11 items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                  className="flex h-11 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
                   href="/messages"
                 >
                   Open DMs
@@ -409,7 +409,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
 
             {claims?.sub ? (
               <SavedItemButton
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
                 isSaved={Boolean(savedItem)}
                 returnPath={`/gigs/${gig.id}`}
                 subjectId={gig.id}
@@ -424,7 +424,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
             />
 
             {claims?.sub ? (
-              <section className="rounded-md border border-[#d8d1c6] bg-white p-4">
+              <section className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4">
                 <p className="mb-3 text-xs font-semibold uppercase text-[#766d62]">
                   Safety
                 </p>
@@ -437,7 +437,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
             ) : null}
 
             {gig.is_sensitive ? (
-              <section className="rounded-md border border-[#d8d1c6] bg-[#fff7ec] p-4">
+              <section className="ttc-card rounded-md border border-[#cfc8bd] bg-[#fff7ec] p-4">
                 <div className="flex items-start gap-2">
                   <LockKeyhole className="mt-0.5 size-4" />
                   <div>

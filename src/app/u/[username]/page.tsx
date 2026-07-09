@@ -275,7 +275,7 @@ function ProfileReportForm({
   return (
     <form
       action={createContentReport}
-      className="rounded-md border border-[#e5ded4] bg-[#f7f4ef] p-2"
+      className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-2"
     >
       <input name="subject_id" type="hidden" value={profileId} />
       <input name="subject_type" type="hidden" value="profile" />
@@ -287,7 +287,7 @@ function ProfileReportForm({
       <div className="grid gap-2 sm:grid-cols-[12rem_1fr_auto]">
         <select
           aria-label="Report profile reason"
-          className="h-10 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+          className="h-10 rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
           name="reason"
         >
           <option value="scam or spam">Scam, spam, or impersonation</option>
@@ -298,12 +298,12 @@ function ProfileReportForm({
           <option value="other">Other policy concern</option>
         </select>
         <input
-          className="h-10 min-w-0 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+          className="h-10 min-w-0 rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
           maxLength={500}
           name="details"
           placeholder="What should moderators know?"
         />
-        <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold">
+        <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm font-semibold">
           <Flag className="size-4" />
           Report
         </button>
@@ -314,7 +314,7 @@ function ProfileReportForm({
 
 function AdultTermsGate({ username }: { username: string }) {
   return (
-    <section className="border-b border-[#e5ded4] px-4 py-4">
+    <section className="border-b border-[#cfc8bd] px-4 py-4">
       <div className="rounded-md border border-[#171412] bg-[#171412] p-4 text-white">
         <p className="text-sm font-bold">18+ body-art content</p>
         <p className="mt-1 text-sm leading-5 text-white/75">
@@ -350,8 +350,8 @@ function PublicProfileNotice({
   if (isSignedIn && isAdultConfirmed && hiddenCount === 0) return null;
 
   return (
-    <section className="border-b border-[#e5ded4] px-4 py-4">
-      <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4">
+    <section className="border-b border-[#cfc8bd] px-4 py-4">
+      <div className="ttc-card rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <p className="inline-flex items-center gap-2 text-sm font-bold">
@@ -369,7 +369,7 @@ function PublicProfileNotice({
             </p>
           </div>
           {hiddenCount > 0 ? (
-            <span className="w-fit shrink-0 rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-semibold text-[#4f473f]">
+            <span className="w-fit shrink-0 rounded-md border border-[#cfc8bd] bg-white px-2 py-1 text-xs font-semibold text-[#4f473f]">
               {hiddenCount} hidden
             </span>
           ) : null}
@@ -383,7 +383,7 @@ function PublicProfileNotice({
               Sign in
             </Link>
             <Link
-              className="inline-flex h-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+              className="inline-flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
               href="/terms"
             >
               Content rules
@@ -412,7 +412,7 @@ function ProfileDetailChip({
   icon: LucideIcon;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-md border border-[#d8d1c6] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#4f473f]">
+    <span className="inline-flex items-center gap-1 rounded-md border border-[#cfc8bd] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#4f473f]">
       <Icon className="size-3.5" />
       {children}
     </span>
@@ -427,11 +427,11 @@ function ProfileContentNav({
   return (
     <nav
       aria-label="Profile content"
-      className="sticky top-[65px] z-10 flex gap-2 overflow-x-auto border-b border-[#e5ded4] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur"
+      className="sticky top-[65px] z-10 flex gap-2 overflow-x-auto border-b border-[#cfc8bd] bg-[#e8e4dc]/95 px-4 py-3 backdrop-blur"
     >
       {items.map(([href, label, count]) => (
         <a
-          className="flex h-10 shrink-0 items-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-bold text-[#171412] hover:bg-[#f7f4ef]"
+          className="flex h-10 shrink-0 items-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm font-bold text-[#171412] hover:border-[#c8953b]"
           href={href}
           key={href}
         >
@@ -798,14 +798,14 @@ export default async function ProfilePage({
       ((gigs?.length ?? 0) - visibleGigs.length);
 
   return (
-    <main className="min-h-screen bg-[#f5f2eb] text-[#171412]">
-      <div className="mx-auto min-h-screen max-w-5xl bg-[#fffdf9]">
-        <header className="sticky top-0 z-10 border-b border-[#e5ded4] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur">
+    <main className="min-h-screen bg-[#202020] text-[#171412]">
+      <div className="mx-auto min-h-screen max-w-5xl bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
+        <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <Link
                 aria-label="Back to feed"
-                className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#d8d1c6] bg-white"
+                className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
                 href="/"
               >
                 <ArrowLeft className="size-5" />
@@ -822,14 +822,14 @@ export default async function ProfilePage({
         </header>
 
         {query.message ? (
-          <p className="border-b border-[#e5ded4] bg-[#efe7da] px-4 py-3 text-sm font-medium">
+          <p className="border-b border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 text-sm font-medium">
             {query.message}
           </p>
         ) : null}
 
-        <section className="border-b border-[#e5ded4] px-4 py-6">
+        <section className="border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-6">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-            <div className="flex size-24 shrink-0 items-center justify-center rounded-md bg-[#171412] text-2xl font-bold text-white">
+            <div className="flex size-24 shrink-0 items-center justify-center rounded-md bg-[#171412] text-2xl font-bold text-[#c8953b] shadow-[0_12px_30px_rgba(23,20,18,0.22)]">
               {initials(profile.display_name)}
             </div>
             <div className="min-w-0 flex-1">
@@ -846,13 +846,13 @@ export default async function ProfilePage({
                   </span>
                 ) : null}
                 {profile.is_private ? (
-                  <span className="inline-flex items-center gap-1 rounded-md border border-[#d8d1c6] px-2 py-1 text-xs font-semibold text-[#766d62]">
+                  <span className="inline-flex items-center gap-1 rounded-md border border-[#cfc8bd] px-2 py-1 text-xs font-semibold text-[#766d62]">
                     <LockKeyhole className="size-3" />
                     Private
                   </span>
                 ) : null}
                 {!profile.is_private && !viewer.isSignedIn ? (
-                  <span className="inline-flex items-center gap-1 rounded-md border border-[#d8d1c6] px-2 py-1 text-xs font-semibold text-[#766d62]">
+                  <span className="inline-flex items-center gap-1 rounded-md border border-[#cfc8bd] px-2 py-1 text-xs font-semibold text-[#766d62]">
                     <LogIn className="size-3" />
                     Public preview
                   </span>
@@ -889,7 +889,7 @@ export default async function ProfilePage({
                 ) : null}
                 {profile.website_url ? (
                   <a
-                    className="inline-flex items-center gap-1 rounded-md border border-[#d8d1c6] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#171412]"
+                    className="inline-flex items-center gap-1 rounded-md border border-[#cfc8bd] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#171412]"
                     href={profile.website_url}
                     rel="noreferrer"
                     target="_blank"
@@ -900,7 +900,7 @@ export default async function ProfilePage({
                 ) : null}
                 {profile.instagram_url ? (
                   <a
-                    className="inline-flex items-center gap-1 rounded-md border border-[#d8d1c6] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#171412]"
+                    className="inline-flex items-center gap-1 rounded-md border border-[#cfc8bd] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#171412]"
                     href={profile.instagram_url}
                     rel="noreferrer"
                     target="_blank"
@@ -937,7 +937,7 @@ export default async function ProfilePage({
                       type="hidden"
                       value={profile.username}
                     />
-                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold">
+                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold">
                       <UserRoundMinus className="size-4" />
                       Following
                     </button>
@@ -950,7 +950,7 @@ export default async function ProfilePage({
                       type="hidden"
                       value={profile.username}
                     />
-                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold">
+                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold">
                       <UserRoundMinus className="size-4" />
                       Request sent
                     </button>
@@ -971,7 +971,7 @@ export default async function ProfilePage({
                 )}
                 {!isOwnProfile ? (
                   <Link
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
                     href="/messages"
                   >
                     <Send className="size-4" />
@@ -980,7 +980,7 @@ export default async function ProfilePage({
                 ) : null}
                 {!isOwnProfile && claims?.sub ? (
                   <SavedItemButton
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
                     isSaved={Boolean(savedProfile)}
                     returnPath={`/u/${profile.username}`}
                     subjectId={profile.id}
@@ -999,7 +999,7 @@ export default async function ProfilePage({
         </section>
 
         {isOwnProfile && profile.is_private && followRequests?.length ? (
-          <section className="border-b border-[#e5ded4] px-4 py-6">
+          <section className="border-b border-[#cfc8bd] px-4 py-6">
             <div className="mb-4 flex items-center gap-2">
               <UserPlus className="size-5" />
               <h2 className="text-lg font-bold">Follow requests</h2>
@@ -1007,7 +1007,7 @@ export default async function ProfilePage({
             <div className="space-y-3">
               {followRequests.map((request) => (
                 <article
-                  className="flex flex-col gap-3 rounded-md border border-[#d8d1c6] bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
+                  className="ttc-card flex flex-col gap-3 rounded-md border border-[#cfc8bd] bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
                   key={request.follower_id}
                 >
                   <div>
@@ -1071,7 +1071,7 @@ export default async function ProfilePage({
 
         {isPrivateLocked ? (
           <section className="px-4 py-8">
-            <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-5 text-center">
+            <div className="ttc-card rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-5 text-center">
               <LockKeyhole className="mx-auto mb-3 size-8 text-[#766d62]" />
               <h2 className="text-lg font-bold">Private profile</h2>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#766d62]">
@@ -1091,7 +1091,7 @@ export default async function ProfilePage({
           ]}
         />
         <section
-          className="scroll-mt-28 border-b border-[#e5ded4] px-4 py-6"
+          className="scroll-mt-28 border-b border-[#cfc8bd] px-4 py-6"
           id="profile-4u"
         >
           <ProfileSectionHeading
@@ -1134,7 +1134,7 @@ export default async function ProfilePage({
               {visibleThreads.length ? (
                 visibleThreads.map((thread) => (
                   <article
-                    className="rounded-md border border-[#d8d1c6] bg-white p-4"
+                    className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4"
                     key={thread.id}
                   >
                     <div className="mb-2 flex items-center justify-between gap-3">
@@ -1177,7 +1177,7 @@ export default async function ProfilePage({
               {visibleListings.length ? (
                 visibleListings.map((listing) => (
                   <Link
-                    className="block rounded-md border border-[#d8d1c6] bg-white p-4 transition hover:border-[#171412] hover:shadow-sm"
+                    className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-4 transition hover:border-[#171412]"
                     href={`/stuff/${listing.id}`}
                     key={listing.id}
                   >
@@ -1247,7 +1247,7 @@ export default async function ProfilePage({
               {visibleGigs.length ? (
                 visibleGigs.map((gig) => (
                   <article
-                    className="rounded-md border border-[#d8d1c6] bg-white p-4"
+                    className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4"
                     key={gig.id}
                   >
                     <div className="flex gap-3">
@@ -1310,7 +1310,7 @@ export default async function ProfilePage({
                               type="hidden"
                               value={profile.username}
                             />
-                            <button className="inline-flex h-9 items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold">
+                            <button className="inline-flex h-9 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-3 text-sm font-semibold">
                               Archive gig
                             </button>
                           </form>

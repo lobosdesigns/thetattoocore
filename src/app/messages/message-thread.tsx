@@ -101,7 +101,7 @@ export function MessageThread({
               className={`max-w-[78%] rounded-md px-4 py-3 ${
                 mine
                   ? "bg-[#171412] text-white"
-                  : "border border-[#d8d1c6] bg-white text-[#171412]"
+                  : "border border-[#cfc8bd] bg-white text-[#171412]"
               }`}
             >
               <p className="whitespace-pre-wrap text-sm leading-6">
