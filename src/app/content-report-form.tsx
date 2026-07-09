@@ -24,6 +24,10 @@ function optionsLabel(subjectType: ReportSubjectType) {
   return subjectType === "profile" ? "Profile options" : "Content options";
 }
 
+function reportButtonLabel(subjectType: ReportSubjectType) {
+  return subjectType === "profile" ? "Report profile" : "Report";
+}
+
 export function ContentReportForm({
   returnHash,
   returnPath,
@@ -36,17 +40,18 @@ export function ContentReportForm({
   subjectType: ReportSubjectType;
 }) {
   return (
-    <details className="relative inline-block rounded-md">
+    <details className="group relative inline-block rounded-md">
       <summary
         aria-label={optionsLabel(subjectType)}
-        className="inline-flex size-9 cursor-pointer list-none items-center justify-center rounded-md border border-[#cfc8bd] bg-white text-[#4f473f] hover:border-[#c8953b]"
+        className="inline-flex h-9 cursor-pointer list-none items-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-2.5 text-xs font-semibold text-[#4f473f] hover:border-[#c8953b]"
         title={optionsLabel(subjectType)}
       >
         <MoreHorizontal className="size-4" />
+        <span>{reportButtonLabel(subjectType)}</span>
       </summary>
       <form
         action={createContentReport}
-        className="fixed inset-x-3 bottom-24 z-40 rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-auto sm:right-0 sm:mt-2 sm:w-[min(20rem,calc(100vw-3rem))]"
+        className="fixed inset-x-3 bottom-24 z-40 max-h-[calc(100dvh-8rem)] overflow-y-auto rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-auto sm:right-0 sm:mt-2 sm:w-[min(20rem,calc(100vw-3rem))]"
       >
         <input name="subject_id" type="hidden" value={subjectId} />
         <input name="subject_type" type="hidden" value={subjectType} />

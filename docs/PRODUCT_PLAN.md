@@ -10,8 +10,10 @@
 - Mobile composer: posting cards must fit mobile browser screens, scroll to the publish button, and keep advanced fields behind expandable sections.
 - Reporting: report controls should look like a small intentional action, then open a separate report card or dropdown so users do not confuse it with normal post options.
 - Mobile report menus must stay inside the viewport; three-dot report cards in 4U, Gossip, Stuff, Gigs, and profiles should not open off-screen on narrow browsers.
+- Report triggers should be labeled enough to reduce false taps; icon-only menus are acceptable only when the surrounding UI makes the report purpose unmistakable.
 - Comments and DMs: add richer expression over time, including emoji, GIFs, photo attachments, and simple media attachments in direct messages.
 - Photos, feed media, reels, listing media, gig media, and DM attachments should be tappable/clickable and open in an Instagram-style lightbox with zoom for images and focused playback for videos.
+- Lightbox controls should reset cleanly between opens, support Escape/backdrop closing, and explain zoom or playback behavior without cluttering the feed.
 - Stories: add temporary story posts later for artists, studios, vendors, events, and community moments after the core feed, Gossip, Stuff, Gigs, and DMs are stable.
 
 ## Platform Stance
@@ -106,6 +108,7 @@
 - Start video with short 1-minute reel limits and clear file-size caps.
 - Treat Cloudflare Stream as the preferred production video route once usage grows, because it handles encoding, adaptive playback, thumbnails, and delivery better than raw Storage video.
 - Revisit a DIY FFmpeg/R2 pipeline only if video volume makes managed video too expensive.
+- User-facing upload copy should make it clear that images are optimized now, while videos stay capped and raw until the managed video pipeline is worth enabling.
 
 ## Lightweight Ads
 

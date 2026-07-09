@@ -23,7 +23,10 @@ export function MediaLightbox({
     if (!isOpen) return;
 
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") setIsOpen(false);
+      if (event.key === "Escape") {
+        setIsOpen(false);
+        setZoom(1);
+      }
     };
 
     document.addEventListener("keydown", onKeyDown);
@@ -38,7 +41,10 @@ export function MediaLightbox({
   function openFromKeyboard(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      if (src) setIsOpen(true);
+      if (src) {
+        setZoom(1);
+        setIsOpen(true);
+      }
     }
   }
 
@@ -48,7 +54,10 @@ export function MediaLightbox({
         aria-label="Open media viewer"
         className="group relative cursor-zoom-in"
         onClick={() => {
-          if (src) setIsOpen(true);
+          if (src) {
+            setZoom(1);
+            setIsOpen(true);
+          }
         }}
         onKeyDown={openFromKeyboard}
         role="button"
@@ -67,8 +76,15 @@ export function MediaLightbox({
           role="dialog"
         >
           <div className="flex items-center justify-between gap-3 border-b border-white/10 px-3 py-2">
-            <div className="text-xs font-bold uppercase tracking-[0.22em] text-white/70">
-              Media viewer
+            <div className="min-w-0">
+              <div className="text-xs font-bold uppercase tracking-[0.22em] text-white/70">
+                Media viewer
+              </div>
+              <p className="mt-0.5 truncate text-[11px] text-white/45">
+                {mediaType === "image"
+                  ? "Double tap or use zoom controls to inspect detail."
+                  : "Focused playback opens here."}
+              </p>
             </div>
             <div className="flex items-center gap-2">
               {mediaType === "image" ? (

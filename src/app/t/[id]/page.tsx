@@ -21,6 +21,7 @@ import { NotificationBellLink } from "@/app/notification-bell-link";
 import { PendingSubmitButton } from "@/app/pending-submit-button";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { ShareActions } from "@/app/share-actions";
+import { WordLimitedField } from "@/app/word-limited-field";
 import { brandShareImage, siteName, siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
@@ -458,12 +459,18 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
                 <form action={createThreadComment} className="mb-4 space-y-2">
                   <input name="thread_id" type="hidden" value={thread.id} />
                   <input name="return_path" type="hidden" value={returnPath} />
-                  <textarea
+                  <WordLimitedField
+                    as="textarea"
                     className="min-h-24 w-full rounded-md border border-[#cfc8bd] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+                    emojiShortcuts
+                    maxCharacters={2000}
                     maxLength={2000}
+                    minTrimmedLength={1}
                     name="body"
                     placeholder="Reply to this Gossip thread"
                     required
+                    validationMessage="Reply cannot be empty."
+                    wrapperClassName="w-full"
                   />
                   <PendingSubmitButton
                     className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-3 text-sm font-semibold text-white"

@@ -32,6 +32,8 @@ const compressionPasses = [
   { edge: 1200, quality: 0.62 },
 ] as const;
 const imageOptimizerLabel = "Phone photos are resized before upload.";
+const videoPipelineLabel =
+  "Video upload is intentionally capped until Cloudflare Stream is worth turning on.";
 
 function formatBytes(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -266,8 +268,8 @@ export function MediaInput({
       <p className="text-xs leading-5 text-[#766d62]">{guidance}</p>
       {videoAllowed ? (
         <p className="rounded-md border border-[#e5ded4] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
-          Reels are capped while we are on low-cost storage. Cloudflare Stream
-          comes later when real video usage justifies paid transcoding.
+          {videoPipelineLabel} Use short MP4/MOV clips for now; adaptive
+          playback and thumbnails come with the managed video pipeline later.
         </p>
       ) : null}
       {isOptimizing && !selected ? (
