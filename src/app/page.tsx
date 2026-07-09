@@ -1219,8 +1219,8 @@ export default async function Home({
                         visibility={post.visibility}
                       />
                     ) : null}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex flex-wrap items-center gap-4">
                         <form action={togglePostLike}>
                           <input name="post_id" type="hidden" value={post.id} />
                           <input name="return_path" type="hidden" value="/#feed" />
@@ -1404,8 +1404,8 @@ export default async function Home({
                       <p className="text-sm leading-6">{thread.body}</p>
                       <TranslationCue preferredLanguage={preferredLanguage} />
                       <ThreadImage media={thread.thread_media[0]} />
-                      <div className="mt-3 flex items-center justify-between gap-4 border-t border-[#e5ded4] pt-3">
-                        <div className="flex items-center gap-4">
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[#e5ded4] pt-3">
+                        <div className="flex flex-wrap items-center gap-4">
                           <form action={toggleThreadLike}>
                             <input
                               name="thread_id"
@@ -1648,6 +1648,12 @@ export default async function Home({
                             subjectType="marketplace_listing"
                           />
                         ) : null}
+                        <Link
+                          className="flex h-10 w-full items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                          href={`/stuff/${listing.id}`}
+                        >
+                          Open listing
+                        </Link>
                         <CompactShareButton
                           className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
                           text={`Check this Stuff listing on ${siteName}: ${listing.title}`}
@@ -1843,6 +1849,12 @@ export default async function Home({
                             subjectType="gig"
                           />
                         ) : null}
+                        <Link
+                          className="flex h-10 w-full items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                          href={`/gigs/${gig.id}`}
+                        >
+                          Open gig
+                        </Link>
                         <CompactShareButton
                           className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
                           text={`Check this Gig on ${siteName}: ${gig.title}`}
@@ -1994,7 +2006,7 @@ export default async function Home({
                 visibleGigs.slice(0, 4).map((gig) => (
                   <Link
                     className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-3"
-                    href={`#gig-${gig.id}`}
+                    href={`/gigs/${gig.id}`}
                     key={gig.id}
                   >
                     <p className="text-sm font-semibold">{gig.title}</p>
@@ -2017,9 +2029,9 @@ export default async function Home({
             <div className="space-y-3">
               {visibleListings.length ? (
                 visibleListings.slice(0, 4).map((listing) => (
-                  <a
+                  <Link
                     className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-3"
-                    href={`#stuff-${listing.id}`}
+                    href={`/stuff/${listing.id}`}
                     key={listing.id}
                   >
                     <div className="mb-2 flex items-center gap-3">
@@ -2032,7 +2044,7 @@ export default async function Home({
                       </div>
                     </div>
                     <p className="text-sm font-bold">{formatPrice(listing)}</p>
-                  </a>
+                  </Link>
                 ))
               ) : (
                 <SidebarEmptyState>No Stuff yet.</SidebarEmptyState>

@@ -1,7 +1,28 @@
 import { Flag, MoreHorizontal } from "lucide-react";
 import { createContentReport } from "@/app/actions";
 
-type ReportSubjectType = "feed_post" | "gig" | "marketplace_listing" | "thread_post";
+type ReportSubjectType =
+  | "feed_post"
+  | "gig"
+  | "marketplace_listing"
+  | "profile"
+  | "thread_post";
+
+function reportTitle(subjectType: ReportSubjectType) {
+  return subjectType === "profile" ? "Report profile" : "Report content";
+}
+
+function reportDescription(subjectType: ReportSubjectType) {
+  if (subjectType === "profile") {
+    return "Report profiles for scams, harassment, illegal services, sexual content, minor safety concerns, or impersonation.";
+  }
+
+  return "Report unsafe, scammy, sexual, illegal, harassing, or miscategorized body-art content.";
+}
+
+function optionsLabel(subjectType: ReportSubjectType) {
+  return subjectType === "profile" ? "Profile options" : "Content options";
+}
 
 export function ContentReportForm({
   returnHash,
@@ -17,9 +38,9 @@ export function ContentReportForm({
   return (
     <details className="relative inline-block rounded-md">
       <summary
-        aria-label="Content options"
+        aria-label={optionsLabel(subjectType)}
         className="inline-flex size-9 cursor-pointer list-none items-center justify-center rounded-md border border-[#cfc8bd] bg-white text-[#4f473f] hover:border-[#c8953b]"
-        title="Content options"
+        title={optionsLabel(subjectType)}
       >
         <MoreHorizontal className="size-4" />
       </summary>
@@ -33,10 +54,11 @@ export function ContentReportForm({
         {returnHash ? (
           <input name="return_hash" type="hidden" value={returnHash} />
         ) : null}
-        <p className="text-sm font-bold text-[#171412]">Report content</p>
+        <p className="text-sm font-bold text-[#171412]">
+          {reportTitle(subjectType)}
+        </p>
         <p className="mb-2 text-xs leading-5 text-[#766d62]">
-          Report unsafe, scammy, sexual, illegal, harassing, or miscategorized
-          body-art content.
+          {reportDescription(subjectType)}
         </p>
         <div className="grid gap-2">
           <select

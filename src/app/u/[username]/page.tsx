@@ -8,13 +8,11 @@ import {
   BriefcaseBusiness,
   CalendarDays,
   Camera,
-  Flag,
   LinkIcon,
   LogIn,
   LockKeyhole,
   MapPin,
   MessageCircle,
-  MoreHorizontal,
   Send,
   ShieldCheck,
   ShoppingBag,
@@ -23,7 +21,8 @@ import {
   Video,
   type LucideIcon,
 } from "lucide-react";
-import { acceptAdultTerms, archiveGig, createContentReport } from "@/app/actions";
+import { acceptAdultTerms, archiveGig } from "@/app/actions";
+import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { SavedItemButton } from "@/app/saved-item-button";
@@ -277,63 +276,6 @@ function canRenderContent({
   if (item.is_sensitive && !viewer.isAdultConfirmed) return false;
 
   return true;
-}
-
-function ProfileReportForm({
-  profileId,
-  username,
-}: {
-  profileId: string;
-  username: string;
-}) {
-  return (
-    <details className="relative inline-block">
-      <summary
-        aria-label="Profile options"
-        className="inline-flex size-10 cursor-pointer list-none items-center justify-center rounded-md border border-[#cfc8bd] bg-white text-[#4f473f] hover:border-[#c8953b]"
-        title="Profile options"
-      >
-        <MoreHorizontal className="size-4" />
-      </summary>
-      <form
-        action={createContentReport}
-        className="fixed inset-x-3 bottom-24 z-40 rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-auto sm:right-0 sm:mt-2 sm:w-[min(21rem,calc(100vw-3rem))]"
-      >
-        <input name="subject_id" type="hidden" value={profileId} />
-        <input name="subject_type" type="hidden" value="profile" />
-        <input name="return_path" type="hidden" value={`/u/${username}`} />
-        <p className="text-sm font-bold text-[#171412]">Report profile</p>
-        <p className="mb-2 text-xs leading-5 text-[#766d62]">
-          Report profiles for scams, harassment, illegal services, sexual content,
-          minor safety concerns, or impersonation.
-        </p>
-        <div className="grid gap-2">
-        <select
-          aria-label="Report profile reason"
-          className="h-10 rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
-          name="reason"
-        >
-          <option value="scam or spam">Scam, spam, or impersonation</option>
-          <option value="harassment or hate">Harassment, hate, or threats</option>
-          <option value="minor safety concern">Minor safety concern</option>
-          <option value="sexual content">Sexual or pornographic content</option>
-          <option value="illegal goods or services">Illegal goods or services</option>
-          <option value="other">Other policy concern</option>
-        </select>
-        <input
-          className="h-10 min-w-0 rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
-          maxLength={500}
-          name="details"
-          placeholder="What should moderators know?"
-        />
-        <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm font-semibold">
-          <Flag className="size-4" />
-          Report
-        </button>
-        </div>
-      </form>
-    </details>
-  );
 }
 
 function AdultTermsGate({ username }: { username: string }) {
@@ -1226,9 +1168,10 @@ export default async function ProfilePage({
                   />
                 ) : null}
                 {!isOwnProfile && claims?.sub ? (
-                  <ProfileReportForm
-                    profileId={profile.id}
-                    username={profile.username}
+                  <ContentReportForm
+                    returnPath={`/u/${profile.username}`}
+                    subjectId={profile.id}
+                    subjectType="profile"
                   />
                 ) : null}
               </div>
