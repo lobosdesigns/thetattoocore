@@ -156,21 +156,26 @@ const adminTabs = [
 const mediaOpsStages = [
   [
     "Live now",
-    "Browser image optimization, server signature checks, dimension checks, and 60-second MP4/MOV reel validation.",
+    "Browser WebP image optimization, saved-size feedback, server signature checks, dimension checks, and 60-second MP4/MOV/WebM reel validation.",
   ],
   [
     "Next",
-    "Add generated thumbnails and poster images so feeds, search, and profiles load lighter previews.",
+    "Store generated thumbnails and poster images so feeds, search, profiles, and share previews can load lighter media without exposing originals.",
+  ],
+  [
+    "Scale trigger",
+    "Move active reels to Cloudflare Stream when video usage justifies paid transcoding, adaptive playback, and managed thumbnails.",
   ],
   [
     "Later",
-    "Add a real processing queue for video transcodes, moderation thumbnails, and retryable failed media jobs.",
+    "Add a retryable processing queue for video transcodes, moderation thumbnails, failed media jobs, and post-upload safety review.",
   ],
 ] as const;
 
 const mediaCostRules = [
   "Keep original media in Supabase Storage while early traffic is small.",
   "Use client-side image compression first because it is free and reduces storage before upload.",
+  "Keep current reel caps strict: 60 seconds and 50 MB while videos are uploaded raw.",
   "Do not enable paid video transcoding until reels are getting enough real usage to justify it.",
   "Consider Cloudflare Images for image variants and Cloudflare Stream for video only after upload volume grows.",
 ] as const;

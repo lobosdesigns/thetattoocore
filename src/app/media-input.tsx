@@ -31,6 +31,7 @@ const compressionPasses = [
   { edge: 1400, quality: 0.7 },
   { edge: 1200, quality: 0.62 },
 ] as const;
+const imageOptimizerLabel = "Phone photos are resized before upload.";
 
 function formatBytes(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -43,6 +44,12 @@ function formatSeconds(seconds: number) {
   const remainder = Math.round(seconds % 60);
 
   return `${minutes}:${String(remainder).padStart(2, "0")}`;
+}
+
+function reductionPercent(original: number, optimized: number) {
+  if (!original || optimized >= original) return 0;
+
+  return Math.round(((original - optimized) / original) * 100);
 }
 
 function mediaTypeFor(file: File): SelectedMedia["mediaType"] {
@@ -235,12 +242,16 @@ export function MediaInput({
 
   const isVideo = selected?.mediaType === "video";
   const guidance = videoAllowed
-    ? `Images auto-optimize before upload. Videos can be ${formatSeconds(
+    ? `${imageOptimizerLabel} Videos stay raw for now: ${formatSeconds(
         maxVideoSeconds,
-      )} max and ${formatBytes(maxVideoBytes)}. GIFs are allowed but keep their original size.`
-    : `Images auto-optimize before upload. Max image size after optimization is ${formatBytes(
+      )} max, ${formatBytes(maxVideoBytes)} max, MP4/MOV preferred.`
+    : `${imageOptimizerLabel} Max image size after optimization is ${formatBytes(
         maxImageBytes,
       )}; GIFs keep their original size.`;
+  const savedPercent =
+    selected?.originalFileSize && selected.mediaType === "image"
+      ? reductionPercent(selected.originalFileSize, selected.file.size)
+      : 0;
 
   return (
     <div className="space-y-2">
@@ -253,6 +264,12 @@ export function MediaInput({
         type="file"
       />
       <p className="text-xs leading-5 text-[#766d62]">{guidance}</p>
+      {videoAllowed ? (
+        <p className="rounded-md border border-[#e5ded4] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
+          Reels are capped while we are on low-cost storage. Cloudflare Stream
+          comes later when real video usage justifies paid transcoding.
+        </p>
+      ) : null}
       {isOptimizing && !selected ? (
         <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 text-xs font-semibold text-[#766d62]">
           Optimizing image before upload...
@@ -295,8 +312,14 @@ export function MediaInput({
               ) : null}
               {selected.originalFileSize ? (
                 <p className="mt-1 text-xs text-[#766d62]">
-                  Optimized from {formatBytes(selected.originalFileSize)} before
-                  upload.
+                  Optimized from {formatBytes(selected.originalFileSize)}
+                  {savedPercent ? `, about ${savedPercent}% smaller` : ""}.
+                </p>
+              ) : null}
+              {isVideo && !selected.error ? (
+                <p className="mt-1 text-xs text-[#766d62]">
+                  Video will upload as-is for now. Keep it short, clear, and
+                  under the cap.
                 </p>
               ) : null}
               {selected.error ? (
