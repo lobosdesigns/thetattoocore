@@ -22,6 +22,13 @@ const REPORT_SUBJECT_TYPES = new Set([
   "thread_post",
   "marketplace_listing",
 ]);
+const SAVED_SUBJECT_TYPES = new Set([
+  "feed_post",
+  "gig",
+  "marketplace_listing",
+  "profile",
+  "thread_post",
+]);
 const REPORT_REASONS = new Set([
   "body-art nudity context",
   "sexual content",
@@ -41,6 +48,12 @@ const REPORT_SUBJECT_CONFIG = {
 } as const;
 
 type ReportSubjectType = keyof typeof REPORT_SUBJECT_CONFIG;
+type SavedSubjectType =
+  | "feed_post"
+  | "gig"
+  | "marketplace_listing"
+  | "profile"
+  | "thread_post";
 
 type Claims = {
   sub: string;
@@ -793,6 +806,61 @@ export async function togglePostLike(formData: FormData) {
 
   revalidatePath("/");
   redirect("/#feed");
+}
+
+export async function toggleSavedItem(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const subjectType = cleanText(
+    formData.get("subject_type"),
+    40,
+  ) as SavedSubjectType;
+  const subjectId = cleanId(formData.get("subject_id"));
+  const saved = cleanText(formData.get("saved"), 8) === "true";
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/";
+  const returnHash = cleanText(formData.get("return_hash"), 80);
+
+  if (!SAVED_SUBJECT_TYPES.has(subjectType) || !subjectId) {
+    redirect(
+      redirectWithMessage({
+        hash: returnHash,
+        message: "Choose something to save first.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  const result = saved
+    ? await supabase
+        .from("saved_items")
+        .delete()
+        .eq("user_id", userId)
+        .eq("subject_type", subjectType)
+        .eq("subject_id", subjectId)
+    : await supabase.from("saved_items").upsert({
+        subject_id: subjectId,
+        subject_type: subjectType,
+        user_id: userId,
+      });
+
+  if (result.error) {
+    redirect(
+      redirectWithMessage({
+        hash: returnHash,
+        message: result.error.message || "Could not update saved item.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  revalidatePath("/");
+  revalidatePath(returnPath);
+  redirect(
+    redirectWithMessage({
+      hash: returnHash,
+      message: saved ? "Removed from saved." : "Saved.",
+      path: returnPath,
+    }),
+  );
 }
 
 export async function createPostComment(formData: FormData) {

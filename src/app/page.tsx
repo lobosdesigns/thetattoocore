@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   BadgeCheck,
+  Bookmark,
   BriefcaseBusiness,
   CalendarDays,
   Flag,
@@ -23,6 +24,7 @@ import {
   createContentReport,
   createPostComment,
   createThreadComment,
+  toggleSavedItem,
   togglePostLike,
   toggleThreadLike,
 } from "./actions";
@@ -114,6 +116,11 @@ type Gig = {
   is_sensitive: boolean;
   visibility: "public_preview" | "members" | "private";
   profiles: Profile | null;
+};
+
+type SavedItem = {
+  subject_id: string;
+  subject_type: "feed_post" | "gig" | "marketplace_listing" | "thread_post";
 };
 
 type PostMedia = {
@@ -396,6 +403,41 @@ function ReportForm({
   );
 }
 
+function SaveButton({
+  className = "flex items-center gap-2 text-sm font-medium",
+  hash,
+  isSaved,
+  subjectId,
+  subjectType,
+}: {
+  className?: string;
+  hash: "feed" | "gigs" | "marketplace" | "threads";
+  isSaved: boolean;
+  subjectId: string;
+  subjectType: SavedItem["subject_type"];
+}) {
+  return (
+    <form action={toggleSavedItem}>
+      <input name="subject_id" type="hidden" value={subjectId} />
+      <input name="subject_type" type="hidden" value={subjectType} />
+      <input name="saved" type="hidden" value={isSaved ? "true" : "false"} />
+      <input name="return_path" type="hidden" value="/" />
+      <input name="return_hash" type="hidden" value={hash} />
+      <button
+        aria-label={isSaved ? "Remove from saved" : "Save"}
+        className={className}
+      >
+        <Bookmark
+          className={`size-5 ${
+            isSaved ? "fill-[#171412] text-[#171412]" : ""
+          }`}
+        />
+        {isSaved ? "Saved" : "Save"}
+      </button>
+    </form>
+  );
+}
+
 function mediaUrl(bucket: string, path: string) {
   const encodedPath = path.split("/").map(encodeURIComponent).join("/");
 
@@ -596,6 +638,7 @@ export default async function Home({
     { data: listings },
     { data: gigs },
     { count: unreadDmCount },
+    { data: savedItems },
   ] = await Promise.all([
     claims?.sub
       ? supabase
@@ -669,6 +712,19 @@ export default async function Home({
           .eq("type", "message")
           .is("read_at", null)
       : Promise.resolve({ count: 0 }),
+    claims?.sub
+      ? supabase
+          .from("saved_items")
+          .select("subject_type, subject_id")
+          .eq("user_id", claims.sub)
+          .in("subject_type", [
+            "feed_post",
+            "thread_post",
+            "marketplace_listing",
+            "gig",
+          ])
+          .returns<SavedItem[]>()
+      : Promise.resolve({ data: [] as SavedItem[] }),
   ]);
 
   const isSignedIn = Boolean(claims?.sub);
@@ -703,6 +759,9 @@ export default async function Home({
   const adminRole = currentProfile?.role;
   const profileHref = currentProfile ? `/u/${currentProfile.username}` : "/account";
   const unreadDmBadge = unreadDmCount ?? 0;
+  const savedItemKeys = new Set(
+    (savedItems ?? []).map((item) => `${item.subject_type}:${item.subject_id}`),
+  );
 
   return (
     <main className="min-h-screen bg-[#f5f2eb] text-[#171412]">
@@ -886,6 +945,14 @@ export default async function Home({
                           <MessageCircle className="size-5" />
                           {post.post_comments.length}
                         </a>
+                        {isSignedIn ? (
+                          <SaveButton
+                            hash="feed"
+                            isSaved={savedItemKeys.has(`feed_post:${post.id}`)}
+                            subjectId={post.id}
+                            subjectType="feed_post"
+                          />
+                        ) : null}
                       </div>
                       <CompactShareButton
                         text={`Check this 4U post on ${siteName}`}
@@ -1050,6 +1117,16 @@ export default async function Home({
                             <MessageCircle className="size-5" />
                             {thread.thread_comments.length}
                           </a>
+                          {isSignedIn ? (
+                            <SaveButton
+                              hash="threads"
+                              isSaved={savedItemKeys.has(
+                                `thread_post:${thread.id}`,
+                              )}
+                              subjectId={thread.id}
+                              subjectType="thread_post"
+                            />
+                          ) : null}
                         </div>
                         <CompactShareButton
                           text={`Check this Gossip thread on ${siteName}`}
@@ -1207,6 +1284,17 @@ export default async function Home({
                         </div>
                       ) : null}
                       <div className="mt-4 grid gap-2">
+                        {isSignedIn ? (
+                          <SaveButton
+                            className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                            hash="marketplace"
+                            isSaved={savedItemKeys.has(
+                              `marketplace_listing:${listing.id}`,
+                            )}
+                            subjectId={listing.id}
+                            subjectType="marketplace_listing"
+                          />
+                        ) : null}
                         <CompactShareButton
                           className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
                           text={`Check this Stuff listing on ${siteName}: ${listing.title}`}
@@ -1375,6 +1463,15 @@ export default async function Home({
                         </form>
                       ) : null}
                       <div className="mt-4 grid gap-2">
+                        {isSignedIn ? (
+                          <SaveButton
+                            className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                            hash="gigs"
+                            isSaved={savedItemKeys.has(`gig:${gig.id}`)}
+                            subjectId={gig.id}
+                            subjectType="gig"
+                          />
+                        ) : null}
                         <CompactShareButton
                           className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
                           text={`Check this Gig on ${siteName}: ${gig.title}`}
