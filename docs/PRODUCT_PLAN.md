@@ -7,6 +7,9 @@
 - Marketplace: flash, guest spots, chairs, supplies, and services with seller messaging.
 - Messages: integrated direct messenger for bookings, marketplace questions, and collaboration.
 - Composer: one floating plus button that opens the correct posting form for the current column.
+- Mobile composer: posting cards must fit mobile browser screens, scroll to the publish button, and keep advanced fields behind expandable sections.
+- Reporting: report controls should look like a small intentional action, then open a separate report card or dropdown so users do not confuse it with normal post options.
+- Comments and DMs: add richer expression over time, including emoji, GIFs, photo attachments, and simple media attachments in direct messages.
 
 ## Visual Direction
 
@@ -15,6 +18,7 @@
 - Add visual punch through tighter spacing, bolder active states, refined icon usage, tasteful shadows, and accent color moments.
 - Keep the app functional first: content should remain easy to scan, controls should stay obvious, and mobile layouts should feel fast.
 - Avoid a flat beige-only look; the brand should feel like a modern creative community, not a generic marketplace.
+- Continue pushing the app toward a sleeker, darker, higher-contrast social look with more pop, sharper mobile controls, and a stronger younger-crowd feel.
 
 ## Global Availability
 

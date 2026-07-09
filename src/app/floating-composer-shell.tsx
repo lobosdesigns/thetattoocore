@@ -138,10 +138,10 @@ export function FloatingComposerShell({
       </button>
 
       {isOpen ? (
-        <div className="fixed inset-0 z-40 bg-[#171412]/55 px-4 py-5 backdrop-blur-sm">
+        <div className="fixed inset-0 z-40 overflow-y-auto bg-[#171412]/55 px-3 py-3 backdrop-blur-sm sm:px-4 sm:py-5">
           <div className="mx-auto flex min-h-full max-w-xl items-end sm:items-center">
-            <section className="w-full rounded-md border border-[#cfc8bd] bg-[#f2f1ee] shadow-2xl">
-              <header className="flex items-center justify-between gap-3 border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-3">
+            <section className="flex max-h-[calc(100dvh-1.5rem)] w-full flex-col overflow-hidden rounded-md border border-[#cfc8bd] bg-[#f2f1ee] shadow-2xl sm:max-h-[calc(100dvh-2.5rem)]">
+              <header className="flex shrink-0 items-center justify-between gap-3 border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-[#c8953b]">
                     <ActiveIcon className="size-5" />
@@ -160,9 +160,9 @@ export function FloatingComposerShell({
                 </button>
               </header>
 
-              <div className="px-4 py-4">
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
                 {!canCreate ? (
-                  <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4">
+                  <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-4">
                     <p className="text-sm font-semibold">
                       {isSignedIn
                         ? "Finish your profile to start posting."

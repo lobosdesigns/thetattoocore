@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Search, Send } from "lucide-react";
 import {
   createFeedPost,
@@ -19,13 +20,35 @@ const visibilityOptions = [
   ["Private", "Only you can see it for now. Useful for drafts or content you are not ready to share."],
 ] as const;
 
+function ComposerDetails({
+  children,
+  open = false,
+  title,
+}: {
+  children: ReactNode;
+  open?: boolean;
+  title: string;
+}) {
+  return (
+    <details
+      className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3"
+      open={open}
+    >
+      <summary className="cursor-pointer list-none text-sm font-bold">
+        {title}
+      </summary>
+      <div className="mt-3 space-y-3">{children}</div>
+    </details>
+  );
+}
+
 function VisibilityControl() {
   return (
-    <section className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3">
+    <section className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3">
       <label className="block">
         <span className="text-sm font-semibold">Visibility</span>
         <select
-          className="mt-2 h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+          className="mt-2 h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
           name="visibility"
         >
           <option value="public_preview">Public preview</option>
@@ -53,7 +76,7 @@ const sensitiveExamples = [
 
 function SensitiveControls() {
   return (
-    <section className="rounded-md border border-[#d8d1c6] bg-[#fff7ec] p-3">
+    <section className="rounded-md border border-[#cfc8bd] bg-[#fff7ec] p-3">
       <label className="flex items-start gap-2 text-sm font-semibold">
         <input className="mt-1 size-4" name="is_sensitive" type="checkbox" />
         <span>Mark as sensitive body-art content</span>
@@ -63,7 +86,7 @@ function SensitiveControls() {
         should require login and 18+ confirmation before viewing.
       </p>
       <select
-        className="mt-3 h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+        className="mt-3 h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
         name="sensitive_reason"
       >
         <option value="body_art_nudity">Body-art nudity</option>
@@ -112,17 +135,19 @@ export function FloatingComposer({
               validationMessage="Feed caption needs at least 3 characters."
             />
             <input
-              className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              className="h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
               name="style_tags"
               placeholder="blackwork, fine line"
             />
             <input
-              className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              className="h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
               name="location_label"
               placeholder="Austin, TX"
             />
-            <VisibilityControl />
-            <SensitiveControls />
+            <ComposerDetails title="Visibility and sensitive content">
+              <VisibilityControl />
+              <SensitiveControls />
+            </ComposerDetails>
             <MediaInput accept={imageVideoAccept} name="media" required />
             <PendingSubmitButton
               className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
@@ -149,8 +174,10 @@ export function FloatingComposer({
               required
               validationMessage="Gossip post needs at least 3 characters."
             />
-            <VisibilityControl />
-            <SensitiveControls />
+            <ComposerDetails title="Visibility and sensitive content">
+              <VisibilityControl />
+              <SensitiveControls />
+            </ComposerDetails>
             <MediaInput accept={imageAccept} name="media" videoAllowed={false} />
             <PendingSubmitButton
               className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
@@ -179,12 +206,12 @@ export function FloatingComposer({
             />
             <div className="grid grid-cols-2 gap-2">
               <input
-                className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
                 name="price"
                 placeholder="80"
               />
               <select
-                className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
                 name="category"
               >
                 <option value="flash">Flash</option>
@@ -204,18 +231,20 @@ export function FloatingComposer({
             />
             <div className="grid grid-cols-2 gap-2">
               <input
-                className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
                 name="city"
                 placeholder="City"
               />
               <input
-                className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
                 name="region"
                 placeholder="State"
               />
             </div>
-            <VisibilityControl />
-            <SensitiveControls />
+            <ComposerDetails title="Visibility and sensitive content">
+              <VisibilityControl />
+              <SensitiveControls />
+            </ComposerDetails>
             <MediaInput accept={imageVideoAccept} name="media" />
             <PendingSubmitButton
               className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
@@ -233,7 +262,7 @@ export function FloatingComposer({
             method="post"
           >
             <WordLimitedField
-              className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              className="h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
               maxCharacters={140}
               maxLength={140}
               minTrimmedLength={3}
@@ -262,49 +291,53 @@ export function FloatingComposer({
               name="description"
               placeholder="Details, dates, requirements, booth info, or contact notes."
             />
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                name="city"
-                placeholder="City"
+            <ComposerDetails title="More gig details">
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  name="city"
+                  placeholder="City"
+                />
+                <input
+                  className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  name="region"
+                  placeholder="State"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  name="starts_at"
+                  type="date"
+                />
+                <input
+                  className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  name="ends_at"
+                  type="date"
+                />
+              </div>
+              <WordLimitedField
+                className="h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                maxCharacters={120}
+                maxLength={120}
+                name="compensation"
+                placeholder="Paid, booth fee, commission split"
+                wrapperClassName="w-full"
               />
-              <input
-                className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                name="region"
-                placeholder="State"
+              <WordLimitedField
+                className="h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                maxCharacters={300}
+                maxLength={300}
+                name="contact_url"
+                placeholder="Application or event link"
+                type="url"
+                wrapperClassName="w-full"
               />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                name="starts_at"
-                type="date"
-              />
-              <input
-                className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                name="ends_at"
-                type="date"
-              />
-            </div>
-            <WordLimitedField
-              className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-              maxCharacters={120}
-              maxLength={120}
-              name="compensation"
-              placeholder="Paid, booth fee, commission split"
-              wrapperClassName="w-full"
-            />
-            <WordLimitedField
-              className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-              maxCharacters={300}
-              maxLength={300}
-              name="contact_url"
-              placeholder="Application or event link"
-              type="url"
-              wrapperClassName="w-full"
-            />
-            <VisibilityControl />
-            <SensitiveControls />
+            </ComposerDetails>
+            <ComposerDetails title="Visibility and sensitive content">
+              <VisibilityControl />
+              <SensitiveControls />
+            </ComposerDetails>
             <MediaInput accept={imageAccept} name="media" videoAllowed={false} />
             <PendingSubmitButton
               className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
