@@ -200,6 +200,14 @@ function EmptySection({ label }: { label: string }) {
   );
 }
 
+function ResultAction({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="mt-3 inline-flex h-8 items-center rounded-md border border-[#d8d1c6] bg-white px-3 text-xs font-semibold text-[#171412]">
+      {children}
+    </span>
+  );
+}
+
 export default async function SearchPage({
   searchParams,
 }: {
@@ -491,7 +499,7 @@ export default async function SearchPage({
                   {feedPosts.map((post) => (
                     <Link
                       className="block rounded-md border border-[#d8d1c6] bg-white p-4"
-                      href="/#feed"
+                      href={`/#feed-${post.id}`}
                       key={post.id}
                     >
                       <div className="flex items-center gap-1.5">
@@ -503,6 +511,13 @@ export default async function SearchPage({
                       <p className="mt-1 line-clamp-2 text-sm leading-6 text-[#4f473f]">
                         {post.caption || post.style_tags.join(", ") || "4U post"}
                       </p>
+                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#766d62]">
+                        {post.profiles?.username ? (
+                          <span>@{post.profiles.username}</span>
+                        ) : null}
+                        {post.location_label ? <span>{post.location_label}</span> : null}
+                      </div>
+                      <ResultAction>Open 4U post</ResultAction>
                     </Link>
                   ))}
                 </div>
@@ -519,7 +534,7 @@ export default async function SearchPage({
                   {threads.map((thread) => (
                     <Link
                       className="block rounded-md border border-[#d8d1c6] bg-white p-4"
-                      href="/#threads"
+                      href={`/#thread-${thread.id}`}
                       key={thread.id}
                     >
                       <div className="flex items-center gap-1.5">
@@ -531,6 +546,12 @@ export default async function SearchPage({
                       <p className="mt-1 line-clamp-3 text-sm leading-6 text-[#4f473f]">
                         {thread.body}
                       </p>
+                      {thread.profiles?.username ? (
+                        <p className="mt-2 text-xs text-[#766d62]">
+                          @{thread.profiles.username}
+                        </p>
+                      ) : null}
+                      <ResultAction>Open Gossip thread</ResultAction>
                     </Link>
                   ))}
                 </div>
@@ -558,6 +579,15 @@ export default async function SearchPage({
                       <div className="mt-2">
                         <VerifiedBadge profile={listing.profiles} />
                       </div>
+                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#766d62]">
+                        {listing.profiles?.username ? (
+                          <span>@{listing.profiles.username}</span>
+                        ) : null}
+                        {listing.profiles?.display_name ? (
+                          <span>{listing.profiles.display_name}</span>
+                        ) : null}
+                      </div>
+                      <ResultAction>View Stuff listing</ResultAction>
                     </Link>
                   ))}
                 </div>
@@ -585,6 +615,15 @@ export default async function SearchPage({
                       <div className="mt-2">
                         <VerifiedBadge profile={gig.profiles} />
                       </div>
+                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#766d62]">
+                        {gig.profiles?.username ? (
+                          <span>@{gig.profiles.username}</span>
+                        ) : null}
+                        {gig.profiles?.display_name ? (
+                          <span>{gig.profiles.display_name}</span>
+                        ) : null}
+                      </div>
+                      <ResultAction>View Gig</ResultAction>
                     </Link>
                   ))}
                 </div>
