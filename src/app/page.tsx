@@ -1157,7 +1157,8 @@ export default async function Home({
               {visibleListings.length
                 ? visibleListings.map((listing) => (
                     <article
-                      className="rounded-md border border-[#d8d1c6] bg-white p-4"
+                      className="scroll-mt-28 rounded-md border border-[#d8d1c6] bg-white p-4"
+                      id={`stuff-${listing.id}`}
                       key={listing.id}
                     >
                       <div className="mb-3 flex items-center gap-3">
@@ -1205,7 +1206,13 @@ export default async function Home({
                           />
                         </div>
                       ) : null}
-                      <div className="mt-4">
+                      <div className="mt-4 grid gap-2">
+                        <CompactShareButton
+                          className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                          text={`Check this Stuff listing on ${siteName}: ${listing.title}`}
+                          title={listing.title}
+                          url={`${siteUrl}/stuff/${listing.id}`}
+                        />
                         {isSignedIn &&
                         listing.profiles?.username &&
                         listing.profiles.id !== claims?.sub ? (
@@ -1293,7 +1300,8 @@ export default async function Home({
               {visibleGigs.length
                 ? visibleGigs.map((gig) => (
                     <article
-                      className="rounded-md border border-[#d8d1c6] bg-white p-4"
+                      className="scroll-mt-28 rounded-md border border-[#d8d1c6] bg-white p-4"
+                      id={`gig-${gig.id}`}
                       key={gig.id}
                     >
                       <div className="mb-3 flex items-start gap-3">
@@ -1366,7 +1374,13 @@ export default async function Home({
                           </button>
                         </form>
                       ) : null}
-                      <div className="mt-4">
+                      <div className="mt-4 grid gap-2">
+                        <CompactShareButton
+                          className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                          text={`Check this Gig on ${siteName}: ${gig.title}`}
+                          title={gig.title}
+                          url={`${siteUrl}/gigs/${gig.id}`}
+                        />
                         {gig.contact_url ? (
                           <a
                             className="flex h-10 w-full items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
@@ -1512,7 +1526,7 @@ export default async function Home({
                 visibleGigs.slice(0, 4).map((gig) => (
                   <Link
                     className="block rounded-md border border-[#d8d1c6] bg-white p-3"
-                    href={`/gigs/${gig.id}`}
+                    href={`#gig-${gig.id}`}
                     key={gig.id}
                   >
                     <p className="text-sm font-semibold">{gig.title}</p>
@@ -1537,7 +1551,7 @@ export default async function Home({
                 visibleListings.slice(0, 4).map((listing) => (
                   <a
                     className="block rounded-md border border-[#d8d1c6] bg-white p-3"
-                    href={`/stuff/${listing.id}`}
+                    href={`#stuff-${listing.id}`}
                     key={listing.id}
                   >
                     <div className="mb-2 flex items-center gap-3">
