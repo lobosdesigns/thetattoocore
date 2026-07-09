@@ -37,3 +37,7 @@ export function languageLabel(value?: string | null) {
     languageOptions.find(([code]) => code === value)?.[1] ?? "English"
   );
 }
+
+export function normalizedLanguage(value?: string | null) {
+  return value && languageCodes.has(value) ? value : "en";
+}

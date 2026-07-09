@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthHashRedirect } from "./auth-hash-redirect";
+import { normalizedLanguage } from "@/lib/localization";
 import { siteDescription, siteName, siteUrl } from "@/lib/site";
+import { createClient } from "@/lib/supabase/server";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -41,14 +43,32 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+async function preferredDocumentLanguage() {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims?.sub;
+
+  if (!userId) return "en";
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("preferred_language")
+    .eq("id", userId)
+    .maybeSingle<{ preferred_language: string | null }>();
+
+  return normalizedLanguage(profile?.preferred_language);
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const language = await preferredDocumentLanguage();
+
   return (
     <html
-      lang="en"
+      lang={language}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">

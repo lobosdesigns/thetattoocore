@@ -40,6 +40,7 @@ import { PendingSubmitButton } from "./pending-submit-button";
 import { SavedItemButton } from "./saved-item-button";
 import { CompactShareButton } from "./share-actions";
 import { WordLimitedField } from "./word-limited-field";
+import { languageLabel, normalizedLanguage } from "@/lib/localization";
 import { siteName, siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
@@ -831,6 +832,42 @@ function ProfileSetupGate() {
   );
 }
 
+function LanguageStatus({ preferredLanguage }: { preferredLanguage: string }) {
+  const label = languageLabel(preferredLanguage);
+
+  return (
+    <section className="border-b border-[#d8d1c6] bg-[#fffdf9] px-4 py-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm leading-5 text-[#4f473f]">
+          Language preference: <span className="font-semibold">{label}</span>.
+          Posts stay in original text for now.
+        </p>
+        <Link
+          className="w-fit rounded-md border border-[#cfc8bd] bg-white px-3 py-2 text-xs font-semibold"
+          href="/account#language-settings"
+        >
+          Language settings
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function TranslationCue({ preferredLanguage }: { preferredLanguage: string }) {
+  if (preferredLanguage === "en") return null;
+
+  return (
+    <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-semibold text-[#766d62]">
+      <span className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 py-1">
+        Original text
+      </span>
+      <span className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 py-1">
+        Translation planned
+      </span>
+    </div>
+  );
+}
+
 async function fetchSponsoredCampaign(
   supabase: Awaited<ReturnType<typeof createClient>>,
   placement: AdPlacement,
@@ -1084,6 +1121,7 @@ export default async function Home({
   const canCreateStuff = isVerifiedProfessional(currentProfile);
   const adminRole = currentProfile?.role;
   const profileHref = currentProfile ? `/u/${currentProfile.username}` : "/account";
+  const preferredLanguage = normalizedLanguage(currentProfile?.preferred_language);
   const unreadDmBadge = unreadDmCount ?? 0;
   const savedItemKeys = new Set(
     (savedItems ?? []).map((item) => `${item.subject_type}:${item.subject_id}`),
@@ -1180,6 +1218,10 @@ export default async function Home({
           {isSignedIn && !currentProfile ? <ProfileSetupGate /> : null}
 
           {currentProfile && !viewer.isAdultConfirmed ? <AdultTermsGate /> : null}
+
+          {currentProfile ? (
+            <LanguageStatus preferredLanguage={preferredLanguage} />
+          ) : null}
 
           <StoriesRail />
 
@@ -1298,6 +1340,7 @@ export default async function Home({
                       />
                     ) : null}
                     <p className="text-sm leading-6">{post.caption}</p>
+                    <TranslationCue preferredLanguage={preferredLanguage} />
                     {post.post_comments.length ? (
                       <div className="space-y-2 border-t border-[#e5ded4] pt-3">
                         {post.post_comments.slice(0, 2).map((comment) => (
@@ -1412,6 +1455,7 @@ export default async function Home({
                         </div>
                       </div>
                       <p className="text-sm leading-6">{thread.body}</p>
+                      <TranslationCue preferredLanguage={preferredLanguage} />
                       <ThreadImage media={thread.thread_media[0]} />
                       <div className="mt-3 flex items-center justify-between gap-4 border-t border-[#e5ded4] pt-3">
                         <div className="flex items-center gap-4">

@@ -184,8 +184,9 @@ export function ProfileForm({
         >
           <h2 className="text-sm font-bold">Language and region</h2>
           <p className="mt-1 text-xs leading-5 text-[#766d62]">
-            These settings power local discovery, future translated UI, and
-            simple ad targeting by country, region, city, and language.
+            These settings power the page language signal, local discovery,
+            future translated UI, and simple ad targeting by country, region,
+            city, and language.
           </p>
           <div className="mt-3 grid gap-2 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3 text-xs leading-5 text-[#4f473f] sm:grid-cols-3">
             <p>
@@ -194,7 +195,7 @@ export function ProfileForm({
             </p>
             <p>
               <span className="block font-semibold">Post translation</span>
-              Manual language choice now, translated post text later.
+              Original text now; provider-backed translation later.
             </p>
             <p>
               <span className="block font-semibold">Discovery</span>
