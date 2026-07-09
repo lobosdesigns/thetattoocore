@@ -745,7 +745,9 @@ export async function generateMetadata({
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username, display_name, account_type, bio, city, region, country, is_private")
+    .select(
+      "id, username, display_name, account_type, bio, city, region, country, is_private",
+    )
     .eq("username", cleanUsername)
     .maybeSingle<Pick<
       Profile,
@@ -754,6 +756,7 @@ export async function generateMetadata({
       | "city"
       | "country"
       | "display_name"
+      | "id"
       | "is_private"
       | "region"
       | "username"
@@ -782,6 +785,30 @@ export async function generateMetadata({
   const shareTitle = profile.is_private
     ? `Private profile | ${siteName}`
     : title;
+  const { data: sharePost } = profile.is_private
+    ? { data: null }
+    : await supabase
+        .from("feed_posts")
+        .select(
+          "feed_media(storage_bucket, storage_path, media_type, sort_order)",
+        )
+        .eq("author_id", profile.id)
+        .eq("is_published", true)
+        .eq("visibility", "public_preview")
+        .eq("is_sensitive", false)
+        .order("created_at", { ascending: false })
+        .order("sort_order", {
+          ascending: true,
+          referencedTable: "feed_media",
+        })
+        .limit(1)
+        .maybeSingle<{ feed_media: FeedMedia[] }>();
+  const shareImageMedia = sharePost?.feed_media.find(
+    (media) => media.media_type === "image",
+  );
+  const shareImage = shareImageMedia
+    ? mediaUrl(shareImageMedia.storage_bucket, shareImageMedia.storage_path)
+    : brandShareImage;
 
   return {
     alternates: {
@@ -790,7 +817,7 @@ export async function generateMetadata({
     description,
     openGraph: {
       description,
-      images: [{ url: brandShareImage }],
+      images: [{ url: shareImage }],
       title: shareTitle,
       type: "profile",
       url: `${siteUrl}/u/${profile.username}`,
@@ -803,7 +830,7 @@ export async function generateMetadata({
     twitter: {
       card: "summary_large_image",
       description,
-      images: [brandShareImage],
+      images: [shareImage],
       title: shareTitle,
     },
   };

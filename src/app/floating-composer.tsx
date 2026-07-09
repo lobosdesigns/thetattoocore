@@ -13,7 +13,7 @@ import { PendingSubmitButton } from "./pending-submit-button";
 import { WordLimitedField } from "./word-limited-field";
 
 const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
-const imageVideoAccept = `${imageAccept},video/mp4,video/quicktime`;
+const imageVideoAccept = `${imageAccept},video/mp4,video/quicktime,video/webm`;
 
 const visibilityOptions = [
   ["Public preview", "Searchable preview for logged-out visitors when the post is not sensitive."],
