@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { submitLicenseVerification } from "./actions";
+import { submitAdCampaign, submitLicenseVerification } from "./actions";
 import { LicenseDocumentInput } from "./license-document-input";
 import { ProfileForm } from "./profile-form";
 import { PendingSubmitButton } from "../pending-submit-button";
@@ -19,6 +19,7 @@ const accountNavItems = [
   ["#privacy-settings", "Privacy"],
   ["#notification-settings", "Notifications"],
   ["#verification-settings", "Verification"],
+  ["#advertising-settings", "Advertising"],
 ] as const;
 
 function AccountSetupGuide({
@@ -84,6 +85,19 @@ export const metadata: Metadata = {
   title: "Account",
 };
 
+function adLabel(value: string) {
+  if (value === "4u") return "4U";
+
+  return value.replaceAll("_", " ");
+}
+
+function dollars(cents: number) {
+  return Intl.NumberFormat("en-US", {
+    currency: "USD",
+    style: "currency",
+  }).format(cents / 100);
+}
+
 export default async function AccountPage({
   searchParams,
 }: {
@@ -101,7 +115,7 @@ export default async function AccountPage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "username, display_name, account_type, bio, city, region, country_code, preferred_language, location_personalization_enabled, is_adult_confirmed, is_private, adult_terms_accepted_at, website_url, instagram_url, license_verified_at, role, notify_follow_activity, notify_message_activity, notify_feed_activity, notify_thread_activity, notify_marketplace_gig_activity",
+      "username, display_name, account_type, bio, city, region, country_code, preferred_language, location_personalization_enabled, is_adult_confirmed, is_private, adult_terms_accepted_at, website_url, instagram_url, license_verified_at, suspended_at, banned_at, role, notify_follow_activity, notify_message_activity, notify_feed_activity, notify_thread_activity, notify_marketplace_gig_activity",
     )
     .eq("id", claims.sub)
     .maybeSingle();
@@ -123,10 +137,34 @@ export default async function AccountPage({
         status: "pending" | "approved" | "rejected";
       }[]
     >();
+  const { data: adCampaigns } = await supabase
+    .from("ad_campaigns")
+    .select(
+      "id, name, title, campaign_type, goal, status, bid_cents, daily_budget_cents, created_at, ad_campaign_placements(placement)",
+    )
+    .eq("advertiser_id", claims.sub)
+    .order("created_at", { ascending: false })
+    .limit(5)
+    .returns<
+      {
+        ad_campaign_placements: { placement: "4u" | "gossip" | "stuff" }[];
+        bid_cents: number;
+        campaign_type: string;
+        created_at: string;
+        daily_budget_cents: number;
+        goal: string;
+        id: string;
+        name: string;
+        status: string;
+        title: string;
+      }[]
+    >();
   const canSubmitLicense =
     profile?.account_type &&
     verificationEligibleAccountTypes.includes(profile.account_type as string);
   const isLicenseVerified = Boolean(profile?.license_verified_at);
+  const canSubmitAds =
+    canSubmitLicense && isLicenseVerified && !profile?.suspended_at && !profile?.banned_at;
   const isFirstProfile = !profile;
 
   return (
@@ -309,6 +347,242 @@ export default async function AccountPage({
             </p>
           </section>
         )}
+
+        <section
+          className="ttc-card mt-6 scroll-mt-4 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-5"
+          id="advertising-settings"
+        >
+          <div className="mb-5">
+            <h2 className="text-xl font-bold">Advertising</h2>
+            <p className="mt-1 text-sm leading-6 text-[#766d62]">
+              Verified artists, studios, and vendors can submit simple campaigns
+              for admin review. Artist growth ads can run in 4U and Gossip.
+              Stuff ads stay in Stuff.
+            </p>
+          </div>
+
+          {adCampaigns?.length ? (
+            <div className="mb-5 grid gap-3">
+              {adCampaigns.map((campaign) => (
+                <article
+                  className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 text-sm"
+                  key={campaign.id}
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold">{campaign.name}</p>
+                      <p className="mt-1 text-xs text-[#766d62]">
+                        {campaign.title}
+                      </p>
+                    </div>
+                    <span className="rounded-md bg-white px-2 py-1 text-xs font-semibold capitalize">
+                      {adLabel(campaign.status)}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#766d62]">
+                    <span className="rounded-md bg-[#f2f1ee] px-2 py-1 capitalize">
+                      {adLabel(campaign.goal)}
+                    </span>
+                    <span className="rounded-md bg-[#f2f1ee] px-2 py-1">
+                      {campaign.ad_campaign_placements
+                        .map((placement) => adLabel(placement.placement))
+                        .join(", ") || "No placement"}
+                    </span>
+                    <span className="rounded-md bg-[#f2f1ee] px-2 py-1">
+                      {dollars(campaign.bid_cents)} bid /{" "}
+                      {dollars(campaign.daily_budget_cents)} daily cap
+                    </span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : null}
+
+          {!canSubmitAds ? (
+            <div className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-4 text-sm leading-6 text-[#4f473f]">
+              Advertising opens after an artist, studio, or vendor account is
+              license verified and in good standing.
+            </div>
+          ) : (
+            <form action={submitAdCampaign} className="grid gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className="text-sm font-medium">Campaign type</span>
+                  <select
+                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    name="campaign_type"
+                    required
+                  >
+                    <option value="artist_growth">Artist growth</option>
+                    <option value="stuff_listing">Stuff listing</option>
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="text-sm font-medium">Goal</span>
+                  <select
+                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    name="goal"
+                    required
+                  >
+                    <option value="leads">Leads</option>
+                    <option value="messages">Messages</option>
+                    <option value="engagement">Engagement</option>
+                    <option value="listing_views">Stuff listing views</option>
+                    <option value="seller_messages">Stuff seller messages</option>
+                    <option value="marketplace_engagement">
+                      Stuff marketplace engagement
+                    </option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className="text-sm font-medium">Campaign name</span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    maxLength={120}
+                    name="name"
+                    placeholder="Austin flash booking push"
+                    required
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-medium">Ad headline</span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    maxLength={120}
+                    name="title"
+                    placeholder="Books open for July"
+                    required
+                  />
+                </label>
+              </div>
+
+              <label className="block">
+                <span className="text-sm font-medium">Ad text</span>
+                <textarea
+                  className="mt-2 min-h-24 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-3 text-sm outline-none focus:border-[#171412]"
+                  maxLength={300}
+                  name="body"
+                  placeholder="Short ad copy for the sponsored card."
+                />
+              </label>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className="text-sm font-medium">Target link</span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    name="target_url"
+                    placeholder="https://..."
+                    type="url"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-medium">Keywords</span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    name="keywords"
+                    placeholder="blackwork, flash, fine line"
+                  />
+                </label>
+              </div>
+
+              <fieldset className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3">
+                <legend className="px-1 text-sm font-semibold">Placements</legend>
+                <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                  {[
+                    ["4u", "4U"],
+                    ["gossip", "Gossip"],
+                    ["stuff", "Stuff"],
+                  ].map(([value, label]) => (
+                    <label
+                      className="flex items-center gap-2 rounded-md border border-[#e5ded4] bg-white px-3 py-2 text-sm font-medium"
+                      key={value}
+                    >
+                      <input name="placements" type="checkbox" value={value} />
+                      {label}
+                    </label>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs leading-5 text-[#766d62]">
+                  Artist growth can use 4U and Gossip. Stuff listing campaigns
+                  can use Stuff only.
+                </p>
+              </fieldset>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className="text-sm font-medium">Bid per spot</span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    min="0"
+                    name="bid_dollars"
+                    placeholder="0.00"
+                    step="0.01"
+                    type="number"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-medium">Daily cap</span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    min="0"
+                    name="daily_budget_dollars"
+                    placeholder="0.00"
+                    step="0.01"
+                    type="number"
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-4">
+                <label className="block">
+                  <span className="text-sm font-medium">City</span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    defaultValue={profile?.city ?? ""}
+                    name="city"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-medium">Region</span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    defaultValue={profile?.region ?? ""}
+                    name="region"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-medium">Country</span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm uppercase outline-none focus:border-[#171412]"
+                    defaultValue={profile?.country_code ?? ""}
+                    maxLength={2}
+                    name="country_code"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-medium">Language</span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    defaultValue={profile?.preferred_language ?? ""}
+                    maxLength={8}
+                    name="language"
+                  />
+                </label>
+              </div>
+
+              <PendingSubmitButton
+                className="h-11 rounded-md bg-[#171412] px-5 text-sm font-semibold text-white"
+                pendingLabel="Submitting"
+              >
+                Submit ad for review
+              </PendingSubmitButton>
+            </form>
+          )}
+        </section>
       </section>
     </main>
   );

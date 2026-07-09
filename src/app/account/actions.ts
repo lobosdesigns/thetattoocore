@@ -33,6 +33,14 @@ const countryCodes = new Set([
   "KR",
   "AU",
 ]);
+const adCampaignTypes = new Set(["artist_growth", "stuff_listing"]);
+const artistGrowthGoals = new Set(["leads", "messages", "engagement"]);
+const stuffListingGoals = new Set([
+  "listing_views",
+  "seller_messages",
+  "marketplace_engagement",
+]);
+const adPlacements = new Set(["4u", "gossip", "stuff"]);
 
 function accountPath(message: string) {
   return `/account?message=${encodeURIComponent(message)}`;
@@ -58,6 +66,16 @@ function cleanUrl(value: FormDataEntryValue | null) {
   } catch {
     return null;
   }
+}
+
+function centsFromDollars(value: FormDataEntryValue | null, maxCents: number) {
+  const text = cleanText(value, 20);
+  if (!text) return 0;
+
+  const amount = Number(text);
+  if (!Number.isFinite(amount) || amount < 0) return -1;
+
+  return Math.min(Math.round(amount * 100), maxCents);
 }
 
 function extensionFor(file: File) {
@@ -233,4 +251,142 @@ export async function submitLicenseVerification(formData: FormData) {
 
   revalidatePath("/account");
   redirect(accountPath("License verification submitted for review."));
+}
+
+export async function submitAdCampaign(formData: FormData) {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+
+  if (!claims?.sub) {
+    redirect("/login");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, account_type, banned_at, suspended_at, license_verified_at")
+    .eq("id", claims.sub)
+    .maybeSingle<{
+      account_type: string;
+      banned_at: string | null;
+      id: string;
+      license_verified_at: string | null;
+      suspended_at: string | null;
+    }>();
+
+  if (!profile) {
+    redirect("/account");
+  }
+
+  if (profile.banned_at || profile.suspended_at) {
+    redirect(accountPath("This account cannot submit ads right now."));
+  }
+
+  if (
+    !["artist", "studio", "vendor"].includes(profile.account_type) ||
+    !profile.license_verified_at
+  ) {
+    redirect(accountPath("Verified artist, studio, or vendor status is required for ads."));
+  }
+
+  const campaignType = cleanText(formData.get("campaign_type"), 40);
+  const goal = cleanText(formData.get("goal"), 40);
+  const selectedPlacements = formData
+    .getAll("placements")
+    .map((value) => cleanText(value, 20))
+    .filter((value) => adPlacements.has(value));
+
+  if (!adCampaignTypes.has(campaignType)) {
+    redirect(accountPath("Choose a valid ad type."));
+  }
+
+  if (campaignType === "artist_growth" && !artistGrowthGoals.has(goal)) {
+    redirect(accountPath("Choose a valid artist ad goal."));
+  }
+
+  if (campaignType === "stuff_listing" && !stuffListingGoals.has(goal)) {
+    redirect(accountPath("Choose a valid Stuff ad goal."));
+  }
+
+  const allowedPlacements =
+    campaignType === "artist_growth" ? new Set(["4u", "gossip"]) : new Set(["stuff"]);
+  const placements = selectedPlacements.filter((placement) =>
+    allowedPlacements.has(placement),
+  );
+
+  if (!placements.length) {
+    redirect(accountPath("Choose at least one valid ad placement."));
+  }
+
+  const name = cleanText(formData.get("name"), 120);
+  const title = cleanText(formData.get("title"), 120);
+  const body = cleanText(formData.get("body"), 300);
+  const targetUrl = cleanUrl(formData.get("target_url"));
+  const bidCents = centsFromDollars(formData.get("bid_dollars"), 100000);
+  const dailyBudgetCents = centsFromDollars(
+    formData.get("daily_budget_dollars"),
+    10000000,
+  );
+  const countryCode = cleanText(formData.get("country_code"), 2).toUpperCase();
+  const language = cleanText(formData.get("language"), 8).toLowerCase();
+  const keywords = cleanText(formData.get("keywords"), 240)
+    .split(",")
+    .map((keyword) => keyword.trim().toLowerCase())
+    .filter(Boolean)
+    .slice(0, 12);
+
+  if (name.length < 3 || title.length < 3) {
+    redirect(accountPath("Campaign name and headline need at least 3 characters."));
+  }
+
+  if (bidCents < 0 || dailyBudgetCents < 0) {
+    redirect(accountPath("Ad bid and daily cap must be valid dollar amounts."));
+  }
+
+  if (targetUrl === null && cleanText(formData.get("target_url"), 240)) {
+    redirect(accountPath("Use a valid http or https ad link."));
+  }
+
+  const { data: campaign, error: campaignError } = await supabase
+    .from("ad_campaigns")
+    .insert({
+      advertiser_id: claims.sub,
+      bid_cents: bidCents,
+      body: body || null,
+      campaign_type: campaignType,
+      city: cleanText(formData.get("city"), 80) || null,
+      country_code: countryCode || null,
+      daily_budget_cents: dailyBudgetCents,
+      goal,
+      keywords,
+      language: language || null,
+      name,
+      region: cleanText(formData.get("region"), 80) || null,
+      status: "pending_review",
+      target_url: targetUrl,
+      title,
+    })
+    .select("id")
+    .single<{ id: string }>();
+
+  if (campaignError || !campaign) {
+    redirect(accountPath(campaignError?.message || "Could not submit ad campaign."));
+  }
+
+  const { error: placementError } = await supabase
+    .from("ad_campaign_placements")
+    .insert(
+      placements.map((placement) => ({
+        campaign_id: campaign.id,
+        placement,
+      })),
+    );
+
+  if (placementError) {
+    redirect(accountPath(placementError.message || "Ad saved, but placement failed."));
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/admin");
+  redirect(accountPath("Ad campaign submitted for review."));
 }
