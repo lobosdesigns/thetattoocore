@@ -218,11 +218,21 @@ export function FloatingComposer({
                 maxLength={120}
                 minTrimmedLength={3}
                 name="title"
-                placeholder="Flash sheet, chair rental, supplies"
+                placeholder="Flash sheet, chair rental, shop gear"
                 required
                 validationMessage="Stuff title needs at least 3 characters."
                 wrapperClassName="w-full"
               />
+              <div className="rounded-md border border-[#e5ded4] bg-[#fffdf9] p-3 text-xs leading-5 text-[#5f564d]">
+                <p className="font-semibold text-[#171412]">
+                  Professional access only
+                </p>
+                <p className="mt-1">
+                  Tattoo machines, needles, pigments, tubes, and shop equipment
+                  can only be listed for verified artists, studios, or approved
+                  vendors to contact.
+                </p>
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 <input
                   className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
@@ -237,6 +247,7 @@ export function FloatingComposer({
                   <option value="guest-spot">Guest spot</option>
                   <option value="chair">Chair</option>
                   <option value="supplies">Supplies</option>
+                  <option value="equipment">Equipment</option>
                   <option value="service">Service</option>
                 </select>
               </div>
@@ -278,7 +289,8 @@ export function FloatingComposer({
               </p>
               <p className="mt-2 text-sm leading-6 text-[#766d62]">
                 Fans can browse Stuff, but listing, buying, selling, trading,
-                and seller contact require verification.
+                seller contact, and professional equipment activity require
+                verification.
               </p>
               <Link
                 className="mt-3 inline-flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"

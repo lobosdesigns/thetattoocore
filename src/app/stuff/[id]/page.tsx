@@ -505,7 +505,8 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
               )}
               <p className="mt-3 text-xs leading-5 text-[#766d62]">
                 Fans can browse Stuff. Buying, selling, trading, seller contact,
-                and professional equipment activity require verified artist,
+                and professional equipment activity, including tattoo machines,
+                needles, pigments, tubes, and shop gear, require verified artist,
                 studio, or approved vendor status.
               </p>
             </section>

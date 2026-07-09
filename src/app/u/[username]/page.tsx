@@ -1426,11 +1426,11 @@ export default async function ProfilePage({
                   actionLabel={isOwnProfile ? "List Stuff" : undefined}
                   body={
                     isOwnProfile
-                      ? "List flash, supplies, studio gear, chair rentals, machines, furniture, or services."
-                      : "Marketplace listings from this profile will appear here when they have active Stuff."
+                      ? "List flash, supplies, chair rentals, machines, furniture, or services. Seller contact and pro gear activity stay verified-only."
+                      : "Marketplace listings from this profile will appear here when they have active Stuff. Fans can browse; seller contact is verified-only."
                   }
                   icon={ShoppingBag}
-                  tips={["Flash", "Supplies", "Studio gear"]}
+                  tips={["Flash", "Supplies", "Verified gear"]}
                   title="No active listings yet"
                 />
               )}

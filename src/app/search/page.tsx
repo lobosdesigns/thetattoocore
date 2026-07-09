@@ -594,6 +594,11 @@ export default async function SearchPage({
                           <span>{listing.profiles.display_name}</span>
                         ) : null}
                       </div>
+                      <p className="mt-3 rounded-md bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
+                        Browse is public. Seller contact and professional gear
+                        activity require verified artist, studio, or vendor
+                        status.
+                      </p>
                       <ResultAction>View Stuff listing</ResultAction>
                     </Link>
                   ))}

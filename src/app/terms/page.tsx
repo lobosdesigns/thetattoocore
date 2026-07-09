@@ -31,7 +31,7 @@ const sections = [
   },
   {
     body:
-      "Stuff listings are for verified artists, studios, and approved vendors. Fans can browse listings, but buy, sell, trade, and seller-contact actions require verified professional or vendor status. Marketplace and gig posts must be honest, lawful, and clear about location, pricing or compensation, availability, and contact details. TheTattooCore is not a party to member-to-member transactions unless a future paid platform feature explicitly says otherwise.",
+      "Stuff listings are for verified artists, studios, and approved vendors. Fans can browse listings, but buy, sell, trade, and seller-contact actions require verified professional or vendor status. Tattoo machines, needles, pigments, tubes, and other professional shop equipment must not be offered to unverified or unqualified buyers where the platform can reasonably enforce it. Marketplace and gig posts must be honest, lawful, and clear about location, pricing or compensation, availability, and contact details. TheTattooCore is not a party to member-to-member transactions unless a future paid platform feature explicitly says otherwise.",
     title: "Marketplace And Gigs",
   },
   {

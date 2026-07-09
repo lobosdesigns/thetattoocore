@@ -1645,6 +1645,10 @@ export default async function Home({
                       <div className="mt-2">
                         <VerifiedBadge profile={listing.profiles} />
                       </div>
+                      <p className="mt-2 rounded-md border border-[#e5ded4] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
+                        Fans can browse. Seller contact, trades, purchases, and
+                        professional equipment activity are verification-gated.
+                      </p>
                       {isSignedIn ? (
                         <div className="mt-3">
                           <ContentReportForm
@@ -1761,9 +1765,9 @@ export default async function Home({
                               ? "Tap + to list Stuff"
                               : "Verify to list Stuff"
                         }
-                        body="Fans can browse. Verified artists, studios, and vendors can buy, sell, trade, and contact sellers."
+                        body="Fans can browse. Verified artists, studios, and vendors can buy, sell, trade, contact sellers, and handle professional shop gear."
                         icon={ShoppingBag}
-                        tips={["Flash", "Supplies", "Studio gear"]}
+                        tips={["Flash", "Supplies", "Verified gear"]}
                         title="No Stuff listings yet"
                       />
                     </div>
