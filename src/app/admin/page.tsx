@@ -9,6 +9,7 @@ import {
   Gavel,
   ImageIcon,
   Mail,
+  Megaphone,
   ShieldCheck,
   ShoppingBag,
   Users,
@@ -17,6 +18,7 @@ import {
   changeUserRole,
   changeUserStatus,
   moderateContent,
+  updateAdCampaignStatus,
   updateLicenseVerification,
   updateReportStatus,
 } from "./actions";
@@ -98,6 +100,43 @@ type AuditItem = {
   note: string | null;
 };
 type ActivityMetadata = Record<string, unknown>;
+type AdCampaign = {
+  advertiserName: string;
+  advertiserUsername: string;
+  bidCents: number;
+  body: string | null;
+  campaignType: "artist_growth" | "stuff_listing";
+  city: string | null;
+  countryCode: string | null;
+  createdAt: string;
+  dailyBudgetCents: number;
+  endsAt: string | null;
+  goal:
+    | "leads"
+    | "messages"
+    | "engagement"
+    | "listing_views"
+    | "seller_messages"
+    | "marketplace_engagement";
+  id: string;
+  keywords: string[];
+  language: string | null;
+  name: string;
+  placements: ("4u" | "gossip" | "stuff")[];
+  region: string | null;
+  reviewerNote: string | null;
+  startsAt: string | null;
+  status:
+    | "draft"
+    | "pending_review"
+    | "approved"
+    | "active"
+    | "paused"
+    | "rejected"
+    | "archived";
+  targetUrl: string | null;
+  title: string;
+};
 
 const adminTabs = [
   [Activity, "Overview"],
@@ -108,6 +147,7 @@ const adminTabs = [
   [ImageIcon, "Media Ops"],
   [BriefcaseBusiness, "Gigs"],
   [ShoppingBag, "Marketplace"],
+  [Megaphone, "Ads"],
   [Mail, "Mail Settings"],
 ] as const;
 
@@ -243,6 +283,10 @@ function auditActivityLabel(eventType: string, metadata: ActivityMetadata | null
 
   if (eventType === "license_approved") return "Approved artist verification";
   if (eventType === "license_rejected") return "Rejected artist verification";
+  if (eventType === "ad_campaign_approved") return "Approved ad campaign";
+  if (eventType === "ad_campaign_active") return "Activated ad campaign";
+  if (eventType === "ad_campaign_paused") return "Paused ad campaign";
+  if (eventType === "ad_campaign_rejected") return "Rejected ad campaign";
 
   return activityLabel(eventType);
 }
@@ -329,6 +373,28 @@ function reportStatusClass(status: ReportItem["status"]) {
   if (status === "resolved") return "border-[#b9d7bd] bg-[#eef8ef] text-[#276231]";
 
   return "border-[#d8d1c6] bg-[#f7f4ef] text-[#4f473f]";
+}
+
+function adStatusClass(status: AdCampaign["status"]) {
+  if (status === "active") return "border-[#b9d7bd] bg-[#eef8ef] text-[#276231]";
+  if (status === "pending_review") return "border-[#e5c58f] bg-[#fff7ec] text-[#7a4a08]";
+  if (status === "rejected") return "border-[#e5b8b8] bg-[#fff0f0] text-[#8a2828]";
+  if (status === "paused") return "border-[#b7c6e8] bg-[#eef3ff] text-[#284f8a]";
+
+  return "border-[#d8d1c6] bg-[#f7f4ef] text-[#4f473f]";
+}
+
+function dollars(cents: number) {
+  return Intl.NumberFormat("en-US", {
+    currency: "USD",
+    style: "currency",
+  }).format(cents / 100);
+}
+
+function adLabel(value: string) {
+  if (value === "4u") return "4U";
+
+  return value.replaceAll("_", " ");
 }
 
 function ReviewCard({ item }: { item: ReviewItem }) {
@@ -691,6 +757,125 @@ function LicenseRequestCard({ request }: { request: LicenseRequest }) {
   );
 }
 
+function AdCampaignCard({ campaign }: { campaign: AdCampaign }) {
+  return (
+    <article className="rounded-md border border-[#e5ded4] bg-white p-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-bold">{campaign.name}</p>
+          <p className="mt-1 text-xs text-[#766d62]">
+            @{campaign.advertiserUsername} -{" "}
+            {adLabel(campaign.campaignType)} - {timeAgo(campaign.createdAt)}
+          </p>
+        </div>
+        <span
+          className={`shrink-0 rounded-md border px-2 py-1 text-xs font-semibold capitalize ${adStatusClass(
+            campaign.status,
+          )}`}
+        >
+          {adLabel(campaign.status)}
+        </span>
+      </div>
+      <div className="rounded-md border border-[#e5ded4] bg-[#f7f4ef] p-3">
+        <p className="text-sm font-semibold">{campaign.title}</p>
+        {campaign.body ? (
+          <p className="mt-1 line-clamp-3 text-sm leading-5 text-[#4f473f]">
+            {campaign.body}
+          </p>
+        ) : null}
+        {campaign.targetUrl ? (
+          <p className="mt-2 truncate text-xs text-[#766d62]">
+            {campaign.targetUrl}
+          </p>
+        ) : null}
+      </div>
+      <dl className="mt-3 grid gap-3 text-sm text-[#4f473f] sm:grid-cols-2">
+        <div>
+          <dt className="text-xs font-semibold uppercase text-[#766d62]">
+            Goal
+          </dt>
+          <dd className="mt-0.5 capitalize">{adLabel(campaign.goal)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase text-[#766d62]">
+            Bid / daily cap
+          </dt>
+          <dd className="mt-0.5">
+            {dollars(campaign.bidCents)} / {dollars(campaign.dailyBudgetCents)}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase text-[#766d62]">
+            Placements
+          </dt>
+          <dd className="mt-0.5">
+            {campaign.placements.length
+              ? campaign.placements.map(adLabel).join(", ")
+              : "No placement selected"}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase text-[#766d62]">
+            Targeting
+          </dt>
+          <dd className="mt-0.5">
+            {[campaign.city, campaign.region, campaign.countryCode, campaign.language]
+              .filter(Boolean)
+              .join(", ") || "Broad"}
+          </dd>
+        </div>
+      </dl>
+      {campaign.keywords.length ? (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {campaign.keywords.slice(0, 8).map((keyword) => (
+            <span
+              className="rounded-md bg-[#efe7da] px-2 py-1 text-xs font-medium"
+              key={keyword}
+            >
+              {keyword}
+            </span>
+          ))}
+        </div>
+      ) : null}
+      {campaign.reviewerNote ? (
+        <p className="mt-3 rounded-md border border-[#e5ded4] bg-[#fffdf9] px-3 py-2 text-xs text-[#4f473f]">
+          {campaign.reviewerNote}
+        </p>
+      ) : null}
+      <form action={updateAdCampaignStatus} className="mt-4 space-y-2">
+        <input name="campaign_id" type="hidden" value={campaign.id} />
+        <input
+          className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+          maxLength={500}
+          name="note"
+          placeholder="Reviewer note"
+        />
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {[
+            ["approved", "Approve"],
+            ["active", "Activate"],
+            ["paused", "Pause"],
+            ["rejected", "Reject"],
+          ].map(([value, label]) => (
+            <button
+              className={
+                value === "active"
+                  ? "h-10 rounded-md bg-[#171412] px-2 text-sm font-semibold text-white"
+                  : "h-10 rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 text-sm font-semibold hover:bg-[#f7f4ef]"
+              }
+              key={value}
+              name="status"
+              value={value}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </form>
+    </article>
+  );
+}
+
 export default async function AdminPage({
   searchParams,
 }: {
@@ -754,6 +939,7 @@ export default async function AdminPage({
     { count: userCount },
     { count: openReports },
     { count: pendingVerifications },
+    { count: pendingAds },
     { count: marketplaceQueue },
     { count: moderationActions },
     { data: adminUsers },
@@ -763,6 +949,7 @@ export default async function AdminPage({
     { data: threadReview },
     { data: listingReview },
     { data: gigReview },
+    { data: adCampaignQueue },
     { data: mailSettings },
     { data: adminAuditLogs },
     { data: moderationLog },
@@ -776,6 +963,10 @@ export default async function AdminPage({
       .from("license_verification_requests")
       .select("*", { count: "exact", head: true })
       .eq("status", "pending"),
+    supabase
+      .from("ad_campaigns")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "pending_review"),
     supabase
       .from("marketplace_listings")
       .select("*", { count: "exact", head: true })
@@ -931,6 +1122,52 @@ export default async function AdminPage({
         }[]
       >(),
     supabase
+      .from("ad_campaigns")
+      .select(
+        "id, name, title, body, target_url, campaign_type, goal, status, bid_cents, daily_budget_cents, country_code, region, city, language, keywords, starts_at, ends_at, reviewer_note, created_at, profiles:profiles!ad_campaigns_advertiser_id_fkey(display_name, username), ad_campaign_placements(placement)",
+      )
+      .in("status", ["pending_review", "approved", "active", "paused", "rejected"])
+      .order("created_at", { ascending: false })
+      .limit(12)
+      .returns<
+        {
+          ad_campaign_placements: { placement: "4u" | "gossip" | "stuff" }[];
+          bid_cents: number;
+          body: string | null;
+          campaign_type: "artist_growth" | "stuff_listing";
+          city: string | null;
+          country_code: string | null;
+          created_at: string;
+          daily_budget_cents: number;
+          ends_at: string | null;
+          goal:
+            | "leads"
+            | "messages"
+            | "engagement"
+            | "listing_views"
+            | "seller_messages"
+            | "marketplace_engagement";
+          id: string;
+          keywords: string[];
+          language: string | null;
+          name: string;
+          profiles: { display_name: string; username: string } | null;
+          region: string | null;
+          reviewer_note: string | null;
+          starts_at: string | null;
+          status:
+            | "draft"
+            | "pending_review"
+            | "approved"
+            | "active"
+            | "paused"
+            | "rejected"
+            | "archived";
+          target_url: string | null;
+          title: string;
+        }[]
+      >(),
+    supabase
       .from("mail_settings")
       .select(
         "provider, from_email, from_name, smtp_host, smtp_port, smtp_username, smtp_secure, smtp_password_secret_name, reply_to_email, is_enabled",
@@ -992,6 +1229,7 @@ export default async function AdminPage({
     ["Members", userCount, "Profiles created"],
     ["Open reports", openReports, "Needs review"],
     ["License checks", pendingVerifications, "Pending approval"],
+    ["Ad reviews", pendingAds, "Pending campaigns"],
     ["Listings", marketplaceQueue, "Draft and active"],
     ["Actions", moderationActions, "Moderation log"],
   ];
@@ -1306,6 +1544,38 @@ export default async function AdminPage({
   ].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
+  const adCampaigns: AdCampaign[] = (adCampaignQueue ?? []).map((campaign) => ({
+    advertiserName: campaign.profiles?.display_name ?? "Advertiser",
+    advertiserUsername: campaign.profiles?.username ?? "advertiser",
+    bidCents: campaign.bid_cents,
+    body: campaign.body,
+    campaignType: campaign.campaign_type,
+    city: campaign.city,
+    countryCode: campaign.country_code,
+    createdAt: campaign.created_at,
+    dailyBudgetCents: campaign.daily_budget_cents,
+    endsAt: campaign.ends_at,
+    goal: campaign.goal,
+    id: campaign.id,
+    keywords: campaign.keywords ?? [],
+    language: campaign.language,
+    name: campaign.name,
+    placements: campaign.ad_campaign_placements.map(
+      (placement) => placement.placement,
+    ),
+    region: campaign.region,
+    reviewerNote: campaign.reviewer_note,
+    startsAt: campaign.starts_at,
+    status: campaign.status,
+    targetUrl: campaign.target_url,
+    title: campaign.title,
+  }));
+  const pendingAdCampaigns = adCampaigns.filter(
+    (campaign) => campaign.status === "pending_review",
+  );
+  const reviewedAdCampaigns = adCampaigns.filter(
+    (campaign) => campaign.status !== "pending_review",
+  );
 
   return (
     <main className="min-h-screen bg-[#202020] text-[#171412]">
@@ -1373,7 +1643,7 @@ export default async function AdminPage({
           ) : null}
 
           <section
-            className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5"
+            className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-6"
             id="overview"
           >
             {metrics.map(([label, value, caption]) => (
@@ -1653,6 +1923,46 @@ export default async function AdminPage({
                   Marketplace review will cover flash sheets, guest spots,
                   studio chairs, supplies, and service listings.
                 </p>
+              </div>
+
+              <div
+                className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5"
+                id="ads"
+              >
+                <div className="mb-4 flex items-center gap-3">
+                  <Megaphone className="size-5" />
+                  <h2 className="text-lg font-bold">Ads</h2>
+                </div>
+                <p className="mb-4 rounded-md border border-[#e5ded4] bg-white px-3 py-2 text-sm leading-6 text-[#4f473f]">
+                  Review paid spots before they can run. Artist ads belong in
+                  4U and Gossip; Stuff ads stay in Stuff.
+                </p>
+                <QueueSummary
+                  items={[
+                    ["Pending", pendingAdCampaigns.length, "warning"],
+                    ["Reviewed", reviewedAdCampaigns.length],
+                  ]}
+                />
+                <div className="space-y-4">
+                  <QueueGroup
+                    count={pendingAdCampaigns.length}
+                    emptyText="No ad campaigns are waiting for review."
+                    title="Pending ad review"
+                  >
+                    {pendingAdCampaigns.map((campaign) => (
+                      <AdCampaignCard campaign={campaign} key={campaign.id} />
+                    ))}
+                  </QueueGroup>
+                  <QueueGroup
+                    count={reviewedAdCampaigns.length}
+                    emptyText="No reviewed campaigns are in this queue yet."
+                    title="Recently reviewed ads"
+                  >
+                    {reviewedAdCampaigns.map((campaign) => (
+                      <AdCampaignCard campaign={campaign} key={campaign.id} />
+                    ))}
+                  </QueueGroup>
+                </div>
               </div>
 
               <div

@@ -10,6 +10,7 @@ type ModerationStatus = "active" | "under_review" | "hidden" | "removed";
 type ReportStatus = "open" | "reviewing" | "resolved" | "dismissed";
 type LicenseVerificationStatus = "approved" | "rejected";
 type UserStatus = "active" | "suspended" | "banned";
+type AdCampaignStatus = "approved" | "active" | "paused" | "rejected";
 
 const moderatorRoles = new Set<UserRole>(["moderator", "admin", "owner"]);
 const statuses = new Set<ModerationStatus>([
@@ -30,6 +31,12 @@ const licenseStatuses = new Set<LicenseVerificationStatus>([
 ]);
 const roleStatuses = new Set<UserRole>(["user", "moderator", "admin", "owner"]);
 const userStatuses = new Set<UserStatus>(["active", "suspended", "banned"]);
+const adCampaignStatuses = new Set<AdCampaignStatus>([
+  "approved",
+  "active",
+  "paused",
+  "rejected",
+]);
 
 const subjectConfig = {
   feed_post: {
@@ -592,4 +599,72 @@ export async function updateLicenseVerification(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/account");
   redirect("/admin?message=License verification updated.#verification");
+}
+
+export async function updateAdCampaignStatus(formData: FormData) {
+  const campaignId = cleanText(formData.get("campaign_id"), 80);
+  const status = cleanText(formData.get("status"), 40) as AdCampaignStatus;
+  const note = cleanText(formData.get("note"), 500);
+
+  if (!campaignId || !adCampaignStatuses.has(status)) {
+    redirect("/admin?message=Choose a valid ad campaign status.#ads");
+  }
+
+  const { supabase, userId } = await requireModerator();
+  const { data: campaign, error: campaignError } = await supabase
+    .from("ad_campaigns")
+    .select("id, advertiser_id, status, campaign_type, goal")
+    .eq("id", campaignId)
+    .maybeSingle<{
+      advertiser_id: string;
+      campaign_type: string;
+      goal: string;
+      id: string;
+      status: string;
+    }>();
+
+  if (campaignError || !campaign) {
+    redirect(
+      `/admin?message=${encodeURIComponent(
+        campaignError?.message || "Ad campaign was not found.",
+      )}#ads`,
+    );
+  }
+
+  const now = new Date().toISOString();
+  const { error: updateError } = await supabase
+    .from("ad_campaigns")
+    .update({
+      reviewed_at: now,
+      reviewed_by: userId,
+      reviewer_note: note || null,
+      status,
+      updated_at: now,
+    })
+    .eq("id", campaignId);
+
+  if (updateError) {
+    redirect(
+      `/admin?message=${encodeURIComponent(
+        updateError.message || "Could not update ad campaign.",
+      )}#ads`,
+    );
+  }
+
+  await supabase.from("admin_audit_logs").insert({
+    actor_id: userId,
+    event_type: `ad_campaign_${status}`,
+    metadata: {
+      campaign_type: campaign.campaign_type,
+      from_status: campaign.status,
+      goal: campaign.goal,
+      to_status: status,
+    },
+    summary: note || null,
+    target_id: campaign.id,
+    target_type: "ad_campaign",
+  });
+
+  revalidatePath("/admin");
+  redirect("/admin?message=Ad campaign updated.#ads");
 }
