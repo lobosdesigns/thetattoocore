@@ -13,7 +13,9 @@ import {
   Video,
 } from "lucide-react";
 import { acceptAdultTerms } from "@/app/actions";
+import { ContentReportForm } from "@/app/content-report-form";
 import { NotificationBellLink } from "@/app/notification-bell-link";
+import { ShareActions } from "@/app/share-actions";
 import { startConversation } from "@/app/messages/actions";
 import { createClient } from "@/lib/supabase/server";
 import { siteName, siteUrl } from "@/lib/site";
@@ -58,6 +60,7 @@ type Gig = {
 
 type GigPageProps = {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ message?: string }>;
 };
 
 function mediaUrl(bucket: string, path: string) {
@@ -173,8 +176,9 @@ export async function generateMetadata({
   };
 }
 
-export default async function GigPage({ params }: GigPageProps) {
+export default async function GigPage({ params, searchParams }: GigPageProps) {
   const { id } = await params;
+  const message = (await searchParams)?.message;
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -210,6 +214,12 @@ export default async function GigPage({ params }: GigPageProps) {
             <NotificationBellLink className="shrink-0" userId={claims?.sub} />
           </div>
         </header>
+
+        {message ? (
+          <div className="border-b border-[#d8d1c6] bg-[#efe7da] px-4 py-2 text-sm font-semibold">
+            {message}
+          </div>
+        ) : null}
 
         <section className="grid gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div>
@@ -385,6 +395,25 @@ export default async function GigPage({ params }: GigPageProps) {
                 directly with the poster before making plans.
               </p>
             </section>
+
+            <ShareActions
+              text={`Check this Gig on ${siteName}: ${gig.title}`}
+              title={gig.title}
+              url={`${siteUrl}/gigs/${gig.id}`}
+            />
+
+            {claims?.sub ? (
+              <section className="rounded-md border border-[#d8d1c6] bg-white p-4">
+                <p className="mb-3 text-xs font-semibold uppercase text-[#766d62]">
+                  Safety
+                </p>
+                <ContentReportForm
+                  returnPath={`/gigs/${gig.id}`}
+                  subjectId={gig.id}
+                  subjectType="gig"
+                />
+              </section>
+            ) : null}
 
             {gig.is_sensitive ? (
               <section className="rounded-md border border-[#d8d1c6] bg-[#fff7ec] p-4">

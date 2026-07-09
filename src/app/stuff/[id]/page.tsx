@@ -13,7 +13,9 @@ import {
   Video,
 } from "lucide-react";
 import { acceptAdultTerms } from "@/app/actions";
+import { ContentReportForm } from "@/app/content-report-form";
 import { NotificationBellLink } from "@/app/notification-bell-link";
+import { ShareActions } from "@/app/share-actions";
 import { startConversation } from "@/app/messages/actions";
 import { createClient } from "@/lib/supabase/server";
 import { siteName, siteUrl } from "@/lib/site";
@@ -55,6 +57,7 @@ type Listing = {
 
 type StuffPageProps = {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ message?: string }>;
 };
 
 function mediaUrl(bucket: string, path: string) {
@@ -168,8 +171,9 @@ export async function generateMetadata({
   };
 }
 
-export default async function StuffPage({ params }: StuffPageProps) {
+export default async function StuffPage({ params, searchParams }: StuffPageProps) {
   const { id } = await params;
+  const message = (await searchParams)?.message;
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -205,6 +209,12 @@ export default async function StuffPage({ params }: StuffPageProps) {
             <NotificationBellLink className="shrink-0" userId={claims?.sub} />
           </div>
         </header>
+
+        {message ? (
+          <div className="border-b border-[#d8d1c6] bg-[#efe7da] px-4 py-2 text-sm font-semibold">
+            {message}
+          </div>
+        ) : null}
 
         <section className="grid gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div>
@@ -379,6 +389,25 @@ export default async function StuffPage({ params }: StuffPageProps) {
                 Check details, location, and terms before buying.
               </p>
             </section>
+
+            <ShareActions
+              text={`Check this Stuff listing on ${siteName}: ${listing.title}`}
+              title={listing.title}
+              url={`${siteUrl}/stuff/${listing.id}`}
+            />
+
+            {claims?.sub ? (
+              <section className="rounded-md border border-[#d8d1c6] bg-white p-4">
+                <p className="mb-3 text-xs font-semibold uppercase text-[#766d62]">
+                  Safety
+                </p>
+                <ContentReportForm
+                  returnPath={`/stuff/${listing.id}`}
+                  subjectId={listing.id}
+                  subjectType="marketplace_listing"
+                />
+              </section>
+            ) : null}
 
             {listing.is_sensitive ? (
               <section className="rounded-md border border-[#d8d1c6] bg-[#fff7ec] p-4">
