@@ -38,7 +38,7 @@ export function MediaLightbox({
   function openFromKeyboard(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      setIsOpen(true);
+      if (src) setIsOpen(true);
     }
   }
 
@@ -47,7 +47,9 @@ export function MediaLightbox({
       <div
         aria-label="Open media viewer"
         className="group relative cursor-zoom-in"
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          if (src) setIsOpen(true);
+        }}
         onKeyDown={openFromKeyboard}
         role="button"
         tabIndex={0}
@@ -78,6 +80,14 @@ export function MediaLightbox({
                     type="button"
                   >
                     <Minus className="size-4" />
+                  </button>
+                  <button
+                    aria-label="Reset zoom"
+                    className="flex h-10 min-w-14 items-center justify-center rounded-md border border-white/15 bg-white/10 px-2 text-xs font-bold tabular-nums"
+                    onClick={() => setZoom(1)}
+                    type="button"
+                  >
+                    {Math.round(zoom * 100)}%
                   </button>
                   <button
                     aria-label="Zoom in"
@@ -123,10 +133,15 @@ export function MediaLightbox({
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 alt={alt}
-                className="max-h-full max-w-full select-none object-contain transition-transform"
+                className={`select-none object-contain transition-[width] ${
+                  zoom === 1 ? "max-h-full max-w-full" : "max-w-none"
+                }`}
+                onDoubleClick={() =>
+                  setZoom((value) => (value === 1 ? 2 : 1))
+                }
                 onClick={(event) => event.stopPropagation()}
                 src={src}
-                style={{ transform: `scale(${zoom})` }}
+                style={{ width: zoom === 1 ? undefined : `${zoom * 100}%` }}
               />
             )}
           </div>

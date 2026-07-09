@@ -44,6 +44,28 @@ function ComposerDetails({
   );
 }
 
+function ComposerSubmit({
+  children,
+  pendingLabel,
+  type,
+}: {
+  children: ReactNode;
+  pendingLabel: string;
+  type?: "submit";
+}) {
+  return (
+    <div className="sticky bottom-0 z-10 -mx-3 border-t border-[#d8d1c6] bg-[#f2f1ee]/95 px-3 py-3 shadow-[0_-12px_24px_rgba(23,20,18,0.08)] backdrop-blur sm:-mx-4 sm:px-4">
+      <PendingSubmitButton
+        className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+        pendingLabel={pendingLabel}
+        type={type}
+      >
+        {children}
+      </PendingSubmitButton>
+    </div>
+  );
+}
+
 function VisibilityControl() {
   return (
     <section className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3">
@@ -129,7 +151,7 @@ export function FloatingComposer({
           >
             <WordLimitedField
               as="textarea"
-              className="min-h-28 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+              className="min-h-24 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412] sm:min-h-28"
               maxLength={360}
               maxWords={40}
               minTrimmedLength={3}
@@ -155,12 +177,7 @@ export function FloatingComposer({
               <SensitiveControls />
             </ComposerDetails>
             <MediaInput accept={imageVideoAccept} name="media" required />
-            <PendingSubmitButton
-              className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
-              pendingLabel="Publishing"
-            >
-              Publish
-            </PendingSubmitButton>
+            <ComposerSubmit pendingLabel="Publishing">Publish</ComposerSubmit>
           </form>
         ),
         threads: (
@@ -185,12 +202,7 @@ export function FloatingComposer({
               <SensitiveControls />
             </ComposerDetails>
             <MediaInput accept={imageAccept} name="media" videoAllowed={false} />
-            <PendingSubmitButton
-              className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
-              pendingLabel="Posting"
-            >
-              Post thread
-            </PendingSubmitButton>
+            <ComposerSubmit pendingLabel="Posting">Post thread</ComposerSubmit>
           </form>
         ),
         marketplace: (
@@ -228,14 +240,16 @@ export function FloatingComposer({
                   <option value="service">Service</option>
                 </select>
               </div>
-              <WordLimitedField
-                as="textarea"
-                className="min-h-24 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
-                maxCharacters={2000}
-                maxLength={2000}
-                name="description"
-                placeholder="Details, terms, dates, or pickup/shipping notes."
-              />
+              <ComposerDetails title="Description and terms">
+                <WordLimitedField
+                  as="textarea"
+                  className="min-h-24 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+                  maxCharacters={2000}
+                  maxLength={2000}
+                  name="description"
+                  placeholder="Details, terms, dates, or pickup/shipping notes."
+                />
+              </ComposerDetails>
               <ComposerDetails title="Pickup, shipping, and location">
                 <div className="grid grid-cols-2 gap-2">
                   <input
@@ -255,12 +269,7 @@ export function FloatingComposer({
                 <SensitiveControls />
               </ComposerDetails>
               <MediaInput accept={imageVideoAccept} name="media" />
-              <PendingSubmitButton
-                className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
-                pendingLabel="Publishing"
-              >
-                Publish listing
-              </PendingSubmitButton>
+              <ComposerSubmit pendingLabel="Publishing">Publish listing</ComposerSubmit>
             </form>
           ) : (
             <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-4">
@@ -309,15 +318,15 @@ export function FloatingComposer({
               <option value="apprenticeship">Apprenticeship</option>
               <option value="event">Event</option>
             </select>
-            <WordLimitedField
-              as="textarea"
-              className="min-h-28 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
-              maxCharacters={3000}
-              maxLength={3000}
-              name="description"
-              placeholder="Details, dates, requirements, booth info, or contact notes."
-            />
-            <ComposerDetails title="More gig details">
+            <ComposerDetails title="Description and more details">
+              <WordLimitedField
+                as="textarea"
+                className="min-h-24 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+                maxCharacters={3000}
+                maxLength={3000}
+                name="description"
+                placeholder="Details, dates, requirements, booth info, or contact notes."
+              />
               <div className="grid grid-cols-2 gap-2">
                 <input
                   className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
@@ -365,13 +374,9 @@ export function FloatingComposer({
               <SensitiveControls />
             </ComposerDetails>
             <MediaInput accept={imageAccept} name="media" videoAllowed={false} />
-            <PendingSubmitButton
-              className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
-              pendingLabel="Posting"
-              type="submit"
-            >
+            <ComposerSubmit pendingLabel="Posting" type="submit">
               Post gig
-            </PendingSubmitButton>
+            </ComposerSubmit>
           </form>
         ),
         messages: (
@@ -400,13 +405,10 @@ export function FloatingComposer({
               required
               validationMessage="Write a message before sending."
             />
-            <PendingSubmitButton
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
-              pendingLabel="Sending"
-            >
+            <ComposerSubmit pendingLabel="Sending">
               <Send className="size-4" />
               Send
-            </PendingSubmitButton>
+            </ComposerSubmit>
           </form>
         ),
       }}
