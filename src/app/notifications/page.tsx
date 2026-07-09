@@ -76,6 +76,18 @@ function subjectLabel(type: string) {
   return type.replaceAll("_", " ");
 }
 
+function notificationHref(notification: Notification) {
+  if (notification.subject_type === "feed_post" && notification.subject_id) {
+    return `/p/${notification.subject_id}`;
+  }
+
+  if (notification.subject_type === "thread_post" && notification.subject_id) {
+    return `/t/${notification.subject_id}`;
+  }
+
+  return notification.href;
+}
+
 function timeAgo(date: string) {
   const seconds = Math.max(1, Math.floor((Date.now() - Date.parse(date)) / 1000));
 
@@ -158,6 +170,7 @@ export default async function NotificationsPage() {
           {notifications?.length ? (
             notifications.map((notification) => {
               const Icon = notificationIcon(notification.type);
+              const href = notificationHref(notification);
               const card = (
                 <article
                   className={`flex gap-3 px-4 py-4 ${
@@ -190,7 +203,7 @@ export default async function NotificationsPage() {
                       </p>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {notification.href ? (
+                      {href ? (
                         <form action={openNotification}>
                           <input
                             name="notification_id"
@@ -200,7 +213,7 @@ export default async function NotificationsPage() {
                           <input
                             name="href"
                             type="hidden"
-                            value={notification.href}
+                            value={href}
                           />
                           <button className="h-9 rounded-md bg-[#171412] px-3 text-sm font-semibold text-white">
                             Open

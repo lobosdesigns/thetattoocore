@@ -506,7 +506,7 @@ export default async function SearchPage({
                   {feedPosts.map((post) => (
                     <Link
                       className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-4"
-                      href={`/#feed-${post.id}`}
+                      href={`/p/${post.id}`}
                       key={post.id}
                     >
                       <div className="flex items-center gap-1.5">
@@ -541,7 +541,7 @@ export default async function SearchPage({
                   {threads.map((thread) => (
                     <Link
                       className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-4"
-                      href={`/#thread-${thread.id}`}
+                      href={`/t/${thread.id}`}
                       key={thread.id}
                     >
                       <div className="flex items-center gap-1.5">

@@ -291,7 +291,7 @@ export default async function SavedPage({
         if (!post) return null;
 
         return {
-          href: `/#feed-${post.id}`,
+          href: `/p/${post.id}`,
           id: post.id,
           meta: [post.profiles?.display_name, post.location_label]
             .filter(Boolean)
@@ -310,7 +310,7 @@ export default async function SavedPage({
         if (!thread) return null;
 
         return {
-          href: `/#thread-${thread.id}`,
+          href: `/t/${thread.id}`,
           id: thread.id,
           meta: thread.profiles?.display_name ?? "Member",
           owner: thread.profiles,
