@@ -28,6 +28,7 @@ import {
   togglePostLike,
   toggleThreadLike,
 } from "./actions";
+import { AdImpressionBeacon } from "./ad-impression-beacon";
 import { ColumnTabs } from "./column-tabs";
 import { startConversation } from "./messages/actions";
 import { FloatingComposer } from "./floating-composer";
@@ -198,6 +199,13 @@ function sponsoredSlotTitle(placement: SponsoredPlacement) {
   return "Sponsored in Stuff";
 }
 
+function sponsoredDbPlacement(placement: SponsoredPlacement): AdPlacement {
+  if (placement === "4u-feed") return "4u";
+  if (placement === "gossip-feed") return "gossip";
+
+  return "stuff";
+}
+
 function SponsoredSlot({
   campaign,
   placement,
@@ -207,11 +215,13 @@ function SponsoredSlot({
 }) {
   if (!campaign) return null;
 
+  const dbPlacement = sponsoredDbPlacement(placement);
   const location = [campaign.city, campaign.region, campaign.country_code]
     .filter(Boolean)
     .join(", ");
   const content = (
     <article className="ttc-card rounded-md border border-[#c8953b]/60 bg-[#171412] p-4 text-white shadow-[0_16px_36px_rgba(0,0,0,0.22)]">
+      <AdImpressionBeacon campaignId={campaign.id} placement={dbPlacement} />
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#c8953b]">
@@ -265,8 +275,12 @@ function SponsoredSlot({
 
   if (!campaign.target_url) return content;
 
+  const clickHref = `/api/ad-click?campaign_id=${encodeURIComponent(
+    campaign.id,
+  )}&placement=${encodeURIComponent(dbPlacement)}`;
+
   return (
-    <a href={campaign.target_url} rel="nofollow sponsored noreferrer" target="_blank">
+    <a href={clickHref} rel="nofollow sponsored noreferrer" target="_blank">
       {content}
     </a>
   );
