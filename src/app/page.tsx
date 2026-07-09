@@ -56,8 +56,11 @@ type Profile = {
   adult_terms_accepted_at?: string | null;
   account_type: string;
   city: string | null;
+  country_code?: string | null;
   is_adult_confirmed?: boolean | null;
   license_verified_at?: string | null;
+  location_personalization_enabled?: boolean | null;
+  preferred_language?: string | null;
   region: string | null;
   role?: string | null;
 };
@@ -189,6 +192,8 @@ type SponsoredCampaign = {
   goal: string;
   id: string;
   keywords: string[];
+  language: string | null;
+  matchLabels: string[];
   region: string | null;
   target_url: string | null;
   title: string;
@@ -248,6 +253,14 @@ function SponsoredSlot({
         <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold capitalize text-white/80">
           {campaign.goal.replaceAll("_", " ")}
         </span>
+        {campaign.matchLabels.map((label) => (
+          <span
+            className="rounded-md bg-[#c8953b]/20 px-2 py-1 text-xs font-semibold text-[#f8d28b]"
+            key={label}
+          >
+            {label}
+          </span>
+        ))}
         {location ? (
           <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80">
             {location}
@@ -821,20 +834,55 @@ function ProfileSetupGate() {
 async function fetchSponsoredCampaign(
   supabase: Awaited<ReturnType<typeof createClient>>,
   placement: AdPlacement,
+  viewer?: Pick<
+    Profile,
+    | "city"
+    | "country_code"
+    | "location_personalization_enabled"
+    | "preferred_language"
+    | "region"
+  > | null,
 ) {
   const now = new Date().toISOString();
-  const { data } = await supabase
+  const countryCode = viewer?.country_code?.toUpperCase() || null;
+  const language = viewer?.preferred_language?.toLowerCase() || null;
+  const useLocal = Boolean(viewer?.location_personalization_enabled);
+  const city = useLocal ? viewer?.city || null : null;
+  const region = useLocal ? viewer?.region || null : null;
+  let query = supabase
     .from("ad_campaigns")
     .select(
-      "id, title, body, target_url, campaign_type, goal, bid_cents, city, region, country_code, keywords, profiles:profiles!ad_campaigns_advertiser_id_fkey(username, display_name, account_type, license_verified_at), ad_campaign_placements!inner(placement)",
+      "id, title, body, target_url, campaign_type, goal, bid_cents, city, region, country_code, language, keywords, profiles:profiles!ad_campaigns_advertiser_id_fkey(username, display_name, account_type, license_verified_at), ad_campaign_placements!inner(placement)",
     )
     .eq("status", "active")
     .or(`starts_at.is.null,starts_at.lte.${now}`)
     .or(`ends_at.is.null,ends_at.gt.${now}`)
-    .eq("ad_campaign_placements.placement", placement)
+    .eq("ad_campaign_placements.placement", placement);
+
+  if (countryCode) {
+    query = query.or(`country_code.is.null,country_code.eq.${countryCode}`);
+  }
+
+  if (language) {
+    query = query.or(`language.is.null,language.eq.${language}`);
+  }
+
+  if (region) {
+    query = query.or(`region.is.null,region.eq.${region}`);
+  } else {
+    query = query.is("region", null);
+  }
+
+  if (city) {
+    query = query.or(`city.is.null,city.eq.${city}`);
+  } else {
+    query = query.is("city", null);
+  }
+
+  const { data } = await query
     .order("bid_cents", { ascending: false })
     .order("created_at", { ascending: false })
-    .limit(1)
+    .limit(8)
     .returns<
       {
         bid_cents: number;
@@ -845,6 +893,7 @@ async function fetchSponsoredCampaign(
         goal: string;
         id: string;
         keywords: string[];
+        language: string | null;
         profiles: Pick<
           Profile,
           "account_type" | "display_name" | "license_verified_at" | "username"
@@ -855,8 +904,25 @@ async function fetchSponsoredCampaign(
       }[]
     >();
 
-  const campaign = data?.[0];
+  const campaign = data
+    ?.map((item) => ({
+      item,
+      score:
+        item.bid_cents +
+        (countryCode && item.country_code === countryCode ? 250 : 0) +
+        (language && item.language === language ? 200 : 0) +
+        (region && item.region === region ? 150 : 0) +
+        (city && item.city === city ? 200 : 0),
+    }))
+    .sort((a, b) => b.score - a.score)[0]?.item;
   if (!campaign) return null;
+
+  const matchLabels = [
+    countryCode && campaign.country_code === countryCode ? "Country match" : null,
+    language && campaign.language === language ? "Language match" : null,
+    region && campaign.region === region ? "Region match" : null,
+    city && campaign.city === city ? "City match" : null,
+  ].filter(Boolean) as string[];
 
   return {
     advertiser: campaign.profiles,
@@ -867,6 +933,8 @@ async function fetchSponsoredCampaign(
     goal: campaign.goal,
     id: campaign.id,
     keywords: campaign.keywords ?? [],
+    language: campaign.language,
+    matchLabels,
     region: campaign.region,
     target_url: campaign.target_url,
     title: campaign.title,
@@ -882,9 +950,17 @@ export default async function Home({
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
+  const { data: currentProfile } = claims?.sub
+    ? await supabase
+        .from("profiles")
+        .select(
+          "id, username, display_name, account_type, city, country_code, preferred_language, location_personalization_enabled, adult_terms_accepted_at, is_adult_confirmed, license_verified_at, region, role",
+        )
+        .eq("id", claims.sub)
+        .maybeSingle<Profile>()
+    : { data: null };
 
   const [
-    { data: currentProfile },
     { data: feedPosts },
     { data: threadPosts },
     { data: listings },
@@ -895,15 +971,6 @@ export default async function Home({
     gossipAd,
     stuffAd,
   ] = await Promise.all([
-    claims?.sub
-      ? supabase
-          .from("profiles")
-          .select(
-            "id, username, display_name, account_type, city, adult_terms_accepted_at, is_adult_confirmed, license_verified_at, region, role",
-          )
-          .eq("id", claims.sub)
-          .maybeSingle<Profile>()
-      : Promise.resolve({ data: null }),
     supabase
       .from("feed_posts")
       .select(
@@ -980,9 +1047,9 @@ export default async function Home({
           ])
           .returns<SavedItem[]>()
       : Promise.resolve({ data: [] as SavedItem[] }),
-    fetchSponsoredCampaign(supabase, "4u"),
-    fetchSponsoredCampaign(supabase, "gossip"),
-    fetchSponsoredCampaign(supabase, "stuff"),
+    fetchSponsoredCampaign(supabase, "4u", currentProfile),
+    fetchSponsoredCampaign(supabase, "gossip", currentProfile),
+    fetchSponsoredCampaign(supabase, "stuff", currentProfile),
   ]);
 
   const isSignedIn = Boolean(claims?.sub);
