@@ -405,7 +405,7 @@ export default async function SearchPage({
           <p className="mt-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
             Search only shows public, non-sensitive previews. Member-only,
             private, and 18+ body-art content stays behind login and terms
-            confirmation.
+            confirmation, and DMs never appear in search.
           </p>
           <form
             action="/search"

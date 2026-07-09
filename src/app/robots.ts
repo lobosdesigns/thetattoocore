@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
-        allow: ["/", "/u/"],
+        allow: ["/", "/gigs/", "/p/", "/stuff/", "/t/", "/u/"],
         disallow: [
           "/account",
           "/admin",
@@ -16,6 +16,7 @@ export default function robots(): MetadataRoute.Robots {
           "/messages",
           "/notifications",
           "/reset-password",
+          "/saved",
           "/search",
         ],
         userAgent: "*",

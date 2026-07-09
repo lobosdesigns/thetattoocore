@@ -2,7 +2,14 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthHashRedirect } from "./auth-hash-redirect";
 import { normalizedLanguage } from "@/lib/localization";
-import { siteDescription, siteName, siteUrl } from "@/lib/site";
+import {
+  brandShareImage,
+  brandShareImageAlt,
+  shareImage,
+  siteDescription,
+  siteName,
+  siteUrl,
+} from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 import "./globals.css";
 
@@ -28,6 +35,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   openGraph: {
     description: siteDescription,
+    images: [shareImage(brandShareImage, brandShareImageAlt)],
     siteName,
     title: siteName,
     type: "website",
@@ -40,6 +48,12 @@ export const metadata: Metadata = {
   title: {
     default: siteName,
     template: `%s | ${siteName}`,
+  },
+  twitter: {
+    card: "summary_large_image",
+    description: siteDescription,
+    images: [brandShareImage],
+    title: siteName,
   },
 };
 

@@ -58,6 +58,7 @@
 - When a logged-out visitor opens sensitive shared content, show the post area blurred with an overlay card that says "you must sign in to see content."
 - If a signed-in user has not accepted the adult body-art terms yet, sensitive shared content should ask for 18+ confirmation instead of telling them to sign in again.
 - Public previews should not expose full comment threads, full profile browsing, posting tools, messaging, follower lists, or full-resolution sensitive media.
+- Profile and site-level share metadata should include brand-safe image alt text; public profile cards can use public non-sensitive work, while private profiles use the brand shield.
 - Content marked sensitive, adult, or body-art nudity must not be visible to logged-out public visitors.
 - Sensitive content requires login plus 18+ terms acceptance before it can be viewed.
 - Add SEO-friendly public profile pages and public listing pages, while respecting profile privacy controls.

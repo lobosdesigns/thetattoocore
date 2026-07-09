@@ -27,7 +27,13 @@ import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { createClient } from "@/lib/supabase/server";
-import { brandShareImage, siteName, siteUrl } from "@/lib/site";
+import {
+  brandShareImage,
+  brandShareImageAlt,
+  shareImage,
+  siteName,
+  siteUrl,
+} from "@/lib/site";
 import { isVerifiedProfessional } from "@/lib/verification";
 import {
   acceptFollowRequest,
@@ -330,21 +336,24 @@ function PublicProfileNotice({
             </p>
             <p className="mt-1 text-sm leading-6 text-[#766d62]">
               {isSignedIn
-                ? "Some member or 18+ content may stay hidden until your account has accepted the adult body-art terms."
-                : "Visitors can discover public, non-sensitive work. Sign in to follow, DM, view member-only posts, and confirm 18+ access where allowed."}
+                ? "Some 18+ body-art content may stay hidden until your account has accepted the adult body-art terms."
+                : "Visitors can discover public, non-sensitive work. Sign in to follow, DM, open full comments, view member-only posts, and confirm 18+ access where allowed."}
             </p>
             {!isSignedIn ? (
               <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-[#4f473f]">
-                {["No full comments", "No DMs", "No member-only posts"].map(
-                  (item) => (
+                {[
+                  "Limited comments",
+                  "No DMs",
+                  "No member-only posts",
+                  "No sensitive media",
+                ].map((item) => (
                     <span
                       className="rounded-md border border-[#e5ded4] bg-white px-2 py-1"
                       key={item}
                     >
                       {item}
                     </span>
-                  ),
-                )}
+                  ))}
               </div>
             ) : null}
           </div>
@@ -756,9 +765,12 @@ export async function generateMetadata({
   const shareImageMedia = sharePost?.feed_media.find(
     (media) => media.media_type === "image",
   );
-  const shareImage = shareImageMedia
+  const profileShareImage = shareImageMedia
     ? mediaUrl(shareImageMedia.storage_bucket, shareImageMedia.storage_path)
     : brandShareImage;
+  const profileShareImageAlt = shareImageMedia
+    ? `${profile.display_name} public tattoo work on ${siteName}`
+    : brandShareImageAlt;
 
   return {
     alternates: {
@@ -767,7 +779,7 @@ export async function generateMetadata({
     description,
     openGraph: {
       description,
-      images: [{ url: shareImage }],
+      images: [shareImage(profileShareImage, profileShareImageAlt)],
       title: shareTitle,
       type: "profile",
       url: `${siteUrl}/u/${profile.username}`,
@@ -780,7 +792,7 @@ export async function generateMetadata({
     twitter: {
       card: "summary_large_image",
       description,
-      images: [shareImage],
+      images: [profileShareImage],
       title: shareTitle,
     },
   };
