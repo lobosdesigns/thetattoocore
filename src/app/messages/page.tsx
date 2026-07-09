@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { MediaInput } from "@/app/media-input";
+import { EmojiMessageField } from "./emoji-message-field";
 import { MessageThread } from "./message-thread";
 import { sendMessage, startConversation } from "./actions";
 
@@ -372,10 +373,8 @@ export default async function MessagesPage({
                   required
                 />
               </div>
-              <textarea
+              <EmojiMessageField
                 className="min-h-20 w-full rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-sm outline-none focus:border-[#171412]"
-                maxLength={4000}
-                name="body"
                 placeholder="Start a message"
               />
               <MediaInput
@@ -521,11 +520,10 @@ export default async function MessagesPage({
                   value={selectedConversation.id}
                 />
                 <div className="flex items-end gap-2">
-                  <textarea
-                    className="min-h-12 flex-1 resize-none rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-sm outline-none focus:border-[#171412]"
-                    maxLength={4000}
-                    name="body"
+                  <EmojiMessageField
+                    className="min-h-12 w-full resize-none rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-sm outline-none focus:border-[#171412]"
                     placeholder="Message"
+                    wrapperClassName="min-w-0 flex-1 space-y-2"
                   />
                   <button
                     aria-label="Send message"

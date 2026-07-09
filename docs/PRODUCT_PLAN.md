@@ -11,6 +11,16 @@
 - Reporting: report controls should look like a small intentional action, then open a separate report card or dropdown so users do not confuse it with normal post options.
 - Comments and DMs: add richer expression over time, including emoji, GIFs, photo attachments, and simple media attachments in direct messages.
 
+## Platform Stance
+
+- TheTattooCore should openly emphasize that it does not use AI-generated art, AI search, AI feeds, or AI-driven creator replacement features.
+- Keep the platform centered on real body-art artists, studios, collectors, suppliers, and enthusiasts.
+- Do not promote or normalize unprofessional tattooing, unlicensed studios, or unsafe "scratcher" activity.
+- Marketplace rules should prevent sales of tattoo equipment to unlicensed or unprofessional buyers where the platform can reasonably enforce it.
+- Support freedom of body-art expression and avoid unnecessary censorship when content follows safety, consent, legality, and adult-content guidelines.
+- Draw firm safety lines around pornography, sexualized content, exploitation, minors, harassment, scams, unsafe practices, and content showing unprofessional or potentially deadly harm.
+- Position the community as a safe space for body-art culture to express itself without unwanted AI, spam, or unprofessional practice watering it down.
+
 ## Visual Direction
 
 - Move toward a younger, tech-forward social app feel with more polish, motion, and energy.
