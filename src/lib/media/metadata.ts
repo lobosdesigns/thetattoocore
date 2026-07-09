@@ -59,6 +59,13 @@ function uint32Be(bytes: Uint8Array, offset: number) {
   );
 }
 
+function uint64Be(bytes: Uint8Array, offset: number) {
+  const high = uint32Be(bytes, offset);
+  const low = uint32Be(bytes, offset + 4);
+
+  return high * 2 ** 32 + low;
+}
+
 function detectMimeType(bytes: Uint8Array) {
   if (
     bytes[0] === 0xff &&
@@ -98,6 +105,72 @@ function detectMimeType(bytes: Uint8Array) {
   }
 
   return null;
+}
+
+function mp4DurationSeconds(bytes: Uint8Array) {
+  let offset = 0;
+
+  while (offset + 8 <= bytes.length) {
+    const size = uint32Be(bytes, offset);
+    const type = ascii(bytes, offset + 4, 4);
+    const headerSize = size === 1 ? 16 : 8;
+    const boxSize = size === 1 ? uint64Be(bytes, offset + 8) : size;
+
+    if (boxSize < headerSize || offset + boxSize > bytes.length) return null;
+
+    if (type === "moov") {
+      return movieBoxDurationSeconds(
+        bytes.subarray(offset + headerSize, offset + boxSize),
+      );
+    }
+
+    offset += boxSize;
+  }
+
+  return null;
+}
+
+function movieBoxDurationSeconds(bytes: Uint8Array) {
+  let offset = 0;
+
+  while (offset + 8 <= bytes.length) {
+    const size = uint32Be(bytes, offset);
+    const type = ascii(bytes, offset + 4, 4);
+    const headerSize = size === 1 ? 16 : 8;
+    const boxSize = size === 1 ? uint64Be(bytes, offset + 8) : size;
+
+    if (boxSize < headerSize || offset + boxSize > bytes.length) return null;
+
+    if (type === "mvhd") {
+      return movieHeaderDurationSeconds(
+        bytes.subarray(offset + headerSize, offset + boxSize),
+      );
+    }
+
+    offset += boxSize;
+  }
+
+  return null;
+}
+
+function movieHeaderDurationSeconds(bytes: Uint8Array) {
+  if (bytes.length < 20) return null;
+
+  const version = bytes[0];
+  const timescaleOffset = version === 1 ? 20 : 12;
+  const durationOffset = version === 1 ? 24 : 16;
+
+  if (bytes.length < durationOffset + (version === 1 ? 8 : 4)) return null;
+
+  const timescale = uint32Be(bytes, timescaleOffset);
+  const duration =
+    version === 1
+      ? uint64Be(bytes, durationOffset)
+      : uint32Be(bytes, durationOffset);
+
+  if (!timescale || !Number.isFinite(duration)) return null;
+
+  return Math.round((duration / timescale) * 100) / 100;
 }
 
 function pngDimensions(bytes: Uint8Array) {
@@ -182,6 +255,14 @@ function imageDimensions(mimeType: string, bytes: Uint8Array) {
   return null;
 }
 
+function mediaDurationSeconds(mimeType: string, bytes: Uint8Array) {
+  if (mimeType === "video/mp4" || mimeType === "video/quicktime") {
+    return mp4DurationSeconds(bytes);
+  }
+
+  return null;
+}
+
 function cleanFilename(name: string) {
   const trimmed = name.trim();
 
@@ -196,10 +277,13 @@ export async function inspectMediaFile(file: File): Promise<MediaMetadata> {
   const dimensions = IMAGE_MIME_TYPES.has(mimeType)
     ? imageDimensions(mimeType, bytes)
     : null;
+  const durationSeconds = VIDEO_MIME_TYPES.has(mimeType)
+    ? mediaDurationSeconds(mimeType, bytes)
+    : null;
 
   return {
     detectedMimeType,
-    durationSeconds: null,
+    durationSeconds,
     fileSizeBytes: file.size,
     height: dimensions?.height ?? null,
     mediaType,
@@ -223,6 +307,14 @@ export function validateMediaMetadata(metadata: MediaMetadata) {
 
   if (metadata.mediaType === "video" && metadata.fileSizeBytes > 50 * 1024 * 1024) {
     return "Videos can be up to 50 MB right now.";
+  }
+
+  if (
+    metadata.mediaType === "video" &&
+    metadata.durationSeconds != null &&
+    metadata.durationSeconds > 60
+  ) {
+    return "Video clips can be up to 60 seconds right now.";
   }
 
   return null;
