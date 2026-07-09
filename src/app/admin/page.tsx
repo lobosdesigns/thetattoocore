@@ -105,9 +105,32 @@ const adminTabs = [
   [ShieldCheck, "Verification"],
   [Flag, "Reports"],
   [ImageIcon, "Content"],
+  [ImageIcon, "Media Ops"],
   [BriefcaseBusiness, "Gigs"],
   [ShoppingBag, "Marketplace"],
   [Mail, "Mail Settings"],
+] as const;
+
+const mediaOpsStages = [
+  [
+    "Live now",
+    "Browser image optimization, server signature checks, dimension checks, and 60-second MP4/MOV reel validation.",
+  ],
+  [
+    "Next",
+    "Add generated thumbnails and poster images so feeds, search, and profiles load lighter previews.",
+  ],
+  [
+    "Later",
+    "Add a real processing queue for video transcodes, moderation thumbnails, and retryable failed media jobs.",
+  ],
+] as const;
+
+const mediaCostRules = [
+  "Keep original media in Supabase Storage while early traffic is small.",
+  "Use client-side image compression first because it is free and reduces storage before upload.",
+  "Do not enable paid video transcoding until reels are getting enough real usage to justify it.",
+  "Consider Cloudflare Images for image variants and Cloudflare Stream for video only after upload volume grows.",
 ] as const;
 
 const moderateRoles: UserRole[] = ["moderator", "admin", "owner"];
@@ -1630,6 +1653,44 @@ export default async function AdminPage({
                   Marketplace review will cover flash sheets, guest spots,
                   studio chairs, supplies, and service listings.
                 </p>
+              </div>
+
+              <div
+                className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-5"
+                id="media-ops"
+              >
+                <div className="mb-4 flex items-center gap-3">
+                  <ImageIcon className="size-5" />
+                  <h2 className="text-lg font-bold">Media ops</h2>
+                </div>
+                <p className="text-sm leading-6 text-[#4f473f]">
+                  Keep uploads cheap and reliable first. Add heavier processing
+                  only when real usage proves we need thumbnails, transcodes, or
+                  separate media services.
+                </p>
+                <div className="mt-4 grid gap-3">
+                  {mediaOpsStages.map(([label, body]) => (
+                    <div
+                      className="rounded-md border border-[#cfc8bd] bg-white p-3"
+                      key={label}
+                    >
+                      <p className="text-xs font-bold uppercase text-[#766d62]">
+                        {label}
+                      </p>
+                      <p className="mt-1 text-sm leading-5 text-[#4f473f]">
+                        {body}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 rounded-md border border-[#cfc8bd] bg-[#f2f1ee] p-3">
+                  <p className="text-sm font-bold">Cost rules</p>
+                  <ul className="mt-2 space-y-2 text-xs leading-5 text-[#766d62]">
+                    {mediaCostRules.map((rule) => (
+                      <li key={rule}>{rule}</li>
+                    ))}
+                  </ul>
+                </div>
               </div>
 
               <div
