@@ -1247,7 +1247,12 @@ export default async function ProfilePage({
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="font-semibold">{gig.title}</p>
+                        <Link
+                          className="font-semibold hover:underline"
+                          href={`/gigs/${gig.id}`}
+                        >
+                          {gig.title}
+                        </Link>
                         <div className="mt-1 flex flex-wrap gap-1.5">
                           <span className="rounded-md bg-[#efe7da] px-2 py-1 text-xs font-medium capitalize">
                             {formatGigCategory(gig.category)}

@@ -1259,7 +1259,12 @@ export default async function Home({
                       <div className="mb-3 flex items-start gap-3">
                         <ListingThumb media={gig.gig_media[0]} />
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold">{gig.title}</p>
+                          <Link
+                            className="text-sm font-semibold hover:underline"
+                            href={`/gigs/${gig.id}`}
+                          >
+                            {gig.title}
+                          </Link>
                           <div className="mt-1 flex flex-wrap items-center gap-1.5">
                             <p className="text-xs capitalize text-[#766d62]">
                               {formatGigCategory(gig.category)}
@@ -1465,16 +1470,16 @@ export default async function Home({
             <div className="space-y-3">
               {visibleGigs.length ? (
                 visibleGigs.slice(0, 4).map((gig) => (
-                  <a
+                  <Link
                     className="block rounded-md border border-[#d8d1c6] bg-white p-3"
-                    href="#gigs"
+                    href={`/gigs/${gig.id}`}
                     key={gig.id}
                   >
                     <p className="text-sm font-semibold">{gig.title}</p>
                     <p className="mt-1 text-xs capitalize text-[#766d62]">
                       {formatGigCategory(gig.category)} - {formatGigDate(gig)}
                     </p>
-                  </a>
+                  </Link>
                 ))
               ) : (
                 <SidebarEmptyState>No Gigs yet.</SidebarEmptyState>

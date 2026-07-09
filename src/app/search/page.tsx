@@ -574,7 +574,7 @@ export default async function SearchPage({
                   {gigs.map((gig) => (
                     <Link
                       className="block rounded-md border border-[#d8d1c6] bg-white p-4"
-                      href="/#gigs"
+                      href={`/gigs/${gig.id}`}
                       key={gig.id}
                     >
                       <p className="text-sm font-semibold">{gig.title}</p>

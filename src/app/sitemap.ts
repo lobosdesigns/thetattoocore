@@ -12,6 +12,11 @@ type PublicListing = {
   updated_at: string | null;
 };
 
+type PublicGig = {
+  id: string;
+  updated_at: string | null;
+};
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const routes: MetadataRoute.Sitemap = [
@@ -66,6 +71,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .order("updated_at", { ascending: false })
     .limit(500)
     .returns<PublicListing[]>();
+  const { data: gigs } = await supabase
+    .from("gigs")
+    .select("id, updated_at")
+    .eq("status", "active")
+    .eq("moderation_status", "active")
+    .eq("visibility", "public_preview")
+    .eq("is_sensitive", false)
+    .order("updated_at", { ascending: false })
+    .limit(500)
+    .returns<PublicGig[]>();
 
   return [
     ...routes,
@@ -82,6 +97,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: listing.updated_at ? new Date(listing.updated_at) : now,
       priority: 0.6,
       url: `${siteUrl}/stuff/${listing.id}`,
+    })),
+    ...(gigs ?? []).map((gig) => ({
+      changeFrequency: "weekly" as const,
+      lastModified: gig.updated_at ? new Date(gig.updated_at) : now,
+      priority: 0.6,
+      url: `${siteUrl}/gigs/${gig.id}`,
     })),
   ];
 }
