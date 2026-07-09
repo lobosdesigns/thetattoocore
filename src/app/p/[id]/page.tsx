@@ -6,20 +6,26 @@ import {
   BadgeCheck,
   Camera,
   Heart,
-  LockKeyhole,
   MessageCircle,
   Send,
   Video,
 } from "lucide-react";
-import { acceptAdultTerms, createPostComment, togglePostLike } from "@/app/actions";
+import { createPostComment, togglePostLike } from "@/app/actions";
 import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { PendingSubmitButton } from "@/app/pending-submit-button";
 import { SavedItemButton } from "@/app/saved-item-button";
+import { SensitiveContentGate } from "@/app/sensitive-content-gate";
 import { ShareActions } from "@/app/share-actions";
 import { WordLimitedField } from "@/app/word-limited-field";
-import { brandShareImage, siteName, siteUrl } from "@/lib/site";
+import {
+  brandShareImage,
+  brandShareImageAlt,
+  shareImage,
+  siteName,
+  siteUrl,
+} from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
 
@@ -126,41 +132,6 @@ function canViewPost({
   return true;
 }
 
-function SensitiveMediaGate({
-  isSignedIn,
-  returnPath,
-}: {
-  isSignedIn: boolean;
-  returnPath: string;
-}) {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center bg-[#171412]/35 p-4 backdrop-blur-sm">
-      <div className="max-w-xs rounded-md border border-white/20 bg-[#171412]/92 p-4 text-center text-white shadow-2xl">
-        <LockKeyhole className="mx-auto mb-2 size-6 text-[#c8953b]" />
-        <p className="text-sm font-bold">You must sign in to see content</p>
-        <p className="mt-1 text-xs leading-5 text-white/70">
-          Sensitive body-art media requires login and 18+ confirmation.
-        </p>
-        {isSignedIn ? (
-          <form action={acceptAdultTerms} className="mt-3">
-            <input name="return_path" type="hidden" value={returnPath} />
-            <button className="h-9 rounded-md bg-white px-3 text-sm font-semibold text-[#171412]">
-              I am 18+
-            </button>
-          </form>
-        ) : (
-          <Link
-            className="mt-3 inline-flex h-9 items-center justify-center rounded-md bg-white px-3 text-sm font-semibold text-[#171412]"
-            href="/login"
-          >
-            Sign in
-          </Link>
-        )}
-      </div>
-    </div>
-  );
-}
-
 async function getPost(id: string) {
   const supabase = await createClient();
   const { data } = await supabase
@@ -222,7 +193,12 @@ export async function generateMetadata({
     description,
     openGraph: {
       description,
-      images: [{ url: image }],
+      images: [
+        shareImage(
+          image,
+          publicIndexable ? "TheTattooCore 4U post media" : brandShareImageAlt,
+        ),
+      ],
       title,
       type: "article",
       url: `${siteUrl}/p/${post.id}`,
@@ -376,7 +352,10 @@ export default async function PostPage({ params }: PostPageProps) {
                 </div>
               )}
               {!showPost ? (
-                <SensitiveMediaGate isSignedIn={isSignedIn} returnPath={returnPath} />
+                <SensitiveContentGate
+                  isSignedIn={isSignedIn}
+                  returnPath={returnPath}
+                />
               ) : null}
             </div>
 

@@ -6,3 +6,11 @@ export const siteName = "TheTattooCore";
 export const siteDescription =
   "The heart of the tattoo community for artists, studios, collectors, and tattoo enthusiasts.";
 export const brandShareImage = `${siteUrl}/icon.svg?v=ttc-shield`;
+export const brandShareImageAlt = `${siteName} shield logo`;
+
+export function shareImage(url: string, alt = `${siteName} shared content`) {
+  return {
+    alt,
+    url,
+  };
+}
