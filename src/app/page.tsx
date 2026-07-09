@@ -1511,7 +1511,7 @@ export default async function Home({
                         <CompactShareButton
                           text={`Check this Gossip thread on ${siteName}`}
                           title="TheTattooCore Gossip thread"
-                          url={`${siteUrl}/#thread-${thread.id}`}
+                          url={`${siteUrl}/t/${thread.id}`}
                         />
                       </div>
                       {isSignedIn ? (

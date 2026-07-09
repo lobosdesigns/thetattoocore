@@ -938,6 +938,7 @@ export async function toggleThreadLike(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const threadId = cleanId(formData.get("thread_id"));
   const liked = cleanText(formData.get("liked"), 8) === "true";
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
 
   if (!threadId) {
     redirect(homeMessage("Choose a thread first."));
@@ -971,7 +972,7 @@ export async function toggleThreadLike(formData: FormData) {
     await notifyContentOwner({
       actorId: userId,
       body: `${actorName} liked your thread.`,
-      href: "/#threads",
+      href: `/t/${threadId}`,
       ownerId: thread?.author_id,
       subjectId: threadId,
       subjectType: "thread_post",
@@ -982,13 +983,15 @@ export async function toggleThreadLike(formData: FormData) {
   }
 
   revalidatePath("/");
-  redirect("/#threads");
+  revalidatePath(returnPath);
+  redirect(returnPath);
 }
 
 export async function createThreadComment(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const body = cleanText(formData.get("body"), 2000);
   const threadId = cleanId(formData.get("thread_id"));
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
 
   if (!threadId) {
     redirect(homeMessage("Choose a thread first."));
@@ -1020,7 +1023,7 @@ export async function createThreadComment(formData: FormData) {
   await notifyContentOwner({
     actorId: userId,
     body: `${actorName}: ${body}`,
-    href: "/#threads",
+    href: `/t/${threadId}`,
     ownerId: thread?.author_id,
     subjectId: threadId,
     subjectType: "thread_post",
@@ -1030,5 +1033,6 @@ export async function createThreadComment(formData: FormData) {
   });
 
   revalidatePath("/");
-  redirect("/#threads");
+  revalidatePath(returnPath);
+  redirect(returnPath);
 }
