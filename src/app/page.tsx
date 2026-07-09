@@ -62,6 +62,8 @@ type Profile = {
   preferred_language?: string | null;
   region: string | null;
   role?: string | null;
+  banned_at?: string | null;
+  suspended_at?: string | null;
 };
 
 type FeedPost = {
@@ -210,6 +212,84 @@ function sponsoredDbPlacement(placement: SponsoredPlacement): AdPlacement {
   if (placement === "gossip-feed") return "gossip";
 
   return "stuff";
+}
+
+function stuffAccessStatus(profile: Profile | null) {
+  if (!profile) {
+    return {
+      body: "Save your profile before posting, commenting, or applying for pro Stuff access.",
+      href: "/account",
+      label: "Set up profile",
+      title: "Profile needed",
+      tone: "neutral",
+    };
+  }
+
+  if (profile.banned_at) {
+    return {
+      body: "This account is banned from member actions and Stuff access.",
+      href: "/account",
+      label: "View account",
+      title: "Account banned",
+      tone: "danger",
+    };
+  }
+
+  if (profile.suspended_at) {
+    return {
+      body: "This account is suspended from posting, messaging, and Stuff access.",
+      href: "/account",
+      label: "View account",
+      title: "Account suspended",
+      tone: "danger",
+    };
+  }
+
+  if (isVerifiedProfessional(profile)) {
+    return {
+      body: "You can list Stuff, contact sellers, trade, and use professional equipment listings.",
+      href: "#marketplace",
+      label: "Open Stuff",
+      title: "Stuff access active",
+      tone: "success",
+    };
+  }
+
+  return {
+    body: "Fans can browse Stuff. Buy, sell, trade, seller contact, and pro gear need artist, studio, or vendor verification.",
+    href: "/account#verification-settings",
+    label: "Apply for verification",
+    title: "Browse-only Stuff",
+    tone: "warning",
+  };
+}
+
+function StuffAccessCard({ profile }: { profile: Profile | null }) {
+  const status = stuffAccessStatus(profile);
+  const toneClass =
+    status.tone === "success"
+      ? "border-[#b9d7bd] bg-[#eef8ef]"
+      : status.tone === "danger"
+        ? "border-[#e5b8b8] bg-[#fff0f0]"
+        : status.tone === "warning"
+          ? "border-[#e5c58f] bg-[#fff7ec]"
+          : "border-[#d8d1c6] bg-white";
+
+  return (
+    <section className={`mt-4 rounded-md border p-3 ${toneClass}`}>
+      <p className="text-xs font-semibold uppercase text-[#766d62]">
+        Stuff access
+      </p>
+      <h2 className="mt-1 text-sm font-bold">{status.title}</h2>
+      <p className="mt-1 text-xs leading-5 text-[#4f473f]">{status.body}</p>
+      <Link
+        className="mt-3 inline-flex h-8 items-center rounded-md bg-[#171412] px-3 text-xs font-semibold text-white"
+        href={status.href}
+      >
+        {status.label}
+      </Link>
+    </section>
+  );
 }
 
 function shouldShowSponsoredSlot(index: number, total: number) {
@@ -947,7 +1027,7 @@ export default async function Home({
     ? await supabase
         .from("profiles")
         .select(
-          "id, username, display_name, account_type, city, country_code, preferred_language, location_personalization_enabled, adult_terms_accepted_at, is_adult_confirmed, license_verified_at, region, role",
+          "id, username, display_name, account_type, city, country_code, preferred_language, location_personalization_enabled, adult_terms_accepted_at, is_adult_confirmed, license_verified_at, region, role, banned_at, suspended_at",
         )
         .eq("id", claims.sub)
         .maybeSingle<Profile>()
@@ -1127,6 +1207,7 @@ export default async function Home({
                   Admin
                 </Link>
               ) : null}
+              {isSignedIn ? <StuffAccessCard profile={currentProfile ?? null} /> : null}
             </div>
 
             <div className="mt-auto flex gap-3 pt-8 text-xs font-semibold text-[#766d62]">

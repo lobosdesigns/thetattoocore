@@ -150,6 +150,108 @@ function isExpiredDate(value: string | null) {
   return Number.isFinite(date.getTime()) && date.getTime() < Date.now();
 }
 
+function AccountReadinessPanel({
+  canSubmitLicense,
+  canUploadVerification,
+  hasPendingVerification,
+  isLicenseVerified,
+  profile,
+}: {
+  canSubmitLicense: string | false | undefined;
+  canUploadVerification: boolean;
+  hasPendingVerification: boolean;
+  isLicenseVerified: boolean;
+  profile:
+    | {
+        banned_at?: string | null;
+        is_adult_confirmed?: boolean | null;
+        license_verified_at?: string | null;
+        suspended_at?: string | null;
+        username?: string | null;
+      }
+    | null;
+}) {
+  const items = [
+    {
+      body: profile?.username
+        ? `@${profile.username} is saved.`
+        : "Choose and save a username first.",
+      label: "Profile",
+      ready: Boolean(profile?.username),
+    },
+    {
+      body: profile?.is_adult_confirmed
+        ? "18+ confirmation is saved."
+        : "Confirm 18+ terms before viewing sensitive body-art content.",
+      label: "18+",
+      ready: Boolean(profile?.is_adult_confirmed),
+    },
+    {
+      body: isLicenseVerified
+        ? "Stuff seller contact and professional gear access are active."
+        : hasPendingVerification
+          ? "Verification is waiting for admin review."
+          : canSubmitLicense
+            ? "Upload current license or business proof."
+            : "Switch account type to artist, studio, or vendor to apply.",
+      label: "Verification",
+      ready: isLicenseVerified,
+    },
+    {
+      body: profile?.banned_at
+        ? "Account is banned."
+        : profile?.suspended_at
+          ? "Account is suspended."
+          : "Account is in good standing.",
+      label: "Standing",
+      ready: !profile?.banned_at && !profile?.suspended_at,
+    },
+  ];
+
+  return (
+    <section className="mb-4 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase text-[#766d62]">
+            Account readiness
+          </p>
+          <h2 className="text-lg font-bold">What is unlocked right now</h2>
+        </div>
+        {canUploadVerification ? (
+          <a
+            className="inline-flex h-9 items-center justify-center rounded-md bg-[#171412] px-3 text-sm font-semibold text-white"
+            href="#verification-settings"
+          >
+            Upload proof
+          </a>
+        ) : null}
+      </div>
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+        {items.map((item) => (
+          <div
+            className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-3 py-2"
+            key={item.label}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold">{item.label}</p>
+              <span
+                className={`rounded-md px-2 py-1 text-xs font-semibold ${
+                  item.ready
+                    ? "bg-[#eef8ef] text-[#276231]"
+                    : "bg-[#fff7ec] text-[#7a4a08]"
+                }`}
+              >
+                {item.ready ? "Ready" : "Needs work"}
+              </span>
+            </div>
+            <p className="mt-1 text-xs leading-5 text-[#766d62]">{item.body}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default async function AccountPage({
   searchParams,
 }: {
@@ -261,6 +363,14 @@ export default async function AccountPage({
 
         <AccountSetupGuide isFirstProfile={isFirstProfile} />
 
+        <AccountReadinessPanel
+          canSubmitLicense={canSubmitLicense}
+          canUploadVerification={canUploadVerification}
+          hasPendingVerification={hasPendingVerification}
+          isLicenseVerified={isLicenseVerified}
+          profile={profile}
+        />
+
         <nav
           aria-label="Account settings"
           className="mb-4 flex gap-2 overflow-x-auto rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-2"
@@ -366,23 +476,23 @@ export default async function AccountPage({
             ) : null}
 
             {canUploadVerification ? (
-            <form action={submitLicenseVerification} className="grid gap-4">
-              {latestVerificationRequest?.status === "rejected" ? (
-                <p className="rounded-md border border-[#e5ded4] bg-[#fffdf9] px-3 py-2 text-sm leading-6 text-[#4f473f]">
-                  Submit updated proof after fixing the last rejection note.
-                </p>
-              ) : null}
-              <label className="block">
-                <span className="text-sm font-medium">
-                  License or certification name <span className="text-[#a3432f]">*</span>
-                </span>
-                <input
-                  className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                  name="license_name"
-                  placeholder="Tattoo artist license"
-                  required
-                />
-              </label>
+              <form action={submitLicenseVerification} className="grid gap-4">
+                {latestVerificationRequest?.status === "rejected" ? (
+                  <p className="rounded-md border border-[#e5ded4] bg-[#fffdf9] px-3 py-2 text-sm leading-6 text-[#4f473f]">
+                    Submit updated proof after fixing the last rejection note.
+                  </p>
+                ) : null}
+                <label className="block">
+                  <span className="text-sm font-medium">
+                    License or certification name <span className="text-[#a3432f]">*</span>
+                  </span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    name="license_name"
+                    placeholder="Tattoo artist license"
+                    required
+                  />
+                </label>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
@@ -440,7 +550,7 @@ export default async function AccountPage({
               >
                 Submit for review
               </PendingSubmitButton>
-            </form>
+              </form>
             ) : null}
           </section>
         ) : (
