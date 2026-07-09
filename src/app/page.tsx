@@ -206,6 +206,10 @@ function sponsoredDbPlacement(placement: SponsoredPlacement): AdPlacement {
   return "stuff";
 }
 
+function shouldShowSponsoredSlot(index: number, total: number) {
+  return total > 0 && index === Math.min(1, total - 1);
+}
+
 function SponsoredSlot({
   campaign,
   placement,
@@ -1215,7 +1219,7 @@ export default async function Home({
                     ) : null}
                   </div>
                 </article>
-                {index === 1 ? (
+                {shouldShowSponsoredSlot(index, visibleFeedPosts.length) ? (
                   <SponsoredSlot campaign={fourUAd} placement="4u-feed" />
                 ) : null}
                 </div>
@@ -1402,7 +1406,7 @@ export default async function Home({
                         </form>
                       ) : null}
                     </article>
-                    {index === 1 ? (
+                    {shouldShowSponsoredSlot(index, visibleThreadPosts.length) ? (
                       <SponsoredSlot campaign={gossipAd} placement="gossip-feed" />
                     ) : null}
                     </div>
@@ -1567,7 +1571,7 @@ export default async function Home({
                         )}
                       </div>
                     </article>
-                    {index === 1 ? (
+                    {shouldShowSponsoredSlot(index, visibleListings.length) ? (
                       <SponsoredSlot campaign={stuffAd} placement="stuff-feed" />
                     ) : null}
                     </div>
