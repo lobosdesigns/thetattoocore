@@ -5,6 +5,7 @@ import { ImageIcon, Video } from "lucide-react";
 
 type MediaInputProps = {
   accept: string;
+  compact?: boolean;
   maxImageBytes?: number;
   maxVideoBytes?: number;
   maxVideoSeconds?: number;
@@ -160,6 +161,7 @@ async function videoDuration(file: File) {
 
 export function MediaInput({
   accept,
+  compact = false,
   maxImageBytes = 10 * 1024 * 1024,
   maxVideoBytes = 50 * 1024 * 1024,
   maxVideoSeconds = 60,
@@ -265,8 +267,16 @@ export function MediaInput({
         required={required}
         type="file"
       />
-      <p className="text-xs leading-5 text-[#766d62]">{guidance}</p>
-      {videoAllowed ? (
+      <p className="text-xs leading-5 text-[#766d62]">
+        {compact
+          ? videoAllowed
+            ? `Optional media. Images optimize before upload; videos max ${formatSeconds(
+                maxVideoSeconds,
+              )}.`
+            : "Optional photo. Images optimize before upload; GIFs keep original size."
+          : guidance}
+      </p>
+      {videoAllowed && !compact ? (
         <p className="rounded-md border border-[#e5ded4] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
           {videoPipelineLabel} Use short MP4/MOV clips for now; adaptive
           playback and thumbnails come with the managed video pipeline later.

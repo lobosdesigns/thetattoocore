@@ -2,14 +2,17 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import {
   ArrowLeft,
+  ImagePlus,
   Inbox,
+  LoaderCircle,
   MessageCircle,
   Search,
   Send,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { MediaInput } from "@/app/media-input";
-import { EmojiMessageField } from "./emoji-message-field";
+import { PendingSubmitButton } from "@/app/pending-submit-button";
+import { WordLimitedField } from "@/app/word-limited-field";
 import { MessageThread } from "./message-thread";
 import { sendMessage, startConversation } from "./actions";
 
@@ -373,20 +376,38 @@ export default async function MessagesPage({
                   required
                 />
               </div>
-              <EmojiMessageField
+              <WordLimitedField
+                as="textarea"
                 className="min-h-20 w-full rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-sm outline-none focus:border-[#171412]"
+                emojiShortcuts
+                maxCharacters={4000}
+                maxLength={4000}
+                name="body"
                 placeholder="Start a message"
+                wrapperClassName="space-y-2"
               />
-              <MediaInput
-                accept={imageAccept}
-                maxImageBytes={10 * 1024 * 1024}
-                name="media"
-                videoAllowed={false}
-              />
-              <button className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+              <details className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3">
+                <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold">
+                  <ImagePlus className="size-4" />
+                  Attach photo
+                </summary>
+                <div className="mt-3">
+                  <MediaInput
+                    accept={imageAccept}
+                    compact
+                    maxImageBytes={10 * 1024 * 1024}
+                    name="media"
+                    videoAllowed={false}
+                  />
+                </div>
+              </details>
+              <PendingSubmitButton
+                className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                pendingLabel="Sending"
+              >
                 <Send className="size-4" />
                 Send
-              </button>
+              </PendingSubmitButton>
             </form>
           </header>
 
@@ -520,24 +541,41 @@ export default async function MessagesPage({
                   value={selectedConversation.id}
                 />
                 <div className="flex items-end gap-2">
-                  <EmojiMessageField
+                  <WordLimitedField
+                    as="textarea"
                     className="min-h-12 w-full resize-none rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-sm outline-none focus:border-[#171412]"
+                    emojiShortcuts
+                    maxCharacters={4000}
+                    maxLength={4000}
+                    name="body"
                     placeholder="Message"
                     wrapperClassName="min-w-0 flex-1 space-y-2"
                   />
-                  <button
+                  <PendingSubmitButton
                     aria-label="Send message"
                     className="flex size-12 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                    pendingChildren={
+                      <LoaderCircle className="size-5 animate-spin" />
+                    }
                   >
                     <Send className="size-5" />
-                  </button>
+                  </PendingSubmitButton>
                 </div>
-                <MediaInput
-                  accept={imageAccept}
-                  maxImageBytes={10 * 1024 * 1024}
-                  name="media"
-                  videoAllowed={false}
-                />
+                <details className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3">
+                  <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold">
+                    <ImagePlus className="size-4" />
+                    Attach photo
+                  </summary>
+                  <div className="mt-3">
+                    <MediaInput
+                      accept={imageAccept}
+                      compact
+                      maxImageBytes={10 * 1024 * 1024}
+                      name="media"
+                      videoAllowed={false}
+                    />
+                  </div>
+                </details>
               </form>
             </>
           ) : (
