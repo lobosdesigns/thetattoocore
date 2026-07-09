@@ -27,7 +27,7 @@ import { acceptAdultTerms, archiveGig, createContentReport } from "@/app/actions
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { createClient } from "@/lib/supabase/server";
-import { siteName, siteUrl } from "@/lib/site";
+import { brandShareImage, siteName, siteUrl } from "@/lib/site";
 import { isVerifiedProfessional } from "@/lib/verification";
 import {
   acceptFollowRequest,
@@ -390,6 +390,20 @@ function PublicProfileNotice({
                 ? "Some member or 18+ content may stay hidden until your account has accepted the adult body-art terms."
                 : "Visitors can discover public, non-sensitive work. Sign in to follow, DM, view member-only posts, and confirm 18+ access where allowed."}
             </p>
+            {!isSignedIn ? (
+              <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-[#4f473f]">
+                {["No full comments", "No DMs", "No member-only posts"].map(
+                  (item) => (
+                    <span
+                      className="rounded-md border border-[#e5ded4] bg-white px-2 py-1"
+                      key={item}
+                    >
+                      {item}
+                    </span>
+                  ),
+                )}
+              </div>
+            ) : null}
           </div>
           {hiddenCount > 0 ? (
             <span className="w-fit shrink-0 rounded-md border border-[#cfc8bd] bg-white px-2 py-1 text-xs font-semibold text-[#4f473f]">
@@ -756,6 +770,9 @@ export async function generateMetadata({
       `${profile.display_name} is a ${profile.account_type} on ${siteName}${
         location ? ` in ${location}` : ""
       }.`;
+  const shareTitle = profile.is_private
+    ? `Private profile | ${siteName}`
+    : title;
 
   return {
     alternates: {
@@ -764,7 +781,8 @@ export async function generateMetadata({
     description,
     openGraph: {
       description,
-      title,
+      images: [{ url: brandShareImage }],
+      title: shareTitle,
       type: "profile",
       url: `${siteUrl}/u/${profile.username}`,
     },
@@ -773,6 +791,12 @@ export async function generateMetadata({
       index: !profile.is_private,
     },
     title,
+    twitter: {
+      card: "summary_large_image",
+      description,
+      images: [brandShareImage],
+      title: shareTitle,
+    },
   };
 }
 

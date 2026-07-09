@@ -500,8 +500,9 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
                 </Link>
               )}
               <p className="mt-3 text-xs leading-5 text-[#766d62]">
-                Fans can browse Stuff. Buy, sell, trade, and seller contact
-                actions require verified artist, studio, or vendor status.
+                Fans can browse Stuff. Buying, selling, trading, seller contact,
+                and professional equipment activity require verified artist,
+                studio, or approved vendor status.
               </p>
             </section>
 
