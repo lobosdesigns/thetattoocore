@@ -175,6 +175,14 @@ type ThreadComment = {
   profiles: Pick<Profile, "display_name" | "username"> | null;
 };
 
+type SponsoredPlacement = "4u-feed" | "gossip-feed" | "stuff-feed";
+
+function SponsoredSlot({ placement }: { placement: SponsoredPlacement }) {
+  void placement;
+
+  return null;
+}
+
 function EmptyColumnState({
   actionHref,
   actionLabel,
@@ -876,11 +884,11 @@ export default async function Home({
             id="feed"
           >
             {visibleFeedPosts.length ? (
-              visibleFeedPosts.map((post) => (
+              visibleFeedPosts.map((post, index) => (
+                <div key={post.id}>
                 <article
                   className="scroll-mt-28 bg-[#fffdf9] shadow-[0_1px_0_rgba(23,20,18,0.06)]"
                   id={`feed-${post.id}`}
-                  key={post.id}
                 >
                   <div className="flex items-center justify-between px-4 py-3">
                     <Link
@@ -1037,6 +1045,8 @@ export default async function Home({
                     ) : null}
                   </div>
                 </article>
+                {index === 1 ? <SponsoredSlot placement="4u-feed" /> : null}
+                </div>
               ))
             ) : (
               <div className="p-4">
@@ -1070,11 +1080,11 @@ export default async function Home({
             </div>
             <div className="space-y-3">
               {visibleThreadPosts.length
-                ? visibleThreadPosts.map((thread) => (
+                ? visibleThreadPosts.map((thread, index) => (
+                    <div key={thread.id}>
                     <article
                       className="ttc-card scroll-mt-28 rounded-md border border-[#cfc8bd] bg-white p-4"
                       id={`thread-${thread.id}`}
-                      key={thread.id}
                     >
                       <div className="mb-2 flex items-center justify-between gap-3">
                         <Link
@@ -1220,6 +1230,8 @@ export default async function Home({
                         </form>
                       ) : null}
                     </article>
+                    {index === 1 ? <SponsoredSlot placement="gossip-feed" /> : null}
+                    </div>
                   ))
                 : (
                     <EmptyColumnState
@@ -1252,11 +1264,11 @@ export default async function Home({
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {visibleListings.length
-                ? visibleListings.map((listing) => (
+                ? visibleListings.map((listing, index) => (
+                    <div key={listing.id}>
                     <article
                       className="ttc-card scroll-mt-28 rounded-md border border-[#cfc8bd] bg-white p-4"
                       id={`stuff-${listing.id}`}
-                      key={listing.id}
                     >
                       <div className="mb-3 flex items-center gap-3">
                         <ListingThumb media={listing.marketplace_media[0]} />
@@ -1381,6 +1393,8 @@ export default async function Home({
                         )}
                       </div>
                     </article>
+                    {index === 1 ? <SponsoredSlot placement="stuff-feed" /> : null}
+                    </div>
                   ))
                 : (
                     <div className="sm:col-span-2">

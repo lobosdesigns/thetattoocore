@@ -19,6 +19,12 @@ creative work.
   verified professional or vendor status.
 - Vendors must be approved with proper business licensing before they receive
   marketplace transaction access.
+- Ads should stay simple and transparent. Artist/client-growth ads belong in 4U
+  and Gossip with goals for leads, messages, and engagement. Stuff ads belong
+  only in Stuff, focused on listing views, eligible seller messages, and
+  marketplace engagement.
+- Stories are planned for later, after the core feed, Gossip, Stuff, Gigs, and
+  DMs are stable.
 - TheTattooCore supports freedom of body-art expression when content follows
   safety, consent, legality, and adult-content guidelines.
 - Body-art nudity may be allowed only when it exists to show tattooing,

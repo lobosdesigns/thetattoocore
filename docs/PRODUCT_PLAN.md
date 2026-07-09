@@ -10,6 +10,7 @@
 - Mobile composer: posting cards must fit mobile browser screens, scroll to the publish button, and keep advanced fields behind expandable sections.
 - Reporting: report controls should look like a small intentional action, then open a separate report card or dropdown so users do not confuse it with normal post options.
 - Comments and DMs: add richer expression over time, including emoji, GIFs, photo attachments, and simple media attachments in direct messages.
+- Stories: add temporary story posts later for artists, studios, vendors, events, and community moments after the core feed, Gossip, Stuff, Gigs, and DMs are stable.
 
 ## Platform Stance
 
@@ -108,6 +109,10 @@
 - Targeting inputs: country, region, city, language, tattoo style keywords, marketplace category, and column placement.
 - Buying model: fixed daily budget plus optional spot bidding for placements.
 - Placements: feed card, thread sidebar/card, marketplace card, and messages-safe non-invasive placement.
+- Artist/client-growth ads should run in 4U and Gossip only, with goals for leads, messages, and engagement.
+- Artist ads should appear in randomized bidded spots inside 4U and Gossip, clearly labeled as sponsored.
+- Stuff ads should run only inside Stuff, using the same simple bidding and rotation model but never leaking into 4U or Gossip.
+- Stuff ad goals should focus on listing views, seller messages from eligible users, and marketplace engagement.
 - Safety rules: no sensitive personal targeting, no hidden behavioral profiling, no adult/minor targeting, and clear sponsor labels.
 - Advertiser flow: create campaign, upload creative, choose regions/languages/keywords, set bid/budget, submit for admin review.
 - Admin flow: approve/reject campaigns, pause campaigns, inspect spend/impressions/clicks, and moderate creative.
