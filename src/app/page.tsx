@@ -1329,7 +1329,7 @@ export default async function Home({
                       <CompactShareButton
                         text={`Check this 4U post on ${siteName}`}
                         title="TheTattooCore 4U post"
-                        url={`${siteUrl}/#feed-${post.id}`}
+                        url={`${siteUrl}/p/${post.id}`}
                       />
                     </div>
                     {isSignedIn ? (

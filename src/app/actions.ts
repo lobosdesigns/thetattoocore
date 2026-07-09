@@ -780,6 +780,7 @@ export async function togglePostLike(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const postId = cleanId(formData.get("post_id"));
   const liked = cleanText(formData.get("liked"), 8) === "true";
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
 
   if (!postId) {
     redirect(homeMessage("Choose a post first."));
@@ -813,7 +814,7 @@ export async function togglePostLike(formData: FormData) {
     await notifyContentOwner({
       actorId: userId,
       body: `${actorName} liked your feed post.`,
-      href: "/#feed",
+      href: `/p/${postId}`,
       ownerId: post?.author_id,
       subjectId: postId,
       subjectType: "feed_post",
@@ -824,7 +825,8 @@ export async function togglePostLike(formData: FormData) {
   }
 
   revalidatePath("/");
-  redirect("/#feed");
+  revalidatePath(returnPath);
+  redirect(returnPath);
 }
 
 export async function toggleSavedItem(formData: FormData) {
@@ -886,6 +888,7 @@ export async function createPostComment(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const body = cleanWords(formData.get("body"), 40);
   const postId = cleanId(formData.get("post_id"));
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
 
   if (!postId) {
     redirect(homeMessage("Choose a post first."));
@@ -917,7 +920,7 @@ export async function createPostComment(formData: FormData) {
   await notifyContentOwner({
     actorId: userId,
     body: `${actorName}: ${body}`,
-    href: "/#feed",
+    href: `/p/${postId}`,
     ownerId: post?.author_id,
     subjectId: postId,
     subjectType: "feed_post",
@@ -927,7 +930,8 @@ export async function createPostComment(formData: FormData) {
   });
 
   revalidatePath("/");
-  redirect("/#feed");
+  revalidatePath(returnPath);
+  redirect(returnPath);
 }
 
 export async function toggleThreadLike(formData: FormData) {
