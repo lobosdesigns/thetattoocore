@@ -333,6 +333,14 @@ export async function submitAdCampaign(formData: FormData) {
     redirect(accountPath("Use a valid http or https ad link."));
   }
 
+  if (countryCode && !countryCodes.has(countryCode)) {
+    redirect(accountPath("Choose a valid ad country."));
+  }
+
+  if (language && !languageCodes.has(language)) {
+    redirect(accountPath("Choose a valid ad language."));
+  }
+
   const { data: campaign, error: campaignError } = await supabase
     .from("ad_campaigns")
     .insert({

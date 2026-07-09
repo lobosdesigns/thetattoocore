@@ -31,8 +31,13 @@ const sections = [
   },
   {
     body:
-      "TheTattooCore stores coarse location settings such as city, region, and country code when you provide them. These settings can support marketplace discovery, gigs, events, and future sponsored placements. Precise browser geolocation should be requested separately before use.",
+      "TheTattooCore stores coarse location settings such as city, region, and country code when you provide them. These settings can support marketplace discovery, gigs, events, and future sponsored placements. Precise browser geolocation should be requested separately before use and should not be required for the basic social app.",
     title: "Location",
+  },
+  {
+    body:
+      "Language settings start as a manual account preference for page language signals, discovery context, and future translated UI. Post translation should preserve the original text and clearly show when provider-backed translation is added later.",
+    title: "Language And Translation",
   },
   {
     body:

@@ -5,6 +5,7 @@ import { submitAdCampaign, submitLicenseVerification } from "./actions";
 import { LicenseDocumentInput } from "./license-document-input";
 import { ProfileForm } from "./profile-form";
 import { PendingSubmitButton } from "../pending-submit-button";
+import { countryOptions, languageOptions } from "@/lib/localization";
 import { createClient } from "@/lib/supabase/server";
 import { verificationEligibleAccountTypes } from "@/lib/verification";
 
@@ -636,21 +637,33 @@ export default async function AccountPage({
                 </label>
                 <label className="block">
                   <span className="text-sm font-medium">Country</span>
-                  <input
+                  <select
                     className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm uppercase outline-none focus:border-[#171412]"
                     defaultValue={profile?.country_code ?? ""}
-                    maxLength={2}
                     name="country_code"
-                  />
+                  >
+                    <option value="">Any country</option>
+                    {countryOptions.map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
                 </label>
                 <label className="block">
                   <span className="text-sm font-medium">Language</span>
-                  <input
+                  <select
                     className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
                     defaultValue={profile?.preferred_language ?? ""}
-                    maxLength={8}
                     name="language"
-                  />
+                  >
+                    <option value="">Any language</option>
+                    {languageOptions.map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
                 </label>
               </div>
 

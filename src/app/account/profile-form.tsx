@@ -186,7 +186,8 @@ export function ProfileForm({
           <p className="mt-1 text-xs leading-5 text-[#766d62]">
             These settings power the page language signal, local discovery,
             future translated UI, and simple ad targeting by country, region,
-            city, and language.
+            city, and language. We use the location you type here, not precise
+            browser GPS.
           </p>
           <div className="mt-3 grid gap-2 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3 text-xs leading-5 text-[#4f473f] sm:grid-cols-3">
             <p>
@@ -195,11 +196,12 @@ export function ProfileForm({
             </p>
             <p>
               <span className="block font-semibold">Post translation</span>
-              Original text now; provider-backed translation later.
+              Original text now; manual language choice first, provider-backed
+              translation later.
             </p>
             <p>
               <span className="block font-semibold">Discovery</span>
-              Country and city help local Stuff, Gigs, and ads.
+              Country and city help local Stuff, Gigs, and clearly labeled ads.
             </p>
           </div>
         </div>
@@ -320,7 +322,8 @@ export function ProfileForm({
             </span>
             <span className="mt-1 block text-xs leading-5 text-[#766d62]">
               Uses your city, region, and country settings for marketplace,
-              local discovery, and future sponsored placements.
+              local discovery, and future sponsored placements. Precise device
+              location should be asked separately before it is ever used.
             </span>
           </span>
         </label>

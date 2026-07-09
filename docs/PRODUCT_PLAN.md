@@ -43,6 +43,7 @@
 
 - Add account-level language preference and country settings early.
 - Start with manual UI language selection, then add translated UI strings.
+- Expand launch country/language options conservatively while keeping manual selection simple and reversible.
 - Later add post-level translation using a provider-backed translation service, with original text preserved.
 - Avoid auto-translating tattoo terms blindly where context matters; show original text when requested.
 - Support country availability by feature where local law, payments, marketplace rules, or content rules require it.
@@ -97,6 +98,7 @@
 
 - Store user-selected city, region, country code, and language preference.
 - Ask before using precise browser geolocation.
+- Keep coarse typed location useful without making precise device GPS a requirement for the basic social app.
 - Use coarse location first for marketplace discovery, event/contest filtering, and ads.
 - Keep location personalization opt-in/out visible in account settings.
 
@@ -117,6 +119,7 @@
 
 - Build a simple internal ad rotator before any complex ad platform.
 - Targeting inputs: country, region, city, language, tattoo style keywords, marketplace category, and column placement.
+- Ad country and language targeting should use the same approved account option lists so advertisers do not submit invalid raw codes.
 - Buying model: fixed daily budget plus optional spot bidding for placements.
 - Placements: feed card, thread sidebar/card, marketplace card, and messages-safe non-invasive placement.
 - Artist/client-growth ads should run in 4U and Gossip only, with goals for leads, messages, and engagement.
