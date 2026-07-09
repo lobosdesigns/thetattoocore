@@ -1982,6 +1982,20 @@ export default async function AdminPage({
                   Review paid spots before they can run. Artist ads belong in
                   4U and Gossip; Stuff ads stay in Stuff.
                 </p>
+                <div className="mb-4 grid gap-2 sm:grid-cols-3">
+                  {[
+                    "Verify advertiser is an approved artist, studio, or vendor.",
+                    "Reject unsafe scratcher, unlicensed studio, or restricted equipment ads.",
+                    "Confirm targeting is coarse and the sponsor label will be clear.",
+                  ].map((rule) => (
+                    <p
+                      className="rounded-md border border-[#e5ded4] bg-white px-3 py-2 text-xs leading-5 text-[#4f473f]"
+                      key={rule}
+                    >
+                      {rule}
+                    </p>
+                  ))}
+                </div>
                 <QueueSummary
                   items={[
                     ["Pending", pendingAdCampaigns.length, "warning"],

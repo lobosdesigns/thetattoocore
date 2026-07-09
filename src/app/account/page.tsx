@@ -105,6 +105,12 @@ const advertisingStandards = [
   "Targeting stays simple: coarse location, language, style keywords, category, and chosen placement.",
 ] as const;
 
+const advertisingReviewRules = [
+  "No AI-generated tattoo art or misleading AI creator replacement claims.",
+  "No scratcher promotion, unlicensed studio promotion, or unsafe equipment sales.",
+  "No sensitive personal targeting, adult/minor targeting, or hidden behavioral profiling.",
+] as const;
+
 function dollars(cents: number) {
   return Intl.NumberFormat("en-US", {
     currency: "USD",
@@ -416,6 +422,16 @@ export default async function AccountPage({
                 </p>
               ))}
             </div>
+            <div className="mt-4 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3">
+              <p className="text-xs font-bold uppercase text-[#766d62]">
+                Review rules
+              </p>
+              <ul className="mt-2 grid gap-2 text-xs leading-5 text-[#4f473f]">
+                {advertisingReviewRules.map((rule) => (
+                  <li key={rule}>{rule}</li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           {adCampaigns?.length ? (
@@ -666,6 +682,12 @@ export default async function AccountPage({
                   </select>
                 </label>
               </div>
+
+              <p className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
+                Ads are reviewed before they run and appear with a sponsored
+                label. Targeting uses coarse location, language, selected
+                placement, and keywords only.
+              </p>
 
               <PendingSubmitButton
                 className="h-11 rounded-md bg-[#171412] px-5 text-sm font-semibold text-white"

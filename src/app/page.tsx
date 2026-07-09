@@ -229,6 +229,13 @@ function SponsoredSlot({
   const location = [campaign.city, campaign.region, campaign.country_code]
     .filter(Boolean)
     .join(", ");
+  const targetingSummary = [
+    location ? "local area" : null,
+    campaign.language ? languageLabel(campaign.language) : null,
+    campaign.keywords.length ? "style keywords" : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
   const content = (
     <article className="ttc-card rounded-md border border-[#c8953b]/60 bg-[#171412] p-4 text-white shadow-[0_16px_36px_rgba(0,0,0,0.22)]">
       <AdImpressionBeacon campaignId={campaign.id} placement={dbPlacement} />
@@ -252,6 +259,15 @@ function SponsoredSlot({
         <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold capitalize text-white/80">
           {campaign.goal.replaceAll("_", " ")}
         </span>
+        {campaign.campaign_type === "artist_growth" ? (
+          <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80">
+            Artist growth
+          </span>
+        ) : (
+          <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80">
+            Stuff listing
+          </span>
+        )}
         {campaign.matchLabels.map((label) => (
           <span
             className="rounded-md bg-[#c8953b]/20 px-2 py-1 text-xs font-semibold text-[#f8d28b]"
@@ -274,6 +290,10 @@ function SponsoredSlot({
           </span>
         ))}
       </div>
+      <p className="mt-3 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-xs leading-5 text-white/65">
+        Sponsored placement reviewed by TheTattooCore. Shown by placement
+        {targetingSummary ? ` and ${targetingSummary}` : ""}, not AI profiling.
+      </p>
       <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">

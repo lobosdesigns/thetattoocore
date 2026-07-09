@@ -128,6 +128,8 @@
 - Stuff ad goals should focus on listing views, seller messages from eligible users, and marketplace engagement.
 - Safety rules: no sensitive personal targeting, no hidden behavioral profiling, no adult/minor targeting, and clear sponsor labels.
 - Privacy language should also reject AI ad expansion, opaque lookalike-style automation, and confusing ad targeting that members cannot understand.
+- Sponsored cards should show clear ad labeling plus simple relevance context such as placement, coarse location, language, or keywords.
+- Admin review should explicitly reject AI tattoo art claims, unsafe scratcher promotion, unlicensed studio promotion, and restricted equipment ads.
 - Advertiser flow: create campaign, upload creative, choose regions/languages/keywords, set bid/budget, submit for admin review.
 - Admin flow: approve/reject campaigns, pause campaigns, inspect spend/impressions/clicks, and moderate creative.
 
