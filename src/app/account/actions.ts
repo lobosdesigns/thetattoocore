@@ -38,6 +38,14 @@ function cleanText(value: FormDataEntryValue | null, maxLength: number) {
     .slice(0, maxLength);
 }
 
+function isPastDate(value: string | null) {
+  if (!value) return false;
+
+  const date = new Date(`${value}T23:59:59`);
+
+  return Number.isFinite(date.getTime()) && date.getTime() < Date.now();
+}
+
 function cleanUrl(value: FormDataEntryValue | null) {
   const text = cleanText(value, 240);
 
@@ -193,6 +201,25 @@ export async function submitLicenseVerification(formData: FormData) {
 
   if (licenseName.length < 2 || issuingRegion.length < 2) {
     redirect(accountPath("License name and issuing region are required."));
+  }
+
+  if (isPastDate(expiresOn || null)) {
+    redirect(accountPath("Use a current, non-expired license document."));
+  }
+
+  const { data: pendingRequest, error: pendingError } = await supabase
+    .from("license_verification_requests")
+    .select("id")
+    .eq("profile_id", claims.sub)
+    .eq("status", "pending")
+    .maybeSingle<{ id: string }>();
+
+  if (pendingError) {
+    redirect(accountPath(pendingError.message || "Could not check verification status."));
+  }
+
+  if (pendingRequest) {
+    redirect(accountPath("A verification request is already waiting for review."));
   }
 
   if (!(file instanceof File) || file.size === 0) {

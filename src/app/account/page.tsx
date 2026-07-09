@@ -131,6 +131,25 @@ function adClickRate({
   return `${((clicks / impressions) * 100).toFixed(1)}%`;
 }
 
+function verificationStatusClass(status: "pending" | "approved" | "rejected") {
+  if (status === "approved") return "border-[#b9d7bd] bg-[#eef8ef] text-[#276231]";
+  if (status === "rejected") return "border-[#e5b8b8] bg-[#fff0f0] text-[#8a2828]";
+
+  return "border-[#e5c58f] bg-[#fff7ec] text-[#7a4a08]";
+}
+
+function formatDate(value: string | null) {
+  return value ? new Date(value).toLocaleDateString() : "Not provided";
+}
+
+function isExpiredDate(value: string | null) {
+  if (!value) return false;
+
+  const date = new Date(`${value}T23:59:59`);
+
+  return Number.isFinite(date.getTime()) && date.getTime() < Date.now();
+}
+
 export default async function AccountPage({
   searchParams,
 }: {
@@ -156,17 +175,21 @@ export default async function AccountPage({
   const role = profile?.role as string | undefined;
   const { data: verificationRequests } = await supabase
     .from("license_verification_requests")
-    .select("id, license_name, issuing_region, status, created_at, reviewed_at")
+    .select(
+      "id, license_name, issuing_region, expires_on, status, reviewer_note, created_at, reviewed_at",
+    )
     .eq("profile_id", claims.sub)
     .order("created_at", { ascending: false })
     .limit(3)
     .returns<
       {
         created_at: string;
+        expires_on: string | null;
         id: string;
         issuing_region: string;
         license_name: string;
         reviewed_at: string | null;
+        reviewer_note: string | null;
         status: "pending" | "approved" | "rejected";
       }[]
     >();
@@ -197,6 +220,11 @@ export default async function AccountPage({
     profile?.account_type &&
     verificationEligibleAccountTypes.includes(profile.account_type as string);
   const isLicenseVerified = Boolean(profile?.license_verified_at);
+  const latestVerificationRequest = verificationRequests?.[0] ?? null;
+  const hasPendingVerification = Boolean(
+    verificationRequests?.some((request) => request.status === "pending"),
+  );
+  const canUploadVerification = !isLicenseVerified && !hasPendingVerification;
   const canSubmitAds =
     canSubmitLicense && isLicenseVerified && !profile?.suspended_at && !profile?.banned_at;
   const isFirstProfile = !profile;
@@ -294,20 +322,56 @@ export default async function AccountPage({
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="font-semibold">{request.license_name}</p>
-                      <span className="rounded-md bg-white px-2 py-1 text-xs font-semibold capitalize">
+                      <span
+                        className={`rounded-md border px-2 py-1 text-xs font-semibold capitalize ${verificationStatusClass(
+                          request.status,
+                        )}`}
+                      >
                         {request.status}
                       </span>
                     </div>
                     <p className="mt-1 text-xs text-[#766d62]">
                       {request.issuing_region} - Submitted{" "}
-                      {new Date(request.created_at).toLocaleDateString()}
+                      {formatDate(request.created_at)}
                     </p>
+                    <p className="mt-1 text-xs text-[#766d62]">
+                      Expires {formatDate(request.expires_on)}
+                      {isExpiredDate(request.expires_on) ? " - expired" : ""}
+                      {request.reviewed_at
+                        ? ` - Reviewed ${formatDate(request.reviewed_at)}`
+                        : ""}
+                    </p>
+                    {request.status === "pending" ? (
+                      <p className="mt-2 rounded-md border border-[#e5c58f] bg-[#fff7ec] px-3 py-2 text-xs leading-5 text-[#7a4a08]">
+                        This request is waiting for admin review. New uploads
+                        open again if it is rejected.
+                      </p>
+                    ) : null}
+                    {request.status === "rejected" && request.reviewer_note ? (
+                      <p className="mt-2 rounded-md border border-[#e5b8b8] bg-[#fff0f0] px-3 py-2 text-xs leading-5 text-[#8a2828]">
+                        Admin note: {request.reviewer_note}
+                      </p>
+                    ) : null}
                   </div>
                 ))}
               </div>
             ) : null}
 
+            {!canUploadVerification ? (
+              <div className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-3 py-2 text-sm leading-6 text-[#4f473f]">
+                {isLicenseVerified
+                  ? "Your verification is active. Keep a current license or business document ready for renewal when we add renewal reminders."
+                  : "Your latest request is pending review. You can submit updated proof if an admin rejects it."}
+              </div>
+            ) : null}
+
+            {canUploadVerification ? (
             <form action={submitLicenseVerification} className="grid gap-4">
+              {latestVerificationRequest?.status === "rejected" ? (
+                <p className="rounded-md border border-[#e5ded4] bg-[#fffdf9] px-3 py-2 text-sm leading-6 text-[#4f473f]">
+                  Submit updated proof after fixing the last rejection note.
+                </p>
+              ) : null}
               <label className="block">
                 <span className="text-sm font-medium">
                   License or certification name <span className="text-[#a3432f]">*</span>
@@ -377,6 +441,7 @@ export default async function AccountPage({
                 Submit for review
               </PendingSubmitButton>
             </form>
+            ) : null}
           </section>
         ) : (
           <section
