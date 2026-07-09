@@ -1156,8 +1156,9 @@ export default async function ProfilePage({
             <div className="space-y-3">
               {visibleListings.length ? (
                 visibleListings.map((listing) => (
-                  <article
-                    className="rounded-md border border-[#d8d1c6] bg-white p-4"
+                  <Link
+                    className="block rounded-md border border-[#d8d1c6] bg-white p-4 transition hover:border-[#171412] hover:shadow-sm"
+                    href={`/stuff/${listing.id}`}
                     key={listing.id}
                   >
                     <div className="flex gap-3">
@@ -1196,20 +1197,20 @@ export default async function ProfilePage({
                         </p>
                       </div>
                     </div>
-                  </article>
+                  </Link>
                 ))
               ) : (
                 <ProfileEmptyState
-                  actionHref={isOwnProfile ? "/#gigs" : undefined}
-                  actionLabel={isOwnProfile ? "Post a Gig" : undefined}
+                  actionHref={isOwnProfile ? "/#marketplace" : undefined}
+                  actionLabel={isOwnProfile ? "List Stuff" : undefined}
                   body={
                     isOwnProfile
-                      ? "Post open chairs, guest spots, convention plans, apprenticeships, jobs, and event calls."
-                      : "Open jobs, guest spots, conventions, and event calls from this profile will appear here."
+                      ? "List flash, supplies, studio gear, chair rentals, machines, furniture, or services."
+                      : "Marketplace listings from this profile will appear here when they have active Stuff."
                   }
-                  icon={BriefcaseBusiness}
-                  tips={["Guest spots", "Conventions", "Jobs"]}
-                  title="No active gigs yet"
+                  icon={ShoppingBag}
+                  tips={["Flash", "Supplies", "Studio gear"]}
+                  title="No active listings yet"
                 />
               )}
             </div>
@@ -1295,16 +1296,16 @@ export default async function ProfilePage({
                 ))
               ) : (
                 <ProfileEmptyState
-                  actionHref={isOwnProfile ? "/#marketplace" : undefined}
-                  actionLabel={isOwnProfile ? "List Stuff" : undefined}
+                  actionHref={isOwnProfile ? "/#gigs" : undefined}
+                  actionLabel={isOwnProfile ? "Post a Gig" : undefined}
                   body={
                     isOwnProfile
-                      ? "List flash, supplies, studio gear, chair rentals, machines, furniture, or services."
-                      : "Marketplace listings from this profile will appear here when they have active Stuff."
+                      ? "Post open chairs, guest spots, convention plans, apprenticeships, jobs, and event calls."
+                      : "Open jobs, guest spots, conventions, and event calls from this profile will appear here."
                   }
-                  icon={ShoppingBag}
-                  tips={["Flash", "Supplies", "Studio gear"]}
-                  title="No active listings yet"
+                  icon={BriefcaseBusiness}
+                  tips={["Guest spots", "Conventions", "Jobs"]}
+                  title="No active gigs yet"
                 />
               )}
             </div>
