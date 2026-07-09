@@ -24,7 +24,6 @@ import {
   createContentReport,
   createPostComment,
   createThreadComment,
-  toggleSavedItem,
   togglePostLike,
   toggleThreadLike,
 } from "./actions";
@@ -34,6 +33,7 @@ import { FloatingComposer } from "./floating-composer";
 import { LogoLockup, LogoWordmark } from "./logo-mark";
 import { NotificationBellLink } from "./notification-bell-link";
 import { PendingSubmitButton } from "./pending-submit-button";
+import { SavedItemButton } from "./saved-item-button";
 import { CompactShareButton } from "./share-actions";
 import { WordLimitedField } from "./word-limited-field";
 import { siteName, siteUrl } from "@/lib/site";
@@ -399,41 +399,6 @@ function ReportForm({
           Report
         </button>
       </div>
-    </form>
-  );
-}
-
-function SaveButton({
-  className = "flex items-center gap-2 text-sm font-medium",
-  hash,
-  isSaved,
-  subjectId,
-  subjectType,
-}: {
-  className?: string;
-  hash: "feed" | "gigs" | "marketplace" | "threads";
-  isSaved: boolean;
-  subjectId: string;
-  subjectType: SavedItem["subject_type"];
-}) {
-  return (
-    <form action={toggleSavedItem}>
-      <input name="subject_id" type="hidden" value={subjectId} />
-      <input name="subject_type" type="hidden" value={subjectType} />
-      <input name="saved" type="hidden" value={isSaved ? "true" : "false"} />
-      <input name="return_path" type="hidden" value="/" />
-      <input name="return_hash" type="hidden" value={hash} />
-      <button
-        aria-label={isSaved ? "Remove from saved" : "Save"}
-        className={className}
-      >
-        <Bookmark
-          className={`size-5 ${
-            isSaved ? "fill-[#171412] text-[#171412]" : ""
-          }`}
-        />
-        {isSaved ? "Saved" : "Save"}
-      </button>
     </form>
   );
 }
@@ -947,9 +912,10 @@ export default async function Home({
                           {post.post_comments.length}
                         </a>
                         {isSignedIn ? (
-                          <SaveButton
+                          <SavedItemButton
                             hash="feed"
                             isSaved={savedItemKeys.has(`feed_post:${post.id}`)}
+                            returnPath="/"
                             subjectId={post.id}
                             subjectType="feed_post"
                           />
@@ -1119,11 +1085,12 @@ export default async function Home({
                             {thread.thread_comments.length}
                           </a>
                           {isSignedIn ? (
-                            <SaveButton
+                            <SavedItemButton
                               hash="threads"
                               isSaved={savedItemKeys.has(
                                 `thread_post:${thread.id}`,
                               )}
+                              returnPath="/"
                               subjectId={thread.id}
                               subjectType="thread_post"
                             />
@@ -1286,12 +1253,13 @@ export default async function Home({
                       ) : null}
                       <div className="mt-4 grid gap-2">
                         {isSignedIn ? (
-                          <SaveButton
+                          <SavedItemButton
                             className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
                             hash="marketplace"
                             isSaved={savedItemKeys.has(
                               `marketplace_listing:${listing.id}`,
                             )}
+                            returnPath="/"
                             subjectId={listing.id}
                             subjectType="marketplace_listing"
                           />
@@ -1465,10 +1433,11 @@ export default async function Home({
                       ) : null}
                       <div className="mt-4 grid gap-2">
                         {isSignedIn ? (
-                          <SaveButton
+                          <SavedItemButton
                             className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
                             hash="gigs"
                             isSaved={savedItemKeys.has(`gig:${gig.id}`)}
+                            returnPath="/"
                             subjectId={gig.id}
                             subjectType="gig"
                           />

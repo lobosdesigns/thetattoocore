@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { acceptAdultTerms, archiveGig, createContentReport } from "@/app/actions";
 import { NotificationBellLink } from "@/app/notification-bell-link";
+import { SavedItemButton } from "@/app/saved-item-button";
 import { createClient } from "@/lib/supabase/server";
 import { siteName, siteUrl } from "@/lib/site";
 import {
@@ -668,6 +669,7 @@ export default async function ProfilePage({
     { data: threads },
     { data: listings },
     { data: gigs },
+    { data: savedProfile },
   ] = await Promise.all([
     supabase
       .from("follows")
@@ -759,6 +761,15 @@ export default async function ProfilePage({
       })
       .limit(6)
       .returns<Gig[]>(),
+    claims?.sub && claims.sub !== profile.id
+      ? supabase
+          .from("saved_items")
+          .select("subject_id")
+          .eq("user_id", claims.sub)
+          .eq("subject_type", "profile")
+          .eq("subject_id", profile.id)
+          .maybeSingle<{ subject_id: string }>()
+      : Promise.resolve({ data: null }),
   ]);
 
   const isOwnProfile = claims?.sub === profile.id;
@@ -966,6 +977,15 @@ export default async function ProfilePage({
                     <Send className="size-4" />
                     DM
                   </Link>
+                ) : null}
+                {!isOwnProfile && claims?.sub ? (
+                  <SavedItemButton
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                    isSaved={Boolean(savedProfile)}
+                    returnPath={`/u/${profile.username}`}
+                    subjectId={profile.id}
+                    subjectType="profile"
+                  />
                 ) : null}
                 {!isOwnProfile && claims?.sub ? (
                   <ProfileReportForm

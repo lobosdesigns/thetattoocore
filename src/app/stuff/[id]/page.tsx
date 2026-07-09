@@ -15,6 +15,7 @@ import {
 import { acceptAdultTerms } from "@/app/actions";
 import { ContentReportForm } from "@/app/content-report-form";
 import { NotificationBellLink } from "@/app/notification-bell-link";
+import { SavedItemButton } from "@/app/saved-item-button";
 import { ShareActions } from "@/app/share-actions";
 import { startConversation } from "@/app/messages/actions";
 import { createClient } from "@/lib/supabase/server";
@@ -183,6 +184,16 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
     notFound();
   }
 
+  const { data: savedItem } =
+    claims?.sub
+      ? await supabase
+          .from("saved_items")
+          .select("subject_id")
+          .eq("user_id", claims.sub)
+          .eq("subject_type", "marketplace_listing")
+          .eq("subject_id", listing.id)
+          .maybeSingle<{ subject_id: string }>()
+      : { data: null };
   const isOwnListing = claims?.sub === listing.profiles?.id;
   const media = listing.marketplace_media[0];
 
@@ -389,6 +400,16 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
                 Check details, location, and terms before buying.
               </p>
             </section>
+
+            {claims?.sub ? (
+              <SavedItemButton
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                isSaved={Boolean(savedItem)}
+                returnPath={`/stuff/${listing.id}`}
+                subjectId={listing.id}
+                subjectType="marketplace_listing"
+              />
+            ) : null}
 
             <ShareActions
               text={`Check this Stuff listing on ${siteName}: ${listing.title}`}
