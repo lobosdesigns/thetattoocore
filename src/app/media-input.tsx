@@ -200,6 +200,13 @@ export function MediaInput({
   }
 
   const isVideo = selected?.mediaType === "video";
+  const guidance = videoAllowed
+    ? `Images auto-optimize before upload. Videos can be ${formatSeconds(
+        maxVideoSeconds,
+      )} max and ${formatBytes(maxVideoBytes)}.`
+    : `Images auto-optimize before upload. Max image size after optimization is ${formatBytes(
+        maxImageBytes,
+      )}.`;
 
   return (
     <div className="space-y-2">
@@ -211,6 +218,7 @@ export function MediaInput({
         required={required}
         type="file"
       />
+      <p className="text-xs leading-5 text-[#766d62]">{guidance}</p>
       {isOptimizing && !selected ? (
         <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3 text-xs font-semibold text-[#766d62]">
           Optimizing image before upload...
