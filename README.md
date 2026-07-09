@@ -23,6 +23,8 @@ creative work.
   and Gossip with goals for leads, messages, and engagement. Stuff ads belong
   only in Stuff, focused on listing views, eligible seller messages, and
   marketplace engagement.
+- Photos, reels, videos, listing media, gig media, and DM attachments should
+  open in a focused lightbox so people can zoom in and inspect body-art detail.
 - Stories are planned for later, after the core feed, Gossip, Stuff, Gigs, and
   DMs are stable.
 - TheTattooCore supports freedom of body-art expression when content follows

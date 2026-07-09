@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { MediaLightbox } from "@/app/media-lightbox";
 import { createClient } from "@/lib/supabase/client";
 
 type Profile = {
@@ -115,13 +116,19 @@ export function MessageThread({
                 <div className="mb-3 grid gap-2">
                   {message.attachments.map((attachment) =>
                     attachment.signedUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <MediaLightbox
                         alt={attachment.original_filename ?? "DM attachment"}
-                        className="max-h-80 w-full rounded-md object-cover"
                         key={attachment.id}
+                        mediaType="image"
                         src={attachment.signedUrl}
-                      />
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          alt={attachment.original_filename ?? "DM attachment"}
+                          className="max-h-80 w-full rounded-md object-cover"
+                          src={attachment.signedUrl}
+                        />
+                      </MediaLightbox>
                     ) : (
                       <div
                         className={`rounded-md border px-3 py-2 text-xs ${

@@ -24,6 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { acceptAdultTerms, archiveGig, createContentReport } from "@/app/actions";
+import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { createClient } from "@/lib/supabase/server";
@@ -676,28 +677,36 @@ function ProfileEmptyState({
 
 function PostPreview({ post }: { post: FeedPost }) {
   const media = post.feed_media[0];
+  const mediaSrc = media
+    ? mediaUrl(media.storage_bucket, media.storage_path)
+    : null;
 
   return (
     <article className="rounded-md border border-[#d8d1c6] bg-white">
       {media ? (
         media.media_type === "video" ? (
-          <video
-            className="aspect-[4/5] w-full rounded-t-md bg-[#171412] object-cover"
-            controls
-            playsInline
-            preload="metadata"
-            src={mediaUrl(media.storage_bucket, media.storage_path)}
-          />
+          <MediaLightbox mediaType="video" src={mediaSrc ?? ""}>
+            <video
+              className="aspect-[4/5] w-full rounded-t-md bg-[#171412] object-cover"
+              controls
+              playsInline
+              preload="metadata"
+              src={mediaSrc ?? undefined}
+            />
+          </MediaLightbox>
         ) : (
-          <div
-            className="aspect-[4/5] rounded-t-md bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${mediaUrl(
-                media.storage_bucket,
-                media.storage_path,
-              )})`,
-            }}
-          />
+          <MediaLightbox
+            alt={post.caption ?? "Profile post media"}
+            mediaType="image"
+            src={mediaSrc ?? ""}
+          >
+            <div
+              className="aspect-[4/5] rounded-t-md bg-cover bg-center"
+              style={{
+                backgroundImage: `url(${mediaSrc})`,
+              }}
+            />
+          </MediaLightbox>
         )
       ) : (
         <div className="flex aspect-[4/5] items-center justify-center rounded-t-md bg-[#171412] text-white">

@@ -34,6 +34,7 @@ import { ColumnTabs } from "./column-tabs";
 import { startConversation } from "./messages/actions";
 import { FloatingComposer } from "./floating-composer";
 import { LogoLockup, LogoWordmark } from "./logo-mark";
+import { MediaLightbox } from "./media-lightbox";
 import { NotificationBellLink } from "./notification-bell-link";
 import { PendingSubmitButton } from "./pending-submit-button";
 import { SavedItemButton } from "./saved-item-button";
@@ -556,21 +557,25 @@ function MediaFrame({ media }: { media?: PostMedia }) {
 
   if (media.media_type === "video") {
     return (
-      <video
-        className="aspect-[4/5] w-full bg-[#171412] object-cover"
-        controls
-        playsInline
-        preload="metadata"
-        src={src}
-      />
+      <MediaLightbox mediaType="video" src={src}>
+        <video
+          className="aspect-[4/5] w-full bg-[#171412] object-cover"
+          controls
+          playsInline
+          preload="metadata"
+          src={src}
+        />
+      </MediaLightbox>
     );
   }
 
   return (
-    <div
-      className="aspect-[4/5] bg-cover bg-center"
-      style={{ backgroundImage: `url(${src})` }}
-    />
+    <MediaLightbox alt="4U post media" mediaType="image" src={src}>
+      <div
+        className="aspect-[4/5] bg-cover bg-center"
+        style={{ backgroundImage: `url(${src})` }}
+      />
+    </MediaLightbox>
   );
 }
 
@@ -585,32 +590,45 @@ function ListingThumb({ media }: { media?: ListingMedia }) {
 
   if (media.media_type === "video") {
     return (
-      <div className="flex size-11 items-center justify-center rounded-md bg-[#171412] text-white">
-        <Video className="size-5" />
-      </div>
+      <MediaLightbox
+        mediaType="video"
+        src={mediaUrl(media.storage_bucket, media.storage_path)}
+      >
+        <div className="flex size-11 items-center justify-center rounded-md bg-[#171412] text-white">
+          <Video className="size-5" />
+        </div>
+      </MediaLightbox>
     );
   }
 
+  const src = mediaUrl(media.storage_bucket, media.storage_path);
+
   return (
-    <div
-      className="size-11 rounded-md bg-cover bg-center"
-      style={{
-        backgroundImage: `url(${mediaUrl(media.storage_bucket, media.storage_path)})`,
-      }}
-    />
+    <MediaLightbox alt="Listing media" mediaType="image" src={src}>
+      <div
+        className="size-11 rounded-md bg-cover bg-center"
+        style={{
+          backgroundImage: `url(${src})`,
+        }}
+      />
+    </MediaLightbox>
   );
 }
 
 function ThreadImage({ media }: { media?: ThreadMedia }) {
   if (!media) return null;
 
+  const src = mediaUrl(media.storage_bucket, media.storage_path);
+
   return (
-    <div
-      className="mt-3 aspect-[16/10] rounded-md border border-[#e5ded4] bg-cover bg-center"
-      style={{
-        backgroundImage: `url(${mediaUrl(media.storage_bucket, media.storage_path)})`,
-      }}
-    />
+    <MediaLightbox alt="Gossip thread media" mediaType="image" src={src}>
+      <div
+        className="mt-3 aspect-[16/10] rounded-md border border-[#e5ded4] bg-cover bg-center"
+        style={{
+          backgroundImage: `url(${src})`,
+        }}
+      />
+    </MediaLightbox>
   );
 }
 

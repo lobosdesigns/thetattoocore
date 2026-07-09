@@ -11,6 +11,7 @@
 - Reporting: report controls should look like a small intentional action, then open a separate report card or dropdown so users do not confuse it with normal post options.
 - Mobile report menus must stay inside the viewport; three-dot report cards in 4U, Gossip, Stuff, Gigs, and profiles should not open off-screen on narrow browsers.
 - Comments and DMs: add richer expression over time, including emoji, GIFs, photo attachments, and simple media attachments in direct messages.
+- Photos, feed media, reels, listing media, gig media, and DM attachments should be tappable/clickable and open in an Instagram-style lightbox with zoom for images and focused playback for videos.
 - Stories: add temporary story posts later for artists, studios, vendors, events, and community moments after the core feed, Gossip, Stuff, Gigs, and DMs are stable.
 
 ## Platform Stance
@@ -99,6 +100,7 @@
 - Keep generous but real upload limits to prevent runaway storage, bandwidth, moderation, and abuse costs.
 - Start with image compression to Web-friendly JPEG/WebP dimensions, around 1600-2200px max edge for feed media and smaller generated previews where needed.
 - Preserve enough image quality for tattoo detail while avoiding full-resolution camera originals in normal feed delivery.
+- Normal feeds can use optimized display media, while the lightbox should preserve enough detail for users to inspect linework, healed texture, placement, and product condition.
 - Keep original-file storage optional for later verified artists or paid creator tools, not as the default MVP path.
 - Start video with short 1-minute reel limits and clear file-size caps.
 - Treat Cloudflare Stream as the preferred production video route once usage grows, because it handles encoding, adaptive playback, thumbnails, and delivery better than raw Storage video.

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { acceptAdultTerms } from "@/app/actions";
 import { ContentReportForm } from "@/app/content-report-form";
+import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { ShareActions } from "@/app/share-actions";
@@ -275,6 +276,9 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
     : { data: null };
   const isOwnGig = claims?.sub === gig.profiles?.id;
   const media = gig.gig_media[0];
+  const mediaSrc = media
+    ? mediaUrl(media.storage_bucket, media.storage_path)
+    : null;
   const showSensitiveMedia = canViewSensitiveMedia({
     isSensitive: gig.is_sensitive,
     profile: currentProfile,
@@ -315,24 +319,43 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
             <div className="relative overflow-hidden rounded-md border border-[#3a332d] bg-[#171412] shadow-[0_12px_30px_rgba(23,20,18,0.22)]">
               {media ? (
                 media.media_type === "video" ? (
-                  <video
-                    className={`aspect-[4/3] w-full bg-[#171412] object-contain ${
-                      showSensitiveMedia ? "" : "scale-[1.02] blur-xl"
-                    }`}
-                    controls
-                    playsInline
-                    preload="metadata"
-                    src={mediaUrl(media.storage_bucket, media.storage_path)}
-                  />
+                  showSensitiveMedia && mediaSrc ? (
+                    <MediaLightbox mediaType="video" src={mediaSrc}>
+                      <video
+                        className="aspect-[4/3] w-full bg-[#171412] object-contain"
+                        controls
+                        playsInline
+                        preload="metadata"
+                        src={mediaSrc}
+                      />
+                    </MediaLightbox>
+                  ) : (
+                    <video
+                      className="aspect-[4/3] w-full scale-[1.02] bg-[#171412] object-contain blur-xl"
+                      controls
+                      playsInline
+                      preload="metadata"
+                      src={mediaSrc ?? undefined}
+                    />
+                  )
                 ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    alt=""
-                    className={`aspect-[4/3] w-full bg-[#171412] object-contain ${
-                      showSensitiveMedia ? "" : "scale-[1.02] blur-xl"
-                    }`}
-                    src={mediaUrl(media.storage_bucket, media.storage_path)}
-                  />
+                  showSensitiveMedia && mediaSrc ? (
+                    <MediaLightbox alt={gig.title} mediaType="image" src={mediaSrc}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        alt=""
+                        className="aspect-[4/3] w-full bg-[#171412] object-contain"
+                        src={mediaSrc}
+                      />
+                    </MediaLightbox>
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      alt=""
+                      className="aspect-[4/3] w-full scale-[1.02] bg-[#171412] object-contain blur-xl"
+                      src={mediaSrc ?? undefined}
+                    />
+                  )
                 )
               ) : (
                 <div className="flex aspect-[4/3] items-center justify-center text-white">

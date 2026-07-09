@@ -1,0 +1,137 @@
+"use client";
+
+import { type KeyboardEvent, type ReactNode, useEffect, useState } from "react";
+import { Maximize2, Minus, Plus, X } from "lucide-react";
+
+type MediaLightboxProps = {
+  alt?: string;
+  children: ReactNode;
+  mediaType: "image" | "video";
+  src: string;
+};
+
+export function MediaLightbox({
+  alt = "",
+  children,
+  mediaType,
+  src,
+}: MediaLightboxProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [zoom, setZoom] = useState(1);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") setIsOpen(false);
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  function openFromKeyboard(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      setIsOpen(true);
+    }
+  }
+
+  return (
+    <>
+      <div
+        aria-label="Open media viewer"
+        className="group relative cursor-zoom-in"
+        onClick={() => setIsOpen(true)}
+        onKeyDown={openFromKeyboard}
+        role="button"
+        tabIndex={0}
+      >
+        {children}
+        <span className="pointer-events-none absolute right-3 top-3 flex size-9 items-center justify-center rounded-md bg-[#171412]/80 text-white opacity-0 shadow-lg transition group-hover:opacity-100 group-focus-visible:opacity-100">
+          <Maximize2 className="size-4" />
+        </span>
+      </div>
+
+      {isOpen ? (
+        <div
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex flex-col bg-[#070605]/95 text-white"
+          role="dialog"
+        >
+          <div className="flex items-center justify-between gap-3 border-b border-white/10 px-3 py-2">
+            <div className="text-xs font-bold uppercase tracking-[0.22em] text-white/70">
+              Media viewer
+            </div>
+            <div className="flex items-center gap-2">
+              {mediaType === "image" ? (
+                <>
+                  <button
+                    aria-label="Zoom out"
+                    className="flex size-10 items-center justify-center rounded-md border border-white/15 bg-white/10"
+                    onClick={() => setZoom((value) => Math.max(1, value - 0.25))}
+                    type="button"
+                  >
+                    <Minus className="size-4" />
+                  </button>
+                  <button
+                    aria-label="Zoom in"
+                    className="flex size-10 items-center justify-center rounded-md border border-white/15 bg-white/10"
+                    onClick={() => setZoom((value) => Math.min(3, value + 0.25))}
+                    type="button"
+                  >
+                    <Plus className="size-4" />
+                  </button>
+                </>
+              ) : null}
+              <button
+                aria-label="Close media viewer"
+                className="flex size-10 items-center justify-center rounded-md bg-white text-[#171412]"
+                onClick={() => {
+                  setIsOpen(false);
+                  setZoom(1);
+                }}
+                type="button"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+          </div>
+
+          <div
+            className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-3"
+            onClick={() => {
+              setIsOpen(false);
+              setZoom(1);
+            }}
+          >
+            {mediaType === "video" ? (
+              <video
+                className="max-h-full max-w-full bg-black"
+                controls
+                onClick={(event) => event.stopPropagation()}
+                playsInline
+                preload="metadata"
+                src={src}
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                alt={alt}
+                className="max-h-full max-w-full select-none object-contain transition-transform"
+                onClick={(event) => event.stopPropagation()}
+                src={src}
+                style={{ transform: `scale(${zoom})` }}
+              />
+            )}
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+}
