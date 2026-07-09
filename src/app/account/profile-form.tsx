@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { updateProfile } from "./actions";
 import { PendingSubmitButton } from "../pending-submit-button";
+import { countryOptions, languageLabel, languageOptions } from "@/lib/localization";
 
 type Claims = {
   email?: string;
@@ -33,33 +34,6 @@ const accountTypes = [
   ["artist", "Artist"],
   ["studio", "Studio"],
   ["vendor", "Vendor"],
-] as const;
-
-const languageOptions = [
-  ["en", "English"],
-  ["es", "Spanish"],
-  ["pt", "Portuguese"],
-  ["fr", "French"],
-  ["de", "German"],
-  ["it", "Italian"],
-  ["ja", "Japanese"],
-  ["ko", "Korean"],
-  ["zh", "Chinese"],
-] as const;
-
-const countryOptions = [
-  ["US", "United States"],
-  ["CA", "Canada"],
-  ["MX", "Mexico"],
-  ["BR", "Brazil"],
-  ["GB", "United Kingdom"],
-  ["FR", "France"],
-  ["DE", "Germany"],
-  ["IT", "Italy"],
-  ["ES", "Spain"],
-  ["JP", "Japan"],
-  ["KR", "South Korea"],
-  ["AU", "Australia"],
 ] as const;
 
 const notificationOptions = [
@@ -213,6 +187,20 @@ export function ProfileForm({
             These settings power local discovery, future translated UI, and
             simple ad targeting by country, region, city, and language.
           </p>
+          <div className="mt-3 grid gap-2 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3 text-xs leading-5 text-[#4f473f] sm:grid-cols-3">
+            <p>
+              <span className="block font-semibold">UI language</span>
+              {languageLabel(initialProfile?.preferred_language ?? "en")}
+            </p>
+            <p>
+              <span className="block font-semibold">Post translation</span>
+              Manual language choice now, translated post text later.
+            </p>
+            <p>
+              <span className="block font-semibold">Discovery</span>
+              Country and city help local Stuff, Gigs, and ads.
+            </p>
+          </div>
         </div>
 
         <label className="block">

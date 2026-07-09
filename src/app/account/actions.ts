@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { countryCodes, languageCodes } from "@/lib/localization";
 import { createClient } from "@/lib/supabase/server";
 
 const LICENSE_BUCKET = "license-documents";
@@ -18,21 +19,6 @@ type Claims = {
 };
 
 const accountTypes = new Set(["artist", "enthusiast", "studio", "supplier", "vendor"]);
-const languages = new Set(["en", "es", "pt", "fr", "de", "it", "ja", "ko", "zh"]);
-const countryCodes = new Set([
-  "US",
-  "CA",
-  "MX",
-  "BR",
-  "GB",
-  "FR",
-  "DE",
-  "IT",
-  "ES",
-  "JP",
-  "KR",
-  "AU",
-]);
 const adCampaignTypes = new Set(["artist_growth", "stuff_listing"]);
 const artistGrowthGoals = new Set(["leads", "messages", "engagement"]);
 const stuffListingGoals = new Set([
@@ -118,7 +104,7 @@ export async function updateProfile(formData: FormData) {
     redirect(accountPath("Choose a valid country."));
   }
 
-  if (!languages.has(preferredLanguage)) {
+  if (!languageCodes.has(preferredLanguage)) {
     redirect(accountPath("Choose a valid language."));
   }
 

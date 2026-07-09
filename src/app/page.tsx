@@ -738,6 +738,45 @@ function PublicVisitorGate({ lockedCount }: { lockedCount: number }) {
   );
 }
 
+function StoriesRail() {
+  const items = [
+    ["Artists", ImageIcon],
+    ["Studios", HomeIcon],
+    ["Vendors", ShoppingBag],
+    ["Events", CalendarDays],
+  ] as const;
+
+  return (
+    <section
+      aria-label="Stories"
+      className="border-b border-[#d8d1c6] bg-[#fffdf9] px-4 py-3"
+    >
+      <div className="no-scrollbar flex gap-3 overflow-x-auto">
+        <div className="flex h-16 min-w-20 flex-col items-center justify-center rounded-md border border-dashed border-[#c8953b] bg-[#fff7ec] px-3 text-center">
+          <Sparkles className="size-4 text-[#c8953b]" />
+          <span className="mt-1 text-[11px] font-bold text-[#4f473f]">
+            Stories
+          </span>
+        </div>
+        {items.map(([label, Icon]) => (
+          <div
+            className="flex h-16 min-w-20 flex-col items-center justify-center rounded-md border border-[#e5ded4] bg-white px-3 text-center"
+            key={label}
+          >
+            <Icon className="size-4 text-[#766d62]" />
+            <span className="mt-1 text-[11px] font-semibold text-[#4f473f]">
+              {label}
+            </span>
+            <span className="text-[10px] font-semibold uppercase text-[#766d62]">
+              Soon
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function ProfileSetupGate() {
   return (
     <section className="border-b border-[#cfc8bd] bg-[#e8e4dc] px-4 py-4">
@@ -1018,7 +1057,7 @@ export default async function Home({
           </div>
         </aside>
 
-        <section className="border-x border-[#cfc8bd] bg-[#f2f1ee] pb-24 lg:pb-0">
+        <section className="border-x border-[#cfc8bd] bg-[#f2f1ee] pb-52 lg:pb-0">
           <header className="sticky top-0 z-10 border-b border-[#d8d1c6] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center">
@@ -1056,6 +1095,8 @@ export default async function Home({
           {isSignedIn && !currentProfile ? <ProfileSetupGate /> : null}
 
           {currentProfile && !viewer.isAdultConfirmed ? <AdultTermsGate /> : null}
+
+          <StoriesRail />
 
           <div className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto scroll-smooth">
           <section
@@ -1194,7 +1235,7 @@ export default async function Home({
                     {canCreate ? (
                       <form
                         action={createPostComment}
-                        className="border-t border-[#e5ded4] pt-3"
+                        className="border-t border-[#e5ded4] pb-24 pt-3 sm:pb-3"
                         id={`comment-${post.id}`}
                       >
                         <input name="post_id" type="hidden" value={post.id} />
@@ -1378,7 +1419,7 @@ export default async function Home({
                       {canCreate ? (
                         <form
                           action={createThreadComment}
-                          className="mt-3"
+                          className="mt-3 pb-24 sm:pb-0"
                           id={`thread-comment-${thread.id}`}
                         >
                           <input
