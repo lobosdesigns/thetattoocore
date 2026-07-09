@@ -122,7 +122,7 @@ export function FloatingComposerShell({
     <>
       <button
         aria-label={`Create ${active.label}`}
-        className="fixed bottom-5 right-5 z-30 flex h-14 max-w-[calc(100vw-2.5rem)] items-center gap-2 rounded-md bg-[#171412] px-3 text-white shadow-[0_12px_30px_rgba(23,20,18,0.28)] transition hover:scale-105 focus:outline-none focus:ring-4 focus:ring-[#c8953b]/30"
+        className="fixed bottom-24 right-5 z-30 flex h-14 max-w-[calc(100vw-2.5rem)] items-center gap-2 rounded-md bg-[#171412] px-3 text-white shadow-[0_12px_30px_rgba(23,20,18,0.28)] transition hover:scale-105 focus:outline-none focus:ring-4 focus:ring-[#c8953b]/30 lg:bottom-5"
         onClick={() => setIsOpen(true)}
       >
         <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-white/12">

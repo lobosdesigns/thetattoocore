@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   BadgeCheck,
+  Bell,
   Bookmark,
   BriefcaseBusiness,
   CalendarDays,
@@ -535,6 +536,50 @@ function AdultTermsGate({ returnHash = "feed" }: { returnHash?: string }) {
   );
 }
 
+function MobileShortcutNav({
+  isSignedIn,
+  profileHref,
+  unreadDmBadge,
+}: {
+  isSignedIn: boolean;
+  profileHref: string;
+  unreadDmBadge: number;
+}) {
+  const memberHref = (href: string) => (isSignedIn ? href : "/login");
+  const items = [
+    [Search, "Search", "/search", null],
+    [Bookmark, "Saved", memberHref("/saved"), null],
+    [Bell, "Alerts", memberHref("/notifications"), null],
+    [Send, "DM", memberHref("/messages"), unreadDmBadge],
+    [UserRound, "Me", memberHref(profileHref), null],
+  ] as const;
+
+  return (
+    <nav
+      aria-label="Mobile shortcuts"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-[#d8d1c6] bg-[#fffdf9]/95 px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 shadow-[0_-10px_28px_rgba(23,20,18,0.12)] backdrop-blur lg:hidden"
+    >
+      <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
+        {items.map(([Icon, label, href, badge]) => (
+          <Link
+            className="relative flex h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-md text-[11px] font-semibold text-[#4f473f] hover:bg-[#f5f2eb]"
+            href={href}
+            key={label}
+          >
+            <Icon className="size-5" />
+            <span className="truncate">{label}</span>
+            {badge ? (
+              <span className="absolute right-2 top-1 flex min-w-5 items-center justify-center rounded-full bg-[#171412] px-1.5 text-[10px] font-bold text-white">
+                {badge > 9 ? "9+" : badge}
+              </span>
+            ) : null}
+          </Link>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 function PublicVisitorGate({ lockedCount }: { lockedCount: number }) {
   return (
     <section className="border-b border-[#d8d1c6] bg-[#fffdf9] px-4 py-4">
@@ -781,7 +826,7 @@ export default async function Home({
           </div>
         </aside>
 
-        <section className="border-x border-[#d8d1c6] bg-[#fffdf9]">
+        <section className="border-x border-[#d8d1c6] bg-[#fffdf9] pb-24 lg:pb-0">
           <header className="sticky top-0 z-10 border-b border-[#e5ded4] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur">
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center">
@@ -1640,6 +1685,11 @@ export default async function Home({
           </section>
         </aside>
       </div>
+      <MobileShortcutNav
+        isSignedIn={isSignedIn}
+        profileHref={profileHref}
+        unreadDmBadge={unreadDmBadge}
+      />
       <FloatingComposer canCreate={canCreate} isSignedIn={isSignedIn} />
     </main>
   );
