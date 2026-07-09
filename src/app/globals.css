@@ -20,14 +20,23 @@
 }
 
 html {
-  background: var(--background);
+  background:
+    linear-gradient(135deg, rgba(200, 149, 59, 0.12), transparent 28rem),
+    linear-gradient(315deg, rgba(88, 104, 116, 0.16), transparent 34rem),
+    var(--background);
 }
 
 body {
   margin: 0;
-  background: var(--background);
+  background:
+    radial-gradient(circle at 50% 0, rgba(255, 253, 249, 0.055), transparent 34rem),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    var(--background);
+  background-size: auto, 42px 42px, 42px 42px, auto;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
@@ -58,7 +67,17 @@ textarea:focus-visible {
 }
 
 .ttc-card {
-  box-shadow: 0 1px 0 rgba(23, 20, 18, 0.06), 0 10px 30px rgba(23, 20, 18, 0.06);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.45) inset,
+    0 1px 0 rgba(23, 20, 18, 0.08),
+    0 18px 46px rgba(23, 20, 18, 0.1);
+}
+
+.ttc-card:hover {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 1px 0 rgba(23, 20, 18, 0.08),
+    0 22px 58px rgba(23, 20, 18, 0.14);
 }
 
 .no-scrollbar {

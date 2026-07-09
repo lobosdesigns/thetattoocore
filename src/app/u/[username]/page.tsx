@@ -14,6 +14,7 @@ import {
   LockKeyhole,
   MapPin,
   MessageCircle,
+  MoreHorizontal,
   Send,
   ShieldCheck,
   ShoppingBag,
@@ -285,18 +286,27 @@ function ProfileReportForm({
   username: string;
 }) {
   return (
-    <form
-      action={createContentReport}
-      className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-2"
-    >
-      <input name="subject_id" type="hidden" value={profileId} />
-      <input name="subject_type" type="hidden" value="profile" />
-      <input name="return_path" type="hidden" value={`/u/${username}`} />
-      <p className="mb-2 text-xs leading-5 text-[#766d62]">
-        Report profiles for scams, harassment, illegal services, sexual content,
-        minor safety concerns, or impersonation.
-      </p>
-      <div className="grid gap-2 sm:grid-cols-[12rem_1fr_auto]">
+    <details className="relative inline-block">
+      <summary
+        aria-label="Profile options"
+        className="inline-flex size-10 cursor-pointer list-none items-center justify-center rounded-md border border-[#cfc8bd] bg-white text-[#4f473f] hover:border-[#c8953b]"
+        title="Profile options"
+      >
+        <MoreHorizontal className="size-4" />
+      </summary>
+      <form
+        action={createContentReport}
+        className="absolute right-0 z-20 mt-2 w-[min(21rem,calc(100vw-3rem))] rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 shadow-xl"
+      >
+        <input name="subject_id" type="hidden" value={profileId} />
+        <input name="subject_type" type="hidden" value="profile" />
+        <input name="return_path" type="hidden" value={`/u/${username}`} />
+        <p className="text-sm font-bold text-[#171412]">Report profile</p>
+        <p className="mb-2 text-xs leading-5 text-[#766d62]">
+          Report profiles for scams, harassment, illegal services, sexual content,
+          minor safety concerns, or impersonation.
+        </p>
+        <div className="grid gap-2">
         <select
           aria-label="Report profile reason"
           className="h-10 rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
@@ -319,8 +329,9 @@ function ProfileReportForm({
           <Flag className="size-4" />
           Report
         </button>
-      </div>
-    </form>
+        </div>
+      </form>
+    </details>
   );
 }
 

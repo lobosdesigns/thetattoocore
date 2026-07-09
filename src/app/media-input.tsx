@@ -212,6 +212,8 @@ export function MediaInput({
             ? `${mediaType === "video" ? "Video" : "Image"} limit is ${formatBytes(
                 maxBytes,
               )}.`
+            : mediaType === "video" && durationSeconds == null
+              ? "Could not read video duration. Try a standard MP4 or MOV clip."
             : mediaType === "video" &&
                 durationSeconds != null &&
                 durationSeconds > maxVideoSeconds
@@ -235,10 +237,10 @@ export function MediaInput({
   const guidance = videoAllowed
     ? `Images auto-optimize before upload. Videos can be ${formatSeconds(
         maxVideoSeconds,
-      )} max and ${formatBytes(maxVideoBytes)}.`
+      )} max and ${formatBytes(maxVideoBytes)}. GIFs are allowed but keep their original size.`
     : `Images auto-optimize before upload. Max image size after optimization is ${formatBytes(
         maxImageBytes,
-      )}.`;
+      )}; GIFs keep their original size.`;
 
   return (
     <div className="space-y-2">
