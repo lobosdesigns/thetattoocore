@@ -1,8 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fffdf9;
+  --background: #202020;
   --foreground: #171412;
+  --accent: #c8953b;
+  --paper: #f2f1ee;
+  --paper-warm: #fffdf9;
 }
 
 @theme inline {
@@ -27,6 +30,11 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+::selection {
+  background: var(--accent);
+  color: #171412;
+}
+
 button,
 a {
   transition:
@@ -38,6 +46,19 @@ a {
 
 button:active {
   transform: translateY(1px);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.ttc-card {
+  box-shadow: 0 1px 0 rgba(23, 20, 18, 0.06), 0 10px 30px rgba(23, 20, 18, 0.06);
 }
 
 .no-scrollbar {

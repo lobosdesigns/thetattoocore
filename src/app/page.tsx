@@ -190,8 +190,8 @@ function EmptyColumnState({
   title: string;
 }) {
   return (
-    <div className="rounded-md border border-dashed border-[#cfc6ba] bg-[#fffdf9] p-6">
-      <div className="flex size-11 items-center justify-center rounded-md bg-[#efe7da]">
+    <div className="ttc-card rounded-md border border-dashed border-[#cfc6ba] bg-[#fffdf9] p-6">
+      <div className="flex size-11 items-center justify-center rounded-md bg-[#171412] text-[#c8953b]">
         <Icon className="size-5" />
       </div>
       <h3 className="mt-4 text-base font-bold">{title}</h3>
@@ -200,7 +200,7 @@ function EmptyColumnState({
         <div className="mt-4 flex flex-wrap gap-2">
           {tips.map((tip) => (
             <span
-              className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] px-2 py-1 text-xs font-semibold text-[#4f473f]"
+              className="rounded-md border border-[#cfc8bd] bg-[#f7f4ef] px-2 py-1 text-xs font-semibold text-[#4f473f]"
               key={tip}
             >
               {tip}
@@ -228,7 +228,7 @@ function EmptyColumnState({
 
 function SidebarEmptyState({ children }: { children: string }) {
   return (
-    <div className="rounded-md border border-dashed border-[#cfc6ba] bg-[#fffdf9] p-3 text-sm leading-5 text-[#766d62]">
+    <div className="rounded-md border border-dashed border-[#cfc6ba] bg-[#fffdf9] p-3 text-sm leading-5 text-[#766d62] shadow-sm">
       {children}
     </div>
   );
@@ -557,19 +557,19 @@ function MobileShortcutNav({
   return (
     <nav
       aria-label="Mobile shortcuts"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-[#d8d1c6] bg-[#fffdf9]/95 px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 shadow-[0_-10px_28px_rgba(23,20,18,0.12)] backdrop-blur lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-[#3a332d] bg-[#171412]/95 px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 shadow-[0_-10px_28px_rgba(0,0,0,0.24)] backdrop-blur lg:hidden"
     >
       <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
         {items.map(([Icon, label, href, badge]) => (
           <Link
-            className="relative flex h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-md text-[11px] font-semibold text-[#4f473f] hover:bg-[#f5f2eb]"
+            className="relative flex h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-md text-[11px] font-semibold text-[#f2f1ee] hover:bg-white/10"
             href={href}
             key={label}
           >
             <Icon className="size-5" />
             <span className="truncate">{label}</span>
             {badge ? (
-              <span className="absolute right-2 top-1 flex min-w-5 items-center justify-center rounded-full bg-[#171412] px-1.5 text-[10px] font-bold text-white">
+              <span className="absolute right-2 top-1 flex min-w-5 items-center justify-center rounded-full bg-[#c8953b] px-1.5 text-[10px] font-bold text-[#171412]">
                 {badge > 9 ? "9+" : badge}
               </span>
             ) : null}
@@ -582,7 +582,7 @@ function MobileShortcutNav({
 
 function PublicVisitorGate({ lockedCount }: { lockedCount: number }) {
   return (
-    <section className="border-b border-[#d8d1c6] bg-[#fffdf9] px-4 py-4">
+    <section className="border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-bold">Public preview</p>
@@ -610,7 +610,7 @@ function PublicVisitorGate({ lockedCount }: { lockedCount: number }) {
 
 function ProfileSetupGate() {
   return (
-    <section className="border-b border-[#d8d1c6] bg-[#efe7da] px-4 py-4">
+    <section className="border-b border-[#cfc8bd] bg-[#e8e4dc] px-4 py-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-bold">Finish your profile</p>
@@ -774,9 +774,9 @@ export default async function Home({
   );
 
   return (
-    <main className="min-h-screen bg-[#f5f2eb] text-[#171412]">
-      <div className="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 lg:grid-cols-[240px_minmax(420px,620px)_320px]">
-        <aside className="hidden border-r border-[#d8d1c6] bg-[#fffdf9] px-5 py-6 lg:block">
+    <main className="min-h-screen bg-[#202020] text-[#171412]">
+      <div className="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 lg:grid-cols-[240px_minmax(420px,620px)_320px] lg:shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
+        <aside className="hidden border-r border-[#cfc8bd] bg-[#f2f1ee] px-5 py-6 lg:block">
           <div className="flex min-h-full flex-col">
             <div>
               <div className="mb-8 flex justify-start">
@@ -794,7 +794,7 @@ export default async function Home({
                   [UserRound, "Profile", profileHref],
                 ].map(([Icon, label, href]) => (
                   <Link
-                    className="flex h-11 w-full items-center gap-3 rounded-md px-3 text-left text-sm font-medium hover:bg-[#f5f2eb]"
+                    className="flex h-11 w-full items-center gap-3 rounded-md px-3 text-left text-sm font-medium hover:bg-[#fffdf9]"
                     href={href as string}
                     key={label as string}
                   >
@@ -811,7 +811,7 @@ export default async function Home({
 
               {adminRole && ["moderator", "admin", "owner"].includes(adminRole) ? (
                 <Link
-                  className="mt-4 flex h-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                  className="mt-4 flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
                   href="/admin"
                 >
                   Admin
@@ -826,8 +826,8 @@ export default async function Home({
           </div>
         </aside>
 
-        <section className="border-x border-[#d8d1c6] bg-[#fffdf9] pb-24 lg:pb-0">
-          <header className="sticky top-0 z-10 border-b border-[#e5ded4] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur">
+        <section className="border-x border-[#cfc8bd] bg-[#f2f1ee] pb-24 lg:pb-0">
+          <header className="sticky top-0 z-10 border-b border-[#d8d1c6] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center">
                 <LogoLockup className="h-14 w-52 max-w-[52vw] shrink-0" />
@@ -873,7 +873,7 @@ export default async function Home({
             {visibleFeedPosts.length ? (
               visibleFeedPosts.map((post) => (
                 <article
-                  className="scroll-mt-28 bg-[#fffdf9]"
+                  className="scroll-mt-28 bg-[#fffdf9] shadow-[0_1px_0_rgba(23,20,18,0.06)]"
                   id={`feed-${post.id}`}
                   key={post.id}
                 >
@@ -1066,7 +1066,7 @@ export default async function Home({
               {visibleThreadPosts.length
                 ? visibleThreadPosts.map((thread) => (
                     <article
-                      className="scroll-mt-28 rounded-md border border-[#d8d1c6] bg-white p-4"
+                      className="ttc-card scroll-mt-28 rounded-md border border-[#cfc8bd] bg-white p-4"
                       id={`thread-${thread.id}`}
                       key={thread.id}
                     >
@@ -1247,7 +1247,7 @@ export default async function Home({
               {visibleListings.length
                 ? visibleListings.map((listing) => (
                     <article
-                      className="scroll-mt-28 rounded-md border border-[#d8d1c6] bg-white p-4"
+                      className="ttc-card scroll-mt-28 rounded-md border border-[#cfc8bd] bg-white p-4"
                       id={`stuff-${listing.id}`}
                       key={listing.id}
                     >
@@ -1402,7 +1402,7 @@ export default async function Home({
               {visibleGigs.length
                 ? visibleGigs.map((gig) => (
                     <article
-                      className="scroll-mt-28 rounded-md border border-[#d8d1c6] bg-white p-4"
+                      className="ttc-card scroll-mt-28 rounded-md border border-[#cfc8bd] bg-white p-4"
                       id={`gig-${gig.id}`}
                       key={gig.id}
                     >
@@ -1593,10 +1593,10 @@ export default async function Home({
           </div>
         </section>
 
-        <aside className="hidden bg-[#f5f2eb] px-5 py-6 lg:block">
+        <aside className="hidden bg-[#f2f1ee] px-5 py-6 lg:block">
           <div className="mb-6">
             <Link
-              className="flex items-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3 py-2"
+              className="flex items-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 shadow-sm"
               href="/search"
             >
               <Search className="size-4 text-[#766d62]" />
@@ -1615,7 +1615,7 @@ export default async function Home({
               {visibleThreadPosts.length ? (
                 visibleThreadPosts.slice(0, 4).map((thread) => (
                   <a
-                    className="block rounded-md border border-[#d8d1c6] bg-white p-3 text-sm leading-5"
+                    className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-3 text-sm leading-5"
                     href={`#thread-${thread.id}`}
                     key={thread.id}
                   >
@@ -1637,7 +1637,7 @@ export default async function Home({
               {visibleGigs.length ? (
                 visibleGigs.slice(0, 4).map((gig) => (
                   <Link
-                    className="block rounded-md border border-[#d8d1c6] bg-white p-3"
+                    className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-3"
                     href={`#gig-${gig.id}`}
                     key={gig.id}
                   >
@@ -1662,7 +1662,7 @@ export default async function Home({
               {visibleListings.length ? (
                 visibleListings.slice(0, 4).map((listing) => (
                   <a
-                    className="block rounded-md border border-[#d8d1c6] bg-white p-3"
+                    className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-3"
                     href={`#stuff-${listing.id}`}
                     key={listing.id}
                   >

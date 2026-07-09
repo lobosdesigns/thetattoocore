@@ -61,7 +61,7 @@ export function ColumnTabs({ unreadDmCount = 0 }: { unreadDmCount?: number }) {
   return (
     <nav
       aria-label="Main columns"
-      className="flex gap-2 overflow-x-auto border-b border-[#e5ded4] px-4 py-3"
+      className="flex gap-2 overflow-x-auto border-b border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 shadow-[inset_0_-1px_0_rgba(23,20,18,0.04)]"
     >
       {tabs.map((tab) => {
         const isActive = tab.id === activeId;
@@ -71,8 +71,8 @@ export function ColumnTabs({ unreadDmCount = 0 }: { unreadDmCount?: number }) {
             aria-current={isActive ? "page" : undefined}
             className={`flex h-9 shrink-0 items-center rounded-md border px-4 text-sm font-medium transition ${
               isActive
-                ? "border-[#171412] bg-[#171412] text-white shadow-sm"
-                : "border-[#d8d1c6] bg-white text-[#171412]"
+                ? "border-[#171412] bg-[#171412] text-white shadow-[0_6px_16px_rgba(23,20,18,0.16)]"
+                : "border-[#cfc8bd] bg-[#fffdf9] text-[#171412] hover:border-[#c8953b]"
             }`}
             href={tab.href}
             key={tab.label}

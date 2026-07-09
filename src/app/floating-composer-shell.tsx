@@ -122,10 +122,10 @@ export function FloatingComposerShell({
     <>
       <button
         aria-label={`Create ${active.label}`}
-        className="fixed bottom-24 right-5 z-30 flex h-14 max-w-[calc(100vw-2.5rem)] items-center gap-2 rounded-md bg-[#171412] px-3 text-white shadow-[0_12px_30px_rgba(23,20,18,0.28)] transition hover:scale-105 focus:outline-none focus:ring-4 focus:ring-[#c8953b]/30 lg:bottom-5"
+        className="fixed bottom-24 right-5 z-30 flex h-14 max-w-[calc(100vw-2.5rem)] items-center gap-2 rounded-md border border-[#3a332d] bg-[#171412] px-3 text-white shadow-[0_14px_34px_rgba(0,0,0,0.34)] transition hover:scale-105 focus:outline-none focus:ring-4 focus:ring-[#c8953b]/35 lg:bottom-5"
         onClick={() => setIsOpen(true)}
       >
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-white/12">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[#c8953b] text-[#171412]">
           <ActiveIcon className="size-5" />
         </span>
         <span className="min-w-0 text-left leading-tight">
@@ -138,12 +138,12 @@ export function FloatingComposerShell({
       </button>
 
       {isOpen ? (
-        <div className="fixed inset-0 z-40 bg-[#171412]/45 px-4 py-5 backdrop-blur-sm">
+        <div className="fixed inset-0 z-40 bg-[#171412]/55 px-4 py-5 backdrop-blur-sm">
           <div className="mx-auto flex min-h-full max-w-xl items-end sm:items-center">
-            <section className="w-full rounded-md border border-[#d8d1c6] bg-[#fffdf9] shadow-2xl">
-              <header className="flex items-center justify-between gap-3 border-b border-[#e5ded4] px-4 py-3">
+            <section className="w-full rounded-md border border-[#cfc8bd] bg-[#f2f1ee] shadow-2xl">
+              <header className="flex items-center justify-between gap-3 border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-3">
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#efe7da]">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-[#c8953b]">
                     <ActiveIcon className="size-5" />
                   </div>
                   <div className="min-w-0">
@@ -153,7 +153,7 @@ export function FloatingComposerShell({
                 </div>
                 <button
                   aria-label="Close composer"
-                  className="flex size-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white"
+                  className="flex size-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-white"
                   onClick={() => setIsOpen(false)}
                 >
                   <X className="size-5" />
