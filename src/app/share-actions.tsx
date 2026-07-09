@@ -56,3 +56,38 @@ export function ShareActions({
     </div>
   );
 }
+
+export function CompactShareButton({
+  className = "flex items-center gap-2 text-sm font-medium",
+  text,
+  title,
+  url,
+}: {
+  className?: string;
+  text: string;
+  title: string;
+  url: string;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  async function share() {
+    try {
+      if (navigator.share) {
+        await navigator.share({ text, title, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1800);
+      }
+    } catch {
+      // User canceled the share sheet or clipboard access was unavailable.
+    }
+  }
+
+  return (
+    <button className={className} onClick={share} type="button">
+      {copied ? <Check className="size-5" /> : <Share2 className="size-5" />}
+      {copied ? "Copied" : "Share"}
+    </button>
+  );
+}

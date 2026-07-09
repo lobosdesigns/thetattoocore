@@ -32,7 +32,9 @@ import { FloatingComposer } from "./floating-composer";
 import { LogoLockup, LogoWordmark } from "./logo-mark";
 import { NotificationBellLink } from "./notification-bell-link";
 import { PendingSubmitButton } from "./pending-submit-button";
+import { CompactShareButton } from "./share-actions";
 import { WordLimitedField } from "./word-limited-field";
+import { siteName, siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 
 type Claims = {
@@ -800,7 +802,11 @@ export default async function Home({
           >
             {visibleFeedPosts.length ? (
               visibleFeedPosts.map((post) => (
-                <article className="bg-[#fffdf9]" key={post.id}>
+                <article
+                  className="scroll-mt-28 bg-[#fffdf9]"
+                  id={`feed-${post.id}`}
+                  key={post.id}
+                >
                   <div className="flex items-center justify-between px-4 py-3">
                     <Link
                       className="flex min-w-0 items-center gap-3"
@@ -873,15 +879,19 @@ export default async function Home({
                             {post.post_likes.length}
                           </button>
                         </form>
-                        <button className="flex items-center gap-2 text-sm font-medium">
+                        <a
+                          className="flex items-center gap-2 text-sm font-medium"
+                          href={`#comment-${post.id}`}
+                        >
                           <MessageCircle className="size-5" />
                           {post.post_comments.length}
-                        </button>
+                        </a>
                       </div>
-                      <button className="flex items-center gap-2 text-sm font-medium">
-                        <Send className="size-5" />
-                        Share
-                      </button>
+                      <CompactShareButton
+                        text={`Check this 4U post on ${siteName}`}
+                        title="TheTattooCore 4U post"
+                        url={`${siteUrl}/#feed-${post.id}`}
+                      />
                     </div>
                     {isSignedIn ? (
                       <ReportForm
@@ -895,16 +905,27 @@ export default async function Home({
                       <div className="space-y-2 border-t border-[#e5ded4] pt-3">
                         {post.post_comments.slice(0, 2).map((comment) => (
                           <p className="text-sm leading-5" key={comment.id}>
-                            <span className="font-semibold">
-                              {comment.profiles?.display_name ?? "Member"}
-                            </span>{" "}
+                            {comment.profiles?.username ? (
+                              <Link
+                                className="font-semibold hover:underline"
+                                href={`/u/${comment.profiles.username}`}
+                              >
+                                {comment.profiles.display_name ?? "Member"}
+                              </Link>
+                            ) : (
+                              <span className="font-semibold">Member</span>
+                            )}{" "}
                             {comment.body}
                           </p>
                         ))}
                       </div>
                     ) : null}
                     {canCreate ? (
-                      <form action={createPostComment} className="border-t border-[#e5ded4] pt-3">
+                      <form
+                        action={createPostComment}
+                        className="border-t border-[#e5ded4] pt-3"
+                        id={`comment-${post.id}`}
+                      >
                         <input name="post_id" type="hidden" value={post.id} />
                         <div className="flex items-start gap-2">
                           <WordLimitedField
