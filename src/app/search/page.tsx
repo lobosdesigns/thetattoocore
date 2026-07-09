@@ -547,7 +547,7 @@ export default async function SearchPage({
                   {listings.map((listing) => (
                     <Link
                       className="block rounded-md border border-[#d8d1c6] bg-white p-4"
-                      href="/#marketplace"
+                      href={`/stuff/${listing.id}`}
                       key={listing.id}
                     >
                       <p className="text-sm font-semibold">{listing.title}</p>

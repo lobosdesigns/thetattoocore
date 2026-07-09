@@ -1124,7 +1124,12 @@ export default async function Home({
                         <ListingThumb media={listing.marketplace_media[0]} />
                         <div>
                           <p className="text-sm font-semibold">
-                            {listing.title}
+                            <Link
+                              className="hover:underline"
+                              href={`/stuff/${listing.id}`}
+                            >
+                              {listing.title}
+                            </Link>
                           </p>
                           <div className="mt-1 flex flex-wrap items-center gap-1.5">
                             <p className="text-xs capitalize text-[#766d62]">
@@ -1487,7 +1492,7 @@ export default async function Home({
                 visibleListings.slice(0, 4).map((listing) => (
                   <a
                     className="block rounded-md border border-[#d8d1c6] bg-white p-3"
-                    href="#marketplace"
+                    href={`/stuff/${listing.id}`}
                     key={listing.id}
                   >
                     <div className="mb-2 flex items-center gap-3">
