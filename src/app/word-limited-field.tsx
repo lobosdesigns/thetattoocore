@@ -75,7 +75,16 @@ function validationFor(value: string, props: WordLimitedFieldProps) {
   return "";
 }
 
-const quickEmojis = ["🔥", "🖤", "👏", "🙌", "💯", "⚡", "✨", "🙏"];
+const quickEmojis = [
+  "\u{1F525}",
+  "\u{1F5A4}",
+  "\u{1F44F}",
+  "\u{1F64C}",
+  "\u{1F4AF}",
+  "\u26A1",
+  "\u2728",
+  "\u{1F64F}",
+];
 
 export function WordLimitedField(props: WordLimitedFieldProps) {
   const fieldRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
@@ -96,10 +105,21 @@ export function WordLimitedField(props: WordLimitedFieldProps) {
   }
 
   function addEmoji(emoji: string) {
-    const nextValue = trimToLimit(`${value}${emoji}`, props);
+    const field = fieldRef.current;
+    const start = field?.selectionStart ?? value.length;
+    const end = field?.selectionEnd ?? value.length;
+    const nextValue = trimToLimit(
+      `${value.slice(0, start)}${emoji}${value.slice(end)}`,
+      props,
+    );
+    const nextCursor = Math.min(start + emoji.length, nextValue.length);
 
-    fieldRef.current?.setCustomValidity(validationFor(nextValue, props));
+    field?.setCustomValidity(validationFor(nextValue, props));
     setValue(nextValue);
+    window.requestAnimationFrame(() => {
+      fieldRef.current?.focus();
+      fieldRef.current?.setSelectionRange(nextCursor, nextCursor);
+    });
   }
 
   const counter = (
@@ -116,18 +136,23 @@ export function WordLimitedField(props: WordLimitedFieldProps) {
     </p>
   );
   const emojiButtons = props.emojiShortcuts ? (
-    <div className="mt-2 flex flex-wrap gap-1.5">
-      {quickEmojis.map((emoji) => (
-        <button
-          aria-label={`Insert ${emoji}`}
-          className="flex size-8 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] text-sm transition hover:border-[#171412]"
-          key={emoji}
-          onClick={() => addEmoji(emoji)}
-          type="button"
-        >
-          {emoji}
-        </button>
-      ))}
+    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+      <span className="mr-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#766d62]">
+        Emoji
+      </span>
+      <div className="flex flex-wrap gap-1.5">
+        {quickEmojis.map((emoji) => (
+          <button
+            aria-label={`Insert emoji ${emoji}`}
+            className="flex size-8 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] text-sm transition hover:border-[#171412]"
+            key={emoji}
+            onClick={() => addEmoji(emoji)}
+            type="button"
+          >
+            {emoji}
+          </button>
+        ))}
+      </div>
     </div>
   ) : null;
 

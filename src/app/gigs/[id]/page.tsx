@@ -19,7 +19,7 @@ import { SavedItemButton } from "@/app/saved-item-button";
 import { ShareActions } from "@/app/share-actions";
 import { startConversation } from "@/app/messages/actions";
 import { createClient } from "@/lib/supabase/server";
-import { siteName, siteUrl } from "@/lib/site";
+import { brandShareImage, siteName, siteUrl } from "@/lib/site";
 import { isVerifiedProfessional } from "@/lib/verification";
 
 type Claims = {
@@ -32,6 +32,11 @@ type Profile = {
   id: string;
   license_verified_at: string | null;
   username: string;
+};
+
+type ViewerProfile = {
+  adult_terms_accepted_at: string | null;
+  is_adult_confirmed: boolean | null;
 };
 
 type GigMedia = {
@@ -115,6 +120,53 @@ function gigMessage(gig: Gig) {
   return `Hi, I am interested in your gig: ${gig.title}`;
 }
 
+function canViewSensitiveMedia({
+  isSensitive,
+  profile,
+}: {
+  isSensitive: boolean;
+  profile?: ViewerProfile | null;
+}) {
+  if (!isSensitive) return true;
+
+  return Boolean(profile?.is_adult_confirmed && profile.adult_terms_accepted_at);
+}
+
+function SensitiveMediaGate({
+  isSignedIn,
+  returnPath,
+}: {
+  isSignedIn: boolean;
+  returnPath: string;
+}) {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-[#171412]/35 p-4 backdrop-blur-sm">
+      <div className="max-w-xs rounded-md border border-white/20 bg-[#171412]/92 p-4 text-center text-white shadow-2xl">
+        <LockKeyhole className="mx-auto mb-2 size-6 text-[#c8953b]" />
+        <p className="text-sm font-bold">You must sign in to see content</p>
+        <p className="mt-1 text-xs leading-5 text-white/70">
+          Sensitive body-art media requires login and 18+ confirmation.
+        </p>
+        {isSignedIn ? (
+          <form action={acceptAdultTerms} className="mt-3">
+            <input name="return_path" type="hidden" value={returnPath} />
+            <button className="h-9 rounded-md bg-white px-3 text-sm font-semibold text-[#171412]">
+              I am 18+
+            </button>
+          </form>
+        ) : (
+          <Link
+            className="mt-3 inline-flex h-9 items-center justify-center rounded-md bg-white px-3 text-sm font-semibold text-[#171412]"
+            href="/login"
+          >
+            Sign in
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
 async function getGig(id: string) {
   const supabase = await createClient();
   const { data } = await supabase
@@ -152,9 +204,19 @@ export async function generateMetadata({
 
   const publicIndexable = gig.visibility === "public_preview" && !gig.is_sensitive;
   const location = locationText(gig);
-  const description =
+  const publicDescription =
     gig.description?.slice(0, 155) ||
     `${gig.title} on ${siteName}${location ? ` in ${location}` : ""}.`;
+  const description = gig.is_sensitive
+    ? `Sensitive body-art Gig on ${siteName}. Sign in to view eligible content.`
+    : publicDescription;
+  const image =
+    publicIndexable && gig.gig_media[0]?.media_type === "image"
+      ? mediaUrl(gig.gig_media[0].storage_bucket, gig.gig_media[0].storage_path)
+      : brandShareImage;
+  const shareTitle = gig.is_sensitive
+    ? `Sensitive body-art content | ${siteName}`
+    : gig.title;
 
   return {
     alternates: {
@@ -163,7 +225,8 @@ export async function generateMetadata({
     description,
     openGraph: {
       description,
-      title: gig.title,
+      images: [{ url: image }],
+      title: shareTitle,
       type: "article",
       url: `${siteUrl}/gigs/${gig.id}`,
     },
@@ -171,7 +234,13 @@ export async function generateMetadata({
       follow: publicIndexable,
       index: publicIndexable,
     },
-    title: `${gig.title} | Gigs`,
+    title: gig.is_sensitive ? "Sensitive Gig" : `${gig.title} | Gigs`,
+    twitter: {
+      card: "summary_large_image",
+      description,
+      images: [image],
+      title: shareTitle,
+    },
   };
 }
 
@@ -197,8 +266,19 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
           .eq("subject_id", gig.id)
           .maybeSingle<{ subject_id: string }>()
       : { data: null };
+  const { data: currentProfile } = claims?.sub
+    ? await supabase
+        .from("profiles")
+        .select("adult_terms_accepted_at, is_adult_confirmed")
+        .eq("id", claims.sub)
+        .maybeSingle<ViewerProfile>()
+    : { data: null };
   const isOwnGig = claims?.sub === gig.profiles?.id;
   const media = gig.gig_media[0];
+  const showSensitiveMedia = canViewSensitiveMedia({
+    isSensitive: gig.is_sensitive,
+    profile: currentProfile,
+  });
 
   return (
     <main className="min-h-screen bg-[#202020] text-[#171412]">
@@ -232,11 +312,13 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
 
         <section className="grid gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div>
-            <div className="overflow-hidden rounded-md border border-[#3a332d] bg-[#171412] shadow-[0_12px_30px_rgba(23,20,18,0.22)]">
+            <div className="relative overflow-hidden rounded-md border border-[#3a332d] bg-[#171412] shadow-[0_12px_30px_rgba(23,20,18,0.22)]">
               {media ? (
                 media.media_type === "video" ? (
                   <video
-                    className="aspect-[4/3] w-full bg-[#171412] object-contain"
+                    className={`aspect-[4/3] w-full bg-[#171412] object-contain ${
+                      showSensitiveMedia ? "" : "scale-[1.02] blur-xl"
+                    }`}
                     controls
                     playsInline
                     preload="metadata"
@@ -246,7 +328,9 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     alt=""
-                    className="aspect-[4/3] w-full bg-[#171412] object-contain"
+                    className={`aspect-[4/3] w-full bg-[#171412] object-contain ${
+                      showSensitiveMedia ? "" : "scale-[1.02] blur-xl"
+                    }`}
                     src={mediaUrl(media.storage_bucket, media.storage_path)}
                   />
                 )
@@ -255,6 +339,12 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
                   <BriefcaseBusiness className="size-12" />
                 </div>
               )}
+              {!showSensitiveMedia ? (
+                <SensitiveMediaGate
+                  isSignedIn={Boolean(claims?.sub)}
+                  returnPath={`/gigs/${gig.id}`}
+                />
+              ) : null}
             </div>
 
             <section className="ttc-card mt-5 rounded-md border border-[#cfc8bd] bg-white p-5">

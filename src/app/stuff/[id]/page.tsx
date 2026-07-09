@@ -19,7 +19,7 @@ import { SavedItemButton } from "@/app/saved-item-button";
 import { ShareActions } from "@/app/share-actions";
 import { startConversation } from "@/app/messages/actions";
 import { createClient } from "@/lib/supabase/server";
-import { siteName, siteUrl } from "@/lib/site";
+import { brandShareImage, siteName, siteUrl } from "@/lib/site";
 import { isVerifiedProfessional } from "@/lib/verification";
 
 type Claims = {
@@ -32,6 +32,13 @@ type Profile = {
   id: string;
   license_verified_at: string | null;
   username: string;
+};
+
+type ViewerProfile = {
+  account_type: string;
+  adult_terms_accepted_at: string | null;
+  is_adult_confirmed: boolean | null;
+  license_verified_at: string | null;
 };
 
 type ListingMedia = {
@@ -109,6 +116,53 @@ function listingMessage(listing: Listing) {
   return `Hi, I am interested in your Stuff listing: ${listing.title}`;
 }
 
+function canViewSensitiveMedia({
+  isSensitive,
+  profile,
+}: {
+  isSensitive: boolean;
+  profile?: Pick<ViewerProfile, "adult_terms_accepted_at" | "is_adult_confirmed"> | null;
+}) {
+  if (!isSensitive) return true;
+
+  return Boolean(profile?.is_adult_confirmed && profile.adult_terms_accepted_at);
+}
+
+function SensitiveMediaGate({
+  isSignedIn,
+  returnPath,
+}: {
+  isSignedIn: boolean;
+  returnPath: string;
+}) {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-[#171412]/35 p-4 backdrop-blur-sm">
+      <div className="max-w-xs rounded-md border border-white/20 bg-[#171412]/92 p-4 text-center text-white shadow-2xl">
+        <LockKeyhole className="mx-auto mb-2 size-6 text-[#c8953b]" />
+        <p className="text-sm font-bold">You must sign in to see content</p>
+        <p className="mt-1 text-xs leading-5 text-white/70">
+          Sensitive body-art media requires login and 18+ confirmation.
+        </p>
+        {isSignedIn ? (
+          <form action={acceptAdultTerms} className="mt-3">
+            <input name="return_path" type="hidden" value={returnPath} />
+            <button className="h-9 rounded-md bg-white px-3 text-sm font-semibold text-[#171412]">
+              I am 18+
+            </button>
+          </form>
+        ) : (
+          <Link
+            className="mt-3 inline-flex h-9 items-center justify-center rounded-md bg-white px-3 text-sm font-semibold text-[#171412]"
+            href="/login"
+          >
+            Sign in
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
 async function getListing(id: string) {
   const supabase = await createClient();
   const { data } = await supabase
@@ -147,9 +201,22 @@ export async function generateMetadata({
   const publicIndexable =
     listing.visibility === "public_preview" && !listing.is_sensitive;
   const location = locationText(listing);
-  const description =
+  const publicDescription =
     listing.description?.slice(0, 155) ||
     `${listing.title} on ${siteName}${location ? ` in ${location}` : ""}.`;
+  const description = listing.is_sensitive
+    ? `Sensitive body-art Stuff listing on ${siteName}. Sign in to view eligible content.`
+    : publicDescription;
+  const image =
+    publicIndexable && listing.marketplace_media[0]?.media_type === "image"
+      ? mediaUrl(
+          listing.marketplace_media[0].storage_bucket,
+          listing.marketplace_media[0].storage_path,
+        )
+      : brandShareImage;
+  const shareTitle = listing.is_sensitive
+    ? `Sensitive body-art content | ${siteName}`
+    : listing.title;
 
   return {
     alternates: {
@@ -158,7 +225,8 @@ export async function generateMetadata({
     description,
     openGraph: {
       description,
-      title: listing.title,
+      images: [{ url: image }],
+      title: shareTitle,
       type: "article",
       url: `${siteUrl}/stuff/${listing.id}`,
     },
@@ -166,7 +234,13 @@ export async function generateMetadata({
       follow: publicIndexable,
       index: publicIndexable,
     },
-    title: `${listing.title} | Stuff`,
+    title: listing.is_sensitive ? "Sensitive Stuff listing" : `${listing.title} | Stuff`,
+    twitter: {
+      card: "summary_large_image",
+      description,
+      images: [image],
+      title: shareTitle,
+    },
   };
 }
 
@@ -195,16 +269,17 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
   const { data: currentProfile } = claims?.sub
     ? await supabase
         .from("profiles")
-        .select("account_type, license_verified_at")
+        .select("account_type, adult_terms_accepted_at, is_adult_confirmed, license_verified_at")
         .eq("id", claims.sub)
-        .maybeSingle<{
-          account_type: string;
-          license_verified_at: string | null;
-        }>()
+        .maybeSingle<ViewerProfile>()
     : { data: null };
   const canContactSeller = isVerifiedProfessional(currentProfile);
   const isOwnListing = claims?.sub === listing.profiles?.id;
   const media = listing.marketplace_media[0];
+  const showSensitiveMedia = canViewSensitiveMedia({
+    isSensitive: listing.is_sensitive,
+    profile: currentProfile,
+  });
 
   return (
     <main className="min-h-screen bg-[#202020] text-[#171412]">
@@ -238,11 +313,13 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
 
         <section className="grid gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div>
-            <div className="overflow-hidden rounded-md border border-[#3a332d] bg-[#171412] shadow-[0_12px_30px_rgba(23,20,18,0.22)]">
+            <div className="relative overflow-hidden rounded-md border border-[#3a332d] bg-[#171412] shadow-[0_12px_30px_rgba(23,20,18,0.22)]">
               {media ? (
                 media.media_type === "video" ? (
                   <video
-                    className="aspect-[4/3] w-full bg-[#171412] object-contain"
+                    className={`aspect-[4/3] w-full bg-[#171412] object-contain ${
+                      showSensitiveMedia ? "" : "scale-[1.02] blur-xl"
+                    }`}
                     controls
                     playsInline
                     preload="metadata"
@@ -252,7 +329,9 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     alt=""
-                    className="aspect-[4/3] w-full bg-[#171412] object-contain"
+                    className={`aspect-[4/3] w-full bg-[#171412] object-contain ${
+                      showSensitiveMedia ? "" : "scale-[1.02] blur-xl"
+                    }`}
                     src={mediaUrl(media.storage_bucket, media.storage_path)}
                   />
                 )
@@ -261,6 +340,12 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
                   <ShoppingBag className="size-12" />
                 </div>
               )}
+              {!showSensitiveMedia ? (
+                <SensitiveMediaGate
+                  isSignedIn={Boolean(claims?.sub)}
+                  returnPath={`/stuff/${listing.id}`}
+                />
+              ) : null}
             </div>
 
             <section className="ttc-card mt-5 rounded-md border border-[#cfc8bd] bg-white p-5">
