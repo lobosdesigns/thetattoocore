@@ -1014,6 +1014,7 @@ export default async function Home({
                         <div className="flex items-start gap-2">
                           <WordLimitedField
                             className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                            emojiShortcuts
                             maxLength={300}
                             maxWords={40}
                             minTrimmedLength={1}
@@ -1197,6 +1198,7 @@ export default async function Home({
                           <div className="flex items-start gap-2">
                             <WordLimitedField
                               className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                              emojiShortcuts
                               maxCharacters={2000}
                               maxLength={2000}
                               minTrimmedLength={1}

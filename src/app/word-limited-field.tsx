@@ -1,9 +1,17 @@
 "use client";
 
-import { ChangeEvent, InputHTMLAttributes, TextareaHTMLAttributes, useState } from "react";
+import {
+  ChangeEvent,
+  InputHTMLAttributes,
+  RefObject,
+  TextareaHTMLAttributes,
+  useRef,
+  useState,
+} from "react";
 
 type SharedProps = {
   className: string;
+  emojiShortcuts?: boolean;
   maxCharacters?: number;
   maxWords?: number;
   minTrimmedLength?: number;
@@ -67,7 +75,10 @@ function validationFor(value: string, props: WordLimitedFieldProps) {
   return "";
 }
 
+const quickEmojis = ["🔥", "🖤", "👏", "🙌", "💯", "⚡", "✨", "🙏"];
+
 export function WordLimitedField(props: WordLimitedFieldProps) {
+  const fieldRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const [value, setValue] = useState("");
   const limit = getLimit(props);
   const count = getValueCount(value, props);
@@ -84,6 +95,13 @@ export function WordLimitedField(props: WordLimitedFieldProps) {
     setValue(nextValue);
   }
 
+  function addEmoji(emoji: string) {
+    const nextValue = trimToLimit(`${value}${emoji}`, props);
+
+    fieldRef.current?.setCustomValidity(validationFor(nextValue, props));
+    setValue(nextValue);
+  }
+
   const counter = (
     <p
       className={`mt-1 text-right text-xs ${
@@ -97,12 +115,28 @@ export function WordLimitedField(props: WordLimitedFieldProps) {
       {count}/{limit} {counterLabel}
     </p>
   );
+  const emojiButtons = props.emojiShortcuts ? (
+    <div className="mt-2 flex flex-wrap gap-1.5">
+      {quickEmojis.map((emoji) => (
+        <button
+          aria-label={`Insert ${emoji}`}
+          className="flex size-8 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] text-sm transition hover:border-[#171412]"
+          key={emoji}
+          onClick={() => addEmoji(emoji)}
+          type="button"
+        >
+          {emoji}
+        </button>
+      ))}
+    </div>
+  ) : null;
 
   if (props.as === "textarea") {
     const {
       as: _as,
       className,
       maxCharacters: _maxCharacters,
+      emojiShortcuts: _emojiShortcuts,
       maxWords: _maxWords,
       minTrimmedLength: _minTrimmedLength,
       validationMessage: _validationMessage,
@@ -110,6 +144,7 @@ export function WordLimitedField(props: WordLimitedFieldProps) {
       ...fieldProps
     } = props;
     void _as;
+    void _emojiShortcuts;
     void _maxCharacters;
     void _maxWords;
     void _minTrimmedLength;
@@ -121,8 +156,10 @@ export function WordLimitedField(props: WordLimitedFieldProps) {
           {...fieldProps}
           className={className}
           onChange={onChange}
+          ref={fieldRef as RefObject<HTMLTextAreaElement>}
           value={value}
         />
+        {emojiButtons}
         {counter}
       </div>
     );
@@ -132,6 +169,7 @@ export function WordLimitedField(props: WordLimitedFieldProps) {
     as: _as,
     className,
     maxCharacters: _maxCharacters,
+    emojiShortcuts: _emojiShortcuts,
     maxWords: _maxWords,
     minTrimmedLength: _minTrimmedLength,
     validationMessage: _validationMessage,
@@ -139,6 +177,7 @@ export function WordLimitedField(props: WordLimitedFieldProps) {
     ...fieldProps
   } = props;
   void _as;
+  void _emojiShortcuts;
   void _maxCharacters;
   void _maxWords;
   void _minTrimmedLength;
@@ -150,8 +189,10 @@ export function WordLimitedField(props: WordLimitedFieldProps) {
         {...fieldProps}
         className={className}
         onChange={onChange}
+        ref={fieldRef as RefObject<HTMLInputElement>}
         value={value}
       />
+      {emojiButtons}
       {counter}
     </div>
   );
