@@ -8,6 +8,7 @@ import {
   Heart,
   Home as HomeIcon,
   ImageIcon,
+  LockKeyhole,
   LogIn,
   LoaderCircle,
   MessageCircle,
@@ -36,6 +37,7 @@ import { MediaLightbox } from "./media-lightbox";
 import { NotificationBellLink } from "./notification-bell-link";
 import { PendingSubmitButton } from "./pending-submit-button";
 import { SavedItemButton } from "./saved-item-button";
+import { SensitiveContentGate } from "./sensitive-content-gate";
 import { CompactShareButton } from "./share-actions";
 import { WordLimitedField } from "./word-limited-field";
 import { languageLabel, normalizedLanguage } from "@/lib/localization";
@@ -580,9 +582,17 @@ function canRenderContent(
 ) {
   if (item.visibility === "private") return false;
   if (item.visibility === "members" && !viewer.isSignedIn) return false;
-  if (item.is_sensitive && !viewer.isAdultConfirmed) return false;
 
   return true;
+}
+
+function canViewSensitiveContent(
+  item: VisibleContent,
+  viewer: { isSignedIn: boolean; isAdultConfirmed: boolean },
+) {
+  if (!item.is_sensitive) return true;
+
+  return viewer.isSignedIn && viewer.isAdultConfirmed;
 }
 
 function mediaUrl(bucket: string, path: string) {
@@ -591,7 +601,17 @@ function mediaUrl(bucket: string, path: string) {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${encodedPath}`;
 }
 
-function MediaFrame({ media }: { media?: PostMedia }) {
+function MediaFrame({
+  isLocked = false,
+  isSignedIn = false,
+  media,
+  returnPath = "/",
+}: {
+  isLocked?: boolean;
+  isSignedIn?: boolean;
+  media?: PostMedia;
+  returnPath?: string;
+}) {
   if (!media) {
     return (
       <div className="flex aspect-[4/3] items-center justify-center bg-[#171412] text-white">
@@ -604,6 +624,31 @@ function MediaFrame({ media }: { media?: PostMedia }) {
   }
 
   const src = mediaUrl(media.storage_bucket, media.storage_path);
+
+  if (isLocked) {
+    return (
+      <div className="relative overflow-hidden bg-[#171412]">
+        {media.media_type === "video" ? (
+          <video
+            className="aspect-[4/5] w-full scale-[1.03] bg-[#171412] object-cover blur-2xl"
+            muted
+            playsInline
+            preload="metadata"
+            src={src}
+          />
+        ) : (
+          <div
+            className="aspect-[4/5] scale-[1.03] bg-cover bg-center blur-2xl"
+            style={{ backgroundImage: `url(${src})` }}
+          />
+        )}
+        <SensitiveContentGate
+          isSignedIn={isSignedIn}
+          returnPath={returnPath}
+        />
+      </div>
+    );
+  }
 
   if (media.media_type === "video") {
     return (
@@ -629,11 +674,41 @@ function MediaFrame({ media }: { media?: PostMedia }) {
   );
 }
 
-function ListingThumb({ media }: { media?: ListingMedia }) {
+function ListingThumb({
+  isLocked = false,
+  media,
+}: {
+  isLocked?: boolean;
+  media?: ListingMedia;
+}) {
   if (!media) {
     return (
       <div className="flex size-11 items-center justify-center rounded-md bg-[#efe7da]">
         <ImageIcon className="size-5" />
+      </div>
+    );
+  }
+
+  if (isLocked) {
+    const src = mediaUrl(media.storage_bucket, media.storage_path);
+
+    return (
+      <div className="relative size-11 overflow-hidden rounded-md bg-[#171412] text-white">
+        {media.media_type === "image" ? (
+          <div
+            className="size-full scale-110 bg-cover bg-center blur-md"
+            style={{
+              backgroundImage: `url(${src})`,
+            }}
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center blur-sm">
+            <Video className="size-5" />
+          </div>
+        )}
+        <div className="absolute inset-0 flex items-center justify-center bg-[#171412]/55">
+          <LockKeyhole className="size-4" />
+        </div>
       </div>
     );
   }
@@ -665,10 +740,38 @@ function ListingThumb({ media }: { media?: ListingMedia }) {
   );
 }
 
-function ThreadImage({ media }: { media?: ThreadMedia }) {
+function ThreadImage({
+  isLocked = false,
+  isSignedIn = false,
+  media,
+  returnPath = "/",
+}: {
+  isLocked?: boolean;
+  isSignedIn?: boolean;
+  media?: ThreadMedia;
+  returnPath?: string;
+}) {
   if (!media) return null;
 
   const src = mediaUrl(media.storage_bucket, media.storage_path);
+
+  if (isLocked) {
+    return (
+      <div className="relative mt-3 overflow-hidden rounded-md border border-[#e5ded4] bg-[#171412]">
+        <div
+          className="aspect-[16/10] scale-[1.03] bg-cover bg-center blur-2xl"
+          style={{
+            backgroundImage: `url(${src})`,
+          }}
+        />
+        <SensitiveContentGate
+          context="discussion"
+          isSignedIn={isSignedIn}
+          returnPath={returnPath}
+        />
+      </div>
+    );
+  }
 
   return (
     <MediaLightbox alt="Gossip thread media" mediaType="image" src={src}>
@@ -1151,7 +1254,7 @@ export default async function Home({
   ].filter(
     (item) =>
       item.visibility !== "private" &&
-      !canRenderContent(item, viewer),
+      (!canRenderContent(item, viewer) || !canViewSensitiveContent(item, viewer)),
   ).length;
   const canCreate = Boolean(currentProfile);
   const canCreateStuff = isVerifiedProfessional(currentProfile);
@@ -1268,7 +1371,10 @@ export default async function Home({
             id="feed"
           >
             {visibleFeedPosts.length ? (
-              visibleFeedPosts.map((post, index) => (
+              visibleFeedPosts.map((post, index) => {
+                const isPostLocked = !canViewSensitiveContent(post, viewer);
+
+                return (
                 <div key={post.id}>
                 <article
                   className="scroll-mt-28 bg-[#fffdf9] shadow-[0_1px_0_rgba(23,20,18,0.06)]"
@@ -1311,9 +1417,20 @@ export default async function Home({
                     )}
                   </div>
 
-                  <MediaFrame media={post.feed_media[0]} />
+                  <MediaFrame
+                    isLocked={isPostLocked}
+                    isSignedIn={isSignedIn}
+                    media={post.feed_media[0]}
+                    returnPath={`/?message=18%2B%20terms%20accepted.#feed-${post.id}`}
+                  />
 
                   <div className="space-y-3 px-4 py-4">
+                    {isPostLocked ? (
+                      <p className="rounded-md border border-[#e5c58f] bg-[#fff7ec] px-3 py-2 text-sm leading-6 text-[#7a4a08]">
+                        Sensitive body-art media is blurred until you sign in
+                        and confirm 18+.
+                      </p>
+                    ) : null}
                     {post.style_tags[0] ? (
                       <ContentLabels
                         isSensitive={post.is_sensitive}
@@ -1386,9 +1503,11 @@ export default async function Home({
                         subjectType="feed_post"
                       />
                     ) : null}
-                    <p className="text-sm leading-6">{post.caption}</p>
+                    {!isPostLocked ? (
+                      <p className="text-sm leading-6">{post.caption}</p>
+                    ) : null}
                     <TranslationCue preferredLanguage={preferredLanguage} />
-                    {post.post_comments.length ? (
+                    {!isPostLocked && post.post_comments.length ? (
                       <div className="space-y-2 border-t border-[#e5ded4] pt-3">
                         {post.post_comments.slice(0, 2).map((comment) => (
                           <p className="text-sm leading-5" key={comment.id}>
@@ -1445,7 +1564,8 @@ export default async function Home({
                   <SponsoredSlot campaign={fourUAd} placement="4u-feed" />
                 ) : null}
                 </div>
-              ))
+                );
+              })
             ) : (
               <div className="p-4">
                 <EmptyColumnState
@@ -1478,7 +1598,10 @@ export default async function Home({
             </div>
             <div className="space-y-3">
               {visibleThreadPosts.length
-                ? visibleThreadPosts.map((thread, index) => (
+                ? visibleThreadPosts.map((thread, index) => {
+                    const isThreadLocked = !canViewSensitiveContent(thread, viewer);
+
+                    return (
                     <div key={thread.id}>
                     <article
                       className="ttc-card scroll-mt-28 rounded-md border border-[#cfc8bd] bg-white p-4"
@@ -1502,9 +1625,21 @@ export default async function Home({
                           </p>
                         </div>
                       </div>
-                      <p className="text-sm leading-6">{thread.body}</p>
+                      {!isThreadLocked ? (
+                        <p className="text-sm leading-6">{thread.body}</p>
+                      ) : (
+                        <p className="rounded-md border border-[#e5c58f] bg-[#fff7ec] px-3 py-2 text-sm leading-6 text-[#7a4a08]">
+                          Sensitive body-art discussion is hidden until you sign
+                          in and confirm 18+.
+                        </p>
+                      )}
                       <TranslationCue preferredLanguage={preferredLanguage} />
-                      <ThreadImage media={thread.thread_media[0]} />
+                      <ThreadImage
+                        isLocked={isThreadLocked}
+                        isSignedIn={isSignedIn}
+                        media={thread.thread_media[0]}
+                        returnPath={`/?message=18%2B%20terms%20accepted.#thread-${thread.id}`}
+                      />
                       <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[#e5ded4] pt-3">
                         <div className="flex flex-wrap items-center gap-4">
                           <form action={toggleThreadLike}>
@@ -1652,7 +1787,8 @@ export default async function Home({
                       <SponsoredSlot campaign={gossipAd} placement="gossip-feed" />
                     ) : null}
                     </div>
-                  ))
+                    );
+                  })
                 : (
                     <EmptyColumnState
                       actionHref={
@@ -1684,14 +1820,20 @@ export default async function Home({
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {visibleListings.length
-                ? visibleListings.map((listing, index) => (
+                ? visibleListings.map((listing, index) => {
+                    const isListingLocked = !canViewSensitiveContent(listing, viewer);
+
+                    return (
                     <div key={listing.id}>
                     <article
                       className="ttc-card scroll-mt-28 rounded-md border border-[#cfc8bd] bg-white p-4"
                       id={`stuff-${listing.id}`}
                     >
                       <div className="mb-3 flex items-center gap-3">
-                        <ListingThumb media={listing.marketplace_media[0]} />
+                        <ListingThumb
+                          isLocked={isListingLocked}
+                          media={listing.marketplace_media[0]}
+                        />
                         <div>
                           <p className="text-sm font-semibold">
                             <Link
@@ -1715,9 +1857,16 @@ export default async function Home({
                       <p className="mb-2 text-lg font-bold">
                         {formatPrice(listing)}
                       </p>
-                      <p className="line-clamp-3 text-sm leading-6 text-[#4f473f]">
-                        {listing.description || "No description yet."}
-                      </p>
+                      {!isListingLocked ? (
+                        <p className="line-clamp-3 text-sm leading-6 text-[#4f473f]">
+                          {listing.description || "No description yet."}
+                        </p>
+                      ) : (
+                        <p className="rounded-md border border-[#e5c58f] bg-[#fff7ec] px-3 py-2 text-sm leading-6 text-[#7a4a08]">
+                          Sensitive listing media is blurred until login and 18+
+                          confirmation.
+                        </p>
+                      )}
                       <p className="mt-3 text-xs text-[#766d62]">
                         {[listing.city, listing.region].filter(Boolean).join(", ") ||
                           listing.profiles?.display_name ||
@@ -1828,7 +1977,8 @@ export default async function Home({
                       <SponsoredSlot campaign={stuffAd} placement="stuff-feed" />
                     ) : null}
                     </div>
-                  ))
+                    );
+                  })
                 : (
                     <div className="sm:col-span-2">
                       <EmptyColumnState
@@ -1866,14 +2016,20 @@ export default async function Home({
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {visibleGigs.length
-                ? visibleGigs.map((gig) => (
+                ? visibleGigs.map((gig) => {
+                    const isGigLocked = !canViewSensitiveContent(gig, viewer);
+
+                    return (
                     <article
                       className="ttc-card scroll-mt-28 rounded-md border border-[#cfc8bd] bg-white p-4"
                       id={`gig-${gig.id}`}
                       key={gig.id}
                     >
                       <div className="mb-3 flex items-start gap-3">
-                        <ListingThumb media={gig.gig_media[0]} />
+                        <ListingThumb
+                          isLocked={isGigLocked}
+                          media={gig.gig_media[0]}
+                        />
                         <div className="min-w-0">
                           <Link
                             className="text-sm font-semibold hover:underline"
@@ -1903,9 +2059,16 @@ export default async function Home({
                             "Remote / open"}
                         </span>
                       </div>
-                      <p className="line-clamp-4 text-sm leading-6 text-[#4f473f]">
-                        {gig.description || "No details yet."}
-                      </p>
+                      {!isGigLocked ? (
+                        <p className="line-clamp-4 text-sm leading-6 text-[#4f473f]">
+                          {gig.description || "No details yet."}
+                        </p>
+                      ) : (
+                        <p className="rounded-md border border-[#e5c58f] bg-[#fff7ec] px-3 py-2 text-sm leading-6 text-[#7a4a08]">
+                          Sensitive gig media is blurred until login and 18+
+                          confirmation.
+                        </p>
+                      )}
                       {gig.compensation ? (
                         <p className="mt-3 text-sm font-semibold">
                           {gig.compensation}
@@ -2019,7 +2182,8 @@ export default async function Home({
                         )}
                       </div>
                     </article>
-                  ))
+                    );
+                  })
                 : (
                     <div className="sm:col-span-2">
                       <EmptyColumnState

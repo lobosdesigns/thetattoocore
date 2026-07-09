@@ -59,6 +59,7 @@
 - Sensitive or body-art nudity links must not expose the media in social previews; use the site logo/brand card as the share image instead.
 - When a logged-out visitor opens sensitive shared content, show the post area blurred with an overlay card that says "you must sign in to see content."
 - If a signed-in user has not accepted the adult body-art terms yet, sensitive shared content should ask for 18+ confirmation instead of telling them to sign in again.
+- Main app feeds should keep public-preview sensitive posts visible only as blurred, non-clickable media with locked captions/comments until the viewer signs in and confirms 18+.
 - Public previews should not expose full comment threads, full profile browsing, posting tools, messaging, follower lists, or full-resolution sensitive media.
 - Profile and site-level share metadata should include brand-safe image alt text; public profile cards can use public non-sensitive work, while private profiles use the brand shield.
 - Content marked sensitive, adult, or body-art nudity must not be visible to logged-out public visitors.
