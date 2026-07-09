@@ -83,10 +83,16 @@ const notificationGroups = [
 ] as const;
 
 const notificationSummary = [
-  ["Social", "Follow requests"],
-  ["DM", "Messages and replies"],
-  ["Content", "4U and Gossip"],
-  ["Commerce", "Stuff and Gigs"],
+  ["Live now", "In-app alerts and badges"],
+  ["Next", "Email for important account events"],
+  ["PWA", "Browser push after install"],
+  ["Apps", "Native iOS and Android push"],
+] as const;
+
+const pushRoadmap = [
+  "Current switches control in-app notifications and unread badges.",
+  "The same choices will feed email and web push when those channels are turned on.",
+  "Native app push will use APNs for iPhone and FCM for Android after app-store builds.",
 ] as const;
 
 function RequiredMark() {
@@ -380,8 +386,9 @@ export function ProfileForm({
           <div>
             <h2 className="text-sm font-bold">Notification preferences</h2>
             <p className="mt-1 text-xs leading-5 text-[#766d62]">
-              Choose which in-app notifications create alerts and badges. Email
-              delivery can follow these same choices later.
+              Choose which in-app notifications create alerts and badges now.
+              These same choices will become the base for email, PWA push, and
+              native app push later.
             </p>
           </div>
           <span className="w-fit rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-semibold text-[#4f473f]">
@@ -402,6 +409,16 @@ export function ProfileForm({
                 <p className="mt-1 text-sm font-semibold">{description}</p>
               </div>
             ))}
+          </div>
+          <div className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3">
+            <p className="text-xs font-bold uppercase text-[#766d62]">
+              Push roadmap
+            </p>
+            <ul className="mt-2 grid gap-2 text-xs leading-5 text-[#4f473f]">
+              {pushRoadmap.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
           </div>
           {notificationGroups.map((group) => (
             <div

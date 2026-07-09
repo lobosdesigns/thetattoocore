@@ -7,6 +7,7 @@ import {
   Check,
   Heart,
   MessageCircle,
+  Smartphone,
   Settings,
   UserPlus,
 } from "lucide-react";
@@ -165,6 +166,22 @@ export default async function NotificationsPage() {
             </div>
           </div>
         </header>
+
+        <section className="border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-4">
+          <div className="flex gap-3 rounded-md border border-[#d8d1c6] bg-white p-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-[#c8953b]">
+              <Smartphone className="size-5" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold">Push notifications later</h2>
+              <p className="mt-1 text-xs leading-5 text-[#766d62]">
+                In-app alerts and badges are live now. These preferences will
+                carry forward to email, installed-web-app push, and native
+                iOS/Android push when those channels are added.
+              </p>
+            </div>
+          </div>
+        </section>
 
         <section className="divide-y divide-[#cfc8bd]">
           {notifications?.length ? (

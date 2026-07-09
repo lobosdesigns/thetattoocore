@@ -6,6 +6,7 @@
 - Threads: longer posts, optional image, replies, likes, and community discussion.
 - Marketplace/Stuff: verified artists, studios, and vendors can buy, sell, and trade approved body-art goods and services; fans can browse but not transact or contact sellers.
 - Messages: integrated direct messenger for bookings, marketplace questions, and collaboration.
+- Notifications: in-app alerts and unread badges first, important email second, PWA browser push third, then native APNs/FCM push for iOS and Android apps.
 - Composer: one floating plus button that opens the correct posting form for the current column.
 - Mobile composer: posting cards must fit mobile browser screens, scroll to the publish button, and keep advanced fields behind expandable sections.
 - Reporting: report controls should look like a small intentional action, then open a separate report card or dropdown so users do not confuse it with normal post options.
@@ -16,6 +17,16 @@
 - Photos, feed media, reels, listing media, gig media, and DM attachments should be tappable/clickable and open in an Instagram-style lightbox with zoom for images and focused playback for videos.
 - Lightbox controls should reset cleanly between opens, support Escape/backdrop closing, and explain zoom or playback behavior without cluttering the feed.
 - Stories: add temporary story posts later for artists, studios, vendors, events, and community moments after the core feed, Gossip, Stuff, Gigs, and DMs are stable.
+
+## Notification Roadmap
+
+- Keep the MVP notification system in-app first: unread badges, notification center, DMs, follow requests, comments, likes, verification decisions, Stuff seller messages, and Gigs activity.
+- Store notification preferences on the profile now so the same choices can later control email, web push, and native push.
+- Add transactional email only for important account, verification, security, and marketplace/gig events before adding noisy social email.
+- Add PWA web push after the app is installable and core flows are stable; Android and desktop Chrome are the easiest starting path, while iPhone installed-PWA push has more limits.
+- Add native app push after mobile app builds exist: APNs for iOS and Firebase Cloud Messaging for Android.
+- Later store push device tokens separately from profile preferences, with per-device opt-out, token revocation, and no plaintext secrets in the public client.
+- Push should respect quiet hours and category preferences before launch so the app does not feel spammy.
 
 ## Platform Stance
 
