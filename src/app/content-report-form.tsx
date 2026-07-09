@@ -23,7 +23,7 @@ export function ContentReportForm({
       </summary>
       <form
         action={createContentReport}
-        className="absolute right-0 z-20 mt-2 w-[min(20rem,calc(100vw-3rem))] rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 shadow-xl"
+        className="absolute left-0 z-20 mt-2 w-[min(20rem,calc(100vw-3rem))] rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 shadow-xl sm:left-auto sm:right-0"
       >
         <input name="subject_id" type="hidden" value={subjectId} />
         <input name="subject_type" type="hidden" value={subjectType} />

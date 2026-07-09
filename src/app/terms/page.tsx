@@ -36,6 +36,16 @@ const sections = [
   },
   {
     body:
+      "TheTattooCore is built for real body-art people and real work. The platform does not use AI-generated art, AI search, AI feeds, or AI creator-replacement features as a community value. Unsafe scratcher activity, unlicensed studio promotion, and sales of professional equipment to unqualified buyers are not allowed where the platform can reasonably enforce it.",
+    title: "No AI And No Scratchers",
+  },
+  {
+    body:
+      "TheTattooCore is intended to support independent artists, studios, collectors, and ethical vendors rather than corporate takeover pressure in the tattoo and body-art industry. Members should use the platform to express body-art culture freely while staying inside safety, consent, legality, adult-content, and anti-exploitation rules.",
+    title: "Independent Body-Art Community",
+  },
+  {
+    body:
       "Admins and moderators may hide, remove, restrict, or escalate content and accounts that violate these rules or create safety risk. Reports can be reviewed for nudity/body-art context, sexual content, minors, harassment, scams, unsafe practices, illegal goods or services, and other abuse.",
     title: "Moderation",
   },

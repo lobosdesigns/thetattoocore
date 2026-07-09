@@ -8,6 +8,12 @@ const setupSteps = [
   ["3", "Post with +", "Use the bottom-right plus button in 4U, Gossip, Stuff, or Gigs."],
 ] as const;
 
+const stanceItems = [
+  ["No AI feed", "No AI art, AI search, or AI creator replacement."],
+  ["No scratchers", "Unsafe or unlicensed tattooing is not welcome."],
+  ["Pro Stuff", "Buy, sell, trade, and vendor contact require verification."],
+] as const;
+
 export const metadata: Metadata = {
   robots: {
     follow: false,
@@ -43,10 +49,22 @@ export default async function LoginPage({
               context without being pornographic.
             </p>
 
+            <div className="mt-5 grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
+              {stanceItems.map(([title, body]) => (
+                <div
+                  className="rounded-md border border-[#c8953b]/35 bg-[#c8953b]/10 p-3"
+                  key={title}
+                >
+                  <p className="text-sm font-bold text-[#f3c15f]">{title}</p>
+                  <p className="mt-1 text-xs leading-5 text-white/70">{body}</p>
+                </div>
+              ))}
+            </div>
+
             <div className="mt-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
               {setupSteps.map(([number, title, body]) => (
                 <div
-                    className="rounded-md border border-white/15 bg-white/5 p-3"
+                  className="rounded-md border border-white/15 bg-white/5 p-3"
                   key={number}
                 >
                   <span className="inline-flex size-7 items-center justify-center rounded-md bg-white text-sm font-bold text-[#171412]">
