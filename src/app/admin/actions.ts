@@ -10,7 +10,7 @@ type ModerationStatus = "active" | "under_review" | "hidden" | "removed";
 type ReportStatus = "open" | "reviewing" | "resolved" | "dismissed";
 type LicenseVerificationStatus = "approved" | "rejected";
 type UserStatus = "active" | "suspended" | "banned";
-type AdCampaignStatus = "approved" | "active" | "paused" | "rejected";
+type AdCampaignStatus = "approved" | "active" | "paused" | "rejected" | "archived";
 
 const moderatorRoles = new Set<UserRole>(["moderator", "admin", "owner"]);
 const statuses = new Set<ModerationStatus>([
@@ -36,6 +36,7 @@ const adCampaignStatuses = new Set<AdCampaignStatus>([
   "active",
   "paused",
   "rejected",
+  "archived",
 ]);
 
 const subjectConfig = {

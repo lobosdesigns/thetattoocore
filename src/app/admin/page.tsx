@@ -289,6 +289,7 @@ function auditActivityLabel(eventType: string, metadata: ActivityMetadata | null
   if (eventType === "ad_campaign_active") return "Activated ad campaign";
   if (eventType === "ad_campaign_paused") return "Paused ad campaign";
   if (eventType === "ad_campaign_rejected") return "Rejected ad campaign";
+  if (eventType === "ad_campaign_archived") return "Archived ad campaign";
 
   return activityLabel(eventType);
 }
@@ -873,17 +874,20 @@ function AdCampaignCard({ campaign }: { campaign: AdCampaign }) {
           name="note"
           placeholder="Reviewer note"
         />
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           {[
             ["approved", "Approve"],
             ["active", "Activate"],
             ["paused", "Pause"],
             ["rejected", "Reject"],
+            ["archived", "Archive"],
           ].map(([value, label]) => (
             <button
               className={
                 value === "active"
                   ? "h-10 rounded-md bg-[#171412] px-2 text-sm font-semibold text-white"
+                  : value === "archived"
+                    ? "h-10 rounded-md border border-[#e5b8b8] bg-[#fff0f0] px-2 text-sm font-semibold text-[#8a2828] hover:bg-[#f6dfdf]"
                   : "h-10 rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 text-sm font-semibold hover:bg-[#f7f4ef]"
               }
               key={value}
@@ -1149,7 +1153,14 @@ export default async function AdminPage({
       .select(
         "id, name, title, body, target_url, campaign_type, goal, status, bid_cents, daily_budget_cents, country_code, region, city, language, keywords, starts_at, ends_at, reviewer_note, created_at, profiles:profiles!ad_campaigns_advertiser_id_fkey(display_name, username), ad_campaign_placements(placement), ad_events(event_type)",
       )
-      .in("status", ["pending_review", "approved", "active", "paused", "rejected"])
+      .in("status", [
+        "pending_review",
+        "approved",
+        "active",
+        "paused",
+        "rejected",
+        "archived",
+      ])
       .order("created_at", { ascending: false })
       .limit(12)
       .returns<
