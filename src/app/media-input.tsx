@@ -23,9 +23,14 @@ type SelectedMedia = {
 };
 
 const inputClass =
-  "block w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#efe7da] file:px-3 file:py-1.5 file:text-sm file:font-semibold";
+  "block w-full rounded-md border border-[#cfc8bd] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#e8e4dc] file:px-3 file:py-1.5 file:text-sm file:font-semibold";
 const maxImageEdge = 2200;
-const imageCompressionQuality = 0.86;
+const compressionPasses = [
+  { edge: 2200, quality: 0.86 },
+  { edge: 1800, quality: 0.78 },
+  { edge: 1400, quality: 0.7 },
+  { edge: 1200, quality: 0.62 },
+] as const;
 
 function formatBytes(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -67,38 +72,59 @@ function replaceInputFile(input: HTMLInputElement, file: File) {
   input.files = transfer.files;
 }
 
-async function compressImageFile(file: File) {
-  if (file.type === "image/gif") return file;
-  if (!file.type.startsWith("image/")) return file;
-
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, maxImageEdge / Math.max(bitmap.width, bitmap.height));
-
-  if (scale === 1 && file.size <= 2 * 1024 * 1024) {
-    bitmap.close();
-    return file;
-  }
-
+async function canvasBlobForImage({
+  bitmap,
+  edge,
+  quality,
+}: {
+  bitmap: ImageBitmap;
+  edge: number;
+  quality: number;
+}) {
+  const scale = Math.min(1, edge / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.max(1, Math.round(bitmap.width * scale));
   canvas.height = Math.max(1, Math.round(bitmap.height * scale));
 
   const context = canvas.getContext("2d");
-  if (!context) {
+  if (!context) return null;
+
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+
+  return new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, "image/webp", quality);
+  });
+}
+
+async function compressImageFile(file: File, targetBytes: number) {
+  if (file.type === "image/gif") return file;
+  if (!file.type.startsWith("image/")) return file;
+
+  const bitmap = await createImageBitmap(file);
+
+  if (
+    Math.max(bitmap.width, bitmap.height) <= maxImageEdge &&
+    file.size <= Math.min(targetBytes, 2 * 1024 * 1024)
+  ) {
     bitmap.close();
     return file;
   }
 
-  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  let bestBlob: Blob | null = null;
+
+  for (const pass of compressionPasses) {
+    const blob = await canvasBlobForImage({ bitmap, ...pass });
+
+    if (!blob) continue;
+    if (!bestBlob || blob.size < bestBlob.size) bestBlob = blob;
+    if (blob.size <= targetBytes) break;
+  }
+
   bitmap.close();
 
-  const blob = await new Promise<Blob | null>((resolve) => {
-    canvas.toBlob(resolve, "image/webp", imageCompressionQuality);
-  });
+  if (!bestBlob || bestBlob.size >= file.size) return file;
 
-  if (!blob || blob.size >= file.size) return file;
-
-  return fileFromBlob(blob, file);
+  return fileFromBlob(bestBlob, file);
 }
 
 async function videoDuration(file: File) {
@@ -158,9 +184,15 @@ export function MediaInput({
       return;
     }
 
+    const originalMediaType = mediaTypeFor(file);
+    const originalMaxBytes =
+      originalMediaType === "video" ? maxVideoBytes : maxImageBytes;
+
     setIsOptimizing(file.type.startsWith("image/") && file.type !== "image/gif");
 
-    const optimizedFile = await compressImageFile(file).catch(() => file);
+    const optimizedFile = await compressImageFile(file, originalMaxBytes).catch(
+      () => file,
+    );
     if (optimizedFile !== file) {
       replaceInputFile(input, optimizedFile);
     }
@@ -220,7 +252,7 @@ export function MediaInput({
       />
       <p className="text-xs leading-5 text-[#766d62]">{guidance}</p>
       {isOptimizing && !selected ? (
-        <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3 text-xs font-semibold text-[#766d62]">
+        <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 text-xs font-semibold text-[#766d62]">
           Optimizing image before upload...
         </div>
       ) : null}
@@ -229,7 +261,7 @@ export function MediaInput({
           className={`rounded-md border p-3 ${
             selected.error
               ? "border-red-300 bg-red-50 text-red-800"
-              : "border-[#d8d1c6] bg-[#f7f4ef] text-[#171412]"
+              : "border-[#cfc8bd] bg-[#fffdf9] text-[#171412]"
           }`}
         >
           <div className="flex gap-3">

@@ -294,6 +294,10 @@ export async function inspectMediaFile(file: File): Promise<MediaMetadata> {
 }
 
 export function validateMediaMetadata(metadata: MediaMetadata) {
+  if (!metadata.detectedMimeType) {
+    return "The file could not be verified as a supported image or video.";
+  }
+
   if (
     !IMAGE_MIME_TYPES.has(metadata.mimeType) &&
     !VIDEO_MIME_TYPES.has(metadata.mimeType)
@@ -301,12 +305,23 @@ export function validateMediaMetadata(metadata: MediaMetadata) {
     return "Use a JPG, PNG, WebP, GIF, MP4, MOV, or WebM file.";
   }
 
+  if (
+    metadata.mediaType === "image" &&
+    (!metadata.width || !metadata.height)
+  ) {
+    return "The image dimensions could not be read.";
+  }
+
   if (metadata.mediaType === "image" && metadata.fileSizeBytes > 10 * 1024 * 1024) {
-    return "Images can be up to 10 MB right now.";
+    return "Images can be up to 10 MB after optimization.";
   }
 
   if (metadata.mediaType === "video" && metadata.fileSizeBytes > 50 * 1024 * 1024) {
     return "Videos can be up to 50 MB right now.";
+  }
+
+  if (metadata.mediaType === "video" && metadata.durationSeconds == null) {
+    return "The video duration could not be read. Use an MP4 or MOV clip up to 60 seconds.";
   }
 
   if (
