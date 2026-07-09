@@ -92,6 +92,18 @@ function adLabel(value: string) {
   return value.replaceAll("_", " ");
 }
 
+const verificationStandards = [
+  "Artists and studios must show current licensing, certification, or local legal proof before professional access is approved.",
+  "Vendors must show proper business licensing before vendor access, seller contact, or Stuff trading is approved.",
+  "Stuff stays browseable for fans, but buy, sell, trade, and seller-contact actions are reserved for verified artists, studios, and vendors.",
+] as const;
+
+const advertisingStandards = [
+  "Artist growth campaigns can appear in 4U and Gossip for leads, messages, and engagement.",
+  "Stuff campaigns stay in Stuff and focus on listing views, eligible seller messages, and marketplace engagement.",
+  "Targeting stays simple: coarse location, language, style keywords, category, and chosen placement.",
+] as const;
+
 function dollars(cents: number) {
   return Intl.NumberFormat("en-US", {
     currency: "USD",
@@ -248,6 +260,16 @@ export default async function AccountPage({
               <p className="mt-2 text-xs font-semibold text-[#766d62]">
                 Accepted files: PDF, JPG, PNG, or WebP up to 10 MB.
               </p>
+              <div className="mt-4 grid gap-2">
+                {verificationStandards.map((standard) => (
+                  <p
+                    className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#4f473f]"
+                    key={standard}
+                  >
+                    {standard}
+                  </p>
+                ))}
+              </div>
               {isLicenseVerified ? (
                 <p className="mt-3 rounded-md bg-[#171412] px-3 py-2 text-sm font-semibold text-white">
                   Your {profile?.account_type} profile is license verified.
@@ -359,6 +381,16 @@ export default async function AccountPage({
               your profile to submit license, certification, or business
               documents.
             </p>
+            <div className="mt-4 grid gap-2">
+              {verificationStandards.map((standard) => (
+                <p
+                  className="rounded-md border border-[#e5ded4] bg-[#f7f4ef] px-3 py-2 text-xs leading-5 text-[#4f473f]"
+                  key={standard}
+                >
+                  {standard}
+                </p>
+              ))}
+            </div>
           </section>
         )}
 
@@ -373,6 +405,16 @@ export default async function AccountPage({
               for admin review. Artist growth ads can run in 4U and Gossip.
               Stuff ads stay in Stuff.
             </p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              {advertisingStandards.map((standard) => (
+                <p
+                  className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#4f473f]"
+                  key={standard}
+                >
+                  {standard}
+                </p>
+              ))}
+            </div>
           </div>
 
           {adCampaigns?.length ? (

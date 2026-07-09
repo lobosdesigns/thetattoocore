@@ -16,8 +16,18 @@ const sections = [
   },
   {
     body:
+      "Sensitive body-art content should not be exposed to logged-out visitors or social previews. When shared content is marked sensitive, public previews should use brand-safe text or logo imagery until the viewer signs in and accepts the 18+ body-art terms.",
+    title: "Sensitive Previews",
+  },
+  {
+    body:
       "Direct messages are for conversation participants. Admin and safety review access may be added only where needed to investigate abuse, legal risk, spam, or platform safety issues.",
     title: "Messages",
+  },
+  {
+    body:
+      "License, certification, and business documents for artists, studios, and vendors are private review materials. They should be visible only to the submitting account and authorized admins or moderators who need them for verification decisions.",
+    title: "Verification Documents",
   },
   {
     body:
@@ -26,8 +36,13 @@ const sections = [
   },
   {
     body:
-      "The planned ad system should use simple targeting such as country, region, city, language, style keywords, marketplace category, and placement. It should avoid hidden behavioral profiling, sensitive personal targeting, and adult/minor targeting.",
+      "The planned ad system should use simple targeting such as country, region, city, language, style keywords, marketplace category, and placement. It should avoid hidden behavioral profiling, sensitive personal targeting, adult/minor targeting, AI ad expansion, and opaque lookalike-style automation.",
     title: "Ads",
+  },
+  {
+    body:
+      "TheTattooCore is not being built around AI art, AI search, AI feeds, or AI creator-replacement tools. Privacy-sensitive product decisions should favor clear member controls, manual review where needed, and understandable ranking or placement rules.",
+    title: "No AI Platform Direction",
   },
   {
     body:

@@ -25,6 +25,7 @@
 - Support freedom of body-art expression and avoid unnecessary censorship when content follows safety, consent, legality, and adult-content guidelines.
 - Draw firm safety lines around pornography, sexualized content, exploitation, minors, harassment, scams, unsafe practices, and content showing unprofessional or potentially deadly harm.
 - Position the community as a safe space for body-art culture to express itself without unwanted AI, spam, or unprofessional practice watering it down.
+- Launch trust surfaces should repeat these values in user-facing places, including `/login`, `/terms`, `/privacy`, account verification, and account advertising settings.
 
 ## Visual Direction
 
@@ -117,6 +118,7 @@
 - Stuff ads should run only inside Stuff, using the same simple bidding and rotation model but never leaking into 4U or Gossip.
 - Stuff ad goals should focus on listing views, seller messages from eligible users, and marketplace engagement.
 - Safety rules: no sensitive personal targeting, no hidden behavioral profiling, no adult/minor targeting, and clear sponsor labels.
+- Privacy language should also reject AI ad expansion, opaque lookalike-style automation, and confusing ad targeting that members cannot understand.
 - Advertiser flow: create campaign, upload creative, choose regions/languages/keywords, set bid/budget, submit for admin review.
 - Admin flow: approve/reject campaigns, pause campaigns, inspect spend/impressions/clicks, and moderate creative.
 
