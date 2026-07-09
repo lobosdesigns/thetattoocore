@@ -146,7 +146,7 @@ function UnsaveButton({
       <input name="subject_type" type="hidden" value={subjectType} />
       <input name="saved" type="hidden" value="true" />
       <input name="return_path" type="hidden" value="/saved" />
-      <button className="flex h-9 items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3 text-xs font-semibold">
+      <button className="flex h-9 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-xs font-semibold hover:border-[#c8953b]">
         <Bookmark className="size-4 fill-[#171412]" />
         Saved
       </button>
@@ -349,14 +349,14 @@ export default async function SavedPage({
     .filter(Boolean) as SavedCard[];
 
   return (
-    <main className="min-h-screen bg-[#f5f2eb] text-[#171412]">
-      <div className="mx-auto min-h-screen max-w-4xl bg-[#fffdf9]">
-        <header className="sticky top-0 z-10 border-b border-[#e5ded4] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur">
+    <main className="min-h-screen bg-[#202020] text-[#171412]">
+      <div className="mx-auto min-h-screen max-w-4xl bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
+        <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <Link
                 aria-label="Back to home"
-                className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#d8d1c6] bg-white"
+                className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
                 href="/"
               >
                 <ArrowLeft className="size-5" />
@@ -371,7 +371,7 @@ export default async function SavedPage({
             <div className="flex items-center gap-2">
               <Link
                 aria-label="Search"
-                className="flex size-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white"
+                className="flex size-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
                 href="/search"
               >
                 <Search className="size-5" />
@@ -382,7 +382,7 @@ export default async function SavedPage({
         </header>
 
         {params.message ? (
-          <p className="border-b border-[#d8d1c6] bg-[#efe7da] px-4 py-3 text-sm font-semibold">
+          <p className="border-b border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 text-sm font-semibold">
             {params.message}
           </p>
         ) : null}
@@ -393,7 +393,7 @@ export default async function SavedPage({
               {cards.length} saved item{cards.length === 1 ? "" : "s"}
             </p>
             <Link
-              className="flex h-9 items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-3 text-xs font-semibold"
+              className="flex h-9 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-xs font-semibold hover:border-[#c8953b]"
               href="/search"
             >
               Find more
@@ -407,12 +407,12 @@ export default async function SavedPage({
 
                 return (
                   <article
-                    className="rounded-md border border-[#d8d1c6] bg-white p-4"
+                    className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4"
                     key={`${card.subjectType}:${card.id}`}
                   >
                     <div className="mb-3 flex items-start justify-between gap-3">
                       <div className="flex min-w-0 items-start gap-3">
-                        <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-[#c8953b]">
                           <Icon className="size-5" />
                         </div>
                         <div className="min-w-0">
@@ -453,7 +453,7 @@ export default async function SavedPage({
               })}
             </div>
           ) : (
-            <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-6 text-center">
+            <div className="ttc-card rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-6 text-center">
               <Bookmark className="mx-auto mb-3 size-8" />
               <h2 className="text-lg font-bold">No saved items yet</h2>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#766d62]">

@@ -177,13 +177,15 @@ function SearchSection({
   title: string;
 }) {
   return (
-    <section className="border-t border-[#e5ded4] px-4 py-5">
+    <section className="border-t border-[#cfc8bd] px-4 py-5">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Icon className="size-5" />
+          <span className="flex size-8 items-center justify-center rounded-md bg-[#171412] text-[#c8953b]">
+            <Icon className="size-4" />
+          </span>
           <h2 className="text-lg font-bold">{title}</h2>
         </div>
-        <span className="rounded-md bg-[#efe7da] px-2 py-1 text-xs font-semibold">
+        <span className="rounded-md bg-[#c8953b] px-2 py-1 text-xs font-bold text-[#171412]">
           {count}
         </span>
       </div>
@@ -194,7 +196,7 @@ function SearchSection({
 
 function EmptySection({ label }: { label: string }) {
   return (
-    <p className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4 text-sm text-[#766d62]">
+    <p className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-4 text-sm text-[#766d62] shadow-sm">
       No {label} found.
     </p>
   );
@@ -202,7 +204,7 @@ function EmptySection({ label }: { label: string }) {
 
 function ResultAction({ children }: { children: React.ReactNode }) {
   return (
-    <span className="mt-3 inline-flex h-8 items-center rounded-md border border-[#d8d1c6] bg-white px-3 text-xs font-semibold text-[#171412]">
+    <span className="mt-3 inline-flex h-8 items-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-xs font-semibold text-[#171412]">
       {children}
     </span>
   );
@@ -363,20 +365,20 @@ export default async function SearchPage({
     (gigs?.length ?? 0);
 
   return (
-    <main className="min-h-screen bg-[#f5f2eb] text-[#171412]">
-      <div className="mx-auto min-h-screen max-w-4xl bg-[#fffdf9]">
-        <header className="sticky top-0 z-10 border-b border-[#e5ded4] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur">
+    <main className="min-h-screen bg-[#202020] text-[#171412]">
+      <div className="mx-auto min-h-screen max-w-4xl bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
+        <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
           <div className="flex items-center gap-3">
             <Link
               aria-label="Back to home"
-              className="flex size-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white"
+              className="flex size-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
               href="/"
             >
               <ArrowLeft className="size-5" />
             </Link>
             <form
               action="/search"
-              className="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3"
+              className="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 shadow-sm"
             >
               <Search className="size-4 shrink-0 text-[#766d62]" />
               <input
@@ -409,24 +411,24 @@ export default async function SearchPage({
             <input name="q" type="hidden" value={query} />
             <input name="type" type="hidden" value={type === "all" ? "" : type} />
             <input
-              className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              className="h-10 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm outline-none focus:border-[#171412]"
               defaultValue={category}
               name="category"
               placeholder="category"
             />
             <input
-              className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              className="h-10 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm outline-none focus:border-[#171412]"
               defaultValue={city}
               name="city"
               placeholder="city"
             />
             <input
-              className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              className="h-10 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm outline-none focus:border-[#171412]"
               defaultValue={region}
               name="region"
               placeholder="state / region"
             />
-            <button className="h-10 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold">
+            <button className="h-10 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-4 text-sm font-semibold">
               Filter
             </button>
           </form>
@@ -440,8 +442,10 @@ export default async function SearchPage({
               ["gigs", "Gigs"],
             ].map(([value, label]) => (
               <Link
-                className={`flex h-9 shrink-0 items-center rounded-md border border-[#d8d1c6] px-3 text-sm font-semibold ${
-                  type === value ? "bg-[#171412] text-white" : "bg-white"
+                className={`flex h-9 shrink-0 items-center rounded-md border px-3 text-sm font-semibold ${
+                  type === value
+                    ? "border-[#171412] bg-[#171412] text-white shadow-[0_6px_16px_rgba(23,20,18,0.16)]"
+                    : "border-[#cfc8bd] bg-[#fffdf9] hover:border-[#c8953b]"
                 }`}
                 href={typedHref(value as SearchType, typedParams)}
                 key={value}
@@ -460,7 +464,7 @@ export default async function SearchPage({
                 <div className="grid gap-3 sm:grid-cols-2">
                   {profiles.map((profile) => (
                     <Link
-                      className="flex items-center gap-3 rounded-md border border-[#d8d1c6] bg-white p-4"
+                      className="ttc-card flex items-center gap-3 rounded-md border border-[#cfc8bd] bg-white p-4"
                       href={`/u/${profile.username}`}
                       key={profile.id}
                     >
@@ -498,7 +502,7 @@ export default async function SearchPage({
                 <div className="space-y-3">
                   {feedPosts.map((post) => (
                     <Link
-                      className="block rounded-md border border-[#d8d1c6] bg-white p-4"
+                      className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-4"
                       href={`/#feed-${post.id}`}
                       key={post.id}
                     >
@@ -533,7 +537,7 @@ export default async function SearchPage({
                 <div className="space-y-3">
                   {threads.map((thread) => (
                     <Link
-                      className="block rounded-md border border-[#d8d1c6] bg-white p-4"
+                      className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-4"
                       href={`/#thread-${thread.id}`}
                       key={thread.id}
                     >
@@ -567,7 +571,7 @@ export default async function SearchPage({
                 <div className="grid gap-3 sm:grid-cols-2">
                   {listings.map((listing) => (
                     <Link
-                      className="block rounded-md border border-[#d8d1c6] bg-white p-4"
+                      className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-4"
                       href={`/stuff/${listing.id}`}
                       key={listing.id}
                     >
@@ -603,7 +607,7 @@ export default async function SearchPage({
                 <div className="grid gap-3 sm:grid-cols-2">
                   {gigs.map((gig) => (
                     <Link
-                      className="block rounded-md border border-[#d8d1c6] bg-white p-4"
+                      className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-4"
                       href={`/gigs/${gig.id}`}
                       key={gig.id}
                     >
