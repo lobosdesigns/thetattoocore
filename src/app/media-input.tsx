@@ -7,6 +7,7 @@ type MediaInputProps = {
   accept: string;
   maxImageBytes?: number;
   maxVideoBytes?: number;
+  maxVideoSeconds?: number;
   name: string;
   required?: boolean;
   videoAllowed?: boolean;
@@ -18,6 +19,7 @@ type SelectedMedia = {
   mediaType: "image" | "video" | "unknown";
   originalFileSize: number | null;
   previewUrl: string | null;
+  videoDurationSeconds: number | null;
 };
 
 const inputClass =
@@ -29,6 +31,13 @@ function formatBytes(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
 
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function formatSeconds(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  const remainder = Math.round(seconds % 60);
+
+  return `${minutes}:${String(remainder).padStart(2, "0")}`;
 }
 
 function mediaTypeFor(file: File): SelectedMedia["mediaType"] {
@@ -92,10 +101,33 @@ async function compressImageFile(file: File) {
   return fileFromBlob(blob, file);
 }
 
+async function videoDuration(file: File) {
+  if (!file.type.startsWith("video/")) return null;
+
+  const objectUrl = URL.createObjectURL(file);
+
+  try {
+    return await new Promise<number | null>((resolve) => {
+      const video = document.createElement("video");
+
+      video.preload = "metadata";
+      video.onloadedmetadata = () => {
+        const duration = Number.isFinite(video.duration) ? video.duration : null;
+        resolve(duration);
+      };
+      video.onerror = () => resolve(null);
+      video.src = objectUrl;
+    });
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 export function MediaInput({
   accept,
   maxImageBytes = 10 * 1024 * 1024,
   maxVideoBytes = 50 * 1024 * 1024,
+  maxVideoSeconds = 60,
   name,
   required,
   videoAllowed = true,
@@ -136,6 +168,8 @@ export function MediaInput({
     setIsOptimizing(false);
 
     const mediaType = mediaTypeFor(optimizedFile);
+    const durationSeconds =
+      mediaType === "video" ? await videoDuration(optimizedFile) : null;
     const maxBytes = mediaType === "video" ? maxVideoBytes : maxImageBytes;
     const error =
       mediaType === "unknown" || !acceptedTypes.has(optimizedFile.type)
@@ -146,6 +180,10 @@ export function MediaInput({
             ? `${mediaType === "video" ? "Video" : "Image"} limit is ${formatBytes(
                 maxBytes,
               )}.`
+            : mediaType === "video" &&
+                durationSeconds != null &&
+                durationSeconds > maxVideoSeconds
+              ? `Video clips can be up to ${maxVideoSeconds} seconds.`
             : null;
 
     input.setCustomValidity(error ?? "");
@@ -157,6 +195,7 @@ export function MediaInput({
       originalFileSize: optimizedFile.size < file.size ? file.size : null,
       previewUrl:
         mediaType === "image" ? URL.createObjectURL(optimizedFile) : null,
+      videoDurationSeconds: durationSeconds,
     });
   }
 
@@ -206,6 +245,12 @@ export function MediaInput({
                 {isVideo ? "Video" : "Image"} / {formatBytes(selected.file.size)}
                 {selected.file.type ? ` / ${selected.file.type}` : ""}
               </p>
+              {selected.videoDurationSeconds != null ? (
+                <p className="mt-1 text-xs text-[#766d62]">
+                  Duration {formatSeconds(selected.videoDurationSeconds)} / max{" "}
+                  {formatSeconds(maxVideoSeconds)}
+                </p>
+              ) : null}
               {selected.originalFileSize ? (
                 <p className="mt-1 text-xs text-[#766d62]">
                   Optimized from {formatBytes(selected.originalFileSize)} before
