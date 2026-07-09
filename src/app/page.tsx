@@ -176,11 +176,100 @@ type ThreadComment = {
 };
 
 type SponsoredPlacement = "4u-feed" | "gossip-feed" | "stuff-feed";
+type AdPlacement = "4u" | "gossip" | "stuff";
+type SponsoredCampaign = {
+  advertiser: Pick<Profile, "account_type" | "display_name" | "license_verified_at" | "username"> | null;
+  body: string | null;
+  campaign_type: "artist_growth" | "stuff_listing";
+  city: string | null;
+  country_code: string | null;
+  goal: string;
+  id: string;
+  keywords: string[];
+  region: string | null;
+  target_url: string | null;
+  title: string;
+};
 
-function SponsoredSlot({ placement }: { placement: SponsoredPlacement }) {
-  void placement;
+function sponsoredSlotTitle(placement: SponsoredPlacement) {
+  if (placement === "4u-feed") return "Sponsored in 4U";
+  if (placement === "gossip-feed") return "Sponsored in Gossip";
 
-  return null;
+  return "Sponsored in Stuff";
+}
+
+function SponsoredSlot({
+  campaign,
+  placement,
+}: {
+  campaign?: SponsoredCampaign | null;
+  placement: SponsoredPlacement;
+}) {
+  if (!campaign) return null;
+
+  const location = [campaign.city, campaign.region, campaign.country_code]
+    .filter(Boolean)
+    .join(", ");
+  const content = (
+    <article className="ttc-card rounded-md border border-[#c8953b]/60 bg-[#171412] p-4 text-white shadow-[0_16px_36px_rgba(0,0,0,0.22)]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#c8953b]">
+            {sponsoredSlotTitle(placement)}
+          </p>
+          <h3 className="mt-2 text-base font-bold">{campaign.title}</h3>
+        </div>
+        <span className="shrink-0 rounded-md border border-white/15 bg-white/10 px-2 py-1 text-xs font-semibold">
+          Ad
+        </span>
+      </div>
+      {campaign.body ? (
+        <p className="mt-2 line-clamp-3 text-sm leading-6 text-white/75">
+          {campaign.body}
+        </p>
+      ) : null}
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold capitalize text-white/80">
+          {campaign.goal.replaceAll("_", " ")}
+        </span>
+        {location ? (
+          <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80">
+            {location}
+          </span>
+        ) : null}
+        {campaign.keywords.slice(0, 3).map((keyword) => (
+          <span
+            className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80"
+            key={keyword}
+          >
+            {keyword}
+          </span>
+        ))}
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold">
+            {campaign.advertiser?.display_name ?? "TheTattooCore advertiser"}
+          </p>
+          <div className="mt-1 flex items-center gap-1 text-xs text-white/60">
+            <span>@{campaign.advertiser?.username ?? "advertiser"}</span>
+            <VerifiedBadge profile={campaign.advertiser} />
+          </div>
+        </div>
+        <span className="shrink-0 text-sm font-bold text-[#c8953b]">
+          Learn more
+        </span>
+      </div>
+    </article>
+  );
+
+  if (!campaign.target_url) return content;
+
+  return (
+    <a href={campaign.target_url} rel="nofollow sponsored noreferrer" target="_blank">
+      {content}
+    </a>
+  );
 }
 
 function EmptyColumnState({
@@ -256,11 +345,17 @@ function profileLocation(profile?: Profile | null) {
   return [profile?.city, profile?.region].filter(Boolean).join(", ");
 }
 
-function isVerifiedProfile(profile?: Profile | null) {
+function isVerifiedProfile(
+  profile?: Pick<Profile, "account_type" | "license_verified_at"> | null,
+) {
   return isVerifiedProfessional(profile);
 }
 
-function VerifiedBadge({ profile }: { profile?: Profile | null }) {
+function VerifiedBadge({
+  profile,
+}: {
+  profile?: Pick<Profile, "account_type" | "license_verified_at"> | null;
+}) {
   if (!isVerifiedProfile(profile)) return null;
 
   return (
@@ -643,6 +738,61 @@ function ProfileSetupGate() {
   );
 }
 
+async function fetchSponsoredCampaign(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  placement: AdPlacement,
+) {
+  const now = new Date().toISOString();
+  const { data } = await supabase
+    .from("ad_campaigns")
+    .select(
+      "id, title, body, target_url, campaign_type, goal, bid_cents, city, region, country_code, keywords, profiles:profiles!ad_campaigns_advertiser_id_fkey(username, display_name, account_type, license_verified_at), ad_campaign_placements!inner(placement)",
+    )
+    .eq("status", "active")
+    .or(`starts_at.is.null,starts_at.lte.${now}`)
+    .or(`ends_at.is.null,ends_at.gt.${now}`)
+    .eq("ad_campaign_placements.placement", placement)
+    .order("bid_cents", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .returns<
+      {
+        bid_cents: number;
+        body: string | null;
+        campaign_type: "artist_growth" | "stuff_listing";
+        city: string | null;
+        country_code: string | null;
+        goal: string;
+        id: string;
+        keywords: string[];
+        profiles: Pick<
+          Profile,
+          "account_type" | "display_name" | "license_verified_at" | "username"
+        > | null;
+        region: string | null;
+        target_url: string | null;
+        title: string;
+      }[]
+    >();
+
+  const campaign = data?.[0];
+  if (!campaign) return null;
+
+  return {
+    advertiser: campaign.profiles,
+    body: campaign.body,
+    campaign_type: campaign.campaign_type,
+    city: campaign.city,
+    country_code: campaign.country_code,
+    goal: campaign.goal,
+    id: campaign.id,
+    keywords: campaign.keywords ?? [],
+    region: campaign.region,
+    target_url: campaign.target_url,
+    title: campaign.title,
+  } satisfies SponsoredCampaign;
+}
+
 export default async function Home({
   searchParams,
 }: {
@@ -661,6 +811,9 @@ export default async function Home({
     { data: gigs },
     { count: unreadDmCount },
     { data: savedItems },
+    fourUAd,
+    gossipAd,
+    stuffAd,
   ] = await Promise.all([
     claims?.sub
       ? supabase
@@ -747,6 +900,9 @@ export default async function Home({
           ])
           .returns<SavedItem[]>()
       : Promise.resolve({ data: [] as SavedItem[] }),
+    fetchSponsoredCampaign(supabase, "4u"),
+    fetchSponsoredCampaign(supabase, "gossip"),
+    fetchSponsoredCampaign(supabase, "stuff"),
   ]);
 
   const isSignedIn = Boolean(claims?.sub);
@@ -1045,7 +1201,9 @@ export default async function Home({
                     ) : null}
                   </div>
                 </article>
-                {index === 1 ? <SponsoredSlot placement="4u-feed" /> : null}
+                {index === 1 ? (
+                  <SponsoredSlot campaign={fourUAd} placement="4u-feed" />
+                ) : null}
                 </div>
               ))
             ) : (
@@ -1230,7 +1388,9 @@ export default async function Home({
                         </form>
                       ) : null}
                     </article>
-                    {index === 1 ? <SponsoredSlot placement="gossip-feed" /> : null}
+                    {index === 1 ? (
+                      <SponsoredSlot campaign={gossipAd} placement="gossip-feed" />
+                    ) : null}
                     </div>
                   ))
                 : (
@@ -1393,7 +1553,9 @@ export default async function Home({
                         )}
                       </div>
                     </article>
-                    {index === 1 ? <SponsoredSlot placement="stuff-feed" /> : null}
+                    {index === 1 ? (
+                      <SponsoredSlot campaign={stuffAd} placement="stuff-feed" />
+                    ) : null}
                     </div>
                   ))
                 : (
