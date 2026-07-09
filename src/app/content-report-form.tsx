@@ -4,10 +4,12 @@ import { createContentReport } from "@/app/actions";
 type ReportSubjectType = "feed_post" | "gig" | "marketplace_listing" | "thread_post";
 
 export function ContentReportForm({
+  returnHash,
   returnPath,
   subjectId,
   subjectType,
 }: {
+  returnHash?: string;
   returnPath: string;
   subjectId: string;
   subjectType: ReportSubjectType;
@@ -28,6 +30,9 @@ export function ContentReportForm({
         <input name="subject_id" type="hidden" value={subjectId} />
         <input name="subject_type" type="hidden" value={subjectType} />
         <input name="return_path" type="hidden" value={returnPath} />
+        {returnHash ? (
+          <input name="return_hash" type="hidden" value={returnHash} />
+        ) : null}
         <p className="text-sm font-bold text-[#171412]">Report content</p>
         <p className="mb-2 text-xs leading-5 text-[#766d62]">
           Report unsafe, scammy, sexual, illegal, harassing, or miscategorized
