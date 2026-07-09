@@ -780,6 +780,7 @@ export default async function Home({
                   [ShoppingBag, "Stuff", "#marketplace"],
                   [BriefcaseBusiness, "Gigs", "#gigs"],
                   [Send, "DM", "/messages"],
+                  [Bookmark, "Saved", "/saved"],
                   [UserRound, "Profile", profileHref],
                 ].map(([Icon, label, href]) => (
                   <Link
