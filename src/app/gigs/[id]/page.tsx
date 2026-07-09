@@ -283,6 +283,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
     isSensitive: gig.is_sensitive,
     profile: currentProfile,
   });
+  const isPublicPreview = gig.visibility === "public_preview" && !gig.is_sensitive;
 
   return (
     <main className="min-h-screen bg-[#202020] text-[#171412]">
@@ -312,6 +313,22 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
           <div className="border-b border-[#cfc8bd] bg-[#e8e4dc] px-4 py-2 text-sm font-semibold">
             {message}
           </div>
+        ) : null}
+        {!claims?.sub && isPublicPreview ? (
+          <section className="border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm leading-5 text-[#4f473f]">
+                Public Gig preview. Sign in to save, DM, reply, and view any
+                member-only or 18+ body-art content.
+              </p>
+              <Link
+                className="flex h-10 shrink-0 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                href="/login"
+              >
+                Sign in
+              </Link>
+            </div>
+          </section>
         ) : null}
 
         <section className="grid gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_340px]">

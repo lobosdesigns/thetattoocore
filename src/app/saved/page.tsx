@@ -48,6 +48,7 @@ type Profile = ProfileBadge & {
 type FeedPost = {
   caption: string | null;
   id: string;
+  is_sensitive: boolean;
   location_label: string | null;
   profiles: Pick<Profile, "account_type" | "display_name" | "license_verified_at" | "username"> | null;
   style_tags: string[];
@@ -56,6 +57,7 @@ type FeedPost = {
 type ThreadPost = {
   body: string;
   id: string;
+  is_sensitive: boolean;
   profiles: Pick<Profile, "account_type" | "display_name" | "license_verified_at" | "username"> | null;
 };
 
@@ -63,6 +65,7 @@ type Listing = {
   category: string;
   city: string | null;
   id: string;
+  is_sensitive: boolean;
   profiles: Pick<Profile, "account_type" | "display_name" | "license_verified_at" | "username"> | null;
   region: string | null;
   title: string;
@@ -72,6 +75,7 @@ type Gig = {
   category: string;
   city: string | null;
   id: string;
+  is_sensitive: boolean;
   profiles: Pick<Profile, "account_type" | "display_name" | "license_verified_at" | "username"> | null;
   region: string | null;
   title: string;
@@ -166,6 +170,19 @@ export default async function SavedPage({
     redirect("/login");
   }
 
+  const { data: viewerProfile } = await supabase
+    .from("profiles")
+    .select("adult_terms_accepted_at, is_adult_confirmed")
+    .eq("id", claims.sub)
+    .maybeSingle<{
+      adult_terms_accepted_at: string | null;
+      is_adult_confirmed: boolean | null;
+    }>();
+  const canViewSensitive = Boolean(
+    viewerProfile?.is_adult_confirmed &&
+      viewerProfile.adult_terms_accepted_at,
+  );
+
   const { data: savedItems } = await supabase
     .from("saved_items")
     .select("subject_type, subject_id, created_at")
@@ -189,47 +206,63 @@ export default async function SavedPage({
     { data: profiles },
   ] = await Promise.all([
     feedIds.length
-      ? supabase
-          .from("feed_posts")
-          .select(
-            "id, caption, style_tags, location_label, profiles:profiles!feed_posts_author_id_fkey(username, display_name, account_type, license_verified_at)",
-          )
-          .in("id", feedIds)
-          .eq("is_published", true)
-          .eq("moderation_status", "active")
-          .returns<FeedPost[]>()
+      ? (() => {
+          const query = supabase
+            .from("feed_posts")
+            .select(
+              "id, caption, is_sensitive, style_tags, location_label, profiles:profiles!feed_posts_author_id_fkey(username, display_name, account_type, license_verified_at)",
+            )
+            .in("id", feedIds)
+            .eq("is_published", true)
+            .eq("moderation_status", "active");
+
+          return (canViewSensitive ? query : query.eq("is_sensitive", false))
+            .returns<FeedPost[]>();
+        })()
       : Promise.resolve({ data: [] as FeedPost[] }),
     threadIds.length
-      ? supabase
-          .from("thread_posts")
-          .select(
-            "id, body, profiles:profiles!thread_posts_author_id_fkey(username, display_name, account_type, license_verified_at)",
-          )
-          .in("id", threadIds)
-          .eq("moderation_status", "active")
-          .returns<ThreadPost[]>()
+      ? (() => {
+          const query = supabase
+            .from("thread_posts")
+            .select(
+              "id, body, is_sensitive, profiles:profiles!thread_posts_author_id_fkey(username, display_name, account_type, license_verified_at)",
+            )
+            .in("id", threadIds)
+            .eq("moderation_status", "active");
+
+          return (canViewSensitive ? query : query.eq("is_sensitive", false))
+            .returns<ThreadPost[]>();
+        })()
       : Promise.resolve({ data: [] as ThreadPost[] }),
     listingIds.length
-      ? supabase
-          .from("marketplace_listings")
-          .select(
-            "id, title, category, city, region, profiles:profiles!marketplace_listings_seller_id_fkey(username, display_name, account_type, license_verified_at)",
-          )
-          .in("id", listingIds)
-          .eq("status", "active")
-          .eq("moderation_status", "active")
-          .returns<Listing[]>()
+      ? (() => {
+          const query = supabase
+            .from("marketplace_listings")
+            .select(
+              "id, title, category, city, region, is_sensitive, profiles:profiles!marketplace_listings_seller_id_fkey(username, display_name, account_type, license_verified_at)",
+            )
+            .in("id", listingIds)
+            .eq("status", "active")
+            .eq("moderation_status", "active");
+
+          return (canViewSensitive ? query : query.eq("is_sensitive", false))
+            .returns<Listing[]>();
+        })()
       : Promise.resolve({ data: [] as Listing[] }),
     gigIds.length
-      ? supabase
-          .from("gigs")
-          .select(
-            "id, title, category, city, region, profiles:profiles!gigs_poster_id_fkey(username, display_name, account_type, license_verified_at)",
-          )
-          .in("id", gigIds)
-          .eq("status", "active")
-          .eq("moderation_status", "active")
-          .returns<Gig[]>()
+      ? (() => {
+          const query = supabase
+            .from("gigs")
+            .select(
+              "id, title, category, city, region, is_sensitive, profiles:profiles!gigs_poster_id_fkey(username, display_name, account_type, license_verified_at)",
+            )
+            .in("id", gigIds)
+            .eq("status", "active")
+            .eq("moderation_status", "active");
+
+          return (canViewSensitive ? query : query.eq("is_sensitive", false))
+            .returns<Gig[]>();
+        })()
       : Promise.resolve({ data: [] as Gig[] }),
     profileIds.length
       ? supabase
@@ -397,6 +430,12 @@ export default async function SavedPage({
               Find more
             </Link>
           </div>
+          {!canViewSensitive ? (
+            <p className="mb-4 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
+              Sensitive saved items stay hidden until your account confirms 18+
+              body-art terms.
+            </p>
+          ) : null}
 
           {cards.length ? (
             <div className="grid gap-3 sm:grid-cols-2">

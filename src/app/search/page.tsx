@@ -400,7 +400,12 @@ export default async function SearchPage({
           <p className="mt-1 text-sm text-[#766d62]">
             {hasSearch
               ? `${total} result${total === 1 ? "" : "s"} found`
-              : "Find artists, styles, gossip, stuff, and gigs."}
+              : "Find public artists, styles, gossip, stuff, and gigs."}
+          </p>
+          <p className="mt-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
+            Search only shows public, non-sensitive previews. Member-only,
+            private, and 18+ body-art content stays behind login and terms
+            confirmation.
           </p>
           <form
             action="/search"
