@@ -136,6 +136,8 @@ type AdCampaign = {
     | "archived";
   targetUrl: string | null;
   title: string;
+  clicks: number;
+  impressions: number;
 };
 
 const adminTabs = [
@@ -395,6 +397,12 @@ function adLabel(value: string) {
   if (value === "4u") return "4U";
 
   return value.replaceAll("_", " ");
+}
+
+function clickRate({ clicks, impressions }: Pick<AdCampaign, "clicks" | "impressions">) {
+  if (!impressions) return "0.0%";
+
+  return `${((clicks / impressions) * 100).toFixed(1)}%`;
 }
 
 function ReviewCard({ item }: { item: ReviewItem }) {
@@ -837,6 +845,21 @@ function AdCampaignCard({ campaign }: { campaign: AdCampaign }) {
           ))}
         </div>
       ) : null}
+      <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
+        {[
+          ["Impressions", campaign.impressions],
+          ["Clicks", campaign.clicks],
+          ["CTR", clickRate(campaign)],
+        ].map(([label, value]) => (
+          <div
+            className="rounded-md border border-[#e5ded4] bg-[#fffdf9] px-2 py-2"
+            key={label}
+          >
+            <p className="font-bold text-[#171412]">{value}</p>
+            <p className="mt-1 text-[#766d62]">{label}</p>
+          </div>
+        ))}
+      </div>
       {campaign.reviewerNote ? (
         <p className="mt-3 rounded-md border border-[#e5ded4] bg-[#fffdf9] px-3 py-2 text-xs text-[#4f473f]">
           {campaign.reviewerNote}
@@ -1124,13 +1147,14 @@ export default async function AdminPage({
     supabase
       .from("ad_campaigns")
       .select(
-        "id, name, title, body, target_url, campaign_type, goal, status, bid_cents, daily_budget_cents, country_code, region, city, language, keywords, starts_at, ends_at, reviewer_note, created_at, profiles:profiles!ad_campaigns_advertiser_id_fkey(display_name, username), ad_campaign_placements(placement)",
+        "id, name, title, body, target_url, campaign_type, goal, status, bid_cents, daily_budget_cents, country_code, region, city, language, keywords, starts_at, ends_at, reviewer_note, created_at, profiles:profiles!ad_campaigns_advertiser_id_fkey(display_name, username), ad_campaign_placements(placement), ad_events(event_type)",
       )
       .in("status", ["pending_review", "approved", "active", "paused", "rejected"])
       .order("created_at", { ascending: false })
       .limit(12)
       .returns<
         {
+          ad_events: { event_type: "impression" | "click" | "message_lead" }[];
           ad_campaign_placements: { placement: "4u" | "gossip" | "stuff" }[];
           bid_cents: number;
           body: string | null;
@@ -1569,6 +1593,11 @@ export default async function AdminPage({
     status: campaign.status,
     targetUrl: campaign.target_url,
     title: campaign.title,
+    clicks: campaign.ad_events.filter((event) => event.event_type === "click")
+      .length,
+    impressions: campaign.ad_events.filter(
+      (event) => event.event_type === "impression",
+    ).length,
   }));
   const pendingAdCampaigns = adCampaigns.filter(
     (campaign) => campaign.status === "pending_review",

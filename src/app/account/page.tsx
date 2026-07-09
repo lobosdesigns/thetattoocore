@@ -98,6 +98,18 @@ function dollars(cents: number) {
   }).format(cents / 100);
 }
 
+function adClickRate({
+  clicks,
+  impressions,
+}: {
+  clicks: number;
+  impressions: number;
+}) {
+  if (!impressions) return "0.0%";
+
+  return `${((clicks / impressions) * 100).toFixed(1)}%`;
+}
+
 export default async function AccountPage({
   searchParams,
 }: {
@@ -140,13 +152,14 @@ export default async function AccountPage({
   const { data: adCampaigns } = await supabase
     .from("ad_campaigns")
     .select(
-      "id, name, title, campaign_type, goal, status, bid_cents, daily_budget_cents, created_at, ad_campaign_placements(placement)",
+      "id, name, title, campaign_type, goal, status, bid_cents, daily_budget_cents, created_at, ad_campaign_placements(placement), ad_events(event_type)",
     )
     .eq("advertiser_id", claims.sub)
     .order("created_at", { ascending: false })
     .limit(5)
     .returns<
       {
+        ad_events: { event_type: "impression" | "click" | "message_lead" }[];
         ad_campaign_placements: { placement: "4u" | "gossip" | "stuff" }[];
         bid_cents: number;
         campaign_type: string;
@@ -363,38 +376,62 @@ export default async function AccountPage({
 
           {adCampaigns?.length ? (
             <div className="mb-5 grid gap-3">
-              {adCampaigns.map((campaign) => (
-                <article
-                  className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 text-sm"
-                  key={campaign.id}
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold">{campaign.name}</p>
-                      <p className="mt-1 text-xs text-[#766d62]">
-                        {campaign.title}
-                      </p>
+              {adCampaigns.map((campaign) => {
+                const clicks = campaign.ad_events.filter(
+                  (event) => event.event_type === "click",
+                ).length;
+                const impressions = campaign.ad_events.filter(
+                  (event) => event.event_type === "impression",
+                ).length;
+
+                return (
+                  <article
+                    className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 text-sm"
+                    key={campaign.id}
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold">{campaign.name}</p>
+                        <p className="mt-1 text-xs text-[#766d62]">
+                          {campaign.title}
+                        </p>
+                      </div>
+                      <span className="rounded-md bg-white px-2 py-1 text-xs font-semibold capitalize">
+                        {adLabel(campaign.status)}
+                      </span>
                     </div>
-                    <span className="rounded-md bg-white px-2 py-1 text-xs font-semibold capitalize">
-                      {adLabel(campaign.status)}
-                    </span>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#766d62]">
-                    <span className="rounded-md bg-[#f2f1ee] px-2 py-1 capitalize">
-                      {adLabel(campaign.goal)}
-                    </span>
-                    <span className="rounded-md bg-[#f2f1ee] px-2 py-1">
-                      {campaign.ad_campaign_placements
-                        .map((placement) => adLabel(placement.placement))
-                        .join(", ") || "No placement"}
-                    </span>
-                    <span className="rounded-md bg-[#f2f1ee] px-2 py-1">
-                      {dollars(campaign.bid_cents)} bid /{" "}
-                      {dollars(campaign.daily_budget_cents)} daily cap
-                    </span>
-                  </div>
-                </article>
-              ))}
+                    <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#766d62]">
+                      <span className="rounded-md bg-[#f2f1ee] px-2 py-1 capitalize">
+                        {adLabel(campaign.goal)}
+                      </span>
+                      <span className="rounded-md bg-[#f2f1ee] px-2 py-1">
+                        {campaign.ad_campaign_placements
+                          .map((placement) => adLabel(placement.placement))
+                          .join(", ") || "No placement"}
+                      </span>
+                      <span className="rounded-md bg-[#f2f1ee] px-2 py-1">
+                        {dollars(campaign.bid_cents)} bid /{" "}
+                        {dollars(campaign.daily_budget_cents)} daily cap
+                      </span>
+                    </div>
+                    <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
+                      {[
+                        ["Impressions", impressions],
+                        ["Clicks", clicks],
+                        ["CTR", adClickRate({ clicks, impressions })],
+                      ].map(([label, value]) => (
+                        <div
+                          className="rounded-md border border-[#e5ded4] bg-white px-2 py-2"
+                          key={label}
+                        >
+                          <p className="font-bold text-[#171412]">{value}</p>
+                          <p className="mt-1 text-[#766d62]">{label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           ) : null}
 
