@@ -409,13 +409,31 @@ function PublicProfileNotice({
   );
 }
 
-function ProfileStat({ label, value }: { label: string; value: number }) {
-  return (
-    <div>
+function ProfileStat({
+  href,
+  label,
+  value,
+}: {
+  href?: string;
+  label: string;
+  value: number;
+}) {
+  const content = (
+    <>
       <p className="text-lg font-bold">{value}</p>
       <p className="text-xs text-[#766d62]">{label}</p>
-    </div>
+    </>
   );
+
+  if (href) {
+    return (
+      <Link className="block rounded-md hover:underline" href={href}>
+        {content}
+      </Link>
+    );
+  }
+
+  return <div>{content}</div>;
 }
 
 function FollowPreviewCard({
@@ -1052,8 +1070,16 @@ export default async function ProfilePage({
                 <ProfileStat label="Gossip" value={visibleThreads.length} />
                 <ProfileStat label="Stuff" value={visibleListings.length} />
                 <ProfileStat label="Gigs" value={visibleGigs.length} />
-                <ProfileStat label="followers" value={followerCount ?? 0} />
-                <ProfileStat label="following" value={followingCount ?? 0} />
+                <ProfileStat
+                  href={`/u/${profile.username}/followers`}
+                  label="followers"
+                  value={followerCount ?? 0}
+                />
+                <ProfileStat
+                  href={`/u/${profile.username}/following`}
+                  label="following"
+                  value={followingCount ?? 0}
+                />
               </div>
               ) : null}
               <div className="mt-5 flex flex-wrap gap-2">
