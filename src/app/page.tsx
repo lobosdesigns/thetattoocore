@@ -12,6 +12,7 @@ import {
   LogIn,
   LoaderCircle,
   MessageCircle,
+  MoreHorizontal,
   Search,
   Send,
   ShoppingBag,
@@ -481,24 +482,28 @@ function ReportForm({
   subjectType: "feed_post" | "thread_post" | "marketplace_listing" | "gig";
 }) {
   return (
-    <details>
-      <summary className="inline-flex h-8 cursor-pointer list-none items-center gap-1.5 rounded-md border border-[#cfc8bd] bg-white px-2 text-xs font-semibold">
-        <Flag className="size-3.5" />
-        Report
+    <details className="relative inline-block">
+      <summary
+        aria-label="Post options"
+        className="inline-flex size-8 cursor-pointer list-none items-center justify-center rounded-md border border-[#cfc8bd] bg-white text-[#4f473f] hover:border-[#c8953b]"
+        title="Post options"
+      >
+        <MoreHorizontal className="size-4" />
       </summary>
       <form
         action={createContentReport}
-        className="mt-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-2"
+        className="absolute right-0 z-20 mt-2 w-[min(20rem,calc(100vw-3rem))] rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 shadow-xl"
       >
         <input name="subject_id" type="hidden" value={subjectId} />
         <input name="subject_type" type="hidden" value={subjectType} />
         <input name="return_path" type="hidden" value="/" />
         <input name="return_hash" type="hidden" value={returnHash} />
+        <p className="text-sm font-bold text-[#171412]">Report content</p>
         <p className="mb-2 text-xs leading-5 text-[#766d62]">
           Report unsafe, scammy, sexual, illegal, harassing, or mislabeled
           body-art content.
         </p>
-        <div className="grid gap-2 sm:grid-cols-[minmax(10rem,14rem)_1fr_auto]">
+        <div className="grid gap-2">
           <select
             aria-label="Report reason"
             className="h-9 min-w-0 rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"

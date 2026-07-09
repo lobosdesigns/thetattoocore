@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Search, Send } from "lucide-react";
+import { ChevronDown, Search, Send } from "lucide-react";
 import {
   createFeedPost,
   createMarketplaceListing,
@@ -32,11 +32,12 @@ function ComposerDetails({
 }) {
   return (
     <details
-      className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3"
+      className="group rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3"
       open={open}
     >
-      <summary className="cursor-pointer list-none text-sm font-bold">
-        {title}
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold">
+        <span>{title}</span>
+        <ChevronDown className="size-4 shrink-0 text-[#766d62] transition group-open:rotate-180" />
       </summary>
       <div className="mt-3 space-y-3">{children}</div>
     </details>
@@ -137,16 +138,18 @@ export function FloatingComposer({
               required
               validationMessage="Feed caption needs at least 3 characters."
             />
-            <input
-              className="h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-              name="style_tags"
-              placeholder="blackwork, fine line"
-            />
-            <input
-              className="h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-              name="location_label"
-              placeholder="Austin, TX"
-            />
+            <ComposerDetails title="Style and location">
+              <input
+                className="h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                name="style_tags"
+                placeholder="blackwork, fine line"
+              />
+              <input
+                className="h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                name="location_label"
+                placeholder="Austin, TX"
+              />
+            </ComposerDetails>
             <ComposerDetails title="Visibility and sensitive content">
               <VisibilityControl />
               <SensitiveControls />
@@ -233,18 +236,20 @@ export function FloatingComposer({
                 name="description"
                 placeholder="Details, terms, dates, or pickup/shipping notes."
               />
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                  name="city"
-                  placeholder="City"
-                />
-                <input
-                  className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                  name="region"
-                  placeholder="State"
-                />
-              </div>
+              <ComposerDetails title="Pickup, shipping, and location">
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    name="city"
+                    placeholder="City"
+                  />
+                  <input
+                    className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    name="region"
+                    placeholder="State"
+                  />
+                </div>
+              </ComposerDetails>
               <ComposerDetails title="Visibility and sensitive content">
                 <VisibilityControl />
                 <SensitiveControls />

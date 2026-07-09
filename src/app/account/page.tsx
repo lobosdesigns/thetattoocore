@@ -16,6 +16,7 @@ type Claims = {
 const adminRoles = ["moderator", "admin", "owner"];
 const accountNavItems = [
   ["#profile-settings", "Profile"],
+  ["#language-settings", "Language"],
   ["#privacy-settings", "Privacy"],
   ["#notification-settings", "Notifications"],
   ["#verification-settings", "Verification"],

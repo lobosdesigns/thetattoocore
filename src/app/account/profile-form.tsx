@@ -204,6 +204,17 @@ export function ProfileForm({
           </span>
         </label>
 
+        <div
+          className="border-t border-[#cfc8bd] pt-4 sm:col-span-2"
+          id="language-settings"
+        >
+          <h2 className="text-sm font-bold">Language and region</h2>
+          <p className="mt-1 text-xs leading-5 text-[#766d62]">
+            These settings power local discovery, future translated UI, and
+            simple ad targeting by country, region, city, and language.
+          </p>
+        </div>
+
         <label className="block">
           <span className="text-sm font-medium">City</span>
           <input
