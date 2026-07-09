@@ -133,13 +133,13 @@ export function ProfileForm({
   return (
     <form
       action={updateProfile}
-      className="scroll-mt-4 rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5"
+      className="ttc-card scroll-mt-4 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-5"
       id="profile-settings"
     >
       <div className="mb-5">
         <h1 className="text-2xl font-bold">Profile setup</h1>
         <p className="mt-1 text-sm text-[#766d62]">{claims.email}</p>
-        <p className="mt-3 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] px-3 py-2 text-sm leading-5 text-[#4f473f]">
+        <p className="mt-3 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-sm leading-5 text-[#4f473f]">
           Required fields are marked with <RequiredMark />. Artists and studios
           can post right away after saving, then submit license verification for
           the verified badge.
@@ -152,7 +152,7 @@ export function ProfileForm({
             Username <RequiredMark />
           </span>
           <input
-            className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
             defaultValue={initialProfile?.username ?? ""}
             maxLength={30}
             minLength={3}
@@ -172,7 +172,7 @@ export function ProfileForm({
             Display name <RequiredMark />
           </span>
           <input
-            className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
             defaultValue={initialProfile?.display_name ?? ""}
             minLength={2}
             name="display_name"
@@ -189,7 +189,7 @@ export function ProfileForm({
             Account type <RequiredMark />
           </span>
           <select
-            className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
             defaultValue={initialProfile?.account_type ?? "enthusiast"}
             name="account_type"
           >
@@ -207,7 +207,7 @@ export function ProfileForm({
         <label className="block">
           <span className="text-sm font-medium">City</span>
           <input
-            className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
             defaultValue={initialProfile?.city ?? ""}
             name="city"
             placeholder="Austin"
@@ -217,7 +217,7 @@ export function ProfileForm({
         <label className="block">
           <span className="text-sm font-medium">Region</span>
           <input
-            className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
             defaultValue={initialProfile?.region ?? ""}
             name="region"
             placeholder="TX"
@@ -229,7 +229,7 @@ export function ProfileForm({
             Country <RequiredMark />
           </span>
           <select
-            className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
             defaultValue={initialProfile?.country_code ?? "US"}
             name="country_code"
           >
@@ -246,7 +246,7 @@ export function ProfileForm({
             Language <RequiredMark />
           </span>
           <select
-            className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
             defaultValue={initialProfile?.preferred_language ?? "en"}
             name="preferred_language"
           >
@@ -261,7 +261,7 @@ export function ProfileForm({
         <label className="block">
           <span className="text-sm font-medium">Website</span>
           <input
-            className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
             defaultValue={initialProfile?.website_url ?? ""}
             name="website_url"
             placeholder="https://shop.com"
@@ -272,7 +272,7 @@ export function ProfileForm({
         <label className="block sm:col-span-2">
           <span className="text-sm font-medium">Instagram</span>
           <input
-            className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
             defaultValue={initialProfile?.instagram_url ?? ""}
             name="instagram_url"
             placeholder="https://instagram.com/artist"
@@ -283,7 +283,7 @@ export function ProfileForm({
         <label className="block sm:col-span-2">
           <span className="text-sm font-medium">Bio</span>
           <textarea
-            className="mt-2 min-h-28 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 min-h-28 w-full rounded-md border border-[#cfc8bd] bg-white px-3 py-3 text-sm outline-none focus:border-[#171412]"
             defaultValue={initialProfile?.bio ?? ""}
             maxLength={500}
             name="bio"
@@ -295,7 +295,7 @@ export function ProfileForm({
         </label>
 
         <div
-          className="border-t border-[#e5ded4] pt-4 sm:col-span-2"
+          className="border-t border-[#cfc8bd] pt-4 sm:col-span-2"
           id="privacy-settings"
         >
           <h2 className="text-sm font-bold">Privacy and safety</h2>
@@ -305,7 +305,7 @@ export function ProfileForm({
           </p>
         </div>
 
-        <label className="flex items-start gap-3 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3 sm:col-span-2">
+        <label className="flex items-start gap-3 rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 sm:col-span-2">
           <input
             className="mt-1 size-4"
             defaultChecked={
@@ -325,7 +325,7 @@ export function ProfileForm({
           </span>
         </label>
 
-        <label className="flex items-start gap-3 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3 sm:col-span-2">
+        <label className="flex items-start gap-3 rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 sm:col-span-2">
           <input
             className="mt-1 size-4"
             defaultChecked={initialProfile?.is_private ?? false}
@@ -370,7 +370,7 @@ export function ProfileForm({
       </div>
 
       <section
-        className="mt-5 scroll-mt-4 border-t border-[#e5ded4] pt-5"
+        className="mt-5 scroll-mt-4 border-t border-[#cfc8bd] pt-5"
         id="notification-settings"
       >
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">

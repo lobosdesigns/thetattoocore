@@ -690,10 +690,10 @@ export default async function AdminPage({
 
   if (!profile || !moderateRoles.includes(profile.role)) {
     return (
-      <main className="min-h-screen bg-[#f7f4ef] px-4 py-8 text-[#171412]">
-        <section className="mx-auto w-full max-w-2xl rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-6">
+      <main className="min-h-screen bg-[#202020] px-4 py-8 text-[#171412]">
+        <section className="ttc-card mx-auto w-full max-w-2xl rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-6">
           <div className="mb-5 flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-md bg-[#171412] text-white">
+            <div className="flex size-10 items-center justify-center rounded-md bg-[#171412] text-[#c8953b]">
               <ShieldCheck className="size-5" />
             </div>
             <div>
@@ -713,7 +713,7 @@ export default async function AdminPage({
               Open profile
             </Link>
             <Link
-              className="flex h-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+              className="flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
               href="/"
             >
               Back to site
@@ -1285,11 +1285,11 @@ export default async function AdminPage({
   );
 
   return (
-    <main className="min-h-screen bg-[#f7f4ef] text-[#171412]">
-      <div className="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 lg:grid-cols-[260px_1fr]">
-        <aside className="border-b border-[#d8d1c6] bg-[#fffdf9] px-5 py-5 lg:border-b-0 lg:border-r">
+    <main className="min-h-screen bg-[#202020] text-[#171412]">
+      <div className="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)] lg:grid-cols-[260px_1fr]">
+        <aside className="border-b border-[#cfc8bd] bg-[#f2f1ee] px-5 py-5 lg:border-b-0 lg:border-r">
           <div className="mb-6 flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-md bg-[#171412] text-white">
+            <div className="flex size-10 items-center justify-center rounded-md bg-[#171412] text-[#c8953b]">
               <ShieldCheck className="size-5" />
             </div>
             <div>
@@ -1301,7 +1301,7 @@ export default async function AdminPage({
           <nav className="grid gap-1 sm:grid-cols-3 lg:grid-cols-1">
             {adminTabs.map(([Icon, label]) => (
               <a
-                className="flex h-11 items-center gap-3 rounded-md px-3 text-sm font-medium hover:bg-[#f7f4ef]"
+                className="flex h-11 items-center gap-3 rounded-md px-3 text-sm font-medium hover:bg-[#fffdf9]"
                 href={`#${label.toLowerCase().replaceAll(" ", "-")}`}
                 key={label}
               >
@@ -1311,7 +1311,7 @@ export default async function AdminPage({
             ))}
           </nav>
 
-          <div className="mt-6 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3">
+          <div className="mt-6 rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3">
             <p className="text-sm font-semibold">{adminProfile.display_name}</p>
             <p className="text-xs text-[#766d62]">
               @{adminProfile.username} - {adminProfile.role}
@@ -1319,8 +1319,8 @@ export default async function AdminPage({
           </div>
         </aside>
 
-        <section className="px-4 py-6 sm:px-6 lg:px-8">
-          <header className="mb-6 flex flex-col gap-4 border-b border-[#d8d1c6] pb-5 md:flex-row md:items-center md:justify-between">
+        <section className="bg-[#f2f1ee] px-4 py-6 sm:px-6 lg:px-8">
+          <header className="mb-6 flex flex-col gap-4 border-b border-[#cfc8bd] pb-5 md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="text-3xl font-bold">Admin dashboard</h1>
               <p className="mt-1 text-sm text-[#766d62]">
@@ -1329,7 +1329,7 @@ export default async function AdminPage({
             </div>
             <div className="flex gap-3">
               <Link
-                className="flex h-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                className="flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
                 href="/"
               >
                 Site
@@ -1344,7 +1344,7 @@ export default async function AdminPage({
           </header>
 
           {params.message ? (
-            <p className="mb-6 rounded-md border border-[#d8d1c6] bg-[#efe7da] px-4 py-3 text-sm font-medium">
+            <p className="mb-6 rounded-md border border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 text-sm font-medium">
               {params.message}
             </p>
           ) : null}
@@ -1355,7 +1355,7 @@ export default async function AdminPage({
           >
             {metrics.map(([label, value, caption]) => (
               <div
-                className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-4"
+                className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4"
                 key={label as string}
               >
                 <p className="text-sm text-[#766d62]">{caption as string}</p>
@@ -1370,7 +1370,7 @@ export default async function AdminPage({
           <div className="grid gap-5 xl:grid-cols-[1fr_380px]">
             <section className="space-y-5">
               <div
-                className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5"
+                className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-5"
                 id="users"
               >
                 <div className="mb-4 flex items-center gap-3">

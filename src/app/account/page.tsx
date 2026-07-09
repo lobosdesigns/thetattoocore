@@ -33,7 +33,7 @@ function AccountSetupGuide({
   ] as const;
 
   return (
-    <section className="mb-4 rounded-lg border border-[#d8d1c6] bg-[#171412] p-5 text-white">
+    <section className="mb-4 rounded-lg border border-[#3a332d] bg-[#171412] p-5 text-white shadow-[0_14px_34px_rgba(0,0,0,0.24)]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/60">
@@ -130,23 +130,23 @@ export default async function AccountPage({
   const isFirstProfile = !profile;
 
   return (
-    <main className="min-h-screen bg-[#f7f4ef] px-4 py-8 text-[#171412]">
+    <main className="min-h-screen bg-[#202020] px-4 py-8 text-[#171412]">
       <section className="mx-auto w-full max-w-3xl">
         <div className="mb-6 flex items-center justify-between">
-          <Link className="text-sm font-semibold" href="/">
+          <Link className="text-sm font-semibold text-[#f2f1ee]" href="/">
             TheTattooCore
           </Link>
           <div className="flex items-center gap-3">
             {role && adminRoles.includes(role) ? (
               <Link
-                className="flex h-10 items-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                className="flex h-10 items-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-4 text-sm font-semibold"
                 href="/admin"
               >
                 Admin
               </Link>
             ) : null}
             <form action="/auth/signout" method="post">
-              <button className="h-10 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold">
+              <button className="h-10 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-4 text-sm font-semibold">
                 Sign out
               </button>
             </form>
@@ -154,7 +154,7 @@ export default async function AccountPage({
         </div>
 
         {params.message ? (
-          <p className="mb-4 rounded-md border border-[#d8d1c6] bg-[#efe7da] px-4 py-3 text-sm font-medium">
+          <p className="mb-4 rounded-md border border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 text-sm font-medium">
             {params.message}
           </p>
         ) : null}
@@ -163,11 +163,11 @@ export default async function AccountPage({
 
         <nav
           aria-label="Account settings"
-          className="mb-4 flex gap-2 overflow-x-auto rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-2"
+          className="mb-4 flex gap-2 overflow-x-auto rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-2"
         >
           {accountNavItems.map(([href, label]) => (
             <a
-              className="flex h-10 shrink-0 items-center rounded-md border border-transparent px-3 text-sm font-semibold text-[#4f473f] hover:border-[#d8d1c6] hover:bg-[#f7f4ef]"
+              className="flex h-10 shrink-0 items-center rounded-md border border-transparent px-3 text-sm font-semibold text-[#4f473f] hover:border-[#c8953b] hover:bg-[#fffdf9]"
               href={href}
               key={href}
             >
@@ -180,7 +180,7 @@ export default async function AccountPage({
 
         {canSubmitLicense ? (
           <section
-            className="mt-6 scroll-mt-4 rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5"
+            className="ttc-card mt-6 scroll-mt-4 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-5"
             id="verification-settings"
           >
             <div className="mb-5">
@@ -206,7 +206,7 @@ export default async function AccountPage({
               <div className="mb-5 space-y-2">
                 {verificationRequests.map((request) => (
                   <div
-                    className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3 text-sm"
+                    className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 text-sm"
                     key={request.id}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">

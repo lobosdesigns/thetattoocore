@@ -24,14 +24,14 @@ export default async function LoginPage({
   const params = await searchParams;
 
   return (
-    <main className="min-h-screen bg-[#f7f4ef] px-4 py-10 text-[#171412]">
+    <main className="min-h-screen bg-[#202020] px-4 py-10 text-[#171412]">
       <section className="mx-auto w-full max-w-5xl">
-        <Link className="mb-8 block text-sm font-semibold" href="/">
+        <Link className="mb-8 block text-sm font-semibold text-[#f2f1ee]" href="/">
           TheTattooCore
         </Link>
 
         <div className="grid gap-4 lg:grid-cols-[1fr_26rem]">
-          <section className="rounded-lg border border-[#d8d1c6] bg-[#171412] p-5 text-white">
+          <section className="rounded-lg border border-[#3a332d] bg-[#171412] p-5 text-white shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/60">
               The heart of the tattoo community
             </p>
@@ -46,7 +46,7 @@ export default async function LoginPage({
             <div className="mt-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
               {setupSteps.map(([number, title, body]) => (
                 <div
-                  className="rounded-md border border-white/15 bg-white/5 p-3"
+                    className="rounded-md border border-white/15 bg-white/5 p-3"
                   key={number}
                 >
                   <span className="inline-flex size-7 items-center justify-center rounded-md bg-white text-sm font-bold text-[#171412]">
@@ -61,7 +61,7 @@ export default async function LoginPage({
             </div>
           </section>
 
-        <div className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5">
+        <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-5">
           <div className="mb-6">
             <h2 className="text-2xl font-bold">Sign in or sign up</h2>
             <p className="mt-1 text-sm text-[#766d62]">
@@ -71,7 +71,7 @@ export default async function LoginPage({
           </div>
 
           {params.message ? (
-            <p className="mb-4 rounded-md border border-[#d8d1c6] bg-[#efe7da] px-3 py-2 text-sm">
+            <p className="mb-4 rounded-md border border-[#cfc8bd] bg-[#e8e4dc] px-3 py-2 text-sm">
               {params.message}
             </p>
           ) : null}
@@ -86,7 +86,7 @@ export default async function LoginPage({
             <label className="block">
               <span className="text-sm font-medium">Email</span>
               <input
-                className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
                 name="email"
                 required
                 type="email"
@@ -96,7 +96,7 @@ export default async function LoginPage({
             <label className="block">
               <span className="text-sm font-medium">Password</span>
               <input
-                className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
                 minLength={8}
                 name="password"
                 required
@@ -112,14 +112,14 @@ export default async function LoginPage({
                 Sign in
               </button>
               <button
-                className="h-11 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                className="h-11 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
                 formAction={signup}
               >
                 Create account
               </button>
             </div>
 
-            <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-3 text-xs leading-5 text-[#4f473f]">
+            <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 text-xs leading-5 text-[#4f473f]">
               Check inbox and junk after creating an account. After confirming
               your email, save your profile before posting, commenting, listing
               Stuff, adding Gigs, or sending DMs.

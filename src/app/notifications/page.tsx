@@ -114,14 +114,14 @@ export default async function NotificationsPage() {
     notifications?.filter((notification) => !notification.read_at).length ?? 0;
 
   return (
-    <main className="min-h-screen bg-[#f5f2eb] text-[#171412]">
-      <div className="mx-auto min-h-screen max-w-3xl bg-[#fffdf9]">
-        <header className="sticky top-0 z-10 border-b border-[#e5ded4] bg-[#fffdf9]/95 px-4 py-3 backdrop-blur">
+    <main className="min-h-screen bg-[#202020] text-[#171412]">
+      <div className="mx-auto min-h-screen max-w-3xl bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
+        <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <Link
                 aria-label="Back to home"
-                className="flex size-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white"
+                className="flex size-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
                 href="/"
               >
                 <ArrowLeft className="size-5" />
@@ -136,7 +136,7 @@ export default async function NotificationsPage() {
 
             <div className="flex shrink-0 items-center gap-2">
               <Link
-                className="flex h-10 items-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold"
+                className="flex h-10 items-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm font-semibold"
                 href="/account#notification-settings"
               >
                 <Settings className="size-4" />
@@ -144,7 +144,7 @@ export default async function NotificationsPage() {
               </Link>
               {unreadCount ? (
                 <form action={markAllNotificationsRead}>
-                  <button className="flex h-10 items-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold">
+                  <button className="flex h-10 items-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm font-semibold">
                     <Check className="size-4" />
                     Mark all read
                   </button>
@@ -154,17 +154,17 @@ export default async function NotificationsPage() {
           </div>
         </header>
 
-        <section className="divide-y divide-[#e5ded4]">
+        <section className="divide-y divide-[#cfc8bd]">
           {notifications?.length ? (
             notifications.map((notification) => {
               const Icon = notificationIcon(notification.type);
               const card = (
                 <article
                   className={`flex gap-3 px-4 py-4 ${
-                    notification.read_at ? "bg-[#fffdf9]" : "bg-[#f7f4ef]"
+                    notification.read_at ? "bg-[#f2f1ee]" : "bg-[#fffdf9]"
                   }`}
                 >
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#d8d1c6] bg-white">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-white text-[#171412]">
                     <Icon className="size-5" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -177,7 +177,7 @@ export default async function NotificationsPage() {
                           {notification.profiles ? (
                             <span>@{notification.profiles.username}</span>
                           ) : null}
-                          <span className="rounded-md border border-[#d8d1c6] bg-white px-1.5 py-0.5 font-semibold capitalize">
+                          <span className="rounded-md border border-[#cfc8bd] bg-white px-1.5 py-0.5 font-semibold capitalize">
                             {subjectLabel(notification.subject_type)}
                           </span>
                         </div>
@@ -236,7 +236,7 @@ export default async function NotificationsPage() {
                             Accept
                           </button>
                           <button
-                            className="h-9 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold"
+                            className="h-9 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm font-semibold"
                             name="decision"
                             value="decline"
                           >
@@ -251,7 +251,7 @@ export default async function NotificationsPage() {
                             type="hidden"
                             value={notification.id}
                           />
-                          <button className="h-9 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold">
+                          <button className="h-9 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm font-semibold">
                             Mark read
                           </button>
                         </form>

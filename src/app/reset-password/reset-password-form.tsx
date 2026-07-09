@@ -72,7 +72,7 @@ export function ResetPasswordForm({ initialMessage }: { initialMessage?: string 
   const isBusy = state === "checking" || state === "saving" || state === "done";
 
   return (
-    <div className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5">
+    <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-5">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Create new password</h1>
         <p className="mt-1 text-sm text-[#766d62]">
@@ -81,13 +81,13 @@ export function ResetPasswordForm({ initialMessage }: { initialMessage?: string 
       </div>
 
       {state === "checking" ? (
-        <p className="mb-4 rounded-md border border-[#d8d1c6] bg-[#efe7da] px-3 py-2 text-sm">
+        <p className="mb-4 rounded-md border border-[#cfc8bd] bg-[#e8e4dc] px-3 py-2 text-sm">
           Checking reset link...
         </p>
       ) : null}
 
       {message ? (
-        <p className="mb-4 rounded-md border border-[#d8d1c6] bg-[#efe7da] px-3 py-2 text-sm">
+        <p className="mb-4 rounded-md border border-[#cfc8bd] bg-[#e8e4dc] px-3 py-2 text-sm">
           {message}
         </p>
       ) : null}
@@ -104,7 +104,7 @@ export function ResetPasswordForm({ initialMessage }: { initialMessage?: string 
           <label className="block">
             <span className="text-sm font-medium">New password</span>
             <input
-              className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
               disabled={isBusy}
               minLength={8}
               onChange={(event) => setPassword(event.target.value)}
@@ -117,7 +117,7 @@ export function ResetPasswordForm({ initialMessage }: { initialMessage?: string 
           <label className="block">
             <span className="text-sm font-medium">Confirm password</span>
             <input
-              className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
               disabled={isBusy}
               minLength={8}
               onChange={(event) => setConfirmPassword(event.target.value)}
