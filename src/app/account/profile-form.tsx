@@ -108,6 +108,13 @@ const notificationGroups = [
   },
 ] as const;
 
+const notificationSummary = [
+  ["Social", "Follow requests"],
+  ["DM", "Messages and replies"],
+  ["Content", "4U and Gossip"],
+  ["Commerce", "Stuff and Gigs"],
+] as const;
+
 function RequiredMark() {
   return <span className="text-[#a3432f]">*</span>;
 }
@@ -380,6 +387,19 @@ export function ProfileForm({
         </div>
 
         <div className="mt-4 grid gap-3">
+          <div className="grid gap-2 sm:grid-cols-4">
+            {notificationSummary.map(([label, description]) => (
+              <div
+                className="rounded-md border border-[#d8d1c6] bg-white p-3"
+                key={label}
+              >
+                <p className="text-xs font-semibold uppercase text-[#766d62]">
+                  {label}
+                </p>
+                <p className="mt-1 text-sm font-semibold">{description}</p>
+              </div>
+            ))}
+          </div>
           {notificationGroups.map((group) => (
             <div
               className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3"

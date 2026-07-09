@@ -7,6 +7,7 @@ import {
   Check,
   Heart,
   MessageCircle,
+  Settings,
   UserPlus,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -133,14 +134,23 @@ export default async function NotificationsPage() {
               </div>
             </div>
 
-            {unreadCount ? (
-              <form action={markAllNotificationsRead}>
-                <button className="flex h-10 items-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold">
-                  <Check className="size-4" />
-                  Mark all read
-                </button>
-              </form>
-            ) : null}
+            <div className="flex shrink-0 items-center gap-2">
+              <Link
+                className="flex h-10 items-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold"
+                href="/account#notification-settings"
+              >
+                <Settings className="size-4" />
+                Settings
+              </Link>
+              {unreadCount ? (
+                <form action={markAllNotificationsRead}>
+                  <button className="flex h-10 items-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold">
+                    <Check className="size-4" />
+                    Mark all read
+                  </button>
+                </form>
+              ) : null}
+            </div>
           </div>
         </header>
 
