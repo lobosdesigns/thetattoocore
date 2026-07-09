@@ -726,7 +726,15 @@ function PostPreview({ post }: { post: FeedPost }) {
         <p className="line-clamp-3 text-sm leading-6">
           {post.caption || "Untitled post"}
         </p>
-        <p className="text-xs text-[#766d62]">{timeAgo(post.created_at)}</p>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs text-[#766d62]">{timeAgo(post.created_at)}</p>
+          <Link
+            className="text-xs font-bold text-[#171412] hover:underline"
+            href={`/p/${post.id}`}
+          >
+            Open
+          </Link>
+        </div>
       </div>
     </article>
   );
@@ -1370,8 +1378,9 @@ export default async function ProfilePage({
             <div className="space-y-3">
               {visibleThreads.length ? (
                 visibleThreads.map((thread) => (
-                  <article
-                    className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4"
+                  <Link
+                    className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-4 transition hover:border-[#171412]"
+                    href={`/t/${thread.id}`}
                     key={thread.id}
                   >
                     <div className="mb-2 flex items-center justify-between gap-3">
@@ -1384,7 +1393,7 @@ export default async function ProfilePage({
                       </p>
                     </div>
                     <p className="text-sm leading-6">{thread.body}</p>
-                  </article>
+                  </Link>
                 ))
               ) : (
                 <ProfileEmptyState

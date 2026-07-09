@@ -1287,6 +1287,7 @@ export default async function Home({
                       <div className="flex items-center gap-4">
                         <form action={togglePostLike}>
                           <input name="post_id" type="hidden" value={post.id} />
+                          <input name="return_path" type="hidden" value="/#feed" />
                           <input
                             name="liked"
                             type="hidden"
@@ -1367,6 +1368,7 @@ export default async function Home({
                         id={`comment-${post.id}`}
                       >
                         <input name="post_id" type="hidden" value={post.id} />
+                        <input name="return_path" type="hidden" value="/#feed" />
                         <div className="flex items-start gap-2">
                           <WordLimitedField
                             className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
@@ -1466,6 +1468,11 @@ export default async function Home({
                               value={thread.id}
                             />
                             <input
+                              name="return_path"
+                              type="hidden"
+                              value="/#threads"
+                            />
+                            <input
                               name="liked"
                               type="hidden"
                               value={
@@ -1555,6 +1562,11 @@ export default async function Home({
                             name="thread_id"
                             type="hidden"
                             value={thread.id}
+                          />
+                          <input
+                            name="return_path"
+                            type="hidden"
+                            value="/#threads"
                           />
                           <div className="flex items-start gap-2">
                             <WordLimitedField
@@ -2002,13 +2014,13 @@ export default async function Home({
             <div className="space-y-3">
               {visibleThreadPosts.length ? (
                 visibleThreadPosts.slice(0, 4).map((thread) => (
-                  <a
+                  <Link
                     className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-3 text-sm leading-5"
-                    href={`#thread-${thread.id}`}
+                    href={`/t/${thread.id}`}
                     key={thread.id}
                   >
                     {thread.body}
-                  </a>
+                  </Link>
                 ))
               ) : (
                 <SidebarEmptyState>No Gossip yet.</SidebarEmptyState>
