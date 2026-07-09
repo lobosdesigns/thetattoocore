@@ -987,7 +987,8 @@ export default async function Home({
               {visibleThreadPosts.length
                 ? visibleThreadPosts.map((thread) => (
                     <article
-                      className="rounded-md border border-[#d8d1c6] bg-white p-4"
+                      className="scroll-mt-28 rounded-md border border-[#d8d1c6] bg-white p-4"
+                      id={`thread-${thread.id}`}
                       key={thread.id}
                     >
                       <div className="mb-2 flex items-center justify-between gap-3">
@@ -1010,41 +1011,51 @@ export default async function Home({
                       </div>
                       <p className="text-sm leading-6">{thread.body}</p>
                       <ThreadImage media={thread.thread_media[0]} />
-                      <div className="mt-3 flex items-center gap-4 border-t border-[#e5ded4] pt-3">
-                        <form action={toggleThreadLike}>
-                          <input
-                            name="thread_id"
-                            type="hidden"
-                            value={thread.id}
-                          />
-                          <input
-                            name="liked"
-                            type="hidden"
-                            value={
-                              thread.thread_likes.some(
-                                (like) => like.user_id === claims?.sub,
-                              )
-                                ? "true"
-                                : "false"
-                            }
-                          />
-                          <button className="flex items-center gap-2 text-sm font-medium">
-                            <Heart
-                              className={`size-5 ${
+                      <div className="mt-3 flex items-center justify-between gap-4 border-t border-[#e5ded4] pt-3">
+                        <div className="flex items-center gap-4">
+                          <form action={toggleThreadLike}>
+                            <input
+                              name="thread_id"
+                              type="hidden"
+                              value={thread.id}
+                            />
+                            <input
+                              name="liked"
+                              type="hidden"
+                              value={
                                 thread.thread_likes.some(
                                   (like) => like.user_id === claims?.sub,
                                 )
-                                  ? "fill-[#c8953b] text-[#c8953b]"
-                                  : ""
-                              }`}
+                                  ? "true"
+                                  : "false"
+                              }
                             />
-                            {thread.thread_likes.length}
-                          </button>
-                        </form>
-                        <button className="flex items-center gap-2 text-sm font-medium">
-                          <MessageCircle className="size-5" />
-                          {thread.thread_comments.length}
-                        </button>
+                            <button className="flex items-center gap-2 text-sm font-medium">
+                              <Heart
+                                className={`size-5 ${
+                                  thread.thread_likes.some(
+                                    (like) => like.user_id === claims?.sub,
+                                  )
+                                    ? "fill-[#c8953b] text-[#c8953b]"
+                                    : ""
+                                }`}
+                              />
+                              {thread.thread_likes.length}
+                            </button>
+                          </form>
+                          <a
+                            className="flex items-center gap-2 text-sm font-medium"
+                            href={`#thread-comment-${thread.id}`}
+                          >
+                            <MessageCircle className="size-5" />
+                            {thread.thread_comments.length}
+                          </a>
+                        </div>
+                        <CompactShareButton
+                          text={`Check this Gossip thread on ${siteName}`}
+                          title="TheTattooCore Gossip thread"
+                          url={`${siteUrl}/#thread-${thread.id}`}
+                        />
                       </div>
                       {isSignedIn ? (
                         <div className="mt-3">
@@ -1062,9 +1073,16 @@ export default async function Home({
                               className="rounded-md bg-[#f7f4ef] px-3 py-2 text-sm leading-5"
                               key={comment.id}
                             >
-                              <span className="font-semibold">
-                                {comment.profiles?.display_name ?? "Member"}
-                              </span>{" "}
+                              {comment.profiles?.username ? (
+                                <Link
+                                  className="font-semibold hover:underline"
+                                  href={`/u/${comment.profiles.username}`}
+                                >
+                                  {comment.profiles.display_name ?? "Member"}
+                                </Link>
+                              ) : (
+                                <span className="font-semibold">Member</span>
+                              )}{" "}
                               {comment.body}
                             </p>
                           ))}
@@ -1074,6 +1092,7 @@ export default async function Home({
                         <form
                           action={createThreadComment}
                           className="mt-3"
+                          id={`thread-comment-${thread.id}`}
                         >
                           <input
                             name="thread_id"
@@ -1471,7 +1490,7 @@ export default async function Home({
                 visibleThreadPosts.slice(0, 4).map((thread) => (
                   <a
                     className="block rounded-md border border-[#d8d1c6] bg-white p-3 text-sm leading-5"
-                    href="#threads"
+                    href={`#thread-${thread.id}`}
                     key={thread.id}
                   >
                     {thread.body}
