@@ -20,6 +20,7 @@ import { ShareActions } from "@/app/share-actions";
 import { startConversation } from "@/app/messages/actions";
 import { createClient } from "@/lib/supabase/server";
 import { siteName, siteUrl } from "@/lib/site";
+import { isVerifiedProfessional } from "@/lib/verification";
 
 type Claims = {
   sub: string;
@@ -82,10 +83,7 @@ function locationText(listing: Pick<Listing, "city" | "region">) {
 }
 
 function isVerifiedProfile(profile?: Profile | null) {
-  return Boolean(
-    profile?.license_verified_at &&
-      (profile.account_type === "artist" || profile.account_type === "studio"),
-  );
+  return isVerifiedProfessional(profile);
 }
 
 function VerifiedBadge({ profile }: { profile?: Profile | null }) {
@@ -194,6 +192,17 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
           .eq("subject_id", listing.id)
           .maybeSingle<{ subject_id: string }>()
       : { data: null };
+  const { data: currentProfile } = claims?.sub
+    ? await supabase
+        .from("profiles")
+        .select("account_type, license_verified_at")
+        .eq("id", claims.sub)
+        .maybeSingle<{
+          account_type: string;
+          license_verified_at: string | null;
+        }>()
+    : { data: null };
+  const canContactSeller = isVerifiedProfessional(currentProfile);
   const isOwnListing = claims?.sub === listing.profiles?.id;
   const media = listing.marketplace_media[0];
 
@@ -352,7 +361,10 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
             </section>
 
             <section className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4">
-              {claims?.sub && listing.profiles?.username && !isOwnListing ? (
+              {claims?.sub &&
+              canContactSeller &&
+              listing.profiles?.username &&
+              !isOwnListing ? (
                 <form action={startConversation}>
                   <input
                     name="username"
@@ -380,12 +392,19 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
                     DM seller
                   </button>
                 </form>
-              ) : claims?.sub ? (
+              ) : claims?.sub && isOwnListing ? (
                 <Link
                   className="flex h-11 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
                   href="/messages"
                 >
                   Open DMs
+                </Link>
+              ) : claims?.sub ? (
+                <Link
+                  className="flex h-11 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
+                  href="/account#verification-settings"
+                >
+                  Verify to contact seller
                 </Link>
               ) : (
                 <Link
@@ -396,8 +415,8 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
                 </Link>
               )}
               <p className="mt-3 text-xs leading-5 text-[#766d62]">
-                TheTattooCore is not a party to member-to-member transactions.
-                Check details, location, and terms before buying.
+                Fans can browse Stuff. Buy, sell, trade, and seller contact
+                actions require verified artist, studio, or vendor status.
               </p>
             </section>
 

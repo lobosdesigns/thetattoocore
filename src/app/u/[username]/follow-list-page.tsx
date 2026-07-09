@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { createClient } from "@/lib/supabase/server";
+import { isVerifiedProfessional } from "@/lib/verification";
 
 type Claims = {
   sub: string;
@@ -49,10 +50,7 @@ function initials(name: string) {
 function isVerifiedProfile(
   profile: Pick<Profile, "account_type" | "license_verified_at">,
 ) {
-  return Boolean(
-    profile.license_verified_at &&
-      (profile.account_type === "artist" || profile.account_type === "studio"),
-  );
+  return isVerifiedProfessional(profile);
 }
 
 function titleFor(kind: FollowListKind) {

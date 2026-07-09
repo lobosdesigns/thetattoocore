@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { createClient } from "@/lib/supabase/server";
+import { isVerifiedProfessional } from "@/lib/verification";
 
 type ProfileResult = {
   id: string;
@@ -144,10 +145,7 @@ function initials(name: string) {
 }
 
 function isVerifiedProfile(profile?: SearchProfileBadge) {
-  return Boolean(
-    profile?.license_verified_at &&
-      (profile.account_type === "artist" || profile.account_type === "studio"),
-  );
+  return isVerifiedProfessional(profile);
 }
 
 function VerifiedBadge({ profile }: { profile?: SearchProfileBadge }) {

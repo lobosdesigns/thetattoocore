@@ -8,7 +8,7 @@ type Claims = {
 };
 
 type Profile = {
-  account_type: "artist" | "enthusiast" | "studio" | "supplier";
+  account_type: "artist" | "enthusiast" | "studio" | "supplier" | "vendor";
   bio: string | null;
   city: string | null;
   country_code: string | null;
@@ -32,7 +32,7 @@ const accountTypes = [
   ["enthusiast", "Enthusiast"],
   ["artist", "Artist"],
   ["studio", "Studio"],
-  ["supplier", "Supplier"],
+  ["vendor", "Vendor"],
 ] as const;
 
 const languageOptions = [
@@ -200,7 +200,7 @@ export function ProfileForm({
             ))}
           </select>
           <span className="mt-1 block text-xs leading-5 text-[#766d62]">
-            Artist and Studio profiles can apply for license verification.
+            Artists, studios, and vendors can apply for license verification.
           </span>
         </label>
 

@@ -20,6 +20,7 @@ import { ShareActions } from "@/app/share-actions";
 import { startConversation } from "@/app/messages/actions";
 import { createClient } from "@/lib/supabase/server";
 import { siteName, siteUrl } from "@/lib/site";
+import { isVerifiedProfessional } from "@/lib/verification";
 
 type Claims = {
   sub: string;
@@ -96,10 +97,7 @@ function locationText(gig: Pick<Gig, "city" | "country" | "region">) {
 }
 
 function isVerifiedProfile(profile?: Profile | null) {
-  return Boolean(
-    profile?.license_verified_at &&
-      (profile.account_type === "artist" || profile.account_type === "studio"),
-  );
+  return isVerifiedProfessional(profile);
 }
 
 function VerifiedBadge({ profile }: { profile?: Profile | null }) {

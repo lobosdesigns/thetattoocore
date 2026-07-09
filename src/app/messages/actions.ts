@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { inspectMediaFile, validateMediaMetadata } from "@/lib/media/metadata";
 import { createClient } from "@/lib/supabase/server";
+import { isVerifiedProfessional } from "@/lib/verification";
 
 const MESSAGE_MEDIA_BUCKET = "message-media";
 
@@ -221,6 +222,25 @@ export async function startConversation(formData: FormData) {
     redirect(messagesPath("Write a message to start the conversation."));
   }
   const messageBody = body || "Photo";
+
+  if (sourceType === "marketplace_listing") {
+    const { data: senderVerification } = await supabase
+      .from("profiles")
+      .select("account_type, license_verified_at")
+      .eq("id", userId)
+      .maybeSingle<{
+        account_type: string;
+        license_verified_at: string | null;
+      }>();
+
+    if (!isVerifiedProfessional(senderVerification)) {
+      redirect(
+        messagesPath(
+          "Verified artist, studio, or vendor status is required to contact Stuff sellers.",
+        ),
+      );
+    }
+  }
 
   const { data: targetProfile } = await supabase
     .from("profiles")

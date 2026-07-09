@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 const sections = [
   {
     body:
-      "TheTattooCore is an 18+ community for tattoo artists, studios, collectors, suppliers, and tattoo enthusiasts. By creating an account, you confirm that you are at least 18 years old and that your profile information is accurate.",
+      "TheTattooCore is an 18+ community for tattoo artists, studios, collectors, vendors, and tattoo enthusiasts. By creating an account, you confirm that you are at least 18 years old and that your profile information is accurate.",
     title: "Adults Only",
   },
   {
@@ -31,7 +31,7 @@ const sections = [
   },
   {
     body:
-      "Marketplace and gig posts must be honest, lawful, and clear about location, pricing or compensation, availability, and contact details. TheTattooCore is not a party to member-to-member transactions unless a future paid platform feature explicitly says otherwise.",
+      "Stuff listings are for verified artists, studios, and approved vendors. Fans can browse listings, but buy, sell, trade, and seller-contact actions require verified professional or vendor status. Marketplace and gig posts must be honest, lawful, and clear about location, pricing or compensation, availability, and contact details. TheTattooCore is not a party to member-to-member transactions unless a future paid platform feature explicitly says otherwise.",
     title: "Marketplace And Gigs",
   },
   {

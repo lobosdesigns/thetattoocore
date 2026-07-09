@@ -27,6 +27,7 @@ import { NotificationBellLink } from "@/app/notification-bell-link";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { createClient } from "@/lib/supabase/server";
 import { siteName, siteUrl } from "@/lib/site";
+import { isVerifiedProfessional } from "@/lib/verification";
 import {
   acceptFollowRequest,
   declineFollowRequest,
@@ -176,10 +177,7 @@ function profileLocation(profile: Profile) {
 function isVerifiedProfile(
   profile: Pick<Profile, "account_type" | "license_verified_at">,
 ) {
-  return Boolean(
-    profile.license_verified_at &&
-      (profile.account_type === "artist" || profile.account_type === "studio"),
-  );
+  return isVerifiedProfessional(profile);
 }
 
 function timeAgo(value: string) {

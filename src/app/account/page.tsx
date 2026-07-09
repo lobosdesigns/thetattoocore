@@ -6,6 +6,7 @@ import { LicenseDocumentInput } from "./license-document-input";
 import { ProfileForm } from "./profile-form";
 import { PendingSubmitButton } from "../pending-submit-button";
 import { createClient } from "@/lib/supabase/server";
+import { verificationEligibleAccountTypes } from "@/lib/verification";
 
 type Claims = {
   sub: string;
@@ -13,7 +14,6 @@ type Claims = {
 };
 
 const adminRoles = ["moderator", "admin", "owner"];
-const verificationEligibleTypes = ["artist", "studio"];
 const accountNavItems = [
   ["#profile-settings", "Profile"],
   ["#privacy-settings", "Privacy"],
@@ -29,7 +29,7 @@ function AccountSetupGuide({
   const steps = [
     ["1", "Save profile", "Choose a username, account type, country, language, and confirm 18+."],
     ["2", "Start posting", "Use the bottom-right plus button from 4U, Gossip, Stuff, or Gigs."],
-    ["3", "Verify later", "Artists and studios can upload license documents for admin review."],
+    ["3", "Verify later", "Artists, studios, and vendors can upload license or business documents for admin review."],
   ] as const;
 
   return (
@@ -46,7 +46,7 @@ function AccountSetupGuide({
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-white/75">
             {isFirstProfile
-              ? "This one save unlocks posting, comments, DMs, follows, marketplace listings, and gigs."
+              ? "This one save unlocks posting, comments, DMs, follows, and community features. Stuff transactions need verification."
               : "Your saved profile powers posting, public discovery, DMs, local results, and verification."}
           </p>
         </div>
@@ -125,7 +125,7 @@ export default async function AccountPage({
     >();
   const canSubmitLicense =
     profile?.account_type &&
-    verificationEligibleTypes.includes(profile.account_type as string);
+    verificationEligibleAccountTypes.includes(profile.account_type as string);
   const isLicenseVerified = Boolean(profile?.license_verified_at);
   const isFirstProfile = !profile;
 
@@ -185,12 +185,13 @@ export default async function AccountPage({
           >
             <div className="mb-5">
               <h2 className="text-xl font-bold">
-                Artist/studio license verification
+                Artist, studio, and vendor verification
               </h2>
               <p className="mt-1 text-sm leading-6 text-[#766d62]">
-                Upload your tattoo license, shop license, certification, or
-                local proof that you can legally tattoo or operate as a studio.
-                Documents are private and reviewed by authorized admins.
+                Upload your tattoo license, shop license, certification,
+                vendor business license, or local proof that you can legally
+                tattoo, operate, or sell as a body-art vendor. Documents are
+                private and reviewed by authorized admins.
               </p>
               <p className="mt-2 text-xs font-semibold text-[#766d62]">
                 Accepted files: PDF, JPG, PNG, or WebP up to 10 MB.
@@ -300,10 +301,11 @@ export default async function AccountPage({
             className="mt-6 scroll-mt-4 rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5"
             id="verification-settings"
           >
-            <h2 className="text-xl font-bold">Artist/studio verification</h2>
+            <h2 className="text-xl font-bold">Artist, studio, and vendor verification</h2>
             <p className="mt-2 text-sm leading-6 text-[#766d62]">
-              Choose Artist or Studio as your account type and save your profile
-              to submit license or certification documents.
+              Choose Artist, Studio, or Vendor as your account type and save
+              your profile to submit license, certification, or business
+              documents.
             </p>
           </section>
         )}

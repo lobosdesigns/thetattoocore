@@ -15,6 +15,7 @@ import {
 import { toggleSavedItem } from "@/app/actions";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { createClient } from "@/lib/supabase/server";
+import { isVerifiedProfessional } from "@/lib/verification";
 
 type Claims = {
   sub: string;
@@ -97,10 +98,7 @@ export const metadata: Metadata = {
 };
 
 function isVerifiedProfile(profile?: ProfileBadge | null) {
-  return Boolean(
-    profile?.license_verified_at &&
-      (profile.account_type === "artist" || profile.account_type === "studio"),
-  );
+  return isVerifiedProfessional(profile);
 }
 
 function VerifiedBadge({ profile }: { profile?: ProfileBadge | null }) {

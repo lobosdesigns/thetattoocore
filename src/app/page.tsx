@@ -39,6 +39,7 @@ import { CompactShareButton } from "./share-actions";
 import { WordLimitedField } from "./word-limited-field";
 import { siteName, siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
+import { isVerifiedProfessional } from "@/lib/verification";
 
 type Claims = {
   sub: string;
@@ -248,10 +249,7 @@ function profileLocation(profile?: Profile | null) {
 }
 
 function isVerifiedProfile(profile?: Profile | null) {
-  return Boolean(
-    profile?.license_verified_at &&
-      (profile.account_type === "artist" || profile.account_type === "studio"),
-  );
+  return isVerifiedProfessional(profile);
 }
 
 function VerifiedBadge({ profile }: { profile?: Profile | null }) {
@@ -772,6 +770,7 @@ export default async function Home({
       !canRenderContent(item, viewer),
   ).length;
   const canCreate = Boolean(currentProfile);
+  const canCreateStuff = isVerifiedProfessional(currentProfile);
   const adminRole = currentProfile?.role;
   const profileHref = currentProfile ? `/u/${currentProfile.username}` : "/account";
   const unreadDmBadge = unreadDmCount ?? 0;
@@ -1322,6 +1321,7 @@ export default async function Home({
                           url={`${siteUrl}/stuff/${listing.id}`}
                         />
                         {isSignedIn &&
+                        canCreateStuff &&
                         listing.profiles?.username &&
                         listing.profiles.id !== claims?.sub ? (
                           <form action={startConversation}>
@@ -1355,12 +1355,19 @@ export default async function Home({
                               DM seller
                             </button>
                           </form>
-                        ) : isSignedIn ? (
+                        ) : isSignedIn && canCreateStuff ? (
                           <Link
                             className="flex h-10 w-full items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
                             href="/messages"
                           >
                             Open DM
+                          </Link>
+                        ) : isSignedIn ? (
+                          <Link
+                            className="flex h-10 w-full items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                            href="/account#verification-settings"
+                          >
+                            Verify to contact
                           </Link>
                         ) : (
                           <Link
@@ -1377,16 +1384,20 @@ export default async function Home({
                     <div className="sm:col-span-2">
                       <EmptyColumnState
                         actionHref={
-                          !isSignedIn ? "/login" : canCreate ? undefined : "/account"
+                          !isSignedIn
+                            ? "/login"
+                            : canCreateStuff
+                              ? undefined
+                              : "/account#verification-settings"
                         }
                         actionLabel={
                           !isSignedIn
                             ? "Sign in to list stuff"
-                            : canCreate
+                            : canCreateStuff
                               ? "Tap + to list Stuff"
-                              : "Set up profile to list"
+                              : "Verify to list Stuff"
                         }
-                        body="Flash, supplies, chair rentals, studio services, machines, furniture, and useful local finds will appear here."
+                        body="Fans can browse. Verified artists, studios, and vendors can buy, sell, trade, and contact sellers."
                         icon={ShoppingBag}
                         tips={["Flash", "Supplies", "Studio gear"]}
                         title="No Stuff listings yet"
@@ -1696,7 +1707,11 @@ export default async function Home({
         profileHref={profileHref}
         unreadDmBadge={unreadDmBadge}
       />
-      <FloatingComposer canCreate={canCreate} isSignedIn={isSignedIn} />
+      <FloatingComposer
+        canCreate={canCreate}
+        canCreateStuff={canCreateStuff}
+        isSignedIn={isSignedIn}
+      />
     </main>
   );
 }

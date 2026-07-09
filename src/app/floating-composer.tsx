@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { Search, Send } from "lucide-react";
 import {
   createFeedPost,
@@ -108,9 +109,11 @@ function SensitiveControls() {
 
 export function FloatingComposer({
   canCreate,
+  canCreateStuff,
   isSignedIn,
 }: {
   canCreate: boolean;
+  canCreateStuff: boolean;
   isSignedIn: boolean;
 }) {
   return (
@@ -188,71 +191,89 @@ export function FloatingComposer({
           </form>
         ),
         marketplace: (
-          <form
-            action={createMarketplaceListing}
-            className="space-y-3"
-            encType="multipart/form-data"
-          >
-            <WordLimitedField
-              className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-              maxCharacters={120}
-              maxLength={120}
-              minTrimmedLength={3}
-              name="title"
-              placeholder="Flash sheet, chair rental, supplies"
-              required
-              validationMessage="Stuff title needs at least 3 characters."
-              wrapperClassName="w-full"
-            />
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                name="price"
-                placeholder="80"
-              />
-              <select
-                className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                name="category"
-              >
-                <option value="flash">Flash</option>
-                <option value="guest-spot">Guest spot</option>
-                <option value="chair">Chair</option>
-                <option value="supplies">Supplies</option>
-                <option value="service">Service</option>
-              </select>
-            </div>
-            <WordLimitedField
-              as="textarea"
-              className="min-h-24 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
-              maxCharacters={2000}
-              maxLength={2000}
-              name="description"
-              placeholder="Details, terms, dates, or pickup/shipping notes."
-            />
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                name="city"
-                placeholder="City"
-              />
-              <input
-                className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-                name="region"
-                placeholder="State"
-              />
-            </div>
-            <ComposerDetails title="Visibility and sensitive content">
-              <VisibilityControl />
-              <SensitiveControls />
-            </ComposerDetails>
-            <MediaInput accept={imageVideoAccept} name="media" />
-            <PendingSubmitButton
-              className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
-              pendingLabel="Publishing"
+          canCreateStuff ? (
+            <form
+              action={createMarketplaceListing}
+              className="space-y-3"
+              encType="multipart/form-data"
             >
-              Publish listing
-            </PendingSubmitButton>
-          </form>
+              <WordLimitedField
+                className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                maxCharacters={120}
+                maxLength={120}
+                minTrimmedLength={3}
+                name="title"
+                placeholder="Flash sheet, chair rental, supplies"
+                required
+                validationMessage="Stuff title needs at least 3 characters."
+                wrapperClassName="w-full"
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  name="price"
+                  placeholder="80"
+                />
+                <select
+                  className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  name="category"
+                >
+                  <option value="flash">Flash</option>
+                  <option value="guest-spot">Guest spot</option>
+                  <option value="chair">Chair</option>
+                  <option value="supplies">Supplies</option>
+                  <option value="service">Service</option>
+                </select>
+              </div>
+              <WordLimitedField
+                as="textarea"
+                className="min-h-24 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+                maxCharacters={2000}
+                maxLength={2000}
+                name="description"
+                placeholder="Details, terms, dates, or pickup/shipping notes."
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  name="city"
+                  placeholder="City"
+                />
+                <input
+                  className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  name="region"
+                  placeholder="State"
+                />
+              </div>
+              <ComposerDetails title="Visibility and sensitive content">
+                <VisibilityControl />
+                <SensitiveControls />
+              </ComposerDetails>
+              <MediaInput accept={imageVideoAccept} name="media" />
+              <PendingSubmitButton
+                className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                pendingLabel="Publishing"
+              >
+                Publish listing
+              </PendingSubmitButton>
+            </form>
+          ) : (
+            <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-4">
+              <p className="text-sm font-semibold">
+                Stuff is for verified artists, studios, and vendors.
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[#766d62]">
+                Fans can browse Stuff, but listing, buying, selling, trading,
+                and seller contact require verification.
+              </p>
+              <Link
+                className="mt-3 inline-flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                href="/account#verification-settings"
+              >
+                Apply for verification
+              </Link>
+            </div>
+          )
         ),
         gigs: (
           <form

@@ -4,7 +4,7 @@
 
 - Feed: image posts and short reel clips, 40-word captions, likes, and short 40-word comments.
 - Threads: longer posts, optional image, replies, likes, and community discussion.
-- Marketplace: flash, guest spots, chairs, supplies, and services with seller messaging.
+- Marketplace/Stuff: verified artists, studios, and vendors can buy, sell, and trade approved body-art goods and services; fans can browse but not transact or contact sellers.
 - Messages: integrated direct messenger for bookings, marketplace questions, and collaboration.
 - Composer: one floating plus button that opens the correct posting form for the current column.
 - Mobile composer: posting cards must fit mobile browser screens, scroll to the publish button, and keep advanced fields behind expandable sections.
@@ -14,9 +14,11 @@
 ## Platform Stance
 
 - TheTattooCore should openly emphasize that it does not use AI-generated art, AI search, AI feeds, or AI-driven creator replacement features.
-- Keep the platform centered on real body-art artists, studios, collectors, suppliers, and enthusiasts.
+- Keep the platform centered on real body-art artists, studios, collectors, vendors, and enthusiasts.
+- Stand against corporate takeover pressure in the tattoo and body-art industry; keep the community focused on independent artists, studios, craft, culture, and ethical vendors.
 - Do not promote or normalize unprofessional tattooing, unlicensed studios, or unsafe "scratcher" activity.
 - Marketplace rules should prevent sales of tattoo equipment to unlicensed or unprofessional buyers where the platform can reasonably enforce it.
+- Stuff access rules should allow public/fan browsing but restrict buy, sell, trade, and seller-contact actions to verified artists, studios, and vendors.
 - Support freedom of body-art expression and avoid unnecessary censorship when content follows safety, consent, legality, and adult-content guidelines.
 - Draw firm safety lines around pornography, sexualized content, exploitation, minors, harassment, scams, unsafe practices, and content showing unprofessional or potentially deadly harm.
 - Position the community as a safe space for body-art culture to express itself without unwanted AI, spam, or unprofessional practice watering it down.
@@ -69,15 +71,15 @@
 ## Verification
 
 - Start with free/low-cost verification: confirmed email, 18+ self-attestation, profile completeness, and optional manual artist/shop review.
-- Add public verification badges later for artists, studios, suppliers, and advertisers.
+- Add public verification badges later for artists, studios, vendors, and advertisers.
 - Verification levels:
   - Email verified: user confirmed email address.
   - Profile verified: profile has enough identity/location/business info to reduce spam.
-  - Artist/studio verified: required manual review for artist and studio accounts before they receive a verified artist/studio badge.
-  - Artist/studio license verified: artists and studios must submit licensing or certification documentation showing they are legally allowed to tattoo or operate in their jurisdiction.
+  - Artist/studio/vendor verified: required manual review before they receive a verified badge or Stuff transaction access.
+  - Artist/studio/vendor license verified: artists and studios must submit licensing or certification documentation showing they are legally allowed to tattoo or operate in their jurisdiction; vendors must submit proper business licensing before approval.
   - Advertiser verified: billing and campaign review before ads go live.
-- Artist/studio license documents must be private, stored outside public media buckets, visible only to the submitting user and authorized admins/moderators.
-- Verification review should collect license/certification file, issuing region, license or certification name/number where applicable, expiration date when applicable, and reviewer notes.
+- Artist/studio/vendor license documents must be private, stored outside public media buckets, visible only to the submitting user and authorized admins/moderators.
+- Verification review should collect license/certification or business-license file, issuing region, license or certification name/number where applicable, expiration date when applicable, and reviewer notes.
 - Profiles should show verification badges only after approval; rejected or pending verification should not be public-facing.
 - SMS or phone MFA is not the default starting path because it adds cost. Current Supabase phone MFA is a paid add-on and SMS/WhatsApp messages can add provider charges.
 - Revisit SMS/phone verification only when there is a clear anti-spam need and budget for it.

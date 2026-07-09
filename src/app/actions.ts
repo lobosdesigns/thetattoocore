@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import type { MediaMetadata } from "@/lib/media/metadata";
 import { inspectMediaFile, validateMediaMetadata } from "@/lib/media/metadata";
 import { createClient } from "@/lib/supabase/server";
+import { isVerifiedProfessional } from "@/lib/verification";
 
 const MEDIA_BUCKET = "tattoo-media";
 const VISIBILITY_VALUES = new Set(["public_preview", "members", "private"]);
@@ -535,6 +536,24 @@ export async function createThreadPost(formData: FormData) {
 
 export async function createMarketplaceListing(formData: FormData) {
   const { supabase, userId } = await requireProfile();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("account_type, license_verified_at")
+    .eq("id", userId)
+    .maybeSingle<{
+      account_type: string;
+      license_verified_at: string | null;
+    }>();
+
+  if (!isVerifiedProfessional(profile)) {
+    redirect(
+      homeMessage(
+        "Verified artist, studio, or vendor status is required to list Stuff.",
+        "marketplace",
+      ),
+    );
+  }
+
   const title = cleanText(formData.get("title"), 120);
   const description = cleanText(formData.get("description"), 2000);
   const category = cleanText(formData.get("category"), 40) || "flash";

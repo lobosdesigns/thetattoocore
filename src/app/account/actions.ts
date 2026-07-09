@@ -17,7 +17,7 @@ type Claims = {
   sub: string;
 };
 
-const accountTypes = new Set(["artist", "enthusiast", "studio", "supplier"]);
+const accountTypes = new Set(["artist", "enthusiast", "studio", "supplier", "vendor"]);
 const languages = new Set(["en", "es", "pt", "fr", "de", "it", "ja", "ko", "zh"]);
 const countryCodes = new Set([
   "US",
@@ -177,8 +177,8 @@ export async function submitLicenseVerification(formData: FormData) {
     redirect(accountPath("This account is suspended from verification submissions."));
   }
 
-  if (!["artist", "studio"].includes(profile.account_type)) {
-    redirect(accountPath("Artist or studio account required for license verification."));
+  if (!["artist", "studio", "vendor"].includes(profile.account_type)) {
+    redirect(accountPath("Artist, studio, or vendor account required for verification."));
   }
 
   const licenseName = cleanText(formData.get("license_name"), 160);
