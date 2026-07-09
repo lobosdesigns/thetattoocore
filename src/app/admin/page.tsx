@@ -180,6 +180,13 @@ const mediaCostRules = [
   "Consider Cloudflare Images for image variants and Cloudflare Stream for video only after upload volume grows.",
 ] as const;
 
+const licenseReviewChecklist = [
+  "Confirm the account is an artist, studio, or vendor before approval.",
+  "Match the document to the profile name, shop, or vendor business.",
+  "Reject expired documents and ask the member to resubmit current proof.",
+  "Do not approve scratcher activity, unlicensed studios, AI tattoo art claims, or restricted equipment access for unqualified buyers.",
+] as const;
+
 const moderateRoles: UserRole[] = ["moderator", "admin", "owner"];
 
 export const metadata: Metadata = {
@@ -224,6 +231,14 @@ function licenseStatusClass(status: LicenseRequest["status"]) {
 function fileNameFromPath(path: string) {
   const name = path.split("/").filter(Boolean).at(-1);
   return name || "License document";
+}
+
+function isExpiredDate(value: string | null) {
+  if (!value) return false;
+
+  const date = new Date(`${value}T23:59:59`);
+
+  return Number.isFinite(date.getTime()) && date.getTime() < Date.now();
 }
 
 function userStatus(user: Pick<AdminUser, "bannedAt" | "suspendedAt">) {
@@ -657,6 +672,7 @@ function QueueSummary({
 
 function LicenseRequestCard({ request }: { request: LicenseRequest }) {
   const isPending = request.status === "pending";
+  const isExpired = isExpiredDate(request.expiresOn);
 
   return (
     <article className="rounded-md border border-[#e5ded4] bg-white p-4">
@@ -707,9 +723,26 @@ function LicenseRequestCard({ request }: { request: LicenseRequest }) {
           <dt className="text-xs font-semibold uppercase text-[#766d62]">
             Expires
           </dt>
-          <dd className="mt-0.5">{formatDate(request.expiresOn)}</dd>
+          <dd className="mt-0.5">
+            {formatDate(request.expiresOn)}
+            {isExpired ? (
+              <span className="ml-2 rounded-md bg-[#fff0f0] px-2 py-0.5 text-xs font-semibold text-[#8a2828]">
+                expired
+              </span>
+            ) : null}
+          </dd>
         </div>
       </dl>
+      <div className="mt-4 rounded-md border border-[#e5ded4] bg-[#fffdf9] p-3">
+        <p className="text-xs font-semibold uppercase text-[#766d62]">
+          Review checklist
+        </p>
+        <ul className="mt-2 space-y-1 text-xs leading-5 text-[#4f473f]">
+          {licenseReviewChecklist.map((item) => (
+            <li key={item}>- {item}</li>
+          ))}
+        </ul>
+      </div>
       <div className="mt-4 rounded-md border border-[#e5ded4] bg-[#f7f4ef] p-3">
         <p className="truncate text-sm font-semibold">{request.documentName}</p>
         <p className="mt-1 text-xs text-[#766d62]">
@@ -738,11 +771,18 @@ function LicenseRequestCard({ request }: { request: LicenseRequest }) {
             className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
             maxLength={500}
             name="note"
-            placeholder="Reviewer note"
+            placeholder="Reviewer note, required for rejection"
           />
+          {isExpired ? (
+            <p className="rounded-md border border-[#e5b8b8] bg-[#fff0f0] px-3 py-2 text-xs leading-5 text-[#8a2828]">
+              This document appears expired. Reject it and ask the member to
+              resubmit current proof.
+            </p>
+          ) : null}
           <div className="grid grid-cols-2 gap-2">
             <button
-              className="h-10 rounded-md bg-[#171412] px-3 text-sm font-semibold text-white"
+              className="h-10 rounded-md bg-[#171412] px-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#a9a19a]"
+              disabled={isExpired}
               name="status"
               value="approved"
             >
@@ -1817,9 +1857,15 @@ export default async function AdminPage({
                 <div className="mb-4 flex items-center gap-3">
                   <ShieldCheck className="size-5" />
                   <h2 className="text-lg font-bold">
-                    Artist and studio verification
+                    Artist, studio, and vendor verification
                   </h2>
                 </div>
+                <p className="mb-4 rounded-md border border-[#e5ded4] bg-white px-3 py-2 text-sm leading-6 text-[#4f473f]">
+                  Approvals unlock Stuff seller contact, buy/sell/trade access,
+                  vendor participation, and professional equipment activity.
+                  Keep notes specific when rejecting so members know what to
+                  resubmit.
+                </p>
                 <QueueSummary
                   items={[
                     ["Pending", pendingLicenseRequests.length, "warning"],
@@ -1831,7 +1877,7 @@ export default async function AdminPage({
                   <div className="space-y-4">
                     <QueueGroup
                       count={pendingLicenseRequests.length}
-                      emptyText="No pending artist or studio submissions."
+                      emptyText="No pending artist, studio, or vendor submissions."
                       title="Pending approval"
                     >
                       {pendingLicenseRequests.map((request) => (
@@ -1856,8 +1902,8 @@ export default async function AdminPage({
                   </div>
                 ) : (
                   <div className="rounded-md border border-[#e5ded4] bg-white p-4 text-sm text-[#4f473f]">
-                    No artist or studio license submissions are waiting right
-                    now.
+                    No artist, studio, or vendor license submissions are waiting
+                    right now.
                   </div>
                 )}
               </div>

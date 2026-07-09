@@ -97,6 +97,7 @@ const verificationStandards = [
   "Artists and studios must show current licensing, certification, or local legal proof before professional access is approved.",
   "Vendors must show proper business licensing before vendor access, seller contact, or Stuff trading is approved.",
   "Stuff stays browseable for fans, but buy, sell, trade, and seller-contact actions are reserved for verified artists, studios, and vendors.",
+  "Expired documents, scratcher activity, unlicensed studios, AI tattoo art claims, and unsafe equipment access are rejected.",
 ] as const;
 
 const advertisingStandards = [

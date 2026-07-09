@@ -29,6 +29,7 @@ const licenseStatuses = new Set<LicenseVerificationStatus>([
   "approved",
   "rejected",
 ]);
+const verificationEligibleAccountTypes = new Set(["artist", "studio", "vendor"]);
 const roleStatuses = new Set<UserRole>(["user", "moderator", "admin", "owner"]);
 const userStatuses = new Set<UserStatus>(["active", "suspended", "banned"]);
 const adCampaignStatuses = new Set<AdCampaignStatus>([
@@ -73,6 +74,14 @@ function cleanText(value: FormDataEntryValue | null, maxLength: number) {
   return String(value ?? "")
     .trim()
     .slice(0, maxLength);
+}
+
+function isPastDate(value: string | null) {
+  if (!value) return false;
+
+  const date = new Date(`${value}T23:59:59`);
+
+  return Number.isFinite(date.getTime()) && date.getTime() < Date.now();
 }
 
 function actionTypeFor(status: ModerationStatus) {
@@ -529,12 +538,22 @@ export async function updateLicenseVerification(formData: FormData) {
     redirect("/admin?message=Choose a valid license decision.#verification");
   }
 
+  if (status === "rejected" && note.length < 10) {
+    redirect("/admin?message=Add a short rejection note for the member.#verification");
+  }
+
   const { supabase, userId } = await requireModerator();
   const { data: request, error: requestError } = await supabase
     .from("license_verification_requests")
-    .select("id, profile_id, status")
+    .select("id, account_type, expires_on, profile_id, status")
     .eq("id", requestId)
-    .maybeSingle<{ id: string; profile_id: string; status: string }>();
+    .maybeSingle<{
+      account_type: string;
+      expires_on: string | null;
+      id: string;
+      profile_id: string;
+      status: string;
+    }>();
 
   if (requestError || !request) {
     redirect(
@@ -546,6 +565,17 @@ export async function updateLicenseVerification(formData: FormData) {
 
   if (request.status !== "pending") {
     redirect("/admin?message=This license request was already reviewed.#verification");
+  }
+
+  if (
+    status === "approved" &&
+    !verificationEligibleAccountTypes.has(request.account_type)
+  ) {
+    redirect("/admin?message=Only artist, studio, or vendor accounts can be approved.#verification");
+  }
+
+  if (status === "approved" && isPastDate(request.expires_on)) {
+    redirect("/admin?message=Expired license documents must be rejected or resubmitted.#verification");
   }
 
   const { error: updateError } = await supabase
@@ -591,7 +621,11 @@ export async function updateLicenseVerification(formData: FormData) {
   await supabase.from("admin_audit_logs").insert({
     actor_id: userId,
     event_type: `license_${status}`,
-    metadata: { status },
+    metadata: {
+      account_type: request.account_type,
+      expires_on: request.expires_on,
+      status,
+    },
     summary: note || null,
     target_id: request.id,
     target_type: "license_verification_request",
