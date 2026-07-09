@@ -8,6 +8,7 @@ import {
   Send,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { MediaInput } from "@/app/media-input";
 import { MessageThread } from "./message-thread";
 import { sendMessage, startConversation } from "./actions";
 
@@ -51,10 +52,22 @@ type Message = {
   created_at: string;
 };
 
+type MessageAttachment = {
+  id: string;
+  message_id: string;
+  storage_bucket: string;
+  storage_path: string;
+  media_type: "image";
+  mime_type: string;
+  original_filename: string | null;
+};
+
 type MessageNotification = {
   href: string | null;
   subject_id: string | null;
 };
+
+const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
 
 function initials(name: string) {
   return name
@@ -288,6 +301,38 @@ export default async function MessagesPage({
   const selectedMessages = selectedConversation
     ? messagesByConversation.get(selectedConversation.id) ?? []
     : [];
+  const selectedMessageIds = selectedMessages.map((message) => message.id);
+  const { data: selectedAttachments } = selectedMessageIds.length
+    ? await supabase
+        .from("message_attachments")
+        .select("id, message_id, storage_bucket, storage_path, media_type, mime_type, original_filename")
+        .in("message_id", selectedMessageIds)
+        .order("created_at", { ascending: true })
+        .returns<MessageAttachment[]>()
+    : { data: [] as MessageAttachment[] };
+  const attachmentsWithUrls = await Promise.all(
+    (selectedAttachments ?? []).map(async (attachment) => {
+      const { data } = await supabase.storage
+        .from(attachment.storage_bucket)
+        .createSignedUrl(attachment.storage_path, 3600);
+
+      return {
+        ...attachment,
+        signedUrl: data?.signedUrl ?? null,
+      };
+    }),
+  );
+  const attachmentsByMessage = new Map<string, typeof attachmentsWithUrls>();
+
+  for (const attachment of attachmentsWithUrls) {
+    const list = attachmentsByMessage.get(attachment.message_id) ?? [];
+    list.push(attachment);
+    attachmentsByMessage.set(attachment.message_id, list);
+  }
+  const selectedMessagesWithAttachments = selectedMessages.map((message) => ({
+    ...message,
+    attachments: attachmentsByMessage.get(message.id) ?? [],
+  }));
 
   return (
     <main className="min-h-screen bg-[#202020] text-[#171412]">
@@ -313,7 +358,11 @@ export default async function MessagesPage({
               </div>
             </div>
 
-            <form action={startConversation} className="space-y-2">
+            <form
+              action={startConversation}
+              className="space-y-2"
+              encType="multipart/form-data"
+            >
               <div className="flex items-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3">
                 <Search className="size-4 text-[#766d62]" />
                 <input
@@ -328,7 +377,12 @@ export default async function MessagesPage({
                 maxLength={4000}
                 name="body"
                 placeholder="Start a message"
-                required
+              />
+              <MediaInput
+                accept={imageAccept}
+                maxImageBytes={10 * 1024 * 1024}
+                name="media"
+                videoAllowed={false}
               />
               <button className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
                 <Send className="size-4" />
@@ -445,7 +499,7 @@ export default async function MessagesPage({
               <MessageThread
                 conversationId={selectedConversation.id}
                 currentUserId={claims.sub}
-                initialMessages={selectedMessages}
+                initialMessages={selectedMessagesWithAttachments}
                 key={`${selectedConversation.id}:${
                   selectedMessages[selectedMessages.length - 1]?.id ?? "empty"
                 }`}
@@ -458,7 +512,8 @@ export default async function MessagesPage({
 
               <form
                 action={sendMessage}
-                className="sticky bottom-0 border-t border-[#cfc8bd] bg-[#f2f1ee] p-4"
+                className="sticky bottom-0 space-y-3 border-t border-[#cfc8bd] bg-[#f2f1ee] p-4"
+                encType="multipart/form-data"
               >
                 <input
                   name="conversation_id"
@@ -471,7 +526,6 @@ export default async function MessagesPage({
                     maxLength={4000}
                     name="body"
                     placeholder="Message"
-                    required
                   />
                   <button
                     aria-label="Send message"
@@ -480,6 +534,12 @@ export default async function MessagesPage({
                     <Send className="size-5" />
                   </button>
                 </div>
+                <MediaInput
+                  accept={imageAccept}
+                  maxImageBytes={10 * 1024 * 1024}
+                  name="media"
+                  videoAllowed={false}
+                />
               </form>
             </>
           ) : (

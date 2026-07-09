@@ -10,6 +10,13 @@ type Profile = {
 };
 
 export type ThreadMessage = {
+  attachments?: {
+    id: string;
+    media_type: "image";
+    mime_type: string;
+    original_filename: string | null;
+    signedUrl: string | null;
+  }[];
   id: string;
   body: string;
   conversation_id: string;
@@ -104,9 +111,37 @@ export function MessageThread({
                   : "border border-[#cfc8bd] bg-white text-[#171412]"
               }`}
             >
-              <p className="whitespace-pre-wrap text-sm leading-6">
-                {message.body}
-              </p>
+              {message.attachments?.length ? (
+                <div className="mb-3 grid gap-2">
+                  {message.attachments.map((attachment) =>
+                    attachment.signedUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        alt={attachment.original_filename ?? "DM attachment"}
+                        className="max-h-80 w-full rounded-md object-cover"
+                        key={attachment.id}
+                        src={attachment.signedUrl}
+                      />
+                    ) : (
+                      <div
+                        className={`rounded-md border px-3 py-2 text-xs ${
+                          mine
+                            ? "border-white/20 bg-white/10 text-white/80"
+                            : "border-[#cfc8bd] bg-[#f7f4ef] text-[#766d62]"
+                        }`}
+                        key={attachment.id}
+                      >
+                        Photo unavailable
+                      </div>
+                    ),
+                  )}
+                </div>
+              ) : null}
+              {message.body ? (
+                <p className="whitespace-pre-wrap text-sm leading-6">
+                  {message.body}
+                </p>
+              ) : null}
               <p
                 className={`mt-2 text-[11px] ${
                   mine ? "text-white/70" : "text-[#766d62]"

@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { inspectMediaFile, validateMediaMetadata } from "@/lib/media/metadata";
 import { createClient } from "@/lib/supabase/server";
+
+const MESSAGE_MEDIA_BUCKET = "message-media";
 
 type Claims = {
   sub: string;
@@ -23,6 +26,26 @@ function cleanText(value: FormDataEntryValue | null, maxLength: number) {
   return String(value ?? "")
     .trim()
     .slice(0, maxLength);
+}
+
+function mediaFromForm(formData: FormData) {
+  const value = formData.get("media");
+
+  if (!(value instanceof File) || value.size === 0) {
+    return null;
+  }
+
+  return value;
+}
+
+function extensionFor(file: File) {
+  const fromName = file.name.split(".").pop()?.toLowerCase();
+
+  if (fromName && /^[a-z0-9]+$/.test(fromName)) {
+    return fromName.slice(0, 12);
+  }
+
+  return file.type.split("/")[1]?.replace("jpeg", "jpg") || "bin";
 }
 
 function cleanSourceType(value: FormDataEntryValue | null) {
@@ -81,6 +104,79 @@ async function requireProfile() {
   return { profile, supabase, userId: claims.sub };
 }
 
+async function attachMessageMedia({
+  conversationId,
+  formData,
+  messageId,
+  supabase,
+  userId,
+}: {
+  conversationId: string;
+  formData: FormData;
+  messageId: string;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId: string;
+}) {
+  const media = mediaFromForm(formData);
+
+  if (!media) return;
+
+  const metadata = await inspectMediaFile(media);
+  const validationMessage = validateMediaMetadata(metadata);
+
+  if (validationMessage || metadata.mediaType !== "image") {
+    redirect(
+      messagesPath(
+        validationMessage || "DM attachments support images right now.",
+        conversationId,
+      ),
+    );
+  }
+
+  const storagePath = `${userId}/messages/${messageId}/${crypto.randomUUID()}.${extensionFor(media)}`;
+  const { error: uploadError } = await supabase.storage
+    .from(MESSAGE_MEDIA_BUCKET)
+    .upload(storagePath, media, {
+      cacheControl: "3600",
+      contentType: metadata.mimeType,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    redirect(
+      messagesPath(
+        uploadError.message || "Message sent, but photo upload failed.",
+        conversationId,
+      ),
+    );
+  }
+
+  const { error: attachmentError } = await supabase
+    .from("message_attachments")
+    .insert({
+      file_size_bytes: metadata.fileSizeBytes,
+      height: metadata.height,
+      media_type: "image",
+      message_id: messageId,
+      mime_type: metadata.mimeType,
+      original_filename: metadata.originalFilename,
+      sender_id: userId,
+      storage_bucket: MESSAGE_MEDIA_BUCKET,
+      storage_path: storagePath,
+      width: metadata.width,
+    });
+
+  if (attachmentError) {
+    await supabase.storage.from(MESSAGE_MEDIA_BUCKET).remove([storagePath]);
+    redirect(
+      messagesPath(
+        attachmentError.message || "Message sent, but photo could not attach.",
+        conversationId,
+      ),
+    );
+  }
+}
+
 async function findExistingConversation(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
@@ -112,6 +208,7 @@ export async function startConversation(formData: FormData) {
     .replace(/^@/, "")
     .toLowerCase();
   const body = cleanText(formData.get("body"), 4000);
+  const media = mediaFromForm(formData);
   const sourceId = cleanText(formData.get("source_id"), 80);
   const sourceTitle = cleanText(formData.get("source_title"), 120);
   const sourceType = cleanSourceType(formData.get("source_type"));
@@ -120,9 +217,10 @@ export async function startConversation(formData: FormData) {
     redirect(messagesPath("Enter a valid username."));
   }
 
-  if (body.length < 1) {
+  if (body.length < 1 && !media) {
     redirect(messagesPath("Write a message to start the conversation."));
   }
+  const messageBody = body || "Photo";
 
   const { data: targetProfile } = await supabase
     .from("profiles")
@@ -173,15 +271,29 @@ export async function startConversation(formData: FormData) {
     }
   }
 
-  const { error: messageError } = await supabase.from("messages").insert({
-    body,
-    conversation_id: conversationId,
-    sender_id: userId,
-  });
+  const { data: message, error: messageError } = await supabase
+    .from("messages")
+    .insert({
+      body: messageBody,
+      conversation_id: conversationId,
+      sender_id: userId,
+    })
+    .select("id")
+    .single<{ id: string }>();
 
-  if (messageError) {
-    redirect(messagesPath(messageError.message, conversationId));
+  if (messageError || !message) {
+    redirect(
+      messagesPath(messageError?.message || "Could not send message.", conversationId),
+    );
   }
+
+  await attachMessageMedia({
+    conversationId,
+    formData,
+    messageId: message.id,
+    supabase,
+    userId,
+  });
 
   const { data: senderProfile } = await supabase
     .from("profiles")
@@ -198,7 +310,7 @@ export async function startConversation(formData: FormData) {
   if (targetPreferences?.[preferenceColumn] !== false) {
     await supabase.from("notifications").insert({
       actor_id: userId,
-      body: body.slice(0, 160),
+      body: messageBody.slice(0, 160),
       href: `/messages?c=${conversationId}`,
       recipient_id: targetProfile.id,
       subject_id: sourceId || conversationId,
@@ -219,24 +331,38 @@ export async function sendMessage(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const conversationId = cleanText(formData.get("conversation_id"), 80);
   const body = cleanText(formData.get("body"), 4000);
+  const media = mediaFromForm(formData);
 
   if (!conversationId) {
     redirect(messagesPath("Choose a conversation first."));
   }
 
-  if (body.length < 1) {
+  if (body.length < 1 && !media) {
     redirect(messagesPath("Message cannot be empty.", conversationId));
   }
+  const messageBody = body || "Photo";
 
-  const { error } = await supabase.from("messages").insert({
-    body,
-    conversation_id: conversationId,
-    sender_id: userId,
-  });
+  const { data: message, error } = await supabase
+    .from("messages")
+    .insert({
+      body: messageBody,
+      conversation_id: conversationId,
+      sender_id: userId,
+    })
+    .select("id")
+    .single<{ id: string }>();
 
-  if (error) {
-    redirect(messagesPath(error.message, conversationId));
+  if (error || !message) {
+    redirect(messagesPath(error?.message || "Could not send message.", conversationId));
   }
+
+  await attachMessageMedia({
+    conversationId,
+    formData,
+    messageId: message.id,
+    supabase,
+    userId,
+  });
 
   const { data: recipients } = await supabase
     .from("conversation_members")
@@ -267,15 +393,15 @@ export async function sendMessage(formData: FormData) {
     const notifications = recipients
       .filter((recipient) => enabledRecipientIds.has(recipient.user_id))
       .map((recipient) => ({
-          actor_id: userId,
-          body: body.slice(0, 160),
-          href: `/messages?c=${conversationId}`,
-          recipient_id: recipient.user_id,
-          subject_id: conversationId,
-          subject_type: "conversation",
-          title: `New message from ${senderProfile?.display_name ?? "a member"}`,
-          type: "message",
-        }));
+        actor_id: userId,
+        body: messageBody.slice(0, 160),
+        href: `/messages?c=${conversationId}`,
+        recipient_id: recipient.user_id,
+        subject_id: conversationId,
+        subject_type: "conversation",
+        title: `New message from ${senderProfile?.display_name ?? "a member"}`,
+        type: "message",
+      }));
 
     if (notifications.length) {
       await supabase.from("notifications").insert(notifications);

@@ -33,6 +33,10 @@
 - Keep the site partly public so artists, studios, marketplace listings, public profiles, and selected public posts can be indexed by search engines.
 - Keep private areas non-indexable and login-only: direct messages, account settings, admin tools, draft listings, moderation queues, and user-private profile data.
 - Use an Instagram-style sharing model: public visitors can open shared links and see a limited preview, but must sign up or log in to continue deeper into the app.
+- Use `/login` as the default logged-out landing page, while shared public content links can still open limited previews when allowed.
+- Shared links should include Open Graph/Twitter card metadata so non-sensitive posts can show the real image, title, and short subtext on Facebook, X, texts, and other social previews.
+- Sensitive or body-art nudity links must not expose the media in social previews; use the site logo/brand card as the share image instead.
+- When a logged-out visitor opens sensitive shared content, show the post area blurred with an overlay card that says "you must sign in to see content."
 - Public previews should not expose full comment threads, full profile browsing, posting tools, messaging, follower lists, or full-resolution sensitive media.
 - Content marked sensitive, adult, or body-art nudity must not be visible to logged-out public visitors.
 - Sensitive content requires login plus 18+ terms acceptance before it can be viewed.
