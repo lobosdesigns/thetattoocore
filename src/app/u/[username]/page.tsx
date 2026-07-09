@@ -140,6 +140,18 @@ type FollowRequest = {
   profiles: Pick<Profile, "account_type" | "display_name" | "id" | "username"> | null;
 };
 
+type FollowPreview = {
+  created_at: string;
+  profiles: Pick<
+    Profile,
+    | "account_type"
+    | "display_name"
+    | "id"
+    | "license_verified_at"
+    | "username"
+  > | null;
+};
+
 function initials(name: string) {
   return name
     .split(" ")
@@ -161,7 +173,9 @@ function profileLocation(profile: Profile) {
     .join(", ");
 }
 
-function isVerifiedProfile(profile: Profile) {
+function isVerifiedProfile(
+  profile: Pick<Profile, "account_type" | "license_verified_at">,
+) {
   return Boolean(
     profile.license_verified_at &&
       (profile.account_type === "artist" || profile.account_type === "studio"),
@@ -401,6 +415,105 @@ function ProfileStat({ label, value }: { label: string; value: number }) {
       <p className="text-lg font-bold">{value}</p>
       <p className="text-xs text-[#766d62]">{label}</p>
     </div>
+  );
+}
+
+function FollowPreviewCard({
+  label,
+  profile,
+}: {
+  label: string;
+  profile: FollowPreview["profiles"];
+}) {
+  if (!profile) return null;
+
+  return (
+    <Link
+      className="ttc-card flex items-center gap-3 rounded-md border border-[#cfc8bd] bg-white p-3"
+      href={`/u/${profile.username}`}
+    >
+      <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-sm font-bold text-[#c8953b]">
+        {initials(profile.display_name)}
+      </div>
+      <div className="min-w-0">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <p className="truncate text-sm font-bold">{profile.display_name}</p>
+          {isVerifiedProfile(profile) ? (
+            <BadgeCheck className="size-3.5 shrink-0 text-[#171412]" />
+          ) : null}
+        </div>
+        <p className="text-xs text-[#766d62]">
+          @{profile.username} - {label}
+        </p>
+      </div>
+    </Link>
+  );
+}
+
+function FollowPreviewSection({
+  followers,
+  following,
+}: {
+  followers: FollowPreview[];
+  following: FollowPreview[];
+}) {
+  if (!followers.length && !following.length) return null;
+
+  return (
+    <section className="border-b border-[#cfc8bd] px-4 py-6">
+      <div className="mb-4 flex items-center gap-2">
+        <UserPlus className="size-5" />
+        <h2 className="text-lg font-bold">Community</h2>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="text-sm font-bold">Recent followers</p>
+            <span className="text-xs font-semibold text-[#766d62]">
+              {followers.length} shown
+            </span>
+          </div>
+          <div className="grid gap-2">
+            {followers.length ? (
+              followers.map((follow) => (
+                <FollowPreviewCard
+                  key={follow.profiles?.id ?? follow.created_at}
+                  label="follower"
+                  profile={follow.profiles}
+                />
+              ))
+            ) : (
+              <p className="rounded-md border border-dashed border-[#cfc8bd] bg-[#fffdf9] p-3 text-sm text-[#766d62]">
+                No followers to show yet.
+              </p>
+            )}
+          </div>
+        </div>
+        <div>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="text-sm font-bold">Following</p>
+            <span className="text-xs font-semibold text-[#766d62]">
+              {following.length} shown
+            </span>
+          </div>
+          <div className="grid gap-2">
+            {following.length ? (
+              following.map((follow) => (
+                <FollowPreviewCard
+                  key={follow.profiles?.id ?? follow.created_at}
+                  label="following"
+                  profile={follow.profiles}
+                />
+              ))
+            ) : (
+              <p className="rounded-md border border-dashed border-[#cfc8bd] bg-[#fffdf9] p-3 text-sm text-[#766d62]">
+                Not following anyone yet.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -664,6 +777,8 @@ export default async function ProfilePage({
     { count: followingCount },
     { data: followRecord },
     { data: followRequests },
+    { data: followerPreview },
+    { data: followingPreview },
     { data: viewerProfile },
     { data: posts },
     { data: threads },
@@ -701,6 +816,26 @@ export default async function ProfilePage({
           .limit(12)
           .returns<FollowRequest[]>()
       : Promise.resolve({ data: null }),
+    supabase
+      .from("follows")
+      .select(
+        "created_at, profiles:profiles!follows_follower_id_fkey(id, username, display_name, account_type, license_verified_at)",
+      )
+      .eq("following_id", profile.id)
+      .eq("status", "accepted")
+      .order("created_at", { ascending: false })
+      .limit(4)
+      .returns<FollowPreview[]>(),
+    supabase
+      .from("follows")
+      .select(
+        "created_at, profiles:profiles!follows_following_id_fkey(id, username, display_name, account_type, license_verified_at)",
+      )
+      .eq("follower_id", profile.id)
+      .eq("status", "accepted")
+      .order("created_at", { ascending: false })
+      .limit(4)
+      .returns<FollowPreview[]>(),
     claims?.sub
       ? supabase
           .from("profiles")
@@ -1055,6 +1190,13 @@ export default async function ProfilePage({
               ))}
             </div>
           </section>
+        ) : null}
+
+        {!isPrivateLocked ? (
+          <FollowPreviewSection
+            followers={followerPreview ?? []}
+            following={followingPreview ?? []}
+          />
         ) : null}
 
         {!isPrivateLocked && !isOwnProfile ? (
