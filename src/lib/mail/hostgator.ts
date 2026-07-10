@@ -16,6 +16,15 @@ type TestMailInput = {
   settings: MailSettings;
 };
 
+type TransactionalMailInput = {
+  headers?: Record<string, string>;
+  html?: string;
+  recipientEmail: string;
+  settings: MailSettings;
+  subject: string;
+  text: string;
+};
+
 function required(value: string | null | undefined, label: string) {
   if (!value) {
     throw new Error(`${label} is not configured.`);
@@ -24,11 +33,14 @@ function required(value: string | null | undefined, label: string) {
   return value;
 }
 
-export async function sendHostgatorTestEmail({
+export async function sendHostgatorEmail({
+  headers,
+  html,
   recipientEmail,
-  sentByEmail,
   settings,
-}: TestMailInput) {
+  subject,
+  text,
+}: TransactionalMailInput) {
   if (!settings.is_enabled) {
     throw new Error("Mail sending is disabled in admin settings.");
   }
@@ -42,7 +54,6 @@ export async function sendHostgatorTestEmail({
     process.env[settings.smtp_password_secret_name],
     settings.smtp_password_secret_name,
   );
-  const sentAt = new Date().toISOString();
   const mailerModule = await import("worker-mailer");
 
   await mailerModule.WorkerMailer.send(
@@ -69,8 +80,37 @@ export async function sendHostgatorTestEmail({
         ? { email: settings.reply_to_email }
         : undefined,
       to: recipientEmail,
-      subject: "TheTattooCore admin mail test",
-      text: [
+      subject,
+      text,
+      html,
+      headers,
+    },
+  );
+}
+
+export async function sendHostgatorTestEmail({
+  recipientEmail,
+  sentByEmail,
+  settings,
+}: TestMailInput) {
+  const sentAt = new Date().toISOString();
+
+  await sendHostgatorEmail({
+    headers: {
+      "X-TheTattooCore-Test": "admin-mail",
+    },
+    html: [
+      "<h1>TheTattooCore mail test</h1>",
+      "<p>The production app sent this through the configured HostGator SMTP mailbox.</p>",
+      `<p><strong>Sent at:</strong> ${sentAt}</p>`,
+      sentByEmail
+        ? `<p><strong>Requested by:</strong> ${sentByEmail}</p>`
+        : "",
+    ].join(""),
+    recipientEmail,
+    settings,
+    subject: "TheTattooCore admin mail test",
+    text: [
         "TheTattooCore production mail test succeeded.",
         "",
         `Sent at: ${sentAt}`,
@@ -78,17 +118,5 @@ export async function sendHostgatorTestEmail({
       ]
         .filter(Boolean)
         .join("\n"),
-      html: [
-        "<h1>TheTattooCore mail test</h1>",
-        "<p>The production app sent this through the configured HostGator SMTP mailbox.</p>",
-        `<p><strong>Sent at:</strong> ${sentAt}</p>`,
-        sentByEmail
-          ? `<p><strong>Requested by:</strong> ${sentByEmail}</p>`
-          : "",
-      ].join(""),
-      headers: {
-        "X-TheTattooCore-Test": "admin-mail",
-      },
-    },
-  );
+  });
 }

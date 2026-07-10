@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { sendHostgatorEmail } from "@/lib/mail/hostgator";
 import { countryCodes, languageCodes } from "@/lib/localization";
+import { siteName, siteUrl, supportEmail } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 
 const LICENSE_BUCKET = "license-documents";
@@ -18,7 +20,20 @@ const LICENSE_TYPES = new Set([
 const MAX_LICENSE_BYTES = 10 * 1024 * 1024;
 
 type Claims = {
+  email?: string;
   sub: string;
+};
+
+type MailSettings = {
+  from_email: string | null;
+  from_name: string;
+  smtp_host: string | null;
+  smtp_port: number | null;
+  smtp_username: string | null;
+  smtp_secure: boolean;
+  smtp_password_secret_name: string;
+  reply_to_email: string | null;
+  is_enabled: boolean;
 };
 
 const accountTypes = new Set(["artist", "enthusiast", "studio", "supplier", "vendor"]);
@@ -107,6 +122,95 @@ function fileFromForm(formData: FormData, name: string) {
   }
 
   return value;
+}
+
+function isEmail(value?: string | null): value is string {
+  return Boolean(value && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value));
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+async function maybeSendAccountDeletionEmail({
+  email,
+  reason,
+  supabase,
+  userId,
+}: {
+  email?: string;
+  reason: string | null;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId: string;
+}) {
+  if (!isEmail(email)) return;
+  const recipientEmail = email;
+
+  const [{ data: profile }, { data: settings }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("display_name, notify_email_important, username")
+      .eq("id", userId)
+      .maybeSingle<{
+        display_name: string | null;
+        notify_email_important: boolean | null;
+        username: string | null;
+      }>(),
+    supabase
+      .from("mail_settings")
+      .select(
+        "from_email, from_name, smtp_host, smtp_port, smtp_username, smtp_secure, smtp_password_secret_name, reply_to_email, is_enabled",
+      )
+      .maybeSingle<MailSettings>(),
+  ]);
+
+  if (profile?.notify_email_important === false || !settings?.is_enabled) {
+    return;
+  }
+
+  const displayName = profile?.display_name || profile?.username || "there";
+  const escapedDisplayName = escapeHtml(displayName);
+  const escapedReason = reason ? escapeHtml(reason) : null;
+  const accountUrl = `${siteUrl}/account#data-settings`;
+
+  try {
+    await sendHostgatorEmail({
+      headers: {
+        "X-TheTattooCore-Transactional": "account-deletion-request",
+      },
+      html: [
+        `<h1>${siteName} account deletion request received</h1>`,
+        `<p>Hi ${escapedDisplayName},</p>`,
+        "<p>We received your account deletion request. During launch, deletion requests are reviewed manually so safety reports, marketplace issues, and legal obligations can be handled correctly.</p>",
+        escapedReason ? `<p><strong>Your note:</strong> ${escapedReason}</p>` : "",
+        `<p>You can check the request status from <a href="${accountUrl}">Account &gt; Data</a>.</p>`,
+        `<p>For urgent help, email <a href="mailto:${supportEmail}">${supportEmail}</a>.</p>`,
+      ].join(""),
+      recipientEmail,
+      settings,
+      subject: `${siteName} account deletion request received`,
+      text: [
+        `${siteName} account deletion request received`,
+        "",
+        `Hi ${displayName},`,
+        "",
+        "We received your account deletion request. During launch, deletion requests are reviewed manually so safety reports, marketplace issues, and legal obligations can be handled correctly.",
+        reason ? `Your note: ${reason}` : null,
+        "",
+        `Check status: ${accountUrl}`,
+        `Urgent help: ${supportEmail}`,
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    });
+  } catch (error) {
+    console.error("Account deletion confirmation email failed", error);
+  }
 }
 
 async function uploadAvatar({
@@ -510,9 +614,10 @@ export async function requestAccountDeletion(formData: FormData) {
     redirect(accountPath("Type DELETE to request account deletion."));
   }
 
+  const reason = cleanText(formData.get("delete_reason"), 500) || null;
   const { error } = await supabase.from("account_deletion_requests").insert({
     profile_id: claims.sub,
-    reason: cleanText(formData.get("delete_reason"), 500) || null,
+    reason,
   });
 
   if (error) {
@@ -524,6 +629,13 @@ export async function requestAccountDeletion(formData: FormData) {
       ),
     );
   }
+
+  await maybeSendAccountDeletionEmail({
+    email: claims.email,
+    reason,
+    supabase,
+    userId: claims.sub,
+  });
 
   revalidatePath("/account");
   redirect(accountPath("Account deletion request submitted for review."));
