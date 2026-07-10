@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { createClient } from "@/lib/supabase/client";
@@ -53,7 +52,6 @@ export function MessageThread({
 }) {
   const [messages, setMessages] = useState(initialMessages);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
   const profileById = useMemo(
     () => new Map(profiles.map((profile) => [profile.id, profile])),
     [profiles],
@@ -89,7 +87,6 @@ export function MessageThread({
                 new Date(b.created_at).getTime(),
             );
           });
-          router.refresh();
         },
       )
       .subscribe();
@@ -97,7 +94,7 @@ export function MessageThread({
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [conversationId, router]);
+  }, [conversationId]);
 
   return (
     <div className="min-w-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-4 py-5">

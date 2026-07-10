@@ -104,9 +104,14 @@ function notificationConversationId(notification: MessageNotification) {
 export default async function MessagesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ c?: string; message?: string }>;
+  searchParams: Promise<{ c?: string; message?: string; to?: string }>;
 }) {
   const params = await searchParams;
+  const prefillUsername = String(params.to ?? "")
+    .replace(/^@/, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, "")
+    .slice(0, 30);
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -367,9 +372,14 @@ export default async function MessagesPage({
                 <Search className="size-4 text-[#766d62]" />
                 <input
                   className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none"
+                  defaultValue={prefillUsername}
+                  maxLength={30}
+                  minLength={3}
                   name="username"
+                  pattern="@?[a-zA-Z0-9_]{3,30}"
                   placeholder="username"
                   required
+                  title="Use 3-30 letters, numbers, or underscores."
                 />
               </div>
               <WordLimitedField

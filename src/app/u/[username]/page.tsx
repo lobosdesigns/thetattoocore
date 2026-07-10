@@ -1200,7 +1200,7 @@ export default async function ProfilePage({
                 {!isOwnProfile && !hasBlockRelationship ? (
                   <Link
                     className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
-                    href="/messages"
+                    href={`/messages?to=${profile.username}`}
                   >
                     <Send className="size-4" />
                     DM
