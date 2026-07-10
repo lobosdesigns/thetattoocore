@@ -31,7 +31,7 @@
 - Add transactional email only for important account, verification, security, and marketplace/gig events before adding noisy social email. Started with account deletion request confirmations.
 - Add PWA web push after the app is installable and core flows are stable; Android and desktop Chrome are the easiest starting path, while iPhone installed-PWA push has more limits.
 - Add installability before push: web app manifest, app icon, standalone display, mobile theme color, and shortcuts for 4U, DMs, and alerts. Done for launch.
-- Suppress automatic mobile browser install prompts during normal browsing because the bottom install sheet can interfere with feed scrolling; add a deliberate install action later from account/settings or onboarding.
+- Suppress automatic mobile browser install prompts during normal browsing because the bottom install sheet can interfere with feed scrolling; add a deliberate install action later from account/settings or onboarding. Done for launch with root-level `beforeinstallprompt` suppression.
 - Add native app push after mobile app builds exist: APNs for iOS and Firebase Cloud Messaging for Android.
 - Later store push device tokens separately from profile preferences, with per-device opt-out, token revocation, and no plaintext secrets in the public client.
 - Push should respect quiet hours and category preferences before launch so the app does not feel spammy.
@@ -80,12 +80,12 @@
 - Keep private areas non-indexable and login-only: direct messages, account settings, admin tools, draft listings, moderation queues, and user-private profile data.
 - Use an Instagram-style sharing model: public visitors can open shared links and see a limited preview, but must sign up or log in to continue deeper into the app.
 - Use `/login` as the default logged-out landing page, while shared public content links can still open limited previews when allowed.
-- Shared links should include Open Graph/Twitter card metadata so non-sensitive posts can show the real image, title, and short subtext on Facebook, X, texts, and other social previews.
-- Legacy or admin-marked sensitive links must not expose the media in social previews; use the site logo/brand card as the share image instead.
+- Shared links should include Open Graph/Twitter card metadata so non-sensitive posts can show the real image, title, and short subtext on Facebook, X, texts, and other social previews. Done for launch on 4U, Gossip, Stuff, Gigs, and profiles.
+- Legacy or admin-marked sensitive links must not expose the media in social previews; use the site logo/brand card as the share image instead. Done for launch with shield fallback metadata.
 - If legacy or admin-marked sensitive shared content exists, logged-out visitors should see a blurred/locked preview with a sign-in prompt.
 - If a signed-in user has not accepted the adult body-art terms yet, legacy or admin-marked sensitive shared content should ask for 18+ confirmation instead of telling them to sign in again.
 - Main app feeds should keep any legacy or admin-marked sensitive posts visible only as blurred, non-clickable media with locked captions/comments until the viewer signs in and confirms 18+.
-- Locked sensitive previews should use brand-safe placeholders and must not load the underlying full media URL for logged-out or non-confirmed viewers.
+- Locked sensitive previews should use brand-safe placeholders and must not load the underlying full media URL for logged-out or non-confirmed viewers. Done for launch on 4U, Gossip, Stuff, and Gigs detail views.
 - Public previews should not expose full comment threads, full profile browsing, posting tools, messaging, follower lists, or full-resolution sensitive media.
 - Profile and site-level share metadata should include brand-safe image alt text; public profile cards can use public non-sensitive work, while private profiles use the brand shield.
 - Content marked sensitive or adult by legacy data or admin moderation must not be visible to logged-out public visitors.
