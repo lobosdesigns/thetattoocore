@@ -4,6 +4,8 @@
   --background: #202020;
   --foreground: #171412;
   --accent: #c8953b;
+  --card-rim: rgba(23, 20, 18, 0.14);
+  --grid-line: rgba(255, 255, 255, 0.025);
   --paper: #f2f1ee;
   --paper-warm: #fffdf9;
   color-scheme: light;
@@ -13,6 +15,8 @@
   --background: #121110;
   --foreground: #f4efe7;
   --accent: #d8a33d;
+  --card-rim: rgba(216, 163, 61, 0.2);
+  --grid-line: rgba(216, 163, 61, 0.035);
   --paper: #201d1a;
   --paper-warm: #28231e;
   color-scheme: dark;
@@ -22,6 +26,8 @@
   --background: #f2f1ee;
   --foreground: #171412;
   --accent: #c8953b;
+  --card-rim: rgba(23, 20, 18, 0.14);
+  --grid-line: rgba(23, 20, 18, 0.035);
   --paper: #f2f1ee;
   --paper-warm: #fffdf9;
   color-scheme: light;
@@ -49,12 +55,12 @@ body {
   margin: 0;
   background:
     radial-gradient(circle at 50% 0, rgba(255, 253, 249, 0.055), transparent 34rem),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(0deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(0deg, var(--grid-line) 1px, transparent 1px),
     var(--background);
   background-size: auto, 42px 42px, 42px 42px, auto;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   text-rendering: optimizeLegibility;
 }
 
@@ -86,17 +92,27 @@ textarea:focus-visible {
 }
 
 .ttc-card {
+  backdrop-filter: blur(8px);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.45) inset,
+    0 1px 0 rgba(255, 255, 255, 0.58) inset,
+    0 0 0 1px var(--card-rim),
     0 1px 0 rgba(23, 20, 18, 0.08),
-    0 18px 46px rgba(23, 20, 18, 0.1);
+    0 18px 46px rgba(23, 20, 18, 0.12);
 }
 
 .ttc-card:hover {
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 1px 0 rgba(255, 255, 255, 0.62) inset,
+    0 0 0 1px color-mix(in srgb, var(--accent) 34%, var(--card-rim)),
     0 1px 0 rgba(23, 20, 18, 0.08),
-    0 22px 58px rgba(23, 20, 18, 0.14);
+    0 22px 58px rgba(23, 20, 18, 0.18);
+}
+
+:root[data-theme="dark"] .ttc-card {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 0 0 1px var(--card-rim),
+    0 20px 52px rgba(0, 0, 0, 0.28);
 }
 
 .no-scrollbar {

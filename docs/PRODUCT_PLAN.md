@@ -68,7 +68,7 @@
 - Keep the app functional first: content should remain easy to scan, controls should stay obvious, and mobile layouts should feel fast.
 - Avoid a flat beige-only look; the brand should feel like a modern creative community, not a generic marketplace.
 - Continue pushing the app toward a sleeker, darker, higher-contrast social look with more pop, sharper mobile controls, and a stronger younger-crowd feel.
-- Add more tech-forward polish across the app: layered opacity, stronger card borders, cleaner shadows, darker chrome, sharper active states, and less plain beige surface area.
+- Add more tech-forward polish across the app: layered opacity, stronger card borders, cleaner shadows, darker chrome, sharper active states, and less plain beige surface area. Started with global font, card-rim, grid-line, and shadow refinements.
 - Add user-selectable appearance settings for Light, Dark, and System mode. Started for launch with a local device preference picker in Account; next is storing it on the profile for signed-in users and migrating hardcoded colors toward theme tokens so both modes are polished instead of just inverted.
 - Notifications and admin need another mobile responsive pass; no panels, buttons, or cards should drift out of frame on narrow browser viewports. Notifications received another mobile containment pass for launch.
 - Admin should move away from one long cluttered page toward clearer tab/menu sections for Overview, Verification, Reports, Users, Ads, Data, Media, and Mail.
