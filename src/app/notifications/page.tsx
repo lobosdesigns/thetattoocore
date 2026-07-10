@@ -47,6 +47,15 @@ type Notification = {
   } | null;
 };
 
+type NotificationProfile = {
+  notification_quiet_hours_enabled: boolean | null;
+  notification_quiet_hours_end: string | null;
+  notification_quiet_hours_start: string | null;
+  notification_timezone: string | null;
+  notify_email_important: boolean | null;
+  notify_push_enabled: boolean | null;
+};
+
 export const metadata: Metadata = {
   robots: {
     follow: false,
@@ -104,6 +113,10 @@ function timeAgo(date: string) {
   return `${days}d`;
 }
 
+function shortTime(value: string | null | undefined, fallback: string) {
+  return value?.slice(0, 5) || fallback;
+}
+
 export default async function NotificationsPage() {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -122,6 +135,13 @@ export default async function NotificationsPage() {
     .order("created_at", { ascending: false })
     .limit(50)
     .returns<Notification[]>();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select(
+      "notification_quiet_hours_enabled, notification_quiet_hours_start, notification_quiet_hours_end, notification_timezone, notify_email_important, notify_push_enabled",
+    )
+    .eq("id", claims.sub)
+    .maybeSingle<NotificationProfile>();
 
   const unreadCount =
     notifications?.filter((notification) => !notification.read_at).length ?? 0;
@@ -179,6 +199,34 @@ export default async function NotificationsPage() {
                 carry forward to email, installed-web-app push, and native
                 iOS/Android push when those channels are added.
               </p>
+              <div className="mt-3 grid gap-2 text-xs leading-5 text-[#4f473f] sm:grid-cols-3">
+                <p className="rounded-md border border-[#e5ded4] bg-[#fffdf9] px-2 py-1">
+                  Quiet hours:{" "}
+                  <span className="font-semibold">
+                    {profile?.notification_quiet_hours_enabled
+                      ? `${shortTime(
+                          profile.notification_quiet_hours_start,
+                          "22:00",
+                        )}-${shortTime(
+                          profile.notification_quiet_hours_end,
+                          "08:00",
+                        )}`
+                      : "Off"}
+                  </span>
+                </p>
+                <p className="rounded-md border border-[#e5ded4] bg-[#fffdf9] px-2 py-1">
+                  Important email:{" "}
+                  <span className="font-semibold">
+                    {profile?.notify_email_important === false ? "Off" : "On"}
+                  </span>
+                </p>
+                <p className="rounded-md border border-[#e5ded4] bg-[#fffdf9] px-2 py-1">
+                  Push intent:{" "}
+                  <span className="font-semibold">
+                    {profile?.notify_push_enabled ? "Saved" : "Off"}
+                  </span>
+                </p>
+              </div>
             </div>
           </div>
         </section>

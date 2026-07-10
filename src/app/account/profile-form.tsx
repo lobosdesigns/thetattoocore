@@ -18,10 +18,16 @@ type Profile = {
   is_adult_confirmed: boolean | null;
   is_private: boolean | null;
   location_personalization_enabled: boolean | null;
+  notification_quiet_hours_enabled: boolean | null;
+  notification_quiet_hours_end: string | null;
+  notification_quiet_hours_start: string | null;
+  notification_timezone: string | null;
+  notify_email_important: boolean | null;
   notify_feed_activity: boolean | null;
   notify_follow_activity: boolean | null;
   notify_marketplace_gig_activity: boolean | null;
   notify_message_activity: boolean | null;
+  notify_push_enabled: boolean | null;
   notify_thread_activity: boolean | null;
   preferred_language: string | null;
   region: string | null;
@@ -92,11 +98,16 @@ const notificationSummary = [
 const pushRoadmap = [
   "Current switches control in-app notifications and unread badges.",
   "The same choices will feed email and web push when those channels are turned on.",
+  "Quiet hours will suppress noisy future email/push while keeping safety and account alerts available.",
   "Native app push will use APNs for iPhone and FCM for Android after app-store builds.",
 ] as const;
 
 function RequiredMark() {
   return <span className="text-[#a3432f]">*</span>;
+}
+
+function timeValue(value: string | null | undefined, fallback: string) {
+  return value?.slice(0, 5) || fallback;
 }
 
 export function ProfileForm({
@@ -419,6 +430,108 @@ export function ProfileForm({
                 <li key={item}>{item}</li>
               ))}
             </ul>
+          </div>
+          <div className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h3 className="text-sm font-semibold">Quiet hours</h3>
+                <p className="mt-1 text-xs leading-5 text-[#766d62]">
+                  Store a do-not-disturb window now so email, PWA push, and
+                  native app push can respect it later.
+                </p>
+              </div>
+              <label className="flex items-center gap-2 text-sm font-medium">
+                <input
+                  className="size-4"
+                  defaultChecked={
+                    initialProfile?.notification_quiet_hours_enabled ?? false
+                  }
+                  name="notification_quiet_hours_enabled"
+                  type="checkbox"
+                />
+                On
+              </label>
+            </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+              <label className="block">
+                <span className="text-xs font-semibold text-[#4f473f]">
+                  Start
+                </span>
+                <input
+                  className="mt-1 h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  defaultValue={timeValue(
+                    initialProfile?.notification_quiet_hours_start,
+                    "22:00",
+                  )}
+                  name="notification_quiet_hours_start"
+                  type="time"
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-semibold text-[#4f473f]">
+                  End
+                </span>
+                <input
+                  className="mt-1 h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  defaultValue={timeValue(
+                    initialProfile?.notification_quiet_hours_end,
+                    "08:00",
+                  )}
+                  name="notification_quiet_hours_end"
+                  type="time"
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-semibold text-[#4f473f]">
+                  Time zone
+                </span>
+                <input
+                  className="mt-1 h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  defaultValue={
+                    initialProfile?.notification_timezone ?? "America/Chicago"
+                  }
+                  maxLength={80}
+                  name="notification_timezone"
+                  placeholder="America/Chicago"
+                />
+              </label>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="flex items-start gap-3 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3">
+              <input
+                className="mt-1 size-4"
+                defaultChecked={initialProfile?.notify_email_important ?? true}
+                name="notify_email_important"
+                type="checkbox"
+              />
+              <span>
+                <span className="block text-sm font-medium">
+                  Important email alerts
+                </span>
+                <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+                  Account, verification, security, Stuff, and Gigs email can
+                  use this when transactional email is expanded.
+                </span>
+              </span>
+            </label>
+            <label className="flex items-start gap-3 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3">
+              <input
+                className="mt-1 size-4"
+                defaultChecked={initialProfile?.notify_push_enabled ?? false}
+                name="notify_push_enabled"
+                type="checkbox"
+              />
+              <span>
+                <span className="block text-sm font-medium">
+                  Prepare push notifications
+                </span>
+                <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+                  Saves your preference only. Browser and native push still
+                  need install/device-token setup later.
+                </span>
+              </span>
+            </label>
           </div>
           {notificationGroups.map((group) => (
             <div

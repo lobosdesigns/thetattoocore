@@ -62,6 +62,22 @@ function cleanUrl(value: FormDataEntryValue | null) {
   }
 }
 
+function cleanTime(value: FormDataEntryValue | null, fallback: string) {
+  const text = cleanText(value, 5);
+
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(text) ? text : fallback;
+}
+
+function cleanTimezone(value: FormDataEntryValue | null) {
+  const text = cleanText(value, 80);
+
+  if (!text || !/^[A-Za-z0-9_+\-/.]{2,80}$/.test(text)) {
+    return "America/Chicago";
+  }
+
+  return text;
+}
+
 function centsFromDollars(value: FormDataEntryValue | null, maxCents: number) {
   const text = cleanText(value, 20);
   if (!text) return 0;
@@ -140,6 +156,19 @@ export async function updateProfile(formData: FormData) {
       formData.get("notify_marketplace_gig_activity") === "on",
     notify_message_activity: formData.get("notify_message_activity") === "on",
     notify_thread_activity: formData.get("notify_thread_activity") === "on",
+    notification_quiet_hours_enabled:
+      formData.get("notification_quiet_hours_enabled") === "on",
+    notification_quiet_hours_end: cleanTime(
+      formData.get("notification_quiet_hours_end"),
+      "08:00",
+    ),
+    notification_quiet_hours_start: cleanTime(
+      formData.get("notification_quiet_hours_start"),
+      "22:00",
+    ),
+    notification_timezone: cleanTimezone(formData.get("notification_timezone")),
+    notify_email_important: formData.get("notify_email_important") === "on",
+    notify_push_enabled: formData.get("notify_push_enabled") === "on",
     preferred_language: preferredLanguage,
     region: cleanText(formData.get("region"), 40) || null,
     updated_at: new Date().toISOString(),
