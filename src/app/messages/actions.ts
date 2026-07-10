@@ -3,6 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { inspectMediaFile, validateMediaMetadata } from "@/lib/media/metadata";
+import {
+  allowsInAppNotification,
+  notificationPreferenceColumn,
+  notificationPreferenceSelect,
+  type NotificationPreferenceCategory,
+  type NotificationPreferenceProfile,
+} from "@/lib/notifications";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
 
@@ -64,10 +71,12 @@ function sourceLabel(sourceType: string | null) {
   return "DM";
 }
 
-function messagePreferenceColumn(sourceType: string | null) {
+function messagePreferenceCategory(
+  sourceType: string | null,
+): NotificationPreferenceCategory {
   return sourceType === "marketplace_listing" || sourceType === "gig"
-    ? "notify_marketplace_gig_activity"
-    : "notify_message_activity";
+    ? "marketplace_gig"
+    : "message";
 }
 
 async function requireProfile() {
@@ -346,14 +355,14 @@ export async function startConversation(formData: FormData) {
     .select("display_name")
     .eq("id", userId)
     .maybeSingle<{ display_name: string }>();
-  const preferenceColumn = messagePreferenceColumn(sourceType);
+  const preferenceCategory = messagePreferenceCategory(sourceType);
   const { data: targetPreferences } = await supabase
     .from("profiles")
-    .select(preferenceColumn)
+    .select(notificationPreferenceSelect(preferenceCategory))
     .eq("id", targetProfile.id)
-    .maybeSingle<Record<string, boolean>>();
+    .maybeSingle<NotificationPreferenceProfile>();
 
-  if (targetPreferences?.[preferenceColumn] !== false) {
+  if (allowsInAppNotification(targetPreferences, preferenceCategory)) {
     await supabase.from("notifications").insert({
       actor_id: userId,
       body: messageBody.slice(0, 160),
@@ -438,15 +447,16 @@ export async function sendMessage(formData: FormData) {
 
   if (recipients?.length) {
     const recipientIds = recipients.map((recipient) => recipient.user_id);
+    const messagePreferenceColumn = notificationPreferenceColumn("message");
     const { data: recipientPreferences } = await supabase
       .from("profiles")
-      .select("id, notify_message_activity")
+      .select(`id, ${messagePreferenceColumn}`)
       .in("id", recipientIds)
-      .returns<{ id: string; notify_message_activity: boolean }[]>();
+      .returns<{ id: string; notify_message_activity: boolean | null }[]>();
     const enabledRecipientIds = new Set(
       (recipientPreferences ?? [])
-        .filter((recipient) => recipient.notify_message_activity)
-        .map((recipient) => recipient.id),
+        .filter((recipient) => allowsInAppNotification(recipient, "message"))
+        .map((recipient) => String(recipient.id)),
     );
 
     const notifications = recipients

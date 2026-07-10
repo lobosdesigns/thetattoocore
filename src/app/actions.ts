@@ -4,6 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { MediaMetadata } from "@/lib/media/metadata";
 import { inspectMediaFile, validateMediaMetadata } from "@/lib/media/metadata";
+import {
+  allowsInAppNotification,
+  notificationPreferenceSelect,
+  type NotificationPreferenceProfile,
+} from "@/lib/notifications";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
 
@@ -302,17 +307,15 @@ async function notifyContentOwner({
 }) {
   if (!ownerId || ownerId === actorId) return;
 
-  const preferenceColumn =
-    type === "feed_like" || type === "feed_comment"
-      ? "notify_feed_activity"
-      : "notify_thread_activity";
+  const preferenceCategory =
+    type === "feed_like" || type === "feed_comment" ? "feed" : "thread";
   const { data: ownerProfile } = await supabase
     .from("profiles")
-    .select(preferenceColumn)
+    .select(notificationPreferenceSelect(preferenceCategory))
     .eq("id", ownerId)
-    .maybeSingle<Record<string, boolean>>();
+    .maybeSingle<NotificationPreferenceProfile>();
 
-  if (ownerProfile?.[preferenceColumn] === false) return;
+  if (!allowsInAppNotification(ownerProfile, preferenceCategory)) return;
 
   const { error } = await supabase.from("notifications").insert({
     actor_id: actorId,

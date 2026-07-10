@@ -2,6 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import {
+  allowsInAppNotification,
+  notificationPreferenceSelect,
+  type NotificationPreferenceProfile,
+} from "@/lib/notifications";
 import { createClient } from "@/lib/supabase/server";
 
 type Claims = {
@@ -146,11 +151,11 @@ export async function followProfile(formData: FormData) {
 
   const { data: targetPreferences } = await supabase
     .from("profiles")
-    .select("notify_follow_activity")
+    .select(notificationPreferenceSelect("follow"))
     .eq("id", targetId)
-    .maybeSingle<{ notify_follow_activity: boolean }>();
+    .maybeSingle<NotificationPreferenceProfile>();
 
-  if (targetPreferences?.notify_follow_activity !== false) {
+  if (allowsInAppNotification(targetPreferences, "follow")) {
     if (status === "pending") {
       await supabase.from("notifications").insert({
         actor_id: userId,
@@ -239,11 +244,11 @@ export async function acceptFollowRequest(formData: FormData) {
 
   const { data: followerPreferences } = await supabase
     .from("profiles")
-    .select("notify_follow_activity")
+    .select(notificationPreferenceSelect("follow"))
     .eq("id", followerId)
-    .maybeSingle<{ notify_follow_activity: boolean }>();
+    .maybeSingle<NotificationPreferenceProfile>();
 
-  if (followerPreferences?.notify_follow_activity !== false) {
+  if (allowsInAppNotification(followerPreferences, "follow")) {
     await supabase.from("notifications").insert({
       actor_id: userId,
       body: `${ownerProfile?.display_name ?? "A member"} approved your follow request.`,

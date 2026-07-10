@@ -41,7 +41,7 @@
 - Suppress automatic mobile browser install prompts during normal browsing because the bottom install sheet can interfere with feed scrolling; add a deliberate install action later from account/settings or onboarding. Done for launch with root-level `beforeinstallprompt` suppression.
 - Add native app push after mobile app builds exist: APNs for iOS and Firebase Cloud Messaging for Android.
 - Later store push device tokens separately from profile preferences, with per-device opt-out, token revocation, and no plaintext secrets in the public client.
-- Push should respect quiet hours and category preferences before launch so the app does not feel spammy.
+- Push should respect quiet hours and category preferences before launch so the app does not feel spammy. Started with a shared notification preference helper for in-app category filtering and quiet-hour checks that future email/web/native push delivery can reuse.
 
 ## Platform Stance
 

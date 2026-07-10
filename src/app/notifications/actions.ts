@@ -2,6 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import {
+  allowsInAppNotification,
+  notificationPreferenceSelect,
+  type NotificationPreferenceProfile,
+} from "@/lib/notifications";
 import { createClient } from "@/lib/supabase/server";
 
 type Claims = {
@@ -102,11 +107,11 @@ export async function respondToFollowRequest(formData: FormData) {
       .maybeSingle<{ display_name: string; username: string }>();
     const { data: followerPreferences } = await supabase
       .from("profiles")
-      .select("notify_follow_activity")
+      .select(notificationPreferenceSelect("follow"))
       .eq("id", followerId)
-      .maybeSingle<{ notify_follow_activity: boolean }>();
+      .maybeSingle<NotificationPreferenceProfile>();
 
-    if (followerPreferences?.notify_follow_activity !== false) {
+    if (allowsInAppNotification(followerPreferences, "follow")) {
       await supabase.from("notifications").insert({
         actor_id: userId,
         body: `${ownerProfile?.display_name ?? "A member"} approved your follow request.`,
