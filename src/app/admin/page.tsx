@@ -160,7 +160,7 @@ const adminTabs = [
   [Flag, "Reports", "/admin/reports"],
   [ImageIcon, "Content", "/admin/content"],
   [ImageIcon, "Media Ops", "/admin#media-ops"],
-  [BriefcaseBusiness, "Gigs", "/admin#gigs"],
+  [BriefcaseBusiness, "Gigs", "/admin/gigs"],
   [ShoppingBag, "Stuff", "/admin/stuff"],
   [Megaphone, "Ads", "/admin/ads"],
   [Mail, "Mail Settings", "/admin#mail-settings"],
@@ -1888,6 +1888,14 @@ export default async function AdminPage({
       href: "/admin/stuff",
       label: "Stuff",
       meta: `${marketplaceQueue ?? 0} listings tracked`,
+    },
+    {
+      action: "Open Gigs",
+      body: "Jobs, conventions, guest spots, apprenticeships, shop openings, and events now have a paged review page.",
+      count: gigReview?.length ?? 0,
+      href: "/admin/gigs",
+      label: "Gigs",
+      meta: `${gigReview?.length ?? 0} latest review signals`,
     },
     {
       action: "Mail page planned",
