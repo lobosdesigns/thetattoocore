@@ -59,7 +59,7 @@
 - Add more tech-forward polish across the app: layered opacity, stronger card borders, cleaner shadows, darker chrome, sharper active states, and less plain beige surface area.
 - Notifications and admin need another mobile responsive pass; no panels, buttons, or cards should drift out of frame on narrow browser viewports.
 - Admin should move away from one long cluttered page toward clearer tab/menu sections for Overview, Verification, Reports, Users, Ads, Data, Media, and Mail.
-- Account/profile editing should follow the same tabbed cleanup direction as admin so profile, language, privacy, notifications, verification, ads, and data do not feel like one long cluttered scroll.
+- Account/profile editing should follow the same tabbed cleanup direction as admin so profile, language, privacy, notifications, verification, ads, and data do not feel like one long cluttered scroll. Started for launch with sticky account tabs and tabbed profile sub-sections.
 - The 4U language preference notice should default to English but behave like a light onboarding cue: hide after the first real interaction such as tap, click, scroll, or swipe.
 
 ## Global Availability

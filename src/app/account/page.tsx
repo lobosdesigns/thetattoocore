@@ -24,8 +24,8 @@ const accountNavItems = [
   ["#language-settings", "Language"],
   ["#privacy-settings", "Privacy"],
   ["#notification-settings", "Notifications"],
-  ["#verification-settings", "Verification"],
-  ["#advertising-settings", "Advertising"],
+  ["#verification-settings", "Verify"],
+  ["#advertising-settings", "Ads"],
   ["#data-settings", "Data"],
 ] as const;
 
@@ -352,7 +352,7 @@ export default async function AccountPage({
   const isFirstProfile = !profile;
 
   return (
-    <main className="min-h-screen bg-[#202020] px-4 py-8 text-[#171412]">
+    <main className="min-h-screen overflow-x-hidden bg-[#202020] px-4 py-8 text-[#171412]">
       <section className="mx-auto w-full max-w-3xl">
         <div className="mb-6 flex items-center justify-between">
           <Link className="text-sm font-semibold text-[#f2f1ee]" href="/">
@@ -393,11 +393,11 @@ export default async function AccountPage({
 
         <nav
           aria-label="Account settings"
-          className="mb-4 flex gap-2 overflow-x-auto rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-2"
+          className="no-scrollbar sticky top-0 z-20 mb-4 flex gap-2 overflow-x-auto rounded-md border border-[#3b332b] bg-[#171412]/95 p-2 shadow-[0_18px_42px_rgba(0,0,0,0.28)] backdrop-blur"
         >
           {accountNavItems.map(([href, label]) => (
             <a
-              className="flex h-10 shrink-0 items-center rounded-md border border-transparent px-3 text-sm font-semibold text-[#4f473f] hover:border-[#c8953b] hover:bg-[#fffdf9]"
+              className="flex h-10 shrink-0 items-center rounded-md border border-white/10 bg-white/5 px-3 text-sm font-semibold text-[#f7f4ef] hover:border-[#c8953b]/70 hover:bg-[#c8953b]/15"
               href={href}
               key={href}
             >
@@ -409,10 +409,20 @@ export default async function AccountPage({
         <ProfileForm claims={claims} initialProfile={profile} />
 
         <section
-          className="ttc-card mt-6 scroll-mt-4 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-5"
+          className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee]/95 p-5 backdrop-blur"
           id="data-settings"
         >
-          <h2 className="text-xl font-bold">Account and data</h2>
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase text-[#766d62]">
+                Data control
+              </p>
+              <h2 className="text-xl font-bold">Account and data</h2>
+            </div>
+            <span className="w-fit rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 py-1 text-xs font-semibold">
+              Manual review
+            </span>
+          </div>
           <p className="mt-2 text-sm leading-6 text-[#766d62]">
             You can make your profile private anytime. Account deletion is a
             manual review request during launch so safety reports, marketplace
@@ -476,13 +486,35 @@ export default async function AccountPage({
 
         {canSubmitLicense ? (
           <section
-            className="ttc-card mt-6 scroll-mt-4 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-5"
+            className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee]/95 p-5 backdrop-blur"
             id="verification-settings"
           >
             <div className="mb-5">
-              <h2 className="text-xl font-bold">
-                Artist, studio, and vendor verification
-              </h2>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase text-[#766d62]">
+                    Professional access
+                  </p>
+                  <h2 className="text-xl font-bold">
+                    Artist, studio, and vendor verification
+                  </h2>
+                </div>
+                <span
+                  className={`w-fit rounded-md border px-2 py-1 text-xs font-semibold ${
+                    isLicenseVerified
+                      ? "border-[#b9d7bd] bg-[#eef8ef] text-[#276231]"
+                      : hasPendingVerification
+                        ? "border-[#e5c58f] bg-[#fff7ec] text-[#7a4a08]"
+                        : "border-[#d8d1c6] bg-[#fffdf9] text-[#4f473f]"
+                  }`}
+                >
+                  {isLicenseVerified
+                    ? "Verified"
+                    : hasPendingVerification
+                      ? "Pending"
+                      : "Not verified"}
+                </span>
+              </div>
               <p className="mt-1 text-sm leading-6 text-[#766d62]">
                 Upload your tattoo license, shop license, certification,
                 vendor business license, or local proof that you can legally
@@ -641,9 +673,12 @@ export default async function AccountPage({
           </section>
         ) : (
           <section
-            className="mt-6 scroll-mt-4 rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5"
+            className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[#d8d1c6] bg-[#fffdf9]/95 p-5 backdrop-blur"
             id="verification-settings"
           >
+            <p className="text-xs font-bold uppercase text-[#766d62]">
+              Professional access
+            </p>
             <h2 className="text-xl font-bold">Artist, studio, and vendor verification</h2>
             <p className="mt-2 text-sm leading-6 text-[#766d62]">
               Choose Artist, Studio, or Vendor as your account type and save
@@ -664,11 +699,21 @@ export default async function AccountPage({
         )}
 
         <section
-          className="ttc-card mt-6 scroll-mt-4 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-5"
+          className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee]/95 p-5 backdrop-blur"
           id="advertising-settings"
         >
           <div className="mb-5">
-            <h2 className="text-xl font-bold">Advertising</h2>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase text-[#766d62]">
+                  Sponsored spots
+                </p>
+                <h2 className="text-xl font-bold">Advertising</h2>
+              </div>
+              <span className="w-fit rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 py-1 text-xs font-semibold">
+                {canSubmitAds ? "Open" : "Locked"}
+              </span>
+            </div>
             <p className="mt-1 text-sm leading-6 text-[#766d62]">
               Verified artists, studios, and vendors can submit simple campaigns
               for admin review. Artist growth ads can run in 4U and Gossip.
