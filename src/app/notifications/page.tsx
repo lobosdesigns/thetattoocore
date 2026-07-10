@@ -156,9 +156,9 @@ export default async function NotificationsPage() {
     notifications?.filter((notification) => !notification.read_at).length ?? 0;
 
   return (
-    <main className="min-h-screen bg-[#202020] text-[#171412]">
-      <div className="mx-auto min-h-screen max-w-3xl bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
-        <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
+    <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
+      <div className="mx-auto min-h-screen w-full max-w-3xl overflow-x-hidden bg-[#ece8df] shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_28px_90px_rgba(0,0,0,0.42)]">
+        <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#ece8df]/95 px-4 py-3 backdrop-blur">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <Link
@@ -178,7 +178,7 @@ export default async function NotificationsPage() {
 
             <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:flex-none">
               <Link
-                className="flex h-10 min-w-0 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm font-semibold"
+                className="flex h-10 min-w-0 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9]/95 px-3 text-sm font-semibold shadow-sm"
                 href="/account#notification-settings"
               >
                 <Settings className="size-4" />
@@ -186,7 +186,7 @@ export default async function NotificationsPage() {
               </Link>
               {unreadCount ? (
                 <form action={markAllNotificationsRead} className="min-w-0">
-                  <button className="flex h-10 min-w-0 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm font-semibold">
+                  <button className="flex h-10 min-w-0 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9]/95 px-3 text-sm font-semibold shadow-sm">
                     <Check className="size-4" />
                     <span className="hidden sm:inline">Mark all read</span>
                     <span className="sm:hidden">Read</span>
@@ -197,9 +197,9 @@ export default async function NotificationsPage() {
           </div>
         </header>
 
-        <section className="border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-4">
-          <div className="flex min-w-0 gap-3 rounded-md border border-[#d8d1c6] bg-white p-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-[#c8953b]">
+        <section className="border-b border-[#cfc8bd] bg-[#fffdf9]/80 px-4 py-4 backdrop-blur">
+          <div className="flex min-w-0 gap-3 rounded-md border border-[#d8d1c6] bg-white/90 p-3 shadow-sm">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#c8953b]/50 bg-[#171412] text-[#c8953b] shadow-[0_0_18px_rgba(200,149,59,0.15)]">
               <Smartphone className="size-5" />
             </div>
             <div className="min-w-0">
@@ -248,8 +248,8 @@ export default async function NotificationsPage() {
               const href = notificationHref(notification);
               const card = (
                 <article
-                  className={`flex gap-3 px-4 py-4 ${
-                    notification.read_at ? "bg-[#f2f1ee]" : "bg-[#fffdf9]"
+                  className={`flex min-w-0 gap-3 px-4 py-4 ${
+                    notification.read_at ? "bg-[#ece8df]" : "bg-[#fffdf9]/95"
                   }`}
                 >
                   <div className="relative shrink-0">
@@ -284,9 +284,9 @@ export default async function NotificationsPage() {
                         {timeAgo(notification.created_at)}
                       </p>
                     </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <div className="mt-3 grid min-w-0 grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                       {href ? (
-                        <form action={openNotification}>
+                        <form action={openNotification} className="min-w-0">
                           <input
                             name="notification_id"
                             type="hidden"
@@ -297,7 +297,7 @@ export default async function NotificationsPage() {
                             type="hidden"
                             value={href}
                           />
-                          <button className="h-9 rounded-md bg-[#171412] px-3 text-sm font-semibold text-white">
+                          <button className="h-9 w-full rounded-md bg-[#171412] px-3 text-sm font-semibold text-white sm:w-auto">
                             Open
                           </button>
                         </form>
@@ -307,7 +307,7 @@ export default async function NotificationsPage() {
                       (notification.actor_id || notification.subject_id) ? (
                         <form
                           action={respondToFollowRequest}
-                          className="flex flex-wrap gap-2"
+                          className="col-span-2 grid min-w-0 grid-cols-2 gap-2 sm:flex sm:flex-wrap"
                         >
                           <input
                             name="notification_id"
@@ -340,13 +340,13 @@ export default async function NotificationsPage() {
                         </form>
                       ) : null}
                       {!notification.read_at ? (
-                        <form action={markNotificationRead}>
+                        <form action={markNotificationRead} className="min-w-0">
                           <input
                             name="notification_id"
                             type="hidden"
                             value={notification.id}
                           />
-                          <button className="h-9 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm font-semibold">
+                          <button className="h-9 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm font-semibold sm:w-auto">
                             Mark read
                           </button>
                         </form>

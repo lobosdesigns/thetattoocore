@@ -1833,41 +1833,41 @@ export default async function AdminPage({
   );
 
   return (
-    <main className="min-h-screen bg-[#202020] text-[#171412]">
-      <div className="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)] lg:grid-cols-[260px_1fr]">
-        <aside className="border-b border-[#cfc8bd] bg-[#f2f1ee] px-5 py-5 lg:border-b-0 lg:border-r">
+    <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
+      <div className="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_28px_90px_rgba(0,0,0,0.42)] lg:grid-cols-[260px_minmax(0,1fr)]">
+        <aside className="border-b border-[#3b332b] bg-[#1c1916]/95 px-5 py-5 text-[#fffdf9] backdrop-blur lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
           <div className="mb-6 flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-md bg-[#171412] text-[#c8953b]">
+            <div className="flex size-10 items-center justify-center rounded-md border border-[#c8953b]/50 bg-[#0f0d0b] text-[#c8953b] shadow-[0_0_20px_rgba(200,149,59,0.16)]">
               <ShieldCheck className="size-5" />
             </div>
             <div>
               <p className="text-lg font-semibold">Admin</p>
-              <p className="text-xs text-[#766d62]">TheTattooCore</p>
+              <p className="text-xs text-[#c9bfb1]">TheTattooCore</p>
             </div>
           </div>
 
-          <nav className="grid gap-1 sm:grid-cols-3 lg:grid-cols-1">
+          <nav className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto pb-1 lg:mx-0 lg:grid lg:grid-cols-1 lg:overflow-visible">
             {adminTabs.map(([Icon, label]) => (
               <a
-                className="flex h-11 items-center gap-3 rounded-md px-3 text-sm font-medium hover:bg-[#fffdf9]"
+                className="flex h-11 shrink-0 items-center gap-3 rounded-md border border-white/10 bg-white/5 px-3 text-sm font-semibold text-[#f7f4ef] backdrop-blur hover:border-[#c8953b]/60 hover:bg-[#c8953b]/15 lg:w-full"
                 href={`#${label.toLowerCase().replaceAll(" ", "-")}`}
                 key={label}
               >
-                <Icon className="size-5" />
+                <Icon className="size-5 text-[#c8953b]" />
                 {label}
               </a>
             ))}
           </nav>
 
-          <div className="mt-6 rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3">
+          <div className="mt-6 rounded-md border border-white/10 bg-white/5 p-3">
             <p className="text-sm font-semibold">{adminProfile.display_name}</p>
-            <p className="text-xs text-[#766d62]">
+            <p className="text-xs text-[#c9bfb1]">
               @{adminProfile.username} - {adminProfile.role}
             </p>
           </div>
         </aside>
 
-        <section className="bg-[#f2f1ee] px-4 py-6 sm:px-6 lg:px-8">
+        <section className="min-w-0 bg-[#ece8df] px-4 py-6 sm:px-6 lg:px-8">
           <header className="mb-6 flex flex-col gap-4 border-b border-[#cfc8bd] pb-5 md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="text-3xl font-bold">Admin dashboard</h1>
@@ -1875,7 +1875,7 @@ export default async function AdminPage({
                 Moderation, user safety, marketplace review, and mail setup.
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <Link
                 className="flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
                 href="/"
@@ -1890,6 +1890,19 @@ export default async function AdminPage({
               </Link>
             </div>
           </header>
+
+          <nav className="no-scrollbar sticky top-0 z-10 -mx-4 mb-6 flex gap-2 overflow-x-auto border-y border-[#cfc8bd] bg-[#ece8df]/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:hidden">
+            {adminTabs.map(([Icon, label]) => (
+              <a
+                className="flex h-10 shrink-0 items-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9]/90 px-3 text-xs font-bold shadow-sm"
+                href={`#${label.toLowerCase().replaceAll(" ", "-")}`}
+                key={label}
+              >
+                <Icon className="size-4 text-[#c8953b]" />
+                {label}
+              </a>
+            ))}
+          </nav>
 
           {params.message ? (
             <p className="mb-6 rounded-md border border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 text-sm font-medium">
@@ -1915,8 +1928,8 @@ export default async function AdminPage({
             ))}
           </section>
 
-          <div className="grid gap-5 xl:grid-cols-[1fr_380px]">
-            <section className="space-y-5">
+          <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,380px)]">
+            <section className="min-w-0 space-y-5">
               <div
                 className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-5"
                 id="users"
@@ -2204,7 +2217,7 @@ export default async function AdminPage({
               </div>
             </section>
 
-            <aside className="space-y-5">
+            <aside className="min-w-0 space-y-5">
               <div
                 className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5"
                 id="gigs"

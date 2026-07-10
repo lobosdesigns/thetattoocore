@@ -1346,9 +1346,9 @@ export default async function Home({
 
           <StoriesRail />
 
-          <div className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto scroll-smooth">
+          <div className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth touch-pan-x">
           <section
-            className="min-w-full snap-start divide-y divide-[#e5ded4]"
+            className="min-w-full snap-start snap-always divide-y divide-[#e5ded4]"
             id="feed"
           >
             {visibleFeedPosts.length ? (
@@ -1574,7 +1574,7 @@ export default async function Home({
           </section>
 
           <section
-            className="min-w-full snap-start border-l border-[#e5ded4] px-4 py-5"
+            className="min-w-full snap-start snap-always border-l border-[#e5ded4] px-4 py-5"
             id="threads"
           >
             <div className="mb-4 flex items-center gap-2">
@@ -1802,7 +1802,7 @@ export default async function Home({
           </section>
 
           <section
-            className="min-w-full snap-start border-l border-[#e5ded4] px-4 py-5"
+            className="min-w-full snap-start snap-always border-l border-[#e5ded4] px-4 py-5"
             id="marketplace"
           >
             <div className="mb-4 flex items-center gap-2">
@@ -1998,7 +1998,7 @@ export default async function Home({
           </section>
 
           <section
-            className="min-w-full snap-start border-l border-[#e5ded4] px-4 py-5"
+            className="min-w-full snap-start snap-always border-l border-[#e5ded4] px-4 py-5"
             id="gigs"
           >
             <div className="mb-4 flex items-center gap-2">
@@ -2199,7 +2199,7 @@ export default async function Home({
           </section>
 
           <section
-            className="min-w-full snap-start border-l border-[#e5ded4] px-4 py-5"
+            className="min-w-full snap-start snap-always border-l border-[#e5ded4] px-4 py-5"
             id="messages"
           >
             <div className="mb-4 flex items-center gap-2">
