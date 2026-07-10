@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { ProfileAvatar } from "@/app/profile-avatar";
-import { createClient } from "@/lib/supabase/client";
 
 type Profile = {
   id: string;
@@ -40,17 +39,15 @@ function timeAgo(value: string) {
 }
 
 export function MessageThread({
-  conversationId,
   currentUserId,
   initialMessages,
   profiles,
 }: {
-  conversationId: string;
+  conversationId?: string;
   currentUserId: string;
   initialMessages: ThreadMessage[];
   profiles: Profile[];
 }) {
-  const [messages, setMessages] = useState(initialMessages);
   const bottomRef = useRef<HTMLDivElement>(null);
   const profileById = useMemo(
     () => new Map(profiles.map((profile) => [profile.id, profile])),
@@ -59,46 +56,11 @@ export function MessageThread({
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: "end" });
-  }, [messages.length]);
-
-  useEffect(() => {
-    const supabase = createClient();
-    const channel = supabase
-      .channel(`messages:${conversationId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          filter: `conversation_id=eq.${conversationId}`,
-          schema: "public",
-          table: "messages",
-        },
-        (payload) => {
-          const incoming = payload.new as ThreadMessage;
-
-          setMessages((current) => {
-            if (current.some((message) => message.id === incoming.id)) {
-              return current;
-            }
-
-            return [...current, incoming].sort(
-              (a, b) =>
-                new Date(a.created_at).getTime() -
-                new Date(b.created_at).getTime(),
-            );
-          });
-        },
-      )
-      .subscribe();
-
-    return () => {
-      void supabase.removeChannel(channel);
-    };
-  }, [conversationId]);
+  }, [initialMessages.length]);
 
   return (
     <div className="min-w-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-4 py-5">
-      {messages.map((message) => {
+      {initialMessages.map((message) => {
         const mine = message.sender_id === currentUserId;
         const sender = profileById.get(message.sender_id);
 
