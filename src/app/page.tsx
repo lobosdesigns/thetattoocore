@@ -32,6 +32,7 @@ import { ColumnTabs } from "./column-tabs";
 import { ContentReportForm } from "./content-report-form";
 import { startConversation } from "./messages/actions";
 import { FloatingComposer } from "./floating-composer";
+import { LanguageStatusBanner } from "./language-status-banner";
 import { LogoLockup, LogoWordmark } from "./logo-mark";
 import { MediaLightbox } from "./media-lightbox";
 import { NotificationBellLink } from "./notification-bell-link";
@@ -955,22 +956,7 @@ function ProfileSetupGate() {
 function LanguageStatus({ preferredLanguage }: { preferredLanguage: string }) {
   const label = languageLabel(preferredLanguage);
 
-  return (
-    <section className="border-b border-[#d8d1c6] bg-[#fffdf9] px-4 py-3">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm leading-5 text-[#4f473f]">
-          Language preference: <span className="font-semibold">{label}</span>.
-          Posts stay in original text for now.
-        </p>
-        <Link
-          className="w-fit rounded-md border border-[#cfc8bd] bg-white px-3 py-2 text-xs font-semibold"
-          href="/account#language-settings"
-        >
-          Language settings
-        </Link>
-      </div>
-    </section>
-  );
+  return <LanguageStatusBanner label={label} />;
 }
 
 function TranslationCue({ preferredLanguage }: { preferredLanguage: string }) {

@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { updateProfile } from "./actions";
 import { MediaInput } from "../media-input";
 import { PendingSubmitButton } from "../pending-submit-button";
@@ -97,6 +100,23 @@ const notificationSummary = [
   ["Apps", "Native iOS and Android push"],
 ] as const;
 
+const profileTabs = [
+  ["profile", "Profile"],
+  ["language", "Language"],
+  ["privacy", "Privacy"],
+  ["notifications", "Notifications"],
+] as const;
+
+type ProfileTab = (typeof profileTabs)[number][0];
+
+function profileTabFromHash(hash: string): ProfileTab {
+  if (hash === "#language-settings") return "language";
+  if (hash === "#privacy-settings") return "privacy";
+  if (hash === "#notification-settings") return "notifications";
+
+  return "profile";
+}
+
 const pushRoadmap = [
   "Current switches control in-app notifications and unread badges.",
   "The same choices will feed email and web push when those channels are turned on.",
@@ -119,14 +139,26 @@ export function ProfileForm({
   claims: Claims;
   initialProfile: Partial<Profile> | null;
 }) {
+  const [activeTab, setActiveTab] = useState<ProfileTab>("profile");
   const enabledNotificationCount = notificationOptions.filter(
     ([name]) => initialProfile?.[name] ?? true,
   ).length;
+  const panelClass = (tab: ProfileTab) =>
+    activeTab === tab ? "grid gap-4 sm:grid-cols-2" : "hidden";
+
+  useEffect(() => {
+    const syncTab = () => setActiveTab(profileTabFromHash(window.location.hash));
+
+    syncTab();
+    window.addEventListener("hashchange", syncTab);
+
+    return () => window.removeEventListener("hashchange", syncTab);
+  }, []);
 
   return (
     <form
       action={updateProfile}
-      className="ttc-card scroll-mt-4 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-5"
+      className="ttc-card scroll-mt-4 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee]/95 p-5 backdrop-blur"
       id="profile-settings"
     >
       <div className="mb-5">
@@ -139,7 +171,25 @@ export function ProfileForm({
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="no-scrollbar mb-5 flex gap-2 overflow-x-auto rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-2">
+        {profileTabs.map(([tab, label]) => (
+          <button
+            aria-pressed={activeTab === tab}
+            className={`h-10 shrink-0 rounded-md border px-3 text-sm font-bold ${
+              activeTab === tab
+                ? "border-[#171412] bg-[#171412] text-white shadow-[0_8px_18px_rgba(23,20,18,0.16)]"
+                : "border-[#d8d1c6] bg-white text-[#4f473f]"
+            }`}
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            type="button"
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div className={panelClass("profile")}>
         <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 sm:col-span-2">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#171412] text-xl font-bold text-[#c8953b]">
@@ -190,7 +240,6 @@ export function ProfileForm({
             name="username"
             pattern="[a-zA-Z0-9_]{3,30}"
             placeholder="artistname"
-            required
             title="Use 3-30 letters, numbers, or underscores."
           />
           <span className="mt-1 block text-xs leading-5 text-[#766d62]">
@@ -208,7 +257,6 @@ export function ProfileForm({
             minLength={2}
             name="display_name"
             placeholder="Artist Name"
-            required
           />
           <span className="mt-1 block text-xs leading-5 text-[#766d62]">
             Shown on posts, listings, comments, and DMs.
@@ -234,9 +282,11 @@ export function ProfileForm({
             Artists, studios, and vendors can apply for license verification.
           </span>
         </label>
+      </div>
 
+      <div className={panelClass("language")}>
         <div
-          className="border-t border-[#cfc8bd] pt-4 sm:col-span-2"
+          className="sm:col-span-2"
           id="language-settings"
         >
           <h2 className="text-sm font-bold">Language and region</h2>
@@ -352,9 +402,11 @@ export function ProfileForm({
             Optional, 500 characters max.
           </span>
         </label>
+      </div>
 
+      <div className={panelClass("privacy")}>
         <div
-          className="border-t border-[#cfc8bd] pt-4 sm:col-span-2"
+          className="sm:col-span-2"
           id="privacy-settings"
         >
           <h2 className="text-sm font-bold">Privacy and safety</h2>
@@ -408,7 +460,6 @@ export function ProfileForm({
             className="mt-1 size-4"
             defaultChecked={initialProfile?.is_adult_confirmed ?? false}
             name="is_adult_confirmed"
-            required
             type="checkbox"
           />
           <span>
@@ -430,7 +481,7 @@ export function ProfileForm({
       </div>
 
       <section
-        className="mt-5 scroll-mt-4 border-t border-[#cfc8bd] pt-5"
+        className={`${activeTab === "notifications" ? "block" : "hidden"} scroll-mt-4`}
         id="notification-settings"
       >
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
