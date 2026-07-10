@@ -156,7 +156,6 @@ async function getThread(id: string) {
       "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, body, parent_id, deleted_at, created_at, thread_comment_hides(hidden_by), thread_comment_likes(user_id), profiles:profiles!thread_comments_author_id_fkey(id, display_name, username)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, account_type, license_verified_at)",
     )
     .eq("id", id)
-    .eq("is_published", true)
     .eq("moderation_status", "active")
     .order("sort_order", {
       ascending: true,
