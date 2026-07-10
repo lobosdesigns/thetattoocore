@@ -100,19 +100,19 @@ export function MessageThread({
   }, [conversationId, router]);
 
   return (
-    <div className="flex-1 space-y-3 overflow-y-auto px-4 py-5">
+    <div className="min-w-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-4 py-5">
       {messages.map((message) => {
         const mine = message.sender_id === currentUserId;
         const sender = profileById.get(message.sender_id);
 
         return (
           <div
-            className={`flex items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}
+            className={`min-w-0 flex items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}
             key={message.id}
           >
             {!mine ? <ProfileAvatar profile={sender} size="sm" /> : null}
             <div
-              className={`max-w-[78%] rounded-md px-4 py-3 ${
+              className={`max-w-[82%] overflow-hidden rounded-md px-4 py-3 sm:max-w-[78%] ${
                 mine
                   ? "bg-[#171412] text-white"
                   : "border border-[#cfc8bd] bg-white text-[#171412]"
@@ -151,7 +151,7 @@ export function MessageThread({
                 </div>
               ) : null}
               {message.body ? (
-                <p className="whitespace-pre-wrap text-sm leading-6">
+                <p className="break-words whitespace-pre-wrap text-sm leading-6">
                   {message.body}
                 </p>
               ) : null}

@@ -7,7 +7,7 @@
 - Comments: original authors must be able to edit/delete their own comments and replies. Post/thread owners should be able to hide/delete/block disruptive comments on their own posts, and all signed-in users should be able to report comments.
 - Marketplace/Stuff: verified artists, studios, and vendors can buy, sell, and trade approved body-art goods and services; fans can browse but not transact or contact sellers.
 - Messages: integrated direct messenger for bookings, marketplace questions, and collaboration.
-- DMs need a focused test pass with the regular test user and moderator test user; fix conversation creation, send/receive, read state, mobile layout, and attachment behavior before app submission.
+- DMs need a focused test pass with the regular test user and moderator test user before app submission. Mobile inbox/thread routing, read-state clearing, signed attachment display, and realtime refresh are improved for launch; real send/receive testing still needs logged-in test sessions.
 - Notifications: in-app alerts and unread badges first, important email second, PWA browser push third, then native APNs/FCM push for iOS and Android apps.
 - Composer: one floating plus button that opens the correct posting form for the current column.
 - Main column swiping should snap one column at a time. A horizontal swipe should land on the next column and stop instead of sliding quickly across multiple sections.

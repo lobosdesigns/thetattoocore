@@ -259,6 +259,7 @@ export default async function MessagesPage({
       return bTime - aTime;
     });
 
+  const hasSelectedConversationParam = Boolean(params.c);
   const selectedConversation =
     inbox.find((conversation) => conversation.id === params.c) ?? inbox[0];
 
@@ -332,9 +333,13 @@ export default async function MessagesPage({
   }));
 
   return (
-    <main className="min-h-screen bg-[#202020] text-[#171412]">
-      <div className="mx-auto grid min-h-screen max-w-7xl grid-cols-1 shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)] lg:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="border-r border-[#cfc8bd] bg-[#f2f1ee]">
+    <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
+      <div className="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 overflow-x-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)] lg:grid-cols-[320px_minmax(0,1fr)]">
+        <aside
+          className={`min-w-0 border-r border-[#cfc8bd] bg-[#f2f1ee] ${
+            hasSelectedConversationParam ? "hidden lg:block" : "block"
+          }`}
+        >
           <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-4 backdrop-blur">
             <div className="mb-4 flex items-center justify-between gap-3">
               <Link
@@ -483,18 +488,29 @@ export default async function MessagesPage({
           </section>
         </aside>
 
-        <section className="flex min-h-screen flex-col bg-[#f2f1ee]">
+        <section
+          className={`min-w-0 flex-col bg-[#f2f1ee] ${
+            hasSelectedConversationParam ? "flex min-h-[100dvh]" : "hidden min-h-screen lg:flex"
+          }`}
+        >
           {selectedConversation ? (
             <>
               <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-4 backdrop-blur">
                 <div className="flex items-center gap-3">
+                  <Link
+                    aria-label="Back to DM inbox"
+                    className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] lg:hidden"
+                    href="/messages"
+                  >
+                    <ArrowLeft className="size-5" />
+                  </Link>
                   <ProfileAvatar profile={selectedConversation.otherProfile} />
-                  <div>
-                    <h2 className="text-base font-bold">
+                  <div className="min-w-0">
+                    <h2 className="truncate text-base font-bold">
                       {selectedConversation.otherProfile?.display_name ??
                         "TattooCore member"}
                     </h2>
-                    <p className="text-xs text-[#766d62]">
+                    <p className="truncate text-xs text-[#766d62]">
                       @{selectedConversation.otherProfile?.username ?? "member"}
                     </p>
                   </div>
