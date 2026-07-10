@@ -130,10 +130,10 @@
   - Artist/studio/vendor license verified: artists and studios must submit licensing or certification documentation showing they are legally allowed to tattoo or operate in their jurisdiction; vendors must submit proper business licensing before approval.
   - Advertiser verified: billing and campaign review before ads go live.
 - Artist/studio/vendor license documents must be private, stored outside public media buckets, visible only to the submitting user and authorized admins/moderators.
-- Verification review should collect license/certification or business-license file, issuing region, license or certification name/number where applicable, expiration date when applicable, and reviewer notes.
-- Verification approvals must be server-checked for eligible account type and non-expired documents; rejections should require a useful reviewer note for the member.
-- Account verification history should show private reviewer notes, pending status, expiration status, and resubmission guidance without exposing license documents publicly.
-- Account and app surfaces should show a clear readiness summary for profile setup, 18+ status, verification status, account standing, and Stuff access.
+- Verification review should collect license/certification or business-license file, issuing region, license or certification name/number where applicable, expiration date when applicable, and reviewer notes. Done for launch.
+- Verification approvals must be server-checked for eligible account type and non-expired documents; rejections should require a useful reviewer note for the member. Done for launch.
+- Account verification history should show private reviewer notes, pending status, expiration status, and resubmission guidance without exposing license documents publicly. Done for launch.
+- Account and app surfaces should show a clear readiness summary for profile setup, 18+ status, verification status, account standing, and Stuff access. Done for launch.
 - Profiles should show verification badges only after approval; rejected or pending verification should not be public-facing.
 - SMS or phone MFA is not the default starting path because it adds cost. Current Supabase phone MFA is a paid add-on and SMS/WhatsApp messages can add provider charges.
 - Revisit SMS/phone verification only when there is a clear anti-spam need and budget for it.
