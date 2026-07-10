@@ -74,20 +74,31 @@ export const viewport: Viewport = {
   themeColor: "#171412",
 };
 
-async function preferredDocumentLanguage() {
+async function preferredDocumentSettings() {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const userId = claimsData?.claims?.sub;
 
-  if (!userId) return "en";
+  if (!userId) {
+    return {
+      language: "en",
+      themePreference: "system" as ThemePreference,
+    };
+  }
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("preferred_language")
+    .select("preferred_language, theme_preference")
     .eq("id", userId)
-    .maybeSingle<{ preferred_language: string | null }>();
+    .maybeSingle<{
+      preferred_language: string | null;
+      theme_preference: string | null;
+    }>();
 
-  return normalizedLanguage(profile?.preferred_language);
+  return {
+    language: normalizedLanguage(profile?.preferred_language),
+    themePreference: normalizedThemePreference(profile?.theme_preference),
+  };
 }
 
 function normalizedThemePreference(value?: string | null): ThemePreference {
@@ -96,31 +107,12 @@ function normalizedThemePreference(value?: string | null): ThemePreference {
   return "system";
 }
 
-async function preferredThemePreference() {
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const userId = claimsData?.claims?.sub;
-
-  if (!userId) return "system";
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("theme_preference")
-    .eq("id", userId)
-    .maybeSingle<{ theme_preference: string | null }>();
-
-  return normalizedThemePreference(profile?.theme_preference);
-}
-
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [language, themePreference] = await Promise.all([
-    preferredDocumentLanguage(),
-    preferredThemePreference(),
-  ]);
+  const { language, themePreference } = await preferredDocumentSettings();
 
   return (
     <html
