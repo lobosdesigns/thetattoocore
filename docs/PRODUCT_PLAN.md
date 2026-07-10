@@ -82,6 +82,7 @@
 - Add `robots.txt`, metadata, and per-route noindex rules before launch.
 - Do not expose private messages, private account data, unpublished content, or sensitive/adult content to crawlers.
 - Provide a public support URL for app-store review, safety reports, privacy help, and account deletion instructions.
+- Keep account deletion requests in an admin data-request queue during launch; complete irreversible deletion manually until legal hold and retention rules are final.
 
 ## Age And Content Policy
 

@@ -14,6 +14,7 @@
 - Visible nudity is not allowed for launch.
 - Sensitive non-nude body-art media stays behind login and 18+ confirmation.
 - Public support and account deletion request paths exist.
+- Admins and moderators can review account deletion requests from the admin data-request queue.
 - PWA manifest is active and starts installed sessions at `/login`.
 - Core social flows are web-first; native wrappers are not ready for submission yet.
 
@@ -22,8 +23,8 @@
 - Create PNG app icons and splash assets from the approved TTC shield.
 - Package native builds through the chosen wrapper path.
 - Add production support/legal contact details and final counsel-reviewed Terms/Privacy.
-- Verify account deletion handling time and admin process.
-- Finish moderation/admin queue coverage for account deletion requests.
+- Define the final account deletion SLA, legal hold rules, and manual deletion checklist.
+- Decide when to automate irreversible user-data deletion versus keeping early launch deletion manual.
 - Test signup, login, posting, reporting, blocking/safety, DMs, and account deletion request on real mobile devices.
 - Prepare store screenshots with no sensitive or copyrighted user content.
 - Confirm no AI-generated tattoo art claims appear in store metadata or screenshots.

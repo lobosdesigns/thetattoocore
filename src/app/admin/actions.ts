@@ -11,6 +11,7 @@ type ReportStatus = "open" | "reviewing" | "resolved" | "dismissed";
 type LicenseVerificationStatus = "approved" | "rejected";
 type UserStatus = "active" | "suspended" | "banned";
 type AdCampaignStatus = "approved" | "active" | "paused" | "rejected" | "archived";
+type AccountDeletionStatus = "reviewing" | "completed" | "rejected" | "cancelled";
 
 const moderatorRoles = new Set<UserRole>(["moderator", "admin", "owner"]);
 const statuses = new Set<ModerationStatus>([
@@ -38,6 +39,12 @@ const adCampaignStatuses = new Set<AdCampaignStatus>([
   "paused",
   "rejected",
   "archived",
+]);
+const accountDeletionStatuses = new Set<AccountDeletionStatus>([
+  "reviewing",
+  "completed",
+  "rejected",
+  "cancelled",
 ]);
 
 const subjectConfig = {
@@ -702,4 +709,81 @@ export async function updateAdCampaignStatus(formData: FormData) {
 
   revalidatePath("/admin");
   redirect("/admin?message=Ad campaign updated.#ads");
+}
+
+export async function updateAccountDeletionRequest(formData: FormData) {
+  const requestId = cleanText(formData.get("request_id"), 80);
+  const status = cleanText(
+    formData.get("status"),
+    40,
+  ) as AccountDeletionStatus;
+  const note = cleanText(formData.get("note"), 500);
+
+  if (!requestId || !accountDeletionStatuses.has(status)) {
+    redirect("/admin?message=Choose a valid account deletion status.#data-requests");
+  }
+
+  if ((status === "completed" || status === "rejected") && note.length < 10) {
+    redirect(
+      "/admin?message=Add a clear review note before completing or rejecting the request.#data-requests",
+    );
+  }
+
+  const { supabase, userId } = await requireModerator();
+  const { data: request, error: requestError } = await supabase
+    .from("account_deletion_requests")
+    .select("id, profile_id, status")
+    .eq("id", requestId)
+    .maybeSingle<{
+      id: string;
+      profile_id: string;
+      status: string;
+    }>();
+
+  if (requestError || !request) {
+    redirect(
+      `/admin?message=${encodeURIComponent(
+        requestError?.message || "Account deletion request was not found.",
+      )}#data-requests`,
+    );
+  }
+
+  if (request.status === "completed") {
+    redirect("/admin?message=Completed deletion requests cannot be changed.#data-requests");
+  }
+
+  const now = new Date().toISOString();
+  const { error: updateError } = await supabase
+    .from("account_deletion_requests")
+    .update({
+      reviewed_at: now,
+      reviewed_by: userId,
+      reviewer_note: note || null,
+      status,
+    })
+    .eq("id", requestId);
+
+  if (updateError) {
+    redirect(
+      `/admin?message=${encodeURIComponent(
+        updateError.message || "Could not update account deletion request.",
+      )}#data-requests`,
+    );
+  }
+
+  await supabase.from("admin_audit_logs").insert({
+    actor_id: userId,
+    event_type: `account_deletion_${status}`,
+    metadata: {
+      from_status: request.status,
+      to_status: status,
+    },
+    summary: note || null,
+    target_id: request.id,
+    target_type: "account_deletion_request",
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/account");
+  redirect("/admin?message=Account deletion request updated.#data-requests");
 }

@@ -12,6 +12,7 @@ import {
   Megaphone,
   ShieldCheck,
   ShoppingBag,
+  Trash2,
   Users,
 } from "lucide-react";
 import {
@@ -19,6 +20,7 @@ import {
   changeUserStatus,
   moderateContent,
   updateAdCampaignStatus,
+  updateAccountDeletionRequest,
   updateLicenseVerification,
   updateReportStatus,
 } from "./actions";
@@ -78,6 +80,16 @@ type LicenseRequest = {
   status: "pending" | "approved" | "rejected";
   storageBucket: string;
   signedDocumentUrl: string | null;
+};
+type AccountDeletionRequest = {
+  id: string;
+  profileName: string;
+  profileUsername: string;
+  reason: string | null;
+  requestedAt: string;
+  reviewedAt: string | null;
+  reviewerNote: string | null;
+  status: "pending" | "reviewing" | "completed" | "rejected" | "cancelled";
 };
 type AdminUser = {
   accountType: string;
@@ -144,6 +156,7 @@ const adminTabs = [
   [Activity, "Overview"],
   [Users, "Users"],
   [ShieldCheck, "Verification"],
+  [Trash2, "Data Requests"],
   [Flag, "Reports"],
   [ImageIcon, "Content"],
   [ImageIcon, "Media Ops"],
@@ -228,6 +241,20 @@ function licenseStatusClass(status: LicenseRequest["status"]) {
   return "border-[#d8d1c6] bg-[#f7f4ef] text-[#4f473f]";
 }
 
+function accountDeletionStatusClass(status: AccountDeletionRequest["status"]) {
+  if (status === "completed") {
+    return "border-[#b9d7bd] bg-[#eef8ef] text-[#276231]";
+  }
+  if (status === "rejected" || status === "cancelled") {
+    return "border-[#e5b8b8] bg-[#fff0f0] text-[#8a2828]";
+  }
+  if (status === "reviewing") {
+    return "border-[#b7c6e8] bg-[#eef3ff] text-[#284f8a]";
+  }
+
+  return "border-[#e5c58f] bg-[#fff7ec] text-[#7a4a08]";
+}
+
 function fileNameFromPath(path: string) {
   const name = path.split("/").filter(Boolean).at(-1);
   return name || "License document";
@@ -310,6 +337,18 @@ function auditActivityLabel(eventType: string, metadata: ActivityMetadata | null
   if (eventType === "ad_campaign_paused") return "Paused ad campaign";
   if (eventType === "ad_campaign_rejected") return "Rejected ad campaign";
   if (eventType === "ad_campaign_archived") return "Archived ad campaign";
+  if (eventType === "account_deletion_reviewing") {
+    return "Started account deletion review";
+  }
+  if (eventType === "account_deletion_completed") {
+    return "Completed account deletion request";
+  }
+  if (eventType === "account_deletion_rejected") {
+    return "Rejected account deletion request";
+  }
+  if (eventType === "account_deletion_cancelled") {
+    return "Cancelled account deletion request";
+  }
 
   return activityLabel(eventType);
 }
@@ -812,6 +851,92 @@ function LicenseRequestCard({ request }: { request: LicenseRequest }) {
   );
 }
 
+function AccountDeletionRequestCard({
+  request,
+}: {
+  request: AccountDeletionRequest;
+}) {
+  const isOpen = request.status === "pending" || request.status === "reviewing";
+
+  return (
+    <article className="rounded-md border border-[#e5ded4] bg-white p-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-bold">{request.profileName}</p>
+          <p className="mt-1 text-xs text-[#766d62]">
+            @{request.profileUsername} - requested {timeAgo(request.requestedAt)}
+          </p>
+        </div>
+        <span
+          className={`shrink-0 rounded-md border px-2 py-1 text-xs font-semibold capitalize ${accountDeletionStatusClass(
+            request.status,
+          )}`}
+        >
+          {request.status}
+        </span>
+      </div>
+      <div className="rounded-md border border-[#e5ded4] bg-[#fffdf9] p-3">
+        <p className="text-xs font-semibold uppercase text-[#766d62]">
+          Member reason
+        </p>
+        <p className="mt-1 text-sm leading-6 text-[#4f473f]">
+          {request.reason || "No reason provided."}
+        </p>
+      </div>
+      <div className="mt-3 rounded-md border border-[#e5ded4] bg-[#f7f4ef] p-3 text-xs leading-5 text-[#4f473f]">
+        <p className="font-bold">Manual handling checklist</p>
+        <p className="mt-1">
+          Confirm identity, review safety or legal holds, preserve required audit
+          records, then process the user data removal before marking completed.
+        </p>
+      </div>
+      {isOpen ? (
+        <form action={updateAccountDeletionRequest} className="mt-4 space-y-2">
+          <input name="request_id" type="hidden" value={request.id} />
+          <input
+            className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            maxLength={500}
+            name="note"
+            placeholder="Reviewer note, required to complete or reject"
+          />
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[
+              ["reviewing", "Review"],
+              ["completed", "Complete"],
+              ["rejected", "Reject"],
+              ["cancelled", "Cancel"],
+            ].map(([value, label]) => (
+              <button
+                className={
+                  value === "completed"
+                    ? "h-10 rounded-md bg-[#171412] px-2 text-sm font-semibold text-white"
+                    : value === "rejected"
+                      ? "h-10 rounded-md border border-[#e5b8b8] bg-[#fff0f0] px-2 text-sm font-semibold text-[#8a2828] hover:bg-[#f6dfdf]"
+                      : "h-10 rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 text-sm font-semibold hover:bg-[#f7f4ef]"
+                }
+                key={value}
+                name="status"
+                value={value}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </form>
+      ) : (
+        <div className="mt-4 rounded-md border border-[#e5ded4] bg-[#f7f4ef] px-3 py-2 text-xs text-[#766d62]">
+          <p>
+            Reviewed {request.reviewedAt ? formatDate(request.reviewedAt) : "previously"}.
+          </p>
+          {request.reviewerNote ? (
+            <p className="mt-1 text-[#4f473f]">{request.reviewerNote}</p>
+          ) : null}
+        </div>
+      )}
+    </article>
+  );
+}
+
 function AdCampaignCard({ campaign }: { campaign: AdCampaign }) {
   return (
     <article className="rounded-md border border-[#e5ded4] bg-white p-4">
@@ -1013,10 +1138,12 @@ export default async function AdminPage({
     { count: openReports },
     { count: pendingVerifications },
     { count: pendingAds },
+    { count: pendingDataRequests },
     { count: marketplaceQueue },
     { count: moderationActions },
     { data: adminUsers },
     { data: verificationQueue },
+    { data: accountDeletionQueue },
     { data: reportQueue },
     { data: feedReview },
     { data: threadReview },
@@ -1040,6 +1167,10 @@ export default async function AdminPage({
       .from("ad_campaigns")
       .select("*", { count: "exact", head: true })
       .eq("status", "pending_review"),
+    supabase
+      .from("account_deletion_requests")
+      .select("*", { count: "exact", head: true })
+      .in("status", ["pending", "reviewing"]),
     supabase
       .from("marketplace_listings")
       .select("*", { count: "exact", head: true })
@@ -1090,6 +1221,25 @@ export default async function AdminPage({
           storage_bucket: string;
           storage_path: string;
           status: "pending" | "approved" | "rejected";
+        }[]
+      >(),
+    supabase
+      .from("account_deletion_requests")
+      .select(
+        "id, reason, status, reviewer_note, requested_at, reviewed_at, profiles:profiles!account_deletion_requests_profile_id_fkey(display_name, username)",
+      )
+      .in("status", ["pending", "reviewing", "rejected", "cancelled"])
+      .order("requested_at", { ascending: false })
+      .limit(10)
+      .returns<
+        {
+          id: string;
+          profiles: { display_name: string; username: string } | null;
+          reason: string | null;
+          requested_at: string;
+          reviewed_at: string | null;
+          reviewer_note: string | null;
+          status: "pending" | "reviewing" | "completed" | "rejected" | "cancelled";
         }[]
       >(),
     supabase
@@ -1311,6 +1461,7 @@ export default async function AdminPage({
     ["Open reports", openReports, "Needs review"],
     ["License checks", pendingVerifications, "Pending approval"],
     ["Ad reviews", pendingAds, "Pending campaigns"],
+    ["Data requests", pendingDataRequests, "Privacy queue"],
     ["Listings", marketplaceQueue, "Draft and active"],
     ["Actions", moderationActions, "Moderation log"],
   ];
@@ -1395,6 +1546,24 @@ export default async function AdminPage({
   );
   const rejectedLicenseRequests = licenseRequests.filter(
     (request) => request.status === "rejected",
+  );
+  const accountDeletionRequests: AccountDeletionRequest[] = (
+    accountDeletionQueue ?? []
+  ).map((request) => ({
+    id: request.id,
+    profileName: request.profiles?.display_name ?? "Member",
+    profileUsername: request.profiles?.username ?? "member",
+    reason: request.reason,
+    requestedAt: request.requested_at,
+    reviewedAt: request.reviewed_at,
+    reviewerNote: request.reviewer_note,
+    status: request.status,
+  }));
+  const openAccountDeletionRequests = accountDeletionRequests.filter(
+    (request) => request.status === "pending" || request.status === "reviewing",
+  );
+  const closedAccountDeletionRequests = accountDeletionRequests.filter(
+    (request) => request.status !== "pending" && request.status !== "reviewing",
   );
   const reportSubjectPreviews = new Map<string, ReportSubjectPreview>();
   const reportSubjectIds = (type: string) =>
@@ -1907,6 +2076,53 @@ export default async function AdminPage({
                     right now.
                   </div>
                 )}
+              </div>
+
+              <div
+                className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5"
+                id="data-requests"
+              >
+                <div className="mb-4 flex items-center gap-3">
+                  <Trash2 className="size-5" />
+                  <h2 className="text-lg font-bold">Data requests</h2>
+                </div>
+                <p className="mb-4 rounded-md border border-[#e5ded4] bg-white px-3 py-2 text-sm leading-6 text-[#4f473f]">
+                  Handle account deletion requests manually during launch. Do
+                  identity, safety, and legal checks before marking anything
+                  completed.
+                </p>
+                <QueueSummary
+                  items={[
+                    ["Open", openAccountDeletionRequests.length, "warning"],
+                    ["Recently closed", closedAccountDeletionRequests.length],
+                  ]}
+                />
+                <div className="space-y-4">
+                  <QueueGroup
+                    count={openAccountDeletionRequests.length}
+                    emptyText="No account deletion requests are waiting."
+                    title="Open deletion requests"
+                  >
+                    {openAccountDeletionRequests.map((request) => (
+                      <AccountDeletionRequestCard
+                        key={request.id}
+                        request={request}
+                      />
+                    ))}
+                  </QueueGroup>
+                  <QueueGroup
+                    count={closedAccountDeletionRequests.length}
+                    emptyText="No recently closed data requests."
+                    title="Recently closed"
+                  >
+                    {closedAccountDeletionRequests.map((request) => (
+                      <AccountDeletionRequestCard
+                        key={request.id}
+                        request={request}
+                      />
+                    ))}
+                  </QueueGroup>
+                </div>
               </div>
 
               <div
