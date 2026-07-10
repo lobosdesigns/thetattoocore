@@ -131,6 +131,24 @@ function adminDataRequestsMessage(message: string, returnTo?: string) {
   return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
 }
 
+function adminVerificationMessage(message: string, returnTo?: string) {
+  const safeReturnTo =
+    returnTo?.startsWith("/admin/verification") || returnTo === "/admin"
+      ? returnTo
+      : "/admin#verification";
+  const separator = safeReturnTo.includes("?") ? "&" : "?";
+  const hashIndex = safeReturnTo.indexOf("#");
+
+  if (hashIndex >= 0) {
+    const base = safeReturnTo.slice(0, hashIndex);
+    const hash = safeReturnTo.slice(hashIndex);
+
+    return `${base}${separator}message=${encodeURIComponent(message)}${hash}`;
+  }
+
+  return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
+}
+
 function cleanText(value: FormDataEntryValue | null, maxLength: number) {
   return String(value ?? "")
     .trim()
@@ -594,6 +612,7 @@ export async function updateReportStatus(formData: FormData) {
 
 export async function updateLicenseVerification(formData: FormData) {
   const requestId = cleanText(formData.get("request_id"), 80);
+  const returnTo = cleanText(formData.get("return_to"), 120);
   const status = cleanText(
     formData.get("status"),
     40,
@@ -601,11 +620,16 @@ export async function updateLicenseVerification(formData: FormData) {
   const note = cleanText(formData.get("note"), 500);
 
   if (!requestId || !licenseStatuses.has(status)) {
-    redirect("/admin?message=Choose a valid license decision.#verification");
+    redirect(adminVerificationMessage("Choose a valid license decision.", returnTo));
   }
 
   if (status === "rejected" && note.length < 10) {
-    redirect("/admin?message=Add a short rejection note for the member.#verification");
+    redirect(
+      adminVerificationMessage(
+        "Add a short rejection note for the member.",
+        returnTo,
+      ),
+    );
   }
 
   const { supabase, userId } = await requireModerator();
@@ -623,25 +647,41 @@ export async function updateLicenseVerification(formData: FormData) {
 
   if (requestError || !request) {
     redirect(
-      `/admin?message=${encodeURIComponent(
+      adminVerificationMessage(
         requestError?.message || "License request was not found.",
-      )}#verification`,
+        returnTo,
+      ),
     );
   }
 
   if (request.status !== "pending") {
-    redirect("/admin?message=This license request was already reviewed.#verification");
+    redirect(
+      adminVerificationMessage(
+        "This license request was already reviewed.",
+        returnTo,
+      ),
+    );
   }
 
   if (
     status === "approved" &&
     !verificationEligibleAccountTypes.has(request.account_type)
   ) {
-    redirect("/admin?message=Only artist, studio, or vendor accounts can be approved.#verification");
+    redirect(
+      adminVerificationMessage(
+        "Only artist, studio, or vendor accounts can be approved.",
+        returnTo,
+      ),
+    );
   }
 
   if (status === "approved" && isPastDate(request.expires_on)) {
-    redirect("/admin?message=Expired license documents must be rejected or resubmitted.#verification");
+    redirect(
+      adminVerificationMessage(
+        "Expired license documents must be rejected or resubmitted.",
+        returnTo,
+      ),
+    );
   }
 
   const { error: updateError } = await supabase
@@ -658,9 +698,10 @@ export async function updateLicenseVerification(formData: FormData) {
 
   if (updateError) {
     redirect(
-      `/admin?message=${encodeURIComponent(
+      adminVerificationMessage(
         updateError.message || "Could not update license request.",
-      )}#verification`,
+        returnTo,
+      ),
     );
   }
 
@@ -677,9 +718,10 @@ export async function updateLicenseVerification(formData: FormData) {
 
     if (profileError) {
       redirect(
-        `/admin?message=${encodeURIComponent(
+        adminVerificationMessage(
           profileError.message || "License approved, but profile badge failed.",
-        )}#verification`,
+          returnTo,
+        ),
       );
     }
   }
@@ -721,16 +763,18 @@ export async function updateLicenseVerification(formData: FormData) {
 
   if (notificationError) {
     redirect(
-      `/admin?message=${encodeURIComponent(
+      adminVerificationMessage(
         notificationError.message ||
           "License updated, but member notification failed.",
-      )}#verification`,
+        returnTo,
+      ),
     );
   }
 
   revalidatePath("/admin");
+  revalidatePath("/admin/verification");
   revalidatePath("/account");
-  redirect("/admin?message=License verification updated.#verification");
+  redirect(adminVerificationMessage("License verification updated.", returnTo));
 }
 
 export async function updateAdCampaignStatus(formData: FormData) {

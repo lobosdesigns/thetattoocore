@@ -155,7 +155,7 @@ type AdCampaign = {
 const adminTabs = [
   [Activity, "Overview", "/admin#overview"],
   [Users, "Users", "/admin/users"],
-  [ShieldCheck, "Verification", "/admin#verification"],
+  [ShieldCheck, "Verification", "/admin/verification"],
   [Trash2, "Data Requests", "/admin/data-requests"],
   [Flag, "Reports", "/admin#reports"],
   [ImageIcon, "Content", "/admin#content"],
@@ -1845,7 +1845,7 @@ export default async function AdminPage({
       action: "Verification page planned",
       body: "Artist, studio, and vendor license approval should move to a dedicated queue page.",
       count: pendingLicenseRequests.length,
-      href: "/admin#verification",
+      href: "/admin/verification",
       label: "Verification",
       meta: `${approvedLicenseRequests.length} approved / ${rejectedLicenseRequests.length} rejected in latest slice`,
     },
