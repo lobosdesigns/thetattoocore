@@ -6,15 +6,21 @@
   "icons": [
     {
       "purpose": "any",
+      "sizes": "192x192",
+      "src": "/icons/icon-192.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "any",
       "sizes": "512x512",
-      "src": "/icon.svg?v=ttc-shield",
-      "type": "image/svg+xml"
+      "src": "/icons/icon-512.png",
+      "type": "image/png"
     },
     {
       "purpose": "maskable",
       "sizes": "512x512",
-      "src": "/icon.svg?v=ttc-shield",
-      "type": "image/svg+xml"
+      "src": "/icons/maskable-512.png",
+      "type": "image/png"
     }
   ],
   "id": "https://thetattoocore.com",

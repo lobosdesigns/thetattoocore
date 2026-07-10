@@ -16,11 +16,12 @@
 - Public support and account deletion request paths exist.
 - Admins and moderators can review account deletion requests from the admin data-request queue.
 - PWA manifest is active and starts installed sessions at `/login`.
+- PNG PWA icons are generated from the approved TTC shield, including a maskable launcher icon.
 - Core social flows are web-first; native wrappers are not ready for submission yet.
 
 ## Before Google Play / App Store Submission
 
-- Create PNG app icons and splash assets from the approved TTC shield.
+- Create final native splash assets from the approved TTC shield.
 - Package native builds through the chosen wrapper path.
 - Add production support/legal contact details and final counsel-reviewed Terms/Privacy.
 - Define the final account deletion SLA, legal hold rules, and manual deletion checklist.

@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      html,
+      body {
+        background: transparent;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        width: 100%;
+      }
+
+      body {
+        align-items: center;
+        display: flex;
+        justify-content: center;
+      }
+
+      .canvas {
+        align-items: center;
+        background: transparent;
+        display: flex;
+        height: 100vmin;
+        justify-content: center;
+        width: 100vmin;
+      }
+
+      .maskable {
+        background: #171412;
+        border-radius: 24%;
+      }
+
+      img {
+        display: block;
+        height: 92%;
+        width: auto;
+      }
+
+      .maskable img {
+        height: 76%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="canvas" id="canvas">
+      <img alt="" src="../src/app/icon.svg" />
+    </div>
+    <script>
+      const params = new URLSearchParams(location.search);
+      if (params.get("maskable") === "1" || location.hash === "#maskable") {
+        document.getElementById("canvas").classList.add("maskable");
+      }
+    </script>
+  </body>
+</html>

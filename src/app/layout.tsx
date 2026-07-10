@@ -35,8 +35,12 @@ export const metadata: Metadata = {
   },
   description: siteDescription,
   icons: {
-    apple: "/icon.svg?v=ttc-shield",
-    icon: "/icon.svg?v=ttc-shield",
+    apple: "/icons/icon-512.png",
+    icon: [
+      { sizes: "192x192", type: "image/png", url: "/icons/icon-192.png" },
+      { sizes: "512x512", type: "image/png", url: "/icons/icon-512.png" },
+      { type: "image/svg+xml", url: "/icon.svg?v=ttc-shield" },
+    ],
   },
   manifest: "/manifest.webmanifest",
   metadataBase: new URL(siteUrl),
