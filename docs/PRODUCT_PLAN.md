@@ -32,7 +32,7 @@
 
 ## Notification Roadmap
 
-- Keep the MVP notification system in-app first: unread badges, notification center, DMs, follow requests, comments, likes, verification decisions, Stuff seller messages, and Gigs activity. Verification decisions done for launch.
+- Keep the MVP notification system in-app first: unread badges, notification center, DMs, new followers, follow requests, comments, likes, verification decisions, Stuff seller messages, and Gigs activity. New follower, follow request, follow approval, message, comment, like, and verification decision notifications are ready for launch.
 - Store notification preferences on the profile now so the same choices can later control email, web push, and native push.
 - Store quiet hours, notification timezone, important-email preference, and push opt-in intent before turning on email/web/native push channels.
 - Add transactional email only for important account, verification, security, and marketplace/gig events before adding noisy social email. Started with account deletion request confirmations.
