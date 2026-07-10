@@ -345,7 +345,8 @@ export default async function AccountPage({
   const hasPendingVerification = Boolean(
     verificationRequests?.some((request) => request.status === "pending"),
   );
-  const canUploadVerification = !isLicenseVerified && !hasPendingVerification;
+  const canUploadVerification =
+    Boolean(canSubmitLicense) && !isLicenseVerified && !hasPendingVerification;
   const canSubmitAds =
     canSubmitLicense && isLicenseVerified && !profile?.suspended_at && !profile?.banned_at;
   const isFirstProfile = !profile;

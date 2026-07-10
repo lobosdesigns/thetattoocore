@@ -1203,7 +1203,7 @@ export default async function AdminPage({
       .select(
         "id, account_type, license_name, license_number, issuing_region, expires_on, storage_bucket, storage_path, status, reviewer_note, reviewed_at, created_at, profiles:profiles!license_verification_requests_profile_id_fkey(display_name, username)",
       )
-      .in("status", ["pending", "rejected"])
+      .in("status", ["pending", "approved", "rejected"])
       .order("created_at", { ascending: false })
       .limit(8)
       .returns<
