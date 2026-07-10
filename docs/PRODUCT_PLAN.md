@@ -2,8 +2,8 @@
 
 ## Core Experience
 
-- Feed: image posts and short reel clips, 40-word captions, likes, short 40-word comments, comment likes, and comment replies. Comment likes/replies started for launch.
-- Threads: longer posts, optional image, replies, likes, comment likes, and community discussion. Comment likes/replies started for launch.
+- Feed: image posts and short reel clips, 40-word captions, likes, short 40-word comments, comment likes, and comment replies. Comment likes/replies are live for launch, including visible replies.
+- Threads: longer posts, optional image, replies, likes, comment likes, and community discussion. Comment likes/replies are live for launch, including visible replies.
 - Marketplace/Stuff: verified artists, studios, and vendors can buy, sell, and trade approved body-art goods and services; fans can browse but not transact or contact sellers.
 - Messages: integrated direct messenger for bookings, marketplace questions, and collaboration.
 - Notifications: in-app alerts and unread badges first, important email second, PWA browser push third, then native APNs/FCM push for iOS and Android apps.
