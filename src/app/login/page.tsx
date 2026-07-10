@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { login, signup } from "./actions";
+import { login } from "./actions";
 
 const setupSteps = [
   ["1", "Confirm email", "New accounts get an email link before login."],
@@ -132,7 +132,7 @@ export default async function LoginPage({
             </span>
           </div>
 
-          <form action={signup} className="space-y-4">
+          <form action="/auth/signup" className="space-y-4" method="post">
             <label className="block">
               <span className="text-sm font-medium">Email</span>
               <input
@@ -172,6 +172,29 @@ export default async function LoginPage({
             <button className="h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold">
               Create account
             </button>
+          </form>
+
+          <form
+            action="/auth/resend-confirmation"
+            className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3"
+            method="post"
+          >
+            <p className="text-xs font-semibold uppercase text-[#766d62]">
+              No confirmation email?
+            </p>
+            <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
+              <input
+                className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                autoComplete="email"
+                name="email"
+                placeholder="email@example.com"
+                required
+                type="email"
+              />
+              <button className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm font-semibold">
+                Resend
+              </button>
+            </div>
           </form>
 
             <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 text-xs leading-5 text-[#4f473f]">
