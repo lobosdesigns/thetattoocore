@@ -108,16 +108,16 @@
 
 ## Age And Content Policy
 
-- TheTattooCore is planned as an 18+ community.
-- Add an age gate during signup requiring users to confirm they are 18 or older.
-- Store the user's 18+ self-attestation and terms acceptance timestamp on the profile.
-- Keep signup blocked until the user explicitly confirms 18+.
-- Launch with a no-visible-nudity policy for app-store readiness and lower moderation risk, even when the intent is tattoo, piercing, scar, healing, placement, or body-art documentation.
+- TheTattooCore is planned as an 18+ community. Done for launch in signup, profile setup, terms, and support copy.
+- Add an age gate during signup requiring users to confirm they are 18 or older. Done for launch.
+- Store the user's 18+ self-attestation and terms acceptance timestamp on the profile. Done for launch.
+- Keep signup blocked until the user explicitly confirms 18+. Done for launch.
+- Launch with a no-visible-nudity policy for app-store readiness and lower moderation risk, even when the intent is tattoo, piercing, scar, healing, placement, or body-art documentation. Done for launch in upload copy and policy pages.
 - Require members to crop or cover private areas before posting; revisit any body-art nudity policy only after moderation, app policy, and legal review are mature.
 - Prohibit pornography, sexual solicitation, explicit sexual content, exploitative content, and content involving minors in nudity or sexualized contexts.
-- Do not ask members to self-label uploads as sensitive during launch; moderation can still hide or restrict edge-case content if needed.
-- Add moderator tools for hiding, warning, removing, and escalating content.
-- Add report reasons for nudity, sexual content, sensitive non-nude body-art context, minors, harassment, scams, unsafe practices, and illegal goods/services.
+- Do not ask members to self-label uploads as sensitive during launch; moderation can still hide or restrict edge-case content if needed. Done for launch.
+- Add moderator tools for hiding, warning, removing, and escalating content. Started for launch with admin report/content queues, under-review, hidden, removed, and restored statuses; dedicated warning/escalation workflow can be refined later.
+- Add report reasons for nudity, sexual content, sensitive non-nude body-art context, minors, harassment, scams, unsafe practices, and illegal goods/services. Done for launch.
 
 ## Verification
 
