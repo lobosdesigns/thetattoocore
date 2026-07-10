@@ -1282,7 +1282,7 @@ export default async function Home({
         ascending: true,
         referencedTable: "feed_media",
       })
-      .limit(20)
+      .limit(25)
       .returns<FeedPost[]>(),
     supabase
       .from("thread_posts")
@@ -1295,7 +1295,7 @@ export default async function Home({
         ascending: true,
         referencedTable: "thread_media",
       })
-      .limit(20)
+      .limit(25)
       .returns<ThreadPost[]>(),
     supabase
       .from("marketplace_listings")
@@ -1309,7 +1309,7 @@ export default async function Home({
         ascending: true,
         referencedTable: "marketplace_media",
       })
-      .limit(20)
+      .limit(25)
       .returns<MarketplaceListing[]>(),
     supabase
       .from("gigs")
@@ -1323,7 +1323,7 @@ export default async function Home({
         ascending: true,
         referencedTable: "gig_media",
       })
-      .limit(20)
+      .limit(25)
       .returns<Gig[]>(),
     claims?.sub
       ? supabase
@@ -2773,3 +2773,4 @@ export default async function Home({
     </main>
   );
 }
+

@@ -143,7 +143,7 @@ export default async function NotificationsPage() {
     )
     .eq("recipient_id", claims.sub)
     .order("created_at", { ascending: false })
-    .limit(50)
+    .limit(25)
     .returns<Notification[]>();
   const { data: profile } = await supabase
     .from("profiles")
@@ -172,7 +172,9 @@ export default async function NotificationsPage() {
               <div className="min-w-0">
                 <h1 className="text-xl font-bold">Notifications</h1>
                 <p className="text-xs text-[#766d62]">
-                  {unreadCount ? `${unreadCount} unread` : "All caught up"}
+                  {unreadCount
+                    ? `${unreadCount} unread - latest 25 shown`
+                    : "All caught up - latest 25 shown"}
                 </p>
               </div>
             </div>

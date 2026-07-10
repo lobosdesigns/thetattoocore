@@ -190,7 +190,7 @@ export default async function SavedPage({
     .select("subject_type, subject_id, created_at")
     .eq("user_id", claims.sub)
     .order("created_at", { ascending: false })
-    .limit(100)
+    .limit(25)
     .returns<SavedItem[]>();
 
   const saved = savedItems ?? [];
@@ -397,7 +397,7 @@ export default async function SavedPage({
               <div>
                 <h1 className="text-xl font-bold">Saved</h1>
                 <p className="text-sm text-[#766d62]">
-                  Artists, 4U, Gossip, Stuff, and Gigs you bookmarked.
+                  Latest 25 artists, 4U, Gossip, Stuff, and Gigs you bookmarked.
                 </p>
               </div>
             </div>
