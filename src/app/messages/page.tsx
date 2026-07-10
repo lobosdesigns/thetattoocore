@@ -70,6 +70,7 @@ type MessageAttachment = {
 
 type MessageNotification = {
   href: string | null;
+  id: string;
   subject_id: string | null;
 };
 
@@ -92,13 +93,15 @@ function profileLocation(profile?: Profile) {
 }
 
 function notificationConversationId(notification: MessageNotification) {
-  if (notification.subject_id) return notification.subject_id;
-  if (!notification.href) return null;
+  if (notification.href) {
+    const [, query] = notification.href.split("?");
+    if (query) {
+      const conversationId = new URLSearchParams(query).get("c");
+      if (conversationId) return conversationId;
+    }
+  }
 
-  const [, query] = notification.href.split("?");
-  if (!query) return null;
-
-  return new URLSearchParams(query).get("c");
+  return notification.subject_id;
 }
 
 export default async function MessagesPage({
@@ -203,7 +206,7 @@ export default async function MessagesPage({
     conversationIds.length
       ? supabase
           .from("notifications")
-          .select("subject_id, href")
+          .select("id, subject_id, href")
           .eq("recipient_id", claims.sub)
           .eq("type", "message")
           .is("read_at", null)
@@ -278,6 +281,31 @@ export default async function MessagesPage({
   const hasSelectedConversationParam = Boolean(params.c);
   const selectedConversation =
     inbox.find((conversation) => conversation.id === params.c) ?? inbox[0];
+
+  if (selectedConversation) {
+    const readAt = new Date().toISOString();
+    const selectedUnreadNotificationIds = (unreadMessageNotifications ?? [])
+      .filter(
+        (notification) =>
+          notificationConversationId(notification) === selectedConversation.id,
+      )
+      .map((notification) => notification.id);
+
+    if (selectedUnreadNotificationIds.length) {
+      await supabase
+        .from("notifications")
+        .update({ read_at: readAt })
+        .eq("recipient_id", claims.sub)
+        .in("id", selectedUnreadNotificationIds);
+      unreadCountByConversation.set(selectedConversation.id, 0);
+    }
+
+    await supabase
+      .from("conversation_members")
+      .update({ last_read_at: readAt })
+      .eq("conversation_id", selectedConversation.id)
+      .eq("user_id", claims.sub);
+  }
 
   const selectedMessages = selectedConversation
     ? messagesByConversation.get(selectedConversation.id) ?? []
