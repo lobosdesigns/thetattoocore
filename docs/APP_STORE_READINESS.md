@@ -18,15 +18,16 @@
 - Members can block and unblock profiles; blocked relationships prevent follow and DM attempts.
 - PWA manifest is active and starts installed sessions at `/login`.
 - PNG PWA icons are generated from the approved TTC shield, including a maskable launcher icon.
+- Branded splash and clean PWA screenshot assets are generated without user, sensitive, or copyrighted tattoo content.
 - Core social flows are web-first; native wrappers are not ready for submission yet.
 
 ## Before Google Play / App Store Submission
 
-- Create final native splash assets from the approved TTC shield.
+- Map the generated splash/screenshot assets into the native wrapper once Android/iOS packaging starts.
 - Package native builds through the chosen wrapper path.
 - Add production support/legal contact details and final counsel-reviewed Terms/Privacy.
 - Define the final account deletion SLA, legal hold rules, and manual deletion checklist.
 - Decide when to automate irreversible user-data deletion versus keeping early launch deletion manual.
 - Test signup, login, posting, reporting, blocking/safety, DMs, and account deletion requests on real mobile devices.
-- Prepare store screenshots with no sensitive or copyrighted user content.
+- Prepare final store screenshots after mobile QA, using no sensitive or copyrighted user content.
 - Confirm no AI-generated tattoo art claims appear in store metadata or screenshots.

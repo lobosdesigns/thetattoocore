@@ -28,6 +28,22 @@
   "name": "TheTattooCore",
   "orientation": "portrait",
   "scope": "/",
+  "screenshots": [
+    {
+      "form_factor": "narrow",
+      "label": "TheTattooCore mobile 4U feed preview",
+      "sizes": "540x960",
+      "src": "/screenshots/mobile-home.png",
+      "type": "image/png"
+    },
+    {
+      "form_factor": "wide",
+      "label": "TheTattooCore desktop community preview",
+      "sizes": "1280x720",
+      "src": "/screenshots/desktop-home.png",
+      "type": "image/png"
+    }
+  ],
   "short_name": "TTC",
   "shortcuts": [
     {
