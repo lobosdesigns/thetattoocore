@@ -64,7 +64,7 @@ const sections = [
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen bg-[#f7f4ef] px-4 py-8 text-[#171412]">
+    <main className="ttc-page min-h-screen px-4 py-8">
       <article className="mx-auto max-w-3xl">
         <div className="mb-8 flex items-center justify-between gap-4">
           <Link href="/" aria-label="TheTattooCore home">
@@ -78,7 +78,7 @@ export default function PrivacyPage() {
           </Link>
         </div>
 
-        <div className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5 sm:p-7">
+        <div className="ttc-card ttc-page-panel rounded-lg border border-[var(--card-rim)] p-5 sm:p-7">
           <p className="text-sm font-semibold uppercase text-[#766d62]">
             {siteName}
           </p>
