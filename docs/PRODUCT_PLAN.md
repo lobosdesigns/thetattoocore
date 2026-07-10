@@ -121,7 +121,7 @@
 
 ## Verification
 
-- Start with free/low-cost verification: confirmed email, 18+ self-attestation, profile completeness, and optional manual artist/shop review.
+- Start with free/low-cost verification: confirmed email, 18+ self-attestation, profile completeness, and optional manual artist/shop review. Done for launch with email confirmation, profile readiness checks, 18+ account gates, and manual artist/studio/vendor license review.
 - Add public verification badges later for artists, studios, vendors, and advertisers. Started for launch for license-verified artists, studios, and vendors.
 - Verification levels:
   - Email verified: user confirmed email address.
