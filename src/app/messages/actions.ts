@@ -300,15 +300,20 @@ export async function startConversation(formData: FormData) {
 
     conversationId = conversation.id;
 
-    const { error: membersError } = await supabase
+    const { error: creatorMemberError } = await supabase
       .from("conversation_members")
-      .insert([
-        { conversation_id: conversationId, user_id: userId },
-        { conversation_id: conversationId, user_id: targetProfile.id },
-      ]);
+      .insert({ conversation_id: conversationId, user_id: userId });
 
-    if (membersError) {
-      redirect(messagesPath(membersError.message, conversationId));
+    if (creatorMemberError) {
+      redirect(messagesPath(creatorMemberError.message, conversationId));
+    }
+
+    const { error: targetMemberError } = await supabase
+      .from("conversation_members")
+      .insert({ conversation_id: conversationId, user_id: targetProfile.id });
+
+    if (targetMemberError) {
+      redirect(messagesPath(targetMemberError.message, conversationId));
     }
   }
 
