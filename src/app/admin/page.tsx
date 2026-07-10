@@ -153,17 +153,17 @@ type AdCampaign = {
 };
 
 const adminTabs = [
-  [Activity, "Overview"],
-  [Users, "Users"],
-  [ShieldCheck, "Verification"],
-  [Trash2, "Data Requests"],
-  [Flag, "Reports"],
-  [ImageIcon, "Content"],
-  [ImageIcon, "Media Ops"],
-  [BriefcaseBusiness, "Gigs"],
-  [ShoppingBag, "Marketplace"],
-  [Megaphone, "Ads"],
-  [Mail, "Mail Settings"],
+  [Activity, "Overview", "/admin#overview"],
+  [Users, "Users", "/admin/users"],
+  [ShieldCheck, "Verification", "/admin#verification"],
+  [Trash2, "Data Requests", "/admin#data-requests"],
+  [Flag, "Reports", "/admin#reports"],
+  [ImageIcon, "Content", "/admin#content"],
+  [ImageIcon, "Media Ops", "/admin#media-ops"],
+  [BriefcaseBusiness, "Gigs", "/admin#gigs"],
+  [ShoppingBag, "Marketplace", "/admin#marketplace"],
+  [Megaphone, "Ads", "/admin#ads"],
+  [Mail, "Mail Settings", "/admin#mail-settings"],
 ] as const;
 
 const mediaOpsStages = [
@@ -1847,10 +1847,10 @@ export default async function AdminPage({
           </div>
 
           <nav className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto pb-1 lg:mx-0 lg:grid lg:grid-cols-1 lg:overflow-visible">
-            {adminTabs.map(([Icon, label]) => (
+            {adminTabs.map(([Icon, label, href]) => (
               <a
                 className="flex h-11 shrink-0 items-center gap-3 rounded-md border border-white/10 bg-white/5 px-3 text-sm font-semibold text-[#f7f4ef] backdrop-blur hover:border-[#c8953b]/60 hover:bg-[#c8953b]/15 lg:w-full"
-                href={`#${label.toLowerCase().replaceAll(" ", "-")}`}
+                href={href}
                 key={label}
               >
                 <Icon className="size-5 text-[#c8953b]" />
@@ -1892,10 +1892,10 @@ export default async function AdminPage({
           </header>
 
           <nav className="no-scrollbar sticky top-0 z-10 -mx-4 mb-6 flex gap-2 overflow-x-auto border-y border-[#cfc8bd] bg-[#ece8df]/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:hidden">
-            {adminTabs.map(([Icon, label]) => (
+            {adminTabs.map(([Icon, label, href]) => (
               <a
                 className="flex h-10 shrink-0 items-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9]/90 px-3 text-xs font-bold shadow-sm"
-                href={`#${label.toLowerCase().replaceAll(" ", "-")}`}
+                href={href}
                 key={label}
               >
                 <Icon className="size-4 text-[#c8953b]" />
@@ -1936,8 +1936,25 @@ export default async function AdminPage({
               >
                 <div className="mb-4 flex items-center gap-3">
                   <Users className="size-5" />
-                  <h2 className="text-lg font-bold">Users and roles</h2>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-lg font-bold">Users and roles</h2>
+                    <p className="text-xs text-[#766d62]">
+                      Dashboard preview. Use the full page for paged account review.
+                    </p>
+                  </div>
+                  <Link
+                    className="hidden h-9 shrink-0 items-center rounded-md border border-[#cfc8bd] bg-white px-3 text-xs font-bold sm:flex"
+                    href="/admin/users"
+                  >
+                    Full users page
+                  </Link>
                 </div>
+                <Link
+                  className="mb-4 flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-3 text-sm font-bold sm:hidden"
+                  href="/admin/users"
+                >
+                  Open full Users page
+                </Link>
                 {!canManageRoles ? (
                   <p className="mb-4 rounded-md border border-[#e5ded4] bg-white p-3 text-sm text-[#4f473f]">
                     Owner role required to promote admins or moderators.

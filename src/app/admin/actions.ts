@@ -77,6 +77,24 @@ function adminMessage(message: string) {
   return `/admin?message=${encodeURIComponent(message)}#content`;
 }
 
+function adminUsersMessage(message: string, returnTo?: string) {
+  const safeReturnTo =
+    returnTo?.startsWith("/admin/users") || returnTo === "/admin"
+      ? returnTo
+      : "/admin#users";
+  const separator = safeReturnTo.includes("?") ? "&" : "?";
+  const hashIndex = safeReturnTo.indexOf("#");
+
+  if (hashIndex >= 0) {
+    const base = safeReturnTo.slice(0, hashIndex);
+    const hash = safeReturnTo.slice(hashIndex);
+
+    return `${base}${separator}message=${encodeURIComponent(message)}${hash}`;
+  }
+
+  return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
+}
+
 function cleanText(value: FormDataEntryValue | null, maxLength: number) {
   return String(value ?? "")
     .trim()
@@ -137,16 +155,17 @@ async function requireOwner() {
 
 export async function changeUserRole(formData: FormData) {
   const profileId = cleanText(formData.get("profile_id"), 80);
+  const returnTo = cleanText(formData.get("return_to"), 120);
   const role = cleanText(formData.get("role"), 40) as UserRole;
 
   if (!profileId || !roleStatuses.has(role)) {
-    redirect("/admin?message=Choose a valid user and role.#users");
+    redirect(adminUsersMessage("Choose a valid user and role.", returnTo));
   }
 
   const { supabase, userId } = await requireOwner();
 
   if (profileId === userId && role !== "owner") {
-    redirect("/admin?message=Owners cannot demote their own account.#users");
+    redirect(adminUsersMessage("Owners cannot demote their own account.", returnTo));
   }
 
   const { data: target, error: targetError } = await supabase
@@ -157,9 +176,10 @@ export async function changeUserRole(formData: FormData) {
 
   if (targetError || !target) {
     redirect(
-      `/admin?message=${encodeURIComponent(
+      adminUsersMessage(
         targetError?.message || "Profile was not found.",
-      )}#users`,
+        returnTo,
+      ),
     );
   }
 
@@ -173,9 +193,7 @@ export async function changeUserRole(formData: FormData) {
 
   if (updateError) {
     redirect(
-      `/admin?message=${encodeURIComponent(
-        updateError.message || "Could not update role.",
-      )}#users`,
+      adminUsersMessage(updateError.message || "Could not update role.", returnTo),
     );
   }
 
@@ -191,22 +209,24 @@ export async function changeUserRole(formData: FormData) {
   });
 
   revalidatePath("/admin");
-  redirect("/admin?message=User role updated.#users");
+  revalidatePath("/admin/users");
+  redirect(adminUsersMessage("User role updated.", returnTo));
 }
 
 export async function changeUserStatus(formData: FormData) {
   const profileId = cleanText(formData.get("profile_id"), 80);
+  const returnTo = cleanText(formData.get("return_to"), 120);
   const status = cleanText(formData.get("status"), 40) as UserStatus;
   const note = cleanText(formData.get("note"), 500);
 
   if (!profileId || !userStatuses.has(status)) {
-    redirect("/admin?message=Choose a valid user and status.#users");
+    redirect(adminUsersMessage("Choose a valid user and status.", returnTo));
   }
 
   const { supabase, userId } = await requireModerator();
 
   if (profileId === userId && status !== "active") {
-    redirect("/admin?message=You cannot suspend or ban your own account.#users");
+    redirect(adminUsersMessage("You cannot suspend or ban your own account.", returnTo));
   }
 
   const { data: target, error: targetError } = await supabase
@@ -221,9 +241,10 @@ export async function changeUserStatus(formData: FormData) {
 
   if (targetError || !target) {
     redirect(
-      `/admin?message=${encodeURIComponent(
+      adminUsersMessage(
         targetError?.message || "Profile was not found.",
-      )}#users`,
+        returnTo,
+      ),
     );
   }
 
@@ -257,9 +278,10 @@ export async function changeUserStatus(formData: FormData) {
 
   if (updateError) {
     redirect(
-      `/admin?message=${encodeURIComponent(
+      adminUsersMessage(
         updateError.message || "Could not update user status.",
-      )}#users`,
+        returnTo,
+      ),
     );
   }
 
@@ -283,7 +305,8 @@ export async function changeUserStatus(formData: FormData) {
   });
 
   revalidatePath("/admin");
-  redirect("/admin?message=User status updated.#users");
+  revalidatePath("/admin/users");
+  redirect(adminUsersMessage("User status updated.", returnTo));
 }
 
 export async function moderateContent(formData: FormData) {
