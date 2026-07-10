@@ -12,6 +12,7 @@ const stanceItems = [
   ["No AI feed", "No AI art, AI search, or AI creator replacement."],
   ["No scratchers", "Unsafe or unlicensed tattooing is not welcome."],
   ["Pro Stuff", "Buy, sell, trade, and vendor contact require verification."],
+  ["Independent core", "Built for body-art people, not corporate takeover."],
 ] as const;
 
 export const metadata: Metadata = {
