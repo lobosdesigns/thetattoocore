@@ -77,9 +77,9 @@
 
 ## Global Availability
 
-- Add account-level language preference and country settings early.
-- Start with manual UI language selection, then add translated UI strings.
-- Expand launch country/language options conservatively while keeping manual selection simple and reversible.
+- Add account-level language preference and country settings early. Done for launch.
+- Start with manual UI language selection, then add translated UI strings. Started for launch with stored language preference and document language signals.
+- Expand launch country/language options conservatively while keeping manual selection simple and reversible. Done for launch with approved country/language lists shared by account and ad forms.
 - Later add post-level translation using a provider-backed translation service, with original text preserved.
 - Avoid auto-translating tattoo terms blindly where context matters; show original text when requested.
 - Support country availability by feature where local law, payments, marketplace rules, or content rules require it.
@@ -140,7 +140,7 @@
 
 ## Location And Discovery
 
-- Store user-selected city, region, country code, and language preference.
+- Store user-selected city, region, country code, and language preference. Done for launch.
 - Ask before using precise browser geolocation.
 - Keep coarse typed location useful without making precise device GPS a requirement for the basic social app.
 - Use coarse location first for marketplace discovery, event/contest filtering, and ads.
