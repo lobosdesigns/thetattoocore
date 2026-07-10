@@ -16,8 +16,8 @@
 - Report triggers should be labeled enough to reduce false taps; icon-only menus are acceptable only when the surrounding UI makes the report purpose unmistakable. Done for launch with a Flag + Report trigger.
 - Comments and DMs: add richer expression over time, including emoji, GIFs, photo attachments, and simple media attachments in direct messages.
 - DM compose should stay compact on mobile: text and send first, optional photo attachment behind a clear expandable control, with emoji shortcuts and visible length feedback.
-- Photos, feed media, reels, listing media, gig media, and DM attachments should be tappable/clickable and open in an Instagram-style lightbox with zoom for images and focused playback for videos.
-- Lightbox controls should reset cleanly between opens, support Escape/backdrop closing, and explain zoom or playback behavior without cluttering the feed.
+- Photos, feed media, reels, listing media, gig media, and DM attachments should be tappable/clickable and open in an Instagram-style lightbox with zoom for images and focused playback for videos. Done for launch.
+- Lightbox controls should reset cleanly between opens, support Escape/backdrop closing, and explain zoom or playback behavior without cluttering the feed. Done for launch.
 - Stories: add temporary story posts later for artists, studios, vendors, events, and community moments after the core feed, Gossip, Stuff, Gigs, and DMs are stable.
 
 ## Notification Roadmap
@@ -27,7 +27,7 @@
 - Store quiet hours, notification timezone, important-email preference, and push opt-in intent before turning on email/web/native push channels.
 - Add transactional email only for important account, verification, security, and marketplace/gig events before adding noisy social email.
 - Add PWA web push after the app is installable and core flows are stable; Android and desktop Chrome are the easiest starting path, while iPhone installed-PWA push has more limits.
-- Add installability before push: web app manifest, app icon, standalone display, mobile theme color, and shortcuts for 4U, DMs, and alerts.
+- Add installability before push: web app manifest, app icon, standalone display, mobile theme color, and shortcuts for 4U, DMs, and alerts. Done for launch.
 - Add native app push after mobile app builds exist: APNs for iOS and Firebase Cloud Messaging for Android.
 - Later store push device tokens separately from profile preferences, with per-device opt-out, token revocation, and no plaintext secrets in the public client.
 - Push should respect quiet hours and category preferences before launch so the app does not feel spammy.
@@ -44,7 +44,7 @@
 - Support freedom of body-art expression and avoid unnecessary censorship when content follows safety, consent, legality, and adult-content guidelines.
 - Draw firm safety lines around pornography, sexualized content, exploitation, minors, harassment, scams, unsafe practices, and content showing unprofessional or potentially deadly harm.
 - Position the community as a safe space for body-art culture to express itself without unwanted AI, spam, or unprofessional practice watering it down.
-- Blocking should hide profile content from the blocker, remove follow relationships, and prevent new DMs in either direction.
+- Blocking should hide profile content from the blocker, remove follow relationships, and prevent new DMs in either direction. Done for launch.
 - Launch trust surfaces should repeat these values in user-facing places, including `/login`, `/terms`, `/privacy`, account verification, and account advertising settings.
 
 ## Visual Direction
