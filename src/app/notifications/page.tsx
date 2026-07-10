@@ -12,6 +12,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { ProfileAvatar } from "@/app/profile-avatar";
 import {
   markAllNotificationsRead,
   markNotificationRead,
@@ -42,6 +43,7 @@ type Notification = {
     | "thread_comment"
     | "thread_like";
   profiles: {
+    avatar_url: string | null;
     display_name: string;
     username: string;
   } | null;
@@ -129,7 +131,7 @@ export default async function NotificationsPage() {
   const { data: notifications } = await supabase
     .from("notifications")
     .select(
-      "id, actor_id, subject_id, type, subject_type, title, body, href, read_at, created_at, profiles:profiles!notifications_actor_id_fkey(display_name, username)",
+      "id, actor_id, subject_id, type, subject_type, title, body, href, read_at, created_at, profiles:profiles!notifications_actor_id_fkey(avatar_url, display_name, username)",
     )
     .eq("recipient_id", claims.sub)
     .order("created_at", { ascending: false })
@@ -243,8 +245,15 @@ export default async function NotificationsPage() {
                     notification.read_at ? "bg-[#f2f1ee]" : "bg-[#fffdf9]"
                   }`}
                 >
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-white text-[#171412]">
-                    <Icon className="size-5" />
+                  <div className="relative shrink-0">
+                    <ProfileAvatar
+                      className="border border-[#cfc8bd]"
+                      profile={notification.profiles}
+                      size="md"
+                    />
+                    <span className="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-md border border-[#cfc8bd] bg-white text-[#171412] shadow-sm">
+                      <Icon className="size-3" />
+                    </span>
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
