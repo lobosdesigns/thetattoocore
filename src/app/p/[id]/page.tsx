@@ -24,6 +24,7 @@ import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { PendingSubmitButton } from "@/app/pending-submit-button";
+import { ProfileAvatar } from "@/app/profile-avatar";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { SensitiveContentGate } from "@/app/sensitive-content-gate";
 import { ShareActions } from "@/app/share-actions";
@@ -44,6 +45,7 @@ type Claims = {
 
 type Profile = {
   account_type: string;
+  avatar_url?: string | null;
   display_name: string;
   id: string;
   license_verified_at: string | null;
@@ -84,7 +86,7 @@ type PostComment = {
   parent_id: string | null;
   post_comment_hides: { hidden_by: string }[] | { hidden_by: string } | null;
   post_comment_likes: PostLike[];
-  profiles: Pick<Profile, "display_name" | "id" | "username"> | null;
+  profiles: Pick<Profile, "avatar_url" | "display_name" | "id" | "username"> | null;
 };
 
 type PostLike = {
@@ -166,7 +168,7 @@ async function getPost(id: string) {
   const { data } = await supabase
     .from("feed_posts")
     .select(
-      "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, parent_id, deleted_at, created_at, post_comment_hides(hidden_by), post_comment_likes(user_id), profiles:profiles!post_comments_author_id_fkey(id, display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, account_type, license_verified_at)",
+      "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, parent_id, deleted_at, created_at, post_comment_hides(hidden_by), post_comment_likes(user_id), profiles:profiles!post_comments_author_id_fkey(id, avatar_url, display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -561,21 +563,26 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                           className="border-t border-[#e5ded4] pt-3 text-sm"
                           key={comment.id}
                         >
-                          <p className="font-semibold">
-                            {comment.profiles?.username ? (
-                              <Link
-                                className="hover:underline"
-                                href={`/u/${comment.profiles.username}`}
-                              >
-                                {comment.profiles.display_name ?? "Member"}
-                              </Link>
-                            ) : (
-                              "Member"
-                            )}
-                          </p>
-                          <p className="mt-1 leading-5 text-[#4f473f]">
-                            {comment.body}
-                          </p>
+                          <div className="flex items-start gap-2">
+                            <ProfileAvatar profile={comment.profiles} size="sm" />
+                            <div className="min-w-0 flex-1">
+                              <p className="font-semibold">
+                                {comment.profiles?.username ? (
+                                  <Link
+                                    className="hover:underline"
+                                    href={`/u/${comment.profiles.username}`}
+                                  >
+                                    {comment.profiles.display_name ?? "Member"}
+                                  </Link>
+                                ) : (
+                                  "Member"
+                                )}
+                              </p>
+                              <p className="mt-1 break-words leading-5 text-[#4f473f]">
+                                {comment.body}
+                              </p>
+                            </div>
+                          </div>
                           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs font-semibold text-[#766d62]">
                             <form action={togglePostCommentLike}>
                               <input
@@ -763,12 +770,18 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                     key={reply.id}
                                   >
                                     <div className="flex items-start justify-between gap-2">
-                                      <p className="min-w-0 flex-1">
-                                        <span className="font-semibold text-[#171412]">
-                                          {reply.profiles?.display_name ?? "Member"}
-                                        </span>{" "}
-                                        {reply.body}
-                                      </p>
+                                      <div className="flex min-w-0 flex-1 items-start gap-2">
+                                        <ProfileAvatar
+                                          profile={reply.profiles}
+                                          size="sm"
+                                        />
+                                        <p className="min-w-0 flex-1 break-words">
+                                          <span className="font-semibold text-[#171412]">
+                                            {reply.profiles?.display_name ?? "Member"}
+                                          </span>{" "}
+                                          {reply.body}
+                                        </p>
+                                      </div>
                                       <form action={togglePostCommentLike}>
                                         <input
                                           name="comment_id"

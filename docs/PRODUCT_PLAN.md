@@ -20,7 +20,7 @@
 - Search and Saved should mention Merch as planned/coming soon until products, seller approval, checkout, tax, shipping, refunds, and payment-provider rules are built.
 - Mobile composer: posting cards must fit mobile browser screens, scroll to the publish button, and keep advanced fields behind expandable sections. Done for launch.
 - Composer uploads should not show a sensitive-content option during launch; visible nudity is not allowed, so members must crop or cover private areas before posting.
-- Profiles need avatar/profile-photo upload with client-side image optimization, public display on profile pages, and later rollout into feeds, comments, DMs, search, and notifications. Done for launch.
+- Profiles need avatar/profile-photo upload with client-side image optimization, public display on profile pages, and rollout into feeds, comments, DMs, search, notifications, and detail pages. Done for launch, including 4U/Gossip detail comments.
 - Reporting: report controls should look like a small intentional action, then open a separate report card or dropdown so users do not confuse it with normal post options.
 - Mobile report menus must stay inside the viewport; three-dot report cards in 4U, Gossip, Stuff, Gigs, and profiles should not open off-screen on narrow browsers. Done for launch by using an inline report panel.
 - Report triggers should be labeled enough to reduce false taps; icon-only menus are acceptable only when the surrounding UI makes the report purpose unmistakable. Done for launch with a Flag + Report trigger.
