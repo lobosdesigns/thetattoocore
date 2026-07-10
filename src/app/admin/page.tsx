@@ -8,6 +8,7 @@ import {
   ImageIcon,
   Mail,
   Megaphone,
+  Package,
   ShieldCheck,
   ShoppingBag,
   Trash2,
@@ -150,6 +151,7 @@ const adminTabs = [
   [ImageIcon, "Media Ops", "/admin/media-ops"],
   [BriefcaseBusiness, "Gigs", "/admin/gigs"],
   [ShoppingBag, "Stuff", "/admin/stuff"],
+  [Package, "Merch", "/admin/merch"],
   [Megaphone, "Ads", "/admin/ads"],
   [Mail, "Mail Settings", "/admin/mail-settings"],
 ] as const;
@@ -1137,6 +1139,14 @@ export default async function AdminPage({
       href: "/admin/gigs",
       label: "Gigs",
       meta: `${gigReview?.length ?? 0} latest review signals`,
+    },
+    {
+      action: "Open Merch",
+      body: "Public-buyable artist, studio, vendor, and official TTC merchandise is planned separately from professional Stuff.",
+      count: 0,
+      href: "/admin/merch",
+      label: "Merch",
+      meta: "Catalog, seller approval, checkout, tax, shipping, and refunds planned",
     },
     {
       action: "Open mail",
