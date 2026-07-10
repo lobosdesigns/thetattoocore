@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   BadgeCheck,
+  ChevronLeft,
+  ChevronRight,
   LockKeyhole,
   UserPlus,
   Users,
@@ -45,6 +47,8 @@ type FollowListRow = {
   > | null;
 };
 
+const pageSize = 50;
+
 function isVerifiedProfile(
   profile: Pick<Profile, "account_type" | "license_verified_at">,
 ) {
@@ -65,14 +69,78 @@ function otherKind(kind: FollowListKind): FollowListKind {
   return kind === "followers" ? "following" : "followers";
 }
 
+function pageNumber(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+  const parsed = Number.parseInt(rawValue ?? "1", 10);
+
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+}
+
+function pageHref(username: string, kind: FollowListKind, page: number) {
+  return `/u/${username}/${kind}?page=${page}`;
+}
+
+function Pagination({
+  currentPage,
+  hasNextPage,
+  kind,
+  profileUsername,
+  totalPages,
+}: {
+  currentPage: number;
+  hasNextPage: boolean;
+  kind: FollowListKind;
+  profileUsername: string;
+  totalPages: number;
+}) {
+  return (
+    <nav className="flex flex-col gap-3 rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm font-semibold text-[#4f473f]">
+        Page {currentPage} of {Math.max(totalPages, 1)}
+      </p>
+      <div className="grid grid-cols-2 gap-2 sm:flex">
+        <Link
+          aria-disabled={currentPage <= 1}
+          className={`flex h-10 items-center justify-center gap-2 rounded-md border px-3 text-sm font-semibold ${
+            currentPage <= 1
+              ? "pointer-events-none border-[#e5ded4] bg-[#f7f4ef] text-[#a69b8d]"
+              : "border-[#cfc8bd] bg-white text-[#171412]"
+          }`}
+          href={pageHref(profileUsername, kind, Math.max(1, currentPage - 1))}
+        >
+          <ChevronLeft className="size-4" />
+          Previous
+        </Link>
+        <Link
+          aria-disabled={!hasNextPage}
+          className={`flex h-10 items-center justify-center gap-2 rounded-md border px-3 text-sm font-semibold ${
+            !hasNextPage
+              ? "pointer-events-none border-[#e5ded4] bg-[#f7f4ef] text-[#a69b8d]"
+              : "border-[#171412] bg-[#171412] text-white"
+          }`}
+          href={pageHref(profileUsername, kind, currentPage + 1)}
+        >
+          Next 50
+          <ChevronRight className="size-4" />
+        </Link>
+      </div>
+    </nav>
+  );
+}
+
 export async function FollowListPage({
   kind,
+  page,
   username,
 }: {
   kind: FollowListKind;
+  page?: string | string[];
   username: string;
 }) {
   const cleanUsername = username.replace(/^@/, "").toLowerCase();
+  const currentPage = pageNumber(page);
+  const from = (currentPage - 1) * pageSize;
+  const to = from + pageSize - 1;
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -121,21 +189,27 @@ export async function FollowListPage({
           .from("follows")
           .select(
             "created_at, profiles:profiles!follows_follower_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
+            { count: "exact" },
           )
           .eq("following_id", profile.id)
       : supabase
           .from("follows")
           .select(
             "created_at, profiles:profiles!follows_following_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
+            { count: "exact" },
           )
           .eq("follower_id", profile.id);
-  const { data: rows } = canView
+  const { count: listCount, data: rows } = canView
     ? await listQuery
         .eq("status", "accepted")
         .order("created_at", { ascending: false })
-        .limit(100)
+        .range(from, to)
         .returns<FollowListRow[]>()
-    : { data: [] as FollowListRow[] };
+    : { count: 0, data: [] as FollowListRow[] };
+  const totalRows =
+    listCount ?? (kind === "followers" ? followerCount : followingCount) ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
+  const hasNextPage = currentPage < totalPages;
   const visibleRows = (rows ?? []).filter((row) => row.profiles);
 
   return (
@@ -198,6 +272,23 @@ export async function FollowListPage({
           </div>
         </section>
 
+        {canView ? (
+          <section className="px-4 pt-5">
+            <Pagination
+              currentPage={currentPage}
+              hasNextPage={hasNextPage}
+              kind={kind}
+              profileUsername={profile.username}
+              totalPages={totalPages}
+            />
+            <p className="mt-3 text-sm text-[#766d62]">
+              Showing{" "}
+              {visibleRows.length ? `${from + 1}-${from + visibleRows.length}` : "0"}{" "}
+              of {totalRows} {kind}.
+            </p>
+          </section>
+        ) : null}
+
         {!canView ? (
           <section className="px-4 py-8">
             <div className="ttc-card rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-5 text-center">
@@ -245,6 +336,13 @@ export async function FollowListPage({
                 </Link>
               );
             })}
+            <Pagination
+              currentPage={currentPage}
+              hasNextPage={hasNextPage}
+              kind={kind}
+              profileUsername={profile.username}
+              totalPages={totalPages}
+            />
           </section>
         ) : (
           <section className="px-4 py-8">

@@ -11,10 +11,15 @@ export const metadata: Metadata = {
 
 export default async function FollowingPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ username: string }>;
+  searchParams: Promise<{ page?: string | string[] }>;
 }) {
   const { username } = await params;
+  const search = await searchParams;
 
-  return <FollowListPage kind="following" username={username} />;
+  return (
+    <FollowListPage kind="following" page={search.page} username={username} />
+  );
 }
