@@ -12,6 +12,7 @@
 - Notifications: in-app alerts and unread badges first, important email second, PWA browser push third, then native APNs/FCM push for iOS and Android apps.
 - Composer: one floating plus button that opens the correct posting form for the current column.
 - Main column swiping should snap one column at a time. A horizontal swipe should land on the next column and stop instead of sliding quickly across multiple sections. Done for launch with a controlled mobile snap rail.
+- Column order for launch planning is 4U, Gossip, Stuff, Gigs, Merch, then DM. Merch can stay as a planned placeholder until seller approval, checkout, tax, shipping, refunds, and payment-provider rules are built.
 - Mobile composer: posting cards must fit mobile browser screens, scroll to the publish button, and keep advanced fields behind expandable sections. Done for launch.
 - Composer uploads should not show a sensitive-content option during launch; visible nudity is not allowed, so members must crop or cover private areas before posting.
 - Profiles need avatar/profile-photo upload with client-side image optimization, public display on profile pages, and later rollout into feeds, comments, DMs, search, and notifications. Done for launch.

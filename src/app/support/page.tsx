@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 const sections = [
   {
     body:
-      "Use the in-app Report button on posts, profiles, Stuff, Gigs, and Gossip whenever possible. Reports go to the moderation queue with the content attached.",
+      "Use the in-app Report button on posts, profiles, Stuff, Gigs, Merch, and Gossip whenever possible. Reports go to the moderation queue with the content attached.",
     title: "Safety And Reports",
   },
   {
@@ -24,6 +24,11 @@ const sections = [
     body:
       "Signed-in members can request account deletion from Account > Data. During launch, deletion requests are reviewed manually so safety reports, marketplace issues, fraud concerns, and legal obligations can be handled correctly. The launch target is to review deletion requests within 30 days unless a safety, dispute, or legal hold requires more time.",
     title: "Account Deletion",
+  },
+  {
+    body:
+      "Merch is planned but not live for checkout yet. Artist, studio, vendor, and official TheTattooCore merchandise will need seller approval, product safety review, shipping and refund rules, and payment-provider review before purchases are enabled.",
+    title: "Merch Support",
   },
   {
     body:

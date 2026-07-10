@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 const sections = [
   {
     body:
-      "Profiles, selected public posts, marketplace listings, and gigs may be visible to other members and, where allowed, search engines. Account settings, private profile data, admin tools, draft content, and messages are not meant for public indexing.",
+      "Profiles, selected public posts, marketplace listings, gigs, and future public Merch items may be visible to other members and, where allowed, search engines. Account settings, private profile data, admin tools, draft content, and messages are not meant for public indexing.",
     title: "What Can Be Public",
   },
   {
@@ -28,6 +28,11 @@ const sections = [
     body:
       "License, certification, and business documents for artists, studios, and vendors are private review materials. They should be visible only to the submitting account and authorized admins or moderators who need them for verification decisions.",
     title: "Verification Documents",
+  },
+  {
+    body:
+      "Merch is planned as a separate public-buyable area for approved artist, studio, vendor, and TheTattooCore brand goods. Before Merch turns on, checkout, tax, shipping, refunds, seller approval, payment-provider rules, and buyer privacy notices need to be completed.",
+    title: "Future Merch",
   },
   {
     body:
