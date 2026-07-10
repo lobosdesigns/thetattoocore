@@ -33,8 +33,8 @@
 ## Notification Roadmap
 
 - Keep the MVP notification system in-app first: unread badges, notification center, DMs, new followers, follow requests, comments, likes, verification decisions, Stuff seller messages, and Gigs activity. New follower, follow request, follow approval, message, comment, like, and verification decision notifications are ready for launch.
-- Store notification preferences on the profile now so the same choices can later control email, web push, and native push.
-- Store quiet hours, notification timezone, important-email preference, and push opt-in intent before turning on email/web/native push channels.
+- Store notification preferences on the profile now so the same choices can later control email, web push, and native push. Done for launch with saved category preferences.
+- Store quiet hours, notification timezone, important-email preference, and push opt-in intent before turning on email/web/native push channels. Done for launch as saved account settings and notification-center summaries.
 - Add transactional email only for important account, verification, security, and marketplace/gig events before adding noisy social email. Started with account deletion request confirmations.
 - Add PWA web push after the app is installable and core flows are stable; Android and desktop Chrome are the easiest starting path, while iPhone installed-PWA push has more limits.
 - Add installability before push: web app manifest, app icon, standalone display, mobile theme color, and shortcuts for 4U, DMs, and alerts. Done for launch.
@@ -69,7 +69,7 @@
 - Avoid a flat beige-only look; the brand should feel like a modern creative community, not a generic marketplace.
 - Continue pushing the app toward a sleeker, darker, higher-contrast social look with more pop, sharper mobile controls, and a stronger younger-crowd feel.
 - Add more tech-forward polish across the app: layered opacity, stronger card borders, cleaner shadows, darker chrome, sharper active states, and less plain beige surface area. Started with global font, card-rim, grid-line, and shadow refinements.
-- Add user-selectable appearance settings for Light, Dark, and System mode. Started for launch with instant local switching plus profile-stored preference for signed-in users; next is migrating hardcoded colors toward theme tokens so both modes are polished instead of just inverted.
+- Add user-selectable appearance settings for Light, Dark, and System mode. Started for launch with instant local switching plus profile-stored preference for signed-in users; theme-token migration has begun on appearance controls, main column tabs, and the language cue so both modes can become polished instead of just inverted.
 - Notifications and admin need another mobile responsive pass; no panels, buttons, or cards should drift out of frame on narrow browser viewports. Notifications received another mobile containment pass for launch.
 - Admin should move away from one long cluttered page toward clearer tab/menu sections for Overview, Verification, Reports, Users, Ads, Data, Media, and Mail. Done for launch with a compact admin overview and dedicated pages for each major queue.
 - Account/profile editing should follow the same tabbed cleanup direction as admin so profile, language, privacy, notifications, verification, ads, and data do not feel like one long cluttered scroll. Started for launch with sticky account tabs and tabbed profile sub-sections.
