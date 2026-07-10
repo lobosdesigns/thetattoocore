@@ -766,16 +766,20 @@ export async function generateMetadata({
   const shareImageMedia = sharePost?.feed_media.find(
     (media) => media.media_type === "image",
   );
-  const profileShareImage = profile.avatar_url
-    ? profile.avatar_url
-    : shareImageMedia
-      ? mediaUrl(shareImageMedia.storage_bucket, shareImageMedia.storage_path)
-      : brandShareImage;
-  const profileShareImageAlt = profile.avatar_url
-    ? `${profile.display_name} profile photo on ${siteName}`
-    : shareImageMedia
-      ? `${profile.display_name} public tattoo work on ${siteName}`
-      : brandShareImageAlt;
+  const profileShareImage = profile.is_private
+    ? brandShareImage
+    : profile.avatar_url
+      ? profile.avatar_url
+      : shareImageMedia
+        ? mediaUrl(shareImageMedia.storage_bucket, shareImageMedia.storage_path)
+        : brandShareImage;
+  const profileShareImageAlt = profile.is_private
+    ? brandShareImageAlt
+    : profile.avatar_url
+      ? `${profile.display_name} profile photo on ${siteName}`
+      : shareImageMedia
+        ? `${profile.display_name} public tattoo work on ${siteName}`
+        : brandShareImageAlt;
 
   return {
     alternates: {
