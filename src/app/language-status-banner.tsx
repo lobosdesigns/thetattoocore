@@ -45,14 +45,14 @@ export function LanguageStatusBanner({
   if (isHidden) return null;
 
   return (
-    <section className="border-b border-[#d8d1c6] bg-[#fffdf9] px-4 py-3">
+    <section className="ttc-surface border-b px-4 py-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm leading-5 text-[#4f473f]">
+        <p className="text-sm leading-5">
           Language preference: <span className="font-semibold">{label}</span>.
           Posts stay in original text for now.
         </p>
         <Link
-          className="w-fit rounded-md border border-[#cfc8bd] bg-white px-3 py-2 text-xs font-semibold"
+          className="ttc-surface w-fit rounded-md border px-3 py-2 text-xs font-semibold hover:border-[var(--accent)]"
           href="/account#language-settings"
         >
           Language settings

@@ -70,7 +70,7 @@ export function ColumnTabs({ unreadDmCount = 0 }: { unreadDmCount?: number }) {
   return (
     <nav
       aria-label="Main columns"
-      className="flex gap-2 overflow-x-auto border-b border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 shadow-[inset_0_-1px_0_rgba(23,20,18,0.04)]"
+      className="flex gap-2 overflow-x-auto border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_90%,var(--background))] px-4 py-3 shadow-[inset_0_-1px_0_rgba(23,20,18,0.04)]"
     >
       {tabs.map((tab) => {
         const isActive = tab.id === activeId;
@@ -80,8 +80,8 @@ export function ColumnTabs({ unreadDmCount = 0 }: { unreadDmCount?: number }) {
             aria-current={isActive ? "page" : undefined}
             className={`flex h-9 shrink-0 items-center rounded-md border px-4 text-sm font-medium transition ${
               isActive
-                ? "border-[#171412] bg-[#171412] text-white shadow-[0_6px_16px_rgba(23,20,18,0.16)]"
-                : "border-[#cfc8bd] bg-[#fffdf9] text-[#171412] hover:border-[#c8953b]"
+                ? "ttc-control-active shadow-[0_6px_16px_rgba(23,20,18,0.16)]"
+                : "ttc-surface hover:border-[var(--accent)]"
             }`}
             href={tab.href}
             key={tab.label}
@@ -94,8 +94,8 @@ export function ColumnTabs({ unreadDmCount = 0 }: { unreadDmCount?: number }) {
               <span
                 className={`ml-2 flex min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
                   isActive
-                    ? "bg-white text-[#171412]"
-                    : "bg-[#171412] text-white"
+                    ? "bg-[var(--background)] text-[var(--foreground)]"
+                    : "bg-[var(--foreground)] text-[var(--background)]"
                 }`}
               >
                 {unreadDmCount > 9 ? "9+" : unreadDmCount}
