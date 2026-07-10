@@ -52,6 +52,12 @@ export function languageLabel(value?: string | null) {
   );
 }
 
+export function countryLabel(value?: string | null) {
+  const normalized = value?.toUpperCase();
+
+  return countryOptions.find(([code]) => code === normalized)?.[1] ?? normalized ?? "";
+}
+
 export function normalizedLanguage(value?: string | null) {
   return value && languageCodes.has(value) ? value : "en";
 }

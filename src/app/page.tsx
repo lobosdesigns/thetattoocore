@@ -54,7 +54,7 @@ import { SavedItemButton } from "./saved-item-button";
 import { SensitiveContentGate } from "./sensitive-content-gate";
 import { CompactShareButton } from "./share-actions";
 import { WordLimitedField } from "./word-limited-field";
-import { languageLabel, normalizedLanguage } from "@/lib/localization";
+import { countryLabel, languageLabel, normalizedLanguage } from "@/lib/localization";
 import { siteName, siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
@@ -466,7 +466,11 @@ function SponsoredSlot({
   if (!campaign) return null;
 
   const dbPlacement = sponsoredDbPlacement(placement);
-  const location = [campaign.city, campaign.region, campaign.country_code]
+  const location = [
+    campaign.city,
+    campaign.region,
+    countryLabel(campaign.country_code),
+  ]
     .filter(Boolean)
     .join(", ");
   const targetingSummary = [

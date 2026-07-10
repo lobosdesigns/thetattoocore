@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ArrowLeft, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
 import { updateAdCampaignStatus } from "../actions";
+import { countryLabel, languageLabel } from "@/lib/localization";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -103,6 +104,19 @@ function adLabel(value: string) {
   if (value === "4u") return "4U";
 
   return value.replaceAll("_", " ");
+}
+
+function targetingText(campaign: AdCampaign) {
+  return (
+    [
+      campaign.city,
+      campaign.region,
+      countryLabel(campaign.countryCode),
+      campaign.language ? languageLabel(campaign.language) : null,
+    ]
+      .filter(Boolean)
+      .join(", ") || "Broad"
+  );
 }
 
 function clickRate({ clicks, impressions }: Pick<AdCampaign, "clicks" | "impressions">) {
@@ -220,11 +234,7 @@ function AdCampaignCard({
           <dt className="text-xs font-semibold uppercase text-[#766d62]">
             Targeting
           </dt>
-          <dd className="mt-0.5">
-            {[campaign.city, campaign.region, campaign.countryCode, campaign.language]
-              .filter(Boolean)
-              .join(", ") || "Broad"}
-          </dd>
+          <dd className="mt-0.5">{targetingText(campaign)}</dd>
         </div>
       </dl>
       {campaign.keywords.length ? (
