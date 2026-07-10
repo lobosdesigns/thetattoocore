@@ -324,13 +324,14 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
                       />
                     </MediaLightbox>
                   ) : (
-                    <video
-                      className="aspect-[4/3] w-full scale-[1.02] bg-[#171412] object-contain blur-xl"
-                      controls
-                      playsInline
-                      preload="metadata"
-                      src={mediaSrc ?? undefined}
-                    />
+                    <div className="flex aspect-[4/3] items-center justify-center bg-[radial-gradient(circle_at_50%_30%,rgba(200,149,59,0.24),transparent_16rem),#171412] text-white">
+                      <div className="text-center opacity-45 blur-[1px]">
+                        <LockKeyhole className="mx-auto mb-3 size-12" />
+                        <p className="text-sm font-bold uppercase tracking-[0.18em]">
+                          Sensitive media
+                        </p>
+                      </div>
+                    </div>
                   )
                 ) : (
                   showSensitiveMedia && mediaSrc ? (
@@ -343,12 +344,14 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
                       />
                     </MediaLightbox>
                   ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      alt=""
-                      className="aspect-[4/3] w-full scale-[1.02] bg-[#171412] object-contain blur-xl"
-                      src={mediaSrc ?? undefined}
-                    />
+                    <div className="flex aspect-[4/3] items-center justify-center bg-[radial-gradient(circle_at_50%_30%,rgba(200,149,59,0.24),transparent_16rem),#171412] text-white">
+                      <div className="text-center opacity-45 blur-[1px]">
+                        <LockKeyhole className="mx-auto mb-3 size-12" />
+                        <p className="text-sm font-bold uppercase tracking-[0.18em]">
+                          Sensitive media
+                        </p>
+                      </div>
+                    </div>
                   )
                 )
               ) : (

@@ -20,12 +20,12 @@ function reportDescription(subjectType: ReportSubjectType) {
   return "Report unsafe, scammy, sexual, illegal, harassing, or miscategorized body-art content.";
 }
 
-function optionsLabel(subjectType: ReportSubjectType) {
-  return subjectType === "profile" ? "Profile options" : "Content options";
-}
-
 function reportButtonLabel(subjectType: ReportSubjectType) {
   return subjectType === "profile" ? "Report profile" : "Report";
+}
+
+function reportMenuLabel(subjectType: ReportSubjectType) {
+  return subjectType === "profile" ? "Profile safety menu" : "Content safety menu";
 }
 
 export function ContentReportForm({
@@ -42,9 +42,9 @@ export function ContentReportForm({
   return (
     <details className="group relative inline-block rounded-md">
       <summary
-        aria-label={optionsLabel(subjectType)}
-        className="inline-flex h-9 cursor-pointer list-none items-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-2.5 text-xs font-semibold text-[#4f473f] hover:border-[#c8953b]"
-        title={optionsLabel(subjectType)}
+        aria-label={reportMenuLabel(subjectType)}
+        className="inline-flex h-9 cursor-pointer list-none items-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-2.5 text-xs font-semibold text-[#4f473f] hover:border-[#c8953b] group-open:border-[#c8953b] group-open:bg-[#fff7ec]"
+        title={reportMenuLabel(subjectType)}
       >
         <MoreHorizontal className="size-4" />
         <span>{reportButtonLabel(subjectType)}</span>
@@ -61,6 +61,9 @@ export function ContentReportForm({
         ) : null}
         <p className="text-sm font-bold text-[#171412]">
           {reportTitle(subjectType)}
+        </p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#a06d13]">
+          Safety review
         </p>
         <p className="mb-2 text-xs leading-5 text-[#766d62]">
           {reportDescription(subjectType)}

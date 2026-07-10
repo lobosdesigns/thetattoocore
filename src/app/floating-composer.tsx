@@ -129,6 +129,24 @@ function SensitiveControls() {
   );
 }
 
+function DmAttachmentControl() {
+  return (
+    <ComposerDetails title="Photo attachment">
+      <MediaInput
+        accept={imageAccept}
+        compact
+        maxImageBytes={10 * 1024 * 1024}
+        name="media"
+        videoAllowed={false}
+      />
+      <p className="text-xs leading-5 text-[#766d62]">
+        Photo DMs stay private to the conversation. GIFs are allowed; video DMs
+        can come later with the managed video pipeline.
+      </p>
+    </ComposerDetails>
+  );
+}
+
 export function FloatingComposer({
   canCreate,
   canCreateStuff,
@@ -391,7 +409,11 @@ export function FloatingComposer({
           </form>
         ),
         messages: (
-          <form action={startConversation} className="space-y-3">
+          <form
+            action={startConversation}
+            className="space-y-3"
+            encType="multipart/form-data"
+          >
             <div className="flex items-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3">
               <Search className="size-4 text-[#766d62]" />
               <input
@@ -408,6 +430,7 @@ export function FloatingComposer({
             <WordLimitedField
               as="textarea"
               className="min-h-28 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+              emojiShortcuts
               maxCharacters={4000}
               maxLength={4000}
               minTrimmedLength={1}
@@ -416,6 +439,7 @@ export function FloatingComposer({
               required
               validationMessage="Write a message before sending."
             />
+            <DmAttachmentControl />
             <ComposerSubmit pendingLabel="Sending">
               <Send className="size-4" />
               Send

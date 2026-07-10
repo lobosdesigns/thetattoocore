@@ -157,7 +157,10 @@ export function MediaLightbox({
                 }
                 onClick={(event) => event.stopPropagation()}
                 src={src}
-                style={{ width: zoom === 1 ? undefined : `${zoom * 100}%` }}
+                style={{
+                  cursor: zoom === 1 ? "zoom-in" : "zoom-out",
+                  width: zoom === 1 ? undefined : `${zoom * 100}%`,
+                }}
               />
             )}
           </div>

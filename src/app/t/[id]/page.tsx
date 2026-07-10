@@ -6,6 +6,7 @@ import {
   BadgeCheck,
   Heart,
   ImageIcon,
+  LockKeyhole,
   MessageCircle,
   Send,
 } from "lucide-react";
@@ -320,13 +321,22 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
                     />
                   </MediaLightbox>
                 ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    alt=""
-                    className="aspect-[16/10] w-full scale-[1.02] bg-[#171412] object-contain blur-xl"
-                    src={mediaSrc}
-                  />
+                  <div className="flex aspect-[16/10] items-center justify-center bg-[radial-gradient(circle_at_50%_30%,rgba(200,149,59,0.24),transparent_16rem),#171412] text-white">
+                    <div className="text-center opacity-45 blur-[1px]">
+                      <LockKeyhole className="mx-auto mb-3 size-12" />
+                      <p className="text-sm font-bold uppercase tracking-[0.18em]">
+                        Sensitive media
+                      </p>
+                    </div>
+                  </div>
                 )}
+                {!showThread ? (
+                  <SensitiveContentGate
+                    context="discussion"
+                    isSignedIn={isSignedIn}
+                    returnPath={returnPath}
+                  />
+                ) : null}
               </div>
             ) : null}
 

@@ -623,25 +623,17 @@ function MediaFrame({
     );
   }
 
-  const src = mediaUrl(media.storage_bucket, media.storage_path);
-
   if (isLocked) {
     return (
       <div className="relative overflow-hidden bg-[#171412]">
-        {media.media_type === "video" ? (
-          <video
-            className="aspect-[4/5] w-full scale-[1.03] bg-[#171412] object-cover blur-2xl"
-            muted
-            playsInline
-            preload="metadata"
-            src={src}
-          />
-        ) : (
-          <div
-            className="aspect-[4/5] scale-[1.03] bg-cover bg-center blur-2xl"
-            style={{ backgroundImage: `url(${src})` }}
-          />
-        )}
+        <div className="flex aspect-[4/5] items-center justify-center bg-[radial-gradient(circle_at_50%_30%,rgba(200,149,59,0.24),transparent_16rem),#171412] text-white">
+          <div className="text-center opacity-45 blur-[1px]">
+            <LockKeyhole className="mx-auto mb-3 size-14" />
+            <p className="text-sm font-bold uppercase tracking-[0.18em]">
+              Sensitive media
+            </p>
+          </div>
+        </div>
         <SensitiveContentGate
           isSignedIn={isSignedIn}
           returnPath={returnPath}
@@ -649,6 +641,8 @@ function MediaFrame({
       </div>
     );
   }
+
+  const src = mediaUrl(media.storage_bucket, media.storage_path);
 
   if (media.media_type === "video") {
     return (
@@ -690,22 +684,11 @@ function ListingThumb({
   }
 
   if (isLocked) {
-    const src = mediaUrl(media.storage_bucket, media.storage_path);
-
     return (
       <div className="relative size-11 overflow-hidden rounded-md bg-[#171412] text-white">
-        {media.media_type === "image" ? (
-          <div
-            className="size-full scale-110 bg-cover bg-center blur-md"
-            style={{
-              backgroundImage: `url(${src})`,
-            }}
-          />
-        ) : (
-          <div className="flex size-full items-center justify-center blur-sm">
-            <Video className="size-5" />
-          </div>
-        )}
+        <div className="flex size-full items-center justify-center bg-[#171412] blur-[1px]">
+          <LockKeyhole className="size-5 opacity-70" />
+        </div>
         <div className="absolute inset-0 flex items-center justify-center bg-[#171412]/55">
           <LockKeyhole className="size-4" />
         </div>
@@ -753,17 +736,17 @@ function ThreadImage({
 }) {
   if (!media) return null;
 
-  const src = mediaUrl(media.storage_bucket, media.storage_path);
-
   if (isLocked) {
     return (
       <div className="relative mt-3 overflow-hidden rounded-md border border-[#e5ded4] bg-[#171412]">
-        <div
-          className="aspect-[16/10] scale-[1.03] bg-cover bg-center blur-2xl"
-          style={{
-            backgroundImage: `url(${src})`,
-          }}
-        />
+        <div className="flex aspect-[16/10] items-center justify-center bg-[radial-gradient(circle_at_50%_30%,rgba(200,149,59,0.24),transparent_16rem),#171412] text-white">
+          <div className="text-center opacity-45 blur-[1px]">
+            <LockKeyhole className="mx-auto mb-2 size-10" />
+            <p className="text-xs font-bold uppercase tracking-[0.18em]">
+              Sensitive discussion media
+            </p>
+          </div>
+        </div>
         <SensitiveContentGate
           context="discussion"
           isSignedIn={isSignedIn}
@@ -772,6 +755,8 @@ function ThreadImage({
       </div>
     );
   }
+
+  const src = mediaUrl(media.storage_bucket, media.storage_path);
 
   return (
     <MediaLightbox alt="Gossip thread media" mediaType="image" src={src}>
