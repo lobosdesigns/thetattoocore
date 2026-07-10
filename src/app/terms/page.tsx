@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { LogoLockup } from "../logo-mark";
+import { supportEmail } from "@/lib/site";
 
 export const metadata: Metadata = {
   description:
@@ -93,7 +94,12 @@ export default function TermsPage() {
           <p className="mt-7 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4 text-sm leading-6 text-[#4f473f]">
             This is a working launch policy, not final legal advice. It should
             be reviewed by counsel before major public launch, payments, paid
-            ads, or mobile app store submission.
+            ads, or mobile app store submission. Policy and safety questions
+            can be sent to{" "}
+            <a className="font-semibold underline" href={`mailto:${supportEmail}`}>
+              {supportEmail}
+            </a>
+            .
           </p>
         </div>
       </article>

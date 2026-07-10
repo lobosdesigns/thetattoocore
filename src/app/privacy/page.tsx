@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { LogoLockup } from "../logo-mark";
+import { siteName, supportEmail } from "@/lib/site";
 
 export const metadata: Metadata = {
   description:
@@ -79,7 +80,7 @@ export default function PrivacyPage() {
 
         <div className="rounded-lg border border-[#d8d1c6] bg-[#fffdf9] p-5 sm:p-7">
           <p className="text-sm font-semibold uppercase text-[#766d62]">
-            TheTattooCore
+            {siteName}
           </p>
           <h1 className="mt-2 text-3xl font-bold">Privacy</h1>
           <p className="mt-3 text-sm leading-6 text-[#4f473f]">
@@ -102,7 +103,11 @@ export default function PrivacyPage() {
           <p className="mt-7 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4 text-sm leading-6 text-[#4f473f]">
             This privacy page is a launch foundation and should be reviewed
             before payments, paid ads, app store release, or international
-            expansion.
+            expansion. Privacy requests can be sent to{" "}
+            <a className="font-semibold underline" href={`mailto:${supportEmail}`}>
+              {supportEmail}
+            </a>
+            .
           </p>
         </div>
       </article>
