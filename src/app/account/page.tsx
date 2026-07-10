@@ -1,7 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { submitAdCampaign, submitLicenseVerification } from "./actions";
+import {
+  requestAccountDeletion,
+  submitAdCampaign,
+  submitLicenseVerification,
+} from "./actions";
 import { LicenseDocumentInput } from "./license-document-input";
 import { ProfileForm } from "./profile-form";
 import { PendingSubmitButton } from "../pending-submit-button";
@@ -22,6 +26,7 @@ const accountNavItems = [
   ["#notification-settings", "Notifications"],
   ["#verification-settings", "Verification"],
   ["#advertising-settings", "Advertising"],
+  ["#data-settings", "Data"],
 ] as const;
 
 function AccountSetupGuide({
@@ -318,6 +323,20 @@ export default async function AccountPage({
         title: string;
       }[]
     >();
+  const { data: deletionRequests } = await supabase
+    .from("account_deletion_requests")
+    .select("id, status, requested_at, reviewer_note")
+    .eq("profile_id", claims.sub)
+    .order("requested_at", { ascending: false })
+    .limit(3)
+    .returns<
+      {
+        id: string;
+        requested_at: string;
+        reviewer_note: string | null;
+        status: "pending" | "reviewing" | "completed" | "rejected" | "cancelled";
+      }[]
+    >();
   const canSubmitLicense =
     profile?.account_type &&
     verificationEligibleAccountTypes.includes(profile.account_type as string);
@@ -387,6 +406,72 @@ export default async function AccountPage({
         </nav>
 
         <ProfileForm claims={claims} initialProfile={profile} />
+
+        <section
+          className="ttc-card mt-6 scroll-mt-4 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-5"
+          id="data-settings"
+        >
+          <h2 className="text-xl font-bold">Account and data</h2>
+          <p className="mt-2 text-sm leading-6 text-[#766d62]">
+            You can make your profile private anytime. Account deletion is a
+            manual review request during launch so safety reports, marketplace
+            issues, and legal obligations can be handled correctly.
+          </p>
+          {deletionRequests?.length ? (
+            <div className="mt-4 grid gap-2">
+              {deletionRequests.map((request) => (
+                <div
+                  className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-3 py-2 text-sm"
+                  key={request.id}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-semibold capitalize">
+                      {request.status} deletion request
+                    </p>
+                    <p className="text-xs text-[#766d62]">
+                      {formatDate(request.requested_at)}
+                    </p>
+                  </div>
+                  {request.reviewer_note ? (
+                    <p className="mt-1 text-xs leading-5 text-[#766d62]">
+                      {request.reviewer_note}
+                    </p>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          ) : null}
+          <form action={requestAccountDeletion} className="mt-4 grid gap-3">
+            <label className="block">
+              <span className="text-sm font-medium">Reason, optional</span>
+              <textarea
+                className="mt-2 min-h-20 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-3 text-sm outline-none focus:border-[#171412]"
+                maxLength={500}
+                name="delete_reason"
+                placeholder="Tell admins what should be reviewed before deletion."
+              />
+            </label>
+            <label className="block">
+              <span className="text-sm font-medium">
+                Type DELETE to request account deletion
+              </span>
+              <input
+                className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                name="delete_confirmation"
+                placeholder="DELETE"
+              />
+            </label>
+            <PendingSubmitButton
+              className="h-11 w-fit rounded-md border border-[#a3432f] bg-white px-5 text-sm font-semibold text-[#8a2828]"
+              pendingLabel="Submitting"
+            >
+              Request account deletion
+            </PendingSubmitButton>
+          </form>
+          <p className="mt-3 text-xs leading-5 text-[#766d62]">
+            For urgent privacy or safety help, use the public support page.
+          </p>
+        </section>
 
         {canSubmitLicense ? (
           <section

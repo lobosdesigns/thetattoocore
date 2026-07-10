@@ -28,6 +28,11 @@ export async function signup(formData: FormData) {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   const origin = String(formData.get("origin") ?? "");
+  const ageConfirmed = formData.get("age_confirmed") === "on";
+
+  if (!ageConfirmed) {
+    redirect(loginMessage("You must confirm you are 18 or older to create an account."));
+  }
 
   const { error } = await supabase.auth.signUp({
     email,

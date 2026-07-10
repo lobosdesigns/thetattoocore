@@ -123,6 +123,18 @@ export default async function LoginPage({
               />
             </label>
 
+            <label className="flex items-start gap-3 rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 text-xs leading-5 text-[#4f473f]">
+              <input
+                className="mt-1 size-4"
+                name="age_confirmed"
+                type="checkbox"
+              />
+              <span>
+                I confirm I am 18 or older. This is required to create a new
+                account on TheTattooCore.
+              </span>
+            </label>
+
             <div className="grid grid-cols-2 gap-3 pt-2">
               <button
                 className="h-11 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
@@ -161,6 +173,12 @@ export default async function LoginPage({
               href="/forgot-password"
             >
               Forgot password?
+            </Link>
+            <Link
+              className="block text-center text-sm font-semibold text-[#766d62]"
+              href="/support"
+            >
+              Support and account help
             </Link>
           </form>
         </div>

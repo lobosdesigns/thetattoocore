@@ -51,7 +51,7 @@ const sections = [
   },
   {
     body:
-      "Members can update profile information from account settings. More export, deletion, and privacy controls should be added before broad launch and mobile app submission.",
+      "Members can update profile information from account settings, make profiles private, and request account deletion from Account > Data. During launch, deletion requests are reviewed manually so safety reports, marketplace issues, and legal obligations can be handled correctly.",
     title: "Controls",
   },
 ];

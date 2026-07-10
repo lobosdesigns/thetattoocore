@@ -81,12 +81,14 @@
 - Add SEO-friendly public profile pages and public listing pages, while respecting profile privacy controls.
 - Add `robots.txt`, metadata, and per-route noindex rules before launch.
 - Do not expose private messages, private account data, unpublished content, or sensitive/adult content to crawlers.
+- Provide a public support URL for app-store review, safety reports, privacy help, and account deletion instructions.
 
 ## Age And Content Policy
 
 - TheTattooCore is planned as an 18+ community.
 - Add an age gate during signup requiring users to confirm they are 18 or older.
 - Store the user's 18+ self-attestation and terms acceptance timestamp on the profile.
+- Keep signup blocked until the user explicitly confirms 18+.
 - Launch with a no-visible-nudity policy for app-store readiness and lower moderation risk, even when the intent is tattoo, piercing, scar, healing, placement, or body-art documentation.
 - Require members to crop or cover private areas before posting; revisit any body-art nudity policy only after moderation, app policy, and legal review are mature.
 - Prohibit pornography, sexual solicitation, explicit sexual content, exploitative content, and content involving minors in nudity or sexualized contexts.

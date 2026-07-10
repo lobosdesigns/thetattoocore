@@ -440,3 +440,37 @@ export async function submitAdCampaign(formData: FormData) {
   revalidatePath("/admin");
   redirect(accountPath("Ad campaign submitted for review."));
 }
+
+export async function requestAccountDeletion(formData: FormData) {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+
+  if (!claims?.sub) {
+    redirect("/login");
+  }
+
+  const confirmation = cleanText(formData.get("delete_confirmation"), 20);
+
+  if (confirmation !== "DELETE") {
+    redirect(accountPath("Type DELETE to request account deletion."));
+  }
+
+  const { error } = await supabase.from("account_deletion_requests").insert({
+    profile_id: claims.sub,
+    reason: cleanText(formData.get("delete_reason"), 500) || null,
+  });
+
+  if (error) {
+    redirect(
+      accountPath(
+        error.code === "23505"
+          ? "You already have a pending account deletion request."
+          : error.message || "Could not request account deletion.",
+      ),
+    );
+  }
+
+  revalidatePath("/account");
+  redirect(accountPath("Account deletion request submitted for review."));
+}

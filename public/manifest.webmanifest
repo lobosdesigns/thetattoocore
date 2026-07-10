@@ -40,6 +40,6 @@
       "url": "/notifications"
     }
   ],
-  "start_url": "/",
+  "start_url": "/login",
   "theme_color": "#171412"
 }
