@@ -162,7 +162,7 @@ const adminTabs = [
   [ImageIcon, "Media Ops", "/admin#media-ops"],
   [BriefcaseBusiness, "Gigs", "/admin#gigs"],
   [ShoppingBag, "Marketplace", "/admin#marketplace"],
-  [Megaphone, "Ads", "/admin#ads"],
+  [Megaphone, "Ads", "/admin/ads"],
   [Mail, "Mail Settings", "/admin#mail-settings"],
 ] as const;
 
@@ -1861,7 +1861,7 @@ export default async function AdminPage({
       action: "Ads page planned",
       body: "Campaign review, placements, bids, and performance should not live in the overview.",
       count: pendingAdCampaigns.length,
-      href: "/admin#ads",
+      href: "/admin/ads",
       label: "Ads",
       meta: `${reviewedAdCampaigns.length} reviewed in latest slice`,
     },

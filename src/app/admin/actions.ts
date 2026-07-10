@@ -95,6 +95,24 @@ function adminUsersMessage(message: string, returnTo?: string) {
   return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
 }
 
+function adminAdsMessage(message: string, returnTo?: string) {
+  const safeReturnTo =
+    returnTo?.startsWith("/admin/ads") || returnTo === "/admin"
+      ? returnTo
+      : "/admin#ads";
+  const separator = safeReturnTo.includes("?") ? "&" : "?";
+  const hashIndex = safeReturnTo.indexOf("#");
+
+  if (hashIndex >= 0) {
+    const base = safeReturnTo.slice(0, hashIndex);
+    const hash = safeReturnTo.slice(hashIndex);
+
+    return `${base}${separator}message=${encodeURIComponent(message)}${hash}`;
+  }
+
+  return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
+}
+
 function cleanText(value: FormDataEntryValue | null, maxLength: number) {
   return String(value ?? "")
     .trim()
@@ -699,11 +717,12 @@ export async function updateLicenseVerification(formData: FormData) {
 
 export async function updateAdCampaignStatus(formData: FormData) {
   const campaignId = cleanText(formData.get("campaign_id"), 80);
+  const returnTo = cleanText(formData.get("return_to"), 120);
   const status = cleanText(formData.get("status"), 40) as AdCampaignStatus;
   const note = cleanText(formData.get("note"), 500);
 
   if (!campaignId || !adCampaignStatuses.has(status)) {
-    redirect("/admin?message=Choose a valid ad campaign status.#ads");
+    redirect(adminAdsMessage("Choose a valid ad campaign status.", returnTo));
   }
 
   const { supabase, userId } = await requireModerator();
@@ -721,9 +740,10 @@ export async function updateAdCampaignStatus(formData: FormData) {
 
   if (campaignError || !campaign) {
     redirect(
-      `/admin?message=${encodeURIComponent(
+      adminAdsMessage(
         campaignError?.message || "Ad campaign was not found.",
-      )}#ads`,
+        returnTo,
+      ),
     );
   }
 
@@ -741,9 +761,10 @@ export async function updateAdCampaignStatus(formData: FormData) {
 
   if (updateError) {
     redirect(
-      `/admin?message=${encodeURIComponent(
+      adminAdsMessage(
         updateError.message || "Could not update ad campaign.",
-      )}#ads`,
+        returnTo,
+      ),
     );
   }
 
@@ -762,7 +783,8 @@ export async function updateAdCampaignStatus(formData: FormData) {
   });
 
   revalidatePath("/admin");
-  redirect("/admin?message=Ad campaign updated.#ads");
+  revalidatePath("/admin/ads");
+  redirect(adminAdsMessage("Ad campaign updated.", returnTo));
 }
 
 export async function updateAccountDeletionRequest(formData: FormData) {
