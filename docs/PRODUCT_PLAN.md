@@ -175,7 +175,7 @@
 - Safety rules: no sensitive personal targeting, no hidden behavioral profiling, no adult/minor targeting, and clear sponsor labels.
 - Privacy language should also reject AI ad expansion, opaque lookalike-style automation, and confusing ad targeting that members cannot understand.
 - Sponsored cards should show clear ad labeling plus simple relevance context such as placement, coarse location, language, or keywords. Started for launch with reviewed sponsored cards showing placement, country/language labels, keywords, and no-AI-profiling copy.
-- Admin review should explicitly reject AI tattoo art claims, unsafe scratcher promotion, unlicensed studio promotion, and restricted equipment ads.
+- Admin review should explicitly reject AI tattoo art claims, unsafe scratcher promotion, unlicensed studio promotion, and restricted equipment ads. Done for launch with visible admin ad-review standards.
 - Advertiser flow: create campaign, upload creative, choose regions/languages/keywords, set bid/budget, submit for admin review.
 - Admin flow: approve/reject campaigns, pause campaigns, inspect spend/impressions/clicks, and moderate creative.
 

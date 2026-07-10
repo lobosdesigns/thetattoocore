@@ -52,6 +52,12 @@ type AdCampaign = {
 
 const moderateRoles: UserRole[] = ["moderator", "admin", "owner"];
 const pageSize = 50;
+const adReviewStandards = [
+  "Artist ads belong in 4U and Gossip; Stuff ads stay in Stuff.",
+  "Reject AI tattoo art claims, AI creator replacement claims, and misleading automation promises.",
+  "Reject scratcher promotion, unlicensed studio promotion, unsafe practice claims, and restricted equipment ads.",
+  "Reject adult/minor targeting, sensitive personal targeting, hidden behavioral profiling, or unclear sponsor ads.",
+] as const;
 
 export const metadata: Metadata = {
   robots: {
@@ -489,12 +495,8 @@ export default async function AdminAdsPage({
           </div>
         </div>
 
-        <div className="mb-4 grid gap-2 sm:grid-cols-3">
-          {[
-            "Artist ads belong in 4U and Gossip.",
-            "Stuff ads stay in Stuff and require verified seller status.",
-            "Reject unsafe scratcher, unlicensed studio, restricted equipment, or unclear sponsor ads.",
-          ].map((rule) => (
+        <div className="mb-4 grid gap-2 sm:grid-cols-2">
+          {adReviewStandards.map((rule) => (
             <p
               className="rounded-md border border-[#e5ded4] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#4f473f]"
               key={rule}
