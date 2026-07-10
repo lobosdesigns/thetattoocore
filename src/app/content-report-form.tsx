@@ -1,4 +1,4 @@
-import { Flag, MoreHorizontal } from "lucide-react";
+import { ChevronDown, Flag } from "lucide-react";
 import { createContentReport } from "@/app/actions";
 
 type ReportSubjectType =
@@ -25,7 +25,7 @@ function reportButtonLabel(subjectType: ReportSubjectType) {
 }
 
 function reportMenuLabel(subjectType: ReportSubjectType) {
-  return subjectType === "profile" ? "Profile safety menu" : "Content safety menu";
+  return subjectType === "profile" ? "Open profile report form" : "Open report form";
 }
 
 export function ContentReportForm({
@@ -40,18 +40,19 @@ export function ContentReportForm({
   subjectType: ReportSubjectType;
 }) {
   return (
-    <details className="group relative inline-block rounded-md">
+    <details className="group w-full max-w-full rounded-md">
       <summary
         aria-label={reportMenuLabel(subjectType)}
-        className="inline-flex h-9 cursor-pointer list-none items-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-2.5 text-xs font-semibold text-[#4f473f] hover:border-[#c8953b] group-open:border-[#c8953b] group-open:bg-[#fff7ec]"
+        className="inline-flex h-9 cursor-pointer list-none items-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-2.5 text-xs font-semibold text-[#4f473f] transition hover:border-[#c8953b] group-open:border-[#c8953b] group-open:bg-[#fff7ec]"
         title={reportMenuLabel(subjectType)}
       >
-        <MoreHorizontal className="size-4" />
+        <Flag className="size-3.5" />
         <span>{reportButtonLabel(subjectType)}</span>
+        <ChevronDown className="size-3.5 transition group-open:rotate-180" />
       </summary>
       <form
         action={createContentReport}
-        className="fixed inset-x-3 bottom-24 z-40 max-h-[calc(100dvh-8rem)] overflow-y-auto rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-auto sm:right-0 sm:mt-2 sm:w-[min(20rem,calc(100vw-3rem))]"
+        className="mt-2 w-full max-w-full overflow-hidden rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 shadow-[0_10px_24px_rgba(23,20,18,0.12)] sm:max-w-sm"
       >
         <input name="subject_id" type="hidden" value={subjectId} />
         <input name="subject_type" type="hidden" value={subjectType} />
@@ -68,13 +69,13 @@ export function ContentReportForm({
         <p className="mb-2 text-xs leading-5 text-[#766d62]">
           {reportDescription(subjectType)}
         </p>
-        <div className="grid gap-2">
+        <div className="grid min-w-0 gap-2">
           <select
             aria-label="Report reason"
-            className="h-9 min-w-0 rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+            className="h-9 w-full min-w-0 rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
             name="reason"
           >
-            <option value="sensitive non-nude body-art">Sensitive non-nude body-art context</option>
+            <option value="sensitive non-nude body-art">Sensitive or restricted body-art context</option>
             <option value="sexual content">Nudity, sexual, or pornographic content</option>
             <option value="minor safety concern">Minor safety concern</option>
             <option value="harassment or hate">Harassment, hate, or threats</option>
@@ -84,7 +85,7 @@ export function ContentReportForm({
             <option value="other">Other policy concern</option>
           </select>
           <input
-            className="h-9 min-w-0 rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+            className="h-9 w-full min-w-0 rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
             maxLength={500}
             name="details"
             placeholder="What should moderators know?"
