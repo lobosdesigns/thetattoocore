@@ -167,6 +167,24 @@ function adminReportsMessage(message: string, returnTo?: string) {
   return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
 }
 
+function adminContentMessage(message: string, returnTo?: string) {
+  const safeReturnTo =
+    returnTo?.startsWith("/admin/content") || returnTo === "/admin"
+      ? returnTo
+      : "/admin#content";
+  const separator = safeReturnTo.includes("?") ? "&" : "?";
+  const hashIndex = safeReturnTo.indexOf("#");
+
+  if (hashIndex >= 0) {
+    const base = safeReturnTo.slice(0, hashIndex);
+    const hash = safeReturnTo.slice(hashIndex);
+
+    return `${base}${separator}message=${encodeURIComponent(message)}${hash}`;
+  }
+
+  return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
+}
+
 function cleanText(value: FormDataEntryValue | null, maxLength: number) {
   return String(value ?? "")
     .trim()
@@ -394,7 +412,7 @@ export async function moderateContent(formData: FormData) {
   const config = subjectConfig[subjectType];
 
   if (!config || !subjectId || !statuses.has(moderationStatus)) {
-    redirect(adminMessage("Choose valid content and moderation status."));
+    redirect(adminContentMessage("Choose valid content and moderation status.", returnTo));
   }
 
   const { supabase, userId } = await requireModerator();
@@ -438,7 +456,12 @@ export async function moderateContent(formData: FormData) {
     .maybeSingle<Record<string, string | null>>();
 
   if (subjectError || !subject) {
-    redirect(adminMessage(subjectError?.message || "Content was not found."));
+    redirect(
+      adminContentMessage(
+        subjectError?.message || "Content was not found.",
+        returnTo,
+      ),
+    );
   }
 
   const { error: updateError } = await supabase
@@ -450,7 +473,12 @@ export async function moderateContent(formData: FormData) {
     .eq(config.idColumn, subjectId);
 
   if (updateError) {
-    redirect(adminMessage(updateError.message || "Could not update content."));
+    redirect(
+      adminContentMessage(
+        updateError.message || "Could not update content.",
+        returnTo,
+      ),
+    );
   }
 
   const { error: actionError } = await supabase
@@ -469,8 +497,9 @@ export async function moderateContent(formData: FormData) {
 
   if (actionError) {
     redirect(
-      adminMessage(
+      adminContentMessage(
         actionError.message || "Content changed, but moderation log failed.",
+        returnTo,
       ),
     );
   }
@@ -541,12 +570,13 @@ export async function moderateContent(formData: FormData) {
   }
 
   revalidatePath("/admin");
+  revalidatePath("/admin/content");
   revalidatePath("/admin/reports");
   revalidatePath("/");
   redirect(
     reportId
       ? adminReportsMessage("Moderation status and report updated.", returnTo)
-      : adminMessage("Moderation status updated."),
+      : adminContentMessage("Moderation status updated.", returnTo),
   );
 }
 
