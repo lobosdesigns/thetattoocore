@@ -113,7 +113,8 @@ export async function FollowListPage({
 
   const isOwnProfile = claims?.sub === profile.id;
   const canView =
-    !profile.is_private || isOwnProfile || followRecord?.status === "accepted";
+    Boolean(claims?.sub) &&
+    (!profile.is_private || isOwnProfile || followRecord?.status === "accepted");
   const listQuery =
     kind === "followers"
       ? supabase
@@ -203,8 +204,8 @@ export async function FollowListPage({
               <LockKeyhole className="mx-auto mb-3 size-8 text-[#766d62]" />
               <h2 className="text-lg font-bold">Private community</h2>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#766d62]">
-                Follow this private profile and wait for approval to view their
-                full community list.
+                Sign in and follow this profile, if needed, to view their full
+                community list.
               </p>
               <Link
                 className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"

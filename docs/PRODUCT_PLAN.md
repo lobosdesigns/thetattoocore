@@ -86,7 +86,7 @@
 - If a signed-in user has not accepted the adult body-art terms yet, legacy or admin-marked sensitive shared content should ask for 18+ confirmation instead of telling them to sign in again.
 - Main app feeds should keep any legacy or admin-marked sensitive posts visible only as blurred, non-clickable media with locked captions/comments until the viewer signs in and confirms 18+.
 - Locked sensitive previews should use brand-safe placeholders and must not load the underlying full media URL for logged-out or non-confirmed viewers. Done for launch on 4U, Gossip, Stuff, and Gigs detail views.
-- Public previews should not expose full comment threads, full profile browsing, posting tools, messaging, follower lists, or full-resolution sensitive media.
+- Public previews should not expose full comment threads, full profile browsing, posting tools, messaging, follower lists, or full-resolution sensitive media. Done for launch: logged-out visitors see limited counts/previews and must sign in for comments, follower lists, posting, DMs, saves, and reports.
 - Profile and site-level share metadata should include brand-safe image alt text; public profile cards can use public non-sensitive work, while private profiles use the brand shield.
 - Content marked sensitive or adult by legacy data or admin moderation must not be visible to logged-out public visitors.
 - Sensitive-content handling remains available for legacy/admin moderation, but member upload forms should default new content to non-sensitive during the no-visible-nudity launch policy.

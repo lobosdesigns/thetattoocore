@@ -1130,12 +1130,20 @@ export default async function ProfilePage({
                 <ProfileStat label="Stuff" value={visibleListings.length} />
                 <ProfileStat label="Gigs" value={visibleGigs.length} />
                 <ProfileStat
-                  href={`/u/${profile.username}/followers`}
+                  href={
+                    viewer.isSignedIn
+                      ? `/u/${profile.username}/followers`
+                      : undefined
+                  }
                   label="followers"
                   value={followerCount ?? 0}
                 />
                 <ProfileStat
-                  href={`/u/${profile.username}/following`}
+                  href={
+                    viewer.isSignedIn
+                      ? `/u/${profile.username}/following`
+                      : undefined
+                  }
                   label="following"
                   value={followingCount ?? 0}
                 />
@@ -1307,7 +1315,7 @@ export default async function ProfilePage({
           </section>
         ) : null}
 
-        {!isPrivateLocked ? (
+        {!isPrivateLocked && viewer.isSignedIn ? (
           <FollowPreviewSection
             followers={followerPreview ?? []}
             following={followingPreview ?? []}
