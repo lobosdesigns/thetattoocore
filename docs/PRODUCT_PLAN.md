@@ -8,7 +8,7 @@
 - Marketplace/Stuff: verified artists, studios, and vendors can buy, sell, and trade approved body-art goods and services; fans can browse but not transact or contact sellers.
 - Merch: a separate public-buyable marketplace for artist, studio, vendor, and TheTattooCore merchandise such as T-shirts, prints, art, stickers, aftercare-adjacent brand goods, and other safe fan-facing products. Merch should not be mixed with pro Stuff because the general public can buy Merch, while Stuff stays verification-gated.
 - Messages: integrated direct messenger for bookings, marketplace questions, and collaboration.
-- DMs need a focused test pass with the regular test user and moderator test user before app submission. Mobile inbox/thread routing, read-state clearing, signed attachment display, direct thread read markers, and realtime refresh are improved for launch; real send/receive testing still needs logged-in test sessions.
+- DMs need a focused test pass with the regular test user and moderator test user before app submission. Mobile inbox/thread routing, read-state clearing, signed attachment display, direct thread read markers, and realtime refresh subscriptions for message/photo inserts are improved for launch; real send/receive testing still needs logged-in test sessions.
 - Notifications: in-app alerts and unread badges first, important email second, PWA browser push third, then native APNs/FCM push for iOS and Android apps.
 - Composer: one floating plus button that opens the correct posting form for the current column.
 - Main column swiping should snap one column at a time. A horizontal swipe should land on the next column and stop instead of sliding quickly across multiple sections. Done for launch with a controlled mobile snap rail.

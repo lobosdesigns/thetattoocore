@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { ProfileAvatar } from "@/app/profile-avatar";
+import { createClient } from "@/lib/supabase/client";
 
 type Profile = {
   id: string;
@@ -39,16 +41,18 @@ function timeAgo(value: string) {
 }
 
 export function MessageThread({
+  conversationId,
   currentUserId,
   initialMessages,
   profiles,
 }: {
-  conversationId?: string;
+  conversationId: string;
   currentUserId: string;
   initialMessages: ThreadMessage[];
   profiles: Profile[];
 }) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const profileById = useMemo(
     () => new Map(profiles.map((profile) => [profile.id, profile])),
     [profiles],
@@ -57,6 +61,44 @@ export function MessageThread({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: "end" });
   }, [initialMessages.length]);
+
+  useEffect(() => {
+    const supabase = createClient();
+    let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+    const refreshThread = () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => {
+        router.refresh();
+      }, 350);
+    };
+    const channel = supabase
+      .channel(`dm-thread:${conversationId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          filter: `conversation_id=eq.${conversationId}`,
+          schema: "public",
+          table: "messages",
+        },
+        refreshThread,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "message_attachments",
+        },
+        refreshThread,
+      )
+      .subscribe();
+
+    return () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      supabase.removeChannel(channel);
+    };
+  }, [conversationId, router]);
 
   return (
     <div className="min-w-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-4 py-5">
