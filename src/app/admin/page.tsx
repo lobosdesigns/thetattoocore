@@ -163,7 +163,7 @@ const adminTabs = [
   [BriefcaseBusiness, "Gigs", "/admin/gigs"],
   [ShoppingBag, "Stuff", "/admin/stuff"],
   [Megaphone, "Ads", "/admin/ads"],
-  [Mail, "Mail Settings", "/admin#mail-settings"],
+  [Mail, "Mail Settings", "/admin/mail-settings"],
 ] as const;
 
 const mediaOpsStages = [
@@ -1898,10 +1898,10 @@ export default async function AdminPage({
       meta: `${gigReview?.length ?? 0} latest review signals`,
     },
     {
-      action: "Mail page planned",
-      body: "SMTP status and test tools should move to a smaller settings page.",
+      action: "Open mail",
+      body: "SMTP status, sender identity, secret binding, and test tools now live on a focused settings page.",
       count: mailSettings?.is_enabled ? 1 : 0,
-      href: "/admin#mail-settings",
+      href: "/admin/mail-settings",
       label: "Mail",
       meta: mailSettings?.is_enabled ? "SMTP enabled" : "SMTP disabled",
     },
