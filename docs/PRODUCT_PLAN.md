@@ -4,7 +4,7 @@
 
 - Feed: image posts and short reel clips, 40-word captions, likes, short 40-word comments, comment likes, and comment replies. Comment likes/replies are live for launch, including visible replies.
 - Threads: longer posts, optional image, replies, likes, comment likes, and community discussion. Comment likes/replies are live for launch, including visible replies.
-- Comments: original authors must be able to edit/delete their own comments and replies. Post/thread owners should be able to hide/delete/block disruptive comments on their own posts, and all signed-in users should be able to report comments.
+- Comments: original authors must be able to edit/delete their own comments and replies. Post/thread owners should be able to hide/delete/block disruptive comments on their own posts, and all signed-in users should be able to report comments. These controls must appear wherever comments are rendered, including 4U/Gossip cards, detail pages, opened notifications, and deep-link contexts.
 - Marketplace/Stuff: verified artists, studios, and vendors can buy, sell, and trade approved body-art goods and services; fans can browse but not transact or contact sellers.
 - Messages: integrated direct messenger for bookings, marketplace questions, and collaboration.
 - DMs need a focused test pass with the regular test user and moderator test user before app submission. Mobile inbox/thread routing, read-state clearing, signed attachment display, and realtime refresh are improved for launch; real send/receive testing still needs logged-in test sessions.

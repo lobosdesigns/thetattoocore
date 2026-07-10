@@ -22,8 +22,16 @@ import {
 import {
   acceptAdultTerms,
   archiveGig,
+  blockPostCommentAuthor,
+  blockThreadCommentAuthor,
   createPostComment,
   createThreadComment,
+  deletePostComment,
+  deleteThreadComment,
+  editPostComment,
+  editThreadComment,
+  hidePostComment,
+  hideThreadComment,
   togglePostCommentLike,
   togglePostLike,
   toggleThreadCommentLike,
@@ -226,6 +234,135 @@ function hasCommentHide(
   value: { hidden_by: string }[] | { hidden_by: string } | null,
 ) {
   return Array.isArray(value) ? value.length > 0 : Boolean(value);
+}
+
+function CardCommentControls({
+  body,
+  commentAuthorId,
+  commentId,
+  contentOwnerId,
+  currentUserId,
+  kind,
+  returnHash,
+  returnPath,
+}: {
+  body: string;
+  commentAuthorId?: string | null;
+  commentId: string;
+  contentOwnerId?: string | null;
+  currentUserId?: string | null;
+  kind: "feed" | "thread";
+  returnHash: "feed" | "threads";
+  returnPath: string;
+}) {
+  if (!currentUserId) return null;
+
+  const isOwnComment = commentAuthorId === currentUserId;
+  const canModerateComment = contentOwnerId === currentUserId && !isOwnComment;
+
+  if (!isOwnComment && !canModerateComment) {
+    return (
+      <ContentReportForm
+        returnHash={returnHash}
+        returnPath="/"
+        subjectId={commentId}
+        subjectType="comment"
+      />
+    );
+  }
+
+  const editAction = kind === "feed" ? editPostComment : editThreadComment;
+  const deleteAction = kind === "feed" ? deletePostComment : deleteThreadComment;
+  const hideAction = kind === "feed" ? hidePostComment : hideThreadComment;
+  const blockAction =
+    kind === "feed" ? blockPostCommentAuthor : blockThreadCommentAuthor;
+
+  return (
+    <div className="flex w-full flex-wrap items-center gap-2">
+      {isOwnComment ? (
+        <details className="group min-w-[13rem] max-w-full">
+          <summary className="cursor-pointer list-none rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-semibold text-[#4f473f] transition group-open:border-[#c8953b] group-open:bg-[#fff7ec]">
+            Edit
+          </summary>
+          <form
+            action={editAction}
+            className="mt-2 grid min-w-0 gap-2 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-2 shadow-[0_10px_24px_rgba(23,20,18,0.12)]"
+          >
+            <input name="comment_id" type="hidden" value={commentId} />
+            <input name="return_path" type="hidden" value={returnPath} />
+            {kind === "feed" ? (
+              <input
+                className="h-9 min-w-0 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+                defaultValue={body}
+                maxLength={300}
+                name="body"
+                required
+              />
+            ) : (
+              <textarea
+                className="min-h-20 min-w-0 rounded-md border border-[#d8d1c6] bg-white px-2 py-2 text-xs outline-none focus:border-[#171412]"
+                defaultValue={body}
+                maxLength={2000}
+                name="body"
+                required
+              />
+            )}
+            <PendingSubmitButton
+              className="h-8 rounded-md bg-[#171412] px-3 text-xs font-semibold text-white"
+              pendingChildren="Saving..."
+            >
+              Save edit
+            </PendingSubmitButton>
+          </form>
+        </details>
+      ) : null}
+      {isOwnComment || canModerateComment ? (
+        <form action={deleteAction}>
+          <input name="comment_id" type="hidden" value={commentId} />
+          <input name="return_path" type="hidden" value={returnPath} />
+          <PendingSubmitButton
+            className="rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-semibold text-[#7a2d1f]"
+            pendingChildren="Deleting..."
+          >
+            Delete
+          </PendingSubmitButton>
+        </form>
+      ) : null}
+      {canModerateComment ? (
+        <>
+          <form action={hideAction}>
+            <input name="comment_id" type="hidden" value={commentId} />
+            <input name="return_path" type="hidden" value={returnPath} />
+            <input name="reason" type="hidden" value="Hidden by post owner." />
+            <PendingSubmitButton
+              className="rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-semibold text-[#4f473f]"
+              pendingChildren="Hiding..."
+            >
+              Hide
+            </PendingSubmitButton>
+          </form>
+          <form action={blockAction}>
+            <input name="comment_id" type="hidden" value={commentId} />
+            <input name="return_path" type="hidden" value={returnPath} />
+            <PendingSubmitButton
+              className="rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-semibold text-[#7a2d1f]"
+              pendingChildren="Blocking..."
+            >
+              Block
+            </PendingSubmitButton>
+          </form>
+        </>
+      ) : null}
+      {!isOwnComment ? (
+        <ContentReportForm
+          returnHash={returnHash}
+          returnPath="/"
+          subjectId={commentId}
+          subjectType="comment"
+        />
+      ) : null}
+    </div>
+  );
 }
 
 function sponsoredDbPlacement(placement: SponsoredPlacement): AdPlacement {
@@ -1566,6 +1703,16 @@ export default async function Home({
                                 </form>
                               </details>
                             ) : null}
+                            <CardCommentControls
+                              body={comment.body}
+                              commentAuthorId={comment.profiles?.id}
+                              commentId={comment.id}
+                              contentOwnerId={post.profiles?.id}
+                              currentUserId={claims?.sub}
+                              kind="feed"
+                              returnHash="feed"
+                              returnPath="/#feed"
+                            />
                           </div>
                           {replies.length ? (
                             <div className="ml-9 space-y-1 border-l border-[#e5ded4] pl-3">
@@ -1576,24 +1723,36 @@ export default async function Home({
 
                                 return (
                                   <div
-                                    className="flex items-start justify-between gap-2 text-xs leading-5 text-[#4f473f]"
+                                    className="space-y-1 text-xs leading-5 text-[#4f473f]"
                                     key={reply.id}
                                   >
-                                    <p className="min-w-0 flex-1">
-                                      <span className="font-semibold">
-                                        {reply.profiles?.display_name ?? "Member"}
-                                      </span>{" "}
-                                      {reply.body}
-                                    </p>
-                                    <form action={togglePostCommentLike}>
-                                      <input name="comment_id" type="hidden" value={reply.id} />
-                                      <input name="liked" type="hidden" value={likedReply ? "true" : "false"} />
-                                      <input name="return_path" type="hidden" value="/#feed" />
-                                      <button className="flex items-center gap-1 font-semibold text-[#766d62]">
-                                        <Heart className={`size-3 ${likedReply ? "fill-[#c8953b] text-[#c8953b]" : ""}`} />
-                                        {reply.post_comment_likes.length}
-                                      </button>
-                                    </form>
+                                    <div className="flex items-start justify-between gap-2">
+                                      <p className="min-w-0 flex-1">
+                                        <span className="font-semibold">
+                                          {reply.profiles?.display_name ?? "Member"}
+                                        </span>{" "}
+                                        {reply.body}
+                                      </p>
+                                      <form action={togglePostCommentLike}>
+                                        <input name="comment_id" type="hidden" value={reply.id} />
+                                        <input name="liked" type="hidden" value={likedReply ? "true" : "false"} />
+                                        <input name="return_path" type="hidden" value="/#feed" />
+                                        <button className="flex items-center gap-1 font-semibold text-[#766d62]">
+                                          <Heart className={`size-3 ${likedReply ? "fill-[#c8953b] text-[#c8953b]" : ""}`} />
+                                          {reply.post_comment_likes.length}
+                                        </button>
+                                      </form>
+                                    </div>
+                                    <CardCommentControls
+                                      body={reply.body}
+                                      commentAuthorId={reply.profiles?.id}
+                                      commentId={reply.id}
+                                      contentOwnerId={post.profiles?.id}
+                                      currentUserId={claims?.sub}
+                                      kind="feed"
+                                      returnHash="feed"
+                                      returnPath="/#feed"
+                                    />
                                   </div>
                                 );
                               })}
@@ -1926,6 +2085,16 @@ export default async function Home({
                                         </form>
                                       </details>
                                     ) : null}
+                                    <CardCommentControls
+                                      body={comment.body}
+                                      commentAuthorId={comment.profiles?.id}
+                                      commentId={comment.id}
+                                      contentOwnerId={thread.profiles?.id}
+                                      currentUserId={claims?.sub}
+                                      kind="thread"
+                                      returnHash="threads"
+                                      returnPath="/#threads"
+                                    />
                                   </div>
                                   {replies.length ? (
                                     <div className="ml-9 mt-2 space-y-1 border-l border-[#e5ded4] pl-3">
@@ -1937,25 +2106,37 @@ export default async function Home({
 
                                         return (
                                           <div
-                                            className="flex items-start justify-between gap-2 text-xs leading-5 text-[#4f473f]"
+                                            className="space-y-1 text-xs leading-5 text-[#4f473f]"
                                             key={reply.id}
                                           >
-                                            <p className="min-w-0 flex-1">
-                                              <span className="font-semibold">
-                                                {reply.profiles?.display_name ??
-                                                  "Member"}
-                                              </span>{" "}
-                                              {reply.body}
-                                            </p>
-                                            <form action={toggleThreadCommentLike}>
-                                              <input name="comment_id" type="hidden" value={reply.id} />
-                                              <input name="liked" type="hidden" value={likedReply ? "true" : "false"} />
-                                              <input name="return_path" type="hidden" value="/#threads" />
-                                              <button className="flex items-center gap-1 font-semibold text-[#766d62]">
-                                                <Heart className={`size-3 ${likedReply ? "fill-[#c8953b] text-[#c8953b]" : ""}`} />
-                                                {reply.thread_comment_likes.length}
-                                              </button>
-                                            </form>
+                                            <div className="flex items-start justify-between gap-2">
+                                              <p className="min-w-0 flex-1">
+                                                <span className="font-semibold">
+                                                  {reply.profiles?.display_name ??
+                                                    "Member"}
+                                                </span>{" "}
+                                                {reply.body}
+                                              </p>
+                                              <form action={toggleThreadCommentLike}>
+                                                <input name="comment_id" type="hidden" value={reply.id} />
+                                                <input name="liked" type="hidden" value={likedReply ? "true" : "false"} />
+                                                <input name="return_path" type="hidden" value="/#threads" />
+                                                <button className="flex items-center gap-1 font-semibold text-[#766d62]">
+                                                  <Heart className={`size-3 ${likedReply ? "fill-[#c8953b] text-[#c8953b]" : ""}`} />
+                                                  {reply.thread_comment_likes.length}
+                                                </button>
+                                              </form>
+                                            </div>
+                                            <CardCommentControls
+                                              body={reply.body}
+                                              commentAuthorId={reply.profiles?.id}
+                                              commentId={reply.id}
+                                              contentOwnerId={thread.profiles?.id}
+                                              currentUserId={claims?.sub}
+                                              kind="thread"
+                                              returnHash="threads"
+                                              returnPath="/#threads"
+                                            />
                                           </div>
                                         );
                                       })}
