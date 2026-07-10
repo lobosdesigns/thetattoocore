@@ -4,7 +4,7 @@
 
 - Feed: image posts and short reel clips, 40-word captions, likes, short 40-word comments, comment likes, and comment replies. Comment likes/replies are live for launch, including visible replies.
 - Threads: longer posts, optional image, replies, likes, comment likes, and community discussion. Comment likes/replies are live for launch, including visible replies.
-- Comments: original authors must be able to edit/delete their own comments and replies. Post/thread owners should be able to hide/delete/block disruptive comments on their own posts, and all signed-in users should be able to report comments. These controls must appear wherever comments are rendered, including 4U/Gossip cards, detail pages, opened notifications, and deep-link contexts.
+- Comments: original authors must be able to edit/delete their own comments and replies. Post/thread owners should be able to hide/delete/block disruptive comments on their own posts, and all signed-in users should be able to report comments. These controls must appear wherever comments are rendered, including 4U/Gossip cards, detail pages, opened notifications, and deep-link contexts. Done for launch on home cards and 4U/Gossip detail pages; keep detail-page controls on the polish list so they visually match the newer card controls.
 - Marketplace/Stuff: verified artists, studios, and vendors can buy, sell, and trade approved body-art goods and services; fans can browse but not transact or contact sellers.
 - Merch: a separate public-buyable marketplace for artist, studio, vendor, and TheTattooCore merchandise such as T-shirts, prints, art, stickers, aftercare-adjacent brand goods, and other safe fan-facing products. Merch should not be mixed with pro Stuff because the general public can buy Merch, while Stuff stays verification-gated.
 - Messages: integrated direct messenger for bookings, marketplace questions, and collaboration.
@@ -21,7 +21,7 @@
 - Mobile composer: posting cards must fit mobile browser screens, scroll to the publish button, and keep advanced fields behind expandable sections. Done for launch.
 - Composer uploads should not show a sensitive-content option during launch; visible nudity is not allowed, so members must crop or cover private areas before posting.
 - Profiles need avatar/profile-photo upload with client-side image optimization, public display on profile pages, and rollout into feeds, comments, DMs, search, notifications, and detail pages. Done for launch, including 4U/Gossip detail comments.
-- Reporting: report controls should look like a small intentional action, then open a separate report card or dropdown so users do not confuse it with normal post options.
+- Reporting: report controls should look like a small intentional action, then open a separate report card or dropdown so users do not confuse it with normal post options. Done for launch with a labeled Flag + Report trigger and inline report form.
 - Mobile report menus must stay inside the viewport; three-dot report cards in 4U, Gossip, Stuff, Gigs, and profiles should not open off-screen on narrow browsers. Done for launch by using an inline report panel.
 - Report triggers should be labeled enough to reduce false taps; icon-only menus are acceptable only when the surrounding UI makes the report purpose unmistakable. Done for launch with a Flag + Report trigger.
 - Comments and DMs: add richer expression over time, including emoji, GIFs, photo attachments, and simple media attachments in direct messages.
