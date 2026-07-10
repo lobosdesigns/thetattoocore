@@ -4,12 +4,6 @@ import { inspectMediaFile, validateMediaMetadata } from "@/lib/media/metadata";
 import { createClient } from "@/lib/supabase/server";
 
 const MEDIA_BUCKET = "tattoo-media";
-const SENSITIVE_REASONS = new Set([
-  "healing",
-  "scar_cover",
-  "piercing",
-  "other",
-]);
 const VISIBILITY_VALUES = new Set(["public_preview", "members", "private"]);
 
 function redirectHome(request: Request, message: string) {
@@ -84,15 +78,10 @@ export async function POST(request: Request) {
   const compensation = cleanText(formData.get("compensation"), 120);
   const contactUrl = cleanText(formData.get("contact_url"), 300);
   const visibility = cleanVisibility(formData.get("visibility"));
-  const isSensitive = formData.get("is_sensitive") === "on";
-  const sensitiveReason = cleanText(formData.get("sensitive_reason"), 40);
+  const isSensitive = false;
   const media = mediaFromForm(formData);
   const metadata = media ? await inspectMediaFile(media) : null;
-  const safeSensitiveReason = isSensitive
-    ? SENSITIVE_REASONS.has(sensitiveReason)
-      ? sensitiveReason
-      : "healing"
-    : null;
+  const safeSensitiveReason = null;
 
   if (title.length < 3) {
     return redirectHome(request, "Gig title needs at least 3 characters.");

@@ -9,12 +9,6 @@ import { isVerifiedProfessional } from "@/lib/verification";
 
 const MEDIA_BUCKET = "tattoo-media";
 const VISIBILITY_VALUES = new Set(["public_preview", "members", "private"]);
-const SENSITIVE_REASONS = new Set([
-  "healing",
-  "scar_cover",
-  "piercing",
-  "other",
-]);
 const REPORT_SUBJECT_TYPES = new Set([
   "profile",
   "feed_post",
@@ -187,22 +181,12 @@ function cleanVisibility(
   return VISIBILITY_VALUES.has(text) ? text : fallback;
 }
 
-function sensitiveFields(formData: FormData) {
-  const isSensitive = formData.get("is_sensitive") === "on";
-  const reason = cleanText(formData.get("sensitive_reason"), 40);
-
-  if (!isSensitive) {
-    return {
-      is_sensitive: false,
-      sensitive_reason: null,
-    };
-  }
-
+function sensitiveFields() {
+  // Launch policy: visible nudity is not allowed, so new upload forms do not
+  // expose a sensitive-content bypass. Keep legacy columns false by default.
   return {
-    is_sensitive: true,
-    sensitive_reason: SENSITIVE_REASONS.has(reason)
-      ? reason
-      : "healing",
+    is_sensitive: false,
+    sensitive_reason: null,
   };
 }
 
@@ -377,7 +361,7 @@ export async function createFeedPost(formData: FormData) {
   const caption = cleanWords(formData.get("caption"), 40);
   const locationLabel = cleanText(formData.get("location_label"), 80);
   const media = mediaFromForm(formData, "media");
-  const sensitive = sensitiveFields(formData);
+  const sensitive = sensitiveFields();
   const visibility = cleanVisibility(formData.get("visibility"), "public_preview");
   const styleTags = cleanText(formData.get("style_tags"), 160)
     .split(",")
@@ -461,7 +445,7 @@ export async function createThreadPost(formData: FormData) {
   const body = cleanText(formData.get("body"), 8000);
   const media = mediaFromForm(formData, "media");
   const metadata = media ? await inspectMediaFile(media) : null;
-  const sensitive = sensitiveFields(formData);
+  const sensitive = sensitiveFields();
   const visibility = cleanVisibility(formData.get("visibility"), "members");
 
   if (body.length < 3) {
@@ -561,7 +545,7 @@ export async function createMarketplaceListing(formData: FormData) {
   const media = mediaFromForm(formData, "media");
   const metadata = media ? await inspectMediaFile(media) : null;
   const region = cleanText(formData.get("region"), 40);
-  const sensitive = sensitiveFields(formData);
+  const sensitive = sensitiveFields();
   const visibility = cleanVisibility(formData.get("visibility"), "public_preview");
   const priceInput = cleanText(formData.get("price"), 20).replace(/[$,]/g, "");
   const priceNumber = priceInput ? Number(priceInput) : NaN;

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { updateProfile } from "./actions";
+import { MediaInput } from "../media-input";
 import { PendingSubmitButton } from "../pending-submit-button";
 import { countryOptions, languageLabel, languageOptions } from "@/lib/localization";
 
@@ -10,6 +11,7 @@ type Claims = {
 
 type Profile = {
   account_type: "artist" | "enthusiast" | "studio" | "supplier" | "vendor";
+  avatar_url: string | null;
   bio: string | null;
   city: string | null;
   country_code: string | null;
@@ -138,6 +140,44 @@ export function ProfileForm({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 sm:col-span-2">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#171412] text-xl font-bold text-[#c8953b]">
+              {initialProfile?.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  alt=""
+                  className="size-full object-cover"
+                  src={initialProfile.avatar_url}
+                />
+              ) : (
+                (initialProfile?.display_name ?? "TC")
+                  .split(" ")
+                  .map((part) => part[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase()
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-sm font-bold">Profile photo</h2>
+              <p className="mt-1 text-xs leading-5 text-[#766d62]">
+                Upload a square logo, portrait, shop mark, or brand image. Images
+                are optimized before upload. No visible nudity for launch.
+              </p>
+              <div className="mt-3">
+                <MediaInput
+                  accept="image/jpeg,image/png,image/webp"
+                  compact
+                  maxImageBytes={4 * 1024 * 1024}
+                  name="avatar"
+                  videoAllowed={false}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
         <label className="block">
           <span className="text-sm font-medium">
             Username <RequiredMark />

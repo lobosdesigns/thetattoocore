@@ -53,6 +53,7 @@ type Profile = {
   id: string;
   username: string;
   display_name: string;
+  avatar_url: string | null;
   account_type: string;
   bio: string | null;
   city: string | null;
@@ -713,12 +714,13 @@ export async function generateMetadata({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, username, display_name, account_type, bio, city, region, country, is_private",
+      "id, username, display_name, avatar_url, account_type, bio, city, region, country, is_private",
     )
     .eq("username", cleanUsername)
     .maybeSingle<Pick<
       Profile,
       | "account_type"
+      | "avatar_url"
       | "bio"
       | "city"
       | "country"
@@ -773,12 +775,16 @@ export async function generateMetadata({
   const shareImageMedia = sharePost?.feed_media.find(
     (media) => media.media_type === "image",
   );
-  const profileShareImage = shareImageMedia
-    ? mediaUrl(shareImageMedia.storage_bucket, shareImageMedia.storage_path)
-    : brandShareImage;
-  const profileShareImageAlt = shareImageMedia
-    ? `${profile.display_name} public tattoo work on ${siteName}`
-    : brandShareImageAlt;
+  const profileShareImage = profile.avatar_url
+    ? profile.avatar_url
+    : shareImageMedia
+      ? mediaUrl(shareImageMedia.storage_bucket, shareImageMedia.storage_path)
+      : brandShareImage;
+  const profileShareImageAlt = profile.avatar_url
+    ? `${profile.display_name} profile photo on ${siteName}`
+    : shareImageMedia
+      ? `${profile.display_name} public tattoo work on ${siteName}`
+      : brandShareImageAlt;
 
   return {
     alternates: {
@@ -820,7 +826,7 @@ export default async function ProfilePage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, username, display_name, account_type, bio, city, region, country, website_url, instagram_url, is_private, license_verified_at, created_at",
+      "id, username, display_name, avatar_url, account_type, bio, city, region, country, website_url, instagram_url, is_private, license_verified_at, created_at",
     )
     .eq("username", cleanUsername)
     .maybeSingle<Profile>();
@@ -1039,8 +1045,17 @@ export default async function ProfilePage({
 
         <section className="border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-6">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-            <div className="flex size-24 shrink-0 items-center justify-center rounded-md bg-[#171412] text-2xl font-bold text-[#c8953b] shadow-[0_12px_30px_rgba(23,20,18,0.22)]">
-              {initials(profile.display_name)}
+            <div className="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#171412] text-2xl font-bold text-[#c8953b] shadow-[0_12px_30px_rgba(23,20,18,0.22)]">
+              {profile.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  alt=""
+                  className="size-full object-cover"
+                  src={profile.avatar_url}
+                />
+              ) : (
+                initials(profile.display_name)
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <div className="mb-3 flex flex-wrap items-center gap-2">

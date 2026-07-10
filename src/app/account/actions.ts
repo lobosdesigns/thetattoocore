@@ -6,6 +6,9 @@ import { countryCodes, languageCodes } from "@/lib/localization";
 import { createClient } from "@/lib/supabase/server";
 
 const LICENSE_BUCKET = "license-documents";
+const AVATAR_BUCKET = "profile-avatars";
+const AVATAR_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const MAX_AVATAR_BYTES = 4 * 1024 * 1024;
 const LICENSE_TYPES = new Set([
   "application/pdf",
   "image/jpeg",
@@ -96,6 +99,50 @@ function extensionFor(file: File) {
   return "jpg";
 }
 
+function fileFromForm(formData: FormData, name: string) {
+  const value = formData.get(name);
+
+  if (!(value instanceof File) || value.size === 0) {
+    return null;
+  }
+
+  return value;
+}
+
+async function uploadAvatar({
+  file,
+  supabase,
+  userId,
+}: {
+  file: File;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId: string;
+}) {
+  if (!AVATAR_TYPES.has(file.type)) {
+    redirect(accountPath("Use a JPG, PNG, or WebP profile photo."));
+  }
+
+  if (file.size > MAX_AVATAR_BYTES) {
+    redirect(accountPath("Profile photos can be up to 4 MB after optimization."));
+  }
+
+  const storagePath = `${userId}/${crypto.randomUUID()}.${extensionFor(file)}`;
+  const { error } = await supabase.storage
+    .from(AVATAR_BUCKET)
+    .upload(storagePath, file, {
+      cacheControl: "31536000",
+      contentType: file.type,
+      upsert: false,
+    });
+
+  if (error) {
+    redirect(accountPath(error.message || "Could not upload profile photo."));
+  }
+
+  return supabase.storage.from(AVATAR_BUCKET).getPublicUrl(storagePath).data
+    .publicUrl;
+}
+
 export async function updateProfile(formData: FormData) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -111,6 +158,7 @@ export async function updateProfile(formData: FormData) {
   const countryCode = cleanText(formData.get("country_code"), 2).toUpperCase();
   const isAdultConfirmed = formData.get("is_adult_confirmed") === "on";
   const preferredLanguage = cleanText(formData.get("preferred_language"), 8);
+  const avatar = fileFromForm(formData, "avatar");
 
   if (!/^[a-z0-9_]{3,30}$/.test(username)) {
     redirect(accountPath("Username must be 3-30 letters, numbers, or underscores."));
@@ -136,7 +184,10 @@ export async function updateProfile(formData: FormData) {
     redirect(accountPath("You must confirm you are 18 or older to use TheTattooCore."));
   }
 
-  const { error } = await supabase.from("profiles").upsert({
+  const avatarUrl = avatar
+    ? await uploadAvatar({ file: avatar, supabase, userId: claims.sub })
+    : null;
+  const profileUpdate = {
     account_type: accountType,
     adult_terms_accepted_at: new Date().toISOString(),
     bio: cleanText(formData.get("bio"), 500) || null,
@@ -174,7 +225,10 @@ export async function updateProfile(formData: FormData) {
     updated_at: new Date().toISOString(),
     username,
     website_url: cleanUrl(formData.get("website_url")),
-  });
+    ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
+  };
+
+  const { error } = await supabase.from("profiles").upsert(profileUpdate);
 
   if (error) {
     redirect(accountPath(error.message || "Could not save profile."));

@@ -29,9 +29,9 @@ creative work.
   DMs are stable.
 - TheTattooCore supports freedom of body-art expression when content follows
   safety, consent, legality, and adult-content guidelines.
-- Body-art nudity may be allowed only when it exists to show tattooing,
-  piercing, scars, healing, placement, or body art, not pornography or sexualized
-  content.
+- Visible nudity is not allowed for launch. Members should crop or cover
+  private areas before posting tattooing, piercing, scars, healing, placement,
+  or body-art documentation.
 - The platform should feel like a safe home for the body-art community without
   unwanted AI, spam, harassment, scams, or dangerous unprofessional practice.
 

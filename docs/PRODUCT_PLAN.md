@@ -9,6 +9,8 @@
 - Notifications: in-app alerts and unread badges first, important email second, PWA browser push third, then native APNs/FCM push for iOS and Android apps.
 - Composer: one floating plus button that opens the correct posting form for the current column.
 - Mobile composer: posting cards must fit mobile browser screens, scroll to the publish button, and keep advanced fields behind expandable sections.
+- Composer uploads should not show a sensitive-content option during launch; visible nudity is not allowed, so members must crop or cover private areas before posting.
+- Profiles need avatar/profile-photo upload with client-side image optimization, public display on profile pages, and later rollout into feeds, comments, DMs, search, and notifications.
 - Reporting: report controls should look like a small intentional action, then open a separate report card or dropdown so users do not confuse it with normal post options.
 - Mobile report menus must stay inside the viewport; three-dot report cards in 4U, Gossip, Stuff, Gigs, and profiles should not open off-screen on narrow browsers.
 - Report triggers should be labeled enough to reduce false taps; icon-only menus are acceptable only when the surrounding UI makes the report purpose unmistakable.
@@ -70,15 +72,15 @@
 - Use an Instagram-style sharing model: public visitors can open shared links and see a limited preview, but must sign up or log in to continue deeper into the app.
 - Use `/login` as the default logged-out landing page, while shared public content links can still open limited previews when allowed.
 - Shared links should include Open Graph/Twitter card metadata so non-sensitive posts can show the real image, title, and short subtext on Facebook, X, texts, and other social previews.
-- Sensitive links must not expose the media in social previews; use the site logo/brand card as the share image instead.
-- When a logged-out visitor opens sensitive shared content, show the post area blurred with an overlay card that says "you must sign in to see content."
-- If a signed-in user has not accepted the adult body-art terms yet, sensitive shared content should ask for 18+ confirmation instead of telling them to sign in again.
-- Main app feeds should keep public-preview sensitive posts visible only as blurred, non-clickable media with locked captions/comments until the viewer signs in and confirms 18+.
+- Legacy or admin-marked sensitive links must not expose the media in social previews; use the site logo/brand card as the share image instead.
+- If legacy or admin-marked sensitive shared content exists, logged-out visitors should see a blurred/locked preview with a sign-in prompt.
+- If a signed-in user has not accepted the adult body-art terms yet, legacy or admin-marked sensitive shared content should ask for 18+ confirmation instead of telling them to sign in again.
+- Main app feeds should keep any legacy or admin-marked sensitive posts visible only as blurred, non-clickable media with locked captions/comments until the viewer signs in and confirms 18+.
 - Locked sensitive previews should use brand-safe placeholders and must not load the underlying full media URL for logged-out or non-confirmed viewers.
 - Public previews should not expose full comment threads, full profile browsing, posting tools, messaging, follower lists, or full-resolution sensitive media.
 - Profile and site-level share metadata should include brand-safe image alt text; public profile cards can use public non-sensitive work, while private profiles use the brand shield.
-- Content marked sensitive or adult must not be visible to logged-out public visitors.
-- Sensitive content requires login plus 18+ terms acceptance before it can be viewed.
+- Content marked sensitive or adult by legacy data or admin moderation must not be visible to logged-out public visitors.
+- Sensitive-content handling remains available for legacy/admin moderation, but member upload forms should default new content to non-sensitive during the no-visible-nudity launch policy.
 - Add SEO-friendly public profile pages and public listing pages, while respecting profile privacy controls.
 - Add `robots.txt`, metadata, and per-route noindex rules before launch.
 - Do not expose private messages, private account data, unpublished content, or sensitive/adult content to crawlers.
@@ -94,7 +96,7 @@
 - Launch with a no-visible-nudity policy for app-store readiness and lower moderation risk, even when the intent is tattoo, piercing, scar, healing, placement, or body-art documentation.
 - Require members to crop or cover private areas before posting; revisit any body-art nudity policy only after moderation, app policy, and legal review are mature.
 - Prohibit pornography, sexual solicitation, explicit sexual content, exploitative content, and content involving minors in nudity or sexualized contexts.
-- Require users to label sensitive non-nude body-art content where appropriate.
+- Do not ask members to self-label uploads as sensitive during launch; moderation can still hide or restrict edge-case content if needed.
 - Add moderator tools for hiding, warning, removing, and escalating content.
 - Add report reasons for nudity, sexual content, sensitive non-nude body-art context, minors, harassment, scams, unsafe practices, and illegal goods/services.
 
@@ -128,6 +130,7 @@
 ## Media Pipeline
 
 - Add client-side image optimization early so large phone photos are resized and compressed before upload.
+- Add profile-photo uploads using the same optimization-first approach, with smaller avatar limits than feed media.
 - Keep generous but real upload limits to prevent runaway storage, bandwidth, moderation, and abuse costs.
 - Start with image compression to Web-friendly JPEG/WebP dimensions, around 1600-2200px max edge for feed media and smaller generated previews where needed.
 - Preserve enough image quality for tattoo detail while avoiding full-resolution camera originals in normal feed delivery.

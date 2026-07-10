@@ -16,7 +16,7 @@ const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
 const imageVideoAccept = `${imageAccept},video/mp4,video/quicktime,video/webm`;
 
 const visibilityOptions = [
-  ["Public preview", "Searchable preview for logged-out visitors when the post is not sensitive."],
+  ["Public preview", "Searchable preview for logged-out visitors."],
   ["Members only", "Visible after login. Good for shop talk, community posts, and member context."],
   ["Private", "Only you can see it for now. Useful for drafts or content you are not ready to share."],
 ] as const;
@@ -92,43 +92,6 @@ function VisibilityControl() {
   );
 }
 
-const sensitiveExamples = [
-  "Fresh, healing, scar cover, piercing, or body modification detail.",
-  "No visible nudity for launch. Crop or cover private areas before posting.",
-  "No pornography, sexual solicitation, or sexualized minor content.",
-] as const;
-
-function SensitiveControls() {
-  return (
-    <section className="rounded-md border border-[#cfc8bd] bg-[#fff7ec] p-3">
-      <label className="flex items-start gap-2 text-sm font-semibold">
-        <input className="mt-1 size-4" name="is_sensitive" type="checkbox" />
-        <span>Mark as sensitive non-nude body-art content</span>
-      </label>
-      <p className="mt-2 text-xs leading-5 text-[#766d62]">
-        Use this when the content is acceptable body-art documentation but
-        should require login and 18+ confirmation before viewing.
-      </p>
-      <select
-        className="mt-3 h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
-        name="sensitive_reason"
-      >
-        <option value="healing">Healing or fresh work</option>
-        <option value="scar_cover">Scar cover or medical context</option>
-        <option value="piercing">Piercing or body modification</option>
-        <option value="other">Other body-art context</option>
-      </select>
-      <div className="mt-3 grid gap-2">
-        {sensitiveExamples.map((example) => (
-          <p className="text-xs leading-5 text-[#766d62]" key={example}>
-            {example}
-          </p>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function DmAttachmentControl() {
   return (
     <ComposerDetails title="Photo attachment">
@@ -189,9 +152,8 @@ export function FloatingComposer({
                 placeholder="Austin, TX"
               />
             </ComposerDetails>
-            <ComposerDetails title="Visibility and sensitive content">
+            <ComposerDetails title="Visibility">
               <VisibilityControl />
-              <SensitiveControls />
             </ComposerDetails>
             <MediaInput accept={imageVideoAccept} name="media" required />
             <ComposerSubmit pendingLabel="Publishing">Publish</ComposerSubmit>
@@ -214,9 +176,8 @@ export function FloatingComposer({
               required
               validationMessage="Gossip post needs at least 3 characters."
             />
-            <ComposerDetails title="Visibility and sensitive content">
+            <ComposerDetails title="Visibility">
               <VisibilityControl />
-              <SensitiveControls />
             </ComposerDetails>
             <MediaInput accept={imageAccept} name="media" videoAllowed={false} />
             <ComposerSubmit pendingLabel="Posting">Post thread</ComposerSubmit>
@@ -292,9 +253,8 @@ export function FloatingComposer({
                   />
                 </div>
               </ComposerDetails>
-              <ComposerDetails title="Visibility and sensitive content">
+              <ComposerDetails title="Visibility">
                 <VisibilityControl />
-                <SensitiveControls />
               </ComposerDetails>
               <MediaInput accept={imageVideoAccept} name="media" />
               <ComposerSubmit pendingLabel="Publishing">Publish listing</ComposerSubmit>
@@ -398,9 +358,8 @@ export function FloatingComposer({
                 wrapperClassName="w-full"
               />
             </ComposerDetails>
-            <ComposerDetails title="Visibility and sensitive content">
+            <ComposerDetails title="Visibility">
               <VisibilityControl />
-              <SensitiveControls />
             </ComposerDetails>
             <MediaInput accept={imageAccept} name="media" videoAllowed={false} />
             <ComposerSubmit pendingLabel="Posting" type="submit">
