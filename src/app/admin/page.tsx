@@ -1831,6 +1831,73 @@ export default async function AdminPage({
   const reviewedAdCampaigns = adCampaigns.filter(
     (campaign) => campaign.status !== "pending_review",
   );
+  const overviewMode = true;
+  const overviewCards = [
+    {
+      action: "Open users",
+      body: "Paged account review, role changes, suspensions, bans, and moderation notes.",
+      count: userCount,
+      href: "/admin/users",
+      label: "Users",
+      meta: `${users.length} latest previewed`,
+    },
+    {
+      action: "Verification page planned",
+      body: "Artist, studio, and vendor license approval should move to a dedicated queue page.",
+      count: pendingLicenseRequests.length,
+      href: "/admin#verification",
+      label: "Verification",
+      meta: `${approvedLicenseRequests.length} approved / ${rejectedLicenseRequests.length} rejected in latest slice`,
+    },
+    {
+      action: "Reports page planned",
+      body: "Content reports need their own review page with filters, status, and pagination.",
+      count: reports.length,
+      href: "/admin#reports",
+      label: "Reports",
+      meta: `${priorityOpenReportItems.length} priority open`,
+    },
+    {
+      action: "Ads page planned",
+      body: "Campaign review, placements, bids, and performance should not live in the overview.",
+      count: pendingAdCampaigns.length,
+      href: "/admin#ads",
+      label: "Ads",
+      meta: `${reviewedAdCampaigns.length} reviewed in latest slice`,
+    },
+    {
+      action: "Data page planned",
+      body: "Deletion and privacy requests need a focused operational page and audit history.",
+      count: openAccountDeletionRequests.length,
+      href: "/admin#data-requests",
+      label: "Data requests",
+      meta: `${closedAccountDeletionRequests.length} recently closed`,
+    },
+    {
+      action: "Content page planned",
+      body: "Media, 4U, Gossip, Stuff, and Gigs moderation should split into dedicated review pages.",
+      count: reviewItems.length,
+      href: "/admin#content",
+      label: "Content",
+      meta: `${pendingAdCampaigns.length + reports.length + reviewItems.length} combined active queue signals`,
+    },
+    {
+      action: "Mail page planned",
+      body: "SMTP status and test tools should move to a smaller settings page.",
+      count: mailSettings?.is_enabled ? 1 : 0,
+      href: "/admin#mail-settings",
+      label: "Mail",
+      meta: mailSettings?.is_enabled ? "SMTP enabled" : "SMTP disabled",
+    },
+    {
+      action: "Media ops page planned",
+      body: "Optimization, thumbnail, and video-processing notes should become a media ops page.",
+      count: mediaOpsStages.length,
+      href: "/admin#media-ops",
+      label: "Media ops",
+      meta: `${mediaCostRules.length} cost rules tracked`,
+    },
+  ];
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
@@ -1928,6 +1995,87 @@ export default async function AdminPage({
             ))}
           </section>
 
+          <section className="mb-6 grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+            {overviewCards.map((card) => (
+              <Link
+                className="ttc-card flex min-h-48 flex-col justify-between rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4 hover:border-[#c8953b]"
+                href={card.href}
+                key={card.label}
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-3">
+                    <h2 className="text-lg font-bold">{card.label}</h2>
+                    <span className="rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-bold text-[#4f473f]">
+                      {formatCount(card.count)}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-[#4f473f]">
+                    {card.body}
+                  </p>
+                  <p className="mt-3 rounded-md border border-[#e5ded4] bg-white px-3 py-2 text-xs leading-5 text-[#766d62]">
+                    {card.meta}
+                  </p>
+                </div>
+                <span className="mt-4 text-sm font-bold text-[#171412]">
+                  {card.action}
+                </span>
+              </Link>
+            ))}
+          </section>
+
+          <section className="mb-6 rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-5">
+            <div className="flex items-center gap-3">
+              <Activity className="size-5" />
+              <h2 className="text-lg font-bold">Recent activity</h2>
+            </div>
+            {activityItems.length ? (
+              <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                {activityItems.slice(0, 6).map((item) => (
+                  <article
+                    className="rounded-md border border-[#e5ded4] bg-white p-3"
+                    key={`${item.kind}-${item.id}`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold capitalize">
+                          {item.label}
+                        </p>
+                        <p className="mt-1 text-xs text-[#766d62]">
+                          @{item.actorUsername} - {timeAgo(item.createdAt)}
+                        </p>
+                      </div>
+                      <span className="shrink-0 rounded-md bg-[#efe7da] px-2 py-1 text-xs font-semibold capitalize text-[#4f473f]">
+                        {item.kind}
+                      </span>
+                    </div>
+                    {item.context ? (
+                      <p className="mt-2 text-xs capitalize text-[#766d62]">
+                        {item.context}
+                      </p>
+                    ) : null}
+                    {item.note ? (
+                      <p className="mt-2 line-clamp-2 text-sm leading-5 text-[#4f473f]">
+                        {item.note}
+                      </p>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-4 rounded-md border border-[#e5ded4] bg-white p-4 text-sm text-[#4f473f]">
+                No admin or moderation activity has been logged yet.
+              </p>
+            )}
+          </section>
+
+          <p className="rounded-md border border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 text-sm leading-6 text-[#4f473f]">
+            This overview intentionally stays short. Full queues belong on
+            dedicated admin pages so Users, Ads, Reports, Verification, Stuff,
+            Merch, Gigs, Mail, and Data Requests can scale without turning the
+            dashboard into a long scroll.
+          </p>
+
+          {overviewMode ? null : (
           <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,380px)]">
             <section className="min-w-0 space-y-5">
               <div
@@ -2464,6 +2612,7 @@ export default async function AdminPage({
               </div>
             </aside>
           </div>
+          )}
         </section>
       </div>
     </main>
