@@ -24,7 +24,9 @@ import {
   archiveGig,
   createPostComment,
   createThreadComment,
+  togglePostCommentLike,
   togglePostLike,
+  toggleThreadCommentLike,
   toggleThreadLike,
 } from "./actions";
 import { AdImpressionBeacon } from "./ad-impression-beacon";
@@ -172,6 +174,8 @@ type PostLike = {
 type PostComment = {
   id: string;
   body: string;
+  parent_id: string | null;
+  post_comment_likes: PostLike[];
   created_at: string;
   profiles: Pick<Profile, "avatar_url" | "display_name" | "username"> | null;
 };
@@ -183,6 +187,8 @@ type ThreadLike = {
 type ThreadComment = {
   id: string;
   body: string;
+  parent_id: string | null;
+  thread_comment_likes: ThreadLike[];
   created_at: string;
   profiles: Pick<Profile, "avatar_url" | "display_name" | "username"> | null;
 };
@@ -1117,7 +1123,7 @@ export default async function Home({
     supabase
       .from("feed_posts")
       .select(
-        "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, created_at, profiles:profiles!post_comments_author_id_fkey(avatar_url, display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, parent_id, created_at, post_comment_likes(user_id), profiles:profiles!post_comments_author_id_fkey(avatar_url, display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("is_published", true)
       .eq("moderation_status", "active")
@@ -1131,7 +1137,7 @@ export default async function Home({
     supabase
       .from("thread_posts")
       .select(
-        "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, body, created_at, profiles:profiles!thread_comments_author_id_fkey(avatar_url, display_name, username)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, body, parent_id, created_at, thread_comment_likes(user_id), profiles:profiles!thread_comments_author_id_fkey(avatar_url, display_name, username)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("moderation_status", "active")
       .order("created_at", { ascending: false })
@@ -1474,11 +1480,20 @@ export default async function Home({
                     <TranslationCue preferredLanguage={preferredLanguage} />
                     {!isPostLocked && post.post_comments.length ? (
                       <div className="space-y-2 border-t border-[#e5ded4] pt-3">
-                        {post.post_comments.slice(0, 2).map((comment) => (
-                          <p
-                            className="flex items-start gap-2 text-sm leading-5"
-                            key={comment.id}
-                          >
+                        {post.post_comments
+                          .filter((comment) => !comment.parent_id)
+                          .slice(0, 2)
+                          .map((comment) => {
+                            const likedComment = comment.post_comment_likes.some(
+                              (like) => like.user_id === claims?.sub,
+                            );
+                            const replies = post.post_comments
+                              .filter((reply) => reply.parent_id === comment.id)
+                              .slice(0, 2);
+
+                            return (
+                          <div className="space-y-2" key={comment.id}>
+                          <div className="flex items-start gap-2 text-sm leading-5">
                             <ProfileAvatar profile={comment.profiles} size="sm" />
                             <span className="min-w-0 flex-1">
                             {comment.profiles?.username ? (
@@ -1493,8 +1508,59 @@ export default async function Home({
                             )}{" "}
                             {comment.body}
                             </span>
-                          </p>
-                        ))}
+                          </div>
+                          <div className="ml-9 flex flex-wrap items-center gap-3 text-xs font-semibold text-[#766d62]">
+                            <form action={togglePostCommentLike}>
+                              <input name="comment_id" type="hidden" value={comment.id} />
+                              <input name="liked" type="hidden" value={likedComment ? "true" : "false"} />
+                              <input name="return_path" type="hidden" value="/#feed" />
+                              <button className="flex items-center gap-1">
+                                <Heart className={`size-3.5 ${likedComment ? "fill-[#c8953b] text-[#c8953b]" : ""}`} />
+                                {comment.post_comment_likes.length}
+                              </button>
+                            </form>
+                            {canCreate ? (
+                              <details>
+                                <summary className="cursor-pointer list-none">Reply</summary>
+                                <form action={createPostComment} className="mt-2 flex items-start gap-2">
+                                  <input name="post_id" type="hidden" value={post.id} />
+                                  <input name="parent_id" type="hidden" value={comment.id} />
+                                  <input name="return_path" type="hidden" value="/#feed" />
+                                  <WordLimitedField
+                                    className="h-9 w-full rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+                                    emojiShortcuts
+                                    maxLength={300}
+                                    maxWords={40}
+                                    minTrimmedLength={1}
+                                    name="body"
+                                    placeholder="Reply"
+                                    required
+                                    validationMessage="Reply cannot be empty."
+                                  />
+                                  <PendingSubmitButton
+                                    aria-label="Post reply"
+                                    className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                                    pendingChildren={<LoaderCircle className="size-4 animate-spin" />}
+                                  >
+                                    <Send className="size-4" />
+                                  </PendingSubmitButton>
+                                </form>
+                              </details>
+                            ) : null}
+                          </div>
+                          {replies.length ? (
+                            <div className="ml-9 space-y-1 border-l border-[#e5ded4] pl-3">
+                              {replies.map((reply) => (
+                                <p className="text-xs leading-5 text-[#4f473f]" key={reply.id}>
+                                  <span className="font-semibold">{reply.profiles?.display_name ?? "Member"}</span>{" "}
+                                  {reply.body}
+                                </p>
+                              ))}
+                            </div>
+                          ) : null}
+                          </div>
+                            );
+                          })}
                       </div>
                     ) : null}
                     {canCreate ? (
@@ -1696,27 +1762,139 @@ export default async function Home({
                       ) : null}
                       {thread.thread_comments.length ? (
                         <div className="mt-3 space-y-2">
-                          {thread.thread_comments.slice(0, 2).map((comment) => (
-                            <p
-                              className="flex items-start gap-2 rounded-md bg-[#f7f4ef] px-3 py-2 text-sm leading-5"
-                              key={comment.id}
-                            >
-                              <ProfileAvatar profile={comment.profiles} size="sm" />
-                              <span className="min-w-0 flex-1">
-                              {comment.profiles?.username ? (
-                                <Link
-                                  className="font-semibold hover:underline"
-                                  href={`/u/${comment.profiles.username}`}
+                          {thread.thread_comments
+                            .filter((comment) => !comment.parent_id)
+                            .slice(0, 2)
+                            .map((comment) => {
+                              const likedComment = comment.thread_comment_likes.some(
+                                (like) => like.user_id === claims?.sub,
+                              );
+                              const replies = thread.thread_comments
+                                .filter((reply) => reply.parent_id === comment.id)
+                                .slice(0, 2);
+
+                              return (
+                                <div
+                                  className="rounded-md bg-[#f7f4ef] px-3 py-2"
+                                  key={comment.id}
                                 >
-                                  {comment.profiles.display_name ?? "Member"}
-                                </Link>
-                              ) : (
-                                <span className="font-semibold">Member</span>
-                              )}{" "}
-                              {comment.body}
-                              </span>
-                            </p>
-                          ))}
+                                  <div className="flex items-start gap-2 text-sm leading-5">
+                                    <ProfileAvatar
+                                      profile={comment.profiles}
+                                      size="sm"
+                                    />
+                                    <span className="min-w-0 flex-1">
+                                      {comment.profiles?.username ? (
+                                        <Link
+                                          className="font-semibold hover:underline"
+                                          href={`/u/${comment.profiles.username}`}
+                                        >
+                                          {comment.profiles.display_name ??
+                                            "Member"}
+                                        </Link>
+                                      ) : (
+                                        <span className="font-semibold">
+                                          Member
+                                        </span>
+                                      )}{" "}
+                                      {comment.body}
+                                    </span>
+                                  </div>
+                                  <div className="ml-9 mt-2 flex flex-wrap items-center gap-3 text-xs font-semibold text-[#766d62]">
+                                    <form action={toggleThreadCommentLike}>
+                                      <input
+                                        name="comment_id"
+                                        type="hidden"
+                                        value={comment.id}
+                                      />
+                                      <input
+                                        name="liked"
+                                        type="hidden"
+                                        value={likedComment ? "true" : "false"}
+                                      />
+                                      <input
+                                        name="return_path"
+                                        type="hidden"
+                                        value="/#threads"
+                                      />
+                                      <button className="flex items-center gap-1">
+                                        <Heart
+                                          className={`size-3.5 ${
+                                            likedComment
+                                              ? "fill-[#c8953b] text-[#c8953b]"
+                                              : ""
+                                          }`}
+                                        />
+                                        {comment.thread_comment_likes.length}
+                                      </button>
+                                    </form>
+                                    {canCreate ? (
+                                      <details>
+                                        <summary className="cursor-pointer list-none">
+                                          Reply
+                                        </summary>
+                                        <form
+                                          action={createThreadComment}
+                                          className="mt-2 flex items-start gap-2"
+                                        >
+                                          <input
+                                            name="thread_id"
+                                            type="hidden"
+                                            value={thread.id}
+                                          />
+                                          <input
+                                            name="parent_id"
+                                            type="hidden"
+                                            value={comment.id}
+                                          />
+                                          <input
+                                            name="return_path"
+                                            type="hidden"
+                                            value="/#threads"
+                                          />
+                                          <WordLimitedField
+                                            className="h-9 w-full rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+                                            emojiShortcuts
+                                            maxCharacters={2000}
+                                            maxLength={2000}
+                                            minTrimmedLength={1}
+                                            name="body"
+                                            placeholder="Reply"
+                                            required
+                                            validationMessage="Reply cannot be empty."
+                                          />
+                                          <PendingSubmitButton
+                                            aria-label="Post reply"
+                                            className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                                            pendingChildren={
+                                              <LoaderCircle className="size-4 animate-spin" />
+                                            }
+                                          >
+                                            <Send className="size-4" />
+                                          </PendingSubmitButton>
+                                        </form>
+                                      </details>
+                                    ) : null}
+                                  </div>
+                                  {replies.length ? (
+                                    <div className="ml-9 mt-2 space-y-1 border-l border-[#e5ded4] pl-3">
+                                      {replies.map((reply) => (
+                                        <p
+                                          className="text-xs leading-5 text-[#4f473f]"
+                                          key={reply.id}
+                                        >
+                                          <span className="font-semibold">
+                                            {reply.profiles?.display_name ??
+                                              "Member"}
+                                          </span>{" "}
+                                          {reply.body}
+                                        </p>
+                                      ))}
+                                    </div>
+                                  ) : null}
+                                </div>
+                              );
+                            })}
                         </div>
                       ) : null}
                       {canCreate ? (

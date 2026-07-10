@@ -11,7 +11,11 @@ import {
   Send,
   Video,
 } from "lucide-react";
-import { createPostComment, togglePostLike } from "@/app/actions";
+import {
+  createPostComment,
+  togglePostCommentLike,
+  togglePostLike,
+} from "@/app/actions";
 import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
@@ -72,6 +76,8 @@ type PostComment = {
   body: string;
   created_at: string;
   id: string;
+  parent_id: string | null;
+  post_comment_likes: PostLike[];
   profiles: Pick<Profile, "display_name" | "username"> | null;
 };
 
@@ -138,7 +144,7 @@ async function getPost(id: string) {
   const { data } = await supabase
     .from("feed_posts")
     .select(
-      "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, created_at, profiles:profiles!post_comments_author_id_fkey(display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, account_type, license_verified_at)",
+      "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, parent_id, created_at, post_comment_likes(user_id), profiles:profiles!post_comments_author_id_fkey(display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, account_type, license_verified_at)",
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -507,19 +513,126 @@ export default async function PostPage({ params }: PostPageProps) {
               )}
               <div className="space-y-3">
                 {isSignedIn && showPost && post.post_comments.length ? (
-                  post.post_comments.slice(0, 12).map((comment) => (
-                    <div
-                      className="border-t border-[#e5ded4] pt-3 text-sm"
-                      key={comment.id}
-                    >
-                      <p className="font-semibold">
-                        {comment.profiles?.display_name ?? "Member"}
-                      </p>
-                      <p className="mt-1 leading-5 text-[#4f473f]">
-                        {comment.body}
-                      </p>
-                    </div>
-                  ))
+                  post.post_comments
+                    .filter((comment) => !comment.parent_id)
+                    .slice(0, 12)
+                    .map((comment) => {
+                      const likedComment = comment.post_comment_likes.some(
+                        (like) => like.user_id === claims?.sub,
+                      );
+                      const replies = post.post_comments.filter(
+                        (reply) => reply.parent_id === comment.id,
+                      );
+
+                      return (
+                        <div
+                          className="border-t border-[#e5ded4] pt-3 text-sm"
+                          key={comment.id}
+                        >
+                          <p className="font-semibold">
+                            {comment.profiles?.username ? (
+                              <Link
+                                className="hover:underline"
+                                href={`/u/${comment.profiles.username}`}
+                              >
+                                {comment.profiles.display_name ?? "Member"}
+                              </Link>
+                            ) : (
+                              "Member"
+                            )}
+                          </p>
+                          <p className="mt-1 leading-5 text-[#4f473f]">
+                            {comment.body}
+                          </p>
+                          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs font-semibold text-[#766d62]">
+                            <form action={togglePostCommentLike}>
+                              <input
+                                name="comment_id"
+                                type="hidden"
+                                value={comment.id}
+                              />
+                              <input
+                                name="liked"
+                                type="hidden"
+                                value={likedComment ? "true" : "false"}
+                              />
+                              <input
+                                name="return_path"
+                                type="hidden"
+                                value={returnPath}
+                              />
+                              <button className="flex items-center gap-1">
+                                <Heart
+                                  className={`size-3.5 ${
+                                    likedComment
+                                      ? "fill-[#c8953b] text-[#c8953b]"
+                                      : ""
+                                  }`}
+                                />
+                                {comment.post_comment_likes.length}
+                              </button>
+                            </form>
+                            <details>
+                              <summary className="cursor-pointer list-none">
+                                Reply
+                              </summary>
+                              <form
+                                action={createPostComment}
+                                className="mt-2 flex items-start gap-2"
+                              >
+                                <input
+                                  name="post_id"
+                                  type="hidden"
+                                  value={post.id}
+                                />
+                                <input
+                                  name="parent_id"
+                                  type="hidden"
+                                  value={comment.id}
+                                />
+                                <input
+                                  name="return_path"
+                                  type="hidden"
+                                  value={returnPath}
+                                />
+                                <WordLimitedField
+                                  className="h-9 w-full rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+                                  emojiShortcuts
+                                  maxLength={220}
+                                  maxWords={40}
+                                  minTrimmedLength={1}
+                                  name="body"
+                                  placeholder="Reply"
+                                  required
+                                  validationMessage="Reply cannot be empty."
+                                />
+                                <PendingSubmitButton
+                                  aria-label="Post reply"
+                                  className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                                >
+                                  <Send className="size-4" />
+                                </PendingSubmitButton>
+                              </form>
+                            </details>
+                          </div>
+                          {replies.length ? (
+                            <div className="mt-3 space-y-2 border-l border-[#e5ded4] pl-3">
+                              {replies.map((reply) => (
+                                <div
+                                  className="rounded-md bg-[#f7f4ef] px-3 py-2 text-xs leading-5 text-[#4f473f]"
+                                  key={reply.id}
+                                >
+                                  <span className="font-semibold text-[#171412]">
+                                    {reply.profiles?.display_name ?? "Member"}
+                                  </span>{" "}
+                                  {reply.body}
+                                </div>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      );
+                    })
                 ) : (
                   <p className="rounded-md border border-dashed border-[#cfc8bd] bg-[#fffdf9] p-3 text-sm text-[#766d62]">
                     {isSignedIn && showPost

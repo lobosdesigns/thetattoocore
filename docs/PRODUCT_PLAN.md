@@ -2,8 +2,8 @@
 
 ## Core Experience
 
-- Feed: image posts and short reel clips, 40-word captions, likes, and short 40-word comments.
-- Threads: longer posts, optional image, replies, likes, and community discussion.
+- Feed: image posts and short reel clips, 40-word captions, likes, short 40-word comments, comment likes, and comment replies. Comment likes/replies started for launch.
+- Threads: longer posts, optional image, replies, likes, comment likes, and community discussion. Comment likes/replies started for launch.
 - Marketplace/Stuff: verified artists, studios, and vendors can buy, sell, and trade approved body-art goods and services; fans can browse but not transact or contact sellers.
 - Messages: integrated direct messenger for bookings, marketplace questions, and collaboration.
 - Notifications: in-app alerts and unread badges first, important email second, PWA browser push third, then native APNs/FCM push for iOS and Android apps.
@@ -58,7 +58,7 @@
 - Avoid a flat beige-only look; the brand should feel like a modern creative community, not a generic marketplace.
 - Continue pushing the app toward a sleeker, darker, higher-contrast social look with more pop, sharper mobile controls, and a stronger younger-crowd feel.
 - Add more tech-forward polish across the app: layered opacity, stronger card borders, cleaner shadows, darker chrome, sharper active states, and less plain beige surface area.
-- Notifications and admin need another mobile responsive pass; no panels, buttons, or cards should drift out of frame on narrow browser viewports.
+- Notifications and admin need another mobile responsive pass; no panels, buttons, or cards should drift out of frame on narrow browser viewports. Notifications received another mobile containment pass for launch.
 - Admin should move away from one long cluttered page toward clearer tab/menu sections for Overview, Verification, Reports, Users, Ads, Data, Media, and Mail.
 - Account/profile editing should follow the same tabbed cleanup direction as admin so profile, language, privacy, notifications, verification, ads, and data do not feel like one long cluttered scroll. Started for launch with sticky account tabs and tabbed profile sub-sections.
 - The 4U language preference notice should default to English but behave like a light onboarding cue: hide after the first real interaction such as tap, click, scroll, or swipe.

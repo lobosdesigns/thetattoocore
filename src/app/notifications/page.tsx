@@ -159,8 +159,8 @@ export default async function NotificationsPage() {
     <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
       <div className="mx-auto min-h-screen w-full max-w-3xl overflow-x-hidden bg-[#ece8df] shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_28px_90px_rgba(0,0,0,0.42)]">
         <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#ece8df]/95 px-4 py-3 backdrop-blur">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className="grid min-w-0 gap-3 sm:flex sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-3">
               <Link
                 aria-label="Back to home"
                 className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
@@ -176,20 +176,20 @@ export default async function NotificationsPage() {
               </div>
             </div>
 
-            <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:flex-none">
+            <div className="grid min-w-0 grid-cols-2 gap-2 sm:flex sm:flex-none sm:items-center sm:justify-end">
               <Link
                 className="flex h-10 min-w-0 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9]/95 px-3 text-sm font-semibold shadow-sm"
                 href="/account#notification-settings"
               >
                 <Settings className="size-4" />
-                <span className="hidden sm:inline">Settings</span>
+                <span>Settings</span>
               </Link>
               {unreadCount ? (
                 <form action={markAllNotificationsRead} className="min-w-0">
                   <button className="flex h-10 min-w-0 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9]/95 px-3 text-sm font-semibold shadow-sm">
                     <Check className="size-4" />
-                    <span className="hidden sm:inline">Mark all read</span>
-                    <span className="sm:hidden">Read</span>
+                    <span className="hidden min-[390px]:inline">Mark all read</span>
+                    <span className="min-[390px]:hidden">Read</span>
                   </button>
                 </form>
               ) : null}
@@ -264,8 +264,8 @@ export default async function NotificationsPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold">
+                      <div className="min-w-0 break-words">
+                        <p className="text-sm font-bold break-words">
                           {notification.title}
                         </p>
                         <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-[#766d62]">
@@ -276,7 +276,7 @@ export default async function NotificationsPage() {
                             {subjectLabel(notification.subject_type)}
                           </span>
                         </div>
-                        <p className="mt-1 text-sm leading-6 text-[#4f473f]">
+                        <p className="mt-1 break-words text-sm leading-6 text-[#4f473f]">
                           {notification.body}
                         </p>
                       </div>

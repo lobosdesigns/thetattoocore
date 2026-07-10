@@ -872,6 +872,7 @@ export async function createPostComment(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const body = cleanWords(formData.get("body"), 40);
   const postId = cleanId(formData.get("post_id"));
+  const parentId = cleanId(formData.get("parent_id"));
   const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
 
   if (!postId) {
@@ -885,6 +886,7 @@ export async function createPostComment(formData: FormData) {
   const { error } = await supabase.from("post_comments").insert({
     author_id: userId,
     body,
+    parent_id: parentId || null,
     post_id: postId,
   });
 
@@ -912,6 +914,36 @@ export async function createPostComment(formData: FormData) {
     title: "New feed comment",
     type: "feed_comment",
   });
+
+  revalidatePath("/");
+  revalidatePath(returnPath);
+  redirect(returnPath);
+}
+
+export async function togglePostCommentLike(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const commentId = cleanId(formData.get("comment_id"));
+  const liked = cleanText(formData.get("liked"), 8) === "true";
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
+
+  if (!commentId) {
+    redirect(homeMessage("Choose a comment first."));
+  }
+
+  const result = liked
+    ? await supabase
+        .from("post_comment_likes")
+        .delete()
+        .eq("comment_id", commentId)
+        .eq("user_id", userId)
+    : await supabase.from("post_comment_likes").upsert({
+        comment_id: commentId,
+        user_id: userId,
+      });
+
+  if (result.error) {
+    redirect(homeMessage(result.error.message || "Could not update comment like."));
+  }
 
   revalidatePath("/");
   revalidatePath(returnPath);
@@ -975,6 +1007,7 @@ export async function createThreadComment(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const body = cleanText(formData.get("body"), 2000);
   const threadId = cleanId(formData.get("thread_id"));
+  const parentId = cleanId(formData.get("parent_id"));
   const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
 
   if (!threadId) {
@@ -988,6 +1021,7 @@ export async function createThreadComment(formData: FormData) {
   const { error } = await supabase.from("thread_comments").insert({
     author_id: userId,
     body,
+    parent_id: parentId || null,
     thread_id: threadId,
   });
 
@@ -1015,6 +1049,36 @@ export async function createThreadComment(formData: FormData) {
     title: "New thread comment",
     type: "thread_comment",
   });
+
+  revalidatePath("/");
+  revalidatePath(returnPath);
+  redirect(returnPath);
+}
+
+export async function toggleThreadCommentLike(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const commentId = cleanId(formData.get("comment_id"));
+  const liked = cleanText(formData.get("liked"), 8) === "true";
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
+
+  if (!commentId) {
+    redirect(homeMessage("Choose a comment first."));
+  }
+
+  const result = liked
+    ? await supabase
+        .from("thread_comment_likes")
+        .delete()
+        .eq("comment_id", commentId)
+        .eq("user_id", userId)
+    : await supabase.from("thread_comment_likes").upsert({
+        comment_id: commentId,
+        user_id: userId,
+      });
+
+  if (result.error) {
+    redirect(homeMessage(result.error.message || "Could not update comment like."));
+  }
 
   revalidatePath("/");
   revalidatePath(returnPath);
