@@ -10,6 +10,7 @@ import { isVerifiedProfessional } from "@/lib/verification";
 const MEDIA_BUCKET = "tattoo-media";
 const VISIBILITY_VALUES = new Set(["public_preview", "members", "private"]);
 const REPORT_SUBJECT_TYPES = new Set([
+  "comment",
   "profile",
   "feed_post",
   "gig",
@@ -42,7 +43,7 @@ const REPORT_SUBJECT_CONFIG = {
   thread_post: { ownerColumn: "author_id", table: "thread_posts" },
 } as const;
 
-type ReportSubjectType = keyof typeof REPORT_SUBJECT_CONFIG;
+type ReportSubjectType = keyof typeof REPORT_SUBJECT_CONFIG | "comment";
 type SavedSubjectType =
   | "feed_post"
   | "gig"
@@ -170,6 +171,28 @@ function reportRedirect({
       path,
     }),
   );
+}
+
+async function findCommentSubjectOwner({
+  commentId,
+  supabase,
+}: {
+  commentId: string;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+}) {
+  const postComment = await supabase
+    .from("post_comments")
+    .select("author_id")
+    .eq("id", commentId)
+    .maybeSingle<{ author_id: string }>();
+
+  if (postComment.data || postComment.error) return postComment;
+
+  return supabase
+    .from("thread_comments")
+    .select("author_id")
+    .eq("id", commentId)
+    .maybeSingle<{ author_id: string }>();
 }
 
 function cleanVisibility(
@@ -638,9 +661,7 @@ export async function createContentReport(formData: FormData) {
   const details = cleanText(formData.get("details"), 500);
   const returnPath = cleanText(formData.get("return_path"), 200) || "/";
   const returnHash = cleanText(formData.get("return_hash"), 80);
-  const subjectConfig = REPORT_SUBJECT_CONFIG[subjectType];
-
-  if (!REPORT_SUBJECT_TYPES.has(subjectType) || !subjectId || !subjectConfig) {
+  if (!REPORT_SUBJECT_TYPES.has(subjectType) || !subjectId) {
     reportRedirect({
       hash: returnHash,
       message: "Choose something to report first.",
@@ -648,11 +669,17 @@ export async function createContentReport(formData: FormData) {
     });
   }
 
-  const { data: subject, error: subjectError } = await supabase
-    .from(subjectConfig.table)
-    .select(subjectConfig.ownerColumn)
-    .eq("id", subjectId)
-    .maybeSingle<Record<string, string>>();
+  const subjectConfig =
+    subjectType === "comment" ? null : REPORT_SUBJECT_CONFIG[subjectType];
+  const subjectResult = subjectConfig
+    ? await supabase
+        .from(subjectConfig.table)
+        .select(subjectConfig.ownerColumn)
+        .eq("id", subjectId)
+        .maybeSingle<Record<string, string>>()
+    : await findCommentSubjectOwner({ commentId: subjectId, supabase });
+  const subject = subjectResult.data;
+  const subjectError = subjectResult.error;
 
   if (subjectError || !subject) {
     reportRedirect({
@@ -662,7 +689,21 @@ export async function createContentReport(formData: FormData) {
     });
   }
 
-  if (subject[subjectConfig.ownerColumn] === userId) {
+  let ownerId: string;
+
+  if (subjectType === "comment") {
+    ownerId = (subject as { author_id: string }).author_id;
+  } else if (subjectConfig) {
+    ownerId = (subject as Record<string, string>)[subjectConfig.ownerColumn];
+  } else {
+    reportRedirect({
+      hash: returnHash,
+      message: "Choose something to report first.",
+      path: returnPath,
+    });
+  }
+
+  if (ownerId === userId) {
     reportRedirect({
       hash: returnHash,
       message: "You cannot report your own content.",
@@ -994,6 +1035,148 @@ export async function togglePostCommentLike(formData: FormData) {
   redirect(returnPath);
 }
 
+export async function editPostComment(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const commentId = cleanId(formData.get("comment_id"));
+  const body = cleanWords(formData.get("body"), 40);
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
+
+  if (!commentId || !body) {
+    redirect(homeMessage("Comment cannot be empty.", "feed"));
+  }
+
+  const { error } = await supabase
+    .from("post_comments")
+    .update({
+      body,
+      deleted_at: null,
+      deleted_by: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", commentId)
+    .eq("author_id", userId);
+
+  if (error) {
+    redirect(homeMessage(error.message || "Could not edit comment.", "feed"));
+  }
+
+  revalidatePath("/");
+  revalidatePath(returnPath);
+  redirect(returnPath);
+}
+
+export async function deletePostComment(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const commentId = cleanId(formData.get("comment_id"));
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
+
+  if (!commentId) {
+    redirect(homeMessage("Choose a comment first.", "feed"));
+  }
+
+  const { data: comment, error: commentError } = await supabase
+    .from("post_comments")
+    .select("author_id, feed_posts!inner(author_id)")
+    .eq("id", commentId)
+    .maybeSingle<{
+      author_id: string;
+      feed_posts: { author_id: string };
+    }>();
+
+  if (
+    commentError ||
+    !comment ||
+    (comment.author_id !== userId && comment.feed_posts.author_id !== userId)
+  ) {
+    redirect(homeMessage("Only the comment author or post owner can delete it.", "feed"));
+  }
+
+  const { error } = await supabase.rpc(
+    "delete_post_comment_for_current_user",
+    {
+      target_comment_id: commentId,
+    },
+  );
+
+  if (error) {
+    redirect(homeMessage(error.message || "Could not delete comment.", "feed"));
+  }
+
+  revalidatePath("/");
+  revalidatePath(returnPath);
+  redirect(returnPath);
+}
+
+export async function hidePostComment(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const commentId = cleanId(formData.get("comment_id"));
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
+  const reason = cleanText(formData.get("reason"), 240);
+
+  if (!commentId) {
+    redirect(homeMessage("Choose a comment first.", "feed"));
+  }
+
+  const { error } = await supabase.from("post_comment_hides").upsert({
+    comment_id: commentId,
+    hidden_by: userId,
+    reason: reason || null,
+  });
+
+  if (error) {
+    redirect(homeMessage(error.message || "Could not hide comment.", "feed"));
+  }
+
+  revalidatePath("/");
+  revalidatePath(returnPath);
+  redirect(returnPath);
+}
+
+export async function blockPostCommentAuthor(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const commentId = cleanId(formData.get("comment_id"));
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
+
+  if (!commentId) {
+    redirect(homeMessage("Choose a comment first.", "feed"));
+  }
+
+  const { data: comment, error: commentError } = await supabase
+    .from("post_comments")
+    .select("author_id, post_id, feed_posts!inner(author_id)")
+    .eq("id", commentId)
+    .maybeSingle<{
+      author_id: string;
+      feed_posts: { author_id: string };
+      post_id: string;
+    }>();
+
+  if (commentError || !comment || comment.feed_posts.author_id !== userId) {
+    redirect(homeMessage("Only the post owner can block from this comment.", "feed"));
+  }
+
+  if (comment.author_id !== userId) {
+    await supabase.from("user_blocks").upsert(
+      {
+        blocked_id: comment.author_id,
+        blocker_id: userId,
+        reason: "Blocked from comment moderation.",
+      },
+      { onConflict: "blocker_id,blocked_id" },
+    );
+  }
+
+  await supabase.from("post_comment_hides").upsert({
+    comment_id: commentId,
+    hidden_by: userId,
+    reason: "Blocked commenter.",
+  });
+
+  revalidatePath("/");
+  revalidatePath(returnPath);
+  redirect(returnPath);
+}
+
 export async function toggleThreadLike(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const threadId = cleanId(formData.get("thread_id"));
@@ -1167,6 +1350,152 @@ export async function toggleThreadCommentLike(formData: FormData) {
       type: "thread_like",
     });
   }
+
+  revalidatePath("/");
+  revalidatePath(returnPath);
+  redirect(returnPath);
+}
+
+export async function editThreadComment(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const commentId = cleanId(formData.get("comment_id"));
+  const body = cleanText(formData.get("body"), 2000);
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
+
+  if (!commentId || !body) {
+    redirect(homeMessage("Comment cannot be empty.", "threads"));
+  }
+
+  const { error } = await supabase
+    .from("thread_comments")
+    .update({
+      body,
+      deleted_at: null,
+      deleted_by: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", commentId)
+    .eq("author_id", userId);
+
+  if (error) {
+    redirect(homeMessage(error.message || "Could not edit comment.", "threads"));
+  }
+
+  revalidatePath("/");
+  revalidatePath(returnPath);
+  redirect(returnPath);
+}
+
+export async function deleteThreadComment(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const commentId = cleanId(formData.get("comment_id"));
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
+
+  if (!commentId) {
+    redirect(homeMessage("Choose a comment first.", "threads"));
+  }
+
+  const { data: comment, error: commentError } = await supabase
+    .from("thread_comments")
+    .select("author_id, thread_posts!inner(author_id)")
+    .eq("id", commentId)
+    .maybeSingle<{
+      author_id: string;
+      thread_posts: { author_id: string };
+    }>();
+
+  if (
+    commentError ||
+    !comment ||
+    (comment.author_id !== userId && comment.thread_posts.author_id !== userId)
+  ) {
+    redirect(
+      homeMessage("Only the comment author or thread owner can delete it.", "threads"),
+    );
+  }
+
+  const { error } = await supabase.rpc(
+    "delete_thread_comment_for_current_user",
+    {
+      target_comment_id: commentId,
+    },
+  );
+
+  if (error) {
+    redirect(homeMessage(error.message || "Could not delete comment.", "threads"));
+  }
+
+  revalidatePath("/");
+  revalidatePath(returnPath);
+  redirect(returnPath);
+}
+
+export async function hideThreadComment(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const commentId = cleanId(formData.get("comment_id"));
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
+  const reason = cleanText(formData.get("reason"), 240);
+
+  if (!commentId) {
+    redirect(homeMessage("Choose a comment first.", "threads"));
+  }
+
+  const { error } = await supabase.from("thread_comment_hides").upsert({
+    comment_id: commentId,
+    hidden_by: userId,
+    reason: reason || null,
+  });
+
+  if (error) {
+    redirect(homeMessage(error.message || "Could not hide comment.", "threads"));
+  }
+
+  revalidatePath("/");
+  revalidatePath(returnPath);
+  redirect(returnPath);
+}
+
+export async function blockThreadCommentAuthor(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const commentId = cleanId(formData.get("comment_id"));
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
+
+  if (!commentId) {
+    redirect(homeMessage("Choose a comment first.", "threads"));
+  }
+
+  const { data: comment, error: commentError } = await supabase
+    .from("thread_comments")
+    .select("author_id, thread_id, thread_posts!inner(author_id)")
+    .eq("id", commentId)
+    .maybeSingle<{
+      author_id: string;
+      thread_id: string;
+      thread_posts: { author_id: string };
+    }>();
+
+  if (commentError || !comment || comment.thread_posts.author_id !== userId) {
+    redirect(
+      homeMessage("Only the thread owner can block from this comment.", "threads"),
+    );
+  }
+
+  if (comment.author_id !== userId) {
+    await supabase.from("user_blocks").upsert(
+      {
+        blocked_id: comment.author_id,
+        blocker_id: userId,
+        reason: "Blocked from comment moderation.",
+      },
+      { onConflict: "blocker_id,blocked_id" },
+    );
+  }
+
+  await supabase.from("thread_comment_hides").upsert({
+    comment_id: commentId,
+    hidden_by: userId,
+    reason: "Blocked commenter.",
+  });
 
   revalidatePath("/");
   revalidatePath(returnPath);

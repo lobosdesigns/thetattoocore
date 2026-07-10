@@ -12,7 +12,11 @@ import {
   Video,
 } from "lucide-react";
 import {
+  blockPostCommentAuthor,
   createPostComment,
+  deletePostComment,
+  editPostComment,
+  hidePostComment,
   togglePostCommentLike,
   togglePostLike,
 } from "@/app/actions";
@@ -75,10 +79,12 @@ type FeedPost = {
 type PostComment = {
   body: string;
   created_at: string;
+  deleted_at: string | null;
   id: string;
   parent_id: string | null;
+  post_comment_hides: { hidden_by: string }[];
   post_comment_likes: PostLike[];
-  profiles: Pick<Profile, "display_name" | "username"> | null;
+  profiles: Pick<Profile, "display_name" | "id" | "username"> | null;
 };
 
 type PostLike = {
@@ -144,7 +150,7 @@ async function getPost(id: string) {
   const { data } = await supabase
     .from("feed_posts")
     .select(
-      "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, parent_id, created_at, post_comment_likes(user_id), profiles:profiles!post_comments_author_id_fkey(display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, account_type, license_verified_at)",
+      "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, parent_id, deleted_at, created_at, post_comment_hides(hidden_by), post_comment_likes(user_id), profiles:profiles!post_comments_author_id_fkey(id, display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, account_type, license_verified_at)",
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -266,6 +272,9 @@ export default async function PostPage({ params }: PostPageProps) {
   const mediaSrc = media ? mediaUrl(media.storage_bucket, media.storage_path) : null;
   const liked = post.post_likes.some((like) => like.user_id === claims?.sub);
   const returnPath = `/p/${post.id}`;
+  const visibleComments = post.post_comments.filter(
+    (comment) => !comment.deleted_at && !comment.post_comment_hides.length,
+  );
 
   return (
     <main className="min-h-screen bg-[#202020] text-[#171412]">
@@ -431,7 +440,7 @@ export default async function PostPage({ params }: PostPageProps) {
                   <p className="text-xs text-[#766d62]">likes</p>
                 </div>
                 <div className="rounded-md bg-[#f7f4ef] p-3">
-                  <p className="text-lg font-bold">{post.post_comments.length}</p>
+                  <p className="text-lg font-bold">{visibleComments.length}</p>
                   <p className="text-xs text-[#766d62]">comments</p>
                 </div>
               </div>
@@ -512,17 +521,20 @@ export default async function PostPage({ params }: PostPageProps) {
                 </Link>
               )}
               <div className="space-y-3">
-                {isSignedIn && showPost && post.post_comments.length ? (
-                  post.post_comments
+                {isSignedIn && showPost && visibleComments.length ? (
+                  visibleComments
                     .filter((comment) => !comment.parent_id)
                     .slice(0, 12)
                     .map((comment) => {
                       const likedComment = comment.post_comment_likes.some(
                         (like) => like.user_id === claims?.sub,
                       );
-                      const replies = post.post_comments.filter(
+                      const replies = visibleComments.filter(
                         (reply) => reply.parent_id === comment.id,
                       );
+                      const isOwnComment = comment.profiles?.id === claims?.sub;
+                      const canModerateComment =
+                        isOwnPost && comment.profiles?.id !== claims?.sub;
 
                       return (
                         <div
@@ -614,6 +626,105 @@ export default async function PostPage({ params }: PostPageProps) {
                                 </PendingSubmitButton>
                               </form>
                             </details>
+                            {isOwnComment ? (
+                              <details>
+                                <summary className="cursor-pointer list-none">
+                                  Edit
+                                </summary>
+                                <form
+                                  action={editPostComment}
+                                  className="mt-2 grid gap-2"
+                                >
+                                  <input
+                                    name="comment_id"
+                                    type="hidden"
+                                    value={comment.id}
+                                  />
+                                  <input
+                                    name="return_path"
+                                    type="hidden"
+                                    value={returnPath}
+                                  />
+                                  <input
+                                    className="h-9 w-full rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+                                    defaultValue={comment.body}
+                                    maxLength={220}
+                                    name="body"
+                                    required
+                                  />
+                                  <button className="h-8 rounded-md bg-[#171412] px-3 text-xs font-semibold text-white">
+                                    Save
+                                  </button>
+                                </form>
+                              </details>
+                            ) : null}
+                            {isOwnComment ? (
+                              <form action={deletePostComment}>
+                                <input
+                                  name="comment_id"
+                                  type="hidden"
+                                  value={comment.id}
+                                />
+                                <input
+                                  name="return_path"
+                                  type="hidden"
+                                  value={returnPath}
+                                />
+                                <button>Delete</button>
+                              </form>
+                            ) : null}
+                            {canModerateComment ? (
+                              <form action={deletePostComment}>
+                                <input
+                                  name="comment_id"
+                                  type="hidden"
+                                  value={comment.id}
+                                />
+                                <input
+                                  name="return_path"
+                                  type="hidden"
+                                  value={returnPath}
+                                />
+                                <button>Delete</button>
+                              </form>
+                            ) : null}
+                            {canModerateComment ? (
+                              <form action={hidePostComment}>
+                                <input
+                                  name="comment_id"
+                                  type="hidden"
+                                  value={comment.id}
+                                />
+                                <input
+                                  name="return_path"
+                                  type="hidden"
+                                  value={returnPath}
+                                />
+                                <button>Hide</button>
+                              </form>
+                            ) : null}
+                            {canModerateComment ? (
+                              <form action={blockPostCommentAuthor}>
+                                <input
+                                  name="comment_id"
+                                  type="hidden"
+                                  value={comment.id}
+                                />
+                                <input
+                                  name="return_path"
+                                  type="hidden"
+                                  value={returnPath}
+                                />
+                                <button>Block</button>
+                              </form>
+                            ) : null}
+                            {!isOwnComment ? (
+                              <ContentReportForm
+                                returnPath={returnPath}
+                                subjectId={comment.id}
+                                subjectType="comment"
+                              />
+                            ) : null}
                           </div>
                           {replies.length ? (
                             <div className="mt-3 space-y-2 border-l border-[#e5ded4] pl-3">
@@ -621,6 +732,10 @@ export default async function PostPage({ params }: PostPageProps) {
                                 const likedReply = reply.post_comment_likes.some(
                                   (like) => like.user_id === claims?.sub,
                                 );
+                                const isOwnReply =
+                                  reply.profiles?.id === claims?.sub;
+                                const canModerateReply =
+                                  isOwnPost && reply.profiles?.id !== claims?.sub;
 
                                 return (
                                   <div
@@ -661,6 +776,107 @@ export default async function PostPage({ params }: PostPageProps) {
                                           {reply.post_comment_likes.length}
                                         </button>
                                       </form>
+                                    </div>
+                                    <div className="mt-2 flex flex-wrap items-center gap-3 font-semibold text-[#766d62]">
+                                      {isOwnReply ? (
+                                        <details>
+                                          <summary className="cursor-pointer list-none">
+                                            Edit
+                                          </summary>
+                                          <form
+                                            action={editPostComment}
+                                            className="mt-2 grid gap-2"
+                                          >
+                                            <input
+                                              name="comment_id"
+                                              type="hidden"
+                                              value={reply.id}
+                                            />
+                                            <input
+                                              name="return_path"
+                                              type="hidden"
+                                              value={returnPath}
+                                            />
+                                            <input
+                                              className="h-9 w-full rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+                                              defaultValue={reply.body}
+                                              maxLength={220}
+                                              name="body"
+                                              required
+                                            />
+                                            <button className="h-8 rounded-md bg-[#171412] px-3 text-xs font-semibold text-white">
+                                              Save
+                                            </button>
+                                          </form>
+                                        </details>
+                                      ) : null}
+                                      {isOwnReply ? (
+                                        <form action={deletePostComment}>
+                                          <input
+                                            name="comment_id"
+                                            type="hidden"
+                                            value={reply.id}
+                                          />
+                                          <input
+                                            name="return_path"
+                                            type="hidden"
+                                            value={returnPath}
+                                          />
+                                          <button>Delete</button>
+                                        </form>
+                                      ) : null}
+                                      {canModerateReply ? (
+                                        <form action={deletePostComment}>
+                                          <input
+                                            name="comment_id"
+                                            type="hidden"
+                                            value={reply.id}
+                                          />
+                                          <input
+                                            name="return_path"
+                                            type="hidden"
+                                            value={returnPath}
+                                          />
+                                          <button>Delete</button>
+                                        </form>
+                                      ) : null}
+                                      {canModerateReply ? (
+                                        <form action={hidePostComment}>
+                                          <input
+                                            name="comment_id"
+                                            type="hidden"
+                                            value={reply.id}
+                                          />
+                                          <input
+                                            name="return_path"
+                                            type="hidden"
+                                            value={returnPath}
+                                          />
+                                          <button>Hide</button>
+                                        </form>
+                                      ) : null}
+                                      {canModerateReply ? (
+                                        <form action={blockPostCommentAuthor}>
+                                          <input
+                                            name="comment_id"
+                                            type="hidden"
+                                            value={reply.id}
+                                          />
+                                          <input
+                                            name="return_path"
+                                            type="hidden"
+                                            value={returnPath}
+                                          />
+                                          <button>Block</button>
+                                        </form>
+                                      ) : null}
+                                      {!isOwnReply ? (
+                                        <ContentReportForm
+                                          returnPath={returnPath}
+                                          subjectId={reply.id}
+                                          subjectType="comment"
+                                        />
+                                      ) : null}
                                     </div>
                                   </div>
                                 );

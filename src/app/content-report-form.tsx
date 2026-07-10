@@ -2,6 +2,7 @@ import { ChevronDown, Flag } from "lucide-react";
 import { createContentReport } from "@/app/actions";
 
 type ReportSubjectType =
+  | "comment"
   | "feed_post"
   | "gig"
   | "marketplace_listing"
@@ -9,10 +10,15 @@ type ReportSubjectType =
   | "thread_post";
 
 function reportTitle(subjectType: ReportSubjectType) {
+  if (subjectType === "comment") return "Report comment";
   return subjectType === "profile" ? "Report profile" : "Report content";
 }
 
 function reportDescription(subjectType: ReportSubjectType) {
+  if (subjectType === "comment") {
+    return "Report comments or replies for harassment, scams, unsafe practice, sexual content, minor safety concerns, or illegal activity.";
+  }
+
   if (subjectType === "profile") {
     return "Report profiles for scams, harassment, illegal services, sexual content, minor safety concerns, or impersonation.";
   }
@@ -21,10 +27,12 @@ function reportDescription(subjectType: ReportSubjectType) {
 }
 
 function reportButtonLabel(subjectType: ReportSubjectType) {
+  if (subjectType === "comment") return "Report";
   return subjectType === "profile" ? "Report profile" : "Report";
 }
 
 function reportMenuLabel(subjectType: ReportSubjectType) {
+  if (subjectType === "comment") return "Open comment report form";
   return subjectType === "profile" ? "Open profile report form" : "Open report form";
 }
 

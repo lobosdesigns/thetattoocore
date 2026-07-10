@@ -11,7 +11,11 @@ import {
   Send,
 } from "lucide-react";
 import {
+  blockThreadCommentAuthor,
   createThreadComment,
+  deleteThreadComment,
+  editThreadComment,
+  hideThreadComment,
   toggleThreadCommentLike,
   toggleThreadLike,
 } from "@/app/actions";
@@ -72,10 +76,12 @@ type ThreadPost = {
 type ThreadComment = {
   body: string;
   created_at: string;
+  deleted_at: string | null;
   id: string;
   parent_id: string | null;
+  thread_comment_hides: { hidden_by: string }[];
   thread_comment_likes: ThreadLike[];
-  profiles: Pick<Profile, "display_name" | "username"> | null;
+  profiles: Pick<Profile, "display_name" | "id" | "username"> | null;
 };
 
 type ThreadLike = {
@@ -141,7 +147,7 @@ async function getThread(id: string) {
   const { data } = await supabase
     .from("thread_posts")
     .select(
-      "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, body, parent_id, created_at, thread_comment_likes(user_id), profiles:profiles!thread_comments_author_id_fkey(display_name, username)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, account_type, license_verified_at)",
+      "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, body, parent_id, deleted_at, created_at, thread_comment_hides(hidden_by), thread_comment_likes(user_id), profiles:profiles!thread_comments_author_id_fkey(id, display_name, username)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, account_type, license_verified_at)",
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -265,6 +271,9 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
   const mediaSrc = media ? mediaUrl(media.storage_bucket, media.storage_path) : null;
   const liked = thread.thread_likes.some((like) => like.user_id === claims?.sub);
   const returnPath = `/t/${thread.id}`;
+  const visibleComments = thread.thread_comments.filter(
+    (comment) => !comment.deleted_at && !comment.thread_comment_hides.length,
+  );
 
   return (
     <main className="min-h-screen bg-[#202020] text-[#171412]">
@@ -400,7 +409,7 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
                 </div>
                 <div className="rounded-md bg-[#f7f4ef] p-3">
                   <p className="text-lg font-bold">
-                    {thread.thread_comments.length}
+                    {visibleComments.length}
                   </p>
                   <p className="text-xs text-[#766d62]">replies</p>
                 </div>
@@ -483,17 +492,20 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
                 </Link>
               )}
               <div className="space-y-3">
-                {isSignedIn && showThread && thread.thread_comments.length ? (
-                  thread.thread_comments
+                {isSignedIn && showThread && visibleComments.length ? (
+                  visibleComments
                     .filter((comment) => !comment.parent_id)
                     .slice(0, 12)
                     .map((comment) => {
                       const likedComment = comment.thread_comment_likes.some(
                         (like) => like.user_id === claims?.sub,
                       );
-                      const replies = thread.thread_comments.filter(
+                      const replies = visibleComments.filter(
                         (reply) => reply.parent_id === comment.id,
                       );
+                      const isOwnComment = comment.profiles?.id === claims?.sub;
+                      const canModerateComment =
+                        isOwnThread && comment.profiles?.id !== claims?.sub;
 
                       return (
                         <div
@@ -585,6 +597,105 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
                                 </PendingSubmitButton>
                               </form>
                             </details>
+                            {isOwnComment ? (
+                              <details>
+                                <summary className="cursor-pointer list-none">
+                                  Edit
+                                </summary>
+                                <form
+                                  action={editThreadComment}
+                                  className="mt-2 grid gap-2"
+                                >
+                                  <input
+                                    name="comment_id"
+                                    type="hidden"
+                                    value={comment.id}
+                                  />
+                                  <input
+                                    name="return_path"
+                                    type="hidden"
+                                    value={returnPath}
+                                  />
+                                  <textarea
+                                    className="min-h-20 w-full rounded-md border border-[#cfc8bd] bg-white px-2 py-2 text-xs outline-none focus:border-[#171412]"
+                                    defaultValue={comment.body}
+                                    maxLength={2000}
+                                    name="body"
+                                    required
+                                  />
+                                  <button className="h-8 rounded-md bg-[#171412] px-3 text-xs font-semibold text-white">
+                                    Save
+                                  </button>
+                                </form>
+                              </details>
+                            ) : null}
+                            {isOwnComment ? (
+                              <form action={deleteThreadComment}>
+                                <input
+                                  name="comment_id"
+                                  type="hidden"
+                                  value={comment.id}
+                                />
+                                <input
+                                  name="return_path"
+                                  type="hidden"
+                                  value={returnPath}
+                                />
+                                <button>Delete</button>
+                              </form>
+                            ) : null}
+                            {canModerateComment ? (
+                              <form action={deleteThreadComment}>
+                                <input
+                                  name="comment_id"
+                                  type="hidden"
+                                  value={comment.id}
+                                />
+                                <input
+                                  name="return_path"
+                                  type="hidden"
+                                  value={returnPath}
+                                />
+                                <button>Delete</button>
+                              </form>
+                            ) : null}
+                            {canModerateComment ? (
+                              <form action={hideThreadComment}>
+                                <input
+                                  name="comment_id"
+                                  type="hidden"
+                                  value={comment.id}
+                                />
+                                <input
+                                  name="return_path"
+                                  type="hidden"
+                                  value={returnPath}
+                                />
+                                <button>Hide</button>
+                              </form>
+                            ) : null}
+                            {canModerateComment ? (
+                              <form action={blockThreadCommentAuthor}>
+                                <input
+                                  name="comment_id"
+                                  type="hidden"
+                                  value={comment.id}
+                                />
+                                <input
+                                  name="return_path"
+                                  type="hidden"
+                                  value={returnPath}
+                                />
+                                <button>Block</button>
+                              </form>
+                            ) : null}
+                            {!isOwnComment ? (
+                              <ContentReportForm
+                                returnPath={returnPath}
+                                subjectId={comment.id}
+                                subjectType="comment"
+                              />
+                            ) : null}
                           </div>
                           {replies.length ? (
                             <div className="mt-3 space-y-2 border-l border-[#e5ded4] pl-3">
@@ -593,6 +704,11 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
                                   reply.thread_comment_likes.some(
                                     (like) => like.user_id === claims?.sub,
                                   );
+                                const isOwnReply =
+                                  reply.profiles?.id === claims?.sub;
+                                const canModerateReply =
+                                  isOwnThread &&
+                                  reply.profiles?.id !== claims?.sub;
 
                                 return (
                                   <div
@@ -633,6 +749,107 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
                                           {reply.thread_comment_likes.length}
                                         </button>
                                       </form>
+                                    </div>
+                                    <div className="mt-2 flex flex-wrap items-center gap-3 font-semibold text-[#766d62]">
+                                      {isOwnReply ? (
+                                        <details>
+                                          <summary className="cursor-pointer list-none">
+                                            Edit
+                                          </summary>
+                                          <form
+                                            action={editThreadComment}
+                                            className="mt-2 grid gap-2"
+                                          >
+                                            <input
+                                              name="comment_id"
+                                              type="hidden"
+                                              value={reply.id}
+                                            />
+                                            <input
+                                              name="return_path"
+                                              type="hidden"
+                                              value={returnPath}
+                                            />
+                                            <textarea
+                                              className="min-h-20 w-full rounded-md border border-[#cfc8bd] bg-white px-2 py-2 text-xs outline-none focus:border-[#171412]"
+                                              defaultValue={reply.body}
+                                              maxLength={2000}
+                                              name="body"
+                                              required
+                                            />
+                                            <button className="h-8 rounded-md bg-[#171412] px-3 text-xs font-semibold text-white">
+                                              Save
+                                            </button>
+                                          </form>
+                                        </details>
+                                      ) : null}
+                                      {isOwnReply ? (
+                                        <form action={deleteThreadComment}>
+                                          <input
+                                            name="comment_id"
+                                            type="hidden"
+                                            value={reply.id}
+                                          />
+                                          <input
+                                            name="return_path"
+                                            type="hidden"
+                                            value={returnPath}
+                                          />
+                                          <button>Delete</button>
+                                        </form>
+                                      ) : null}
+                                      {canModerateReply ? (
+                                        <form action={deleteThreadComment}>
+                                          <input
+                                            name="comment_id"
+                                            type="hidden"
+                                            value={reply.id}
+                                          />
+                                          <input
+                                            name="return_path"
+                                            type="hidden"
+                                            value={returnPath}
+                                          />
+                                          <button>Delete</button>
+                                        </form>
+                                      ) : null}
+                                      {canModerateReply ? (
+                                        <form action={hideThreadComment}>
+                                          <input
+                                            name="comment_id"
+                                            type="hidden"
+                                            value={reply.id}
+                                          />
+                                          <input
+                                            name="return_path"
+                                            type="hidden"
+                                            value={returnPath}
+                                          />
+                                          <button>Hide</button>
+                                        </form>
+                                      ) : null}
+                                      {canModerateReply ? (
+                                        <form action={blockThreadCommentAuthor}>
+                                          <input
+                                            name="comment_id"
+                                            type="hidden"
+                                            value={reply.id}
+                                          />
+                                          <input
+                                            name="return_path"
+                                            type="hidden"
+                                            value={returnPath}
+                                          />
+                                          <button>Block</button>
+                                        </form>
+                                      ) : null}
+                                      {!isOwnReply ? (
+                                        <ContentReportForm
+                                          returnPath={returnPath}
+                                          subjectId={reply.id}
+                                          subjectType="comment"
+                                        />
+                                      ) : null}
                                     </div>
                                   </div>
                                 );

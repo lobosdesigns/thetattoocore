@@ -174,10 +174,12 @@ type PostLike = {
 type PostComment = {
   id: string;
   body: string;
+  deleted_at: string | null;
   parent_id: string | null;
+  post_comment_hides: { hidden_by: string }[];
   post_comment_likes: PostLike[];
   created_at: string;
-  profiles: Pick<Profile, "avatar_url" | "display_name" | "username"> | null;
+  profiles: Pick<Profile, "avatar_url" | "display_name" | "id" | "username"> | null;
 };
 
 type ThreadLike = {
@@ -187,10 +189,12 @@ type ThreadLike = {
 type ThreadComment = {
   id: string;
   body: string;
+  deleted_at: string | null;
   parent_id: string | null;
+  thread_comment_hides: { hidden_by: string }[];
   thread_comment_likes: ThreadLike[];
   created_at: string;
-  profiles: Pick<Profile, "avatar_url" | "display_name" | "username"> | null;
+  profiles: Pick<Profile, "avatar_url" | "display_name" | "id" | "username"> | null;
 };
 
 type SponsoredPlacement = "4u-feed" | "gossip-feed" | "stuff-feed";
@@ -1123,7 +1127,7 @@ export default async function Home({
     supabase
       .from("feed_posts")
       .select(
-        "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, parent_id, created_at, post_comment_likes(user_id), profiles:profiles!post_comments_author_id_fkey(avatar_url, display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, parent_id, deleted_at, created_at, post_comment_hides(hidden_by), post_comment_likes(user_id), profiles:profiles!post_comments_author_id_fkey(id, avatar_url, display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("is_published", true)
       .eq("moderation_status", "active")
@@ -1137,7 +1141,7 @@ export default async function Home({
     supabase
       .from("thread_posts")
       .select(
-        "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, body, parent_id, created_at, thread_comment_likes(user_id), profiles:profiles!thread_comments_author_id_fkey(avatar_url, display_name, username)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, body, parent_id, deleted_at, created_at, thread_comment_hides(hidden_by), thread_comment_likes(user_id), profiles:profiles!thread_comments_author_id_fkey(id, avatar_url, display_name, username)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("moderation_status", "active")
       .order("created_at", { ascending: false })
@@ -1346,6 +1350,10 @@ export default async function Home({
             {visibleFeedPosts.length ? (
               visibleFeedPosts.map((post, index) => {
                 const isPostLocked = !canViewSensitiveContent(post, viewer);
+                const visiblePostComments = post.post_comments.filter(
+                  (comment) =>
+                    !comment.deleted_at && !comment.post_comment_hides.length,
+                );
 
                 return (
                 <div key={post.id}>
@@ -1440,7 +1448,7 @@ export default async function Home({
                           href={`#comment-${post.id}`}
                         >
                           <MessageCircle className="size-5" />
-                          {post.post_comments.length}
+                          {visiblePostComments.length}
                         </a>
                         {isSignedIn ? (
                           <SavedItemButton
@@ -1478,9 +1486,9 @@ export default async function Home({
                       <p className="text-sm leading-6">{post.caption}</p>
                     ) : null}
                     <TranslationCue preferredLanguage={preferredLanguage} />
-                    {!isPostLocked && post.post_comments.length ? (
+                    {!isPostLocked && visiblePostComments.length ? (
                       <div className="space-y-2 border-t border-[#e5ded4] pt-3">
-                        {post.post_comments
+                        {visiblePostComments
                           .filter((comment) => !comment.parent_id)
                           .slice(0, 2)
                           .map((comment) => {
@@ -1489,6 +1497,11 @@ export default async function Home({
                             );
                             const replies = post.post_comments
                               .filter((reply) => reply.parent_id === comment.id)
+                              .filter(
+                                (reply) =>
+                                  !reply.deleted_at &&
+                                  !reply.post_comment_hides.length,
+                              )
                               .slice(0, 2);
 
                             return (
@@ -1659,6 +1672,10 @@ export default async function Home({
               {visibleThreadPosts.length
                 ? visibleThreadPosts.map((thread, index) => {
                     const isThreadLocked = !canViewSensitiveContent(thread, viewer);
+                    const visibleThreadComments = thread.thread_comments.filter(
+                      (comment) =>
+                        !comment.deleted_at && !comment.thread_comment_hides.length,
+                    );
 
                     return (
                     <div key={thread.id}>
@@ -1744,7 +1761,7 @@ export default async function Home({
                             href={`#thread-comment-${thread.id}`}
                           >
                             <MessageCircle className="size-5" />
-                            {thread.thread_comments.length}
+                            {visibleThreadComments.length}
                           </a>
                           {isSignedIn ? (
                             <SavedItemButton
@@ -1782,9 +1799,9 @@ export default async function Home({
                           />
                         </div>
                       ) : null}
-                      {thread.thread_comments.length ? (
+                      {visibleThreadComments.length ? (
                         <div className="mt-3 space-y-2">
-                          {thread.thread_comments
+                          {visibleThreadComments
                             .filter((comment) => !comment.parent_id)
                             .slice(0, 2)
                             .map((comment) => {
@@ -1793,6 +1810,11 @@ export default async function Home({
                               );
                               const replies = thread.thread_comments
                                 .filter((reply) => reply.parent_id === comment.id)
+                                .filter(
+                                  (reply) =>
+                                    !reply.deleted_at &&
+                                    !reply.thread_comment_hides.length,
+                                )
                                 .slice(0, 2);
 
                               return (
