@@ -1184,7 +1184,7 @@ export default async function AdminPage({
         "id, username, display_name, account_type, role, banned_at, suspended_at, moderation_note, created_at",
       )
       .order("created_at", { ascending: false })
-      .limit(16)
+      .limit(25)
       .returns<
         {
           account_type: string;
@@ -1205,7 +1205,7 @@ export default async function AdminPage({
       )
       .in("status", ["pending", "approved", "rejected"])
       .order("created_at", { ascending: false })
-      .limit(8)
+      .limit(25)
       .returns<
         {
           account_type: string;
@@ -1230,7 +1230,7 @@ export default async function AdminPage({
       )
       .in("status", ["pending", "reviewing", "rejected", "cancelled"])
       .order("requested_at", { ascending: false })
-      .limit(10)
+      .limit(25)
       .returns<
         {
           id: string;
@@ -1249,7 +1249,7 @@ export default async function AdminPage({
       )
       .in("status", ["open", "reviewing"])
       .order("created_at", { ascending: false })
-      .limit(12)
+      .limit(25)
       .returns<
         {
           id: string;
@@ -1269,7 +1269,7 @@ export default async function AdminPage({
       )
       .or("is_sensitive.eq.true,moderation_status.neq.active")
       .order("created_at", { ascending: false })
-      .limit(6)
+      .limit(25)
       .returns<
         {
           id: string;
@@ -1289,7 +1289,7 @@ export default async function AdminPage({
       )
       .or("is_sensitive.eq.true,moderation_status.neq.active")
       .order("created_at", { ascending: false })
-      .limit(6)
+      .limit(25)
       .returns<
         {
           id: string;
@@ -1309,7 +1309,7 @@ export default async function AdminPage({
       )
       .or("is_sensitive.eq.true,moderation_status.neq.active")
       .order("created_at", { ascending: false })
-      .limit(6)
+      .limit(25)
       .returns<
         {
           id: string;
@@ -1330,7 +1330,7 @@ export default async function AdminPage({
       )
       .or("is_sensitive.eq.true,moderation_status.neq.active")
       .order("created_at", { ascending: false })
-      .limit(6)
+      .limit(25)
       .returns<
         {
           id: string;
@@ -1358,7 +1358,7 @@ export default async function AdminPage({
         "archived",
       ])
       .order("created_at", { ascending: false })
-      .limit(12)
+      .limit(25)
       .returns<
         {
           ad_events: { event_type: "impression" | "click" | "message_lead" }[];
@@ -1421,7 +1421,7 @@ export default async function AdminPage({
         "id, event_type, target_type, target_id, summary, metadata, created_at, profiles:profiles!admin_audit_logs_actor_id_fkey(display_name, username)",
       )
       .order("created_at", { ascending: false })
-      .limit(8)
+      .limit(25)
       .returns<
         {
           created_at: string;
@@ -1440,7 +1440,7 @@ export default async function AdminPage({
         "id, action_type, subject_type, subject_id, report_id, note, metadata, created_at, profiles:profiles!moderation_actions_actor_id_fkey(display_name, username)",
       )
       .order("created_at", { ascending: false })
-      .limit(8)
+      .limit(25)
       .returns<
         {
           action_type: string;
@@ -2452,3 +2452,4 @@ export default async function AdminPage({
     </main>
   );
 }
+

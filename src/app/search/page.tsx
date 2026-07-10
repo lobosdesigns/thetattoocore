@@ -125,6 +125,7 @@ function runSection(type: SearchType, section: Exclude<SearchType, "all">) {
 
 function typedHref(type: SearchType, params: URLSearchParams) {
   const next = new URLSearchParams(params);
+  next.delete("page");
 
   if (type === "all") {
     next.delete("type");
@@ -207,6 +208,7 @@ export default async function SearchPage({
   searchParams: Promise<{
     category?: string;
     city?: string;
+    page?: string;
     q?: string;
     region?: string;
     type?: string;
@@ -218,6 +220,8 @@ export default async function SearchPage({
   const city = cleanFilter(params.city);
   const region = cleanFilter(params.region);
   const type = cleanType(params.type);
+  const page = Math.max(1, Math.min(20, Number(params.page ?? "1") || 1));
+  const resultLimit = page * 25;
   const pattern = searchPattern(query);
   const cityPattern = searchPattern(city);
   const regionPattern = searchPattern(region);
@@ -228,6 +232,9 @@ export default async function SearchPage({
   if (category) typedParams.set("category", category);
   if (city) typedParams.set("city", city);
   if (region) typedParams.set("region", region);
+  const loadMoreParams = new URLSearchParams(typedParams);
+  if (type !== "all") loadMoreParams.set("type", type);
+  loadMoreParams.set("page", String(page + 1));
 
   const hasSearch = Boolean(query || category || city || region);
   const supabase = await createClient();
@@ -258,7 +265,7 @@ export default async function SearchPage({
               .ilike("city", city ? cityPattern : "%")
               .ilike("region", region ? regionPattern : "%")
               .order("display_name", { ascending: true })
-              .limit(12)
+              .limit(resultLimit)
               .returns<ProfileResult[]>()
           : Promise.resolve({ data: [] as ProfileResult[] }),
         shouldRunFeed
@@ -278,7 +285,7 @@ export default async function SearchPage({
               )
               .ilike("location_label", city ? cityPattern : "%")
               .order("created_at", { ascending: false })
-              .limit(8)
+              .limit(resultLimit)
               .returns<FeedResult[]>()
           : Promise.resolve({ data: [] as FeedResult[] }),
         shouldRunThreads && query
@@ -292,7 +299,7 @@ export default async function SearchPage({
               .eq("is_sensitive", false)
               .ilike("body", pattern)
               .order("created_at", { ascending: false })
-              .limit(8)
+              .limit(resultLimit)
               .returns<ThreadResult[]>()
           : Promise.resolve({ data: [] as ThreadResult[] }),
         shouldRunListings
@@ -314,7 +321,7 @@ export default async function SearchPage({
               .ilike("city", city ? cityPattern : "%")
               .ilike("region", region ? regionPattern : "%")
               .order("created_at", { ascending: false })
-              .limit(8)
+              .limit(resultLimit)
               .returns<ListingResult[]>()
           : Promise.resolve({ data: [] as ListingResult[] }),
         shouldRunGigs
@@ -336,7 +343,7 @@ export default async function SearchPage({
               .ilike("city", city ? cityPattern : "%")
               .ilike("region", region ? regionPattern : "%")
               .order("created_at", { ascending: false })
-              .limit(8)
+              .limit(resultLimit)
               .returns<GigResult[]>()
           : Promise.resolve({ data: [] as GigResult[] }),
       ])
@@ -354,6 +361,15 @@ export default async function SearchPage({
     (threads?.length ?? 0) +
     (listings?.length ?? 0) +
     (gigs?.length ?? 0);
+  const canLoadMore =
+    hasSearch &&
+    [
+      shouldRunProfiles ? profiles?.length ?? 0 : 0,
+      shouldRunFeed ? feedPosts?.length ?? 0 : 0,
+      shouldRunThreads ? threads?.length ?? 0 : 0,
+      shouldRunListings ? listings?.length ?? 0 : 0,
+      shouldRunGigs ? gigs?.length ?? 0 : 0,
+    ].some((count) => count === resultLimit);
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
@@ -638,6 +654,16 @@ export default async function SearchPage({
                 <EmptySection label="gigs" />
               )}
             </SearchSection>
+            ) : null}
+            {canLoadMore ? (
+              <div className="border-t border-[#cfc8bd] px-4 py-5 text-center">
+                <Link
+                  className="inline-flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-4 text-sm font-semibold"
+                  href={`/search?${loadMoreParams.toString()}`}
+                >
+                  Load more
+                </Link>
+              </div>
             ) : null}
           </>
         )}
