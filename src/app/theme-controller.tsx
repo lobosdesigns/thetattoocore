@@ -25,12 +25,18 @@ export function saveThemePreference(preference: ThemePreference) {
   applyThemePreference(preference);
 }
 
-export function ThemeController() {
+export function ThemeController({
+  initialPreference = "system",
+}: {
+  initialPreference?: ThemePreference;
+}) {
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const syncTheme = () => {
       applyThemePreference(
-        resolveThemePreference(window.localStorage.getItem(themeStorageKey)),
+        resolveThemePreference(
+          window.localStorage.getItem(themeStorageKey) ?? initialPreference,
+        ),
       );
     };
 
@@ -42,7 +48,7 @@ export function ThemeController() {
       mediaQuery.removeEventListener("change", syncTheme);
       window.removeEventListener("storage", syncTheme);
     };
-  }, []);
+  }, [initialPreference]);
 
   return null;
 }

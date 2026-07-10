@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthHashRedirect } from "./auth-hash-redirect";
 import { PwaInstallSuppressor } from "./pwa-install-suppressor";
-import { ThemeController } from "./theme-controller";
+import { ThemeController, type ThemePreference } from "./theme-controller";
 import { normalizedLanguage } from "@/lib/localization";
 import {
   brandShareImage,
@@ -90,12 +90,37 @@ async function preferredDocumentLanguage() {
   return normalizedLanguage(profile?.preferred_language);
 }
 
+function normalizedThemePreference(value?: string | null): ThemePreference {
+  if (value === "light" || value === "dark" || value === "system") return value;
+
+  return "system";
+}
+
+async function preferredThemePreference() {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims?.sub;
+
+  if (!userId) return "system";
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("theme_preference")
+    .eq("id", userId)
+    .maybeSingle<{ theme_preference: string | null }>();
+
+  return normalizedThemePreference(profile?.theme_preference);
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const language = await preferredDocumentLanguage();
+  const [language, themePreference] = await Promise.all([
+    preferredDocumentLanguage(),
+    preferredThemePreference(),
+  ]);
 
   return (
     <html
@@ -105,7 +130,7 @@ export default async function RootLayout({
       <body className="min-h-full">
         <AuthHashRedirect />
         <PwaInstallSuppressor />
-        <ThemeController />
+        <ThemeController initialPreference={themePreference} />
         {children}
       </body>
     </html>

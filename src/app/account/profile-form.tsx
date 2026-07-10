@@ -37,6 +37,7 @@ type Profile = {
   notify_thread_activity: boolean | null;
   preferred_language: string | null;
   region: string | null;
+  theme_preference: "light" | "dark" | "system" | null;
   username: string;
   website_url: string | null;
 };
@@ -299,7 +300,10 @@ export function ProfileForm({
             theme tokens.
           </p>
           <div className="mt-3 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3">
-            <ThemePreferencePicker />
+            <ThemePreferencePicker
+              initialPreference={initialProfile?.theme_preference ?? "system"}
+              name="theme_preference"
+            />
           </div>
         </div>
       </div>

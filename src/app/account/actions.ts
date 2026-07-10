@@ -45,6 +45,7 @@ const stuffListingGoals = new Set([
   "marketplace_engagement",
 ]);
 const adPlacements = new Set(["4u", "gossip", "stuff"]);
+const themePreferences = new Set(["light", "dark", "system"]);
 
 function accountPath(message: string) {
   return `/account?message=${encodeURIComponent(message)}`;
@@ -262,6 +263,7 @@ export async function updateProfile(formData: FormData) {
   const countryCode = cleanText(formData.get("country_code"), 2).toUpperCase();
   const isAdultConfirmed = formData.get("is_adult_confirmed") === "on";
   const preferredLanguage = cleanText(formData.get("preferred_language"), 8);
+  const themePreference = cleanText(formData.get("theme_preference"), 16);
   const avatar = fileFromForm(formData, "avatar");
 
   if (!/^[a-z0-9_]{3,30}$/.test(username)) {
@@ -282,6 +284,10 @@ export async function updateProfile(formData: FormData) {
 
   if (!languageCodes.has(preferredLanguage)) {
     redirect(accountPath("Choose a valid language."));
+  }
+
+  if (!themePreferences.has(themePreference)) {
+    redirect(accountPath("Choose a valid appearance setting."));
   }
 
   if (!isAdultConfirmed) {
@@ -326,6 +332,7 @@ export async function updateProfile(formData: FormData) {
     notify_push_enabled: formData.get("notify_push_enabled") === "on",
     preferred_language: preferredLanguage,
     region: cleanText(formData.get("region"), 40) || null,
+    theme_preference: themePreference,
     updated_at: new Date().toISOString(),
     username,
     website_url: cleanUrl(formData.get("website_url")),

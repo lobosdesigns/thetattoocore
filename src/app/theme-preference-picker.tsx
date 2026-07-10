@@ -14,15 +14,24 @@ const themeOptions = [
   ["light", "Light", "Brighter daytime view."],
 ] as const;
 
-export function ThemePreferencePicker() {
+export function ThemePreferencePicker({
+  initialPreference = "system",
+  name,
+}: {
+  initialPreference?: ThemePreference;
+  name?: string;
+}) {
   const [preference, setPreference] = useState<ThemePreference>(() => {
     if (typeof window === "undefined") return "system";
 
-    return resolveThemePreference(window.localStorage.getItem(themeStorageKey));
+    return resolveThemePreference(
+      window.localStorage.getItem(themeStorageKey) ?? initialPreference,
+    );
   });
 
   return (
     <div className="grid gap-2 sm:grid-cols-3">
+      {name ? <input name={name} type="hidden" value={preference} /> : null}
       {themeOptions.map(([value, label, description]) => (
         <button
           aria-pressed={preference === value}

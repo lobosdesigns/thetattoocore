@@ -275,7 +275,7 @@ export default async function AccountPage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "username, display_name, avatar_url, account_type, bio, city, region, country_code, preferred_language, location_personalization_enabled, is_adult_confirmed, is_private, adult_terms_accepted_at, website_url, instagram_url, license_verified_at, suspended_at, banned_at, role, notify_follow_activity, notify_message_activity, notify_feed_activity, notify_thread_activity, notify_marketplace_gig_activity, notification_quiet_hours_enabled, notification_quiet_hours_start, notification_quiet_hours_end, notification_timezone, notify_email_important, notify_push_enabled",
+      "username, display_name, avatar_url, account_type, bio, city, region, country_code, preferred_language, theme_preference, location_personalization_enabled, is_adult_confirmed, is_private, adult_terms_accepted_at, website_url, instagram_url, license_verified_at, suspended_at, banned_at, role, notify_follow_activity, notify_message_activity, notify_feed_activity, notify_thread_activity, notify_marketplace_gig_activity, notification_quiet_hours_enabled, notification_quiet_hours_start, notification_quiet_hours_end, notification_timezone, notify_email_important, notify_push_enabled",
     )
     .eq("id", claims.sub)
     .maybeSingle();
