@@ -104,9 +104,18 @@ function notificationConversationId(notification: MessageNotification) {
 export default async function MessagesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ c?: string; message?: string; to?: string }>;
+  searchParams: Promise<{
+    c?: string;
+    inboxPage?: string;
+    message?: string;
+    to?: string;
+  }>;
 }) {
   const params = await searchParams;
+  const inboxPageSize = 25;
+  const inboxPage = Math.max(1, Math.min(20, Number(params.inboxPage ?? "1") || 1));
+  const conversationLimit = inboxPage * inboxPageSize;
+  const messageWindowLimit = Math.min(conversationLimit * 25, 500);
   const prefillUsername = String(params.to ?? "")
     .replace(/^@/, "")
     .toLowerCase()
@@ -165,6 +174,7 @@ export default async function MessagesPage({
     .select("conversation_id, created_at, last_read_at")
     .eq("user_id", claims.sub)
     .order("created_at", { ascending: false })
+    .limit(conversationLimit)
     .returns<Membership[]>();
   const conversationIds =
     memberships?.map((membership) => membership.conversation_id) ?? [];
@@ -186,7 +196,8 @@ export default async function MessagesPage({
           .from("messages")
           .select("id, body, conversation_id, sender_id, created_at")
           .in("conversation_id", conversationIds)
-          .order("created_at", { ascending: true })
+          .order("created_at", { ascending: false })
+          .limit(messageWindowLimit)
           .returns<Message[]>()
       : Promise.resolve({ data: [] as Message[] }),
     conversationIds.length
@@ -213,7 +224,7 @@ export default async function MessagesPage({
   const profileById = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
   const messagesByConversation = new Map<string, Message[]>();
 
-  for (const message of messages ?? []) {
+  for (const message of (messages ?? []).toReversed()) {
     const list = messagesByConversation.get(message.conversation_id) ?? [];
     list.push(message);
     messagesByConversation.set(message.conversation_id, list);
@@ -463,6 +474,16 @@ export default async function MessagesPage({
               </div>
             )}
           </section>
+          {(memberships?.length ?? 0) >= conversationLimit ? (
+            <div className="border-t border-[#cfc8bd] bg-[#f2f1ee] px-4 py-4">
+              <Link
+                className="flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-4 text-sm font-bold shadow-sm hover:bg-white"
+                href={`/messages?inboxPage=${inboxPage + 1}`}
+              >
+                Load 25 more conversations
+              </Link>
+            </div>
+          ) : null}
         </aside>
 
         <section
