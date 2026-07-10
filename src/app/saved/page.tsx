@@ -161,9 +161,11 @@ function UnsaveButton({
 export default async function SavedPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string }>;
+  searchParams: Promise<{ message?: string; page?: string }>;
 }) {
   const params = await searchParams;
+  const page = Math.max(1, Math.min(20, Number(params.page ?? "1") || 1));
+  const savedLimit = page * 25;
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -190,7 +192,7 @@ export default async function SavedPage({
     .select("subject_type, subject_id, created_at")
     .eq("user_id", claims.sub)
     .order("created_at", { ascending: false })
-    .limit(25)
+    .limit(savedLimit)
     .returns<SavedItem[]>();
 
   const saved = savedItems ?? [];
@@ -397,7 +399,7 @@ export default async function SavedPage({
               <div>
                 <h1 className="text-xl font-bold">Saved</h1>
                 <p className="text-sm text-[#766d62]">
-                  Latest 25 artists, 4U, Gossip, Stuff, and Gigs you bookmarked.
+                  Latest {savedLimit} artists, 4U, Gossip, Stuff, and Gigs you bookmarked.
                 </p>
               </div>
             </div>
@@ -508,6 +510,16 @@ export default async function SavedPage({
               </Link>
             </div>
           )}
+          {saved.length === savedLimit ? (
+            <div className="mt-5 text-center">
+              <Link
+                className="inline-flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-4 text-sm font-semibold"
+                href={`/saved?page=${page + 1}`}
+              >
+                Load more
+              </Link>
+            </div>
+          ) : null}
         </section>
       </div>
     </main>

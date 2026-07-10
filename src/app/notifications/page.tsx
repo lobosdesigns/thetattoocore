@@ -127,7 +127,14 @@ function shortTime(value: string | null | undefined, fallback: string) {
   return value?.slice(0, 5) || fallback;
 }
 
-export default async function NotificationsPage() {
+export default async function NotificationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const params = await searchParams;
+  const page = Math.max(1, Math.min(20, Number(params.page ?? "1") || 1));
+  const notificationLimit = page * 25;
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -143,7 +150,7 @@ export default async function NotificationsPage() {
     )
     .eq("recipient_id", claims.sub)
     .order("created_at", { ascending: false })
-    .limit(25)
+    .limit(notificationLimit)
     .returns<Notification[]>();
   const { data: profile } = await supabase
     .from("profiles")
@@ -173,8 +180,8 @@ export default async function NotificationsPage() {
                 <h1 className="text-xl font-bold">Notifications</h1>
                 <p className="text-xs text-[#766d62]">
                   {unreadCount
-                    ? `${unreadCount} unread - latest 25 shown`
-                    : "All caught up - latest 25 shown"}
+                    ? `${unreadCount} unread - latest ${notificationLimit} shown`
+                    : `All caught up - latest ${notificationLimit} shown`}
                 </p>
               </div>
             </div>
@@ -372,6 +379,16 @@ export default async function NotificationsPage() {
             </div>
           )}
         </section>
+        {notifications?.length === notificationLimit ? (
+          <div className="border-t border-[#cfc8bd] bg-[#ece8df] px-4 py-5 text-center">
+            <Link
+              className="inline-flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-4 text-sm font-semibold"
+              href={`/notifications?page=${page + 1}`}
+            >
+              Load more
+            </Link>
+          </div>
+        ) : null}
       </div>
     </main>
   );
