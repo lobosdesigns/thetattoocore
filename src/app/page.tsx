@@ -176,7 +176,7 @@ type PostComment = {
   body: string;
   deleted_at: string | null;
   parent_id: string | null;
-  post_comment_hides: { hidden_by: string }[];
+  post_comment_hides: { hidden_by: string }[] | { hidden_by: string } | null;
   post_comment_likes: PostLike[];
   created_at: string;
   profiles: Pick<Profile, "avatar_url" | "display_name" | "id" | "username"> | null;
@@ -191,7 +191,7 @@ type ThreadComment = {
   body: string;
   deleted_at: string | null;
   parent_id: string | null;
-  thread_comment_hides: { hidden_by: string }[];
+  thread_comment_hides: { hidden_by: string }[] | { hidden_by: string } | null;
   thread_comment_likes: ThreadLike[];
   created_at: string;
   profiles: Pick<Profile, "avatar_url" | "display_name" | "id" | "username"> | null;
@@ -220,6 +220,12 @@ function sponsoredSlotTitle(placement: SponsoredPlacement) {
   if (placement === "gossip-feed") return "Sponsored in Gossip";
 
   return "Sponsored in Stuff";
+}
+
+function hasCommentHide(
+  value: { hidden_by: string }[] | { hidden_by: string } | null,
+) {
+  return Array.isArray(value) ? value.length > 0 : Boolean(value);
 }
 
 function sponsoredDbPlacement(placement: SponsoredPlacement): AdPlacement {
@@ -1352,7 +1358,7 @@ export default async function Home({
                 const isPostLocked = !canViewSensitiveContent(post, viewer);
                 const visiblePostComments = post.post_comments.filter(
                   (comment) =>
-                    !comment.deleted_at && !comment.post_comment_hides.length,
+                    !comment.deleted_at && !hasCommentHide(comment.post_comment_hides),
                 );
 
                 return (
@@ -1500,7 +1506,7 @@ export default async function Home({
                               .filter(
                                 (reply) =>
                                   !reply.deleted_at &&
-                                  !reply.post_comment_hides.length,
+                                  !hasCommentHide(reply.post_comment_hides),
                               )
                               .slice(0, 2);
 
@@ -1674,7 +1680,8 @@ export default async function Home({
                     const isThreadLocked = !canViewSensitiveContent(thread, viewer);
                     const visibleThreadComments = thread.thread_comments.filter(
                       (comment) =>
-                        !comment.deleted_at && !comment.thread_comment_hides.length,
+                        !comment.deleted_at &&
+                        !hasCommentHide(comment.thread_comment_hides),
                     );
 
                     return (
@@ -1813,7 +1820,7 @@ export default async function Home({
                                 .filter(
                                   (reply) =>
                                     !reply.deleted_at &&
-                                    !reply.thread_comment_hides.length,
+                                    !hasCommentHide(reply.thread_comment_hides),
                                 )
                                 .slice(0, 2);
 

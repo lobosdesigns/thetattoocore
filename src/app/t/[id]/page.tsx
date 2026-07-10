@@ -79,7 +79,7 @@ type ThreadComment = {
   deleted_at: string | null;
   id: string;
   parent_id: string | null;
-  thread_comment_hides: { hidden_by: string }[];
+  thread_comment_hides: { hidden_by: string }[] | { hidden_by: string } | null;
   thread_comment_likes: ThreadLike[];
   profiles: Pick<Profile, "display_name" | "id" | "username"> | null;
 };
@@ -108,6 +108,12 @@ function timeAgo(value: string) {
   if (hours < 24) return `${hours}h`;
 
   return `${Math.round(hours / 24)}d`;
+}
+
+function hasCommentHide(
+  value: { hidden_by: string }[] | { hidden_by: string } | null,
+) {
+  return Array.isArray(value) ? value.length > 0 : Boolean(value);
 }
 
 function isVerifiedProfile(profile?: Profile | null) {
@@ -272,7 +278,8 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
   const liked = thread.thread_likes.some((like) => like.user_id === claims?.sub);
   const returnPath = `/t/${thread.id}`;
   const visibleComments = thread.thread_comments.filter(
-    (comment) => !comment.deleted_at && !comment.thread_comment_hides.length,
+    (comment) =>
+      !comment.deleted_at && !hasCommentHide(comment.thread_comment_hides),
   );
 
   return (

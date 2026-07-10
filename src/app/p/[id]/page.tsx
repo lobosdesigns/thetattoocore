@@ -82,7 +82,7 @@ type PostComment = {
   deleted_at: string | null;
   id: string;
   parent_id: string | null;
-  post_comment_hides: { hidden_by: string }[];
+  post_comment_hides: { hidden_by: string }[] | { hidden_by: string } | null;
   post_comment_likes: PostLike[];
   profiles: Pick<Profile, "display_name" | "id" | "username"> | null;
 };
@@ -111,6 +111,12 @@ function timeAgo(value: string) {
   if (hours < 24) return `${hours}h`;
 
   return `${Math.round(hours / 24)}d`;
+}
+
+function hasCommentHide(
+  value: { hidden_by: string }[] | { hidden_by: string } | null,
+) {
+  return Array.isArray(value) ? value.length > 0 : Boolean(value);
 }
 
 function isVerifiedProfile(profile?: Profile | null) {
@@ -273,7 +279,7 @@ export default async function PostPage({ params }: PostPageProps) {
   const liked = post.post_likes.some((like) => like.user_id === claims?.sub);
   const returnPath = `/p/${post.id}`;
   const visibleComments = post.post_comments.filter(
-    (comment) => !comment.deleted_at && !comment.post_comment_hides.length,
+    (comment) => !comment.deleted_at && !hasCommentHide(comment.post_comment_hides),
   );
 
   return (
