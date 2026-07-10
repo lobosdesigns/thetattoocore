@@ -51,7 +51,7 @@ export function ContentReportForm({
     <details className="group w-full max-w-full rounded-md">
       <summary
         aria-label={reportMenuLabel(subjectType)}
-        className="inline-flex h-9 cursor-pointer list-none items-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-2.5 text-xs font-semibold text-[#4f473f] transition hover:border-[#c8953b] group-open:border-[#c8953b] group-open:bg-[#fff7ec]"
+        className="ttc-surface inline-flex h-9 cursor-pointer list-none items-center gap-2 rounded-md border px-2.5 text-xs font-semibold transition hover:border-[var(--accent)] group-open:border-[var(--accent)]"
         title={reportMenuLabel(subjectType)}
       >
         <Flag className="size-3.5" />
@@ -60,7 +60,7 @@ export function ContentReportForm({
       </summary>
       <form
         action={createContentReport}
-        className="mt-2 w-full max-w-full overflow-hidden rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 shadow-[0_10px_24px_rgba(23,20,18,0.12)] sm:max-w-sm"
+        className="ttc-surface mt-2 w-full max-w-full overflow-hidden rounded-md border p-3 shadow-[0_10px_24px_rgba(23,20,18,0.12)] sm:max-w-sm"
       >
         <input name="subject_id" type="hidden" value={subjectId} />
         <input name="subject_type" type="hidden" value={subjectType} />
@@ -68,13 +68,13 @@ export function ContentReportForm({
         {returnHash ? (
           <input name="return_hash" type="hidden" value={returnHash} />
         ) : null}
-        <p className="text-sm font-bold text-[#171412]">
+        <p className="text-sm font-bold">
           {reportTitle(subjectType)}
         </p>
         <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#a06d13]">
           Safety review
         </p>
-        <p className="mb-2 text-xs leading-5 text-[#766d62]">
+        <p className="ttc-muted mb-2 text-xs leading-5">
           {reportDescription(subjectType)}
         </p>
         <div className="grid min-w-0 gap-2">

@@ -136,6 +136,13 @@ textarea:focus-visible {
   color: var(--foreground);
 }
 
+.ttc-avatar {
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--foreground) 90%, #000), color-mix(in srgb, var(--paper-warm) 30%, #000)),
+    var(--foreground);
+  color: var(--accent);
+}
+
 .no-scrollbar {
   scrollbar-width: none;
 }

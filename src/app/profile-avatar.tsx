@@ -32,7 +32,7 @@ export function ProfileAvatar({
 
   return (
     <div
-      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#171412] font-bold text-[#c8953b] ${sizeClass[size]} ${className}`}
+      className={`ttc-avatar flex shrink-0 items-center justify-center overflow-hidden rounded-md font-bold ${sizeClass[size]} ${className}`}
     >
       {profile?.avatar_url ? (
         // eslint-disable-next-line @next/next/no-img-element
