@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import {
   ArrowLeft,
   BadgeCheck,
+  Ban,
   BriefcaseBusiness,
   CalendarDays,
   Camera,
@@ -37,8 +38,10 @@ import {
 import { isVerifiedProfessional } from "@/lib/verification";
 import {
   acceptFollowRequest,
+  blockProfile,
   declineFollowRequest,
   followProfile,
+  unblockProfile,
   unfollowProfile,
 } from "./actions";
 
@@ -140,6 +143,11 @@ type Gig = {
 type FollowRecord = {
   following_id: string;
   status: "pending" | "accepted";
+};
+
+type BlockRecord = {
+  blocked_id: string;
+  blocker_id: string;
 };
 
 type FollowRequest = {
@@ -829,6 +837,7 @@ export default async function ProfilePage({
     { data: followerPreview },
     { data: followingPreview },
     { data: viewerProfile },
+    { data: blockRecord },
     { data: posts },
     { data: threads },
     { data: listings },
@@ -891,6 +900,16 @@ export default async function ProfilePage({
           .select("id, adult_terms_accepted_at, is_adult_confirmed")
           .eq("id", claims.sub)
           .maybeSingle<ViewerProfile>()
+      : Promise.resolve({ data: null }),
+    claims?.sub && claims.sub !== profile.id
+      ? supabase
+          .from("user_blocks")
+          .select("blocker_id, blocked_id")
+          .or(
+            `and(blocker_id.eq.${claims.sub},blocked_id.eq.${profile.id}),and(blocker_id.eq.${profile.id},blocked_id.eq.${claims.sub})`,
+          )
+          .limit(1)
+          .maybeSingle<BlockRecord>()
       : Promise.resolve({ data: null }),
     supabase
       .from("feed_posts")
@@ -957,9 +976,16 @@ export default async function ProfilePage({
   ]);
 
   const isOwnProfile = claims?.sub === profile.id;
+  const blockedByViewer =
+    Boolean(blockRecord) && blockRecord?.blocker_id === claims?.sub;
+  const viewerBlockedByProfile =
+    Boolean(blockRecord) && blockRecord?.blocked_id === claims?.sub;
+  const hasBlockRelationship = blockedByViewer || viewerBlockedByProfile;
   const isFollowing = followRecord?.status === "accepted";
   const hasPendingRequest = followRecord?.status === "pending";
-  const isPrivateLocked = profile.is_private && !isOwnProfile && !isFollowing;
+  const isPrivateLocked =
+    (profile.is_private && !isOwnProfile && !isFollowing) ||
+    hasBlockRelationship;
   const viewer = {
     isAdultConfirmed: Boolean(
       viewerProfile?.is_adult_confirmed &&
@@ -1052,8 +1078,11 @@ export default async function ProfilePage({
               ) : null}
               {isPrivateLocked ? (
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-[#766d62]">
-                  This profile is private. Follow the profile to see posts,
-                  gigs, stuff listings, and profile details.
+                  {blockedByViewer
+                    ? "You blocked this profile. Unblock them if you want to view, follow, or message again."
+                    : viewerBlockedByProfile
+                      ? "This profile is not available to your account."
+                      : "This profile is private. Follow the profile to see posts, gigs, stuff listings, and profile details."}
                 </p>
               ) : null}
               {!isPrivateLocked ? (
@@ -1121,7 +1150,7 @@ export default async function ProfilePage({
                   >
                     Edit profile
                   </Link>
-                ) : isFollowing ? (
+                ) : hasBlockRelationship ? null : isFollowing ? (
                   <form action={unfollowProfile}>
                     <input name="profile_id" type="hidden" value={profile.id} />
                     <input
@@ -1161,7 +1190,7 @@ export default async function ProfilePage({
                     </button>
                   </form>
                 )}
-                {!isOwnProfile ? (
+                {!isOwnProfile && !hasBlockRelationship ? (
                   <Link
                     className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
                     href="/messages"
@@ -1170,7 +1199,7 @@ export default async function ProfilePage({
                     DM
                   </Link>
                 ) : null}
-                {!isOwnProfile && claims?.sub ? (
+                {!isOwnProfile && claims?.sub && !hasBlockRelationship ? (
                   <SavedItemButton
                     className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
                     isSaved={Boolean(savedProfile)}
@@ -1179,12 +1208,41 @@ export default async function ProfilePage({
                     subjectType="profile"
                   />
                 ) : null}
-                {!isOwnProfile && claims?.sub ? (
+                {!isOwnProfile && claims?.sub && !hasBlockRelationship ? (
                   <ContentReportForm
                     returnPath={`/u/${profile.username}`}
                     subjectId={profile.id}
                     subjectType="profile"
                   />
+                ) : null}
+                {!isOwnProfile && claims?.sub ? (
+                  blockedByViewer ? (
+                    <form action={unblockProfile}>
+                      <input name="profile_id" type="hidden" value={profile.id} />
+                      <input
+                        name="username"
+                        type="hidden"
+                        value={profile.username}
+                      />
+                      <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold">
+                        <Ban className="size-4" />
+                        Unblock
+                      </button>
+                    </form>
+                  ) : viewerBlockedByProfile ? null : (
+                    <form action={blockProfile}>
+                      <input name="profile_id" type="hidden" value={profile.id} />
+                      <input
+                        name="username"
+                        type="hidden"
+                        value={profile.username}
+                      />
+                      <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#e5b8b8] bg-[#fff0f0] px-4 text-sm font-semibold text-[#8a2828]">
+                        <Ban className="size-4" />
+                        Block
+                      </button>
+                    </form>
+                  )
                 ) : null}
               </div>
             </div>
@@ -1275,8 +1333,11 @@ export default async function ProfilePage({
               <LockKeyhole className="mx-auto mb-3 size-8 text-[#766d62]" />
               <h2 className="text-lg font-bold">Private profile</h2>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#766d62]">
-                The owner has limited this profile to followers.
-                Public search engines can see only this limited preview.
+                {blockedByViewer
+                  ? "You blocked this profile, so their content and messages are hidden."
+                  : viewerBlockedByProfile
+                    ? "This profile is not available to your account."
+                    : "The owner has limited this profile to followers. Public search engines can see only this limited preview."}
               </p>
             </div>
           </section>

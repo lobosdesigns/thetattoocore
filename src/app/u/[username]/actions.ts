@@ -58,6 +58,27 @@ async function requireUser() {
   return { supabase, userId: claims.sub };
 }
 
+async function blockRelationshipExists({
+  supabase,
+  targetId,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  targetId: string;
+  userId: string;
+}) {
+  const { data } = await supabase
+    .from("user_blocks")
+    .select("blocker_id")
+    .or(
+      `and(blocker_id.eq.${userId},blocked_id.eq.${targetId}),and(blocker_id.eq.${targetId},blocked_id.eq.${userId})`,
+    )
+    .limit(1)
+    .maybeSingle<{ blocker_id: string }>();
+
+  return Boolean(data);
+}
+
 export async function followProfile(formData: FormData) {
   const username = cleanUsername(formData.get("username"));
   const targetId = String(formData.get("profile_id") ?? "");
@@ -85,6 +106,10 @@ export async function followProfile(formData: FormData) {
 
   if (targetError || !targetProfile) {
     redirect(profilePath(username, targetError?.message || "Profile not found."));
+  }
+
+  if (await blockRelationshipExists({ supabase, targetId, userId })) {
+    redirect(profilePath(username, "You cannot follow a blocked profile."));
   }
 
   const status = targetProfile.is_private ? "pending" : "accepted";
@@ -231,4 +256,70 @@ export async function declineFollowRequest(formData: FormData) {
 
   revalidatePath(`/u/${username}`);
   redirect(profilePath(username, "Follow request declined."));
+}
+
+export async function blockProfile(formData: FormData) {
+  const username = cleanUsername(formData.get("username"));
+  const targetId = String(formData.get("profile_id") ?? "");
+  const reason = String(formData.get("reason") ?? "")
+    .trim()
+    .slice(0, 500);
+  const { supabase, userId } = await requireUser();
+
+  if (!username || !targetId) {
+    redirect("/");
+  }
+
+  if (targetId === userId) {
+    redirect(profilePath(username, "You cannot block yourself."));
+  }
+
+  const { error } = await supabase.from("user_blocks").upsert(
+    {
+      blocked_id: targetId,
+      blocker_id: userId,
+      reason: reason || null,
+    },
+    {
+      ignoreDuplicates: true,
+      onConflict: "blocker_id,blocked_id",
+    },
+  );
+
+  if (error) {
+    redirect(profilePath(username, error.message || "Could not block profile."));
+  }
+
+  await supabase
+    .from("follows")
+    .delete()
+    .or(
+      `and(follower_id.eq.${userId},following_id.eq.${targetId}),and(follower_id.eq.${targetId},following_id.eq.${userId})`,
+    );
+
+  revalidatePath(`/u/${username}`);
+  redirect(profilePath(username, "Profile blocked."));
+}
+
+export async function unblockProfile(formData: FormData) {
+  const username = cleanUsername(formData.get("username"));
+  const targetId = String(formData.get("profile_id") ?? "");
+  const { supabase, userId } = await requireUser();
+
+  if (!username || !targetId) {
+    redirect("/");
+  }
+
+  const { error } = await supabase
+    .from("user_blocks")
+    .delete()
+    .eq("blocker_id", userId)
+    .eq("blocked_id", targetId);
+
+  if (error) {
+    redirect(profilePath(username, error.message || "Could not unblock profile."));
+  }
+
+  revalidatePath(`/u/${username}`);
+  redirect(profilePath(username, "Profile unblocked."));
 }

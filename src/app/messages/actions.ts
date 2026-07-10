@@ -203,6 +203,23 @@ async function findExistingConversation(
   return targetMembership?.conversation_id ?? null;
 }
 
+async function blockRelationshipExists(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  targetId: string,
+) {
+  const { data } = await supabase
+    .from("user_blocks")
+    .select("blocker_id")
+    .or(
+      `and(blocker_id.eq.${userId},blocked_id.eq.${targetId}),and(blocker_id.eq.${targetId},blocked_id.eq.${userId})`,
+    )
+    .limit(1)
+    .maybeSingle<{ blocker_id: string }>();
+
+  return Boolean(data);
+}
+
 export async function startConversation(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const username = cleanText(formData.get("username"), 30)
@@ -254,6 +271,10 @@ export async function startConversation(formData: FormData) {
 
   if (targetProfile.id === userId) {
     redirect(messagesPath("You cannot message yourself."));
+  }
+
+  if (await blockRelationshipExists(supabase, userId, targetProfile.id)) {
+    redirect(messagesPath("You cannot message a blocked profile."));
   }
 
   let conversationId = await findExistingConversation(
@@ -361,6 +382,19 @@ export async function sendMessage(formData: FormData) {
     redirect(messagesPath("Message cannot be empty.", conversationId));
   }
   const messageBody = body || "Photo";
+
+  const { data: blockedMembers } = await supabase
+    .from("conversation_members")
+    .select("user_id")
+    .eq("conversation_id", conversationId)
+    .neq("user_id", userId)
+    .returns<{ user_id: string }[]>();
+
+  for (const member of blockedMembers ?? []) {
+    if (await blockRelationshipExists(supabase, userId, member.user_id)) {
+      redirect(messagesPath("You cannot message a blocked profile.", conversationId));
+    }
+  }
 
   const { data: message, error } = await supabase
     .from("messages")
