@@ -1332,7 +1332,7 @@ export default async function Home({
 
           <StoriesRail />
 
-          <div className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth touch-pan-x">
+          <div className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth">
           <section
             className="min-w-full snap-start snap-always divide-y divide-[#e5ded4]"
             id="feed"
