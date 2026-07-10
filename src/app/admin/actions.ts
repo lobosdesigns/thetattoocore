@@ -113,6 +113,24 @@ function adminAdsMessage(message: string, returnTo?: string) {
   return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
 }
 
+function adminDataRequestsMessage(message: string, returnTo?: string) {
+  const safeReturnTo =
+    returnTo?.startsWith("/admin/data-requests") || returnTo === "/admin"
+      ? returnTo
+      : "/admin#data-requests";
+  const separator = safeReturnTo.includes("?") ? "&" : "?";
+  const hashIndex = safeReturnTo.indexOf("#");
+
+  if (hashIndex >= 0) {
+    const base = safeReturnTo.slice(0, hashIndex);
+    const hash = safeReturnTo.slice(hashIndex);
+
+    return `${base}${separator}message=${encodeURIComponent(message)}${hash}`;
+  }
+
+  return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
+}
+
 function cleanText(value: FormDataEntryValue | null, maxLength: number) {
   return String(value ?? "")
     .trim()
@@ -789,6 +807,7 @@ export async function updateAdCampaignStatus(formData: FormData) {
 
 export async function updateAccountDeletionRequest(formData: FormData) {
   const requestId = cleanText(formData.get("request_id"), 80);
+  const returnTo = cleanText(formData.get("return_to"), 120);
   const status = cleanText(
     formData.get("status"),
     40,
@@ -796,12 +815,17 @@ export async function updateAccountDeletionRequest(formData: FormData) {
   const note = cleanText(formData.get("note"), 500);
 
   if (!requestId || !accountDeletionStatuses.has(status)) {
-    redirect("/admin?message=Choose a valid account deletion status.#data-requests");
+    redirect(
+      adminDataRequestsMessage("Choose a valid account deletion status.", returnTo),
+    );
   }
 
   if ((status === "completed" || status === "rejected") && note.length < 10) {
     redirect(
-      "/admin?message=Add a clear review note before completing or rejecting the request.#data-requests",
+      adminDataRequestsMessage(
+        "Add a clear review note before completing or rejecting the request.",
+        returnTo,
+      ),
     );
   }
 
@@ -818,14 +842,20 @@ export async function updateAccountDeletionRequest(formData: FormData) {
 
   if (requestError || !request) {
     redirect(
-      `/admin?message=${encodeURIComponent(
+      adminDataRequestsMessage(
         requestError?.message || "Account deletion request was not found.",
-      )}#data-requests`,
+        returnTo,
+      ),
     );
   }
 
   if (request.status === "completed") {
-    redirect("/admin?message=Completed deletion requests cannot be changed.#data-requests");
+    redirect(
+      adminDataRequestsMessage(
+        "Completed deletion requests cannot be changed.",
+        returnTo,
+      ),
+    );
   }
 
   const now = new Date().toISOString();
@@ -841,9 +871,10 @@ export async function updateAccountDeletionRequest(formData: FormData) {
 
   if (updateError) {
     redirect(
-      `/admin?message=${encodeURIComponent(
+      adminDataRequestsMessage(
         updateError.message || "Could not update account deletion request.",
-      )}#data-requests`,
+        returnTo,
+      ),
     );
   }
 
@@ -860,6 +891,7 @@ export async function updateAccountDeletionRequest(formData: FormData) {
   });
 
   revalidatePath("/admin");
+  revalidatePath("/admin/data-requests");
   revalidatePath("/account");
-  redirect("/admin?message=Account deletion request updated.#data-requests");
+  redirect(adminDataRequestsMessage("Account deletion request updated.", returnTo));
 }
