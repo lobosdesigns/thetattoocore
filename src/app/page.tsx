@@ -627,6 +627,19 @@ function SidebarEmptyState({ children }: { children: string }) {
   );
 }
 
+function LoadMoreLink({ href, label }: { href: string; label: string }) {
+  return (
+    <div className="mt-4 flex justify-center">
+      <Link
+        className="flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-4 text-sm font-bold shadow-sm hover:bg-white"
+        href={href}
+      >
+        {label}
+      </Link>
+    </div>
+  );
+}
+
 function profileLocation(profile?: Profile | null) {
   return [profile?.city, profile?.region].filter(Boolean).join(", ");
 }
@@ -1243,9 +1256,47 @@ async function fetchSponsoredCampaign(
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string }>;
+  searchParams: Promise<{
+    feedPage?: string;
+    gigsPage?: string;
+    gossipPage?: string;
+    message?: string;
+    stuffPage?: string;
+  }>;
 }) {
   const params = await searchParams;
+  const pageSize = 25;
+  const pageParam = (value: string | undefined) =>
+    Math.max(1, Math.min(20, Number(value ?? "1") || 1));
+  const feedLimit = pageParam(params.feedPage) * pageSize;
+  const gossipLimit = pageParam(params.gossipPage) * pageSize;
+  const stuffLimit = pageParam(params.stuffPage) * pageSize;
+  const gigsLimit = pageParam(params.gigsPage) * pageSize;
+  const loadMoreHref = (
+    key: "feedPage" | "gigsPage" | "gossipPage" | "stuffPage",
+    currentLimit: number,
+    hash: string,
+  ) => {
+    const nextPage = Math.floor(currentLimit / pageSize) + 1;
+    const nextParams = new URLSearchParams();
+
+    if (params.message) nextParams.set("message", params.message);
+    if (params.feedPage && key !== "feedPage") {
+      nextParams.set("feedPage", params.feedPage);
+    }
+    if (params.gossipPage && key !== "gossipPage") {
+      nextParams.set("gossipPage", params.gossipPage);
+    }
+    if (params.stuffPage && key !== "stuffPage") {
+      nextParams.set("stuffPage", params.stuffPage);
+    }
+    if (params.gigsPage && key !== "gigsPage") {
+      nextParams.set("gigsPage", params.gigsPage);
+    }
+    nextParams.set(key, String(nextPage));
+
+    return `/?${nextParams.toString()}#${hash}`;
+  };
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -1282,7 +1333,7 @@ export default async function Home({
         ascending: true,
         referencedTable: "feed_media",
       })
-      .limit(25)
+      .limit(feedLimit)
       .returns<FeedPost[]>(),
     supabase
       .from("thread_posts")
@@ -1295,7 +1346,7 @@ export default async function Home({
         ascending: true,
         referencedTable: "thread_media",
       })
-      .limit(25)
+      .limit(gossipLimit)
       .returns<ThreadPost[]>(),
     supabase
       .from("marketplace_listings")
@@ -1309,7 +1360,7 @@ export default async function Home({
         ascending: true,
         referencedTable: "marketplace_media",
       })
-      .limit(25)
+      .limit(stuffLimit)
       .returns<MarketplaceListing[]>(),
     supabase
       .from("gigs")
@@ -1323,7 +1374,7 @@ export default async function Home({
         ascending: true,
         referencedTable: "gig_media",
       })
-      .limit(25)
+      .limit(gigsLimit)
       .returns<Gig[]>(),
     claims?.sub
       ? supabase
@@ -1827,6 +1878,12 @@ export default async function Home({
                 />
               </div>
             )}
+            {(feedPosts?.length ?? 0) >= feedLimit ? (
+              <LoadMoreLink
+                href={loadMoreHref("feedPage", feedLimit, "feed")}
+                label="Load 25 more 4U posts"
+              />
+            ) : null}
           </section>
 
           <section
@@ -2217,6 +2274,12 @@ export default async function Home({
                     />
                   )}
             </div>
+            {(threadPosts?.length ?? 0) >= gossipLimit ? (
+              <LoadMoreLink
+                href={loadMoreHref("gossipPage", gossipLimit, "threads")}
+                label="Load 25 more Gossip posts"
+              />
+            ) : null}
           </section>
 
           <section
@@ -2413,6 +2476,12 @@ export default async function Home({
                     </div>
                   )}
             </div>
+            {(listings?.length ?? 0) >= stuffLimit ? (
+              <LoadMoreLink
+                href={loadMoreHref("stuffPage", stuffLimit, "marketplace")}
+                label="Load 25 more Stuff listings"
+              />
+            ) : null}
           </section>
 
           <section
@@ -2614,6 +2683,12 @@ export default async function Home({
                     </div>
                   )}
             </div>
+            {(gigs?.length ?? 0) >= gigsLimit ? (
+              <LoadMoreLink
+                href={loadMoreHref("gigsPage", gigsLimit, "gigs")}
+                label="Load 25 more Gigs"
+              />
+            ) : null}
           </section>
 
           <section
