@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthHashRedirect } from "./auth-hash-redirect";
+import { PwaInstallSuppressor } from "./pwa-install-suppressor";
 import { normalizedLanguage } from "@/lib/localization";
 import {
   brandShareImage,
@@ -102,6 +103,7 @@ export default async function RootLayout({
     >
       <body className="min-h-full">
         <AuthHashRedirect />
+        <PwaInstallSuppressor />
         {children}
       </body>
     </html>

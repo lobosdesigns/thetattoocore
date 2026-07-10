@@ -51,7 +51,7 @@ const sections = [
   },
   {
     body:
-      "Members can update profile information from account settings, make profiles private, and request account deletion from Account > Data. During launch, deletion requests are reviewed manually so safety reports, marketplace issues, and legal obligations can be handled correctly.",
+      "Members can update profile information from account settings, make profiles private, and request account deletion from Account > Data. During launch, deletion requests are reviewed manually so safety reports, marketplace issues, fraud concerns, disputes, and legal obligations can be handled correctly. The launch target is to review deletion requests within 30 days unless a safety, dispute, or legal hold requires more time.",
     title: "Controls",
   },
 ];

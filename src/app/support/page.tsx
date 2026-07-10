@@ -22,7 +22,7 @@ const sections = [
   },
   {
     body:
-      "Signed-in members can request account deletion from Account > Data. During launch, deletion requests are reviewed manually so safety reports, marketplace issues, and legal obligations can be handled correctly.",
+      "Signed-in members can request account deletion from Account > Data. During launch, deletion requests are reviewed manually so safety reports, marketplace issues, fraud concerns, and legal obligations can be handled correctly. The launch target is to review deletion requests within 30 days unless a safety, dispute, or legal hold requires more time.",
     title: "Account Deletion",
   },
   {
