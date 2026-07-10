@@ -15,6 +15,7 @@
 - Column order for launch planning is 4U, Gossip, Stuff, Gigs, Merch, then DM. Merch can stay as a planned placeholder until seller approval, checkout, tax, shipping, refunds, and payment-provider rules are built.
 - Long feeds and queues should load 25 items at a time with a clear Load more button for each next batch of 25. Apply this to 4U, Gossip, Stuff, Gigs, Merch, notifications, saved items, search results, comments/replies, admin queues, and future long lists so the site stays fast as volume grows.
 - Admin queues should get per-tab Load more controls after the simple 25-item caps are stable, so verification, reports, users, ads, data requests, media review, and activity logs can scale without returning to one giant admin page.
+- Search and Saved should mention Merch as planned/coming soon until products, seller approval, checkout, tax, shipping, refunds, and payment-provider rules are built.
 - Mobile composer: posting cards must fit mobile browser screens, scroll to the publish button, and keep advanced fields behind expandable sections. Done for launch.
 - Composer uploads should not show a sensitive-content option during launch; visible nudity is not allowed, so members must crop or cover private areas before posting.
 - Profiles need avatar/profile-photo upload with client-side image optimization, public display on profile pages, and later rollout into feeds, comments, DMs, search, and notifications. Done for launch.
@@ -66,6 +67,7 @@
 - Avoid a flat beige-only look; the brand should feel like a modern creative community, not a generic marketplace.
 - Continue pushing the app toward a sleeker, darker, higher-contrast social look with more pop, sharper mobile controls, and a stronger younger-crowd feel.
 - Add more tech-forward polish across the app: layered opacity, stronger card borders, cleaner shadows, darker chrome, sharper active states, and less plain beige surface area.
+- Add user-selectable appearance settings for Light, Dark, and System mode. Store the preference on the profile for signed-in users and locally for visitors, then migrate the UI from hardcoded colors toward theme tokens so both modes are polished instead of just inverted.
 - Notifications and admin need another mobile responsive pass; no panels, buttons, or cards should drift out of frame on narrow browser viewports. Notifications received another mobile containment pass for launch.
 - Admin should move away from one long cluttered page toward clearer tab/menu sections for Overview, Verification, Reports, Users, Ads, Data, Media, and Mail.
 - Account/profile editing should follow the same tabbed cleanup direction as admin so profile, language, privacy, notifications, verification, ads, and data do not feel like one long cluttered scroll. Started for launch with sticky account tabs and tabbed profile sub-sections.

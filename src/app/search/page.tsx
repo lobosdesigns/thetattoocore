@@ -6,6 +6,7 @@ import {
   BriefcaseBusiness,
   Camera,
   MessageCircle,
+  Package,
   Search,
   ShoppingBag,
   UserRound,
@@ -394,7 +395,7 @@ export default async function SearchPage({
                 defaultValue={query}
                 maxLength={80}
                 name="q"
-                placeholder="Search artists, styles, shops, gigs"
+                placeholder="Search artists, styles, shops, gigs, merch"
               />
               <button className="h-8 rounded-md bg-[#171412] px-3 text-xs font-semibold text-white">
                 Search
@@ -409,13 +410,20 @@ export default async function SearchPage({
           <p className="mt-1 text-sm text-[#766d62]">
             {hasSearch
               ? `${total} result${total === 1 ? "" : "s"} found`
-              : "Find public artists, styles, gossip, stuff, and gigs."}
+              : "Find public artists, styles, gossip, Stuff, and Gigs. Merch search is planned next."}
           </p>
           <p className="mt-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
             Search only shows public, non-sensitive previews. Member-only,
             private, and 18+ sensitive body-art content stays behind login and
             terms confirmation, and DMs never appear in search.
           </p>
+          <div className="mt-3 flex items-start gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
+            <Package className="mt-0.5 size-4 shrink-0 text-[#c8953b]" />
+            <p>
+              Merch discovery will join search after seller approval, checkout,
+              tax, shipping, refunds, and payment-provider rules are built.
+            </p>
+          </div>
           <form
             action="/search"
             className="mt-4 grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]"

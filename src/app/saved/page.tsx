@@ -399,7 +399,7 @@ export default async function SavedPage({
               <div>
                 <h1 className="text-xl font-bold">Saved</h1>
                 <p className="text-sm text-[#766d62]">
-                  Latest {savedLimit} artists, 4U, Gossip, Stuff, and Gigs you bookmarked.
+                  Latest {savedLimit} artists, 4U, Gossip, Stuff, and Gigs you bookmarked. Merch joins when products go live.
                 </p>
               </div>
             </div>
