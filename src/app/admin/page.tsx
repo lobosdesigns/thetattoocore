@@ -468,9 +468,9 @@ function clickRate({ clicks, impressions }: Pick<AdCampaign, "clicks" | "impress
 
 function ReviewCard({ item }: { item: ReviewItem }) {
   return (
-    <article className="rounded-md border border-[#e5ded4] bg-white p-4">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div className="min-w-0">
+    <article className="min-w-0 overflow-hidden rounded-md border border-[#e5ded4] bg-white p-3 sm:p-4">
+      <div className="mb-3 flex min-w-0 flex-col gap-3 min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between">
+        <div className="min-w-0 break-words">
           <p className="truncate text-sm font-bold">{item.title}</p>
           <p className="mt-1 text-xs text-[#766d62]">
             @{item.authorUsername} - {timeAgo(item.createdAt)}
@@ -507,7 +507,7 @@ function ReviewCard({ item }: { item: ReviewItem }) {
           name="note"
           placeholder="Moderator note"
         />
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 min-[430px]:grid-cols-4">
           {[
             ["under_review", "Review"],
             ["hidden", "Hide"],
@@ -531,9 +531,9 @@ function ReviewCard({ item }: { item: ReviewItem }) {
 
 function ReportCard({ report }: { report: ReportItem }) {
   return (
-    <article className="rounded-md border border-[#e5ded4] bg-white p-4">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div className="min-w-0">
+    <article className="min-w-0 overflow-hidden rounded-md border border-[#e5ded4] bg-white p-3 sm:p-4">
+      <div className="mb-3 flex min-w-0 flex-col gap-3 min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between">
+        <div className="min-w-0 break-words">
           <div className="flex flex-wrap items-center gap-2">
             <span
               className={`rounded-md border px-2 py-1 text-xs font-semibold ${reportReasonClass(
@@ -607,7 +607,7 @@ function ReportCard({ report }: { report: ReportItem }) {
             name="note"
             placeholder="Content action note for audit log"
           />
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 min-[430px]:grid-cols-4">
             {[
               ["under_review", "Review"],
               ["hidden", "Hide"],
@@ -634,7 +634,7 @@ function ReportCard({ report }: { report: ReportItem }) {
           name="note"
           placeholder="Report status note"
         />
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 gap-2 min-[390px]:grid-cols-3">
           {[
             ["reviewing", "Reviewing"],
             ["resolved", "Resolve"],
@@ -715,9 +715,9 @@ function LicenseRequestCard({ request }: { request: LicenseRequest }) {
   const isExpired = isExpiredDate(request.expiresOn);
 
   return (
-    <article className="rounded-md border border-[#e5ded4] bg-white p-4">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div className="min-w-0">
+    <article className="min-w-0 overflow-hidden rounded-md border border-[#e5ded4] bg-white p-3 sm:p-4">
+      <div className="mb-3 flex min-w-0 flex-col gap-3 min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between">
+        <div className="min-w-0 break-words">
           <p className="truncate text-sm font-bold">{request.profileName}</p>
           <p className="mt-1 text-xs text-[#766d62]">
             @{request.profileUsername} - {request.accountType} -{" "}
@@ -859,9 +859,9 @@ function AccountDeletionRequestCard({
   const isOpen = request.status === "pending" || request.status === "reviewing";
 
   return (
-    <article className="rounded-md border border-[#e5ded4] bg-white p-4">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div className="min-w-0">
+    <article className="min-w-0 overflow-hidden rounded-md border border-[#e5ded4] bg-white p-3 sm:p-4">
+      <div className="mb-3 flex min-w-0 flex-col gap-3 min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between">
+        <div className="min-w-0 break-words">
           <p className="truncate text-sm font-bold">{request.profileName}</p>
           <p className="mt-1 text-xs text-[#766d62]">
             @{request.profileUsername} - requested {timeAgo(request.requestedAt)}
@@ -899,7 +899,7 @@ function AccountDeletionRequestCard({
             name="note"
             placeholder="Reviewer note, required to complete or reject"
           />
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 min-[430px]:grid-cols-4">
             {[
               ["reviewing", "Review"],
               ["completed", "Complete"],
@@ -939,9 +939,9 @@ function AccountDeletionRequestCard({
 
 function AdCampaignCard({ campaign }: { campaign: AdCampaign }) {
   return (
-    <article className="rounded-md border border-[#e5ded4] bg-white p-4">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div className="min-w-0">
+    <article className="min-w-0 overflow-hidden rounded-md border border-[#e5ded4] bg-white p-3 sm:p-4">
+      <div className="mb-3 flex min-w-0 flex-col gap-3 min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between">
+        <div className="min-w-0 break-words">
           <p className="truncate text-sm font-bold">{campaign.name}</p>
           <p className="mt-1 text-xs text-[#766d62]">
             @{campaign.advertiserUsername} -{" "}
@@ -1017,7 +1017,7 @@ function AdCampaignCard({ campaign }: { campaign: AdCampaign }) {
           ))}
         </div>
       ) : null}
-      <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
+      <div className="mt-3 grid grid-cols-1 gap-2 text-center text-xs min-[390px]:grid-cols-3">
         {[
           ["Impressions", campaign.impressions],
           ["Clicks", campaign.clicks],
@@ -1045,7 +1045,7 @@ function AdCampaignCard({ campaign }: { campaign: AdCampaign }) {
           name="note"
           placeholder="Reviewer note"
         />
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 min-[430px]:grid-cols-3 sm:grid-cols-5">
           {[
             ["approved", "Approve"],
             ["active", "Activate"],
@@ -1946,7 +1946,7 @@ export default async function AdminPage({
                 <div className="grid gap-3">
                   {users.map((user) => (
                     <article
-                      className="rounded-md border border-[#e5ded4] bg-white p-3"
+                      className="min-w-0 overflow-hidden rounded-md border border-[#e5ded4] bg-white p-3"
                       key={user.id}
                     >
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -2011,7 +2011,7 @@ export default async function AdminPage({
                           name="note"
                           placeholder="Moderation note"
                         />
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-1 gap-2 min-[390px]:grid-cols-3">
                           {[
                             ["active", "Restore"],
                             ["suspended", "Suspend"],

@@ -176,7 +176,7 @@ export default async function NotificationsPage() {
               </div>
             </div>
 
-            <div className="grid min-w-0 grid-cols-2 gap-2 sm:flex sm:flex-none sm:items-center sm:justify-end">
+            <div className="grid min-w-0 grid-cols-1 gap-2 min-[380px]:grid-cols-2 sm:flex sm:flex-none sm:items-center sm:justify-end">
               <Link
                 className="flex h-10 min-w-0 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9]/95 px-3 text-sm font-semibold shadow-sm"
                 href="/account#notification-settings"
@@ -284,7 +284,7 @@ export default async function NotificationsPage() {
                         {timeAgo(notification.created_at)}
                       </p>
                     </div>
-                    <div className="mt-3 grid min-w-0 grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                    <div className="mt-3 grid min-w-0 grid-cols-1 gap-2 min-[380px]:grid-cols-2 sm:flex sm:flex-wrap">
                       {href ? (
                         <form action={openNotification} className="min-w-0">
                           <input
@@ -307,7 +307,7 @@ export default async function NotificationsPage() {
                       (notification.actor_id || notification.subject_id) ? (
                         <form
                           action={respondToFollowRequest}
-                          className="col-span-2 grid min-w-0 grid-cols-2 gap-2 sm:flex sm:flex-wrap"
+                          className="grid min-w-0 grid-cols-1 gap-2 min-[380px]:col-span-2 min-[380px]:grid-cols-2 sm:flex sm:flex-wrap"
                         >
                           <input
                             name="notification_id"
