@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, TouchEvent, useRef } from "react";
+import { languageStatusDismissEvent } from "./language-status-banner";
 
 const columnIds = ["feed", "threads", "marketplace", "gigs"] as const;
 
@@ -14,6 +15,10 @@ function updateHash(index: number) {
 
   window.history.replaceState(null, "", `#${id}`);
   window.dispatchEvent(new HashChangeEvent("hashchange"));
+}
+
+function dismissLanguageStatus() {
+  window.dispatchEvent(new Event(languageStatusDismissEvent));
 }
 
 export function ColumnSnapRail({ children }: { children: ReactNode }) {
@@ -50,6 +55,7 @@ export function ColumnSnapRail({ children }: { children: ReactNode }) {
     touchStartX.current = touch.clientX;
     touchStartY.current = touch.clientY;
     touchStartIndex.current = nearestIndex();
+    dismissLanguageStatus();
   }
 
   function onTouchEnd(event: TouchEvent<HTMLDivElement>) {

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+export const languageStatusDismissEvent = "ttc:language-status-dismiss";
+
 export function LanguageStatusBanner({
   label,
 }: {
@@ -24,15 +26,19 @@ export function LanguageStatusBanner({
 
     const options: AddEventListenerOptions = { once: true, passive: true };
     window.addEventListener("click", dismiss, options);
+    window.addEventListener(languageStatusDismissEvent, dismiss, options);
     window.addEventListener("pointerdown", dismiss, options);
     window.addEventListener("scroll", dismiss, options);
     window.addEventListener("touchstart", dismiss, options);
+    window.addEventListener("wheel", dismiss, options);
 
     return () => {
       window.removeEventListener("click", dismiss);
+      window.removeEventListener(languageStatusDismissEvent, dismiss);
       window.removeEventListener("pointerdown", dismiss);
       window.removeEventListener("scroll", dismiss);
       window.removeEventListener("touchstart", dismiss);
+      window.removeEventListener("wheel", dismiss);
     };
   }, []);
 
