@@ -638,6 +638,37 @@ export async function updateLicenseVerification(formData: FormData) {
     target_type: "license_verification_request",
   });
 
+  const notificationBody =
+    status === "approved"
+      ? `Your ${request.account_type} verification was approved. Stuff seller contact, professional access, and ad submission are now unlocked.`
+      : note ||
+        "Your verification was rejected. Open Account to review the note and submit updated proof.";
+  const { error: notificationError } = await supabase.from("notifications").insert({
+    actor_id: userId,
+    body: notificationBody.slice(0, 240),
+    href: "/account#verification-settings",
+    recipient_id: request.profile_id,
+    subject_id: request.id,
+    subject_type: "license_verification_request",
+    title:
+      status === "approved"
+        ? "Verification approved"
+        : "Verification needs updated proof",
+    type:
+      status === "approved"
+        ? "verification_approved"
+        : "verification_rejected",
+  });
+
+  if (notificationError) {
+    redirect(
+      `/admin?message=${encodeURIComponent(
+        notificationError.message ||
+          "License updated, but member notification failed.",
+      )}#verification`,
+    );
+  }
+
   revalidatePath("/admin");
   revalidatePath("/account");
   redirect("/admin?message=License verification updated.#verification");

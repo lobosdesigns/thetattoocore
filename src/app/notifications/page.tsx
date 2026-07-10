@@ -3,10 +3,12 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
   ArrowLeft,
+  BadgeCheck,
   Bell,
   Check,
   Heart,
   MessageCircle,
+  ShieldAlert,
   Smartphone,
   Settings,
   UserPlus,
@@ -41,7 +43,9 @@ type Notification = {
     | "follow_request"
     | "message"
     | "thread_comment"
-    | "thread_like";
+    | "thread_like"
+    | "verification_approved"
+    | "verification_rejected";
   profiles: {
     avatar_url: string | null;
     display_name: string;
@@ -67,6 +71,8 @@ export const metadata: Metadata = {
 };
 
 function notificationIcon(type: Notification["type"]) {
+  if (type === "verification_approved") return BadgeCheck;
+  if (type === "verification_rejected") return ShieldAlert;
   if (type === "message") return MessageCircle;
   if (type === "feed_like" || type === "thread_like") return Heart;
   if (type === "feed_comment" || type === "thread_comment") {
@@ -84,6 +90,7 @@ function subjectLabel(type: string) {
   if (type === "profile") return "Profile";
   if (type === "message") return "DM";
   if (type === "conversation") return "DM";
+  if (type === "license_verification_request") return "Verification";
 
   return type.replaceAll("_", " ");
 }

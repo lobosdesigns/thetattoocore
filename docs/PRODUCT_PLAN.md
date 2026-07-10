@@ -22,10 +22,10 @@
 
 ## Notification Roadmap
 
-- Keep the MVP notification system in-app first: unread badges, notification center, DMs, follow requests, comments, likes, verification decisions, Stuff seller messages, and Gigs activity.
+- Keep the MVP notification system in-app first: unread badges, notification center, DMs, follow requests, comments, likes, verification decisions, Stuff seller messages, and Gigs activity. Verification decisions done for launch.
 - Store notification preferences on the profile now so the same choices can later control email, web push, and native push.
 - Store quiet hours, notification timezone, important-email preference, and push opt-in intent before turning on email/web/native push channels.
-- Add transactional email only for important account, verification, security, and marketplace/gig events before adding noisy social email.
+- Add transactional email only for important account, verification, security, and marketplace/gig events before adding noisy social email. Started with account deletion request confirmations.
 - Add PWA web push after the app is installable and core flows are stable; Android and desktop Chrome are the easiest starting path, while iPhone installed-PWA push has more limits.
 - Add installability before push: web app manifest, app icon, standalone display, mobile theme color, and shortcuts for 4U, DMs, and alerts. Done for launch.
 - Add native app push after mobile app builds exist: APNs for iOS and Firebase Cloud Messaging for Android.
