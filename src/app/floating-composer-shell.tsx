@@ -6,13 +6,20 @@ import {
   BriefcaseBusiness,
   Camera,
   MessageCircle,
+  Package,
   Plus,
   Send,
   ShoppingBag,
   X,
 } from "lucide-react";
 
-type ComposerMode = "feed" | "threads" | "marketplace" | "gigs" | "messages";
+type ComposerMode =
+  | "feed"
+  | "threads"
+  | "marketplace"
+  | "gigs"
+  | "merch"
+  | "messages";
 
 const modes: Record<
   ComposerMode,
@@ -42,6 +49,11 @@ const modes: Record<
     label: "Gigs",
     title: "Gig",
   },
+  merch: {
+    icon: Package,
+    label: "Merch",
+    title: "Merch item",
+  },
   messages: {
     icon: Send,
     label: "DM",
@@ -53,6 +65,7 @@ function modeFromHash(hash: string): ComposerMode {
   if (hash === "#threads") return "threads";
   if (hash === "#marketplace") return "marketplace";
   if (hash === "#gigs") return "gigs";
+  if (hash === "#merch") return "merch";
   if (hash === "#messages") return "messages";
 
   return "feed";
@@ -78,7 +91,7 @@ export function FloatingComposerShell({
     const onHashChange = () => setActiveMode(modeFromHash(window.location.hash));
     window.addEventListener("hashchange", onHashChange);
 
-    const sections = ["feed", "threads", "marketplace", "gigs", "messages"]
+    const sections = ["feed", "threads", "marketplace", "gigs", "merch", "messages"]
       .map((id) => document.getElementById(id))
       .filter(Boolean) as HTMLElement[];
 

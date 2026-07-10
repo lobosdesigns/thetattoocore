@@ -6,6 +6,7 @@
 - Threads: longer posts, optional image, replies, likes, comment likes, and community discussion. Comment likes/replies are live for launch, including visible replies.
 - Comments: original authors must be able to edit/delete their own comments and replies. Post/thread owners should be able to hide/delete/block disruptive comments on their own posts, and all signed-in users should be able to report comments. These controls must appear wherever comments are rendered, including 4U/Gossip cards, detail pages, opened notifications, and deep-link contexts.
 - Marketplace/Stuff: verified artists, studios, and vendors can buy, sell, and trade approved body-art goods and services; fans can browse but not transact or contact sellers.
+- Merch: a separate public-buyable marketplace for artist, studio, vendor, and TheTattooCore merchandise such as T-shirts, prints, art, stickers, aftercare-adjacent brand goods, and other safe fan-facing products. Merch should not be mixed with pro Stuff because the general public can buy Merch, while Stuff stays verification-gated.
 - Messages: integrated direct messenger for bookings, marketplace questions, and collaboration.
 - DMs need a focused test pass with the regular test user and moderator test user before app submission. Mobile inbox/thread routing, read-state clearing, signed attachment display, and realtime refresh are improved for launch; real send/receive testing still needs logged-in test sessions.
 - Notifications: in-app alerts and unread badges first, important email second, PWA browser push third, then native APNs/FCM push for iOS and Android apps.
@@ -45,6 +46,8 @@
 - Marketplace rules should prevent sales of tattoo equipment to unlicensed or unprofessional buyers where the platform can reasonably enforce it.
 - Stuff access rules should allow public/fan browsing but restrict buy, sell, trade, and seller-contact actions to verified artists, studios, and vendors.
 - Stuff UI copy should explicitly call out tattoo machines, needles, pigments, tubes, and professional shop gear as verified-only activity so fans understand browse-only access.
+- Merch rules should allow public fan purchases of safe brand goods while still requiring seller approval for artists, studios, vendors, and official TheTattooCore store inventory.
+- Merch must stay separate from professional equipment, regulated services, unsafe products, counterfeit goods, adult sexual products, and anything that would undermine app-store or payment-provider safety.
 - Support freedom of body-art expression and avoid unnecessary censorship when content follows safety, consent, legality, and adult-content guidelines.
 - Draw firm safety lines around pornography, sexualized content, exploitation, minors, harassment, scams, unsafe practices, and content showing unprofessional or potentially deadly harm.
 - Position the community as a safe space for body-art culture to express itself without unwanted AI, spam, or unprofessional practice watering it down.
@@ -161,6 +164,7 @@
 - Artist ads should appear in randomized bidded spots inside 4U and Gossip, clearly labeled as sponsored.
 - Stuff ads should run only inside Stuff, using the same simple bidding and rotation model but never leaking into 4U or Gossip.
 - Stuff ad goals should focus on listing views, seller messages from eligible users, and marketplace engagement.
+- Merch ads should run only inside Merch or safe brand placements and focus on product views, shop visits, and public purchases without mixing with professional Stuff equipment campaigns.
 - Safety rules: no sensitive personal targeting, no hidden behavioral profiling, no adult/minor targeting, and clear sponsor labels.
 - Privacy language should also reject AI ad expansion, opaque lookalike-style automation, and confusing ad targeting that members cannot understand.
 - Sponsored cards should show clear ad labeling plus simple relevance context such as placement, coarse location, language, or keywords.
@@ -170,6 +174,7 @@
 
 ## Later Columns
 
+- Merch: artist, studio, vendor, and TheTattooCore merchandise for public fan purchases, including T-shirts, prints, art, stickers, and other safe brand goods.
 - Gigs: jobs, conventions, guest spots, shop openings, apprenticeships, and event opportunities for artists and studios.
 - Contests: artist contests, flash challenges, sponsor prizes, and voting.
 - Streams: live tattoo sessions, shop walkthroughs, Q&A, and moderated chat.

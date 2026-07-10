@@ -3,7 +3,7 @@
 import { ReactNode, TouchEvent, useRef } from "react";
 import { languageStatusDismissEvent } from "./language-status-banner";
 
-const columnIds = ["feed", "threads", "marketplace", "gigs"] as const;
+const columnIds = ["feed", "threads", "marketplace", "gigs", "merch"] as const;
 
 function clampColumn(index: number) {
   return Math.max(0, Math.min(columnIds.length - 1, index));

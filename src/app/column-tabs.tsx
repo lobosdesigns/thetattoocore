@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-type ColumnId = "feed" | "threads" | "marketplace" | "gigs";
+type ColumnId = "feed" | "threads" | "marketplace" | "gigs" | "merch";
 
 const tabs: { href: string; id?: ColumnId; label: string }[] = [
   { href: "#feed", id: "feed", label: "4U" },
   { href: "#threads", id: "threads", label: "Gossip" },
   { href: "#marketplace", id: "marketplace", label: "Stuff" },
   { href: "#gigs", id: "gigs", label: "Gigs" },
+  { href: "#merch", id: "merch", label: "Merch" },
   { href: "/messages", label: "DM" },
 ];
 
@@ -17,6 +18,7 @@ function idFromHash(hash: string): ColumnId {
   if (hash === "#threads") return "threads";
   if (hash === "#marketplace") return "marketplace";
   if (hash === "#gigs") return "gigs";
+  if (hash === "#merch") return "merch";
 
   return "feed";
 }

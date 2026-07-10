@@ -12,6 +12,7 @@ import {
   LogIn,
   LoaderCircle,
   MessageCircle,
+  Package,
   Search,
   Send,
   ShoppingBag,
@@ -1050,6 +1051,7 @@ function StoriesRail() {
     ["Artists", ImageIcon],
     ["Studios", HomeIcon],
     ["Vendors", ShoppingBag],
+    ["Merch", Package],
     ["Events", CalendarDays],
   ] as const;
 
@@ -1403,6 +1405,7 @@ export default async function Home({
                   [MessageCircle, "Gossip", "#threads"],
                   [ShoppingBag, "Stuff", "#marketplace"],
                   [BriefcaseBusiness, "Gigs", "#gigs"],
+                  [Package, "Merch", "#merch"],
                   [Send, "DM", "/messages"],
                   [Bookmark, "Saved", "/saved"],
                   [UserRound, "Profile", profileHref],
@@ -2610,6 +2613,35 @@ export default async function Home({
                       />
                     </div>
                   )}
+            </div>
+          </section>
+
+          <section
+            className="min-w-full snap-start snap-always border-l border-[#e5ded4] px-4 py-5"
+            id="merch"
+          >
+            <div className="mb-4 flex items-center gap-2">
+              <Package className="size-5" />
+              <h2 className="text-lg font-bold">Merch</h2>
+            </div>
+            <EmptyColumnState
+              actionHref={isSignedIn ? undefined : "/login"}
+              actionLabel={isSignedIn ? "Tap + to preview plan" : "Sign in"}
+              body="Artist shirts, prints, art, stickers, vendor brand goods, and official TheTattooCore merchandise will live here. Merch will be public-buyable and separate from verified-only Stuff."
+              icon={Package}
+              tips={["T-shirts", "Prints", "TTC merch"]}
+              title="Merch is planned"
+            />
+            <div className="mt-4 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-4 text-sm leading-6 text-[#4f473f]">
+              <p className="font-semibold text-[#171412]">
+                Why Merch is separate from Stuff
+              </p>
+              <p className="mt-1">
+                Stuff is for professional body-art goods, trade, and seller
+                contact that need verification. Merch is for safe fan-facing
+                brand products the public can buy once checkout, shipping,
+                taxes, refunds, and seller approval are ready.
+              </p>
             </div>
           </section>
 

@@ -5,7 +5,7 @@ import { login } from "./actions";
 const setupSteps = [
   ["1", "Confirm email", "New accounts get an email link before login."],
   ["2", "Save profile", "Choose your username, account type, country, and 18+ confirmation."],
-  ["3", "Post with +", "Use the bottom-right plus button in 4U, Gossip, Stuff, or Gigs."],
+  ["3", "Post with +", "Use the bottom-right plus button in 4U, Gossip, Stuff, Gigs, or planned Merch."],
 ] as const;
 
 const stanceItems = [
@@ -200,7 +200,7 @@ export default async function LoginPage({
             <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 text-xs leading-5 text-[#4f473f]">
               Check inbox and junk after creating an account. After confirming
               your email, save your profile before posting, commenting, listing
-              Stuff, adding Gigs, or sending DMs.
+              Stuff, adding Gigs, previewing Merch, or sending DMs.
             </div>
 
             <p className="text-xs leading-5 text-[#766d62]">

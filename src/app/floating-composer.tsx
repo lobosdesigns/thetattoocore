@@ -367,6 +367,21 @@ export function FloatingComposer({
             </ComposerSubmit>
           </form>
         ),
+        merch: (
+          <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-4">
+            <p className="text-sm font-semibold">Merch is planned next.</p>
+            <p className="mt-2 text-sm leading-6 text-[#766d62]">
+              Merch will be for public fan purchases like artist shirts, prints,
+              art, stickers, vendor brand goods, and official TheTattooCore
+              merchandise. It stays separate from Stuff, which is for verified
+              professional equipment and trade.
+            </p>
+            <p className="mt-3 rounded-md border border-[#e5ded4] bg-white p-3 text-xs leading-5 text-[#5f564d]">
+              Checkout, tax, shipping, refunds, seller approval, and payment
+              provider rules need to be built before live Merch listings turn on.
+            </p>
+          </div>
+        ),
         messages: (
           <form
             action={startConversation}
