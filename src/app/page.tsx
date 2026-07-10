@@ -39,6 +39,7 @@ import {
 } from "./actions";
 import { AdImpressionBeacon } from "./ad-impression-beacon";
 import { ColumnTabs } from "./column-tabs";
+import { ColumnSnapRail } from "./column-snap-rail";
 import { ContentReportForm } from "./content-report-form";
 import { startConversation } from "./messages/actions";
 import { FloatingComposer } from "./floating-composer";
@@ -1485,7 +1486,7 @@ export default async function Home({
 
           <StoriesRail />
 
-          <div className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth">
+          <ColumnSnapRail>
           <section
             className="min-w-full snap-start snap-always divide-y divide-[#e5ded4]"
             id="feed"
@@ -2632,7 +2633,7 @@ export default async function Home({
               </Link>
             </div>
           </section>
-          </div>
+          </ColumnSnapRail>
         </section>
 
         <aside className="hidden bg-[#f2f1ee] px-5 py-6 lg:block">
