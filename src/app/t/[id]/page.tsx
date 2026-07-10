@@ -90,7 +90,17 @@ type ThreadLike = {
 
 type ThreadPageProps = {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ commentsPage?: string | string[] }>;
 };
+
+const commentsPageSize = 25;
+
+function pageNumber(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+  const parsed = Number.parseInt(rawValue ?? "1", 10);
+
+  return Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, 20) : 1;
+}
 
 function mediaUrl(bucket: string, path: string) {
   const encodedPath = path.split("/").map(encodeURIComponent).join("/");
@@ -234,8 +244,14 @@ export async function generateMetadata({
   };
 }
 
-export default async function ThreadPage({ params }: ThreadPageProps) {
+export default async function ThreadPage({
+  params,
+  searchParams,
+}: ThreadPageProps) {
   const { id } = await params;
+  const search = await searchParams;
+  const commentsPage = pageNumber(search?.commentsPage);
+  const commentLimit = commentsPage * commentsPageSize;
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -280,6 +296,9 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
     (comment) =>
       !comment.deleted_at && !hasCommentHide(comment.thread_comment_hides),
   );
+  const topLevelComments = visibleComments.filter((comment) => !comment.parent_id);
+  const visibleTopLevelComments = topLevelComments.slice(0, commentLimit);
+  const hasMoreComments = topLevelComments.length > visibleTopLevelComments.length;
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
@@ -499,9 +518,7 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
               )}
               <div className="space-y-3">
                 {isSignedIn && showThread && visibleComments.length ? (
-                  visibleComments
-                    .filter((comment) => !comment.parent_id)
-                    .slice(0, 12)
+                  visibleTopLevelComments
                     .map((comment) => {
                       const likedComment = comment.thread_comment_likes.some(
                         (like) => like.user_id === claims?.sub,
@@ -872,6 +889,14 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
                       : "Replies are visible after login."}
                   </p>
                 )}
+                {isSignedIn && showThread && hasMoreComments ? (
+                  <Link
+                    className="flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm font-semibold"
+                    href={`/t/${thread.id}?commentsPage=${commentsPage + 1}`}
+                  >
+                    Load 25 more replies
+                  </Link>
+                ) : null}
               </div>
             </section>
 
