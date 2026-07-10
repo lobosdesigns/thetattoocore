@@ -1550,12 +1550,34 @@ export default async function Home({
                           </div>
                           {replies.length ? (
                             <div className="ml-9 space-y-1 border-l border-[#e5ded4] pl-3">
-                              {replies.map((reply) => (
-                                <p className="text-xs leading-5 text-[#4f473f]" key={reply.id}>
-                                  <span className="font-semibold">{reply.profiles?.display_name ?? "Member"}</span>{" "}
-                                  {reply.body}
-                                </p>
-                              ))}
+                              {replies.map((reply) => {
+                                const likedReply = reply.post_comment_likes.some(
+                                  (like) => like.user_id === claims?.sub,
+                                );
+
+                                return (
+                                  <div
+                                    className="flex items-start justify-between gap-2 text-xs leading-5 text-[#4f473f]"
+                                    key={reply.id}
+                                  >
+                                    <p className="min-w-0 flex-1">
+                                      <span className="font-semibold">
+                                        {reply.profiles?.display_name ?? "Member"}
+                                      </span>{" "}
+                                      {reply.body}
+                                    </p>
+                                    <form action={togglePostCommentLike}>
+                                      <input name="comment_id" type="hidden" value={reply.id} />
+                                      <input name="liked" type="hidden" value={likedReply ? "true" : "false"} />
+                                      <input name="return_path" type="hidden" value="/#feed" />
+                                      <button className="flex items-center gap-1 font-semibold text-[#766d62]">
+                                        <Heart className={`size-3 ${likedReply ? "fill-[#c8953b] text-[#c8953b]" : ""}`} />
+                                        {reply.post_comment_likes.length}
+                                      </button>
+                                    </form>
+                                  </div>
+                                );
+                              })}
                             </div>
                           ) : null}
                           </div>
@@ -1878,18 +1900,36 @@ export default async function Home({
                                   </div>
                                   {replies.length ? (
                                     <div className="ml-9 mt-2 space-y-1 border-l border-[#e5ded4] pl-3">
-                                      {replies.map((reply) => (
-                                        <p
-                                          className="text-xs leading-5 text-[#4f473f]"
-                                          key={reply.id}
-                                        >
-                                          <span className="font-semibold">
-                                            {reply.profiles?.display_name ??
-                                              "Member"}
-                                          </span>{" "}
-                                          {reply.body}
-                                        </p>
-                                      ))}
+                                      {replies.map((reply) => {
+                                        const likedReply =
+                                          reply.thread_comment_likes.some(
+                                            (like) => like.user_id === claims?.sub,
+                                          );
+
+                                        return (
+                                          <div
+                                            className="flex items-start justify-between gap-2 text-xs leading-5 text-[#4f473f]"
+                                            key={reply.id}
+                                          >
+                                            <p className="min-w-0 flex-1">
+                                              <span className="font-semibold">
+                                                {reply.profiles?.display_name ??
+                                                  "Member"}
+                                              </span>{" "}
+                                              {reply.body}
+                                            </p>
+                                            <form action={toggleThreadCommentLike}>
+                                              <input name="comment_id" type="hidden" value={reply.id} />
+                                              <input name="liked" type="hidden" value={likedReply ? "true" : "false"} />
+                                              <input name="return_path" type="hidden" value="/#threads" />
+                                              <button className="flex items-center gap-1 font-semibold text-[#766d62]">
+                                                <Heart className={`size-3 ${likedReply ? "fill-[#c8953b] text-[#c8953b]" : ""}`} />
+                                                {reply.thread_comment_likes.length}
+                                              </button>
+                                            </form>
+                                          </div>
+                                        );
+                                      })}
                                     </div>
                                   ) : null}
                                 </div>

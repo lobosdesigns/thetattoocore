@@ -588,17 +588,55 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
                           </div>
                           {replies.length ? (
                             <div className="mt-3 space-y-2 border-l border-[#e5ded4] pl-3">
-                              {replies.map((reply) => (
-                                <div
-                                  className="rounded-md bg-[#f7f4ef] px-3 py-2 text-xs leading-5 text-[#4f473f]"
-                                  key={reply.id}
-                                >
-                                  <span className="font-semibold text-[#171412]">
-                                    {reply.profiles?.display_name ?? "Member"}
-                                  </span>{" "}
-                                  {reply.body}
-                                </div>
-                              ))}
+                              {replies.map((reply) => {
+                                const likedReply =
+                                  reply.thread_comment_likes.some(
+                                    (like) => like.user_id === claims?.sub,
+                                  );
+
+                                return (
+                                  <div
+                                    className="rounded-md bg-[#f7f4ef] px-3 py-2 text-xs leading-5 text-[#4f473f]"
+                                    key={reply.id}
+                                  >
+                                    <div className="flex items-start justify-between gap-2">
+                                      <p className="min-w-0 flex-1">
+                                        <span className="font-semibold text-[#171412]">
+                                          {reply.profiles?.display_name ?? "Member"}
+                                        </span>{" "}
+                                        {reply.body}
+                                      </p>
+                                      <form action={toggleThreadCommentLike}>
+                                        <input
+                                          name="comment_id"
+                                          type="hidden"
+                                          value={reply.id}
+                                        />
+                                        <input
+                                          name="liked"
+                                          type="hidden"
+                                          value={likedReply ? "true" : "false"}
+                                        />
+                                        <input
+                                          name="return_path"
+                                          type="hidden"
+                                          value={returnPath}
+                                        />
+                                        <button className="flex items-center gap-1 font-semibold text-[#766d62]">
+                                          <Heart
+                                            className={`size-3 ${
+                                              likedReply
+                                                ? "fill-[#c8953b] text-[#c8953b]"
+                                                : ""
+                                            }`}
+                                          />
+                                          {reply.thread_comment_likes.length}
+                                        </button>
+                                      </form>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           ) : null}
                         </div>
