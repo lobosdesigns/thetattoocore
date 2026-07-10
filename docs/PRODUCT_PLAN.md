@@ -50,8 +50,8 @@
 - Stand against corporate takeover pressure in the tattoo and body-art industry; keep the community focused on independent artists, studios, craft, culture, and ethical vendors.
 - Do not promote or normalize unprofessional tattooing, unlicensed studios, or unsafe "scratcher" activity.
 - Marketplace rules should prevent sales of tattoo equipment to unlicensed or unprofessional buyers where the platform can reasonably enforce it.
-- Stuff access rules should allow public/fan browsing but restrict buy, sell, trade, and seller-contact actions to verified artists, studios, and vendors.
-- Stuff UI copy should explicitly call out tattoo machines, needles, pigments, tubes, and professional shop gear as verified-only activity so fans understand browse-only access.
+- Stuff access rules should allow public/fan browsing but restrict buy, sell, trade, and seller-contact actions to verified artists, studios, and vendors. Done for launch.
+- Stuff UI copy should explicitly call out tattoo machines, needles, pigments, tubes, and professional shop gear as verified-only activity so fans understand browse-only access. Done for launch.
 - Merch rules should allow public fan purchases of safe brand goods while still requiring seller approval for artists, studios, vendors, and official TheTattooCore store inventory.
 - Merch must stay separate from professional equipment, regulated services, unsafe products, counterfeit goods, adult sexual products, and anything that would undermine app-store or payment-provider safety.
 - Support freedom of body-art expression and avoid unnecessary censorship when content follows safety, consent, legality, and adult-content guidelines.
