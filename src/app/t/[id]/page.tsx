@@ -171,7 +171,7 @@ export async function generateMetadata({
   const publicIndexable =
     thread.visibility === "public_preview" && !thread.is_sensitive;
   const description = thread.is_sensitive
-    ? `Sensitive body-art Gossip thread on ${siteName}. Sign in to view eligible content.`
+    ? `Sensitive non-nude body-art Gossip thread on ${siteName}. Sign in to view eligible content.`
     : thread.body.slice(0, 155) ||
       `A Gossip thread by ${thread.profiles?.display_name ?? "a member"} on ${siteName}.`;
   const shareMedia = thread.thread_media[0];
@@ -180,7 +180,7 @@ export async function generateMetadata({
       ? mediaUrl(shareMedia.storage_bucket, shareMedia.storage_path)
       : brandShareImage;
   const title = thread.is_sensitive
-    ? `Sensitive body-art content | ${siteName}`
+    ? `Sensitive non-nude body-art content | ${siteName}`
     : `Gossip by ${thread.profiles?.display_name ?? siteName}`;
 
   return {
@@ -290,7 +290,7 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm leading-5 text-[#4f473f]">
                 Public Gossip preview. Sign in to like, reply, save, follow,
-                DM, and view member-only or 18+ body-art content.
+                DM, and view member-only or 18+ sensitive body-art content.
               </p>
               <Link
                 className="flex h-10 shrink-0 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"

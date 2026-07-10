@@ -68,13 +68,13 @@
 - Use an Instagram-style sharing model: public visitors can open shared links and see a limited preview, but must sign up or log in to continue deeper into the app.
 - Use `/login` as the default logged-out landing page, while shared public content links can still open limited previews when allowed.
 - Shared links should include Open Graph/Twitter card metadata so non-sensitive posts can show the real image, title, and short subtext on Facebook, X, texts, and other social previews.
-- Sensitive or body-art nudity links must not expose the media in social previews; use the site logo/brand card as the share image instead.
+- Sensitive links must not expose the media in social previews; use the site logo/brand card as the share image instead.
 - When a logged-out visitor opens sensitive shared content, show the post area blurred with an overlay card that says "you must sign in to see content."
 - If a signed-in user has not accepted the adult body-art terms yet, sensitive shared content should ask for 18+ confirmation instead of telling them to sign in again.
 - Main app feeds should keep public-preview sensitive posts visible only as blurred, non-clickable media with locked captions/comments until the viewer signs in and confirms 18+.
 - Public previews should not expose full comment threads, full profile browsing, posting tools, messaging, follower lists, or full-resolution sensitive media.
 - Profile and site-level share metadata should include brand-safe image alt text; public profile cards can use public non-sensitive work, while private profiles use the brand shield.
-- Content marked sensitive, adult, or body-art nudity must not be visible to logged-out public visitors.
+- Content marked sensitive or adult must not be visible to logged-out public visitors.
 - Sensitive content requires login plus 18+ terms acceptance before it can be viewed.
 - Add SEO-friendly public profile pages and public listing pages, while respecting profile privacy controls.
 - Add `robots.txt`, metadata, and per-route noindex rules before launch.
@@ -85,12 +85,12 @@
 - TheTattooCore is planned as an 18+ community.
 - Add an age gate during signup requiring users to confirm they are 18 or older.
 - Store the user's 18+ self-attestation and terms acceptance timestamp on the profile.
-- Add Terms of Service language explaining that tattooing, piercing, and body art may involve adult bodies or limited nudity.
-- Allow limited non-sexual nudity only when the purpose is clearly to display tattoos, piercings, scars, healing, placement, or body art.
+- Launch with a no-visible-nudity policy for app-store readiness and lower moderation risk, even when the intent is tattoo, piercing, scar, healing, placement, or body-art documentation.
+- Require members to crop or cover private areas before posting; revisit any body-art nudity policy only after moderation, app policy, and legal review are mature.
 - Prohibit pornography, sexual solicitation, explicit sexual content, exploitative content, and content involving minors in nudity or sexualized contexts.
-- Require users to label sensitive body-art content where appropriate.
+- Require users to label sensitive non-nude body-art content where appropriate.
 - Add moderator tools for hiding, warning, removing, and escalating content.
-- Add report reasons for nudity/body-art context, sexual content, minors, harassment, scams, unsafe practices, and illegal goods/services.
+- Add report reasons for nudity, sexual content, sensitive non-nude body-art context, minors, harassment, scams, unsafe practices, and illegal goods/services.
 
 ## Verification
 

@@ -20,8 +20,8 @@ export function SensitiveContentGate({
     : "You must sign in to see content";
   const body =
     context === "discussion"
-      ? "Sensitive body-art discussion requires login and 18+ confirmation."
-      : "Sensitive body-art media requires login and 18+ confirmation.";
+      ? "Sensitive non-nude body-art discussion requires login and 18+ confirmation."
+      : "Sensitive non-nude body-art media requires login and 18+ confirmation.";
   const wrapperClass =
     variant === "overlay"
       ? "absolute inset-0 flex items-center justify-center bg-[#171412]/35 p-4 backdrop-blur-sm"

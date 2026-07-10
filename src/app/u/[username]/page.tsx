@@ -288,7 +288,7 @@ function AdultTermsGate({ username }: { username: string }) {
   return (
     <section className="border-b border-[#cfc8bd] px-4 py-4">
       <div className="rounded-md border border-[#171412] bg-[#171412] p-4 text-white">
-        <p className="text-sm font-bold">18+ body-art content</p>
+        <p className="text-sm font-bold">18+ sensitive body-art content</p>
         <p className="mt-1 text-sm leading-5 text-white/75">
           This profile may include sensitive tattoo, piercing, healing, or
           placement posts. Accept the Terms to view eligible sensitive content.
@@ -336,7 +336,7 @@ function PublicProfileNotice({
             </p>
             <p className="mt-1 text-sm leading-6 text-[#766d62]">
               {isSignedIn
-                ? "Some 18+ body-art content may stay hidden until your account has accepted the adult body-art terms."
+                ? "Some 18+ sensitive body-art content may stay hidden until your account has accepted the adult body-art terms."
                 : "Visitors can discover public, non-sensitive work. Sign in to follow, DM, open full comments, view member-only posts, and confirm 18+ access where allowed."}
             </p>
             {!isSignedIn ? (

@@ -71,8 +71,8 @@ export function ContentReportForm({
             className="h-9 min-w-0 rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
             name="reason"
           >
-            <option value="body-art nudity context">Sensitive body-art context</option>
-            <option value="sexual content">Sexual or pornographic content</option>
+            <option value="sensitive non-nude body-art">Sensitive non-nude body-art context</option>
+            <option value="sexual content">Nudity, sexual, or pornographic content</option>
             <option value="minor safety concern">Minor safety concern</option>
             <option value="harassment or hate">Harassment, hate, or threats</option>
             <option value="scam or spam">Scam, spam, or impersonation</option>

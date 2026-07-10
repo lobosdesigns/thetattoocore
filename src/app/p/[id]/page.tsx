@@ -174,7 +174,7 @@ export async function generateMetadata({
   const publicIndexable =
     post.visibility === "public_preview" && !post.is_sensitive;
   const description = post.is_sensitive
-    ? `Sensitive body-art 4U post on ${siteName}. Sign in to view eligible content.`
+    ? `Sensitive non-nude body-art 4U post on ${siteName}. Sign in to view eligible content.`
     : post.caption?.slice(0, 155) ||
       `A 4U post by ${post.profiles?.display_name ?? "a member"} on ${siteName}.`;
   const shareMedia = post.feed_media.find((media) => media.media_type === "image");
@@ -183,7 +183,7 @@ export async function generateMetadata({
       ? mediaUrl(shareMedia.storage_bucket, shareMedia.storage_path)
       : brandShareImage;
   const title = post.is_sensitive
-    ? `Sensitive body-art content | ${siteName}`
+    ? `Sensitive non-nude body-art content | ${siteName}`
     : `4U post by ${post.profiles?.display_name ?? siteName}`;
 
   return {
@@ -289,7 +289,7 @@ export default async function PostPage({ params }: PostPageProps) {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm leading-5 text-[#4f473f]">
                 Public 4U preview. Sign in to like, comment, save, follow, DM,
-                and view member-only or 18+ body-art content.
+                and view member-only or 18+ sensitive body-art content.
               </p>
               <Link
                 className="flex h-10 shrink-0 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"

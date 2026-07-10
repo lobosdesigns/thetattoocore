@@ -16,12 +16,12 @@ const sections = [
   },
   {
     body:
-      "Tattooing, piercing, scar work, healing, placement, and body-art documentation may include adult bodies or limited non-sexual nudity. That content is allowed only when the clear purpose is to show the art, placement, healing, or body modification. Pornography, sexual solicitation, explicit sexual content, and sexualized content involving minors are not allowed.",
+      "For launch and mobile app readiness, visible nudity is not allowed, even when the intent is tattoo, piercing, scar, healing, placement, or body-art documentation. Members should crop or cover private areas before posting. Pornography, sexual solicitation, explicit sexual content, and sexualized content involving minors are not allowed.",
     title: "Body Art Content",
   },
   {
     body:
-      "Members must label sensitive body-art content when appropriate. Sensitive posts may be hidden from public visitors, require login, and require 18+ confirmation before viewing. Public previews should not expose private messages, full comment threads, private account data, or sensitive media.",
+      "Members must label sensitive non-nude body-art content when appropriate, including fresh work, healing, scar cover, piercing, body modification, or medical-looking context. Sensitive posts may be hidden from public visitors, require login, and require 18+ confirmation before viewing. Public previews should not expose private messages, full comment threads, private account data, or sensitive media.",
     title: "Public And Sensitive Visibility",
   },
   {
@@ -46,7 +46,7 @@ const sections = [
   },
   {
     body:
-      "Admins and moderators may hide, remove, restrict, or escalate content and accounts that violate these rules or create safety risk. Reports can be reviewed for nudity/body-art context, sexual content, minors, harassment, scams, unsafe practices, illegal goods or services, and other abuse.",
+      "Admins and moderators may hide, remove, restrict, or escalate content and accounts that violate these rules or create safety risk. Reports can be reviewed for nudity, sexual content, sensitive non-nude body-art context, minors, harassment, scams, unsafe practices, illegal goods or services, and other abuse.",
     title: "Moderation",
   },
 ];
@@ -75,8 +75,8 @@ export default function TermsPage() {
           <p className="mt-3 text-sm leading-6 text-[#4f473f]">
             These launch rules set the baseline for an adult tattoo community:
             public enough for artists and studios to be discovered, private
-            enough to protect messages, account data, and sensitive body-art
-            content.
+            enough to protect messages, account data, and sensitive non-nude
+            body-art content.
           </p>
 
           <div className="mt-7 space-y-5">

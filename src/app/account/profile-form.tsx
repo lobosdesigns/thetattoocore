@@ -366,9 +366,9 @@ export function ProfileForm({
             </span>
             <span className="mt-1 block text-xs leading-5 text-[#766d62]">
               TheTattooCore is for adults. Tattoo, piercing, and body-art
-              content may include limited non-sexual nudity only when it shows
-              the artwork, placement, healing, or body modification.
-              Pornographic content is not allowed. Review the{" "}
+              content may include sensitive non-nude healing, placement, scar,
+              piercing, or body modification context. Visible nudity and
+              pornographic content are not allowed for launch. Review the{" "}
               <Link className="font-semibold underline" href="/terms">
                 Terms and Content Policy
               </Link>

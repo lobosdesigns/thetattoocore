@@ -93,8 +93,8 @@ function VisibilityControl() {
 }
 
 const sensitiveExamples = [
-  "Tattoo placement includes limited non-sexual nudity.",
   "Fresh, healing, scar cover, piercing, or body modification detail.",
+  "No visible nudity for launch. Crop or cover private areas before posting.",
   "No pornography, sexual solicitation, or sexualized minor content.",
 ] as const;
 
@@ -103,7 +103,7 @@ function SensitiveControls() {
     <section className="rounded-md border border-[#cfc8bd] bg-[#fff7ec] p-3">
       <label className="flex items-start gap-2 text-sm font-semibold">
         <input className="mt-1 size-4" name="is_sensitive" type="checkbox" />
-        <span>Mark as sensitive body-art content</span>
+        <span>Mark as sensitive non-nude body-art content</span>
       </label>
       <p className="mt-2 text-xs leading-5 text-[#766d62]">
         Use this when the content is acceptable body-art documentation but
@@ -113,7 +113,6 @@ function SensitiveControls() {
         className="mt-3 h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
         name="sensitive_reason"
       >
-        <option value="body_art_nudity">Body-art nudity</option>
         <option value="healing">Healing or fresh work</option>
         <option value="scar_cover">Scar cover or medical context</option>
         <option value="piercing">Piercing or body modification</option>

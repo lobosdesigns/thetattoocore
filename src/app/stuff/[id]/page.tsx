@@ -178,7 +178,7 @@ export async function generateMetadata({
     listing.description?.slice(0, 155) ||
     `${listing.title} on ${siteName}${location ? ` in ${location}` : ""}.`;
   const description = listing.is_sensitive
-    ? `Sensitive body-art Stuff listing on ${siteName}. Sign in to view eligible content.`
+    ? `Sensitive non-nude body-art Stuff listing on ${siteName}. Sign in to view eligible content.`
     : publicDescription;
   const image =
     publicIndexable && listing.marketplace_media[0]?.media_type === "image"
@@ -188,7 +188,7 @@ export async function generateMetadata({
         )
       : brandShareImage;
   const shareTitle = listing.is_sensitive
-    ? `Sensitive body-art content | ${siteName}`
+    ? `Sensitive non-nude body-art content | ${siteName}`
     : listing.title;
 
   return {
@@ -545,10 +545,10 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
                 <div className="flex items-start gap-2">
                   <LockKeyhole className="mt-0.5 size-4" />
                   <div>
-                    <p className="text-sm font-bold">18+ body-art context</p>
+                    <p className="text-sm font-bold">18+ sensitive body-art context</p>
                     <p className="mt-1 text-xs leading-5 text-[#766d62]">
-                      Sensitive listing media requires login and adult terms
-                      acceptance where allowed.
+                      Sensitive non-nude listing media requires login and adult
+                      terms acceptance where allowed.
                     </p>
                     {claims?.sub ? (
                       <form action={acceptAdultTerms} className="mt-3">

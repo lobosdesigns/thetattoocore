@@ -351,12 +351,13 @@ function canModerateReportedSubject(subjectType: string) {
 
 function reportReasonLabel(reason: string) {
   const labels: Record<string, string> = {
-    "body-art nudity context": "Sensitive body-art context",
+    "body-art nudity context": "Legacy sensitive body-art context",
     "harassment or hate": "Harassment, hate, or threats",
     "illegal goods or services": "Illegal goods or services",
     "minor safety concern": "Minor safety concern",
     other: "Other policy concern",
     "scam or spam": "Scam, spam, or impersonation",
+    "sensitive non-nude body-art": "Sensitive non-nude body-art context",
     "sexual content": "Sexual or pornographic content",
     "unsafe practice": "Unsafe tattoo/body-art practice",
   };

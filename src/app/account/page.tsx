@@ -182,7 +182,7 @@ function AccountReadinessPanel({
     {
       body: profile?.is_adult_confirmed
         ? "18+ confirmation is saved."
-        : "Confirm 18+ terms before viewing sensitive body-art content.",
+        : "Confirm 18+ terms before viewing sensitive non-nude body-art content.",
       label: "18+",
       ready: Boolean(profile?.is_adult_confirmed),
     },

@@ -813,7 +813,7 @@ function AdultTermsGate({ returnHash = "feed" }: { returnHash?: string }) {
     <section className="border-b border-[#d8d1c6] bg-[#171412] px-4 py-4 text-white">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-bold">18+ body-art content</p>
+          <p className="text-sm font-bold">18+ sensitive body-art content</p>
           <p className="mt-1 text-sm leading-5 text-white/75">
             Sensitive tattoo, piercing, healing, or placement posts require
             login and 18+ Terms acceptance.
@@ -889,7 +889,7 @@ function PublicVisitorGate({ lockedCount }: { lockedCount: number }) {
           <p className="text-sm font-bold">Public preview</p>
           <p className="mt-1 text-sm leading-5 text-[#4f473f]">
             Sign in to post, reply, DM, follow creators, and view member-only
-            or 18+ body-art content.
+            or 18+ sensitive body-art content.
           </p>
           {lockedCount ? (
             <p className="mt-2 text-xs font-semibold text-[#766d62]">
@@ -1427,8 +1427,8 @@ export default async function Home({
                   <div className="space-y-3 px-4 py-4">
                     {isPostLocked ? (
                       <p className="rounded-md border border-[#e5c58f] bg-[#fff7ec] px-3 py-2 text-sm leading-6 text-[#7a4a08]">
-                        Sensitive body-art media is blurred until you sign in
-                        and confirm 18+.
+                        Sensitive non-nude body-art media is blurred until you
+                        sign in and confirm 18+.
                       </p>
                     ) : null}
                     {post.style_tags[0] ? (
@@ -1629,8 +1629,8 @@ export default async function Home({
                         <p className="text-sm leading-6">{thread.body}</p>
                       ) : (
                         <p className="rounded-md border border-[#e5c58f] bg-[#fff7ec] px-3 py-2 text-sm leading-6 text-[#7a4a08]">
-                          Sensitive body-art discussion is hidden until you sign
-                          in and confirm 18+.
+                          Sensitive non-nude body-art discussion is hidden
+                          until you sign in and confirm 18+.
                         </p>
                       )}
                       <TranslationCue preferredLanguage={preferredLanguage} />
@@ -1863,8 +1863,8 @@ export default async function Home({
                         </p>
                       ) : (
                         <p className="rounded-md border border-[#e5c58f] bg-[#fff7ec] px-3 py-2 text-sm leading-6 text-[#7a4a08]">
-                          Sensitive listing media is blurred until login and 18+
-                          confirmation.
+                          Sensitive non-nude listing media is blurred until
+                          login and 18+ confirmation.
                         </p>
                       )}
                       <p className="mt-3 text-xs text-[#766d62]">
@@ -2065,8 +2065,8 @@ export default async function Home({
                         </p>
                       ) : (
                         <p className="rounded-md border border-[#e5c58f] bg-[#fff7ec] px-3 py-2 text-sm leading-6 text-[#7a4a08]">
-                          Sensitive gig media is blurred until login and 18+
-                          confirmation.
+                          Sensitive non-nude gig media is blurred until login
+                          and 18+ confirmation.
                         </p>
                       )}
                       {gig.compensation ? (

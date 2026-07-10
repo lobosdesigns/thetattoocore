@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/server";
 
 const MEDIA_BUCKET = "tattoo-media";
 const SENSITIVE_REASONS = new Set([
-  "body_art_nudity",
   "healing",
   "scar_cover",
   "piercing",
@@ -92,7 +91,7 @@ export async function POST(request: Request) {
   const safeSensitiveReason = isSensitive
     ? SENSITIVE_REASONS.has(sensitiveReason)
       ? sensitiveReason
-      : "body_art_nudity"
+      : "healing"
     : null;
 
   if (title.length < 3) {

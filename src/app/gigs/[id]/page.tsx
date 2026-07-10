@@ -181,14 +181,14 @@ export async function generateMetadata({
     gig.description?.slice(0, 155) ||
     `${gig.title} on ${siteName}${location ? ` in ${location}` : ""}.`;
   const description = gig.is_sensitive
-    ? `Sensitive body-art Gig on ${siteName}. Sign in to view eligible content.`
+    ? `Sensitive non-nude body-art Gig on ${siteName}. Sign in to view eligible content.`
     : publicDescription;
   const image =
     publicIndexable && gig.gig_media[0]?.media_type === "image"
       ? mediaUrl(gig.gig_media[0].storage_bucket, gig.gig_media[0].storage_path)
       : brandShareImage;
   const shareTitle = gig.is_sensitive
-    ? `Sensitive body-art content | ${siteName}`
+    ? `Sensitive non-nude body-art content | ${siteName}`
     : gig.title;
 
   return {
@@ -296,7 +296,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm leading-5 text-[#4f473f]">
                 Public Gig preview. Sign in to save, DM, reply, and view any
-                member-only or 18+ body-art content.
+                member-only or 18+ sensitive body-art content.
               </p>
               <Link
                 className="flex h-10 shrink-0 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
@@ -546,10 +546,10 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
                 <div className="flex items-start gap-2">
                   <LockKeyhole className="mt-0.5 size-4" />
                   <div>
-                    <p className="text-sm font-bold">18+ body-art context</p>
+                    <p className="text-sm font-bold">18+ sensitive body-art context</p>
                     <p className="mt-1 text-xs leading-5 text-[#766d62]">
-                      Sensitive gig media requires login and adult terms
-                      acceptance where allowed.
+                      Sensitive non-nude gig media requires login and adult
+                      terms acceptance where allowed.
                     </p>
                     {claims?.sub ? (
                       <form action={acceptAdultTerms} className="mt-3">

@@ -10,7 +10,6 @@ import { isVerifiedProfessional } from "@/lib/verification";
 const MEDIA_BUCKET = "tattoo-media";
 const VISIBILITY_VALUES = new Set(["public_preview", "members", "private"]);
 const SENSITIVE_REASONS = new Set([
-  "body_art_nudity",
   "healing",
   "scar_cover",
   "piercing",
@@ -31,6 +30,7 @@ const SAVED_SUBJECT_TYPES = new Set([
   "thread_post",
 ]);
 const REPORT_REASONS = new Set([
+  "sensitive non-nude body-art",
   "body-art nudity context",
   "sexual content",
   "minor safety concern",
@@ -148,7 +148,7 @@ export async function acceptAdultTerms(formData: FormData) {
   redirect(
     redirectWithMessage({
       hash: returnHash,
-      message: "18+ terms accepted. Sensitive body-art content can now be shown.",
+      message: "18+ terms accepted. Sensitive non-nude body-art content can now be shown.",
       path: returnPath,
     }),
   );
@@ -202,7 +202,7 @@ function sensitiveFields(formData: FormData) {
     is_sensitive: true,
     sensitive_reason: SENSITIVE_REASONS.has(reason)
       ? reason
-      : "body_art_nudity",
+      : "healing",
   };
 }
 

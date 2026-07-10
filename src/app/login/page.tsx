@@ -45,8 +45,9 @@ export default async function LoginPage({
             <p className="mt-3 max-w-2xl text-sm leading-6 text-white/75">
               Find artists, share work, start Gossip, list Stuff, post Gigs,
               and DM other members. The community is 18+ because tattoo,
-              piercing, and body-art documentation can include adult placement
-              context without being pornographic.
+              piercing, and body-art documentation can include sensitive
+              placement, healing, or modification context. Visible nudity is
+              not allowed for launch.
             </p>
 
             <div className="mt-5 grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
