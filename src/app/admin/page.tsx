@@ -161,7 +161,7 @@ const adminTabs = [
   [ImageIcon, "Content", "/admin/content"],
   [ImageIcon, "Media Ops", "/admin#media-ops"],
   [BriefcaseBusiness, "Gigs", "/admin#gigs"],
-  [ShoppingBag, "Marketplace", "/admin#marketplace"],
+  [ShoppingBag, "Stuff", "/admin/stuff"],
   [Megaphone, "Ads", "/admin/ads"],
   [Mail, "Mail Settings", "/admin#mail-settings"],
 ] as const;
@@ -1874,12 +1874,20 @@ export default async function AdminPage({
       meta: `${closedAccountDeletionRequests.length} recently closed`,
     },
     {
-      action: "Content page planned",
+      action: "Open content",
       body: "Media, 4U, Gossip, Stuff, and Gigs moderation should split into dedicated review pages.",
       count: reviewItems.length,
       href: "/admin/content",
       label: "Content",
       meta: `${pendingAdCampaigns.length + reports.length + reviewItems.length} combined active queue signals`,
+    },
+    {
+      action: "Open Stuff",
+      body: "Verified-only marketplace listings get their own paged review page for seller, price, status, and access checks.",
+      count: marketplaceQueue ?? 0,
+      href: "/admin/stuff",
+      label: "Stuff",
+      meta: `${marketplaceQueue ?? 0} listings tracked`,
     },
     {
       action: "Mail page planned",
