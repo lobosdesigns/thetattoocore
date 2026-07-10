@@ -164,7 +164,7 @@
 
 - Build a simple internal ad rotator before any complex ad platform.
 - Targeting inputs: country, region, city, language, tattoo style keywords, marketplace category, and column placement.
-- Ad country and language targeting should use the same approved account option lists so advertisers do not submit invalid raw codes.
+- Ad country and language targeting should use the same approved account option lists so advertisers do not submit invalid raw codes. Done for launch.
 - Buying model: fixed daily budget plus optional spot bidding for placements.
 - Placements: feed card, thread sidebar/card, marketplace card, and messages-safe non-invasive placement.
 - Artist/client-growth ads should run in 4U and Gossip only, with goals for leads, messages, and engagement.
@@ -176,8 +176,8 @@
 - Privacy language should also reject AI ad expansion, opaque lookalike-style automation, and confusing ad targeting that members cannot understand.
 - Sponsored cards should show clear ad labeling plus simple relevance context such as placement, coarse location, language, or keywords. Started for launch with reviewed sponsored cards showing placement, country/language labels, keywords, and no-AI-profiling copy.
 - Admin review should explicitly reject AI tattoo art claims, unsafe scratcher promotion, unlicensed studio promotion, and restricted equipment ads. Done for launch with visible admin ad-review standards.
-- Advertiser flow: create campaign, upload creative, choose regions/languages/keywords, set bid/budget, submit for admin review.
-- Admin flow: approve/reject campaigns, pause campaigns, inspect spend/impressions/clicks, and moderate creative.
+- Advertiser flow: create campaign, upload creative, choose regions/languages/keywords, set bid/budget, submit for admin review. Started for launch with account campaign submission, simple targeting, placements, bid/budget, and admin review.
+- Admin flow: approve/reject campaigns, pause campaigns, inspect spend/impressions/clicks, and moderate creative. Started for launch with dedicated admin ad queue, review standards, status actions, and basic performance counts.
 
 ## Later Columns
 
