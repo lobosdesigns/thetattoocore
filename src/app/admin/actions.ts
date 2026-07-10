@@ -149,6 +149,24 @@ function adminVerificationMessage(message: string, returnTo?: string) {
   return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
 }
 
+function adminReportsMessage(message: string, returnTo?: string) {
+  const safeReturnTo =
+    returnTo?.startsWith("/admin/reports") || returnTo === "/admin"
+      ? returnTo
+      : "/admin#reports";
+  const separator = safeReturnTo.includes("?") ? "&" : "?";
+  const hashIndex = safeReturnTo.indexOf("#");
+
+  if (hashIndex >= 0) {
+    const base = safeReturnTo.slice(0, hashIndex);
+    const hash = safeReturnTo.slice(hashIndex);
+
+    return `${base}${separator}message=${encodeURIComponent(message)}${hash}`;
+  }
+
+  return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
+}
+
 function cleanText(value: FormDataEntryValue | null, maxLength: number) {
   return String(value ?? "")
     .trim()
@@ -367,6 +385,7 @@ export async function moderateContent(formData: FormData) {
   const subjectType = cleanText(formData.get("subject_type"), 40) as SubjectType;
   const subjectId = cleanText(formData.get("subject_id"), 80);
   const reportId = cleanText(formData.get("report_id"), 80);
+  const returnTo = cleanText(formData.get("return_to"), 120);
   const moderationStatus = cleanText(
     formData.get("moderation_status"),
     40,
@@ -398,14 +417,15 @@ export async function moderateContent(formData: FormData) {
 
     if (reportError || !report) {
       redirect(
-        `/admin?message=${encodeURIComponent(
+        adminReportsMessage(
           reportError?.message || "Linked report was not found.",
-        )}#reports`,
+          returnTo,
+        ),
       );
     }
 
     if (report.subject_type !== subjectType || report.subject_id !== subjectId) {
-      redirect("/admin?message=Report does not match that content.#reports");
+      redirect(adminReportsMessage("Report does not match that content.", returnTo));
     }
 
     linkedReport = report;
@@ -483,10 +503,11 @@ export async function moderateContent(formData: FormData) {
 
     if (reportUpdateError) {
       redirect(
-        `/admin?message=${encodeURIComponent(
+        adminReportsMessage(
           reportUpdateError.message ||
             "Content changed, but the report status did not update.",
-        )}#reports`,
+          returnTo,
+        ),
       );
     }
 
@@ -509,31 +530,34 @@ export async function moderateContent(formData: FormData) {
 
       if (reportActionError) {
         redirect(
-          `/admin?message=${encodeURIComponent(
+          adminReportsMessage(
             reportActionError.message ||
               "Content and report changed, but report log failed.",
-          )}#reports`,
+            returnTo,
+          ),
         );
       }
     }
   }
 
   revalidatePath("/admin");
+  revalidatePath("/admin/reports");
   revalidatePath("/");
   redirect(
     reportId
-      ? "/admin?message=Moderation status and report updated.#reports"
+      ? adminReportsMessage("Moderation status and report updated.", returnTo)
       : adminMessage("Moderation status updated."),
   );
 }
 
 export async function updateReportStatus(formData: FormData) {
   const reportId = cleanText(formData.get("report_id"), 80);
+  const returnTo = cleanText(formData.get("return_to"), 120);
   const status = cleanText(formData.get("status"), 40) as ReportStatus;
   const note = cleanText(formData.get("note"), 500);
 
   if (!reportId || !reportStatuses.has(status)) {
-    redirect("/admin?message=Choose a valid report status.#reports");
+    redirect(adminReportsMessage("Choose a valid report status.", returnTo));
   }
 
   const { supabase, userId } = await requireModerator();
@@ -550,9 +574,10 @@ export async function updateReportStatus(formData: FormData) {
 
   if (reportError || !report) {
     redirect(
-      `/admin?message=${encodeURIComponent(
+      adminReportsMessage(
         reportError?.message || "Report was not found.",
-      )}#reports`,
+        returnTo,
+      ),
     );
   }
 
@@ -578,9 +603,10 @@ export async function updateReportStatus(formData: FormData) {
 
   if (updateError) {
     redirect(
-      `/admin?message=${encodeURIComponent(
+      adminReportsMessage(
         updateError.message || "Could not update report.",
-      )}#reports`,
+        returnTo,
+      ),
     );
   }
 
@@ -597,17 +623,19 @@ export async function updateReportStatus(formData: FormData) {
         subject_type: report.subject_type,
       });
 
-    if (actionError) {
+      if (actionError) {
       redirect(
-        `/admin?message=${encodeURIComponent(
+        adminReportsMessage(
           actionError.message || "Report changed, but log failed.",
-        )}#reports`,
+          returnTo,
+        ),
       );
     }
   }
 
   revalidatePath("/admin");
-  redirect("/admin?message=Report status updated.#reports");
+  revalidatePath("/admin/reports");
+  redirect(adminReportsMessage("Report status updated.", returnTo));
 }
 
 export async function updateLicenseVerification(formData: FormData) {
