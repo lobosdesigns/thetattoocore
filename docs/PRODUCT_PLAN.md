@@ -122,7 +122,7 @@
 ## Verification
 
 - Start with free/low-cost verification: confirmed email, 18+ self-attestation, profile completeness, and optional manual artist/shop review.
-- Add public verification badges later for artists, studios, vendors, and advertisers.
+- Add public verification badges later for artists, studios, vendors, and advertisers. Started for launch for license-verified artists, studios, and vendors.
 - Verification levels:
   - Email verified: user confirmed email address.
   - Profile verified: profile has enough identity/location/business info to reduce spam.
@@ -134,7 +134,7 @@
 - Verification approvals must be server-checked for eligible account type and non-expired documents; rejections should require a useful reviewer note for the member. Done for launch.
 - Account verification history should show private reviewer notes, pending status, expiration status, and resubmission guidance without exposing license documents publicly. Done for launch.
 - Account and app surfaces should show a clear readiness summary for profile setup, 18+ status, verification status, account standing, and Stuff access. Done for launch.
-- Profiles should show verification badges only after approval; rejected or pending verification should not be public-facing.
+- Profiles should show verification badges only after approval; rejected or pending verification should not be public-facing. Done for launch.
 - SMS or phone MFA is not the default starting path because it adds cost. Current Supabase phone MFA is a paid add-on and SMS/WhatsApp messages can add provider charges.
 - Revisit SMS/phone verification only when there is a clear anti-spam need and budget for it.
 
