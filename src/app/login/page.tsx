@@ -95,17 +95,13 @@ export default async function LoginPage({
             </p>
           ) : null}
 
-          <form className="space-y-4">
-            <input
-              name="origin"
-              type="hidden"
-              value={process.env.NEXT_PUBLIC_SITE_URL ?? "https://thetattoocore.com"}
-            />
-
+          <div className="space-y-5">
+          <form action={login} className="space-y-4">
             <label className="block">
               <span className="text-sm font-medium">Email</span>
               <input
                 className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                autoComplete="email"
                 name="email"
                 required
                 type="email"
@@ -116,6 +112,43 @@ export default async function LoginPage({
               <span className="text-sm font-medium">Password</span>
               <input
                 className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                autoComplete="current-password"
+                minLength={8}
+                name="password"
+                required
+                type="password"
+              />
+            </label>
+
+            <button className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+              Sign in
+            </button>
+          </form>
+
+          <div className="relative py-1">
+            <div className="h-px bg-[#cfc8bd]" />
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#f2f1ee] px-3 text-xs font-semibold uppercase text-[#766d62]">
+              New account
+            </span>
+          </div>
+
+          <form action={signup} className="space-y-4">
+            <label className="block">
+              <span className="text-sm font-medium">Email</span>
+              <input
+                className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                autoComplete="email"
+                name="email"
+                required
+                type="email"
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-medium">Password</span>
+              <input
+                className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                autoComplete="new-password"
                 minLength={8}
                 name="password"
                 required
@@ -127,6 +160,7 @@ export default async function LoginPage({
               <input
                 className="mt-1 size-4"
                 name="age_confirmed"
+                required
                 type="checkbox"
               />
               <span>
@@ -135,20 +169,10 @@ export default async function LoginPage({
               </span>
             </label>
 
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <button
-                className="h-11 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
-                formAction={login}
-              >
-                Sign in
-              </button>
-              <button
-                className="h-11 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
-                formAction={signup}
-              >
-                Create account
-              </button>
-            </div>
+            <button className="h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold">
+              Create account
+            </button>
+          </form>
 
             <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 text-xs leading-5 text-[#4f473f]">
               Check inbox and junk after creating an account. After confirming
@@ -180,7 +204,7 @@ export default async function LoginPage({
             >
               Support and account help
             </Link>
-          </form>
+          </div>
         </div>
         </div>
       </section>

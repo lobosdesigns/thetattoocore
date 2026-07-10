@@ -1,7 +1,9 @@
 "use server";
 
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 
 function loginMessage(message: string) {
@@ -27,8 +29,8 @@ export async function signup(formData: FormData) {
   const supabase = await createClient();
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
-  const origin = String(formData.get("origin") ?? "");
   const ageConfirmed = formData.get("age_confirmed") === "on";
+  const requestOrigin = (await headers()).get("origin") ?? siteUrl;
 
   if (!ageConfirmed) {
     redirect(loginMessage("You must confirm you are 18 or older to create an account."));
@@ -38,7 +40,7 @@ export async function signup(formData: FormData) {
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/auth/confirm`,
+      emailRedirectTo: `${requestOrigin}/auth/confirm`,
     },
   });
 
