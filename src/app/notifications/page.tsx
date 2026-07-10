@@ -150,16 +150,16 @@ export default async function NotificationsPage() {
     <main className="min-h-screen bg-[#202020] text-[#171412]">
       <div className="mx-auto min-h-screen max-w-3xl bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
         <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
               <Link
                 aria-label="Back to home"
-                className="flex size-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
+                className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
                 href="/"
               >
                 <ArrowLeft className="size-5" />
               </Link>
-              <div>
+              <div className="min-w-0">
                 <h1 className="text-xl font-bold">Notifications</h1>
                 <p className="text-xs text-[#766d62]">
                   {unreadCount ? `${unreadCount} unread` : "All caught up"}
@@ -167,19 +167,20 @@ export default async function NotificationsPage() {
               </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:flex-none">
               <Link
-                className="flex h-10 items-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm font-semibold"
+                className="flex h-10 min-w-0 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm font-semibold"
                 href="/account#notification-settings"
               >
                 <Settings className="size-4" />
-                Settings
+                <span className="hidden sm:inline">Settings</span>
               </Link>
               {unreadCount ? (
-                <form action={markAllNotificationsRead}>
-                  <button className="flex h-10 items-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm font-semibold">
+                <form action={markAllNotificationsRead} className="min-w-0">
+                  <button className="flex h-10 min-w-0 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm font-semibold">
                     <Check className="size-4" />
-                    Mark all read
+                    <span className="hidden sm:inline">Mark all read</span>
+                    <span className="sm:hidden">Read</span>
                   </button>
                 </form>
               ) : null}
@@ -188,11 +189,11 @@ export default async function NotificationsPage() {
         </header>
 
         <section className="border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-4">
-          <div className="flex gap-3 rounded-md border border-[#d8d1c6] bg-white p-3">
+          <div className="flex min-w-0 gap-3 rounded-md border border-[#d8d1c6] bg-white p-3">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-[#c8953b]">
               <Smartphone className="size-5" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h2 className="text-sm font-bold">Push notifications later</h2>
               <p className="mt-1 text-xs leading-5 text-[#766d62]">
                 In-app alerts and badges are live now. These preferences will
@@ -246,8 +247,8 @@ export default async function NotificationsPage() {
                     <Icon className="size-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
+                    <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+                      <div className="min-w-0">
                         <p className="text-sm font-bold">
                           {notification.title}
                         </p>
@@ -290,7 +291,7 @@ export default async function NotificationsPage() {
                       (notification.actor_id || notification.subject_id) ? (
                         <form
                           action={respondToFollowRequest}
-                          className="flex gap-2"
+                          className="flex flex-wrap gap-2"
                         >
                           <input
                             name="notification_id"

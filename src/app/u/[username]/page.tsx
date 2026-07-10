@@ -26,6 +26,7 @@ import { acceptAdultTerms, archiveGig } from "@/app/actions";
 import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
+import { ProfileAvatar } from "@/app/profile-avatar";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -154,7 +155,7 @@ type BlockRecord = {
 type FollowRequest = {
   created_at: string;
   follower_id: string;
-  profiles: Pick<Profile, "account_type" | "display_name" | "id" | "username"> | null;
+  profiles: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "id" | "username"> | null;
 };
 
 type FollowPreview = {
@@ -162,21 +163,13 @@ type FollowPreview = {
   profiles: Pick<
     Profile,
     | "account_type"
+    | "avatar_url"
     | "display_name"
     | "id"
     | "license_verified_at"
     | "username"
   > | null;
 };
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 function mediaUrl(bucket: string, path: string) {
   const encodedPath = path.split("/").map(encodeURIComponent).join("/");
@@ -434,9 +427,7 @@ function FollowPreviewCard({
       className="ttc-card flex items-center gap-3 rounded-md border border-[#cfc8bd] bg-white p-3"
       href={`/u/${profile.username}`}
     >
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-sm font-bold text-[#c8953b]">
-        {initials(profile.display_name)}
-      </div>
+      <ProfileAvatar profile={profile} size="md" />
       <div className="min-w-0">
         <div className="flex min-w-0 items-center gap-1.5">
           <p className="truncate text-sm font-bold">{profile.display_name}</p>
@@ -872,7 +863,7 @@ export default async function ProfilePage({
       ? supabase
           .from("follows")
           .select(
-            "created_at, follower_id, profiles:profiles!follows_follower_id_fkey(id, username, display_name, account_type)",
+            "created_at, follower_id, profiles:profiles!follows_follower_id_fkey(id, username, display_name, avatar_url, account_type)",
           )
           .eq("following_id", profile.id)
           .eq("status", "pending")
@@ -883,7 +874,7 @@ export default async function ProfilePage({
     supabase
       .from("follows")
       .select(
-        "created_at, profiles:profiles!follows_follower_id_fkey(id, username, display_name, account_type, license_verified_at)",
+        "created_at, profiles:profiles!follows_follower_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
       )
       .eq("following_id", profile.id)
       .eq("status", "accepted")
@@ -893,7 +884,7 @@ export default async function ProfilePage({
     supabase
       .from("follows")
       .select(
-        "created_at, profiles:profiles!follows_following_id_fkey(id, username, display_name, account_type, license_verified_at)",
+        "created_at, profiles:profiles!follows_following_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
       )
       .eq("follower_id", profile.id)
       .eq("status", "accepted")
@@ -1045,18 +1036,11 @@ export default async function ProfilePage({
 
         <section className="border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-6">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-            <div className="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#171412] text-2xl font-bold text-[#c8953b] shadow-[0_12px_30px_rgba(23,20,18,0.22)]">
-              {profile.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  alt=""
-                  className="size-full object-cover"
-                  src={profile.avatar_url}
-                />
-              ) : (
-                initials(profile.display_name)
-              )}
-            </div>
+            <ProfileAvatar
+              className="shadow-[0_12px_30px_rgba(23,20,18,0.22)]"
+              profile={profile}
+              size="xl"
+            />
             <div className="min-w-0 flex-1">
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 <h2 className="text-2xl font-bold">{profile.display_name}</h2>

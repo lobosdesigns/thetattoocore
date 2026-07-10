@@ -11,6 +11,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { NotificationBellLink } from "@/app/notification-bell-link";
+import { ProfileAvatar } from "@/app/profile-avatar";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
 
@@ -18,6 +19,7 @@ type ProfileResult = {
   id: string;
   username: string;
   display_name: string;
+  avatar_url: string | null;
   account_type: string;
   city: string | null;
   license_verified_at: string | null;
@@ -36,7 +38,7 @@ type FeedResult = {
   style_tags: string[];
   profiles: Pick<
     ProfileResult,
-    "account_type" | "display_name" | "license_verified_at" | "username"
+    "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"
   > | null;
 };
 
@@ -45,7 +47,7 @@ type ThreadResult = {
   body: string;
   profiles: Pick<
     ProfileResult,
-    "account_type" | "display_name" | "license_verified_at" | "username"
+    "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"
   > | null;
 };
 
@@ -57,7 +59,7 @@ type ListingResult = {
   region: string | null;
   profiles: Pick<
     ProfileResult,
-    "account_type" | "display_name" | "license_verified_at" | "username"
+    "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"
   > | null;
 };
 
@@ -69,7 +71,7 @@ type GigResult = {
   region: string | null;
   profiles: Pick<
     ProfileResult,
-    "account_type" | "display_name" | "license_verified_at" | "username"
+    "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"
   > | null;
 };
 
@@ -133,15 +135,6 @@ function typedHref(type: SearchType, params: URLSearchParams) {
   const qs = next.toString();
 
   return qs ? `/search?${qs}` : "/search";
-}
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
 }
 
 function isVerifiedProfile(profile?: SearchProfileBadge) {
@@ -256,7 +249,7 @@ export default async function SearchPage({
           ? supabase
               .from("profiles")
               .select(
-                "id, username, display_name, account_type, city, license_verified_at, region",
+                "id, username, display_name, avatar_url, account_type, city, license_verified_at, region",
               )
               .or(
                 `username.ilike.${pattern},display_name.ilike.${pattern},account_type.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`,
@@ -272,7 +265,7 @@ export default async function SearchPage({
           ? supabase
               .from("feed_posts")
               .select(
-                "id, caption, location_label, style_tags, profiles:profiles!feed_posts_author_id_fkey(display_name, username, account_type, license_verified_at)",
+                "id, caption, location_label, style_tags, profiles:profiles!feed_posts_author_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
               )
               .eq("is_published", true)
               .eq("moderation_status", "active")
@@ -292,7 +285,7 @@ export default async function SearchPage({
           ? supabase
               .from("thread_posts")
               .select(
-                "id, body, profiles:profiles!thread_posts_author_id_fkey(display_name, username, account_type, license_verified_at)",
+                "id, body, profiles:profiles!thread_posts_author_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
               )
               .eq("moderation_status", "active")
               .eq("visibility", "public_preview")
@@ -306,7 +299,7 @@ export default async function SearchPage({
           ? supabase
               .from("marketplace_listings")
               .select(
-                "id, title, category, city, region, profiles:profiles!marketplace_listings_seller_id_fkey(display_name, username, account_type, license_verified_at)",
+                "id, title, category, city, region, profiles:profiles!marketplace_listings_seller_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
               )
               .eq("status", "active")
               .eq("moderation_status", "active")
@@ -328,7 +321,7 @@ export default async function SearchPage({
           ? supabase
               .from("gigs")
               .select(
-                "id, title, category, city, region, profiles:profiles!gigs_poster_id_fkey(display_name, username, account_type, license_verified_at)",
+                "id, title, category, city, region, profiles:profiles!gigs_poster_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
               )
               .eq("status", "active")
               .eq("moderation_status", "active")
@@ -471,9 +464,7 @@ export default async function SearchPage({
                       href={`/u/${profile.username}`}
                       key={profile.id}
                     >
-                      <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-[#171412] text-sm font-bold text-white">
-                        {initials(profile.display_name)}
-                      </div>
+                      <ProfileAvatar profile={profile} />
                       <div className="min-w-0">
                         <div className="flex min-w-0 items-center gap-1.5">
                           <p className="truncate text-sm font-semibold">
@@ -509,7 +500,8 @@ export default async function SearchPage({
                       href={`/p/${post.id}`}
                       key={post.id}
                     >
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <ProfileAvatar profile={post.profiles} size="sm" />
                         <p className="text-sm font-semibold">
                           {post.profiles?.display_name ?? "Member"}
                         </p>
@@ -544,7 +536,8 @@ export default async function SearchPage({
                       href={`/t/${thread.id}`}
                       key={thread.id}
                     >
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <ProfileAvatar profile={thread.profiles} size="sm" />
                         <p className="text-sm font-semibold">
                           {thread.profiles?.display_name ?? "Member"}
                         </p>
@@ -583,7 +576,8 @@ export default async function SearchPage({
                         {listing.category}
                         {locationText(listing) ? ` - ${locationText(listing)}` : ""}
                       </p>
-                      <div className="mt-2">
+                      <div className="mt-2 flex items-center gap-2">
+                        <ProfileAvatar profile={listing.profiles} size="sm" />
                         <VerifiedBadge profile={listing.profiles} />
                       </div>
                       <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#766d62]">
@@ -624,7 +618,8 @@ export default async function SearchPage({
                         {gig.category.replaceAll("_", " ")}
                         {locationText(gig) ? ` - ${locationText(gig)}` : ""}
                       </p>
-                      <div className="mt-2">
+                      <div className="mt-2 flex items-center gap-2">
+                        <ProfileAvatar profile={gig.profiles} size="sm" />
                         <VerifiedBadge profile={gig.profiles} />
                       </div>
                       <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#766d62]">

@@ -2,12 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MediaLightbox } from "@/app/media-lightbox";
+import { ProfileAvatar } from "@/app/profile-avatar";
 import { createClient } from "@/lib/supabase/client";
 
 type Profile = {
   id: string;
   username: string;
   display_name: string;
+  avatar_url?: string | null;
 };
 
 export type ThreadMessage = {
@@ -102,9 +104,10 @@ export function MessageThread({
 
         return (
           <div
-            className={`flex ${mine ? "justify-end" : "justify-start"}`}
+            className={`flex items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}
             key={message.id}
           >
+            {!mine ? <ProfileAvatar profile={sender} size="sm" /> : null}
             <div
               className={`max-w-[78%] rounded-md px-4 py-3 ${
                 mine
@@ -158,6 +161,7 @@ export function MessageThread({
                 {timeAgo(message.created_at)}
               </p>
             </div>
+            {mine ? <ProfileAvatar profile={sender} size="sm" /> : null}
           </div>
         );
       })}

@@ -21,7 +21,7 @@ const sections = [
   },
   {
     body:
-      "Members must label sensitive non-nude body-art content when appropriate, including fresh work, healing, scar cover, piercing, body modification, or medical-looking context. Sensitive posts may be hidden from public visitors, require login, and require 18+ confirmation before viewing. Public previews should not expose private messages, full comment threads, private account data, or sensitive media.",
+      "For launch, member upload forms do not include a sensitive-content bypass because visible nudity is not allowed. Members should crop or cover private areas before posting fresh work, healing, scar cover, piercing, body modification, or medical-looking context. Admins may still hide, restrict, or mark edge-case content for login and 18+ review. Public previews should not expose private messages, full comment threads, private account data, or restricted media.",
     title: "Public And Sensitive Visibility",
   },
   {

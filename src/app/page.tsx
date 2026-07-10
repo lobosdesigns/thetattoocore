@@ -36,6 +36,7 @@ import { LogoLockup, LogoWordmark } from "./logo-mark";
 import { MediaLightbox } from "./media-lightbox";
 import { NotificationBellLink } from "./notification-bell-link";
 import { PendingSubmitButton } from "./pending-submit-button";
+import { ProfileAvatar } from "./profile-avatar";
 import { SavedItemButton } from "./saved-item-button";
 import { SensitiveContentGate } from "./sensitive-content-gate";
 import { CompactShareButton } from "./share-actions";
@@ -54,6 +55,7 @@ type Profile = {
   id: string;
   username: string;
   display_name: string;
+  avatar_url?: string | null;
   adult_terms_accepted_at?: string | null;
   account_type: string;
   city: string | null;
@@ -170,7 +172,7 @@ type PostComment = {
   id: string;
   body: string;
   created_at: string;
-  profiles: Pick<Profile, "display_name" | "username"> | null;
+  profiles: Pick<Profile, "avatar_url" | "display_name" | "username"> | null;
 };
 
 type ThreadLike = {
@@ -181,13 +183,13 @@ type ThreadComment = {
   id: string;
   body: string;
   created_at: string;
-  profiles: Pick<Profile, "display_name" | "username"> | null;
+  profiles: Pick<Profile, "avatar_url" | "display_name" | "username"> | null;
 };
 
 type SponsoredPlacement = "4u-feed" | "gossip-feed" | "stuff-feed";
 type AdPlacement = "4u" | "gossip" | "stuff";
 type SponsoredCampaign = {
-  advertiser: Pick<Profile, "account_type" | "display_name" | "license_verified_at" | "username"> | null;
+  advertiser: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"> | null;
   body: string | null;
   campaign_type: "artist_growth" | "stuff_listing";
   city: string | null;
@@ -377,13 +379,16 @@ function SponsoredSlot({
         {targetingSummary ? ` and ${targetingSummary}` : ""}, not AI profiling.
       </p>
       <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold">
-            {campaign.advertiser?.display_name ?? "TheTattooCore advertiser"}
-          </p>
-          <div className="mt-1 flex items-center gap-1 text-xs text-white/60">
-            <span>@{campaign.advertiser?.username ?? "advertiser"}</span>
-            <VerifiedBadge profile={campaign.advertiser} />
+        <div className="flex min-w-0 items-center gap-3">
+          <ProfileAvatar profile={campaign.advertiser} size="md" />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">
+              {campaign.advertiser?.display_name ?? "TheTattooCore advertiser"}
+            </p>
+            <div className="mt-1 flex items-center gap-1 text-xs text-white/60">
+              <span>@{campaign.advertiser?.username ?? "advertiser"}</span>
+              <VerifiedBadge profile={campaign.advertiser} />
+            </div>
           </div>
         </div>
         <span className="shrink-0 text-sm font-bold text-[#c8953b]">
@@ -464,15 +469,6 @@ function SidebarEmptyState({ children }: { children: string }) {
       {children}
     </div>
   );
-}
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
 }
 
 function profileLocation(profile?: Profile | null) {
@@ -1012,9 +1008,9 @@ async function fetchSponsoredCampaign(
   const region = useLocal ? viewer?.region || null : null;
   let query = supabase
     .from("ad_campaigns")
-    .select(
-      "id, title, body, target_url, campaign_type, goal, bid_cents, city, region, country_code, language, keywords, profiles:profiles!ad_campaigns_advertiser_id_fkey(username, display_name, account_type, license_verified_at), ad_campaign_placements!inner(placement)",
-    )
+        .select(
+          "id, title, body, target_url, campaign_type, goal, bid_cents, city, region, country_code, language, keywords, profiles:profiles!ad_campaigns_advertiser_id_fkey(username, display_name, avatar_url, account_type, license_verified_at), ad_campaign_placements!inner(placement)",
+        )
     .eq("status", "active")
     .or(`starts_at.is.null,starts_at.lte.${now}`)
     .or(`ends_at.is.null,ends_at.gt.${now}`)
@@ -1055,10 +1051,10 @@ async function fetchSponsoredCampaign(
         id: string;
         keywords: string[];
         language: string | null;
-        profiles: Pick<
-          Profile,
-          "account_type" | "display_name" | "license_verified_at" | "username"
-        > | null;
+          profiles: Pick<
+            Profile,
+            "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"
+          > | null;
         region: string | null;
         target_url: string | null;
         title: string;
@@ -1115,7 +1111,7 @@ export default async function Home({
     ? await supabase
         .from("profiles")
         .select(
-          "id, username, display_name, account_type, city, country_code, preferred_language, location_personalization_enabled, adult_terms_accepted_at, is_adult_confirmed, license_verified_at, region, role, banned_at, suspended_at",
+        "id, username, display_name, avatar_url, account_type, city, country_code, preferred_language, location_personalization_enabled, adult_terms_accepted_at, is_adult_confirmed, license_verified_at, region, role, banned_at, suspended_at",
         )
         .eq("id", claims.sub)
         .maybeSingle<Profile>()
@@ -1135,7 +1131,7 @@ export default async function Home({
     supabase
       .from("feed_posts")
       .select(
-        "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, created_at, profiles:profiles!post_comments_author_id_fkey(display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, account_type, city, license_verified_at, region)",
+        "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, created_at, profiles:profiles!post_comments_author_id_fkey(avatar_url, display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("is_published", true)
       .eq("moderation_status", "active")
@@ -1149,7 +1145,7 @@ export default async function Home({
     supabase
       .from("thread_posts")
       .select(
-        "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, body, created_at, profiles:profiles!thread_comments_author_id_fkey(display_name, username)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, account_type, city, license_verified_at, region)",
+        "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, body, created_at, profiles:profiles!thread_comments_author_id_fkey(avatar_url, display_name, username)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("moderation_status", "active")
       .order("created_at", { ascending: false })
@@ -1162,7 +1158,7 @@ export default async function Home({
     supabase
       .from("marketplace_listings")
       .select(
-        "id, title, description, price_cents, currency, category, city, region, visibility, is_sensitive, created_at, marketplace_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!marketplace_listings_seller_id_fkey(id, username, display_name, account_type, city, license_verified_at, region)",
+        "id, title, description, price_cents, currency, category, city, region, visibility, is_sensitive, created_at, marketplace_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!marketplace_listings_seller_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("status", "active")
       .eq("moderation_status", "active")
@@ -1176,7 +1172,7 @@ export default async function Home({
     supabase
       .from("gigs")
       .select(
-        "id, title, description, category, city, region, country, starts_at, ends_at, compensation, contact_url, visibility, is_sensitive, created_at, gig_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!gigs_poster_id_fkey(id, username, display_name, account_type, city, license_verified_at, region)",
+        "id, title, description, category, city, region, country, starts_at, ends_at, compensation, contact_url, visibility, is_sensitive, created_at, gig_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!gigs_poster_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("status", "active")
       .eq("moderation_status", "active")
@@ -1370,9 +1366,7 @@ export default async function Home({
                       className="flex min-w-0 items-center gap-3"
                       href={`/u/${post.profiles?.username ?? "member"}`}
                     >
-                      <div className="flex size-11 items-center justify-center rounded-md bg-[#c8953b] text-sm font-bold text-white">
-                        {initials(post.profiles?.display_name ?? "TC")}
-                      </div>
+                      <ProfileAvatar profile={post.profiles} />
                       <div className="min-w-0">
                         <div className="flex min-w-0 items-center gap-1.5">
                           <p className="truncate text-sm font-semibold">
@@ -1495,7 +1489,12 @@ export default async function Home({
                     {!isPostLocked && post.post_comments.length ? (
                       <div className="space-y-2 border-t border-[#e5ded4] pt-3">
                         {post.post_comments.slice(0, 2).map((comment) => (
-                          <p className="text-sm leading-5" key={comment.id}>
+                          <p
+                            className="flex items-start gap-2 text-sm leading-5"
+                            key={comment.id}
+                          >
+                            <ProfileAvatar profile={comment.profiles} size="sm" />
+                            <span className="min-w-0 flex-1">
                             {comment.profiles?.username ? (
                               <Link
                                 className="font-semibold hover:underline"
@@ -1507,6 +1506,7 @@ export default async function Home({
                               <span className="font-semibold">Member</span>
                             )}{" "}
                             {comment.body}
+                            </span>
                           </p>
                         ))}
                       </div>
@@ -1594,10 +1594,13 @@ export default async function Home({
                     >
                       <div className="mb-2 flex items-center justify-between gap-3">
                         <Link
-                          className="inline-flex items-center gap-1.5 text-sm font-semibold hover:underline"
+                          className="inline-flex min-w-0 items-center gap-2 text-sm font-semibold hover:underline"
                           href={`/u/${thread.profiles?.username ?? "member"}`}
                         >
-                          <span>{thread.profiles?.display_name ?? "Member"}</span>
+                          <ProfileAvatar profile={thread.profiles} size="sm" />
+                          <span className="truncate">
+                            {thread.profiles?.display_name ?? "Member"}
+                          </span>
                           <VerifiedBadge profile={thread.profiles} />
                         </Link>
                         <div className="flex shrink-0 items-center gap-2">
@@ -1709,9 +1712,11 @@ export default async function Home({
                         <div className="mt-3 space-y-2">
                           {thread.thread_comments.slice(0, 2).map((comment) => (
                             <p
-                              className="rounded-md bg-[#f7f4ef] px-3 py-2 text-sm leading-5"
+                              className="flex items-start gap-2 rounded-md bg-[#f7f4ef] px-3 py-2 text-sm leading-5"
                               key={comment.id}
                             >
+                              <ProfileAvatar profile={comment.profiles} size="sm" />
+                              <span className="min-w-0 flex-1">
                               {comment.profiles?.username ? (
                                 <Link
                                   className="font-semibold hover:underline"
@@ -1723,6 +1728,7 @@ export default async function Home({
                                 <span className="font-semibold">Member</span>
                               )}{" "}
                               {comment.body}
+                              </span>
                             </p>
                           ))}
                         </div>

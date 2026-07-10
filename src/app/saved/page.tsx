@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { toggleSavedItem } from "@/app/actions";
 import { NotificationBellLink } from "@/app/notification-bell-link";
+import { ProfileAvatar } from "@/app/profile-avatar";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
 
@@ -34,6 +35,7 @@ type SavedItem = {
 
 type ProfileBadge = {
   account_type: string;
+  avatar_url?: string | null;
   license_verified_at: string | null;
 };
 
@@ -50,7 +52,7 @@ type FeedPost = {
   id: string;
   is_sensitive: boolean;
   location_label: string | null;
-  profiles: Pick<Profile, "account_type" | "display_name" | "license_verified_at" | "username"> | null;
+  profiles: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"> | null;
   style_tags: string[];
 };
 
@@ -58,7 +60,7 @@ type ThreadPost = {
   body: string;
   id: string;
   is_sensitive: boolean;
-  profiles: Pick<Profile, "account_type" | "display_name" | "license_verified_at" | "username"> | null;
+  profiles: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"> | null;
 };
 
 type Listing = {
@@ -66,7 +68,7 @@ type Listing = {
   city: string | null;
   id: string;
   is_sensitive: boolean;
-  profiles: Pick<Profile, "account_type" | "display_name" | "license_verified_at" | "username"> | null;
+  profiles: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"> | null;
   region: string | null;
   title: string;
 };
@@ -76,7 +78,7 @@ type Gig = {
   city: string | null;
   id: string;
   is_sensitive: boolean;
-  profiles: Pick<Profile, "account_type" | "display_name" | "license_verified_at" | "username"> | null;
+  profiles: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"> | null;
   region: string | null;
   title: string;
 };
@@ -210,7 +212,7 @@ export default async function SavedPage({
           const query = supabase
             .from("feed_posts")
             .select(
-              "id, caption, is_sensitive, style_tags, location_label, profiles:profiles!feed_posts_author_id_fkey(username, display_name, account_type, license_verified_at)",
+              "id, caption, is_sensitive, style_tags, location_label, profiles:profiles!feed_posts_author_id_fkey(username, display_name, avatar_url, account_type, license_verified_at)",
             )
             .in("id", feedIds)
             .eq("is_published", true)
@@ -225,7 +227,7 @@ export default async function SavedPage({
           const query = supabase
             .from("thread_posts")
             .select(
-              "id, body, is_sensitive, profiles:profiles!thread_posts_author_id_fkey(username, display_name, account_type, license_verified_at)",
+              "id, body, is_sensitive, profiles:profiles!thread_posts_author_id_fkey(username, display_name, avatar_url, account_type, license_verified_at)",
             )
             .in("id", threadIds)
             .eq("moderation_status", "active");
@@ -239,7 +241,7 @@ export default async function SavedPage({
           const query = supabase
             .from("marketplace_listings")
             .select(
-              "id, title, category, city, region, is_sensitive, profiles:profiles!marketplace_listings_seller_id_fkey(username, display_name, account_type, license_verified_at)",
+              "id, title, category, city, region, is_sensitive, profiles:profiles!marketplace_listings_seller_id_fkey(username, display_name, avatar_url, account_type, license_verified_at)",
             )
             .in("id", listingIds)
             .eq("status", "active")
@@ -254,7 +256,7 @@ export default async function SavedPage({
           const query = supabase
             .from("gigs")
             .select(
-              "id, title, category, city, region, is_sensitive, profiles:profiles!gigs_poster_id_fkey(username, display_name, account_type, license_verified_at)",
+              "id, title, category, city, region, is_sensitive, profiles:profiles!gigs_poster_id_fkey(username, display_name, avatar_url, account_type, license_verified_at)",
             )
             .in("id", gigIds)
             .eq("status", "active")
@@ -268,7 +270,7 @@ export default async function SavedPage({
       ? supabase
           .from("profiles")
           .select(
-            "id, username, display_name, account_type, city, region, license_verified_at",
+            "id, username, display_name, avatar_url, account_type, city, region, license_verified_at",
           )
           .in("id", profileIds)
           .eq("is_private", false)
@@ -479,6 +481,7 @@ export default async function SavedPage({
                     </p>
                     {card.ownerName ? (
                       <div className="mt-3 flex items-center gap-2">
+                        <ProfileAvatar profile={card.owner} size="sm" />
                         <span className="text-xs font-semibold">
                           {card.ownerName}
                         </span>

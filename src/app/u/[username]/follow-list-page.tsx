@@ -8,6 +8,7 @@ import {
   Users,
 } from "lucide-react";
 import { NotificationBellLink } from "@/app/notification-bell-link";
+import { ProfileAvatar } from "@/app/profile-avatar";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
 
@@ -19,6 +20,7 @@ type FollowListKind = "followers" | "following";
 
 type Profile = {
   account_type: string;
+  avatar_url: string | null;
   display_name: string;
   id: string;
   is_private: boolean;
@@ -34,18 +36,14 @@ type FollowListRow = {
   created_at: string;
   profiles: Pick<
     Profile,
-    "account_type" | "display_name" | "id" | "license_verified_at" | "username"
+    | "account_type"
+    | "avatar_url"
+    | "display_name"
+    | "id"
+    | "license_verified_at"
+    | "username"
   > | null;
 };
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 function isVerifiedProfile(
   profile: Pick<Profile, "account_type" | "license_verified_at">,
@@ -82,7 +80,7 @@ export async function FollowListPage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, username, display_name, account_type, is_private, license_verified_at",
+      "id, username, display_name, avatar_url, account_type, is_private, license_verified_at",
     )
     .eq("username", cleanUsername)
     .maybeSingle<Profile>();
@@ -121,13 +119,13 @@ export async function FollowListPage({
       ? supabase
           .from("follows")
           .select(
-            "created_at, profiles:profiles!follows_follower_id_fkey(id, username, display_name, account_type, license_verified_at)",
+            "created_at, profiles:profiles!follows_follower_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
           )
           .eq("following_id", profile.id)
       : supabase
           .from("follows")
           .select(
-            "created_at, profiles:profiles!follows_following_id_fkey(id, username, display_name, account_type, license_verified_at)",
+            "created_at, profiles:profiles!follows_following_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
           )
           .eq("follower_id", profile.id);
   const { data: rows } = canView
@@ -167,9 +165,7 @@ export async function FollowListPage({
 
         <section className="border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-5">
           <div className="flex items-center gap-3">
-            <div className="flex size-14 shrink-0 items-center justify-center rounded-md bg-[#171412] text-lg font-bold text-[#c8953b]">
-              {initials(profile.display_name)}
-            </div>
+            <ProfileAvatar profile={profile} className="size-14 text-lg" />
             <div className="min-w-0">
               <div className="flex min-w-0 items-center gap-2">
                 <h2 className="truncate text-lg font-bold">
@@ -231,9 +227,7 @@ export async function FollowListPage({
                   href={`/u/${person.username}`}
                   key={person.id}
                 >
-                  <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-[#171412] text-sm font-bold text-[#c8953b]">
-                    {initials(person.display_name)}
-                  </div>
+                  <ProfileAvatar profile={person} />
                   <div className="min-w-0 flex-1">
                     <div className="flex min-w-0 items-center gap-1.5">
                       <p className="truncate text-sm font-bold">

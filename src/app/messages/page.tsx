@@ -12,6 +12,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { MediaInput } from "@/app/media-input";
 import { PendingSubmitButton } from "@/app/pending-submit-button";
+import { ProfileAvatar } from "@/app/profile-avatar";
 import { WordLimitedField } from "@/app/word-limited-field";
 import { MessageThread } from "./message-thread";
 import { sendMessage, startConversation } from "./actions";
@@ -32,6 +33,7 @@ type Profile = {
   id: string;
   username: string;
   display_name: string;
+  avatar_url: string | null;
   account_type: string;
   city: string | null;
   region: string | null;
@@ -72,15 +74,6 @@ type MessageNotification = {
 };
 
 const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 function timeAgo(value: string) {
   const diffMs = Date.now() - new Date(value).getTime();
@@ -139,7 +132,7 @@ export default async function MessagesPage({
 
   const { data: currentProfile } = await supabase
     .from("profiles")
-    .select("id, username, display_name, account_type, city, region")
+    .select("id, username, display_name, avatar_url, account_type, city, region")
     .eq("id", claims.sub)
     .maybeSingle<Profile>();
 
@@ -208,7 +201,7 @@ export default async function MessagesPage({
   const { data: profiles } = profileIds.length
     ? await supabase
         .from("profiles")
-        .select("id, username, display_name, account_type, city, region")
+        .select("id, username, display_name, avatar_url, account_type, city, region")
         .in("id", profileIds)
         .returns<Profile[]>()
     : { data: [] as Profile[] };
@@ -357,9 +350,7 @@ export default async function MessagesPage({
                   @{currentProfile.username}
                 </p>
               </div>
-              <div className="flex size-10 items-center justify-center rounded-md bg-[#171412] text-xs font-bold text-[#c8953b]">
-                {initials(currentProfile.display_name)}
-              </div>
+              <ProfileAvatar profile={currentProfile} size="md" />
             </div>
 
             <form
@@ -437,9 +428,7 @@ export default async function MessagesPage({
                     key={conversation.id}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-[#171412] text-sm font-bold text-[#c8953b]">
-                        {initials(profile?.display_name ?? "TC")}
-                      </div>
+                      <ProfileAvatar profile={profile} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-3">
                           <p
@@ -499,11 +488,7 @@ export default async function MessagesPage({
             <>
               <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-4 backdrop-blur">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-11 items-center justify-center rounded-md bg-[#171412] text-sm font-bold text-[#c8953b]">
-                    {initials(
-                      selectedConversation.otherProfile?.display_name ?? "TC",
-                    )}
-                  </div>
+                  <ProfileAvatar profile={selectedConversation.otherProfile} />
                   <div>
                     <h2 className="text-base font-bold">
                       {selectedConversation.otherProfile?.display_name ??
@@ -525,6 +510,7 @@ export default async function MessagesPage({
                 }`}
                 profiles={(profiles ?? []).map((profile) => ({
                   display_name: profile.display_name,
+                  avatar_url: profile.avatar_url,
                   id: profile.id,
                   username: profile.username,
                 }))}
