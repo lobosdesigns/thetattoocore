@@ -17,7 +17,7 @@
 - Admin queues should get per-tab Load more controls after the simple 25-item caps are stable, so verification, reports, users, ads, data requests, media review, and activity logs can scale without returning to one giant admin page. Dedicated admin queue pages now use 50-item page navigation where real queues exist.
 - Admin sections must become dedicated pages as volume grows, especially Users, Ads, Stuff, Merch, Reports, Verification, Data Requests, Content, Gigs, Media Ops, and Mail Settings. Each long admin list should use real pagination instead of an endless dashboard section; Users, Ads, Data Requests, Verification, Reports, Content, Stuff, Gigs, Mail Settings, Media Ops, and a Merch planning page have started with dedicated page layers.
 - Admin `/admin` must stay an overview-only command center: high-level counts, health/status cards, and links into dedicated admin pages. It should not contain full user, report, verification, ad, Stuff, Merch, Gig, content, mail, or data-request queues because those pages will get long over time. Done for launch with short overview cards, recent activity, and dedicated queue links.
-- Search and Saved should mention Merch as planned/coming soon until products, seller approval, checkout, tax, shipping, refunds, and payment-provider rules are built.
+- Search and Saved should mention Merch as planned/coming soon until products, seller approval, checkout, tax, shipping, refunds, and payment-provider rules are built. Done for launch.
 - Mobile composer: posting cards must fit mobile browser screens, scroll to the publish button, and keep advanced fields behind expandable sections. Done for launch.
 - Composer uploads should not show a sensitive-content option during launch; visible nudity is not allowed, so members must crop or cover private areas before posting.
 - Profiles need avatar/profile-photo upload with client-side image optimization, public display on profile pages, and rollout into feeds, comments, DMs, search, notifications, and detail pages. Done for launch, including 4U/Gossip detail comments.
@@ -103,8 +103,8 @@
 - Add SEO-friendly public profile pages and public listing pages, while respecting profile privacy controls.
 - Add `robots.txt`, metadata, and per-route noindex rules before launch. Done for launch with private route disallows/noindex metadata and sitemap entries limited to public-safe profiles, posts, Gossip, Stuff, Gigs, and support/legal pages.
 - Do not expose private messages, private account data, unpublished content, or sensitive/adult content to crawlers. Done for launch with private route noindex and sitemap filtering for public, active, non-sensitive content.
-- Provide a public support URL for app-store review, safety reports, privacy help, and account deletion instructions.
-- Keep account deletion requests in an admin data-request queue during launch; complete irreversible deletion manually until legal hold and retention rules are final.
+- Provide a public support URL for app-store review, safety reports, privacy help, and account deletion instructions. Done for launch at `/support`.
+- Keep account deletion requests in an admin data-request queue during launch; complete irreversible deletion manually until legal hold and retention rules are final. Done for launch with Account > Data requests, email confirmation when SMTP is enabled, and the admin data-request queue.
 
 ## Age And Content Policy
 
