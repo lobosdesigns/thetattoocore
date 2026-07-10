@@ -6,6 +6,25 @@
   --accent: #c8953b;
   --paper: #f2f1ee;
   --paper-warm: #fffdf9;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --background: #121110;
+  --foreground: #f4efe7;
+  --accent: #d8a33d;
+  --paper: #201d1a;
+  --paper-warm: #28231e;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --background: #f2f1ee;
+  --foreground: #171412;
+  --accent: #c8953b;
+  --paper: #f2f1ee;
+  --paper-warm: #fffdf9;
+  color-scheme: light;
 }
 
 @theme inline {

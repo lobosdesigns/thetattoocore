@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { updateProfile } from "./actions";
 import { MediaInput } from "../media-input";
 import { PendingSubmitButton } from "../pending-submit-button";
+import { ThemePreferencePicker } from "../theme-preference-picker";
 import { countryOptions, languageLabel, languageOptions } from "@/lib/localization";
 
 type Claims = {
@@ -102,6 +103,7 @@ const notificationSummary = [
 
 const profileTabs = [
   ["profile", "Profile"],
+  ["appearance", "Appearance"],
   ["language", "Language"],
   ["privacy", "Privacy"],
   ["notifications", "Notifications"],
@@ -110,6 +112,7 @@ const profileTabs = [
 type ProfileTab = (typeof profileTabs)[number][0];
 
 function profileTabFromHash(hash: string): ProfileTab {
+  if (hash === "#appearance-settings") return "appearance";
   if (hash === "#language-settings") return "language";
   if (hash === "#privacy-settings") return "privacy";
   if (hash === "#notification-settings") return "notifications";
@@ -282,6 +285,23 @@ export function ProfileForm({
             Artists, studios, and vendors can apply for license verification.
           </span>
         </label>
+      </div>
+
+      <div className={panelClass("appearance")}>
+        <div
+          className="sm:col-span-2"
+          id="appearance-settings"
+        >
+          <h2 className="text-sm font-bold">Appearance</h2>
+          <p className="mt-1 text-xs leading-5 text-[#766d62]">
+            Choose Light, Dark, or System mode on this device. Account sync can
+            come after the full color system moves from hardcoded colors to
+            theme tokens.
+          </p>
+          <div className="mt-3 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3">
+            <ThemePreferencePicker />
+          </div>
+        </div>
       </div>
 
       <div className={panelClass("language")}>
