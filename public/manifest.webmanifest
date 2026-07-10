@@ -1,0 +1,45 @@
+{
+  "background_color": "#202020",
+  "categories": ["social", "lifestyle", "photo", "shopping"],
+  "description": "The heart of the tattoo community for artists, studios, collectors, and tattoo enthusiasts.",
+  "display": "standalone",
+  "icons": [
+    {
+      "purpose": "any",
+      "sizes": "512x512",
+      "src": "/icon.svg?v=ttc-shield",
+      "type": "image/svg+xml"
+    },
+    {
+      "purpose": "maskable",
+      "sizes": "512x512",
+      "src": "/icon.svg?v=ttc-shield",
+      "type": "image/svg+xml"
+    }
+  ],
+  "id": "https://thetattoocore.com",
+  "lang": "en",
+  "name": "TheTattooCore",
+  "orientation": "portrait",
+  "scope": "/",
+  "short_name": "TTC",
+  "shortcuts": [
+    {
+      "description": "Open the 4U feed",
+      "name": "4U",
+      "url": "/#feed"
+    },
+    {
+      "description": "Open direct messages",
+      "name": "DM",
+      "url": "/messages"
+    },
+    {
+      "description": "Open notifications",
+      "name": "Alerts",
+      "url": "/notifications"
+    }
+  ],
+  "start_url": "/",
+  "theme_color": "#171412"
+}

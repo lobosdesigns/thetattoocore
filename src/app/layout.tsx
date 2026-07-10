@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthHashRedirect } from "./auth-hash-redirect";
 import { normalizedLanguage } from "@/lib/localization";
@@ -28,10 +28,17 @@ export const metadata: Metadata = {
     canonical: siteUrl,
   },
   applicationName: siteName,
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: siteName,
+  },
   description: siteDescription,
   icons: {
+    apple: "/icon.svg?v=ttc-shield",
     icon: "/icon.svg?v=ttc-shield",
   },
+  manifest: "/manifest.webmanifest",
   metadataBase: new URL(siteUrl),
   openGraph: {
     description: siteDescription,
@@ -55,6 +62,10 @@ export const metadata: Metadata = {
     images: [brandShareImage],
     title: siteName,
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#171412",
 };
 
 async function preferredDocumentLanguage() {

@@ -24,6 +24,7 @@
 - Store notification preferences on the profile now so the same choices can later control email, web push, and native push.
 - Add transactional email only for important account, verification, security, and marketplace/gig events before adding noisy social email.
 - Add PWA web push after the app is installable and core flows are stable; Android and desktop Chrome are the easiest starting path, while iPhone installed-PWA push has more limits.
+- Add installability before push: web app manifest, app icon, standalone display, mobile theme color, and shortcuts for 4U, DMs, and alerts.
 - Add native app push after mobile app builds exist: APNs for iOS and Firebase Cloud Messaging for Android.
 - Later store push device tokens separately from profile preferences, with per-device opt-out, token revocation, and no plaintext secrets in the public client.
 - Push should respect quiet hours and category preferences before launch so the app does not feel spammy.
