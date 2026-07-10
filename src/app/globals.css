@@ -115,6 +115,27 @@ textarea:focus-visible {
     0 20px 52px rgba(0, 0, 0, 0.28);
 }
 
+.ttc-surface {
+  background: color-mix(in srgb, var(--paper-warm) 92%, transparent);
+  border-color: var(--card-rim);
+  color: var(--foreground);
+}
+
+.ttc-muted {
+  color: color-mix(in srgb, var(--foreground) 62%, transparent);
+}
+
+.ttc-control-active {
+  background: color-mix(in srgb, var(--foreground) 92%, #000 8%);
+  border-color: var(--accent);
+  color: color-mix(in srgb, var(--background) 94%, #fff 6%);
+}
+
+:root[data-theme="dark"] .ttc-control-active {
+  background: color-mix(in srgb, var(--accent) 18%, var(--paper-warm));
+  color: var(--foreground);
+}
+
 .no-scrollbar {
   scrollbar-width: none;
 }
