@@ -42,6 +42,7 @@ type Notification = {
     | "follow_accepted"
     | "follow_request"
     | "message"
+    | "new_follow"
     | "thread_comment"
     | "thread_like"
     | "verification_approved"

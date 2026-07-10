@@ -1005,8 +1005,8 @@ export default async function ProfilePage({
       ((gigs?.length ?? 0) - visibleGigs.length);
 
   return (
-    <main className="min-h-screen bg-[#202020] text-[#171412]">
-      <div className="mx-auto min-h-screen max-w-5xl bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
+    <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
+      <div className="mx-auto min-h-screen w-full max-w-5xl overflow-x-hidden bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
         <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">

@@ -112,6 +112,21 @@ export async function followProfile(formData: FormData) {
     redirect(profilePath(username, "You cannot follow a blocked profile."));
   }
 
+  const { data: existingFollow } = await supabase
+    .from("follows")
+    .select("status")
+    .eq("follower_id", userId)
+    .eq("following_id", targetId)
+    .maybeSingle<{ status: "accepted" | "pending" }>();
+
+  if (existingFollow?.status === "accepted") {
+    redirect(profilePath(username, "Already following."));
+  }
+
+  if (existingFollow?.status === "pending") {
+    redirect(profilePath(username, "Follow request already sent."));
+  }
+
   const status = targetProfile.is_private ? "pending" : "accepted";
   const { error } = await supabase.from("follows").upsert(
     {
@@ -129,14 +144,14 @@ export async function followProfile(formData: FormData) {
     redirect(profilePath(username, error.message || "Could not follow profile."));
   }
 
-  if (status === "pending") {
-    const { data: targetPreferences } = await supabase
-      .from("profiles")
-      .select("notify_follow_activity")
-      .eq("id", targetId)
-      .maybeSingle<{ notify_follow_activity: boolean }>();
+  const { data: targetPreferences } = await supabase
+    .from("profiles")
+    .select("notify_follow_activity")
+    .eq("id", targetId)
+    .maybeSingle<{ notify_follow_activity: boolean }>();
 
-    if (targetPreferences?.notify_follow_activity !== false) {
+  if (targetPreferences?.notify_follow_activity !== false) {
+    if (status === "pending") {
       await supabase.from("notifications").insert({
         actor_id: userId,
         body: `${actorProfile?.display_name ?? "A member"} wants to follow your private profile.`,
@@ -146,6 +161,17 @@ export async function followProfile(formData: FormData) {
         subject_type: "profile",
         title: "New follow request",
         type: "follow_request",
+      });
+    } else {
+      await supabase.from("notifications").insert({
+        actor_id: userId,
+        body: `${actorProfile?.display_name ?? "A member"} started following you.`,
+        href: actorProfile?.username ? `/u/${actorProfile.username}` : "/notifications",
+        recipient_id: targetId,
+        subject_id: userId,
+        subject_type: "profile",
+        title: "New follower",
+        type: "new_follow",
       });
     }
   }
