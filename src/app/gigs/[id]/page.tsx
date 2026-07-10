@@ -263,8 +263,8 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
   const isPublicPreview = gig.visibility === "public_preview" && !gig.is_sensitive;
 
   return (
-    <main className="min-h-screen bg-[#202020] text-[#171412]">
-      <div className="mx-auto min-h-screen max-w-5xl bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
+    <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
+      <div className="mx-auto min-h-screen w-full max-w-5xl overflow-x-hidden bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
         <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
@@ -308,8 +308,8 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
           </section>
         ) : null}
 
-        <section className="grid gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-          <div>
+        <section className="grid min-w-0 gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="min-w-0">
             <div className="relative overflow-hidden rounded-md border border-[#3a332d] bg-[#171412] shadow-[0_12px_30px_rgba(23,20,18,0.22)]">
               {media ? (
                 media.media_type === "video" ? (
@@ -429,7 +429,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
             </section>
           </div>
 
-          <aside className="space-y-4">
+          <aside className="min-w-0 space-y-4">
             <section className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4">
               <p className="text-xs font-semibold uppercase text-[#766d62]">
                 Posted by
