@@ -148,17 +148,17 @@
 
 ## Media Pipeline
 
-- Add client-side image optimization early so large phone photos are resized and compressed before upload.
-- Add profile-photo uploads using the same optimization-first approach, with smaller avatar limits than feed media.
-- Keep generous but real upload limits to prevent runaway storage, bandwidth, moderation, and abuse costs.
-- Start with image compression to Web-friendly JPEG/WebP dimensions, around 1600-2200px max edge for feed media and smaller generated previews where needed.
+- Add client-side image optimization early so large phone photos are resized and compressed before upload. Done for launch.
+- Add profile-photo uploads using the same optimization-first approach, with smaller avatar limits than feed media. Done for launch.
+- Keep generous but real upload limits to prevent runaway storage, bandwidth, moderation, and abuse costs. Done for launch with optimized image limits and strict raw-video caps.
+- Start with image compression to Web-friendly JPEG/WebP dimensions, around 1600-2200px max edge for feed media and smaller generated previews where needed. Done for launch with browser WebP resizing up to 2200px.
 - Preserve enough image quality for tattoo detail while avoiding full-resolution camera originals in normal feed delivery.
 - Normal feeds can use optimized display media, while the lightbox should preserve enough detail for users to inspect linework, healed texture, placement, and product condition.
 - Keep original-file storage optional for later verified artists or paid creator tools, not as the default MVP path.
-- Start video with short 1-minute reel limits and clear file-size caps.
+- Start video with short 1-minute reel limits and clear file-size caps. Done for launch with 60-second and 50 MB caps.
 - Treat Cloudflare Stream as the preferred production video route once usage grows, because it handles encoding, adaptive playback, thumbnails, and delivery better than raw Storage video.
 - Revisit a DIY FFmpeg/R2 pipeline only if video volume makes managed video too expensive.
-- User-facing upload copy should make it clear that images are optimized now, while videos stay capped and raw until the managed video pipeline is worth enabling.
+- User-facing upload copy should make it clear that images are optimized now, while videos stay capped and raw until the managed video pipeline is worth enabling. Done for launch.
 
 ## Lightweight Ads
 
