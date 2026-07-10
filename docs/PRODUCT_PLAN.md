@@ -141,8 +141,8 @@
 ## Location And Discovery
 
 - Store user-selected city, region, country code, and language preference. Done for launch.
-- Ask before using precise browser geolocation.
-- Keep coarse typed location useful without making precise device GPS a requirement for the basic social app.
+- Ask before using precise browser geolocation. Done for launch by not requesting browser GPS yet and documenting typed/coarse location only.
+- Keep coarse typed location useful without making precise device GPS a requirement for the basic social app. Done for launch.
 - Use coarse location first for marketplace discovery, event/contest filtering, and ads.
 - Keep location personalization opt-in/out visible in account settings.
 
