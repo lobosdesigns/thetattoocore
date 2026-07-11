@@ -65,7 +65,7 @@ const merchRules = [
   "Merch is public-buyable brand goods, separate from verified-only professional Stuff.",
   "Artist, studio, vendor, and official TheTattooCore sellers still need approval before listing products.",
   "Do not allow professional equipment, regulated services, unsafe products, counterfeits, adult sexual products, or scratcher-facing supplies.",
-  "Stripe checkout is wired in test mode; finish tax, shipping, refunds, fulfillment, payouts, and payment-provider safety rules before public production orders.",
+  "Stripe checkout and refund-status webhooks are wired in test mode; finish tax, shipping, fulfillment, payouts, and payment-provider safety rules before public production orders.",
 ] as const;
 const buildSteps = [
   [
@@ -78,7 +78,7 @@ const buildSteps = [
   ],
   [
     "Checkout",
-    "Stripe Checkout, paid webhooks, and inventory decrement are wired in test mode. Next: refunds, taxes, receipts, fulfillment, and production review.",
+    "Stripe Checkout, paid/failed/refunded webhooks, and inventory decrement are wired in test mode. Next: taxes, receipts, fulfillment, and production review.",
   ],
   [
     "Admin operations",

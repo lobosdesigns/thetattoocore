@@ -1148,7 +1148,7 @@ export default async function AdminPage({
       count: 0,
       href: "/admin/merch",
       label: "Merch",
-      meta: "Catalog, seller approval, checkout, tax, shipping, and refunds planned",
+      meta: "Catalog, seller approval, checkout, refund status, tax, and shipping",
     },
     {
       action: "Open mail",
