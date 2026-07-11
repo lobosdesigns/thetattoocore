@@ -267,8 +267,9 @@ function AdCampaignCard({
         </div>
       ) : null}
       <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-xs text-[var(--muted)]">
-        TTC fee tracked for this campaign: {dollars(campaign.platformFeeCents)}.
-        Stripe ad checkout is not enabled yet.
+        Stripe ad checkout is wired through Account &gt; Advertising. Prepaid ad
+        budget: {dollars(campaign.prepaidAmountCents)}. TTC fee tracked:{" "}
+        {dollars(campaign.platformFeeCents)}.
       </p>
       <div className="mt-3 grid grid-cols-1 gap-2 text-center text-xs min-[390px]:grid-cols-3">
         {[
