@@ -289,9 +289,9 @@ function canRenderContent({
 function AdultTermsGate({ username }: { username: string }) {
   return (
     <section className="border-b border-[var(--card-rim)] px-4 py-4">
-      <div className="rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_28%,transparent)] bg-[var(--ink)] p-4 text-white">
+      <div className="rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_28%,transparent)] bg-[var(--ink)] p-4 text-[var(--background)]">
         <p className="text-sm font-bold">18+ sensitive body-art content</p>
-        <p className="mt-1 text-sm leading-5 text-white/75">
+        <p className="mt-1 text-sm leading-5 text-[var(--background)]/75">
           This profile may include sensitive tattoo, piercing, healing, or
           placement posts. Accept the Terms to view eligible sensitive content.
         </p>
@@ -303,7 +303,7 @@ function AdultTermsGate({ username }: { username: string }) {
           >
             Terms
           </Link>
-          <button className="h-10 rounded-md bg-white px-4 text-sm font-semibold text-[var(--ink)]">
+          <button className="h-10 rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold text-[var(--ink)]">
             I am 18+
           </button>
         </form>

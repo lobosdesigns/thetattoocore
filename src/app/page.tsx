@@ -283,18 +283,18 @@ function CardCommentControls({
     <div className="flex w-full flex-wrap items-center gap-2">
       {isOwnComment ? (
         <details className="group min-w-[13rem] max-w-full">
-          <summary className="cursor-pointer list-none rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-semibold text-[#4f473f] transition group-open:border-[#c8953b] group-open:bg-[#fff7ec]">
+          <summary className="cursor-pointer list-none rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--muted)] transition group-open:border-[var(--gold)] group-open:bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))]">
             Edit
           </summary>
           <form
             action={editAction}
-            className="mt-2 grid min-w-0 gap-2 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-2 shadow-[0_10px_24px_rgba(23,20,18,0.12)]"
+            className="mt-2 grid min-w-0 gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-2 shadow-[0_10px_24px_rgba(23,20,18,0.12)]"
           >
             <input name="comment_id" type="hidden" value={commentId} />
             <input name="return_path" type="hidden" value={returnPath} />
             {kind === "feed" ? (
               <input
-                className="h-9 min-w-0 rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+                className="h-9 min-w-0 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-xs outline-none focus:border-[var(--foreground)]"
                 defaultValue={body}
                 maxLength={300}
                 name="body"
@@ -302,7 +302,7 @@ function CardCommentControls({
               />
             ) : (
               <textarea
-                className="min-h-20 min-w-0 rounded-md border border-[#d8d1c6] bg-white px-2 py-2 text-xs outline-none focus:border-[#171412]"
+                className="min-h-20 min-w-0 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-2 text-xs outline-none focus:border-[var(--foreground)]"
                 defaultValue={body}
                 maxLength={2000}
                 name="body"
@@ -310,7 +310,7 @@ function CardCommentControls({
               />
             )}
             <PendingSubmitButton
-              className="h-8 rounded-md bg-[#171412] px-3 text-xs font-semibold text-white"
+              className="h-8 rounded-md bg-[var(--foreground)] px-3 text-xs font-semibold text-[var(--background)]"
               pendingChildren="Saving..."
             >
               Save edit
@@ -323,7 +323,7 @@ function CardCommentControls({
           <input name="comment_id" type="hidden" value={commentId} />
           <input name="return_path" type="hidden" value={returnPath} />
           <PendingSubmitButton
-            className="rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-semibold text-[#7a2d1f]"
+            className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--danger)]"
             pendingChildren="Deleting..."
           >
             Delete
@@ -337,7 +337,7 @@ function CardCommentControls({
             <input name="return_path" type="hidden" value={returnPath} />
             <input name="reason" type="hidden" value="Hidden by post owner." />
             <PendingSubmitButton
-              className="rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-semibold text-[#4f473f]"
+              className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--muted)]"
               pendingChildren="Hiding..."
             >
               Hide
@@ -347,7 +347,7 @@ function CardCommentControls({
             <input name="comment_id" type="hidden" value={commentId} />
             <input name="return_path" type="hidden" value={returnPath} />
             <PendingSubmitButton
-              className="rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-semibold text-[#7a2d1f]"
+              className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--danger)]"
               pendingChildren="Blocking..."
             >
               Block
@@ -428,22 +428,22 @@ function StuffAccessCard({ profile }: { profile: Profile | null }) {
   const status = stuffAccessStatus(profile);
   const toneClass =
     status.tone === "success"
-      ? "border-[#b9d7bd] bg-[#eef8ef]"
+      ? "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))]"
       : status.tone === "danger"
-        ? "border-[#e5b8b8] bg-[#fff0f0]"
+        ? "border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))]"
         : status.tone === "warning"
-          ? "border-[#e5c58f] bg-[#fff7ec]"
-          : "border-[#d8d1c6] bg-white";
+          ? "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))]"
+          : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)]";
 
   return (
     <section className={`mt-4 rounded-md border p-3 ${toneClass}`}>
-      <p className="text-xs font-semibold uppercase text-[#766d62]">
+      <p className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
         Stuff access
       </p>
       <h2 className="mt-1 text-sm font-bold">{status.title}</h2>
-      <p className="mt-1 text-xs leading-5 text-[#4f473f]">{status.body}</p>
+      <p className="mt-1 text-xs leading-5 text-[var(--muted)]">{status.body}</p>
       <Link
-        className="mt-3 inline-flex h-8 items-center rounded-md bg-[#171412] px-3 text-xs font-semibold text-white"
+        className="mt-3 inline-flex h-8 items-center rounded-md bg-[var(--foreground)] px-3 text-xs font-semibold text-[var(--background)]"
         href={status.href}
       >
         {status.label}
@@ -481,60 +481,60 @@ function SponsoredSlot({
     .filter(Boolean)
     .join(", ");
   const content = (
-    <article className="ttc-card rounded-md border border-[#c8953b]/60 bg-[#171412] p-4 text-white shadow-[0_16px_36px_rgba(0,0,0,0.22)]">
+    <article className="ttc-card rounded-md border border-[color-mix(in_srgb,var(--gold)_60%,var(--card-rim))] bg-[var(--foreground)] p-4 text-[var(--background)] shadow-[0_16px_36px_rgba(0,0,0,0.22)]">
       <AdImpressionBeacon campaignId={campaign.id} placement={dbPlacement} />
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#c8953b]">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">
             {sponsoredSlotTitle(placement)}
           </p>
           <h3 className="mt-2 text-base font-bold">{campaign.title}</h3>
         </div>
-        <span className="shrink-0 rounded-md border border-white/15 bg-white/10 px-2 py-1 text-xs font-semibold">
+        <span className="shrink-0 rounded-md border border-white/15 bg-[color-mix(in_srgb,var(--paper-warm)_10%,transparent)] px-2 py-1 text-xs font-semibold">
           Ad
         </span>
       </div>
       {campaign.body ? (
-        <p className="mt-2 line-clamp-3 text-sm leading-6 text-white/75">
+        <p className="mt-2 line-clamp-3 text-sm leading-6 text-[var(--background)]/75">
           {campaign.body}
         </p>
       ) : null}
       <div className="mt-3 flex flex-wrap gap-1.5">
-        <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold capitalize text-white/80">
+        <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_10%,transparent)] px-2 py-1 text-xs font-semibold capitalize text-[color-mix(in_srgb,var(--background)_80%,transparent)]">
           {campaign.goal.replaceAll("_", " ")}
         </span>
         {campaign.campaign_type === "artist_growth" ? (
-          <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80">
+          <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_10%,transparent)] px-2 py-1 text-xs font-semibold text-[color-mix(in_srgb,var(--background)_80%,transparent)]">
             Artist growth
           </span>
         ) : (
-          <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80">
+          <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_10%,transparent)] px-2 py-1 text-xs font-semibold text-[color-mix(in_srgb,var(--background)_80%,transparent)]">
             Stuff listing
           </span>
         )}
         {campaign.matchLabels.map((label) => (
           <span
-            className="rounded-md bg-[#c8953b]/20 px-2 py-1 text-xs font-semibold text-[#f8d28b]"
+            className="rounded-md bg-[color-mix(in_srgb,var(--gold)_20%,transparent)] px-2 py-1 text-xs font-semibold text-[color-mix(in_srgb,var(--gold)_70%,var(--background))]"
             key={label}
           >
             {label}
           </span>
         ))}
         {location ? (
-          <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80">
+          <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_10%,transparent)] px-2 py-1 text-xs font-semibold text-[color-mix(in_srgb,var(--background)_80%,transparent)]">
             {location}
           </span>
         ) : null}
         {campaign.keywords.slice(0, 3).map((keyword) => (
           <span
-            className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80"
+            className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_10%,transparent)] px-2 py-1 text-xs font-semibold text-[color-mix(in_srgb,var(--background)_80%,transparent)]"
             key={keyword}
           >
             {keyword}
           </span>
         ))}
       </div>
-      <p className="mt-3 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-xs leading-5 text-white/65">
+      <p className="mt-3 rounded-md border border-white/10 bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)]/5 px-3 py-2 text-xs leading-5 text-[var(--background)]/65">
         Sponsored placement reviewed by TheTattooCore. Shown by placement
         {targetingSummary ? ` and ${targetingSummary}` : ""}, not AI profiling.
       </p>
@@ -545,13 +545,13 @@ function SponsoredSlot({
             <p className="truncate text-sm font-semibold">
               {campaign.advertiser?.display_name ?? "TheTattooCore advertiser"}
             </p>
-            <div className="mt-1 flex items-center gap-1 text-xs text-white/60">
+            <div className="mt-1 flex items-center gap-1 text-xs text-[var(--background)]/60">
               <span>@{campaign.advertiser?.username ?? "advertiser"}</span>
               <VerifiedBadge profile={campaign.advertiser} />
             </div>
           </div>
         </div>
-        <span className="shrink-0 text-sm font-bold text-[#c8953b]">
+        <span className="shrink-0 text-sm font-bold text-[var(--gold)]">
           Learn more
         </span>
       </div>
@@ -587,17 +587,17 @@ function EmptyColumnState({
   title: string;
 }) {
   return (
-    <div className="ttc-card rounded-md border border-dashed border-[#cfc6ba] bg-[#fffdf9] p-6">
-      <div className="flex size-11 items-center justify-center rounded-md bg-[#171412] text-[#c8953b]">
+    <div className="ttc-card rounded-md border border-dashed border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-6">
+      <div className="flex size-11 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--gold)]">
         <Icon className="size-5" />
       </div>
       <h3 className="mt-4 text-base font-bold">{title}</h3>
-      <p className="mt-2 text-sm leading-6 text-[#4f473f]">{body}</p>
+      <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{body}</p>
       {tips?.length ? (
         <div className="mt-4 flex flex-wrap gap-2">
           {tips.map((tip) => (
             <span
-              className="rounded-md border border-[#cfc8bd] bg-[#f7f4ef] px-2 py-1 text-xs font-semibold text-[#4f473f]"
+              className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--muted)]"
               key={tip}
             >
               {tip}
@@ -608,13 +608,13 @@ function EmptyColumnState({
       {actionLabel ? (
         actionHref ? (
           <Link
-            className="mt-5 inline-flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+            className="mt-5 inline-flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
             href={actionHref}
           >
             {actionLabel}
           </Link>
         ) : (
-          <p className="mt-5 text-sm font-semibold text-[#171412]">
+          <p className="mt-5 text-sm font-semibold text-[var(--foreground)]">
             {actionLabel}
           </p>
         )
@@ -625,7 +625,7 @@ function EmptyColumnState({
 
 function SidebarEmptyState({ children }: { children: string }) {
   return (
-    <div className="rounded-md border border-dashed border-[#cfc6ba] bg-[#fffdf9] p-3 text-sm leading-5 text-[#766d62] shadow-sm">
+    <div className="rounded-md border border-dashed border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm leading-5 text-[var(--muted-strong)] shadow-sm">
       {children}
     </div>
   );
@@ -635,7 +635,7 @@ function LoadMoreLink({ href, label }: { href: string; label: string }) {
   return (
     <div className="mt-4 flex justify-center">
       <Link
-        className="flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-4 text-sm font-bold shadow-sm hover:bg-white"
+        className="flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-4 text-sm font-bold shadow-sm hover:bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)]"
         href={href}
       >
         {label}
@@ -663,7 +663,7 @@ function VerifiedBadge({
 
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-md bg-[#171412] px-1.5 py-0.5 text-[11px] font-semibold text-white"
+      className="inline-flex items-center gap-1 rounded-md bg-[var(--foreground)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--background)]"
       title={`${profile?.account_type ?? "Profile"} license verified`}
     >
       <BadgeCheck className="size-3" />
@@ -730,7 +730,7 @@ function ContentLabels({
     <div className="flex flex-wrap gap-1.5">
       {labels.map((label) => (
         <span
-          className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 py-1 text-[11px] font-semibold text-[#766d62]"
+          className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1 text-[11px] font-semibold text-[var(--muted-strong)]"
           key={label}
         >
           {label}
@@ -783,7 +783,7 @@ function MediaFrame({
 }) {
   if (!media) {
     return (
-      <div className="flex aspect-[4/3] items-center justify-center bg-[#171412] text-white">
+      <div className="flex aspect-[4/3] items-center justify-center bg-[var(--foreground)] text-[var(--background)]">
         <div className="text-center">
           <ImageIcon className="mx-auto mb-2 size-10 opacity-80" />
           <p className="text-sm font-semibold">No media attached</p>
@@ -794,8 +794,8 @@ function MediaFrame({
 
   if (isLocked) {
     return (
-      <div className="relative overflow-hidden bg-[#171412]">
-        <div className="flex aspect-[4/5] items-center justify-center bg-[radial-gradient(circle_at_50%_30%,rgba(200,149,59,0.24),transparent_16rem),#171412] text-white">
+      <div className="relative overflow-hidden bg-[var(--foreground)]">
+        <div className="flex aspect-[4/5] items-center justify-center bg-[radial-gradient(circle_at_50%_30%,rgba(200,149,59,0.24),transparent_16rem),#171412] text-[var(--background)]">
           <div className="text-center opacity-45 blur-[1px]">
             <LockKeyhole className="mx-auto mb-3 size-14" />
             <p className="text-sm font-bold uppercase tracking-[0.18em]">
@@ -817,7 +817,7 @@ function MediaFrame({
     return (
       <MediaLightbox mediaType="video" src={src}>
         <video
-          className="aspect-[4/5] w-full bg-[#171412] object-cover"
+          className="aspect-[4/5] w-full bg-[var(--foreground)] object-cover"
           controls
           controlsList="nodownload noplaybackrate"
           disablePictureInPicture
@@ -848,7 +848,7 @@ function ListingThumb({
 }) {
   if (!media) {
     return (
-      <div className="flex size-11 items-center justify-center rounded-md bg-[#efe7da]">
+      <div className="flex size-11 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))]">
         <ImageIcon className="size-5" />
       </div>
     );
@@ -856,11 +856,11 @@ function ListingThumb({
 
   if (isLocked) {
     return (
-      <div className="relative size-11 overflow-hidden rounded-md bg-[#171412] text-white">
-        <div className="flex size-full items-center justify-center bg-[#171412] blur-[1px]">
+      <div className="relative size-11 overflow-hidden rounded-md bg-[var(--foreground)] text-[var(--background)]">
+        <div className="flex size-full items-center justify-center bg-[var(--foreground)] blur-[1px]">
           <LockKeyhole className="size-5 opacity-70" />
         </div>
-        <div className="absolute inset-0 flex items-center justify-center bg-[#171412]/55">
+        <div className="absolute inset-0 flex items-center justify-center bg-[color-mix(in_srgb,var(--foreground)_55%,transparent)]">
           <LockKeyhole className="size-4" />
         </div>
       </div>
@@ -873,7 +873,7 @@ function ListingThumb({
         mediaType="video"
         src={mediaUrl(media.storage_bucket, media.storage_path)}
       >
-        <div className="flex size-11 items-center justify-center rounded-md bg-[#171412] text-white">
+        <div className="flex size-11 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]">
           <Video className="size-5" />
         </div>
       </MediaLightbox>
@@ -909,8 +909,8 @@ function ThreadImage({
 
   if (isLocked) {
     return (
-      <div className="relative mt-3 overflow-hidden rounded-md border border-[#e5ded4] bg-[#171412]">
-        <div className="flex aspect-[16/10] items-center justify-center bg-[radial-gradient(circle_at_50%_30%,rgba(200,149,59,0.24),transparent_16rem),#171412] text-white">
+      <div className="relative mt-3 overflow-hidden rounded-md border border-[var(--card-rim)] bg-[var(--foreground)]">
+        <div className="flex aspect-[16/10] items-center justify-center bg-[radial-gradient(circle_at_50%_30%,rgba(200,149,59,0.24),transparent_16rem),#171412] text-[var(--background)]">
           <div className="text-center opacity-45 blur-[1px]">
             <LockKeyhole className="mx-auto mb-2 size-10" />
             <p className="text-xs font-bold uppercase tracking-[0.18em]">
@@ -932,7 +932,7 @@ function ThreadImage({
   return (
     <MediaLightbox alt="Gossip thread media" mediaType="image" src={src}>
       <div
-        className="mt-3 aspect-[16/10] rounded-md border border-[#e5ded4] bg-cover bg-center"
+        className="mt-3 aspect-[16/10] rounded-md border border-[var(--card-rim)] bg-cover bg-center"
         style={{
           backgroundImage: `url(${src})`,
         }}
@@ -945,7 +945,7 @@ function AuthCallout({ isSignedIn }: { isSignedIn: boolean }) {
   if (isSignedIn) {
     return (
       <Link
-        className="flex h-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+        className="flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
         href="/account"
       >
         Profile
@@ -955,7 +955,7 @@ function AuthCallout({ isSignedIn }: { isSignedIn: boolean }) {
 
   return (
     <Link
-      className="flex h-10 items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+      className="flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
       href="/login"
     >
       <LogIn className="size-4" />
@@ -966,11 +966,11 @@ function AuthCallout({ isSignedIn }: { isSignedIn: boolean }) {
 
 function AdultTermsGate({ returnHash = "feed" }: { returnHash?: string }) {
   return (
-    <section className="border-b border-[#d8d1c6] bg-[#171412] px-4 py-4 text-white">
+    <section className="border-b border-[var(--card-rim)] bg-[var(--foreground)] px-4 py-4 text-[var(--background)]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-bold">18+ sensitive body-art content</p>
-          <p className="mt-1 text-sm leading-5 text-white/75">
+          <p className="mt-1 text-sm leading-5 text-[var(--background)]/75">
             Sensitive tattoo, piercing, healing, or placement posts require
             login and 18+ Terms acceptance.
           </p>
@@ -984,7 +984,7 @@ function AdultTermsGate({ returnHash = "feed" }: { returnHash?: string }) {
           >
             Terms
           </Link>
-          <button className="h-10 rounded-md bg-white px-4 text-sm font-semibold text-[#171412]">
+          <button className="h-10 rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold text-[var(--foreground)]">
             I am 18+
           </button>
         </form>
@@ -1014,19 +1014,19 @@ function MobileShortcutNav({
   return (
     <nav
       aria-label="Mobile shortcuts"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-[#3a332d] bg-[#171412]/95 px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 shadow-[0_-10px_28px_rgba(0,0,0,0.24)] backdrop-blur lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-[color-mix(in_srgb,var(--gold)_24%,var(--card-rim))] bg-[color-mix(in_srgb,var(--foreground)_94%,transparent)] px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 shadow-[0_-10px_28px_rgba(0,0,0,0.24)] backdrop-blur lg:hidden"
     >
       <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
         {items.map(([Icon, label, href, badge]) => (
           <Link
-            className="relative flex h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-md text-[11px] font-semibold text-[#f2f1ee] hover:bg-white/10"
+            className="relative flex h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-md text-[11px] font-semibold text-[var(--background)] hover:bg-[color-mix(in_srgb,var(--paper-warm)_10%,transparent)]"
             href={href}
             key={label}
           >
             <Icon className="size-5" />
             <span className="truncate">{label}</span>
             {badge ? (
-              <span className="absolute right-2 top-1 flex min-w-5 items-center justify-center rounded-full bg-[#c8953b] px-1.5 text-[10px] font-bold text-[#171412]">
+              <span className="absolute right-2 top-1 flex min-w-5 items-center justify-center rounded-full bg-[var(--gold)] px-1.5 text-[10px] font-bold text-[var(--foreground)]">
                 {badge > 9 ? "9+" : badge}
               </span>
             ) : null}
@@ -1039,22 +1039,22 @@ function MobileShortcutNav({
 
 function PublicVisitorGate({ lockedCount }: { lockedCount: number }) {
   return (
-    <section className="border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-4">
+    <section className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-4 py-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-bold">Public preview</p>
-          <p className="mt-1 text-sm leading-5 text-[#4f473f]">
+          <p className="mt-1 text-sm leading-5 text-[var(--muted)]">
             Sign in to post, reply, DM, follow creators, and view member-only
             or 18+ sensitive body-art content.
           </p>
           {lockedCount ? (
-            <p className="mt-2 text-xs font-semibold text-[#766d62]">
+            <p className="mt-2 text-xs font-semibold text-[var(--muted-strong)]">
               {lockedCount} member or 18+ item{lockedCount === 1 ? "" : "s"} hidden.
             </p>
           ) : null}
         </div>
         <Link
-          className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+          className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
           href="/login"
         >
           <LogIn className="size-4" />
@@ -1077,25 +1077,25 @@ function StoriesRail() {
   return (
     <section
       aria-label="Stories"
-      className="border-b border-[#d8d1c6] bg-[#fffdf9] px-4 py-3"
+      className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-4 py-3"
     >
       <div className="no-scrollbar flex gap-3 overflow-x-auto">
-        <div className="flex h-16 min-w-20 flex-col items-center justify-center rounded-md border border-dashed border-[#c8953b] bg-[#fff7ec] px-3 text-center">
-          <Sparkles className="size-4 text-[#c8953b]" />
-          <span className="mt-1 text-[11px] font-bold text-[#4f473f]">
+        <div className="flex h-16 min-w-20 flex-col items-center justify-center rounded-md border border-dashed border-[var(--gold)] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] px-3 text-center">
+          <Sparkles className="size-4 text-[var(--gold)]" />
+          <span className="mt-1 text-[11px] font-bold text-[var(--muted)]">
             Stories
           </span>
         </div>
         {items.map(([label, Icon]) => (
           <div
-            className="flex h-16 min-w-20 flex-col items-center justify-center rounded-md border border-[#e5ded4] bg-white px-3 text-center"
+            className="flex h-16 min-w-20 flex-col items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-center"
             key={label}
           >
-            <Icon className="size-4 text-[#766d62]" />
-            <span className="mt-1 text-[11px] font-semibold text-[#4f473f]">
+            <Icon className="size-4 text-[var(--muted-strong)]" />
+            <span className="mt-1 text-[11px] font-semibold text-[var(--muted)]">
               {label}
             </span>
-            <span className="text-[10px] font-semibold uppercase text-[#766d62]">
+            <span className="text-[10px] font-semibold uppercase text-[var(--muted-strong)]">
               Soon
             </span>
           </div>
@@ -1107,17 +1107,17 @@ function StoriesRail() {
 
 function ProfileSetupGate() {
   return (
-    <section className="border-b border-[#cfc8bd] bg-[#e8e4dc] px-4 py-4">
+    <section className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-bold">Finish your profile</p>
-          <p className="mt-1 text-sm leading-5 text-[#4f473f]">
+          <p className="mt-1 text-sm leading-5 text-[var(--muted)]">
             Choose a username and account type before posting, replying,
             listing Stuff, adding Gigs, or sending DMs.
           </p>
         </div>
         <Link
-          className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+          className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
           href="/account"
         >
           <UserRound className="size-4" />
@@ -1138,11 +1138,11 @@ function TranslationCue({ preferredLanguage }: { preferredLanguage: string }) {
   if (preferredLanguage === "en") return null;
 
   return (
-    <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-semibold text-[#766d62]">
-      <span className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 py-1">
+    <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-semibold text-[var(--muted-strong)]">
+      <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1">
         Original text
       </span>
-      <span className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 py-1">
+      <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1">
         Translation planned
       </span>
     </div>
@@ -1447,9 +1447,9 @@ export default async function Home({
   );
 
   return (
-    <main className="min-h-screen bg-[#202020] text-[#171412]">
+    <main className="min-h-screen bg-[color-mix(in_srgb,var(--foreground)_90%,#202020)] text-[var(--foreground)]">
       <div className="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 lg:grid-cols-[240px_minmax(420px,620px)_320px] lg:shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
-        <aside className="hidden border-r border-[#cfc8bd] bg-[#f2f1ee] px-5 py-6 lg:block">
+        <aside className="hidden border-r border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] px-5 py-6 lg:block">
           <div className="flex min-h-full flex-col">
             <div>
               <div className="mb-8 flex justify-start">
@@ -1468,14 +1468,14 @@ export default async function Home({
                   [UserRound, "Profile", profileHref],
                 ].map(([Icon, label, href]) => (
                   <Link
-                    className="flex h-11 w-full items-center gap-3 rounded-md px-3 text-left text-sm font-medium hover:bg-[#fffdf9]"
+                    className="flex h-11 w-full items-center gap-3 rounded-md px-3 text-left text-sm font-medium hover:bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)]"
                     href={href as string}
                     key={label as string}
                   >
                     <Icon className="size-5" />
                     <span className="min-w-0 flex-1">{label as string}</span>
                     {label === "DM" && unreadDmBadge ? (
-                      <span className="flex min-w-5 items-center justify-center rounded-full bg-[#171412] px-1.5 text-[10px] font-bold text-white">
+                      <span className="flex min-w-5 items-center justify-center rounded-full bg-[var(--foreground)] px-1.5 text-[10px] font-bold text-[var(--background)]">
                         {unreadDmBadge > 9 ? "9+" : unreadDmBadge}
                       </span>
                     ) : null}
@@ -1485,7 +1485,7 @@ export default async function Home({
 
               {adminRole && ["moderator", "admin", "owner"].includes(adminRole) ? (
                 <Link
-                  className="mt-4 flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
+                  className="mt-4 flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
                   href="/admin"
                 >
                   Admin
@@ -1494,15 +1494,15 @@ export default async function Home({
               {isSignedIn ? <StuffAccessCard profile={currentProfile ?? null} /> : null}
             </div>
 
-            <div className="mt-auto flex gap-3 pt-8 text-xs font-semibold text-[#766d62]">
+            <div className="mt-auto flex gap-3 pt-8 text-xs font-semibold text-[var(--muted-strong)]">
               <Link href="/terms">Terms</Link>
               <Link href="/privacy">Privacy</Link>
             </div>
           </div>
         </aside>
 
-        <section className="border-x border-[#cfc8bd] bg-[#f2f1ee] pb-52 lg:pb-0">
-          <header className="sticky top-0 z-10 border-b border-[#d8d1c6] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
+        <section className="border-x border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] pb-52 lg:pb-0">
+          <header className="sticky top-0 z-10 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] px-4 py-3 backdrop-blur">
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center">
                 <LogoLockup className="h-14 w-52 max-w-[52vw] shrink-0" />
@@ -1510,7 +1510,7 @@ export default async function Home({
               <div className="flex items-center gap-2">
                 <Link
                   aria-label="Search"
-                  className="flex size-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white"
+                  className="flex size-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)]"
                   href="/search"
                 >
                   <Search className="size-5" />
@@ -1525,7 +1525,7 @@ export default async function Home({
 
           {params.message ? (
             <p
-              className="sticky top-0 z-20 border-b border-[#d8d1c6] bg-[#efe7da] px-4 py-3 text-sm font-semibold shadow-sm"
+              className="sticky top-0 z-20 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] px-4 py-3 text-sm font-semibold shadow-sm"
               role="status"
             >
               {params.message}
@@ -1562,7 +1562,7 @@ export default async function Home({
                 return (
                 <div key={post.id}>
                 <article
-                  className="scroll-mt-28 bg-[#fffdf9] shadow-[0_1px_0_rgba(23,20,18,0.06)]"
+                  className="scroll-mt-28 bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] shadow-[0_1px_0_rgba(23,20,18,0.06)]"
                   id={`feed-${post.id}`}
                 >
                   <div className="flex items-center justify-between px-4 py-3">
@@ -1579,7 +1579,7 @@ export default async function Home({
                           </p>
                           <VerifiedBadge profile={post.profiles} />
                         </div>
-                        <p className="text-xs text-[#766d62]">
+                        <p className="text-xs text-[var(--muted-strong)]">
                           @{post.profiles?.username ?? "member"} -{" "}
                           {post.location_label ||
                             profileLocation(post.profiles) ||
@@ -1589,7 +1589,7 @@ export default async function Home({
                       </div>
                     </Link>
                     {post.style_tags[0] ? (
-                      <span className="rounded-md bg-[#efe7da] px-2 py-1 text-xs font-medium">
+                      <span className="rounded-md bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] px-2 py-1 text-xs font-medium">
                         {post.style_tags[0]}
                       </span>
                     ) : (
@@ -1609,7 +1609,7 @@ export default async function Home({
 
                   <div className="space-y-3 px-4 py-4">
                     {isPostLocked ? (
-                      <p className="rounded-md border border-[#e5c58f] bg-[#fff7ec] px-3 py-2 text-sm leading-6 text-[#7a4a08]">
+                      <p className="rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] px-3 py-2 text-sm leading-6 text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]">
                         Sensitive non-nude body-art media is blurred until you
                         sign in and confirm 18+.
                       </p>
@@ -1640,7 +1640,7 @@ export default async function Home({
                                 post.post_likes.some(
                                   (like) => like.user_id === claims?.sub,
                                 )
-                                  ? "fill-[#c8953b] text-[#c8953b]"
+                                  ? "fill-[var(--gold)] text-[var(--gold)]"
                                   : ""
                               }`}
                             />
@@ -1666,7 +1666,7 @@ export default async function Home({
                       </div>
                       <div className="flex items-center gap-2">
                         <Link
-                          className="flex h-9 items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold"
+                          className="flex h-9 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm font-semibold"
                           href={`/p/${post.id}`}
                         >
                           Open
@@ -1691,7 +1691,7 @@ export default async function Home({
                     ) : null}
                     <TranslationCue preferredLanguage={preferredLanguage} />
                     {!isPostLocked && visiblePostComments.length ? (
-                      <div className="space-y-2 border-t border-[#e5ded4] pt-3">
+                      <div className="space-y-2 border-t border-[var(--card-rim)] pt-3">
                         {visiblePostComments
                           .filter((comment) => !comment.parent_id)
                           .slice(0, 2)
@@ -1726,13 +1726,13 @@ export default async function Home({
                             {comment.body}
                             </span>
                           </div>
-                          <div className="ml-9 flex flex-wrap items-center gap-3 text-xs font-semibold text-[#766d62]">
+                          <div className="ml-9 flex flex-wrap items-center gap-3 text-xs font-semibold text-[var(--muted-strong)]">
                             <form action={togglePostCommentLike}>
                               <input name="comment_id" type="hidden" value={comment.id} />
                               <input name="liked" type="hidden" value={likedComment ? "true" : "false"} />
                               <input name="return_path" type="hidden" value="/#feed" />
                               <button className="flex items-center gap-1">
-                                <Heart className={`size-3.5 ${likedComment ? "fill-[#c8953b] text-[#c8953b]" : ""}`} />
+                                <Heart className={`size-3.5 ${likedComment ? "fill-[var(--gold)] text-[var(--gold)]" : ""}`} />
                                 {comment.post_comment_likes.length}
                               </button>
                             </form>
@@ -1744,7 +1744,7 @@ export default async function Home({
                                   <input name="parent_id" type="hidden" value={comment.id} />
                                   <input name="return_path" type="hidden" value="/#feed" />
                                   <WordLimitedField
-                                    className="h-9 w-full rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+                                    className="h-9 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-xs outline-none focus:border-[var(--foreground)]"
                                     emojiShortcuts
                                     maxLength={300}
                                     maxWords={40}
@@ -1756,7 +1756,7 @@ export default async function Home({
                                   />
                                   <PendingSubmitButton
                                     aria-label="Post reply"
-                                    className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                                    className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]"
                                     pendingChildren={<LoaderCircle className="size-4 animate-spin" />}
                                   >
                                     <Send className="size-4" />
@@ -1776,7 +1776,7 @@ export default async function Home({
                             />
                           </div>
                           {replies.length ? (
-                            <div className="ml-9 space-y-1 border-l border-[#e5ded4] pl-3">
+                            <div className="ml-9 space-y-1 border-l border-[var(--card-rim)] pl-3">
                               {replies.map((reply) => {
                                 const likedReply = reply.post_comment_likes.some(
                                   (like) => like.user_id === claims?.sub,
@@ -1784,7 +1784,7 @@ export default async function Home({
 
                                 return (
                                   <div
-                                    className="space-y-1 text-xs leading-5 text-[#4f473f]"
+                                    className="space-y-1 text-xs leading-5 text-[var(--muted)]"
                                     key={reply.id}
                                   >
                                     <div className="flex items-start justify-between gap-2">
@@ -1798,8 +1798,8 @@ export default async function Home({
                                         <input name="comment_id" type="hidden" value={reply.id} />
                                         <input name="liked" type="hidden" value={likedReply ? "true" : "false"} />
                                         <input name="return_path" type="hidden" value="/#feed" />
-                                        <button className="flex items-center gap-1 font-semibold text-[#766d62]">
-                                          <Heart className={`size-3 ${likedReply ? "fill-[#c8953b] text-[#c8953b]" : ""}`} />
+                                        <button className="flex items-center gap-1 font-semibold text-[var(--muted-strong)]">
+                                          <Heart className={`size-3 ${likedReply ? "fill-[var(--gold)] text-[var(--gold)]" : ""}`} />
                                           {reply.post_comment_likes.length}
                                         </button>
                                       </form>
@@ -1827,14 +1827,14 @@ export default async function Home({
                     {canCreate ? (
                       <form
                         action={createPostComment}
-                        className="border-t border-[#e5ded4] pb-24 pt-3 sm:pb-3"
+                        className="border-t border-[var(--card-rim)] pb-24 pt-3 sm:pb-3"
                         id={`comment-${post.id}`}
                       >
                         <input name="post_id" type="hidden" value={post.id} />
                         <input name="return_path" type="hidden" value="/#feed" />
                         <div className="flex items-start gap-2">
                           <WordLimitedField
-                            className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                            className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                             emojiShortcuts
                             maxLength={300}
                             maxWords={40}
@@ -1846,7 +1846,7 @@ export default async function Home({
                           />
                           <PendingSubmitButton
                             aria-label="Post comment"
-                            className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                            className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]"
                             pendingChildren={
                               <LoaderCircle className="size-4 animate-spin" />
                             }
@@ -1893,7 +1893,7 @@ export default async function Home({
           </section>
 
           <section
-            className="min-w-full snap-start snap-always border-l border-[#e5ded4] px-4 py-5"
+            className="min-w-full snap-start snap-always border-l border-[var(--card-rim)] px-4 py-5"
             id="threads"
           >
             <div className="mb-4 flex items-center gap-2">
@@ -1913,7 +1913,7 @@ export default async function Home({
                     return (
                     <div key={thread.id}>
                     <article
-                      className="ttc-card scroll-mt-28 rounded-md border border-[#cfc8bd] bg-white p-4"
+                      className="ttc-card scroll-mt-28 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-4"
                       id={`thread-${thread.id}`}
                     >
                       <div className="mb-2 flex items-center justify-between gap-3">
@@ -1932,7 +1932,7 @@ export default async function Home({
                             isSensitive={thread.is_sensitive}
                             visibility={thread.visibility}
                           />
-                          <p className="text-xs text-[#766d62]">
+                          <p className="text-xs text-[var(--muted-strong)]">
                             {timeAgo(thread.created_at)}
                           </p>
                         </div>
@@ -1940,7 +1940,7 @@ export default async function Home({
                       {!isThreadLocked ? (
                         <p className="text-sm leading-6">{thread.body}</p>
                       ) : (
-                        <p className="rounded-md border border-[#e5c58f] bg-[#fff7ec] px-3 py-2 text-sm leading-6 text-[#7a4a08]">
+                        <p className="rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] px-3 py-2 text-sm leading-6 text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]">
                           Sensitive non-nude body-art discussion is hidden
                           until you sign in and confirm 18+.
                         </p>
@@ -1952,7 +1952,7 @@ export default async function Home({
                         media={thread.thread_media[0]}
                         returnPath={`/?message=18%2B%20terms%20accepted.#thread-${thread.id}`}
                       />
-                      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[#e5ded4] pt-3">
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--card-rim)] pt-3">
                         <div className="flex flex-wrap items-center gap-4">
                           <form action={toggleThreadLike}>
                             <input
@@ -1982,7 +1982,7 @@ export default async function Home({
                                   thread.thread_likes.some(
                                     (like) => like.user_id === claims?.sub,
                                   )
-                                    ? "fill-[#c8953b] text-[#c8953b]"
+                                    ? "fill-[var(--gold)] text-[var(--gold)]"
                                     : ""
                                 }`}
                               />
@@ -2010,7 +2010,7 @@ export default async function Home({
                         </div>
                         <div className="flex items-center gap-2">
                           <Link
-                            className="flex h-9 items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold"
+                            className="flex h-9 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm font-semibold"
                             href={`/t/${thread.id}`}
                           >
                             Open
@@ -2052,7 +2052,7 @@ export default async function Home({
 
                               return (
                                 <div
-                                  className="rounded-md bg-[#f7f4ef] px-3 py-2"
+                                  className="rounded-md bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 py-2"
                                   key={comment.id}
                                 >
                                   <div className="flex items-start gap-2 text-sm leading-5">
@@ -2077,7 +2077,7 @@ export default async function Home({
                                       {comment.body}
                                     </span>
                                   </div>
-                                  <div className="ml-9 mt-2 flex flex-wrap items-center gap-3 text-xs font-semibold text-[#766d62]">
+                                  <div className="ml-9 mt-2 flex flex-wrap items-center gap-3 text-xs font-semibold text-[var(--muted-strong)]">
                                     <form action={toggleThreadCommentLike}>
                                       <input
                                         name="comment_id"
@@ -2098,7 +2098,7 @@ export default async function Home({
                                         <Heart
                                           className={`size-3.5 ${
                                             likedComment
-                                              ? "fill-[#c8953b] text-[#c8953b]"
+                                              ? "fill-[var(--gold)] text-[var(--gold)]"
                                               : ""
                                           }`}
                                         />
@@ -2130,7 +2130,7 @@ export default async function Home({
                                             value="/#threads"
                                           />
                                           <WordLimitedField
-                                            className="h-9 w-full rounded-md border border-[#d8d1c6] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+                                            className="h-9 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-xs outline-none focus:border-[var(--foreground)]"
                                             emojiShortcuts
                                             maxCharacters={2000}
                                             maxLength={2000}
@@ -2142,7 +2142,7 @@ export default async function Home({
                                           />
                                           <PendingSubmitButton
                                             aria-label="Post reply"
-                                            className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                                            className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]"
                                             pendingChildren={
                                               <LoaderCircle className="size-4 animate-spin" />
                                             }
@@ -2164,7 +2164,7 @@ export default async function Home({
                                     />
                                   </div>
                                   {replies.length ? (
-                                    <div className="ml-9 mt-2 space-y-1 border-l border-[#e5ded4] pl-3">
+                                    <div className="ml-9 mt-2 space-y-1 border-l border-[var(--card-rim)] pl-3">
                                       {replies.map((reply) => {
                                         const likedReply =
                                           reply.thread_comment_likes.some(
@@ -2173,7 +2173,7 @@ export default async function Home({
 
                                         return (
                                           <div
-                                            className="space-y-1 text-xs leading-5 text-[#4f473f]"
+                                            className="space-y-1 text-xs leading-5 text-[var(--muted)]"
                                             key={reply.id}
                                           >
                                             <div className="flex items-start justify-between gap-2">
@@ -2188,8 +2188,8 @@ export default async function Home({
                                                 <input name="comment_id" type="hidden" value={reply.id} />
                                                 <input name="liked" type="hidden" value={likedReply ? "true" : "false"} />
                                                 <input name="return_path" type="hidden" value="/#threads" />
-                                                <button className="flex items-center gap-1 font-semibold text-[#766d62]">
-                                                  <Heart className={`size-3 ${likedReply ? "fill-[#c8953b] text-[#c8953b]" : ""}`} />
+                                                <button className="flex items-center gap-1 font-semibold text-[var(--muted-strong)]">
+                                                  <Heart className={`size-3 ${likedReply ? "fill-[var(--gold)] text-[var(--gold)]" : ""}`} />
                                                   {reply.thread_comment_likes.length}
                                                 </button>
                                               </form>
@@ -2232,7 +2232,7 @@ export default async function Home({
                           />
                           <div className="flex items-start gap-2">
                             <WordLimitedField
-                              className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                              className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                               emojiShortcuts
                               maxCharacters={2000}
                               maxLength={2000}
@@ -2244,7 +2244,7 @@ export default async function Home({
                             />
                             <PendingSubmitButton
                               aria-label="Post thread reply"
-                              className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                              className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]"
                               pendingChildren={
                                 <LoaderCircle className="size-4 animate-spin" />
                               }
@@ -2289,7 +2289,7 @@ export default async function Home({
           </section>
 
           <section
-            className="min-w-full snap-start snap-always border-l border-[#e5ded4] px-4 py-5"
+            className="min-w-full snap-start snap-always border-l border-[var(--card-rim)] px-4 py-5"
             id="marketplace"
           >
             <div className="mb-4 flex items-center gap-2">
@@ -2304,7 +2304,7 @@ export default async function Home({
                     return (
                     <div key={listing.id}>
                     <article
-                      className="ttc-card scroll-mt-28 rounded-md border border-[#cfc8bd] bg-white p-4"
+                      className="ttc-card scroll-mt-28 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-4"
                       id={`stuff-${listing.id}`}
                     >
                       <div className="mb-3 flex items-center gap-3">
@@ -2322,7 +2322,7 @@ export default async function Home({
                             </Link>
                           </p>
                           <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                            <p className="text-xs capitalize text-[#766d62]">
+                            <p className="text-xs capitalize text-[var(--muted-strong)]">
                               {listing.category}
                             </p>
                             <ContentLabels
@@ -2336,16 +2336,16 @@ export default async function Home({
                         {formatPrice(listing)}
                       </p>
                       {!isListingLocked ? (
-                        <p className="line-clamp-3 text-sm leading-6 text-[#4f473f]">
+                        <p className="line-clamp-3 text-sm leading-6 text-[var(--muted)]">
                           {listing.description || "No description yet."}
                         </p>
                       ) : (
-                        <p className="rounded-md border border-[#e5c58f] bg-[#fff7ec] px-3 py-2 text-sm leading-6 text-[#7a4a08]">
+                        <p className="rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] px-3 py-2 text-sm leading-6 text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]">
                           Sensitive non-nude listing media is blurred until
                           login and 18+ confirmation.
                         </p>
                       )}
-                      <p className="mt-3 text-xs text-[#766d62]">
+                      <p className="mt-3 text-xs text-[var(--muted-strong)]">
                         {[listing.city, listing.region].filter(Boolean).join(", ") ||
                           listing.profiles?.display_name ||
                           "TheTattooCore"}
@@ -2353,7 +2353,7 @@ export default async function Home({
                       <div className="mt-2">
                         <VerifiedBadge profile={listing.profiles} />
                       </div>
-                      <p className="mt-2 rounded-md border border-[#e5ded4] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
+                      <p className="mt-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
                         Fans can browse. Seller contact, trades, purchases, and
                         professional equipment activity are verification-gated.
                       </p>
@@ -2370,7 +2370,7 @@ export default async function Home({
                       <div className="mt-4 grid gap-2">
                         {isSignedIn ? (
                           <SavedItemButton
-                            className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                            className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
                             hash="marketplace"
                             isSaved={savedItemKeys.has(
                               `marketplace_listing:${listing.id}`,
@@ -2381,13 +2381,13 @@ export default async function Home({
                           />
                         ) : null}
                         <Link
-                          className="flex h-10 w-full items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                          className="flex h-10 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
                           href={`/stuff/${listing.id}`}
                         >
                           Open listing
                         </Link>
                         <CompactShareButton
-                          className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                          className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
                           text={`Check this Stuff listing on ${siteName}: ${listing.title}`}
                           title={listing.title}
                           url={`${siteUrl}/stuff/${listing.id}`}
@@ -2422,28 +2422,28 @@ export default async function Home({
                               type="hidden"
                               value="marketplace_listing"
                             />
-                            <button className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+                            <button className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
                               <Send className="size-4" />
                               DM seller
                             </button>
                           </form>
                         ) : isSignedIn && canCreateStuff ? (
                           <Link
-                            className="flex h-10 w-full items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                            className="flex h-10 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
                             href="/messages"
                           >
                             Open DM
                           </Link>
                         ) : isSignedIn ? (
                           <Link
-                            className="flex h-10 w-full items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                            className="flex h-10 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
                             href="/account#verification-settings"
                           >
                             Verify to contact
                           </Link>
                         ) : (
                           <Link
-                            className="flex h-10 w-full items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                            className="flex h-10 w-full items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                             href="/login"
                           >
                             Sign in to message
@@ -2491,7 +2491,7 @@ export default async function Home({
           </section>
 
           <section
-            className="min-w-full snap-start snap-always border-l border-[#e5ded4] px-4 py-5"
+            className="min-w-full snap-start snap-always border-l border-[var(--card-rim)] px-4 py-5"
             id="gigs"
           >
             <div className="mb-4 flex items-center gap-2">
@@ -2505,7 +2505,7 @@ export default async function Home({
 
                     return (
                     <article
-                      className="ttc-card scroll-mt-28 rounded-md border border-[#cfc8bd] bg-white p-4"
+                      className="ttc-card scroll-mt-28 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-4"
                       id={`gig-${gig.id}`}
                       key={gig.id}
                     >
@@ -2522,7 +2522,7 @@ export default async function Home({
                             {gig.title}
                           </Link>
                           <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                            <p className="text-xs capitalize text-[#766d62]">
+                            <p className="text-xs capitalize text-[var(--muted-strong)]">
                               {formatGigCategory(gig.category)}
                             </p>
                             <ContentLabels
@@ -2532,23 +2532,23 @@ export default async function Home({
                           </div>
                         </div>
                       </div>
-                      <div className="mb-3 flex flex-wrap gap-2 text-xs text-[#766d62]">
-                        <span className="flex items-center gap-1 rounded-md bg-[#f7f4ef] px-2 py-1">
+                      <div className="mb-3 flex flex-wrap gap-2 text-xs text-[var(--muted-strong)]">
+                        <span className="flex items-center gap-1 rounded-md bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-2 py-1">
                           <CalendarDays className="size-3.5" />
                           {formatGigDate(gig)}
                         </span>
-                        <span className="rounded-md bg-[#f7f4ef] px-2 py-1">
+                        <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-2 py-1">
                           {[gig.city, gig.region].filter(Boolean).join(", ") ||
                             gig.country ||
                             "Remote / open"}
                         </span>
                       </div>
                       {!isGigLocked ? (
-                        <p className="line-clamp-4 text-sm leading-6 text-[#4f473f]">
+                        <p className="line-clamp-4 text-sm leading-6 text-[var(--muted)]">
                           {gig.description || "No details yet."}
                         </p>
                       ) : (
-                        <p className="rounded-md border border-[#e5c58f] bg-[#fff7ec] px-3 py-2 text-sm leading-6 text-[#7a4a08]">
+                        <p className="rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] px-3 py-2 text-sm leading-6 text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]">
                           Sensitive non-nude gig media is blurred until login
                           and 18+ confirmation.
                         </p>
@@ -2558,7 +2558,7 @@ export default async function Home({
                           {gig.compensation}
                         </p>
                       ) : null}
-                      <p className="mt-3 text-xs text-[#766d62]">
+                      <p className="mt-3 text-xs text-[var(--muted-strong)]">
                         Posted by{" "}
                         {gig.profiles?.display_name ?? "TheTattooCore member"} -{" "}
                         {timeAgo(gig.created_at)}
@@ -2585,7 +2585,7 @@ export default async function Home({
                             type="hidden"
                             value={gig.profiles.username}
                           />
-                          <button className="flex h-9 w-full items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold">
+                          <button className="flex h-9 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm font-semibold">
                             Archive gig
                           </button>
                         </form>
@@ -2593,7 +2593,7 @@ export default async function Home({
                       <div className="mt-4 grid gap-2">
                         {isSignedIn ? (
                           <SavedItemButton
-                            className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                            className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
                             hash="gigs"
                             isSaved={savedItemKeys.has(`gig:${gig.id}`)}
                             returnPath="/"
@@ -2602,20 +2602,20 @@ export default async function Home({
                           />
                         ) : null}
                         <Link
-                          className="flex h-10 w-full items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                          className="flex h-10 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
                           href={`/gigs/${gig.id}`}
                         >
                           Open gig
                         </Link>
                         <CompactShareButton
-                          className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                          className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
                           text={`Check this Gig on ${siteName}: ${gig.title}`}
                           title={gig.title}
                           url={`${siteUrl}/gigs/${gig.id}`}
                         />
                         {gig.contact_url ? (
                           <a
-                            className="flex h-10 w-full items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                            className="flex h-10 w-full items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                             href={gig.contact_url}
                             rel="noreferrer"
                             target="_blank"
@@ -2651,14 +2651,14 @@ export default async function Home({
                               type="hidden"
                               value="gig"
                             />
-                            <button className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+                            <button className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
                               <Send className="size-4" />
                               DM poster
                             </button>
                           </form>
                         ) : (
                           <Link
-                            className="flex h-10 w-full items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-4 text-sm font-semibold"
+                            className="flex h-10 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
                             href={isSignedIn ? "/messages" : "/login"}
                           >
                             {isSignedIn ? "Open DM" : "Sign in to respond"}
@@ -2698,7 +2698,7 @@ export default async function Home({
           </section>
 
           <section
-            className="min-w-full snap-start snap-always border-l border-[#e5ded4] px-4 py-5"
+            className="min-w-full snap-start snap-always border-l border-[var(--card-rim)] px-4 py-5"
             id="merch"
           >
             <div className="mb-4 flex items-center gap-2">
@@ -2713,8 +2713,8 @@ export default async function Home({
               tips={["T-shirts", "Prints", "TTC merch"]}
               title="Merch is planned"
             />
-            <div className="mt-4 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-4 text-sm leading-6 text-[#4f473f]">
-              <p className="font-semibold text-[#171412]">
+            <div className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 text-sm leading-6 text-[var(--muted)]">
+              <p className="font-semibold text-[var(--foreground)]">
                 Why Merch is separate from Stuff
               </p>
               <p className="mt-1">
@@ -2727,18 +2727,18 @@ export default async function Home({
           </section>
 
           <section
-            className="min-w-full snap-start snap-always border-l border-[#e5ded4] px-4 py-5"
+            className="min-w-full snap-start snap-always border-l border-[var(--card-rim)] px-4 py-5"
             id="messages"
           >
             <div className="mb-4 flex items-center gap-2">
               <Send className="size-5" />
               <h2 className="text-lg font-bold">DM</h2>
             </div>
-            <div className="rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4 text-sm leading-6 text-[#4f473f]">
+            <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-4 text-sm leading-6 text-[var(--muted)]">
               DMs are live. Start conversations, view your inbox,
               and reply from the dedicated messenger.
               <Link
-                className="mt-3 flex h-10 w-fit items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                className="mt-3 flex h-10 w-fit items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                 href="/messages"
               >
                 <Send className="size-4" />
@@ -2749,14 +2749,14 @@ export default async function Home({
           </ColumnSnapRail>
         </section>
 
-        <aside className="hidden bg-[#f2f1ee] px-5 py-6 lg:block">
+        <aside className="hidden bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] px-5 py-6 lg:block">
           <div className="mb-6">
             <Link
-              className="flex items-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 shadow-sm"
+              className="flex items-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 shadow-sm"
               href="/search"
             >
-              <Search className="size-4 text-[#766d62]" />
-              <span className="text-sm text-[#766d62]">
+              <Search className="size-4 text-[var(--muted-strong)]" />
+              <span className="text-sm text-[var(--muted-strong)]">
                 Search artists, styles, shops
               </span>
             </Link>
@@ -2771,7 +2771,7 @@ export default async function Home({
               {visibleThreadPosts.length ? (
                 visibleThreadPosts.slice(0, 4).map((thread) => (
                   <Link
-                    className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-3 text-sm leading-5"
+                    className="ttc-card block rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3 text-sm leading-5"
                     href={`/t/${thread.id}`}
                     key={thread.id}
                   >
@@ -2793,12 +2793,12 @@ export default async function Home({
               {visibleGigs.length ? (
                 visibleGigs.slice(0, 4).map((gig) => (
                   <Link
-                    className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-3"
+                    className="ttc-card block rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3"
                     href={`/gigs/${gig.id}`}
                     key={gig.id}
                   >
                     <p className="text-sm font-semibold">{gig.title}</p>
-                    <p className="mt-1 text-xs capitalize text-[#766d62]">
+                    <p className="mt-1 text-xs capitalize text-[var(--muted-strong)]">
                       {formatGigCategory(gig.category)} - {formatGigDate(gig)}
                     </p>
                   </Link>
@@ -2818,7 +2818,7 @@ export default async function Home({
               {visibleListings.length ? (
                 visibleListings.slice(0, 4).map((listing) => (
                   <Link
-                    className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-3"
+                    className="ttc-card block rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3"
                     href={`/stuff/${listing.id}`}
                     key={listing.id}
                   >
@@ -2826,7 +2826,7 @@ export default async function Home({
                       <ListingThumb media={listing.marketplace_media[0]} />
                       <div>
                         <p className="text-sm font-semibold">{listing.title}</p>
-                        <p className="text-xs capitalize text-[#766d62]">
+                        <p className="text-xs capitalize text-[var(--muted-strong)]">
                           {listing.category}
                         </p>
                       </div>
