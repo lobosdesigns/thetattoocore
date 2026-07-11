@@ -518,8 +518,8 @@ export default async function AdminMerchPage({
 
         {productError ? (
           <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] p-4 text-sm leading-6 text-[var(--muted)]">
-            Merch database tables are not live in Supabase yet. Apply the merch foundation
-            migration before products can appear here.
+            Merch products could not load. Check Supabase table access,
+            migrations, or the database error before reviewing products.
           </p>
         ) : null}
 

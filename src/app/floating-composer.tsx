@@ -369,7 +369,7 @@ export function FloatingComposer({
         ),
         merch: (
           <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-4">
-            <p className="text-sm font-semibold">Merch is planned next.</p>
+            <p className="text-sm font-semibold">Merch listings are approval-only.</p>
             <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
               Merch will be for public fan purchases like artist shirts, prints,
               art, stickers, vendor brand goods, and official TheTattooCore
@@ -377,8 +377,9 @@ export function FloatingComposer({
               professional equipment and trade.
             </p>
             <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] p-3 text-xs leading-5 text-[var(--muted)]">
-              Checkout, tax, shipping, refunds, seller approval, and payment
-              provider rules need to be built before live Merch listings turn on.
+              Stripe checkout is in test mode. Seller product creation stays
+              closed until approval, tax, shipping, refunds, fulfillment, and
+              payment-provider rules are ready.
             </p>
           </div>
         ),

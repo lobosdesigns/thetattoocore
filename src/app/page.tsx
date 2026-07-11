@@ -2273,8 +2273,8 @@ export default async function Home({
                 <div className="sm:col-span-2">
                   <EmptyColumnState
                     actionHref={isSignedIn ? undefined : "/login"}
-                    actionLabel={isSignedIn ? "Merch coming soon" : "Sign in"}
-                    body="Artist shirts, prints, art, stickers, vendor brand goods, and official TheTattooCore merchandise will live here. Merch is public-buyable and separate from verified-only Stuff."
+                    actionLabel={isSignedIn ? "Approval-only" : "Sign in"}
+                    body="Artist shirts, prints, art, stickers, vendor brand goods, and official TheTattooCore merchandise will live here. Merch is public-buyable, separate from verified-only Stuff, and checkout is in test mode."
                     icon={Package}
                     tips={["T-shirts", "Prints", "TTC merch"]}
                     title="No Merch yet"
@@ -2295,8 +2295,8 @@ export default async function Home({
               <p className="mt-1">
                 Stuff is for professional body-art goods, trade, and seller
                 contact that need verification. Merch is for safe fan-facing
-                brand products the public can buy once checkout, shipping,
-                taxes, refunds, and seller approval are ready.
+                brand products the public can buy after production seller
+                approval, shipping, taxes, refunds, and fulfillment rules are ready.
               </p>
             </div>
           </section>

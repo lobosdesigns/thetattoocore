@@ -410,7 +410,7 @@ export default async function SearchPage({
           <p className="mt-1 text-sm text-[var(--muted-strong)]">
             {hasSearch
               ? `${total} result${total === 1 ? "" : "s"} found`
-              : "Find public artists, styles, gossip, Stuff, and Gigs. Merch search is planned next."}
+              : "Find public artists, styles, gossip, Stuff, Gigs, and public Merch previews."}
           </p>
           <p className="ttc-surface mt-2 rounded-md border px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
             Search only shows public, non-sensitive previews. Member-only,
@@ -420,8 +420,9 @@ export default async function SearchPage({
           <div className="ttc-surface mt-3 flex items-start gap-2 rounded-md border px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
             <Package className="mt-0.5 size-4 shrink-0 text-[var(--brand-gold)]" />
             <p>
-              Merch discovery will join search after seller approval, checkout,
-              tax, shipping, refunds, and payment-provider rules are built.
+              Merch checkout is in test mode. Public discovery should stay
+              limited to active, safe, approved products until production
+              seller, tax, shipping, refund, and payment-provider rules are ready.
             </p>
           </div>
           <form
