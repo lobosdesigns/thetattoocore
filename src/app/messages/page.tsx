@@ -119,6 +119,9 @@ export default async function MessagesPage({
   const inboxPage = Math.max(1, Math.min(20, Number(params.inboxPage ?? "1") || 1));
   const conversationLimit = inboxPage * inboxPageSize;
   const messageWindowLimit = Math.min(conversationLimit * 25, 500);
+  const requestedConversationId = String(params.c ?? "")
+    .replace(/[^a-zA-Z0-9_-]/g, "")
+    .slice(0, 80);
   const prefillUsername = String(params.to ?? "")
     .replace(/^@/, "")
     .toLowerCase()
@@ -172,15 +175,35 @@ export default async function MessagesPage({
     );
   }
 
-  const { data: memberships } = await supabase
+  const { data: membershipRows } = await supabase
     .from("conversation_members")
     .select("conversation_id, created_at, last_read_at")
     .eq("user_id", claims.sub)
     .order("created_at", { ascending: false })
     .limit(conversationLimit)
     .returns<Membership[]>();
-  const conversationIds =
-    memberships?.map((membership) => membership.conversation_id) ?? [];
+  const memberships = [...(membershipRows ?? [])];
+
+  if (
+    requestedConversationId &&
+    !memberships.some(
+      (membership) => membership.conversation_id === requestedConversationId,
+    )
+  ) {
+    const { data: selectedMembership } = await supabase
+      .from("conversation_members")
+      .select("conversation_id, created_at, last_read_at")
+      .eq("user_id", claims.sub)
+      .eq("conversation_id", requestedConversationId)
+      .maybeSingle<Membership>();
+
+    if (selectedMembership) {
+      memberships.unshift(selectedMembership);
+    }
+  }
+  const conversationIds = memberships.map(
+    (membership) => membership.conversation_id,
+  );
 
   const [
     { data: members },
@@ -246,7 +269,7 @@ export default async function MessagesPage({
     }
   }
 
-  const inbox = (memberships ?? [])
+  const inbox = memberships
     .map((membership) => {
       const conversationMembers =
         members?.filter(
@@ -278,9 +301,10 @@ export default async function MessagesPage({
       return bTime - aTime;
     });
 
-  const hasSelectedConversationParam = Boolean(params.c);
+  const hasSelectedConversationParam = Boolean(requestedConversationId);
   const selectedConversation =
-    inbox.find((conversation) => conversation.id === params.c) ?? inbox[0];
+    inbox.find((conversation) => conversation.id === requestedConversationId) ??
+    inbox[0];
 
   if (selectedConversation) {
     const readAt = new Date().toISOString();
@@ -502,7 +526,7 @@ export default async function MessagesPage({
               </div>
             )}
           </section>
-          {(memberships?.length ?? 0) >= conversationLimit ? (
+          {memberships.length >= conversationLimit ? (
             <div className="border-t border-[#cfc8bd] bg-[#f2f1ee] px-4 py-4">
               <Link
                 className="flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-4 text-sm font-bold shadow-sm hover:bg-white"
