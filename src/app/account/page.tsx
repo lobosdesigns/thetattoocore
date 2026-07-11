@@ -19,6 +19,7 @@ type Claims = {
 };
 
 const adminRoles = ["moderator", "admin", "owner"];
+const adPageSize = 25;
 const orderPageSize = 25;
 const accountNavItems = [
   ["#profile-settings", "Profile"],
@@ -41,8 +42,12 @@ function limitParam(value: string | string[] | undefined) {
   return Math.max(orderPageSize, Math.min(250, parsed));
 }
 
-function orderLimitHref(limit: number) {
-  return `/account?orders=${limit}#order-settings`;
+function adLimitHref({ adLimit, orderLimit }: { adLimit: number; orderLimit: number }) {
+  return `/account?ads=${adLimit}&orders=${orderLimit}#advertising-settings`;
+}
+
+function orderLimitHref({ adLimit, orderLimit }: { adLimit: number; orderLimit: number }) {
+  return `/account?ads=${adLimit}&orders=${orderLimit}#order-settings`;
 }
 
 function AccountSetupGuide({
@@ -299,9 +304,14 @@ function AccountReadinessPanel({
 export default async function AccountPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string; orders?: string | string[] }>;
+  searchParams: Promise<{
+    ads?: string | string[];
+    message?: string;
+    orders?: string | string[];
+  }>;
 }) {
   const params = await searchParams;
+  const adLimit = limitParam(params.ads);
   const orderLimit = limitParam(params.orders);
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -347,7 +357,7 @@ export default async function AccountPage({
     )
     .eq("advertiser_id", claims.sub)
     .order("created_at", { ascending: false })
-    .limit(5)
+    .limit(adLimit + 1)
     .returns<
       {
         ad_events: { event_type: "impression" | "click" | "message_lead" }[];
@@ -443,6 +453,8 @@ export default async function AccountPage({
   const hasMoreMerchOrders = (merchOrders?.length ?? 0) > orderLimit;
   const visibleMerchSales = (merchSales ?? []).slice(0, orderLimit);
   const hasMoreMerchSales = (merchSales?.length ?? 0) > orderLimit;
+  const visibleAdCampaigns = (adCampaigns ?? []).slice(0, adLimit);
+  const hasMoreAdCampaigns = (adCampaigns?.length ?? 0) > adLimit;
   const canSubmitLicense =
     profile?.account_type &&
     verificationEligibleAccountTypes.includes(profile.account_type as string);
@@ -604,7 +616,10 @@ export default async function AccountPage({
           {hasMoreMerchOrders ? (
             <Link
               className="mt-4 flex h-11 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-4 text-sm font-semibold"
-              href={orderLimitHref(orderLimit + orderPageSize)}
+              href={orderLimitHref({
+                adLimit,
+                orderLimit: orderLimit + orderPageSize,
+              })}
             >
               Load {orderPageSize} more orders
             </Link>
@@ -687,7 +702,10 @@ export default async function AccountPage({
             {hasMoreMerchSales ? (
               <Link
                 className="mt-4 flex h-11 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-4 text-sm font-semibold"
-                href={orderLimitHref(orderLimit + orderPageSize)}
+                href={orderLimitHref({
+                  adLimit,
+                  orderLimit: orderLimit + orderPageSize,
+                })}
               >
                 Load {orderPageSize} more sales
               </Link>
@@ -1000,6 +1018,9 @@ export default async function AccountPage({
               <span className="w-fit rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1 text-xs font-semibold">
                 {canSubmitAds ? "Open" : "Locked"}
               </span>
+              <span className="w-fit rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1 text-xs font-semibold">
+                Latest {visibleAdCampaigns.length || adLimit}
+              </span>
             </div>
             <p className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">
               Verified artists, studios, and vendors can submit simple campaigns
@@ -1028,9 +1049,9 @@ export default async function AccountPage({
             </div>
           </div>
 
-          {adCampaigns?.length ? (
+          {visibleAdCampaigns.length ? (
             <div className="mb-5 grid gap-3">
-              {adCampaigns.map((campaign) => {
+              {visibleAdCampaigns.map((campaign) => {
                 const clicks = campaign.ad_events.filter(
                   (event) => event.event_type === "click",
                 ).length;
@@ -1108,6 +1129,18 @@ export default async function AccountPage({
                 );
               })}
             </div>
+          ) : null}
+
+          {hasMoreAdCampaigns ? (
+            <Link
+              className="mb-5 flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
+              href={adLimitHref({
+                adLimit: adLimit + adPageSize,
+                orderLimit,
+              })}
+            >
+              Load {adPageSize} more ads
+            </Link>
           ) : null}
 
           {!canSubmitAds ? (
