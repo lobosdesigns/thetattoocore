@@ -1460,18 +1460,7 @@ export async function archiveMerchProduct(formData: FormData) {
     );
   }
 
-  const adminClient = createAdminClient();
-
-  if (!adminClient) {
-    redirect(
-      redirectWithMessage({
-        message: "Merch archiving needs the server service key configured first.",
-        path: `/merch/${productId}`,
-      }),
-    );
-  }
-
-  const { data: archivedProduct, error } = await adminClient
+  const { data: archivedProduct, error } = await supabase
     .from("merch_products")
     .update({
       is_indexable: false,
