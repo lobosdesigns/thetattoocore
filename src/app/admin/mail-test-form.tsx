@@ -50,7 +50,7 @@ export function MailTestForm({
         Test recipient
       </label>
       <input
-        className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+        className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
         disabled={disabled || status === "sending"}
         id="mail-test-email"
         onChange={(event) => setRecipientEmail(event.target.value)}
@@ -59,7 +59,7 @@ export function MailTestForm({
         value={recipientEmail}
       />
       <button
-        className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)] disabled:cursor-not-allowed disabled:opacity-60"
         disabled={disabled || status === "sending"}
         type="submit"
       >
@@ -69,7 +69,7 @@ export function MailTestForm({
       {message ? (
         <p
           className={`text-sm ${
-            status === "error" ? "text-red-700" : "text-[#37614b]"
+            status === "error" ? "text-red-700" : "text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]"
           }`}
         >
           {message}
