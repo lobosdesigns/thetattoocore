@@ -899,7 +899,10 @@ export default async function AccountPage({
             ) : null}
 
             {canUploadVerification ? (
-              <form action={submitLicenseVerification} className="grid gap-4">
+              <form
+                action={submitLicenseVerification}
+                className="grid gap-4"
+              >
                 {latestVerificationRequest?.status === "rejected" ? (
                   <p className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 text-sm leading-6 text-[var(--muted)]">
                     Submit updated proof after fixing the last rejection note.

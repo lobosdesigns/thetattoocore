@@ -24,8 +24,12 @@ export function PendingSubmitButton({
     <button
       {...props}
       aria-busy={pending}
-      className={`${className ?? ""} disabled:cursor-not-allowed disabled:opacity-70`}
+      className={`${className ?? ""} disabled:cursor-not-allowed disabled:opacity-100`}
       disabled={disabled || pending}
+      style={{
+        WebkitTextFillColor: "currentColor",
+        ...props.style,
+      }}
       type={props.type ?? "submit"}
     >
       {pending && pendingChildren ? (

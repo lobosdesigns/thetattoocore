@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
+type AccountType = "artist" | "enthusiast" | "studio" | "supplier" | "vendor";
 type SubjectType =
   | "feed_post"
   | "gig"
@@ -62,6 +63,13 @@ const licenseStatuses = new Set<LicenseVerificationStatus>([
 const verificationEligibleAccountTypes = new Set(["artist", "studio", "vendor"]);
 const roleStatuses = new Set<UserRole>(["user", "moderator", "admin", "owner"]);
 const userStatuses = new Set<UserStatus>(["active", "suspended", "banned"]);
+const accountTypes = new Set<AccountType>([
+  "artist",
+  "enthusiast",
+  "studio",
+  "supplier",
+  "vendor",
+]);
 const adCampaignStatuses = new Set<AdCampaignStatus>([
   "approved",
   "active",
@@ -567,6 +575,115 @@ export async function changeUserStatus(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/admin/users");
   redirect(adminUsersMessage("User status updated.", returnTo));
+}
+
+export async function createTestAccount(formData: FormData) {
+  const email = cleanText(formData.get("email"), 254).toLowerCase();
+  const password = cleanText(formData.get("password"), 128);
+  const username = cleanText(formData.get("username"), 30).toLowerCase();
+  const displayName = cleanText(formData.get("display_name"), 80);
+  const accountType = cleanText(formData.get("account_type"), 40) as AccountType;
+  const returnTo = cleanText(formData.get("return_to"), 120);
+
+  if (!isEmail(email)) {
+    redirect(adminUsersMessage("Enter a valid tester email.", returnTo));
+  }
+
+  if (password.length < 8) {
+    redirect(adminUsersMessage("Tester password must be at least 8 characters.", returnTo));
+  }
+
+  if (!/^[a-z0-9_]{3,30}$/.test(username)) {
+    redirect(
+      adminUsersMessage(
+        "Tester username must be 3-30 lowercase letters, numbers, or underscores.",
+        returnTo,
+      ),
+    );
+  }
+
+  if (!displayName || !accountTypes.has(accountType)) {
+    redirect(adminUsersMessage("Add a display name and valid account type.", returnTo));
+  }
+
+  const { supabase, userId } = await requireOwner();
+  const adminClient = createAdminClient();
+
+  if (!adminClient) {
+    redirect(
+      adminUsersMessage(
+        "Supabase service role key is missing, so Admin cannot create tester accounts yet.",
+        returnTo,
+      ),
+    );
+  }
+
+  const { data: existingProfile } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("username", username)
+    .maybeSingle<{ id: string }>();
+
+  if (existingProfile) {
+    redirect(adminUsersMessage("That username is already taken.", returnTo));
+  }
+
+  const { data: createdUser, error: createError } =
+    await adminClient.auth.admin.createUser({
+      email,
+      email_confirm: true,
+      password,
+      user_metadata: {
+        full_name: displayName,
+      },
+    });
+
+  const profileId = createdUser.user?.id;
+
+  if (createError || !profileId) {
+    redirect(
+      adminUsersMessage(
+        createError?.message || "Could not create tester account.",
+        returnTo,
+      ),
+    );
+  }
+
+  const { error: updateError } = await adminClient
+    .from("profiles")
+    .update({
+      account_type: accountType,
+      display_name: displayName,
+      username,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", profileId);
+
+  if (updateError) {
+    await adminClient.auth.admin.deleteUser(profileId);
+    redirect(
+      adminUsersMessage(
+        updateError.message || "Created auth user, but profile setup failed.",
+        returnTo,
+      ),
+    );
+  }
+
+  await supabase.from("admin_audit_logs").insert({
+    actor_id: userId,
+    event_type: "tester_account_created",
+    metadata: {
+      account_type: accountType,
+      email,
+      username,
+    },
+    target_id: profileId,
+    target_type: "profile",
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/users");
+  redirect(adminUsersMessage(`Tester @${username} created.`, returnTo));
 }
 
 export async function moderateContent(formData: FormData) {

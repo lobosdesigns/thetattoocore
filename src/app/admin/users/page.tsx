@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ArrowLeft, ChevronLeft, ChevronRight, ShieldCheck, Users } from "lucide-react";
 import { AdminSectionNav } from "../admin-section-nav";
-import { changeUserRole, changeUserStatus } from "../actions";
+import { changeUserRole, changeUserStatus, createTestAccount } from "../actions";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -168,6 +168,7 @@ export default async function AdminUsersPage({
   const totalPages = Math.max(1, Math.ceil(totalUsers / pageSize));
   const hasNextPage = currentPage < totalPages;
   const canManageRoles = profile.role === "owner";
+  const canCreateTestAccounts = canManageRoles && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -240,6 +241,106 @@ export default async function AdminUsersPage({
             Owner role required to promote admins or moderators. Moderators can
             still restore, suspend, ban, and note accounts.
           </p>
+        ) : null}
+
+        {canManageRoles ? (
+          <section className="ttc-card mt-4 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-strong)]">
+                  Owner tools
+                </p>
+                <h2 className="mt-1 text-xl font-bold">Create tester account</h2>
+                <p className="mt-1 text-sm text-[var(--muted-strong)]">
+                  Make confirmed QA or demo users without opening Supabase.
+                </p>
+              </div>
+              <span
+                className={`w-fit rounded-md border px-3 py-2 text-xs font-semibold ${
+                  canCreateTestAccounts
+                    ? "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_14%,var(--paper-warm))] text-[var(--foreground)]"
+                    : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[var(--muted-strong)]"
+                }`}
+              >
+                {canCreateTestAccounts ? "Service key ready" : "Needs service key"}
+              </span>
+            </div>
+
+            <form
+              action={createTestAccount}
+              className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]"
+            >
+              <input name="return_to" type="hidden" value={pageHref(currentPage)} />
+              <label className="grid gap-1 text-sm font-semibold">
+                Email
+                <input
+                  className="h-11 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+                  name="email"
+                  placeholder="tester@example.com"
+                  required
+                  type="email"
+                />
+              </label>
+              <label className="grid gap-1 text-sm font-semibold">
+                Username
+                <input
+                  className="h-11 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+                  maxLength={30}
+                  minLength={3}
+                  name="username"
+                  pattern="[a-z0-9_]{3,30}"
+                  placeholder="ttc_tester"
+                  required
+                />
+              </label>
+              <label className="grid gap-1 text-sm font-semibold">
+                Display
+                <input
+                  className="h-11 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+                  maxLength={80}
+                  name="display_name"
+                  placeholder="TTC Tester"
+                  required
+                />
+              </label>
+              <label className="grid gap-1 text-sm font-semibold">
+                Type
+                <select
+                  className="h-11 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+                  defaultValue="enthusiast"
+                  name="account_type"
+                >
+                  {["enthusiast", "artist", "studio", "vendor"].map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="grid gap-1 text-sm font-semibold lg:min-w-44">
+                Password
+                <input
+                  className="h-11 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+                  minLength={8}
+                  name="password"
+                  required
+                  type="password"
+                />
+              </label>
+              <button
+                className="h-11 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)] disabled:bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--foreground)_10%)] disabled:text-[var(--muted-strong)] lg:col-start-5"
+                disabled={!canCreateTestAccounts}
+              >
+                Create
+              </button>
+            </form>
+            {!canCreateTestAccounts ? (
+              <p className="mt-3 text-xs font-medium text-[var(--muted-strong)]">
+                Add `SUPABASE_SERVICE_ROLE_KEY` as a server-only Cloudflare secret
+                to enable this. Public browser keys cannot create confirmed users.
+              </p>
+            ) : null}
+          </section>
         ) : null}
 
         <section className="mt-4 grid gap-3">
