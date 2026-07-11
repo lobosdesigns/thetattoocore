@@ -54,10 +54,10 @@ function pageHref(page: number) {
 function statusClass(user: AdminUser) {
   const status = userStatus(user);
 
-  if (status === "active") return "bg-[#efe7da] text-[#4f473f]";
-  if (status === "suspended") return "bg-[#fff1c7] text-[#6f5200]";
+  if (status === "active") return "bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] text-[var(--muted)]";
+  if (status === "suspended") return "bg-[color-mix(in_srgb,var(--gold)_22%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]";
 
-  return "bg-[#f6dfdf] text-[#8a2828]";
+  return "bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]";
 }
 
 function Pagination({
@@ -70,8 +70,8 @@ function Pagination({
   totalPages: number;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm font-semibold text-[#4f473f]">
+    <div className="flex flex-col gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm font-semibold text-[var(--muted)]">
         Page {currentPage} of {Math.max(totalPages, 1)}
       </p>
       <div className="flex gap-2">
@@ -79,8 +79,8 @@ function Pagination({
           aria-disabled={currentPage <= 1}
           className={`flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold ${
             currentPage <= 1
-              ? "pointer-events-none border-[#e5ded4] bg-[#f7f4ef] text-[#a69b8d]"
-              : "border-[#cfc8bd] bg-white text-[#171412]"
+              ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
+              : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
           }`}
           href={pageHref(Math.max(1, currentPage - 1))}
         >
@@ -91,8 +91,8 @@ function Pagination({
           aria-disabled={!hasNextPage}
           className={`flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold ${
             !hasNextPage
-              ? "pointer-events-none border-[#e5ded4] bg-[#f7f4ef] text-[#a69b8d]"
-              : "border-[#171412] bg-[#171412] text-white"
+              ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
+              : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
           }`}
           href={pageHref(currentPage + 1)}
         >
@@ -171,56 +171,56 @@ export default async function AdminUsersPage({
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
       <section className="ttc-page-panel mx-auto min-h-screen w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className="mb-6 flex flex-col gap-4 border-b border-[#cfc8bd] pb-5 md:flex-row md:items-center md:justify-between">
+        <header className="mb-6 flex flex-col gap-4 border-b border-[var(--card-rim)] pb-5 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <Link
               aria-label="Back to admin dashboard"
-              className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
+              className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)]"
               href="/admin"
             >
               <ArrowLeft className="size-5" />
             </Link>
             <div className="min-w-0">
-              <p className="text-sm font-semibold uppercase tracking-wide text-[#766d62]">
+              <p className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-strong)]">
                 Admin
               </p>
               <h1 className="text-2xl font-bold sm:text-3xl">Users</h1>
-              <p className="mt-1 text-sm text-[#766d62]">
+              <p className="mt-1 text-sm text-[var(--muted-strong)]">
                 50 accounts per page for role, suspension, ban, and moderation-note review.
               </p>
             </div>
           </div>
-          <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-sm">
+          <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 text-sm">
             <p className="font-semibold">{profile.display_name}</p>
-            <p className="text-xs text-[#766d62]">
+            <p className="text-xs text-[var(--muted-strong)]">
               @{profile.username} - {profile.role}
             </p>
           </div>
         </header>
 
         {params.message ? (
-          <p className="mb-4 rounded-md border border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 text-sm font-medium">
+          <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">
             {params.message}
           </p>
         ) : null}
 
         <div className="mb-4 grid gap-3 sm:grid-cols-3">
-          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
-            <p className="text-sm text-[#766d62]">Total accounts</p>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <p className="text-sm text-[var(--muted-strong)]">Total accounts</p>
             <p className="mt-2 text-3xl font-bold">
               {Intl.NumberFormat("en-US").format(totalUsers)}
             </p>
           </div>
-          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
-            <p className="text-sm text-[#766d62]">Showing</p>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <p className="text-sm text-[var(--muted-strong)]">Showing</p>
             <p className="mt-2 text-3xl font-bold">
               {users.length ? `${from + 1}-${from + users.length}` : "0"}
             </p>
           </div>
-          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
-            <p className="text-sm text-[#766d62]">Role tools</p>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <p className="text-sm text-[var(--muted-strong)]">Role tools</p>
             <p className="mt-2 flex items-center gap-2 text-lg font-bold">
-              <ShieldCheck className="size-5 text-[#c8953b]" />
+              <ShieldCheck className="size-5 text-[var(--gold)]" />
               {canManageRoles ? "Owner enabled" : "Moderator safety only"}
             </p>
           </div>
@@ -233,7 +233,7 @@ export default async function AdminUsersPage({
         />
 
         {!canManageRoles ? (
-          <p className="mt-4 rounded-md border border-[#e5ded4] bg-white p-3 text-sm text-[#4f473f]">
+          <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3 text-sm text-[var(--muted)]">
             Owner role required to promote admins or moderators. Moderators can
             still restore, suspend, ban, and note accounts.
           </p>
@@ -242,17 +242,17 @@ export default async function AdminUsersPage({
         <section className="mt-4 grid gap-3">
           {users.map((user) => (
             <article
-              className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4"
+              className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4"
               key={user.id}
             >
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Users className="size-4 text-[#c8953b]" />
+                    <Users className="size-4 text-[var(--gold)]" />
                     <p className="truncate text-base font-bold">
                       {user.displayName}
                     </p>
-                    <span className="rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-semibold capitalize text-[#4f473f]">
+                    <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold capitalize text-[var(--muted)]">
                       {user.role}
                     </span>
                     <span
@@ -263,18 +263,18 @@ export default async function AdminUsersPage({
                       {userStatus(user)}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm text-[#766d62]">
+                  <p className="mt-1 text-sm text-[var(--muted-strong)]">
                     @{user.username} - {user.accountType} - joined{" "}
                     {new Date(user.createdAt).toLocaleDateString()}
                   </p>
                   {user.moderationNote ? (
-                    <p className="mt-3 rounded-md border border-[#e5ded4] bg-white px-3 py-2 text-xs leading-5 text-[#766d62]">
+                    <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
                       {user.moderationNote}
                     </p>
                   ) : null}
                 </div>
                 <Link
-                  className="h-10 w-fit rounded-md border border-[#cfc8bd] bg-white px-4 py-2 text-sm font-semibold"
+                  className="h-10 w-fit rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 py-2 text-sm font-semibold"
                   href={`/u/${user.username}`}
                 >
                   View profile
@@ -290,7 +290,7 @@ export default async function AdminUsersPage({
                     <input name="profile_id" type="hidden" value={user.id} />
                     <input name="return_to" type="hidden" value={pageHref(currentPage)} />
                     <select
-                      className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                      className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                       defaultValue={user.role}
                       name="role"
                     >
@@ -300,7 +300,7 @@ export default async function AdminUsersPage({
                         </option>
                       ))}
                     </select>
-                    <button className="h-10 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+                    <button className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
                       Update role
                     </button>
                   </form>
@@ -311,7 +311,7 @@ export default async function AdminUsersPage({
                   <input name="profile_id" type="hidden" value={user.id} />
                   <input name="return_to" type="hidden" value={pageHref(currentPage)} />
                   <input
-                    className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     maxLength={500}
                     name="note"
                     placeholder="Moderation note"
@@ -323,7 +323,7 @@ export default async function AdminUsersPage({
                       ["banned", "Ban"],
                     ].map(([value, label]) => (
                       <button
-                        className="h-10 rounded-md border border-[#d8d1c6] bg-white px-2 text-sm font-semibold hover:bg-[#f7f4ef]"
+                        className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)]"
                         key={value}
                         name="status"
                         value={value}
