@@ -9,6 +9,10 @@ function stripeResponse(message: string, status = 200) {
   return NextResponse.json({ message }, { status });
 }
 
+type PaidOrderTransition = {
+  id: string;
+};
+
 async function markCheckoutSession({
   session,
   status,
@@ -61,13 +65,36 @@ async function markCheckoutSession({
     ...(status === "cancelled" ? { cancelled_at: now } : {}),
   };
 
-  const { error } = await supabase
+  const query = supabase
     .from("merch_orders")
     .update(updateValues)
     .eq("stripe_checkout_session_id", session.id);
+  const { data: transitionedPaidOrders, error } =
+    status === "paid"
+      ? await query
+          .neq("status", "paid")
+          .neq("status", "fulfilled")
+          .select("id")
+          .returns<PaidOrderTransition[]>()
+      : await query.select("id").returns<PaidOrderTransition[]>();
 
   if (error) {
     throw new Error(error.message || "Could not update merch order.");
+  }
+
+  if (status === "paid") {
+    for (const order of transitionedPaidOrders ?? []) {
+      const { error: inventoryError } = await supabase.rpc(
+        "decrement_merch_inventory_for_order",
+        { p_order_id: order.id },
+      );
+
+      if (inventoryError) {
+        throw new Error(
+          inventoryError.message || "Could not update merch inventory.",
+        );
+      }
+    }
   }
 }
 
