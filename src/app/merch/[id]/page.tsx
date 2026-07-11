@@ -1,7 +1,16 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BadgeCheck, ImageIcon, Package, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  BadgeCheck,
+  ImageIcon,
+  Package,
+  Pencil,
+  ShieldCheck,
+  Trash2,
+} from "lucide-react";
+import { archiveMerchProduct, editMerchProduct } from "@/app/actions";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { ProtectedVideo } from "@/app/protected-video";
@@ -46,6 +55,9 @@ type MerchProduct = {
   merch_product_media: MerchMedia[];
   price_cents: number;
   profiles: Profile | null;
+  ships_from_city: string | null;
+  ships_from_region: string | null;
+  status: string;
   title: string;
 };
 
@@ -71,6 +83,19 @@ function formatCategory(value: string) {
   return value.replaceAll("_", " ");
 }
 
+function priceInputValue(product: Pick<MerchProduct, "price_cents">) {
+  return String(product.price_cents / 100);
+}
+
+const merchCategoryOptions = [
+  ["apparel", "Apparel"],
+  ["print", "Print"],
+  ["art", "Art"],
+  ["sticker", "Sticker"],
+  ["accessory", "Accessory"],
+  ["other", "Other"],
+] as const;
+
 function VerifiedBadge({ profile }: { profile?: Profile | null }) {
   if (!isVerifiedProfessional(profile)) return null;
 
@@ -87,7 +112,7 @@ async function getProduct(id: string) {
   const { data } = await supabase
     .from("merch_products")
     .select(
-      "id, title, description, category, price_cents, currency, inventory_quantity, inventory_reserved, is_official, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, account_type, license_verified_at)",
+      "id, title, description, category, status, price_cents, currency, inventory_quantity, inventory_reserved, ships_from_city, ships_from_region, is_official, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, account_type, license_verified_at)",
     )
     .eq("id", id)
     .eq("status", "active")
@@ -272,6 +297,116 @@ export default async function MerchProductPage({
                   ? `${Intl.NumberFormat("en-US").format(available)} available`
                   : "Sold out"}
               </p>
+
+              {isOwnProduct ? (
+                <details className="mt-5 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-4">
+                  <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-bold">
+                    <Pencil className="size-4" />
+                    Manage Merch
+                  </summary>
+                  <p className="mt-3 rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_28%,var(--card-rim))] bg-[color-mix(in_srgb,var(--brand-gold)_10%,var(--paper-warm))] p-3 text-xs leading-5 text-[var(--muted-strong)]">
+                    Saving an active or approved product sends it back to admin
+                    review before checkout opens again.
+                  </p>
+                  <form action={editMerchProduct} className="mt-4 space-y-3">
+                    <input name="product_id" type="hidden" value={product.id} />
+                    <input
+                      name="return_path"
+                      type="hidden"
+                      value={`/merch/${product.id}`}
+                    />
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Title
+                      <input
+                        className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                        defaultValue={product.title}
+                        maxLength={120}
+                        name="title"
+                        required
+                      />
+                    </label>
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Category
+                      <select
+                        className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                        defaultValue={product.category}
+                        name="category"
+                      >
+                        {merchCategoryOptions.map(([value, label]) => (
+                          <option key={value} value={value}>
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Description
+                      <textarea
+                        className="mt-1 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 py-3 text-sm text-[var(--foreground)]"
+                        defaultValue={product.description ?? ""}
+                        maxLength={4000}
+                        name="description"
+                        placeholder="Add sizing, materials, shipping notes, or edition info."
+                        rows={6}
+                      />
+                    </label>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                        Price
+                        <input
+                          className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                          defaultValue={priceInputValue(product)}
+                          inputMode="decimal"
+                          maxLength={20}
+                          name="price"
+                          required
+                        />
+                      </label>
+                      <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                        Inventory
+                        <input
+                          className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                          defaultValue={product.inventory_quantity}
+                          min={product.inventory_reserved}
+                          name="inventory_quantity"
+                          required
+                          type="number"
+                        />
+                      </label>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                        Ships from city
+                        <input
+                          className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                          defaultValue={product.ships_from_city ?? ""}
+                          maxLength={80}
+                          name="ships_from_city"
+                        />
+                      </label>
+                      <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                        Ships from region
+                        <input
+                          className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                          defaultValue={product.ships_from_region ?? ""}
+                          maxLength={80}
+                          name="ships_from_region"
+                        />
+                      </label>
+                    </div>
+                    <button className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
+                      Save changes
+                    </button>
+                  </form>
+                  <form action={archiveMerchProduct} className="mt-4">
+                    <input name="product_id" type="hidden" value={product.id} />
+                    <button className="inline-flex h-10 items-center gap-2 rounded-md border border-[color-mix(in_srgb,#ef4444_38%,var(--card-rim))] px-4 text-sm font-semibold text-[var(--foreground)]">
+                      <Trash2 className="size-4" />
+                      Archive Merch
+                    </button>
+                  </form>
+                </details>
+              ) : null}
             </section>
           </div>
 

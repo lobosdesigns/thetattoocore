@@ -9,6 +9,7 @@ import {
   notificationPreferenceSelect,
   type NotificationPreferenceProfile,
 } from "@/lib/notifications";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
 
@@ -28,6 +29,15 @@ const SAVED_SUBJECT_TYPES = new Set([
   "marketplace_listing",
   "profile",
   "thread_post",
+]);
+const MERCH_CATEGORIES = new Set([
+  "accessory",
+  "apparel",
+  "art",
+  "official",
+  "other",
+  "print",
+  "sticker",
 ]);
 const REPORT_REASONS = new Set([
   "sensitive non-nude body-art",
@@ -1104,6 +1114,254 @@ export async function archiveGigFromDetail(formData: FormData) {
   revalidatePath("/");
   revalidatePath(`/gigs/${gigId}`);
   redirect(homeMessage("Gig archived.", "gigs"));
+}
+
+export async function editMerchProduct(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const productId = cleanId(formData.get("product_id"));
+  const returnPath =
+    cleanText(formData.get("return_path"), 200) ||
+    (productId ? `/merch/${productId}` : "/#merch");
+  const title = cleanText(formData.get("title"), 120);
+  const description = cleanText(formData.get("description"), 4000);
+  const rawCategory = cleanText(formData.get("category"), 40);
+  const category = MERCH_CATEGORIES.has(rawCategory) ? rawCategory : "other";
+  const priceInput = cleanText(formData.get("price"), 20).replace(/[$,]/g, "");
+  const priceNumber = priceInput ? Number(priceInput) : NaN;
+  const priceCents = Number.isFinite(priceNumber)
+    ? Math.max(0, Math.round(priceNumber * 100))
+    : null;
+  const inventoryInput = cleanText(formData.get("inventory_quantity"), 12);
+  const inventoryNumber = inventoryInput ? Number(inventoryInput) : NaN;
+  const inventoryQuantity = Number.isFinite(inventoryNumber)
+    ? Math.max(0, Math.floor(inventoryNumber))
+    : null;
+  const shipsFromCity = cleanText(formData.get("ships_from_city"), 80);
+  const shipsFromRegion = cleanText(formData.get("ships_from_region"), 80);
+
+  if (!productId) {
+    redirect(homeMessage("Choose a Merch product first.", "merch"));
+  }
+
+  if (title.length < 3) {
+    redirect(
+      redirectWithMessage({
+        message: "Merch title needs at least 3 characters.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  if (priceCents == null) {
+    redirect(
+      redirectWithMessage({
+        message: "Add a valid Merch price.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  if (inventoryQuantity == null) {
+    redirect(
+      redirectWithMessage({
+        message: "Add a valid Merch inventory quantity.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  const { data: product, error: productError } = await supabase
+    .from("merch_products")
+    .select(
+      "id, seller_id, status, is_official, inventory_reserved, profiles:profiles!merch_products_seller_id_fkey(account_type, license_verified_at)",
+    )
+    .eq("id", productId)
+    .maybeSingle<{
+      id: string;
+      inventory_reserved: number;
+      is_official: boolean;
+      profiles: { account_type: string; license_verified_at: string | null } | null;
+      seller_id: string;
+      status: string;
+    }>();
+
+  if (productError || !product) {
+    redirect(
+      redirectWithMessage({
+        message: productError?.message || "Merch product was not found.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  if (product.seller_id !== userId) {
+    redirect(
+      redirectWithMessage({
+        message: "You can only edit your own Merch.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  if (product.is_official) {
+    redirect(
+      redirectWithMessage({
+        message: "Official TTC Merch must be edited from admin.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  if (!isVerifiedProfessional(product.profiles)) {
+    redirect(
+      redirectWithMessage({
+        message: "Verified artist, studio, or vendor status is required to edit Merch.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  if (inventoryQuantity < product.inventory_reserved) {
+    redirect(
+      redirectWithMessage({
+        message: "Inventory cannot be lower than reserved checkout quantity.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  const adminClient = createAdminClient();
+
+  if (!adminClient) {
+    redirect(
+      redirectWithMessage({
+        message: "Merch edits need the server service key configured first.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  const nextStatus =
+    product.status === "active" || product.status === "approved"
+      ? "pending_review"
+      : product.status;
+  const { error } = await adminClient
+    .from("merch_products")
+    .update({
+      category,
+      description: description || null,
+      inventory_quantity: inventoryQuantity,
+      is_indexable: nextStatus === "active",
+      price_cents: priceCents,
+      ships_from_city: shipsFromCity || null,
+      ships_from_region: shipsFromRegion || null,
+      status: nextStatus,
+      title,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", productId)
+    .eq("seller_id", userId);
+
+  if (error) {
+    redirect(
+      redirectWithMessage({
+        message: error.message || "Could not update Merch product.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  revalidatePath("/");
+  revalidatePath(`/merch/${productId}`);
+  revalidatePath("/admin/merch");
+
+  if (nextStatus !== product.status) {
+    redirect(homeMessage("Merch updated and sent back to review.", "merch"));
+  }
+
+  redirect(
+    redirectWithMessage({
+      message: "Merch product updated.",
+      path: returnPath,
+    }),
+  );
+}
+
+export async function archiveMerchProduct(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const productId = cleanId(formData.get("product_id"));
+
+  if (!productId) {
+    redirect(homeMessage("Choose a Merch product first.", "merch"));
+  }
+
+  const { data: product, error: productError } = await supabase
+    .from("merch_products")
+    .select("id, seller_id, is_official")
+    .eq("id", productId)
+    .maybeSingle<{ id: string; is_official: boolean; seller_id: string }>();
+
+  if (productError || !product) {
+    redirect(
+      redirectWithMessage({
+        message: productError?.message || "Merch product was not found.",
+        path: `/merch/${productId}`,
+      }),
+    );
+  }
+
+  if (product.seller_id !== userId) {
+    redirect(
+      redirectWithMessage({
+        message: "You can only archive your own Merch.",
+        path: `/merch/${productId}`,
+      }),
+    );
+  }
+
+  if (product.is_official) {
+    redirect(
+      redirectWithMessage({
+        message: "Official TTC Merch must be archived from admin.",
+        path: `/merch/${productId}`,
+      }),
+    );
+  }
+
+  const adminClient = createAdminClient();
+
+  if (!adminClient) {
+    redirect(
+      redirectWithMessage({
+        message: "Merch archiving needs the server service key configured first.",
+        path: `/merch/${productId}`,
+      }),
+    );
+  }
+
+  const { error } = await adminClient
+    .from("merch_products")
+    .update({
+      is_indexable: false,
+      status: "archived",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", productId)
+    .eq("seller_id", userId);
+
+  if (error) {
+    redirect(
+      redirectWithMessage({
+        message: error.message || "Could not archive Merch product.",
+        path: `/merch/${productId}`,
+      }),
+    );
+  }
+
+  revalidatePath("/");
+  revalidatePath(`/merch/${productId}`);
+  revalidatePath("/admin/merch");
+  redirect(homeMessage("Merch product archived.", "merch"));
 }
 
 export async function togglePostLike(formData: FormData) {
