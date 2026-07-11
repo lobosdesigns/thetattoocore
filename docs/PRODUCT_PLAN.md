@@ -28,6 +28,7 @@
 - DM compose should stay compact on mobile: text and send first, optional photo attachment behind a clear expandable control, with emoji shortcuts and visible length feedback. Done for launch.
 - Photos, feed media, reels, listing media, gig media, and DM attachments should be tappable/clickable and open in an Instagram-style lightbox with zoom for images and focused playback for videos. Done for launch.
 - Lightbox controls should reset cleanly between opens, support Escape/backdrop closing, and explain zoom or playback behavior without cluttering the feed. Done for launch.
+- Video playback should discourage direct downloads in the visible controls and context menu while recognizing that browser-delivered media cannot be made impossible to save. Done for launch with shared protected video controls across feeds, profiles, detail pages, and the media lightbox.
 - Stories: add temporary story posts later for artists, studios, vendors, events, and community moments after the core feed, Gossip, Stuff, Gigs, and DMs are stable.
 
 ## Notification Roadmap

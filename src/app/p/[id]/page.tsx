@@ -24,6 +24,7 @@ import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { PendingSubmitButton } from "@/app/pending-submit-button";
+import { ProtectedVideo } from "@/app/protected-video";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { SensitiveContentGate } from "@/app/sensitive-content-gate";
@@ -348,13 +349,8 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                 media.media_type === "video" ? (
                   showPost ? (
                     <MediaLightbox mediaType="video" src={mediaSrc}>
-                      <video
+                      <ProtectedVideo
                         className="aspect-[4/5] w-full bg-[var(--ink)] object-contain"
-                        controls
-                        controlsList="nodownload noplaybackrate"
-                        disablePictureInPicture
-                        playsInline
-                        preload="metadata"
                         src={mediaSrc}
                       />
                     </MediaLightbox>

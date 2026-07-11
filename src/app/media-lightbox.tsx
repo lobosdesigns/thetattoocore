@@ -2,6 +2,7 @@
 
 import { type KeyboardEvent, type ReactNode, useEffect, useState } from "react";
 import { Maximize2, Minus, Plus, X } from "lucide-react";
+import { ProtectedVideo } from "./protected-video";
 
 type MediaLightboxProps = {
   alt?: string;
@@ -137,15 +138,10 @@ export function MediaLightbox({
             }}
           >
             {mediaType === "video" ? (
-              <video
+              <ProtectedVideo
                 className="max-h-full max-w-full bg-black"
-                controls
-                controlsList="nodownload noplaybackrate"
-                disablePictureInPicture
-                onClick={(event) => event.stopPropagation()}
-                playsInline
-                preload="metadata"
                 src={src}
+                stopClickPropagation
               />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element

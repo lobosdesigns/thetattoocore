@@ -50,6 +50,7 @@ import { LogoLockup, LogoWordmark } from "./logo-mark";
 import { MediaLightbox } from "./media-lightbox";
 import { NotificationBellLink } from "./notification-bell-link";
 import { PendingSubmitButton } from "./pending-submit-button";
+import { ProtectedVideo } from "./protected-video";
 import { ProfileAvatar } from "./profile-avatar";
 import { SavedItemButton } from "./saved-item-button";
 import { SensitiveContentGate } from "./sensitive-content-gate";
@@ -817,13 +818,8 @@ function MediaFrame({
   if (media.media_type === "video") {
     return (
       <MediaLightbox mediaType="video" src={src}>
-        <video
+        <ProtectedVideo
           className="aspect-[4/5] w-full bg-[var(--foreground)] object-cover"
-          controls
-          controlsList="nodownload noplaybackrate"
-          disablePictureInPicture
-          playsInline
-          preload="metadata"
           src={src}
         />
       </MediaLightbox>

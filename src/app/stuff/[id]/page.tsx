@@ -16,6 +16,7 @@ import { acceptAdultTerms } from "@/app/actions";
 import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
+import { ProtectedVideo } from "@/app/protected-video";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { SensitiveContentGate } from "@/app/sensitive-content-gate";
 import { ShareActions } from "@/app/share-actions";
@@ -299,13 +300,8 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
                 media.media_type === "video" ? (
                   showSensitiveMedia && mediaSrc ? (
                     <MediaLightbox mediaType="video" src={mediaSrc}>
-                      <video
+                      <ProtectedVideo
                         className="aspect-[4/3] w-full bg-[var(--ink)] object-contain"
-                        controls
-                        controlsList="nodownload noplaybackrate"
-                        disablePictureInPicture
-                        playsInline
-                        preload="metadata"
                         src={mediaSrc}
                       />
                     </MediaLightbox>

@@ -26,6 +26,7 @@ import { acceptAdultTerms, archiveGig } from "@/app/actions";
 import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
+import { ProtectedVideo } from "@/app/protected-video";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { createClient } from "@/lib/supabase/server";
@@ -637,13 +638,8 @@ function PostPreview({ post }: { post: FeedPost }) {
       {media ? (
         media.media_type === "video" ? (
           <MediaLightbox mediaType="video" src={mediaSrc ?? ""}>
-            <video
+            <ProtectedVideo
               className="aspect-[4/5] w-full rounded-t-md bg-[var(--ink)] object-cover"
-              controls
-              controlsList="nodownload noplaybackrate"
-              disablePictureInPicture
-              playsInline
-              preload="metadata"
               src={mediaSrc ?? undefined}
             />
           </MediaLightbox>
