@@ -333,6 +333,10 @@ function isPriorityReport(reason: string) {
   ].includes(reason);
 }
 
+function adminLoginPath() {
+  return `/login?return_to=${encodeURIComponent("/admin")}`;
+}
+
 export default async function AdminPage({
   searchParams,
 }: {
@@ -344,7 +348,7 @@ export default async function AdminPage({
   const claims = claimsData?.claims as Claims | undefined;
 
   if (!claims?.sub) {
-    redirect("/login");
+    redirect(adminLoginPath());
   }
 
   const { data: profile } = await supabase

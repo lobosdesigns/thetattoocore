@@ -150,6 +150,12 @@ function itemIcon(type: SavedItem["subject_type"]) {
   return UserRound;
 }
 
+function savedLoginPath(page: number) {
+  const returnTo = page > 1 ? `/saved?page=${page}` : "/saved";
+
+  return `/login?return_to=${encodeURIComponent(returnTo)}`;
+}
+
 function UnsaveButton({
   subjectId,
   subjectType,
@@ -184,7 +190,7 @@ export default async function SavedPage({
   const claims = claimsData?.claims as Claims | undefined;
 
   if (!claims?.sub) {
-    redirect("/login");
+    redirect(savedLoginPath(page));
   }
 
   const { data: viewerProfile } = await supabase

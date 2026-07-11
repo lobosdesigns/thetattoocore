@@ -128,6 +128,12 @@ function shortTime(value: string | null | undefined, fallback: string) {
   return value?.slice(0, 5) || fallback;
 }
 
+function notificationsLoginPath(page: number) {
+  const returnTo = page > 1 ? `/notifications?page=${page}` : "/notifications";
+
+  return `/login?return_to=${encodeURIComponent(returnTo)}`;
+}
+
 export default async function NotificationsPage({
   searchParams,
 }: {
@@ -141,7 +147,7 @@ export default async function NotificationsPage({
   const claims = claimsData?.claims as Claims | undefined;
 
   if (!claims?.sub) {
-    redirect("/login");
+    redirect(notificationsLoginPath(page));
   }
 
   const { data: notifications } = await supabase

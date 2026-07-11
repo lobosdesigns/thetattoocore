@@ -50,6 +50,15 @@ function orderLimitHref({ adLimit, orderLimit }: { adLimit: number; orderLimit: 
   return `/account?ads=${adLimit}&orders=${orderLimit}#order-settings`;
 }
 
+function accountLoginPath({ adLimit, orderLimit }: { adLimit: number; orderLimit: number }) {
+  const returnTo =
+    adLimit !== adPageSize || orderLimit !== orderPageSize
+      ? `/account?ads=${adLimit}&orders=${orderLimit}`
+      : "/account";
+
+  return `/login?return_to=${encodeURIComponent(returnTo)}`;
+}
+
 function AccountSetupGuide({
   isFirstProfile,
 }: {
@@ -318,7 +327,7 @@ export default async function AccountPage({
   const claims = claimsData?.claims as Claims | undefined;
 
   if (!claims?.sub) {
-    redirect("/login");
+    redirect(accountLoginPath({ adLimit, orderLimit }));
   }
 
   const { data: profile } = await supabase
