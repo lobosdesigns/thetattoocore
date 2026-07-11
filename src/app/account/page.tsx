@@ -42,7 +42,7 @@ function AccountSetupGuide({
   ] as const;
 
   return (
-    <section className="mb-4 rounded-lg border border-[color-mix(in_srgb,var(--gold)_28%,var(--card-rim))] bg-[var(--foreground)] p-5 text-white shadow-[0_14px_34px_rgba(0,0,0,0.24)]">
+    <section className="mb-4 rounded-lg border border-[color-mix(in_srgb,var(--gold)_28%,var(--card-rim))] bg-[var(--ink)] p-5 text-white shadow-[0_14px_34px_rgba(0,0,0,0.24)]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/60">

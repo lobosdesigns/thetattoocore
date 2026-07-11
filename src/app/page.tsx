@@ -329,7 +329,7 @@ function SponsoredSlot({
     .filter(Boolean)
     .join(", ");
   const content = (
-    <article className="ttc-card rounded-md border border-[color-mix(in_srgb,var(--gold)_60%,var(--card-rim))] bg-[var(--foreground)] p-4 text-[var(--background)] shadow-[0_16px_36px_rgba(0,0,0,0.22)]">
+    <article className="ttc-card rounded-md border border-[color-mix(in_srgb,var(--gold)_60%,var(--card-rim))] bg-[var(--ink)] p-4 text-[var(--paper-warm)] shadow-[0_16px_36px_rgba(0,0,0,0.22)]">
       <AdImpressionBeacon campaignId={campaign.id} placement={dbPlacement} />
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -343,20 +343,20 @@ function SponsoredSlot({
         </span>
       </div>
       {campaign.body ? (
-        <p className="mt-2 line-clamp-3 text-sm leading-6 text-[var(--background)]/75">
+        <p className="mt-2 line-clamp-3 text-sm leading-6 text-white/75">
           {campaign.body}
         </p>
       ) : null}
       <div className="mt-3 flex flex-wrap gap-1.5">
-        <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_10%,transparent)] px-2 py-1 text-xs font-semibold capitalize text-[color-mix(in_srgb,var(--background)_80%,transparent)]">
+        <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold capitalize text-white/80">
           {campaign.goal.replaceAll("_", " ")}
         </span>
         {campaign.campaign_type === "artist_growth" ? (
-          <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_10%,transparent)] px-2 py-1 text-xs font-semibold text-[color-mix(in_srgb,var(--background)_80%,transparent)]">
+          <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80">
             Artist growth
           </span>
         ) : (
-          <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_10%,transparent)] px-2 py-1 text-xs font-semibold text-[color-mix(in_srgb,var(--background)_80%,transparent)]">
+          <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80">
             Stuff listing
           </span>
         )}
@@ -369,20 +369,20 @@ function SponsoredSlot({
           </span>
         ))}
         {location ? (
-          <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_10%,transparent)] px-2 py-1 text-xs font-semibold text-[color-mix(in_srgb,var(--background)_80%,transparent)]">
+          <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80">
             {location}
           </span>
         ) : null}
         {campaign.keywords.slice(0, 3).map((keyword) => (
           <span
-            className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_10%,transparent)] px-2 py-1 text-xs font-semibold text-[color-mix(in_srgb,var(--background)_80%,transparent)]"
+            className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80"
             key={keyword}
           >
             {keyword}
           </span>
         ))}
       </div>
-      <p className="mt-3 rounded-md border border-white/10 bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)]/5 px-3 py-2 text-xs leading-5 text-[var(--background)]/65">
+      <p className="mt-3 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-xs leading-5 text-white/65">
         Sponsored placement reviewed by TheTattooCore. Shown by placement
         {targetingSummary ? ` and ${targetingSummary}` : ""}, not AI profiling.
       </p>
@@ -393,7 +393,7 @@ function SponsoredSlot({
             <p className="truncate text-sm font-semibold">
               {campaign.advertiser?.display_name ?? "TheTattooCore advertiser"}
             </p>
-            <div className="mt-1 flex items-center gap-1 text-xs text-[var(--background)]/60">
+            <div className="mt-1 flex items-center gap-1 text-xs text-white/60">
               <span>@{campaign.advertiser?.username ?? "advertiser"}</span>
               <VerifiedBadge profile={campaign.advertiser} />
             </div>
