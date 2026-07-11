@@ -32,6 +32,6 @@
 - Add final production support/legal contact details and final counsel-reviewed Terms/Privacy. Current support contact is visible; counsel-reviewed final legal copy is still required before submission.
 - Have counsel review the final account deletion SLA, legal hold rules, and manual deletion checklist before store submission.
 - Decide when to automate irreversible user-data deletion versus keeping early launch deletion manual.
-- Test signup, login, posting, reporting, blocking/safety, DMs, verification review, and account deletion requests on real mobile devices. A reusable confirmed tester account exists, but the two-user DM pass still needs a second known test login or owner use of Admin > Users > Create tester account.
+- Test signup, login, posting, reporting, blocking/safety, DMs, verification review, and account deletion requests on real mobile devices. A reusable confirmed tester account exists, and one-way DM send plus notification creation passed from `ttc_tester` to `checkouttest`; the full two-user read/reply pass still needs a second known test login or owner use of Admin > Users > Create tester account.
 - Prepare final store screenshots after mobile QA, using no sensitive or copyrighted user content.
 - Confirm no AI-generated tattoo art claims appear in store metadata or screenshots.
