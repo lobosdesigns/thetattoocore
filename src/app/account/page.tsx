@@ -358,7 +358,7 @@ export default async function AccountPage({
   const { data: merchOrders } = await supabase
     .from("merch_orders")
     .select(
-      "id, status, currency, total_cents, customer_email, shipping_name, created_at, fulfilled_at, cancelled_at, refunded_at, merch_order_items(title_snapshot, quantity)",
+      "id, status, currency, subtotal_cents, platform_fee_cents, total_cents, customer_email, shipping_name, created_at, fulfilled_at, cancelled_at, refunded_at, merch_order_items(title_snapshot, quantity)",
     )
     .eq("buyer_id", claims.sub)
     .order("created_at", { ascending: false })
@@ -372,9 +372,11 @@ export default async function AccountPage({
         fulfilled_at: string | null;
         id: string;
         merch_order_items: { quantity: number; title_snapshot: string }[];
+        platform_fee_cents: number;
         refunded_at: string | null;
         shipping_name: string | null;
         status: string;
+        subtotal_cents: number;
         total_cents: number;
       }[]
     >();
@@ -502,6 +504,18 @@ export default async function AccountPage({
                         {item.quantity} x {item.title_snapshot}
                       </p>
                     ))}
+                    <p className="text-xs text-[var(--muted-strong)]">
+                      Subtotal{" "}
+                      {Intl.NumberFormat("en-US", {
+                        currency: order.currency,
+                        style: "currency",
+                      }).format(order.subtotal_cents / 100)}
+                      {" "}+ TTC fee{" "}
+                      {Intl.NumberFormat("en-US", {
+                        currency: order.currency,
+                        style: "currency",
+                      }).format(order.platform_fee_cents / 100)}
+                    </p>
                   </div>
                   <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted-strong)] sm:grid-cols-2">
                     <p>Ship to: {order.shipping_name || "Not collected"}</p>

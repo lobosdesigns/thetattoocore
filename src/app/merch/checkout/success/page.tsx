@@ -7,6 +7,8 @@ type Order = {
   created_at: string;
   currency: string;
   id: string;
+  platform_fee_cents: number;
+  subtotal_cents: number;
   status: string;
   total_cents: number;
 };
@@ -36,7 +38,7 @@ export default async function MerchCheckoutSuccessPage({
   const { data: order } = sessionId
     ? await supabase
         .from("merch_orders")
-        .select("id, status, currency, total_cents, created_at")
+        .select("id, status, currency, subtotal_cents, platform_fee_cents, total_cents, created_at")
         .eq("stripe_checkout_session_id", sessionId)
         .maybeSingle<Order>()
     : { data: null };
@@ -65,6 +67,18 @@ export default async function MerchCheckoutSuccessPage({
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
+                  <dt>Subtotal</dt>
+                  <dd className="font-semibold text-[var(--foreground)]">
+                    {money(order.subtotal_cents, order.currency)}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt>TTC platform fee</dt>
+                  <dd className="font-semibold text-[var(--foreground)]">
+                    {money(order.platform_fee_cents, order.currency)}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3 border-t border-[var(--card-rim)] pt-2">
                   <dt>Total</dt>
                   <dd className="font-semibold text-[var(--foreground)]">
                     {money(order.total_cents, order.currency)}

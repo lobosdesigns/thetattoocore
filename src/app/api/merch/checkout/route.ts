@@ -23,6 +23,12 @@ type CheckoutSession = {
   url: string | null;
 };
 
+function calculatePlatformFeeCents(subtotalCents: number) {
+  if (subtotalCents <= 0) return 0;
+
+  return Math.ceil(subtotalCents * 0.02);
+}
+
 function cleanQuantity(value: FormDataEntryValue | null) {
   const parsed = Number.parseInt(String(value ?? "1"), 10);
 
@@ -42,15 +48,19 @@ async function createCheckoutSession({
   buyerId,
   cancelUrl,
   orderId,
+  platformFeeCents,
   product,
   quantity,
+  subtotalCents,
   successUrl,
 }: {
   buyerId: string;
   cancelUrl: string;
   orderId: string;
+  platformFeeCents: number;
   product: Product;
   quantity: number;
+  subtotalCents: number;
   successUrl: string;
 }) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -74,11 +84,15 @@ async function createCheckoutSession({
     "metadata[buyer_id]": buyerId,
     "metadata[merch_order_id]": orderId,
     "metadata[merch_product_id]": product.id,
+    "metadata[merch_subtotal_cents]": String(subtotalCents),
+    "metadata[platform_fee_cents]": String(platformFeeCents),
     "metadata[seller_id]": product.seller_id,
     "mode": "payment",
     "payment_intent_data[metadata][buyer_id]": buyerId,
     "payment_intent_data[metadata][merch_order_id]": orderId,
     "payment_intent_data[metadata][merch_product_id]": product.id,
+    "payment_intent_data[metadata][merch_subtotal_cents]": String(subtotalCents),
+    "payment_intent_data[metadata][platform_fee_cents]": String(platformFeeCents),
     "payment_intent_data[metadata][seller_id]": product.seller_id,
     "shipping_address_collection[allowed_countries][0]": "US",
     "shipping_address_collection[allowed_countries][1]": "CA",
@@ -92,6 +106,17 @@ async function createCheckoutSession({
       "line_items[0][price_data][product_data][description]",
       product.description.slice(0, 500),
     );
+  }
+
+  if (platformFeeCents > 0) {
+    body.set("line_items[1][price_data][currency]", product.currency.toLowerCase());
+    body.set("line_items[1][price_data][product_data][name]", `${siteName} platform fee`);
+    body.set(
+      "line_items[1][price_data][product_data][description]",
+      "Transparent 2% TTC platform fee for test-mode Merch checkout.",
+    );
+    body.set("line_items[1][price_data][unit_amount]", String(platformFeeCents));
+    body.set("line_items[1][quantity]", "1");
   }
 
   const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
@@ -184,6 +209,8 @@ export async function POST(request: Request) {
 
   const orderId = crypto.randomUUID();
   const subtotalCents = product.price_cents * quantity;
+  const platformFeeCents = calculatePlatformFeeCents(subtotalCents);
+  const totalCents = subtotalCents + platformFeeCents;
   const successUrl = `${siteUrl}/merch/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl = `${siteUrl}/merch/${product.id}?message=${encodeURIComponent(
     "Checkout canceled.",
@@ -195,8 +222,10 @@ export async function POST(request: Request) {
       buyerId: claims.sub,
       cancelUrl,
       orderId,
+      platformFeeCents,
       product,
       quantity,
+      subtotalCents,
       successUrl,
     });
   } catch (error) {
@@ -212,8 +241,9 @@ export async function POST(request: Request) {
     id: orderId,
     status: "pending_checkout",
     stripe_checkout_session_id: session.id,
+    platform_fee_cents: platformFeeCents,
     subtotal_cents: subtotalCents,
-    total_cents: subtotalCents,
+    total_cents: totalCents,
   });
 
   if (orderError) {

@@ -13,6 +13,12 @@ type PaidOrderTransition = {
   id: string;
 };
 
+function metadataCents(value: string | null | undefined, fallback: number) {
+  const parsed = Number.parseInt(value ?? "", 10);
+
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
 async function markCheckoutSession({
   session,
   status,
@@ -44,6 +50,14 @@ async function markCheckoutSession({
   const collectedShippingDetails =
     shippingDetails.collected_information?.shipping_details ??
     shippingDetails.shipping_details;
+  const platformFeeCents = metadataCents(
+    session.metadata?.platform_fee_cents,
+    0,
+  );
+  const subtotalCents = metadataCents(
+    session.metadata?.merch_subtotal_cents,
+    Math.max(0, (session.amount_subtotal ?? 0) - platformFeeCents),
+  );
   const updateValues = {
     customer_email: session.customer_details?.email ?? session.customer_email ?? null,
     shipping_address: collectedShippingDetails
@@ -56,7 +70,8 @@ async function markCheckoutSession({
     status,
     stripe_payment_intent_id:
       typeof session.payment_intent === "string" ? session.payment_intent : null,
-    subtotal_cents: session.amount_subtotal ?? 0,
+    platform_fee_cents: platformFeeCents,
+    subtotal_cents: subtotalCents,
     tax_cents: session.total_details?.amount_tax ?? 0,
     shipping_cents: session.total_details?.amount_shipping ?? 0,
     discount_cents: session.total_details?.amount_discount ?? 0,

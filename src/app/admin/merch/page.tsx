@@ -47,8 +47,10 @@ type MerchOrder = {
   customerEmail: string | null;
   id: string;
   itemCount: number;
+  platformFeeCents: number;
   shippingName: string | null;
   status: string;
+  subtotalCents: number;
   totalCents: number;
 };
 
@@ -297,6 +299,10 @@ function OrderCard({
           <dd>{Intl.NumberFormat("en-US").format(order.itemCount)}</dd>
         </div>
         <div>
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">TTC fee</dt>
+          <dd>{money(order.platformFeeCents, order.currency)}</dd>
+        </div>
+        <div>
           <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">Total</dt>
           <dd>{money(order.totalCents, order.currency)}</dd>
         </div>
@@ -426,7 +432,7 @@ export default async function AdminMerchPage({
   const { count: orderCount, data: orderRows } = await supabase
     .from("merch_orders")
     .select(
-      "id, status, currency, total_cents, customer_email, shipping_name, admin_note, created_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id)",
+      "id, status, currency, subtotal_cents, platform_fee_cents, total_cents, customer_email, shipping_name, admin_note, created_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id)",
       { count: "exact" },
     )
     .order("created_at", { ascending: false })
@@ -439,9 +445,11 @@ export default async function AdminMerchPage({
         customer_email: string | null;
         id: string;
         merch_order_items: { id: string }[];
+        platform_fee_cents: number;
         profiles: { display_name: string; username: string } | null;
         shipping_name: string | null;
         status: string;
+        subtotal_cents: number;
         total_cents: number;
       }[]
     >();
@@ -454,8 +462,10 @@ export default async function AdminMerchPage({
     customerEmail: order.customer_email,
     id: order.id,
     itemCount: order.merch_order_items.length,
+    platformFeeCents: order.platform_fee_cents,
     shippingName: order.shipping_name,
     status: order.status,
+    subtotalCents: order.subtotal_cents,
     totalCents: order.total_cents,
   }));
 
