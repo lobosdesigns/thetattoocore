@@ -25,6 +25,7 @@ type ProductStatus =
   | "paused"
   | "rejected"
   | "archived";
+type ModerationStatus = "active" | "under_review" | "hidden" | "removed";
 type MerchProduct = {
   category: string;
   createdAt: string;
@@ -32,6 +33,7 @@ type MerchProduct = {
   id: string;
   inventoryQuantity: number;
   isOfficial: boolean;
+  moderationStatus: ModerationStatus;
   sellerAccountType: string | null;
   sellerLicenseVerifiedAt: string | null;
   priceCents: number;
@@ -153,6 +155,18 @@ function statusClass(status: ProductStatus) {
   return "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]";
 }
 
+function moderationStatusClass(status: ModerationStatus) {
+  if (status === "active") {
+    return "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]";
+  }
+
+  if (status === "under_review") {
+    return "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]";
+  }
+
+  return "border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]";
+}
+
 function Pagination({
   currentPage,
   hasNextPage,
@@ -224,6 +238,13 @@ function ProductCard({
             )}`}
           >
             {product.status.replace("_", " ")}
+          </span>
+          <span
+            className={`rounded-md border px-2 py-1 text-xs font-semibold capitalize ${moderationStatusClass(
+              product.moderationStatus,
+            )}`}
+          >
+            Moderation {product.moderationStatus.replace("_", " ")}
           </span>
           {product.isOfficial ? (
             <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] px-2 py-1 text-xs font-semibold">
@@ -459,7 +480,7 @@ export default async function AdminMerchPage({
   const { count, data: productRows, error: productError } = await supabase
     .from("merch_products")
     .select(
-      "id, title, category, status, price_cents, currency, inventory_quantity, is_official, created_at, profiles:profiles!merch_products_seller_id_fkey(account_type, display_name, license_verified_at, username)",
+      "id, title, category, status, moderation_status, price_cents, currency, inventory_quantity, is_official, created_at, profiles:profiles!merch_products_seller_id_fkey(account_type, display_name, license_verified_at, username)",
       { count: "exact" },
     )
     .order("created_at", { ascending: false })
@@ -472,6 +493,7 @@ export default async function AdminMerchPage({
         id: string;
         inventory_quantity: number;
         is_official: boolean;
+        moderation_status: ModerationStatus;
         price_cents: number;
         profiles: {
           account_type: string | null;
@@ -490,6 +512,7 @@ export default async function AdminMerchPage({
     id: product.id,
     inventoryQuantity: product.inventory_quantity,
     isOfficial: product.is_official,
+    moderationStatus: product.moderation_status,
     priceCents: product.price_cents,
     sellerAccountType: product.profiles?.account_type ?? null,
     sellerLicenseVerifiedAt: product.profiles?.license_verified_at ?? null,
@@ -504,6 +527,9 @@ export default async function AdminMerchPage({
   const activeCount = products.filter((product) => product.status === "active").length;
   const reviewCount = products.filter(
     (product) => product.status === "pending_review",
+  ).length;
+  const moderationCount = products.filter(
+    (product) => product.moderationStatus !== "active",
   ).length;
   const { count: orderCount, data: orderRows } = await supabase
     .from("merch_orders")
@@ -588,7 +614,7 @@ export default async function AdminMerchPage({
           </div>
         </header>
 
-        <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
             <Package className="size-5 text-[var(--gold)]" />
             <p className="mt-3 text-sm text-[var(--muted-strong)]">Products</p>
@@ -605,6 +631,11 @@ export default async function AdminMerchPage({
             <CreditCard className="size-5 text-[var(--gold)]" />
             <p className="mt-3 text-sm text-[var(--muted-strong)]">Needs review here</p>
             <p className="mt-1 text-3xl font-bold">{reviewCount}</p>
+          </div>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <ShieldCheck className="size-5 text-[var(--gold)]" />
+            <p className="mt-3 text-sm text-[var(--muted-strong)]">Moderated here</p>
+            <p className="mt-1 text-3xl font-bold">{moderationCount}</p>
           </div>
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
             <ShieldCheck className="size-5 text-[var(--gold)]" />
