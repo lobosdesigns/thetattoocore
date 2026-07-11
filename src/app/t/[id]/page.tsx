@@ -13,7 +13,9 @@ import {
 import {
   blockThreadCommentAuthor,
   createThreadComment,
+  deleteThreadPost,
   deleteThreadComment,
+  editThreadPost,
   editThreadComment,
   hideThreadComment,
   toggleThreadCommentLike,
@@ -417,6 +419,38 @@ export default async function ThreadPage({
                   variant="card"
                 />
               )}
+
+              {isOwnThread && showThread ? (
+                <details className="mt-5 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
+                  <summary className="cursor-pointer list-none text-sm font-bold">
+                    Edit or delete Gossip post
+                  </summary>
+                  <form action={editThreadPost} className="mt-3 space-y-2">
+                    <input name="thread_id" type="hidden" value={thread.id} />
+                    <input name="return_path" type="hidden" value={returnPath} />
+                    <WordLimitedField
+                      as="textarea"
+                      className="min-h-28 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                      defaultValue={thread.body}
+                      maxCharacters={8000}
+                      maxLength={8000}
+                      name="body"
+                      placeholder="Edit your Gossip post"
+                      wrapperClassName="space-y-2"
+                    />
+                    <button className="h-10 w-full rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
+                      Save Gossip edit
+                    </button>
+                  </form>
+                  <form action={deleteThreadPost} className="mt-3">
+                    <input name="thread_id" type="hidden" value={thread.id} />
+                    <input name="return_path" type="hidden" value={returnPath} />
+                    <button className="h-10 w-full rounded-md border border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] px-4 text-sm font-semibold text-[var(--danger)]">
+                      Delete Gossip post
+                    </button>
+                  </form>
+                </details>
+              ) : null}
 
               {!media ? (
                 <div className="mt-5 flex h-24 items-center justify-center rounded-md border border-dashed border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] text-[var(--muted-strong)]">

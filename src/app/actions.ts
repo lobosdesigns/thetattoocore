@@ -561,6 +561,86 @@ export async function createThreadPost(formData: FormData) {
   redirect(homeMessage("Thread posted.", "threads"));
 }
 
+export async function editThreadPost(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const threadId = cleanId(formData.get("thread_id"));
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
+  const body = cleanText(formData.get("body"), 8000);
+
+  if (!threadId) {
+    redirect(redirectWithMessage({ message: "Choose a Gossip post first.", path: returnPath }));
+  }
+
+  if (body.length < 3) {
+    redirect(
+      redirectWithMessage({
+        message: "Gossip post needs at least 3 characters.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  const { error } = await supabase
+    .from("thread_posts")
+    .update({
+      body,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", threadId)
+    .eq("author_id", userId);
+
+  if (error) {
+    redirect(
+      redirectWithMessage({
+        message: error.message || "Could not edit Gossip post.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  revalidatePath("/");
+  revalidatePath(`/t/${threadId}`);
+  redirect(
+    redirectWithMessage({
+      message: "Gossip post updated.",
+      path: returnPath,
+    }),
+  );
+}
+
+export async function deleteThreadPost(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const threadId = cleanId(formData.get("thread_id"));
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
+
+  if (!threadId) {
+    redirect(redirectWithMessage({ message: "Choose a Gossip post first.", path: returnPath }));
+  }
+
+  const { error } = await supabase
+    .from("thread_posts")
+    .update({
+      is_indexable: false,
+      moderation_status: "removed",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", threadId)
+    .eq("author_id", userId);
+
+  if (error) {
+    redirect(
+      redirectWithMessage({
+        message: error.message || "Could not delete Gossip post.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  revalidatePath("/");
+  revalidatePath(`/t/${threadId}`);
+  redirect(homeMessage("Gossip post deleted.", "threads"));
+}
+
 export async function createMarketplaceListing(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const { data: profile } = await supabase
