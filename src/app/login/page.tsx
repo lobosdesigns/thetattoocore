@@ -66,10 +66,10 @@ export default async function LoginPage({
             <div className="mt-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
               {setupSteps.map(([number, title, body]) => (
                 <div
-                  className="rounded-md border border-white/15 bg-white/5 p-3"
+                  className="rounded-md border border-white/15 bg-[color-mix(in_srgb,var(--paper-warm)_8%,transparent)] p-3"
                   key={number}
                 >
-                  <span className="inline-flex size-7 items-center justify-center rounded-md bg-white text-sm font-bold text-[var(--ink)]">
+                  <span className="inline-flex size-7 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-sm font-bold text-[var(--ink)]">
                     {number}
                   </span>
                   <h2 className="mt-3 text-sm font-bold">{title}</h2>
