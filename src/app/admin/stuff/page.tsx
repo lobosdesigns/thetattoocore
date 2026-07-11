@@ -70,11 +70,11 @@ function money(cents: number | null, currency: string | null) {
 }
 
 function statusClass(status: Listing["moderationStatus"]) {
-  if (status === "active") return "border-[#b9d7bd] bg-[#eef8ef] text-[#276231]";
-  if (status === "under_review") return "border-[#b7c6e8] bg-[#eef3ff] text-[#284f8a]";
-  if (status === "removed") return "border-[#e5b8b8] bg-[#fff0f0] text-[#8a2828]";
+  if (status === "active") return "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]";
+  if (status === "under_review") return "border-[color-mix(in_srgb,#5078c8_35%,var(--card-rim))] bg-[color-mix(in_srgb,#5078c8_10%,var(--paper-warm))] text-[color-mix(in_srgb,#284f8a_78%,var(--foreground))]";
+  if (status === "removed") return "border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]";
 
-  return "border-[#e5c58f] bg-[#fff7ec] text-[#7a4a08]";
+  return "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]";
 }
 
 function Pagination({
@@ -87,8 +87,8 @@ function Pagination({
   totalPages: number;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm font-semibold text-[#4f473f]">
+    <div className="flex flex-col gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm font-semibold text-[var(--muted)]">
         Page {currentPage} of {Math.max(totalPages, 1)}
       </p>
       <div className="flex gap-2">
@@ -96,8 +96,8 @@ function Pagination({
           aria-disabled={currentPage <= 1}
           className={`flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold ${
             currentPage <= 1
-              ? "pointer-events-none border-[#e5ded4] bg-[#f7f4ef] text-[#a69b8d]"
-              : "border-[#cfc8bd] bg-white text-[#171412]"
+              ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
+              : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
           }`}
           href={pageHref(Math.max(1, currentPage - 1))}
         >
@@ -108,8 +108,8 @@ function Pagination({
           aria-disabled={!hasNextPage}
           className={`flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold ${
             !hasNextPage
-              ? "pointer-events-none border-[#e5ded4] bg-[#f7f4ef] text-[#a69b8d]"
-              : "border-[#171412] bg-[#171412] text-white"
+              ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
+              : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
           }`}
           href={pageHref(currentPage + 1)}
         >
@@ -123,11 +123,11 @@ function Pagination({
 
 function ListingCard({ listing }: { listing: Listing }) {
   return (
-    <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
+    <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
           <p className="truncate text-base font-bold">{listing.title}</p>
-          <p className="mt-1 text-xs text-[#766d62]">
+          <p className="mt-1 text-xs text-[var(--muted-strong)]">
             @{listing.sellerUsername} - {listing.category} - {timeAgo(listing.createdAt)}
           </p>
         </div>
@@ -139,35 +139,35 @@ function ListingCard({ listing }: { listing: Listing }) {
           >
             {listing.moderationStatus.replace("_", " ")}
           </span>
-          <span className="rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-semibold capitalize text-[#4f473f]">
+          <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold capitalize text-[var(--muted)]">
             {listing.status}
           </span>
         </div>
       </div>
       {listing.description ? (
-        <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#4f473f]">
+        <p className="mt-3 line-clamp-3 text-sm leading-6 text-[var(--muted)]">
           {listing.description}
         </p>
       ) : null}
-      <dl className="mt-3 grid gap-3 text-sm text-[#4f473f] sm:grid-cols-4">
+      <dl className="mt-3 grid gap-3 text-sm text-[var(--muted)] sm:grid-cols-4">
         <div>
-          <dt className="text-xs font-semibold uppercase text-[#766d62]">Price</dt>
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">Price</dt>
           <dd>{money(listing.priceCents, listing.currency)}</dd>
         </div>
         <div>
-          <dt className="text-xs font-semibold uppercase text-[#766d62]">
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
             Location
           </dt>
           <dd>{[listing.city, listing.region].filter(Boolean).join(", ") || "Not set"}</dd>
         </div>
         <div>
-          <dt className="text-xs font-semibold uppercase text-[#766d62]">
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
             Visibility
           </dt>
           <dd className="capitalize">{listing.visibility.replace("_", " ")}</dd>
         </div>
         <div>
-          <dt className="text-xs font-semibold uppercase text-[#766d62]">
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
             Sensitive
           </dt>
           <dd>{listing.isSensitive ? "Yes" : "No"}</dd>
@@ -175,13 +175,13 @@ function ListingCard({ listing }: { listing: Listing }) {
       </dl>
       <div className="mt-4 flex flex-wrap gap-2">
         <Link
-          className="flex h-10 items-center rounded-md border border-[#cfc8bd] bg-white px-3 text-sm font-semibold"
+          className="flex h-10 items-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm font-semibold"
           href={`/stuff/${listing.id}`}
         >
           Open listing
         </Link>
         <Link
-          className="flex h-10 items-center rounded-md bg-[#171412] px-3 text-sm font-semibold text-white"
+          className="flex h-10 items-center rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-[var(--background)]"
           href="/admin/content?type=marketplace_listing&page=1"
         >
           Moderate in Content
@@ -273,58 +273,58 @@ export default async function AdminStuffPage({
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
       <section className="ttc-page-panel mx-auto min-h-screen w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className="mb-6 flex flex-col gap-4 border-b border-[#cfc8bd] pb-5 md:flex-row md:items-center md:justify-between">
+        <header className="mb-6 flex flex-col gap-4 border-b border-[var(--card-rim)] pb-5 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <Link
               aria-label="Back to admin dashboard"
-              className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
+              className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)]"
               href="/admin"
             >
               <ArrowLeft className="size-5" />
             </Link>
             <div className="min-w-0">
-              <p className="text-sm font-semibold uppercase tracking-wide text-[#766d62]">
+              <p className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-strong)]">
                 Admin
               </p>
               <h1 className="text-2xl font-bold sm:text-3xl">Stuff</h1>
-              <p className="mt-1 text-sm text-[#766d62]">
+              <p className="mt-1 text-sm text-[var(--muted-strong)]">
                 50 marketplace listings per page for seller, status, and pricing review.
               </p>
             </div>
           </div>
-          <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-sm">
+          <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 text-sm">
             <p className="font-semibold">{profile.display_name}</p>
-            <p className="text-xs text-[#766d62]">
+            <p className="text-xs text-[var(--muted-strong)]">
               @{profile.username} - {profile.role}
             </p>
           </div>
         </header>
 
         {params.message ? (
-          <p className="mb-4 rounded-md border border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 text-sm font-medium">
+          <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">
             {params.message}
           </p>
         ) : null}
 
         <div className="mb-4 grid gap-3 sm:grid-cols-3">
-          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
-            <p className="text-sm text-[#766d62]">Listings</p>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <p className="text-sm text-[var(--muted-strong)]">Listings</p>
             <p className="mt-2 text-3xl font-bold">
               {Intl.NumberFormat("en-US").format(totalListings)}
             </p>
           </div>
-          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
-            <p className="text-sm text-[#766d62]">Active here</p>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <p className="text-sm text-[var(--muted-strong)]">Active here</p>
             <p className="mt-2 text-3xl font-bold">{activeCount}</p>
           </div>
-          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
-            <p className="text-sm text-[#766d62]">Needs attention here</p>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <p className="text-sm text-[var(--muted-strong)]">Needs attention here</p>
             <p className="mt-2 text-3xl font-bold">{restrictedCount}</p>
           </div>
         </div>
 
-        <div className="mb-4 flex items-start gap-3 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3 text-sm leading-6 text-[#4f473f]">
-          <ShoppingBag className="mt-1 size-5 shrink-0 text-[#c8953b]" />
+        <div className="mb-4 flex items-start gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm leading-6 text-[var(--muted)]">
+          <ShoppingBag className="mt-1 size-5 shrink-0 text-[var(--gold)]" />
           <p>
             Stuff is verified-professional commerce. Fans may browse, but buying,
             selling, trading, and seller contact stay restricted to verified
@@ -345,7 +345,7 @@ export default async function AdminStuffPage({
             ))}
           </section>
         ) : (
-          <p className="mt-4 rounded-md border border-[#e5ded4] bg-[#fffdf9] p-4 text-sm text-[#4f473f]">
+          <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 text-sm text-[var(--muted)]">
             No Stuff listings exist yet.
           </p>
         )}
