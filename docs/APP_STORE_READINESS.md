@@ -16,6 +16,7 @@
 - Public support and account deletion request paths exist.
 - Public support, privacy, and terms pages expose the current support contact email for account, privacy, policy, and safety questions.
 - Admins and moderators can review account deletion requests from the admin data-request queue.
+- Verification approval/rejection creates in-app alerts and can send important email through HostGator once the server-only Supabase service-role secret is configured.
 - Public support and privacy pages explain that launch deletion requests are manually reviewed, with a target review window of 30 days unless safety, dispute, fraud, legal, or retention obligations require more time.
 - Members can block and unblock profiles; blocked relationships prevent follow and DM attempts.
 - PWA manifest is active and starts installed sessions at `/login`.

@@ -2,6 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { sendHostgatorEmail } from "@/lib/mail/hostgator";
+import { siteName, siteUrl, supportEmail } from "@/lib/site";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -12,6 +15,17 @@ type LicenseVerificationStatus = "approved" | "rejected";
 type UserStatus = "active" | "suspended" | "banned";
 type AdCampaignStatus = "approved" | "active" | "paused" | "rejected" | "archived";
 type AccountDeletionStatus = "reviewing" | "completed" | "rejected" | "cancelled";
+type MailSettings = {
+  from_email: string | null;
+  from_name: string;
+  smtp_host: string | null;
+  smtp_port: number | null;
+  smtp_username: string | null;
+  smtp_secure: boolean;
+  smtp_password_secret_name: string;
+  reply_to_email: string | null;
+  is_enabled: boolean;
+};
 
 const moderatorRoles = new Set<UserRole>(["moderator", "admin", "owner"]);
 const statuses = new Set<ModerationStatus>([
@@ -197,6 +211,113 @@ function isPastDate(value: string | null) {
   const date = new Date(`${value}T23:59:59`);
 
   return Number.isFinite(date.getTime()) && date.getTime() < Date.now();
+}
+
+function isEmail(value?: string | null): value is string {
+  return Boolean(value && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value));
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+async function maybeSendVerificationDecisionEmail({
+  accountType,
+  note,
+  profileId,
+  status,
+  supabase,
+}: {
+  accountType: string;
+  note: string | null;
+  profileId: string;
+  status: LicenseVerificationStatus;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+}) {
+  const [{ data: profile }, { data: settings }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("display_name, notify_email_important, username")
+      .eq("id", profileId)
+      .maybeSingle<{
+        display_name: string | null;
+        notify_email_important: boolean | null;
+        username: string | null;
+      }>(),
+    supabase
+      .from("mail_settings")
+      .select(
+        "from_email, from_name, smtp_host, smtp_port, smtp_username, smtp_secure, smtp_password_secret_name, reply_to_email, is_enabled",
+      )
+      .maybeSingle<MailSettings>(),
+  ]);
+
+  if (profile?.notify_email_important === false || !settings?.is_enabled) {
+    return;
+  }
+
+  const adminClient = createAdminClient();
+  if (!adminClient) {
+    console.warn("Verification decision email skipped: missing service role key.");
+    return;
+  }
+
+  const { data: userData, error: userError } =
+    await adminClient.auth.admin.getUserById(profileId);
+
+  if (userError) {
+    console.error("Verification decision email user lookup failed", userError);
+    return;
+  }
+
+  const recipientEmail = userData.user?.email;
+  if (!isEmail(recipientEmail)) return;
+
+  const displayName = profile?.display_name || profile?.username || "there";
+  const accountUrl = `${siteUrl}/account#verification-settings`;
+  const approved = status === "approved";
+  const subject = approved
+    ? `${siteName} ${accountType} verification approved`
+    : `${siteName} verification needs updated proof`;
+  const body = approved
+    ? `Your ${accountType} verification was approved. Stuff seller contact, professional access, and ad submission are now unlocked.`
+    : note ||
+      "Your verification was rejected. Open Account to review the note and submit updated proof.";
+
+  try {
+    await sendHostgatorEmail({
+      headers: {
+        "X-TheTattooCore-Transactional": `verification-${status}`,
+      },
+      html: [
+        `<h1>${escapeHtml(subject)}</h1>`,
+        `<p>Hi ${escapeHtml(displayName)},</p>`,
+        `<p>${escapeHtml(body)}</p>`,
+        `<p>You can review verification status from <a href="${accountUrl}">Account &gt; Verification</a>.</p>`,
+        `<p>For help, email <a href="mailto:${supportEmail}">${supportEmail}</a>.</p>`,
+      ].join(""),
+      recipientEmail,
+      settings,
+      subject,
+      text: [
+        subject,
+        "",
+        `Hi ${displayName},`,
+        "",
+        body,
+        "",
+        `Review status: ${accountUrl}`,
+        `Help: ${supportEmail}`,
+      ].join("\n"),
+    });
+  } catch (error) {
+    console.error("Verification decision email failed", error);
+  }
 }
 
 function actionTypeFor(status: ModerationStatus) {
@@ -828,6 +949,14 @@ export async function updateLicenseVerification(formData: FormData) {
       ),
     );
   }
+
+  await maybeSendVerificationDecisionEmail({
+    accountType: request.account_type,
+    note: note || null,
+    profileId: request.profile_id,
+    status,
+    supabase,
+  });
 
   revalidatePath("/admin");
   revalidatePath("/admin/verification");
