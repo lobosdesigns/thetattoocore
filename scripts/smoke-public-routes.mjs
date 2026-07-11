@@ -1,0 +1,48 @@
+const baseUrl = (process.env.SMOKE_BASE_URL || "https://thetattoocore.com").replace(/\/$/, "");
+
+const checks = [
+  { path: "/", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  { path: "/login", status: [200], includes: ["Sign in or sign up", "TheTattooCore"] },
+  { path: "/forgot-password", status: [200], includes: ["Reset password", "Send reset link"] },
+  { path: "/reset-password", status: [200], includes: ["Create new password"] },
+  { path: "/support", status: [200], includes: ["Support"] },
+  { path: "/privacy", status: [200], includes: ["Privacy"] },
+  { path: "/terms", status: [200], includes: ["Terms"] },
+  { path: "/search", status: [200], includes: ["Search"] },
+  { path: "/robots.txt", status: [200], includes: ["User-agent"] },
+  { path: "/sitemap.xml", status: [200], includes: ["urlset"] },
+];
+
+let failures = 0;
+
+for (const check of checks) {
+  const url = `${baseUrl}${check.path}`;
+  const response = await fetch(url, { redirect: check.redirect || "follow" });
+  const body = await response.text();
+  const okStatus = check.status.includes(response.status);
+  const location = response.headers.get("location") || "";
+  const okRedirect = check.redirectIncludes ? location.includes(check.redirectIncludes) : true;
+  const missingText = (check.includes || []).filter((text) => !body.includes(text));
+
+  if (!okStatus || !okRedirect || missingText.length > 0) {
+    failures += 1;
+    console.error(`FAIL ${check.path}`);
+    console.error(`  status: ${response.status}, expected: ${check.status.join(" or ")}`);
+    if (check.redirectIncludes) {
+      console.error(`  location: ${location || "(none)"}, expected to include: ${check.redirectIncludes}`);
+    }
+    if (missingText.length > 0) {
+      console.error(`  missing text: ${missingText.join(", ")}`);
+    }
+    continue;
+  }
+
+  console.log(`PASS ${check.path}`);
+}
+
+if (failures > 0) {
+  console.error(`${failures} public route smoke check(s) failed for ${baseUrl}`);
+  process.exit(1);
+}
+
+console.log(`All public route smoke checks passed for ${baseUrl}`);

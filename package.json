@@ -10,7 +10,8 @@
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "smoke:public": "node scripts/smoke-public-routes.mjs"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.20.1",
