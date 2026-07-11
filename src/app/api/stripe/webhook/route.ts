@@ -163,17 +163,33 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
     throw new Error("Missing Supabase service role key for Stripe webhook.");
   }
 
+  const now = new Date().toISOString();
   const { error } = await supabase
     .from("merch_orders")
     .update({
-      refunded_at: new Date().toISOString(),
+      refunded_at: now,
       status: fullyRefunded ? "refunded" : "partially_refunded",
-      updated_at: new Date().toISOString(),
+      updated_at: now,
     })
     .eq("stripe_payment_intent_id", paymentIntentId);
 
   if (error) {
     throw new Error(error.message || "Could not update merch refund status.");
+  }
+
+  if (!fullyRefunded) return;
+
+  const { error: adError } = await supabase
+    .from("ad_campaigns")
+    .update({
+      payment_status: "refunded",
+      refunded_at: now,
+      updated_at: now,
+    })
+    .eq("stripe_payment_intent_id", paymentIntentId);
+
+  if (adError) {
+    throw new Error(adError.message || "Could not update ad refund status.");
   }
 }
 
