@@ -27,6 +27,7 @@ const SAVED_SUBJECT_TYPES = new Set([
   "feed_post",
   "gig",
   "marketplace_listing",
+  "merch_product",
   "profile",
   "thread_post",
 ]);
@@ -63,6 +64,7 @@ type SavedSubjectType =
   | "feed_post"
   | "gig"
   | "marketplace_listing"
+  | "merch_product"
   | "profile"
   | "thread_post";
 

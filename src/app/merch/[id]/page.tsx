@@ -14,6 +14,7 @@ import { archiveMerchProduct, editMerchProduct } from "@/app/actions";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { ProtectedVideo } from "@/app/protected-video";
+import { SavedItemButton } from "@/app/saved-item-button";
 import { ShareActions } from "@/app/share-actions";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -198,6 +199,15 @@ export default async function MerchProductPage({
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
+  const { data: savedItem } = claims?.sub
+    ? await supabase
+        .from("saved_items")
+        .select("subject_id")
+        .eq("user_id", claims.sub)
+        .eq("subject_type", "merch_product")
+        .eq("subject_id", product.id)
+        .maybeSingle<{ subject_id: string }>()
+    : { data: null };
   const media = product.merch_product_media[0];
   const mediaSrc = media ? mediaUrl(media.storage_bucket, media.storage_path) : null;
   const available = product.inventory_quantity - product.inventory_reserved;
@@ -494,6 +504,16 @@ export default async function MerchProductPage({
                 payment webhook back to TheTattooCore.
               </p>
             </section>
+
+            {claims?.sub ? (
+              <SavedItemButton
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-4 text-sm font-semibold"
+                isSaved={Boolean(savedItem)}
+                returnPath={`/merch/${product.id}`}
+                subjectId={product.id}
+                subjectType="merch_product"
+              />
+            ) : null}
 
             <ShareActions
               text={`Check this Merch on ${siteName}: ${product.title}`}

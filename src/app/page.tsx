@@ -152,7 +152,12 @@ type Gig = {
 
 type SavedItem = {
   subject_id: string;
-  subject_type: "feed_post" | "gig" | "marketplace_listing" | "thread_post";
+  subject_type:
+    | "feed_post"
+    | "gig"
+    | "marketplace_listing"
+    | "merch_product"
+    | "thread_post";
 };
 
 type FollowedProfile = {
@@ -1480,6 +1485,7 @@ export default async function Home({
             "thread_post",
             "marketplace_listing",
             "gig",
+            "merch_product",
           ])
           .returns<SavedItem[]>()
       : Promise.resolve({ data: [] as SavedItem[] }),
@@ -1531,6 +1537,7 @@ export default async function Home({
         product.is_official || isVerifiedProfessional(product.profiles),
     ),
     rankingContext,
+    "merch_product",
   );
   const lockedPublicItemCount = [
     ...(feedPosts ?? []),
@@ -2605,6 +2612,18 @@ export default async function Home({
                           >
                             Manage merch
                           </Link>
+                        ) : null}
+                        {isSignedIn ? (
+                          <SavedItemButton
+                            className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
+                            hash="merch"
+                            isSaved={savedItemKeys.has(
+                              `merch_product:${product.id}`,
+                            )}
+                            returnPath="/"
+                            subjectId={product.id}
+                            subjectType="merch_product"
+                          />
                         ) : null}
                         <CompactShareButton
                           className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"

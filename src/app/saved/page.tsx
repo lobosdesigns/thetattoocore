@@ -8,6 +8,7 @@ import {
   BriefcaseBusiness,
   Camera,
   MessageCircle,
+  Package,
   Search,
   ShoppingBag,
   UserRound,
@@ -29,6 +30,7 @@ type SavedItem = {
     | "feed_post"
     | "gig"
     | "marketplace_listing"
+    | "merch_product"
     | "profile"
     | "thread_post";
 };
@@ -83,6 +85,16 @@ type Gig = {
   title: string;
 };
 
+type MerchProduct = {
+  category: string;
+  currency: string;
+  id: string;
+  is_official: boolean;
+  price_cents: number;
+  profiles: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"> | null;
+  title: string;
+};
+
 type SavedCard = {
   href: string;
   id: string;
@@ -133,6 +145,7 @@ function itemIcon(type: SavedItem["subject_type"]) {
   if (type === "thread_post") return MessageCircle;
   if (type === "marketplace_listing") return ShoppingBag;
   if (type === "gig") return BriefcaseBusiness;
+  if (type === "merch_product") return Package;
 
   return UserRound;
 }
@@ -200,6 +213,7 @@ export default async function SavedPage({
   const threadIds = idsFor(saved, "thread_post");
   const listingIds = idsFor(saved, "marketplace_listing");
   const gigIds = idsFor(saved, "gig");
+  const merchIds = idsFor(saved, "merch_product");
   const profileIds = idsFor(saved, "profile");
 
   const [
@@ -207,6 +221,7 @@ export default async function SavedPage({
     { data: threadPosts },
     { data: listings },
     { data: gigs },
+    { data: merchProducts },
     { data: profiles },
   ] = await Promise.all([
     feedIds.length
@@ -268,6 +283,16 @@ export default async function SavedPage({
             .returns<Gig[]>();
         })()
       : Promise.resolve({ data: [] as Gig[] }),
+    merchIds.length
+      ? supabase
+          .from("merch_products")
+          .select(
+            "id, title, category, price_cents, currency, is_official, profiles:profiles!merch_products_seller_id_fkey(username, display_name, avatar_url, account_type, license_verified_at)",
+          )
+          .in("id", merchIds)
+          .eq("status", "active")
+          .returns<MerchProduct[]>()
+      : Promise.resolve({ data: [] as MerchProduct[] }),
     profileIds.length
       ? supabase
           .from("profiles")
@@ -286,6 +311,9 @@ export default async function SavedPage({
   const threadMap = new Map((threadPosts ?? []).map((thread) => [thread.id, thread]));
   const listingMap = new Map((listings ?? []).map((listing) => [listing.id, listing]));
   const gigMap = new Map((gigs ?? []).map((gig) => [gig.id, gig]));
+  const merchMap = new Map(
+    (merchProducts ?? []).map((product) => [product.id, product]),
+  );
   const profileMap = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
 
   const cards: SavedCard[] = saved
@@ -366,6 +394,35 @@ export default async function SavedPage({
         };
       }
 
+      if (item.subject_type === "merch_product") {
+        const product = merchMap.get(item.subject_id);
+        if (!product) return null;
+
+        return {
+          href: `/merch/${product.id}`,
+          id: product.id,
+          meta: [
+            product.category.replaceAll("_", " "),
+            new Intl.NumberFormat("en-US", {
+              currency: product.currency,
+              style: "currency",
+            }).format(product.price_cents / 100),
+          ]
+            .filter(Boolean)
+            .join(" - "),
+          owner: product.profiles,
+          ownerName: product.profiles?.display_name,
+          subjectType: item.subject_type,
+          summary: product.is_official
+            ? "Official TheTattooCore Merch"
+            : product.profiles?.display_name
+              ? `Sold by ${product.profiles.display_name}`
+              : "Merch product",
+          title: product.title,
+          typeLabel: "Merch",
+        };
+      }
+
       const profile = profileMap.get(item.subject_id);
       if (!profile) return null;
 
@@ -399,7 +456,7 @@ export default async function SavedPage({
               <div>
                 <h1 className="text-xl font-bold">Saved</h1>
                 <p className="text-sm text-[var(--muted-strong)]">
-                  Latest {savedLimit} artists, 4U, Gossip, Stuff, and Gigs you bookmarked. Merch saves come after production product rules.
+                  Latest {savedLimit} artists, 4U, Gossip, Stuff, Gigs, and Merch you bookmarked.
                 </p>
               </div>
             </div>
@@ -499,8 +556,8 @@ export default async function SavedPage({
               <Bookmark className="mx-auto mb-3 size-8" />
               <h2 className="text-lg font-bold">No saved items yet</h2>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--muted-strong)]">
-                Tap Save on 4U, Gossip, Stuff, or Gigs to keep them here for
-                later.
+                Tap Save on 4U, Gossip, Stuff, Gigs, or Merch to keep them here
+                for later.
               </p>
               <Link
                 className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"

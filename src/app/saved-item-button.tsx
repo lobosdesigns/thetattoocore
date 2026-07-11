@@ -5,6 +5,7 @@ type SavedSubjectType =
   | "feed_post"
   | "gig"
   | "marketplace_listing"
+  | "merch_product"
   | "profile"
   | "thread_post";
 
