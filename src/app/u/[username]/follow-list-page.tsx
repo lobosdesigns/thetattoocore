@@ -94,8 +94,8 @@ function Pagination({
   totalPages: number;
 }) {
   return (
-    <nav className="flex flex-col gap-3 rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm font-semibold text-[#4f473f]">
+    <nav className="ttc-surface flex flex-col gap-3 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm font-semibold text-[var(--muted)]">
         Page {currentPage} of {Math.max(totalPages, 1)}
       </p>
       <div className="grid grid-cols-2 gap-2 sm:flex">
@@ -103,8 +103,8 @@ function Pagination({
           aria-disabled={currentPage <= 1}
           className={`flex h-10 items-center justify-center gap-2 rounded-md border px-3 text-sm font-semibold ${
             currentPage <= 1
-              ? "pointer-events-none border-[#e5ded4] bg-[#f7f4ef] text-[#a69b8d]"
-              : "border-[#cfc8bd] bg-white text-[#171412]"
+              ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_74%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
+              : "ttc-surface"
           }`}
           href={pageHref(profileUsername, kind, Math.max(1, currentPage - 1))}
         >
@@ -115,8 +115,8 @@ function Pagination({
           aria-disabled={!hasNextPage}
           className={`flex h-10 items-center justify-center gap-2 rounded-md border px-3 text-sm font-semibold ${
             !hasNextPage
-              ? "pointer-events-none border-[#e5ded4] bg-[#f7f4ef] text-[#a69b8d]"
-              : "border-[#171412] bg-[#171412] text-white"
+              ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_74%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
+              : "ttc-control-active border-[var(--foreground)]"
           }`}
           href={pageHref(profileUsername, kind, currentPage + 1)}
         >
@@ -213,14 +213,14 @@ export async function FollowListPage({
   const visibleRows = (rows ?? []).filter((row) => row.profiles);
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
-      <div className="mx-auto min-h-screen w-full max-w-3xl overflow-x-hidden bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
-        <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
+    <main className="ttc-page min-h-screen overflow-x-hidden">
+      <div className="ttc-page-panel mx-auto min-h-screen w-full max-w-3xl overflow-x-hidden">
+        <header className="sticky top-0 z-10 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <Link
                 aria-label="Back to profile"
-                className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
+                className="ttc-surface flex size-10 shrink-0 items-center justify-center rounded-md border"
                 href={`/u/${profile.username}`}
               >
                 <ArrowLeft className="size-5" />
@@ -229,7 +229,7 @@ export async function FollowListPage({
                 <h1 className="truncate text-xl font-bold">
                   {titleFor(kind)}
                 </h1>
-                <p className="truncate text-xs text-[#766d62]">
+                <p className="truncate text-xs text-[var(--muted-strong)]">
                   @{profile.username}
                 </p>
               </div>
@@ -238,7 +238,7 @@ export async function FollowListPage({
           </div>
         </header>
 
-        <section className="border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-5">
+        <section className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-4 py-5">
           <div className="flex items-center gap-3">
             <ProfileAvatar profile={profile} className="size-14 text-lg" />
             <div className="min-w-0">
@@ -250,7 +250,7 @@ export async function FollowListPage({
                   <BadgeCheck className="size-4 shrink-0" />
                 ) : null}
               </div>
-              <p className="text-sm text-[#766d62]">
+              <p className="text-sm text-[var(--muted-strong)]">
                 {followerCount ?? 0} followers - {followingCount ?? 0} following
               </p>
             </div>
@@ -260,8 +260,8 @@ export async function FollowListPage({
               <Link
                 className={`flex h-9 shrink-0 items-center rounded-md border px-3 text-sm font-semibold ${
                   item === kind
-                    ? "border-[#171412] bg-[#171412] text-white"
-                    : "border-[#cfc8bd] bg-white text-[#171412]"
+                    ? "ttc-control-active border-[var(--foreground)]"
+                    : "ttc-surface"
                 }`}
                 href={`/u/${profile.username}/${item}`}
                 key={item}
@@ -281,7 +281,7 @@ export async function FollowListPage({
               profileUsername={profile.username}
               totalPages={totalPages}
             />
-            <p className="mt-3 text-sm text-[#766d62]">
+            <p className="mt-3 text-sm text-[var(--muted-strong)]">
               Showing{" "}
               {visibleRows.length ? `${from + 1}-${from + visibleRows.length}` : "0"}{" "}
               of {totalRows} {kind}.
@@ -291,15 +291,15 @@ export async function FollowListPage({
 
         {!canView ? (
           <section className="px-4 py-8">
-            <div className="ttc-card rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-5 text-center">
-              <LockKeyhole className="mx-auto mb-3 size-8 text-[#766d62]" />
+            <div className="ttc-card rounded-md p-5 text-center">
+              <LockKeyhole className="mx-auto mb-3 size-8 text-[var(--muted-strong)]" />
               <h2 className="text-lg font-bold">Private community</h2>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#766d62]">
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--muted-strong)]">
                 Sign in and follow this profile, if needed, to view their full
                 community list.
               </p>
               <Link
-                className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                 href={`/u/${profile.username}`}
               >
                 Back to profile
@@ -315,7 +315,7 @@ export async function FollowListPage({
 
               return (
                 <Link
-                  className="ttc-card flex items-center gap-3 rounded-md border border-[#cfc8bd] bg-white p-4"
+                  className="ttc-card flex items-center gap-3 rounded-md p-4"
                   href={`/u/${person.username}`}
                   key={person.id}
                 >
@@ -329,7 +329,7 @@ export async function FollowListPage({
                         <BadgeCheck className="size-3.5 shrink-0" />
                       ) : null}
                     </div>
-                    <p className="text-xs text-[#766d62]">
+                    <p className="text-xs text-[var(--muted-strong)]">
                       @{person.username} - {person.account_type}
                     </p>
                   </div>
@@ -346,15 +346,15 @@ export async function FollowListPage({
           </section>
         ) : (
           <section className="px-4 py-8">
-            <div className="rounded-md border border-dashed border-[#cfc8bd] bg-[#fffdf9] p-5 text-center">
+            <div className="ttc-surface rounded-md border border-dashed p-5 text-center">
               {kind === "followers" ? (
-                <Users className="mx-auto mb-3 size-8 text-[#766d62]" />
+                <Users className="mx-auto mb-3 size-8 text-[var(--muted-strong)]" />
               ) : (
-                <UserPlus className="mx-auto mb-3 size-8 text-[#766d62]" />
+                <UserPlus className="mx-auto mb-3 size-8 text-[var(--muted-strong)]" />
               )}
               <h2 className="text-lg font-bold">{emptyText(kind)}</h2>
               <Link
-                className="mt-4 inline-flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
+                className="ttc-surface mt-4 inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-semibold"
                 href={`/u/${profile.username}/${otherKind(kind)}`}
               >
                 View {titleFor(otherKind(kind))}
