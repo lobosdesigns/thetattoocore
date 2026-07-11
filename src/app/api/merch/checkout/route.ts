@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { siteName, siteUrl } from "@/lib/site";
-import { createStripeClient } from "@/lib/stripe/server";
 import { createClient } from "@/lib/supabase/server";
 
 type Claims = {
@@ -19,6 +18,11 @@ type Product = {
   title: string;
 };
 
+type CheckoutSession = {
+  id: string;
+  url: string | null;
+};
+
 function cleanQuantity(value: FormDataEntryValue | null) {
   const parsed = Number.parseInt(String(value ?? "1"), 10);
 
@@ -34,13 +38,92 @@ function redirectWithMessage(path: string, message: string) {
   );
 }
 
+async function createCheckoutSession({
+  buyerId,
+  cancelUrl,
+  orderId,
+  product,
+  quantity,
+  successUrl,
+}: {
+  buyerId: string;
+  cancelUrl: string;
+  orderId: string;
+  product: Product;
+  quantity: number;
+  successUrl: string;
+}) {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+
+  if (!secretKey) {
+    throw new Error("Stripe is not configured yet. Add the Stripe secret key before checkout.");
+  }
+
+  const body = new URLSearchParams({
+    "allow_promotion_codes": "false",
+    "billing_address_collection": "auto",
+    "client_reference_id": orderId,
+    "line_items[0][price_data][currency]": product.currency.toLowerCase(),
+    "line_items[0][price_data][product_data][metadata][merch_product_id]":
+      product.id,
+    "line_items[0][price_data][product_data][metadata][seller_id]":
+      product.seller_id,
+    "line_items[0][price_data][product_data][name]": product.title,
+    "line_items[0][price_data][unit_amount]": String(product.price_cents),
+    "line_items[0][quantity]": String(quantity),
+    "metadata[buyer_id]": buyerId,
+    "metadata[merch_order_id]": orderId,
+    "metadata[merch_product_id]": product.id,
+    "metadata[seller_id]": product.seller_id,
+    "mode": "payment",
+    "payment_intent_data[metadata][buyer_id]": buyerId,
+    "payment_intent_data[metadata][merch_order_id]": orderId,
+    "payment_intent_data[metadata][merch_product_id]": product.id,
+    "payment_intent_data[metadata][seller_id]": product.seller_id,
+    "shipping_address_collection[allowed_countries][0]": "US",
+    "shipping_address_collection[allowed_countries][1]": "CA",
+    "submit_type": "pay",
+    "success_url": successUrl,
+    "cancel_url": cancelUrl,
+  });
+
+  if (product.description) {
+    body.set(
+      "line_items[0][price_data][product_data][description]",
+      product.description.slice(0, 500),
+    );
+  }
+
+  const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+    body,
+    headers: {
+      Authorization: `Bearer ${secretKey}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    method: "POST",
+  });
+  const session = (await response.json()) as
+    | CheckoutSession
+    | { error?: { message?: string } };
+
+  if (!response.ok || !("id" in session)) {
+    const message =
+      "error" in session && session.error?.message
+        ? session.error.message
+        : "Stripe could not create checkout.";
+
+    throw new Error(message);
+  }
+
+  return session;
+}
+
 export async function POST(request: Request) {
-  const stripe = createStripeClient();
   const canProcessStripeWebhooks = Boolean(
     process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY,
   );
 
-  if (!stripe) {
+  if (!process.env.STRIPE_SECRET_KEY) {
     return redirectWithMessage(
       "/#merch",
       "Stripe is not configured yet. Add the Stripe secret key before checkout.",
@@ -105,49 +188,23 @@ export async function POST(request: Request) {
   const cancelUrl = `${siteUrl}/merch/${product.id}?message=${encodeURIComponent(
     "Checkout canceled.",
   )}`;
-  const session = await stripe.checkout.sessions.create({
-    allow_promotion_codes: false,
-    billing_address_collection: "auto",
-    client_reference_id: orderId,
-    line_items: [
-      {
-        price_data: {
-          currency: product.currency.toLowerCase(),
-          product_data: {
-            description: product.description?.slice(0, 500) || undefined,
-            metadata: {
-              merch_product_id: product.id,
-              seller_id: product.seller_id,
-            },
-            name: product.title,
-          },
-          unit_amount: product.price_cents,
-        },
-        quantity,
-      },
-    ],
-    metadata: {
-      buyer_id: claims.sub,
-      merch_order_id: orderId,
-      merch_product_id: product.id,
-      seller_id: product.seller_id,
-    },
-    mode: "payment",
-    payment_intent_data: {
-      metadata: {
-        buyer_id: claims.sub,
-        merch_order_id: orderId,
-        merch_product_id: product.id,
-        seller_id: product.seller_id,
-      },
-    },
-    shipping_address_collection: {
-      allowed_countries: ["US", "CA"],
-    },
-    submit_type: "pay",
-    success_url: successUrl,
-    cancel_url: cancelUrl,
-  });
+  let session: CheckoutSession;
+
+  try {
+    session = await createCheckoutSession({
+      buyerId: claims.sub,
+      cancelUrl,
+      orderId,
+      product,
+      quantity,
+      successUrl,
+    });
+  } catch (error) {
+    return redirectWithMessage(
+      `/merch/${product.id}`,
+      error instanceof Error ? error.message : "Stripe could not create checkout.",
+    );
+  }
 
   const { error: orderError } = await supabase.from("merch_orders").insert({
     buyer_id: claims.sub,
