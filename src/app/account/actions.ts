@@ -305,6 +305,7 @@ export async function updateProfile(formData: FormData) {
     country: countryCode,
     country_code: countryCode,
     display_name: displayName,
+    facebook_url: cleanUrl(formData.get("facebook_url")),
     id: claims.sub,
     instagram_url: cleanUrl(formData.get("instagram_url")),
     is_adult_confirmed: true,
@@ -333,9 +334,12 @@ export async function updateProfile(formData: FormData) {
     preferred_language: preferredLanguage,
     region: cleanText(formData.get("region"), 40) || null,
     theme_preference: themePreference,
+    tiktok_url: cleanUrl(formData.get("tiktok_url")),
     updated_at: new Date().toISOString(),
     username,
     website_url: cleanUrl(formData.get("website_url")),
+    x_url: cleanUrl(formData.get("x_url")),
+    youtube_url: cleanUrl(formData.get("youtube_url")),
     ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
   };
 

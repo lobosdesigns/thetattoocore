@@ -21,6 +21,7 @@ type Profile = {
   city: string | null;
   country_code: string | null;
   display_name: string;
+  facebook_url: string | null;
   instagram_url: string | null;
   is_adult_confirmed: boolean | null;
   is_private: boolean | null;
@@ -41,6 +42,9 @@ type Profile = {
   theme_preference: "light" | "dark" | "system" | null;
   username: string;
   website_url: string | null;
+  tiktok_url: string | null;
+  x_url: string | null;
+  youtube_url: string | null;
 };
 
 const accountTypes = [
@@ -403,13 +407,57 @@ export function ProfileForm({
           />
         </label>
 
-        <label className="block sm:col-span-2">
+        <label className="block">
           <span className="text-sm font-medium">Instagram</span>
           <input
             className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
             defaultValue={initialProfile?.instagram_url ?? ""}
             name="instagram_url"
             placeholder="https://instagram.com/artist"
+            type="url"
+          />
+        </label>
+
+        <label className="block">
+          <span className="text-sm font-medium">TikTok</span>
+          <input
+            className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+            defaultValue={initialProfile?.tiktok_url ?? ""}
+            name="tiktok_url"
+            placeholder="https://tiktok.com/@artist"
+            type="url"
+          />
+        </label>
+
+        <label className="block">
+          <span className="text-sm font-medium">Facebook</span>
+          <input
+            className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+            defaultValue={initialProfile?.facebook_url ?? ""}
+            name="facebook_url"
+            placeholder="https://facebook.com/studio"
+            type="url"
+          />
+        </label>
+
+        <label className="block">
+          <span className="text-sm font-medium">YouTube</span>
+          <input
+            className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+            defaultValue={initialProfile?.youtube_url ?? ""}
+            name="youtube_url"
+            placeholder="https://youtube.com/@artist"
+            type="url"
+          />
+        </label>
+
+        <label className="block sm:col-span-2">
+          <span className="text-sm font-medium">X / Twitter</span>
+          <input
+            className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+            defaultValue={initialProfile?.x_url ?? ""}
+            name="x_url"
+            placeholder="https://x.com/artist"
             type="url"
           />
         </label>

@@ -63,6 +63,10 @@ type Profile = {
   country: string | null;
   website_url: string | null;
   instagram_url: string | null;
+  tiktok_url: string | null;
+  facebook_url: string | null;
+  youtube_url: string | null;
+  x_url: string | null;
   is_private: boolean;
   license_verified_at: string | null;
   created_at: string;
@@ -819,7 +823,7 @@ export default async function ProfilePage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, username, display_name, avatar_url, account_type, bio, city, region, country, website_url, instagram_url, is_private, license_verified_at, created_at",
+      "id, username, display_name, avatar_url, account_type, bio, city, region, country, website_url, instagram_url, tiktok_url, facebook_url, youtube_url, x_url, is_private, license_verified_at, created_at",
     )
     .eq("username", cleanUsername)
     .maybeSingle<Profile>();
@@ -1121,6 +1125,50 @@ export default async function ProfilePage({
                   >
                     <LinkIcon className="size-3.5" />
                     Instagram
+                  </a>
+                ) : null}
+                {profile.tiktok_url ? (
+                  <a
+                    className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2.5 py-1.5 text-xs font-semibold text-[var(--foreground)]"
+                    href={profile.tiktok_url}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <LinkIcon className="size-3.5" />
+                    TikTok
+                  </a>
+                ) : null}
+                {profile.facebook_url ? (
+                  <a
+                    className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2.5 py-1.5 text-xs font-semibold text-[var(--foreground)]"
+                    href={profile.facebook_url}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <LinkIcon className="size-3.5" />
+                    Facebook
+                  </a>
+                ) : null}
+                {profile.youtube_url ? (
+                  <a
+                    className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2.5 py-1.5 text-xs font-semibold text-[var(--foreground)]"
+                    href={profile.youtube_url}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <LinkIcon className="size-3.5" />
+                    YouTube
+                  </a>
+                ) : null}
+                {profile.x_url ? (
+                  <a
+                    className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2.5 py-1.5 text-xs font-semibold text-[var(--foreground)]"
+                    href={profile.x_url}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <LinkIcon className="size-3.5" />
+                    X
                   </a>
                 ) : null}
               </div>
