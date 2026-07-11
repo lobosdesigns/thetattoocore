@@ -224,7 +224,7 @@ function LicenseRequestCard({
         <a
           className="mt-4 flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)]"
           href={request.signedDocumentUrl}
-          rel="noreferrer"
+          rel="noopener noreferrer"
           target="_blank"
         >
           Open private document

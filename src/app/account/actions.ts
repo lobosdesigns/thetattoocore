@@ -6,6 +6,7 @@ import { sendHostgatorEmail } from "@/lib/mail/hostgator";
 import { countryCodes, languageCodes } from "@/lib/localization";
 import { siteName, siteUrl, supportEmail } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
+import { cleanExternalUrl } from "@/lib/urls";
 
 const LICENSE_BUCKET = "license-documents";
 const AVATAR_BUCKET = "profile-avatars";
@@ -63,22 +64,6 @@ function isPastDate(value: string | null) {
   const date = new Date(`${value}T23:59:59`);
 
   return Number.isFinite(date.getTime()) && date.getTime() < Date.now();
-}
-
-function cleanUrl(value: FormDataEntryValue | null) {
-  const text = cleanText(value, 240);
-
-  if (!text) return null;
-
-  try {
-    const url = new URL(text);
-
-    if (!["http:", "https:"].includes(url.protocol)) return null;
-
-    return url.toString();
-  } catch {
-    return null;
-  }
 }
 
 function cleanTime(value: FormDataEntryValue | null, fallback: string) {
@@ -305,9 +290,9 @@ export async function updateProfile(formData: FormData) {
     country: countryCode,
     country_code: countryCode,
     display_name: displayName,
-    facebook_url: cleanUrl(formData.get("facebook_url")),
+    facebook_url: cleanExternalUrl(formData.get("facebook_url"), 240),
     id: claims.sub,
-    instagram_url: cleanUrl(formData.get("instagram_url")),
+    instagram_url: cleanExternalUrl(formData.get("instagram_url"), 240),
     is_adult_confirmed: true,
     is_private: formData.get("is_private") === "on",
     location_personalization_enabled:
@@ -334,12 +319,12 @@ export async function updateProfile(formData: FormData) {
     preferred_language: preferredLanguage,
     region: cleanText(formData.get("region"), 40) || null,
     theme_preference: themePreference,
-    tiktok_url: cleanUrl(formData.get("tiktok_url")),
+    tiktok_url: cleanExternalUrl(formData.get("tiktok_url"), 240),
     updated_at: new Date().toISOString(),
     username,
-    website_url: cleanUrl(formData.get("website_url")),
-    x_url: cleanUrl(formData.get("x_url")),
-    youtube_url: cleanUrl(formData.get("youtube_url")),
+    website_url: cleanExternalUrl(formData.get("website_url"), 240),
+    x_url: cleanExternalUrl(formData.get("x_url"), 240),
+    youtube_url: cleanExternalUrl(formData.get("youtube_url"), 240),
     ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
   };
 
@@ -532,7 +517,7 @@ export async function submitAdCampaign(formData: FormData) {
   const name = cleanText(formData.get("name"), 120);
   const title = cleanText(formData.get("title"), 120);
   const body = cleanText(formData.get("body"), 300);
-  const targetUrl = cleanUrl(formData.get("target_url"));
+  const targetUrl = cleanExternalUrl(formData.get("target_url"), 240);
   const bidCents = centsFromDollars(formData.get("bid_dollars"), 100000);
   const dailyBudgetCents = centsFromDollars(
     formData.get("daily_budget_dollars"),

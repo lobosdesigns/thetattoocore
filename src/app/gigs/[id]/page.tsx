@@ -31,6 +31,7 @@ import {
   siteName,
   siteUrl,
 } from "@/lib/site";
+import { userGeneratedLinkRel } from "@/lib/urls";
 import { isVerifiedProfessional } from "@/lib/verification";
 
 type Claims = {
@@ -594,7 +595,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
                 <a
                   className="flex h-11 w-full items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                   href={gig.contact_url}
-                  rel="noreferrer"
+                  rel={userGeneratedLinkRel}
                   target="_blank"
                 >
                   View details

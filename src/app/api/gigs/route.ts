@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { inspectMediaFile, validateMediaMetadata } from "@/lib/media/metadata";
 import { createClient } from "@/lib/supabase/server";
+import { cleanExternalUrl } from "@/lib/urls";
 
 const MEDIA_BUCKET = "tattoo-media";
 const VISIBILITY_VALUES = new Set(["public_preview", "members", "private"]);
@@ -76,7 +77,7 @@ export async function POST(request: Request) {
   const startsAt = cleanText(formData.get("starts_at"), 40);
   const endsAt = cleanText(formData.get("ends_at"), 40);
   const compensation = cleanText(formData.get("compensation"), 120);
-  const contactUrl = cleanText(formData.get("contact_url"), 300);
+  const contactUrl = cleanExternalUrl(formData.get("contact_url"), 300);
   const visibility = cleanVisibility(formData.get("visibility"));
   const isSensitive = false;
   const media = mediaFromForm(formData);

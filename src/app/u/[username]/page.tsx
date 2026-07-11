@@ -37,6 +37,7 @@ import {
   siteName,
   siteUrl,
 } from "@/lib/site";
+import { userGeneratedLinkRel } from "@/lib/urls";
 import { isVerifiedProfessional } from "@/lib/verification";
 import {
   acceptFollowRequest,
@@ -1109,7 +1110,7 @@ export default async function ProfilePage({
                   <a
                     className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2.5 py-1.5 text-xs font-semibold text-[var(--foreground)]"
                     href={profile.website_url}
-                    rel="noreferrer"
+                    rel={userGeneratedLinkRel}
                     target="_blank"
                   >
                     <LinkIcon className="size-3.5" />
@@ -1120,7 +1121,7 @@ export default async function ProfilePage({
                   <a
                     className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2.5 py-1.5 text-xs font-semibold text-[var(--foreground)]"
                     href={profile.instagram_url}
-                    rel="noreferrer"
+                    rel={userGeneratedLinkRel}
                     target="_blank"
                   >
                     <LinkIcon className="size-3.5" />
@@ -1131,7 +1132,7 @@ export default async function ProfilePage({
                   <a
                     className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2.5 py-1.5 text-xs font-semibold text-[var(--foreground)]"
                     href={profile.tiktok_url}
-                    rel="noreferrer"
+                    rel={userGeneratedLinkRel}
                     target="_blank"
                   >
                     <LinkIcon className="size-3.5" />
@@ -1142,7 +1143,7 @@ export default async function ProfilePage({
                   <a
                     className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2.5 py-1.5 text-xs font-semibold text-[var(--foreground)]"
                     href={profile.facebook_url}
-                    rel="noreferrer"
+                    rel={userGeneratedLinkRel}
                     target="_blank"
                   >
                     <LinkIcon className="size-3.5" />
@@ -1153,7 +1154,7 @@ export default async function ProfilePage({
                   <a
                     className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2.5 py-1.5 text-xs font-semibold text-[var(--foreground)]"
                     href={profile.youtube_url}
-                    rel="noreferrer"
+                    rel={userGeneratedLinkRel}
                     target="_blank"
                   >
                     <LinkIcon className="size-3.5" />
@@ -1164,7 +1165,7 @@ export default async function ProfilePage({
                   <a
                     className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2.5 py-1.5 text-xs font-semibold text-[var(--foreground)]"
                     href={profile.x_url}
-                    rel="noreferrer"
+                    rel={userGeneratedLinkRel}
                     target="_blank"
                   >
                     <LinkIcon className="size-3.5" />
@@ -1615,7 +1616,7 @@ export default async function ProfilePage({
                           <a
                             className="mt-3 inline-flex h-9 items-center justify-center rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-[var(--background)]"
                             href={gig.contact_url}
-                            rel="noreferrer"
+                            rel={userGeneratedLinkRel}
                             target="_blank"
                           >
                             View details

@@ -48,6 +48,7 @@ import { CompactShareButton } from "./share-actions";
 import { countryLabel, languageLabel, normalizedLanguage } from "@/lib/localization";
 import { siteName, siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
+import { userGeneratedLinkRel } from "@/lib/urls";
 import { isVerifiedProfessional } from "@/lib/verification";
 
 type Claims = {
@@ -622,7 +623,7 @@ function SponsoredSlot({
   )}&placement=${encodeURIComponent(dbPlacement)}`;
 
   return (
-    <a href={clickHref} rel="nofollow sponsored noreferrer" target="_blank">
+    <a href={clickHref} rel="nofollow noopener noreferrer sponsored" target="_blank">
       {content}
     </a>
   );
@@ -2459,7 +2460,7 @@ export default async function Home({
                           <a
                             className="flex h-10 w-full items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                             href={gig.contact_url}
-                            rel="noreferrer"
+                            rel={userGeneratedLinkRel}
                             target="_blank"
                           >
                             View details

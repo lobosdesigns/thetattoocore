@@ -11,6 +11,7 @@ import {
 } from "@/lib/notifications";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { cleanExternalUrl } from "@/lib/urls";
 import { isVerifiedProfessional } from "@/lib/verification";
 
 const MEDIA_BUCKET = "tattoo-media";
@@ -1154,7 +1155,7 @@ export async function editGig(formData: FormData) {
   const region = cleanText(formData.get("region"), 80);
   const country = cleanText(formData.get("country"), 80) || "US";
   const compensation = cleanText(formData.get("compensation"), 120);
-  const contactUrl = cleanText(formData.get("contact_url"), 240);
+  const contactUrl = cleanExternalUrl(formData.get("contact_url"), 240);
 
   if (!gigId) {
     redirect(homeMessage("Choose a Gig first.", "gigs"));
