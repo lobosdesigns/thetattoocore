@@ -178,7 +178,7 @@ export default async function NotificationsPage({
               </Link>
               <div className="min-w-0">
                 <h1 className="text-xl font-bold">Notifications</h1>
-                <p className="text-xs text-[#766d62]">
+                <p className="text-xs text-[var(--muted-strong)]">
                   {unreadCount
                     ? `${unreadCount} unread - latest ${notificationLimit} shown`
                     : `All caught up - latest ${notificationLimit} shown`}
@@ -209,17 +209,17 @@ export default async function NotificationsPage({
 
         <section className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_80%,transparent)] px-4 py-4 backdrop-blur">
           <div className="ttc-surface flex min-w-0 gap-3 rounded-md border p-3 shadow-sm">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#c8953b]/50 bg-[#171412] text-[#c8953b] shadow-[0_0_18px_rgba(200,149,59,0.15)]">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--gold)_50%,var(--card-rim))] bg-[var(--foreground)] text-[var(--gold)] shadow-[0_0_18px_rgba(200,149,59,0.15)]">
               <Smartphone className="size-5" />
             </div>
             <div className="min-w-0">
               <h2 className="text-sm font-bold">Push notifications later</h2>
-              <p className="mt-1 text-xs leading-5 text-[#766d62]">
+              <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
                 In-app alerts and badges are live now. These preferences will
                 carry forward to email, installed-web-app push, and native
                 iOS/Android push when those channels are added.
               </p>
-              <div className="mt-3 grid gap-2 text-xs leading-5 text-[#4f473f] sm:grid-cols-3">
+              <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted)] sm:grid-cols-3">
                 <p className="ttc-surface rounded-md border px-2 py-1">
                   Quiet hours:{" "}
                   <span className="font-semibold">
@@ -266,7 +266,7 @@ export default async function NotificationsPage({
                 >
                   <div className="relative shrink-0">
                     <ProfileAvatar
-                      className="border border-[#cfc8bd]"
+                      className="border border-[var(--card-rim)]"
                       profile={notification.profiles}
                       size="md"
                     />
@@ -280,7 +280,7 @@ export default async function NotificationsPage({
                         <p className="text-sm font-bold break-words">
                           {notification.title}
                         </p>
-                        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-[#766d62]">
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-[var(--muted-strong)]">
                           {notification.profiles ? (
                             <span>@{notification.profiles.username}</span>
                           ) : null}
@@ -288,11 +288,11 @@ export default async function NotificationsPage({
                             {subjectLabel(notification.subject_type)}
                           </span>
                         </div>
-                        <p className="mt-1 break-words text-sm leading-6 text-[#4f473f]">
+                        <p className="mt-1 break-words text-sm leading-6 text-[var(--muted)]">
                           {notification.body}
                         </p>
                       </div>
-                      <p className="shrink-0 text-xs text-[#766d62]">
+                      <p className="shrink-0 text-xs text-[var(--muted-strong)]">
                         {timeAgo(notification.created_at)}
                       </p>
                     </div>
@@ -372,9 +372,9 @@ export default async function NotificationsPage({
             })
           ) : (
             <div className="px-4 py-12 text-center">
-              <Bell className="mx-auto mb-3 size-9 text-[#766d62]" />
+              <Bell className="mx-auto mb-3 size-9 text-[var(--muted-strong)]" />
               <h2 className="text-lg font-bold">No notifications yet</h2>
-              <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#766d62]">
+              <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[var(--muted-strong)]">
                 Follow requests, messages, likes, and comments will show up
                 here.
               </p>
