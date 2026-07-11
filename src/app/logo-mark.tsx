@@ -190,7 +190,7 @@ export function LogoLockup({
       </g>
       <g transform="translate(122 21)">
         <text
-          fill="#171412"
+          fill="currentColor"
           fontFamily="Georgia, 'Times New Roman', serif"
           fontSize="26"
           fontWeight="700"
@@ -200,7 +200,7 @@ export function LogoLockup({
           The
         </text>
         <text
-          fill="#171412"
+          fill="currentColor"
           fontFamily="Georgia, 'Times New Roman', serif"
           fontSize="48"
           fontWeight="900"
@@ -210,7 +210,7 @@ export function LogoLockup({
           Tattoo Core
         </text>
         <text
-          fill="#766D62"
+          fill="color-mix(in srgb, currentColor 64%, transparent)"
           fontFamily="Arial, sans-serif"
           fontSize="16"
           fontWeight="600"

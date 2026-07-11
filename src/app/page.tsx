@@ -11,7 +11,6 @@ import {
   ImageIcon,
   LockKeyhole,
   LogIn,
-  LoaderCircle,
   MessageCircle,
   Package,
   Search,
@@ -24,19 +23,7 @@ import {
 import {
   acceptAdultTerms,
   archiveGig,
-  blockPostCommentAuthor,
-  blockThreadCommentAuthor,
-  createPostComment,
-  createThreadComment,
-  deletePostComment,
-  deleteThreadComment,
-  editPostComment,
-  editThreadComment,
-  hidePostComment,
-  hideThreadComment,
-  togglePostCommentLike,
   togglePostLike,
-  toggleThreadCommentLike,
   toggleThreadLike,
 } from "./actions";
 import { AdImpressionBeacon } from "./ad-impression-beacon";
@@ -49,13 +36,11 @@ import { LanguageStatusBanner } from "./language-status-banner";
 import { LogoLockup, LogoWordmark } from "./logo-mark";
 import { MediaLightbox } from "./media-lightbox";
 import { NotificationBellLink } from "./notification-bell-link";
-import { PendingSubmitButton } from "./pending-submit-button";
 import { ProtectedVideo } from "./protected-video";
 import { ProfileAvatar } from "./profile-avatar";
 import { SavedItemButton } from "./saved-item-button";
 import { SensitiveContentGate } from "./sensitive-content-gate";
 import { CompactShareButton } from "./share-actions";
-import { WordLimitedField } from "./word-limited-field";
 import { countryLabel, languageLabel, normalizedLanguage } from "@/lib/localization";
 import { siteName, siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
@@ -185,13 +170,8 @@ type PostLike = {
 
 type PostComment = {
   id: string;
-  body: string;
   deleted_at: string | null;
-  parent_id: string | null;
   post_comment_hides: { hidden_by: string }[] | { hidden_by: string } | null;
-  post_comment_likes: PostLike[];
-  created_at: string;
-  profiles: Pick<Profile, "avatar_url" | "display_name" | "id" | "username"> | null;
 };
 
 type ThreadLike = {
@@ -200,13 +180,8 @@ type ThreadLike = {
 
 type ThreadComment = {
   id: string;
-  body: string;
   deleted_at: string | null;
-  parent_id: string | null;
   thread_comment_hides: { hidden_by: string }[] | { hidden_by: string } | null;
-  thread_comment_likes: ThreadLike[];
-  created_at: string;
-  profiles: Pick<Profile, "avatar_url" | "display_name" | "id" | "username"> | null;
 };
 
 type SponsoredPlacement = "4u-feed" | "gossip-feed" | "stuff-feed";
@@ -238,135 +213,6 @@ function hasCommentHide(
   value: { hidden_by: string }[] | { hidden_by: string } | null,
 ) {
   return Array.isArray(value) ? value.length > 0 : Boolean(value);
-}
-
-function CardCommentControls({
-  body,
-  commentAuthorId,
-  commentId,
-  contentOwnerId,
-  currentUserId,
-  kind,
-  returnHash,
-  returnPath,
-}: {
-  body: string;
-  commentAuthorId?: string | null;
-  commentId: string;
-  contentOwnerId?: string | null;
-  currentUserId?: string | null;
-  kind: "feed" | "thread";
-  returnHash: "feed" | "threads";
-  returnPath: string;
-}) {
-  if (!currentUserId) return null;
-
-  const isOwnComment = commentAuthorId === currentUserId;
-  const canModerateComment = contentOwnerId === currentUserId && !isOwnComment;
-
-  if (!isOwnComment && !canModerateComment) {
-    return (
-      <ContentReportForm
-        returnHash={returnHash}
-        returnPath="/"
-        subjectId={commentId}
-        subjectType="comment"
-      />
-    );
-  }
-
-  const editAction = kind === "feed" ? editPostComment : editThreadComment;
-  const deleteAction = kind === "feed" ? deletePostComment : deleteThreadComment;
-  const hideAction = kind === "feed" ? hidePostComment : hideThreadComment;
-  const blockAction =
-    kind === "feed" ? blockPostCommentAuthor : blockThreadCommentAuthor;
-
-  return (
-    <div className="flex w-full flex-wrap items-center gap-2">
-      {isOwnComment ? (
-        <details className="group min-w-[13rem] max-w-full">
-          <summary className="cursor-pointer list-none rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--muted)] transition group-open:border-[var(--gold)] group-open:bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))]">
-            Edit
-          </summary>
-          <form
-            action={editAction}
-            className="mt-2 grid min-w-0 gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-2 shadow-[0_10px_24px_rgba(23,20,18,0.12)]"
-          >
-            <input name="comment_id" type="hidden" value={commentId} />
-            <input name="return_path" type="hidden" value={returnPath} />
-            {kind === "feed" ? (
-              <input
-                className="h-9 min-w-0 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-xs outline-none focus:border-[var(--foreground)]"
-                defaultValue={body}
-                maxLength={300}
-                name="body"
-                required
-              />
-            ) : (
-              <textarea
-                className="min-h-20 min-w-0 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-2 text-xs outline-none focus:border-[var(--foreground)]"
-                defaultValue={body}
-                maxLength={2000}
-                name="body"
-                required
-              />
-            )}
-            <PendingSubmitButton
-              className="h-8 rounded-md bg-[var(--foreground)] px-3 text-xs font-semibold text-[var(--background)]"
-              pendingChildren="Saving..."
-            >
-              Save edit
-            </PendingSubmitButton>
-          </form>
-        </details>
-      ) : null}
-      {isOwnComment || canModerateComment ? (
-        <form action={deleteAction}>
-          <input name="comment_id" type="hidden" value={commentId} />
-          <input name="return_path" type="hidden" value={returnPath} />
-          <PendingSubmitButton
-            className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--danger)]"
-            pendingChildren="Deleting..."
-          >
-            Delete
-          </PendingSubmitButton>
-        </form>
-      ) : null}
-      {canModerateComment ? (
-        <>
-          <form action={hideAction}>
-            <input name="comment_id" type="hidden" value={commentId} />
-            <input name="return_path" type="hidden" value={returnPath} />
-            <input name="reason" type="hidden" value="Hidden by post owner." />
-            <PendingSubmitButton
-              className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--muted)]"
-              pendingChildren="Hiding..."
-            >
-              Hide
-            </PendingSubmitButton>
-          </form>
-          <form action={blockAction}>
-            <input name="comment_id" type="hidden" value={commentId} />
-            <input name="return_path" type="hidden" value={returnPath} />
-            <PendingSubmitButton
-              className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--danger)]"
-              pendingChildren="Blocking..."
-            >
-              Block
-            </PendingSubmitButton>
-          </form>
-        </>
-      ) : null}
-      {!isOwnComment ? (
-        <ContentReportForm
-          returnHash={returnHash}
-          returnPath="/"
-          subjectId={commentId}
-          subjectType="comment"
-        />
-      ) : null}
-    </div>
-  );
 }
 
 function sponsoredDbPlacement(placement: SponsoredPlacement): AdPlacement {
@@ -1332,7 +1178,7 @@ export default async function Home({
     supabase
       .from("feed_posts")
       .select(
-        "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, parent_id, deleted_at, created_at, post_comment_hides(hidden_by), post_comment_likes(user_id), profiles:profiles!post_comments_author_id_fkey(id, avatar_url, display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, deleted_at, post_comment_hides(hidden_by)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("is_published", true)
       .eq("moderation_status", "active")
@@ -1346,7 +1192,7 @@ export default async function Home({
     supabase
       .from("thread_posts")
       .select(
-        "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, body, parent_id, deleted_at, created_at, thread_comment_hides(hidden_by), thread_comment_likes(user_id), profiles:profiles!thread_comments_author_id_fkey(id, avatar_url, display_name, username)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, deleted_at, thread_comment_hides(hidden_by)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("moderation_status", "active")
       .order("created_at", { ascending: false })
@@ -1649,13 +1495,13 @@ export default async function Home({
                             {post.post_likes.length}
                           </button>
                         </form>
-                        <a
+                        <Link
                           className="flex items-center gap-2 text-sm font-medium"
-                          href={`#comment-${post.id}`}
+                          href={`/p/${post.id}#comments`}
                         >
                           <MessageCircle className="size-5" />
                           {visiblePostComments.length}
-                        </a>
+                        </Link>
                         {isSignedIn ? (
                           <SavedItemButton
                             hash="feed"
@@ -1692,172 +1538,6 @@ export default async function Home({
                       <p className="text-sm leading-6">{post.caption}</p>
                     ) : null}
                     <TranslationCue preferredLanguage={preferredLanguage} />
-                    {!isPostLocked && visiblePostComments.length ? (
-                      <div className="space-y-2 border-t border-[var(--card-rim)] pt-3">
-                        {visiblePostComments
-                          .filter((comment) => !comment.parent_id)
-                          .slice(0, 2)
-                          .map((comment) => {
-                            const likedComment = comment.post_comment_likes.some(
-                              (like) => like.user_id === claims?.sub,
-                            );
-                            const replies = post.post_comments
-                              .filter((reply) => reply.parent_id === comment.id)
-                              .filter(
-                                (reply) =>
-                                  !reply.deleted_at &&
-                                  !hasCommentHide(reply.post_comment_hides),
-                              )
-                              .slice(0, 2);
-
-                            return (
-                          <div className="space-y-2" key={comment.id}>
-                          <div className="flex items-start gap-2 text-sm leading-5">
-                            <ProfileAvatar profile={comment.profiles} size="sm" />
-                            <span className="min-w-0 flex-1">
-                            {comment.profiles?.username ? (
-                              <Link
-                                className="font-semibold hover:underline"
-                                href={`/u/${comment.profiles.username}`}
-                              >
-                                {comment.profiles.display_name ?? "Member"}
-                              </Link>
-                            ) : (
-                              <span className="font-semibold">Member</span>
-                            )}{" "}
-                            {comment.body}
-                            </span>
-                          </div>
-                          <div className="ml-9 flex flex-wrap items-center gap-3 text-xs font-semibold text-[var(--muted-strong)]">
-                            <form action={togglePostCommentLike}>
-                              <input name="comment_id" type="hidden" value={comment.id} />
-                              <input name="liked" type="hidden" value={likedComment ? "true" : "false"} />
-                              <input name="return_path" type="hidden" value="/#feed" />
-                              <button className="flex items-center gap-1">
-                                <Heart className={`size-3.5 ${likedComment ? "fill-[var(--gold)] text-[var(--gold)]" : ""}`} />
-                                {comment.post_comment_likes.length}
-                              </button>
-                            </form>
-                            {canCreate ? (
-                              <details>
-                                <summary className="cursor-pointer list-none">Reply</summary>
-                                <form action={createPostComment} className="mt-2 flex items-start gap-2">
-                                  <input name="post_id" type="hidden" value={post.id} />
-                                  <input name="parent_id" type="hidden" value={comment.id} />
-                                  <input name="return_path" type="hidden" value="/#feed" />
-                                  <WordLimitedField
-                                    className="h-9 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-xs outline-none focus:border-[var(--foreground)]"
-                                    emojiShortcuts
-                                    maxLength={300}
-                                    maxWords={40}
-                                    minTrimmedLength={1}
-                                    name="body"
-                                    placeholder="Reply"
-                                    required
-                                    validationMessage="Reply cannot be empty."
-                                  />
-                                  <PendingSubmitButton
-                                    aria-label="Post reply"
-                                    className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]"
-                                    pendingChildren={<LoaderCircle className="size-4 animate-spin" />}
-                                  >
-                                    <Send className="size-4" />
-                                  </PendingSubmitButton>
-                                </form>
-                              </details>
-                            ) : null}
-                            <CardCommentControls
-                              body={comment.body}
-                              commentAuthorId={comment.profiles?.id}
-                              commentId={comment.id}
-                              contentOwnerId={post.profiles?.id}
-                              currentUserId={claims?.sub}
-                              kind="feed"
-                              returnHash="feed"
-                              returnPath="/#feed"
-                            />
-                          </div>
-                          {replies.length ? (
-                            <div className="ml-9 space-y-1 border-l border-[var(--card-rim)] pl-3">
-                              {replies.map((reply) => {
-                                const likedReply = reply.post_comment_likes.some(
-                                  (like) => like.user_id === claims?.sub,
-                                );
-
-                                return (
-                                  <div
-                                    className="space-y-1 text-xs leading-5 text-[var(--muted)]"
-                                    key={reply.id}
-                                  >
-                                    <div className="flex items-start justify-between gap-2">
-                                      <p className="min-w-0 flex-1">
-                                        <span className="font-semibold">
-                                          {reply.profiles?.display_name ?? "Member"}
-                                        </span>{" "}
-                                        {reply.body}
-                                      </p>
-                                      <form action={togglePostCommentLike}>
-                                        <input name="comment_id" type="hidden" value={reply.id} />
-                                        <input name="liked" type="hidden" value={likedReply ? "true" : "false"} />
-                                        <input name="return_path" type="hidden" value="/#feed" />
-                                        <button className="flex items-center gap-1 font-semibold text-[var(--muted-strong)]">
-                                          <Heart className={`size-3 ${likedReply ? "fill-[var(--gold)] text-[var(--gold)]" : ""}`} />
-                                          {reply.post_comment_likes.length}
-                                        </button>
-                                      </form>
-                                    </div>
-                                    <CardCommentControls
-                                      body={reply.body}
-                                      commentAuthorId={reply.profiles?.id}
-                                      commentId={reply.id}
-                                      contentOwnerId={post.profiles?.id}
-                                      currentUserId={claims?.sub}
-                                      kind="feed"
-                                      returnHash="feed"
-                                      returnPath="/#feed"
-                                    />
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          ) : null}
-                          </div>
-                            );
-                          })}
-                      </div>
-                    ) : null}
-                    {canCreate ? (
-                      <form
-                        action={createPostComment}
-                        className="border-t border-[var(--card-rim)] pb-24 pt-3 sm:pb-3"
-                        id={`comment-${post.id}`}
-                      >
-                        <input name="post_id" type="hidden" value={post.id} />
-                        <input name="return_path" type="hidden" value="/#feed" />
-                        <div className="flex items-start gap-2">
-                          <WordLimitedField
-                            className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
-                            emojiShortcuts
-                            maxLength={300}
-                            maxWords={40}
-                            minTrimmedLength={1}
-                            name="body"
-                            placeholder="Add a short comment"
-                            required
-                            validationMessage="Comment cannot be empty."
-                          />
-                          <PendingSubmitButton
-                            aria-label="Post comment"
-                            className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]"
-                            pendingChildren={
-                              <LoaderCircle className="size-4 animate-spin" />
-                            }
-                          >
-                            <Send className="size-4" />
-                          </PendingSubmitButton>
-                        </div>
-                      </form>
-                    ) : null}
                   </div>
                 </article>
                 {shouldShowSponsoredSlot(index, visibleFeedPosts.length) ? (
@@ -1991,13 +1671,13 @@ export default async function Home({
                               {thread.thread_likes.length}
                             </button>
                           </form>
-                          <a
+                          <Link
                             className="flex items-center gap-2 text-sm font-medium"
-                            href={`#thread-comment-${thread.id}`}
+                            href={`/t/${thread.id}#comments`}
                           >
                             <MessageCircle className="size-5" />
                             {visibleThreadComments.length}
-                          </a>
+                          </Link>
                           {isSignedIn ? (
                             <SavedItemButton
                               hash="threads"
@@ -2033,228 +1713,6 @@ export default async function Home({
                             subjectType="thread_post"
                           />
                         </div>
-                      ) : null}
-                      {visibleThreadComments.length ? (
-                        <div className="mt-3 space-y-2">
-                          {visibleThreadComments
-                            .filter((comment) => !comment.parent_id)
-                            .slice(0, 2)
-                            .map((comment) => {
-                              const likedComment = comment.thread_comment_likes.some(
-                                (like) => like.user_id === claims?.sub,
-                              );
-                              const replies = thread.thread_comments
-                                .filter((reply) => reply.parent_id === comment.id)
-                                .filter(
-                                  (reply) =>
-                                    !reply.deleted_at &&
-                                    !hasCommentHide(reply.thread_comment_hides),
-                                )
-                                .slice(0, 2);
-
-                              return (
-                                <div
-                                  className="rounded-md bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 py-2"
-                                  key={comment.id}
-                                >
-                                  <div className="flex items-start gap-2 text-sm leading-5">
-                                    <ProfileAvatar
-                                      profile={comment.profiles}
-                                      size="sm"
-                                    />
-                                    <span className="min-w-0 flex-1">
-                                      {comment.profiles?.username ? (
-                                        <Link
-                                          className="font-semibold hover:underline"
-                                          href={`/u/${comment.profiles.username}`}
-                                        >
-                                          {comment.profiles.display_name ??
-                                            "Member"}
-                                        </Link>
-                                      ) : (
-                                        <span className="font-semibold">
-                                          Member
-                                        </span>
-                                      )}{" "}
-                                      {comment.body}
-                                    </span>
-                                  </div>
-                                  <div className="ml-9 mt-2 flex flex-wrap items-center gap-3 text-xs font-semibold text-[var(--muted-strong)]">
-                                    <form action={toggleThreadCommentLike}>
-                                      <input
-                                        name="comment_id"
-                                        type="hidden"
-                                        value={comment.id}
-                                      />
-                                      <input
-                                        name="liked"
-                                        type="hidden"
-                                        value={likedComment ? "true" : "false"}
-                                      />
-                                      <input
-                                        name="return_path"
-                                        type="hidden"
-                                        value="/#threads"
-                                      />
-                                      <button className="flex items-center gap-1">
-                                        <Heart
-                                          className={`size-3.5 ${
-                                            likedComment
-                                              ? "fill-[var(--gold)] text-[var(--gold)]"
-                                              : ""
-                                          }`}
-                                        />
-                                        {comment.thread_comment_likes.length}
-                                      </button>
-                                    </form>
-                                    {canCreate ? (
-                                      <details>
-                                        <summary className="cursor-pointer list-none">
-                                          Reply
-                                        </summary>
-                                        <form
-                                          action={createThreadComment}
-                                          className="mt-2 flex items-start gap-2"
-                                        >
-                                          <input
-                                            name="thread_id"
-                                            type="hidden"
-                                            value={thread.id}
-                                          />
-                                          <input
-                                            name="parent_id"
-                                            type="hidden"
-                                            value={comment.id}
-                                          />
-                                          <input
-                                            name="return_path"
-                                            type="hidden"
-                                            value="/#threads"
-                                          />
-                                          <WordLimitedField
-                                            className="h-9 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-xs outline-none focus:border-[var(--foreground)]"
-                                            emojiShortcuts
-                                            maxCharacters={2000}
-                                            maxLength={2000}
-                                            minTrimmedLength={1}
-                                            name="body"
-                                            placeholder="Reply"
-                                            required
-                                            validationMessage="Reply cannot be empty."
-                                          />
-                                          <PendingSubmitButton
-                                            aria-label="Post reply"
-                                            className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]"
-                                            pendingChildren={
-                                              <LoaderCircle className="size-4 animate-spin" />
-                                            }
-                                          >
-                                            <Send className="size-4" />
-                                          </PendingSubmitButton>
-                                        </form>
-                                      </details>
-                                    ) : null}
-                                    <CardCommentControls
-                                      body={comment.body}
-                                      commentAuthorId={comment.profiles?.id}
-                                      commentId={comment.id}
-                                      contentOwnerId={thread.profiles?.id}
-                                      currentUserId={claims?.sub}
-                                      kind="thread"
-                                      returnHash="threads"
-                                      returnPath="/#threads"
-                                    />
-                                  </div>
-                                  {replies.length ? (
-                                    <div className="ml-9 mt-2 space-y-1 border-l border-[var(--card-rim)] pl-3">
-                                      {replies.map((reply) => {
-                                        const likedReply =
-                                          reply.thread_comment_likes.some(
-                                            (like) => like.user_id === claims?.sub,
-                                          );
-
-                                        return (
-                                          <div
-                                            className="space-y-1 text-xs leading-5 text-[var(--muted)]"
-                                            key={reply.id}
-                                          >
-                                            <div className="flex items-start justify-between gap-2">
-                                              <p className="min-w-0 flex-1">
-                                                <span className="font-semibold">
-                                                  {reply.profiles?.display_name ??
-                                                    "Member"}
-                                                </span>{" "}
-                                                {reply.body}
-                                              </p>
-                                              <form action={toggleThreadCommentLike}>
-                                                <input name="comment_id" type="hidden" value={reply.id} />
-                                                <input name="liked" type="hidden" value={likedReply ? "true" : "false"} />
-                                                <input name="return_path" type="hidden" value="/#threads" />
-                                                <button className="flex items-center gap-1 font-semibold text-[var(--muted-strong)]">
-                                                  <Heart className={`size-3 ${likedReply ? "fill-[var(--gold)] text-[var(--gold)]" : ""}`} />
-                                                  {reply.thread_comment_likes.length}
-                                                </button>
-                                              </form>
-                                            </div>
-                                            <CardCommentControls
-                                              body={reply.body}
-                                              commentAuthorId={reply.profiles?.id}
-                                              commentId={reply.id}
-                                              contentOwnerId={thread.profiles?.id}
-                                              currentUserId={claims?.sub}
-                                              kind="thread"
-                                              returnHash="threads"
-                                              returnPath="/#threads"
-                                            />
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  ) : null}
-                                </div>
-                              );
-                            })}
-                        </div>
-                      ) : null}
-                      {canCreate ? (
-                        <form
-                          action={createThreadComment}
-                          className="mt-3 pb-24 sm:pb-0"
-                          id={`thread-comment-${thread.id}`}
-                        >
-                          <input
-                            name="thread_id"
-                            type="hidden"
-                            value={thread.id}
-                          />
-                          <input
-                            name="return_path"
-                            type="hidden"
-                            value="/#threads"
-                          />
-                          <div className="flex items-start gap-2">
-                            <WordLimitedField
-                              className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
-                              emojiShortcuts
-                              maxCharacters={2000}
-                              maxLength={2000}
-                              minTrimmedLength={1}
-                              name="body"
-                              placeholder="Reply to thread"
-                              required
-                              validationMessage="Thread reply cannot be empty."
-                            />
-                            <PendingSubmitButton
-                              aria-label="Post thread reply"
-                              className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]"
-                              pendingChildren={
-                                <LoaderCircle className="size-4 animate-spin" />
-                              }
-                            >
-                              <Send className="size-4" />
-                            </PendingSubmitButton>
-                          </div>
-                        </form>
                       ) : null}
                     </article>
                     {shouldShowSponsoredSlot(index, visibleThreadPosts.length) ? (

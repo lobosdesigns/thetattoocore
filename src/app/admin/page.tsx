@@ -1171,21 +1171,21 @@ export default async function AdminPage({
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
       <div className="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_28px_90px_rgba(0,0,0,0.42)] lg:grid-cols-[260px_minmax(0,1fr)]">
-        <aside className="border-b border-[color-mix(in_srgb,var(--gold)_24%,var(--card-rim))] bg-[color-mix(in_srgb,var(--foreground)_94%,transparent)] px-5 py-5 text-[var(--background)] backdrop-blur lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
+        <aside className="border-b border-[color-mix(in_srgb,var(--gold)_34%,transparent)] bg-[var(--ink)] px-5 py-5 text-[var(--paper-warm)] backdrop-blur lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
           <div className="mb-6 flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--gold)_50%,var(--card-rim))] bg-[color-mix(in_srgb,var(--foreground)_82%,black)] text-[var(--gold)] shadow-[0_0_20px_rgba(200,149,59,0.16)]">
               <ShieldCheck className="size-5" />
             </div>
             <div>
               <p className="text-lg font-semibold">Admin</p>
-              <p className="text-xs text-[color-mix(in_srgb,var(--background)_72%,var(--muted-strong))]">TheTattooCore</p>
+              <p className="text-xs text-white/60">TheTattooCore</p>
             </div>
           </div>
 
           <nav className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto pb-1 lg:mx-0 lg:grid lg:grid-cols-1 lg:overflow-visible">
             {adminTabs.map(([Icon, label, href]) => (
               <a
-                className="flex h-11 shrink-0 items-center gap-3 rounded-md border border-white/10 bg-[color-mix(in_srgb,var(--paper-warm)_8%,transparent)] px-3 text-sm font-semibold text-[var(--background)] backdrop-blur hover:border-[color-mix(in_srgb,var(--gold)_60%,var(--card-rim))] hover:bg-[color-mix(in_srgb,var(--gold)_15%,transparent)] lg:w-full"
+                className="flex h-11 shrink-0 items-center gap-3 rounded-md border border-white/10 bg-white/5 px-3 text-sm font-semibold text-white backdrop-blur hover:border-[color-mix(in_srgb,var(--gold)_60%,transparent)] hover:bg-[color-mix(in_srgb,var(--gold)_15%,transparent)] lg:w-full"
                 href={href}
                 key={label}
               >
@@ -1195,9 +1195,9 @@ export default async function AdminPage({
             ))}
           </nav>
 
-          <div className="mt-6 rounded-md border border-white/10 bg-[color-mix(in_srgb,var(--paper-warm)_8%,transparent)] p-3">
+          <div className="mt-6 rounded-md border border-white/10 bg-white/5 p-3">
             <p className="text-sm font-semibold">{adminProfile.display_name}</p>
-            <p className="text-xs text-[color-mix(in_srgb,var(--background)_72%,var(--muted-strong))]">
+            <p className="text-xs text-white/60">
               @{adminProfile.username} - {adminProfile.role}
             </p>
           </div>

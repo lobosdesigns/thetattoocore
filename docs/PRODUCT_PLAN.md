@@ -2,8 +2,8 @@
 
 ## Core Experience
 
-- Feed: image posts and short reel clips, 40-word captions, likes, short 40-word comments, comment likes, and comment replies. Comment likes/replies are live for launch, including visible replies.
-- Threads: longer posts, optional image, replies, likes, comment likes, and community discussion. Comment likes/replies are live for launch, including visible replies.
+- Feed: image posts and short reel clips, 40-word captions, likes, short 40-word comments, comment likes, and comment replies. Comment likes/replies are live for launch on detail pages; the main 4U feed now shows only comment counts linking into the full post so the scroll stays fast.
+- Threads: longer posts, optional image, replies, likes, comment likes, and community discussion. Comment likes/replies are live for launch on detail pages; the main Gossip feed now shows only comment counts linking into the full thread so the scroll stays fast.
 - Comments: original authors must be able to edit/delete their own comments and replies. Post/thread owners should be able to hide/delete/block disruptive comments on their own posts, and all signed-in users should be able to report comments. These controls must appear wherever comments are rendered, including 4U/Gossip cards, detail pages, opened notifications, and deep-link contexts. Done for launch on home cards and 4U/Gossip detail pages, with compact styled controls on detail pages.
 - Marketplace/Stuff: verified artists, studios, and vendors can buy, sell, and trade approved body-art goods and services; fans can browse but not transact or contact sellers.
 - Merch: a separate public-buyable marketplace for artist, studio, vendor, and TheTattooCore merchandise such as T-shirts, prints, art, stickers, aftercare-adjacent brand goods, and other safe fan-facing products. Merch should not be mixed with pro Stuff because the general public can buy Merch, while Stuff stays verification-gated.
@@ -14,6 +14,7 @@
 - Main column swiping should snap one column at a time. A horizontal swipe should land on the next column and stop instead of sliding quickly across multiple sections. Done for launch with a controlled mobile snap rail.
 - Column order for launch planning is 4U, Gossip, Stuff, Gigs, Merch, then DM. Merch can stay as a planned placeholder until seller approval, checkout, tax, shipping, refunds, and payment-provider rules are built.
 - Long feeds and queues should load 25 items at a time with a clear Load more button for each next batch of 25. Apply this to 4U, Gossip, Stuff, Gigs, Merch, notifications, saved items, search results, comments/replies, admin queues, and future long lists so the site stays fast as volume grows. Done for launch on the home 4U, Gossip, Stuff, Gigs, notifications, saved items, search results, DM inbox, and 4U/Gossip detail comments, with follower/following and dedicated admin queues using 50-item page navigation.
+- Main feed cards should not render full comments inline. Home 4U/Gossip cards should show only the visible comment count; clicking the count opens the detail page where comments, replies, edit/delete/report controls, and Load more live. Done for launch, including reduced home-feed comment select payloads.
 - Admin queues should get per-tab Load more controls after the simple 25-item caps are stable, so verification, reports, users, ads, data requests, media review, and activity logs can scale without returning to one giant admin page. Dedicated admin queue pages now use 50-item page navigation where real queues exist.
 - Admin sections must become dedicated pages as volume grows, especially Users, Ads, Stuff, Merch, Reports, Verification, Data Requests, Content, Gigs, Media Ops, and Mail Settings. Each long admin list should use real pagination instead of an endless dashboard section; Users, Ads, Data Requests, Verification, Reports, Content, Stuff, Gigs, Mail Settings, Media Ops, and a Merch planning page have started with dedicated page layers.
 - Admin `/admin` must stay an overview-only command center: high-level counts, health/status cards, and links into dedicated admin pages. It should not contain full user, report, verification, ad, Stuff, Merch, Gig, content, mail, or data-request queues because those pages will get long over time. Done for launch with short overview cards, recent activity, and dedicated queue links.
@@ -55,6 +56,7 @@
 - Stuff UI copy should explicitly call out tattoo machines, needles, pigments, tubes, and professional shop gear as verified-only activity so fans understand browse-only access. Done for launch.
 - Merch rules should allow public fan purchases of safe brand goods while still requiring seller approval for artists, studios, vendors, and official TheTattooCore store inventory.
 - Merch must stay separate from professional equipment, regulated services, unsafe products, counterfeit goods, adult sexual products, and anything that would undermine app-store or payment-provider safety.
+- Merch payments should use Stripe for checkout, seller payouts/connect planning, refunds, taxes, receipts, and webhook-backed order status once product catalog and seller approval are ready.
 - Support freedom of body-art expression and avoid unnecessary censorship when content follows safety, consent, legality, and adult-content guidelines.
 - Draw firm safety lines around pornography, sexualized content, exploitation, minors, harassment, scams, unsafe practices, and content showing unprofessional or potentially deadly harm.
 - Position the community as a safe space for body-art culture to express itself without unwanted AI, spam, or unprofessional practice watering it down.
@@ -183,6 +185,7 @@
 ## Later Columns
 
 - Merch: artist, studio, vendor, and TheTattooCore merchandise for public fan purchases, including T-shirts, prints, art, stickers, and other safe brand goods.
+- Merch build order: product catalog and seller eligibility first, Stripe checkout/webhooks second, order/admin/refund handling third, then public purchase UI after policy and payment-provider review.
 - Gigs: jobs, conventions, guest spots, shop openings, apprenticeships, and event opportunities for artists and studios.
 - Contests: artist contests, flash challenges, sponsor prizes, and voting.
 - Streams: live tattoo sessions, shop walkthroughs, Q&A, and moderated chat.
