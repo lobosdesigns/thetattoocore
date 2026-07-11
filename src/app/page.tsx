@@ -129,6 +129,7 @@ type MerchProduct = {
   merch_product_media: ListingMedia[];
   price_cents: number;
   profiles: Profile | null;
+  shipping_required: boolean;
   title: string;
 };
 
@@ -1451,7 +1452,7 @@ export default async function Home({
     supabase
       .from("merch_products")
       .select(
-        "id, title, description, category, price_cents, currency, inventory_quantity, inventory_reserved, is_official, created_at, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, title, description, category, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, is_official, created_at, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("status", "active")
       .eq("moderation_status", "active")
@@ -2581,6 +2582,11 @@ export default async function Home({
                                 Official TTC
                               </span>
                             ) : null}
+                            <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--muted)]">
+                              {product.shipping_required
+                                ? "Shipping required"
+                                : "No shipping"}
+                            </span>
                           </div>
                         </div>
                       </div>
