@@ -328,7 +328,7 @@ export default async function AdminUsersPage({
                 />
               </label>
               <button
-                className="h-11 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)] disabled:bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--foreground)_10%)] disabled:text-[var(--muted-strong)] lg:col-start-5"
+                className="h-11 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)] disabled:cursor-not-allowed disabled:border disabled:border-[var(--card-rim)] disabled:bg-[color-mix(in_srgb,var(--paper-soft)_90%,transparent)] disabled:text-[var(--muted-strong)] lg:col-start-5"
                 disabled={!canCreateTestAccounts}
               >
                 Create
