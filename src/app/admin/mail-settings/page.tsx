@@ -70,6 +70,7 @@ export default async function AdminMailSettingsPage() {
   }
 
   const canSendMailTest = sendTestRoles.includes(profile.role);
+  const hasAuthEmailLookup = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
   const { data: mailSettings } = await supabase
     .from("mail_settings")
     .select(
@@ -107,7 +108,7 @@ export default async function AdminMailSettingsPage() {
           </div>
         </header>
 
-        <div className="mb-4 grid gap-3 sm:grid-cols-3">
+        <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
             <p className="text-sm text-[#766d62]">Provider</p>
             <p className="mt-2 text-2xl font-bold capitalize">
@@ -124,6 +125,12 @@ export default async function AdminMailSettingsPage() {
             <p className="text-sm text-[#766d62]">Secure SMTP</p>
             <p className="mt-2 text-2xl font-bold">
               {mailSettings?.smtp_secure ? "Yes" : "No"}
+            </p>
+          </div>
+          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
+            <p className="text-sm text-[#766d62]">Auth email lookup</p>
+            <p className="mt-2 text-2xl font-bold">
+              {hasAuthEmailLookup ? "Ready" : "Missing"}
             </p>
           </div>
         </div>
@@ -232,6 +239,10 @@ export default async function AdminMailSettingsPage() {
               <ul className="space-y-2 text-sm leading-6 text-[#4f473f]">
                 <li>Keep passwords in Cloudflare secrets, never in source code.</li>
                 <li>Use HostGator SMTP for transactional account mail only.</li>
+                <li>
+                  Add the server-only Supabase service role secret before
+                  verification-decision email can look up member addresses.
+                </li>
                 <li>Check inbox and junk when testing deliverability.</li>
               </ul>
             </section>
