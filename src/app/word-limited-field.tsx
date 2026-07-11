@@ -126,10 +126,10 @@ export function WordLimitedField(props: WordLimitedFieldProps) {
     <p
       className={`mt-1 text-right text-xs ${
         isAtLimit
-          ? "font-semibold text-[#a3432f]"
+          ? "font-semibold text-[color-mix(in_srgb,#d14b4b_82%,var(--foreground))]"
           : isNearLimit
-            ? "font-medium text-[#8a5b1f]"
-            : "text-[#766d62]"
+            ? "font-medium text-[color-mix(in_srgb,var(--brand-gold)_72%,var(--foreground))]"
+            : "text-[var(--muted-strong)]"
       }`}
     >
       {count}/{limit} {counterLabel}
@@ -137,14 +137,14 @@ export function WordLimitedField(props: WordLimitedFieldProps) {
   );
   const emojiButtons = props.emojiShortcuts ? (
     <div className="mt-2 flex flex-wrap items-center gap-1.5">
-      <span className="mr-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#766d62]">
+      <span className="mr-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--muted-strong)]">
         Emoji
       </span>
       <div className="flex flex-wrap gap-1.5">
         {quickEmojis.map((emoji) => (
           <button
             aria-label={`Insert emoji ${emoji}`}
-            className="flex size-8 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] text-sm transition hover:border-[#171412]"
+            className="flex size-8 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] text-sm transition hover:border-[var(--foreground)]"
             key={emoji}
             onClick={() => addEmoji(emoji)}
             type="button"
