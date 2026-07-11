@@ -47,6 +47,7 @@ type Membership = {
 
 type ConversationMember = {
   conversation_id: string;
+  last_read_at: string | null;
   user_id: string;
 };
 
@@ -213,7 +214,7 @@ export default async function MessagesPage({
     conversationIds.length
       ? supabase
           .from("conversation_members")
-          .select("conversation_id, user_id")
+          .select("conversation_id, user_id, last_read_at")
           .in("conversation_id", conversationIds)
           .returns<ConversationMember[]>()
       : Promise.resolve({ data: [] as ConversationMember[] }),
@@ -289,6 +290,7 @@ export default async function MessagesPage({
       return {
         id: membership.conversation_id,
         latestMessage,
+        otherLastReadAt: otherMember?.last_read_at ?? null,
         otherProfile,
         unreadCount:
           unreadCountByConversation.get(membership.conversation_id) ?? 0,
@@ -575,6 +577,7 @@ export default async function MessagesPage({
                 key={`${selectedConversation.id}:${
                   selectedMessages[selectedMessages.length - 1]?.id ?? "empty"
                 }`}
+                otherLastReadAt={selectedConversation.otherLastReadAt}
                 profiles={(profiles ?? []).map((profile) => ({
                   display_name: profile.display_name,
                   avatar_url: profile.avatar_url,

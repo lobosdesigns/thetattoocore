@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { Check, CheckCheck, Trash2 } from "lucide-react";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { createClient } from "@/lib/supabase/client";
+import { deleteUnreadMessage } from "./actions";
 
 type Profile = {
   id: string;
@@ -44,11 +46,13 @@ export function MessageThread({
   conversationId,
   currentUserId,
   initialMessages,
+  otherLastReadAt,
   profiles,
 }: {
   conversationId: string;
   currentUserId: string;
   initialMessages: ThreadMessage[];
+  otherLastReadAt: string | null;
   profiles: Profile[];
 }) {
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -86,9 +90,29 @@ export function MessageThread({
       .on(
         "postgres_changes",
         {
+          event: "DELETE",
+          filter: `conversation_id=eq.${conversationId}`,
+          schema: "public",
+          table: "messages",
+        },
+        refreshThread,
+      )
+      .on(
+        "postgres_changes",
+        {
           event: "INSERT",
           schema: "public",
           table: "message_attachments",
+        },
+        refreshThread,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          filter: `conversation_id=eq.${conversationId}`,
+          schema: "public",
+          table: "conversation_members",
         },
         refreshThread,
       )
@@ -105,67 +129,110 @@ export function MessageThread({
       {initialMessages.map((message) => {
         const mine = message.sender_id === currentUserId;
         const sender = profileById.get(message.sender_id);
+        const hasBeenRead =
+          mine &&
+          otherLastReadAt &&
+          new Date(otherLastReadAt).getTime() >=
+            new Date(message.created_at).getTime();
+        const canDeleteUnread = mine && !hasBeenRead;
 
         return (
-          <div
-            className={`min-w-0 flex items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}
-            key={message.id}
-          >
-            {!mine ? <ProfileAvatar profile={sender} size="sm" /> : null}
+          <div className="min-w-0" key={message.id}>
             <div
-              className={`max-w-[82%] overflow-hidden rounded-md px-4 py-3 sm:max-w-[78%] ${
-                mine
-                  ? "bg-[var(--foreground)] text-[var(--background)]"
-                  : "ttc-surface border"
-              }`}
+              className={`min-w-0 flex items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}
             >
-              {message.attachments?.length ? (
-                <div className="mb-3 grid gap-2">
-                  {message.attachments.map((attachment) =>
-                    attachment.signedUrl ? (
-                      <MediaLightbox
-                        alt={attachment.original_filename ?? "DM attachment"}
-                        key={attachment.id}
-                        mediaType="image"
-                        src={attachment.signedUrl}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          alt={attachment.original_filename ?? "DM attachment"}
-                          className="max-h-80 w-full rounded-md object-cover"
-                          src={attachment.signedUrl}
-                        />
-                      </MediaLightbox>
-                    ) : (
-                      <div
-                        className={`rounded-md border px-3 py-2 text-xs ${
-                          mine
-                            ? "border-white/20 bg-white/10 text-white/80"
-                            : "ttc-surface"
-                        }`}
-                        key={attachment.id}
-                      >
-                        Photo unavailable
-                      </div>
-                    ),
-                  )}
-                </div>
-              ) : null}
-              {message.body ? (
-                <p className="break-words whitespace-pre-wrap text-sm leading-6">
-                  {message.body}
-                </p>
-              ) : null}
-              <p
-                className={`mt-2 text-[11px] ${
-                  mine ? "text-white/70" : "text-[var(--muted-strong)]"
+              {!mine ? <ProfileAvatar profile={sender} size="sm" /> : null}
+              <div
+                className={`max-w-[82%] overflow-hidden rounded-md px-4 py-3 sm:max-w-[78%] ${
+                  mine
+                    ? "bg-[var(--foreground)] text-[var(--background)]"
+                    : "ttc-surface border"
                 }`}
               >
-                {mine ? "You" : sender?.display_name ?? "TattooCore member"} -{" "}
-                {timeAgo(message.created_at)}
-              </p>
+                {message.attachments?.length ? (
+                  <div className="mb-3 grid gap-2">
+                    {message.attachments.map((attachment) =>
+                      attachment.signedUrl ? (
+                        <MediaLightbox
+                          alt={attachment.original_filename ?? "DM attachment"}
+                          key={attachment.id}
+                          mediaType="image"
+                          src={attachment.signedUrl}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            alt={attachment.original_filename ?? "DM attachment"}
+                            className="max-h-80 w-full rounded-md object-cover"
+                            src={attachment.signedUrl}
+                          />
+                        </MediaLightbox>
+                      ) : (
+                        <div
+                          className={`rounded-md border px-3 py-2 text-xs ${
+                            mine
+                              ? "border-white/20 bg-white/10 text-white/80"
+                              : "ttc-surface"
+                          }`}
+                          key={attachment.id}
+                        >
+                          Photo unavailable
+                        </div>
+                      ),
+                    )}
+                  </div>
+                ) : null}
+                {message.body ? (
+                  <p className="break-words whitespace-pre-wrap text-sm leading-6">
+                    {message.body}
+                  </p>
+                ) : null}
+                <p
+                  className={`mt-2 text-[11px] ${
+                    mine ? "text-white/70" : "text-[var(--muted-strong)]"
+                  }`}
+                >
+                  {mine ? "You" : sender?.display_name ?? "TattooCore member"} -{" "}
+                  {timeAgo(message.created_at)}
+                </p>
+              </div>
+              {mine ? <ProfileAvatar profile={sender} size="sm" /> : null}
             </div>
-            {mine ? <ProfileAvatar profile={sender} size="sm" /> : null}
+            {mine ? (
+              <div className="mt-1 flex justify-end">
+                <div className="flex max-w-[82%] items-center justify-end gap-2 pr-12 text-[11px] text-[var(--muted-strong)] sm:max-w-[78%]">
+                  <span className="inline-flex items-center gap-1">
+                    {hasBeenRead ? (
+                      <>
+                        <CheckCheck className="size-3.5 text-[var(--accent)]" />
+                        Read
+                      </>
+                    ) : (
+                      <>
+                        <Check className="size-3.5" />
+                        Delivered
+                      </>
+                    )}
+                  </span>
+                  {canDeleteUnread ? (
+                    <form action={deleteUnreadMessage}>
+                      <input
+                        name="conversation_id"
+                        type="hidden"
+                        value={conversationId}
+                      />
+                      <input name="message_id" type="hidden" value={message.id} />
+                      <button
+                        className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_88%,transparent)] px-2 py-1 font-semibold text-[var(--muted)] hover:border-[color-mix(in_srgb,var(--danger)_35%,var(--card-rim))] hover:text-[var(--danger)]"
+                        title="Delete before the other member reads it"
+                      >
+                        <Trash2 className="size-3" />
+                        Delete
+                      </button>
+                    </form>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
           </div>
         );
       })}

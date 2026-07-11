@@ -10,6 +10,7 @@ import {
   type NotificationPreferenceCategory,
   type NotificationPreferenceProfile,
 } from "@/lib/notifications";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
 
@@ -491,4 +492,111 @@ export async function sendMessage(formData: FormData) {
   revalidatePath("/messages");
   revalidatePath("/notifications");
   redirect(messagesPath(undefined, conversationId));
+}
+
+export async function deleteUnreadMessage(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const messageId = cleanText(formData.get("message_id"), 80);
+  const conversationId = cleanText(formData.get("conversation_id"), 80);
+
+  if (!messageId || !conversationId) {
+    redirect(messagesPath("Choose a message to delete.", conversationId));
+  }
+
+  const { data: message, error: messageError } = await supabase
+    .from("messages")
+    .select("id, conversation_id, sender_id, created_at")
+    .eq("id", messageId)
+    .eq("conversation_id", conversationId)
+    .maybeSingle<{
+      conversation_id: string;
+      created_at: string;
+      id: string;
+      sender_id: string;
+    }>();
+
+  if (messageError || !message) {
+    redirect(
+      messagesPath(
+        messageError?.message || "That message was not found.",
+        conversationId,
+      ),
+    );
+  }
+
+  if (message.sender_id !== userId) {
+    redirect(messagesPath("You can only delete your own DMs.", conversationId));
+  }
+
+  const { data: otherMember } = await supabase
+    .from("conversation_members")
+    .select("last_read_at")
+    .eq("conversation_id", conversationId)
+    .neq("user_id", userId)
+    .limit(1)
+    .maybeSingle<{ last_read_at: string | null }>();
+
+  if (
+    otherMember?.last_read_at &&
+    new Date(otherMember.last_read_at).getTime() >=
+      new Date(message.created_at).getTime()
+  ) {
+    redirect(
+      messagesPath(
+        "That DM has already been read, so it cannot be deleted.",
+        conversationId,
+      ),
+    );
+  }
+
+  const adminClient = createAdminClient();
+
+  if (!adminClient) {
+    redirect(
+      messagesPath(
+        "Message deletion needs the server service key configured first.",
+        conversationId,
+      ),
+    );
+  }
+
+  const { data: attachments } = await supabase
+    .from("message_attachments")
+    .select("storage_bucket, storage_path")
+    .eq("message_id", message.id)
+    .eq("sender_id", userId)
+    .returns<{ storage_bucket: string; storage_path: string }[]>();
+  const attachmentsByBucket = new Map<string, string[]>();
+
+  for (const attachment of attachments ?? []) {
+    const paths = attachmentsByBucket.get(attachment.storage_bucket) ?? [];
+    paths.push(attachment.storage_path);
+    attachmentsByBucket.set(attachment.storage_bucket, paths);
+  }
+
+  for (const [bucket, paths] of attachmentsByBucket) {
+    if (paths.length) {
+      await adminClient.storage.from(bucket).remove(paths);
+    }
+  }
+
+  const { error: deleteError } = await adminClient
+    .from("messages")
+    .delete()
+    .eq("id", message.id)
+    .eq("conversation_id", conversationId)
+    .eq("sender_id", userId);
+
+  if (deleteError) {
+    redirect(
+      messagesPath(
+        deleteError.message || "Could not delete that unread DM.",
+        conversationId,
+      ),
+    );
+  }
+
+  revalidatePath("/messages");
+  revalidatePath("/notifications");
+  redirect(messagesPath("Unread DM deleted.", conversationId));
 }
