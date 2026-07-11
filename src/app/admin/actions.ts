@@ -23,6 +23,9 @@ type AdCampaignStatus = "approved" | "active" | "paused" | "rejected" | "archive
 type MerchProductStatus = "approved" | "active" | "paused" | "rejected" | "archived";
 type MerchOrderAdminStatus = "fulfilled" | "cancelled";
 type AccountDeletionStatus = "reviewing" | "completed" | "rejected" | "cancelled";
+type MerchOrderProductRow = {
+  product_id: string;
+};
 type MailSettings = {
   from_email: string | null;
   from_name: string;
@@ -1400,6 +1403,15 @@ export async function updateMerchOrderStatus(formData: FormData) {
     }
   }
 
+  const { data: orderItems } = await supabase
+    .from("merch_order_items")
+    .select("product_id")
+    .eq("order_id", orderId)
+    .returns<MerchOrderProductRow[]>();
+  const productIds = new Set(
+    (orderItems ?? []).map((item) => item.product_id).filter(Boolean),
+  );
+
   await supabase.from("admin_audit_logs").insert({
     actor_id: userId,
     event_type: `merch_order_${status}`,
@@ -1416,6 +1428,10 @@ export async function updateMerchOrderStatus(formData: FormData) {
 
   revalidatePath("/admin");
   revalidatePath("/admin/merch");
+  revalidatePath("/account");
+  for (const productId of productIds) {
+    revalidatePath(`/merch/${productId}`);
+  }
   redirect(adminMerchMessage("Merch order updated.", returnTo));
 }
 
