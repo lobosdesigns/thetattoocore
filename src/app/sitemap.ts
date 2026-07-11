@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { siteUrl } from "@/lib/site";
+import { isVerifiedProfessional } from "@/lib/verification";
 
 type PublicProfile = {
   username: string;
@@ -19,6 +20,8 @@ type PublicGig = {
 
 type PublicMerch = {
   id: string;
+  is_official: boolean;
+  profiles: { account_type: string; license_verified_at: string | null } | null;
   updated_at: string | null;
 };
 
@@ -118,7 +121,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .returns<PublicGig[]>();
   const { data: merch } = await supabase
     .from("merch_products")
-    .select("id, updated_at")
+    .select(
+      "id, is_official, updated_at, profiles:profiles!merch_products_seller_id_fkey(account_type, license_verified_at)",
+    )
     .eq("status", "active")
     .order("updated_at", { ascending: false })
     .limit(500)
@@ -158,11 +163,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
       url: `${siteUrl}/gigs/${gig.id}`,
     })),
-    ...(merch ?? []).map((product) => ({
-      changeFrequency: "weekly" as const,
-      lastModified: product.updated_at ? new Date(product.updated_at) : now,
-      priority: 0.6,
-      url: `${siteUrl}/merch/${product.id}`,
-    })),
+    ...(merch ?? [])
+      .filter(
+        (product) =>
+          product.is_official || isVerifiedProfessional(product.profiles),
+      )
+      .map((product) => ({
+        changeFrequency: "weekly" as const,
+        lastModified: product.updated_at ? new Date(product.updated_at) : now,
+        priority: 0.6,
+        url: `${siteUrl}/merch/${product.id}`,
+      })),
   ];
 }
