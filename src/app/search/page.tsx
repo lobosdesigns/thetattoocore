@@ -22,6 +22,7 @@ type ProfileResult = {
   display_name: string;
   avatar_url: string | null;
   account_type: string;
+  bio: string | null;
   city: string | null;
   license_verified_at: string | null;
   region: string | null;
@@ -282,10 +283,10 @@ export default async function SearchPage({
           ? supabase
               .from("profiles")
               .select(
-                "id, username, display_name, avatar_url, account_type, city, license_verified_at, region",
+                "id, username, display_name, avatar_url, account_type, bio, city, license_verified_at, region",
               )
               .or(
-                `username.ilike.${pattern},display_name.ilike.${pattern},account_type.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`,
+                `username.ilike.${pattern},display_name.ilike.${pattern},account_type.ilike.${pattern},bio.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`,
               )
               .eq("is_private", false)
               .ilike("city", city ? cityPattern : "%")
@@ -585,6 +586,11 @@ export default async function SearchPage({
                         {locationText(profile) ? (
                           <p className="mt-1 text-xs text-[var(--muted-strong)]">
                             {locationText(profile)}
+                          </p>
+                        ) : null}
+                        {profile.bio ? (
+                          <p className="mt-1 line-clamp-2 text-xs leading-5 text-[var(--muted)]">
+                            {profile.bio}
                           </p>
                         ) : null}
                       </div>
