@@ -23,6 +23,10 @@ import {
 import {
   acceptAdultTerms,
   archiveGig,
+  deleteFeedPost,
+  deleteThreadPost,
+  editFeedPost,
+  editThreadPost,
   togglePostLike,
   toggleThreadLike,
 } from "./actions";
@@ -1792,6 +1796,58 @@ export default async function Home({
                       <p className="text-sm leading-6">{post.caption}</p>
                     ) : null}
                     <TranslationCue preferredLanguage={preferredLanguage} />
+                    {post.profiles?.id === claims?.sub ? (
+                      <details className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3">
+                        <summary className="cursor-pointer text-sm font-bold">
+                          Manage 4U post
+                        </summary>
+                        <form action={editFeedPost} className="mt-3 space-y-2">
+                          <input name="post_id" type="hidden" value={post.id} />
+                          <input name="return_path" type="hidden" value="/#feed" />
+                          <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                            Caption
+                            <textarea
+                              className="mt-1 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 py-2 text-sm text-[var(--foreground)]"
+                              defaultValue={post.caption ?? ""}
+                              maxLength={360}
+                              name="caption"
+                              placeholder="Edit your 4U caption"
+                              rows={3}
+                            />
+                          </label>
+                          <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                            Style tags
+                            <input
+                              className="mt-1 h-10 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                              defaultValue={post.style_tags.join(", ")}
+                              maxLength={160}
+                              name="style_tags"
+                              placeholder="blackwork, fine line"
+                            />
+                          </label>
+                          <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                            Location
+                            <input
+                              className="mt-1 h-10 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                              defaultValue={post.location_label ?? ""}
+                              maxLength={80}
+                              name="location_label"
+                              placeholder="Austin, TX"
+                            />
+                          </label>
+                          <button className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
+                            Save 4U edit
+                          </button>
+                        </form>
+                        <form action={deleteFeedPost} className="mt-3">
+                          <input name="post_id" type="hidden" value={post.id} />
+                          <input name="return_path" type="hidden" value="/#feed" />
+                          <button className="h-10 rounded-md border border-[color-mix(in_srgb,#ef4444_38%,var(--card-rim))] px-4 text-sm font-semibold">
+                            Delete 4U post
+                          </button>
+                        </form>
+                      </details>
+                    ) : null}
                   </div>
                 </article>
                 {shouldShowSponsoredSlot(index, visibleFeedPosts.length) ? (
@@ -1968,6 +2024,54 @@ export default async function Home({
                           />
                         </div>
                       ) : null}
+                      {thread.profiles?.id === claims?.sub ? (
+                        <details className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3">
+                          <summary className="cursor-pointer text-sm font-bold">
+                            Manage Gossip post
+                          </summary>
+                          <form action={editThreadPost} className="mt-3 space-y-2">
+                            <input
+                              name="thread_id"
+                              type="hidden"
+                              value={thread.id}
+                            />
+                            <input
+                              name="return_path"
+                              type="hidden"
+                              value="/#threads"
+                            />
+                            <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                              Post
+                              <textarea
+                                className="mt-1 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 py-2 text-sm text-[var(--foreground)]"
+                                defaultValue={thread.body}
+                                maxLength={8000}
+                                name="body"
+                                placeholder="Edit your Gossip post"
+                                rows={5}
+                              />
+                            </label>
+                            <button className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
+                              Save Gossip edit
+                            </button>
+                          </form>
+                          <form action={deleteThreadPost} className="mt-3">
+                            <input
+                              name="thread_id"
+                              type="hidden"
+                              value={thread.id}
+                            />
+                            <input
+                              name="return_path"
+                              type="hidden"
+                              value="/#threads"
+                            />
+                            <button className="h-10 rounded-md border border-[color-mix(in_srgb,#ef4444_38%,var(--card-rim))] px-4 text-sm font-semibold">
+                              Delete Gossip post
+                            </button>
+                          </form>
+                        </details>
+                      ) : null}
                     </article>
                     {shouldShowSponsoredSlot(index, visibleThreadPosts.length) ? (
                       <SponsoredSlot campaign={gossipAd} placement="gossip-feed" />
@@ -2100,6 +2204,14 @@ export default async function Home({
                         >
                           Open listing
                         </Link>
+                        {listing.profiles?.id === claims?.sub ? (
+                          <Link
+                            className="flex h-10 w-full items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
+                            href={`/stuff/${listing.id}`}
+                          >
+                            Manage listing
+                          </Link>
+                        ) : null}
                         <CompactShareButton
                           className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
                           text={`Check this Stuff listing on ${siteName}: ${listing.title}`}
@@ -2321,6 +2433,14 @@ export default async function Home({
                         >
                           Open gig
                         </Link>
+                        {gig.profiles?.id === claims?.sub ? (
+                          <Link
+                            className="flex h-10 w-full items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
+                            href={`/gigs/${gig.id}`}
+                          >
+                            Manage gig
+                          </Link>
+                        ) : null}
                         <CompactShareButton
                           className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
                           text={`Check this Gig on ${siteName}: ${gig.title}`}
@@ -2478,6 +2598,14 @@ export default async function Home({
                         >
                           Open merch
                         </Link>
+                        {product.profiles?.id === claims?.sub ? (
+                          <Link
+                            className="flex h-10 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
+                            href={`/merch/${product.id}`}
+                          >
+                            Manage merch
+                          </Link>
+                        ) : null}
                         <CompactShareButton
                           className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
                           text={`Check this Merch on ${siteName}: ${product.title}`}

@@ -14,7 +14,9 @@ import {
 import {
   blockPostCommentAuthor,
   createPostComment,
+  deleteFeedPost,
   deletePostComment,
+  editFeedPost,
   editPostComment,
   hidePostComment,
   togglePostCommentLike,
@@ -451,6 +453,59 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                   </span>
                 ) : null}
               </div>
+
+              {isOwnPost && showPost ? (
+                <details className="mt-5 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-4">
+                  <summary className="cursor-pointer text-sm font-bold">
+                    Edit or delete 4U post
+                  </summary>
+                  <form action={editFeedPost} className="mt-3 space-y-3">
+                    <input name="post_id" type="hidden" value={post.id} />
+                    <input name="return_path" type="hidden" value={returnPath} />
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Caption
+                      <textarea
+                        className="mt-1 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 py-2 text-sm text-[var(--foreground)]"
+                        defaultValue={post.caption ?? ""}
+                        maxLength={360}
+                        name="caption"
+                        placeholder="Edit your 4U caption"
+                        rows={3}
+                      />
+                    </label>
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Style tags
+                      <input
+                        className="mt-1 h-10 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                        defaultValue={post.style_tags.join(", ")}
+                        maxLength={160}
+                        name="style_tags"
+                        placeholder="blackwork, fine line"
+                      />
+                    </label>
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Location
+                      <input
+                        className="mt-1 h-10 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                        defaultValue={post.location_label ?? ""}
+                        maxLength={80}
+                        name="location_label"
+                        placeholder="Austin, TX"
+                      />
+                    </label>
+                    <button className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
+                      Save 4U edit
+                    </button>
+                  </form>
+                  <form action={deleteFeedPost} className="mt-3">
+                    <input name="post_id" type="hidden" value={post.id} />
+                    <input name="return_path" type="hidden" value={returnPath} />
+                    <button className="h-10 rounded-md border border-[color-mix(in_srgb,#ef4444_38%,var(--card-rim))] px-4 text-sm font-semibold">
+                      Delete 4U post
+                    </button>
+                  </form>
+                </details>
+              ) : null}
             </section>
           </div>
 

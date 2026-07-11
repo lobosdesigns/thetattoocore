@@ -493,6 +493,94 @@ export async function createFeedPost(formData: FormData) {
   redirect(homeMessage("Feed post published.", "feed"));
 }
 
+export async function editFeedPost(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const postId = cleanId(formData.get("post_id"));
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
+  const caption = cleanWords(formData.get("caption"), 40);
+  const locationLabel = cleanText(formData.get("location_label"), 80);
+  const styleTags = cleanText(formData.get("style_tags"), 160)
+    .split(",")
+    .map((tag) => tag.trim().toLowerCase())
+    .filter(Boolean)
+    .slice(0, 6);
+
+  if (!postId) {
+    redirect(redirectWithMessage({ message: "Choose a 4U post first.", path: returnPath }));
+  }
+
+  if (caption.length < 3) {
+    redirect(
+      redirectWithMessage({
+        message: "4U caption needs at least 3 characters.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  const { error } = await supabase
+    .from("feed_posts")
+    .update({
+      caption,
+      location_label: locationLabel || null,
+      style_tags: styleTags,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", postId)
+    .eq("author_id", userId);
+
+  if (error) {
+    redirect(
+      redirectWithMessage({
+        message: error.message || "Could not edit 4U post.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  revalidatePath("/");
+  revalidatePath(`/p/${postId}`);
+  redirect(
+    redirectWithMessage({
+      message: "4U post updated.",
+      path: returnPath,
+    }),
+  );
+}
+
+export async function deleteFeedPost(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const postId = cleanId(formData.get("post_id"));
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
+
+  if (!postId) {
+    redirect(redirectWithMessage({ message: "Choose a 4U post first.", path: returnPath }));
+  }
+
+  const { error } = await supabase
+    .from("feed_posts")
+    .update({
+      is_indexable: false,
+      moderation_status: "removed",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", postId)
+    .eq("author_id", userId);
+
+  if (error) {
+    redirect(
+      redirectWithMessage({
+        message: error.message || "Could not delete 4U post.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  revalidatePath("/");
+  revalidatePath(`/p/${postId}`);
+  redirect(homeMessage("4U post deleted.", "feed"));
+}
+
 export async function createThreadPost(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const body = cleanText(formData.get("body"), 8000);
