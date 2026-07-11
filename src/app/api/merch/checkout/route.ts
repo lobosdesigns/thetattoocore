@@ -265,6 +265,32 @@ export async function POST(request: Request) {
     );
   }
 
+  const adminSupabase = createAdminClient();
+  if (!adminSupabase) {
+    return redirectWithMessage(
+      `/merch/${product.id}`,
+      "Checkout is almost ready. Finish server webhook setup before taking payments.",
+    );
+  }
+
+  const cancelPendingOrder = async (message: string) => {
+    await adminSupabase
+      .from("merch_orders")
+      .update({
+        admin_note: message,
+        cancelled_at: new Date().toISOString(),
+        status: "cancelled",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", orderId)
+      .eq("buyer_id", claims.sub)
+      .eq("status", "pending_checkout");
+    revalidatePath("/account");
+    revalidatePath("/admin");
+    revalidatePath("/admin/merch");
+    revalidatePath(`/merch/${product.id}`);
+  };
+
   let session: CheckoutSession;
 
   try {
@@ -279,17 +305,11 @@ export async function POST(request: Request) {
       successUrl,
     });
   } catch (error) {
+    await cancelPendingOrder("Stripe could not create checkout.");
+
     return redirectWithMessage(
       `/merch/${product.id}`,
       error instanceof Error ? error.message : "Stripe could not create checkout.",
-    );
-  }
-
-  const adminSupabase = createAdminClient();
-  if (!adminSupabase) {
-    return redirectWithMessage(
-      `/merch/${product.id}`,
-      "Checkout is almost ready. Finish server webhook setup before taking payments.",
     );
   }
 
@@ -309,17 +329,19 @@ export async function POST(request: Request) {
     );
   }
 
-  revalidatePath("/account");
-  revalidatePath("/admin");
-  revalidatePath("/admin/merch");
-  revalidatePath(`/merch/${product.id}`);
-
   if (!session.url) {
+    await cancelPendingOrder("Stripe did not return a checkout URL.");
+
     return redirectWithMessage(
       `/merch/${product.id}`,
       `${siteName} could not open Stripe Checkout for this product.`,
     );
   }
+
+  revalidatePath("/account");
+  revalidatePath("/admin");
+  revalidatePath("/admin/merch");
+  revalidatePath(`/merch/${product.id}`);
 
   return NextResponse.redirect(session.url, { status: 303 });
 }
