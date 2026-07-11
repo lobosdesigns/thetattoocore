@@ -38,6 +38,16 @@ type MerchProduct = {
   status: ProductStatus;
   title: string;
 };
+type MerchOrder = {
+  buyerName: string;
+  buyerUsername: string;
+  createdAt: string;
+  currency: string;
+  id: string;
+  itemCount: number;
+  status: string;
+  totalCents: number;
+};
 
 const viewRoles: UserRole[] = ["moderator", "admin", "owner"];
 const pageSize = 50;
@@ -247,6 +257,40 @@ function ProductCard({
   );
 }
 
+function OrderCard({ order }: { order: MerchOrder }) {
+  return (
+    <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div className="min-w-0">
+          <p className="truncate text-base font-bold">
+            Order {order.id.slice(0, 8)}
+          </p>
+          <p className="mt-1 text-xs text-[var(--muted-strong)]">
+            @{order.buyerUsername} - {timeAgo(order.createdAt)}
+          </p>
+        </div>
+        <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold capitalize text-[var(--muted)]">
+          {order.status.replace("_", " ")}
+        </span>
+      </div>
+      <dl className="mt-4 grid gap-3 text-sm text-[var(--muted)] sm:grid-cols-3">
+        <div>
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">Buyer</dt>
+          <dd>{order.buyerName}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">Items</dt>
+          <dd>{Intl.NumberFormat("en-US").format(order.itemCount)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">Total</dt>
+          <dd>{money(order.totalCents, order.currency)}</dd>
+        </div>
+      </dl>
+    </article>
+  );
+}
+
 export default async function AdminMerchPage({
   searchParams,
 }: {
@@ -316,6 +360,35 @@ export default async function AdminMerchPage({
   const reviewCount = products.filter(
     (product) => product.status === "pending_review",
   ).length;
+  const { count: orderCount, data: orderRows } = await supabase
+    .from("merch_orders")
+    .select(
+      "id, status, currency, total_cents, created_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id)",
+      { count: "exact" },
+    )
+    .order("created_at", { ascending: false })
+    .range(0, 9)
+    .returns<
+      {
+        created_at: string;
+        currency: string;
+        id: string;
+        merch_order_items: { id: string }[];
+        profiles: { display_name: string; username: string } | null;
+        status: string;
+        total_cents: number;
+      }[]
+    >();
+  const orders: MerchOrder[] = (orderRows ?? []).map((order) => ({
+    buyerName: order.profiles?.display_name ?? "Buyer",
+    buyerUsername: order.profiles?.username ?? "buyer",
+    createdAt: order.created_at,
+    currency: order.currency,
+    id: order.id,
+    itemCount: order.merch_order_items.length,
+    status: order.status,
+    totalCents: order.total_cents,
+  }));
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -347,7 +420,7 @@ export default async function AdminMerchPage({
           </div>
         </header>
 
-        <div className="mb-4 grid gap-3 sm:grid-cols-3">
+        <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
             <Package className="size-5 text-[var(--gold)]" />
             <p className="mt-3 text-sm text-[var(--muted-strong)]">Products</p>
@@ -364,6 +437,13 @@ export default async function AdminMerchPage({
             <CreditCard className="size-5 text-[var(--gold)]" />
             <p className="mt-3 text-sm text-[var(--muted-strong)]">Needs review here</p>
             <p className="mt-1 text-3xl font-bold">{reviewCount}</p>
+          </div>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <ShieldCheck className="size-5 text-[var(--gold)]" />
+            <p className="mt-3 text-sm text-[var(--muted-strong)]">Orders</p>
+            <p className="mt-1 text-3xl font-bold">
+              {Intl.NumberFormat("en-US").format(orderCount ?? 0)}
+            </p>
           </div>
         </div>
 
@@ -459,6 +539,31 @@ export default async function AdminMerchPage({
               totalPages={totalPages}
             />
           </div>
+        </section>
+
+        <section className="mt-4 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-bold">Recent Orders</h2>
+              <p className="mt-1 text-sm text-[var(--muted)]">
+                Stripe will write checkout results here once payments are connected.
+              </p>
+            </div>
+            <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-sm font-semibold">
+              First 10
+            </span>
+          </div>
+          {orders.length ? (
+            <div className="grid gap-3">
+              {orders.map((order) => (
+                <OrderCard key={order.id} order={order} />
+              ))}
+            </div>
+          ) : (
+            <p className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-4 text-sm text-[var(--muted)]">
+              No orders yet.
+            </p>
+          )}
         </section>
       </section>
     </main>
