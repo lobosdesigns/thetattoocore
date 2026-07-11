@@ -26,7 +26,14 @@ export async function GET(request: Request) {
     return NextResponse.redirect(fallback, { status: 303 });
   }
 
-  const target = new URL(campaign.target_url);
+  let target: URL;
+
+  try {
+    target = new URL(campaign.target_url);
+  } catch {
+    return NextResponse.redirect(fallback, { status: 303 });
+  }
+
   if (!["http:", "https:"].includes(target.protocol)) {
     return NextResponse.redirect(fallback, { status: 303 });
   }
