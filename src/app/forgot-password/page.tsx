@@ -20,7 +20,7 @@ export default async function ForgotPasswordPage({
   return (
     <main className="ttc-page min-h-screen px-4 py-10">
       <section className="mx-auto w-full max-w-md">
-        <Link className="mb-8 block text-sm font-semibold text-[var(--paper-soft)]" href="/">
+        <Link className="mb-8 block text-sm font-semibold text-[var(--foreground)]" href="/">
           TheTattooCore
         </Link>
 

@@ -418,7 +418,7 @@ export default async function AccountPage({
     <main className="ttc-page min-h-screen overflow-x-hidden px-4 py-8">
       <section className="mx-auto w-full max-w-3xl">
         <div className="mb-6 flex items-center justify-between">
-          <Link className="text-sm font-semibold text-[var(--background)]" href="/">
+          <Link className="text-sm font-semibold text-[var(--foreground)]" href="/">
             TheTattooCore
           </Link>
           <div className="flex items-center gap-3">
