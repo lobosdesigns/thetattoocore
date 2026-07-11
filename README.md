@@ -47,3 +47,16 @@ npm run dev
 npm run lint
 npm run build
 ```
+
+## Production Secrets
+
+Cloudflare needs these server-only bindings for full production behavior:
+
+- `HOSTGATOR_SMTP_PASSWORD`: required for HostGator transactional email.
+- `SUPABASE_SERVICE_ROLE_KEY`: required for server-only Supabase Auth email lookup, used by verification approval/rejection emails. Never expose this as a `NEXT_PUBLIC_` variable.
+
+After adding or rotating secrets, redeploy with:
+
+```bash
+npm run deploy
+```
