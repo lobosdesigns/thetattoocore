@@ -27,6 +27,7 @@ const accountNavItems = [
   ["#notification-settings", "Notifications"],
   ["#verification-settings", "Verify"],
   ["#advertising-settings", "Ads"],
+  ["#order-settings", "Orders"],
   ["#data-settings", "Data"],
 ] as const;
 
@@ -142,6 +143,22 @@ function verificationStatusClass(status: "pending" | "approved" | "rejected") {
   if (status === "rejected") return "border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]";
 
   return "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]";
+}
+
+function orderStatusClass(status: string) {
+  if (status === "paid" || status === "fulfilled") {
+    return "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]";
+  }
+
+  if (status === "pending_checkout") {
+    return "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]";
+  }
+
+  if (status === "cancelled" || status === "payment_failed") {
+    return "border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]";
+  }
+
+  return "border-[color-mix(in_srgb,#5078c8_35%,var(--card-rim))] bg-[color-mix(in_srgb,#5078c8_10%,var(--paper-warm))] text-[color-mix(in_srgb,#284f8a_78%,var(--foreground))]";
 }
 
 function formatDate(value: string | null) {
@@ -338,6 +355,29 @@ export default async function AccountPage({
         status: "pending" | "reviewing" | "completed" | "rejected" | "cancelled";
       }[]
     >();
+  const { data: merchOrders } = await supabase
+    .from("merch_orders")
+    .select(
+      "id, status, currency, total_cents, customer_email, shipping_name, created_at, fulfilled_at, cancelled_at, refunded_at, merch_order_items(title_snapshot, quantity)",
+    )
+    .eq("buyer_id", claims.sub)
+    .order("created_at", { ascending: false })
+    .limit(5)
+    .returns<
+      {
+        cancelled_at: string | null;
+        created_at: string;
+        currency: string;
+        customer_email: string | null;
+        fulfilled_at: string | null;
+        id: string;
+        merch_order_items: { quantity: number; title_snapshot: string }[];
+        refunded_at: string | null;
+        shipping_name: string | null;
+        status: string;
+        total_cents: number;
+      }[]
+    >();
   const canSubmitLicense =
     profile?.account_type &&
     verificationEligibleAccountTypes.includes(profile.account_type as string);
@@ -408,6 +448,83 @@ export default async function AccountPage({
         </nav>
 
         <ProfileForm claims={claims} initialProfile={profile} />
+
+        <section
+          className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-5 backdrop-blur"
+          id="order-settings"
+        >
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
+                Merch
+              </p>
+              <h2 className="text-xl font-bold">Orders</h2>
+            </div>
+            <span className="w-fit rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1 text-xs font-semibold">
+              Latest 5
+            </span>
+          </div>
+          <p className="text-sm leading-6 text-[var(--muted-strong)]">
+            Merch checkout is in test mode while fulfillment, shipping, refund,
+            tax, and production seller rules are finished.
+          </p>
+          {merchOrders?.length ? (
+            <div className="mt-4 grid gap-3">
+              {merchOrders.map((order) => (
+                <article
+                  className="rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4"
+                  key={order.id}
+                >
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-sm font-bold">
+                        Order {order.id.slice(0, 8)}
+                      </p>
+                      <p className="mt-1 text-xs text-[var(--muted-strong)]">
+                        {formatDate(order.created_at)} -{" "}
+                        {Intl.NumberFormat("en-US", {
+                          currency: order.currency,
+                          style: "currency",
+                        }).format(order.total_cents / 100)}
+                      </p>
+                    </div>
+                    <span
+                      className={`w-fit rounded-md border px-2 py-1 text-xs font-semibold capitalize ${orderStatusClass(
+                        order.status,
+                      )}`}
+                    >
+                      {order.status.replace("_", " ")}
+                    </span>
+                  </div>
+                  <div className="mt-3 space-y-1 text-sm text-[var(--muted)]">
+                    {order.merch_order_items.map((item) => (
+                      <p key={`${order.id}-${item.title_snapshot}`}>
+                        {item.quantity} x {item.title_snapshot}
+                      </p>
+                    ))}
+                  </div>
+                  <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted-strong)] sm:grid-cols-2">
+                    <p>Ship to: {order.shipping_name || "Not collected"}</p>
+                    <p>Email: {order.customer_email || claims.email || "Not collected"}</p>
+                    {order.fulfilled_at ? (
+                      <p>Fulfilled: {formatDate(order.fulfilled_at)}</p>
+                    ) : null}
+                    {order.refunded_at ? (
+                      <p>Refunded: {formatDate(order.refunded_at)}</p>
+                    ) : null}
+                    {order.cancelled_at ? (
+                      <p>Cancelled: {formatDate(order.cancelled_at)}</p>
+                    ) : null}
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 text-sm text-[var(--muted)]">
+              No Merch orders yet.
+            </p>
+          )}
+        </section>
 
         <section
           className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-5 backdrop-blur"
