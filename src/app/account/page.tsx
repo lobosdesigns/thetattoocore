@@ -466,11 +466,11 @@ export default async function AccountPage({
 
         <nav
           aria-label="Account settings"
-          className="no-scrollbar sticky top-0 z-20 mb-4 flex gap-2 overflow-x-auto rounded-md border border-[color-mix(in_srgb,var(--gold)_24%,var(--card-rim))] bg-[color-mix(in_srgb,var(--foreground)_94%,transparent)] p-2 shadow-[0_18px_42px_rgba(0,0,0,0.28)] backdrop-blur"
+          className="no-scrollbar sticky top-0 z-20 mb-4 flex gap-2 overflow-x-auto rounded-md border border-[color-mix(in_srgb,var(--gold)_24%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-2 shadow-[0_18px_42px_rgba(0,0,0,0.14)] backdrop-blur"
         >
           {accountNavItems.map(([href, label]) => (
             <a
-              className="flex h-10 shrink-0 items-center rounded-md border border-white/10 bg-[color-mix(in_srgb,var(--paper-warm)_8%,transparent)] px-3 text-sm font-semibold text-[var(--background)] hover:border-[color-mix(in_srgb,var(--gold)_70%,var(--card-rim))] hover:bg-[color-mix(in_srgb,var(--gold)_15%,transparent)]"
+              className="flex h-10 shrink-0 items-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm font-semibold text-[var(--foreground)] hover:border-[color-mix(in_srgb,var(--gold)_70%,var(--card-rim))] hover:bg-[color-mix(in_srgb,var(--gold)_15%,var(--paper-warm))]"
               href={href}
               key={href}
             >
