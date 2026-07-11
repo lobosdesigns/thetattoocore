@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #202020;
+  --background: #f2f1ee;
   --foreground: #171412;
   --accent: #c8953b;
   --brand-gold: #c8953b;
   --card-rim: rgba(23, 20, 18, 0.14);
   --danger: #b42318;
   --gold: #c8953b;
-  --grid-line: rgba(255, 255, 255, 0.025);
+  --grid-line: rgba(23, 20, 18, 0.035);
   --ink: #171412;
   --muted: rgba(23, 20, 18, 0.72);
   --muted-strong: rgba(23, 20, 18, 0.58);
