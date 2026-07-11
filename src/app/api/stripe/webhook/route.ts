@@ -25,21 +25,30 @@ async function markCheckoutSession({
   const now = new Date().toISOString();
   const shippingDetails = (
     session as Stripe.Checkout.Session & {
+      collected_information?: {
+        shipping_details?: {
+          address?: Stripe.Address | null;
+          name?: string | null;
+        } | null;
+      } | null;
       shipping_details?: {
         address?: Stripe.Address | null;
         name?: string | null;
       } | null;
     }
-  ).shipping_details;
+  );
+  const collectedShippingDetails =
+    shippingDetails.collected_information?.shipping_details ??
+    shippingDetails.shipping_details;
   const updateValues = {
     customer_email: session.customer_details?.email ?? session.customer_email ?? null,
-    shipping_address: shippingDetails
+    shipping_address: collectedShippingDetails
       ? {
-          address: shippingDetails.address,
-          name: shippingDetails.name,
+          address: collectedShippingDetails.address,
+          name: collectedShippingDetails.name,
         }
       : {},
-    shipping_name: shippingDetails?.name ?? null,
+    shipping_name: collectedShippingDetails?.name ?? null,
     status,
     stripe_payment_intent_id:
       typeof session.payment_intent === "string" ? session.payment_intent : null,
