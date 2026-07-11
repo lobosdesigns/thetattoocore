@@ -254,7 +254,7 @@ function ContentLabels({
     <div className="flex flex-wrap gap-1.5">
       {labels.map((label) => (
         <span
-          className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 py-1 text-[11px] font-semibold text-[#766d62]"
+          className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-2 py-1 text-[11px] font-semibold text-[var(--muted-strong)]"
           key={label}
         >
           {label}
@@ -288,8 +288,8 @@ function canRenderContent({
 
 function AdultTermsGate({ username }: { username: string }) {
   return (
-    <section className="border-b border-[#cfc8bd] px-4 py-4">
-      <div className="rounded-md border border-[#171412] bg-[#171412] p-4 text-white">
+    <section className="border-b border-[var(--card-rim)] px-4 py-4">
+      <div className="rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_28%,transparent)] bg-[var(--ink)] p-4 text-white">
         <p className="text-sm font-bold">18+ sensitive body-art content</p>
         <p className="mt-1 text-sm leading-5 text-white/75">
           This profile may include sensitive tattoo, piercing, healing, or
@@ -303,7 +303,7 @@ function AdultTermsGate({ username }: { username: string }) {
           >
             Terms
           </Link>
-          <button className="h-10 rounded-md bg-white px-4 text-sm font-semibold text-[#171412]">
+          <button className="h-10 rounded-md bg-white px-4 text-sm font-semibold text-[var(--ink)]">
             I am 18+
           </button>
         </form>
@@ -324,8 +324,8 @@ function PublicProfileNotice({
   if (isSignedIn && isAdultConfirmed && hiddenCount === 0) return null;
 
   return (
-    <section className="border-b border-[#cfc8bd] px-4 py-4">
-      <div className="ttc-card rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-4">
+    <section className="border-b border-[var(--card-rim)] px-4 py-4">
+      <div className="ttc-card rounded-md p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <p className="inline-flex items-center gap-2 text-sm font-bold">
@@ -336,13 +336,13 @@ function PublicProfileNotice({
               )}
               Public profile preview
             </p>
-            <p className="mt-1 text-sm leading-6 text-[#766d62]">
+            <p className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">
               {isSignedIn
                 ? "Some 18+ sensitive body-art content may stay hidden until your account has accepted the adult body-art terms."
                 : "Visitors can discover public, non-sensitive work. Sign in to follow, DM, open full comments, view member-only posts, and confirm 18+ access where allowed."}
             </p>
             {!isSignedIn ? (
-              <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-[#4f473f]">
+              <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-[var(--muted)]">
                 {[
                   "Limited comments",
                   "No DMs",
@@ -350,7 +350,7 @@ function PublicProfileNotice({
                   "No sensitive media",
                 ].map((item) => (
                     <span
-                      className="rounded-md border border-[#e5ded4] bg-white px-2 py-1"
+                      className="ttc-surface rounded-md border px-2 py-1"
                       key={item}
                     >
                       {item}
@@ -360,7 +360,7 @@ function PublicProfileNotice({
             ) : null}
           </div>
           {hiddenCount > 0 ? (
-            <span className="w-fit shrink-0 rounded-md border border-[#cfc8bd] bg-white px-2 py-1 text-xs font-semibold text-[#4f473f]">
+            <span className="w-fit shrink-0 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--muted)]">
               {hiddenCount} hidden
             </span>
           ) : null}
@@ -368,13 +368,13 @@ function PublicProfileNotice({
         {!isSignedIn ? (
           <div className="mt-3 flex flex-wrap gap-2">
             <Link
-              className="inline-flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+              className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
               href="/login"
             >
               Sign in
             </Link>
             <Link
-              className="inline-flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
+              className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-4 text-sm font-semibold"
               href="/terms"
             >
               Content rules
@@ -398,7 +398,7 @@ function ProfileStat({
   const content = (
     <>
       <p className="text-lg font-bold">{value}</p>
-      <p className="text-xs text-[#766d62]">{label}</p>
+      <p className="text-xs text-[var(--muted-strong)]">{label}</p>
     </>
   );
 
@@ -424,7 +424,7 @@ function FollowPreviewCard({
 
   return (
     <Link
-      className="ttc-card flex items-center gap-3 rounded-md border border-[#cfc8bd] bg-white p-3"
+      className="ttc-card flex items-center gap-3 rounded-md p-3"
       href={`/u/${profile.username}`}
     >
       <ProfileAvatar profile={profile} size="md" />
@@ -432,10 +432,10 @@ function FollowPreviewCard({
         <div className="flex min-w-0 items-center gap-1.5">
           <p className="truncate text-sm font-bold">{profile.display_name}</p>
           {isVerifiedProfile(profile) ? (
-            <BadgeCheck className="size-3.5 shrink-0 text-[#171412]" />
+            <BadgeCheck className="size-3.5 shrink-0 text-[var(--foreground)]" />
           ) : null}
         </div>
-        <p className="text-xs text-[#766d62]">
+        <p className="text-xs text-[var(--muted-strong)]">
           @{profile.username} - {label}
         </p>
       </div>
@@ -453,7 +453,7 @@ function FollowPreviewSection({
   if (!followers.length && !following.length) return null;
 
   return (
-    <section className="border-b border-[#cfc8bd] px-4 py-6">
+    <section className="border-b border-[var(--card-rim)] px-4 py-6">
       <div className="mb-4 flex items-center gap-2">
         <UserPlus className="size-5" />
         <h2 className="text-lg font-bold">Community</h2>
@@ -462,7 +462,7 @@ function FollowPreviewSection({
         <div>
           <div className="mb-2 flex items-center justify-between gap-2">
             <p className="text-sm font-bold">Recent followers</p>
-            <span className="text-xs font-semibold text-[#766d62]">
+            <span className="text-xs font-semibold text-[var(--muted-strong)]">
               {followers.length} shown
             </span>
           </div>
@@ -476,7 +476,7 @@ function FollowPreviewSection({
                 />
               ))
             ) : (
-              <p className="rounded-md border border-dashed border-[#cfc8bd] bg-[#fffdf9] p-3 text-sm text-[#766d62]">
+              <p className="rounded-md border border-dashed border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3 text-sm text-[var(--muted-strong)]">
                 No followers to show yet.
               </p>
             )}
@@ -485,7 +485,7 @@ function FollowPreviewSection({
         <div>
           <div className="mb-2 flex items-center justify-between gap-2">
             <p className="text-sm font-bold">Following</p>
-            <span className="text-xs font-semibold text-[#766d62]">
+            <span className="text-xs font-semibold text-[var(--muted-strong)]">
               {following.length} shown
             </span>
           </div>
@@ -499,7 +499,7 @@ function FollowPreviewSection({
                 />
               ))
             ) : (
-              <p className="rounded-md border border-dashed border-[#cfc8bd] bg-[#fffdf9] p-3 text-sm text-[#766d62]">
+              <p className="rounded-md border border-dashed border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3 text-sm text-[var(--muted-strong)]">
                 Not following anyone yet.
               </p>
             )}
@@ -518,7 +518,7 @@ function ProfileDetailChip({
   icon: LucideIcon;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-md border border-[#cfc8bd] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#4f473f]">
+    <span className="ttc-surface inline-flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-xs font-semibold text-[var(--muted)]">
       <Icon className="size-3.5" />
       {children}
     </span>
@@ -533,16 +533,16 @@ function ProfileContentNav({
   return (
     <nav
       aria-label="Profile content"
-      className="sticky top-[65px] z-10 flex gap-2 overflow-x-auto border-b border-[#cfc8bd] bg-[#e8e4dc]/95 px-4 py-3 backdrop-blur"
+      className="sticky top-[65px] z-10 flex gap-2 overflow-x-auto border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] px-4 py-3 backdrop-blur"
     >
       {items.map(([href, label, count]) => (
         <a
-          className="flex h-10 shrink-0 items-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm font-bold text-[#171412] hover:border-[#c8953b]"
+          className="ttc-surface flex h-10 shrink-0 items-center gap-2 rounded-md border px-3 text-sm font-bold hover:border-[var(--brand-gold)]"
           href={href}
           key={href}
         >
           <span>{label}</span>
-          <span className="rounded-md bg-[#efe7da] px-1.5 py-0.5 text-xs text-[#4f473f]">
+          <span className="rounded-md bg-[color-mix(in_srgb,var(--brand-gold)_16%,var(--paper-warm))] px-1.5 py-0.5 text-xs text-[var(--muted)]">
             {count}
           </span>
         </a>
@@ -565,15 +565,15 @@ function ProfileSectionHeading({
   return (
     <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="flex items-start gap-3">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]">
           <Icon className="size-5" />
         </span>
         <div>
           <h2 className="text-lg font-bold">{title}</h2>
-          <p className="mt-1 text-sm leading-5 text-[#766d62]">{description}</p>
+          <p className="mt-1 text-sm leading-5 text-[var(--muted-strong)]">{description}</p>
         </div>
       </div>
-      <span className="w-fit rounded-md border border-[#d8d1c6] bg-white px-2.5 py-1.5 text-xs font-bold text-[#4f473f]">
+      <span className="w-fit rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2.5 py-1.5 text-xs font-bold text-[var(--muted)]">
         {count} live
       </span>
     </div>
@@ -596,17 +596,17 @@ function ProfileEmptyState({
   title: string;
 }) {
   return (
-    <div className="rounded-md border border-dashed border-[#cfc6ba] bg-[#f7f4ef] p-4">
-      <div className="flex size-10 items-center justify-center rounded-md bg-[#efe7da]">
+    <div className="rounded-md border border-dashed border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_86%,transparent)] p-4">
+      <div className="flex size-10 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--brand-gold)_16%,var(--paper-warm))]">
         <Icon className="size-5" />
       </div>
       <h3 className="mt-3 text-sm font-bold">{title}</h3>
-      <p className="mt-2 text-sm leading-6 text-[#766d62]">{body}</p>
+      <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">{body}</p>
       {tips?.length ? (
         <div className="mt-3 flex flex-wrap gap-2">
           {tips.map((tip) => (
             <span
-              className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 py-1 text-xs font-semibold text-[#4f473f]"
+              className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--muted)]"
               key={tip}
             >
               {tip}
@@ -616,7 +616,7 @@ function ProfileEmptyState({
       ) : null}
       {actionHref && actionLabel ? (
         <Link
-          className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+          className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
           href={actionHref}
         >
           {actionLabel}
@@ -633,12 +633,12 @@ function PostPreview({ post }: { post: FeedPost }) {
     : null;
 
   return (
-    <article className="rounded-md border border-[#d8d1c6] bg-white">
+    <article className="ttc-surface rounded-md border">
       {media ? (
         media.media_type === "video" ? (
           <MediaLightbox mediaType="video" src={mediaSrc ?? ""}>
             <video
-              className="aspect-[4/5] w-full rounded-t-md bg-[#171412] object-cover"
+              className="aspect-[4/5] w-full rounded-t-md bg-[var(--ink)] object-cover"
               controls
               controlsList="nodownload noplaybackrate"
               disablePictureInPicture
@@ -662,13 +662,13 @@ function PostPreview({ post }: { post: FeedPost }) {
           </MediaLightbox>
         )
       ) : (
-        <div className="flex aspect-[4/5] items-center justify-center rounded-t-md bg-[#171412] text-white">
+        <div className="flex aspect-[4/5] items-center justify-center rounded-t-md bg-[var(--foreground)] text-[var(--background)]">
           <Camera className="size-8" />
         </div>
       )}
       <div className="space-y-2 p-3">
         {post.style_tags[0] ? (
-          <span className="rounded-md bg-[#efe7da] px-2 py-1 text-xs font-medium">
+          <span className="rounded-md bg-[color-mix(in_srgb,var(--brand-gold)_16%,var(--paper-warm))] px-2 py-1 text-xs font-medium">
             {post.style_tags[0]}
           </span>
         ) : null}
@@ -680,9 +680,9 @@ function PostPreview({ post }: { post: FeedPost }) {
           {post.caption || "Untitled post"}
         </p>
         <div className="flex items-center justify-between gap-3">
-          <p className="text-xs text-[#766d62]">{timeAgo(post.created_at)}</p>
+          <p className="text-xs text-[var(--muted-strong)]">{timeAgo(post.created_at)}</p>
           <Link
-            className="text-xs font-bold text-[#171412] hover:underline"
+            className="text-xs font-bold text-[var(--foreground)] hover:underline"
             href={`/p/${post.id}`}
           >
             Open
@@ -1011,14 +1011,14 @@ export default async function ProfilePage({
       ((gigs?.length ?? 0) - visibleGigs.length);
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
-      <div className="mx-auto min-h-screen w-full max-w-5xl overflow-x-hidden bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
-        <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
+    <main className="ttc-page min-h-screen overflow-x-hidden">
+      <div className="ttc-page-panel mx-auto min-h-screen w-full max-w-5xl overflow-x-hidden">
+        <header className="sticky top-0 z-10 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <Link
                 aria-label="Back to feed"
-                className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
+                className="flex size-10 shrink-0 items-center justify-center rounded-md border ttc-surface"
                 href="/"
               >
                 <ArrowLeft className="size-5" />
@@ -1027,7 +1027,7 @@ export default async function ProfilePage({
                 <h1 className="truncate text-xl font-bold">
                   {profile.display_name}
                 </h1>
-                <p className="text-xs text-[#766d62]">@{profile.username}</p>
+                <p className="text-xs text-[var(--muted-strong)]">@{profile.username}</p>
               </div>
             </div>
             <NotificationBellLink className="shrink-0" userId={claims?.sub} />
@@ -1035,12 +1035,12 @@ export default async function ProfilePage({
         </header>
 
         {query.message ? (
-          <p className="border-b border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 text-sm font-medium">
+          <p className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_88%,var(--brand-gold)_12%)] px-4 py-3 text-sm font-medium">
             {query.message}
           </p>
         ) : null}
 
-        <section className="border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-6">
+        <section className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-4 py-6">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
             <ProfileAvatar
               className="shadow-[0_12px_30px_rgba(23,20,18,0.22)]"
@@ -1050,30 +1050,30 @@ export default async function ProfilePage({
             <div className="min-w-0 flex-1">
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 <h2 className="text-2xl font-bold">{profile.display_name}</h2>
-                <span className="inline-flex items-center gap-1 rounded-md bg-[#efe7da] px-2 py-1 text-xs font-semibold capitalize text-[#4f473f]">
+                <span className="inline-flex items-center gap-1 rounded-md bg-[color-mix(in_srgb,var(--brand-gold)_16%,var(--paper-warm))] px-2 py-1 text-xs font-semibold capitalize text-[var(--muted)]">
                   <UserPlus className="size-3" />
                   {formatAccountType(profile.account_type)}
                 </span>
                 {isVerifiedProfile(profile) ? (
-                  <span className="inline-flex items-center gap-1 rounded-md bg-[#171412] px-2 py-1 text-xs font-semibold text-white">
+                  <span className="inline-flex items-center gap-1 rounded-md bg-[var(--foreground)] px-2 py-1 text-xs font-semibold text-[var(--background)]">
                     <BadgeCheck className="size-3" />
                     Verified {formatAccountType(profile.account_type)}
                   </span>
                 ) : null}
                 {profile.is_private ? (
-                  <span className="inline-flex items-center gap-1 rounded-md border border-[#cfc8bd] px-2 py-1 text-xs font-semibold text-[#766d62]">
+                  <span className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] px-2 py-1 text-xs font-semibold text-[var(--muted-strong)]">
                     <LockKeyhole className="size-3" />
                     Private
                   </span>
                 ) : null}
                 {!profile.is_private && !viewer.isSignedIn ? (
-                  <span className="inline-flex items-center gap-1 rounded-md border border-[#cfc8bd] px-2 py-1 text-xs font-semibold text-[#766d62]">
+                  <span className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] px-2 py-1 text-xs font-semibold text-[var(--muted-strong)]">
                     <LogIn className="size-3" />
                     Public preview
                   </span>
                 ) : null}
               </div>
-              <p className="text-sm font-medium text-[#766d62]">
+              <p className="text-sm font-medium text-[var(--muted-strong)]">
                 @{profile.username}
               </p>
               {profile.bio && !isPrivateLocked ? (
@@ -1082,7 +1082,7 @@ export default async function ProfilePage({
                 </p>
               ) : null}
               {isPrivateLocked ? (
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-[#766d62]">
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--muted-strong)]">
                   {blockedByViewer
                     ? "You blocked this profile. Unblock them if you want to view, follow, or message again."
                     : viewerBlockedByProfile
@@ -1107,7 +1107,7 @@ export default async function ProfilePage({
                 ) : null}
                 {profile.website_url ? (
                   <a
-                    className="inline-flex items-center gap-1 rounded-md border border-[#cfc8bd] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#171412]"
+                    className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2.5 py-1.5 text-xs font-semibold text-[var(--foreground)]"
                     href={profile.website_url}
                     rel="noreferrer"
                     target="_blank"
@@ -1118,7 +1118,7 @@ export default async function ProfilePage({
                 ) : null}
                 {profile.instagram_url ? (
                   <a
-                    className="inline-flex items-center gap-1 rounded-md border border-[#cfc8bd] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#171412]"
+                    className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2.5 py-1.5 text-xs font-semibold text-[var(--foreground)]"
                     href={profile.instagram_url}
                     rel="noreferrer"
                     target="_blank"
@@ -1158,7 +1158,7 @@ export default async function ProfilePage({
               <div className="mt-5 flex flex-wrap gap-2">
                 {isOwnProfile ? (
                   <Link
-                    className="inline-flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                    className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                     href="/account"
                   >
                     Edit profile
@@ -1171,7 +1171,7 @@ export default async function ProfilePage({
                       type="hidden"
                       value={profile.username}
                     />
-                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold">
+                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-4 text-sm font-semibold">
                       <UserRoundMinus className="size-4" />
                       Following
                     </button>
@@ -1184,7 +1184,7 @@ export default async function ProfilePage({
                       type="hidden"
                       value={profile.username}
                     />
-                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold">
+                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-4 text-sm font-semibold">
                       <UserRoundMinus className="size-4" />
                       Request sent
                     </button>
@@ -1197,7 +1197,7 @@ export default async function ProfilePage({
                       type="hidden"
                       value={profile.username}
                     />
-                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
                       <UserPlus className="size-4" />
                       {profile.is_private ? "Request follow" : "Follow"}
                     </button>
@@ -1205,7 +1205,7 @@ export default async function ProfilePage({
                 )}
                 {!isOwnProfile && !hasBlockRelationship ? (
                   <Link
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-4 text-sm font-semibold"
                     href={`/messages?to=${profile.username}`}
                   >
                     <Send className="size-4" />
@@ -1214,7 +1214,7 @@ export default async function ProfilePage({
                 ) : null}
                 {!isOwnProfile && claims?.sub && !hasBlockRelationship ? (
                   <SavedItemButton
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-4 text-sm font-semibold"
                     isSaved={Boolean(savedProfile)}
                     returnPath={`/u/${profile.username}`}
                     subjectId={profile.id}
@@ -1237,7 +1237,7 @@ export default async function ProfilePage({
                         type="hidden"
                         value={profile.username}
                       />
-                      <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold">
+                      <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-4 text-sm font-semibold">
                         <Ban className="size-4" />
                         Unblock
                       </button>
@@ -1250,7 +1250,7 @@ export default async function ProfilePage({
                         type="hidden"
                         value={profile.username}
                       />
-                      <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[#e5b8b8] bg-[#fff0f0] px-4 text-sm font-semibold text-[#8a2828]">
+                      <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[color-mix(in_srgb,#d14b4b_36%,var(--card-rim))] bg-[color-mix(in_srgb,#d14b4b_12%,var(--paper-warm))] px-4 text-sm font-semibold text-[color-mix(in_srgb,#d14b4b_80%,var(--foreground))]">
                         <Ban className="size-4" />
                         Block
                       </button>
@@ -1263,7 +1263,7 @@ export default async function ProfilePage({
         </section>
 
         {isOwnProfile && profile.is_private && followRequests?.length ? (
-          <section className="border-b border-[#cfc8bd] px-4 py-6">
+          <section className="border-b border-[var(--card-rim)] px-4 py-6">
             <div className="mb-4 flex items-center gap-2">
               <UserPlus className="size-5" />
               <h2 className="text-lg font-bold">Follow requests</h2>
@@ -1271,14 +1271,14 @@ export default async function ProfilePage({
             <div className="space-y-3">
               {followRequests.map((request) => (
                 <article
-                  className="ttc-card flex flex-col gap-3 rounded-md border border-[#cfc8bd] bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
+                  className="ttc-card flex flex-col gap-3 rounded-md p-4 sm:flex-row sm:items-center sm:justify-between"
                   key={request.follower_id}
                 >
                   <div>
                     <p className="font-semibold">
                       {request.profiles?.display_name ?? "Unknown member"}
                     </p>
-                    <p className="text-sm text-[#766d62]">
+                    <p className="text-sm text-[var(--muted-strong)]">
                       @{request.profiles?.username ?? "unknown"} ·{" "}
                       {request.profiles?.account_type ?? "member"}
                     </p>
@@ -1295,7 +1295,7 @@ export default async function ProfilePage({
                         type="hidden"
                         value={profile.username}
                       />
-                      <button className="h-9 rounded-md bg-[#171412] px-3 text-sm font-semibold text-white">
+                      <button className="h-9 rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-[var(--background)]">
                         Approve
                       </button>
                     </form>
@@ -1310,7 +1310,7 @@ export default async function ProfilePage({
                         type="hidden"
                         value={profile.username}
                       />
-                      <button className="h-9 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold">
+                      <button className="h-9 ttc-surface rounded-md border px-3 text-sm font-semibold">
                         Decline
                       </button>
                     </form>
@@ -1342,10 +1342,10 @@ export default async function ProfilePage({
 
         {isPrivateLocked ? (
           <section className="px-4 py-8">
-            <div className="ttc-card rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-5 text-center">
-              <LockKeyhole className="mx-auto mb-3 size-8 text-[#766d62]" />
+            <div className="ttc-card rounded-md border ttc-surface p-5 text-center">
+              <LockKeyhole className="mx-auto mb-3 size-8 text-[var(--muted-strong)]" />
               <h2 className="text-lg font-bold">Private profile</h2>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#766d62]">
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--muted-strong)]">
                 {blockedByViewer
                   ? "You blocked this profile, so their content and messages are hidden."
                   : viewerBlockedByProfile
@@ -1365,7 +1365,7 @@ export default async function ProfilePage({
           ]}
         />
         <section
-          className="scroll-mt-28 border-b border-[#cfc8bd] px-4 py-6"
+          className="scroll-mt-28 border-b border-[var(--card-rim)] px-4 py-6"
           id="profile-4u"
         >
           <ProfileSectionHeading
@@ -1408,7 +1408,7 @@ export default async function ProfilePage({
               {visibleThreads.length ? (
                 visibleThreads.map((thread) => (
                   <Link
-                    className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-4 transition hover:border-[#171412]"
+                    className="ttc-card block rounded-md p-4 transition hover:border-[var(--foreground)]"
                     href={`/t/${thread.id}`}
                     key={thread.id}
                   >
@@ -1417,7 +1417,7 @@ export default async function ProfilePage({
                         isSensitive={thread.is_sensitive}
                         visibility={thread.visibility}
                       />
-                      <p className="shrink-0 text-xs text-[#766d62]">
+                      <p className="shrink-0 text-xs text-[var(--muted-strong)]">
                         {timeAgo(thread.created_at)}
                       </p>
                     </div>
@@ -1452,13 +1452,13 @@ export default async function ProfilePage({
               {visibleListings.length ? (
                 visibleListings.map((listing) => (
                   <Link
-                    className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-4 transition hover:border-[#171412]"
+                    className="ttc-card block rounded-md p-4 transition hover:border-[var(--foreground)]"
                     href={`/stuff/${listing.id}`}
                     key={listing.id}
                   >
                     <div className="flex gap-3">
                       {listing.marketplace_media[0]?.media_type === "video" ? (
-                        <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white">
+                        <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]">
                           <Video className="size-6" />
                         </div>
                       ) : listing.marketplace_media[0] ? (
@@ -1472,7 +1472,7 @@ export default async function ProfilePage({
                           }}
                         />
                       ) : (
-                        <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-[#efe7da]">
+                        <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--brand-gold)_16%,var(--paper-warm))]">
                           <ShoppingBag className="size-6" />
                         </div>
                       )}
@@ -1487,7 +1487,7 @@ export default async function ProfilePage({
                         <p className="text-sm font-bold">
                           {formatPrice(listing)}
                         </p>
-                        <p className="mt-1 line-clamp-2 text-sm leading-6 text-[#766d62]">
+                        <p className="mt-1 line-clamp-2 text-sm leading-6 text-[var(--muted-strong)]">
                           {listing.description || listing.category}
                         </p>
                       </div>
@@ -1522,7 +1522,7 @@ export default async function ProfilePage({
               {visibleGigs.length ? (
                 visibleGigs.map((gig) => (
                   <article
-                    className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4"
+                    className="ttc-card rounded-md p-4"
                     key={gig.id}
                   >
                     <div className="flex gap-3">
@@ -1537,7 +1537,7 @@ export default async function ProfilePage({
                           }}
                         />
                       ) : (
-                        <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-[#efe7da]">
+                        <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--brand-gold)_16%,var(--paper-warm))]">
                           <BriefcaseBusiness className="size-6" />
                         </div>
                       )}
@@ -1549,7 +1549,7 @@ export default async function ProfilePage({
                           {gig.title}
                         </Link>
                         <div className="mt-1 flex flex-wrap gap-1.5">
-                          <span className="rounded-md bg-[#efe7da] px-2 py-1 text-xs font-medium capitalize">
+                          <span className="rounded-md bg-[color-mix(in_srgb,var(--brand-gold)_16%,var(--paper-warm))] px-2 py-1 text-xs font-medium capitalize">
                             {formatGigCategory(gig.category)}
                           </span>
                           <ContentLabels
@@ -1557,19 +1557,19 @@ export default async function ProfilePage({
                             visibility={gig.visibility}
                           />
                         </div>
-                        <p className="mt-2 flex items-center gap-1 text-xs text-[#766d62]">
+                        <p className="mt-2 flex items-center gap-1 text-xs text-[var(--muted-strong)]">
                           <CalendarDays className="size-3.5" />
                           {formatGigDate(gig)} -{" "}
                           {[gig.city, gig.region, gig.country]
                             .filter(Boolean)
                             .join(", ") || "Remote / open"}
                         </p>
-                        <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#766d62]">
+                        <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--muted-strong)]">
                           {gig.description || gig.compensation || "No details yet."}
                         </p>
                         {gig.contact_url ? (
                           <a
-                            className="mt-3 inline-flex h-9 items-center justify-center rounded-md bg-[#171412] px-3 text-sm font-semibold text-white"
+                            className="mt-3 inline-flex h-9 items-center justify-center rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-[var(--background)]"
                             href={gig.contact_url}
                             rel="noreferrer"
                             target="_blank"
@@ -1585,7 +1585,7 @@ export default async function ProfilePage({
                               type="hidden"
                               value={profile.username}
                             />
-                            <button className="inline-flex h-9 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-3 text-sm font-semibold">
+                            <button className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm font-semibold">
                               Archive gig
                             </button>
                           </form>
