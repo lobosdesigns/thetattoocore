@@ -15,6 +15,9 @@ type Order = {
   tax_cents: number;
   total_cents: number;
 };
+type Claims = {
+  sub: string;
+};
 
 export const metadata: Metadata = {
   robots: {
@@ -70,13 +73,16 @@ export default async function MerchCheckoutSuccessPage({
 }) {
   const { session_id: sessionId } = await searchParams;
   const supabase = await createClient();
-  const { data: order } = sessionId
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+  const { data: order } = sessionId && claims?.sub
     ? await supabase
         .from("merch_orders")
         .select(
           "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, created_at",
         )
         .eq("stripe_checkout_session_id", sessionId)
+        .eq("buyer_id", claims.sub)
         .maybeSingle<Order>()
     : { data: null };
   const copy = statusCopy(order?.status);
@@ -147,6 +153,10 @@ export default async function MerchCheckoutSuccessPage({
                 </div>
               </dl>
             </div>
+          ) : sessionId && !claims?.sub ? (
+            <p className="mt-5 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-4 text-sm leading-6 text-[var(--muted)]">
+              Sign in with the buying account to view this order receipt.
+            </p>
           ) : null}
           <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
             <Link
