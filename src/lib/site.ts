@@ -4,7 +4,7 @@ export const siteUrl =
 
 export const siteName = "TheTattooCore";
 export const siteDescription =
-  "The heart of the tattoo community for artists, studios, collectors, and tattoo enthusiasts.";
+  "The heart of the tattoo community for real artists, studios, vendors, collectors, and enthusiasts, with no AI art or scratcher promotion.";
 export const supportEmail = "lobosden@hotmail.com";
 export const brandShareImage = `${siteUrl}/icon.svg?v=ttc-shield`;
 export const brandShareImageAlt = `${siteName} shield logo`;
