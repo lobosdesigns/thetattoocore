@@ -1205,6 +1205,7 @@ export async function updateAdCampaignStatus(formData: FormData) {
 
   revalidatePath("/admin");
   revalidatePath("/admin/ads");
+  revalidatePath("/");
   redirect(adminAdsMessage("Ad campaign updated.", returnTo));
 }
 

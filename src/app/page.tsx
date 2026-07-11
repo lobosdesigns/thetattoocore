@@ -1226,6 +1226,7 @@ async function fetchSponsoredCampaign(
           "id, title, body, target_url, campaign_type, goal, bid_cents, city, region, country_code, language, keywords, profiles:profiles!ad_campaigns_advertiser_id_fkey(username, display_name, avatar_url, account_type, license_verified_at), ad_campaign_placements!inner(placement)",
         )
     .eq("status", "active")
+    .in("payment_status", ["paid", "waived"])
     .or(`starts_at.is.null,starts_at.lte.${now}`)
     .or(`ends_at.is.null,ends_at.gt.${now}`)
     .eq("ad_campaign_placements.placement", placement);

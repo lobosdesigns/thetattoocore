@@ -19,6 +19,7 @@ export async function GET(request: Request) {
     .select("id, target_url, ad_campaign_placements!inner(placement)")
     .eq("id", campaignId)
     .eq("status", "active")
+    .in("payment_status", ["paid", "waived"])
     .eq("ad_campaign_placements.placement", placement)
     .maybeSingle<{ id: string; target_url: string | null }>();
 
