@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { siteName, siteUrl } from "@/lib/site";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
 
@@ -227,6 +228,43 @@ export async function POST(request: Request) {
   const cancelUrl = `${siteUrl}/merch/${product.id}?message=${encodeURIComponent(
     "Checkout canceled.",
   )}`;
+
+  const { error: orderError } = await supabase.from("merch_orders").insert({
+    buyer_id: claims.sub,
+    currency: product.currency,
+    id: orderId,
+    status: "pending_checkout",
+    platform_fee_cents: platformFeeCents,
+    subtotal_cents: subtotalCents,
+    total_cents: totalCents,
+  });
+
+  if (orderError) {
+    return redirectWithMessage(
+      `/merch/${product.id}`,
+      orderError.message || "The order could not be saved before checkout.",
+    );
+  }
+
+  const { error: itemError } = await supabase.from("merch_order_items").insert({
+    currency: product.currency,
+    line_total_cents: subtotalCents,
+    order_id: orderId,
+    product_id: product.id,
+    quantity,
+    seller_id: product.seller_id,
+    sku_snapshot: product.sku,
+    title_snapshot: product.title,
+    unit_price_cents: product.price_cents,
+  });
+
+  if (itemError) {
+    return redirectWithMessage(
+      `/merch/${product.id}`,
+      itemError.message || "The order item could not be saved before checkout.",
+    );
+  }
+
   let session: CheckoutSession;
 
   try {
@@ -247,40 +285,27 @@ export async function POST(request: Request) {
     );
   }
 
-  const { error: orderError } = await supabase.from("merch_orders").insert({
-    buyer_id: claims.sub,
-    currency: product.currency,
-    id: orderId,
-    status: "pending_checkout",
-    stripe_checkout_session_id: session.id,
-    platform_fee_cents: platformFeeCents,
-    subtotal_cents: subtotalCents,
-    total_cents: totalCents,
-  });
-
-  if (orderError) {
+  const adminSupabase = createAdminClient();
+  if (!adminSupabase) {
     return redirectWithMessage(
       `/merch/${product.id}`,
-      orderError.message || "Checkout started, but the order could not be saved.",
+      "Checkout is almost ready. Finish server webhook setup before taking payments.",
     );
   }
 
-  const { error: itemError } = await supabase.from("merch_order_items").insert({
-    currency: product.currency,
-    line_total_cents: subtotalCents,
-    order_id: orderId,
-    product_id: product.id,
-    quantity,
-    seller_id: product.seller_id,
-    sku_snapshot: product.sku,
-    title_snapshot: product.title,
-    unit_price_cents: product.price_cents,
-  });
+  const { error: sessionError } = await adminSupabase
+    .from("merch_orders")
+    .update({
+      stripe_checkout_session_id: session.id,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", orderId)
+    .eq("buyer_id", claims.sub);
 
-  if (itemError) {
+  if (sessionError) {
     return redirectWithMessage(
       `/merch/${product.id}`,
-      itemError.message || "Checkout started, but the order item could not be saved.",
+      sessionError.message || "Checkout started, but the order session could not be saved.",
     );
   }
 
