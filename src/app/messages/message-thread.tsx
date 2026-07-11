@@ -116,7 +116,7 @@ export function MessageThread({
               className={`max-w-[82%] overflow-hidden rounded-md px-4 py-3 sm:max-w-[78%] ${
                 mine
                   ? "bg-[#171412] text-white"
-                  : "border border-[#cfc8bd] bg-white text-[#171412]"
+                  : "ttc-surface border"
               }`}
             >
               {message.attachments?.length ? (
@@ -141,7 +141,7 @@ export function MessageThread({
                         className={`rounded-md border px-3 py-2 text-xs ${
                           mine
                             ? "border-white/20 bg-white/10 text-white/80"
-                            : "border-[#cfc8bd] bg-[#f7f4ef] text-[#766d62]"
+                            : "ttc-surface"
                         }`}
                         key={attachment.id}
                       >

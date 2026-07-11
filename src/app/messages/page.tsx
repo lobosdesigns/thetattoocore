@@ -133,8 +133,8 @@ export default async function MessagesPage({
 
   if (!claims?.sub) {
     return (
-      <main className="min-h-screen bg-[#202020] px-4 py-8 text-[#171412]">
-        <section className="ttc-card mx-auto max-w-xl rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-5">
+      <main className="ttc-page min-h-screen px-4 py-8">
+        <section className="ttc-card ttc-surface mx-auto max-w-xl rounded-md border p-5">
           <h1 className="text-xl font-bold">DM</h1>
           <p className="mt-2 text-sm text-[#766d62]">
             Sign in to start conversations with artists, studios, and collectors.
@@ -158,8 +158,8 @@ export default async function MessagesPage({
 
   if (!currentProfile) {
     return (
-      <main className="min-h-screen bg-[#202020] px-4 py-8 text-[#171412]">
-        <section className="ttc-card mx-auto max-w-xl rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-5">
+      <main className="ttc-page min-h-screen px-4 py-8">
+        <section className="ttc-card ttc-surface mx-auto max-w-xl rounded-md border p-5">
           <h1 className="text-xl font-bold">Finish profile</h1>
           <p className="mt-2 text-sm text-[#766d62]">
             Set up your profile before sending messages.
@@ -368,18 +368,18 @@ export default async function MessagesPage({
   }));
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
+    <main className="ttc-page min-h-screen overflow-x-hidden">
       <div className="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 overflow-x-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)] lg:grid-cols-[320px_minmax(0,1fr)]">
         <aside
-          className={`min-w-0 border-r border-[#cfc8bd] bg-[#f2f1ee] ${
+          className={`ttc-page-panel min-w-0 border-r border-[var(--card-rim)] ${
             hasSelectedConversationParam ? "hidden lg:block" : "block"
           }`}
         >
-          <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-4 backdrop-blur">
+          <header className="sticky top-0 z-10 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_95%,transparent)] px-4 py-4 backdrop-blur">
             <div className="mb-4 flex items-center justify-between gap-3">
               <Link
                 aria-label="Back to feed"
-                className="flex size-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
+                className="ttc-surface flex size-10 items-center justify-center rounded-md border"
                 href="/"
               >
                 <ArrowLeft className="size-5" />
@@ -398,7 +398,7 @@ export default async function MessagesPage({
               className="space-y-2"
               encType="multipart/form-data"
             >
-              <div className="flex items-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3">
+              <div className="ttc-surface flex items-center gap-2 rounded-md border px-3">
                 <Search className="size-4 text-[#766d62]" />
                 <input
                   className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none"
@@ -414,7 +414,7 @@ export default async function MessagesPage({
               </div>
               <WordLimitedField
                 as="textarea"
-                className="min-h-20 w-full rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-sm outline-none focus:border-[#171412]"
+                className="ttc-surface min-h-20 w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-[#171412]"
                 emojiShortcuts
                 maxCharacters={4000}
                 maxLength={4000}
@@ -422,7 +422,7 @@ export default async function MessagesPage({
                 placeholder="Start a message"
                 wrapperClassName="space-y-2"
               />
-              <details className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3">
+              <details className="ttc-surface rounded-md border p-3">
                 <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold">
                   <ImagePlus className="size-4" />
                   Attach photo
@@ -448,12 +448,12 @@ export default async function MessagesPage({
           </header>
 
           {params.message ? (
-            <p className="border-b border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 text-sm font-medium">
+            <p className="ttc-surface border-b border-[var(--card-rim)] px-4 py-3 text-sm font-medium">
               {params.message}
             </p>
           ) : null}
 
-          <section className="divide-y divide-[#cfc8bd]">
+          <section className="divide-y divide-[var(--card-rim)]">
             {inbox.length ? (
               inbox.map((conversation) => {
                 const profile = conversation.otherProfile;
@@ -464,10 +464,10 @@ export default async function MessagesPage({
                   <Link
                     className={`block px-4 py-4 ${
                       active
-                        ? "bg-[#e8e4dc]"
+                        ? "bg-[color-mix(in_srgb,var(--accent)_14%,var(--paper))]"
                         : hasUnread
-                          ? "bg-[#fffdf9] hover:bg-[#e8e4dc]"
-                          : "bg-[#f2f1ee] hover:bg-[#fffdf9]"
+                          ? "bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] hover:bg-[color-mix(in_srgb,var(--accent)_10%,var(--paper))]"
+                          : "bg-[color-mix(in_srgb,var(--paper)_96%,transparent)] hover:bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)]"
                     }`}
                     href={`/messages?c=${conversation.id}`}
                     key={conversation.id}
@@ -527,9 +527,9 @@ export default async function MessagesPage({
             )}
           </section>
           {memberships.length >= conversationLimit ? (
-            <div className="border-t border-[#cfc8bd] bg-[#f2f1ee] px-4 py-4">
+            <div className="border-t border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_96%,transparent)] px-4 py-4">
               <Link
-                className="flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-4 text-sm font-bold shadow-sm hover:bg-white"
+                className="ttc-surface flex h-10 items-center justify-center rounded-md border px-4 text-sm font-bold shadow-sm"
                 href={`/messages?inboxPage=${inboxPage + 1}`}
               >
                 Load 25 more conversations
@@ -539,17 +539,17 @@ export default async function MessagesPage({
         </aside>
 
         <section
-          className={`min-w-0 flex-col bg-[#f2f1ee] ${
+          className={`ttc-page-panel min-w-0 flex-col ${
             hasSelectedConversationParam ? "flex min-h-[100dvh]" : "hidden min-h-screen lg:flex"
           }`}
         >
           {selectedConversation ? (
             <>
-              <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-4 backdrop-blur">
+              <header className="sticky top-0 z-10 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_95%,transparent)] px-4 py-4 backdrop-blur">
                 <div className="flex items-center gap-3">
                   <Link
                     aria-label="Back to DM inbox"
-                    className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] lg:hidden"
+                    className="ttc-surface flex size-10 shrink-0 items-center justify-center rounded-md border lg:hidden"
                     href="/messages"
                   >
                     <ArrowLeft className="size-5" />
@@ -584,7 +584,7 @@ export default async function MessagesPage({
 
               <form
                 action={sendMessage}
-                className="sticky bottom-0 space-y-3 border-t border-[#cfc8bd] bg-[#f2f1ee] p-4"
+                className="sticky bottom-0 space-y-3 border-t border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_95%,transparent)] p-4"
                 encType="multipart/form-data"
               >
                 <input
@@ -595,7 +595,7 @@ export default async function MessagesPage({
                 <div className="flex items-end gap-2">
                   <WordLimitedField
                     as="textarea"
-                    className="min-h-12 w-full resize-none rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-sm outline-none focus:border-[#171412]"
+                    className="ttc-surface min-h-12 w-full resize-none rounded-md border px-3 py-2 text-sm outline-none focus:border-[#171412]"
                     emojiShortcuts
                     maxCharacters={4000}
                     maxLength={4000}
@@ -613,7 +613,7 @@ export default async function MessagesPage({
                     <Send className="size-5" />
                   </PendingSubmitButton>
                 </div>
-                <details className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3">
+                <details className="ttc-surface rounded-md border p-3">
                   <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold">
                     <ImagePlus className="size-4" />
                     Attach photo
