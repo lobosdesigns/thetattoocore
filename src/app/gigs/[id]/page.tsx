@@ -117,7 +117,7 @@ function VerifiedBadge({ profile }: { profile?: Profile | null }) {
   if (!isVerifiedProfile(profile)) return null;
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-md bg-[#171412] px-2 py-1 text-xs font-semibold text-white">
+    <span className="inline-flex items-center gap-1 rounded-md bg-[var(--foreground)] px-2 py-1 text-xs font-semibold text-[var(--background)]">
       <BadgeCheck className="size-3" />
       Verified
     </span>
@@ -263,21 +263,21 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
   const isPublicPreview = gig.visibility === "public_preview" && !gig.is_sensitive;
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
-      <div className="mx-auto min-h-screen w-full max-w-5xl overflow-x-hidden bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
-        <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
+    <main className="ttc-page min-h-screen overflow-x-hidden">
+      <div className="ttc-page-panel mx-auto min-h-screen w-full max-w-5xl overflow-x-hidden">
+        <header className="sticky top-0 z-10 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <Link
                 aria-label="Back to Gigs"
-                className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
+                className="ttc-surface flex size-10 shrink-0 items-center justify-center rounded-md border"
                 href="/#gigs"
               >
                 <ArrowLeft className="size-5" />
               </Link>
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold">Gigs</p>
-                <p className="truncate text-xs capitalize text-[#766d62]">
+                <p className="truncate text-xs capitalize text-[var(--muted-strong)]">
                   {formatCategory(gig.category)}
                 </p>
               </div>
@@ -287,19 +287,19 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
         </header>
 
         {message ? (
-          <div className="border-b border-[#cfc8bd] bg-[#e8e4dc] px-4 py-2 text-sm font-semibold">
+          <div className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_88%,var(--brand-gold)_12%)] px-4 py-2 text-sm font-semibold">
             {message}
           </div>
         ) : null}
         {!claims?.sub && isPublicPreview ? (
-          <section className="border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-3">
+          <section className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-4 py-3">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm leading-5 text-[#4f473f]">
+              <p className="text-sm leading-5 text-[var(--muted)]">
                 Public Gig preview. Sign in to save, DM, reply, and view any
                 member-only or 18+ sensitive body-art content.
               </p>
               <Link
-                className="flex h-10 shrink-0 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                className="flex h-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                 href="/login"
               >
                 Sign in
@@ -310,13 +310,13 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
 
         <section className="grid min-w-0 gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="min-w-0">
-            <div className="relative overflow-hidden rounded-md border border-[#3a332d] bg-[#171412] shadow-[0_12px_30px_rgba(23,20,18,0.22)]">
+            <div className="relative overflow-hidden rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_28%,transparent)] bg-[var(--ink)] shadow-[0_12px_30px_rgba(23,20,18,0.22)]">
               {media ? (
                 media.media_type === "video" ? (
                   showSensitiveMedia && mediaSrc ? (
                     <MediaLightbox mediaType="video" src={mediaSrc}>
                       <video
-                        className="aspect-[4/3] w-full bg-[#171412] object-contain"
+                        className="aspect-[4/3] w-full bg-[var(--ink)] object-contain"
                         controls
                         playsInline
                         preload="metadata"
@@ -339,7 +339,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         alt=""
-                        className="aspect-[4/3] w-full bg-[#171412] object-contain"
+                        className="aspect-[4/3] w-full bg-[var(--ink)] object-contain"
                         src={mediaSrc}
                       />
                     </MediaLightbox>
@@ -367,44 +367,44 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
               ) : null}
             </div>
 
-            <section className="ttc-card mt-5 rounded-md border border-[#cfc8bd] bg-white p-5">
+            <section className="ttc-card mt-5 rounded-md p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h1 className="text-2xl font-bold">{gig.title}</h1>
-                  <div className="mt-2 flex flex-wrap gap-2 text-xs font-semibold text-[#4f473f]">
-                    <span className="rounded-md bg-[#efe7da] px-2 py-1 capitalize">
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs font-semibold text-[var(--muted)]">
+                    <span className="rounded-md bg-[color-mix(in_srgb,var(--brand-gold)_16%,var(--paper-warm))] px-2 py-1 capitalize">
                       {formatCategory(gig.category)}
                     </span>
                     {gig.is_sensitive ? (
-                      <span className="rounded-md bg-[#fff1c7] px-2 py-1 text-[#6f5200]">
+                      <span className="rounded-md bg-[color-mix(in_srgb,var(--brand-gold)_30%,var(--paper-warm))] px-2 py-1 text-[var(--foreground)]">
                         Sensitive
                       </span>
                     ) : null}
                     {gig.visibility !== "public_preview" ? (
-                      <span className="rounded-md bg-[#f7f4ef] px-2 py-1 capitalize">
+                      <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_84%,transparent)] px-2 py-1 capitalize">
                         {gig.visibility.replace("_", " ")}
                       </span>
                     ) : null}
                   </div>
                 </div>
                 {gig.compensation ? (
-                  <p className="rounded-md bg-[#171412] px-3 py-2 text-sm font-bold text-white">
+                  <p className="rounded-md bg-[var(--foreground)] px-3 py-2 text-sm font-bold text-[var(--background)]">
                     {gig.compensation}
                   </p>
                 ) : null}
               </div>
 
               {gig.description ? (
-                <p className="mt-5 whitespace-pre-wrap text-sm leading-6 text-[#4f473f]">
+                <p className="mt-5 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">
                   {gig.description}
                 </p>
               ) : (
-                <p className="mt-5 text-sm leading-6 text-[#766d62]">
+                <p className="mt-5 text-sm leading-6 text-[var(--muted-strong)]">
                   No details have been added yet.
                 </p>
               )}
 
-              <div className="mt-5 flex flex-wrap gap-3 text-sm text-[#766d62]">
+              <div className="mt-5 flex flex-wrap gap-3 text-sm text-[var(--muted-strong)]">
                 <span className="inline-flex items-center gap-1">
                   <CalendarDays className="size-4" />
                   {formatGigDate(gig)}
@@ -430,14 +430,14 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
           </div>
 
           <aside className="min-w-0 space-y-4">
-            <section className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4">
-              <p className="text-xs font-semibold uppercase text-[#766d62]">
+            <section className="ttc-card rounded-md p-4">
+              <p className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
                 Posted by
               </p>
               {gig.profiles ? (
                 <>
                   <div className="mt-3 flex items-center gap-3">
-                    <div className="flex size-12 shrink-0 items-center justify-center rounded-md bg-[#171412] text-sm font-bold text-[#c8953b]">
+                    <div className="flex size-12 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-sm font-bold text-[var(--brand-gold)]">
                       {gig.profiles.display_name
                         .split(" ")
                         .map((part) => part[0])
@@ -452,13 +452,13 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
                         </p>
                         <VerifiedBadge profile={gig.profiles} />
                       </div>
-                      <p className="text-xs text-[#766d62]">
+                      <p className="text-xs text-[var(--muted-strong)]">
                         @{gig.profiles.username}
                       </p>
                     </div>
                   </div>
                   <Link
-                    className="mt-4 flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
+                    className="mt-4 flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-4 text-sm font-semibold"
                     href={`/u/${gig.profiles.username}`}
                   >
                     <LinkIcon className="size-4" />
@@ -466,16 +466,16 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
                   </Link>
                 </>
               ) : (
-                <p className="mt-3 text-sm text-[#766d62]">
+                <p className="mt-3 text-sm text-[var(--muted-strong)]">
                   Poster profile is unavailable.
                 </p>
               )}
             </section>
 
-            <section className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4">
+            <section className="ttc-card rounded-md p-4">
               {gig.contact_url ? (
                 <a
-                  className="flex h-11 w-full items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                  className="flex h-11 w-full items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                   href={gig.contact_url}
                   rel="noreferrer"
                   target="_blank"
@@ -489,27 +489,27 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
                   <input name="source_id" type="hidden" value={gig.id} />
                   <input name="source_title" type="hidden" value={gig.title} />
                   <input name="source_type" type="hidden" value="gig" />
-                  <button className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+                  <button className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
                     <Send className="size-4" />
                     DM poster
                   </button>
                 </form>
               ) : claims?.sub ? (
                 <Link
-                  className="flex h-11 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
+                  className="flex h-11 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-4 text-sm font-semibold"
                   href="/messages"
                 >
                   Open DMs
                 </Link>
               ) : (
                 <Link
-                  className="flex h-11 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                  className="flex h-11 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                   href="/login"
                 >
                   Sign in to respond
                 </Link>
               )}
-              <p className="mt-3 text-xs leading-5 text-[#766d62]">
+              <p className="mt-3 text-xs leading-5 text-[var(--muted-strong)]">
                 Verify shop, convention, job, guest spot, and travel details
                 directly with the poster before making plans.
               </p>
@@ -517,7 +517,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
 
             {claims?.sub ? (
               <SavedItemButton
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-4 text-sm font-semibold"
                 isSaved={Boolean(savedItem)}
                 returnPath={`/gigs/${gig.id}`}
                 subjectId={gig.id}
@@ -532,8 +532,8 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
             />
 
             {claims?.sub ? (
-              <section className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4">
-                <p className="mb-3 text-xs font-semibold uppercase text-[#766d62]">
+              <section className="ttc-card rounded-md p-4">
+                <p className="mb-3 text-xs font-semibold uppercase text-[var(--muted-strong)]">
                   Safety
                 </p>
                 <ContentReportForm
@@ -545,12 +545,12 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
             ) : null}
 
             {gig.is_sensitive ? (
-              <section className="ttc-card rounded-md border border-[#cfc8bd] bg-[#fff7ec] p-4">
+              <section className="ttc-card rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_28%,var(--card-rim))] bg-[color-mix(in_srgb,var(--brand-gold)_10%,var(--paper-warm))] p-4">
                 <div className="flex items-start gap-2">
                   <LockKeyhole className="mt-0.5 size-4" />
                   <div>
                     <p className="text-sm font-bold">18+ sensitive body-art context</p>
-                    <p className="mt-1 text-xs leading-5 text-[#766d62]">
+                    <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
                       Sensitive non-nude gig media requires login and adult
                       terms acceptance where allowed.
                     </p>
@@ -561,7 +561,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
                           type="hidden"
                           value={`/gigs/${gig.id}`}
                         />
-                        <button className="h-9 rounded-md bg-[#171412] px-3 text-sm font-semibold text-white">
+                        <button className="h-9 rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-[var(--background)]">
                           I am 18+
                         </button>
                       </form>
