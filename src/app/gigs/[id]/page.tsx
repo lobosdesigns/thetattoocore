@@ -9,10 +9,12 @@ import {
   LinkIcon,
   LockKeyhole,
   MapPin,
+  Pencil,
   Send,
+  Trash2,
   Video,
 } from "lucide-react";
-import { acceptAdultTerms } from "@/app/actions";
+import { acceptAdultTerms, archiveGigFromDetail, editGig } from "@/app/actions";
 import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
@@ -128,6 +130,15 @@ function VerifiedBadge({ profile }: { profile?: Profile | null }) {
 function gigMessage(gig: Gig) {
   return `Hi, I am interested in your gig: ${gig.title}`;
 }
+
+const gigCategoryOptions = [
+  ["job", "Job"],
+  ["convention", "Convention"],
+  ["guest_spot", "Guest spot"],
+  ["shop_opening", "Shop opening"],
+  ["apprenticeship", "Apprenticeship"],
+  ["event", "Event"],
+] as const;
 
 function canViewSensitiveMedia({
   isSensitive,
@@ -424,6 +435,114 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
                   </span>
                 ) : null}
               </div>
+
+              {isOwnGig ? (
+                <details className="mt-5 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-4">
+                  <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-bold">
+                    <Pencil className="size-4" />
+                    Manage Gig
+                  </summary>
+                  <form action={editGig} className="mt-4 space-y-3">
+                    <input name="gig_id" type="hidden" value={gig.id} />
+                    <input name="return_path" type="hidden" value={`/gigs/${gig.id}`} />
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Title
+                      <input
+                        className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                        defaultValue={gig.title}
+                        maxLength={140}
+                        name="title"
+                        required
+                      />
+                    </label>
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Category
+                      <select
+                        className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                        defaultValue={gig.category}
+                        name="category"
+                      >
+                        {gigCategoryOptions.map(([value, label]) => (
+                          <option key={value} value={value}>
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Description
+                      <textarea
+                        className="mt-1 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 py-3 text-sm text-[var(--foreground)]"
+                        defaultValue={gig.description ?? ""}
+                        maxLength={2400}
+                        name="description"
+                        placeholder="Add the job, convention, guest spot, or event details."
+                        rows={6}
+                      />
+                    </label>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                        City
+                        <input
+                          className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                          defaultValue={gig.city ?? ""}
+                          maxLength={80}
+                          name="city"
+                        />
+                      </label>
+                      <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                        Region
+                        <input
+                          className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                          defaultValue={gig.region ?? ""}
+                          maxLength={80}
+                          name="region"
+                        />
+                      </label>
+                      <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                        Country
+                        <input
+                          className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                          defaultValue={gig.country ?? "US"}
+                          maxLength={80}
+                          name="country"
+                        />
+                      </label>
+                    </div>
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Compensation
+                      <input
+                        className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                        defaultValue={gig.compensation ?? ""}
+                        maxLength={120}
+                        name="compensation"
+                        placeholder="Paid, trade, booth fee, negotiable"
+                      />
+                    </label>
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Contact URL
+                      <input
+                        className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                        defaultValue={gig.contact_url ?? ""}
+                        maxLength={240}
+                        name="contact_url"
+                        placeholder="https://"
+                        type="url"
+                      />
+                    </label>
+                    <button className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
+                      Save changes
+                    </button>
+                  </form>
+                  <form action={archiveGigFromDetail} className="mt-4">
+                    <input name="gig_id" type="hidden" value={gig.id} />
+                    <button className="inline-flex h-10 items-center gap-2 rounded-md border border-[color-mix(in_srgb,#ef4444_38%,var(--card-rim))] px-4 text-sm font-semibold text-[var(--foreground)]">
+                      <Trash2 className="size-4" />
+                      Archive Gig
+                    </button>
+                  </form>
+                </details>
+              ) : null}
             </section>
           </div>
 

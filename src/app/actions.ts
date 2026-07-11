@@ -750,6 +750,106 @@ export async function createMarketplaceListing(formData: FormData) {
   redirect(homeMessage("Marketplace listing published.", "marketplace"));
 }
 
+export async function editMarketplaceListing(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const listingId = cleanId(formData.get("listing_id"));
+  const returnPath =
+    cleanText(formData.get("return_path"), 200) ||
+    (listingId ? `/stuff/${listingId}` : "/#marketplace");
+  const title = cleanText(formData.get("title"), 120);
+  const description = cleanText(formData.get("description"), 2000);
+  const category = cleanText(formData.get("category"), 40) || "flash";
+  const city = cleanText(formData.get("city"), 80);
+  const region = cleanText(formData.get("region"), 40);
+  const priceInput = cleanText(formData.get("price"), 20).replace(/[$,]/g, "");
+  const priceNumber = priceInput ? Number(priceInput) : NaN;
+  const priceCents = Number.isFinite(priceNumber)
+    ? Math.max(0, Math.round(priceNumber * 100))
+    : null;
+
+  if (!listingId) {
+    redirect(
+      redirectWithMessage({
+        message: "Choose a Stuff listing first.",
+        path: "/#marketplace",
+      }),
+    );
+  }
+
+  if (title.length < 3) {
+    redirect(
+      redirectWithMessage({
+        message: "Listing title needs at least 3 characters.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  const { error } = await supabase
+    .from("marketplace_listings")
+    .update({
+      category,
+      city: city || null,
+      description: description || null,
+      price_cents: priceCents,
+      region: region || null,
+      title,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", listingId)
+    .eq("seller_id", userId);
+
+  if (error) {
+    redirect(
+      redirectWithMessage({
+        message: error.message || "Could not update Stuff listing.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  revalidatePath("/");
+  revalidatePath(`/stuff/${listingId}`);
+  redirect(
+    redirectWithMessage({
+      message: "Stuff listing updated.",
+      path: returnPath,
+    }),
+  );
+}
+
+export async function archiveMarketplaceListing(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const listingId = cleanId(formData.get("listing_id"));
+
+  if (!listingId) {
+    redirect(homeMessage("Choose a Stuff listing first.", "marketplace"));
+  }
+
+  const { error } = await supabase
+    .from("marketplace_listings")
+    .update({
+      is_indexable: false,
+      status: "archived",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", listingId)
+    .eq("seller_id", userId);
+
+  if (error) {
+    redirect(
+      redirectWithMessage({
+        message: error.message || "Could not archive Stuff listing.",
+        path: `/stuff/${listingId}`,
+      }),
+    );
+  }
+
+  revalidatePath("/");
+  revalidatePath(`/stuff/${listingId}`);
+  redirect(homeMessage("Stuff listing archived.", "marketplace"));
+}
+
 export async function createContentReport(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const subjectType = cleanText(
@@ -899,6 +999,111 @@ export async function archiveGig(formData: FormData) {
       path: returnPath,
     }),
   );
+}
+
+const GIG_CATEGORIES = new Set([
+  "apprenticeship",
+  "convention",
+  "event",
+  "guest_spot",
+  "job",
+  "shop_opening",
+]);
+
+export async function editGig(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const gigId = cleanId(formData.get("gig_id"));
+  const returnPath =
+    cleanText(formData.get("return_path"), 200) ||
+    (gigId ? `/gigs/${gigId}` : "/#gigs");
+  const title = cleanText(formData.get("title"), 140);
+  const description = cleanText(formData.get("description"), 2400);
+  const rawCategory = cleanText(formData.get("category"), 40);
+  const category = GIG_CATEGORIES.has(rawCategory) ? rawCategory : "job";
+  const city = cleanText(formData.get("city"), 80);
+  const region = cleanText(formData.get("region"), 80);
+  const country = cleanText(formData.get("country"), 80) || "US";
+  const compensation = cleanText(formData.get("compensation"), 120);
+  const contactUrl = cleanText(formData.get("contact_url"), 240);
+
+  if (!gigId) {
+    redirect(homeMessage("Choose a Gig first.", "gigs"));
+  }
+
+  if (title.length < 3) {
+    redirect(
+      redirectWithMessage({
+        message: "Gig title needs at least 3 characters.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  const { error } = await supabase
+    .from("gigs")
+    .update({
+      category,
+      city: city || null,
+      compensation: compensation || null,
+      contact_url: contactUrl || null,
+      country: country || null,
+      description: description || null,
+      region: region || null,
+      title,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", gigId)
+    .eq("poster_id", userId);
+
+  if (error) {
+    redirect(
+      redirectWithMessage({
+        message: error.message || "Could not update Gig.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  revalidatePath("/");
+  revalidatePath(`/gigs/${gigId}`);
+  redirect(
+    redirectWithMessage({
+      message: "Gig updated.",
+      path: returnPath,
+    }),
+  );
+}
+
+export async function archiveGigFromDetail(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const gigId = cleanId(formData.get("gig_id"));
+
+  if (!gigId) {
+    redirect(homeMessage("Choose a Gig first.", "gigs"));
+  }
+
+  const { error } = await supabase
+    .from("gigs")
+    .update({
+      is_indexable: false,
+      status: "archived",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", gigId)
+    .eq("poster_id", userId);
+
+  if (error) {
+    redirect(
+      redirectWithMessage({
+        message: error.message || "Could not archive Gig.",
+        path: `/gigs/${gigId}`,
+      }),
+    );
+  }
+
+  revalidatePath("/");
+  revalidatePath(`/gigs/${gigId}`);
+  redirect(homeMessage("Gig archived.", "gigs"));
 }
 
 export async function togglePostLike(formData: FormData) {

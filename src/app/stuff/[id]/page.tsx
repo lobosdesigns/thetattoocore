@@ -5,14 +5,20 @@ import {
   ArrowLeft,
   BadgeCheck,
   CalendarDays,
+  Pencil,
   LinkIcon,
   LockKeyhole,
   MapPin,
   Send,
   ShoppingBag,
+  Trash2,
   Video,
 } from "lucide-react";
-import { acceptAdultTerms } from "@/app/actions";
+import {
+  acceptAdultTerms,
+  archiveMarketplaceListing,
+  editMarketplaceListing,
+} from "@/app/actions";
 import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
@@ -123,6 +129,12 @@ function formatDate(value: string) {
 
 function listingMessage(listing: Listing) {
   return `Hi, I am interested in your Stuff listing: ${listing.title}`;
+}
+
+function priceInputValue(listing: Pick<Listing, "price_cents">) {
+  if (listing.price_cents == null) return "";
+
+  return String(listing.price_cents / 100);
 }
 
 function canViewSensitiveMedia({
@@ -404,6 +416,94 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
                   </span>
                 ) : null}
               </div>
+
+              {isOwnListing ? (
+                <details className="mt-5 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-4">
+                  <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-bold">
+                    <Pencil className="size-4" />
+                    Manage Stuff listing
+                  </summary>
+                  <form action={editMarketplaceListing} className="mt-4 space-y-3">
+                    <input name="listing_id" type="hidden" value={listing.id} />
+                    <input
+                      name="return_path"
+                      type="hidden"
+                      value={`/stuff/${listing.id}`}
+                    />
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Title
+                      <input
+                        className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                        defaultValue={listing.title}
+                        maxLength={120}
+                        name="title"
+                        required
+                      />
+                    </label>
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Category
+                      <input
+                        className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                        defaultValue={listing.category}
+                        maxLength={40}
+                        name="category"
+                      />
+                    </label>
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Description
+                      <textarea
+                        className="mt-1 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 py-3 text-sm text-[var(--foreground)]"
+                        defaultValue={listing.description ?? ""}
+                        maxLength={2000}
+                        name="description"
+                        placeholder="Add listing details, pickup notes, condition, or trade info."
+                        rows={5}
+                      />
+                    </label>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                        City
+                        <input
+                          className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                          defaultValue={listing.city ?? ""}
+                          maxLength={80}
+                          name="city"
+                        />
+                      </label>
+                      <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                        Region
+                        <input
+                          className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                          defaultValue={listing.region ?? ""}
+                          maxLength={40}
+                          name="region"
+                        />
+                      </label>
+                      <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                        Price
+                        <input
+                          className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                          defaultValue={priceInputValue(listing)}
+                          inputMode="decimal"
+                          maxLength={20}
+                          name="price"
+                          placeholder="0"
+                        />
+                      </label>
+                    </div>
+                    <button className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
+                      Save changes
+                    </button>
+                  </form>
+                  <form action={archiveMarketplaceListing} className="mt-4">
+                    <input name="listing_id" type="hidden" value={listing.id} />
+                    <button className="inline-flex h-10 items-center gap-2 rounded-md border border-[color-mix(in_srgb,#ef4444_38%,var(--card-rim))] px-4 text-sm font-semibold text-[var(--foreground)]">
+                      <Trash2 className="size-4" />
+                      Archive listing
+                    </button>
+                  </form>
+                </details>
+              ) : null}
             </section>
           </div>
 
