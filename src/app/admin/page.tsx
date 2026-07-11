@@ -407,6 +407,7 @@ export default async function AdminPage({
     { data: threadReview },
     { data: listingReview },
     { data: gigReview },
+    { data: merchReview },
     { data: adCampaignQueue },
     { data: mailSettings },
     { data: adminAuditLogs },
@@ -600,6 +601,24 @@ export default async function AdminPage({
           moderation_status: ModerationStatus;
           visibility: "public_preview" | "members" | "private";
           profiles: { display_name: string; username: string } | null;
+        }[]
+      >(),
+    supabase
+      .from("merch_products")
+      .select(
+        "id, title, description, created_at, moderation_status, profiles:profiles!merch_products_seller_id_fkey(display_name, username)",
+      )
+      .neq("moderation_status", "active")
+      .order("created_at", { ascending: false })
+      .limit(25)
+      .returns<
+        {
+          created_at: string;
+          description: string | null;
+          id: string;
+          moderation_status: ModerationStatus;
+          profiles: { display_name: string; username: string } | null;
+          title: string;
         }[]
       >(),
     supabase
@@ -1071,6 +1090,19 @@ export default async function AdminPage({
       subjectType: "gig" as const,
       title: gig.title,
       visibility: gig.visibility,
+    })),
+    ...(merchReview ?? []).map((product) => ({
+      authorName: product.profiles?.display_name ?? "Seller",
+      authorUsername: product.profiles?.username ?? "seller",
+      body: product.description,
+      createdAt: product.created_at,
+      id: product.id,
+      isSensitive: false,
+      sensitiveReason: null,
+      status: product.moderation_status,
+      subjectType: "merch_product" as const,
+      title: product.title,
+      visibility: "public_preview" as const,
     })),
   ].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
