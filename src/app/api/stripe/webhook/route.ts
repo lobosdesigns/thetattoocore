@@ -13,11 +13,35 @@ function stripeResponse(message: string, status = 200) {
 type PaidOrderTransition = {
   id: string;
 };
+type AdminSupabase = NonNullable<ReturnType<typeof createAdminClient>>;
+type OrderProductRow = {
+  product_id: string;
+};
 
 function metadataCents(value: string | null | undefined, fallback: number) {
   const parsed = Number.parseInt(value ?? "", 10);
 
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+async function revalidateMerchOrderProducts(
+  supabase: AdminSupabase,
+  orderIds: string[],
+) {
+  if (!orderIds.length) return;
+
+  const { data: items } = await supabase
+    .from("merch_order_items")
+    .select("product_id")
+    .in("order_id", orderIds)
+    .returns<OrderProductRow[]>();
+  const productIds = new Set(
+    (items ?? []).map((item) => item.product_id).filter(Boolean),
+  );
+
+  for (const productId of productIds) {
+    revalidatePath(`/merch/${productId}`);
+  }
 }
 
 async function markCheckoutSession({
@@ -113,6 +137,10 @@ async function markCheckoutSession({
     }
   }
 
+  await revalidateMerchOrderProducts(
+    supabase,
+    (transitionedPaidOrders ?? []).map((order) => order.id),
+  );
   revalidatePath("/account");
   revalidatePath("/admin");
   revalidatePath("/admin/merch");
