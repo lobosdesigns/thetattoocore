@@ -19,7 +19,7 @@
 - Public support and privacy pages explain that launch deletion requests are manually reviewed, with a target review window of 30 days unless safety, dispute, fraud, legal, or retention obligations require more time.
 - Members can block and unblock profiles; blocked relationships prevent follow and DM attempts.
 - PWA manifest is active and starts installed sessions at `/login`.
-- Automatic mobile browser install prompts are suppressed during regular browsing so the install sheet does not interfere with feed scrolling; add a deliberate install action later if needed.
+- Automatic mobile browser install prompts are suppressed during regular browsing so the install sheet does not interfere with feed scrolling; Account > Notifications has a deliberate install action when the browser supports installation.
 - PNG PWA icons are generated from the approved TTC shield, including a maskable launcher icon.
 - Branded splash and clean PWA screenshot assets are generated without user, sensitive, or copyrighted tattoo content.
 - Core social flows are web-first; native wrappers are not ready for submission yet.

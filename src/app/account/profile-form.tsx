@@ -6,6 +6,7 @@ import { updateProfile } from "./actions";
 import { MediaInput } from "../media-input";
 import { PendingSubmitButton } from "../pending-submit-button";
 import { ThemePreferencePicker } from "../theme-preference-picker";
+import { PwaInstallButton } from "../pwa-install-button";
 import { countryOptions, languageLabel, languageOptions } from "@/lib/localization";
 
 type Claims = {
@@ -647,6 +648,16 @@ export function ProfileForm({
                 </span>
               </span>
             </label>
+          </div>
+          <div className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3">
+            <h3 className="text-sm font-semibold">Install app</h3>
+            <p className="mt-1 text-xs leading-5 text-[#766d62]">
+              The automatic mobile install sheet stays hidden while browsing.
+              Use this only when you decide you want the app on this device.
+            </p>
+            <div className="mt-3">
+              <PwaInstallButton />
+            </div>
           </div>
           {notificationGroups.map((group) => (
             <div
