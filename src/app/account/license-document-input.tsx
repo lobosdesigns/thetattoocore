@@ -56,7 +56,7 @@ export function LicenseDocumentInput({
     <div className="space-y-2">
       <input
         accept={accept}
-        className="w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#efe7da] file:px-3 file:py-1.5 file:text-sm file:font-semibold"
+        className="w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[color-mix(in_srgb,var(--brand-gold)_16%,var(--paper-warm))] file:px-3 file:py-1.5 file:text-sm file:font-semibold"
         name={name}
         onChange={onChange}
         required={required}
@@ -67,11 +67,11 @@ export function LicenseDocumentInput({
           className={`rounded-md border p-3 ${
             selected.error
               ? "border-red-300 bg-red-50 text-red-800"
-              : "border-[#d8d1c6] bg-[#f7f4ef] text-[#171412]"
+              : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_86%,transparent)] text-[var(--foreground)]"
           }`}
         >
           <div className="flex gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]">
               {selected.error ? (
                 <FileText className="size-5" />
               ) : (
@@ -86,7 +86,7 @@ export function LicenseDocumentInput({
               </p>
               <p
                 className={`mt-2 text-xs ${
-                  selected.error ? "font-semibold" : "text-[#766d62]"
+                  selected.error ? "font-semibold" : "text-[var(--muted-strong)]"
                 }`}
               >
                 {selected.error ?? "Ready for private admin review."}

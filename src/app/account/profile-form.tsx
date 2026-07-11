@@ -130,7 +130,7 @@ const pushRoadmap = [
 ] as const;
 
 function RequiredMark() {
-  return <span className="text-[#a3432f]">*</span>;
+  return <span className="text-[color-mix(in_srgb,#d14b4b_82%,var(--foreground))]">*</span>;
 }
 
 function timeValue(value: string | null | undefined, fallback: string) {
@@ -168,7 +168,7 @@ export function ProfileForm({
     >
       <div className="mb-5">
         <h1 className="text-2xl font-bold">Profile setup</h1>
-        <p className="mt-1 text-sm text-[#766d62]">{claims.email}</p>
+        <p className="mt-1 text-sm text-[var(--muted-strong)]">{claims.email}</p>
         <p className="ttc-surface mt-3 rounded-md border px-3 py-2 text-sm leading-5">
           Required fields are marked with <RequiredMark />. Artists and studios
           can post right away after saving, then submit license verification for
@@ -197,7 +197,7 @@ export function ProfileForm({
       <div className={panelClass("profile")}>
         <div className="ttc-surface rounded-md border p-3 sm:col-span-2">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#171412] text-xl font-bold text-[#c8953b]">
+            <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[var(--foreground)] text-xl font-bold text-[var(--brand-gold)]">
               {initialProfile?.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -216,7 +216,7 @@ export function ProfileForm({
             </div>
             <div className="min-w-0 flex-1">
               <h2 className="text-sm font-bold">Profile photo</h2>
-              <p className="mt-1 text-xs leading-5 text-[#766d62]">
+              <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
                 Upload a square logo, portrait, shop mark, or brand image. Images
                 are optimized before upload. No visible nudity for launch.
               </p>
@@ -238,7 +238,7 @@ export function ProfileForm({
             Username <RequiredMark />
           </span>
           <input
-            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
             defaultValue={initialProfile?.username ?? ""}
             maxLength={30}
             minLength={3}
@@ -247,7 +247,7 @@ export function ProfileForm({
             placeholder="artistname"
             title="Use 3-30 letters, numbers, or underscores."
           />
-          <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+          <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
             3-30 letters, numbers, or underscores. This becomes your public URL.
           </span>
         </label>
@@ -257,13 +257,13 @@ export function ProfileForm({
             Display name <RequiredMark />
           </span>
           <input
-            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
             defaultValue={initialProfile?.display_name ?? ""}
             minLength={2}
             name="display_name"
             placeholder="Artist Name"
           />
-          <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+          <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
             Shown on posts, listings, comments, and DMs.
           </span>
         </label>
@@ -273,7 +273,7 @@ export function ProfileForm({
             Account type <RequiredMark />
           </span>
           <select
-            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
             defaultValue={initialProfile?.account_type ?? "enthusiast"}
             name="account_type"
           >
@@ -283,7 +283,7 @@ export function ProfileForm({
               </option>
             ))}
           </select>
-          <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+          <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
             Artists, studios, and vendors can apply for license verification.
           </span>
         </label>
@@ -295,12 +295,12 @@ export function ProfileForm({
           id="appearance-settings"
         >
           <h2 className="text-sm font-bold">Appearance</h2>
-          <p className="mt-1 text-xs leading-5 text-[#766d62]">
+          <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
             Choose Light, Dark, or System mode on this device. Account sync can
             come after the full color system moves from hardcoded colors to
             theme tokens.
           </p>
-          <div className="mt-3 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3">
+          <div className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
             <ThemePreferencePicker
               initialPreference={initialProfile?.theme_preference ?? "system"}
               name="theme_preference"
@@ -315,13 +315,13 @@ export function ProfileForm({
           id="language-settings"
         >
           <h2 className="text-sm font-bold">Language and region</h2>
-          <p className="mt-1 text-xs leading-5 text-[#766d62]">
+          <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
             These settings power the page language signal, local discovery,
             future translated UI, and simple ad targeting by country, region,
             city, and language. We use the location you type here, not precise
             browser GPS.
           </p>
-          <div className="mt-3 grid gap-2 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3 text-xs leading-5 text-[#4f473f] sm:grid-cols-3">
+          <div className="mt-3 grid gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3 text-xs leading-5 text-[var(--muted)] sm:grid-cols-3">
             <p>
               <span className="block font-semibold">UI language</span>
               {languageLabel(initialProfile?.preferred_language ?? "en")}
@@ -341,7 +341,7 @@ export function ProfileForm({
         <label className="block">
           <span className="text-sm font-medium">City</span>
           <input
-            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
             defaultValue={initialProfile?.city ?? ""}
             name="city"
             placeholder="Austin"
@@ -351,7 +351,7 @@ export function ProfileForm({
         <label className="block">
           <span className="text-sm font-medium">Region</span>
           <input
-            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
             defaultValue={initialProfile?.region ?? ""}
             name="region"
             placeholder="TX"
@@ -363,7 +363,7 @@ export function ProfileForm({
             Country <RequiredMark />
           </span>
           <select
-            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
             defaultValue={initialProfile?.country_code ?? "US"}
             name="country_code"
           >
@@ -380,7 +380,7 @@ export function ProfileForm({
             Language <RequiredMark />
           </span>
           <select
-            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
             defaultValue={initialProfile?.preferred_language ?? "en"}
             name="preferred_language"
           >
@@ -395,7 +395,7 @@ export function ProfileForm({
         <label className="block">
           <span className="text-sm font-medium">Website</span>
           <input
-            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
             defaultValue={initialProfile?.website_url ?? ""}
             name="website_url"
             placeholder="https://shop.com"
@@ -406,7 +406,7 @@ export function ProfileForm({
         <label className="block sm:col-span-2">
           <span className="text-sm font-medium">Instagram</span>
           <input
-            className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
             defaultValue={initialProfile?.instagram_url ?? ""}
             name="instagram_url"
             placeholder="https://instagram.com/artist"
@@ -417,13 +417,13 @@ export function ProfileForm({
         <label className="block sm:col-span-2">
           <span className="text-sm font-medium">Bio</span>
           <textarea
-            className="mt-2 min-h-28 w-full rounded-md border border-[#cfc8bd] bg-white px-3 py-3 text-sm outline-none focus:border-[#171412]"
+            className="mt-2 min-h-28 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-3 text-sm outline-none focus:border-[var(--foreground)]"
             defaultValue={initialProfile?.bio ?? ""}
             maxLength={500}
             name="bio"
             placeholder="Style, booking notes, shop, favorite work..."
           />
-          <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+          <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
             Optional, 500 characters max.
           </span>
         </label>
@@ -435,13 +435,13 @@ export function ProfileForm({
           id="privacy-settings"
         >
           <h2 className="text-sm font-bold">Privacy and safety</h2>
-          <p className="mt-1 text-xs leading-5 text-[#766d62]">
+          <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
             Control profile visibility, local personalization, and adult access
             requirements.
           </p>
         </div>
 
-        <label className="flex items-start gap-3 rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 sm:col-span-2">
+        <label className="flex items-start gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3 sm:col-span-2">
           <input
             className="mt-1 size-4"
             defaultChecked={
@@ -454,7 +454,7 @@ export function ProfileForm({
             <span className="block text-sm font-medium">
               Use my location for discovery and local ads
             </span>
-            <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+            <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
               Uses your city, region, and country settings for marketplace,
               local discovery, and future sponsored placements. Precise device
               location should be asked separately before it is ever used.
@@ -462,7 +462,7 @@ export function ProfileForm({
           </span>
         </label>
 
-        <label className="flex items-start gap-3 rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 sm:col-span-2">
+        <label className="flex items-start gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3 sm:col-span-2">
           <input
             className="mt-1 size-4"
             defaultChecked={initialProfile?.is_private ?? false}
@@ -473,14 +473,14 @@ export function ProfileForm({
             <span className="block text-sm font-medium">
               Make my profile private
             </span>
-            <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+            <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
               Hides your profile from search engines and limits profile content
               to you and followers.
             </span>
           </span>
         </label>
 
-        <label className="flex items-start gap-3 rounded-md border border-[#d8d1c6] bg-[#fff7ec] p-3 sm:col-span-2">
+        <label className="flex items-start gap-3 rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_28%,var(--card-rim))] bg-[color-mix(in_srgb,var(--brand-gold)_10%,var(--paper-warm))] p-3 sm:col-span-2">
           <input
             className="mt-1 size-4"
             defaultChecked={initialProfile?.is_adult_confirmed ?? false}
@@ -491,7 +491,7 @@ export function ProfileForm({
             <span className="block text-sm font-medium">
               I confirm I am 18 or older
             </span>
-            <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+            <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
               TheTattooCore is for adults. Tattoo, piercing, and body-art
               content may include sensitive non-nude healing, placement, scar,
               piercing, or body modification context. Visible nudity and
@@ -512,13 +512,13 @@ export function ProfileForm({
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="text-sm font-bold">Notification preferences</h2>
-            <p className="mt-1 text-xs leading-5 text-[#766d62]">
+            <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
               Choose which in-app notifications create alerts and badges now.
               These same choices will become the base for email, PWA push, and
               native app push later.
             </p>
           </div>
-          <span className="w-fit rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-semibold text-[#4f473f]">
+          <span className="w-fit rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--muted)]">
             {enabledNotificationCount}/{notificationOptions.length} on
           </span>
         </div>
@@ -527,31 +527,31 @@ export function ProfileForm({
           <div className="grid gap-2 sm:grid-cols-4">
             {notificationSummary.map(([label, description]) => (
               <div
-                className="rounded-md border border-[#d8d1c6] bg-white p-3"
+                className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] p-3"
                 key={label}
               >
-                <p className="text-xs font-semibold uppercase text-[#766d62]">
+                <p className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
                   {label}
                 </p>
                 <p className="mt-1 text-sm font-semibold">{description}</p>
               </div>
             ))}
           </div>
-          <div className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3">
-            <p className="text-xs font-bold uppercase text-[#766d62]">
+          <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
+            <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
               Push roadmap
             </p>
-            <ul className="mt-2 grid gap-2 text-xs leading-5 text-[#4f473f]">
+            <ul className="mt-2 grid gap-2 text-xs leading-5 text-[var(--muted)]">
               {pushRoadmap.map((item) => (
                 <li key={item}>{item}</li>
               ))}
             </ul>
           </div>
-          <div className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3">
+          <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h3 className="text-sm font-semibold">Quiet hours</h3>
-                <p className="mt-1 text-xs leading-5 text-[#766d62]">
+                <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
                   Store a do-not-disturb window now so email, PWA push, and
                   native app push can respect it later.
                 </p>
@@ -570,11 +570,11 @@ export function ProfileForm({
             </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-3">
               <label className="block">
-                <span className="text-xs font-semibold text-[#4f473f]">
+                <span className="text-xs font-semibold text-[var(--muted)]">
                   Start
                 </span>
                 <input
-                  className="mt-1 h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  className="mt-1 h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                   defaultValue={timeValue(
                     initialProfile?.notification_quiet_hours_start,
                     "22:00",
@@ -584,11 +584,11 @@ export function ProfileForm({
                 />
               </label>
               <label className="block">
-                <span className="text-xs font-semibold text-[#4f473f]">
+                <span className="text-xs font-semibold text-[var(--muted)]">
                   End
                 </span>
                 <input
-                  className="mt-1 h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  className="mt-1 h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                   defaultValue={timeValue(
                     initialProfile?.notification_quiet_hours_end,
                     "08:00",
@@ -598,11 +598,11 @@ export function ProfileForm({
                 />
               </label>
               <label className="block">
-                <span className="text-xs font-semibold text-[#4f473f]">
+                <span className="text-xs font-semibold text-[var(--muted)]">
                   Time zone
                 </span>
                 <input
-                  className="mt-1 h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  className="mt-1 h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                   defaultValue={
                     initialProfile?.notification_timezone ?? "America/Chicago"
                   }
@@ -614,7 +614,7 @@ export function ProfileForm({
             </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="flex items-start gap-3 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3">
+            <label className="flex items-start gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
               <input
                 className="mt-1 size-4"
                 defaultChecked={initialProfile?.notify_email_important ?? true}
@@ -625,13 +625,13 @@ export function ProfileForm({
                 <span className="block text-sm font-medium">
                   Important email alerts
                 </span>
-                <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+                <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
                   Account, verification, security, Stuff, and Gigs email can
                   use this when transactional email is expanded.
                 </span>
               </span>
             </label>
-            <label className="flex items-start gap-3 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3">
+            <label className="flex items-start gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
               <input
                 className="mt-1 size-4"
                 defaultChecked={initialProfile?.notify_push_enabled ?? false}
@@ -642,16 +642,16 @@ export function ProfileForm({
                 <span className="block text-sm font-medium">
                   Prepare push notifications
                 </span>
-                <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+                <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
                   Saves your preference only. Browser and native push still
                   need install/device-token setup later.
                 </span>
               </span>
             </label>
           </div>
-          <div className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3">
+          <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
             <h3 className="text-sm font-semibold">Install app</h3>
-            <p className="mt-1 text-xs leading-5 text-[#766d62]">
+            <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
               The automatic mobile install sheet stays hidden while browsing.
               Use this only when you decide you want the app on this device.
             </p>
@@ -661,12 +661,12 @@ export function ProfileForm({
           </div>
           {notificationGroups.map((group) => (
             <div
-              className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3"
+              className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3"
               key={group.title}
             >
               <div className="mb-3">
                 <h3 className="text-sm font-semibold">{group.title}</h3>
-                <p className="mt-1 text-xs leading-5 text-[#766d62]">
+                <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
                   {group.description}
                 </p>
               </div>
@@ -683,7 +683,7 @@ export function ProfileForm({
                       <span className="block text-sm font-medium">
                         {label}
                       </span>
-                      <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+                      <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
                         {description}
                       </span>
                     </span>
@@ -697,7 +697,7 @@ export function ProfileForm({
 
       <div className="mt-5 flex items-center gap-3">
         <PendingSubmitButton
-          className="h-11 rounded-md bg-[#171412] px-5 text-sm font-semibold text-white"
+          className="h-11 rounded-md bg-[var(--foreground)] px-5 text-sm font-semibold text-[var(--background)]"
           pendingLabel="Saving"
           type="submit"
         >
