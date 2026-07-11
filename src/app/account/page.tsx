@@ -42,7 +42,7 @@ function AccountSetupGuide({
   ] as const;
 
   return (
-    <section className="mb-4 rounded-lg border border-[#3a332d] bg-[#171412] p-5 text-white shadow-[0_14px_34px_rgba(0,0,0,0.24)]">
+    <section className="mb-4 rounded-lg border border-[color-mix(in_srgb,var(--gold)_28%,var(--card-rim))] bg-[var(--foreground)] p-5 text-white shadow-[0_14px_34px_rgba(0,0,0,0.24)]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/60">
@@ -60,7 +60,7 @@ function AccountSetupGuide({
           </p>
         </div>
         <Link
-          className="inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#171412]"
+          className="inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold text-[var(--foreground)]"
           href="/"
         >
           Open app
@@ -70,10 +70,10 @@ function AccountSetupGuide({
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         {steps.map(([number, title, body]) => (
           <div
-            className="rounded-md border border-white/15 bg-white/5 p-3"
+            className="rounded-md border border-white/15 bg-[color-mix(in_srgb,var(--paper-warm)_8%,transparent)] p-3"
             key={number}
           >
-            <span className="inline-flex size-7 items-center justify-center rounded-md bg-white text-sm font-bold text-[#171412]">
+            <span className="inline-flex size-7 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-sm font-bold text-[var(--foreground)]">
               {number}
             </span>
             <h2 className="mt-3 text-sm font-bold">{title}</h2>
@@ -138,10 +138,10 @@ function adClickRate({
 }
 
 function verificationStatusClass(status: "pending" | "approved" | "rejected") {
-  if (status === "approved") return "border-[#b9d7bd] bg-[#eef8ef] text-[#276231]";
-  if (status === "rejected") return "border-[#e5b8b8] bg-[#fff0f0] text-[#8a2828]";
+  if (status === "approved") return "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]";
+  if (status === "rejected") return "border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]";
 
-  return "border-[#e5c58f] bg-[#fff7ec] text-[#7a4a08]";
+  return "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]";
 }
 
 function formatDate(value: string | null) {
@@ -218,14 +218,14 @@ function AccountReadinessPanel({
     <section className="ttc-card mb-4 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_95%,transparent)] p-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase text-[#766d62]">
+          <p className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
             Account readiness
           </p>
           <h2 className="text-lg font-bold">What is unlocked right now</h2>
         </div>
         {canUploadVerification ? (
           <a
-            className="inline-flex h-9 items-center justify-center rounded-md bg-[#171412] px-3 text-sm font-semibold text-white"
+            className="inline-flex h-9 items-center justify-center rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-white"
             href="#verification-settings"
           >
             Upload proof
@@ -243,14 +243,14 @@ function AccountReadinessPanel({
               <span
                 className={`rounded-md px-2 py-1 text-xs font-semibold ${
                   item.ready
-                    ? "bg-[#eef8ef] text-[#276231]"
-                    : "bg-[#fff7ec] text-[#7a4a08]"
+                    ? "bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]"
+                    : "bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]"
                 }`}
               >
                 {item.ready ? "Ready" : "Needs work"}
               </span>
             </div>
-            <p className="mt-1 text-xs leading-5 text-[#766d62]">{item.body}</p>
+            <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">{item.body}</p>
           </div>
         ))}
       </div>
@@ -356,7 +356,7 @@ export default async function AccountPage({
     <main className="ttc-page min-h-screen overflow-x-hidden px-4 py-8">
       <section className="mx-auto w-full max-w-3xl">
         <div className="mb-6 flex items-center justify-between">
-          <Link className="text-sm font-semibold text-[#f2f1ee]" href="/">
+          <Link className="text-sm font-semibold text-[var(--background)]" href="/">
             TheTattooCore
           </Link>
           <div className="flex items-center gap-3">
@@ -394,11 +394,11 @@ export default async function AccountPage({
 
         <nav
           aria-label="Account settings"
-          className="no-scrollbar sticky top-0 z-20 mb-4 flex gap-2 overflow-x-auto rounded-md border border-[#3b332b] bg-[#171412]/95 p-2 shadow-[0_18px_42px_rgba(0,0,0,0.28)] backdrop-blur"
+          className="no-scrollbar sticky top-0 z-20 mb-4 flex gap-2 overflow-x-auto rounded-md border border-[color-mix(in_srgb,var(--gold)_24%,var(--card-rim))] bg-[color-mix(in_srgb,var(--foreground)_94%,transparent)] p-2 shadow-[0_18px_42px_rgba(0,0,0,0.28)] backdrop-blur"
         >
           {accountNavItems.map(([href, label]) => (
             <a
-              className="flex h-10 shrink-0 items-center rounded-md border border-white/10 bg-white/5 px-3 text-sm font-semibold text-[#f7f4ef] hover:border-[#c8953b]/70 hover:bg-[#c8953b]/15"
+              className="flex h-10 shrink-0 items-center rounded-md border border-white/10 bg-[color-mix(in_srgb,var(--paper-warm)_8%,transparent)] px-3 text-sm font-semibold text-[var(--background)] hover:border-[color-mix(in_srgb,var(--gold)_70%,var(--card-rim))] hover:bg-[color-mix(in_srgb,var(--gold)_15%,transparent)]"
               href={href}
               key={href}
             >
@@ -410,21 +410,21 @@ export default async function AccountPage({
         <ProfileForm claims={claims} initialProfile={profile} />
 
         <section
-          className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee]/95 p-5 backdrop-blur"
+          className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-5 backdrop-blur"
           id="data-settings"
         >
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase text-[#766d62]">
+              <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
                 Data control
               </p>
               <h2 className="text-xl font-bold">Account and data</h2>
             </div>
-            <span className="w-fit rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 py-1 text-xs font-semibold">
+            <span className="w-fit rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1 text-xs font-semibold">
               Manual review
             </span>
           </div>
-          <p className="mt-2 text-sm leading-6 text-[#766d62]">
+          <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
             You can make your profile private anytime. Account deletion is a
             manual review request during launch so safety reports, marketplace
             issues, and legal obligations can be handled correctly.
@@ -433,19 +433,19 @@ export default async function AccountPage({
             <div className="mt-4 grid gap-2">
               {deletionRequests.map((request) => (
                 <div
-                  className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-3 py-2 text-sm"
+                  className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 text-sm"
                   key={request.id}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="font-semibold capitalize">
                       {request.status} deletion request
                     </p>
-                    <p className="text-xs text-[#766d62]">
+                    <p className="text-xs text-[var(--muted-strong)]">
                       {formatDate(request.requested_at)}
                     </p>
                   </div>
                   {request.reviewer_note ? (
-                    <p className="mt-1 text-xs leading-5 text-[#766d62]">
+                    <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
                       {request.reviewer_note}
                     </p>
                   ) : null}
@@ -457,7 +457,7 @@ export default async function AccountPage({
             <label className="block">
               <span className="text-sm font-medium">Reason, optional</span>
               <textarea
-                className="mt-2 min-h-20 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-3 text-sm outline-none focus:border-[#171412]"
+                className="mt-2 min-h-20 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-3 text-sm outline-none focus:border-[var(--foreground)]"
                 maxLength={500}
                 name="delete_reason"
                 placeholder="Tell admins what should be reviewed before deletion."
@@ -468,32 +468,32 @@ export default async function AccountPage({
                 Type DELETE to request account deletion
               </span>
               <input
-                className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                 name="delete_confirmation"
                 placeholder="DELETE"
               />
             </label>
             <PendingSubmitButton
-              className="h-11 w-fit rounded-md border border-[#a3432f] bg-white px-5 text-sm font-semibold text-[#8a2828]"
+              className="h-11 w-fit rounded-md border border-[color-mix(in_srgb,var(--danger)_55%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-5 text-sm font-semibold text-[var(--danger)]"
               pendingLabel="Submitting"
             >
               Request account deletion
             </PendingSubmitButton>
           </form>
-          <p className="mt-3 text-xs leading-5 text-[#766d62]">
+          <p className="mt-3 text-xs leading-5 text-[var(--muted-strong)]">
             For urgent privacy or safety help, use the public support page.
           </p>
         </section>
 
         {canSubmitLicense ? (
           <section
-            className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee]/95 p-5 backdrop-blur"
+            className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-5 backdrop-blur"
             id="verification-settings"
           >
             <div className="mb-5">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-bold uppercase text-[#766d62]">
+                  <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
                     Professional access
                   </p>
                   <h2 className="text-xl font-bold">
@@ -503,10 +503,10 @@ export default async function AccountPage({
                 <span
                   className={`w-fit rounded-md border px-2 py-1 text-xs font-semibold ${
                     isLicenseVerified
-                      ? "border-[#b9d7bd] bg-[#eef8ef] text-[#276231]"
+                      ? "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]"
                       : hasPendingVerification
-                        ? "border-[#e5c58f] bg-[#fff7ec] text-[#7a4a08]"
-                        : "border-[#d8d1c6] bg-[#fffdf9] text-[#4f473f]"
+                        ? "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]"
+                        : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] text-[var(--muted)]"
                   }`}
                 >
                   {isLicenseVerified
@@ -516,19 +516,19 @@ export default async function AccountPage({
                       : "Not verified"}
                 </span>
               </div>
-              <p className="mt-1 text-sm leading-6 text-[#766d62]">
+              <p className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">
                 Upload your tattoo license, shop license, certification,
                 vendor business license, or local proof that you can legally
                 tattoo, operate, or sell as a body-art vendor. Documents are
                 private and reviewed by authorized admins.
               </p>
-              <p className="mt-2 text-xs font-semibold text-[#766d62]">
+              <p className="mt-2 text-xs font-semibold text-[var(--muted-strong)]">
                 Accepted files: PDF, JPG, PNG, or WebP up to 10 MB.
               </p>
               <div className="mt-4 grid gap-2">
                 {verificationStandards.map((standard) => (
                   <p
-                    className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#4f473f]"
+                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 text-xs leading-5 text-[var(--muted)]"
                     key={standard}
                   >
                     {standard}
@@ -536,7 +536,7 @@ export default async function AccountPage({
                 ))}
               </div>
               {isLicenseVerified ? (
-                <p className="mt-3 rounded-md bg-[#171412] px-3 py-2 text-sm font-semibold text-white">
+                <p className="mt-3 rounded-md bg-[var(--foreground)] px-3 py-2 text-sm font-semibold text-white">
                   Your {profile?.account_type} profile is license verified.
                 </p>
               ) : null}
@@ -546,7 +546,7 @@ export default async function AccountPage({
               <div className="mb-5 space-y-2">
                 {verificationRequests.map((request) => (
                   <div
-                    className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 text-sm"
+                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm"
                     key={request.id}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
@@ -559,11 +559,11 @@ export default async function AccountPage({
                         {request.status}
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-[#766d62]">
+                    <p className="mt-1 text-xs text-[var(--muted-strong)]">
                       {request.issuing_region} - Submitted{" "}
                       {formatDate(request.created_at)}
                     </p>
-                    <p className="mt-1 text-xs text-[#766d62]">
+                    <p className="mt-1 text-xs text-[var(--muted-strong)]">
                       Expires {formatDate(request.expires_on)}
                       {isExpiredDate(request.expires_on) ? " - expired" : ""}
                       {request.reviewed_at
@@ -571,13 +571,13 @@ export default async function AccountPage({
                         : ""}
                     </p>
                     {request.status === "pending" ? (
-                      <p className="mt-2 rounded-md border border-[#e5c58f] bg-[#fff7ec] px-3 py-2 text-xs leading-5 text-[#7a4a08]">
+                      <p className="mt-2 rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] px-3 py-2 text-xs leading-5 text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]">
                         This request is waiting for admin review. New uploads
                         open again if it is rejected.
                       </p>
                     ) : null}
                     {request.status === "rejected" && request.reviewer_note ? (
-                      <p className="mt-2 rounded-md border border-[#e5b8b8] bg-[#fff0f0] px-3 py-2 text-xs leading-5 text-[#8a2828]">
+                      <p className="mt-2 rounded-md border border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] px-3 py-2 text-xs leading-5 text-[var(--danger)]">
                         Admin note: {request.reviewer_note}
                       </p>
                     ) : null}
@@ -587,7 +587,7 @@ export default async function AccountPage({
             ) : null}
 
             {!canUploadVerification ? (
-              <div className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-3 py-2 text-sm leading-6 text-[#4f473f]">
+              <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 text-sm leading-6 text-[var(--muted)]">
                 {isLicenseVerified
                   ? "Your verification is active. Keep a current license or business document ready for renewal when we add renewal reminders."
                   : "Your latest request is pending review. You can submit updated proof if an admin rejects it."}
@@ -597,16 +597,16 @@ export default async function AccountPage({
             {canUploadVerification ? (
               <form action={submitLicenseVerification} className="grid gap-4">
                 {latestVerificationRequest?.status === "rejected" ? (
-                  <p className="rounded-md border border-[#e5ded4] bg-[#fffdf9] px-3 py-2 text-sm leading-6 text-[#4f473f]">
+                  <p className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 text-sm leading-6 text-[var(--muted)]">
                     Submit updated proof after fixing the last rejection note.
                   </p>
                 ) : null}
                 <label className="block">
                   <span className="text-sm font-medium">
-                    License or certification name <span className="text-[#a3432f]">*</span>
+                    License or certification name <span className="text-[var(--danger)]">*</span>
                   </span>
                   <input
-                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     name="license_name"
                     placeholder="Tattoo artist license"
                     required
@@ -619,17 +619,17 @@ export default async function AccountPage({
                     License number
                   </span>
                   <input
-                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     name="license_number"
                     placeholder="Optional"
                   />
                 </label>
                 <label className="block">
                   <span className="text-sm font-medium">
-                    Issuing city/state/country <span className="text-[#a3432f]">*</span>
+                    Issuing city/state/country <span className="text-[var(--danger)]">*</span>
                   </span>
                   <input
-                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     name="issuing_region"
                     placeholder="Austin, TX"
                     required
@@ -641,14 +641,14 @@ export default async function AccountPage({
                 <label className="block">
                   <span className="text-sm font-medium">Expiration date</span>
                   <input
-                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     name="expires_on"
                     type="date"
                   />
                 </label>
                 <label className="block">
                   <span className="text-sm font-medium">
-                    License document <span className="text-[#a3432f]">*</span>
+                    License document <span className="text-[var(--danger)]">*</span>
                   </span>
                   <div className="mt-2">
                     <LicenseDocumentInput
@@ -657,14 +657,14 @@ export default async function AccountPage({
                       required
                     />
                   </div>
-                  <span className="mt-1 block text-xs leading-5 text-[#766d62]">
+                  <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
                     Private admin review only. Public users only see verified status after approval.
                   </span>
                 </label>
               </div>
 
               <PendingSubmitButton
-                className="h-11 rounded-md bg-[#171412] px-5 text-sm font-semibold text-white"
+                className="h-11 rounded-md bg-[var(--foreground)] px-5 text-sm font-semibold text-white"
                 pendingLabel="Submitting"
               >
                 Submit for review
@@ -674,14 +674,14 @@ export default async function AccountPage({
           </section>
         ) : (
           <section
-            className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[#d8d1c6] bg-[#fffdf9]/95 p-5 backdrop-blur"
+            className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] p-5 backdrop-blur"
             id="verification-settings"
           >
-            <p className="text-xs font-bold uppercase text-[#766d62]">
+            <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
               Professional access
             </p>
             <h2 className="text-xl font-bold">Artist, studio, and vendor verification</h2>
-            <p className="mt-2 text-sm leading-6 text-[#766d62]">
+            <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
               Choose Artist, Studio, or Vendor as your account type and save
               your profile to submit license, certification, or business
               documents.
@@ -689,7 +689,7 @@ export default async function AccountPage({
             <div className="mt-4 grid gap-2">
               {verificationStandards.map((standard) => (
                 <p
-                  className="rounded-md border border-[#e5ded4] bg-[#f7f4ef] px-3 py-2 text-xs leading-5 text-[#4f473f]"
+                  className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 py-2 text-xs leading-5 text-[var(--muted)]"
                   key={standard}
                 >
                   {standard}
@@ -700,22 +700,22 @@ export default async function AccountPage({
         )}
 
         <section
-          className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee]/95 p-5 backdrop-blur"
+          className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-5 backdrop-blur"
           id="advertising-settings"
         >
           <div className="mb-5">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="text-xs font-bold uppercase text-[#766d62]">
+                <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
                   Sponsored spots
                 </p>
                 <h2 className="text-xl font-bold">Advertising</h2>
               </div>
-              <span className="w-fit rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 py-1 text-xs font-semibold">
+              <span className="w-fit rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1 text-xs font-semibold">
                 {canSubmitAds ? "Open" : "Locked"}
               </span>
             </div>
-            <p className="mt-1 text-sm leading-6 text-[#766d62]">
+            <p className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">
               Verified artists, studios, and vendors can submit simple campaigns
               for admin review. Artist growth ads can run in 4U and Gossip.
               Stuff ads stay in Stuff.
@@ -723,18 +723,18 @@ export default async function AccountPage({
             <div className="mt-4 grid gap-2 sm:grid-cols-3">
               {advertisingStandards.map((standard) => (
                 <p
-                  className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#4f473f]"
+                  className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 text-xs leading-5 text-[var(--muted)]"
                   key={standard}
                 >
                   {standard}
                 </p>
               ))}
             </div>
-            <div className="mt-4 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3">
-              <p className="text-xs font-bold uppercase text-[#766d62]">
+            <div className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3">
+              <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
                 Review rules
               </p>
-              <ul className="mt-2 grid gap-2 text-xs leading-5 text-[#4f473f]">
+              <ul className="mt-2 grid gap-2 text-xs leading-5 text-[var(--muted)]">
                 {advertisingReviewRules.map((rule) => (
                   <li key={rule}>{rule}</li>
                 ))}
@@ -754,30 +754,30 @@ export default async function AccountPage({
 
                 return (
                   <article
-                    className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 text-sm"
+                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm"
                     key={campaign.id}
                   >
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="truncate font-semibold">{campaign.name}</p>
-                        <p className="mt-1 text-xs text-[#766d62]">
+                        <p className="mt-1 text-xs text-[var(--muted-strong)]">
                           {campaign.title}
                         </p>
                       </div>
-                      <span className="rounded-md bg-white px-2 py-1 text-xs font-semibold capitalize">
+                      <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold capitalize">
                         {adLabel(campaign.status)}
                       </span>
                     </div>
-                    <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#766d62]">
-                      <span className="rounded-md bg-[#f2f1ee] px-2 py-1 capitalize">
+                    <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--muted-strong)]">
+                      <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-2 py-1 capitalize">
                         {adLabel(campaign.goal)}
                       </span>
-                      <span className="rounded-md bg-[#f2f1ee] px-2 py-1">
+                      <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-2 py-1">
                         {campaign.ad_campaign_placements
                           .map((placement) => adLabel(placement.placement))
                           .join(", ") || "No placement"}
                       </span>
-                      <span className="rounded-md bg-[#f2f1ee] px-2 py-1">
+                      <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-2 py-1">
                         {dollars(campaign.bid_cents)} bid /{" "}
                         {dollars(campaign.daily_budget_cents)} daily cap
                       </span>
@@ -789,11 +789,11 @@ export default async function AccountPage({
                         ["CTR", adClickRate({ clicks, impressions })],
                       ].map(([label, value]) => (
                         <div
-                          className="rounded-md border border-[#e5ded4] bg-white px-2 py-2"
+                          className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-2"
                           key={label}
                         >
-                          <p className="font-bold text-[#171412]">{value}</p>
-                          <p className="mt-1 text-[#766d62]">{label}</p>
+                          <p className="font-bold text-[var(--foreground)]">{value}</p>
+                          <p className="mt-1 text-[var(--muted-strong)]">{label}</p>
                         </div>
                       ))}
                     </div>
@@ -804,7 +804,7 @@ export default async function AccountPage({
           ) : null}
 
           {!canSubmitAds ? (
-            <div className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-4 text-sm leading-6 text-[#4f473f]">
+            <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 text-sm leading-6 text-[var(--muted)]">
               Advertising opens after an artist, studio, or vendor account is
               license verified and in good standing.
             </div>
@@ -814,7 +814,7 @@ export default async function AccountPage({
                 <label className="block">
                   <span className="text-sm font-medium">Campaign type</span>
                   <select
-                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     name="campaign_type"
                     required
                   >
@@ -825,7 +825,7 @@ export default async function AccountPage({
                 <label className="block">
                   <span className="text-sm font-medium">Goal</span>
                   <select
-                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     name="goal"
                     required
                   >
@@ -845,7 +845,7 @@ export default async function AccountPage({
                 <label className="block">
                   <span className="text-sm font-medium">Campaign name</span>
                   <input
-                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     maxLength={120}
                     name="name"
                     placeholder="Austin flash booking push"
@@ -855,7 +855,7 @@ export default async function AccountPage({
                 <label className="block">
                   <span className="text-sm font-medium">Ad headline</span>
                   <input
-                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     maxLength={120}
                     name="title"
                     placeholder="Books open for July"
@@ -867,7 +867,7 @@ export default async function AccountPage({
               <label className="block">
                 <span className="text-sm font-medium">Ad text</span>
                 <textarea
-                  className="mt-2 min-h-24 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-3 text-sm outline-none focus:border-[#171412]"
+                  className="mt-2 min-h-24 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-3 text-sm outline-none focus:border-[var(--foreground)]"
                   maxLength={300}
                   name="body"
                   placeholder="Short ad copy for the sponsored card."
@@ -878,7 +878,7 @@ export default async function AccountPage({
                 <label className="block">
                   <span className="text-sm font-medium">Target link</span>
                   <input
-                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     name="target_url"
                     placeholder="https://..."
                     type="url"
@@ -887,14 +887,14 @@ export default async function AccountPage({
                 <label className="block">
                   <span className="text-sm font-medium">Keywords</span>
                   <input
-                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     name="keywords"
                     placeholder="blackwork, flash, fine line"
                   />
                 </label>
               </div>
 
-              <fieldset className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3">
+              <fieldset className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3">
                 <legend className="px-1 text-sm font-semibold">Placements</legend>
                 <div className="mt-2 grid gap-2 sm:grid-cols-3">
                   {[
@@ -903,7 +903,7 @@ export default async function AccountPage({
                     ["stuff", "Stuff"],
                   ].map(([value, label]) => (
                     <label
-                      className="flex items-center gap-2 rounded-md border border-[#e5ded4] bg-white px-3 py-2 text-sm font-medium"
+                      className="flex items-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-sm font-medium"
                       key={value}
                     >
                       <input name="placements" type="checkbox" value={value} />
@@ -911,7 +911,7 @@ export default async function AccountPage({
                     </label>
                   ))}
                 </div>
-                <p className="mt-2 text-xs leading-5 text-[#766d62]">
+                <p className="mt-2 text-xs leading-5 text-[var(--muted-strong)]">
                   Artist growth can use 4U and Gossip. Stuff listing campaigns
                   can use Stuff only.
                 </p>
@@ -921,7 +921,7 @@ export default async function AccountPage({
                 <label className="block">
                   <span className="text-sm font-medium">Bid per spot</span>
                   <input
-                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     min="0"
                     name="bid_dollars"
                     placeholder="0.00"
@@ -932,7 +932,7 @@ export default async function AccountPage({
                 <label className="block">
                   <span className="text-sm font-medium">Daily cap</span>
                   <input
-                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     min="0"
                     name="daily_budget_dollars"
                     placeholder="0.00"
@@ -946,7 +946,7 @@ export default async function AccountPage({
                 <label className="block">
                   <span className="text-sm font-medium">City</span>
                   <input
-                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     defaultValue={profile?.city ?? ""}
                     name="city"
                   />
@@ -954,7 +954,7 @@ export default async function AccountPage({
                 <label className="block">
                   <span className="text-sm font-medium">Region</span>
                   <input
-                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     defaultValue={profile?.region ?? ""}
                     name="region"
                   />
@@ -962,7 +962,7 @@ export default async function AccountPage({
                 <label className="block">
                   <span className="text-sm font-medium">Country</span>
                   <select
-                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm uppercase outline-none focus:border-[#171412]"
+                    className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm uppercase outline-none focus:border-[var(--foreground)]"
                     defaultValue={profile?.country_code ?? ""}
                     name="country_code"
                   >
@@ -977,7 +977,7 @@ export default async function AccountPage({
                 <label className="block">
                   <span className="text-sm font-medium">Language</span>
                   <select
-                    className="mt-2 h-11 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     defaultValue={profile?.preferred_language ?? ""}
                     name="language"
                   >
@@ -991,14 +991,14 @@ export default async function AccountPage({
                 </label>
               </div>
 
-              <p className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
+              <p className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
                 Ads are reviewed before they run and appear with a sponsored
                 label. Targeting uses coarse location, language, selected
                 placement, and keywords only.
               </p>
 
               <PendingSubmitButton
-                className="h-11 rounded-md bg-[#171412] px-5 text-sm font-semibold text-white"
+                className="h-11 rounded-md bg-[var(--foreground)] px-5 text-sm font-semibold text-white"
                 pendingLabel="Submitting"
               >
                 Submit ad for review
