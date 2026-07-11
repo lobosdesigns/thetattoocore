@@ -151,6 +151,10 @@ type SavedItem = {
   subject_type: "feed_post" | "gig" | "marketplace_listing" | "thread_post";
 };
 
+type FollowedProfile = {
+  following_id: string;
+};
+
 type PostMedia = {
   id: string;
   media_type: "image" | "video";
@@ -198,6 +202,187 @@ type ThreadComment = {
   deleted_at: string | null;
   thread_comment_hides: { hidden_by: string }[] | { hidden_by: string } | null;
 };
+
+type RankingContext = {
+  followedProfileIds: Set<string>;
+  preferredCategories: Set<string>;
+  preferredStyleTags: Set<string>;
+  savedKeys: Set<string>;
+  userId: string | null;
+  viewerCity: string | null;
+  viewerRegion: string | null;
+};
+
+function savedKey(subjectType: SavedItem["subject_type"], subjectId: string) {
+  return `${subjectType}:${subjectId}`;
+}
+
+function ageScore(createdAt: string) {
+  const ageHours = Math.max(0, (Date.now() - new Date(createdAt).getTime()) / 3600000);
+
+  return Math.max(0, 240 - ageHours);
+}
+
+function profileAffinityScore(profile: Profile | null, context: RankingContext) {
+  if (!profile) return 0;
+
+  return (
+    (context.followedProfileIds.has(profile.id) ? 950 : 0) +
+    (context.viewerCity && profile.city === context.viewerCity ? 95 : 0) +
+    (context.viewerRegion && profile.region === context.viewerRegion ? 70 : 0)
+  );
+}
+
+function locationAffinityScore(
+  item: { city?: string | null; region?: string | null },
+  context: RankingContext,
+) {
+  return (
+    (context.viewerCity && item.city === context.viewerCity ? 80 : 0) +
+    (context.viewerRegion && item.region === context.viewerRegion ? 55 : 0)
+  );
+}
+
+function buildRankingContext({
+  currentProfile,
+  feedPosts,
+  gigs,
+  listings,
+  merchProducts,
+  savedItems,
+  threadPosts,
+  userId,
+  followedProfileIds,
+}: {
+  currentProfile: Profile | null;
+  feedPosts: FeedPost[];
+  followedProfileIds: Set<string>;
+  gigs: Gig[];
+  listings: MarketplaceListing[];
+  merchProducts: MerchProduct[];
+  savedItems: SavedItem[];
+  threadPosts: ThreadPost[];
+  userId: string | null;
+}): RankingContext {
+  const savedKeys = new Set(
+    savedItems.map((item) => savedKey(item.subject_type, item.subject_id)),
+  );
+  const preferredStyleTags = new Set<string>();
+  const preferredCategories = new Set<string>();
+
+  for (const post of feedPosts) {
+    const liked = Boolean(userId && post.post_likes.some((like) => like.user_id === userId));
+    const saved = savedKeys.has(savedKey("feed_post", post.id));
+
+    if (liked || saved) {
+      for (const tag of post.style_tags ?? []) {
+        preferredStyleTags.add(tag.toLowerCase());
+      }
+    }
+  }
+
+  for (const thread of threadPosts) {
+    const liked = Boolean(
+      userId && thread.thread_likes.some((like) => like.user_id === userId),
+    );
+    const saved = savedKeys.has(savedKey("thread_post", thread.id));
+
+    if (liked || saved) {
+      for (const word of thread.body.toLowerCase().match(/[a-z0-9]{4,}/g) ?? []) {
+        preferredStyleTags.add(word);
+      }
+    }
+  }
+
+  for (const listing of listings) {
+    if (savedKeys.has(savedKey("marketplace_listing", listing.id))) {
+      preferredCategories.add(listing.category.toLowerCase());
+    }
+  }
+
+  for (const gig of gigs) {
+    if (savedKeys.has(savedKey("gig", gig.id))) {
+      preferredCategories.add(gig.category.toLowerCase());
+    }
+  }
+
+  for (const product of merchProducts) {
+    if (product.profiles && followedProfileIds.has(product.profiles.id)) {
+      preferredCategories.add(product.category.toLowerCase());
+    }
+  }
+
+  return {
+    followedProfileIds,
+    preferredCategories,
+    preferredStyleTags,
+    savedKeys,
+    userId,
+    viewerCity: currentProfile?.location_personalization_enabled
+      ? currentProfile.city
+      : null,
+    viewerRegion: currentProfile?.location_personalization_enabled
+      ? currentProfile.region
+      : null,
+  };
+}
+
+function rankFeedPosts(posts: FeedPost[], context: RankingContext) {
+  return [...posts].sort((a, b) => {
+    const score = (post: FeedPost) =>
+      ageScore(post.created_at) +
+      profileAffinityScore(post.profiles, context) +
+      (context.savedKeys.has(savedKey("feed_post", post.id)) ? 260 : 0) +
+      (context.userId && post.post_likes.some((like) => like.user_id === context.userId)
+        ? 210
+        : 0) +
+      post.style_tags.reduce(
+        (sum, tag) => sum + (context.preferredStyleTags.has(tag.toLowerCase()) ? 140 : 0),
+        0,
+      ) +
+      Math.min(120, post.post_likes.length * 12 + post.post_comments.length * 8);
+
+    return score(b) - score(a) || Date.parse(b.created_at) - Date.parse(a.created_at);
+  });
+}
+
+function rankThreadPosts(posts: ThreadPost[], context: RankingContext) {
+  return [...posts].sort((a, b) => {
+    const score = (thread: ThreadPost) =>
+      ageScore(thread.created_at) +
+      profileAffinityScore(thread.profiles, context) +
+      (context.savedKeys.has(savedKey("thread_post", thread.id)) ? 240 : 0) +
+      (context.userId &&
+      thread.thread_likes.some((like) => like.user_id === context.userId)
+        ? 190
+        : 0) +
+      Math.min(120, thread.thread_likes.length * 12 + thread.thread_comments.length * 8);
+
+    return score(b) - score(a) || Date.parse(b.created_at) - Date.parse(a.created_at);
+  });
+}
+
+function rankCategoryItems<
+  T extends {
+    category: string;
+    city?: string | null;
+    created_at: string;
+    id: string;
+    profiles: Profile | null;
+    region?: string | null;
+  },
+>(items: T[], context: RankingContext, savedType?: SavedItem["subject_type"]) {
+  return [...items].sort((a, b) => {
+    const score = (item: T) =>
+      ageScore(item.created_at) +
+      profileAffinityScore(item.profiles, context) +
+      locationAffinityScore(item, context) +
+      (context.preferredCategories.has(item.category.toLowerCase()) ? 220 : 0) +
+      (savedType && context.savedKeys.has(savedKey(savedType, item.id)) ? 260 : 0);
+
+    return score(b) - score(a) || Date.parse(b.created_at) - Date.parse(a.created_at);
+  });
+}
 
 type SponsoredPlacement = "4u-feed" | "gossip-feed" | "stuff-feed";
 type AdPlacement = "4u" | "gossip" | "stuff";
@@ -1190,6 +1375,7 @@ export default async function Home({
     { data: listings },
     { data: gigs },
     { data: merchProducts },
+    { data: follows },
     { count: unreadDmCount },
     { data: savedItems },
     fourUAd,
@@ -1266,6 +1452,14 @@ export default async function Home({
       .returns<MerchProduct[]>(),
     claims?.sub
       ? supabase
+          .from("follows")
+          .select("following_id")
+          .eq("follower_id", claims.sub)
+          .eq("status", "accepted")
+          .returns<FollowedProfile[]>()
+      : Promise.resolve({ data: [] as FollowedProfile[] }),
+    claims?.sub
+      ? supabase
           .from("notifications")
           .select("*", { count: "exact", head: true })
           .eq("recipient_id", claims.sub)
@@ -1298,17 +1492,36 @@ export default async function Home({
     ),
     isSignedIn,
   };
-  const visibleFeedPosts = (feedPosts ?? []).filter((post) =>
-    canRenderContent(post, viewer),
+  const rankingContext = buildRankingContext({
+    currentProfile: currentProfile ?? null,
+    feedPosts: feedPosts ?? [],
+    followedProfileIds: new Set((follows ?? []).map((follow) => follow.following_id)),
+    gigs: gigs ?? [],
+    listings: listings ?? [],
+    merchProducts: merchProducts ?? [],
+    savedItems: savedItems ?? [],
+    threadPosts: threadPosts ?? [],
+    userId: claims?.sub ?? null,
+  });
+  const visibleFeedPosts = rankFeedPosts(
+    (feedPosts ?? []).filter((post) => canRenderContent(post, viewer)),
+    rankingContext,
   );
-  const visibleThreadPosts = (threadPosts ?? []).filter((thread) =>
-    canRenderContent(thread, viewer),
+  const visibleThreadPosts = rankThreadPosts(
+    (threadPosts ?? []).filter((thread) => canRenderContent(thread, viewer)),
+    rankingContext,
   );
-  const visibleListings = (listings ?? []).filter((listing) =>
-    canRenderContent(listing, viewer),
+  const visibleListings = rankCategoryItems(
+    (listings ?? []).filter((listing) => canRenderContent(listing, viewer)),
+    rankingContext,
+    "marketplace_listing",
   );
-  const visibleGigs = (gigs ?? []).filter((gig) => canRenderContent(gig, viewer));
-  const visibleMerchProducts = merchProducts ?? [];
+  const visibleGigs = rankCategoryItems(
+    (gigs ?? []).filter((gig) => canRenderContent(gig, viewer)),
+    rankingContext,
+    "gig",
+  );
+  const visibleMerchProducts = rankCategoryItems(merchProducts ?? [], rankingContext);
   const lockedPublicItemCount = [
     ...(feedPosts ?? []),
     ...(threadPosts ?? []),
