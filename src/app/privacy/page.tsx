@@ -32,8 +32,8 @@ const sections = [
   },
   {
     body:
-      "Merch is planned as a separate public-buyable area for approved artist, studio, vendor, and TheTattooCore brand goods. Before Merch turns on, checkout, tax, shipping, refunds, seller approval, payment-provider rules, and buyer privacy notices need to be completed.",
-    title: "Future Merch",
+      "Merch is a separate public-buyable area for approved artist, studio, vendor, and TheTattooCore brand goods. Stripe checkout is in test mode, and production purchases still need final seller approval, tax, shipping, refunds, fulfillment, payment-provider rules, and buyer privacy notices.",
+    title: "Merch",
   },
   {
     body:

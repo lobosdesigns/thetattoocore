@@ -10,7 +10,7 @@ import {
   ShieldCheck,
   Store,
 } from "lucide-react";
-import { updateMerchProductStatus } from "../actions";
+import { updateMerchOrderStatus, updateMerchProductStatus } from "../actions";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -39,12 +39,15 @@ type MerchProduct = {
   title: string;
 };
 type MerchOrder = {
+  adminNote: string | null;
   buyerName: string;
   buyerUsername: string;
   createdAt: string;
   currency: string;
+  customerEmail: string | null;
   id: string;
   itemCount: number;
+  shippingName: string | null;
   status: string;
   totalCents: number;
 };
@@ -55,7 +58,7 @@ const merchRules = [
   "Merch is public-buyable brand goods, separate from verified-only professional Stuff.",
   "Artist, studio, vendor, and official TheTattooCore sellers still need approval before listing products.",
   "Do not allow professional equipment, regulated services, unsafe products, counterfeits, adult sexual products, or scratcher-facing supplies.",
-  "Build checkout, tax, shipping, refunds, and payment-provider safety rules before accepting public orders.",
+  "Stripe checkout is wired in test mode; finish tax, shipping, refunds, fulfillment, payouts, and payment-provider safety rules before public production orders.",
 ] as const;
 const buildSteps = [
   [
@@ -68,7 +71,7 @@ const buildSteps = [
   ],
   [
     "Checkout",
-    "Next payment step is Stripe checkout sessions, webhooks, order status, refunds, taxes, and receipts.",
+    "Stripe Checkout, paid webhooks, and inventory decrement are wired in test mode. Next: refunds, taxes, receipts, fulfillment, and production review.",
   ],
   [
     "Admin operations",
@@ -257,7 +260,18 @@ function ProductCard({
   );
 }
 
-function OrderCard({ order }: { order: MerchOrder }) {
+function OrderCard({
+  currentPage,
+  order,
+}: {
+  currentPage: number;
+  order: MerchOrder;
+}) {
+  const canFulfill = order.status === "paid";
+  const canCancel = ["pending_checkout", "payment_failed", "cancelled"].includes(
+    order.status,
+  );
+
   return (
     <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -273,7 +287,7 @@ function OrderCard({ order }: { order: MerchOrder }) {
           {order.status.replace("_", " ")}
         </span>
       </div>
-      <dl className="mt-4 grid gap-3 text-sm text-[var(--muted)] sm:grid-cols-3">
+      <dl className="mt-4 grid gap-3 text-sm text-[var(--muted)] sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">Buyer</dt>
           <dd>{order.buyerName}</dd>
@@ -286,7 +300,56 @@ function OrderCard({ order }: { order: MerchOrder }) {
           <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">Total</dt>
           <dd>{money(order.totalCents, order.currency)}</dd>
         </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">Ship to</dt>
+          <dd>{order.shippingName || "Not collected"}</dd>
+        </div>
       </dl>
+      {order.customerEmail || order.adminNote ? (
+        <div className="mt-3 space-y-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-3 text-xs leading-5 text-[var(--muted)]">
+          {order.customerEmail ? <p>Email: {order.customerEmail}</p> : null}
+          {order.adminNote ? <p>Admin note: {order.adminNote}</p> : null}
+        </div>
+      ) : null}
+      <form action={updateMerchOrderStatus} className="mt-4 space-y-2">
+        <input name="order_id" type="hidden" value={order.id} />
+        <input name="return_to" type="hidden" value={pageHref(currentPage)} />
+        <input
+          className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+          maxLength={1000}
+          name="note"
+          placeholder="Order note for fulfillment, cancellation, or handoff"
+        />
+        <div className="grid gap-2 min-[430px]:grid-cols-2">
+          <button
+            className={`h-10 rounded-md px-3 text-sm font-semibold ${
+              canFulfill
+                ? "bg-[var(--foreground)] text-[var(--background)]"
+                : "border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_90%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
+            }`}
+            disabled={!canFulfill}
+            name="status"
+            value="fulfilled"
+          >
+            Mark fulfilled
+          </button>
+          <button
+            className={`h-10 rounded-md border px-3 text-sm font-semibold ${
+              canCancel
+                ? "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)]"
+                : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_90%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
+            }`}
+            disabled={!canCancel}
+            name="status"
+            value="cancelled"
+          >
+            Cancel unpaid
+          </button>
+        </div>
+        <p className="text-xs leading-5 text-[var(--muted-strong)]">
+          Refund paid orders in Stripe first; the webhook updates refunded status.
+        </p>
+      </form>
     </article>
   );
 }
@@ -363,29 +426,35 @@ export default async function AdminMerchPage({
   const { count: orderCount, data: orderRows } = await supabase
     .from("merch_orders")
     .select(
-      "id, status, currency, total_cents, created_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id)",
+      "id, status, currency, total_cents, customer_email, shipping_name, admin_note, created_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id)",
       { count: "exact" },
     )
     .order("created_at", { ascending: false })
     .range(0, 9)
     .returns<
       {
+        admin_note: string | null;
         created_at: string;
         currency: string;
+        customer_email: string | null;
         id: string;
         merch_order_items: { id: string }[];
         profiles: { display_name: string; username: string } | null;
+        shipping_name: string | null;
         status: string;
         total_cents: number;
       }[]
     >();
   const orders: MerchOrder[] = (orderRows ?? []).map((order) => ({
+    adminNote: order.admin_note,
     buyerName: order.profiles?.display_name ?? "Buyer",
     buyerUsername: order.profiles?.username ?? "buyer",
     createdAt: order.created_at,
     currency: order.currency,
+    customerEmail: order.customer_email,
     id: order.id,
     itemCount: order.merch_order_items.length,
+    shippingName: order.shipping_name,
     status: order.status,
     totalCents: order.total_cents,
   }));
@@ -546,7 +615,7 @@ export default async function AdminMerchPage({
             <div>
               <h2 className="text-lg font-bold">Recent Orders</h2>
               <p className="mt-1 text-sm text-[var(--muted)]">
-                Stripe will write checkout results here once payments are connected.
+                Stripe checkout writes paid, failed, expired, and refunded order states here.
               </p>
             </div>
             <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-sm font-semibold">
@@ -556,7 +625,11 @@ export default async function AdminMerchPage({
           {orders.length ? (
             <div className="grid gap-3">
               {orders.map((order) => (
-                <OrderCard key={order.id} order={order} />
+                <OrderCard
+                  currentPage={currentPage}
+                  key={order.id}
+                  order={order}
+                />
               ))}
             </div>
           ) : (

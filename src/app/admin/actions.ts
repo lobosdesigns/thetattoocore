@@ -16,6 +16,7 @@ type LicenseVerificationStatus = "approved" | "rejected";
 type UserStatus = "active" | "suspended" | "banned";
 type AdCampaignStatus = "approved" | "active" | "paused" | "rejected" | "archived";
 type MerchProductStatus = "approved" | "active" | "paused" | "rejected" | "archived";
+type MerchOrderAdminStatus = "fulfilled" | "cancelled";
 type AccountDeletionStatus = "reviewing" | "completed" | "rejected" | "cancelled";
 type MailSettings = {
   from_email: string | null;
@@ -66,6 +67,10 @@ const merchProductStatuses = new Set<MerchProductStatus>([
   "paused",
   "rejected",
   "archived",
+]);
+const merchOrderAdminStatuses = new Set<MerchOrderAdminStatus>([
+  "fulfilled",
+  "cancelled",
 ]);
 const accountDeletionStatuses = new Set<AccountDeletionStatus>([
   "reviewing",
@@ -1249,6 +1254,125 @@ export async function updateMerchProductStatus(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/admin/merch");
   redirect(adminMerchMessage("Merch product updated.", returnTo));
+}
+
+export async function updateMerchOrderStatus(formData: FormData) {
+  const orderId = cleanText(formData.get("order_id"), 80);
+  const returnTo = cleanText(formData.get("return_to"), 120);
+  const status = cleanText(
+    formData.get("status"),
+    40,
+  ) as MerchOrderAdminStatus;
+  const note = cleanText(formData.get("note"), 1000);
+
+  if (!orderId || !merchOrderAdminStatuses.has(status)) {
+    redirect(adminMerchMessage("Choose a valid merch order and status.", returnTo));
+  }
+
+  const { supabase, userId } = await requireModerator();
+  const { data: order, error: orderError } = await supabase
+    .from("merch_orders")
+    .select("id, status, buyer_id, total_cents, currency")
+    .eq("id", orderId)
+    .maybeSingle<{
+      buyer_id: string;
+      currency: string;
+      id: string;
+      status: string;
+      total_cents: number;
+    }>();
+
+  if (orderError || !order) {
+    redirect(
+      adminMerchMessage(
+        orderError?.message || "Merch order was not found.",
+        returnTo,
+      ),
+    );
+  }
+
+  if (status === "fulfilled" && order.status !== "paid") {
+    redirect(adminMerchMessage("Only paid orders can be fulfilled.", returnTo));
+  }
+
+  if (
+    status === "cancelled" &&
+    !["pending_checkout", "payment_failed", "cancelled"].includes(order.status)
+  ) {
+    redirect(
+      adminMerchMessage(
+        "Only pending, failed, or already-cancelled orders can be cancelled here. Refund paid orders in Stripe.",
+        returnTo,
+      ),
+    );
+  }
+
+  const now = new Date().toISOString();
+  const updateValues =
+    status === "fulfilled"
+      ? {
+          admin_note: note || null,
+          fulfilled_at: now,
+          status,
+          updated_at: now,
+        }
+      : {
+          admin_note: note || null,
+          cancelled_at: now,
+          status,
+          updated_at: now,
+        };
+  const { error: updateError } = await supabase
+    .from("merch_orders")
+    .update(updateValues)
+    .eq("id", orderId);
+
+  if (updateError) {
+    redirect(
+      adminMerchMessage(
+        updateError.message || "Could not update merch order.",
+        returnTo,
+      ),
+    );
+  }
+
+  if (status === "fulfilled" || status === "cancelled") {
+    const { error: itemError } = await supabase
+      .from("merch_order_items")
+      .update({
+        fulfillment_status:
+          status === "fulfilled" ? "fulfilled" : "cancelled",
+      })
+      .eq("order_id", orderId);
+
+    if (itemError) {
+      redirect(
+        adminMerchMessage(
+          itemError.message ||
+            "Order changed, but line-item fulfillment status failed.",
+          returnTo,
+        ),
+      );
+    }
+  }
+
+  await supabase.from("admin_audit_logs").insert({
+    actor_id: userId,
+    event_type: `merch_order_${status}`,
+    metadata: {
+      currency: order.currency,
+      from_status: order.status,
+      to_status: status,
+      total_cents: order.total_cents,
+    },
+    summary: note || null,
+    target_id: order.id,
+    target_type: "merch_order",
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/merch");
+  redirect(adminMerchMessage("Merch order updated.", returnTo));
 }
 
 export async function updateAccountDeletionRequest(formData: FormData) {

@@ -27,7 +27,7 @@ const sections = [
   },
   {
     body:
-      "Merch is planned but not live for checkout yet. Artist, studio, vendor, and official TheTattooCore merchandise will need seller approval, product safety review, shipping and refund rules, and payment-provider review before purchases are enabled.",
+      "Merch checkout is in test mode while seller approval, product safety review, shipping, fulfillment, refunds, tax, and payment-provider review are finished. Public production purchases should stay limited until those rules are ready.",
     title: "Merch Support",
   },
   {
