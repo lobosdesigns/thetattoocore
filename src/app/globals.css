@@ -4,9 +4,13 @@
   --background: #202020;
   --foreground: #171412;
   --accent: #c8953b;
+  --brand-gold: #c8953b;
   --card-rim: rgba(23, 20, 18, 0.14);
+  --gold: #c8953b;
   --grid-line: rgba(255, 255, 255, 0.025);
+  --ink: #171412;
   --paper: #f2f1ee;
+  --paper-soft: #ebe8df;
   --paper-warm: #fffdf9;
   color-scheme: light;
 }
@@ -15,9 +19,13 @@
   --background: #121110;
   --foreground: #f4efe7;
   --accent: #d8a33d;
+  --brand-gold: #d8a33d;
   --card-rim: rgba(216, 163, 61, 0.2);
+  --gold: #d8a33d;
   --grid-line: rgba(216, 163, 61, 0.035);
+  --ink: #0f0d0b;
   --paper: #201d1a;
+  --paper-soft: #181614;
   --paper-warm: #28231e;
   color-scheme: dark;
 }
@@ -26,9 +34,13 @@
   --background: #f2f1ee;
   --foreground: #171412;
   --accent: #c8953b;
+  --brand-gold: #c8953b;
   --card-rim: rgba(23, 20, 18, 0.14);
+  --gold: #c8953b;
   --grid-line: rgba(23, 20, 18, 0.035);
+  --ink: #171412;
   --paper: #f2f1ee;
+  --paper-soft: #ebe8df;
   --paper-warm: #fffdf9;
   color-scheme: light;
 }
@@ -180,6 +192,30 @@ textarea:focus-visible {
   gap: 0.25rem;
   min-height: 2rem;
   padding: 0.25rem 0.5rem;
+}
+
+.ttc-comment-controls details {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.ttc-comment-controls details[open] {
+  flex-basis: 100%;
+  width: 100%;
+}
+
+.ttc-comment-controls details[open] > form {
+  max-width: 100%;
+  min-width: 0;
+  width: 100%;
+}
+
+.ttc-comment-controls details[open] > form > * {
+  min-width: 0;
+}
+
+.ttc-comment-controls details[open] > form.flex {
+  flex-wrap: wrap;
 }
 
 .ttc-comment-controls button:hover,
