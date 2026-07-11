@@ -73,15 +73,15 @@ export function MediaLightbox({
       {isOpen ? (
         <div
           aria-modal="true"
-          className="fixed inset-0 z-50 flex flex-col bg-[color-mix(in_srgb,var(--foreground)_96%,#070605)] text-white"
+          className="fixed inset-0 z-50 flex flex-col bg-black text-white"
           role="dialog"
         >
-          <div className="flex items-center justify-between gap-3 border-b border-white/10 px-3 py-2">
+          <div className="flex items-center justify-between gap-3 border-b border-white/15 bg-black px-3 py-2 text-white">
             <div className="min-w-0">
-              <div className="text-xs font-bold uppercase tracking-[0.22em] text-white/70">
+              <div className="text-xs font-bold uppercase tracking-[0.22em] text-white">
                 Media viewer
               </div>
-              <p className="mt-0.5 truncate text-[11px] text-white/45">
+              <p className="mt-0.5 truncate text-[11px] text-white/75">
                 {mediaType === "image"
                   ? "Double tap or use zoom controls to inspect detail."
                   : "Focused playback opens here."}
@@ -92,7 +92,7 @@ export function MediaLightbox({
                 <>
                   <button
                     aria-label="Zoom out"
-                    className="flex size-10 items-center justify-center rounded-md border border-white/15 bg-white/10"
+                    className="flex size-10 items-center justify-center rounded-md border border-white/25 bg-white/10 text-white"
                     onClick={() => setZoom((value) => Math.max(1, value - 0.25))}
                     type="button"
                   >
@@ -100,7 +100,7 @@ export function MediaLightbox({
                   </button>
                   <button
                     aria-label="Reset zoom"
-                    className="flex h-10 min-w-14 items-center justify-center rounded-md border border-white/15 bg-white/10 px-2 text-xs font-bold tabular-nums"
+                    className="flex h-10 min-w-14 items-center justify-center rounded-md border border-white/25 bg-white/10 px-2 text-xs font-bold tabular-nums text-white"
                     onClick={() => setZoom(1)}
                     type="button"
                   >
@@ -108,7 +108,7 @@ export function MediaLightbox({
                   </button>
                   <button
                     aria-label="Zoom in"
-                    className="flex size-10 items-center justify-center rounded-md border border-white/15 bg-white/10"
+                    className="flex size-10 items-center justify-center rounded-md border border-white/25 bg-white/10 text-white"
                     onClick={() => setZoom((value) => Math.min(3, value + 0.25))}
                     type="button"
                   >
@@ -118,7 +118,7 @@ export function MediaLightbox({
               ) : null}
               <button
                 aria-label="Close media viewer"
-                className="flex size-10 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
+                className="flex size-10 items-center justify-center rounded-md border border-white/25 bg-white/10 text-white"
                 onClick={() => {
                   setIsOpen(false);
                   setZoom(1);
@@ -131,7 +131,7 @@ export function MediaLightbox({
           </div>
 
           <div
-            className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-3"
+            className="flex min-h-0 flex-1 items-center justify-center overflow-auto bg-black p-3"
             onClick={() => {
               setIsOpen(false);
               setZoom(1);
