@@ -18,9 +18,9 @@ export default async function ResetPasswordPage({
   const params = await searchParams;
 
   return (
-    <main className="min-h-screen bg-[#202020] px-4 py-10 text-[#171412]">
+    <main className="ttc-page min-h-screen px-4 py-10">
       <section className="mx-auto w-full max-w-md">
-        <Link className="mb-8 block text-sm font-semibold text-[#f2f1ee]" href="/">
+        <Link className="mb-8 block text-sm font-semibold text-[var(--paper-soft)]" href="/">
           TheTattooCore
         </Link>
 

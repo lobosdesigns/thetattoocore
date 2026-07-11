@@ -72,29 +72,29 @@ export function ResetPasswordForm({ initialMessage }: { initialMessage?: string 
   const isBusy = state === "checking" || state === "saving" || state === "done";
 
   return (
-    <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-5">
+    <div className="ttc-card rounded-lg p-5">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Create new password</h1>
-        <p className="mt-1 text-sm text-[#766d62]">
+        <p className="mt-1 text-sm text-[var(--muted-strong)]">
           Set the password you want to use for this account.
         </p>
       </div>
 
       {state === "checking" ? (
-        <p className="mb-4 rounded-md border border-[#cfc8bd] bg-[#e8e4dc] px-3 py-2 text-sm">
+        <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_88%,var(--brand-gold)_12%)] px-3 py-2 text-sm">
           Checking reset link...
         </p>
       ) : null}
 
       {message ? (
-        <p className="mb-4 rounded-md border border-[#cfc8bd] bg-[#e8e4dc] px-3 py-2 text-sm">
+        <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_88%,var(--brand-gold)_12%)] px-3 py-2 text-sm">
           {message}
         </p>
       ) : null}
 
       {state === "blocked" ? (
         <a
-          className="flex h-11 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+          className="flex h-11 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
           href="/forgot-password"
         >
           Request a new reset link
@@ -104,7 +104,7 @@ export function ResetPasswordForm({ initialMessage }: { initialMessage?: string 
           <label className="block">
             <span className="text-sm font-medium">New password</span>
             <input
-              className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
               disabled={isBusy}
               minLength={8}
               onChange={(event) => setPassword(event.target.value)}
@@ -117,7 +117,7 @@ export function ResetPasswordForm({ initialMessage }: { initialMessage?: string 
           <label className="block">
             <span className="text-sm font-medium">Confirm password</span>
             <input
-              className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
               disabled={isBusy}
               minLength={8}
               onChange={(event) => setConfirmPassword(event.target.value)}
@@ -128,7 +128,7 @@ export function ResetPasswordForm({ initialMessage }: { initialMessage?: string 
           </label>
 
           <button
-            className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white disabled:opacity-50"
+            className="h-11 w-full rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)] disabled:opacity-50"
             disabled={isBusy}
             onClick={savePassword}
             type="button"

@@ -31,14 +31,14 @@ export default async function LoginPage({
   const params = await searchParams;
 
   return (
-    <main className="min-h-screen bg-[#202020] px-4 py-10 text-[#171412]">
+    <main className="ttc-page min-h-screen px-4 py-10">
       <section className="mx-auto w-full max-w-5xl">
-        <Link className="mb-8 block text-sm font-semibold text-[#f2f1ee]" href="/">
+        <Link className="mb-8 block text-sm font-semibold text-[var(--paper-soft)]" href="/">
           TheTattooCore
         </Link>
 
         <div className="grid gap-4 lg:grid-cols-[1fr_26rem]">
-          <section className="rounded-lg border border-[#3a332d] bg-[#171412] p-5 text-white shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
+          <section className="rounded-lg border border-[color-mix(in_srgb,var(--brand-gold)_28%,transparent)] bg-[color-mix(in_srgb,var(--ink)_92%,black)] p-5 text-white shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/60">
               The heart of the tattoo community
             </p>
@@ -54,10 +54,10 @@ export default async function LoginPage({
             <div className="mt-5 grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
               {stanceItems.map(([title, body]) => (
                 <div
-                  className="rounded-md border border-[#c8953b]/35 bg-[#c8953b]/10 p-3"
+                  className="rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_35%,transparent)] bg-[color-mix(in_srgb,var(--brand-gold)_12%,transparent)] p-3"
                   key={title}
                 >
-                  <p className="text-sm font-bold text-[#f3c15f]">{title}</p>
+                  <p className="text-sm font-bold text-[var(--brand-gold)]">{title}</p>
                   <p className="mt-1 text-xs leading-5 text-white/70">{body}</p>
                 </div>
               ))}
@@ -69,7 +69,7 @@ export default async function LoginPage({
                   className="rounded-md border border-white/15 bg-white/5 p-3"
                   key={number}
                 >
-                  <span className="inline-flex size-7 items-center justify-center rounded-md bg-white text-sm font-bold text-[#171412]">
+                  <span className="inline-flex size-7 items-center justify-center rounded-md bg-white text-sm font-bold text-[var(--ink)]">
                     {number}
                   </span>
                   <h2 className="mt-3 text-sm font-bold">{title}</h2>
@@ -81,17 +81,17 @@ export default async function LoginPage({
             </div>
           </section>
 
-        <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-5">
+        <div className="ttc-card rounded-lg p-5">
           <div className="mb-6">
             <h2 className="text-2xl font-bold">Sign in or sign up</h2>
-            <p className="mt-1 text-sm text-[#766d62]">
+            <p className="mt-1 text-sm text-[var(--muted-strong)]">
               Use email and password. New accounts confirm email first, then
               land on profile setup.
             </p>
           </div>
 
           {params.message ? (
-            <p className="mb-4 rounded-md border border-[#cfc8bd] bg-[#e8e4dc] px-3 py-2 text-sm">
+            <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_88%,var(--brand-gold)_12%)] px-3 py-2 text-sm">
               {params.message}
             </p>
           ) : null}
@@ -101,7 +101,7 @@ export default async function LoginPage({
             <label className="block">
               <span className="text-sm font-medium">Email</span>
               <input
-                className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                 autoComplete="email"
                 name="email"
                 required
@@ -112,7 +112,7 @@ export default async function LoginPage({
             <label className="block">
               <span className="text-sm font-medium">Password</span>
               <input
-                className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                 autoComplete="current-password"
                 minLength={8}
                 name="password"
@@ -121,14 +121,14 @@ export default async function LoginPage({
               />
             </label>
 
-            <button className="h-11 w-full rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+            <button className="h-11 w-full rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
               Sign in
             </button>
           </form>
 
           <div className="relative py-1">
-            <div className="h-px bg-[#cfc8bd]" />
-            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#f2f1ee] px-3 text-xs font-semibold uppercase text-[#766d62]">
+            <div className="h-px bg-[var(--card-rim)]" />
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-[var(--paper-warm)] px-3 text-xs font-semibold uppercase text-[var(--muted-strong)]">
               New account
             </span>
           </div>
@@ -137,7 +137,7 @@ export default async function LoginPage({
             <label className="block">
               <span className="text-sm font-medium">Email</span>
               <input
-                className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                 autoComplete="email"
                 name="email"
                 required
@@ -148,7 +148,7 @@ export default async function LoginPage({
             <label className="block">
               <span className="text-sm font-medium">Password</span>
               <input
-                className="mt-2 h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                 autoComplete="new-password"
                 minLength={8}
                 name="password"
@@ -157,7 +157,7 @@ export default async function LoginPage({
               />
             </label>
 
-            <label className="flex items-start gap-3 rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 text-xs leading-5 text-[#4f473f]">
+            <label className="ttc-surface flex items-start gap-3 rounded-md border p-3 text-xs leading-5 text-[var(--muted)]">
               <input
                 className="mt-1 size-4"
                 name="age_confirmed"
@@ -170,41 +170,41 @@ export default async function LoginPage({
               </span>
             </label>
 
-            <button className="h-11 w-full rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold">
+            <button className="ttc-surface h-11 w-full rounded-md border px-4 text-sm font-semibold">
               Create account
             </button>
           </form>
 
           <form
             action="/auth/resend-confirmation"
-            className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3"
+            className="ttc-surface rounded-md border p-3"
             method="post"
           >
-            <p className="text-xs font-semibold uppercase text-[#766d62]">
+            <p className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
               No confirmation email?
             </p>
             <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
               <input
-                className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                 autoComplete="email"
                 name="email"
                 placeholder="email@example.com"
                 required
                 type="email"
               />
-              <button className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm font-semibold">
+              <button className="ttc-surface h-10 rounded-md border px-3 text-sm font-semibold">
                 Resend
               </button>
             </div>
           </form>
 
-            <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 text-xs leading-5 text-[#4f473f]">
+            <div className="ttc-surface rounded-md border p-3 text-xs leading-5 text-[var(--muted)]">
               Check inbox and junk after creating an account. After confirming
               your email, save your profile before posting, commenting, listing
               Stuff, adding Gigs, previewing Merch, or sending DMs.
             </div>
 
-            <p className="text-xs leading-5 text-[#766d62]">
+            <p className="text-xs leading-5 text-[var(--muted-strong)]">
               By signing up, you confirm you are 18 or older and agree to the{" "}
               <Link className="font-semibold underline" href="/terms">
                 Terms
@@ -217,13 +217,13 @@ export default async function LoginPage({
             </p>
 
             <Link
-              className="block text-center text-sm font-semibold text-[#766d62]"
+              className="block text-center text-sm font-semibold text-[var(--muted-strong)]"
               href="/forgot-password"
             >
               Forgot password?
             </Link>
             <Link
-              className="block text-center text-sm font-semibold text-[#766d62]"
+              className="block text-center text-sm font-semibold text-[var(--muted-strong)]"
               href="/support"
             >
               Support and account help
