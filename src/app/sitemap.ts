@@ -17,6 +17,11 @@ type PublicGig = {
   updated_at: string | null;
 };
 
+type PublicMerch = {
+  id: string;
+  updated_at: string | null;
+};
+
 type PublicPost = {
   id: string;
   updated_at: string | null;
@@ -111,6 +116,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .order("updated_at", { ascending: false })
     .limit(500)
     .returns<PublicGig[]>();
+  const { data: merch } = await supabase
+    .from("merch_products")
+    .select("id, updated_at")
+    .eq("status", "active")
+    .order("updated_at", { ascending: false })
+    .limit(500)
+    .returns<PublicMerch[]>();
 
   return [
     ...routes,
@@ -145,6 +157,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: gig.updated_at ? new Date(gig.updated_at) : now,
       priority: 0.6,
       url: `${siteUrl}/gigs/${gig.id}`,
+    })),
+    ...(merch ?? []).map((product) => ({
+      changeFrequency: "weekly" as const,
+      lastModified: product.updated_at ? new Date(product.updated_at) : now,
+      priority: 0.6,
+      url: `${siteUrl}/merch/${product.id}`,
     })),
   ];
 }

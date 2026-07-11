@@ -1,0 +1,153 @@
+import { NextResponse } from "next/server";
+import Stripe from "stripe";
+import { createStripeClient } from "@/lib/stripe/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+
+export const runtime = "nodejs";
+
+function stripeResponse(message: string, status = 200) {
+  return NextResponse.json({ message }, { status });
+}
+
+async function markCheckoutSession({
+  session,
+  status,
+}: {
+  session: Stripe.Checkout.Session;
+  status: "cancelled" | "paid" | "payment_failed";
+}) {
+  const supabase = createAdminClient();
+
+  if (!supabase) {
+    throw new Error("Missing Supabase service role key for Stripe webhook.");
+  }
+
+  const now = new Date().toISOString();
+  const shippingDetails = (
+    session as Stripe.Checkout.Session & {
+      shipping_details?: {
+        address?: Stripe.Address | null;
+        name?: string | null;
+      } | null;
+    }
+  ).shipping_details;
+  const updateValues = {
+    customer_email: session.customer_details?.email ?? session.customer_email ?? null,
+    shipping_address: shippingDetails
+      ? {
+          address: shippingDetails.address,
+          name: shippingDetails.name,
+        }
+      : {},
+    shipping_name: shippingDetails?.name ?? null,
+    status,
+    stripe_payment_intent_id:
+      typeof session.payment_intent === "string" ? session.payment_intent : null,
+    subtotal_cents: session.amount_subtotal ?? 0,
+    tax_cents: session.total_details?.amount_tax ?? 0,
+    shipping_cents: session.total_details?.amount_shipping ?? 0,
+    discount_cents: session.total_details?.amount_discount ?? 0,
+    total_cents: session.amount_total ?? 0,
+    updated_at: now,
+    ...(status === "cancelled" ? { cancelled_at: now } : {}),
+  };
+
+  const { error } = await supabase
+    .from("merch_orders")
+    .update(updateValues)
+    .eq("stripe_checkout_session_id", session.id);
+
+  if (error) {
+    throw new Error(error.message || "Could not update merch order.");
+  }
+}
+
+async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
+  const supabase = createAdminClient();
+
+  if (!supabase) {
+    throw new Error("Missing Supabase service role key for Stripe webhook.");
+  }
+
+  const { error } = await supabase
+    .from("merch_orders")
+    .update({
+      refunded_at: new Date().toISOString(),
+      status: fullyRefunded ? "refunded" : "partially_refunded",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("stripe_payment_intent_id", paymentIntentId);
+
+  if (error) {
+    throw new Error(error.message || "Could not update merch refund status.");
+  }
+}
+
+export async function POST(request: Request) {
+  const stripe = createStripeClient();
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!stripe || !webhookSecret) {
+    return stripeResponse("Stripe webhook is not configured.", 500);
+  }
+
+  const signature = request.headers.get("stripe-signature");
+
+  if (!signature) {
+    return stripeResponse("Missing Stripe signature.", 400);
+  }
+
+  const body = await request.text();
+  let event: Stripe.Event;
+
+  try {
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Invalid webhook.";
+
+    return stripeResponse(message, 400);
+  }
+
+  try {
+    if (
+      event.type === "checkout.session.completed" ||
+      event.type === "checkout.session.async_payment_succeeded"
+    ) {
+      await markCheckoutSession({
+        session: event.data.object as Stripe.Checkout.Session,
+        status: "paid",
+      });
+    }
+
+    if (event.type === "checkout.session.async_payment_failed") {
+      await markCheckoutSession({
+        session: event.data.object as Stripe.Checkout.Session,
+        status: "payment_failed",
+      });
+    }
+
+    if (event.type === "checkout.session.expired") {
+      await markCheckoutSession({
+        session: event.data.object as Stripe.Checkout.Session,
+        status: "cancelled",
+      });
+    }
+
+    if (event.type === "charge.refunded") {
+      const charge = event.data.object as Stripe.Charge;
+      const paymentIntentId =
+        typeof charge.payment_intent === "string" ? charge.payment_intent : null;
+
+      if (paymentIntentId) {
+        await markRefunded(paymentIntentId, charge.amount_refunded >= charge.amount);
+      }
+    }
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Could not process Stripe webhook.";
+
+    return stripeResponse(message, 500);
+  }
+
+  return stripeResponse("ok");
+}

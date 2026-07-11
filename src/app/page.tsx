@@ -112,6 +112,21 @@ type MarketplaceListing = {
   profiles: Profile | null;
 };
 
+type MerchProduct = {
+  category: string;
+  created_at: string;
+  currency: string;
+  description: string | null;
+  id: string;
+  inventory_quantity: number;
+  inventory_reserved: number;
+  is_official: boolean;
+  merch_product_media: ListingMedia[];
+  price_cents: number;
+  profiles: Profile | null;
+  title: string;
+};
+
 type Gig = {
   id: string;
   title: string;
@@ -1109,6 +1124,7 @@ export default async function Home({
     feedPage?: string;
     gigsPage?: string;
     gossipPage?: string;
+    merchPage?: string;
     message?: string;
     stuffPage?: string;
   }>;
@@ -1120,9 +1136,10 @@ export default async function Home({
   const feedLimit = pageParam(params.feedPage) * pageSize;
   const gossipLimit = pageParam(params.gossipPage) * pageSize;
   const stuffLimit = pageParam(params.stuffPage) * pageSize;
+  const merchLimit = pageParam(params.merchPage) * pageSize;
   const gigsLimit = pageParam(params.gigsPage) * pageSize;
   const loadMoreHref = (
-    key: "feedPage" | "gigsPage" | "gossipPage" | "stuffPage",
+    key: "feedPage" | "gigsPage" | "gossipPage" | "merchPage" | "stuffPage",
     currentLimit: number,
     hash: string,
   ) => {
@@ -1141,6 +1158,9 @@ export default async function Home({
     }
     if (params.gigsPage && key !== "gigsPage") {
       nextParams.set("gigsPage", params.gigsPage);
+    }
+    if (params.merchPage && key !== "merchPage") {
+      nextParams.set("merchPage", params.merchPage);
     }
     nextParams.set(key, String(nextPage));
 
@@ -1169,6 +1189,7 @@ export default async function Home({
     { data: threadPosts },
     { data: listings },
     { data: gigs },
+    { data: merchProducts },
     { count: unreadDmCount },
     { data: savedItems },
     fourUAd,
@@ -1230,6 +1251,19 @@ export default async function Home({
       })
       .limit(gigsLimit)
       .returns<Gig[]>(),
+    supabase
+      .from("merch_products")
+      .select(
+        "id, title, description, category, price_cents, currency, inventory_quantity, inventory_reserved, is_official, created_at, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+      )
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .order("sort_order", {
+        ascending: true,
+        referencedTable: "merch_product_media",
+      })
+      .limit(merchLimit)
+      .returns<MerchProduct[]>(),
     claims?.sub
       ? supabase
           .from("notifications")
@@ -1274,6 +1308,7 @@ export default async function Home({
     canRenderContent(listing, viewer),
   );
   const visibleGigs = (gigs ?? []).filter((gig) => canRenderContent(gig, viewer));
+  const visibleMerchProducts = merchProducts ?? [];
   const lockedPublicItemCount = [
     ...(feedPosts ?? []),
     ...(threadPosts ?? []),
@@ -2165,14 +2200,94 @@ export default async function Home({
               <Package className="size-5" />
               <h2 className="text-lg font-bold">Merch</h2>
             </div>
-            <EmptyColumnState
-              actionHref={isSignedIn ? undefined : "/login"}
-              actionLabel={isSignedIn ? "Tap + to preview plan" : "Sign in"}
-              body="Artist shirts, prints, art, stickers, vendor brand goods, and official TheTattooCore merchandise will live here. Merch will be public-buyable and separate from verified-only Stuff."
-              icon={Package}
-              tips={["T-shirts", "Prints", "TTC merch"]}
-              title="Merch is planned"
-            />
+            <div className="grid gap-3 sm:grid-cols-2">
+              {visibleMerchProducts.length ? (
+                visibleMerchProducts.map((product) => {
+                  const available =
+                    product.inventory_quantity - product.inventory_reserved;
+
+                  return (
+                    <article
+                      className="ttc-card scroll-mt-28 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-4"
+                      id={`merch-${product.id}`}
+                      key={product.id}
+                    >
+                      <div className="mb-3 flex items-center gap-3">
+                        <ListingThumb media={product.merch_product_media[0]} />
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold">
+                            <Link
+                              className="hover:underline"
+                              href={`/merch/${product.id}`}
+                            >
+                              {product.title}
+                            </Link>
+                          </p>
+                          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                            <p className="text-xs capitalize text-[var(--muted-strong)]">
+                              {product.category.replaceAll("_", " ")}
+                            </p>
+                            {product.is_official ? (
+                              <span className="rounded-md bg-[var(--foreground)] px-2 py-1 text-xs font-semibold text-[var(--background)]">
+                                Official TTC
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                      <p className="mb-2 text-lg font-bold">
+                        {new Intl.NumberFormat("en-US", {
+                          currency: product.currency,
+                          style: "currency",
+                        }).format(product.price_cents / 100)}
+                      </p>
+                      <p className="line-clamp-3 text-sm leading-6 text-[var(--muted)]">
+                        {product.description || "No description yet."}
+                      </p>
+                      <p className="mt-3 text-xs text-[var(--muted-strong)]">
+                        {available > 0
+                          ? `${Intl.NumberFormat("en-US").format(available)} available`
+                          : "Sold out"}
+                      </p>
+                      <div className="mt-2">
+                        <VerifiedBadge profile={product.profiles} />
+                      </div>
+                      <div className="mt-4 grid gap-2">
+                        <Link
+                          className="flex h-10 w-full items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
+                          href={`/merch/${product.id}`}
+                        >
+                          Open merch
+                        </Link>
+                        <CompactShareButton
+                          className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
+                          text={`Check this Merch on ${siteName}: ${product.title}`}
+                          title={product.title}
+                          url={`${siteUrl}/merch/${product.id}`}
+                        />
+                      </div>
+                    </article>
+                  );
+                })
+              ) : (
+                <div className="sm:col-span-2">
+                  <EmptyColumnState
+                    actionHref={isSignedIn ? undefined : "/login"}
+                    actionLabel={isSignedIn ? "Merch coming soon" : "Sign in"}
+                    body="Artist shirts, prints, art, stickers, vendor brand goods, and official TheTattooCore merchandise will live here. Merch is public-buyable and separate from verified-only Stuff."
+                    icon={Package}
+                    tips={["T-shirts", "Prints", "TTC merch"]}
+                    title="No Merch yet"
+                  />
+                </div>
+              )}
+            </div>
+            {(merchProducts?.length ?? 0) >= merchLimit ? (
+              <LoadMoreLink
+                href={loadMoreHref("merchPage", merchLimit, "merch")}
+                label="Load 25 more Merch products"
+              />
+            ) : null}
             <div className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 text-sm leading-6 text-[var(--muted)]">
               <p className="font-semibold text-[var(--foreground)]">
                 Why Merch is separate from Stuff
