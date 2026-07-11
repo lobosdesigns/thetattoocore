@@ -1122,13 +1122,14 @@ export async function updateAdCampaignStatus(formData: FormData) {
   const { supabase, userId } = await requireModerator();
   const { data: campaign, error: campaignError } = await supabase
     .from("ad_campaigns")
-    .select("id, advertiser_id, status, campaign_type, goal")
+    .select("id, advertiser_id, status, payment_status, campaign_type, goal")
     .eq("id", campaignId)
     .maybeSingle<{
       advertiser_id: string;
       campaign_type: string;
       goal: string;
       id: string;
+      payment_status: string;
       status: string;
     }>();
 
@@ -1136,6 +1137,19 @@ export async function updateAdCampaignStatus(formData: FormData) {
     redirect(
       adminAdsMessage(
         campaignError?.message || "Ad campaign was not found.",
+        returnTo,
+      ),
+    );
+  }
+
+  if (
+    status === "active" &&
+    campaign.payment_status !== "paid" &&
+    campaign.payment_status !== "waived"
+  ) {
+    redirect(
+      adminAdsMessage(
+        "Paid or waived ad payment is required before activation.",
         returnTo,
       ),
     );

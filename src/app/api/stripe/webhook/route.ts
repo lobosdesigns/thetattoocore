@@ -113,6 +113,49 @@ async function markCheckoutSession({
   }
 }
 
+async function markAdCheckoutSession({
+  session,
+  status,
+}: {
+  session: Stripe.Checkout.Session;
+  status: "paid" | "payment_failed";
+}) {
+  const supabase = createAdminClient();
+
+  if (!supabase) {
+    throw new Error("Missing Supabase service role key for Stripe webhook.");
+  }
+
+  const campaignId = session.metadata?.ad_campaign_id;
+  if (!campaignId) {
+    throw new Error("Missing ad campaign id on Stripe session.");
+  }
+
+  const now = new Date().toISOString();
+  const platformFeeCents = metadataCents(session.metadata?.platform_fee_cents, 0);
+  const prepaidAmountCents = metadataCents(
+    session.metadata?.prepaid_amount_cents,
+    Math.max(0, (session.amount_total ?? 0) - platformFeeCents),
+  );
+  const { error } = await supabase
+    .from("ad_campaigns")
+    .update({
+      paid_at: status === "paid" ? now : null,
+      payment_status: status,
+      platform_fee_cents: platformFeeCents,
+      prepaid_amount_cents: prepaidAmountCents,
+      stripe_payment_intent_id:
+        typeof session.payment_intent === "string" ? session.payment_intent : null,
+      updated_at: now,
+    })
+    .eq("id", campaignId)
+    .eq("stripe_checkout_session_id", session.id);
+
+  if (error) {
+    throw new Error(error.message || "Could not update ad payment status.");
+  }
+}
+
 async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
   const supabase = createAdminClient();
 
@@ -170,24 +213,42 @@ export async function POST(request: Request) {
       event.type === "checkout.session.completed" ||
       event.type === "checkout.session.async_payment_succeeded"
     ) {
-      await markCheckoutSession({
-        session: event.data.object as Stripe.Checkout.Session,
-        status: "paid",
-      });
+      const session = event.data.object as Stripe.Checkout.Session;
+
+      if (session.metadata?.payment_kind === "ad_campaign") {
+        await markAdCheckoutSession({ session, status: "paid" });
+      } else {
+        await markCheckoutSession({
+          session,
+          status: "paid",
+        });
+      }
     }
 
     if (event.type === "checkout.session.async_payment_failed") {
-      await markCheckoutSession({
-        session: event.data.object as Stripe.Checkout.Session,
-        status: "payment_failed",
-      });
+      const session = event.data.object as Stripe.Checkout.Session;
+
+      if (session.metadata?.payment_kind === "ad_campaign") {
+        await markAdCheckoutSession({ session, status: "payment_failed" });
+      } else {
+        await markCheckoutSession({
+          session,
+          status: "payment_failed",
+        });
+      }
     }
 
     if (event.type === "checkout.session.expired") {
-      await markCheckoutSession({
-        session: event.data.object as Stripe.Checkout.Session,
-        status: "cancelled",
-      });
+      const session = event.data.object as Stripe.Checkout.Session;
+
+      if (session.metadata?.payment_kind === "ad_campaign") {
+        await markAdCheckoutSession({ session, status: "payment_failed" });
+      } else {
+        await markCheckoutSession({
+          session,
+          status: "cancelled",
+        });
+      }
     }
 
     if (event.type === "charge.refunded") {

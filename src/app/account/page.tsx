@@ -938,6 +938,19 @@ export default async function AccountPage({
                         </div>
                       ))}
                     </div>
+                    {campaign.payment_status !== "paid" &&
+                    campaign.daily_budget_cents > 0 ? (
+                      <form action="/api/ads/checkout" className="mt-3" method="post">
+                        <input
+                          name="campaign_id"
+                          type="hidden"
+                          value={campaign.id}
+                        />
+                        <button className="h-10 w-full rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
+                          Pay {dollars(campaign.daily_budget_cents)} ad budget
+                        </button>
+                      </form>
+                    ) : null}
                   </article>
                 );
               })}
