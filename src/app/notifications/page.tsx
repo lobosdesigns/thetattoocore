@@ -14,6 +14,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { PwaInstallButton } from "@/app/pwa-install-button";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import {
   markAllNotificationsRead,
@@ -246,6 +247,9 @@ export default async function NotificationsPage({
                     {profile?.notify_push_enabled ? "Saved" : "Off"}
                   </span>
                 </p>
+              </div>
+              <div className="mt-3 max-w-xs">
+                <PwaInstallButton />
               </div>
             </div>
           </div>
