@@ -6,9 +6,12 @@
   --accent: #c8953b;
   --brand-gold: #c8953b;
   --card-rim: rgba(23, 20, 18, 0.14);
+  --danger: #b42318;
   --gold: #c8953b;
   --grid-line: rgba(255, 255, 255, 0.025);
   --ink: #171412;
+  --muted: rgba(23, 20, 18, 0.72);
+  --muted-strong: rgba(23, 20, 18, 0.58);
   --paper: #f2f1ee;
   --paper-soft: #ebe8df;
   --paper-warm: #fffdf9;
@@ -21,9 +24,12 @@
   --accent: #d8a33d;
   --brand-gold: #d8a33d;
   --card-rim: rgba(216, 163, 61, 0.2);
+  --danger: #ff7a6e;
   --gold: #d8a33d;
   --grid-line: rgba(216, 163, 61, 0.035);
   --ink: #0f0d0b;
+  --muted: rgba(244, 239, 231, 0.74);
+  --muted-strong: rgba(244, 239, 231, 0.58);
   --paper: #201d1a;
   --paper-soft: #181614;
   --paper-warm: #28231e;
@@ -36,9 +42,12 @@
   --accent: #c8953b;
   --brand-gold: #c8953b;
   --card-rim: rgba(23, 20, 18, 0.14);
+  --danger: #b42318;
   --gold: #c8953b;
   --grid-line: rgba(23, 20, 18, 0.035);
   --ink: #171412;
+  --muted: rgba(23, 20, 18, 0.72);
+  --muted-strong: rgba(23, 20, 18, 0.58);
   --paper: #f2f1ee;
   --paper-soft: #ebe8df;
   --paper-warm: #fffdf9;
