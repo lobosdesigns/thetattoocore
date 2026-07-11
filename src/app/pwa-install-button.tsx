@@ -42,7 +42,7 @@ export function PwaInstallButton() {
 
   if (!canInstall) {
     return (
-      <p className="text-xs leading-5 text-[#766d62]">
+      <p className="text-xs leading-5 text-[var(--muted-strong)]">
         Install becomes available when this browser supports it and the app is
         not already installed.
       </p>
@@ -52,7 +52,7 @@ export function PwaInstallButton() {
   return (
     <div className="space-y-2">
       <button
-        className="h-10 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+        className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
         onClick={async () => {
           const installPrompt = window.ttcBeforeInstallPrompt;
           if (!installPrompt) return;
@@ -71,7 +71,7 @@ export function PwaInstallButton() {
       >
         Install app
       </button>
-      {message ? <p className="text-xs text-[#766d62]">{message}</p> : null}
+      {message ? <p className="text-xs text-[var(--muted-strong)]">{message}</p> : null}
     </div>
   );
 }

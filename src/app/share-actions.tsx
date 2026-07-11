@@ -30,11 +30,11 @@ export function ShareActions({
   }
 
   return (
-    <div className="rounded-md border border-[#d8d1c6] bg-white p-4">
-      <p className="text-xs font-semibold uppercase text-[#766d62]">Share</p>
+    <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+      <p className="text-xs font-semibold uppercase text-[var(--muted-strong)]">Share</p>
       <div className="mt-3 grid grid-cols-2 gap-2">
         <button
-          className="flex h-10 items-center justify-center gap-2 rounded-md bg-[#171412] px-3 text-sm font-semibold text-white"
+          className="flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-[var(--background)]"
           onClick={share}
           type="button"
         >
@@ -42,7 +42,7 @@ export function ShareActions({
           Share
         </button>
         <button
-          className="flex h-10 items-center justify-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold"
+          className="flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm font-semibold"
           onClick={copy}
           type="button"
         >
@@ -50,7 +50,7 @@ export function ShareActions({
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
-      <p className="mt-3 truncate rounded-md bg-[#f7f4ef] px-2 py-2 text-xs text-[#766d62]">
+      <p className="mt-3 truncate rounded-md bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-2 py-2 text-xs text-[var(--muted-strong)]">
         {url}
       </p>
     </div>

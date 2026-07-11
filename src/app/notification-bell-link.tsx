@@ -38,12 +38,12 @@ export async function NotificationBellLink({
   return (
     <Link
       aria-label={label}
-      className={`relative flex size-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white ${className}`}
+      className={`relative flex size-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] ${className}`}
       href={recipientId ? "/notifications" : "/login"}
     >
       <Bell className="size-5" />
       {unreadCount ? (
-        <span className="absolute -right-1 -top-1 flex min-w-5 items-center justify-center rounded-full bg-[#171412] px-1 text-[10px] font-bold text-white">
+        <span className="absolute -right-1 -top-1 flex min-w-5 items-center justify-center rounded-full bg-[var(--foreground)] px-1 text-[10px] font-bold text-[var(--background)]">
           {unreadCount > 9 ? "9+" : unreadCount}
         </span>
       ) : null}
