@@ -24,7 +24,7 @@ type SelectedMedia = {
 };
 
 const inputClass =
-  "block w-full rounded-md border border-[#cfc8bd] bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[#e8e4dc] file:px-3 file:py-1.5 file:text-sm file:font-semibold";
+  "block w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-[color-mix(in_srgb,var(--brand-gold)_18%,var(--paper-warm))] file:px-3 file:py-1.5 file:text-sm file:font-semibold";
 const maxImageEdge = 2200;
 const compressionPasses = [
   { edge: 2200, quality: 0.86 },
@@ -267,7 +267,7 @@ export function MediaInput({
         required={required}
         type="file"
       />
-      <p className="text-xs leading-5 text-[#766d62]">
+      <p className="text-xs leading-5 text-[var(--muted-strong)]">
         {compact
           ? videoAllowed
             ? `Optional media. Images optimize before upload; videos max ${formatSeconds(
@@ -277,13 +277,13 @@ export function MediaInput({
           : guidance}
       </p>
       {videoAllowed && !compact ? (
-        <p className="rounded-md border border-[#e5ded4] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
+        <p className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
           {videoPipelineLabel} Use short MP4/MOV clips for now; adaptive
           playback and thumbnails come with the managed video pipeline later.
         </p>
       ) : null}
       {isOptimizing && !selected ? (
-        <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 text-xs font-semibold text-[#766d62]">
+        <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3 text-xs font-semibold text-[var(--muted-strong)]">
           Optimizing image before upload...
         </div>
       ) : null}
@@ -292,11 +292,11 @@ export function MediaInput({
           className={`rounded-md border p-3 ${
             selected.error
               ? "border-red-300 bg-red-50 text-red-800"
-              : "border-[#cfc8bd] bg-[#fffdf9] text-[#171412]"
+              : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] text-[var(--foreground)]"
           }`}
         >
           <div className="flex gap-3">
-            <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#171412] text-white">
+            <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[var(--foreground)] text-[var(--background)]">
               {selected.previewUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -317,19 +317,19 @@ export function MediaInput({
                 {selected.file.type ? ` / ${selected.file.type}` : ""}
               </p>
               {selected.videoDurationSeconds != null ? (
-                <p className="mt-1 text-xs text-[#766d62]">
+                <p className="mt-1 text-xs text-[var(--muted-strong)]">
                   Duration {formatSeconds(selected.videoDurationSeconds)} / max{" "}
                   {formatSeconds(maxVideoSeconds)}
                 </p>
               ) : null}
               {selected.originalFileSize ? (
-                <p className="mt-1 text-xs text-[#766d62]">
+                <p className="mt-1 text-xs text-[var(--muted-strong)]">
                   Optimized from {formatBytes(selected.originalFileSize)}
                   {savedPercent ? `, about ${savedPercent}% smaller` : ""}.
                 </p>
               ) : null}
               {isVideo && !selected.error ? (
-                <p className="mt-1 text-xs text-[#766d62]">
+                <p className="mt-1 text-xs text-[var(--muted-strong)]">
                   Video will upload as-is for now. Keep it short, clear, and
                   under the cap.
                 </p>
@@ -337,11 +337,11 @@ export function MediaInput({
               {selected.error ? (
                 <p className="mt-2 text-xs font-semibold">{selected.error}</p>
               ) : isOptimizing ? (
-                <p className="mt-2 text-xs text-[#766d62]">
+                <p className="mt-2 text-xs text-[var(--muted-strong)]">
                   Optimizing image before upload...
                 </p>
               ) : (
-                <p className="mt-2 text-xs text-[#766d62]">
+                <p className="mt-2 text-xs text-[var(--muted-strong)]">
                   Ready to attach. Final checks run again when you publish.
                 </p>
               )}
