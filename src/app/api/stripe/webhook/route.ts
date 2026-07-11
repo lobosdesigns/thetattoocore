@@ -202,18 +202,28 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
   }
 
   const now = new Date().toISOString();
-  const { error } = await supabase
+  const { data: refundedOrders, error } = await supabase
     .from("merch_orders")
     .update({
       refunded_at: now,
       status: fullyRefunded ? "refunded" : "partially_refunded",
       updated_at: now,
     })
-    .eq("stripe_payment_intent_id", paymentIntentId);
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .select("id")
+    .returns<PaidOrderTransition[]>();
 
   if (error) {
     throw new Error(error.message || "Could not update merch refund status.");
   }
+
+  await revalidateMerchOrderProducts(
+    supabase,
+    (refundedOrders ?? []).map((order) => order.id),
+  );
+  revalidatePath("/account");
+  revalidatePath("/admin");
+  revalidatePath("/admin/merch");
 
   if (!fullyRefunded) return;
 
