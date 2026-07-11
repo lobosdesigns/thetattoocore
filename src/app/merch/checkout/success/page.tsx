@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     follow: false,
     index: false,
   },
-  title: "Merch checkout complete",
+  title: "Merch checkout status",
 };
 
 function money(cents: number, currency: string) {
@@ -26,6 +26,38 @@ function money(cents: number, currency: string) {
     currency,
     style: "currency",
   }).format(cents / 100);
+}
+
+function statusCopy(status?: string) {
+  if (status === "paid" || status === "fulfilled") {
+    return {
+      heading: "Payment confirmed",
+      message:
+        "Stripe confirmed the payment. You can track fulfillment from your account orders.",
+    };
+  }
+
+  if (status === "payment_failed" || status === "cancelled") {
+    return {
+      heading: "Checkout was not completed",
+      message:
+        "Stripe did not confirm this payment. No fulfillment should start for this order.",
+    };
+  }
+
+  if (status === "refunded" || status === "partially_refunded") {
+    return {
+      heading: "Refund status updated",
+      message:
+        "Stripe reported a refund update. Check your account orders for the latest status.",
+    };
+  }
+
+  return {
+    heading: "Checkout received",
+    message:
+      "Stripe is processing the payment result. The order status updates after the webhook confirms it.",
+  };
 }
 
 export default async function MerchCheckoutSuccessPage({
@@ -42,16 +74,16 @@ export default async function MerchCheckoutSuccessPage({
         .eq("stripe_checkout_session_id", sessionId)
         .maybeSingle<Order>()
     : { data: null };
+  const copy = statusCopy(order?.status);
 
   return (
     <main className="ttc-page min-h-screen">
       <section className="ttc-page-panel mx-auto flex min-h-screen w-full max-w-xl items-center px-4 py-10">
         <div className="ttc-card w-full rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-6 text-center">
           <CheckCircle2 className="mx-auto size-12 text-[var(--gold)]" />
-          <h1 className="mt-4 text-2xl font-bold">Checkout received</h1>
+          <h1 className="mt-4 text-2xl font-bold">{copy.heading}</h1>
           <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-            Stripe is processing the payment result. The order status updates
-            after the webhook confirms it.
+            {copy.message}
           </p>
           {order ? (
             <div className="mt-5 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-4 text-left text-sm">
