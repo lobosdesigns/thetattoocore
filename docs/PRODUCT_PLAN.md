@@ -18,7 +18,7 @@
 - Admin queues should get per-tab Load more controls after the simple 25-item caps are stable, so verification, reports, users, ads, data requests, media review, and activity logs can scale without returning to one giant admin page. Dedicated admin queue pages now use 50-item page navigation where real queues exist.
 - Admin sections must become dedicated pages as volume grows, especially Users, Ads, Stuff, Merch, Reports, Verification, Data Requests, Content, Gigs, Media Ops, and Mail Settings. Each long admin list should use real pagination instead of an endless dashboard section; Users, Ads, Data Requests, Verification, Reports, Content, Stuff, Gigs, Mail Settings, Media Ops, and a Merch planning page have started with dedicated page layers.
 - Admin `/admin` must stay an overview-only command center: high-level counts, health/status cards, and links into dedicated admin pages. It should not contain full user, report, verification, ad, Stuff, Merch, Gig, content, mail, or data-request queues because those pages will get long over time. Done for launch with short overview cards, recent activity, and dedicated queue links.
-- Search and Saved should mention Merch as limited/checkout-in-testing until products, seller approval, tax, shipping, refunds, fulfillment, payouts, and payment-provider rules are production-ready.
+- Search and Saved should mention Merch as limited/checkout-in-testing until products, seller approval, tax, shipping, refunds, fulfillment, payouts, and payment-provider rules are production-ready. Search now includes active, indexable public Merch previews.
 - Mobile composer: posting cards must fit mobile browser screens, scroll to the publish button, and keep advanced fields behind expandable sections. Done for launch.
 - Composer uploads should not show a sensitive-content option during launch; visible nudity is not allowed, so members must crop or cover private areas before posting.
 - Profiles need avatar/profile-photo upload with client-side image optimization, public display on profile pages, and rollout into feeds, comments, DMs, search, notifications, and detail pages. Done for launch, including 4U/Gossip detail comments.
@@ -56,7 +56,7 @@
 - Stuff UI copy should explicitly call out tattoo machines, needles, pigments, tubes, and professional shop gear as verified-only activity so fans understand browse-only access. Done for launch.
 - Merch rules should allow public fan purchases of safe brand goods while still requiring seller approval for artists, studios, vendors, and official TheTattooCore store inventory.
 - Merch must stay separate from professional equipment, regulated services, unsafe products, counterfeit goods, adult sexual products, and anything that would undermine app-store or payment-provider safety.
-- Merch payments use Stripe Checkout and webhook-backed order status in test mode. Next payment work is production seller approval, Stripe Connect or manual payout policy, refund handling, tax, receipts, fulfillment, and payment-provider review.
+- Merch payments use Stripe Checkout and webhook-backed order status in test mode. Test checkout, paid webhooks, inventory decrement, buyer order history, and basic admin order controls are wired. Next payment work is production seller approval, Stripe Connect or manual payout policy, refund handling, tax, receipts, fulfillment workflow, and payment-provider review.
 - Support freedom of body-art expression and avoid unnecessary censorship when content follows safety, consent, legality, and adult-content guidelines.
 - Draw firm safety lines around pornography, sexualized content, exploitation, minors, harassment, scams, unsafe practices, and content showing unprofessional or potentially deadly harm.
 - Position the community as a safe space for body-art culture to express itself without unwanted AI, spam, or unprofessional practice watering it down.
@@ -185,7 +185,7 @@
 ## Later Columns
 
 - Merch: artist, studio, vendor, and TheTattooCore merchandise for public fan purchases, including T-shirts, prints, art, stickers, and other safe brand goods.
-- Merch build order: product catalog and seller eligibility first, Stripe checkout/webhooks second, order/admin/refund/fulfillment handling third, then public production purchase rules after policy and payment-provider review. Stripe test checkout, paid webhooks, and inventory decrement are now working.
+- Merch build order: product catalog and seller eligibility first, Stripe checkout/webhooks second, order/admin/refund/fulfillment handling third, then public production purchase rules after policy and payment-provider review. Stripe test checkout, paid webhooks, inventory decrement, buyer order history, search previews, and basic admin order controls are now working.
 - Gigs: jobs, conventions, guest spots, shop openings, apprenticeships, and event opportunities for artists and studios.
 - Contests: artist contests, flash challenges, sponsor prizes, and voting.
 - Streams: live tattoo sessions, shop walkthroughs, Q&A, and moderated chat.
