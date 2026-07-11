@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import {
   ArrowLeft,
   ImagePlus,
@@ -133,22 +134,7 @@ export default async function MessagesPage({
   const claims = claimsData?.claims as Claims | undefined;
 
   if (!claims?.sub) {
-    return (
-      <main className="ttc-page min-h-screen px-4 py-8">
-        <section className="ttc-card ttc-surface mx-auto max-w-xl rounded-md border p-5">
-          <h1 className="text-xl font-bold">DM</h1>
-          <p className="mt-2 text-sm text-[var(--muted-strong)]">
-            Sign in to start conversations with artists, studios, and collectors.
-          </p>
-          <Link
-            className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-            href="/login"
-          >
-            Sign in
-          </Link>
-        </section>
-      </main>
-    );
+    redirect("/login");
   }
 
   const { data: currentProfile } = await supabase

@@ -2,6 +2,11 @@ const baseUrl = (process.env.SMOKE_BASE_URL || "https://thetattoocore.com").repl
 
 const checks = [
   { path: "/", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  { path: "/account", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  { path: "/admin", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  { path: "/messages", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  { path: "/notifications", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  { path: "/saved", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/login", status: [200], includes: ["Sign in or sign up", "TheTattooCore"] },
   { path: "/forgot-password", status: [200], includes: ["Reset password", "Send reset link"] },
   { path: "/reset-password", status: [200], includes: ["Create new password"] },
