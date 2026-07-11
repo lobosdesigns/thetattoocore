@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, TouchEvent, useRef } from "react";
+import { ReactNode, TouchEvent, useEffect, useRef } from "react";
 import { languageStatusDismissEvent } from "./language-status-banner";
 
 const columnIds = [
@@ -16,6 +16,12 @@ function clampColumn(index: number) {
   return Math.max(0, Math.min(columnIds.length - 1, index));
 }
 
+function indexFromHash(hash: string) {
+  const index = columnIds.findIndex((id) => hash === `#${id}`);
+
+  return clampColumn(index < 0 ? 0 : index);
+}
+
 function updateHash(index: number) {
   const id = columnIds[index];
   if (!id || window.location.hash === `#${id}`) return;
@@ -28,23 +34,45 @@ function dismissLanguageStatus() {
   window.dispatchEvent(new Event(languageStatusDismissEvent));
 }
 
+function scrollPageToTop(behavior: ScrollBehavior = "smooth") {
+  window.scrollTo({
+    behavior,
+    top: 0,
+  });
+}
+
 export function ColumnSnapRail({ children }: { children: ReactNode }) {
   const railRef = useRef<HTMLDivElement>(null);
+  const activeIndex = useRef(0);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const touchStartIndex = useRef(0);
   const snapTimer = useRef<number | null>(null);
 
-  function scrollToIndex(index: number, behavior: ScrollBehavior = "smooth") {
+  function scrollToIndex({
+    behavior = "smooth",
+    index,
+    resetPage = true,
+  }: {
+    behavior?: ScrollBehavior;
+    index: number;
+    resetPage?: boolean;
+  }) {
     const rail = railRef.current;
     if (!rail) return;
 
     const nextIndex = clampColumn(index);
+    const didChangeColumn = nextIndex !== activeIndex.current;
+    activeIndex.current = nextIndex;
     rail.scrollTo({
       behavior,
       left: nextIndex * rail.clientWidth,
     });
     updateHash(nextIndex);
+
+    if (resetPage && didChangeColumn) {
+      scrollPageToTop(behavior);
+    }
   }
 
   function nearestIndex() {
@@ -74,11 +102,11 @@ export function ColumnSnapRail({ children }: { children: ReactNode }) {
     const isHorizontalSwipe = Math.abs(deltaX) > 42 && Math.abs(deltaX) > Math.abs(deltaY);
 
     if (isHorizontalSwipe) {
-      scrollToIndex(touchStartIndex.current + (deltaX < 0 ? 1 : -1));
+      scrollToIndex({ index: touchStartIndex.current + (deltaX < 0 ? 1 : -1) });
       return;
     }
 
-    scrollToIndex(nearestIndex());
+    scrollToIndex({ index: nearestIndex(), resetPage: false });
   }
 
   function onScroll() {
@@ -87,9 +115,36 @@ export function ColumnSnapRail({ children }: { children: ReactNode }) {
     }
 
     snapTimer.current = window.setTimeout(() => {
-      scrollToIndex(nearestIndex(), "smooth");
+      scrollToIndex({
+        index: nearestIndex(),
+        resetPage: false,
+      });
     }, 180);
   }
+
+  useEffect(() => {
+    activeIndex.current = indexFromHash(window.location.hash);
+    scrollToIndex({
+      behavior: "auto",
+      index: activeIndex.current,
+      resetPage: false,
+    });
+
+    const onHashChange = () => {
+      scrollToIndex({
+        index: indexFromHash(window.location.hash),
+      });
+    };
+
+    window.addEventListener("hashchange", onHashChange);
+
+    return () => {
+      window.removeEventListener("hashchange", onHashChange);
+      if (snapTimer.current) {
+        window.clearTimeout(snapTimer.current);
+      }
+    };
+  }, []);
 
   return (
     <div
