@@ -31,12 +31,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const routes: MetadataRoute.Sitemap = [
     {
-      changeFrequency: "daily",
-      lastModified: now,
-      priority: 1,
-      url: siteUrl,
-    },
-    {
       changeFrequency: "monthly",
       lastModified: now,
       priority: 0.4,

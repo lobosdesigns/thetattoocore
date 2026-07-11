@@ -89,7 +89,7 @@
 - Keep the site partly public so artists, studios, marketplace listings, public profiles, and selected public posts can be indexed by search engines.
 - Keep private areas non-indexable and login-only: direct messages, account settings, admin tools, draft listings, moderation queues, and user-private profile data.
 - Use an Instagram-style sharing model: public visitors can open shared links and see a limited preview, but must sign up or log in to continue deeper into the app.
-- Use `/login` as the default logged-out landing page, while shared public content links can still open limited previews when allowed. Done for launch on the root route; signed-out direct visits to `/` redirect to `/login`.
+- Use `/login` as the default logged-out landing page, while shared public content links can still open limited previews when allowed. Done for launch on the root route; signed-out direct visits to `/` redirect to `/login`, and the sitemap now favors public share/profile/support routes instead of the redirecting root URL.
 - Shared links should include Open Graph/Twitter card metadata so non-sensitive posts can show the real image, title, and short subtext on Facebook, X, texts, and other social previews. Done for launch on 4U, Gossip, Stuff, Gigs, and profiles.
 - Legacy or admin-marked sensitive links must not expose the media in social previews; use the site logo/brand card as the share image instead. Done for launch with shield fallback metadata.
 - If legacy or admin-marked sensitive shared content exists, logged-out visitors should see a blurred/locked preview with a sign-in prompt.
