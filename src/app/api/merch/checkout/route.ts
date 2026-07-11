@@ -19,6 +19,7 @@ type Product = {
   price_cents: number;
   profiles: { account_type: string; license_verified_at: string | null } | null;
   seller_id: string;
+  shipping_required: boolean;
   sku: string | null;
   title: string;
 };
@@ -99,12 +100,21 @@ async function createCheckoutSession({
     "payment_intent_data[metadata][merch_subtotal_cents]": String(subtotalCents),
     "payment_intent_data[metadata][platform_fee_cents]": String(platformFeeCents),
     "payment_intent_data[metadata][seller_id]": product.seller_id,
-    "shipping_address_collection[allowed_countries][0]": "US",
-    "shipping_address_collection[allowed_countries][1]": "CA",
     "submit_type": "pay",
     "success_url": successUrl,
     "cancel_url": cancelUrl,
   });
+
+  body.set("metadata[shipping_required]", String(product.shipping_required));
+  body.set(
+    "payment_intent_data[metadata][shipping_required]",
+    String(product.shipping_required),
+  );
+
+  if (product.shipping_required) {
+    body.set("shipping_address_collection[allowed_countries][0]", "US");
+    body.set("shipping_address_collection[allowed_countries][1]", "CA");
+  }
 
   if (product.description) {
     body.set(
@@ -189,7 +199,7 @@ export async function POST(request: Request) {
   const { data: product, error } = await supabase
     .from("merch_products")
     .select(
-      "id, seller_id, title, description, sku, price_cents, currency, inventory_quantity, inventory_reserved, is_official, profiles:profiles!merch_products_seller_id_fkey(account_type, license_verified_at)",
+      "id, seller_id, title, description, sku, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, is_official, profiles:profiles!merch_products_seller_id_fkey(account_type, license_verified_at)",
     )
     .eq("id", productId)
     .eq("status", "active")

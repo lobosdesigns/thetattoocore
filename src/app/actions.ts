@@ -1265,6 +1265,7 @@ export async function editMerchProduct(formData: FormData) {
   const inventoryQuantity = Number.isFinite(inventoryNumber)
     ? Math.max(0, Math.floor(inventoryNumber))
     : null;
+  const shippingRequired = formData.get("shipping_required") === "on";
   const shipsFromCity = cleanText(formData.get("ships_from_city"), 80);
   const shipsFromRegion = cleanText(formData.get("ships_from_region"), 80);
 
@@ -1382,6 +1383,7 @@ export async function editMerchProduct(formData: FormData) {
       inventory_quantity: inventoryQuantity,
       is_indexable: nextStatus === "active",
       price_cents: priceCents,
+      shipping_required: shippingRequired,
       ships_from_city: shipsFromCity || null,
       ships_from_region: shipsFromRegion || null,
       status: nextStatus,

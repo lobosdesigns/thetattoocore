@@ -57,6 +57,7 @@ type MerchProduct = {
   merch_product_media: MerchMedia[];
   price_cents: number;
   profiles: Profile | null;
+  shipping_required: boolean;
   ships_from_city: string | null;
   ships_from_region: string | null;
   status: string;
@@ -114,7 +115,7 @@ async function getProduct(id: string) {
   const { data } = await supabase
     .from("merch_products")
     .select(
-      "id, title, description, category, status, price_cents, currency, inventory_quantity, inventory_reserved, ships_from_city, ships_from_region, is_official, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, account_type, license_verified_at)",
+      "id, title, description, category, status, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, ships_from_city, ships_from_region, is_official, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, account_type, license_verified_at)",
     )
     .eq("id", id)
     .eq("status", "active")
@@ -387,6 +388,15 @@ export default async function MerchProductPage({
                       </label>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="flex min-h-11 items-center gap-3 rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-xs font-bold uppercase text-[var(--muted-strong)]">
+                        <input
+                          className="size-4 accent-[var(--gold)]"
+                          defaultChecked={product.shipping_required}
+                          name="shipping_required"
+                          type="checkbox"
+                        />
+                        Requires shipping address
+                      </label>
                       <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
                         Ships from city
                         <input
