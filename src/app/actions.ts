@@ -899,7 +899,7 @@ export async function editMarketplaceListing(formData: FormData) {
     );
   }
 
-  const { error } = await supabase
+  const { data: updatedListing, error } = await supabase
     .from("marketplace_listings")
     .update({
       category,
@@ -911,12 +911,16 @@ export async function editMarketplaceListing(formData: FormData) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", listingId)
-    .eq("seller_id", userId);
+    .eq("seller_id", userId)
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
+  if (error || !updatedListing) {
     redirect(
       redirectWithMessage({
-        message: error.message || "Could not update Stuff listing.",
+        message:
+          error?.message ||
+          "Could not update Stuff listing. It may be gone or owned by another account.",
         path: returnPath,
       }),
     );
@@ -940,7 +944,7 @@ export async function archiveMarketplaceListing(formData: FormData) {
     redirect(homeMessage("Choose a Stuff listing first.", "marketplace"));
   }
 
-  const { error } = await supabase
+  const { data: archivedListing, error } = await supabase
     .from("marketplace_listings")
     .update({
       is_indexable: false,
@@ -948,12 +952,16 @@ export async function archiveMarketplaceListing(formData: FormData) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", listingId)
-    .eq("seller_id", userId);
+    .eq("seller_id", userId)
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
+  if (error || !archivedListing) {
     redirect(
       redirectWithMessage({
-        message: error.message || "Could not archive Stuff listing.",
+        message:
+          error?.message ||
+          "Could not archive Stuff listing. It may be gone or owned by another account.",
         path: `/stuff/${listingId}`,
       }),
     );
@@ -1086,19 +1094,23 @@ export async function archiveGig(formData: FormData) {
     );
   }
 
-  const { error } = await supabase
+  const { data: archivedGig, error } = await supabase
     .from("gigs")
     .update({
       status: "archived",
       updated_at: new Date().toISOString(),
     })
     .eq("id", gigId)
-    .eq("poster_id", userId);
+    .eq("poster_id", userId)
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
+  if (error || !archivedGig) {
     redirect(
       redirectWithMessage({
-        message: error.message || "Could not archive gig.",
+        message:
+          error?.message ||
+          "Could not archive gig. It may be gone or owned by another account.",
         path: returnPath,
       }),
     );
@@ -1153,7 +1165,7 @@ export async function editGig(formData: FormData) {
     );
   }
 
-  const { error } = await supabase
+  const { data: updatedGig, error } = await supabase
     .from("gigs")
     .update({
       category,
@@ -1167,12 +1179,16 @@ export async function editGig(formData: FormData) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", gigId)
-    .eq("poster_id", userId);
+    .eq("poster_id", userId)
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
+  if (error || !updatedGig) {
     redirect(
       redirectWithMessage({
-        message: error.message || "Could not update Gig.",
+        message:
+          error?.message ||
+          "Could not update Gig. It may be gone or owned by another account.",
         path: returnPath,
       }),
     );
@@ -1196,7 +1212,7 @@ export async function archiveGigFromDetail(formData: FormData) {
     redirect(homeMessage("Choose a Gig first.", "gigs"));
   }
 
-  const { error } = await supabase
+  const { data: archivedGig, error } = await supabase
     .from("gigs")
     .update({
       is_indexable: false,
@@ -1204,12 +1220,16 @@ export async function archiveGigFromDetail(formData: FormData) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", gigId)
-    .eq("poster_id", userId);
+    .eq("poster_id", userId)
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
+  if (error || !archivedGig) {
     redirect(
       redirectWithMessage({
-        message: error.message || "Could not archive Gig.",
+        message:
+          error?.message ||
+          "Could not archive Gig. It may be gone or owned by another account.",
         path: `/gigs/${gigId}`,
       }),
     );
@@ -1349,7 +1369,7 @@ export async function editMerchProduct(formData: FormData) {
     product.status === "active" || product.status === "approved"
       ? "pending_review"
       : product.status;
-  const { error } = await adminClient
+  const { data: updatedProduct, error } = await adminClient
     .from("merch_products")
     .update({
       category,
@@ -1364,12 +1384,16 @@ export async function editMerchProduct(formData: FormData) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", productId)
-    .eq("seller_id", userId);
+    .eq("seller_id", userId)
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
+  if (error || !updatedProduct) {
     redirect(
       redirectWithMessage({
-        message: error.message || "Could not update Merch product.",
+        message:
+          error?.message ||
+          "Could not update Merch product. It may be gone or owned by another account.",
         path: returnPath,
       }),
     );
@@ -1443,7 +1467,7 @@ export async function archiveMerchProduct(formData: FormData) {
     );
   }
 
-  const { error } = await adminClient
+  const { data: archivedProduct, error } = await adminClient
     .from("merch_products")
     .update({
       is_indexable: false,
@@ -1451,12 +1475,16 @@ export async function archiveMerchProduct(formData: FormData) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", productId)
-    .eq("seller_id", userId);
+    .eq("seller_id", userId)
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
+  if (error || !archivedProduct) {
     redirect(
       redirectWithMessage({
-        message: error.message || "Could not archive Merch product.",
+        message:
+          error?.message ||
+          "Could not archive Merch product. It may be gone or owned by another account.",
         path: `/merch/${productId}`,
       }),
     );
