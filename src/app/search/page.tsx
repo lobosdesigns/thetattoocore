@@ -147,7 +147,7 @@ function VerifiedBadge({ profile }: { profile?: SearchProfileBadge }) {
   if (!isVerifiedProfile(profile)) return null;
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-md bg-[#171412] px-1.5 py-0.5 text-[11px] font-semibold text-white">
+    <span className="inline-flex items-center gap-1 rounded-md bg-[var(--foreground)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--background)]">
       <BadgeCheck className="size-3" />
       Verified
     </span>
@@ -170,15 +170,15 @@ function SearchSection({
   title: string;
 }) {
   return (
-    <section className="border-t border-[#cfc8bd] px-4 py-5">
+    <section className="border-t border-[var(--card-rim)] px-4 py-5">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="flex size-8 items-center justify-center rounded-md bg-[#171412] text-[#c8953b]">
+          <span className="flex size-8 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--brand-gold)]">
             <Icon className="size-4" />
           </span>
           <h2 className="text-lg font-bold">{title}</h2>
         </div>
-        <span className="rounded-md bg-[#c8953b] px-2 py-1 text-xs font-bold text-[#171412]">
+        <span className="rounded-md bg-[var(--brand-gold)] px-2 py-1 text-xs font-bold text-[var(--ink)]">
           {count}
         </span>
       </div>
@@ -189,7 +189,7 @@ function SearchSection({
 
 function EmptySection({ label }: { label: string }) {
   return (
-    <p className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-4 text-sm text-[#766d62] shadow-sm">
+    <p className="ttc-surface rounded-md border p-4 text-sm text-[var(--muted-strong)] shadow-sm">
       No {label} found.
     </p>
   );
@@ -197,7 +197,7 @@ function EmptySection({ label }: { label: string }) {
 
 function ResultAction({ children }: { children: React.ReactNode }) {
   return (
-    <span className="mt-3 inline-flex h-8 items-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-xs font-semibold text-[#171412]">
+    <span className="ttc-surface mt-3 inline-flex h-8 items-center rounded-md border px-3 text-xs font-semibold">
       {children}
     </span>
   );
@@ -373,22 +373,22 @@ export default async function SearchPage({
     ].some((count) => count === resultLimit);
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
-      <div className="mx-auto min-h-screen w-full max-w-4xl overflow-x-hidden bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
-        <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
+    <main className="ttc-page min-h-screen overflow-x-hidden">
+      <div className="ttc-page-panel mx-auto min-h-screen w-full max-w-4xl overflow-x-hidden">
+        <header className="sticky top-0 z-10 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] px-4 py-3 backdrop-blur">
           <div className="flex items-center gap-3">
             <Link
               aria-label="Back to home"
-              className="flex size-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
+              className="ttc-surface flex size-10 items-center justify-center rounded-md border"
               href="/"
             >
               <ArrowLeft className="size-5" />
             </Link>
             <form
               action="/search"
-              className="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 shadow-sm"
+              className="ttc-surface flex min-w-0 flex-1 items-center gap-2 rounded-md border px-3 shadow-sm"
             >
-              <Search className="size-4 shrink-0 text-[#766d62]" />
+              <Search className="size-4 shrink-0 text-[var(--muted-strong)]" />
               <input
                 autoFocus
                 className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none"
@@ -397,7 +397,7 @@ export default async function SearchPage({
                 name="q"
                 placeholder="Search artists, styles, shops, gigs, merch"
               />
-              <button className="h-8 rounded-md bg-[#171412] px-3 text-xs font-semibold text-white">
+              <button className="h-8 rounded-md bg-[var(--foreground)] px-3 text-xs font-semibold text-[var(--background)]">
                 Search
               </button>
             </form>
@@ -407,18 +407,18 @@ export default async function SearchPage({
 
         <section className="px-4 py-5">
           <h1 className="text-2xl font-bold">Search</h1>
-          <p className="mt-1 text-sm text-[#766d62]">
+          <p className="mt-1 text-sm text-[var(--muted-strong)]">
             {hasSearch
               ? `${total} result${total === 1 ? "" : "s"} found`
               : "Find public artists, styles, gossip, Stuff, and Gigs. Merch search is planned next."}
           </p>
-          <p className="mt-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
+          <p className="ttc-surface mt-2 rounded-md border px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
             Search only shows public, non-sensitive previews. Member-only,
             private, and 18+ sensitive body-art content stays behind login and
             terms confirmation, and DMs never appear in search.
           </p>
-          <div className="mt-3 flex items-start gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
-            <Package className="mt-0.5 size-4 shrink-0 text-[#c8953b]" />
+          <div className="ttc-surface mt-3 flex items-start gap-2 rounded-md border px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
+            <Package className="mt-0.5 size-4 shrink-0 text-[var(--brand-gold)]" />
             <p>
               Merch discovery will join search after seller approval, checkout,
               tax, shipping, refunds, and payment-provider rules are built.
@@ -431,24 +431,24 @@ export default async function SearchPage({
             <input name="q" type="hidden" value={query} />
             <input name="type" type="hidden" value={type === "all" ? "" : type} />
             <input
-              className="h-10 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm outline-none focus:border-[#171412]"
+              className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
               defaultValue={category}
               name="category"
               placeholder="category"
             />
             <input
-              className="h-10 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm outline-none focus:border-[#171412]"
+              className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
               defaultValue={city}
               name="city"
               placeholder="city"
             />
             <input
-              className="h-10 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm outline-none focus:border-[#171412]"
+              className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
               defaultValue={region}
               name="region"
               placeholder="state / region"
             />
-            <button className="h-10 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-4 text-sm font-semibold">
+            <button className="ttc-surface h-10 rounded-md border px-4 text-sm font-semibold">
               Filter
             </button>
           </form>
@@ -464,8 +464,8 @@ export default async function SearchPage({
               <Link
                 className={`flex h-9 shrink-0 items-center rounded-md border px-3 text-sm font-semibold ${
                   type === value
-                    ? "border-[#171412] bg-[#171412] text-white shadow-[0_6px_16px_rgba(23,20,18,0.16)]"
-                    : "border-[#cfc8bd] bg-[#fffdf9] hover:border-[#c8953b]"
+                    ? "ttc-control-active border-[var(--foreground)] shadow-[0_6px_16px_rgba(23,20,18,0.16)]"
+                    : "ttc-surface hover:border-[var(--brand-gold)]"
                 }`}
                 href={typedHref(value as SearchType, typedParams)}
                 key={value}
@@ -484,7 +484,7 @@ export default async function SearchPage({
                 <div className="grid gap-3 sm:grid-cols-2">
                   {profiles.map((profile) => (
                     <Link
-                      className="ttc-card flex items-center gap-3 rounded-md border border-[#cfc8bd] bg-white p-4"
+                      className="ttc-card flex items-center gap-3 rounded-md p-4"
                       href={`/u/${profile.username}`}
                       key={profile.id}
                     >
@@ -496,11 +496,11 @@ export default async function SearchPage({
                           </p>
                           <VerifiedBadge profile={profile} />
                         </div>
-                        <p className="text-xs text-[#766d62]">
+                        <p className="text-xs text-[var(--muted-strong)]">
                           @{profile.username} - {profile.account_type}
                         </p>
                         {locationText(profile) ? (
-                          <p className="mt-1 text-xs text-[#766d62]">
+                          <p className="mt-1 text-xs text-[var(--muted-strong)]">
                             {locationText(profile)}
                           </p>
                         ) : null}
@@ -520,7 +520,7 @@ export default async function SearchPage({
                 <div className="space-y-3">
                   {feedPosts.map((post) => (
                     <Link
-                      className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-4"
+                      className="ttc-card block rounded-md p-4"
                       href={`/p/${post.id}`}
                       key={post.id}
                     >
@@ -531,10 +531,10 @@ export default async function SearchPage({
                         </p>
                         <VerifiedBadge profile={post.profiles} />
                       </div>
-                      <p className="mt-1 line-clamp-2 text-sm leading-6 text-[#4f473f]">
+                      <p className="mt-1 line-clamp-2 text-sm leading-6 text-[var(--muted)]">
                         {post.caption || post.style_tags.join(", ") || "4U post"}
                       </p>
-                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#766d62]">
+                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-[var(--muted-strong)]">
                         {post.profiles?.username ? (
                           <span>@{post.profiles.username}</span>
                         ) : null}
@@ -556,7 +556,7 @@ export default async function SearchPage({
                 <div className="space-y-3">
                   {threads.map((thread) => (
                     <Link
-                      className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-4"
+                      className="ttc-card block rounded-md p-4"
                       href={`/t/${thread.id}`}
                       key={thread.id}
                     >
@@ -567,11 +567,11 @@ export default async function SearchPage({
                         </p>
                         <VerifiedBadge profile={thread.profiles} />
                       </div>
-                      <p className="mt-1 line-clamp-3 text-sm leading-6 text-[#4f473f]">
+                      <p className="mt-1 line-clamp-3 text-sm leading-6 text-[var(--muted)]">
                         {thread.body}
                       </p>
                       {thread.profiles?.username ? (
-                        <p className="mt-2 text-xs text-[#766d62]">
+                        <p className="mt-2 text-xs text-[var(--muted-strong)]">
                           @{thread.profiles.username}
                         </p>
                       ) : null}
@@ -591,12 +591,12 @@ export default async function SearchPage({
                 <div className="grid gap-3 sm:grid-cols-2">
                   {listings.map((listing) => (
                     <Link
-                      className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-4"
+                      className="ttc-card block rounded-md p-4"
                       href={`/stuff/${listing.id}`}
                       key={listing.id}
                     >
                       <p className="text-sm font-semibold">{listing.title}</p>
-                      <p className="mt-1 text-xs capitalize text-[#766d62]">
+                      <p className="mt-1 text-xs capitalize text-[var(--muted-strong)]">
                         {listing.category}
                         {locationText(listing) ? ` - ${locationText(listing)}` : ""}
                       </p>
@@ -604,7 +604,7 @@ export default async function SearchPage({
                         <ProfileAvatar profile={listing.profiles} size="sm" />
                         <VerifiedBadge profile={listing.profiles} />
                       </div>
-                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#766d62]">
+                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-[var(--muted-strong)]">
                         {listing.profiles?.username ? (
                           <span>@{listing.profiles.username}</span>
                         ) : null}
@@ -612,7 +612,7 @@ export default async function SearchPage({
                           <span>{listing.profiles.display_name}</span>
                         ) : null}
                       </div>
-                      <p className="mt-3 rounded-md bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
+                      <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
                         Browse is public. Seller contact and professional gear
                         activity require verified artist, studio, or vendor
                         status.
@@ -633,12 +633,12 @@ export default async function SearchPage({
                 <div className="grid gap-3 sm:grid-cols-2">
                   {gigs.map((gig) => (
                     <Link
-                      className="ttc-card block rounded-md border border-[#cfc8bd] bg-white p-4"
+                      className="ttc-card block rounded-md p-4"
                       href={`/gigs/${gig.id}`}
                       key={gig.id}
                     >
                       <p className="text-sm font-semibold">{gig.title}</p>
-                      <p className="mt-1 text-xs capitalize text-[#766d62]">
+                      <p className="mt-1 text-xs capitalize text-[var(--muted-strong)]">
                         {gig.category.replaceAll("_", " ")}
                         {locationText(gig) ? ` - ${locationText(gig)}` : ""}
                       </p>
@@ -646,7 +646,7 @@ export default async function SearchPage({
                         <ProfileAvatar profile={gig.profiles} size="sm" />
                         <VerifiedBadge profile={gig.profiles} />
                       </div>
-                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#766d62]">
+                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-[var(--muted-strong)]">
                         {gig.profiles?.username ? (
                           <span>@{gig.profiles.username}</span>
                         ) : null}
@@ -664,9 +664,9 @@ export default async function SearchPage({
             </SearchSection>
             ) : null}
             {canLoadMore ? (
-              <div className="border-t border-[#cfc8bd] px-4 py-5 text-center">
+              <div className="border-t border-[var(--card-rim)] px-4 py-5 text-center">
                 <Link
-                  className="inline-flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-4 text-sm font-semibold"
+                  className="ttc-surface inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-semibold"
                   href={`/search?${loadMoreParams.toString()}`}
                 >
                   Load more
