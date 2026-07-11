@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createStripeClient } from "@/lib/stripe/server";
+import { createStripeClient, stripeCryptoProvider } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -101,7 +101,13 @@ export async function POST(request: Request) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    event = await stripe.webhooks.constructEventAsync(
+      body,
+      signature,
+      webhookSecret,
+      undefined,
+      stripeCryptoProvider,
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Invalid webhook.";
 

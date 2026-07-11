@@ -13,5 +13,8 @@ export function createStripeClient() {
       name: "TheTattooCore",
       url: "https://thetattoocore.com",
     },
+    httpClient: Stripe.createFetchHttpClient(),
   });
 }
+
+export const stripeCryptoProvider = Stripe.createSubtleCryptoProvider();
