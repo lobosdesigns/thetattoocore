@@ -71,7 +71,7 @@ export default function PrivacyPage() {
             <LogoLockup />
           </Link>
           <Link
-            className="rounded-md border border-[#d8d1c6] bg-white px-4 py-2 text-sm font-semibold"
+            className="ttc-surface rounded-md border px-4 py-2 text-sm font-semibold"
             href="/"
           >
             Back home
@@ -79,11 +79,11 @@ export default function PrivacyPage() {
         </div>
 
         <div className="ttc-card ttc-page-panel rounded-lg border border-[var(--card-rim)] p-5 sm:p-7">
-          <p className="text-sm font-semibold uppercase text-[#766d62]">
+          <p className="text-sm font-semibold uppercase text-[var(--muted-strong)]">
             {siteName}
           </p>
           <h1 className="mt-2 text-3xl font-bold">Privacy</h1>
-          <p className="mt-3 text-sm leading-6 text-[#4f473f]">
+          <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
             This overview explains the privacy shape we are building toward:
             public discovery where it helps the community, protected account
             and message areas where privacy matters.
@@ -93,14 +93,14 @@ export default function PrivacyPage() {
             {sections.map((section) => (
               <section key={section.title}>
                 <h2 className="text-lg font-bold">{section.title}</h2>
-                <p className="mt-2 text-sm leading-6 text-[#4f473f]">
+                <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
                   {section.body}
                 </p>
               </section>
             ))}
           </div>
 
-          <p className="mt-7 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4 text-sm leading-6 text-[#4f473f]">
+          <p className="ttc-surface mt-7 rounded-md border p-4 text-sm leading-6 text-[var(--muted)]">
             This privacy page is a launch foundation and should be reviewed
             before payments, paid ads, app store release, or international
             expansion. Privacy requests can be sent to{" "}

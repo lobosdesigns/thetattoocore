@@ -61,7 +61,7 @@ export default function TermsPage() {
             <LogoLockup />
           </Link>
           <Link
-            className="rounded-md border border-[#d8d1c6] bg-white px-4 py-2 text-sm font-semibold"
+            className="ttc-surface rounded-md border px-4 py-2 text-sm font-semibold"
             href="/"
           >
             Back home
@@ -69,11 +69,11 @@ export default function TermsPage() {
         </div>
 
         <div className="ttc-card ttc-page-panel rounded-lg border border-[var(--card-rim)] p-5 sm:p-7">
-          <p className="text-sm font-semibold uppercase text-[#766d62]">
+          <p className="text-sm font-semibold uppercase text-[var(--muted-strong)]">
             TheTattooCore
           </p>
           <h1 className="mt-2 text-3xl font-bold">Terms and Content Policy</h1>
-          <p className="mt-3 text-sm leading-6 text-[#4f473f]">
+          <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
             These launch rules set the baseline for an adult tattoo community:
             public enough for artists and studios to be discovered, private
             enough to protect messages, account data, and sensitive non-nude
@@ -84,14 +84,14 @@ export default function TermsPage() {
             {sections.map((section) => (
               <section key={section.title}>
                 <h2 className="text-lg font-bold">{section.title}</h2>
-                <p className="mt-2 text-sm leading-6 text-[#4f473f]">
+                <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
                   {section.body}
                 </p>
               </section>
             ))}
           </div>
 
-          <p className="mt-7 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4 text-sm leading-6 text-[#4f473f]">
+          <p className="ttc-surface mt-7 rounded-md border p-4 text-sm leading-6 text-[var(--muted)]">
             This is a working launch policy, not final legal advice. It should
             be reviewed by counsel before major public launch, payments, paid
             ads, or mobile app store submission. Policy and safety questions

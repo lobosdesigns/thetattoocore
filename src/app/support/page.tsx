@@ -46,7 +46,7 @@ export default function SupportPage() {
             <LogoLockup />
           </Link>
           <Link
-            className="rounded-md border border-[#d8d1c6] bg-white px-4 py-2 text-sm font-semibold"
+            className="ttc-surface rounded-md border px-4 py-2 text-sm font-semibold"
             href="/login"
           >
             Sign in
@@ -54,11 +54,11 @@ export default function SupportPage() {
         </div>
 
         <div className="ttc-card ttc-page-panel rounded-lg border border-[var(--card-rim)] p-5 sm:p-7">
-          <p className="text-sm font-semibold uppercase text-[#766d62]">
+          <p className="text-sm font-semibold uppercase text-[var(--muted-strong)]">
             {siteName}
           </p>
           <h1 className="mt-2 text-3xl font-bold">Support</h1>
-          <p className="mt-3 text-sm leading-6 text-[#4f473f]">
+          <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
             Help for account access, safety reports, privacy requests,
             verification, and app-store support.
           </p>
@@ -67,14 +67,14 @@ export default function SupportPage() {
             {sections.map((section) => (
               <section key={section.title}>
                 <h2 className="text-lg font-bold">{section.title}</h2>
-                <p className="mt-2 text-sm leading-6 text-[#4f473f]">
+                <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
                   {section.body}
                 </p>
               </section>
             ))}
           </div>
 
-          <div className="mt-7 rounded-md border border-[#d8d1c6] bg-[#f7f4ef] p-4 text-sm leading-6 text-[#4f473f]">
+          <div className="ttc-surface mt-7 rounded-md border p-4 text-sm leading-6 text-[var(--muted)]">
             <p className="font-semibold">Support email</p>
             <a className="mt-1 block underline" href={`mailto:${supportEmail}`}>
               {supportEmail}
