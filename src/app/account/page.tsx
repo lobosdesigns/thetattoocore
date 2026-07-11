@@ -1090,8 +1090,9 @@ export default async function AccountPage({
                         </div>
                       ))}
                     </div>
-                    {campaign.payment_status !== "paid" &&
-                    campaign.daily_budget_cents > 0 ? (
+                    {!["paid", "waived", "checkout_started"].includes(
+                      campaign.payment_status,
+                    ) && campaign.daily_budget_cents > 0 ? (
                       <form action="/api/ads/checkout" className="mt-3" method="post">
                         <input
                           name="campaign_id"

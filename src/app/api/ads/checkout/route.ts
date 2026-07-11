@@ -182,6 +182,20 @@ export async function POST(request: Request) {
     return redirectWithMessage("/account", "That ad campaign is already paid.");
   }
 
+  if (campaign.payment_status === "waived") {
+    return redirectWithMessage(
+      "/account",
+      "That ad campaign payment has been waived.",
+    );
+  }
+
+  if (campaign.payment_status === "checkout_started") {
+    return redirectWithMessage(
+      "/account",
+      "Ad checkout has already started. Finish that Stripe session or wait for it to expire before trying again.",
+    );
+  }
+
   if (campaign.daily_budget_cents <= 0) {
     return redirectWithMessage(
       "/account",
