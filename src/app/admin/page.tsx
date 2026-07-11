@@ -349,29 +349,29 @@ export default async function AdminPage({
   if (!profile || !moderateRoles.includes(profile.role)) {
     return (
       <main className="ttc-page min-h-screen px-4 py-8">
-        <section className="ttc-card mx-auto w-full max-w-2xl rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-6">
+        <section className="ttc-card mx-auto w-full max-w-2xl rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-6">
           <div className="mb-5 flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-md bg-[#171412] text-[#c8953b]">
+            <div className="flex size-10 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--gold)]">
               <ShieldCheck className="size-5" />
             </div>
             <div>
               <h1 className="text-2xl font-bold">Admin access required</h1>
-              <p className="text-sm text-[#766d62]">{claims.email}</p>
+              <p className="text-sm text-[var(--muted-strong)]">{claims.email}</p>
             </div>
           </div>
-          <p className="text-sm leading-6 text-[#4f473f]">
+          <p className="text-sm leading-6 text-[var(--muted)]">
             This account is signed in, but it has not been assigned an admin or
             moderator role yet.
           </p>
           <div className="mt-6 flex gap-3">
             <Link
-              className="flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+              className="flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
               href="/account"
             >
               Open profile
             </Link>
             <Link
-              className="flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
+              className="flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
               href="/"
             >
               Back to site
@@ -1169,55 +1169,55 @@ export default async function AdminPage({
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
       <div className="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_28px_90px_rgba(0,0,0,0.42)] lg:grid-cols-[260px_minmax(0,1fr)]">
-        <aside className="border-b border-[#3b332b] bg-[#1c1916]/95 px-5 py-5 text-[#fffdf9] backdrop-blur lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
+        <aside className="border-b border-[color-mix(in_srgb,var(--gold)_24%,var(--card-rim))] bg-[color-mix(in_srgb,var(--foreground)_94%,transparent)] px-5 py-5 text-[var(--background)] backdrop-blur lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
           <div className="mb-6 flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-md border border-[#c8953b]/50 bg-[#0f0d0b] text-[#c8953b] shadow-[0_0_20px_rgba(200,149,59,0.16)]">
+            <div className="flex size-10 items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--gold)_50%,var(--card-rim))] bg-[color-mix(in_srgb,var(--foreground)_82%,black)] text-[var(--gold)] shadow-[0_0_20px_rgba(200,149,59,0.16)]">
               <ShieldCheck className="size-5" />
             </div>
             <div>
               <p className="text-lg font-semibold">Admin</p>
-              <p className="text-xs text-[#c9bfb1]">TheTattooCore</p>
+              <p className="text-xs text-[color-mix(in_srgb,var(--background)_72%,var(--muted-strong))]">TheTattooCore</p>
             </div>
           </div>
 
           <nav className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto pb-1 lg:mx-0 lg:grid lg:grid-cols-1 lg:overflow-visible">
             {adminTabs.map(([Icon, label, href]) => (
               <a
-                className="flex h-11 shrink-0 items-center gap-3 rounded-md border border-white/10 bg-white/5 px-3 text-sm font-semibold text-[#f7f4ef] backdrop-blur hover:border-[#c8953b]/60 hover:bg-[#c8953b]/15 lg:w-full"
+                className="flex h-11 shrink-0 items-center gap-3 rounded-md border border-white/10 bg-[color-mix(in_srgb,var(--paper-warm)_8%,transparent)] px-3 text-sm font-semibold text-[var(--background)] backdrop-blur hover:border-[color-mix(in_srgb,var(--gold)_60%,var(--card-rim))] hover:bg-[color-mix(in_srgb,var(--gold)_15%,transparent)] lg:w-full"
                 href={href}
                 key={label}
               >
-                <Icon className="size-5 text-[#c8953b]" />
+                <Icon className="size-5 text-[var(--gold)]" />
                 {label}
               </a>
             ))}
           </nav>
 
-          <div className="mt-6 rounded-md border border-white/10 bg-white/5 p-3">
+          <div className="mt-6 rounded-md border border-white/10 bg-[color-mix(in_srgb,var(--paper-warm)_8%,transparent)] p-3">
             <p className="text-sm font-semibold">{adminProfile.display_name}</p>
-            <p className="text-xs text-[#c9bfb1]">
+            <p className="text-xs text-[color-mix(in_srgb,var(--background)_72%,var(--muted-strong))]">
               @{adminProfile.username} - {adminProfile.role}
             </p>
           </div>
         </aside>
 
         <section className="ttc-page-panel min-w-0 px-4 py-6 sm:px-6 lg:px-8">
-          <header className="mb-6 flex flex-col gap-4 border-b border-[#cfc8bd] pb-5 md:flex-row md:items-center md:justify-between">
+          <header className="mb-6 flex flex-col gap-4 border-b border-[var(--card-rim)] pb-5 md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="text-3xl font-bold">Admin dashboard</h1>
-              <p className="mt-1 text-sm text-[#766d62]">
+              <p className="mt-1 text-sm text-[var(--muted-strong)]">
                 Moderation, user safety, marketplace review, and mail setup.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
               <Link
-                className="flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
+                className="flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
                 href="/"
               >
                 Site
               </Link>
               <Link
-                className="flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                className="flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                 href="/account"
               >
                 Account
@@ -1225,21 +1225,21 @@ export default async function AdminPage({
             </div>
           </header>
 
-          <nav className="no-scrollbar sticky top-0 z-10 -mx-4 mb-6 flex gap-2 overflow-x-auto border-y border-[#cfc8bd] bg-[color-mix(in_srgb,var(--paper)_95%,transparent)] px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:hidden">
+          <nav className="no-scrollbar sticky top-0 z-10 -mx-4 mb-6 flex gap-2 overflow-x-auto border-y border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_95%,transparent)] px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:hidden">
             {adminTabs.map(([Icon, label, href]) => (
               <a
-                className="flex h-10 shrink-0 items-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9]/90 px-3 text-xs font-bold shadow-sm"
+                className="flex h-10 shrink-0 items-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_90%,transparent)] px-3 text-xs font-bold shadow-sm"
                 href={href}
                 key={label}
               >
-                <Icon className="size-4 text-[#c8953b]" />
+                <Icon className="size-4 text-[var(--gold)]" />
                 {label}
               </a>
             ))}
           </nav>
 
           {params.message ? (
-            <p className="mb-6 rounded-md border border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 text-sm font-medium">
+            <p className="mb-6 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">
               {params.message}
             </p>
           ) : null}
@@ -1250,10 +1250,10 @@ export default async function AdminPage({
           >
             {metrics.map(([label, value, caption]) => (
               <div
-                className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4"
+                className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4"
                 key={label as string}
               >
-                <p className="text-sm text-[#766d62]">{caption as string}</p>
+                <p className="text-sm text-[var(--muted-strong)]">{caption as string}</p>
                 <p className="mt-2 text-3xl font-bold">
                   {formatCount(value as number | null)}
                 </p>
@@ -1265,32 +1265,32 @@ export default async function AdminPage({
           <section className="mb-6 grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
             {overviewCards.map((card) => (
               <Link
-                className="ttc-card flex min-h-48 flex-col justify-between rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4 hover:border-[#c8953b]"
+                className="ttc-card flex min-h-48 flex-col justify-between rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 hover:border-[var(--gold)]"
                 href={card.href}
                 key={card.label}
               >
                 <div>
                   <div className="flex items-start justify-between gap-3">
                     <h2 className="text-lg font-bold">{card.label}</h2>
-                    <span className="rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-bold text-[#4f473f]">
+                    <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-bold text-[var(--muted)]">
                       {formatCount(card.count)}
                     </span>
                   </div>
-                  <p className="mt-3 text-sm leading-6 text-[#4f473f]">
+                  <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
                     {card.body}
                   </p>
-                  <p className="mt-3 rounded-md border border-[#e5ded4] bg-white px-3 py-2 text-xs leading-5 text-[#766d62]">
+                  <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
                     {card.meta}
                   </p>
                 </div>
-                <span className="mt-4 text-sm font-bold text-[#171412]">
+                <span className="mt-4 text-sm font-bold text-[var(--foreground)]">
                   {card.action}
                 </span>
               </Link>
             ))}
           </section>
 
-          <section className="mb-6 rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-5">
+          <section className="mb-6 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
             <div className="flex items-center gap-3">
               <Activity className="size-5" />
               <h2 className="text-lg font-bold">Recent activity</h2>
@@ -1299,7 +1299,7 @@ export default async function AdminPage({
               <div className="mt-4 grid gap-3 lg:grid-cols-2">
                 {activityItems.slice(0, 6).map((item) => (
                   <article
-                    className="rounded-md border border-[#e5ded4] bg-white p-3"
+                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3"
                     key={`${item.kind}-${item.id}`}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -1307,21 +1307,21 @@ export default async function AdminPage({
                         <p className="text-sm font-semibold capitalize">
                           {item.label}
                         </p>
-                        <p className="mt-1 text-xs text-[#766d62]">
+                        <p className="mt-1 text-xs text-[var(--muted-strong)]">
                           @{item.actorUsername} - {timeAgo(item.createdAt)}
                         </p>
                       </div>
-                      <span className="shrink-0 rounded-md bg-[#efe7da] px-2 py-1 text-xs font-semibold capitalize text-[#4f473f]">
+                      <span className="shrink-0 rounded-md bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] px-2 py-1 text-xs font-semibold capitalize text-[var(--muted)]">
                         {item.kind}
                       </span>
                     </div>
                     {item.context ? (
-                      <p className="mt-2 text-xs capitalize text-[#766d62]">
+                      <p className="mt-2 text-xs capitalize text-[var(--muted-strong)]">
                         {item.context}
                       </p>
                     ) : null}
                     {item.note ? (
-                      <p className="mt-2 line-clamp-2 text-sm leading-5 text-[#4f473f]">
+                      <p className="mt-2 line-clamp-2 text-sm leading-5 text-[var(--muted)]">
                         {item.note}
                       </p>
                     ) : null}
@@ -1329,13 +1329,13 @@ export default async function AdminPage({
                 ))}
               </div>
             ) : (
-              <p className="mt-4 rounded-md border border-[#e5ded4] bg-white p-4 text-sm text-[#4f473f]">
+              <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-4 text-sm text-[var(--muted)]">
                 No admin or moderation activity has been logged yet.
               </p>
             )}
           </section>
 
-          <p className="rounded-md border border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 text-sm leading-6 text-[#4f473f]">
+          <p className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm leading-6 text-[var(--muted)]">
             This overview intentionally stays short. Full queues belong on
             dedicated admin pages so Users, Ads, Reports, Verification, Stuff,
             Merch, Gigs, Mail, and Data Requests can scale without turning the
