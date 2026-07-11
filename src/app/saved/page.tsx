@@ -111,7 +111,7 @@ function VerifiedBadge({ profile }: { profile?: ProfileBadge | null }) {
   if (!isVerifiedProfile(profile)) return null;
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-md bg-[#171412] px-1.5 py-0.5 text-[11px] font-semibold text-white">
+    <span className="inline-flex items-center gap-1 rounded-md bg-[var(--foreground)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--background)]">
       <BadgeCheck className="size-3" />
       Verified
     </span>
@@ -150,8 +150,8 @@ function UnsaveButton({
       <input name="subject_type" type="hidden" value={subjectType} />
       <input name="saved" type="hidden" value="true" />
       <input name="return_path" type="hidden" value="/saved" />
-      <button className="flex h-9 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-xs font-semibold hover:border-[#c8953b]">
-        <Bookmark className="size-4 fill-[#171412]" />
+      <button className="ttc-surface flex h-9 items-center justify-center gap-2 rounded-md border px-3 text-xs font-semibold hover:border-[var(--brand-gold)]">
+        <Bookmark className="size-4 fill-[var(--foreground)]" />
         Saved
       </button>
     </form>
@@ -384,21 +384,21 @@ export default async function SavedPage({
     .filter(Boolean) as SavedCard[];
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
-      <div className="mx-auto min-h-screen w-full max-w-4xl overflow-x-hidden bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
-        <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
+    <main className="ttc-page min-h-screen overflow-x-hidden">
+      <div className="ttc-page-panel mx-auto min-h-screen w-full max-w-4xl overflow-x-hidden">
+        <header className="sticky top-0 z-10 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <Link
                 aria-label="Back to home"
-                className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
+                className="ttc-surface flex size-10 shrink-0 items-center justify-center rounded-md border"
                 href="/"
               >
                 <ArrowLeft className="size-5" />
               </Link>
               <div>
                 <h1 className="text-xl font-bold">Saved</h1>
-                <p className="text-sm text-[#766d62]">
+                <p className="text-sm text-[var(--muted-strong)]">
                   Latest {savedLimit} artists, 4U, Gossip, Stuff, and Gigs you bookmarked. Merch joins when products go live.
                 </p>
               </div>
@@ -406,7 +406,7 @@ export default async function SavedPage({
             <div className="flex items-center gap-2">
               <Link
                 aria-label="Search"
-                className="flex size-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
+                className="ttc-surface flex size-10 items-center justify-center rounded-md border"
                 href="/search"
               >
                 <Search className="size-5" />
@@ -417,25 +417,25 @@ export default async function SavedPage({
         </header>
 
         {params.message ? (
-          <p className="border-b border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 text-sm font-semibold">
+          <p className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_88%,var(--brand-gold)_12%)] px-4 py-3 text-sm font-semibold">
             {params.message}
           </p>
         ) : null}
 
         <section className="px-4 py-5">
           <div className="mb-4 flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-[#766d62]">
+            <p className="text-sm font-semibold text-[var(--muted-strong)]">
               {cards.length} saved item{cards.length === 1 ? "" : "s"}
             </p>
             <Link
-              className="flex h-9 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-xs font-semibold hover:border-[#c8953b]"
+              className="ttc-surface flex h-9 items-center justify-center rounded-md border px-3 text-xs font-semibold hover:border-[var(--brand-gold)]"
               href="/search"
             >
               Find more
             </Link>
           </div>
           {!canViewSensitive ? (
-            <p className="mb-4 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-xs leading-5 text-[#766d62]">
+            <p className="ttc-surface mb-4 rounded-md border px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
               Sensitive saved items stay hidden until your account confirms 18+
               body-art terms.
             </p>
@@ -448,16 +448,16 @@ export default async function SavedPage({
 
                 return (
                   <article
-                    className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4"
+                    className="ttc-card rounded-md p-4"
                     key={`${card.subjectType}:${card.id}`}
                   >
                     <div className="mb-3 flex items-start justify-between gap-3">
                       <div className="flex min-w-0 items-start gap-3">
-                        <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#171412] text-[#c8953b]">
+                        <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--brand-gold)]">
                           <Icon className="size-5" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs font-semibold uppercase text-[#766d62]">
+                          <p className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
                             {card.typeLabel}
                           </p>
                           <Link
@@ -474,11 +474,11 @@ export default async function SavedPage({
                       />
                     </div>
                     {card.meta ? (
-                      <p className="text-xs capitalize text-[#766d62]">
+                      <p className="text-xs capitalize text-[var(--muted-strong)]">
                         {card.meta}
                       </p>
                     ) : null}
-                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-[#4f473f]">
+                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-[var(--muted)]">
                       {card.summary}
                     </p>
                     {card.ownerName ? (
@@ -495,15 +495,15 @@ export default async function SavedPage({
               })}
             </div>
           ) : (
-            <div className="ttc-card rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-6 text-center">
+            <div className="ttc-card rounded-md p-6 text-center">
               <Bookmark className="mx-auto mb-3 size-8" />
               <h2 className="text-lg font-bold">No saved items yet</h2>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#766d62]">
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--muted-strong)]">
                 Tap Save on 4U, Gossip, Stuff, or Gigs to keep them here for
                 later.
               </p>
               <Link
-                className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                 href="/"
               >
                 Browse 4U
@@ -513,7 +513,7 @@ export default async function SavedPage({
           {saved.length === savedLimit ? (
             <div className="mt-5 text-center">
               <Link
-                className="inline-flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-4 text-sm font-semibold"
+                className="ttc-surface inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-semibold"
                 href={`/saved?page=${page + 1}`}
               >
                 Load more
