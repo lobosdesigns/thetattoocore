@@ -518,7 +518,7 @@ export async function editFeedPost(formData: FormData) {
     );
   }
 
-  const { error } = await supabase
+  const { data: updatedPost, error } = await supabase
     .from("feed_posts")
     .update({
       caption,
@@ -527,12 +527,16 @@ export async function editFeedPost(formData: FormData) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", postId)
-    .eq("author_id", userId);
+    .eq("author_id", userId)
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
+  if (error || !updatedPost) {
     redirect(
       redirectWithMessage({
-        message: error.message || "Could not edit 4U post.",
+        message:
+          error?.message ||
+          "Could not edit 4U post. It may be gone or owned by another account.",
         path: returnPath,
       }),
     );
@@ -557,7 +561,7 @@ export async function deleteFeedPost(formData: FormData) {
     redirect(redirectWithMessage({ message: "Choose a 4U post first.", path: returnPath }));
   }
 
-  const { error } = await supabase
+  const { data: deletedPost, error } = await supabase
     .from("feed_posts")
     .update({
       is_indexable: false,
@@ -565,12 +569,16 @@ export async function deleteFeedPost(formData: FormData) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", postId)
-    .eq("author_id", userId);
+    .eq("author_id", userId)
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
+  if (error || !deletedPost) {
     redirect(
       redirectWithMessage({
-        message: error.message || "Could not delete 4U post.",
+        message:
+          error?.message ||
+          "Could not delete 4U post. It may be gone or owned by another account.",
         path: returnPath,
       }),
     );
@@ -678,19 +686,23 @@ export async function editThreadPost(formData: FormData) {
     );
   }
 
-  const { error } = await supabase
+  const { data: updatedThread, error } = await supabase
     .from("thread_posts")
     .update({
       body,
       updated_at: new Date().toISOString(),
     })
     .eq("id", threadId)
-    .eq("author_id", userId);
+    .eq("author_id", userId)
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
+  if (error || !updatedThread) {
     redirect(
       redirectWithMessage({
-        message: error.message || "Could not edit Gossip post.",
+        message:
+          error?.message ||
+          "Could not edit Gossip post. It may be gone or owned by another account.",
         path: returnPath,
       }),
     );
@@ -715,7 +727,7 @@ export async function deleteThreadPost(formData: FormData) {
     redirect(redirectWithMessage({ message: "Choose a Gossip post first.", path: returnPath }));
   }
 
-  const { error } = await supabase
+  const { data: deletedThread, error } = await supabase
     .from("thread_posts")
     .update({
       is_indexable: false,
@@ -723,12 +735,16 @@ export async function deleteThreadPost(formData: FormData) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", threadId)
-    .eq("author_id", userId);
+    .eq("author_id", userId)
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
+  if (error || !deletedThread) {
     redirect(
       redirectWithMessage({
-        message: error.message || "Could not delete Gossip post.",
+        message:
+          error?.message ||
+          "Could not delete Gossip post. It may be gone or owned by another account.",
         path: returnPath,
       }),
     );
