@@ -64,7 +64,7 @@ export function MediaLightbox({
         tabIndex={0}
       >
         {children}
-        <span className="pointer-events-none absolute right-3 top-3 flex size-9 items-center justify-center rounded-md bg-[#171412]/80 text-white opacity-0 shadow-lg transition group-hover:opacity-100 group-focus-visible:opacity-100">
+        <span className="pointer-events-none absolute right-3 top-3 flex size-9 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--foreground)_82%,transparent)] text-[var(--background)] opacity-0 shadow-lg transition group-hover:opacity-100 group-focus-visible:opacity-100">
           <Maximize2 className="size-4" />
         </span>
       </div>
@@ -72,7 +72,7 @@ export function MediaLightbox({
       {isOpen ? (
         <div
           aria-modal="true"
-          className="fixed inset-0 z-50 flex flex-col bg-[#070605]/95 text-white"
+          className="fixed inset-0 z-50 flex flex-col bg-[color-mix(in_srgb,var(--foreground)_96%,#070605)] text-white"
           role="dialog"
         >
           <div className="flex items-center justify-between gap-3 border-b border-white/10 px-3 py-2">
@@ -117,7 +117,7 @@ export function MediaLightbox({
               ) : null}
               <button
                 aria-label="Close media viewer"
-                className="flex size-10 items-center justify-center rounded-md bg-white text-[#171412]"
+                className="flex size-10 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
                 onClick={() => {
                   setIsOpen(false);
                   setZoom(1);
