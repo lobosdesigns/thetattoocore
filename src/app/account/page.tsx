@@ -408,8 +408,41 @@ export default async function AccountPage({
         total_cents: number;
       }[]
     >();
+  const { data: merchSales } = await supabase
+    .from("merch_order_items")
+    .select(
+      "id, order_id, title_snapshot, quantity, unit_price_cents, line_total_cents, currency, fulfillment_status, created_at, merch_orders(id, status, customer_email, shipping_name, created_at, fulfilled_at, cancelled_at, refunded_at)",
+    )
+    .eq("seller_id", claims.sub)
+    .order("created_at", { ascending: false })
+    .limit(orderLimit + 1)
+    .returns<
+      {
+        created_at: string;
+        currency: string;
+        fulfillment_status: string;
+        id: string;
+        line_total_cents: number;
+        merch_orders: {
+          cancelled_at: string | null;
+          created_at: string;
+          customer_email: string | null;
+          fulfilled_at: string | null;
+          id: string;
+          refunded_at: string | null;
+          shipping_name: string | null;
+          status: string;
+        } | null;
+        order_id: string;
+        quantity: number;
+        title_snapshot: string;
+        unit_price_cents: number;
+      }[]
+    >();
   const visibleMerchOrders = (merchOrders ?? []).slice(0, orderLimit);
   const hasMoreMerchOrders = (merchOrders?.length ?? 0) > orderLimit;
+  const visibleMerchSales = (merchSales ?? []).slice(0, orderLimit);
+  const hasMoreMerchSales = (merchSales?.length ?? 0) > orderLimit;
   const canSubmitLicense =
     profile?.account_type &&
     verificationEligibleAccountTypes.includes(profile.account_type as string);
@@ -576,6 +609,90 @@ export default async function AccountPage({
               Load {orderPageSize} more orders
             </Link>
           ) : null}
+
+          <div className="mt-8 border-t border-[var(--card-rim)] pt-5">
+            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
+                  Seller view
+                </p>
+                <h3 className="text-lg font-bold">Merch sales</h3>
+              </div>
+              <span className="w-fit rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1 text-xs font-semibold">
+                Latest {visibleMerchSales.length || orderLimit}
+              </span>
+            </div>
+            <p className="text-sm leading-6 text-[var(--muted-strong)]">
+              Sales show paid or pending checkout items that belong to your
+              products. Fulfillment still needs admin/payment-provider review
+              before public production orders open.
+            </p>
+            {visibleMerchSales.length ? (
+              <div className="mt-4 grid gap-3">
+                {visibleMerchSales.map((item) => {
+                  const order = item.merch_orders;
+
+                  return (
+                    <article
+                      className="rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4"
+                      key={item.id}
+                    >
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-sm font-bold">
+                            {item.quantity} x {item.title_snapshot}
+                          </p>
+                          <p className="mt-1 text-xs text-[var(--muted-strong)]">
+                            Order {(order?.id ?? item.order_id).slice(0, 8)} -{" "}
+                            {formatDate(order?.created_at ?? item.created_at)}
+                          </p>
+                        </div>
+                        <span
+                          className={`w-fit rounded-md border px-2 py-1 text-xs font-semibold capitalize ${orderStatusClass(
+                            order?.status ?? item.fulfillment_status,
+                          )}`}
+                        >
+                          {(order?.status ?? item.fulfillment_status).replace("_", " ")}
+                        </span>
+                      </div>
+                      <div className="mt-3 grid gap-2 text-sm text-[var(--muted)] sm:grid-cols-2">
+                        <p>
+                          Line total: {money(item.line_total_cents, item.currency)}
+                        </p>
+                        <p>
+                          Unit price: {money(item.unit_price_cents, item.currency)}
+                        </p>
+                        <p>Fulfillment: {item.fulfillment_status.replace("_", " ")}</p>
+                        <p>Ship to: {order?.shipping_name || "Not collected"}</p>
+                        <p>Email: {order?.customer_email || "Not collected"}</p>
+                        {order?.fulfilled_at ? (
+                          <p>Fulfilled: {formatDate(order.fulfilled_at)}</p>
+                        ) : null}
+                        {order?.refunded_at ? (
+                          <p>Refunded: {formatDate(order.refunded_at)}</p>
+                        ) : null}
+                        {order?.cancelled_at ? (
+                          <p>Cancelled: {formatDate(order.cancelled_at)}</p>
+                        ) : null}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 text-sm text-[var(--muted)]">
+                No Merch sales yet.
+              </p>
+            )}
+            {hasMoreMerchSales ? (
+              <Link
+                className="mt-4 flex h-11 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-4 text-sm font-semibold"
+                href={orderLimitHref(orderLimit + orderPageSize)}
+              >
+                Load {orderPageSize} more sales
+              </Link>
+            ) : null}
+          </div>
         </section>
 
         <section
