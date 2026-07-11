@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   BadgeCheck,
   Bell,
@@ -1306,6 +1307,11 @@ export default async function Home({
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
+
+  if (!claims?.sub) {
+    redirect("/login");
+  }
+
   const { data: currentProfile } = claims?.sub
     ? await supabase
         .from("profiles")
