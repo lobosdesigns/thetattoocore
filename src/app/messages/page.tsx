@@ -136,11 +136,11 @@ export default async function MessagesPage({
       <main className="ttc-page min-h-screen px-4 py-8">
         <section className="ttc-card ttc-surface mx-auto max-w-xl rounded-md border p-5">
           <h1 className="text-xl font-bold">DM</h1>
-          <p className="mt-2 text-sm text-[#766d62]">
+          <p className="mt-2 text-sm text-[var(--muted-strong)]">
             Sign in to start conversations with artists, studios, and collectors.
           </p>
           <Link
-            className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+            className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
             href="/login"
           >
             Sign in
@@ -161,11 +161,11 @@ export default async function MessagesPage({
       <main className="ttc-page min-h-screen px-4 py-8">
         <section className="ttc-card ttc-surface mx-auto max-w-xl rounded-md border p-5">
           <h1 className="text-xl font-bold">Finish profile</h1>
-          <p className="mt-2 text-sm text-[#766d62]">
+          <p className="mt-2 text-sm text-[var(--muted-strong)]">
             Set up your profile before sending messages.
           </p>
           <Link
-            className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+            className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
             href="/account"
           >
             Profile
@@ -386,7 +386,7 @@ export default async function MessagesPage({
               </Link>
               <div className="min-w-0 flex-1">
                 <h1 className="text-xl font-bold">DM</h1>
-                <p className="truncate text-xs text-[#766d62]">
+                <p className="truncate text-xs text-[var(--muted-strong)]">
                   @{currentProfile.username}
                 </p>
               </div>
@@ -399,7 +399,7 @@ export default async function MessagesPage({
               encType="multipart/form-data"
             >
               <div className="ttc-surface flex items-center gap-2 rounded-md border px-3">
-                <Search className="size-4 text-[#766d62]" />
+                <Search className="size-4 text-[var(--muted-strong)]" />
                 <input
                   className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none"
                   defaultValue={prefillUsername}
@@ -414,7 +414,7 @@ export default async function MessagesPage({
               </div>
               <WordLimitedField
                 as="textarea"
-                className="ttc-surface min-h-20 w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-[#171412]"
+                className="ttc-surface min-h-20 w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
                 emojiShortcuts
                 maxCharacters={4000}
                 maxLength={4000}
@@ -438,7 +438,7 @@ export default async function MessagesPage({
                 </div>
               </details>
               <PendingSubmitButton
-                className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                 pendingLabel="Sending"
               >
                 <Send className="size-4" />
@@ -485,20 +485,20 @@ export default async function MessagesPage({
                           </p>
                           <div className="flex shrink-0 items-center gap-2">
                             {hasUnread ? (
-                              <span className="flex min-w-5 items-center justify-center rounded-full bg-[#171412] px-1.5 text-[10px] font-bold text-white">
+                              <span className="flex min-w-5 items-center justify-center rounded-full bg-[var(--foreground)] px-1.5 text-[10px] font-bold text-[var(--background)]">
                                 {conversation.unreadCount > 9
                                   ? "9+"
                                   : conversation.unreadCount}
                               </span>
                             ) : null}
                             {conversation.latestMessage ? (
-                              <p className="text-xs text-[#766d62]">
+                              <p className="text-xs text-[var(--muted-strong)]">
                                 {timeAgo(conversation.latestMessage.created_at)}
                               </p>
                             ) : null}
                           </div>
                         </div>
-                        <p className="truncate text-xs text-[#766d62]">
+                        <p className="truncate text-xs text-[var(--muted-strong)]">
                           @{profile?.username ?? "member"}{" "}
                           {profileLocation(profile)
                             ? ` - ${profileLocation(profile)}`
@@ -506,7 +506,7 @@ export default async function MessagesPage({
                         </p>
                         <p
                           className={`mt-1 truncate text-sm ${
-                            hasUnread ? "font-semibold text-[#171412]" : "text-[#4f473f]"
+                            hasUnread ? "font-semibold text-[var(--foreground)]" : "text-[var(--muted)]"
                           }`}
                         >
                           {conversation.latestMessage?.body ?? "No DMs yet."}
@@ -518,9 +518,9 @@ export default async function MessagesPage({
               })
             ) : (
               <div className="px-4 py-8 text-center">
-                <Inbox className="mx-auto mb-3 size-8 text-[#766d62]" />
+                <Inbox className="mx-auto mb-3 size-8 text-[var(--muted-strong)]" />
                 <p className="text-sm font-semibold">No conversations yet</p>
-                <p className="mt-1 text-sm text-[#766d62]">
+                <p className="mt-1 text-sm text-[var(--muted-strong)]">
                   Search a username above to send the first DM.
                 </p>
               </div>
@@ -560,7 +560,7 @@ export default async function MessagesPage({
                       {selectedConversation.otherProfile?.display_name ??
                         "TattooCore member"}
                     </h2>
-                    <p className="truncate text-xs text-[#766d62]">
+                    <p className="truncate text-xs text-[var(--muted-strong)]">
                       @{selectedConversation.otherProfile?.username ?? "member"}
                     </p>
                   </div>
@@ -595,7 +595,7 @@ export default async function MessagesPage({
                 <div className="flex items-end gap-2">
                   <WordLimitedField
                     as="textarea"
-                    className="ttc-surface min-h-12 w-full resize-none rounded-md border px-3 py-2 text-sm outline-none focus:border-[#171412]"
+                    className="ttc-surface min-h-12 w-full resize-none rounded-md border px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
                     emojiShortcuts
                     maxCharacters={4000}
                     maxLength={4000}
@@ -605,7 +605,7 @@ export default async function MessagesPage({
                   />
                   <PendingSubmitButton
                     aria-label="Send message"
-                    className="flex size-12 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                    className="flex size-12 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]"
                     pendingChildren={
                       <LoaderCircle className="size-5 animate-spin" />
                     }
@@ -633,9 +633,9 @@ export default async function MessagesPage({
           ) : (
             <div className="flex flex-1 items-center justify-center px-4">
               <div className="max-w-sm text-center">
-                <MessageCircle className="mx-auto mb-3 size-10 text-[#766d62]" />
+                <MessageCircle className="mx-auto mb-3 size-10 text-[var(--muted-strong)]" />
                 <h2 className="text-lg font-bold">Your DMs</h2>
-                <p className="mt-2 text-sm leading-6 text-[#766d62]">
+                <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
                   Start a conversation from the inbox panel to trade booking
                   details, flash info, guest spots, and marketplace questions.
                 </p>

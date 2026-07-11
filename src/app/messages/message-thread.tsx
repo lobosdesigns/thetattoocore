@@ -115,7 +115,7 @@ export function MessageThread({
             <div
               className={`max-w-[82%] overflow-hidden rounded-md px-4 py-3 sm:max-w-[78%] ${
                 mine
-                  ? "bg-[#171412] text-white"
+                  ? "bg-[var(--foreground)] text-[var(--background)]"
                   : "ttc-surface border"
               }`}
             >
@@ -158,7 +158,7 @@ export function MessageThread({
               ) : null}
               <p
                 className={`mt-2 text-[11px] ${
-                  mine ? "text-white/70" : "text-[#766d62]"
+                  mine ? "text-white/70" : "text-[var(--muted-strong)]"
                 }`}
               >
                 {mine ? "You" : sender?.display_name ?? "TattooCore member"} -{" "}
