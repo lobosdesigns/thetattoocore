@@ -1664,7 +1664,7 @@ export default async function Home({
 
           <ColumnSnapRail>
           <section
-            className="min-w-full snap-start snap-always divide-y divide-[#e5ded4]"
+            className="min-w-full snap-start snap-always divide-y divide-[var(--card-rim)]"
             id="feed"
           >
             {visibleFeedPosts.length ? (
