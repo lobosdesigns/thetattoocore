@@ -1187,7 +1187,7 @@ export default async function AdminPage({
     },
     {
       action: "Open content",
-      body: "Media, 4U, Gossip, Stuff, and Gigs moderation should split into dedicated review pages.",
+      body: "4U, Gossip, Stuff, Gigs, and Merch moderation now live on a focused paged content queue.",
       count: reviewItems.length,
       href: "/admin/content",
       label: "Content",
