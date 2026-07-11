@@ -42,6 +42,18 @@ const mediaLimits = [
   ["DM media", "Photos and GIF-style images only until private video handling is worth the cost."],
   ["Sensitive media", "No nudity for launch policy; legacy sensitive flags should stay protected where present."],
 ] as const;
+const streamReadiness = [
+  "Weekly reel uploads are high enough that raw Storage delivery is slowing feeds or raising bandwidth cost.",
+  "Moderation has enough volume that generated posters and review thumbnails save real admin time.",
+  "Stripe, app-store, and policy review are stable enough that paid video infrastructure will not be wasted on rework.",
+  "A fallback path exists for failed transcodes so member posts do not disappear silently.",
+] as const;
+const thumbnailContract = [
+  "Store poster path, width, height, duration, and source media id next to the media row.",
+  "Use posters in feeds, search, profile grids, and share cards before loading heavier video.",
+  "Keep private or sensitive posters behind the same visibility checks as their source media.",
+  "Record processing status so admins can retry failed thumbnails without re-uploading member media.",
+] as const;
 
 export const metadata: Metadata = {
   robots: {
@@ -164,6 +176,46 @@ export default async function AdminMediaOpsPage() {
               </div>
             </section>
           </aside>
+        </div>
+
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
+            <h2 className="text-lg font-bold">Stream switch checklist</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
+              Use this before paying for managed video. The current raw-video
+              path should stay in place until the cost and moderation benefits
+              are obvious.
+            </p>
+            <ul className="mt-4 space-y-2 text-sm leading-6 text-[var(--muted)]">
+              {streamReadiness.map((item) => (
+                <li
+                  className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2"
+                  key={item}
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
+            <h2 className="text-lg font-bold">Thumbnail contract</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
+              The first media-processing job should be lightweight poster and
+              thumbnail generation, because it improves feed speed before full
+              video transcoding is needed.
+            </p>
+            <ul className="mt-4 space-y-2 text-sm leading-6 text-[var(--muted)]">
+              {thumbnailContract.map((item) => (
+                <li
+                  className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2"
+                  key={item}
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
       </section>
     </main>
