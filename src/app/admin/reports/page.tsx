@@ -39,6 +39,7 @@ const reportModerationSubjectTypes = new Set<string>([
   "gig",
   "thread_post",
   "marketplace_listing",
+  "merch_product",
 ]);
 
 export const metadata: Metadata = {
@@ -474,6 +475,29 @@ export default async function AdminReportsPage({
           ownerUsername: gig.profiles?.username ?? null,
           preview: gig.description,
           title: gig.title,
+        });
+      }
+    })(),
+    (async () => {
+      const ids = reportSubjectIds("merch_product");
+      if (!ids.length) return;
+      const { data } = await supabase
+        .from("merch_products")
+        .select("id, title, description, profiles:profiles!merch_products_seller_id_fkey(username)")
+        .in("id", ids)
+        .returns<
+          {
+            description: string | null;
+            id: string;
+            profiles: { username: string } | null;
+            title: string;
+          }[]
+        >();
+      for (const product of data ?? []) {
+        reportSubjectPreviews.set(reportSubjectKey("merch_product", product.id), {
+          ownerUsername: product.profiles?.username ?? null,
+          preview: product.description,
+          title: product.title,
         });
       }
     })(),

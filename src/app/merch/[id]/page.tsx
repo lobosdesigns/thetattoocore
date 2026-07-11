@@ -11,6 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { archiveMerchProduct, editMerchProduct } from "@/app/actions";
+import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { ProtectedVideo } from "@/app/protected-video";
@@ -520,6 +521,19 @@ export default async function MerchProductPage({
               title={product.title}
               url={`${siteUrl}/merch/${product.id}`}
             />
+
+            {claims?.sub && !isOwnProduct ? (
+              <section className="ttc-card rounded-md p-4">
+                <p className="mb-3 text-xs font-semibold uppercase text-[var(--muted-strong)]">
+                  Safety
+                </p>
+                <ContentReportForm
+                  returnPath={`/merch/${product.id}`}
+                  subjectId={product.id}
+                  subjectType="merch_product"
+                />
+              </section>
+            ) : null}
           </aside>
         </section>
       </div>

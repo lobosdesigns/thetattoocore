@@ -2631,6 +2631,14 @@ export default async function Home({
                           title={product.title}
                           url={`${siteUrl}/merch/${product.id}`}
                         />
+                        {isSignedIn && product.profiles?.id !== claims?.sub ? (
+                          <ContentReportForm
+                            returnHash="merch"
+                            returnPath="/"
+                            subjectId={product.id}
+                            subjectType="merch_product"
+                          />
+                        ) : null}
                       </div>
                     </article>
                   );

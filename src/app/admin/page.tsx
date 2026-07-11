@@ -32,7 +32,12 @@ type ReviewItem = {
   isSensitive: boolean;
   sensitiveReason: string | null;
   status: ModerationStatus;
-  subjectType: "feed_post" | "gig" | "thread_post" | "marketplace_listing";
+  subjectType:
+    | "feed_post"
+    | "gig"
+    | "marketplace_listing"
+    | "merch_product"
+    | "thread_post";
   visibility: "public_preview" | "members" | "private";
 };
 type ReportItem = {
@@ -931,6 +936,36 @@ export default async function AdminPage({
           preview: gig.description,
           title: gig.title,
         });
+      }
+    })(),
+    (async () => {
+      const ids = reportSubjectIds("merch_product");
+      if (!ids.length) return;
+
+      const { data } = await supabase
+        .from("merch_products")
+        .select(
+          "id, title, description, profiles:profiles!merch_products_seller_id_fkey(username)",
+        )
+        .in("id", ids)
+        .returns<
+          {
+            description: string | null;
+            id: string;
+            profiles: { username: string } | null;
+            title: string;
+          }[]
+        >();
+
+      for (const product of data ?? []) {
+        reportSubjectPreviews.set(
+          reportSubjectKey("merch_product", product.id),
+          {
+            ownerUsername: product.profiles?.username ?? null,
+            preview: product.description,
+            title: product.title,
+          },
+        );
       }
     })(),
     (async () => {

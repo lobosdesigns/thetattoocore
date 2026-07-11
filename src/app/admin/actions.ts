@@ -8,7 +8,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
-type SubjectType = "feed_post" | "gig" | "thread_post" | "marketplace_listing";
+type SubjectType =
+  | "feed_post"
+  | "gig"
+  | "marketplace_listing"
+  | "merch_product"
+  | "thread_post";
 type ModerationStatus = "active" | "under_review" | "hidden" | "removed";
 type ReportStatus = "open" | "reviewing" | "resolved" | "dismissed";
 type ReportFollowupAction = "escalate_report" | "warn_member";
@@ -94,6 +99,11 @@ const subjectConfig = {
     idColumn: "id",
     ownerColumn: "seller_id",
     table: "marketplace_listings",
+  },
+  merch_product: {
+    idColumn: "id",
+    ownerColumn: "seller_id",
+    table: "merch_products",
   },
   thread_post: {
     idColumn: "id",
