@@ -19,6 +19,7 @@ type Claims = {
 };
 
 const adminRoles = ["moderator", "admin", "owner"];
+const orderPageSize = 25;
 const accountNavItems = [
   ["#profile-settings", "Profile"],
   ["#appearance-settings", "Appearance"],
@@ -30,6 +31,19 @@ const accountNavItems = [
   ["#order-settings", "Orders"],
   ["#data-settings", "Data"],
 ] as const;
+
+function limitParam(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+  const parsed = Number.parseInt(rawValue ?? String(orderPageSize), 10);
+
+  if (!Number.isFinite(parsed)) return orderPageSize;
+
+  return Math.max(orderPageSize, Math.min(250, parsed));
+}
+
+function orderLimitHref(limit: number) {
+  return `/account?orders=${limit}#order-settings`;
+}
 
 function AccountSetupGuide({
   isFirstProfile,
@@ -278,9 +292,10 @@ function AccountReadinessPanel({
 export default async function AccountPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string }>;
+  searchParams: Promise<{ message?: string; orders?: string | string[] }>;
 }) {
   const params = await searchParams;
+  const orderLimit = limitParam(params.orders);
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -365,7 +380,7 @@ export default async function AccountPage({
     )
     .eq("buyer_id", claims.sub)
     .order("created_at", { ascending: false })
-    .limit(5)
+    .limit(orderLimit + 1)
     .returns<
       {
         cancelled_at: string | null;
@@ -383,6 +398,8 @@ export default async function AccountPage({
         total_cents: number;
       }[]
     >();
+  const visibleMerchOrders = (merchOrders ?? []).slice(0, orderLimit);
+  const hasMoreMerchOrders = (merchOrders?.length ?? 0) > orderLimit;
   const canSubmitLicense =
     profile?.account_type &&
     verificationEligibleAccountTypes.includes(profile.account_type as string);
@@ -466,16 +483,16 @@ export default async function AccountPage({
               <h2 className="text-xl font-bold">Orders</h2>
             </div>
             <span className="w-fit rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1 text-xs font-semibold">
-              Latest 5
+              Latest {visibleMerchOrders.length || orderLimit}
             </span>
           </div>
           <p className="text-sm leading-6 text-[var(--muted-strong)]">
             Merch checkout is in test mode while fulfillment, shipping, refund,
             tax, and production seller rules are finished.
           </p>
-          {merchOrders?.length ? (
+          {visibleMerchOrders.length ? (
             <div className="mt-4 grid gap-3">
-              {merchOrders.map((order) => (
+              {visibleMerchOrders.map((order) => (
                 <article
                   className="rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4"
                   key={order.id}
@@ -541,6 +558,14 @@ export default async function AccountPage({
               No Merch orders yet.
             </p>
           )}
+          {hasMoreMerchOrders ? (
+            <Link
+              className="mt-4 flex h-11 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-4 text-sm font-semibold"
+              href={orderLimitHref(orderLimit + orderPageSize)}
+            >
+              Load {orderPageSize} more orders
+            </Link>
+          ) : null}
         </section>
 
         <section
