@@ -321,7 +321,7 @@ export default async function AccountPage({
   const { data: adCampaigns } = await supabase
     .from("ad_campaigns")
     .select(
-      "id, name, title, campaign_type, goal, status, bid_cents, daily_budget_cents, created_at, ad_campaign_placements(placement), ad_events(event_type)",
+      "id, name, title, campaign_type, goal, status, payment_status, prepaid_amount_cents, platform_fee_cents, bid_cents, daily_budget_cents, created_at, ad_campaign_placements(placement), ad_events(event_type)",
     )
     .eq("advertiser_id", claims.sub)
     .order("created_at", { ascending: false })
@@ -337,6 +337,9 @@ export default async function AccountPage({
         goal: string;
         id: string;
         name: string;
+        payment_status: string;
+        platform_fee_cents: number;
+        prepaid_amount_cents: number;
         status: string;
         title: string;
       }[]
@@ -898,6 +901,9 @@ export default async function AccountPage({
                       <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold capitalize">
                         {adLabel(campaign.status)}
                       </span>
+                      <span className="rounded-md bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] px-2 py-1 text-xs font-semibold capitalize">
+                        {adLabel(campaign.payment_status)}
+                      </span>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--muted-strong)]">
                       <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-2 py-1 capitalize">
@@ -911,6 +917,10 @@ export default async function AccountPage({
                       <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-2 py-1">
                         {dollars(campaign.bid_cents)} bid /{" "}
                         {dollars(campaign.daily_budget_cents)} daily cap
+                      </span>
+                      <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-2 py-1">
+                        {dollars(campaign.prepaid_amount_cents)} prepaid /{" "}
+                        {dollars(campaign.platform_fee_cents)} TTC fee
                       </span>
                     </div>
                     <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">

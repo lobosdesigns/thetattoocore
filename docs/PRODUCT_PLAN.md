@@ -187,7 +187,8 @@
 - Sponsored cards should show clear ad labeling plus simple relevance context such as placement, coarse location, language, or keywords. Started for launch with reviewed sponsored cards showing placement, country/language labels, keywords, and no-AI-profiling copy.
 - Admin review should explicitly reject AI tattoo art claims, unsafe scratcher promotion, unlicensed studio promotion, and restricted equipment ads. Done for launch with visible admin ad-review standards.
 - Advertiser flow: create campaign, upload creative, choose regions/languages/keywords, set bid/budget, submit for admin review. Started for launch with account campaign submission, simple targeting, placements, bid/budget, and admin review.
-- Admin flow: approve/reject campaigns, pause campaigns, inspect spend/impressions/clicks, and moderate creative. Started for launch with dedicated admin ad queue, review standards, status actions, and basic performance counts.
+- Admin flow: approve/reject campaigns, pause campaigns, inspect spend/impressions/clicks, and moderate creative. Started for launch with dedicated admin ad queue, review standards, status actions, basic performance counts, and ad payment-status visibility.
+- Ad payments should use the same Stripe gateway/POS foundation as Merch. Started with ad campaign payment fields for unpaid/checkout/paid/refunded state, prepaid amount, TTC platform fee, Stripe checkout session, Stripe payment intent, and paid/refunded timestamps. Next step is an advertiser Stripe checkout route before active paid campaigns can run from budget.
 
 ## Later Columns
 

@@ -34,7 +34,10 @@ type AdCampaign = {
   keywords: string[];
   language: string | null;
   name: string;
+  paymentStatus: string;
   placements: ("4u" | "gossip" | "stuff")[];
+  platformFeeCents: number;
+  prepaidAmountCents: number;
   region: string | null;
   reviewerNote: string | null;
   startsAt: string | null;
@@ -228,6 +231,14 @@ function AdCampaignCard({
         </div>
         <div>
           <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
+            Payment
+          </dt>
+          <dd className="mt-0.5 capitalize">
+            {adLabel(campaign.paymentStatus)} - {dollars(campaign.prepaidAmountCents)}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
             Placements
           </dt>
           <dd className="mt-0.5">
@@ -255,6 +266,10 @@ function AdCampaignCard({
           ))}
         </div>
       ) : null}
+      <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-xs text-[var(--muted)]">
+        TTC fee tracked for this campaign: {dollars(campaign.platformFeeCents)}.
+        Stripe ad checkout is not enabled yet.
+      </p>
       <div className="mt-3 grid grid-cols-1 gap-2 text-center text-xs min-[390px]:grid-cols-3">
         {[
           ["Impressions", campaign.impressions],
@@ -343,7 +358,7 @@ export default async function AdminAdsPage({
   const { count, data: adCampaignRows } = await supabase
     .from("ad_campaigns")
     .select(
-      "id, name, title, body, target_url, campaign_type, goal, status, bid_cents, daily_budget_cents, country_code, region, city, language, keywords, starts_at, ends_at, reviewer_note, created_at, profiles:profiles!ad_campaigns_advertiser_id_fkey(display_name, username), ad_campaign_placements(placement), ad_events(event_type)",
+      "id, name, title, body, target_url, campaign_type, goal, status, payment_status, prepaid_amount_cents, platform_fee_cents, bid_cents, daily_budget_cents, country_code, region, city, language, keywords, starts_at, ends_at, reviewer_note, created_at, profiles:profiles!ad_campaigns_advertiser_id_fkey(display_name, username), ad_campaign_placements(placement), ad_events(event_type)",
       { count: "exact" },
     )
     .in("status", [
@@ -379,7 +394,10 @@ export default async function AdminAdsPage({
         keywords: string[];
         language: string | null;
         name: string;
+        payment_status: string;
         profiles: { display_name: string; username: string } | null;
+        platform_fee_cents: number;
+        prepaid_amount_cents: number;
         region: string | null;
         reviewer_note: string | null;
         starts_at: string | null;
@@ -415,9 +433,12 @@ export default async function AdminAdsPage({
     keywords: campaign.keywords ?? [],
     language: campaign.language,
     name: campaign.name,
+    paymentStatus: campaign.payment_status,
     placements: campaign.ad_campaign_placements.map(
       (placement) => placement.placement,
     ),
+    platformFeeCents: campaign.platform_fee_cents,
+    prepaidAmountCents: campaign.prepaid_amount_cents,
     region: campaign.region,
     reviewerNote: campaign.reviewer_note,
     startsAt: campaign.starts_at,
