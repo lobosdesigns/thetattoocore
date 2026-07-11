@@ -32,6 +32,8 @@ type MerchProduct = {
   id: string;
   inventoryQuantity: number;
   isOfficial: boolean;
+  sellerAccountType: string | null;
+  sellerLicenseVerifiedAt: string | null;
   priceCents: number;
   sellerName: string;
   sellerUsername: string;
@@ -225,6 +227,19 @@ function ProductCard({
               Official TTC
             </span>
           ) : null}
+          {!product.isOfficial ? (
+            <span
+              className={`rounded-md border px-2 py-1 text-xs font-semibold ${
+                product.sellerLicenseVerifiedAt
+                  ? "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]"
+                  : "border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]"
+              }`}
+            >
+              {product.sellerLicenseVerifiedAt
+                ? "Seller verified"
+                : "Seller not verified"}
+            </span>
+          ) : null}
         </div>
       </div>
       <dl className="mt-4 grid gap-3 text-sm text-[var(--muted)] sm:grid-cols-3">
@@ -240,7 +255,10 @@ function ProductCard({
         </div>
         <div>
           <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">Seller</dt>
-          <dd>{product.sellerName}</dd>
+          <dd>
+            {product.sellerName}
+            {product.sellerAccountType ? ` - ${product.sellerAccountType}` : ""}
+          </dd>
         </div>
       </dl>
       <form action={updateMerchProductStatus} className="mt-4 space-y-2">
@@ -418,7 +436,7 @@ export default async function AdminMerchPage({
   const { count, data: productRows, error: productError } = await supabase
     .from("merch_products")
     .select(
-      "id, title, category, status, price_cents, currency, inventory_quantity, is_official, created_at, profiles:profiles!merch_products_seller_id_fkey(display_name, username)",
+      "id, title, category, status, price_cents, currency, inventory_quantity, is_official, created_at, profiles:profiles!merch_products_seller_id_fkey(account_type, display_name, license_verified_at, username)",
       { count: "exact" },
     )
     .order("created_at", { ascending: false })
@@ -432,7 +450,12 @@ export default async function AdminMerchPage({
         inventory_quantity: number;
         is_official: boolean;
         price_cents: number;
-        profiles: { display_name: string; username: string } | null;
+        profiles: {
+          account_type: string | null;
+          display_name: string;
+          license_verified_at: string | null;
+          username: string;
+        } | null;
         status: ProductStatus;
         title: string;
       }[]
@@ -445,6 +468,8 @@ export default async function AdminMerchPage({
     inventoryQuantity: product.inventory_quantity,
     isOfficial: product.is_official,
     priceCents: product.price_cents,
+    sellerAccountType: product.profiles?.account_type ?? null,
+    sellerLicenseVerifiedAt: product.profiles?.license_verified_at ?? null,
     sellerName: product.profiles?.display_name ?? "Seller",
     sellerUsername: product.profiles?.username ?? "seller",
     status: product.status,

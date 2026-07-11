@@ -1208,13 +1208,17 @@ export async function updateMerchProductStatus(formData: FormData) {
   const { supabase, userId } = await requireModerator();
   const { data: product, error: productError } = await supabase
     .from("merch_products")
-    .select("id, seller_id, status, title, category, price_cents, currency")
+    .select(
+      "id, seller_id, status, title, category, price_cents, currency, is_official, profiles:profiles!merch_products_seller_id_fkey(account_type, license_verified_at)",
+    )
     .eq("id", productId)
     .maybeSingle<{
       category: string;
       currency: string;
       id: string;
+      is_official: boolean;
       price_cents: number;
+      profiles: { account_type: string; license_verified_at: string | null } | null;
       seller_id: string;
       status: string;
       title: string;
@@ -1224,6 +1228,22 @@ export async function updateMerchProductStatus(formData: FormData) {
     redirect(
       adminMerchMessage(
         productError?.message || "Merch product was not found.",
+        returnTo,
+      ),
+    );
+  }
+
+  if (
+    (status === "approved" || status === "active") &&
+    !product.is_official &&
+    !(
+      product.profiles?.license_verified_at &&
+      verificationEligibleAccountTypes.has(product.profiles.account_type)
+    )
+  ) {
+    redirect(
+      adminMerchMessage(
+        "This seller must be artist, studio, or vendor license verified before Merch can be approved or activated.",
         returnTo,
       ),
     );
