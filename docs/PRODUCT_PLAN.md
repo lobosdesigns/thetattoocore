@@ -116,7 +116,7 @@
 - Require members to crop or cover private areas before posting; revisit any body-art nudity policy only after moderation, app policy, and legal review are mature.
 - Prohibit pornography, sexual solicitation, explicit sexual content, exploitative content, and content involving minors in nudity or sexualized contexts.
 - Do not ask members to self-label uploads as sensitive during launch; moderation can still hide or restrict edge-case content if needed. Done for launch.
-- Add moderator tools for hiding, warning, removing, and escalating content. Started for launch with admin report/content queues, under-review, hidden, removed, and restored statuses; dedicated warning/escalation workflow can be refined later.
+- Add moderator tools for hiding, warning, removing, and escalating content. Started for launch with admin report/content queues, under-review, hidden, removed, and restored statuses; report follow-up controls now record member-warning and escalation audit entries without changing content state.
 - Add report reasons for nudity, sexual content, sensitive non-nude body-art context, minors, harassment, scams, unsafe practices, and illegal goods/services. Done for launch.
 
 ## Verification

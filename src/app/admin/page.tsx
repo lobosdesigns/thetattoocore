@@ -255,6 +255,8 @@ function moderationActivityLabel(
   if (actionType === "ban_user") return "Banned user";
   if (actionType === "resolve_report") return "Resolved report";
   if (actionType === "dismiss_report") return "Dismissed report";
+  if (actionType === "warn_member") return "Recorded member warning";
+  if (actionType === "escalate_report") return "Escalated report";
 
   return activityLabel(actionType);
 }

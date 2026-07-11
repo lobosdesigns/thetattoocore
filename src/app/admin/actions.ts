@@ -11,6 +11,7 @@ type UserRole = "user" | "moderator" | "admin" | "owner";
 type SubjectType = "feed_post" | "gig" | "thread_post" | "marketplace_listing";
 type ModerationStatus = "active" | "under_review" | "hidden" | "removed";
 type ReportStatus = "open" | "reviewing" | "resolved" | "dismissed";
+type ReportFollowupAction = "escalate_report" | "warn_member";
 type LicenseVerificationStatus = "approved" | "rejected";
 type UserStatus = "active" | "suspended" | "banned";
 type AdCampaignStatus = "approved" | "active" | "paused" | "rejected" | "archived";
@@ -39,6 +40,10 @@ const reportStatuses = new Set<ReportStatus>([
   "reviewing",
   "resolved",
   "dismissed",
+]);
+const reportFollowupActions = new Set<ReportFollowupAction>([
+  "escalate_report",
+  "warn_member",
 ]);
 const licenseStatuses = new Set<LicenseVerificationStatus>([
   "approved",
@@ -787,6 +792,115 @@ export async function updateReportStatus(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/admin/reports");
   redirect(adminReportsMessage("Report status updated.", returnTo));
+}
+
+export async function recordReportFollowup(formData: FormData) {
+  const reportId = cleanText(formData.get("report_id"), 80);
+  const returnTo = cleanText(formData.get("return_to"), 120);
+  const followupAction = cleanText(
+    formData.get("followup_action"),
+    40,
+  ) as ReportFollowupAction;
+  const note = cleanText(formData.get("note"), 500);
+
+  if (!reportId || !reportFollowupActions.has(followupAction)) {
+    redirect(adminReportsMessage("Choose a valid report follow-up.", returnTo));
+  }
+
+  const { supabase, userId } = await requireModerator();
+  const { data: report, error: reportError } = await supabase
+    .from("content_reports")
+    .select("id, subject_type, subject_id, reporter_id, status")
+    .eq("id", reportId)
+    .maybeSingle<{
+      id: string;
+      reporter_id: string;
+      status: ReportStatus;
+      subject_id: string;
+      subject_type: string;
+    }>();
+
+  if (reportError || !report) {
+    redirect(
+      adminReportsMessage(
+        reportError?.message || "Report was not found.",
+        returnTo,
+      ),
+    );
+  }
+
+  const config = subjectConfig[report.subject_type as SubjectType];
+  let targetUserId: string | null = null;
+
+  if (report.subject_type === "profile") {
+    targetUserId = report.subject_id;
+  } else if (config) {
+    const { data: subject } = await supabase
+      .from(config.table)
+      .select(config.ownerColumn)
+      .eq(config.idColumn, report.subject_id)
+      .maybeSingle<Record<string, string | null>>();
+
+    targetUserId = subject?.[config.ownerColumn] ?? null;
+  }
+
+  const now = new Date().toISOString();
+  const { error: actionError } = await supabase
+    .from("moderation_actions")
+    .insert({
+      action_type: followupAction,
+      actor_id: userId,
+      metadata: {
+        report_status:
+          followupAction === "escalate_report" ? "reviewing" : report.status,
+      },
+      note: note || null,
+      report_id: report.id,
+      subject_id: report.subject_id,
+      subject_type: report.subject_type,
+      target_user_id: targetUserId,
+    });
+
+  if (actionError) {
+    redirect(
+      adminReportsMessage(
+        actionError.message || "Could not record report follow-up.",
+        returnTo,
+      ),
+    );
+  }
+
+  if (report.status === "open" || followupAction === "escalate_report") {
+    const { error: updateError } = await supabase
+      .from("content_reports")
+      .update({
+        assigned_to: userId,
+        status: "reviewing",
+        updated_at: now,
+      })
+      .eq("id", report.id);
+
+    if (updateError) {
+      redirect(
+        adminReportsMessage(
+          updateError.message ||
+            "Follow-up was logged, but report status did not update.",
+          returnTo,
+        ),
+      );
+    }
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/reports");
+  redirect(
+    adminReportsMessage(
+      followupAction === "escalate_report"
+        ? "Report escalated for review."
+        : "Warning follow-up recorded.",
+      returnTo,
+    ),
+  );
 }
 
 export async function updateLicenseVerification(formData: FormData) {

@@ -2,7 +2,11 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ArrowLeft, ChevronLeft, ChevronRight, Flag } from "lucide-react";
-import { moderateContent, updateReportStatus } from "../actions";
+import {
+  moderateContent,
+  recordReportFollowup,
+  updateReportStatus,
+} from "../actions";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -304,6 +308,31 @@ function ReportCard({
           ))}
         </div>
       </form>
+      <form action={recordReportFollowup} className="mt-4 space-y-2">
+        <input name="report_id" type="hidden" value={report.id} />
+        <input name="return_to" type="hidden" value={pageHref(currentPage)} />
+        <input
+          className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+          maxLength={500}
+          name="note"
+          placeholder="Warning or escalation note"
+        />
+        <div className="grid grid-cols-1 gap-2 min-[390px]:grid-cols-2">
+          {[
+            ["warn_member", "Record warning"],
+            ["escalate_report", "Escalate"],
+          ].map(([value, label]) => (
+            <button
+              className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)]"
+              key={value}
+              name="followup_action"
+              value={value}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </form>
     </article>
   );
 }
@@ -558,7 +587,8 @@ export default async function AdminReportsPage({
           <p>
             Review red reports first, move valid reports into Reviewing, and use
             content actions for reportable 4U, Gossip, Stuff, and Gigs subjects.
-            Keep notes specific enough for the moderation audit log.
+            Use warning or escalation follow-ups for audit-only handling when a
+            report needs more context before content is hidden or removed.
           </p>
         </div>
 
