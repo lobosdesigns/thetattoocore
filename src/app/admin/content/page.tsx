@@ -104,8 +104,8 @@ function Pagination({
   type: ContentType;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm font-semibold text-[#4f473f]">
+    <div className="flex flex-col gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm font-semibold text-[var(--muted)]">
         Page {currentPage} of {Math.max(totalPages, 1)}
       </p>
       <div className="flex gap-2">
@@ -113,8 +113,8 @@ function Pagination({
           aria-disabled={currentPage <= 1}
           className={`flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold ${
             currentPage <= 1
-              ? "pointer-events-none border-[#e5ded4] bg-[#f7f4ef] text-[#a69b8d]"
-              : "border-[#cfc8bd] bg-white text-[#171412]"
+              ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
+              : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
           }`}
           href={pageHref(type, Math.max(1, currentPage - 1))}
         >
@@ -125,8 +125,8 @@ function Pagination({
           aria-disabled={!hasNextPage}
           className={`flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold ${
             !hasNextPage
-              ? "pointer-events-none border-[#e5ded4] bg-[#f7f4ef] text-[#a69b8d]"
-              : "border-[#171412] bg-[#171412] text-white"
+              ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
+              : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
           }`}
           href={pageHref(type, currentPage + 1)}
         >
@@ -146,32 +146,32 @@ function ReviewCard({
   item: ReviewItem;
 }) {
   return (
-    <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
+    <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
       <div className="mb-3 flex min-w-0 flex-col gap-3 min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between">
         <div className="min-w-0 break-words">
           <p className="truncate text-base font-bold">{item.title}</p>
-          <p className="mt-1 text-xs text-[#766d62]">
+          <p className="mt-1 text-xs text-[var(--muted-strong)]">
             @{item.authorUsername} - {timeAgo(item.createdAt)}
           </p>
         </div>
-        <span className="shrink-0 rounded-md border border-[#d8d1c6] bg-white px-2 py-1 text-xs font-semibold capitalize text-[#4f473f]">
+        <span className="shrink-0 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold capitalize text-[var(--muted)]">
           {statusLabel(item.status)}
         </span>
       </div>
       {item.body ? (
-        <p className="line-clamp-3 text-sm leading-6 text-[#4f473f]">
+        <p className="line-clamp-3 text-sm leading-6 text-[var(--muted)]">
           {item.body}
         </p>
       ) : null}
       <div className="mt-3 flex flex-wrap gap-1.5">
-        <span className="rounded-md bg-white px-2 py-1 text-xs font-medium">
+        <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-medium">
           {contentTypeLabel(item.subjectType)}
         </span>
-        <span className="rounded-md bg-white px-2 py-1 text-xs font-medium capitalize">
+        <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-medium capitalize">
           {item.visibility.replace("_", " ")}
         </span>
         {item.isSensitive ? (
-          <span className="rounded-md bg-[#f6dfdf] px-2 py-1 text-xs font-semibold text-[#8a2828]">
+          <span className="rounded-md bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] px-2 py-1 text-xs font-semibold text-[var(--danger)]">
             Sensitive: {item.sensitiveReason?.replaceAll("_", " ") ?? "body art"}
           </span>
         ) : null}
@@ -181,7 +181,7 @@ function ReviewCard({
         <input name="subject_id" type="hidden" value={item.id} />
         <input name="subject_type" type="hidden" value={item.subjectType} />
         <input
-          className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+          className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
           maxLength={500}
           name="note"
           placeholder="Moderator note"
@@ -194,7 +194,7 @@ function ReviewCard({
             ["active", "Restore"],
           ].map(([value, label]) => (
             <button
-              className="h-10 rounded-md border border-[#d8d1c6] bg-white px-2 text-sm font-semibold hover:bg-[#f7f4ef]"
+              className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)]"
               key={value}
               name="moderation_status"
               value={value}
@@ -398,46 +398,46 @@ export default async function AdminContentPage({
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
       <section className="ttc-page-panel mx-auto min-h-screen w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className="mb-6 flex flex-col gap-4 border-b border-[#cfc8bd] pb-5 md:flex-row md:items-center md:justify-between">
+        <header className="mb-6 flex flex-col gap-4 border-b border-[var(--card-rim)] pb-5 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <Link
               aria-label="Back to admin dashboard"
-              className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
+              className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)]"
               href="/admin"
             >
               <ArrowLeft className="size-5" />
             </Link>
             <div className="min-w-0">
-              <p className="text-sm font-semibold uppercase tracking-wide text-[#766d62]">
+              <p className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-strong)]">
                 Admin
               </p>
               <h1 className="text-2xl font-bold sm:text-3xl">Content</h1>
-              <p className="mt-1 text-sm text-[#766d62]">
+              <p className="mt-1 text-sm text-[var(--muted-strong)]">
                 50 {contentTypeLabel(activeType)} review items per page.
               </p>
             </div>
           </div>
-          <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-sm">
+          <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 text-sm">
             <p className="font-semibold">{profile.display_name}</p>
-            <p className="text-xs text-[#766d62]">
+            <p className="text-xs text-[var(--muted-strong)]">
               @{profile.username} - {profile.role}
             </p>
           </div>
         </header>
 
         {params.message ? (
-          <p className="mb-4 rounded-md border border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 text-sm font-medium">
+          <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">
             {params.message}
           </p>
         ) : null}
 
-        <div className="no-scrollbar mb-4 flex gap-2 overflow-x-auto rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-2">
+        <div className="no-scrollbar mb-4 flex gap-2 overflow-x-auto rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-2">
           {contentTabs.map(([type, label]) => (
             <Link
               className={`flex h-10 shrink-0 items-center rounded-md border px-3 text-sm font-bold ${
                 activeType === type
-                  ? "border-[#171412] bg-[#171412] text-white"
-                  : "border-[#d8d1c6] bg-white text-[#4f473f]"
+                  ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                  : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--muted)]"
               }`}
               href={pageHref(type, 1)}
               key={type}
@@ -448,28 +448,28 @@ export default async function AdminContentPage({
         </div>
 
         <div className="mb-4 grid gap-3 sm:grid-cols-4">
-          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
-            <p className="text-sm text-[#766d62]">Total in filter</p>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <p className="text-sm text-[var(--muted-strong)]">Total in filter</p>
             <p className="mt-2 text-3xl font-bold">
               {Intl.NumberFormat("en-US").format(totalItems)}
             </p>
           </div>
-          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
-            <p className="text-sm text-[#766d62]">Active here</p>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <p className="text-sm text-[var(--muted-strong)]">Active here</p>
             <p className="mt-2 text-3xl font-bold">{activeCount}</p>
           </div>
-          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
-            <p className="text-sm text-[#766d62]">Review here</p>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <p className="text-sm text-[var(--muted-strong)]">Review here</p>
             <p className="mt-2 text-3xl font-bold">{underReviewCount}</p>
           </div>
-          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
-            <p className="text-sm text-[#766d62]">Restricted here</p>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <p className="text-sm text-[var(--muted-strong)]">Restricted here</p>
             <p className="mt-2 text-3xl font-bold">{restrictedCount}</p>
           </div>
         </div>
 
-        <div className="mb-4 flex items-start gap-3 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3 text-sm leading-6 text-[#4f473f]">
-          <Gavel className="mt-1 size-5 shrink-0 text-[#c8953b]" />
+        <div className="mb-4 flex items-start gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm leading-6 text-[var(--muted)]">
+          <Gavel className="mt-1 size-5 shrink-0 text-[var(--gold)]" />
           <p>
             Review sensitive, hidden, removed, or under-review content by type.
             Use reports for user-submitted abuse context; use this page for
@@ -491,7 +491,7 @@ export default async function AdminContentPage({
             ))}
           </section>
         ) : (
-          <p className="mt-4 rounded-md border border-[#e5ded4] bg-[#fffdf9] p-4 text-sm text-[#4f473f]">
+          <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 text-sm text-[var(--muted)]">
             No {contentTypeLabel(activeType)} items are waiting in this content
             review filter.
           </p>
