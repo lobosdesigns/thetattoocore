@@ -140,6 +140,8 @@ export function MediaLightbox({
               <video
                 className="max-h-full max-w-full bg-black"
                 controls
+                controlsList="nodownload noplaybackrate"
+                disablePictureInPicture
                 onClick={(event) => event.stopPropagation()}
                 playsInline
                 preload="metadata"

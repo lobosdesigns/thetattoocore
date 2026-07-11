@@ -318,6 +318,8 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
                       <video
                         className="aspect-[4/3] w-full bg-[var(--ink)] object-contain"
                         controls
+                        controlsList="nodownload noplaybackrate"
+                        disablePictureInPicture
                         playsInline
                         preload="metadata"
                         src={mediaSrc}

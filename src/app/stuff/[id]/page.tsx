@@ -302,6 +302,8 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
                       <video
                         className="aspect-[4/3] w-full bg-[var(--ink)] object-contain"
                         controls
+                        controlsList="nodownload noplaybackrate"
+                        disablePictureInPicture
                         playsInline
                         preload="metadata"
                         src={mediaSrc}

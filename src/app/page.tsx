@@ -819,6 +819,8 @@ function MediaFrame({
         <video
           className="aspect-[4/5] w-full bg-[#171412] object-cover"
           controls
+          controlsList="nodownload noplaybackrate"
+          disablePictureInPicture
           playsInline
           preload="metadata"
           src={src}

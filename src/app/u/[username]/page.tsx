@@ -640,6 +640,8 @@ function PostPreview({ post }: { post: FeedPost }) {
             <video
               className="aspect-[4/5] w-full rounded-t-md bg-[#171412] object-cover"
               controls
+              controlsList="nodownload noplaybackrate"
+              disablePictureInPicture
               playsInline
               preload="metadata"
               src={mediaSrc ?? undefined}

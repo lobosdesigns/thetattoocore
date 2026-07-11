@@ -351,6 +351,8 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                       <video
                         className="aspect-[4/5] w-full bg-[var(--ink)] object-contain"
                         controls
+                        controlsList="nodownload noplaybackrate"
+                        disablePictureInPicture
                         playsInline
                         preload="metadata"
                         src={mediaSrc}
