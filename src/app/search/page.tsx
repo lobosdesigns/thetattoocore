@@ -76,7 +76,28 @@ type GigResult = {
   > | null;
 };
 
-type SearchType = "all" | "profiles" | "feed" | "threads" | "marketplace" | "gigs";
+type MerchResult = {
+  category: string;
+  city: string | null;
+  currency: string;
+  id: string;
+  price_cents: number;
+  profiles: Pick<
+    ProfileResult,
+    "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"
+  > | null;
+  region: string | null;
+  title: string;
+};
+
+type SearchType =
+  | "all"
+  | "profiles"
+  | "feed"
+  | "threads"
+  | "marketplace"
+  | "gigs"
+  | "merch";
 
 export const metadata: Metadata = {
   robots: {
@@ -108,7 +129,8 @@ function cleanType(value?: string): SearchType {
     text === "feed" ||
     text === "threads" ||
     text === "marketplace" ||
-    text === "gigs"
+    text === "gigs" ||
+    text === "merch"
   ) {
     return text;
   }
@@ -244,6 +266,7 @@ export default async function SearchPage({
   const shouldRunThreads = hasSearch && runSection(type, "threads");
   const shouldRunListings = hasSearch && runSection(type, "marketplace");
   const shouldRunGigs = hasSearch && runSection(type, "gigs");
+  const shouldRunMerch = hasSearch && runSection(type, "merch");
 
   const [
     { data: profiles },
@@ -251,6 +274,7 @@ export default async function SearchPage({
     { data: threads },
     { data: listings },
     { data: gigs },
+    { data: merchProducts },
   ] = hasSearch
     ? await Promise.all([
         shouldRunProfiles
@@ -347,6 +371,50 @@ export default async function SearchPage({
               .limit(resultLimit)
               .returns<GigResult[]>()
           : Promise.resolve({ data: [] as GigResult[] }),
+        shouldRunMerch
+          ? supabase
+              .from("merch_products")
+              .select(
+                "id, title, category, price_cents, currency, ships_from_city, ships_from_region, profiles:profiles!merch_products_seller_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
+              )
+              .eq("status", "active")
+              .eq("is_indexable", true)
+              .or(
+                query
+                  ? `title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern},ships_from_city.ilike.${pattern},ships_from_region.ilike.${pattern}`
+                  : `title.ilike.%,description.ilike.%,category.ilike.%,ships_from_city.ilike.%,ships_from_region.ilike.%`,
+              )
+              .ilike("category", category ? categoryPattern : "%")
+              .ilike("ships_from_city", city ? cityPattern : "%")
+              .ilike("ships_from_region", region ? regionPattern : "%")
+              .order("created_at", { ascending: false })
+              .limit(resultLimit)
+              .returns<
+                {
+                  category: string;
+                  currency: string;
+                  id: string;
+                  price_cents: number;
+                  profiles: MerchResult["profiles"];
+                  ships_from_city: string | null;
+                  ships_from_region: string | null;
+                  title: string;
+                }[]
+              >()
+              .then(({ data, ...rest }) => ({
+                data: (data ?? []).map((product) => ({
+                  category: product.category,
+                  city: product.ships_from_city,
+                  currency: product.currency,
+                  id: product.id,
+                  price_cents: product.price_cents,
+                  profiles: product.profiles,
+                  region: product.ships_from_region,
+                  title: product.title,
+                })),
+                ...rest,
+              }))
+          : Promise.resolve({ data: [] as MerchResult[] }),
       ])
     : [
         { data: [] as ProfileResult[] },
@@ -354,6 +422,7 @@ export default async function SearchPage({
         { data: [] as ThreadResult[] },
         { data: [] as ListingResult[] },
         { data: [] as GigResult[] },
+        { data: [] as MerchResult[] },
       ];
 
   const total =
@@ -361,7 +430,8 @@ export default async function SearchPage({
     (feedPosts?.length ?? 0) +
     (threads?.length ?? 0) +
     (listings?.length ?? 0) +
-    (gigs?.length ?? 0);
+    (gigs?.length ?? 0) +
+    (merchProducts?.length ?? 0);
   const canLoadMore =
     hasSearch &&
     [
@@ -370,6 +440,7 @@ export default async function SearchPage({
       shouldRunThreads ? threads?.length ?? 0 : 0,
       shouldRunListings ? listings?.length ?? 0 : 0,
       shouldRunGigs ? gigs?.length ?? 0 : 0,
+      shouldRunMerch ? merchProducts?.length ?? 0 : 0,
     ].some((count) => count === resultLimit);
 
   return (
@@ -461,6 +532,7 @@ export default async function SearchPage({
               ["threads", "Gossip"],
               ["marketplace", "Stuff"],
               ["gigs", "Gigs"],
+              ["merch", "Merch"],
             ].map(([value, label]) => (
               <Link
                 className={`flex h-9 shrink-0 items-center rounded-md border px-3 text-sm font-semibold ${
@@ -661,6 +733,52 @@ export default async function SearchPage({
                 </div>
               ) : (
                 <EmptySection label="gigs" />
+              )}
+            </SearchSection>
+            ) : null}
+
+            {runSection(type, "merch") ? (
+            <SearchSection count={merchProducts?.length ?? 0} icon={Package} title="Merch">
+              {merchProducts?.length ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {merchProducts.map((product) => (
+                    <Link
+                      className="ttc-card block rounded-md p-4"
+                      href={`/merch/${product.id}`}
+                      key={product.id}
+                    >
+                      <p className="text-sm font-semibold">{product.title}</p>
+                      <p className="mt-1 text-xs capitalize text-[var(--muted-strong)]">
+                        {product.category} -{" "}
+                        {Intl.NumberFormat("en-US", {
+                          currency: product.currency,
+                          style: "currency",
+                        }).format(product.price_cents / 100)}
+                        {locationText(product) ? ` - ${locationText(product)}` : ""}
+                      </p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <ProfileAvatar profile={product.profiles} size="sm" />
+                        <VerifiedBadge profile={product.profiles} />
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-[var(--muted-strong)]">
+                        {product.profiles?.username ? (
+                          <span>@{product.profiles.username}</span>
+                        ) : null}
+                        {product.profiles?.display_name ? (
+                          <span>{product.profiles.display_name}</span>
+                        ) : null}
+                      </div>
+                      <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
+                        Merch is fan-facing brand goods. Production checkout
+                        stays limited until seller, shipping, tax, and refund
+                        rules are complete.
+                      </p>
+                      <ResultAction>View Merch</ResultAction>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <EmptySection label="merch" />
               )}
             </SearchSection>
             ) : null}
