@@ -85,10 +85,10 @@ function isExpiredDate(value: string | null) {
 }
 
 function licenseStatusClass(status: LicenseRequest["status"]) {
-  if (status === "approved") return "border-[#b9d7bd] bg-[#eef8ef] text-[#276231]";
-  if (status === "rejected") return "border-[#e5b8b8] bg-[#fff0f0] text-[#8a2828]";
+  if (status === "approved") return "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]";
+  if (status === "rejected") return "border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]";
 
-  return "border-[#e5c58f] bg-[#fff7ec] text-[#7a4a08]";
+  return "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]";
 }
 
 function Pagination({
@@ -101,8 +101,8 @@ function Pagination({
   totalPages: number;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm font-semibold text-[#4f473f]">
+    <div className="flex flex-col gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm font-semibold text-[var(--muted)]">
         Page {currentPage} of {Math.max(totalPages, 1)}
       </p>
       <div className="flex gap-2">
@@ -110,8 +110,8 @@ function Pagination({
           aria-disabled={currentPage <= 1}
           className={`flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold ${
             currentPage <= 1
-              ? "pointer-events-none border-[#e5ded4] bg-[#f7f4ef] text-[#a69b8d]"
-              : "border-[#cfc8bd] bg-white text-[#171412]"
+              ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
+              : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
           }`}
           href={pageHref(Math.max(1, currentPage - 1))}
         >
@@ -122,8 +122,8 @@ function Pagination({
           aria-disabled={!hasNextPage}
           className={`flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold ${
             !hasNextPage
-              ? "pointer-events-none border-[#e5ded4] bg-[#f7f4ef] text-[#a69b8d]"
-              : "border-[#171412] bg-[#171412] text-white"
+              ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
+              : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
           }`}
           href={pageHref(currentPage + 1)}
         >
@@ -146,11 +146,11 @@ function LicenseRequestCard({
   const isExpired = isExpiredDate(request.expiresOn);
 
   return (
-    <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
+    <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
       <div className="mb-3 flex min-w-0 flex-col gap-3 min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between">
         <div className="min-w-0 break-words">
           <p className="truncate text-base font-bold">{request.profileName}</p>
-          <p className="mt-1 text-xs text-[#766d62]">
+          <p className="mt-1 text-xs text-[var(--muted-strong)]">
             @{request.profileUsername} - {request.accountType} -{" "}
             {timeAgo(request.createdAt)}
           </p>
@@ -163,33 +163,33 @@ function LicenseRequestCard({
           {request.status}
         </span>
       </div>
-      <dl className="grid gap-3 text-sm text-[#4f473f] sm:grid-cols-2 lg:grid-cols-4">
+      <dl className="grid gap-3 text-sm text-[var(--muted)] sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <dt className="text-xs font-semibold uppercase text-[#766d62]">
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
             Certification
           </dt>
           <dd className="mt-0.5">{request.licenseName}</dd>
         </div>
         <div>
-          <dt className="text-xs font-semibold uppercase text-[#766d62]">
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
             Region
           </dt>
           <dd className="mt-0.5">{request.issuingRegion}</dd>
         </div>
         <div>
-          <dt className="text-xs font-semibold uppercase text-[#766d62]">
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
             Submitted
           </dt>
           <dd className="mt-0.5">{formatDate(request.createdAt)}</dd>
         </div>
         <div>
-          <dt className="text-xs font-semibold uppercase text-[#766d62]">
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
             Expires
           </dt>
           <dd className="mt-0.5">
             {formatDate(request.expiresOn)}
             {isExpired ? (
-              <span className="ml-2 rounded-md bg-[#fff0f0] px-2 py-0.5 text-xs font-semibold text-[#8a2828]">
+              <span className="ml-2 rounded-md bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] px-2 py-0.5 text-xs font-semibold text-[var(--danger)]">
                 expired
               </span>
             ) : null}
@@ -197,32 +197,32 @@ function LicenseRequestCard({
         </div>
         {request.licenseNumber ? (
           <div>
-            <dt className="text-xs font-semibold uppercase text-[#766d62]">
+            <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
               License number
             </dt>
             <dd className="mt-0.5">{request.licenseNumber}</dd>
           </div>
         ) : null}
       </dl>
-      <div className="mt-4 rounded-md border border-[#e5ded4] bg-white p-3">
-        <p className="text-xs font-semibold uppercase text-[#766d62]">
+      <div className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3">
+        <p className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
           Review checklist
         </p>
-        <ul className="mt-2 space-y-1 text-xs leading-5 text-[#4f473f]">
+        <ul className="mt-2 space-y-1 text-xs leading-5 text-[var(--muted)]">
           {licenseReviewChecklist.map((item) => (
             <li key={item}>- {item}</li>
           ))}
         </ul>
       </div>
-      <div className="mt-4 rounded-md border border-[#e5ded4] bg-[#f7f4ef] p-3">
+      <div className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3">
         <p className="truncate text-sm font-semibold">{request.documentName}</p>
-        <p className="mt-1 text-xs text-[#766d62]">
+        <p className="mt-1 text-xs text-[var(--muted-strong)]">
           Private file - {request.storageBucket}
         </p>
       </div>
       {request.signedDocumentUrl ? (
         <a
-          className="mt-4 flex h-10 items-center justify-center rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold hover:bg-[#f7f4ef]"
+          className="mt-4 flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)]"
           href={request.signedDocumentUrl}
           rel="noreferrer"
           target="_blank"
@@ -230,7 +230,7 @@ function LicenseRequestCard({
           Open private document
         </a>
       ) : (
-        <p className="mt-4 rounded-md border border-[#e5ded4] bg-[#f7f4ef] px-3 py-2 text-xs text-[#766d62]">
+        <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 py-2 text-xs text-[var(--muted-strong)]">
           Document link is unavailable. Refresh the queue or check storage
           permissions.
         </p>
@@ -240,20 +240,20 @@ function LicenseRequestCard({
           <input name="request_id" type="hidden" value={request.id} />
           <input name="return_to" type="hidden" value={pageHref(currentPage)} />
           <input
-            className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+            className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
             maxLength={500}
             name="note"
             placeholder="Reviewer note, required for rejection"
           />
           {isExpired ? (
-            <p className="rounded-md border border-[#e5b8b8] bg-[#fff0f0] px-3 py-2 text-xs leading-5 text-[#8a2828]">
+            <p className="rounded-md border border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] px-3 py-2 text-xs leading-5 text-[var(--danger)]">
               This document appears expired. Reject it and ask the member to
               resubmit current proof.
             </p>
           ) : null}
           <div className="grid grid-cols-2 gap-2">
             <button
-              className="h-10 rounded-md bg-[#171412] px-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#a9a19a]"
+              className="h-10 rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-[var(--background)] disabled:cursor-not-allowed disabled:bg-[color-mix(in_srgb,var(--muted-strong)_55%,var(--paper-soft))]"
               disabled={isExpired}
               name="status"
               value="approved"
@@ -261,7 +261,7 @@ function LicenseRequestCard({
               Approve
             </button>
             <button
-              className="h-10 rounded-md border border-[#d8d1c6] bg-white px-3 text-sm font-semibold hover:bg-[#f7f4ef]"
+              className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)]"
               name="status"
               value="rejected"
             >
@@ -270,12 +270,12 @@ function LicenseRequestCard({
           </div>
         </form>
       ) : (
-        <div className="mt-4 rounded-md border border-[#e5ded4] bg-[#f7f4ef] px-3 py-2 text-xs text-[#766d62]">
+        <div className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 py-2 text-xs text-[var(--muted-strong)]">
           <p>
             Reviewed {request.reviewedAt ? formatDate(request.reviewedAt) : "previously"}.
           </p>
           {request.reviewerNote ? (
-            <p className="mt-1 text-[#4f473f]">{request.reviewerNote}</p>
+            <p className="mt-1 text-[var(--muted)]">{request.reviewerNote}</p>
           ) : null}
         </div>
       )}
@@ -373,62 +373,62 @@ export default async function AdminVerificationPage({
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
       <section className="ttc-page-panel mx-auto min-h-screen w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className="mb-6 flex flex-col gap-4 border-b border-[#cfc8bd] pb-5 md:flex-row md:items-center md:justify-between">
+        <header className="mb-6 flex flex-col gap-4 border-b border-[var(--card-rim)] pb-5 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <Link
               aria-label="Back to admin dashboard"
-              className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
+              className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)]"
               href="/admin"
             >
               <ArrowLeft className="size-5" />
             </Link>
             <div className="min-w-0">
-              <p className="text-sm font-semibold uppercase tracking-wide text-[#766d62]">
+              <p className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-strong)]">
                 Admin
               </p>
               <h1 className="text-2xl font-bold sm:text-3xl">Verification</h1>
-              <p className="mt-1 text-sm text-[#766d62]">
+              <p className="mt-1 text-sm text-[var(--muted-strong)]">
                 50 license, certification, and vendor business submissions per page.
               </p>
             </div>
           </div>
-          <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-sm">
+          <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 text-sm">
             <p className="font-semibold">{profile.display_name}</p>
-            <p className="text-xs text-[#766d62]">
+            <p className="text-xs text-[var(--muted-strong)]">
               @{profile.username} - {profile.role}
             </p>
           </div>
         </header>
 
         {params.message ? (
-          <p className="mb-4 rounded-md border border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 text-sm font-medium">
+          <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">
             {params.message}
           </p>
         ) : null}
 
         <div className="mb-4 grid gap-3 sm:grid-cols-4">
-          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
-            <p className="text-sm text-[#766d62]">Requests</p>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <p className="text-sm text-[var(--muted-strong)]">Requests</p>
             <p className="mt-2 text-3xl font-bold">
               {Intl.NumberFormat("en-US").format(totalRequests)}
             </p>
           </div>
-          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
-            <p className="text-sm text-[#766d62]">Pending here</p>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <p className="text-sm text-[var(--muted-strong)]">Pending here</p>
             <p className="mt-2 text-3xl font-bold">{pendingRequests.length}</p>
           </div>
-          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
-            <p className="text-sm text-[#766d62]">Approved here</p>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <p className="text-sm text-[var(--muted-strong)]">Approved here</p>
             <p className="mt-2 text-3xl font-bold">{approvedRequests.length}</p>
           </div>
-          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
-            <p className="text-sm text-[#766d62]">Rejected here</p>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <p className="text-sm text-[var(--muted-strong)]">Rejected here</p>
             <p className="mt-2 text-3xl font-bold">{rejectedRequests.length}</p>
           </div>
         </div>
 
-        <div className="mb-4 flex items-start gap-3 rounded-md border border-[#d8d1c6] bg-[#fffdf9] p-3 text-sm leading-6 text-[#4f473f]">
-          <ShieldCheck className="mt-1 size-5 shrink-0 text-[#c8953b]" />
+        <div className="mb-4 flex items-start gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm leading-6 text-[var(--muted)]">
+          <ShieldCheck className="mt-1 size-5 shrink-0 text-[var(--gold)]" />
           <p>
             Approvals unlock verified artist, studio, and vendor capabilities.
             Reject expired, mismatched, scratcher, unlicensed, unsafe, or AI-art
@@ -453,7 +453,7 @@ export default async function AdminVerificationPage({
             ))}
           </section>
         ) : (
-          <p className="mt-4 rounded-md border border-[#e5ded4] bg-[#fffdf9] p-4 text-sm text-[#4f473f]">
+          <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 text-sm text-[var(--muted)]">
             No license, certification, or vendor verification submissions are in
             this queue yet.
           </p>

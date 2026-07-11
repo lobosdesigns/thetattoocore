@@ -72,88 +72,88 @@ export default async function AdminMediaOpsPage() {
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
       <section className="ttc-page-panel mx-auto min-h-screen w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className="mb-6 flex flex-col gap-4 border-b border-[#cfc8bd] pb-5 md:flex-row md:items-center md:justify-between">
+        <header className="mb-6 flex flex-col gap-4 border-b border-[var(--card-rim)] pb-5 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <Link
               aria-label="Back to admin dashboard"
-              className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
+              className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)]"
               href="/admin"
             >
               <ArrowLeft className="size-5" />
             </Link>
             <div className="min-w-0">
-              <p className="text-sm font-semibold uppercase tracking-wide text-[#766d62]">
+              <p className="text-sm font-semibold uppercase tracking-wide text-[var(--muted-strong)]">
                 Admin
               </p>
               <h1 className="text-2xl font-bold sm:text-3xl">Media ops</h1>
-              <p className="mt-1 text-sm text-[#766d62]">
+              <p className="mt-1 text-sm text-[var(--muted-strong)]">
                 Upload limits, image optimization, thumbnails, and future video pipeline.
               </p>
             </div>
           </div>
-          <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-sm">
+          <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 text-sm">
             <p className="font-semibold">{profile.display_name}</p>
-            <p className="text-xs text-[#766d62]">
+            <p className="text-xs text-[var(--muted-strong)]">
               @{profile.username} - {profile.role}
             </p>
           </div>
         </header>
 
         <div className="mb-4 grid gap-3 sm:grid-cols-3">
-          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
-            <ImageIcon className="size-5 text-[#c8953b]" />
-            <p className="mt-3 text-sm text-[#766d62]">Image route</p>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <ImageIcon className="size-5 text-[var(--gold)]" />
+            <p className="mt-3 text-sm text-[var(--muted-strong)]">Image route</p>
             <p className="mt-1 text-xl font-bold">Client optimized</p>
           </div>
-          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
-            <Film className="size-5 text-[#c8953b]" />
-            <p className="mt-3 text-sm text-[#766d62]">Video route</p>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <Film className="size-5 text-[var(--gold)]" />
+            <p className="mt-3 text-sm text-[var(--muted-strong)]">Video route</p>
             <p className="mt-1 text-xl font-bold">Raw capped reels</p>
           </div>
-          <div className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-4">
-            <ServerCog className="size-5 text-[#c8953b]" />
-            <p className="mt-3 text-sm text-[#766d62]">Scale option</p>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <ServerCog className="size-5 text-[var(--gold)]" />
+            <p className="mt-3 text-sm text-[var(--muted-strong)]">Scale option</p>
             <p className="mt-1 text-xl font-bold">Cloudflare Stream</p>
           </div>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
-          <section className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-5">
+          <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
             <h2 className="text-lg font-bold">Pipeline stages</h2>
             <div className="mt-4 grid gap-3">
               {mediaOpsStages.map(([label, body]) => (
                 <article
-                  className="rounded-md border border-[#e5ded4] bg-white p-3"
+                  className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3"
                   key={label}
                 >
-                  <p className="text-xs font-bold uppercase text-[#766d62]">
+                  <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
                     {label}
                   </p>
-                  <p className="mt-1 text-sm leading-6 text-[#4f473f]">{body}</p>
+                  <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{body}</p>
                 </article>
               ))}
             </div>
           </section>
 
           <aside className="space-y-4">
-            <section className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-5">
+            <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
               <h2 className="text-lg font-bold">Cost rules</h2>
-              <ul className="mt-3 space-y-2 text-sm leading-6 text-[#4f473f]">
+              <ul className="mt-3 space-y-2 text-sm leading-6 text-[var(--muted)]">
                 {mediaCostRules.map((rule) => (
                   <li key={rule}>{rule}</li>
                 ))}
               </ul>
             </section>
-            <section className="ttc-card rounded-lg border border-[#cfc8bd] bg-[#fffdf9] p-5">
+            <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
               <h2 className="text-lg font-bold">Launch limits</h2>
               <div className="mt-3 space-y-3">
                 {mediaLimits.map(([label, body]) => (
                   <div
-                    className="rounded-md border border-[#e5ded4] bg-white p-3"
+                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3"
                     key={label}
                   >
                     <p className="text-sm font-bold">{label}</p>
-                    <p className="mt-1 text-sm leading-5 text-[#766d62]">
+                    <p className="mt-1 text-sm leading-5 text-[var(--muted-strong)]">
                       {body}
                     </p>
                   </div>
