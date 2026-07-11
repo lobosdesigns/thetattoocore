@@ -66,7 +66,7 @@ export function LicenseDocumentInput({
         <div
           className={`rounded-md border p-3 ${
             selected.error
-              ? "border-red-300 bg-red-50 text-red-800"
+              ? "border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]"
               : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_86%,transparent)] text-[var(--foreground)]"
           }`}
         >

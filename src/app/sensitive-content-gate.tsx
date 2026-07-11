@@ -29,10 +29,10 @@ export function SensitiveContentGate({
 
   return (
     <div className={wrapperClass}>
-      <div className="max-w-xs rounded-md border border-white/20 bg-[color-mix(in_srgb,var(--foreground)_92%,transparent)] p-4 text-center text-white shadow-2xl">
+      <div className="max-w-xs rounded-md border border-[color-mix(in_srgb,var(--background)_22%,transparent)] bg-[color-mix(in_srgb,var(--foreground)_92%,transparent)] p-4 text-center text-[var(--background)] shadow-2xl">
         <LockKeyhole className="mx-auto mb-2 size-6 text-[var(--gold)]" />
         <p className="text-sm font-bold">{title}</p>
-        <p className="mt-1 text-xs leading-5 text-white/70">{body}</p>
+        <p className="mt-1 text-xs leading-5 text-[color-mix(in_srgb,var(--background)_72%,transparent)]">{body}</p>
         {isSignedIn ? (
           <form action={acceptAdultTerms} className="mt-3">
             <input name="return_path" type="hidden" value={returnPath} />

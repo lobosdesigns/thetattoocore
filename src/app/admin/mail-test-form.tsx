@@ -69,7 +69,9 @@ export function MailTestForm({
       {message ? (
         <p
           className={`text-sm ${
-            status === "error" ? "text-red-700" : "text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]"
+            status === "error"
+              ? "text-[var(--danger)]"
+              : "text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]"
           }`}
         >
           {message}
