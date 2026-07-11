@@ -26,6 +26,7 @@ export function SensitiveContentGate({
     variant === "overlay"
       ? "absolute inset-0 flex items-center justify-center bg-[color-mix(in_srgb,var(--foreground)_36%,transparent)] p-4 backdrop-blur-sm"
       : "";
+  const loginHref = `/login?return_to=${encodeURIComponent(returnPath)}`;
 
   return (
     <div className={wrapperClass}>
@@ -43,7 +44,7 @@ export function SensitiveContentGate({
         ) : (
           <Link
             className="mt-3 inline-flex h-9 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm font-semibold text-[var(--foreground)]"
-            href="/login"
+            href={loginHref}
           >
             Sign in
           </Link>

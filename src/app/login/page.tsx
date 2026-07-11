@@ -25,9 +25,13 @@ export const metadata: Metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string }>;
+  searchParams: Promise<{ message?: string; return_to?: string }>;
 }) {
   const params = await searchParams;
+  const returnTo =
+    params.return_to?.startsWith("/") && !params.return_to.startsWith("//")
+      ? params.return_to
+      : "";
 
   return (
     <main className="ttc-page min-h-screen px-4 py-10">
@@ -97,6 +101,9 @@ export default async function LoginPage({
 
           <div className="space-y-5">
           <form action="/auth/login" className="space-y-4" method="post">
+            {returnTo ? (
+              <input name="return_to" type="hidden" value={returnTo} />
+            ) : null}
             <label className="block">
               <span className="text-sm font-medium">Email</span>
               <input

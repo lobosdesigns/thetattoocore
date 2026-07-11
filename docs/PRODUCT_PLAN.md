@@ -105,7 +105,7 @@
 - Use `/login` as the default logged-out landing page, while shared public content links can still open limited previews when allowed. Done for launch on the root route; signed-out direct visits to `/` redirect to `/login`, and the sitemap now favors public share/profile/support routes instead of the redirecting root URL.
 - Shared links should include Open Graph/Twitter card metadata so non-sensitive posts can show the real image, title, and short subtext on Facebook, X, texts, and other social previews. Done for launch on 4U, Gossip, Stuff, Gigs, and profiles.
 - Legacy or admin-marked sensitive links must not expose the media in social previews; use the site logo/brand card as the share image instead. Done for launch with shield fallback metadata.
-- If legacy or admin-marked sensitive shared content exists, logged-out visitors should see a blurred/locked preview with a sign-in prompt.
+- If legacy or admin-marked sensitive shared content exists, logged-out visitors should see a blurred/locked preview with a sign-in prompt. Done for launch with local return-to handling so sign-in can send the member back to the locked content path.
 - If a signed-in user has not accepted the adult body-art terms yet, legacy or admin-marked sensitive shared content should ask for 18+ confirmation instead of telling them to sign in again.
 - Main app feeds should keep any legacy or admin-marked sensitive posts visible only as blurred, non-clickable media with locked captions/comments until the viewer signs in and confirms 18+.
 - Locked sensitive previews should use brand-safe placeholders and must not load the underlying full media URL for logged-out or non-confirmed viewers. Done for launch on 4U, Gossip, Stuff, and Gigs detail views.
