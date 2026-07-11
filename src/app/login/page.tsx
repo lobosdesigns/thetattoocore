@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { login } from "./actions";
 
 const setupSteps = [
   ["1", "Confirm email", "New accounts get an email link before login."],
@@ -97,7 +96,7 @@ export default async function LoginPage({
           ) : null}
 
           <div className="space-y-5">
-          <form action={login} className="space-y-4">
+          <form action="/auth/login" className="space-y-4" method="post">
             <label className="block">
               <span className="text-sm font-medium">Email</span>
               <input
