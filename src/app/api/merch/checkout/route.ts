@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { siteName, siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
@@ -282,6 +283,11 @@ export async function POST(request: Request) {
       itemError.message || "Checkout started, but the order item could not be saved.",
     );
   }
+
+  revalidatePath("/account");
+  revalidatePath("/admin");
+  revalidatePath("/admin/merch");
+  revalidatePath(`/merch/${product.id}`);
 
   if (!session.url) {
     return redirectWithMessage(

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { siteName, siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 
@@ -223,6 +224,10 @@ export async function POST(request: Request) {
       updateError.message || "Checkout started, but the ad payment could not be saved.",
     );
   }
+
+  revalidatePath("/account");
+  revalidatePath("/admin");
+  revalidatePath("/admin/ads");
 
   if (!session.url) {
     return redirectWithMessage(
