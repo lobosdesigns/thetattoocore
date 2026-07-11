@@ -200,6 +200,23 @@ async function findCommentSubjectOwner({
     .maybeSingle<{ author_id: string }>();
 }
 
+async function removeFollowRelationship({
+  blockedId,
+  blockerId,
+  supabase,
+}: {
+  blockedId: string;
+  blockerId: string;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+}) {
+  await supabase
+    .from("follows")
+    .delete()
+    .or(
+      `and(follower_id.eq.${blockerId},following_id.eq.${blockedId}),and(follower_id.eq.${blockedId},following_id.eq.${blockerId})`,
+    );
+}
+
 function cleanVisibility(
   value: FormDataEntryValue | null,
   fallback: "public_preview" | "members" | "private",
@@ -1167,6 +1184,11 @@ export async function blockPostCommentAuthor(formData: FormData) {
       },
       { onConflict: "blocker_id,blocked_id" },
     );
+    await removeFollowRelationship({
+      blockedId: comment.author_id,
+      blockerId: userId,
+      supabase,
+    });
   }
 
   await supabase.from("post_comment_hides").upsert({
@@ -1492,6 +1514,11 @@ export async function blockThreadCommentAuthor(formData: FormData) {
       },
       { onConflict: "blocker_id,blocked_id" },
     );
+    await removeFollowRelationship({
+      blockedId: comment.author_id,
+      blockerId: userId,
+      supabase,
+    });
   }
 
   await supabase.from("thread_comment_hides").upsert({

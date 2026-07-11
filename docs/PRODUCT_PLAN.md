@@ -57,7 +57,7 @@
 - Support freedom of body-art expression and avoid unnecessary censorship when content follows safety, consent, legality, and adult-content guidelines.
 - Draw firm safety lines around pornography, sexualized content, exploitation, minors, harassment, scams, unsafe practices, and content showing unprofessional or potentially deadly harm.
 - Position the community as a safe space for body-art culture to express itself without unwanted AI, spam, or unprofessional practice watering it down.
-- Blocking should hide profile content from the blocker, remove follow relationships, and prevent new DMs in either direction. Done for launch.
+- Blocking should hide profile content from the blocker, remove follow relationships, and prevent new DMs in either direction. Done for launch for profile blocks and comment-owner blocks from 4U/Gossip moderation controls.
 - Launch trust surfaces should repeat these values in user-facing places, including `/login`, `/terms`, `/privacy`, account verification, and account advertising settings. Done for launch, including front-door no-AI, no-scratchers, verified Stuff, and independent-community positioning.
 
 ## Visual Direction
