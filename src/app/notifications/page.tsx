@@ -164,14 +164,14 @@ export default async function NotificationsPage({
     notifications?.filter((notification) => !notification.read_at).length ?? 0;
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
-      <div className="mx-auto min-h-screen w-full max-w-3xl overflow-x-hidden bg-[#ece8df] shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_28px_90px_rgba(0,0,0,0.42)]">
-        <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#ece8df]/95 px-4 py-3 backdrop-blur">
+    <main className="ttc-page min-h-screen overflow-x-hidden">
+      <div className="ttc-page-panel mx-auto min-h-screen w-full max-w-3xl overflow-x-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_28px_90px_rgba(0,0,0,0.42)]">
+        <header className="sticky top-0 z-10 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_94%,transparent)] px-4 py-3 backdrop-blur">
           <div className="grid min-w-0 gap-3 sm:flex sm:items-center sm:justify-between">
             <div className="flex min-w-0 items-center gap-3">
               <Link
                 aria-label="Back to home"
-                className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
+                className="ttc-surface flex size-10 shrink-0 items-center justify-center rounded-md border"
                 href="/"
               >
                 <ArrowLeft className="size-5" />
@@ -188,7 +188,7 @@ export default async function NotificationsPage({
 
             <div className="grid min-w-0 grid-cols-1 gap-2 min-[380px]:grid-cols-2 sm:flex sm:flex-none sm:items-center sm:justify-end">
               <Link
-                className="flex h-10 min-w-0 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9]/95 px-3 text-sm font-semibold shadow-sm"
+                className="ttc-surface flex h-10 min-w-0 items-center justify-center gap-2 rounded-md border px-3 text-sm font-semibold shadow-sm"
                 href="/account#notification-settings"
               >
                 <Settings className="size-4" />
@@ -196,7 +196,7 @@ export default async function NotificationsPage({
               </Link>
               {unreadCount ? (
                 <form action={markAllNotificationsRead} className="min-w-0">
-                  <button className="flex h-10 min-w-0 items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9]/95 px-3 text-sm font-semibold shadow-sm">
+                  <button className="ttc-surface flex h-10 min-w-0 items-center justify-center gap-2 rounded-md border px-3 text-sm font-semibold shadow-sm">
                     <Check className="size-4" />
                     <span className="hidden min-[390px]:inline">Mark all read</span>
                     <span className="min-[390px]:hidden">Read</span>
@@ -207,8 +207,8 @@ export default async function NotificationsPage({
           </div>
         </header>
 
-        <section className="border-b border-[#cfc8bd] bg-[#fffdf9]/80 px-4 py-4 backdrop-blur">
-          <div className="flex min-w-0 gap-3 rounded-md border border-[#d8d1c6] bg-white/90 p-3 shadow-sm">
+        <section className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_80%,transparent)] px-4 py-4 backdrop-blur">
+          <div className="ttc-surface flex min-w-0 gap-3 rounded-md border p-3 shadow-sm">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#c8953b]/50 bg-[#171412] text-[#c8953b] shadow-[0_0_18px_rgba(200,149,59,0.15)]">
               <Smartphone className="size-5" />
             </div>
@@ -220,7 +220,7 @@ export default async function NotificationsPage({
                 iOS/Android push when those channels are added.
               </p>
               <div className="mt-3 grid gap-2 text-xs leading-5 text-[#4f473f] sm:grid-cols-3">
-                <p className="rounded-md border border-[#e5ded4] bg-[#fffdf9] px-2 py-1">
+                <p className="ttc-surface rounded-md border px-2 py-1">
                   Quiet hours:{" "}
                   <span className="font-semibold">
                     {profile?.notification_quiet_hours_enabled
@@ -234,13 +234,13 @@ export default async function NotificationsPage({
                       : "Off"}
                   </span>
                 </p>
-                <p className="rounded-md border border-[#e5ded4] bg-[#fffdf9] px-2 py-1">
+                <p className="ttc-surface rounded-md border px-2 py-1">
                   Important email:{" "}
                   <span className="font-semibold">
                     {profile?.notify_email_important === false ? "Off" : "On"}
                   </span>
                 </p>
-                <p className="rounded-md border border-[#e5ded4] bg-[#fffdf9] px-2 py-1">
+                <p className="ttc-surface rounded-md border px-2 py-1">
                   Push intent:{" "}
                   <span className="font-semibold">
                     {profile?.notify_push_enabled ? "Saved" : "Off"}
@@ -251,7 +251,7 @@ export default async function NotificationsPage({
           </div>
         </section>
 
-        <section className="divide-y divide-[#cfc8bd]">
+        <section className="divide-y divide-[var(--card-rim)]">
           {notifications?.length ? (
             notifications.map((notification) => {
               const Icon = notificationIcon(notification.type);
@@ -259,7 +259,9 @@ export default async function NotificationsPage({
               const card = (
                 <article
                   className={`flex min-w-0 gap-3 px-4 py-4 ${
-                    notification.read_at ? "bg-[#ece8df]" : "bg-[#fffdf9]/95"
+                    notification.read_at
+                      ? "bg-[color-mix(in_srgb,var(--paper)_92%,transparent)]"
+                      : "bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)]"
                   }`}
                 >
                   <div className="relative shrink-0">
@@ -268,7 +270,7 @@ export default async function NotificationsPage({
                       profile={notification.profiles}
                       size="md"
                     />
-                    <span className="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-md border border-[#cfc8bd] bg-white text-[#171412] shadow-sm">
+                    <span className="ttc-surface absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-md border shadow-sm">
                       <Icon className="size-3" />
                     </span>
                   </div>
@@ -282,7 +284,7 @@ export default async function NotificationsPage({
                           {notification.profiles ? (
                             <span>@{notification.profiles.username}</span>
                           ) : null}
-                          <span className="rounded-md border border-[#cfc8bd] bg-white px-1.5 py-0.5 font-semibold capitalize">
+                          <span className="ttc-surface rounded-md border px-1.5 py-0.5 font-semibold capitalize">
                             {subjectLabel(notification.subject_type)}
                           </span>
                         </div>
@@ -307,7 +309,7 @@ export default async function NotificationsPage({
                             type="hidden"
                             value={href}
                           />
-                          <button className="h-9 w-full rounded-md bg-[#171412] px-3 text-sm font-semibold text-white sm:w-auto">
+                          <button className="ttc-control-active h-9 w-full rounded-md border px-3 text-sm font-semibold sm:w-auto">
                             Open
                           </button>
                         </form>
@@ -334,14 +336,14 @@ export default async function NotificationsPage({
                             }
                           />
                           <button
-                            className="h-9 rounded-md bg-[#171412] px-3 text-sm font-semibold text-white"
+                            className="ttc-control-active h-9 rounded-md border px-3 text-sm font-semibold"
                             name="decision"
                             value="accept"
                           >
                             Accept
                           </button>
                           <button
-                            className="h-9 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm font-semibold"
+                            className="ttc-surface h-9 rounded-md border px-3 text-sm font-semibold"
                             name="decision"
                             value="decline"
                           >
@@ -356,7 +358,7 @@ export default async function NotificationsPage({
                             type="hidden"
                             value={notification.id}
                           />
-                          <button className="h-9 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm font-semibold sm:w-auto">
+                          <button className="ttc-surface h-9 w-full rounded-md border px-3 text-sm font-semibold sm:w-auto">
                             Mark read
                           </button>
                         </form>
@@ -380,9 +382,9 @@ export default async function NotificationsPage({
           )}
         </section>
         {notifications?.length === notificationLimit ? (
-          <div className="border-t border-[#cfc8bd] bg-[#ece8df] px-4 py-5 text-center">
+          <div className="border-t border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] px-4 py-5 text-center">
             <Link
-              className="inline-flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-4 text-sm font-semibold"
+              className="ttc-surface inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-semibold"
               href={`/notifications?page=${page + 1}`}
             >
               Load more
