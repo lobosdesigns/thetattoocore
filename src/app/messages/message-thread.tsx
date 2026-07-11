@@ -170,7 +170,7 @@ export function MessageThread({
                         <div
                           className={`rounded-md border px-3 py-2 text-xs ${
                             mine
-                              ? "border-white/20 bg-white/10 text-white/80"
+                              ? "border-[color-mix(in_srgb,var(--background)_20%,transparent)] bg-[color-mix(in_srgb,var(--background)_10%,transparent)] text-[color-mix(in_srgb,var(--background)_82%,transparent)]"
                               : "ttc-surface"
                           }`}
                           key={attachment.id}
@@ -188,7 +188,9 @@ export function MessageThread({
                 ) : null}
                 <p
                   className={`mt-2 text-[11px] ${
-                    mine ? "text-white/70" : "text-[var(--muted-strong)]"
+                    mine
+                      ? "text-[color-mix(in_srgb,var(--background)_72%,transparent)]"
+                      : "text-[var(--muted-strong)]"
                   }`}
                 >
                   {mine ? "You" : sender?.display_name ?? "TattooCore member"} -{" "}

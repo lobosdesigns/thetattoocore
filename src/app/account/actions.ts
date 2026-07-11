@@ -6,6 +6,7 @@ import { sendHostgatorEmail } from "@/lib/mail/hostgator";
 import { countryCodes, languageCodes } from "@/lib/localization";
 import { siteName, siteUrl, supportEmail } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { cleanExternalUrl } from "@/lib/urls";
 
 const LICENSE_BUCKET = "license-documents";
@@ -48,8 +49,14 @@ const stuffListingGoals = new Set([
 const adPlacements = new Set(["4u", "gossip", "stuff"]);
 const themePreferences = new Set(["light", "dark", "system"]);
 
-function accountPath(message: string) {
-  return `/account?message=${encodeURIComponent(message)}`;
+function accountPath(message: string, hash?: string) {
+  const suffix = hash ? `#${hash}` : "";
+
+  return `/account?message=${encodeURIComponent(message)}${suffix}`;
+}
+
+function verificationPath(message: string) {
+  return accountPath(message, "verification-settings");
 }
 
 function cleanText(value: FormDataEntryValue | null, maxLength: number) {
@@ -365,15 +372,15 @@ export async function submitLicenseVerification(formData: FormData) {
   }
 
   if (profile.banned_at) {
-    redirect(accountPath("This account is banned from verification submissions."));
+    redirect(verificationPath("This account is banned from verification submissions."));
   }
 
   if (profile.suspended_at) {
-    redirect(accountPath("This account is suspended from verification submissions."));
+    redirect(verificationPath("This account is suspended from verification submissions."));
   }
 
   if (!["artist", "studio", "vendor"].includes(profile.account_type)) {
-    redirect(accountPath("Artist, studio, or vendor account required for verification."));
+    redirect(verificationPath("Artist, studio, or vendor account required for verification."));
   }
 
   const licenseName = cleanText(formData.get("license_name"), 160);
@@ -383,11 +390,11 @@ export async function submitLicenseVerification(formData: FormData) {
   const file = formData.get("license_document");
 
   if (licenseName.length < 2 || issuingRegion.length < 2) {
-    redirect(accountPath("License name and issuing region are required."));
+    redirect(verificationPath("License name and issuing region are required."));
   }
 
   if (isPastDate(expiresOn || null)) {
-    redirect(accountPath("Use a current, non-expired license document."));
+    redirect(verificationPath("Use a current, non-expired license document."));
   }
 
   const { data: pendingRequest, error: pendingError } = await supabase
@@ -398,28 +405,31 @@ export async function submitLicenseVerification(formData: FormData) {
     .maybeSingle<{ id: string }>();
 
   if (pendingError) {
-    redirect(accountPath(pendingError.message || "Could not check verification status."));
+    redirect(
+      verificationPath(pendingError.message || "Could not check verification status."),
+    );
   }
 
   if (pendingRequest) {
-    redirect(accountPath("A verification request is already waiting for review."));
+    redirect(verificationPath("A verification request is already waiting for review."));
   }
 
   if (!(file instanceof File) || file.size === 0) {
-    redirect(accountPath("Upload your license or certification document."));
+    redirect(verificationPath("Upload your license or certification document."));
   }
 
   if (!LICENSE_TYPES.has(file.type)) {
-    redirect(accountPath("Use a PDF, JPG, PNG, or WebP license file."));
+    redirect(verificationPath("Use a PDF, JPG, PNG, or WebP license file."));
   }
 
   if (file.size > MAX_LICENSE_BYTES) {
-    redirect(accountPath("License files can be up to 10 MB."));
+    redirect(verificationPath("License files can be up to 10 MB."));
   }
 
   const requestId = crypto.randomUUID();
   const storagePath = `${claims.sub}/${requestId}.${extensionFor(file)}`;
-  const { error: uploadError } = await supabase.storage
+  const storageClient = createAdminClient() ?? supabase;
+  const { error: uploadError } = await storageClient.storage
     .from(LICENSE_BUCKET)
     .upload(storagePath, file, {
       contentType: file.type,
@@ -427,7 +437,7 @@ export async function submitLicenseVerification(formData: FormData) {
     });
 
   if (uploadError) {
-    redirect(accountPath(uploadError.message || "Could not upload license file."));
+    redirect(verificationPath(uploadError.message || "Could not upload license file."));
   }
 
   const { error } = await supabase.from("license_verification_requests").insert({
@@ -442,11 +452,12 @@ export async function submitLicenseVerification(formData: FormData) {
   });
 
   if (error) {
-    redirect(accountPath(error.message || "Could not submit verification."));
+    await storageClient.storage.from(LICENSE_BUCKET).remove([storagePath]);
+    redirect(verificationPath(error.message || "Could not submit verification."));
   }
 
   revalidatePath("/account");
-  redirect(accountPath("License verification submitted for review."));
+  redirect(verificationPath("License verification submitted for review."));
 }
 
 export async function submitAdCampaign(formData: FormData) {

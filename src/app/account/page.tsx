@@ -268,7 +268,7 @@ function AccountReadinessPanel({
         </div>
         {canUploadVerification ? (
           <a
-            className="inline-flex h-9 items-center justify-center rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-white"
+            className="inline-flex h-9 items-center justify-center rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-[var(--background)]"
             href="#verification-settings"
           >
             Upload proof
@@ -840,7 +840,7 @@ export default async function AccountPage({
                 ))}
               </div>
               {isLicenseVerified ? (
-                <p className="mt-3 rounded-md bg-[var(--foreground)] px-3 py-2 text-sm font-semibold text-white">
+                <p className="mt-3 rounded-md bg-[var(--foreground)] px-3 py-2 text-sm font-semibold text-[var(--background)]">
                   Your {profile?.account_type} profile is license verified.
                 </p>
               ) : null}
@@ -968,7 +968,7 @@ export default async function AccountPage({
               </div>
 
               <PendingSubmitButton
-                className="h-11 rounded-md bg-[var(--foreground)] px-5 text-sm font-semibold text-white"
+                className="h-11 rounded-md bg-[var(--foreground)] px-5 text-sm font-semibold text-[var(--background)]"
                 pendingLabel="Submitting"
               >
                 Submit for review
@@ -1338,7 +1338,7 @@ export default async function AccountPage({
               </p>
 
               <PendingSubmitButton
-                className="h-11 rounded-md bg-[var(--foreground)] px-5 text-sm font-semibold text-white"
+                className="h-11 rounded-md bg-[var(--foreground)] px-5 text-sm font-semibold text-[var(--background)]"
                 pendingLabel="Submitting"
               >
                 Submit ad for review
