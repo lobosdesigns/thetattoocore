@@ -139,7 +139,7 @@ function VerifiedBadge({ profile }: { profile?: Profile | null }) {
   if (!profile || !isVerifiedProfile(profile)) return null;
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-md bg-[#171412] px-2 py-1 text-xs font-semibold text-white">
+    <span className="inline-flex items-center gap-1 rounded-md bg-[var(--foreground)] px-2 py-1 text-xs font-semibold text-[var(--background)]">
       <BadgeCheck className="size-3" />
       Verified
     </span>
@@ -301,21 +301,21 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
   const hasMoreComments = topLevelComments.length > visibleTopLevelComments.length;
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
-      <div className="mx-auto min-h-screen w-full max-w-5xl overflow-x-hidden bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
-        <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
+    <main className="ttc-page min-h-screen overflow-x-hidden">
+      <div className="ttc-page-panel mx-auto min-h-screen w-full max-w-5xl overflow-x-hidden">
+        <header className="sticky top-0 z-10 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <Link
                 aria-label="Back to 4U"
-                className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
+                className="ttc-surface flex size-10 shrink-0 items-center justify-center rounded-md border"
                 href="/#feed"
               >
                 <ArrowLeft className="size-5" />
               </Link>
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold">4U</p>
-                <p className="truncate text-xs text-[#766d62]">
+                <p className="truncate text-xs text-[var(--muted-strong)]">
                   {post.profiles?.display_name ?? "TheTattooCore member"}
                 </p>
               </div>
@@ -325,14 +325,14 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
         </header>
 
         {!isSignedIn && post.visibility === "public_preview" && !post.is_sensitive ? (
-          <section className="border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-3">
+          <section className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-4 py-3">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm leading-5 text-[#4f473f]">
+              <p className="text-sm leading-5 text-[var(--muted)]">
                 Public 4U preview. Sign in to like, comment, save, follow, DM,
                 and view member-only or 18+ sensitive body-art content.
               </p>
               <Link
-                className="flex h-10 shrink-0 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                className="flex h-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                 href="/login"
               >
                 Sign in
@@ -343,13 +343,13 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
 
         <section className="grid min-w-0 gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="min-w-0">
-            <div className="relative overflow-hidden rounded-md border border-[#3a332d] bg-[#171412] shadow-[0_12px_30px_rgba(23,20,18,0.22)]">
+            <div className="relative overflow-hidden rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_28%,transparent)] bg-[var(--ink)] shadow-[0_12px_30px_rgba(23,20,18,0.22)]">
               {media && mediaSrc ? (
                 media.media_type === "video" ? (
                   showPost ? (
                     <MediaLightbox mediaType="video" src={mediaSrc}>
                       <video
-                        className="aspect-[4/5] w-full bg-[#171412] object-contain"
+                        className="aspect-[4/5] w-full bg-[var(--ink)] object-contain"
                         controls
                         playsInline
                         preload="metadata"
@@ -375,7 +375,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       alt=""
-                      className="aspect-[4/5] w-full bg-[#171412] object-contain"
+                      className="aspect-[4/5] w-full bg-[var(--ink)] object-contain"
                       src={mediaSrc}
                     />
                   </MediaLightbox>
@@ -402,7 +402,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
               ) : null}
             </div>
 
-            <section className="ttc-card mt-5 rounded-md border border-[#cfc8bd] bg-white p-5">
+            <section className="ttc-card mt-5 rounded-md p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
@@ -413,41 +413,41 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                   </div>
                   {post.profiles?.username ? (
                     <Link
-                      className="mt-1 block text-sm text-[#766d62] hover:underline"
+                      className="mt-1 block text-sm text-[var(--muted-strong)] hover:underline"
                       href={`/u/${post.profiles.username}`}
                     >
                       @{post.profiles.username}
                     </Link>
                   ) : null}
                 </div>
-                <span className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 py-1 text-xs font-semibold text-[#766d62]">
+                <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--muted-strong)]">
                   {timeAgo(post.created_at)}
                 </span>
               </div>
 
               {showPost ? (
-                <p className="mt-5 whitespace-pre-wrap text-sm leading-6 text-[#4f473f]">
+                <p className="mt-5 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">
                   {post.caption || "Untitled 4U post"}
                 </p>
               ) : (
-                <p className="mt-5 text-sm leading-6 text-[#766d62]">
+                <p className="mt-5 text-sm leading-6 text-[var(--muted-strong)]">
                   This post is limited to members or confirmed 18+ viewers.
                 </p>
               )}
 
-              <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-[#4f473f]">
+              <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-[var(--muted)]">
                 {post.style_tags.map((tag) => (
-                  <span className="rounded-md bg-[#efe7da] px-2 py-1" key={tag}>
+                  <span className="rounded-md bg-[color-mix(in_srgb,var(--brand-gold)_16%,var(--paper-warm))] px-2 py-1" key={tag}>
                     {tag}
                   </span>
                 ))}
                 {post.location_label ? (
-                  <span className="rounded-md bg-[#f7f4ef] px-2 py-1">
+                  <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_84%,transparent)] px-2 py-1">
                     {post.location_label}
                   </span>
                 ) : null}
                 {media?.media_type === "video" ? (
-                  <span className="inline-flex items-center gap-1 rounded-md bg-[#f7f4ef] px-2 py-1">
+                  <span className="inline-flex items-center gap-1 rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_84%,transparent)] px-2 py-1">
                     <Video className="size-3.5" />
                     Reel
                   </span>
@@ -457,15 +457,15 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
           </div>
 
           <aside className="min-w-0 space-y-4">
-            <section className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4">
+            <section className="ttc-card rounded-md p-4">
               <div className="grid grid-cols-2 gap-2 text-center text-sm">
-                <div className="rounded-md bg-[#f7f4ef] p-3">
+                <div className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_84%,transparent)] p-3">
                   <p className="text-lg font-bold">{post.post_likes.length}</p>
-                  <p className="text-xs text-[#766d62]">likes</p>
+                  <p className="text-xs text-[var(--muted-strong)]">likes</p>
                 </div>
-                <div className="rounded-md bg-[#f7f4ef] p-3">
+                <div className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_84%,transparent)] p-3">
                   <p className="text-lg font-bold">{visibleComments.length}</p>
-                  <p className="text-xs text-[#766d62]">comments</p>
+                  <p className="text-xs text-[var(--muted-strong)]">comments</p>
                 </div>
               </div>
 
@@ -474,16 +474,16 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                   <input name="post_id" type="hidden" value={post.id} />
                   <input name="liked" type="hidden" value={String(liked)} />
                   <input name="return_path" type="hidden" value={returnPath} />
-                  <button className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+                  <button className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
                     <Heart
-                      className={`size-4 ${liked ? "fill-[#c8953b] text-[#c8953b]" : ""}`}
+                      className={`size-4 ${liked ? "fill-[var(--brand-gold)] text-[var(--brand-gold)]" : ""}`}
                     />
                     {liked ? "Liked" : "Like"}
                   </button>
                 </form>
               ) : (
                 <Link
-                  className="mt-3 flex h-11 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                  className="mt-3 flex h-11 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                   href="/login"
                 >
                   Sign in to like
@@ -493,7 +493,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
 
             {isSignedIn ? (
               <SavedItemButton
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-4 text-sm font-semibold"
                 isSaved={Boolean(savedItem)}
                 returnPath={returnPath}
                 subjectId={post.id}
@@ -507,7 +507,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
               url={`${siteUrl}/p/${post.id}`}
             />
 
-            <section className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4">
+            <section className="ttc-card rounded-md p-4">
               <div className="mb-3 flex items-center gap-2">
                 <MessageCircle className="size-4" />
                 <h2 className="text-sm font-bold">Comments</h2>
@@ -517,7 +517,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                   <input name="post_id" type="hidden" value={post.id} />
                   <input name="return_path" type="hidden" value={returnPath} />
                   <WordLimitedField
-                    className="h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     emojiShortcuts
                     maxLength={220}
                     maxWords={40}
@@ -529,7 +529,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                     wrapperClassName="w-full"
                   />
                   <PendingSubmitButton
-                    className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-3 text-sm font-semibold text-white"
+                    className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-[var(--background)]"
                     pendingLabel="Posting"
                   >
                     <Send className="size-4" />
@@ -538,7 +538,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                 </form>
               ) : (
                 <Link
-                  className="mb-4 flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-3 text-sm font-semibold"
+                  className="mb-4 flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm font-semibold"
                   href={isSignedIn ? "/terms" : "/login"}
                 >
                   {isSignedIn ? "Confirm 18+ to comment" : "Sign in to comment"}
@@ -560,7 +560,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
 
                       return (
                         <div
-                          className="border-t border-[#e5ded4] pt-3 text-sm"
+                          className="border-t border-[var(--card-rim)] pt-3 text-sm"
                           key={comment.id}
                         >
                           <div className="flex items-start gap-2">
@@ -578,7 +578,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                   "Member"
                                 )}
                               </p>
-                              <p className="mt-1 break-words leading-5 text-[#4f473f]">
+                              <p className="mt-1 break-words leading-5 text-[var(--muted)]">
                                 {comment.body}
                               </p>
                             </div>
@@ -604,7 +604,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                 <Heart
                                   className={`size-3.5 ${
                                     likedComment
-                                      ? "fill-[#c8953b] text-[#c8953b]"
+                                      ? "fill-[var(--brand-gold)] text-[var(--brand-gold)]"
                                       : ""
                                   }`}
                                 />
@@ -635,7 +635,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                   value={returnPath}
                                 />
                                 <WordLimitedField
-                                  className="h-9 w-full rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+                                  className="h-9 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2 text-xs outline-none focus:border-[var(--foreground)]"
                                   emojiShortcuts
                                   maxLength={220}
                                   maxWords={40}
@@ -647,7 +647,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                 />
                                 <PendingSubmitButton
                                   aria-label="Post reply"
-                                  className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                                  className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]"
                                 >
                                   <Send className="size-4" />
                                 </PendingSubmitButton>
@@ -673,13 +673,13 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                     value={returnPath}
                                   />
                                   <input
-                                    className="h-9 w-full rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+                                    className="h-9 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2 text-xs outline-none focus:border-[var(--foreground)]"
                                     defaultValue={comment.body}
                                     maxLength={220}
                                     name="body"
                                     required
                                   />
-                                  <button className="h-8 rounded-md bg-[#171412] px-3 text-xs font-semibold text-white">
+                                  <button className="h-8 rounded-md bg-[var(--foreground)] px-3 text-xs font-semibold text-[var(--background)]">
                                     Save
                                   </button>
                                 </form>
@@ -754,7 +754,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                             ) : null}
                           </div>
                           {replies.length ? (
-                            <div className="mt-3 space-y-2 border-l border-[#e5ded4] pl-3">
+                            <div className="mt-3 space-y-2 border-l border-[var(--card-rim)] pl-3">
                               {replies.map((reply) => {
                                 const likedReply = reply.post_comment_likes.some(
                                   (like) => like.user_id === claims?.sub,
@@ -766,7 +766,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
 
                                 return (
                                   <div
-                                    className="rounded-md bg-[#f7f4ef] px-3 py-2 text-xs leading-5 text-[#4f473f]"
+                                    className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_84%,transparent)] px-3 py-2 text-xs leading-5 text-[var(--muted)]"
                                     key={reply.id}
                                   >
                                     <div className="flex items-start justify-between gap-2">
@@ -776,7 +776,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                           size="sm"
                                         />
                                         <p className="min-w-0 flex-1 break-words">
-                                          <span className="font-semibold text-[#171412]">
+                                          <span className="font-semibold text-[var(--foreground)]">
                                             {reply.profiles?.display_name ?? "Member"}
                                           </span>{" "}
                                           {reply.body}
@@ -798,11 +798,11 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                           type="hidden"
                                           value={returnPath}
                                         />
-                                        <button className="flex items-center gap-1 font-semibold text-[#766d62]">
+                                        <button className="flex items-center gap-1 font-semibold text-[var(--muted-strong)]">
                                           <Heart
                                             className={`size-3 ${
                                               likedReply
-                                                ? "fill-[#c8953b] text-[#c8953b]"
+                                                ? "fill-[var(--brand-gold)] text-[var(--brand-gold)]"
                                                 : ""
                                             }`}
                                           />
@@ -831,13 +831,13 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                               value={returnPath}
                                             />
                                             <input
-                                              className="h-9 w-full rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+                                              className="h-9 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2 text-xs outline-none focus:border-[var(--foreground)]"
                                               defaultValue={reply.body}
                                               maxLength={220}
                                               name="body"
                                               required
                                             />
-                                            <button className="h-8 rounded-md bg-[#171412] px-3 text-xs font-semibold text-white">
+                                            <button className="h-8 rounded-md bg-[var(--foreground)] px-3 text-xs font-semibold text-[var(--background)]">
                                               Save
                                             </button>
                                           </form>
@@ -920,7 +920,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                       );
                     })
                 ) : (
-                  <p className="rounded-md border border-dashed border-[#cfc8bd] bg-[#fffdf9] p-3 text-sm text-[#766d62]">
+                  <p className="rounded-md border border-dashed border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3 text-sm text-[var(--muted-strong)]">
                     {isSignedIn && showPost
                       ? "No comments yet."
                       : "Comments are visible after login."}
@@ -928,7 +928,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                 )}
                 {isSignedIn && showPost && hasMoreComments ? (
                   <Link
-                    className="flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm font-semibold"
+                    className="flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm font-semibold"
                     href={`/p/${post.id}?commentsPage=${commentsPage + 1}`}
                   >
                     Load 25 more comments
@@ -938,8 +938,8 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
             </section>
 
             {isSignedIn ? (
-              <section className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4">
-                <p className="mb-3 text-xs font-semibold uppercase text-[#766d62]">
+              <section className="ttc-card rounded-md p-4">
+                <p className="mb-3 text-xs font-semibold uppercase text-[var(--muted-strong)]">
                   Safety
                 </p>
                 <ContentReportForm

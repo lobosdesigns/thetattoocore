@@ -136,7 +136,7 @@ function VerifiedBadge({ profile }: { profile?: Profile | null }) {
   if (!profile || !isVerifiedProfile(profile)) return null;
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-md bg-[#171412] px-2 py-1 text-xs font-semibold text-white">
+    <span className="inline-flex items-center gap-1 rounded-md bg-[var(--foreground)] px-2 py-1 text-xs font-semibold text-[var(--background)]">
       <BadgeCheck className="size-3" />
       Verified
     </span>
@@ -303,21 +303,21 @@ export default async function ThreadPage({
   const hasMoreComments = topLevelComments.length > visibleTopLevelComments.length;
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
-      <div className="mx-auto min-h-screen w-full max-w-5xl overflow-x-hidden bg-[#f2f1ee] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)]">
-        <header className="sticky top-0 z-10 border-b border-[#cfc8bd] bg-[#f2f1ee]/95 px-4 py-3 backdrop-blur">
+    <main className="ttc-page min-h-screen overflow-x-hidden">
+      <div className="ttc-page-panel mx-auto min-h-screen w-full max-w-5xl overflow-x-hidden">
+        <header className="sticky top-0 z-10 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <Link
                 aria-label="Back to Gossip"
-                className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9]"
+                className="ttc-surface flex size-10 shrink-0 items-center justify-center rounded-md border"
                 href="/#threads"
               >
                 <ArrowLeft className="size-5" />
               </Link>
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold">Gossip</p>
-                <p className="truncate text-xs text-[#766d62]">
+                <p className="truncate text-xs text-[var(--muted-strong)]">
                   {thread.profiles?.display_name ?? "TheTattooCore member"}
                 </p>
               </div>
@@ -329,14 +329,14 @@ export default async function ThreadPage({
         {!isSignedIn &&
         thread.visibility === "public_preview" &&
         !thread.is_sensitive ? (
-          <section className="border-b border-[#cfc8bd] bg-[#fffdf9] px-4 py-3">
+          <section className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-4 py-3">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm leading-5 text-[#4f473f]">
+              <p className="text-sm leading-5 text-[var(--muted)]">
                 Public Gossip preview. Sign in to like, reply, save, follow,
                 DM, and view member-only or 18+ sensitive body-art content.
               </p>
               <Link
-                className="flex h-10 shrink-0 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                className="flex h-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                 href="/login"
               >
                 Sign in
@@ -348,7 +348,7 @@ export default async function ThreadPage({
         <section className="grid min-w-0 gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="min-w-0 space-y-5">
             {media && mediaSrc ? (
-              <div className="relative overflow-hidden rounded-md border border-[#3a332d] bg-[#171412] shadow-[0_12px_30px_rgba(23,20,18,0.22)]">
+              <div className="relative overflow-hidden rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_28%,transparent)] bg-[var(--ink)] shadow-[0_12px_30px_rgba(23,20,18,0.22)]">
                 {showThread ? (
                   <MediaLightbox
                     alt="Gossip thread media"
@@ -358,7 +358,7 @@ export default async function ThreadPage({
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       alt=""
-                      className="aspect-[16/10] w-full bg-[#171412] object-contain"
+                      className="aspect-[16/10] w-full bg-[var(--ink)] object-contain"
                       src={mediaSrc}
                     />
                   </MediaLightbox>
@@ -382,7 +382,7 @@ export default async function ThreadPage({
               </div>
             ) : null}
 
-            <section className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-5">
+            <section className="ttc-card rounded-md p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
@@ -393,20 +393,20 @@ export default async function ThreadPage({
                   </div>
                   {thread.profiles?.username ? (
                     <Link
-                      className="mt-1 block text-sm text-[#766d62] hover:underline"
+                      className="mt-1 block text-sm text-[var(--muted-strong)] hover:underline"
                       href={`/u/${thread.profiles.username}`}
                     >
                       @{thread.profiles.username}
                     </Link>
                   ) : null}
                 </div>
-                <span className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-2 py-1 text-xs font-semibold text-[#766d62]">
+                <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--muted-strong)]">
                   {timeAgo(thread.created_at)}
                 </span>
               </div>
 
               {showThread ? (
-                <p className="mt-5 whitespace-pre-wrap text-sm leading-6 text-[#4f473f]">
+                <p className="mt-5 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">
                   {thread.body}
                 </p>
               ) : (
@@ -419,7 +419,7 @@ export default async function ThreadPage({
               )}
 
               {!media ? (
-                <div className="mt-5 flex h-24 items-center justify-center rounded-md border border-dashed border-[#cfc8bd] bg-[#fffdf9] text-[#766d62]">
+                <div className="mt-5 flex h-24 items-center justify-center rounded-md border border-dashed border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] text-[var(--muted-strong)]">
                   <ImageIcon className="mr-2 size-5" />
                   Text thread
                 </div>
@@ -428,17 +428,17 @@ export default async function ThreadPage({
           </div>
 
           <aside className="min-w-0 space-y-4">
-            <section className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4">
+            <section className="ttc-card rounded-md p-4">
               <div className="grid grid-cols-2 gap-2 text-center text-sm">
-                <div className="rounded-md bg-[#f7f4ef] p-3">
+                <div className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_84%,transparent)] p-3">
                   <p className="text-lg font-bold">{thread.thread_likes.length}</p>
-                  <p className="text-xs text-[#766d62]">likes</p>
+                  <p className="text-xs text-[var(--muted-strong)]">likes</p>
                 </div>
-                <div className="rounded-md bg-[#f7f4ef] p-3">
+                <div className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_84%,transparent)] p-3">
                   <p className="text-lg font-bold">
                     {visibleComments.length}
                   </p>
-                  <p className="text-xs text-[#766d62]">replies</p>
+                  <p className="text-xs text-[var(--muted-strong)]">replies</p>
                 </div>
               </div>
 
@@ -447,16 +447,16 @@ export default async function ThreadPage({
                   <input name="thread_id" type="hidden" value={thread.id} />
                   <input name="liked" type="hidden" value={String(liked)} />
                   <input name="return_path" type="hidden" value={returnPath} />
-                  <button className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white">
+                  <button className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
                     <Heart
-                      className={`size-4 ${liked ? "fill-[#c8953b] text-[#c8953b]" : ""}`}
+                      className={`size-4 ${liked ? "fill-[var(--brand-gold)] text-[var(--brand-gold)]" : ""}`}
                     />
                     {liked ? "Liked" : "Like"}
                   </button>
                 </form>
               ) : (
                 <Link
-                  className="mt-3 flex h-11 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                  className="mt-3 flex h-11 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                   href="/login"
                 >
                   Sign in to like
@@ -466,7 +466,7 @@ export default async function ThreadPage({
 
             {isSignedIn ? (
               <SavedItemButton
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-[#cfc8bd] bg-white px-4 text-sm font-semibold"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-4 text-sm font-semibold"
                 isSaved={Boolean(savedItem)}
                 returnPath={returnPath}
                 subjectId={thread.id}
@@ -480,7 +480,7 @@ export default async function ThreadPage({
               url={`${siteUrl}/t/${thread.id}`}
             />
 
-            <section className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4">
+            <section className="ttc-card rounded-md p-4">
               <div className="mb-3 flex items-center gap-2">
                 <MessageCircle className="size-4" />
                 <h2 className="text-sm font-bold">Replies</h2>
@@ -491,7 +491,7 @@ export default async function ThreadPage({
                   <input name="return_path" type="hidden" value={returnPath} />
                   <WordLimitedField
                     as="textarea"
-                    className="min-h-24 w-full rounded-md border border-[#cfc8bd] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+                    className="min-h-24 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
                     emojiShortcuts
                     maxCharacters={2000}
                     maxLength={2000}
@@ -503,7 +503,7 @@ export default async function ThreadPage({
                     wrapperClassName="w-full"
                   />
                   <PendingSubmitButton
-                    className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-3 text-sm font-semibold text-white"
+                    className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-[var(--background)]"
                     pendingLabel="Replying"
                   >
                     <Send className="size-4" />
@@ -512,7 +512,7 @@ export default async function ThreadPage({
                 </form>
               ) : (
                 <Link
-                  className="mb-4 flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-white px-3 text-sm font-semibold"
+                  className="mb-4 flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm font-semibold"
                   href={isSignedIn ? "/terms" : "/login"}
                 >
                   {isSignedIn ? "Confirm 18+ to reply" : "Sign in to reply"}
@@ -534,7 +534,7 @@ export default async function ThreadPage({
 
                       return (
                         <div
-                          className="border-t border-[#e5ded4] pt-3 text-sm"
+                          className="border-t border-[var(--card-rim)] pt-3 text-sm"
                           key={comment.id}
                         >
                           <div className="flex items-start gap-2">
@@ -552,7 +552,7 @@ export default async function ThreadPage({
                                   "Member"
                                 )}
                               </p>
-                              <p className="mt-1 whitespace-pre-wrap break-words leading-5 text-[#4f473f]">
+                              <p className="mt-1 whitespace-pre-wrap break-words leading-5 text-[var(--muted)]">
                                 {comment.body}
                               </p>
                             </div>
@@ -578,7 +578,7 @@ export default async function ThreadPage({
                                 <Heart
                                   className={`size-3.5 ${
                                     likedComment
-                                      ? "fill-[#c8953b] text-[#c8953b]"
+                                      ? "fill-[var(--brand-gold)] text-[var(--brand-gold)]"
                                       : ""
                                   }`}
                                 />
@@ -609,7 +609,7 @@ export default async function ThreadPage({
                                   value={returnPath}
                                 />
                                 <WordLimitedField
-                                  className="h-9 w-full rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+                                  className="h-9 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2 text-xs outline-none focus:border-[var(--foreground)]"
                                   emojiShortcuts
                                   maxCharacters={2000}
                                   maxLength={2000}
@@ -621,7 +621,7 @@ export default async function ThreadPage({
                                 />
                                 <PendingSubmitButton
                                   aria-label="Post reply"
-                                  className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[#171412] text-white"
+                                  className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]"
                                 >
                                   <Send className="size-4" />
                                 </PendingSubmitButton>
@@ -647,13 +647,13 @@ export default async function ThreadPage({
                                     value={returnPath}
                                   />
                                   <textarea
-                                    className="min-h-20 w-full rounded-md border border-[#cfc8bd] bg-white px-2 py-2 text-xs outline-none focus:border-[#171412]"
+                                    className="min-h-20 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2 py-2 text-xs outline-none focus:border-[var(--foreground)]"
                                     defaultValue={comment.body}
                                     maxLength={2000}
                                     name="body"
                                     required
                                   />
-                                  <button className="h-8 rounded-md bg-[#171412] px-3 text-xs font-semibold text-white">
+                                  <button className="h-8 rounded-md bg-[var(--foreground)] px-3 text-xs font-semibold text-[var(--background)]">
                                     Save
                                   </button>
                                 </form>
@@ -728,7 +728,7 @@ export default async function ThreadPage({
                             ) : null}
                           </div>
                           {replies.length ? (
-                            <div className="mt-3 space-y-2 border-l border-[#e5ded4] pl-3">
+                            <div className="mt-3 space-y-2 border-l border-[var(--card-rim)] pl-3">
                               {replies.map((reply) => {
                                 const likedReply =
                                   reply.thread_comment_likes.some(
@@ -742,7 +742,7 @@ export default async function ThreadPage({
 
                                 return (
                                   <div
-                                    className="rounded-md bg-[#f7f4ef] px-3 py-2 text-xs leading-5 text-[#4f473f]"
+                                    className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_84%,transparent)] px-3 py-2 text-xs leading-5 text-[var(--muted)]"
                                     key={reply.id}
                                   >
                                     <div className="flex items-start justify-between gap-2">
@@ -752,7 +752,7 @@ export default async function ThreadPage({
                                           size="sm"
                                         />
                                         <p className="min-w-0 flex-1 break-words">
-                                          <span className="font-semibold text-[#171412]">
+                                          <span className="font-semibold text-[var(--foreground)]">
                                             {reply.profiles?.display_name ?? "Member"}
                                           </span>{" "}
                                           {reply.body}
@@ -774,11 +774,11 @@ export default async function ThreadPage({
                                           type="hidden"
                                           value={returnPath}
                                         />
-                                        <button className="flex items-center gap-1 font-semibold text-[#766d62]">
+                                        <button className="flex items-center gap-1 font-semibold text-[var(--muted-strong)]">
                                           <Heart
                                             className={`size-3 ${
                                               likedReply
-                                                ? "fill-[#c8953b] text-[#c8953b]"
+                                                ? "fill-[var(--brand-gold)] text-[var(--brand-gold)]"
                                                 : ""
                                             }`}
                                           />
@@ -807,13 +807,13 @@ export default async function ThreadPage({
                                               value={returnPath}
                                             />
                                             <textarea
-                                              className="min-h-20 w-full rounded-md border border-[#cfc8bd] bg-white px-2 py-2 text-xs outline-none focus:border-[#171412]"
+                                              className="min-h-20 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2 py-2 text-xs outline-none focus:border-[var(--foreground)]"
                                               defaultValue={reply.body}
                                               maxLength={2000}
                                               name="body"
                                               required
                                             />
-                                            <button className="h-8 rounded-md bg-[#171412] px-3 text-xs font-semibold text-white">
+                                            <button className="h-8 rounded-md bg-[var(--foreground)] px-3 text-xs font-semibold text-[var(--background)]">
                                               Save
                                             </button>
                                           </form>
@@ -896,7 +896,7 @@ export default async function ThreadPage({
                       );
                     })
                 ) : (
-                  <p className="rounded-md border border-dashed border-[#cfc8bd] bg-[#fffdf9] p-3 text-sm text-[#766d62]">
+                  <p className="rounded-md border border-dashed border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3 text-sm text-[var(--muted-strong)]">
                     {isSignedIn && showThread
                       ? "No replies yet."
                       : "Replies are visible after login."}
@@ -904,7 +904,7 @@ export default async function ThreadPage({
                 )}
                 {isSignedIn && showThread && hasMoreComments ? (
                   <Link
-                    className="flex h-10 items-center justify-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 text-sm font-semibold"
+                    className="flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm font-semibold"
                     href={`/t/${thread.id}?commentsPage=${commentsPage + 1}`}
                   >
                     Load 25 more replies
@@ -914,8 +914,8 @@ export default async function ThreadPage({
             </section>
 
             {isSignedIn ? (
-              <section className="ttc-card rounded-md border border-[#cfc8bd] bg-white p-4">
-                <p className="mb-3 text-xs font-semibold uppercase text-[#766d62]">
+              <section className="ttc-card rounded-md p-4">
+                <p className="mb-3 text-xs font-semibold uppercase text-[var(--muted-strong)]">
                   Safety
                 </p>
                 <ContentReportForm
