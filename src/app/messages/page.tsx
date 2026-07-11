@@ -303,8 +303,9 @@ export default async function MessagesPage({
 
   const hasSelectedConversationParam = Boolean(requestedConversationId);
   const selectedConversation =
-    inbox.find((conversation) => conversation.id === requestedConversationId) ??
-    inbox[0];
+    (hasSelectedConversationParam
+      ? inbox.find((conversation) => conversation.id === requestedConversationId)
+      : inbox[0]) ?? null;
 
   if (selectedConversation) {
     const readAt = new Date().toISOString();

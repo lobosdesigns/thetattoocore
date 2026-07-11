@@ -397,6 +397,17 @@ export async function sendMessage(formData: FormData) {
   }
   const messageBody = body || "Photo";
 
+  const { data: senderMembership } = await supabase
+    .from("conversation_members")
+    .select("conversation_id")
+    .eq("conversation_id", conversationId)
+    .eq("user_id", userId)
+    .maybeSingle<{ conversation_id: string }>();
+
+  if (!senderMembership) {
+    redirect(messagesPath("Choose one of your conversations first."));
+  }
+
   const { data: blockedMembers } = await supabase
     .from("conversation_members")
     .select("user_id")
