@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Store,
 } from "lucide-react";
+import { AdminSectionNav } from "../admin-section-nav";
 import { updateMerchOrderStatus, updateMerchProductStatus } from "../actions";
 import { createClient } from "@/lib/supabase/server";
 
@@ -613,6 +614,8 @@ export default async function AdminMerchPage({
             </p>
           </div>
         </header>
+
+        <AdminSectionNav activeHref="/admin/merch" />
 
         <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">

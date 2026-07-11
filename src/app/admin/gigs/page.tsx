@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ArrowLeft, BriefcaseBusiness, ChevronLeft, ChevronRight } from "lucide-react";
+import { AdminSectionNav } from "../admin-section-nav";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -307,6 +308,8 @@ export default async function AdminGigsPage({
             </p>
           </div>
         </header>
+
+        <AdminSectionNav activeHref="/admin/gigs" />
 
         {params.message ? (
           <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">

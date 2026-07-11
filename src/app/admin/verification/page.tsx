@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ArrowLeft, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
+import { AdminSectionNav } from "../admin-section-nav";
 import { updateLicenseVerification } from "../actions";
 import { createClient } from "@/lib/supabase/server";
 
@@ -399,6 +400,8 @@ export default async function AdminVerificationPage({
             </p>
           </div>
         </header>
+
+        <AdminSectionNav activeHref="/admin/verification" />
 
         {params.message ? (
           <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ArrowLeft, ChevronLeft, ChevronRight, ShieldCheck, Users } from "lucide-react";
+import { AdminSectionNav } from "../admin-section-nav";
 import { changeUserRole, changeUserStatus } from "../actions";
 import { createClient } from "@/lib/supabase/server";
 
@@ -197,6 +198,8 @@ export default async function AdminUsersPage({
             </p>
           </div>
         </header>
+
+        <AdminSectionNav activeHref="/admin/users" />
 
         {params.message ? (
           <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ArrowLeft, Film, ImageIcon, ServerCog } from "lucide-react";
+import { AdminSectionNav } from "../admin-section-nav";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -98,6 +99,8 @@ export default async function AdminMediaOpsPage() {
             </p>
           </div>
         </header>
+
+        <AdminSectionNav activeHref="/admin/media-ops" />
 
         <div className="mb-4 grid gap-3 sm:grid-cols-3">
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">

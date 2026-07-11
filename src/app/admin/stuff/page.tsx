@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ArrowLeft, ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
+import { AdminSectionNav } from "../admin-section-nav";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -299,6 +300,8 @@ export default async function AdminStuffPage({
             </p>
           </div>
         </header>
+
+        <AdminSectionNav activeHref="/admin/stuff" />
 
         {params.message ? (
           <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">

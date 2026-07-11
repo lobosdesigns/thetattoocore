@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ArrowLeft, ChevronLeft, ChevronRight, Gavel } from "lucide-react";
+import { AdminSectionNav } from "../admin-section-nav";
 import { moderateContent } from "../actions";
 import { createClient } from "@/lib/supabase/server";
 
@@ -466,6 +467,8 @@ export default async function AdminContentPage({
             </p>
           </div>
         </header>
+
+        <AdminSectionNav activeHref="/admin/content" />
 
         {params.message ? (
           <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">

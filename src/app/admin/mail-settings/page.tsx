@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ArrowLeft, Mail, Send, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { AdminSectionNav } from "../admin-section-nav";
 import { MailTestForm } from "../mail-test-form";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -107,6 +108,8 @@ export default async function AdminMailSettingsPage() {
             </p>
           </div>
         </header>
+
+        <AdminSectionNav activeHref="/admin/mail-settings" />
 
         <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
