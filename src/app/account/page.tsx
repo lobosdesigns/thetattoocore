@@ -140,6 +140,13 @@ function dollars(cents: number) {
   }).format(cents / 100);
 }
 
+function money(cents: number, currency: string) {
+  return Intl.NumberFormat("en-US", {
+    currency,
+    style: "currency",
+  }).format(cents / 100);
+}
+
 function adClickRate({
   clicks,
   impressions,
@@ -376,7 +383,7 @@ export default async function AccountPage({
   const { data: merchOrders } = await supabase
     .from("merch_orders")
     .select(
-      "id, status, currency, subtotal_cents, platform_fee_cents, total_cents, customer_email, shipping_name, created_at, fulfilled_at, cancelled_at, refunded_at, merch_order_items(title_snapshot, quantity)",
+      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, created_at, fulfilled_at, cancelled_at, refunded_at, merch_order_items(title_snapshot, quantity)",
     )
     .eq("buyer_id", claims.sub)
     .order("created_at", { ascending: false })
@@ -387,14 +394,17 @@ export default async function AccountPage({
         created_at: string;
         currency: string;
         customer_email: string | null;
+        discount_cents: number;
         fulfilled_at: string | null;
         id: string;
         merch_order_items: { quantity: number; title_snapshot: string }[];
         platform_fee_cents: number;
         refunded_at: string | null;
+        shipping_cents: number;
         shipping_name: string | null;
         status: string;
         subtotal_cents: number;
+        tax_cents: number;
         total_cents: number;
       }[]
     >();
@@ -504,10 +514,7 @@ export default async function AccountPage({
                       </p>
                       <p className="mt-1 text-xs text-[var(--muted-strong)]">
                         {formatDate(order.created_at)} -{" "}
-                        {Intl.NumberFormat("en-US", {
-                          currency: order.currency,
-                          style: "currency",
-                        }).format(order.total_cents / 100)}
+                        {money(order.total_cents, order.currency)}
                       </p>
                     </div>
                     <span
@@ -526,15 +533,18 @@ export default async function AccountPage({
                     ))}
                     <p className="text-xs text-[var(--muted-strong)]">
                       Subtotal{" "}
-                      {Intl.NumberFormat("en-US", {
-                        currency: order.currency,
-                        style: "currency",
-                      }).format(order.subtotal_cents / 100)}
+                      {money(order.subtotal_cents, order.currency)}
                       {" "}+ TTC fee{" "}
-                      {Intl.NumberFormat("en-US", {
-                        currency: order.currency,
-                        style: "currency",
-                      }).format(order.platform_fee_cents / 100)}
+                      {money(order.platform_fee_cents, order.currency)}
+                      {order.shipping_cents > 0
+                        ? ` + shipping ${money(order.shipping_cents, order.currency)}`
+                        : ""}
+                      {order.tax_cents > 0
+                        ? ` + tax ${money(order.tax_cents, order.currency)}`
+                        : ""}
+                      {order.discount_cents > 0
+                        ? ` - discount ${money(order.discount_cents, order.currency)}`
+                        : ""}
                     </p>
                   </div>
                   <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted-strong)] sm:grid-cols-2">

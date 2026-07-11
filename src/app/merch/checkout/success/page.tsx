@@ -6,10 +6,13 @@ import { createClient } from "@/lib/supabase/server";
 type Order = {
   created_at: string;
   currency: string;
+  discount_cents: number;
   id: string;
   platform_fee_cents: number;
+  shipping_cents: number;
   subtotal_cents: number;
   status: string;
+  tax_cents: number;
   total_cents: number;
 };
 
@@ -70,7 +73,9 @@ export default async function MerchCheckoutSuccessPage({
   const { data: order } = sessionId
     ? await supabase
         .from("merch_orders")
-        .select("id, status, currency, subtotal_cents, platform_fee_cents, total_cents, created_at")
+        .select(
+          "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, created_at",
+        )
         .eq("stripe_checkout_session_id", sessionId)
         .maybeSingle<Order>()
     : { data: null };
@@ -110,6 +115,30 @@ export default async function MerchCheckoutSuccessPage({
                     {money(order.platform_fee_cents, order.currency)}
                   </dd>
                 </div>
+                {order.shipping_cents > 0 ? (
+                  <div className="flex justify-between gap-3">
+                    <dt>Shipping</dt>
+                    <dd className="font-semibold text-[var(--foreground)]">
+                      {money(order.shipping_cents, order.currency)}
+                    </dd>
+                  </div>
+                ) : null}
+                {order.tax_cents > 0 ? (
+                  <div className="flex justify-between gap-3">
+                    <dt>Tax</dt>
+                    <dd className="font-semibold text-[var(--foreground)]">
+                      {money(order.tax_cents, order.currency)}
+                    </dd>
+                  </div>
+                ) : null}
+                {order.discount_cents > 0 ? (
+                  <div className="flex justify-between gap-3">
+                    <dt>Discount</dt>
+                    <dd className="font-semibold text-[var(--foreground)]">
+                      -{money(order.discount_cents, order.currency)}
+                    </dd>
+                  </div>
+                ) : null}
                 <div className="flex justify-between gap-3 border-t border-[var(--card-rim)] pt-2">
                   <dt>Total</dt>
                   <dd className="font-semibold text-[var(--foreground)]">

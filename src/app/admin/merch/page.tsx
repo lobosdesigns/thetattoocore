@@ -47,12 +47,15 @@ type MerchOrder = {
   createdAt: string;
   currency: string;
   customerEmail: string | null;
+  discountCents: number;
   id: string;
   itemCount: number;
   platformFeeCents: number;
+  shippingCents: number;
   shippingName: string | null;
   status: string;
   subtotalCents: number;
+  taxCents: number;
   totalCents: number;
 };
 
@@ -334,8 +337,28 @@ function OrderCard({
           <dd>{Intl.NumberFormat("en-US").format(order.itemCount)}</dd>
         </div>
         <div>
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">Subtotal</dt>
+          <dd>{money(order.subtotalCents, order.currency)}</dd>
+        </div>
+        <div>
           <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">TTC fee</dt>
           <dd>{money(order.platformFeeCents, order.currency)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">Shipping</dt>
+          <dd>{money(order.shippingCents, order.currency)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">Tax</dt>
+          <dd>{money(order.taxCents, order.currency)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">Discount</dt>
+          <dd>
+            {order.discountCents > 0
+              ? `-${money(order.discountCents, order.currency)}`
+              : money(0, order.currency)}
+          </dd>
         </div>
         <div>
           <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">Total</dt>
@@ -485,7 +508,7 @@ export default async function AdminMerchPage({
   const { count: orderCount, data: orderRows } = await supabase
     .from("merch_orders")
     .select(
-      "id, status, currency, subtotal_cents, platform_fee_cents, total_cents, customer_email, shipping_name, admin_note, created_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id)",
+      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, admin_note, created_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id)",
       { count: "exact" },
     )
     .order("created_at", { ascending: false })
@@ -496,13 +519,16 @@ export default async function AdminMerchPage({
         created_at: string;
         currency: string;
         customer_email: string | null;
+        discount_cents: number;
         id: string;
         merch_order_items: { id: string }[];
         platform_fee_cents: number;
         profiles: { display_name: string; username: string } | null;
+        shipping_cents: number;
         shipping_name: string | null;
         status: string;
         subtotal_cents: number;
+        tax_cents: number;
         total_cents: number;
       }[]
     >();
@@ -513,12 +539,15 @@ export default async function AdminMerchPage({
     createdAt: order.created_at,
     currency: order.currency,
     customerEmail: order.customer_email,
+    discountCents: order.discount_cents,
     id: order.id,
     itemCount: order.merch_order_items.length,
     platformFeeCents: order.platform_fee_cents,
+    shippingCents: order.shipping_cents,
     shippingName: order.shipping_name,
     status: order.status,
     subtotalCents: order.subtotal_cents,
+    taxCents: order.tax_cents,
     totalCents: order.total_cents,
   }));
   const totalOrders = orderCount ?? 0;
