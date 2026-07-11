@@ -220,6 +220,13 @@ export async function POST(request: Request) {
     );
   }
 
+  if (!session.url) {
+    return redirectWithMessage(
+      "/account",
+      `${siteName} could not open Stripe Checkout for this ad campaign.`,
+    );
+  }
+
   const { error: updateError } = await supabase
     .from("ad_campaigns")
     .update({
@@ -242,13 +249,6 @@ export async function POST(request: Request) {
   revalidatePath("/account");
   revalidatePath("/admin");
   revalidatePath("/admin/ads");
-
-  if (!session.url) {
-    return redirectWithMessage(
-      "/account",
-      `${siteName} could not open Stripe Checkout for this ad campaign.`,
-    );
-  }
 
   return NextResponse.redirect(session.url, { status: 303 });
 }
