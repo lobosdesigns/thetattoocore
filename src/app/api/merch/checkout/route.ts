@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { siteName, siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
+import { isVerifiedProfessional } from "@/lib/verification";
 
 type Claims = {
   sub: string;
@@ -12,7 +13,9 @@ type Product = {
   id: string;
   inventory_quantity: number;
   inventory_reserved: number;
+  is_official: boolean;
   price_cents: number;
+  profiles: { account_type: string; license_verified_at: string | null } | null;
   seller_id: string;
   sku: string | null;
   title: string;
@@ -184,7 +187,7 @@ export async function POST(request: Request) {
   const { data: product, error } = await supabase
     .from("merch_products")
     .select(
-      "id, seller_id, title, description, sku, price_cents, currency, inventory_quantity, inventory_reserved",
+      "id, seller_id, title, description, sku, price_cents, currency, inventory_quantity, inventory_reserved, is_official, profiles:profiles!merch_products_seller_id_fkey(account_type, license_verified_at)",
     )
     .eq("id", productId)
     .eq("status", "active")
@@ -192,6 +195,13 @@ export async function POST(request: Request) {
 
   if (error || !product) {
     return redirectWithMessage("/#merch", "That merch product is not available.");
+  }
+
+  if (!product.is_official && !isVerifiedProfessional(product.profiles)) {
+    return redirectWithMessage(
+      "/#merch",
+      "That merch seller needs approval again before checkout can open.",
+    );
   }
 
   if (product.seller_id === claims.sub) {

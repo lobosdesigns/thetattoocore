@@ -1521,7 +1521,13 @@ export default async function Home({
     rankingContext,
     "gig",
   );
-  const visibleMerchProducts = rankCategoryItems(merchProducts ?? [], rankingContext);
+  const visibleMerchProducts = rankCategoryItems(
+    (merchProducts ?? []).filter(
+      (product) =>
+        product.is_official || isVerifiedProfessional(product.profiles),
+    ),
+    rankingContext,
+  );
   const lockedPublicItemCount = [
     ...(feedPosts ?? []),
     ...(threadPosts ?? []),

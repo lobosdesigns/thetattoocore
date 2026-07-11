@@ -81,6 +81,7 @@ type MerchResult = {
   city: string | null;
   currency: string;
   id: string;
+  is_official: boolean;
   price_cents: number;
   profiles: Pick<
     ProfileResult,
@@ -375,7 +376,7 @@ export default async function SearchPage({
           ? supabase
               .from("merch_products")
               .select(
-                "id, title, category, price_cents, currency, ships_from_city, ships_from_region, profiles:profiles!merch_products_seller_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
+                "id, title, category, price_cents, currency, is_official, ships_from_city, ships_from_region, profiles:profiles!merch_products_seller_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
               )
               .eq("status", "active")
               .eq("is_indexable", true)
@@ -394,6 +395,7 @@ export default async function SearchPage({
                   category: string;
                   currency: string;
                   id: string;
+                  is_official: boolean;
                   price_cents: number;
                   profiles: MerchResult["profiles"];
                   ships_from_city: string | null;
@@ -402,16 +404,23 @@ export default async function SearchPage({
                 }[]
               >()
               .then(({ data, ...rest }) => ({
-                data: (data ?? []).map((product) => ({
-                  category: product.category,
-                  city: product.ships_from_city,
-                  currency: product.currency,
-                  id: product.id,
-                  price_cents: product.price_cents,
-                  profiles: product.profiles,
-                  region: product.ships_from_region,
-                  title: product.title,
-                })),
+                data: (data ?? [])
+                  .filter(
+                    (product) =>
+                      product.is_official ||
+                      isVerifiedProfessional(product.profiles),
+                  )
+                  .map((product) => ({
+                    category: product.category,
+                    city: product.ships_from_city,
+                    currency: product.currency,
+                    id: product.id,
+                    is_official: product.is_official,
+                    price_cents: product.price_cents,
+                    profiles: product.profiles,
+                    region: product.ships_from_region,
+                    title: product.title,
+                  })),
                 ...rest,
               }))
           : Promise.resolve({ data: [] as MerchResult[] }),

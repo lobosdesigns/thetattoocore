@@ -97,6 +97,12 @@ async function getProduct(id: string) {
     })
     .maybeSingle<MerchProduct>();
 
+  if (!data) return null;
+
+  if (!data.is_official && !isVerifiedProfessional(data.profiles)) {
+    return null;
+  }
+
   return data;
 }
 
