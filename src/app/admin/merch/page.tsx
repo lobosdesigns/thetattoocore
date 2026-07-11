@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Store,
 } from "lucide-react";
+import { updateMerchProductStatus } from "../actions";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -163,7 +164,13 @@ function Pagination({
   );
 }
 
-function ProductCard({ product }: { product: MerchProduct }) {
+function ProductCard({
+  currentPage,
+  product,
+}: {
+  currentPage: number;
+  product: MerchProduct;
+}) {
   return (
     <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -204,6 +211,38 @@ function ProductCard({ product }: { product: MerchProduct }) {
           <dd>{product.sellerName}</dd>
         </div>
       </dl>
+      <form action={updateMerchProductStatus} className="mt-4 space-y-2">
+        <input name="product_id" type="hidden" value={product.id} />
+        <input name="return_to" type="hidden" value={pageHref(currentPage)} />
+        <input
+          className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+          maxLength={500}
+          name="note"
+          placeholder="Reviewer note"
+        />
+        <div className="grid grid-cols-2 gap-2 min-[430px]:grid-cols-3 sm:grid-cols-5">
+          {[
+            ["approved", "Approve"],
+            ["active", "Activate"],
+            ["paused", "Pause"],
+            ["rejected", "Reject"],
+            ["archived", "Archive"],
+          ].map(([value, label]) => (
+            <button
+              className={
+                value === "active"
+                  ? "h-10 rounded-md bg-[var(--foreground)] px-2 text-sm font-semibold text-[var(--background)]"
+                  : "h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-sm font-semibold"
+              }
+              key={value}
+              name="status"
+              value={value}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </form>
     </article>
   );
 }
@@ -211,7 +250,7 @@ function ProductCard({ product }: { product: MerchProduct }) {
 export default async function AdminMerchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string | string[] }>;
+  searchParams: Promise<{ message?: string; page?: string | string[] }>;
 }) {
   const params = await searchParams;
   const currentPage = pageNumber(params.page);
@@ -335,6 +374,12 @@ export default async function AdminMerchPage({
           </p>
         ) : null}
 
+        {params.message ? (
+          <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">
+            {params.message}
+          </p>
+        ) : null}
+
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
           <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
             <h2 className="text-lg font-bold">Build path</h2>
@@ -394,7 +439,11 @@ export default async function AdminMerchPage({
           {products.length ? (
             <div className="mt-4 grid gap-4">
               {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard
+                  currentPage={currentPage}
+                  key={product.id}
+                  product={product}
+                />
               ))}
             </div>
           ) : (

@@ -15,6 +15,7 @@ type ReportFollowupAction = "escalate_report" | "warn_member";
 type LicenseVerificationStatus = "approved" | "rejected";
 type UserStatus = "active" | "suspended" | "banned";
 type AdCampaignStatus = "approved" | "active" | "paused" | "rejected" | "archived";
+type MerchProductStatus = "approved" | "active" | "paused" | "rejected" | "archived";
 type AccountDeletionStatus = "reviewing" | "completed" | "rejected" | "cancelled";
 type MailSettings = {
   from_email: string | null;
@@ -53,6 +54,13 @@ const verificationEligibleAccountTypes = new Set(["artist", "studio", "vendor"])
 const roleStatuses = new Set<UserRole>(["user", "moderator", "admin", "owner"]);
 const userStatuses = new Set<UserStatus>(["active", "suspended", "banned"]);
 const adCampaignStatuses = new Set<AdCampaignStatus>([
+  "approved",
+  "active",
+  "paused",
+  "rejected",
+  "archived",
+]);
+const merchProductStatuses = new Set<MerchProductStatus>([
   "approved",
   "active",
   "paused",
@@ -119,6 +127,24 @@ function adminAdsMessage(message: string, returnTo?: string) {
     returnTo?.startsWith("/admin/ads") || returnTo === "/admin"
       ? returnTo
       : "/admin#ads";
+  const separator = safeReturnTo.includes("?") ? "&" : "?";
+  const hashIndex = safeReturnTo.indexOf("#");
+
+  if (hashIndex >= 0) {
+    const base = safeReturnTo.slice(0, hashIndex);
+    const hash = safeReturnTo.slice(hashIndex);
+
+    return `${base}${separator}message=${encodeURIComponent(message)}${hash}`;
+  }
+
+  return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
+}
+
+function adminMerchMessage(message: string, returnTo?: string) {
+  const safeReturnTo =
+    returnTo?.startsWith("/admin/merch") || returnTo === "/admin"
+      ? returnTo
+      : "/admin#merch";
   const separator = safeReturnTo.includes("?") ? "&" : "?";
   const hashIndex = safeReturnTo.indexOf("#");
 
@@ -1148,6 +1174,81 @@ export async function updateAdCampaignStatus(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/admin/ads");
   redirect(adminAdsMessage("Ad campaign updated.", returnTo));
+}
+
+export async function updateMerchProductStatus(formData: FormData) {
+  const productId = cleanText(formData.get("product_id"), 80);
+  const returnTo = cleanText(formData.get("return_to"), 120);
+  const status = cleanText(formData.get("status"), 40) as MerchProductStatus;
+  const note = cleanText(formData.get("note"), 500);
+
+  if (!productId || !merchProductStatuses.has(status)) {
+    redirect(adminMerchMessage("Choose a valid merch product status.", returnTo));
+  }
+
+  const { supabase, userId } = await requireModerator();
+  const { data: product, error: productError } = await supabase
+    .from("merch_products")
+    .select("id, seller_id, status, title, category, price_cents, currency")
+    .eq("id", productId)
+    .maybeSingle<{
+      category: string;
+      currency: string;
+      id: string;
+      price_cents: number;
+      seller_id: string;
+      status: string;
+      title: string;
+    }>();
+
+  if (productError || !product) {
+    redirect(
+      adminMerchMessage(
+        productError?.message || "Merch product was not found.",
+        returnTo,
+      ),
+    );
+  }
+
+  const now = new Date().toISOString();
+  const { error: updateError } = await supabase
+    .from("merch_products")
+    .update({
+      reviewed_at: now,
+      reviewed_by: userId,
+      reviewer_note: note || null,
+      status,
+      updated_at: now,
+    })
+    .eq("id", productId);
+
+  if (updateError) {
+    redirect(
+      adminMerchMessage(
+        updateError.message || "Could not update merch product.",
+        returnTo,
+      ),
+    );
+  }
+
+  await supabase.from("admin_audit_logs").insert({
+    actor_id: userId,
+    event_type: `merch_product_${status}`,
+    metadata: {
+      category: product.category,
+      currency: product.currency,
+      from_status: product.status,
+      price_cents: product.price_cents,
+      to_status: status,
+    },
+    summary: note || null,
+    target_id: product.id,
+    target_type: "merch_product",
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/merch");
+  redirect(adminMerchMessage("Merch product updated.", returnTo));
 }
 
 export async function updateAccountDeletionRequest(formData: FormData) {
