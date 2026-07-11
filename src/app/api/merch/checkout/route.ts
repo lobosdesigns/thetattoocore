@@ -191,6 +191,7 @@ export async function POST(request: Request) {
     )
     .eq("id", productId)
     .eq("status", "active")
+    .eq("moderation_status", "active")
     .maybeSingle<Product>();
 
   if (error || !product) {

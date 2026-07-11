@@ -379,6 +379,7 @@ export default async function SearchPage({
                 "id, title, category, price_cents, currency, is_official, ships_from_city, ships_from_region, profiles:profiles!merch_products_seller_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
               )
               .eq("status", "active")
+              .eq("moderation_status", "active")
               .eq("is_indexable", true)
               .or(
                 query

@@ -10,7 +10,12 @@ type Claims = {
   sub: string;
 };
 type ModerationStatus = "active" | "under_review" | "hidden" | "removed";
-type ContentType = "feed_post" | "thread_post" | "marketplace_listing" | "gig";
+type ContentType =
+  | "feed_post"
+  | "gig"
+  | "marketplace_listing"
+  | "merch_product"
+  | "thread_post";
 type ReviewItem = {
   authorName: string;
   authorUsername: string;
@@ -32,6 +37,7 @@ const contentTabs = [
   ["thread_post", "Gossip"],
   ["marketplace_listing", "Stuff"],
   ["gig", "Gigs"],
+  ["merch_product", "Merch"],
 ] as const;
 
 export const metadata: Metadata = {
@@ -56,7 +62,8 @@ function contentType(value: string | string[] | undefined): ContentType {
     rawValue === "feed_post" ||
     rawValue === "thread_post" ||
     rawValue === "marketplace_listing" ||
-    rawValue === "gig"
+    rawValue === "gig" ||
+    rawValue === "merch_product"
   ) {
     return rawValue;
   }
@@ -88,6 +95,7 @@ function contentTypeLabel(type: ContentType) {
   if (type === "feed_post") return "4U";
   if (type === "thread_post") return "Gossip";
   if (type === "marketplace_listing") return "Stuff";
+  if (type === "merch_product") return "Merch";
 
   return "Gigs";
 }
@@ -348,7 +356,7 @@ export default async function AdminContentPage({
       title: listing.title,
       visibility: listing.visibility,
     }));
-  } else {
+  } else if (activeType === "gig") {
     const { count, data } = await supabase
       .from("gigs")
       .select(
@@ -384,6 +392,40 @@ export default async function AdminContentPage({
       subjectType: "gig",
       title: gig.title,
       visibility: gig.visibility,
+    }));
+  } else {
+    const { count, data } = await supabase
+      .from("merch_products")
+      .select(
+        "id, title, description, created_at, moderation_status, profiles:profiles!merch_products_seller_id_fkey(display_name, username)",
+        { count: "exact" },
+      )
+      .neq("moderation_status", "active")
+      .order("created_at", { ascending: false })
+      .range(from, to)
+      .returns<
+        {
+          created_at: string;
+          description: string | null;
+          id: string;
+          moderation_status: ModerationStatus;
+          profiles: { display_name: string; username: string } | null;
+          title: string;
+        }[]
+      >();
+    totalItems = count ?? 0;
+    items = (data ?? []).map((product) => ({
+      authorName: product.profiles?.display_name ?? "Seller",
+      authorUsername: product.profiles?.username ?? "seller",
+      body: product.description,
+      createdAt: product.created_at,
+      id: product.id,
+      isSensitive: false,
+      sensitiveReason: null,
+      status: product.moderation_status,
+      subjectType: "merch_product",
+      title: product.title,
+      visibility: "public_preview",
     }));
   }
 

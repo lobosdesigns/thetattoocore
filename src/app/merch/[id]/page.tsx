@@ -118,6 +118,7 @@ async function getProduct(id: string) {
     )
     .eq("id", id)
     .eq("status", "active")
+    .eq("moderation_status", "active")
     .order("sort_order", {
       ascending: true,
       referencedTable: "merch_product_media",

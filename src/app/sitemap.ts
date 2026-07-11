@@ -125,6 +125,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       "id, is_official, updated_at, profiles:profiles!merch_products_seller_id_fkey(account_type, license_verified_at)",
     )
     .eq("status", "active")
+    .eq("moderation_status", "active")
     .order("updated_at", { ascending: false })
     .limit(500)
     .returns<PublicMerch[]>();

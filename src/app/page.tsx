@@ -1452,6 +1452,7 @@ export default async function Home({
         "id, title, description, category, price_cents, currency, inventory_quantity, inventory_reserved, is_official, created_at, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("status", "active")
+      .eq("moderation_status", "active")
       .order("created_at", { ascending: false })
       .order("sort_order", {
         ascending: true,

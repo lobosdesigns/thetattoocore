@@ -291,6 +291,7 @@ export default async function SavedPage({
           )
           .in("id", merchIds)
           .eq("status", "active")
+          .eq("moderation_status", "active")
           .returns<MerchProduct[]>()
       : Promise.resolve({ data: [] as MerchProduct[] }),
     profileIds.length
