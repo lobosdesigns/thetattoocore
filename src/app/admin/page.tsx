@@ -348,7 +348,7 @@ export default async function AdminPage({
 
   if (!profile || !moderateRoles.includes(profile.role)) {
     return (
-      <main className="min-h-screen bg-[#202020] px-4 py-8 text-[#171412]">
+      <main className="ttc-page min-h-screen px-4 py-8">
         <section className="ttc-card mx-auto w-full max-w-2xl rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-6">
           <div className="mb-5 flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-md bg-[#171412] text-[#c8953b]">
@@ -1167,7 +1167,7 @@ export default async function AdminPage({
   ];
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
+    <main className="ttc-page min-h-screen overflow-x-hidden">
       <div className="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_28px_90px_rgba(0,0,0,0.42)] lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside className="border-b border-[#3b332b] bg-[#1c1916]/95 px-5 py-5 text-[#fffdf9] backdrop-blur lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
           <div className="mb-6 flex items-center gap-3">
@@ -1201,7 +1201,7 @@ export default async function AdminPage({
           </div>
         </aside>
 
-        <section className="min-w-0 bg-[#ece8df] px-4 py-6 sm:px-6 lg:px-8">
+        <section className="ttc-page-panel min-w-0 px-4 py-6 sm:px-6 lg:px-8">
           <header className="mb-6 flex flex-col gap-4 border-b border-[#cfc8bd] pb-5 md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="text-3xl font-bold">Admin dashboard</h1>
@@ -1225,7 +1225,7 @@ export default async function AdminPage({
             </div>
           </header>
 
-          <nav className="no-scrollbar sticky top-0 z-10 -mx-4 mb-6 flex gap-2 overflow-x-auto border-y border-[#cfc8bd] bg-[#ece8df]/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:hidden">
+          <nav className="no-scrollbar sticky top-0 z-10 -mx-4 mb-6 flex gap-2 overflow-x-auto border-y border-[#cfc8bd] bg-[color-mix(in_srgb,var(--paper)_95%,transparent)] px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:hidden">
             {adminTabs.map(([Icon, label, href]) => (
               <a
                 className="flex h-10 shrink-0 items-center gap-2 rounded-md border border-[#cfc8bd] bg-[#fffdf9]/90 px-3 text-xs font-bold shadow-sm"

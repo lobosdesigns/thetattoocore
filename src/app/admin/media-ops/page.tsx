@@ -70,8 +70,8 @@ export default async function AdminMediaOpsPage() {
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#202020] text-[#171412]">
-      <section className="mx-auto min-h-screen w-full max-w-5xl bg-[#ece8df] px-4 py-6 sm:px-6 lg:px-8">
+    <main className="ttc-page min-h-screen overflow-x-hidden">
+      <section className="ttc-page-panel mx-auto min-h-screen w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
         <header className="mb-6 flex flex-col gap-4 border-b border-[#cfc8bd] pb-5 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <Link
