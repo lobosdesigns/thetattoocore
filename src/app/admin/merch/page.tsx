@@ -96,8 +96,21 @@ function pageNumber(value: string | string[] | undefined) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 }
 
-function pageHref(page: number) {
-  return `/admin/merch?page=${page}`;
+function pageHref({
+  orderPage = 1,
+  page = 1,
+}: {
+  orderPage?: number;
+  page?: number;
+}) {
+  const params = new URLSearchParams();
+
+  if (page > 1) params.set("page", String(page));
+  if (orderPage > 1) params.set("order_page", String(orderPage));
+
+  const query = params.toString();
+
+  return query ? `/admin/merch?${query}` : "/admin/merch";
 }
 
 function timeAgo(value: string) {
@@ -138,10 +151,14 @@ function statusClass(status: ProductStatus) {
 function Pagination({
   currentPage,
   hasNextPage,
+  hrefForPage,
+  pageSizeLabel = "50",
   totalPages,
 }: {
   currentPage: number;
   hasNextPage: boolean;
+  hrefForPage: (page: number) => string;
+  pageSizeLabel?: string;
   totalPages: number;
 }) {
   return (
@@ -157,10 +174,10 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
           }`}
-          href={pageHref(Math.max(1, currentPage - 1))}
+          href={hrefForPage(Math.max(1, currentPage - 1))}
         >
           <ChevronLeft className="size-4" />
-          Previous 50
+          Previous {pageSizeLabel}
         </Link>
         <Link
           aria-disabled={!hasNextPage}
@@ -169,9 +186,9 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
           }`}
-          href={pageHref(currentPage + 1)}
+          href={hrefForPage(currentPage + 1)}
         >
-          Next 50
+          Next {pageSizeLabel}
           <ChevronRight className="size-4" />
         </Link>
       </div>
@@ -180,11 +197,11 @@ function Pagination({
 }
 
 function ProductCard({
-  currentPage,
   product,
+  returnTo,
 }: {
-  currentPage: number;
   product: MerchProduct;
+  returnTo: string;
 }) {
   return (
     <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
@@ -228,7 +245,7 @@ function ProductCard({
       </dl>
       <form action={updateMerchProductStatus} className="mt-4 space-y-2">
         <input name="product_id" type="hidden" value={product.id} />
-        <input name="return_to" type="hidden" value={pageHref(currentPage)} />
+        <input name="return_to" type="hidden" value={returnTo} />
         <input
           className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
           maxLength={500}
@@ -263,11 +280,11 @@ function ProductCard({
 }
 
 function OrderCard({
-  currentPage,
   order,
+  returnTo,
 }: {
-  currentPage: number;
   order: MerchOrder;
+  returnTo: string;
 }) {
   const canFulfill = order.status === "paid";
   const canCancel = ["pending_checkout", "payment_failed", "cancelled"].includes(
@@ -319,7 +336,7 @@ function OrderCard({
       ) : null}
       <form action={updateMerchOrderStatus} className="mt-4 space-y-2">
         <input name="order_id" type="hidden" value={order.id} />
-        <input name="return_to" type="hidden" value={pageHref(currentPage)} />
+        <input name="return_to" type="hidden" value={returnTo} />
         <input
           className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
           maxLength={1000}
@@ -363,12 +380,23 @@ function OrderCard({
 export default async function AdminMerchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string; page?: string | string[] }>;
+  searchParams: Promise<{
+    message?: string;
+    order_page?: string | string[];
+    page?: string | string[];
+  }>;
 }) {
   const params = await searchParams;
   const currentPage = pageNumber(params.page);
+  const currentOrderPage = pageNumber(params.order_page);
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
+  const orderFrom = (currentOrderPage - 1) * pageSize;
+  const orderTo = orderFrom + pageSize - 1;
+  const currentProductHref = pageHref({
+    orderPage: currentOrderPage,
+    page: currentPage,
+  });
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -436,7 +464,7 @@ export default async function AdminMerchPage({
       { count: "exact" },
     )
     .order("created_at", { ascending: false })
-    .range(0, 9)
+    .range(orderFrom, orderTo)
     .returns<
       {
         admin_note: string | null;
@@ -468,6 +496,13 @@ export default async function AdminMerchPage({
     subtotalCents: order.subtotal_cents,
     totalCents: order.total_cents,
   }));
+  const totalOrders = orderCount ?? 0;
+  const totalOrderPages = Math.max(1, Math.ceil(totalOrders / pageSize));
+  const hasNextOrderPage = currentOrderPage < totalOrderPages;
+  const currentOrderHref = pageHref({
+    orderPage: currentOrderPage,
+    page: currentPage,
+  });
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -592,6 +627,9 @@ export default async function AdminMerchPage({
           <Pagination
             currentPage={currentPage}
             hasNextPage={hasNextPage}
+            hrefForPage={(nextPage) =>
+              pageHref({ orderPage: currentOrderPage, page: nextPage })
+            }
             totalPages={totalPages}
           />
 
@@ -599,9 +637,9 @@ export default async function AdminMerchPage({
             <div className="mt-4 grid gap-4">
               {products.map((product) => (
                 <ProductCard
-                  currentPage={currentPage}
                   key={product.id}
                   product={product}
+                  returnTo={currentProductHref}
                 />
               ))}
             </div>
@@ -615,6 +653,9 @@ export default async function AdminMerchPage({
             <Pagination
               currentPage={currentPage}
               hasNextPage={hasNextPage}
+              hrefForPage={(nextPage) =>
+                pageHref({ orderPage: currentOrderPage, page: nextPage })
+              }
               totalPages={totalPages}
             />
           </div>
@@ -629,16 +670,24 @@ export default async function AdminMerchPage({
               </p>
             </div>
             <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-sm font-semibold">
-              First 10
+              Page {currentOrderPage} of {totalOrderPages}
             </span>
           </div>
+          <Pagination
+            currentPage={currentOrderPage}
+            hasNextPage={hasNextOrderPage}
+            hrefForPage={(nextOrderPage) =>
+              pageHref({ orderPage: nextOrderPage, page: currentPage })
+            }
+            totalPages={totalOrderPages}
+          />
           {orders.length ? (
-            <div className="grid gap-3">
+            <div className="mt-4 grid gap-3">
               {orders.map((order) => (
                 <OrderCard
-                  currentPage={currentPage}
                   key={order.id}
                   order={order}
+                  returnTo={currentOrderHref}
                 />
               ))}
             </div>
@@ -647,6 +696,16 @@ export default async function AdminMerchPage({
               No orders yet.
             </p>
           )}
+          <div className="mt-4">
+            <Pagination
+              currentPage={currentOrderPage}
+              hasNextPage={hasNextOrderPage}
+              hrefForPage={(nextOrderPage) =>
+                pageHref({ orderPage: nextOrderPage, page: currentPage })
+              }
+              totalPages={totalOrderPages}
+            />
+          </div>
         </section>
       </section>
     </main>

@@ -194,7 +194,7 @@
 ## Later Columns
 
 - Merch: artist, studio, vendor, and TheTattooCore merchandise for public fan purchases, including T-shirts, prints, art, stickers, and other safe brand goods.
-- Merch build order: product catalog and seller eligibility first, Stripe checkout/webhooks second, order/admin/refund/fulfillment handling third, then public production purchase rules after policy and payment-provider review. Stripe test checkout, paid webhooks, inventory decrement, buyer order history, search previews, and basic admin order controls are now working.
+- Merch build order: product catalog and seller eligibility first, Stripe checkout/webhooks second, order/admin/refund/fulfillment handling third, then public production purchase rules after policy and payment-provider review. Stripe test checkout, paid webhooks, inventory decrement, buyer order history, search previews, paged admin product/order queues, and basic admin order controls are now working.
 - Gigs: jobs, conventions, guest spots, shop openings, apprenticeships, and event opportunities for artists and studios.
 - Contests: artist contests, flash challenges, sponsor prizes, and voting.
 - Streams: live tattoo sessions, shop walkthroughs, Q&A, and moderated chat.
