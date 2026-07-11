@@ -163,27 +163,27 @@ export function ProfileForm({
   return (
     <form
       action={updateProfile}
-      className="ttc-card scroll-mt-4 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee]/95 p-5 backdrop-blur"
+      className="ttc-card scroll-mt-4 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_95%,transparent)] p-5 backdrop-blur"
       id="profile-settings"
     >
       <div className="mb-5">
         <h1 className="text-2xl font-bold">Profile setup</h1>
         <p className="mt-1 text-sm text-[#766d62]">{claims.email}</p>
-        <p className="mt-3 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-3 py-2 text-sm leading-5 text-[#4f473f]">
+        <p className="ttc-surface mt-3 rounded-md border px-3 py-2 text-sm leading-5">
           Required fields are marked with <RequiredMark />. Artists and studios
           can post right away after saving, then submit license verification for
           the verified badge.
         </p>
       </div>
 
-      <div className="no-scrollbar mb-5 flex gap-2 overflow-x-auto rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-2">
+      <div className="ttc-surface no-scrollbar mb-5 flex gap-2 overflow-x-auto rounded-md border p-2">
         {profileTabs.map(([tab, label]) => (
           <button
             aria-pressed={activeTab === tab}
             className={`h-10 shrink-0 rounded-md border px-3 text-sm font-bold ${
               activeTab === tab
-                ? "border-[#171412] bg-[#171412] text-white shadow-[0_8px_18px_rgba(23,20,18,0.16)]"
-                : "border-[#d8d1c6] bg-white text-[#4f473f]"
+                ? "ttc-control-active shadow-[0_8px_18px_rgba(23,20,18,0.16)]"
+                : "ttc-surface"
             }`}
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -195,7 +195,7 @@ export function ProfileForm({
       </div>
 
       <div className={panelClass("profile")}>
-        <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3 sm:col-span-2">
+        <div className="ttc-surface rounded-md border p-3 sm:col-span-2">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[#171412] text-xl font-bold text-[#c8953b]">
               {initialProfile?.avatar_url ? (

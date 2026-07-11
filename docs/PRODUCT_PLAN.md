@@ -72,7 +72,7 @@
 - Add user-selectable appearance settings for Light, Dark, and System mode. Started for launch with instant local switching plus profile-stored preference for signed-in users; theme-token migration has begun on appearance controls, main column tabs, and the language cue so both modes can become polished instead of just inverted.
 - Notifications and admin need another mobile responsive pass; no panels, buttons, or cards should drift out of frame on narrow browser viewports. Notifications received another mobile containment pass for launch.
 - Admin should move away from one long cluttered page toward clearer tab/menu sections for Overview, Verification, Reports, Users, Ads, Data, Media, and Mail. Done for launch with a compact admin overview and dedicated pages for each major queue.
-- Account/profile editing should follow the same tabbed cleanup direction as admin so profile, language, privacy, notifications, verification, ads, and data do not feel like one long cluttered scroll. Started for launch with sticky account tabs and tabbed profile sub-sections.
+- Account/profile editing should follow the same tabbed cleanup direction as admin so profile, language, privacy, notifications, verification, ads, and data do not feel like one long cluttered scroll. Started for launch with sticky account tabs, tabbed profile sub-sections, and theme-token form/card styling on the core profile editor.
 - The 4U language preference notice should default to English but behave like a light onboarding cue: hide after the first real interaction such as tap, click, scroll, or swipe. Done for launch with local dismissal and explicit swipe dismissal.
 
 ## Global Availability

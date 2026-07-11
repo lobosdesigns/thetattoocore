@@ -153,6 +153,19 @@ textarea:focus-visible {
   color: var(--foreground);
 }
 
+.ttc-card input:not([type="checkbox"]):not([type="radio"]),
+.ttc-card select,
+.ttc-card textarea {
+  background: color-mix(in srgb, var(--paper-warm) 94%, transparent);
+  border-color: var(--card-rim);
+  color: var(--foreground);
+}
+
+.ttc-card input::placeholder,
+.ttc-card textarea::placeholder {
+  color: color-mix(in srgb, var(--foreground) 42%, transparent);
+}
+
 .ttc-comment-controls button,
 .ttc-comment-controls summary {
   align-items: center;

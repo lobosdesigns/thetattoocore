@@ -215,7 +215,7 @@ function AccountReadinessPanel({
   ];
 
   return (
-    <section className="mb-4 rounded-lg border border-[#cfc8bd] bg-[#f2f1ee] p-4">
+    <section className="ttc-card mb-4 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_95%,transparent)] p-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase text-[#766d62]">
@@ -235,7 +235,7 @@ function AccountReadinessPanel({
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         {items.map((item) => (
           <div
-            className="rounded-md border border-[#d8d1c6] bg-[#fffdf9] px-3 py-2"
+            className="ttc-surface rounded-md border px-3 py-2"
             key={item.label}
           >
             <div className="flex items-center justify-between gap-3">
@@ -353,7 +353,7 @@ export default async function AccountPage({
   const isFirstProfile = !profile;
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#202020] px-4 py-8 text-[#171412]">
+    <main className="ttc-page min-h-screen overflow-x-hidden px-4 py-8">
       <section className="mx-auto w-full max-w-3xl">
         <div className="mb-6 flex items-center justify-between">
           <Link className="text-sm font-semibold text-[#f2f1ee]" href="/">
@@ -362,14 +362,14 @@ export default async function AccountPage({
           <div className="flex items-center gap-3">
             {role && adminRoles.includes(role) ? (
               <Link
-                className="flex h-10 items-center rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-4 text-sm font-semibold"
+                className="ttc-surface flex h-10 items-center rounded-md border px-4 text-sm font-semibold"
                 href="/admin"
               >
                 Admin
               </Link>
             ) : null}
             <form action="/auth/signout" method="post">
-              <button className="h-10 rounded-md border border-[#cfc8bd] bg-[#fffdf9] px-4 text-sm font-semibold">
+              <button className="ttc-surface h-10 rounded-md border px-4 text-sm font-semibold">
                 Sign out
               </button>
             </form>
@@ -377,7 +377,7 @@ export default async function AccountPage({
         </div>
 
         {params.message ? (
-          <p className="mb-4 rounded-md border border-[#cfc8bd] bg-[#e8e4dc] px-4 py-3 text-sm font-medium">
+          <p className="ttc-surface mb-4 rounded-md border px-4 py-3 text-sm font-medium">
             {params.message}
           </p>
         ) : null}
