@@ -32,12 +32,12 @@ function ComposerDetails({
 }) {
   return (
     <details
-      className="group rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3"
+      className="group rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3"
       open={open}
     >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold">
         <span>{title}</span>
-        <ChevronDown className="size-4 shrink-0 text-[#766d62] transition group-open:rotate-180" />
+        <ChevronDown className="size-4 shrink-0 text-[var(--muted-strong)] transition group-open:rotate-180" />
       </summary>
       <div className="mt-3 space-y-3">{children}</div>
     </details>
@@ -54,9 +54,9 @@ function ComposerSubmit({
   type?: "submit";
 }) {
   return (
-    <div className="sticky bottom-0 z-10 -mx-3 border-t border-[#d8d1c6] bg-[#f2f1ee]/95 px-3 py-3 shadow-[0_-12px_24px_rgba(23,20,18,0.08)] backdrop-blur sm:-mx-4 sm:px-4">
+    <div className="sticky bottom-0 z-10 -mx-3 border-t border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] px-3 py-3 shadow-[0_-12px_24px_rgba(23,20,18,0.08)] backdrop-blur sm:-mx-4 sm:px-4">
       <PendingSubmitButton
-        className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+        className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
         pendingLabel={pendingLabel}
         type={type}
       >
@@ -68,11 +68,11 @@ function ComposerSubmit({
 
 function VisibilityControl() {
   return (
-    <section className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-3">
+    <section className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
       <label className="block">
         <span className="text-sm font-semibold">Visibility</span>
         <select
-          className="mt-2 h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+          className="mt-2 h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
           name="visibility"
         >
           <option value="public_preview">Public preview</option>
@@ -82,8 +82,8 @@ function VisibilityControl() {
       </label>
       <div className="mt-3 grid gap-2">
         {visibilityOptions.map(([label, description]) => (
-          <p className="text-xs leading-5 text-[#766d62]" key={label}>
-            <span className="font-semibold text-[#4f473f]">{label}:</span>{" "}
+          <p className="text-xs leading-5 text-[var(--muted-strong)]" key={label}>
+            <span className="font-semibold text-[var(--muted)]">{label}:</span>{" "}
             {description}
           </p>
         ))}
@@ -102,7 +102,7 @@ function DmAttachmentControl() {
         name="media"
         videoAllowed={false}
       />
-      <p className="text-xs leading-5 text-[#766d62]">
+      <p className="text-xs leading-5 text-[var(--muted-strong)]">
         Photo DMs stay private to the conversation. GIFs are allowed; video DMs
         can come later with the managed video pipeline.
       </p>
@@ -131,7 +131,7 @@ export function FloatingComposer({
           >
             <WordLimitedField
               as="textarea"
-              className="min-h-24 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412] sm:min-h-28"
+              className="min-h-24 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)] sm:min-h-28"
               maxLength={360}
               maxWords={40}
               minTrimmedLength={3}
@@ -142,12 +142,12 @@ export function FloatingComposer({
             />
             <ComposerDetails title="Style and location">
               <input
-                className="h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                 name="style_tags"
                 placeholder="blackwork, fine line"
               />
               <input
-                className="h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                 name="location_label"
                 placeholder="Austin, TX"
               />
@@ -167,7 +167,7 @@ export function FloatingComposer({
           >
             <WordLimitedField
               as="textarea"
-              className="min-h-44 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+              className="min-h-44 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
               maxCharacters={8000}
               maxLength={8000}
               minTrimmedLength={3}
@@ -191,7 +191,7 @@ export function FloatingComposer({
               encType="multipart/form-data"
             >
               <WordLimitedField
-                className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                 maxCharacters={120}
                 maxLength={120}
                 minTrimmedLength={3}
@@ -201,8 +201,8 @@ export function FloatingComposer({
                 validationMessage="Stuff title needs at least 3 characters."
                 wrapperClassName="w-full"
               />
-              <div className="rounded-md border border-[#e5ded4] bg-[#fffdf9] p-3 text-xs leading-5 text-[#5f564d]">
-                <p className="font-semibold text-[#171412]">
+              <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3 text-xs leading-5 text-[var(--muted)]">
+                <p className="font-semibold text-[var(--foreground)]">
                   Professional access only
                 </p>
                 <p className="mt-1">
@@ -213,12 +213,12 @@ export function FloatingComposer({
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <input
-                  className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                   name="price"
                   placeholder="80"
                 />
                 <select
-                  className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                   name="category"
                 >
                   <option value="flash">Flash</option>
@@ -232,7 +232,7 @@ export function FloatingComposer({
               <ComposerDetails title="Description and terms">
                 <WordLimitedField
                   as="textarea"
-                  className="min-h-24 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+                  className="min-h-24 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
                   maxCharacters={2000}
                   maxLength={2000}
                   name="description"
@@ -242,12 +242,12 @@ export function FloatingComposer({
               <ComposerDetails title="Pickup, shipping, and location">
                 <div className="grid grid-cols-2 gap-2">
                   <input
-                    className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     name="city"
                     placeholder="City"
                   />
                   <input
-                    className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                    className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     name="region"
                     placeholder="State"
                   />
@@ -260,17 +260,17 @@ export function FloatingComposer({
               <ComposerSubmit pendingLabel="Publishing">Publish listing</ComposerSubmit>
             </form>
           ) : (
-            <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-4">
+            <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-4">
               <p className="text-sm font-semibold">
                 Stuff is for verified artists, studios, and vendors.
               </p>
-              <p className="mt-2 text-sm leading-6 text-[#766d62]">
+              <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
                 Fans can browse Stuff, but listing, buying, selling, trading,
                 seller contact, and professional equipment activity require
                 verification.
               </p>
               <Link
-                className="mt-3 inline-flex h-10 items-center justify-center rounded-md bg-[#171412] px-4 text-sm font-semibold text-white"
+                className="mt-3 inline-flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
                 href="/account#verification-settings"
               >
                 Apply for verification
@@ -286,7 +286,7 @@ export function FloatingComposer({
             method="post"
           >
             <WordLimitedField
-              className="h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
               maxCharacters={140}
               maxLength={140}
               minTrimmedLength={3}
@@ -297,7 +297,7 @@ export function FloatingComposer({
               wrapperClassName="w-full"
             />
             <select
-              className="h-10 w-full rounded-md border border-[#d8d1c6] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+              className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
               name="category"
             >
               <option value="job">Job</option>
@@ -310,7 +310,7 @@ export function FloatingComposer({
             <ComposerDetails title="Description and more details">
               <WordLimitedField
                 as="textarea"
-                className="min-h-24 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+                className="min-h-24 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
                 maxCharacters={3000}
                 maxLength={3000}
                 name="description"
@@ -318,30 +318,30 @@ export function FloatingComposer({
               />
               <div className="grid grid-cols-2 gap-2">
                 <input
-                  className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                   name="city"
                   placeholder="City"
                 />
                 <input
-                  className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                   name="region"
                   placeholder="State"
                 />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <input
-                  className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                   name="starts_at"
                   type="date"
                 />
                 <input
-                  className="h-10 rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                  className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                   name="ends_at"
                   type="date"
                 />
               </div>
               <WordLimitedField
-                className="h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                 maxCharacters={120}
                 maxLength={120}
                 name="compensation"
@@ -349,7 +349,7 @@ export function FloatingComposer({
                 wrapperClassName="w-full"
               />
               <WordLimitedField
-                className="h-10 w-full rounded-md border border-[#cfc8bd] bg-white px-3 text-sm outline-none focus:border-[#171412]"
+                className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                 maxCharacters={300}
                 maxLength={300}
                 name="contact_url"
@@ -368,15 +368,15 @@ export function FloatingComposer({
           </form>
         ),
         merch: (
-          <div className="rounded-md border border-[#cfc8bd] bg-[#fffdf9] p-4">
+          <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-4">
             <p className="text-sm font-semibold">Merch is planned next.</p>
-            <p className="mt-2 text-sm leading-6 text-[#766d62]">
+            <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
               Merch will be for public fan purchases like artist shirts, prints,
               art, stickers, vendor brand goods, and official TheTattooCore
               merchandise. It stays separate from Stuff, which is for verified
               professional equipment and trade.
             </p>
-            <p className="mt-3 rounded-md border border-[#e5ded4] bg-white p-3 text-xs leading-5 text-[#5f564d]">
+            <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] p-3 text-xs leading-5 text-[var(--muted)]">
               Checkout, tax, shipping, refunds, seller approval, and payment
               provider rules need to be built before live Merch listings turn on.
             </p>
@@ -388,8 +388,8 @@ export function FloatingComposer({
             className="space-y-3"
             encType="multipart/form-data"
           >
-            <div className="flex items-center gap-2 rounded-md border border-[#d8d1c6] bg-white px-3">
-              <Search className="size-4 text-[#766d62]" />
+            <div className="flex items-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3">
+              <Search className="size-4 text-[var(--muted-strong)]" />
               <input
                 className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none"
                 maxLength={30}
@@ -403,7 +403,7 @@ export function FloatingComposer({
             </div>
             <WordLimitedField
               as="textarea"
-              className="min-h-28 w-full rounded-md border border-[#d8d1c6] bg-white px-3 py-2 text-sm outline-none focus:border-[#171412]"
+              className="min-h-28 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
               emojiShortcuts
               maxCharacters={4000}
               maxLength={4000}

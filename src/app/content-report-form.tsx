@@ -71,7 +71,7 @@ export function ContentReportForm({
         <p className="text-sm font-bold">
           {reportTitle(subjectType)}
         </p>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#a06d13]">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--brand-gold)]">
           Safety review
         </p>
         <p className="ttc-muted mb-2 text-xs leading-5">
@@ -80,7 +80,7 @@ export function ContentReportForm({
         <div className="grid min-w-0 gap-2">
           <select
             aria-label="Report reason"
-            className="h-9 w-full min-w-0 rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+            className="h-9 w-full min-w-0 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2 text-xs outline-none focus:border-[var(--foreground)]"
             name="reason"
           >
             <option value="sensitive non-nude body-art">Sensitive or restricted body-art context</option>
@@ -93,12 +93,12 @@ export function ContentReportForm({
             <option value="other">Other policy concern</option>
           </select>
           <input
-            className="h-9 w-full min-w-0 rounded-md border border-[#cfc8bd] bg-white px-2 text-xs outline-none focus:border-[#171412]"
+            className="h-9 w-full min-w-0 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2 text-xs outline-none focus:border-[var(--foreground)]"
             maxLength={500}
             name="details"
             placeholder="What should moderators know?"
           />
-          <button className="flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-md bg-[#171412] px-2 text-xs font-semibold text-white">
+          <button className="flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-md bg-[var(--foreground)] px-2 text-xs font-semibold text-[var(--background)]">
             <Flag className="size-3.5" />
             Send report
           </button>
