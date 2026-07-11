@@ -8,6 +8,12 @@ type Order = {
   currency: string;
   discount_cents: number;
   id: string;
+  merch_order_items: {
+    line_total_cents: number;
+    quantity: number;
+    title_snapshot: string;
+    unit_price_cents: number;
+  }[];
   platform_fee_cents: number;
   shipping_cents: number;
   subtotal_cents: number;
@@ -79,7 +85,7 @@ export default async function MerchCheckoutSuccessPage({
     ? await supabase
         .from("merch_orders")
         .select(
-          "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, created_at",
+          "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, created_at, merch_order_items(title_snapshot, quantity, unit_price_cents, line_total_cents)",
         )
         .eq("stripe_checkout_session_id", sessionId)
         .eq("buyer_id", claims.sub)
@@ -103,6 +109,28 @@ export default async function MerchCheckoutSuccessPage({
                 <p className="font-semibold">Order {order.id.slice(0, 8)}</p>
               </div>
               <dl className="mt-3 grid gap-2 text-[var(--muted)]">
+                {order.merch_order_items.length ? (
+                  <div className="border-b border-[var(--card-rim)] pb-2">
+                    <dt className="text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Items
+                    </dt>
+                    <dd className="mt-2 space-y-1 text-[var(--foreground)]">
+                      {order.merch_order_items.map((item) => (
+                        <div
+                          className="flex justify-between gap-3"
+                          key={`${item.title_snapshot}-${item.quantity}-${item.line_total_cents}`}
+                        >
+                          <span>
+                            {item.quantity} x {item.title_snapshot}
+                          </span>
+                          <span className="font-semibold">
+                            {money(item.line_total_cents, order.currency)}
+                          </span>
+                        </div>
+                      ))}
+                    </dd>
+                  </div>
+                ) : null}
                 <div className="flex justify-between gap-3">
                   <dt>Status</dt>
                   <dd className="font-semibold capitalize text-[var(--foreground)]">
