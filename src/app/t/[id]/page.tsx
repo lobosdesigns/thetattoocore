@@ -557,7 +557,7 @@ export default async function ThreadPage({
                               </p>
                             </div>
                           </div>
-                          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs font-semibold text-[#766d62]">
+                          <div className="ttc-comment-controls mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold">
                             <form action={toggleThreadCommentLike}>
                               <input
                                 name="comment_id"
@@ -786,7 +786,7 @@ export default async function ThreadPage({
                                         </button>
                                       </form>
                                     </div>
-                                    <div className="mt-2 flex flex-wrap items-center gap-3 font-semibold text-[#766d62]">
+                                    <div className="ttc-comment-controls mt-2 flex flex-wrap items-center gap-2 font-semibold">
                                       {isOwnReply ? (
                                         <details>
                                           <summary className="cursor-pointer list-none">
