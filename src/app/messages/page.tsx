@@ -78,6 +78,23 @@ type MessageNotification = {
 
 const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
 
+function loginPathForMessages(params: {
+  c?: string;
+  inboxPage?: string;
+  to?: string;
+}) {
+  const returnParams = new URLSearchParams();
+
+  if (params.c) returnParams.set("c", params.c);
+  if (params.inboxPage) returnParams.set("inboxPage", params.inboxPage);
+  if (params.to) returnParams.set("to", params.to);
+
+  const query = returnParams.toString();
+  const returnTo = `/messages${query ? `?${query}` : ""}`;
+
+  return `/login?return_to=${encodeURIComponent(returnTo)}`;
+}
+
 function timeAgo(value: string) {
   const diffMs = Date.now() - new Date(value).getTime();
   const minutes = Math.max(1, Math.round(diffMs / 60000));
@@ -134,7 +151,7 @@ export default async function MessagesPage({
   const claims = claimsData?.claims as Claims | undefined;
 
   if (!claims?.sub) {
-    redirect("/login");
+    redirect(loginPathForMessages(params));
   }
 
   const { data: currentProfile } = await supabase
