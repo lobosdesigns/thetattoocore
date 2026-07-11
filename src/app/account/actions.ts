@@ -592,6 +592,7 @@ export async function submitAdCampaign(formData: FormData) {
 
   revalidatePath("/account");
   revalidatePath("/admin");
+  revalidatePath("/admin/ads");
   redirect(accountPath("Ad campaign submitted for review."));
 }
 

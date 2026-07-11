@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import Stripe from "stripe";
 import { createStripeClient, stripeCryptoProvider } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -111,6 +112,10 @@ async function markCheckoutSession({
       }
     }
   }
+
+  revalidatePath("/account");
+  revalidatePath("/admin");
+  revalidatePath("/admin/merch");
 }
 
 async function markAdCheckoutSession({
@@ -154,6 +159,11 @@ async function markAdCheckoutSession({
   if (error) {
     throw new Error(error.message || "Could not update ad payment status.");
   }
+
+  revalidatePath("/");
+  revalidatePath("/account");
+  revalidatePath("/admin");
+  revalidatePath("/admin/ads");
 }
 
 async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
@@ -191,6 +201,12 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
   if (adError) {
     throw new Error(adError.message || "Could not update ad refund status.");
   }
+
+  revalidatePath("/");
+  revalidatePath("/account");
+  revalidatePath("/admin");
+  revalidatePath("/admin/ads");
+  revalidatePath("/admin/merch");
 }
 
 export async function POST(request: Request) {
