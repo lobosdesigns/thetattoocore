@@ -26,16 +26,11 @@ type ProfileResult = {
   city: string | null;
   license_verified_at: string | null;
   region: string | null;
-  shop_profile:
-    | {
-        display_name: string;
-        username: string;
-      }
-    | {
-        display_name: string;
-        username: string;
-      }[]
-    | null;
+  shop_profile?: {
+    display_name: string;
+    username: string;
+  } | null;
+  shop_profile_id: string | null;
 };
 
 type SearchProfileBadge = Pick<
@@ -111,6 +106,16 @@ type SearchType =
   | "gigs"
   | "merch";
 
+const MERCH_CATEGORY_VALUES = new Set([
+  "apparel",
+  "print",
+  "art",
+  "sticker",
+  "accessory",
+  "official",
+  "other",
+]);
+
 export const metadata: Metadata = {
   robots: {
     follow: false,
@@ -118,6 +123,8 @@ export const metadata: Metadata = {
   },
   title: "Search",
 };
+
+export const dynamic = "force-dynamic";
 
 function cleanQuery(value?: string) {
   return String(value ?? "")
@@ -295,43 +302,53 @@ export default async function SearchPage({
     { data: listings },
     { data: gigs },
     { data: merchProducts },
-  ] = hasSearch
+      ] = hasSearch
     ? await Promise.all([
         shouldRunProfiles
-          ? supabase
-              .from("profiles")
-              .select(
-                "id, username, display_name, avatar_url, account_type, bio, city, license_verified_at, region, shop_profile:profiles!profiles_shop_profile_id_fkey(username, display_name)",
-              )
-              .or(
-                `username.ilike.${pattern},display_name.ilike.${pattern},account_type.ilike.${pattern},bio.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`,
-              )
-              .eq("is_private", false)
-              .ilike("city", city ? cityPattern : "%")
-              .ilike("region", region ? regionPattern : "%")
-              .order("display_name", { ascending: true })
-              .limit(resultLimit)
-              .returns<ProfileResult[]>()
+          ? (() => {
+              let profileQuery = supabase
+                .from("profiles")
+                .select(
+                  "id, username, display_name, avatar_url, account_type, bio, city, license_verified_at, region, shop_profile_id",
+                )
+                .or(
+                  `username.ilike.${pattern},display_name.ilike.${pattern},bio.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`,
+                )
+                .eq("is_private", false);
+
+              if (city) profileQuery = profileQuery.ilike("city", cityPattern);
+              if (region) profileQuery = profileQuery.ilike("region", regionPattern);
+
+              return profileQuery
+                .order("display_name", { ascending: true })
+                .limit(resultLimit)
+                .returns<ProfileResult[]>();
+            })()
           : Promise.resolve({ data: [] as ProfileResult[] }),
         shouldRunFeed
-          ? supabase
-              .from("feed_posts")
-              .select(
-                "id, caption, location_label, style_tags, profiles:profiles!feed_posts_author_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
-              )
-              .eq("is_published", true)
-              .eq("moderation_status", "active")
-              .eq("visibility", "public_preview")
-              .eq("is_sensitive", false)
-              .or(
-                query
-                  ? `caption.ilike.${pattern},location_label.ilike.${pattern}`
-                  : `caption.ilike.%,location_label.ilike.%`,
-              )
-              .ilike("location_label", city ? cityPattern : "%")
-              .order("created_at", { ascending: false })
-              .limit(resultLimit)
-              .returns<FeedResult[]>()
+          ? (() => {
+              let feedQuery = supabase
+                .from("feed_posts")
+                .select(
+                  "id, caption, location_label, style_tags, profiles:profiles!feed_posts_author_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
+                )
+                .eq("is_published", true)
+                .eq("moderation_status", "active")
+                .eq("visibility", "public_preview")
+                .eq("is_sensitive", false)
+                .or(
+                  query
+                    ? `caption.ilike.${pattern},location_label.ilike.${pattern}`
+                    : `caption.ilike.%,location_label.ilike.%`,
+                );
+
+              if (city) feedQuery = feedQuery.ilike("location_label", cityPattern);
+
+              return feedQuery
+                .order("created_at", { ascending: false })
+                .limit(resultLimit)
+                .returns<FeedResult[]>();
+            })()
           : Promise.resolve({ data: [] as FeedResult[] }),
         shouldRunThreads && query
           ? supabase
@@ -348,101 +365,121 @@ export default async function SearchPage({
               .returns<ThreadResult[]>()
           : Promise.resolve({ data: [] as ThreadResult[] }),
         shouldRunListings
-          ? supabase
-              .from("marketplace_listings")
-              .select(
-                "id, title, category, city, region, profiles:profiles!marketplace_listings_seller_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
-              )
-              .eq("status", "active")
-              .eq("moderation_status", "active")
-              .eq("visibility", "public_preview")
-              .eq("is_sensitive", false)
-              .or(
-                query
-                  ? `title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`
-                  : `title.ilike.%,description.ilike.%,category.ilike.%,city.ilike.%,region.ilike.%`,
-              )
-              .ilike("category", category ? categoryPattern : "%")
-              .ilike("city", city ? cityPattern : "%")
-              .ilike("region", region ? regionPattern : "%")
-              .order("created_at", { ascending: false })
-              .limit(resultLimit)
-              .returns<ListingResult[]>()
+          ? (() => {
+              let listingQuery = supabase
+                .from("marketplace_listings")
+                .select(
+                  "id, title, category, city, region, profiles:profiles!marketplace_listings_seller_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
+                )
+                .eq("status", "active")
+                .eq("moderation_status", "active")
+                .eq("visibility", "public_preview")
+                .eq("is_sensitive", false)
+                .or(
+                  query
+                    ? `title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`
+                    : `title.ilike.%,description.ilike.%,category.ilike.%,city.ilike.%,region.ilike.%`,
+                );
+
+              if (category) listingQuery = listingQuery.ilike("category", categoryPattern);
+              if (city) listingQuery = listingQuery.ilike("city", cityPattern);
+              if (region) listingQuery = listingQuery.ilike("region", regionPattern);
+
+              return listingQuery
+                .order("created_at", { ascending: false })
+                .limit(resultLimit)
+                .returns<ListingResult[]>();
+            })()
           : Promise.resolve({ data: [] as ListingResult[] }),
         shouldRunGigs
-          ? supabase
-              .from("gigs")
-              .select(
-                "id, title, category, city, region, profiles:profiles!gigs_poster_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
-              )
-              .eq("status", "active")
-              .eq("moderation_status", "active")
-              .eq("visibility", "public_preview")
-              .eq("is_sensitive", false)
-              .or(
-                query
-                  ? `title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern},compensation.ilike.${pattern}`
-                  : `title.ilike.%,description.ilike.%,category.ilike.%,city.ilike.%,region.ilike.%,compensation.ilike.%`,
-              )
-              .ilike("category", category ? categoryPattern : "%")
-              .ilike("city", city ? cityPattern : "%")
-              .ilike("region", region ? regionPattern : "%")
-              .order("created_at", { ascending: false })
-              .limit(resultLimit)
-              .returns<GigResult[]>()
+          ? (() => {
+              let gigQuery = supabase
+                .from("gigs")
+                .select(
+                  "id, title, category, city, region, profiles:profiles!gigs_poster_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
+                )
+                .eq("status", "active")
+                .eq("moderation_status", "active")
+                .eq("visibility", "public_preview")
+                .eq("is_sensitive", false)
+                .or(
+                  query
+                    ? `title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern},compensation.ilike.${pattern}`
+                    : `title.ilike.%,description.ilike.%,category.ilike.%,city.ilike.%,region.ilike.%,compensation.ilike.%`,
+                );
+
+              if (category) gigQuery = gigQuery.ilike("category", categoryPattern);
+              if (city) gigQuery = gigQuery.ilike("city", cityPattern);
+              if (region) gigQuery = gigQuery.ilike("region", regionPattern);
+
+              return gigQuery
+                .order("created_at", { ascending: false })
+                .limit(resultLimit)
+                .returns<GigResult[]>();
+            })()
           : Promise.resolve({ data: [] as GigResult[] }),
         shouldRunMerch
-          ? supabase
-              .from("merch_products")
-              .select(
-                "id, title, category, price_cents, currency, is_official, ships_from_city, ships_from_region, profiles:profiles!merch_products_seller_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
-              )
-              .eq("status", "active")
-              .eq("moderation_status", "active")
-              .eq("is_indexable", true)
-              .or(
-                query
-                  ? `title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern},ships_from_city.ilike.${pattern},ships_from_region.ilike.${pattern}`
-                  : `title.ilike.%,description.ilike.%,category.ilike.%,ships_from_city.ilike.%,ships_from_region.ilike.%`,
-              )
-              .ilike("category", category ? categoryPattern : "%")
-              .ilike("ships_from_city", city ? cityPattern : "%")
-              .ilike("ships_from_region", region ? regionPattern : "%")
-              .order("created_at", { ascending: false })
-              .limit(resultLimit)
-              .returns<
-                {
-                  category: string;
-                  currency: string;
-                  id: string;
-                  is_official: boolean;
-                  price_cents: number;
-                  profiles: MerchResult["profiles"];
-                  ships_from_city: string | null;
-                  ships_from_region: string | null;
-                  title: string;
-                }[]
-              >()
-              .then(({ data, ...rest }) => ({
-                data: (data ?? [])
-                  .filter(
-                    (product) =>
-                      product.is_official ||
-                      isVerifiedProfessional(product.profiles),
-                  )
-                  .map((product) => ({
-                    category: product.category,
-                    city: product.ships_from_city,
-                    currency: product.currency,
-                    id: product.id,
-                    is_official: product.is_official,
-                    price_cents: product.price_cents,
-                    profiles: product.profiles,
-                    region: product.ships_from_region,
-                    title: product.title,
-                  })),
-                ...rest,
-              }))
+          ? (() => {
+              const merchCategory = category.toLowerCase();
+              let merchQuery = supabase
+                .from("merch_products")
+                .select(
+                  "id, title, category, price_cents, currency, is_official, ships_from_city, ships_from_region, profiles:profiles!merch_products_seller_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
+                )
+                .eq("status", "active")
+                .eq("moderation_status", "active")
+                .eq("is_indexable", true)
+                .or(
+                  query
+                    ? `title.ilike.${pattern},description.ilike.${pattern},ships_from_city.ilike.${pattern},ships_from_region.ilike.${pattern}`
+                    : `title.ilike.%,description.ilike.%,ships_from_city.ilike.%,ships_from_region.ilike.%`,
+                );
+
+              if (MERCH_CATEGORY_VALUES.has(merchCategory)) {
+                merchQuery = merchQuery.eq("category", merchCategory);
+              }
+              if (city) merchQuery = merchQuery.ilike("ships_from_city", cityPattern);
+              if (region) {
+                merchQuery = merchQuery.ilike("ships_from_region", regionPattern);
+              }
+
+              return merchQuery
+                .order("created_at", { ascending: false })
+                .limit(resultLimit)
+                .returns<
+                  {
+                    category: string;
+                    currency: string;
+                    id: string;
+                    is_official: boolean;
+                    price_cents: number;
+                    profiles: MerchResult["profiles"];
+                    ships_from_city: string | null;
+                    ships_from_region: string | null;
+                    title: string;
+                  }[]
+                >()
+                .then(({ data, ...rest }) => ({
+                  data: (data ?? [])
+                    .filter(
+                      (product) =>
+                        product.is_official ||
+                        isVerifiedProfessional(product.profiles),
+                    )
+                    .map((product) => ({
+                      category: product.category,
+                      city: product.ships_from_city,
+                      currency: product.currency,
+                      id: product.id,
+                      is_official: product.is_official,
+                      price_cents: product.price_cents,
+                      profiles: product.profiles,
+                      region: product.ships_from_region,
+                      title: product.title,
+                    })),
+                  ...rest,
+                }));
+            })()
           : Promise.resolve({ data: [] as MerchResult[] }),
       ])
     : [
@@ -453,9 +490,28 @@ export default async function SearchPage({
         { data: [] as GigResult[] },
         { data: [] as MerchResult[] },
       ];
+  const profileShopIds = Array.from(
+    new Set((profiles ?? []).map((profile) => profile.shop_profile_id).filter(Boolean)),
+  ) as string[];
+  const { data: profileShops } = profileShopIds.length
+    ? await supabase
+        .from("profiles")
+        .select("id, username, display_name")
+        .in("id", profileShopIds)
+        .returns<{ display_name: string; id: string; username: string }[]>()
+    : { data: [] as { display_name: string; id: string; username: string }[] };
+  const profileShopMap = new Map(
+    (profileShops ?? []).map((shop) => [shop.id, shop]),
+  );
+  const profileResults = (profiles ?? []).map((profile) => ({
+    ...profile,
+    shop_profile: profile.shop_profile_id
+      ? (profileShopMap.get(profile.shop_profile_id) ?? null)
+      : null,
+  }));
 
   const total =
-    (profiles?.length ?? 0) +
+    profileResults.length +
     (feedPosts?.length ?? 0) +
     (threads?.length ?? 0) +
     (listings?.length ?? 0) +
@@ -464,7 +520,7 @@ export default async function SearchPage({
   const canLoadMore =
     hasSearch &&
     [
-      shouldRunProfiles ? profiles?.length ?? 0 : 0,
+      shouldRunProfiles ? profileResults.length : 0,
       shouldRunFeed ? feedPosts?.length ?? 0 : 0,
       shouldRunThreads ? threads?.length ?? 0 : 0,
       shouldRunListings ? listings?.length ?? 0 : 0,
@@ -581,10 +637,10 @@ export default async function SearchPage({
         {!hasSearch ? null : (
           <>
             {runSection(type, "profiles") ? (
-            <SearchSection count={profiles?.length ?? 0} icon={UserRound} title="Profiles">
-              {profiles?.length ? (
+            <SearchSection count={profileResults.length} icon={UserRound} title="Profiles">
+              {profileResults.length ? (
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {profiles.map((profile) => (
+                  {profileResults.map((profile) => (
                     <Link
                       className="ttc-card flex items-center gap-3 rounded-md p-4"
                       href={`/u/${profile.username}`}

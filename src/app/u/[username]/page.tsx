@@ -850,17 +850,29 @@ export default async function ProfilePage({
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
 
-  const { data: profile } = await supabase
+  const { data: profileRow } = await supabase
     .from("profiles")
     .select(
-      "id, username, display_name, avatar_url, account_type, bio, city, region, country, website_url, instagram_url, tiktok_url, facebook_url, youtube_url, x_url, shop_profile_id, shop_profile:profiles!profiles_shop_profile_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at), is_private, license_verified_at, created_at",
+      "id, username, display_name, avatar_url, account_type, bio, city, region, country, website_url, instagram_url, tiktok_url, facebook_url, youtube_url, x_url, shop_profile_id, is_private, license_verified_at, created_at",
     )
     .eq("username", cleanUsername)
-    .maybeSingle<Profile>();
+    .maybeSingle<Omit<Profile, "shop_profile">>();
 
-  if (!profile) {
+  if (!profileRow) {
     notFound();
   }
+
+  const { data: shopProfile } = profileRow.shop_profile_id
+    ? await supabase
+        .from("profiles")
+        .select("id, username, display_name, avatar_url, account_type, license_verified_at")
+        .eq("id", profileRow.shop_profile_id)
+        .maybeSingle<ShopProfile>()
+    : { data: null };
+  const profile: Profile = {
+    ...profileRow,
+    shop_profile: shopProfile ?? null,
+  };
 
   const [
     { count: followerCount },
