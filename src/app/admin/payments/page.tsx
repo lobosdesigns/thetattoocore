@@ -428,15 +428,16 @@ export default async function AdminPaymentsPage({
                   <div className="mt-3 space-y-2">
                     {merchStatusCounts.length ? (
                       merchStatusCounts.map(([status, count]) => (
-                        <div
+                        <Link
                           className="flex items-center justify-between rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-sm"
+                          href={`/admin/merch?order_status=${status}`}
                           key={status}
                         >
                           <span className="font-semibold">{status}</span>
                           <span className="text-[var(--muted-strong)]">
                             {count}
                           </span>
-                        </div>
+                        </Link>
                       ))
                     ) : (
                       <p className="text-sm text-[var(--muted)]">
@@ -451,15 +452,16 @@ export default async function AdminPaymentsPage({
                   <div className="mt-3 space-y-2">
                     {adStatusCounts.length ? (
                       adStatusCounts.map(([status, count]) => (
-                        <div
+                        <Link
                           className="flex items-center justify-between rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-sm"
+                          href={`/admin/ads?payment_status=${status}`}
                           key={status}
                         >
                           <span className="font-semibold">{status}</span>
                           <span className="text-[var(--muted-strong)]">
                             {count}
                           </span>
-                        </div>
+                        </Link>
                       ))
                     ) : (
                       <p className="text-sm text-[var(--muted)]">
