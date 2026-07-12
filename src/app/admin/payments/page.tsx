@@ -124,6 +124,10 @@ function staleCheckoutCutoff() {
   return new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 }
 
+function statusLabel(value: string) {
+  return value.replaceAll("_", " ");
+}
+
 async function statusCounts({
   column,
   statuses,
@@ -433,7 +437,9 @@ export default async function AdminPaymentsPage({
                           href={`/admin/merch?order_status=${status}`}
                           key={status}
                         >
-                          <span className="font-semibold">{status}</span>
+                          <span className="font-semibold capitalize">
+                            {statusLabel(status)}
+                          </span>
                           <span className="text-[var(--muted-strong)]">
                             {count}
                           </span>
@@ -457,7 +463,9 @@ export default async function AdminPaymentsPage({
                           href={`/admin/ads?payment_status=${status}`}
                           key={status}
                         >
-                          <span className="font-semibold">{status}</span>
+                          <span className="font-semibold capitalize">
+                            {statusLabel(status)}
+                          </span>
                           <span className="text-[var(--muted-strong)]">
                             {count}
                           </span>
