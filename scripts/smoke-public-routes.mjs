@@ -2,11 +2,11 @@ const baseUrl = (process.env.SMOKE_BASE_URL || "https://thetattoocore.com").repl
 
 const checks = [
   { path: "/", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
-  { path: "/account", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
-  { path: "/admin", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
-  { path: "/messages", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
-  { path: "/notifications", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
-  { path: "/saved", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  { path: "/account", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Faccount"], redirect: "manual" },
+  { path: "/admin", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fadmin"], redirect: "manual" },
+  { path: "/messages", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fmessages"], redirect: "manual" },
+  { path: "/notifications", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fnotifications"], redirect: "manual" },
+  { path: "/saved", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fsaved"], redirect: "manual" },
   { path: "/login", status: [200], includes: ["Sign in or sign up", "TheTattooCore"] },
   { path: "/forgot-password", status: [200], includes: ["Reset password", "Send reset link"] },
   { path: "/reset-password", status: [200], includes: ["Create new password"] },
@@ -27,9 +27,12 @@ for (const check of checks) {
   const okStatus = check.status.includes(response.status);
   const location = response.headers.get("location") || "";
   const okRedirect = check.redirectIncludes ? location.includes(check.redirectIncludes) : true;
+  const missingLocationText = (check.locationIncludes || []).filter(
+    (text) => !location.includes(text),
+  );
   const missingText = (check.includes || []).filter((text) => !body.includes(text));
 
-  if (!okStatus || !okRedirect || missingText.length > 0) {
+  if (!okStatus || !okRedirect || missingLocationText.length > 0 || missingText.length > 0) {
     failures += 1;
     console.error(`FAIL ${check.path}`);
     console.error(`  status: ${response.status}, expected: ${check.status.join(" or ")}`);
@@ -38,6 +41,10 @@ for (const check of checks) {
     }
     if (missingText.length > 0) {
       console.error(`  missing text: ${missingText.join(", ")}`);
+    }
+    if (missingLocationText.length > 0) {
+      console.error(`  location: ${location || "(none)"}`);
+      console.error(`  missing location text: ${missingLocationText.join(", ")}`);
     }
     continue;
   }
