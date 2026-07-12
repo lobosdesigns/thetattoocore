@@ -17,6 +17,8 @@ const requiredHeaders = [
   ["referrer-policy", "strict-origin-when-cross-origin"],
   ["strict-transport-security", "max-age=31536000"],
   ["permissions-policy", "camera=()"],
+  ["permissions-policy", "microphone=()"],
+  ["permissions-policy", 'payment=(self "https://checkout.stripe.com")'],
 ];
 
 const checks = [
