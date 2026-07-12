@@ -68,12 +68,18 @@ export function MessageThread({
 
   useEffect(() => {
     const supabase = createClient();
+    let attachmentCatchupTimer: ReturnType<typeof setTimeout> | null = null;
     let refreshTimer: ReturnType<typeof setTimeout> | null = null;
     const refreshThread = () => {
       if (refreshTimer) clearTimeout(refreshTimer);
       refreshTimer = setTimeout(() => {
         router.refresh();
       }, 350);
+    };
+    const refreshThreadWithAttachmentCatchup = () => {
+      refreshThread();
+      if (attachmentCatchupTimer) clearTimeout(attachmentCatchupTimer);
+      attachmentCatchupTimer = setTimeout(refreshThread, 1200);
     };
     const channel = supabase
       .channel(`dm-thread:${conversationId}`)
@@ -85,7 +91,7 @@ export function MessageThread({
           schema: "public",
           table: "messages",
         },
-        refreshThread,
+        refreshThreadWithAttachmentCatchup,
       )
       .on(
         "postgres_changes",
@@ -94,15 +100,6 @@ export function MessageThread({
           filter: `conversation_id=eq.${conversationId}`,
           schema: "public",
           table: "messages",
-        },
-        refreshThread,
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "message_attachments",
         },
         refreshThread,
       )
@@ -119,6 +116,7 @@ export function MessageThread({
       .subscribe();
 
     return () => {
+      if (attachmentCatchupTimer) clearTimeout(attachmentCatchupTimer);
       if (refreshTimer) clearTimeout(refreshTimer);
       supabase.removeChannel(channel);
     };
