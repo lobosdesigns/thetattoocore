@@ -4,6 +4,7 @@ const layout = readFileSync("src/app/layout.tsx", "utf8");
 const suppressor = readFileSync("src/app/pwa-install-suppressor.tsx", "utf8");
 const installButton = readFileSync("src/app/pwa-install-button.tsx", "utf8");
 const registrar = readFileSync("src/app/service-worker-registrar.tsx", "utf8");
+const notificationPrefs = readFileSync("src/lib/notifications.ts", "utf8");
 const serviceWorker = readFileSync("public/sw.js", "utf8");
 const allClientPwaSource = [suppressor, installButton, registrar].join("\n");
 
@@ -42,6 +43,15 @@ const checks = [
       !allClientPwaSource.includes("Notification.requestPermission") &&
       !allClientPwaSource.includes(".pushManager.subscribe") &&
       !allClientPwaSource.includes("PushManager"),
+  },
+  {
+    label: "future noisy push/email delivery has preference and quiet-hour helpers",
+    ok:
+      notificationPrefs.includes("export function allowsNoisyDeliveryNow") &&
+      notificationPrefs.includes("allowsInAppNotification(profile, category)") &&
+      notificationPrefs.includes("!isNotificationQuietHour(profile, now)") &&
+      notificationPrefs.includes("notificationPreferenceSelect") &&
+      notificationPrefs.includes("notification_timezone"),
   },
   {
     label: "notification clicks stay on same-origin safe paths",
