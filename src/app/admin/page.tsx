@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import {
   Activity,
   BriefcaseBusiness,
+  CreditCard,
   Flag,
   ImageIcon,
   Mail,
@@ -161,6 +162,7 @@ const adminTabs = [
   [ShoppingBag, "Stuff", "/admin/stuff"],
   [Package, "Merch", "/admin/merch"],
   [Megaphone, "Ads", "/admin/ads"],
+  [CreditCard, "Payments", "/admin/payments"],
   [Mail, "Mail Settings", "/admin/mail-settings"],
 ] as const;
 
@@ -1226,6 +1228,14 @@ export default async function AdminPage({
       href: "/admin/merch",
       label: "Merch",
       meta: "Catalog, seller approval, checkout, refund status, tax, and shipping",
+    },
+    {
+      action: "Open payments",
+      body: "Stripe checkout, webhook event receipts, payment status, refund status, and future payout readiness live on a focused ops page.",
+      count: 0,
+      href: "/admin/payments",
+      label: "Payments",
+      meta: "Stripe events, Merch orders, and ad payments",
     },
     {
       action: "Open mail",

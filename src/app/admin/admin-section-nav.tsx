@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   BriefcaseBusiness,
+  CreditCard,
   Flag,
   ImageIcon,
   Mail,
@@ -21,6 +22,7 @@ const adminSections = [
   [BriefcaseBusiness, "Gigs", "/admin/gigs"],
   [Package, "Merch", "/admin/merch"],
   [Megaphone, "Ads", "/admin/ads"],
+  [CreditCard, "Payments", "/admin/payments"],
   [ImageIcon, "Media Ops", "/admin/media-ops"],
   [Mail, "Mail", "/admin/mail-settings"],
   [Trash2, "Data", "/admin/data-requests"],
