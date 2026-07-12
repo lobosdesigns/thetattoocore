@@ -6,6 +6,7 @@ const forbiddenBodyText = [
   "Internal Server Error",
   "SUPABASE_SERVICE_ROLE_KEY",
   "STRIPE_SECRET_KEY",
+  "lobosden@hotmail.com",
 ];
 
 const checks = [
@@ -18,9 +19,9 @@ const checks = [
   { path: "/login", status: [200], includes: ["Sign in or sign up", "TheTattooCore"] },
   { path: "/forgot-password", status: [200], includes: ["Reset password", "Send reset link"] },
   { path: "/reset-password", status: [200], includes: ["Create new password"] },
-  { path: "/support", status: [200], includes: ["Support"] },
-  { path: "/privacy", status: [200], includes: ["Privacy"] },
-  { path: "/terms", status: [200], includes: ["Terms"] },
+  { path: "/support", status: [200], includes: ["Support", "support@thetattoocore.com"] },
+  { path: "/privacy", status: [200], includes: ["Privacy", "support@thetattoocore.com"] },
+  { path: "/terms", status: [200], includes: ["Terms", "support@thetattoocore.com"] },
   { path: "/search", status: [200], includes: ["Search"] },
   { path: "/search?q=ceocore", status: [200], includes: ["CEOCore", "@ceocore"] },
   { path: "/search?q=ceocore&type=profiles", status: [200], includes: ["CEOCore", "@ceocore"] },
