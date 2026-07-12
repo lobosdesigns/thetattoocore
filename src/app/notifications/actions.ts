@@ -30,6 +30,24 @@ function safeInternalHref(value: FormDataEntryValue | null) {
 
   if (!href.startsWith("/") || href.startsWith("//")) return "/notifications";
 
+  const url = new URL(href, "https://thetattoocore.local");
+  const allowedPaths = [
+    "/",
+    "/account",
+    "/messages",
+    "/notifications",
+    "/saved",
+    "/search",
+  ];
+  const allowedPrefixes = ["/p/", "/t/", "/u/", "/merch/", "/stuff/", "/gigs/"];
+
+  if (
+    !allowedPaths.includes(url.pathname) &&
+    !allowedPrefixes.some((prefix) => url.pathname.startsWith(prefix))
+  ) {
+    return "/notifications";
+  }
+
   return href;
 }
 
