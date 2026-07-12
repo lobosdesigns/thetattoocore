@@ -30,6 +30,7 @@ const mediaOpsStages = [
   ],
 ] as const;
 const mediaCostRules = [
+  "Cloudflare Pro is active for the domain; use it first for CDN, security, and image-delivery polish before adding new paid media products.",
   "Keep original media in Supabase Storage while early traffic is small.",
   "Use client-side image compression first because it is free and reduces storage before upload.",
   "Keep current reel caps strict: 60 seconds and 50 MB while videos are uploaded raw.",
@@ -128,7 +129,7 @@ export default async function AdminMediaOpsPage() {
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
             <ServerCog className="size-5 text-[var(--gold)]" />
             <p className="mt-3 text-sm text-[var(--muted-strong)]">Scale option</p>
-            <p className="mt-1 text-xl font-bold">Cloudflare Stream</p>
+            <p className="mt-1 text-xl font-bold">Pro now, Stream later</p>
           </div>
         </div>
 
