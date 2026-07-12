@@ -23,6 +23,7 @@ const checks = [
   { path: "/terms", status: [200], includes: ["Terms"] },
   { path: "/search", status: [200], includes: ["Search"] },
   { path: "/search?q=ceocore", status: [200], includes: ["CEOCore", "@ceocore"] },
+  { path: "/search?q=ceocore&type=profiles", status: [200], includes: ["CEOCore", "@ceocore"] },
   { path: "/u/ceocore", status: [200], includes: ["CEOCore", "@ceocore"] },
   { path: "/merch/checkout/success", status: [200], includes: ["Checkout received", "Back to Merch"] },
   { path: "/robots.txt", status: [200], includes: ["User-agent"] },
