@@ -53,6 +53,10 @@ type MerchOrder = {
   discountCents: number;
   id: string;
   itemCount: number;
+  items: {
+    quantity: number;
+    title: string;
+  }[];
   platformFeeCents: number;
   shippingCents: number;
   shippingName: string | null;
@@ -391,6 +395,24 @@ function OrderCard({
           <dd>{order.shippingName || "Not collected"}</dd>
         </div>
       </dl>
+      {order.items.length ? (
+        <div className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-3 text-xs leading-5 text-[var(--muted)]">
+          <p className="font-semibold uppercase text-[var(--muted-strong)]">
+            Items ordered
+          </p>
+          <ul className="mt-2 space-y-1">
+            {order.items.map((item) => (
+              <li
+                className="flex justify-between gap-3 text-[var(--foreground)]"
+                key={`${item.title}-${item.quantity}`}
+              >
+                <span>{item.title}</span>
+                <span className="shrink-0 font-semibold">x{item.quantity}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
       {order.customerEmail || order.adminNote ? (
         <div className="mt-3 space-y-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-3 text-xs leading-5 text-[var(--muted)]">
           {order.customerEmail ? <p>Email: {order.customerEmail}</p> : null}
@@ -535,7 +557,7 @@ export default async function AdminMerchPage({
   const { count: orderCount, data: orderRows } = await supabase
     .from("merch_orders")
     .select(
-      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, admin_note, created_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id)",
+      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, admin_note, created_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id, title_snapshot, quantity)",
       { count: "exact" },
     )
     .order("created_at", { ascending: false })
@@ -548,7 +570,11 @@ export default async function AdminMerchPage({
         customer_email: string | null;
         discount_cents: number;
         id: string;
-        merch_order_items: { id: string }[];
+        merch_order_items: {
+          id: string;
+          quantity: number;
+          title_snapshot: string;
+        }[];
         platform_fee_cents: number;
         profiles: { display_name: string; username: string } | null;
         shipping_cents: number;
@@ -569,6 +595,10 @@ export default async function AdminMerchPage({
     discountCents: order.discount_cents,
     id: order.id,
     itemCount: order.merch_order_items.length,
+    items: order.merch_order_items.map((item) => ({
+      quantity: item.quantity,
+      title: item.title_snapshot,
+    })),
     platformFeeCents: order.platform_fee_cents,
     shippingCents: order.shipping_cents,
     shippingName: order.shipping_name,
