@@ -1,4 +1,12 @@
 const baseUrl = (process.env.SMOKE_BASE_URL || "https://thetattoocore.com").replace(/\/$/, "");
+const forbiddenBodyText = [
+  "This page couldn't load",
+  "Reload to try again",
+  "Application error",
+  "Internal Server Error",
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "STRIPE_SECRET_KEY",
+];
 
 const checks = [
   { path: "/", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
@@ -31,8 +39,15 @@ for (const check of checks) {
     (text) => !location.includes(text),
   );
   const missingText = (check.includes || []).filter((text) => !body.includes(text));
+  const leakedText = forbiddenBodyText.filter((text) => body.includes(text));
 
-  if (!okStatus || !okRedirect || missingLocationText.length > 0 || missingText.length > 0) {
+  if (
+    !okStatus ||
+    !okRedirect ||
+    missingLocationText.length > 0 ||
+    missingText.length > 0 ||
+    leakedText.length > 0
+  ) {
     failures += 1;
     console.error(`FAIL ${check.path}`);
     console.error(`  status: ${response.status}, expected: ${check.status.join(" or ")}`);
@@ -45,6 +60,9 @@ for (const check of checks) {
     if (missingLocationText.length > 0) {
       console.error(`  location: ${location || "(none)"}`);
       console.error(`  missing location text: ${missingLocationText.join(", ")}`);
+    }
+    if (leakedText.length > 0) {
+      console.error(`  forbidden text present: ${leakedText.join(", ")}`);
     }
     continue;
   }
