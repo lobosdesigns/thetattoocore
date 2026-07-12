@@ -17,6 +17,7 @@ import { NotificationBellLink } from "@/app/notification-bell-link";
 import { ProtectedVideo } from "@/app/protected-video";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { ShareActions } from "@/app/share-actions";
+import { platformFeePercentLabel } from "@/lib/payments/fees";
 import { createClient } from "@/lib/supabase/server";
 import {
   brandShareImage,
@@ -523,9 +524,10 @@ export default async function MerchProductPage({
                 </Link>
               )}
               <p className="mt-3 text-xs leading-5 text-[var(--muted-strong)]">
-                Checkout uses Stripe and includes a transparent 2% TTC platform
-                fee in test mode. Orders are confirmed after Stripe sends the
-                payment webhook back to TheTattooCore.
+                Checkout uses Stripe and includes a transparent{" "}
+                {platformFeePercentLabel} TTC platform fee in test mode. Orders
+                are confirmed after Stripe sends the payment webhook back to
+                TheTattooCore.
               </p>
             </section>
 

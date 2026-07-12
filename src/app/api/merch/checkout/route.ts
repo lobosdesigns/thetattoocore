@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import {
+  calculatePlatformFeeCents,
+  platformFeeDescription,
+} from "@/lib/payments/fees";
 import { siteName, siteUrl } from "@/lib/site";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -28,12 +32,6 @@ type CheckoutSession = {
   id: string;
   url: string | null;
 };
-
-function calculatePlatformFeeCents(subtotalCents: number) {
-  if (subtotalCents <= 0) return 0;
-
-  return Math.ceil(subtotalCents * 0.02);
-}
 
 function cleanQuantity(value: FormDataEntryValue | null) {
   const parsed = Number.parseInt(String(value ?? "1"), 10);
@@ -128,7 +126,7 @@ async function createCheckoutSession({
     body.set("line_items[1][price_data][product_data][name]", `${siteName} platform fee`);
     body.set(
       "line_items[1][price_data][product_data][description]",
-      "Transparent 2% TTC platform fee for test-mode Merch checkout.",
+      platformFeeDescription("merch"),
     );
     body.set("line_items[1][price_data][unit_amount]", String(platformFeeCents));
     body.set("line_items[1][quantity]", "1");
