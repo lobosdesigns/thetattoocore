@@ -43,6 +43,12 @@ const adPaymentStatuses = [
   "refunded",
   "waived",
 ] as const;
+const productionPaymentGates = [
+  "Choose Stripe Connect or a documented manual payout policy before real seller payouts.",
+  "Finish tax, shipping-rate, refund, dispute, and chargeback procedures before public Merch orders.",
+  "Keep seller payout details inside Stripe-hosted onboarding; do not collect bank or card payout data in TTC forms.",
+  "Review platform fees, app-store rules, and payment-provider policy before turning on production purchases.",
+] as const;
 
 export const metadata: Metadata = {
   robots: {
@@ -396,6 +402,27 @@ export default async function AdminPaymentsPage({
               </section>
 
               <aside className="space-y-4">
+                <section className="ttc-card rounded-lg border border-[color-mix(in_srgb,var(--gold)_42%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))] p-5">
+                  <ShieldAlert className="size-5 text-[var(--gold)]" />
+                  <h2 className="mt-3 text-lg font-bold">
+                    Production payment gates
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                    Stripe is wired for test-mode checkout. Keep real commerce
+                    gated until these items are handled.
+                  </p>
+                  <ul className="mt-3 space-y-2 text-sm leading-6 text-[var(--muted)]">
+                    {productionPaymentGates.map((gate) => (
+                      <li
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-2"
+                        key={gate}
+                      >
+                        {gate}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
                 <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
                   <h2 className="text-lg font-bold">Merch order states</h2>
                   <div className="mt-3 space-y-2">
