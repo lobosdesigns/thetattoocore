@@ -47,10 +47,12 @@ type MerchOrder = {
   adminNote: string | null;
   buyerName: string;
   buyerUsername: string;
+  cancelledAt: string | null;
   createdAt: string;
   currency: string;
   customerEmail: string | null;
   discountCents: number;
+  fulfilledAt: string | null;
   id: string;
   itemCount: number;
   items: {
@@ -58,6 +60,7 @@ type MerchOrder = {
     title: string;
   }[];
   platformFeeCents: number;
+  refundedAt: string | null;
   shippingCents: number;
   shippingName: string | null;
   status: string;
@@ -135,6 +138,13 @@ function timeAgo(value: string) {
   if (hours < 24) return `${hours}h`;
 
   return `${Math.round(hours / 24)}d`;
+}
+
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
 }
 
 function money(cents: number, currency: string) {
@@ -419,6 +429,19 @@ function OrderCard({
           {order.adminNote ? <p>Admin note: {order.adminNote}</p> : null}
         </div>
       ) : null}
+      {order.fulfilledAt || order.cancelledAt || order.refundedAt ? (
+        <div className="mt-3 grid gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-3 text-xs leading-5 text-[var(--muted)] sm:grid-cols-3">
+          {order.fulfilledAt ? (
+            <p>Fulfilled {formatDateTime(order.fulfilledAt)}</p>
+          ) : null}
+          {order.cancelledAt ? (
+            <p>Cancelled {formatDateTime(order.cancelledAt)}</p>
+          ) : null}
+          {order.refundedAt ? (
+            <p>Refunded {formatDateTime(order.refundedAt)}</p>
+          ) : null}
+        </div>
+      ) : null}
       <form action={updateMerchOrderStatus} className="mt-4 space-y-2">
         <input name="order_id" type="hidden" value={order.id} />
         <input name="return_to" type="hidden" value={returnTo} />
@@ -557,7 +580,7 @@ export default async function AdminMerchPage({
   const { count: orderCount, data: orderRows } = await supabase
     .from("merch_orders")
     .select(
-      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, admin_note, created_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id, title_snapshot, quantity)",
+      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, admin_note, created_at, fulfilled_at, cancelled_at, refunded_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id, title_snapshot, quantity)",
       { count: "exact" },
     )
     .order("created_at", { ascending: false })
@@ -565,10 +588,12 @@ export default async function AdminMerchPage({
     .returns<
       {
         admin_note: string | null;
+        cancelled_at: string | null;
         created_at: string;
         currency: string;
         customer_email: string | null;
         discount_cents: number;
+        fulfilled_at: string | null;
         id: string;
         merch_order_items: {
           id: string;
@@ -577,6 +602,7 @@ export default async function AdminMerchPage({
         }[];
         platform_fee_cents: number;
         profiles: { display_name: string; username: string } | null;
+        refunded_at: string | null;
         shipping_cents: number;
         shipping_name: string | null;
         status: string;
@@ -589,10 +615,12 @@ export default async function AdminMerchPage({
     adminNote: order.admin_note,
     buyerName: order.profiles?.display_name ?? "Buyer",
     buyerUsername: order.profiles?.username ?? "buyer",
+    cancelledAt: order.cancelled_at,
     createdAt: order.created_at,
     currency: order.currency,
     customerEmail: order.customer_email,
     discountCents: order.discount_cents,
+    fulfilledAt: order.fulfilled_at,
     id: order.id,
     itemCount: order.merch_order_items.length,
     items: order.merch_order_items.map((item) => ({
@@ -600,6 +628,7 @@ export default async function AdminMerchPage({
       title: item.title_snapshot,
     })),
     platformFeeCents: order.platform_fee_cents,
+    refundedAt: order.refunded_at,
     shippingCents: order.shipping_cents,
     shippingName: order.shipping_name,
     status: order.status,
