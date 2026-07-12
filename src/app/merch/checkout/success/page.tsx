@@ -40,6 +40,25 @@ function money(cents: number, currency: string) {
   }).format(cents / 100);
 }
 
+function formatReceiptDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function statusClass(status?: string) {
+  if (status === "paid" || status === "fulfilled") {
+    return "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]";
+  }
+
+  if (status === "payment_failed" || status === "cancelled") {
+    return "border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]";
+  }
+
+  return "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]";
+}
+
 function statusCopy(status?: string) {
   if (status === "paid" || status === "fulfilled") {
     return {
@@ -108,6 +127,9 @@ export default async function MerchCheckoutSuccessPage({
                 <Package className="size-4 text-[var(--gold)]" />
                 <p className="font-semibold">Order {order.id.slice(0, 8)}</p>
               </div>
+              <p className="mt-2 text-xs text-[var(--muted-strong)]">
+                Created {formatReceiptDate(order.created_at)}
+              </p>
               <dl className="mt-3 grid gap-2 text-[var(--muted)]">
                 {order.merch_order_items.length ? (
                   <div className="border-b border-[var(--card-rim)] pb-2">
@@ -133,7 +155,11 @@ export default async function MerchCheckoutSuccessPage({
                 ) : null}
                 <div className="flex justify-between gap-3">
                   <dt>Status</dt>
-                  <dd className="font-semibold capitalize text-[var(--foreground)]">
+                  <dd
+                    className={`rounded-md border px-2 py-1 text-xs font-semibold capitalize ${statusClass(
+                      order.status,
+                    )}`}
+                  >
                     {order.status.replace("_", " ")}
                   </dd>
                 </div>
@@ -180,6 +206,11 @@ export default async function MerchCheckoutSuccessPage({
                   </dd>
                 </div>
               </dl>
+              <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_90%,transparent)] p-3 text-xs leading-5 text-[var(--muted-strong)]">
+                Fulfillment starts only after payment is confirmed and seller/admin
+                review rules are satisfied. Refunds and disputes are handled
+                through Stripe records.
+              </p>
             </div>
           ) : sessionId && !claims?.sub ? (
             <p className="mt-5 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-4 text-sm leading-6 text-[var(--muted)]">
@@ -195,9 +226,9 @@ export default async function MerchCheckoutSuccessPage({
             </Link>
             <Link
               className="flex h-11 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
-              href="/account"
+              href="/account#order-settings"
             >
-              Account
+              Account orders
             </Link>
           </div>
         </div>
