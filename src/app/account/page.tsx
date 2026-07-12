@@ -370,7 +370,7 @@ export default async function AccountPage({
     .returns<
       {
         ad_events: { event_type: "impression" | "click" | "message_lead" }[];
-        ad_campaign_placements: { placement: "4u" | "gossip" | "stuff" }[];
+        ad_campaign_placements: { placement: "4u" | "gossip" | "stuff" | "merch" }[];
         bid_cents: number;
         campaign_type: string;
         created_at: string;
@@ -1172,6 +1172,7 @@ export default async function AccountPage({
                   >
                     <option value="artist_growth">Artist growth</option>
                     <option value="stuff_listing">Stuff listing</option>
+                    <option value="merch_listing">Merch listing</option>
                   </select>
                 </label>
                 <label className="block">
@@ -1189,6 +1190,9 @@ export default async function AccountPage({
                     <option value="marketplace_engagement">
                       Stuff marketplace engagement
                     </option>
+                    <option value="product_views">Merch product views</option>
+                    <option value="shop_visits">Merch shop visits</option>
+                    <option value="purchases">Merch purchases</option>
                   </select>
                 </label>
               </div>
@@ -1253,6 +1257,7 @@ export default async function AccountPage({
                     ["4u", "4U"],
                     ["gossip", "Gossip"],
                     ["stuff", "Stuff"],
+                    ["merch", "Merch"],
                   ].map(([value, label]) => (
                     <label
                       className="flex items-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-sm font-medium"
@@ -1265,7 +1270,7 @@ export default async function AccountPage({
                 </div>
                 <p className="mt-2 text-xs leading-5 text-[var(--muted-strong)]">
                   Artist growth can use 4U and Gossip. Stuff listing campaigns
-                  can use Stuff only.
+                  can use Stuff only. Merch campaigns can use Merch only.
                 </p>
               </fieldset>
 

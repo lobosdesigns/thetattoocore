@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Fragment } from "react";
 import {
   BadgeCheck,
   Bell,
@@ -395,12 +396,12 @@ function rankCategoryItems<
   });
 }
 
-type SponsoredPlacement = "4u-feed" | "gossip-feed" | "stuff-feed";
-type AdPlacement = "4u" | "gossip" | "stuff";
+type SponsoredPlacement = "4u-feed" | "gossip-feed" | "stuff-feed" | "merch-feed";
+type AdPlacement = "4u" | "gossip" | "stuff" | "merch";
 type SponsoredCampaign = {
   advertiser: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"> | null;
   body: string | null;
-  campaign_type: "artist_growth" | "stuff_listing";
+  campaign_type: "artist_growth" | "stuff_listing" | "merch_listing";
   city: string | null;
   country_code: string | null;
   goal: string;
@@ -416,6 +417,7 @@ type SponsoredCampaign = {
 function sponsoredSlotTitle(placement: SponsoredPlacement) {
   if (placement === "4u-feed") return "Sponsored in 4U";
   if (placement === "gossip-feed") return "Sponsored in Gossip";
+  if (placement === "merch-feed") return "Sponsored in Merch";
 
   return "Sponsored in Stuff";
 }
@@ -429,6 +431,7 @@ function hasCommentHide(
 function sponsoredDbPlacement(placement: SponsoredPlacement): AdPlacement {
   if (placement === "4u-feed") return "4u";
   if (placement === "gossip-feed") return "gossip";
+  if (placement === "merch-feed") return "merch";
 
   return "stuff";
 }
@@ -562,15 +565,13 @@ function SponsoredSlot({
         <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold capitalize text-white/80">
           {campaign.goal.replaceAll("_", " ")}
         </span>
-        {campaign.campaign_type === "artist_growth" ? (
-          <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80">
-            Artist growth
-          </span>
-        ) : (
-          <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80">
-            Stuff listing
-          </span>
-        )}
+        <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80">
+          {campaign.campaign_type === "artist_growth"
+            ? "Artist growth"
+            : campaign.campaign_type === "merch_listing"
+              ? "Merch listing"
+              : "Stuff listing"}
+        </span>
         {campaign.matchLabels.map((label) => (
           <span
             className="rounded-md bg-[color-mix(in_srgb,var(--gold)_20%,transparent)] px-2 py-1 text-xs font-semibold text-[color-mix(in_srgb,var(--gold)_70%,var(--background))]"
@@ -1260,7 +1261,7 @@ async function fetchSponsoredCampaign(
       {
         bid_cents: number;
         body: string | null;
-        campaign_type: "artist_growth" | "stuff_listing";
+        campaign_type: "artist_growth" | "stuff_listing" | "merch_listing";
         city: string | null;
         country_code: string | null;
         goal: string;
@@ -1393,6 +1394,7 @@ export default async function Home({
     fourUAd,
     gossipAd,
     stuffAd,
+    merchAd,
   ] = await Promise.all([
     supabase
       .from("feed_posts")
@@ -1496,6 +1498,7 @@ export default async function Home({
     fetchSponsoredCampaign(supabase, "4u", currentProfile),
     fetchSponsoredCampaign(supabase, "gossip", currentProfile),
     fetchSponsoredCampaign(supabase, "stuff", currentProfile),
+    fetchSponsoredCampaign(supabase, "merch", currentProfile),
   ]);
 
   const isSignedIn = Boolean(claims?.sub);
@@ -2552,15 +2555,15 @@ export default async function Home({
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {visibleMerchProducts.length ? (
-                visibleMerchProducts.map((product) => {
+                visibleMerchProducts.map((product, index) => {
                   const available =
                     product.inventory_quantity - product.inventory_reserved;
 
                   return (
+                    <Fragment key={product.id}>
                     <article
                       className="ttc-card scroll-mt-28 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-4"
                       id={`merch-${product.id}`}
-                      key={product.id}
                     >
                       <div className="mb-3 flex items-center gap-3">
                         <ListingThumb media={product.merch_product_media[0]} />
@@ -2650,6 +2653,10 @@ export default async function Home({
                         ) : null}
                       </div>
                     </article>
+                    {shouldShowSponsoredSlot(index, visibleMerchProducts.length) ? (
+                      <SponsoredSlot campaign={merchAd} placement="merch-feed" />
+                    ) : null}
+                    </Fragment>
                   );
                 })
               ) : (

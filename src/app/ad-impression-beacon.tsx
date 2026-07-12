@@ -7,7 +7,7 @@ export function AdImpressionBeacon({
   placement,
 }: {
   campaignId: string;
-  placement: "4u" | "gossip" | "stuff";
+  placement: "4u" | "gossip" | "stuff" | "merch";
 }) {
   useEffect(() => {
     const body = JSON.stringify({

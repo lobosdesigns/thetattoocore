@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-const placements = new Set(["4u", "gossip", "stuff"]);
+const placements = new Set(["4u", "gossip", "stuff", "merch"]);
 
 export async function GET(request: Request) {
   const url = new URL(request.url);

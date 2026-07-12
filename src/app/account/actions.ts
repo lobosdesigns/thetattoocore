@@ -39,14 +39,15 @@ type MailSettings = {
 };
 
 const accountTypes = new Set(["artist", "enthusiast", "studio", "supplier", "vendor"]);
-const adCampaignTypes = new Set(["artist_growth", "stuff_listing"]);
+const adCampaignTypes = new Set(["artist_growth", "stuff_listing", "merch_listing"]);
 const artistGrowthGoals = new Set(["leads", "messages", "engagement"]);
 const stuffListingGoals = new Set([
   "listing_views",
   "seller_messages",
   "marketplace_engagement",
 ]);
-const adPlacements = new Set(["4u", "gossip", "stuff"]);
+const merchListingGoals = new Set(["product_views", "shop_visits", "purchases"]);
+const adPlacements = new Set(["4u", "gossip", "stuff", "merch"]);
 const themePreferences = new Set(["light", "dark", "system"]);
 
 function accountPath(message: string, hash?: string) {
@@ -515,8 +516,16 @@ export async function submitAdCampaign(formData: FormData) {
     redirect(accountPath("Choose a valid Stuff ad goal."));
   }
 
+  if (campaignType === "merch_listing" && !merchListingGoals.has(goal)) {
+    redirect(accountPath("Choose a valid Merch ad goal."));
+  }
+
   const allowedPlacements =
-    campaignType === "artist_growth" ? new Set(["4u", "gossip"]) : new Set(["stuff"]);
+    campaignType === "artist_growth"
+      ? new Set(["4u", "gossip"])
+      : campaignType === "stuff_listing"
+        ? new Set(["stuff"])
+        : new Set(["merch"]);
   const placements = selectedPlacements.filter((placement) =>
     allowedPlacements.has(placement),
   );

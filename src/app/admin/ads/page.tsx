@@ -16,7 +16,7 @@ type AdCampaign = {
   advertiserUsername: string;
   bidCents: number;
   body: string | null;
-  campaignType: "artist_growth" | "stuff_listing";
+  campaignType: "artist_growth" | "stuff_listing" | "merch_listing";
   city: string | null;
   clicks: number;
   countryCode: string | null;
@@ -29,14 +29,17 @@ type AdCampaign = {
     | "engagement"
     | "listing_views"
     | "seller_messages"
-    | "marketplace_engagement";
+    | "marketplace_engagement"
+    | "product_views"
+    | "shop_visits"
+    | "purchases";
   id: string;
   impressions: number;
   keywords: string[];
   language: string | null;
   name: string;
   paymentStatus: string;
-  placements: ("4u" | "gossip" | "stuff")[];
+  placements: ("4u" | "gossip" | "stuff" | "merch")[];
   platformFeeCents: number;
   prepaidAmountCents: number;
   region: string | null;
@@ -57,7 +60,7 @@ type AdCampaign = {
 const moderateRoles: UserRole[] = ["moderator", "admin", "owner"];
 const pageSize = 50;
 const adReviewStandards = [
-  "Artist ads belong in 4U and Gossip; Stuff ads stay in Stuff.",
+  "Artist ads belong in 4U and Gossip; Stuff ads stay in Stuff; Merch ads stay in Merch.",
   "Reject AI tattoo art claims, AI creator replacement claims, and misleading automation promises.",
   "Reject scratcher promotion, unlicensed studio promotion, unsafe practice claims, and restricted equipment ads.",
   "Reject adult/minor targeting, sensitive personal targeting, hidden behavioral profiling, or unclear sponsor ads.",
@@ -375,11 +378,11 @@ export default async function AdminAdsPage({
     .range(from, to)
     .returns<
       {
-        ad_campaign_placements: { placement: "4u" | "gossip" | "stuff" }[];
+        ad_campaign_placements: { placement: "4u" | "gossip" | "stuff" | "merch" }[];
         ad_events: { event_type: "impression" | "click" | "message_lead" }[];
         bid_cents: number;
         body: string | null;
-        campaign_type: "artist_growth" | "stuff_listing";
+        campaign_type: "artist_growth" | "stuff_listing" | "merch_listing";
         city: string | null;
         country_code: string | null;
         created_at: string;
@@ -391,7 +394,10 @@ export default async function AdminAdsPage({
           | "engagement"
           | "listing_views"
           | "seller_messages"
-          | "marketplace_engagement";
+          | "marketplace_engagement"
+          | "product_views"
+          | "shop_visits"
+          | "purchases";
         id: string;
         keywords: string[];
         language: string | null;
