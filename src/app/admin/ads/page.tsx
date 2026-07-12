@@ -59,6 +59,15 @@ type AdCampaign = {
 
 const moderateRoles: UserRole[] = ["moderator", "admin", "owner"];
 const pageSize = 50;
+const paymentStatusFilters = [
+  "problem",
+  "unpaid",
+  "checkout_started",
+  "paid",
+  "payment_failed",
+  "refunded",
+  "waived",
+] as const;
 const adReviewStandards = [
   "Artist ads belong in 4U and Gossip; Stuff ads stay in Stuff; Merch ads stay in Merch.",
   "Reject AI tattoo art claims, AI creator replacement claims, and misleading automation promises.",
@@ -81,8 +90,33 @@ function pageNumber(value: string | string[] | undefined) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 }
 
-function pageHref(page: number) {
-  return `/admin/ads?page=${page}`;
+function paymentStatusFilter(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+
+  return paymentStatusFilters.find((status) => status === rawValue) ?? null;
+}
+
+function paymentStatusLabel(value: string) {
+  if (value === "problem") return "problem payments";
+
+  return adLabel(value);
+}
+
+function pageHref({
+  page,
+  paymentStatus,
+}: {
+  page: number;
+  paymentStatus?: string | null;
+}) {
+  const params = new URLSearchParams();
+
+  if (page > 1) params.set("page", String(page));
+  if (paymentStatus) params.set("payment_status", paymentStatus);
+
+  const query = params.toString();
+
+  return query ? `/admin/ads?${query}` : "/admin/ads";
 }
 
 function timeAgo(value: string) {
@@ -141,10 +175,12 @@ function clickRate({ clicks, impressions }: Pick<AdCampaign, "clicks" | "impress
 function Pagination({
   currentPage,
   hasNextPage,
+  paymentStatus,
   totalPages,
 }: {
   currentPage: number;
   hasNextPage: boolean;
+  paymentStatus?: string | null;
   totalPages: number;
 }) {
   return (
@@ -160,7 +196,10 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
           }`}
-          href={pageHref(Math.max(1, currentPage - 1))}
+          href={pageHref({
+            page: Math.max(1, currentPage - 1),
+            paymentStatus,
+          })}
         >
           <ChevronLeft className="size-4" />
           Previous 50
@@ -172,7 +211,7 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
           }`}
-          href={pageHref(currentPage + 1)}
+          href={pageHref({ page: currentPage + 1, paymentStatus })}
         >
           Next 50
           <ChevronRight className="size-4" />
@@ -184,10 +223,10 @@ function Pagination({
 
 function AdCampaignCard({
   campaign,
-  currentPage,
+  returnTo,
 }: {
   campaign: AdCampaign;
-  currentPage: number;
+  returnTo: string;
 }) {
   return (
     <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
@@ -297,7 +336,7 @@ function AdCampaignCard({
       ) : null}
       <form action={updateAdCampaignStatus} className="mt-4 space-y-2">
         <input name="campaign_id" type="hidden" value={campaign.id} />
-        <input name="return_to" type="hidden" value={pageHref(currentPage)} />
+        <input name="return_to" type="hidden" value={returnTo} />
         <input
           className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
           maxLength={500}
@@ -336,12 +375,21 @@ function AdCampaignCard({
 export default async function AdminAdsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string; page?: string | string[] }>;
+  searchParams: Promise<{
+    message?: string;
+    page?: string | string[];
+    payment_status?: string | string[];
+  }>;
 }) {
   const params = await searchParams;
   const currentPage = pageNumber(params.page);
+  const activePaymentStatus = paymentStatusFilter(params.payment_status);
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
+  const currentHref = pageHref({
+    page: currentPage,
+    paymentStatus: activePaymentStatus,
+  });
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -360,7 +408,7 @@ export default async function AdminAdsPage({
     redirect("/admin");
   }
 
-  const { count, data: adCampaignRows } = await supabase
+  let adCampaignQuery = supabase
     .from("ad_campaigns")
     .select(
       "id, name, title, body, target_url, campaign_type, goal, status, payment_status, prepaid_amount_cents, platform_fee_cents, bid_cents, daily_budget_cents, country_code, region, city, language, keywords, starts_at, ends_at, reviewer_note, created_at, profiles:profiles!ad_campaigns_advertiser_id_fkey(display_name, username), ad_campaign_placements(placement), ad_events(event_type)",
@@ -373,7 +421,21 @@ export default async function AdminAdsPage({
       "paused",
       "rejected",
       "archived",
-    ])
+    ]);
+
+  if (activePaymentStatus) {
+    adCampaignQuery =
+      activePaymentStatus === "problem"
+        ? adCampaignQuery.in("payment_status", [
+            "unpaid",
+            "checkout_started",
+            "payment_failed",
+            "refunded",
+          ])
+        : adCampaignQuery.eq("payment_status", activePaymentStatus);
+  }
+
+  const { count, data: adCampaignRows } = await adCampaignQuery
     .order("created_at", { ascending: false })
     .range(from, to)
     .returns<
@@ -526,6 +588,21 @@ export default async function AdminAdsPage({
           </div>
         </div>
 
+        {activePaymentStatus ? (
+          <div className="mb-4 flex flex-col gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+            <p className="font-semibold">
+              Filtering ad payments by{" "}
+              <span className="capitalize">{paymentStatusLabel(activePaymentStatus)}</span>
+            </p>
+            <Link
+              className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 font-semibold text-[var(--foreground)]"
+              href="/admin/ads"
+            >
+              Clear filter
+            </Link>
+          </div>
+        ) : null}
+
         <div className="mb-4 grid gap-2 sm:grid-cols-2">
           {adReviewStandards.map((rule) => (
             <p
@@ -540,6 +617,7 @@ export default async function AdminAdsPage({
         <Pagination
           currentPage={currentPage}
           hasNextPage={hasNextPage}
+          paymentStatus={activePaymentStatus}
           totalPages={totalPages}
         />
 
@@ -548,8 +626,8 @@ export default async function AdminAdsPage({
             {campaigns.map((campaign) => (
               <AdCampaignCard
                 campaign={campaign}
-                currentPage={currentPage}
                 key={campaign.id}
+                returnTo={currentHref}
               />
             ))}
           </section>
@@ -563,6 +641,7 @@ export default async function AdminAdsPage({
           <Pagination
             currentPage={currentPage}
             hasNextPage={hasNextPage}
+            paymentStatus={activePaymentStatus}
             totalPages={totalPages}
           />
         </div>

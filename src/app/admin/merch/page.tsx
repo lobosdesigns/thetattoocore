@@ -76,6 +76,15 @@ type MerchOrder = {
 
 const viewRoles: UserRole[] = ["moderator", "admin", "owner"];
 const pageSize = 50;
+const orderStatusFilters = [
+  "pending_checkout",
+  "paid",
+  "payment_failed",
+  "cancelled",
+  "fulfilled",
+  "partially_refunded",
+  "refunded",
+] as const;
 const merchRules = [
   "Merch is public-buyable brand goods, separate from verified-only professional Stuff.",
   "Artist, studio, vendor, and official TheTattooCore sellers still need approval before listing products.",
@@ -116,17 +125,26 @@ function pageNumber(value: string | string[] | undefined) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 }
 
+function orderStatusFilter(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+
+  return orderStatusFilters.find((status) => status === rawValue) ?? null;
+}
+
 function pageHref({
   orderPage = 1,
+  orderStatus,
   page = 1,
 }: {
   orderPage?: number;
+  orderStatus?: string | null;
   page?: number;
 }) {
   const params = new URLSearchParams();
 
   if (page > 1) params.set("page", String(page));
   if (orderPage > 1) params.set("order_page", String(orderPage));
+  if (orderStatus) params.set("order_status", orderStatus);
 
   const query = params.toString();
 
@@ -157,6 +175,10 @@ function money(cents: number, currency: string) {
     currency,
     style: "currency",
   }).format(cents / 100);
+}
+
+function statusLabel(value: string) {
+  return value.replaceAll("_", " ");
 }
 
 function statusClass(status: ProductStatus) {
@@ -538,18 +560,21 @@ export default async function AdminMerchPage({
   searchParams: Promise<{
     message?: string;
     order_page?: string | string[];
+    order_status?: string | string[];
     page?: string | string[];
   }>;
 }) {
   const params = await searchParams;
   const currentPage = pageNumber(params.page);
   const currentOrderPage = pageNumber(params.order_page);
+  const activeOrderStatus = orderStatusFilter(params.order_status);
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
   const orderFrom = (currentOrderPage - 1) * pageSize;
   const orderTo = orderFrom + pageSize - 1;
   const currentProductHref = pageHref({
     orderPage: currentOrderPage,
+    orderStatus: activeOrderStatus,
     page: currentPage,
   });
   const supabase = await createClient();
@@ -626,12 +651,18 @@ export default async function AdminMerchPage({
   const moderationCount = products.filter(
     (product) => product.moderationStatus !== "active",
   ).length;
-  const { count: orderCount, data: orderRows } = await supabase
+  let orderQuery = supabase
     .from("merch_orders")
     .select(
       "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, admin_note, created_at, fulfilled_at, cancelled_at, refunded_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id, title_snapshot, quantity, seller_fulfilled_at, tracking_carrier, tracking_number, tracking_url)",
       { count: "exact" },
-    )
+    );
+
+  if (activeOrderStatus) {
+    orderQuery = orderQuery.eq("status", activeOrderStatus);
+  }
+
+  const { count: orderCount, data: orderRows } = await orderQuery
     .order("created_at", { ascending: false })
     .range(orderFrom, orderTo)
     .returns<
@@ -698,6 +729,7 @@ export default async function AdminMerchPage({
   const hasNextOrderPage = currentOrderPage < totalOrderPages;
   const currentOrderHref = pageHref({
     orderPage: currentOrderPage,
+    orderStatus: activeOrderStatus,
     page: currentPage,
   });
 
@@ -832,7 +864,11 @@ export default async function AdminMerchPage({
             currentPage={currentPage}
             hasNextPage={hasNextPage}
             hrefForPage={(nextPage) =>
-              pageHref({ orderPage: currentOrderPage, page: nextPage })
+              pageHref({
+                orderPage: currentOrderPage,
+                orderStatus: activeOrderStatus,
+                page: nextPage,
+              })
             }
             totalPages={totalPages}
           />
@@ -858,7 +894,11 @@ export default async function AdminMerchPage({
               currentPage={currentPage}
               hasNextPage={hasNextPage}
               hrefForPage={(nextPage) =>
-                pageHref({ orderPage: currentOrderPage, page: nextPage })
+                pageHref({
+                  orderPage: currentOrderPage,
+                  orderStatus: activeOrderStatus,
+                  page: nextPage,
+                })
               }
               totalPages={totalPages}
             />
@@ -877,11 +917,31 @@ export default async function AdminMerchPage({
               Page {currentOrderPage} of {totalOrderPages}
             </span>
           </div>
+          {activeOrderStatus ? (
+            <div className="mb-4 flex flex-col gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+              <p className="font-semibold">
+                Filtering orders by{" "}
+                <span className="capitalize">
+                  {statusLabel(activeOrderStatus)}
+                </span>
+              </p>
+              <Link
+                className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 font-semibold text-[var(--foreground)]"
+                href={pageHref({ page: currentPage })}
+              >
+                Clear filter
+              </Link>
+            </div>
+          ) : null}
           <Pagination
             currentPage={currentOrderPage}
             hasNextPage={hasNextOrderPage}
             hrefForPage={(nextOrderPage) =>
-              pageHref({ orderPage: nextOrderPage, page: currentPage })
+              pageHref({
+                orderPage: nextOrderPage,
+                orderStatus: activeOrderStatus,
+                page: currentPage,
+              })
             }
             totalPages={totalOrderPages}
           />
@@ -905,7 +965,11 @@ export default async function AdminMerchPage({
               currentPage={currentOrderPage}
               hasNextPage={hasNextOrderPage}
               hrefForPage={(nextOrderPage) =>
-                pageHref({ orderPage: nextOrderPage, page: currentPage })
+                pageHref({
+                  orderPage: nextOrderPage,
+                  orderStatus: activeOrderStatus,
+                  page: currentPage,
+                })
               }
               totalPages={totalOrderPages}
             />

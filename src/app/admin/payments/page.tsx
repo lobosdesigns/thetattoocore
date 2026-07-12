@@ -328,7 +328,7 @@ export default async function AdminPaymentsPage({
                     <p>
                       <Link
                         className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
-                        href="/admin/merch"
+                        href="/admin/merch?order_status=pending_checkout"
                       >
                         Stale pending Merch checkouts over 24h
                       </Link>
@@ -340,7 +340,7 @@ export default async function AdminPaymentsPage({
                     <p>
                       <Link
                         className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
-                        href="/admin/ads"
+                        href="/admin/ads?payment_status=problem"
                       >
                         Active ads with unpaid/problem payment
                       </Link>
