@@ -50,10 +50,20 @@ npm run build
 
 ## Production Secrets
 
-Cloudflare needs these server-only bindings for full production behavior:
+Cloudflare needs these public variables and server-only bindings for full
+production behavior:
 
+- `NEXT_PUBLIC_SITE_URL`: canonical site URL, currently `https://thetattoocore.com`.
+- `NEXT_PUBLIC_SUPABASE_URL`: browser-safe Supabase project URL.
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: browser-safe Supabase publishable key.
 - `HOSTGATOR_SMTP_PASSWORD`: required for HostGator transactional email.
 - `SUPABASE_SERVICE_ROLE_KEY`: required for server-only Supabase Auth email lookup, used by verification approval/rejection emails. Never expose this as a `NEXT_PUBLIC_` variable.
+- `STRIPE_SECRET_KEY`: server-only Stripe key for test/live checkout sessions.
+- `STRIPE_WEBHOOK_SECRET`: server-only webhook signing secret for Stripe payment status updates.
+
+Keep public support and reply-to email on company mail such as
+`support@thetattoocore.com`. Do not put personal owner contact details in public
+app copy or store metadata.
 
 After adding or rotating secrets, redeploy with:
 
