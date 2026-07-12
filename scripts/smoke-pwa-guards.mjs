@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 
 const layout = readFileSync("src/app/layout.tsx", "utf8");
 const manifest = readFileSync("public/manifest.webmanifest", "utf8");
@@ -10,6 +11,16 @@ const serviceWorker = readFileSync("public/sw.js", "utf8");
 const allClientPwaSource = [suppressor, installButton, registrar].join("\n");
 
 const checks = [
+  {
+    label: "public assets do not include default scaffold SVGs",
+    ok: [
+      "public/file.svg",
+      "public/globe.svg",
+      "public/next.svg",
+      "public/vercel.svg",
+      "public/window.svg",
+    ].every((path) => !existsSync(path)),
+  },
   {
     label: "root layout registers service worker and suppresses automatic install sheet",
     ok:
