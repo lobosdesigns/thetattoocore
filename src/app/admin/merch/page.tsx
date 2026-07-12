@@ -110,7 +110,7 @@ const buildSteps = [
   ],
   [
     "Checkout",
-    "Stripe Checkout, paid/failed/refunded webhooks, and inventory decrement are wired in test mode. Next: taxes, receipts, fulfillment, and production review.",
+    "Stripe Checkout, paid/failed/refunded webhooks, inventory decrement, and buyer printable receipts are wired in test mode. Next: taxes, fulfillment, payouts, and production review.",
   ],
   [
     "Admin operations",
