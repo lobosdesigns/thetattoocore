@@ -48,21 +48,49 @@
   "shortcuts": [
     {
       "description": "Open the 4U feed",
+      "icons": [
+        {
+          "sizes": "192x192",
+          "src": "/icons/icon-192.png",
+          "type": "image/png"
+        }
+      ],
       "name": "4U",
       "url": "/#feed"
     },
     {
       "description": "Open direct messages",
+      "icons": [
+        {
+          "sizes": "192x192",
+          "src": "/icons/icon-192.png",
+          "type": "image/png"
+        }
+      ],
       "name": "DM",
       "url": "/messages"
     },
     {
       "description": "Open notifications",
+      "icons": [
+        {
+          "sizes": "192x192",
+          "src": "/icons/icon-192.png",
+          "type": "image/png"
+        }
+      ],
       "name": "Alerts",
       "url": "/notifications"
     },
     {
       "description": "Browse safe fan-facing merch",
+      "icons": [
+        {
+          "sizes": "192x192",
+          "src": "/icons/icon-192.png",
+          "type": "image/png"
+        }
+      ],
       "name": "Merch",
       "url": "/#merch"
     }

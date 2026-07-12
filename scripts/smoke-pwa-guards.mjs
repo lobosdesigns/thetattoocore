@@ -27,7 +27,8 @@ const checks = [
       manifest.includes('"name": "Alerts"') &&
       manifest.includes('"url": "/notifications"') &&
       manifest.includes('"name": "Merch"') &&
-      manifest.includes('"url": "/#merch"'),
+      manifest.includes('"url": "/#merch"') &&
+      (manifest.match(/"icons": \[/g) || []).length >= 5,
   },
   {
     label: "automatic install prompt is intercepted instead of shown during browsing",
