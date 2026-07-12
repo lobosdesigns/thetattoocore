@@ -10,6 +10,26 @@ const notificationPrefs = readFileSync("src/lib/notifications.ts", "utf8");
 const serviceWorker = readFileSync("public/sw.js", "utf8");
 const allClientPwaSource = [suppressor, installButton, registrar].join("\n");
 
+function pngDimensions(path) {
+  const bytes = readFileSync(path);
+  const signature = bytes.subarray(0, 8).toString("hex");
+
+  if (signature !== "89504e470d0a1a0a") {
+    return null;
+  }
+
+  return {
+    height: bytes.readUInt32BE(20),
+    width: bytes.readUInt32BE(16),
+  };
+}
+
+function hasPngDimensions(path, width, height) {
+  const dimensions = pngDimensions(path);
+
+  return dimensions?.width === width && dimensions?.height === height;
+}
+
 const checks = [
   {
     label: "public assets do not include default scaffold SVGs",
@@ -26,6 +46,15 @@ const checks = [
     ok:
       layout.includes("<ServiceWorkerRegistrar />") &&
       layout.includes("<PwaInstallSuppressor />"),
+  },
+  {
+    label: "PWA icon and screenshot files match manifest dimensions",
+    ok:
+      hasPngDimensions("public/icons/icon-192.png", 192, 192) &&
+      hasPngDimensions("public/icons/icon-512.png", 512, 512) &&
+      hasPngDimensions("public/icons/maskable-512.png", 512, 512) &&
+      hasPngDimensions("public/screenshots/mobile-home.png", 540, 960) &&
+      hasPngDimensions("public/screenshots/desktop-home.png", 1280, 720),
   },
   {
     label: "installed app shortcuts include launch columns and alerts",
