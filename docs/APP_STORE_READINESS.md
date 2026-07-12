@@ -12,6 +12,7 @@
 
 - Native submission details live in `docs/MOBILE_APP_SUBMISSION_RUNBOOK.md`.
 - Draft store listing copy lives in `docs/STORE_LISTING_DRAFT.md` and should be policy-reviewed before submission.
+- Age-rating prep notes live in `docs/AGE_RATING_PREP.md` and should be checked against the current store questionnaires before submission.
 - TheTattooCore is 18+ only.
 - Visible nudity is not allowed for launch.
 - Sensitive non-nude body-art media stays behind login and 18+ confirmation.
