@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { AuthLegalLinks } from "../auth-legal-links";
 import { requestPasswordReset } from "./actions";
 
 export const metadata: Metadata = {
@@ -68,6 +69,7 @@ export default async function ForgotPasswordPage({
             >
               Back to sign in
             </Link>
+            <AuthLegalLinks />
           </form>
         </div>
       </section>

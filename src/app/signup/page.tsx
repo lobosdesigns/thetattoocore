@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { AuthLegalLinks } from "../auth-legal-links";
 
 const accountSteps = [
   ["1", "Create account", "Confirm you are 18+ and use your email/password."],
@@ -190,6 +191,7 @@ export default async function SignupPage({
               >
                 Support and account help
               </Link>
+              <AuthLegalLinks />
             </div>
           </div>
         </div>

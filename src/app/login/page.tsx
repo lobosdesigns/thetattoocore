@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { AuthLegalLinks } from "../auth-legal-links";
 
 const setupSteps = [
   ["1", "Confirm email", "New accounts get an email link before login."],
@@ -157,6 +158,7 @@ export default async function LoginPage({
               >
                 Support and account help
               </Link>
+              <AuthLegalLinks />
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AuthLegalLinks } from "../auth-legal-links";
 import { createClient } from "@/lib/supabase/client";
 
 type ResetState = "checking" | "ready" | "saving" | "done" | "blocked";
@@ -137,6 +138,9 @@ export function ResetPasswordForm({ initialMessage }: { initialMessage?: string 
           </button>
         </form>
       )}
+      <div className="mt-5">
+        <AuthLegalLinks />
+      </div>
     </div>
   );
 }

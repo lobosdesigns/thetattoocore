@@ -48,7 +48,7 @@ const checks = [
   {
     path: "/login",
     status: [200],
-    includes: ['name="robots" content="noindex, nofollow"', "Sign in", "Create new account", "TheTattooCore"],
+    includes: ['name="robots" content="noindex, nofollow"', "Sign in", "Create new account", "Support", "Terms", "Privacy", "TheTattooCore"],
     excludes: ['action="/auth/signup"', 'name="age_confirmed"'],
   },
   {
@@ -60,6 +60,9 @@ const checks = [
       'action="/auth/signup"',
       'name="age_confirmed"',
       "Already have an account? Sign in",
+      "Support",
+      "Terms",
+      "Privacy",
     ],
     excludes: ['action="/auth/login"', 'name="return_to"'],
   },
@@ -77,12 +80,12 @@ const checks = [
   {
     path: "/forgot-password",
     status: [200],
-    includes: ['name="robots" content="noindex, nofollow"', "Reset password", "Send reset link"],
+    includes: ['name="robots" content="noindex, nofollow"', "Reset password", "Send reset link", "Support", "Terms", "Privacy"],
   },
   {
     path: "/reset-password",
     status: [200],
-    includes: ['name="robots" content="noindex, nofollow"', "Create new password"],
+    includes: ['name="robots" content="noindex, nofollow"', "Create new password", "Support", "Terms", "Privacy"],
   },
   { path: "/auth/confirm?next=%2F%2Fevil.example&code=bad", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   {
