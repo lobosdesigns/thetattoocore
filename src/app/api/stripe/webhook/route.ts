@@ -19,6 +19,10 @@ type RefundedOrderTransition = {
   buyer_id: string;
   id: string;
 };
+type MerchOrderPaymentProblemTransition = {
+  buyer_id: string;
+  id: string;
+};
 type RefundedAdTransition = {
   advertiser_id: string;
   id: string;
@@ -342,8 +346,9 @@ async function markCheckoutSession({
     .from("merch_orders")
     .update(updateValues)
     .eq("stripe_checkout_session_id", session.id)
-    .select("id")
-    .returns<PaidOrderTransition[]>();
+    .eq("status", "pending_checkout")
+    .select("id, buyer_id")
+    .returns<MerchOrderPaymentProblemTransition[]>();
 
   if (error) {
     throw new Error(error.message || "Could not update merch order.");
@@ -362,6 +367,51 @@ async function markCheckoutSession({
         );
       }
     }
+  }
+
+  const buyerPaymentNotifications = (transitionedOrders ?? []).map((order) => ({
+    actor_id: null,
+    body:
+      status === "cancelled"
+        ? "Stripe checkout expired or was cancelled, so this Merch order was not completed."
+        : "Stripe reported this Merch payment failed, so this order was not completed.",
+    href: "/account#order-settings",
+    recipient_id: order.buyer_id,
+    subject_id: order.id,
+    subject_type: "merch_order",
+    title:
+      status === "cancelled"
+        ? "Merch checkout cancelled"
+        : "Merch payment failed",
+    type: status === "cancelled" ? "merch_cancelled" : "merch_payment_failed",
+  }));
+
+  if (buyerPaymentNotifications.length) {
+    await supabase.from("notifications").insert(buyerPaymentNotifications);
+    revalidatePath("/notifications");
+  }
+
+  for (const order of transitionedOrders ?? []) {
+    await maybeSendPaymentEmail({
+      headerKind:
+        status === "cancelled"
+          ? "merch-checkout-cancelled"
+          : "merch-payment-failed",
+      htmlBody:
+        status === "cancelled"
+          ? "Stripe checkout expired or was cancelled, so your Merch order was not completed."
+          : "Stripe reported your Merch payment failed, so your order was not completed.",
+      subject:
+        status === "cancelled"
+          ? `${siteName} Merch checkout cancelled`
+          : `${siteName} Merch payment failed`,
+      supabase,
+      textBody:
+        status === "cancelled"
+          ? "Stripe checkout expired or was cancelled, so your Merch order was not completed."
+          : "Stripe reported your Merch payment failed, so your order was not completed.",
+      userId: order.buyer_id,
+    });
   }
 
   await revalidateMerchOrderProducts(

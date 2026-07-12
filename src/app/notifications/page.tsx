@@ -50,6 +50,8 @@ type Notification = {
     | "merch_paid"
     | "merch_fulfilled"
     | "merch_refunded"
+    | "merch_payment_failed"
+    | "merch_cancelled"
     | "new_follow"
     | "thread_comment"
     | "thread_like"
@@ -88,6 +90,9 @@ function notificationIcon(type: Notification["type"]) {
   if (type === "merch_paid") return CreditCard;
   if (type === "merch_fulfilled") return BadgeCheck;
   if (type === "merch_refunded") return CreditCard;
+  if (type === "merch_payment_failed" || type === "merch_cancelled") {
+    return ShieldAlert;
+  }
   if (type === "message") return MessageCircle;
   if (type === "feed_like" || type === "thread_like") return Heart;
   if (type === "feed_comment" || type === "thread_comment") {
