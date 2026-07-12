@@ -188,6 +188,16 @@ type FollowPreview = {
   > | null;
 };
 
+type LinkedArtist = Pick<
+  Profile,
+  | "account_type"
+  | "avatar_url"
+  | "display_name"
+  | "id"
+  | "license_verified_at"
+  | "username"
+>;
+
 function mediaUrl(bucket: string, path: string) {
   const encodedPath = path.split("/").map(encodeURIComponent).join("/");
 
@@ -522,6 +532,35 @@ function FollowPreviewSection({
             )}
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function LinkedArtistsSection({
+  artists,
+  shopName,
+}: {
+  artists: LinkedArtist[];
+  shopName: string;
+}) {
+  if (!artists.length) return null;
+
+  return (
+    <section className="border-b border-[var(--card-rim)] px-4 py-6">
+      <div className="mb-4 flex items-center gap-2">
+        <BriefcaseBusiness className="size-5" />
+        <div>
+          <h2 className="text-lg font-bold">Artists at this shop</h2>
+          <p className="text-sm text-[var(--muted-strong)]">
+            Public artist profiles linked to {shopName}.
+          </p>
+        </div>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {artists.map((artist) => (
+          <FollowPreviewCard key={artist.id} label="artist" profile={artist} />
+        ))}
       </div>
     </section>
   );
@@ -888,6 +927,7 @@ export default async function ProfilePage({
     { data: listings },
     { data: gigs },
     { data: savedProfile },
+    { data: linkedArtists },
   ] = await Promise.all([
     supabase
       .from("follows")
@@ -1018,6 +1058,21 @@ export default async function ProfilePage({
           .eq("subject_id", profile.id)
           .maybeSingle<{ subject_id: string }>()
       : Promise.resolve({ data: null }),
+    profile.account_type === "studio"
+      ? supabase
+          .from("profiles")
+          .select(
+            "id, username, display_name, avatar_url, account_type, license_verified_at",
+          )
+          .eq("shop_profile_id", profile.id)
+          .eq("account_type", "artist")
+          .eq("is_private", false)
+          .is("banned_at", null)
+          .is("suspended_at", null)
+          .order("display_name", { ascending: true })
+          .limit(12)
+          .returns<LinkedArtist[]>()
+      : Promise.resolve({ data: [] as LinkedArtist[] }),
   ]);
 
   const isOwnProfile = claims?.sub === profile.id;
@@ -1417,6 +1472,13 @@ export default async function ProfilePage({
           <FollowPreviewSection
             followers={followerPreview ?? []}
             following={followingPreview ?? []}
+          />
+        ) : null}
+
+        {!isPrivateLocked ? (
+          <LinkedArtistsSection
+            artists={linkedArtists ?? []}
+            shopName={profile.display_name}
           />
         ) : null}
 
