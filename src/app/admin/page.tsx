@@ -186,7 +186,9 @@ const mediaOpsStages = [
 ] as const;
 
 const mediaCostRules = [
+  "Cloudflare Pro is active for CDN, security, and image-delivery polish before adding new paid media products.",
   "Keep original media in Supabase Storage while early traffic is small.",
+  "Keep HostGator for company email and static backups only, not active user media or video delivery.",
   "Use client-side image compression first because it is free and reduces storage before upload.",
   "Keep current reel caps strict: 60 seconds and 50 MB while videos are uploaded raw.",
   "Do not enable paid video transcoding until reels are getting enough real usage to justify it.",

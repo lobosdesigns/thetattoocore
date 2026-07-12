@@ -174,6 +174,7 @@
 - Keep original-file storage optional for later verified artists or paid creator tools, not as the default MVP path.
 - Start video with short 1-minute reel limits and clear file-size caps. Done for launch with 60-second and 50 MB caps.
 - Cloudflare Pro is active for the domain; use it first for CDN/security polish, caching, and image-delivery improvements while keeping uploads on the current low-cost path. Treat Cloudflare Stream as the preferred production video route once usage grows, because it handles encoding, adaptive playback, thumbnails, and delivery better than raw Storage video. Admin Media Ops now includes a concrete Stream switch checklist and thumbnail/poster contract so paid video work has clear readiness gates.
+- HostGator should stay for company email and occasional static backups only. Do not use HostGator as the active user-media CDN, video host, or side media server because Supabase Storage, Cloudflare cache, future R2, Cloudflare Images, and Cloudflare Stream fit the app's security and scaling needs better.
 - Revisit a DIY FFmpeg/R2 pipeline only if video volume makes managed video too expensive.
 - User-facing upload copy should make it clear that images are optimized now, while videos stay capped and raw until the managed video pipeline is worth enabling. Done for launch.
 
