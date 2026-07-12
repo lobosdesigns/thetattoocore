@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   resolveThemePreference,
   saveThemePreference,
@@ -21,13 +21,23 @@ export function ThemePreferencePicker({
   initialPreference?: ThemePreference;
   name?: string;
 }) {
-  const [preference, setPreference] = useState<ThemePreference>(() => {
-    if (typeof window === "undefined") return "system";
+  const [preference, setPreference] =
+    useState<ThemePreference>(initialPreference);
 
-    return resolveThemePreference(
-      window.localStorage.getItem(themeStorageKey) ?? initialPreference,
-    );
-  });
+  useEffect(() => {
+    let syncFrame: number | null = window.requestAnimationFrame(() => {
+      setPreference(
+        resolveThemePreference(
+          window.localStorage.getItem(themeStorageKey) ?? initialPreference,
+        ),
+      );
+    });
+
+    return () => {
+      if (syncFrame != null) window.cancelAnimationFrame(syncFrame);
+      syncFrame = null;
+    };
+  }, [initialPreference]);
 
   return (
     <div className="grid gap-2 sm:grid-cols-3">
