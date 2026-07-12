@@ -43,6 +43,17 @@ const checks = [
   { path: "/notifications", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fnotifications"], redirect: "manual" },
   { path: "/saved", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fsaved"], redirect: "manual" },
   { path: "/login", status: [200], includes: ["Sign in or sign up", "TheTattooCore"] },
+  {
+    path: "/login?return_to=%2Fmessages",
+    status: [200],
+    includes: ['name="return_to"', 'value="/messages"'],
+  },
+  {
+    path: "/login?return_to=%2F%2Fevil.example",
+    status: [200],
+    includes: ["Sign in or sign up"],
+    excludes: ['name="return_to"', 'value="//evil.example"'],
+  },
   { path: "/forgot-password", status: [200], includes: ["Reset password", "Send reset link"] },
   { path: "/reset-password", status: [200], includes: ["Create new password"] },
   { path: "/auth/confirm?next=%2F%2Fevil.example&code=bad", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
@@ -105,6 +116,9 @@ for (const check of checks) {
   const missingText = (check.includes || []).filter(
     (text) => !searchableBody.includes(text),
   );
+  const unexpectedText = (check.excludes || []).filter(
+    (text) => searchableBody.includes(text),
+  );
   const leakedText = forbiddenBodyText.filter((text) => body.includes(text));
   const missingHeaders = check.redirect || check.headers === false
     ? []
@@ -119,6 +133,7 @@ for (const check of checks) {
     !okRedirect ||
     missingLocationText.length > 0 ||
     missingText.length > 0 ||
+    unexpectedText.length > 0 ||
     leakedText.length > 0 ||
     missingHeaders.length > 0
   ) {
@@ -130,6 +145,9 @@ for (const check of checks) {
     }
     if (missingText.length > 0) {
       console.error(`  missing text: ${missingText.join(", ")}`);
+    }
+    if (unexpectedText.length > 0) {
+      console.error(`  unexpected text: ${unexpectedText.join(", ")}`);
     }
     if (missingLocationText.length > 0) {
       console.error(`  location: ${location || "(none)"}`);
