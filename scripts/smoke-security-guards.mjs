@@ -13,6 +13,9 @@ const homePage = readFileSync("src/app/page.tsx", "utf8");
 const termsPage = readFileSync("src/app/terms/page.tsx", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
+const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
+const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
+const nextConfig = readFileSync("next.config.ts", "utf8");
 const siteConfig = readFileSync("src/lib/site.ts", "utf8");
 const publicSource = [
   authLogin,
@@ -27,6 +30,8 @@ const publicSource = [
   termsPage,
   privacyPage,
   supportPage,
+  accountActions,
+  accountPage,
   siteConfig,
 ].join("\n");
 const privateContactSnippets = [
@@ -127,6 +132,18 @@ const checks = [
       termsPage.includes("corporate takeover pressure") &&
       privacyPage.includes("AI ad expansion") &&
       supportPage.includes("supportEmail"),
+  },
+  {
+    label: "verification uploads keep private storage and size guards",
+    ok:
+      nextConfig.includes('bodySizeLimit: "12mb"') &&
+      accountActions.includes('const LICENSE_BUCKET = "license-documents"') &&
+      accountActions.includes("const MAX_LICENSE_BYTES = 10 * 1024 * 1024") &&
+      accountActions.includes("createAdminClient() ?? supabase") &&
+      accountActions.includes("storageClient.storage.from(LICENSE_BUCKET).remove([storagePath])") &&
+      accountActions.includes('redirect(verificationPath("License verification submitted for review."))') &&
+      accountPage.includes("Accepted files: PDF, JPG, PNG, or WebP up to 10 MB.") &&
+      accountPage.includes("Private admin review only."),
   },
 ];
 
