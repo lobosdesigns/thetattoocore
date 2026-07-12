@@ -10,6 +10,7 @@
 
 ## Current Launch Position
 
+- Native submission details live in `docs/MOBILE_APP_SUBMISSION_RUNBOOK.md`.
 - TheTattooCore is 18+ only.
 - Visible nudity is not allowed for launch.
 - Sensitive non-nude body-art media stays behind login and 18+ confirmation.
