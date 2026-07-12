@@ -439,7 +439,7 @@ export default async function AccountPage({
   const { data: merchSales } = await supabase
     .from("merch_order_items")
     .select(
-      "id, order_id, title_snapshot, quantity, unit_price_cents, line_total_cents, currency, fulfillment_status, created_at, merch_orders(id, status, customer_email, shipping_name, created_at, fulfilled_at, cancelled_at, refunded_at)",
+      "id, order_id, title_snapshot, quantity, unit_price_cents, line_total_cents, currency, fulfillment_status, seller_fulfilled_at, tracking_carrier, tracking_number, tracking_url, created_at, merch_orders(id, status, customer_email, shipping_name, created_at, fulfilled_at, cancelled_at, refunded_at)",
     )
     .eq("seller_id", claims.sub)
     .order("created_at", { ascending: false })
@@ -463,7 +463,11 @@ export default async function AccountPage({
         } | null;
         order_id: string;
         quantity: number;
+        seller_fulfilled_at?: string | null;
         title_snapshot: string;
+        tracking_carrier?: string | null;
+        tracking_number?: string | null;
+        tracking_url?: string | null;
         unit_price_cents: number;
       }[]
     >();
@@ -717,6 +721,29 @@ export default async function AccountPage({
                         {order?.cancelled_at ? (
                           <p>Cancelled: {formatDate(order.cancelled_at)}</p>
                         ) : null}
+                        {item.seller_fulfilled_at ? (
+                          <p>Seller fulfilled: {formatDate(item.seller_fulfilled_at)}</p>
+                        ) : null}
+                        {item.tracking_carrier || item.tracking_number ? (
+                          <p>
+                            Tracking: {[item.tracking_carrier, item.tracking_number]
+                              .filter(Boolean)
+                              .join(" ")}
+                          </p>
+                        ) : null}
+                        {item.tracking_url ? (
+                          <p>
+                            Tracking link:{" "}
+                            <a
+                              className="font-semibold underline"
+                              href={item.tracking_url}
+                              rel="ugc nofollow noopener noreferrer"
+                              target="_blank"
+                            >
+                              Open
+                            </a>
+                          </p>
+                        ) : null}
                       </div>
                       <form action={markMerchSaleFulfilled} className="mt-4">
                         <input
@@ -724,6 +751,34 @@ export default async function AccountPage({
                           type="hidden"
                           value={item.id}
                         />
+                        {canMarkFulfilled ? (
+                          <details className="mb-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-3">
+                            <summary className="cursor-pointer text-sm font-bold">
+                              Add optional shipping details
+                            </summary>
+                            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                              <input
+                                className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                                maxLength={80}
+                                name="tracking_carrier"
+                                placeholder="Carrier"
+                              />
+                              <input
+                                className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                                maxLength={120}
+                                name="tracking_number"
+                                placeholder="Tracking number"
+                              />
+                              <input
+                                className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)] sm:col-span-3"
+                                maxLength={500}
+                                name="tracking_url"
+                                placeholder="Tracking link"
+                                type="url"
+                              />
+                            </div>
+                          </details>
+                        ) : null}
                         <PendingSubmitButton
                           className="flex h-10 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[var(--ink)] px-4 text-sm font-bold text-white disabled:bg-[color-mix(in_srgb,var(--paper-soft)_90%,transparent)] disabled:text-[var(--muted-strong)] sm:w-fit"
                           disabled={!canMarkFulfilled}

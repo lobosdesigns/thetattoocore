@@ -670,13 +670,23 @@ export async function markMerchSaleFulfilled(formData: FormData) {
   }
 
   const orderItemId = cleanText(formData.get("order_item_id"), 80);
+  const trackingCarrier = cleanText(formData.get("tracking_carrier"), 80);
+  const trackingNumber = cleanText(formData.get("tracking_number"), 120);
+  const trackingUrl = cleanExternalUrl(formData.get("tracking_url"), 500);
 
   if (!orderItemId) {
     redirect(accountPath("Choose a valid Merch sale.", "order-settings"));
   }
 
+  if (trackingUrl === null && cleanText(formData.get("tracking_url"), 500)) {
+    redirect(accountPath("Use a valid http or https tracking link.", "order-settings"));
+  }
+
   const { error } = await supabase.rpc("mark_own_merch_order_item_fulfilled", {
     p_order_item_id: orderItemId,
+    p_tracking_carrier: trackingCarrier || null,
+    p_tracking_number: trackingNumber || null,
+    p_tracking_url: trackingUrl,
   });
 
   if (error) {

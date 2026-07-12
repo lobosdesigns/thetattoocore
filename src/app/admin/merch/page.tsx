@@ -58,7 +58,11 @@ type MerchOrder = {
   itemCount: number;
   items: {
     quantity: number;
+    sellerFulfilledAt: string | null;
     title: string;
+    trackingCarrier: string | null;
+    trackingNumber: string | null;
+    trackingUrl: string | null;
   }[];
   platformFeeCents: number;
   refundedAt: string | null;
@@ -424,11 +428,43 @@ function OrderCard({
           <ul className="mt-2 space-y-1">
             {order.items.map((item) => (
               <li
-                className="flex justify-between gap-3 text-[var(--foreground)]"
-                key={`${item.title}-${item.quantity}`}
+                className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_80%,transparent)] p-2 text-[var(--foreground)]"
+                key={`${item.title}-${item.quantity}-${item.trackingNumber ?? "none"}`}
               >
-                <span>{item.title}</span>
-                <span className="shrink-0 font-semibold">x{item.quantity}</span>
+                <div className="flex justify-between gap-3">
+                  <span>{item.title}</span>
+                  <span className="shrink-0 font-semibold">x{item.quantity}</span>
+                </div>
+                {item.sellerFulfilledAt ||
+                item.trackingCarrier ||
+                item.trackingNumber ||
+                item.trackingUrl ? (
+                  <div className="mt-1 space-y-1 text-xs leading-5 text-[var(--muted)]">
+                    {item.sellerFulfilledAt ? (
+                      <p>Seller fulfilled {formatDateTime(item.sellerFulfilledAt)}</p>
+                    ) : null}
+                    {item.trackingCarrier || item.trackingNumber ? (
+                      <p>
+                        Tracking: {[item.trackingCarrier, item.trackingNumber]
+                          .filter(Boolean)
+                          .join(" ")}
+                      </p>
+                    ) : null}
+                    {item.trackingUrl ? (
+                      <p>
+                        Tracking link:{" "}
+                        <a
+                          className="font-semibold underline"
+                          href={item.trackingUrl}
+                          rel="ugc nofollow noopener noreferrer"
+                          target="_blank"
+                        >
+                          Open
+                        </a>
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
               </li>
             ))}
           </ul>
@@ -593,7 +629,7 @@ export default async function AdminMerchPage({
   const { count: orderCount, data: orderRows } = await supabase
     .from("merch_orders")
     .select(
-      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, admin_note, created_at, fulfilled_at, cancelled_at, refunded_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id, title_snapshot, quantity)",
+      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, admin_note, created_at, fulfilled_at, cancelled_at, refunded_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id, title_snapshot, quantity, seller_fulfilled_at, tracking_carrier, tracking_number, tracking_url)",
       { count: "exact" },
     )
     .order("created_at", { ascending: false })
@@ -611,7 +647,11 @@ export default async function AdminMerchPage({
         merch_order_items: {
           id: string;
           quantity: number;
+          seller_fulfilled_at: string | null;
           title_snapshot: string;
+          tracking_carrier: string | null;
+          tracking_number: string | null;
+          tracking_url: string | null;
         }[];
         platform_fee_cents: number;
         profiles: { display_name: string; username: string } | null;
@@ -638,7 +678,11 @@ export default async function AdminMerchPage({
     itemCount: order.merch_order_items.length,
     items: order.merch_order_items.map((item) => ({
       quantity: item.quantity,
+      sellerFulfilledAt: item.seller_fulfilled_at,
       title: item.title_snapshot,
+      trackingCarrier: item.tracking_carrier,
+      trackingNumber: item.tracking_number,
+      trackingUrl: item.tracking_url,
     })),
     platformFeeCents: order.platform_fee_cents,
     refundedAt: order.refunded_at,
