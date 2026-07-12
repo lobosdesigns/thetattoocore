@@ -238,6 +238,31 @@ export async function POST(request: Request) {
   const cancelUrl = `${siteUrl}/merch/${product.id}?message=${encodeURIComponent(
     "Checkout canceled.",
   )}`;
+  const adminSupabase = createAdminClient();
+  if (!adminSupabase) {
+    return redirectWithMessage(
+      `/merch/${product.id}`,
+      "Checkout is almost ready. Finish server webhook setup before taking payments.",
+    );
+  }
+
+  const cancelUnreservedPendingOrder = async (message: string) => {
+    await adminSupabase
+      .from("merch_orders")
+      .update({
+        admin_note: message,
+        cancelled_at: new Date().toISOString(),
+        status: "cancelled",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", orderId)
+      .eq("buyer_id", claims.sub)
+      .eq("status", "pending_checkout");
+    revalidatePath("/account");
+    revalidatePath("/admin");
+    revalidatePath("/admin/merch");
+    revalidatePath(`/merch/${product.id}`);
+  };
 
   const { error: orderError } = await supabase.from("merch_orders").insert({
     buyer_id: claims.sub,
@@ -269,17 +294,11 @@ export async function POST(request: Request) {
   });
 
   if (itemError) {
+    await cancelUnreservedPendingOrder("Order item could not be saved before checkout.");
+
     return redirectWithMessage(
       `/merch/${product.id}`,
       itemError.message || "The order item could not be saved before checkout.",
-    );
-  }
-
-  const adminSupabase = createAdminClient();
-  if (!adminSupabase) {
-    return redirectWithMessage(
-      `/merch/${product.id}`,
-      "Checkout is almost ready. Finish server webhook setup before taking payments.",
     );
   }
 
