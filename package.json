@@ -13,6 +13,7 @@
     "lint": "eslint",
     "smoke:public": "node scripts/smoke-public-routes.mjs",
     "smoke:media": "node scripts/smoke-media-guards.mjs",
+    "smoke:payments": "node scripts/smoke-payment-guards.mjs",
     "smoke:theme": "node scripts/smoke-theme-tokens.mjs"
   },
   "dependencies": {

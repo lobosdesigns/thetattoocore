@@ -47,6 +47,7 @@ npm run dev
 npm run lint
 npm run build
 npm run smoke:media
+npm run smoke:payments
 npm run smoke:theme
 npm run smoke:public
 ```
