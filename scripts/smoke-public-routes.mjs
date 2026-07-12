@@ -53,6 +53,8 @@ const checks = [
   { path: "/search?q=ceocore", status: [200], includes: ["CEOCore", "@ceocore"] },
   { path: "/search?q=ceocore&type=profiles", status: [200], includes: ["CEOCore", "@ceocore"] },
   { path: "/u/ceocore", status: [200], includes: ["CEOCore", "@ceocore"] },
+  { path: "/u/ceocore/followers", status: [200], includes: ["Private community", "Back to profile"] },
+  { path: "/u/ceocore/following", status: [200], includes: ["Private community", "Back to profile"] },
   { path: "/merch/checkout/success", status: [200], includes: ["Checkout received", "Back to Merch"] },
   { path: "/robots.txt", status: [200], includes: ["User-agent"], headers: false },
   { path: "/sitemap.xml", status: [200], includes: ["urlset"] },
