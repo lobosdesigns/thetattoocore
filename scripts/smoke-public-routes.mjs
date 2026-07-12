@@ -7,6 +7,9 @@ const forbiddenBodyText = [
   "SUPABASE_SERVICE_ROLE_KEY",
   "STRIPE_SECRET_KEY",
   "lobosden@hotmail.com",
+  "D@k0t",
+  "Dakota",
+  "Calder",
 ];
 
 const checks = [
