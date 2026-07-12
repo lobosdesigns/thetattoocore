@@ -22,6 +22,7 @@ const checks = [
   { path: "/privacy", status: [200], includes: ["Privacy"] },
   { path: "/terms", status: [200], includes: ["Terms"] },
   { path: "/search", status: [200], includes: ["Search"] },
+  { path: "/merch/checkout/success", status: [200], includes: ["Checkout received", "Back to Merch"] },
   { path: "/robots.txt", status: [200], includes: ["User-agent"] },
   { path: "/sitemap.xml", status: [200], includes: ["urlset"] },
 ];
