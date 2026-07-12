@@ -67,8 +67,35 @@ function safeNotificationPath(value) {
 
     if (url.origin !== self.location.origin) return "/notifications";
 
-    return `${url.pathname}${url.search}${url.hash}` || "/notifications";
+    return allowedNotificationPath(url);
   } catch {
-    return value.startsWith("/") && !value.startsWith("//") ? value : "/notifications";
+    if (!value.startsWith("/") || value.startsWith("//")) return "/notifications";
+
+    try {
+      return allowedNotificationPath(new URL(value, self.location.origin));
+    } catch {
+      return "/notifications";
+    }
   }
+}
+
+function allowedNotificationPath(url) {
+  const allowedPaths = [
+    "/",
+    "/account",
+    "/messages",
+    "/notifications",
+    "/saved",
+    "/search",
+  ];
+  const allowedPrefixes = ["/p/", "/t/", "/u/", "/merch/", "/stuff/", "/gigs/"];
+
+  if (
+    !allowedPaths.includes(url.pathname) &&
+    !allowedPrefixes.some((prefix) => url.pathname.startsWith(prefix))
+  ) {
+    return "/notifications";
+  }
+
+  return `${url.pathname}${url.search}${url.hash}` || "/notifications";
 }

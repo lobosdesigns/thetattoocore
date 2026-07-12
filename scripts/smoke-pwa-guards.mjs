@@ -51,6 +51,15 @@ const checks = [
       serviceWorker.includes("url.origin !== self.location.origin") &&
       serviceWorker.includes('return "/notifications"'),
   },
+  {
+    label: "notification click routes are limited to user-facing paths",
+    ok:
+      serviceWorker.includes("allowedNotificationPath") &&
+      serviceWorker.includes("allowedPaths") &&
+      serviceWorker.includes("allowedPrefixes") &&
+      serviceWorker.includes('"/messages"') &&
+      serviceWorker.includes('"/p/"'),
+  },
 ];
 
 const failures = checks.filter((check) => !check.ok);
