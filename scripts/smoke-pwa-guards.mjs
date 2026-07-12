@@ -22,13 +22,19 @@ const checks = [
       manifest.includes('"start_url": "/login"') &&
       manifest.includes('"name": "4U"') &&
       manifest.includes('"url": "/#feed"') &&
+      manifest.includes('"name": "Gossip"') &&
+      manifest.includes('"url": "/#threads"') &&
+      manifest.includes('"name": "Stuff"') &&
+      manifest.includes('"url": "/#marketplace"') &&
+      manifest.includes('"name": "Gigs"') &&
+      manifest.includes('"url": "/#gigs"') &&
       manifest.includes('"name": "DM"') &&
       manifest.includes('"url": "/messages"') &&
       manifest.includes('"name": "Alerts"') &&
       manifest.includes('"url": "/notifications"') &&
       manifest.includes('"name": "Merch"') &&
       manifest.includes('"url": "/#merch"') &&
-      (manifest.match(/"icons": \[/g) || []).length >= 5,
+      (manifest.match(/"icons": \[/g) || []).length >= 8,
   },
   {
     label: "automatic install prompt is intercepted instead of shown during browsing",

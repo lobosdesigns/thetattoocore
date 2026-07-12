@@ -59,6 +59,42 @@
       "url": "/#feed"
     },
     {
+      "description": "Open Gossip threads",
+      "icons": [
+        {
+          "sizes": "192x192",
+          "src": "/icons/icon-192.png",
+          "type": "image/png"
+        }
+      ],
+      "name": "Gossip",
+      "url": "/#threads"
+    },
+    {
+      "description": "Browse verified professional Stuff",
+      "icons": [
+        {
+          "sizes": "192x192",
+          "src": "/icons/icon-192.png",
+          "type": "image/png"
+        }
+      ],
+      "name": "Stuff",
+      "url": "/#marketplace"
+    },
+    {
+      "description": "Browse Gigs and opportunities",
+      "icons": [
+        {
+          "sizes": "192x192",
+          "src": "/icons/icon-192.png",
+          "type": "image/png"
+        }
+      ],
+      "name": "Gigs",
+      "url": "/#gigs"
+    },
+    {
       "description": "Open direct messages",
       "icons": [
         {

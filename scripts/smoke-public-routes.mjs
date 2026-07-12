@@ -284,7 +284,15 @@ async function checkPwaManifest() {
     .map(([field, expected]) => `${field}=${expected}`);
   const requiredIcons = ["/icons/icon-192.png", "/icons/icon-512.png", "/icons/maskable-512.png"];
   const requiredScreenshots = ["/screenshots/mobile-home.png", "/screenshots/desktop-home.png"];
-  const requiredShortcuts = ["/#feed", "/messages", "/notifications", "/#merch"];
+  const requiredShortcuts = [
+    "/#feed",
+    "/#threads",
+    "/#marketplace",
+    "/#gigs",
+    "/messages",
+    "/notifications",
+    "/#merch",
+  ];
   const manifestIcons = new Set((manifest.icons || []).map((icon) => icon.src));
   const manifestScreenshots = new Set((manifest.screenshots || []).map((screenshot) => screenshot.src));
   const manifestShortcuts = new Set((manifest.shortcuts || []).map((shortcut) => shortcut.url));
