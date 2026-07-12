@@ -24,6 +24,7 @@
 - PNG PWA icons are generated from the approved TTC shield, including a maskable launcher icon.
 - Branded splash and clean PWA screenshot assets are generated without user, sensitive, or copyrighted tattoo content.
 - DM thread reload loops from read-state realtime updates have been fixed, stale/unavailable DM thread links now return to the inbox instead of stranding mobile users on an empty thread view, and the deployed browser Supabase client config is stable for realtime/browser auth helpers.
+- Live Chrome QA on a 390px-wide mobile viewport passed for the tester account on Account > Advertising and `/messages`: no horizontal overflow, no DM reload-loop error page, and no captured console errors.
 - Core social flows are web-first; native wrappers are not ready for submission yet.
 
 ## Before Google Play / App Store Submission
