@@ -37,6 +37,24 @@ const sections = [
   },
 ] as const;
 
+const quickActions = [
+  {
+    body: "Signed-in members can request deletion from the Account data controls.",
+    href: "/account#data-settings",
+    label: "Request deletion",
+  },
+  {
+    body: "Use this for login trouble, privacy help, urgent safety, or verification questions.",
+    href: `mailto:${supportEmail}`,
+    label: "Email support",
+  },
+  {
+    body: "Sign in before reporting content when possible so the moderation queue has account context.",
+    href: "/login",
+    label: "Sign in",
+  },
+] as const;
+
 export default function SupportPage() {
   return (
     <main className="ttc-page min-h-screen px-4 py-8">
@@ -62,6 +80,21 @@ export default function SupportPage() {
             Help for account access, safety reports, privacy requests,
             verification, and app-store support.
           </p>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            {quickActions.map((action) => (
+              <Link
+                className="ttc-surface rounded-md border p-3 text-sm font-semibold hover:border-[var(--gold)]"
+                href={action.href}
+                key={action.label}
+              >
+                <span className="block">{action.label}</span>
+                <span className="mt-2 block text-xs font-medium leading-5 text-[var(--muted)]">
+                  {action.body}
+                </span>
+              </Link>
+            ))}
+          </div>
 
           <div className="mt-7 space-y-5">
             {sections.map((section) => (

@@ -85,7 +85,11 @@ const checks = [
     includes: ['name="robots" content="noindex, nofollow"', "Create new password"],
   },
   { path: "/auth/confirm?next=%2F%2Fevil.example&code=bad", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
-  { path: "/support", status: [200], includes: ["Support", "support@thetattoocore.com"] },
+  {
+    path: "/support",
+    status: [200],
+    includes: ["Support", "Request deletion", "/account#data-settings", "support@thetattoocore.com"],
+  },
   { path: "/privacy", status: [200], includes: ["Privacy", "support@thetattoocore.com"] },
   { path: "/terms", status: [200], includes: ["Terms", "support@thetattoocore.com"] },
   {
