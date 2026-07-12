@@ -45,6 +45,7 @@ const checks = [
   { path: "/login", status: [200], includes: ["Sign in or sign up", "TheTattooCore"] },
   { path: "/forgot-password", status: [200], includes: ["Reset password", "Send reset link"] },
   { path: "/reset-password", status: [200], includes: ["Create new password"] },
+  { path: "/auth/confirm?next=%2F%2Fevil.example&code=bad", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/support", status: [200], includes: ["Support", "support@thetattoocore.com"] },
   { path: "/privacy", status: [200], includes: ["Privacy", "support@thetattoocore.com"] },
   { path: "/terms", status: [200], includes: ["Terms", "support@thetattoocore.com"] },
