@@ -17,7 +17,6 @@ export async function POST(request: Request) {
     .toLowerCase();
   const password = String(formData.get("password") ?? "");
   const ageConfirmed = formData.get("age_confirmed") === "on";
-  const origin = request.headers.get("origin") ?? siteUrl;
 
   if (!email || !password) {
     return loginRedirect(request, "Enter an email and password to create an account.");
@@ -34,7 +33,7 @@ export async function POST(request: Request) {
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/auth/confirm`,
+      emailRedirectTo: `${siteUrl}/auth/confirm`,
     },
   });
 

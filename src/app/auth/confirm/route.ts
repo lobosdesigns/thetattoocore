@@ -9,7 +9,8 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type") as EmailOtpType | null;
   const next = searchParams.get("next");
   const redirectTo = request.nextUrl.clone();
-  redirectTo.pathname = next?.startsWith("/") ? next : "/account";
+  redirectTo.pathname =
+    next?.startsWith("/") && !next.startsWith("//") ? next : "/account";
   redirectTo.search = "";
 
   const supabase = await createClient();
