@@ -10,11 +10,12 @@
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "start": "next start",
-    "verify": "npm run lint && npm run build && npm run smoke:media && npm run smoke:payments && npm run smoke:security && npm run smoke:theme && npm run smoke:public",
+    "verify": "npm run lint && npm run build && npm run smoke:media && npm run smoke:payments && npm run smoke:pwa && npm run smoke:security && npm run smoke:theme && npm run smoke:public",
     "lint": "eslint",
     "smoke:public": "node scripts/smoke-public-routes.mjs",
     "smoke:media": "node scripts/smoke-media-guards.mjs",
     "smoke:payments": "node scripts/smoke-payment-guards.mjs",
+    "smoke:pwa": "node scripts/smoke-pwa-guards.mjs",
     "smoke:security": "node scripts/smoke-security-guards.mjs",
     "smoke:theme": "node scripts/smoke-theme-tokens.mjs"
   },
