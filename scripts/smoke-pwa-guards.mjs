@@ -54,7 +54,8 @@ const checks = [
       hasPngDimensions("public/icons/icon-512.png", 512, 512) &&
       hasPngDimensions("public/icons/maskable-512.png", 512, 512) &&
       hasPngDimensions("public/screenshots/mobile-home.png", 540, 960) &&
-      hasPngDimensions("public/screenshots/desktop-home.png", 1280, 720),
+      hasPngDimensions("public/screenshots/desktop-home.png", 1280, 720) &&
+      hasPngDimensions("public/splash/splash-2048.png", 2048, 2048),
   },
   {
     label: "installed app shortcuts include launch columns and alerts",
