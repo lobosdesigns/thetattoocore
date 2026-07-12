@@ -60,6 +60,14 @@ try {
 }
 
 checks.push({
+  label: "checkout routes require webhook and service-role gates before payments",
+  ok:
+    adCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&
+    adCheckout.includes("Ad checkout is almost ready. Finish server webhook setup before taking payments.") &&
+    merchCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&
+    merchCheckout.includes("Checkout is almost ready. Finish server webhook setup before taking payments."),
+});
+checks.push({
   label: "merch checkout creates local order before Stripe session",
   ok:
     merchCheckout.indexOf('from("merch_orders").insert') <
