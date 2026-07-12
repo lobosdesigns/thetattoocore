@@ -11,6 +11,13 @@ const forbiddenBodyText = [
   "Dakota",
   "Calder",
 ];
+const requiredHeaders = [
+  ["x-content-type-options", "nosniff"],
+  ["x-frame-options", "DENY"],
+  ["referrer-policy", "strict-origin-when-cross-origin"],
+  ["strict-transport-security", "max-age=31536000"],
+  ["permissions-policy", "camera=()"],
+];
 
 const checks = [
   { path: "/", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
@@ -46,7 +53,7 @@ const checks = [
   { path: "/search?q=ceocore&type=profiles", status: [200], includes: ["CEOCore", "@ceocore"] },
   { path: "/u/ceocore", status: [200], includes: ["CEOCore", "@ceocore"] },
   { path: "/merch/checkout/success", status: [200], includes: ["Checkout received", "Back to Merch"] },
-  { path: "/robots.txt", status: [200], includes: ["User-agent"] },
+  { path: "/robots.txt", status: [200], includes: ["User-agent"], headers: false },
   { path: "/sitemap.xml", status: [200], includes: ["urlset"] },
 ];
 
@@ -67,13 +74,21 @@ for (const check of checks) {
     (text) => !searchableBody.includes(text),
   );
   const leakedText = forbiddenBodyText.filter((text) => body.includes(text));
+  const missingHeaders = check.redirect || check.headers === false
+    ? []
+    : requiredHeaders.filter(([header, value]) => {
+        const headerValue = response.headers.get(header) || "";
+
+        return !headerValue.includes(value);
+      });
 
   if (
     !okStatus ||
     !okRedirect ||
     missingLocationText.length > 0 ||
     missingText.length > 0 ||
-    leakedText.length > 0
+    leakedText.length > 0 ||
+    missingHeaders.length > 0
   ) {
     failures += 1;
     console.error(`FAIL ${check.path}`);
@@ -90,6 +105,13 @@ for (const check of checks) {
     }
     if (leakedText.length > 0) {
       console.error(`  forbidden text present: ${leakedText.join(", ")}`);
+    }
+    if (missingHeaders.length > 0) {
+      console.error(
+        `  missing headers: ${missingHeaders
+          .map(([header, value]) => `${header} includes ${value}`)
+          .join(", ")}`,
+      );
     }
     continue;
   }
