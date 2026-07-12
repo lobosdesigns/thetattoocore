@@ -2,6 +2,11 @@ import { readFileSync } from "node:fs";
 
 const adCheckout = readFileSync("src/app/api/ads/checkout/route.ts", "utf8");
 const merchCheckout = readFileSync("src/app/api/merch/checkout/route.ts", "utf8");
+const merchCheckoutSuccessPage = readFileSync("src/app/merch/checkout/success/page.tsx", "utf8");
+const merchPrintReceiptButton = readFileSync(
+  "src/app/merch/checkout/success/print-receipt-button.tsx",
+  "utf8",
+);
 const adminMerchPage = readFileSync("src/app/admin/merch/page.tsx", "utf8");
 const adminPaymentsPage = readFileSync("src/app/admin/payments/page.tsx", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
@@ -81,6 +86,14 @@ checks.push({
     merchCheckout.includes('.is("stripe_checkout_session_id", null)') &&
     merchCheckout.includes('.select("id")') &&
     merchCheckout.includes("if (!sessionOrder)"),
+});
+checks.push({
+  label: "buyer checkout success keeps printable receipt action",
+  ok:
+    merchCheckoutSuccessPage.includes("<PrintReceiptButton />") &&
+    merchPrintReceiptButton.includes('"use client"') &&
+    merchPrintReceiptButton.includes("window.print()") &&
+    merchPrintReceiptButton.includes("Print receipt"),
 });
 checks.push({
   label: "shared platform fee helper stays at launch rate",

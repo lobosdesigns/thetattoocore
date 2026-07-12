@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { CheckCircle2, Package } from "lucide-react";
+import { PrintReceiptButton } from "./print-receipt-button";
 import { createClient } from "@/lib/supabase/server";
 
 type Order = {
@@ -218,6 +219,7 @@ export default async function MerchCheckoutSuccessPage({
             </p>
           ) : null}
           <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+            {order ? <PrintReceiptButton /> : null}
             <Link
               className="flex h-11 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
               href="/#merch"
