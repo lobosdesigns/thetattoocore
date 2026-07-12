@@ -227,7 +227,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { error: updateError } = await supabase
+  const { data: updatedCampaign, error: updateError } = await supabase
     .from("ad_campaigns")
     .update({
       payment_status: "checkout_started",
@@ -237,12 +237,22 @@ export async function POST(request: Request) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", campaign.id)
-    .eq("advertiser_id", claims.sub);
+    .eq("advertiser_id", claims.sub)
+    .in("payment_status", ["unpaid", "payment_failed", "refunded"])
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
   if (updateError) {
     return redirectWithMessage(
       "/account",
       updateError.message || "Checkout started, but the ad payment could not be saved.",
+    );
+  }
+
+  if (!updatedCampaign) {
+    return redirectWithMessage(
+      "/account",
+      "Ad checkout has already started. Finish that Stripe session or wait for it to expire before trying again.",
     );
   }
 
