@@ -23,7 +23,7 @@
 - Automatic mobile browser install prompts are suppressed during regular browsing so the install sheet does not interfere with feed scrolling; Account > Notifications has a deliberate install action when the browser supports installation.
 - PNG PWA icons are generated from the approved TTC shield, including a maskable launcher icon.
 - Branded splash and clean PWA screenshot assets are generated without user, sensitive, or copyrighted tattoo content.
-- DM thread reload loops from read-state realtime updates have been fixed, and stale/unavailable DM thread links now return to the inbox instead of stranding mobile users on an empty thread view.
+- DM thread reload loops from read-state realtime updates have been fixed, stale/unavailable DM thread links now return to the inbox instead of stranding mobile users on an empty thread view, and the deployed browser Supabase client config is stable for realtime/browser auth helpers.
 - Core social flows are web-first; native wrappers are not ready for submission yet.
 
 ## Before Google Play / App Store Submission
