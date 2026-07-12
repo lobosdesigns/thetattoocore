@@ -76,6 +76,14 @@ type MerchOrder = {
 
 const viewRoles: UserRole[] = ["moderator", "admin", "owner"];
 const pageSize = 50;
+const productStatusFilters = [
+  "pending_review",
+  "approved",
+  "active",
+  "paused",
+  "rejected",
+  "archived",
+] as const;
 const orderStatusFilters = [
   "pending_checkout",
   "paid",
@@ -131,20 +139,29 @@ function orderStatusFilter(value: string | string[] | undefined) {
   return orderStatusFilters.find((status) => status === rawValue) ?? null;
 }
 
+function productStatusFilter(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+
+  return productStatusFilters.find((status) => status === rawValue) ?? null;
+}
+
 function pageHref({
   orderPage = 1,
   orderStatus,
   page = 1,
+  productStatus,
 }: {
   orderPage?: number;
   orderStatus?: string | null;
   page?: number;
+  productStatus?: string | null;
 }) {
   const params = new URLSearchParams();
 
   if (page > 1) params.set("page", String(page));
   if (orderPage > 1) params.set("order_page", String(orderPage));
   if (orderStatus) params.set("order_status", orderStatus);
+  if (productStatus) params.set("product_status", productStatus);
 
   const query = params.toString();
 
@@ -562,12 +579,14 @@ export default async function AdminMerchPage({
     order_page?: string | string[];
     order_status?: string | string[];
     page?: string | string[];
+    product_status?: string | string[];
   }>;
 }) {
   const params = await searchParams;
   const currentPage = pageNumber(params.page);
   const currentOrderPage = pageNumber(params.order_page);
   const activeOrderStatus = orderStatusFilter(params.order_status);
+  const activeProductStatus = productStatusFilter(params.product_status);
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
   const orderFrom = (currentOrderPage - 1) * pageSize;
@@ -576,6 +595,7 @@ export default async function AdminMerchPage({
     orderPage: currentOrderPage,
     orderStatus: activeOrderStatus,
     page: currentPage,
+    productStatus: activeProductStatus,
   });
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -595,12 +615,18 @@ export default async function AdminMerchPage({
     redirect("/admin");
   }
 
-  const { count, data: productRows, error: productError } = await supabase
+  let productQuery = supabase
     .from("merch_products")
     .select(
       "id, title, category, status, moderation_status, price_cents, currency, inventory_quantity, inventory_reserved, is_official, created_at, profiles:profiles!merch_products_seller_id_fkey(account_type, display_name, license_verified_at, username)",
       { count: "exact" },
-    )
+    );
+
+  if (activeProductStatus) {
+    productQuery = productQuery.eq("status", activeProductStatus);
+  }
+
+  const { count, data: productRows, error: productError } = await productQuery
     .order("created_at", { ascending: false })
     .range(from, to)
     .returns<
@@ -731,6 +757,7 @@ export default async function AdminMerchPage({
     orderPage: currentOrderPage,
     orderStatus: activeOrderStatus,
     page: currentPage,
+    productStatus: activeProductStatus,
   });
 
   return (
@@ -810,6 +837,88 @@ export default async function AdminMerchPage({
           </p>
         ) : null}
 
+        {activeProductStatus || activeOrderStatus ? (
+          <div className="mb-4 flex flex-col gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+            <p className="font-semibold">
+              Filtering Merch
+              {activeProductStatus ? (
+                <>
+                  {" "}products by{" "}
+                  <span className="capitalize">
+                    {statusLabel(activeProductStatus)}
+                  </span>
+                </>
+              ) : null}
+              {activeProductStatus && activeOrderStatus ? " and" : null}
+              {activeOrderStatus ? (
+                <>
+                  {" "}orders by{" "}
+                  <span className="capitalize">
+                    {statusLabel(activeOrderStatus)}
+                  </span>
+                </>
+              ) : null}
+            </p>
+            <Link
+              className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 font-semibold text-[var(--foreground)]"
+              href="/admin/merch"
+            >
+              Clear filters
+            </Link>
+          </div>
+        ) : null}
+
+        <div className="mb-4 grid gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm lg:grid-cols-2">
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase text-[var(--muted-strong)]">
+              Product status
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {productStatusFilters.map((status) => (
+                <Link
+                  className={`rounded-md border px-2.5 py-1.5 text-xs font-semibold capitalize ${
+                    activeProductStatus === status
+                      ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                      : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
+                  }`}
+                  href={pageHref({
+                    orderStatus: activeOrderStatus,
+                    page: 1,
+                    productStatus: status,
+                  })}
+                  key={status}
+                >
+                  {statusLabel(status)}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase text-[var(--muted-strong)]">
+              Order status
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {orderStatusFilters.map((status) => (
+                <Link
+                  className={`rounded-md border px-2.5 py-1.5 text-xs font-semibold capitalize ${
+                    activeOrderStatus === status
+                      ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                      : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
+                  }`}
+                  href={pageHref({
+                    orderStatus: status,
+                    page: currentPage,
+                    productStatus: activeProductStatus,
+                  })}
+                  key={status}
+                >
+                  {statusLabel(status)}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
           <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
             <h2 className="text-lg font-bold">Build path</h2>
@@ -868,6 +977,7 @@ export default async function AdminMerchPage({
                 orderPage: currentOrderPage,
                 orderStatus: activeOrderStatus,
                 page: nextPage,
+                productStatus: activeProductStatus,
               })
             }
             totalPages={totalPages}
@@ -898,6 +1008,7 @@ export default async function AdminMerchPage({
                   orderPage: currentOrderPage,
                   orderStatus: activeOrderStatus,
                   page: nextPage,
+                  productStatus: activeProductStatus,
                 })
               }
               totalPages={totalPages}
@@ -927,7 +1038,10 @@ export default async function AdminMerchPage({
               </p>
               <Link
                 className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 font-semibold text-[var(--foreground)]"
-                href={pageHref({ page: currentPage })}
+                href={pageHref({
+                  page: currentPage,
+                  productStatus: activeProductStatus,
+                })}
               >
                 Clear filter
               </Link>
@@ -941,6 +1055,7 @@ export default async function AdminMerchPage({
                 orderPage: nextOrderPage,
                 orderStatus: activeOrderStatus,
                 page: currentPage,
+                productStatus: activeProductStatus,
               })
             }
             totalPages={totalOrderPages}
@@ -969,6 +1084,7 @@ export default async function AdminMerchPage({
                   orderPage: nextOrderPage,
                   orderStatus: activeOrderStatus,
                   page: currentPage,
+                  productStatus: activeProductStatus,
                 })
               }
               totalPages={totalOrderPages}
