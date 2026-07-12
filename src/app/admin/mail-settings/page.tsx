@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ArrowLeft, Mail, Send, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { supportEmail } from "@/lib/site";
 import { AdminSectionNav } from "../admin-section-nav";
 import { MailTestForm } from "../mail-test-form";
 
@@ -241,6 +242,10 @@ export default async function AdminMailSettingsPage() {
               </div>
               <ul className="space-y-2 text-sm leading-6 text-[var(--muted)]">
                 <li>Keep passwords in Cloudflare secrets, never in source code.</li>
+                <li>
+                  Keep public support and reply-to mail on company addresses
+                  such as {supportEmail}.
+                </li>
                 <li>Use HostGator SMTP for transactional account mail only.</li>
                 <li>
                   Add the server-only Supabase service role secret before
