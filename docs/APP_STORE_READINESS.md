@@ -15,6 +15,7 @@
 - Sensitive non-nude body-art media stays behind login and 18+ confirmation.
 - Public support and account deletion request paths exist.
 - Public support, privacy, and terms pages expose the current support contact email for account, privacy, policy, and safety questions.
+- HostGator transactional mail is configured around `support@thetattoocore.com`; public support/reply-to mail should stay on company addresses instead of personal owner contact details.
 - Admins and moderators can review account deletion requests from the admin data-request queue.
 - Verification approval/rejection creates in-app alerts and can send important email through HostGator; the required server-only Supabase service-role secret is configured in Cloudflare.
 - Public support and privacy pages explain that launch deletion requests are manually reviewed, with a target review window of 30 days unless safety, dispute, fraud, legal, or retention obligations require more time.
