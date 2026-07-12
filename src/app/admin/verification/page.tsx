@@ -254,7 +254,7 @@ function LicenseRequestCard({
           ) : null}
           <div className="grid grid-cols-2 gap-2">
             <button
-              className="h-10 rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-[var(--background)] disabled:cursor-not-allowed disabled:border disabled:border-[var(--card-rim)] disabled:bg-[color-mix(in_srgb,var(--paper-soft)_90%,transparent)] disabled:text-[var(--muted-strong)]"
+              className="ttc-disabled-state h-10 rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-[var(--background)] disabled:border"
               disabled={isExpired}
               name="status"
               value="approved"

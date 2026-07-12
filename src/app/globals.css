@@ -157,6 +157,19 @@ textarea:focus-visible {
   color: var(--foreground);
 }
 
+.ttc-disabled-state:disabled {
+  background: color-mix(in srgb, var(--paper-soft) 88%, transparent);
+  border-color: var(--card-rim);
+  color: color-mix(in srgb, var(--foreground) 54%, transparent);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+:root[data-theme="dark"] .ttc-disabled-state:disabled {
+  background: color-mix(in srgb, var(--paper-warm) 56%, #000);
+  color: color-mix(in srgb, var(--foreground) 76%, transparent);
+}
+
 .ttc-avatar {
   background:
     linear-gradient(145deg, color-mix(in srgb, var(--foreground) 90%, #000), color-mix(in srgb, var(--paper-warm) 30%, #000)),

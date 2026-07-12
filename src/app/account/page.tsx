@@ -823,7 +823,7 @@ export default async function AccountPage({
                           </details>
                         ) : null}
                         <PendingSubmitButton
-                          className="flex h-10 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[var(--ink)] px-4 text-sm font-bold text-white disabled:bg-[color-mix(in_srgb,var(--paper-soft)_90%,transparent)] disabled:text-[var(--muted-strong)] sm:w-fit"
+                          className="flex h-10 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[var(--ink)] px-4 text-sm font-bold text-white sm:w-fit"
                           disabled={!canMarkFulfilled}
                           pendingLabel="Updating"
                         >

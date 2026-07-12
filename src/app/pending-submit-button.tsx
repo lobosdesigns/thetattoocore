@@ -24,7 +24,7 @@ export function PendingSubmitButton({
     <button
       {...props}
       aria-busy={pending}
-      className={`${className ?? ""} disabled:cursor-not-allowed disabled:border-[var(--card-rim)] disabled:bg-[color-mix(in_srgb,var(--paper-soft)_90%,transparent)] disabled:text-[var(--muted-strong)] disabled:opacity-100`}
+      className={`${className ?? ""} ttc-disabled-state`}
       disabled={disabled || pending}
       style={{
         WebkitTextFillColor: "currentColor",
