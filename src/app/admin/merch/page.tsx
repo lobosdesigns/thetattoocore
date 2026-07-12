@@ -33,6 +33,7 @@ type MerchProduct = {
   currency: string;
   id: string;
   inventoryQuantity: number;
+  inventoryReserved: number;
   isOfficial: boolean;
   moderationStatus: ModerationStatus;
   sellerAccountType: string | null;
@@ -290,7 +291,17 @@ function ProductCard({
           <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
             Inventory
           </dt>
-          <dd>{Intl.NumberFormat("en-US").format(product.inventoryQuantity)}</dd>
+          <dd>
+            {Intl.NumberFormat("en-US").format(
+              Math.max(0, product.inventoryQuantity - product.inventoryReserved),
+            )}{" "}
+            available
+            {product.inventoryReserved > 0 ? (
+              <span className="block text-xs text-[var(--muted-strong)]">
+                {Intl.NumberFormat("en-US").format(product.inventoryReserved)} reserved
+              </span>
+            ) : null}
+          </dd>
         </div>
         <div>
           <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">Seller</dt>
@@ -526,7 +537,7 @@ export default async function AdminMerchPage({
   const { count, data: productRows, error: productError } = await supabase
     .from("merch_products")
     .select(
-      "id, title, category, status, moderation_status, price_cents, currency, inventory_quantity, is_official, created_at, profiles:profiles!merch_products_seller_id_fkey(account_type, display_name, license_verified_at, username)",
+      "id, title, category, status, moderation_status, price_cents, currency, inventory_quantity, inventory_reserved, is_official, created_at, profiles:profiles!merch_products_seller_id_fkey(account_type, display_name, license_verified_at, username)",
       { count: "exact" },
     )
     .order("created_at", { ascending: false })
@@ -538,6 +549,7 @@ export default async function AdminMerchPage({
         currency: string;
         id: string;
         inventory_quantity: number;
+        inventory_reserved: number;
         is_official: boolean;
         moderation_status: ModerationStatus;
         price_cents: number;
@@ -557,6 +569,7 @@ export default async function AdminMerchPage({
     currency: product.currency,
     id: product.id,
     inventoryQuantity: product.inventory_quantity,
+    inventoryReserved: product.inventory_reserved,
     isOfficial: product.is_official,
     moderationStatus: product.moderation_status,
     priceCents: product.price_cents,
