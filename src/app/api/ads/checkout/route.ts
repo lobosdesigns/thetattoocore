@@ -18,7 +18,10 @@ type AdCampaign = {
   id: string;
   name: string;
   payment_status: string;
+  platform_fee_cents: number | null;
+  prepaid_amount_cents: number | null;
   status: string;
+  stripe_checkout_session_id: string | null;
   title: string;
 };
 
@@ -159,7 +162,7 @@ export async function POST(request: Request) {
   const { data: campaign, error } = await supabase
     .from("ad_campaigns")
     .select(
-      "id, advertiser_id, name, title, campaign_type, status, payment_status, daily_budget_cents",
+      "id, advertiser_id, name, title, campaign_type, status, payment_status, daily_budget_cents, platform_fee_cents, prepaid_amount_cents, stripe_checkout_session_id",
     )
     .eq("id", campaignId)
     .eq("advertiser_id", claims.sub)
@@ -203,7 +206,51 @@ export async function POST(request: Request) {
 
   const prepaidAmountCents = campaign.daily_budget_cents;
   const platformFeeCents = calculatePlatformFeeCents(prepaidAmountCents);
+  const { data: reservedCampaign, error: reserveError } = await supabase
+    .from("ad_campaigns")
+    .update({
+      payment_status: "checkout_started",
+      platform_fee_cents: platformFeeCents,
+      prepaid_amount_cents: prepaidAmountCents,
+      stripe_checkout_session_id: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", campaign.id)
+    .eq("advertiser_id", claims.sub)
+    .in("payment_status", ["unpaid", "payment_failed", "refunded"])
+    .select("id")
+    .maybeSingle<{ id: string }>();
+
+  if (reserveError) {
+    return redirectWithMessage(
+      "/account",
+      reserveError.message || "The ad payment could not be reserved before checkout.",
+    );
+  }
+
+  if (!reservedCampaign) {
+    return redirectWithMessage(
+      "/account",
+      "Ad checkout has already started. Finish that Stripe session or wait for it to expire before trying again.",
+    );
+  }
+
   let session: CheckoutSession;
+  const rollBackReservation = async () => {
+    await supabase
+      .from("ad_campaigns")
+      .update({
+        payment_status: campaign.payment_status,
+        platform_fee_cents: campaign.platform_fee_cents,
+        prepaid_amount_cents: campaign.prepaid_amount_cents,
+        stripe_checkout_session_id: campaign.stripe_checkout_session_id,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", campaign.id)
+      .eq("advertiser_id", claims.sub)
+      .eq("payment_status", "checkout_started")
+      .is("stripe_checkout_session_id", null);
+  };
 
   try {
     session = await createAdCheckoutSession({
@@ -212,6 +259,7 @@ export async function POST(request: Request) {
       prepaidAmountCents,
     });
   } catch (error) {
+    await rollBackReservation();
     return redirectWithMessage(
       "/account",
       error instanceof Error ? error.message : "Stripe could not create ad checkout.",
@@ -219,6 +267,7 @@ export async function POST(request: Request) {
   }
 
   if (!session.url) {
+    await rollBackReservation();
     return redirectWithMessage(
       "/account",
       `${siteName} could not open Stripe Checkout for this ad campaign.`,
@@ -236,21 +285,22 @@ export async function POST(request: Request) {
     })
     .eq("id", campaign.id)
     .eq("advertiser_id", claims.sub)
-    .in("payment_status", ["unpaid", "payment_failed", "refunded"])
+    .eq("payment_status", "checkout_started")
+    .is("stripe_checkout_session_id", null)
     .select("id")
     .maybeSingle<{ id: string }>();
 
   if (updateError) {
     return redirectWithMessage(
       "/account",
-      updateError.message || "Checkout started, but the ad payment could not be saved.",
+      updateError.message || "Checkout started, but the Stripe session could not be saved.",
     );
   }
 
   if (!updatedCampaign) {
     return redirectWithMessage(
       "/account",
-      "Ad checkout has already started. Finish that Stripe session or wait for it to expire before trying again.",
+      "Ad checkout was reserved, but the Stripe session could not be attached. Wait for it to expire before trying again.",
     );
   }
 
