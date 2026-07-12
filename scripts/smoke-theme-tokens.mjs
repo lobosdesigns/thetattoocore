@@ -1,16 +1,14 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { relative } from "node:path";
 import { cwd } from "node:process";
 
-const filesToCheck = [
-  "src/app/account/page.tsx",
-  "src/app/admin/users/page.tsx",
-  "src/app/admin/verification/page.tsx",
-  "src/app/pending-submit-button.tsx",
-  "src/app/globals.css",
-];
+const filesToCheck = collectFiles("src/app", [".css", ".tsx"]);
 const bannedSnippets = [
+  "disabled:bg-[color-mix(in_srgb,var(--paper",
   "disabled:bg-[color-mix(in_srgb,var(--paper-soft)_90%,transparent)]",
+  "disabled:bg-[var(--paper",
+  "disabled:bg-white",
+  "disabled:text-white",
   "disabled:text-[var(--muted-strong)]",
 ];
 const requiredSnippets = [
@@ -57,3 +55,17 @@ if (failures) {
 }
 
 console.log("PASS theme token smoke checks");
+
+function collectFiles(directory, extensions) {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = `${directory}/${entry.name}`;
+
+    if (entry.isDirectory()) {
+      return collectFiles(path, extensions);
+    }
+
+    return extensions.some((extension) => entry.name.endsWith(extension))
+      ? [path]
+      : [];
+  });
+}
