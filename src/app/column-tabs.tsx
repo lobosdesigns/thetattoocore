@@ -31,12 +31,11 @@ function idFromHash(hash: string): ColumnId {
 }
 
 export function ColumnTabs({ unreadDmCount = 0 }: { unreadDmCount?: number }) {
-  const [activeId, setActiveId] = useState<ColumnId>(() =>
-    typeof window === "undefined" ? "feed" : idFromHash(window.location.hash),
-  );
+  const [activeId, setActiveId] = useState<ColumnId>("feed");
 
   useEffect(() => {
     const onHashChange = () => setActiveId(idFromHash(window.location.hash));
+    onHashChange();
     window.addEventListener("hashchange", onHashChange);
 
     const sections = tabs

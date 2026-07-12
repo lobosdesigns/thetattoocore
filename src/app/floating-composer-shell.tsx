@@ -80,15 +80,14 @@ export function FloatingComposerShell({
   forms: Record<ComposerMode, ReactNode>;
   isSignedIn: boolean;
 }) {
-  const [activeMode, setActiveMode] = useState<ComposerMode>(() =>
-    typeof window === "undefined" ? "feed" : modeFromHash(window.location.hash),
-  );
+  const [activeMode, setActiveMode] = useState<ComposerMode>("feed");
   const [isOpen, setIsOpen] = useState(false);
   const active = modes[activeMode];
   const ActiveIcon = active.icon;
 
   useEffect(() => {
     const onHashChange = () => setActiveMode(modeFromHash(window.location.hash));
+    onHashChange();
     window.addEventListener("hashchange", onHashChange);
 
     const sections = ["feed", "threads", "marketplace", "gigs", "merch", "messages"]

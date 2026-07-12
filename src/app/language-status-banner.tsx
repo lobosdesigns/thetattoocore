@@ -10,19 +10,20 @@ export function LanguageStatusBanner({
 }: {
   label: string;
 }) {
-  const [isHidden, setIsHidden] = useState(() =>
-    typeof window === "undefined"
-      ? false
-      : window.localStorage.getItem("ttc-language-status-dismissed") === "true",
-  );
+  const [isHidden, setIsHidden] = useState(false);
 
   useEffect(() => {
     const storageKey = "ttc-language-status-dismissed";
+    let hideFrame: number | null = null;
 
     const dismiss = () => {
       window.localStorage.setItem(storageKey, "true");
       setIsHidden(true);
     };
+
+    if (window.localStorage.getItem(storageKey) === "true") {
+      hideFrame = window.requestAnimationFrame(() => setIsHidden(true));
+    }
 
     const options: AddEventListenerOptions = { once: true, passive: true };
     window.addEventListener("click", dismiss, options);
@@ -39,6 +40,7 @@ export function LanguageStatusBanner({
       window.removeEventListener("scroll", dismiss);
       window.removeEventListener("touchstart", dismiss);
       window.removeEventListener("wheel", dismiss);
+      if (hideFrame != null) window.cancelAnimationFrame(hideFrame);
     };
   }, []);
 
