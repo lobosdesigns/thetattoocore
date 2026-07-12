@@ -411,7 +411,7 @@ export default async function AccountPage({
   const { data: merchOrders } = await supabase
     .from("merch_orders")
     .select(
-      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, created_at, fulfilled_at, cancelled_at, refunded_at, merch_order_items(title_snapshot, quantity)",
+      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, created_at, fulfilled_at, cancelled_at, refunded_at, merch_order_items(title_snapshot, quantity, fulfillment_status, seller_fulfilled_at, tracking_carrier, tracking_number, tracking_url)",
     )
     .eq("buyer_id", claims.sub)
     .order("created_at", { ascending: false })
@@ -425,7 +425,15 @@ export default async function AccountPage({
         discount_cents: number;
         fulfilled_at: string | null;
         id: string;
-        merch_order_items: { quantity: number; title_snapshot: string }[];
+        merch_order_items: {
+          fulfillment_status: string;
+          quantity: number;
+          seller_fulfilled_at: string | null;
+          title_snapshot: string;
+          tracking_carrier: string | null;
+          tracking_number: string | null;
+          tracking_url: string | null;
+        }[];
         platform_fee_cents: number;
         refunded_at: string | null;
         shipping_cents: number;
@@ -600,9 +608,44 @@ export default async function AccountPage({
                   </div>
                   <div className="mt-3 space-y-1 text-sm text-[var(--muted)]">
                     {order.merch_order_items.map((item) => (
-                      <p key={`${order.id}-${item.title_snapshot}`}>
-                        {item.quantity} x {item.title_snapshot}
-                      </p>
+                      <div
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_84%,transparent)] p-2"
+                        key={`${order.id}-${item.title_snapshot}`}
+                      >
+                        <p className="font-semibold text-[var(--foreground)]">
+                          {item.quantity} x {item.title_snapshot}
+                        </p>
+                        <div className="mt-1 space-y-1 text-xs leading-5 text-[var(--muted-strong)]">
+                          <p className="capitalize">
+                            Fulfillment: {item.fulfillment_status.replace("_", " ")}
+                          </p>
+                          {item.seller_fulfilled_at ? (
+                            <p>
+                              Seller fulfilled: {formatDate(item.seller_fulfilled_at)}
+                            </p>
+                          ) : null}
+                          {item.tracking_carrier || item.tracking_number ? (
+                            <p>
+                              Tracking: {[item.tracking_carrier, item.tracking_number]
+                                .filter(Boolean)
+                                .join(" ")}
+                            </p>
+                          ) : null}
+                          {item.tracking_url ? (
+                            <p>
+                              Tracking link:{" "}
+                              <a
+                                className="font-semibold underline"
+                                href={item.tracking_url}
+                                rel="ugc nofollow noopener noreferrer"
+                                target="_blank"
+                              >
+                                Open
+                              </a>
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
                     ))}
                     <p className="text-xs text-[var(--muted-strong)]">
                       Subtotal{" "}
