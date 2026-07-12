@@ -12,6 +12,10 @@ function stripeResponse(message: string, status = 200) {
   return NextResponse.json({ message }, { status });
 }
 
+function isUniqueViolation(error: { code?: string } | null) {
+  return error?.code === "23505";
+}
+
 type PaidOrderTransition = {
   id: string;
 };
@@ -677,6 +681,28 @@ export async function POST(request: Request) {
   }
 
   try {
+    const supabase = createAdminClient();
+
+    if (!supabase) {
+      throw new Error("Missing Supabase service role key for Stripe webhook.");
+    }
+
+    const { data: processedEvent, error: processedEventError } = await supabase
+      .from("stripe_webhook_events")
+      .select("event_id")
+      .eq("event_id", event.id)
+      .maybeSingle<{ event_id: string }>();
+
+    if (processedEventError) {
+      throw new Error(
+        processedEventError.message || "Could not check Stripe event status.",
+      );
+    }
+
+    if (processedEvent) {
+      return stripeResponse("Stripe event already processed.");
+    }
+
     if (
       event.type === "checkout.session.completed" ||
       event.type === "checkout.session.async_payment_succeeded"
@@ -727,6 +753,19 @@ export async function POST(request: Request) {
       if (paymentIntentId) {
         await markRefunded(paymentIntentId, charge.amount_refunded >= charge.amount);
       }
+    }
+
+    const { error: recordEventError } = await supabase
+      .from("stripe_webhook_events")
+      .insert({
+        event_id: event.id,
+        event_type: event.type,
+      });
+
+    if (recordEventError && !isUniqueViolation(recordEventError)) {
+      throw new Error(
+        recordEventError.message || "Could not record Stripe event status.",
+      );
     }
   } catch (error) {
     const message =
