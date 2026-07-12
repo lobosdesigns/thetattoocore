@@ -5,6 +5,10 @@ const authConfirm = readFileSync("src/app/auth/confirm/route.ts", "utf8");
 const loginPage = readFileSync("src/app/login/page.tsx", "utf8");
 const notificationActions = readFileSync("src/app/notifications/actions.ts", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
+const urls = readFileSync("src/lib/urls.ts", "utf8");
+const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
+const gigsDetailPage = readFileSync("src/app/gigs/[id]/page.tsx", "utf8");
+const homePage = readFileSync("src/app/page.tsx", "utf8");
 
 const checks = [
   {
@@ -48,6 +52,20 @@ const checks = [
       publicSmoke.includes("/login?return_to=%2Fmessages") &&
       publicSmoke.includes("/login?return_to=%2F%2Fevil.example") &&
       publicSmoke.includes("excludes"),
+  },
+  {
+    label: "external URL sanitizer only allows http and https",
+    ok:
+      urls.includes('["http:", "https:"].includes(url.protocol)') &&
+      urls.includes("return null"),
+  },
+  {
+    label: "user-generated external links carry safe rel attributes",
+    ok:
+      urls.includes('userGeneratedLinkRel = "ugc nofollow noopener noreferrer"') &&
+      profilePage.includes("rel={userGeneratedLinkRel}") &&
+      gigsDetailPage.includes("rel={userGeneratedLinkRel}") &&
+      homePage.includes("rel={userGeneratedLinkRel}"),
   },
 ];
 
