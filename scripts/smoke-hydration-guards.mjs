@@ -1,13 +1,8 @@
-import { readFileSync } from "node:fs";
-import { relative } from "node:path";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
 import { cwd } from "node:process";
 
-const clientFiles = [
-  "src/app/column-tabs.tsx",
-  "src/app/floating-composer-shell.tsx",
-  "src/app/language-status-banner.tsx",
-  "src/app/theme-preference-picker.tsx",
-];
+const sourceRoot = "src/app";
 
 const riskyInitializers = [
   /useState(?:<[^>]+>)?\(\s*\(\)\s*=>[\s\S]*?(?:window|document|localStorage|sessionStorage|navigator)\b[\s\S]*?\)/m,
@@ -15,6 +10,9 @@ const riskyInitializers = [
 ];
 
 let failures = 0;
+const clientFiles = listTsxFiles(sourceRoot).filter((file) =>
+  readFileSync(file, "utf8").startsWith('"use client";'),
+);
 
 for (const file of clientFiles) {
   const body = readFileSync(file, "utf8");
@@ -35,3 +33,17 @@ if (failures > 0) {
 }
 
 console.log("PASS hydration guard smoke checks");
+
+function listTsxFiles(dir) {
+  return readdirSync(dir)
+    .flatMap((entry) => {
+      const path = join(dir, entry);
+      const stats = statSync(path);
+
+      if (stats.isDirectory()) return listTsxFiles(path);
+      if (stats.isFile() && path.endsWith(".tsx")) return [path];
+
+      return [];
+    })
+    .sort();
+}
