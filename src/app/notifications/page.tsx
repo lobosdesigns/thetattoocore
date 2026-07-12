@@ -43,6 +43,7 @@ type Notification = {
     | "feed_like"
     | "follow_accepted"
     | "follow_request"
+    | "ad_refunded"
     | "message"
     | "merch_fulfilled"
     | "merch_refunded"
@@ -78,6 +79,7 @@ export const metadata: Metadata = {
 function notificationIcon(type: Notification["type"]) {
   if (type === "verification_approved") return BadgeCheck;
   if (type === "verification_rejected") return ShieldAlert;
+  if (type === "ad_refunded") return CreditCard;
   if (type === "merch_fulfilled") return BadgeCheck;
   if (type === "merch_refunded") return CreditCard;
   if (type === "message") return MessageCircle;
@@ -97,6 +99,7 @@ function subjectLabel(type: string) {
   if (type === "profile") return "Profile";
   if (type === "message") return "DM";
   if (type === "conversation") return "DM";
+  if (type === "ad_campaign") return "Ad";
   if (type === "merch_order") return "Merch order";
   if (type === "merch_product") return "Merch";
   if (type === "license_verification_request") return "Verification";

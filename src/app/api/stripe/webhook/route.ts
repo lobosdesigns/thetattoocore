@@ -17,6 +17,11 @@ type RefundedOrderTransition = {
   buyer_id: string;
   id: string;
 };
+type RefundedAdTransition = {
+  advertiser_id: string;
+  id: string;
+  title: string;
+};
 type PaidOrderRpcArgs = {
   p_checkout_session_id: string;
   p_customer_email: string | null;
@@ -301,17 +306,34 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
 
   if (!fullyRefunded) return;
 
-  const { error: adError } = await supabase
+  const { data: refundedAds, error: adError } = await supabase
     .from("ad_campaigns")
     .update({
       payment_status: "refunded",
       refunded_at: now,
       updated_at: now,
     })
-    .eq("stripe_payment_intent_id", paymentIntentId);
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .select("id, advertiser_id, title")
+    .returns<RefundedAdTransition[]>();
 
   if (adError) {
     throw new Error(adError.message || "Could not update ad refund status.");
+  }
+
+  const adRefundNotifications = (refundedAds ?? []).map((campaign) => ({
+    actor_id: null,
+    body: "Stripe reported a full refund for this ad payment.",
+    href: "/account#advertising-settings",
+    recipient_id: campaign.advertiser_id,
+    subject_id: campaign.id,
+    subject_type: "ad_campaign",
+    title: `Ad payment refunded: ${campaign.title}`.slice(0, 120),
+    type: "ad_refunded",
+  }));
+
+  if (adRefundNotifications.length) {
+    await supabase.from("notifications").insert(adRefundNotifications);
   }
 
   revalidatePath("/");
@@ -319,6 +341,7 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
   revalidatePath("/admin");
   revalidatePath("/admin/ads");
   revalidatePath("/admin/merch");
+  revalidatePath("/notifications");
 }
 
 export async function POST(request: Request) {
