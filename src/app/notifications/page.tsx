@@ -6,6 +6,7 @@ import {
   BadgeCheck,
   Bell,
   Check,
+  CreditCard,
   Heart,
   MessageCircle,
   ShieldAlert,
@@ -44,6 +45,7 @@ type Notification = {
     | "follow_request"
     | "message"
     | "merch_fulfilled"
+    | "merch_refunded"
     | "new_follow"
     | "thread_comment"
     | "thread_like"
@@ -77,6 +79,7 @@ function notificationIcon(type: Notification["type"]) {
   if (type === "verification_approved") return BadgeCheck;
   if (type === "verification_rejected") return ShieldAlert;
   if (type === "merch_fulfilled") return BadgeCheck;
+  if (type === "merch_refunded") return CreditCard;
   if (type === "message") return MessageCircle;
   if (type === "feed_like" || type === "thread_like") return Heart;
   if (type === "feed_comment" || type === "thread_comment") {

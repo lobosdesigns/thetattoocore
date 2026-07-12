@@ -13,6 +13,10 @@ function stripeResponse(message: string, status = 200) {
 type PaidOrderTransition = {
   id: string;
 };
+type RefundedOrderTransition = {
+  buyer_id: string;
+  id: string;
+};
 type PaidOrderRpcArgs = {
   p_checkout_session_id: string;
   p_customer_email: string | null;
@@ -262,8 +266,8 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
       updated_at: now,
     })
     .eq("stripe_payment_intent_id", paymentIntentId)
-    .select("id")
-    .returns<PaidOrderTransition[]>();
+    .select("id, buyer_id")
+    .returns<RefundedOrderTransition[]>();
 
   if (error) {
     throw new Error(error.message || "Could not update merch refund status.");
@@ -273,9 +277,27 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
     supabase,
     (refundedOrders ?? []).map((order) => order.id),
   );
+  const refundNotifications = (refundedOrders ?? []).map((order) => ({
+    actor_id: null,
+    body: fullyRefunded
+      ? "Stripe reported a full refund for this Merch order."
+      : "Stripe reported a partial refund for this Merch order.",
+    href: "/account#order-settings",
+    recipient_id: order.buyer_id,
+    subject_id: order.id,
+    subject_type: "merch_order",
+    title: fullyRefunded ? "Merch order refunded" : "Merch order partially refunded",
+    type: "merch_refunded",
+  }));
+
+  if (refundNotifications.length) {
+    await supabase.from("notifications").insert(refundNotifications);
+  }
+
   revalidatePath("/account");
   revalidatePath("/admin");
   revalidatePath("/admin/merch");
+  revalidatePath("/notifications");
 
   if (!fullyRefunded) return;
 
