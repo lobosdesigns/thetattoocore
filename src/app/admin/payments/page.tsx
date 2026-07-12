@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import {
   ArrowLeft,
   BadgeCheck,
+  ChevronLeft,
+  ChevronRight,
   CreditCard,
   ReceiptText,
   ShieldAlert,
@@ -29,6 +31,7 @@ type AdPaymentStatusRow = {
 };
 
 const viewRoles: UserRole[] = ["moderator", "admin", "owner"];
+const pageSize = 50;
 
 export const metadata: Metadata = {
   robots: {
@@ -50,6 +53,61 @@ function countByStatus(rows: StatusRow[] | AdPaymentStatusRow[] | null) {
   return Array.from(counts.entries()).sort(([a], [b]) => a.localeCompare(b));
 }
 
+function pageNumber(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+  const parsed = Number.parseInt(rawValue ?? "1", 10);
+
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+}
+
+function pageHref(page: number) {
+  return `/admin/payments?page=${page}`;
+}
+
+function Pagination({
+  currentPage,
+  hasNextPage,
+  totalPages,
+}: {
+  currentPage: number;
+  hasNextPage: boolean;
+  totalPages: number;
+}) {
+  return (
+    <div className="mt-4 flex flex-col gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm font-semibold text-[var(--muted)]">
+        Page {currentPage} of {Math.max(totalPages, 1)}
+      </p>
+      <div className="flex gap-2">
+        <Link
+          aria-disabled={currentPage <= 1}
+          className={`flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold ${
+            currentPage <= 1
+              ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
+              : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
+          }`}
+          href={pageHref(Math.max(1, currentPage - 1))}
+        >
+          <ChevronLeft className="size-4" />
+          Previous 50
+        </Link>
+        <Link
+          aria-disabled={!hasNextPage}
+          className={`flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-semibold ${
+            !hasNextPage
+              ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
+              : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+          }`}
+          href={pageHref(currentPage + 1)}
+        >
+          Next 50
+          <ChevronRight className="size-4" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat("en", {
     dateStyle: "medium",
@@ -57,7 +115,15 @@ function formatDateTime(value: string) {
   }).format(new Date(value));
 }
 
-export default async function AdminPaymentsPage() {
+export default async function AdminPaymentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const currentPage = pageNumber(params.page);
+  const from = (currentPage - 1) * pageSize;
+  const to = from + pageSize - 1;
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -79,16 +145,20 @@ export default async function AdminPaymentsPage() {
   const adminClient = createAdminClient();
   const [
     { data: stripeEvents },
+    { count: stripeEventCount },
     { data: merchStatuses },
     { data: adStatuses },
   ] = adminClient
     ? await Promise.all([
         adminClient
           .from("stripe_webhook_events")
-          .select("event_id, event_type, received_at")
+          .select("event_id, event_type, received_at", { count: "exact" })
           .order("received_at", { ascending: false })
-          .limit(50)
+          .range(from, to)
           .returns<StripeWebhookEvent[]>(),
+        adminClient
+          .from("stripe_webhook_events")
+          .select("event_id", { count: "exact", head: true }),
         adminClient
           .from("merch_orders")
           .select("status")
@@ -102,10 +172,20 @@ export default async function AdminPaymentsPage() {
           .limit(1000)
           .returns<AdPaymentStatusRow[]>(),
       ])
-    : [{ data: null }, { data: null }, { data: null }];
+    : [
+        { data: null },
+        { count: null },
+        { data: null },
+        { data: null },
+      ];
 
   const merchStatusCounts = countByStatus(merchStatuses);
   const adStatusCounts = countByStatus(adStatuses);
+  const totalStripeEvents = stripeEventCount ?? stripeEvents?.length ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalStripeEvents / pageSize));
+  const hasNextPage = currentPage < totalPages;
+  const rangeStart = totalStripeEvents > 0 ? from + 1 : 0;
+  const rangeEnd = Math.min(to + 1, totalStripeEvents);
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -157,7 +237,7 @@ export default async function AdminPaymentsPage() {
                   Stripe events
                 </p>
                 <p className="mt-1 text-2xl font-bold">
-                  {stripeEvents?.length ?? 0}
+                  {totalStripeEvents}
                 </p>
               </div>
               <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
@@ -182,7 +262,12 @@ export default async function AdminPaymentsPage() {
 
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
               <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
-                <h2 className="text-lg font-bold">Recent Stripe events</h2>
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                  <h2 className="text-lg font-bold">Recent Stripe events</h2>
+                  <p className="text-sm text-[var(--muted-strong)]">
+                    Showing {rangeStart}-{rangeEnd} of {totalStripeEvents}
+                  </p>
+                </div>
                 <div className="mt-4 space-y-2">
                   {stripeEvents?.length ? (
                     stripeEvents.map((event) => (
@@ -209,6 +294,11 @@ export default async function AdminPaymentsPage() {
                     </p>
                   )}
                 </div>
+                <Pagination
+                  currentPage={currentPage}
+                  hasNextPage={hasNextPage}
+                  totalPages={totalPages}
+                />
               </section>
 
               <aside className="space-y-4">
