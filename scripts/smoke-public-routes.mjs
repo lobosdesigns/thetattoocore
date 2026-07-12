@@ -113,10 +113,29 @@ const sitemapSampleLimit = Number.parseInt(process.env.SMOKE_SITEMAP_LIMIT || "2
 const privateSitemapPathPrefixes = [
   "/account",
   "/admin",
+  "/auth",
+  "/forgot-password",
+  "/login",
   "/messages",
   "/notifications",
   "/reset-password",
   "/saved",
+  "/search",
+  "/signup",
+];
+const requiredRobotsDisallows = [
+  "/account",
+  "/admin",
+  "/api",
+  "/auth",
+  "/forgot-password",
+  "/login",
+  "/messages",
+  "/notifications",
+  "/reset-password",
+  "/saved",
+  "/search",
+  "/signup",
 ];
 
 let failures = 0;
@@ -189,6 +208,7 @@ for (const check of checks) {
 }
 
 await checkPwaManifest();
+await checkRobotsPolicy();
 await checkSitemapUrls();
 
 if (failures > 0) {
@@ -266,6 +286,46 @@ async function checkPwaManifest() {
   }
 
   console.log("PASS PWA manifest installability fields");
+}
+
+async function checkRobotsPolicy() {
+  const response = await fetch(`${baseUrl}/robots.txt`);
+
+  if (!response.ok) {
+    failures += 1;
+    console.error(`FAIL robots policy`);
+    console.error(`  status: ${response.status}, expected: 200`);
+    return;
+  }
+
+  const body = await response.text();
+  const missingDisallows = requiredRobotsDisallows.filter(
+    (path) => !body.includes(`Disallow: ${path}`),
+  );
+  const missingAllows = ["/p/", "/t/", "/u/", "/stuff/", "/gigs/"].filter(
+    (path) => !body.includes(`Allow: ${path}`),
+  );
+
+  if (
+    missingDisallows.length > 0 ||
+    missingAllows.length > 0 ||
+    !body.includes(`Sitemap: ${baseUrl}/sitemap.xml`)
+  ) {
+    failures += 1;
+    console.error(`FAIL robots policy`);
+    if (missingDisallows.length > 0) {
+      console.error(`  missing disallows: ${missingDisallows.join(", ")}`);
+    }
+    if (missingAllows.length > 0) {
+      console.error(`  missing public allows: ${missingAllows.join(", ")}`);
+    }
+    if (!body.includes(`Sitemap: ${baseUrl}/sitemap.xml`)) {
+      console.error(`  missing sitemap URL`);
+    }
+    return;
+  }
+
+  console.log("PASS robots public/private policy");
 }
 
 async function checkSitemapUrls() {
