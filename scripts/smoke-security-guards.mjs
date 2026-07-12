@@ -9,6 +9,24 @@ const urls = readFileSync("src/lib/urls.ts", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
 const gigsDetailPage = readFileSync("src/app/gigs/[id]/page.tsx", "utf8");
 const homePage = readFileSync("src/app/page.tsx", "utf8");
+const siteConfig = readFileSync("src/lib/site.ts", "utf8");
+const publicSource = [
+  authLogin,
+  authConfirm,
+  loginPage,
+  notificationActions,
+  urls,
+  profilePage,
+  gigsDetailPage,
+  homePage,
+  siteConfig,
+].join("\n");
+const privateContactSnippets = [
+  "lobosden@hotmail.com",
+  "D@k0t",
+  "Dakota",
+  "Calder",
+];
 
 const checks = [
   {
@@ -74,6 +92,12 @@ const checks = [
       profilePage.includes("rel={userGeneratedLinkRel}") &&
       gigsDetailPage.includes("rel={userGeneratedLinkRel}") &&
       homePage.includes("rel={userGeneratedLinkRel}"),
+  },
+  {
+    label: "public app source uses company support contact only",
+    ok:
+      siteConfig.includes('supportEmail = "support@thetattoocore.com"') &&
+      privateContactSnippets.every((snippet) => !publicSource.includes(snippet)),
   },
 ];
 
