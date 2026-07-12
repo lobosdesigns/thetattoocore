@@ -326,13 +326,25 @@ export default async function AdminPaymentsPage({
                   </h2>
                   <div className="mt-2 grid gap-2 text-sm text-[var(--muted)] sm:grid-cols-2">
                     <p>
-                      Stale pending Merch checkouts over 24h:{" "}
+                      <Link
+                        className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
+                        href="/admin/merch"
+                      >
+                        Stale pending Merch checkouts over 24h
+                      </Link>
+                      :{" "}
                       <span className="font-bold text-[var(--foreground)]">
                         {stalePendingCheckoutCount ?? 0}
                       </span>
                     </p>
                     <p>
-                      Active ads with unpaid/problem payment:{" "}
+                      <Link
+                        className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
+                        href="/admin/ads"
+                      >
+                        Active ads with unpaid/problem payment
+                      </Link>
+                      :{" "}
                       <span className="font-bold text-[var(--foreground)]">
                         {activeUnpaidAdCount ?? 0}
                       </span>
