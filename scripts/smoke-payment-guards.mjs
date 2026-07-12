@@ -9,6 +9,7 @@ const merchPrintReceiptButton = readFileSync(
 );
 const adminMerchPage = readFileSync("src/app/admin/merch/page.tsx", "utf8");
 const adminPaymentsPage = readFileSync("src/app/admin/payments/page.tsx", "utf8");
+const globalsCss = readFileSync("src/app/globals.css", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
 const fees = readFileSync("src/lib/payments/fees.ts", "utf8");
@@ -91,9 +92,14 @@ checks.push({
   label: "buyer checkout success keeps printable receipt action",
   ok:
     merchCheckoutSuccessPage.includes("<PrintReceiptButton />") &&
+    merchCheckoutSuccessPage.includes("ttc-print-receipt") &&
+    merchCheckoutSuccessPage.includes("ttc-print-hidden") &&
     merchPrintReceiptButton.includes('"use client"') &&
     merchPrintReceiptButton.includes("window.print()") &&
-    merchPrintReceiptButton.includes("Print receipt"),
+    merchPrintReceiptButton.includes("Print receipt") &&
+    globalsCss.includes("@media print") &&
+    globalsCss.includes(".ttc-print-hidden") &&
+    globalsCss.includes(".ttc-print-receipt"),
 });
 checks.push({
   label: "shared platform fee helper stays at launch rate",

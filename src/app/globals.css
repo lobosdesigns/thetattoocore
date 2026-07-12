@@ -259,3 +259,24 @@ textarea:focus-visible {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+@media print {
+  html,
+  body,
+  .ttc-page,
+  .ttc-page-panel {
+    background: #ffffff !important;
+    color: #171412 !important;
+  }
+
+  .ttc-print-hidden {
+    display: none !important;
+  }
+
+  .ttc-print-receipt {
+    background: #ffffff !important;
+    border-color: #d7d0c5 !important;
+    box-shadow: none !important;
+    color: #171412 !important;
+  }
+}

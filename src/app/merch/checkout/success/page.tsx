@@ -116,7 +116,7 @@ export default async function MerchCheckoutSuccessPage({
   return (
     <main className="ttc-page min-h-screen">
       <section className="ttc-page-panel mx-auto flex min-h-screen w-full max-w-xl items-center px-4 py-10">
-        <div className="ttc-card w-full rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-6 text-center">
+        <div className="ttc-card ttc-print-receipt w-full rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-6 text-center">
           <CheckCircle2 className="mx-auto size-12 text-[var(--gold)]" />
           <h1 className="mt-4 text-2xl font-bold">{copy.heading}</h1>
           <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
@@ -218,7 +218,7 @@ export default async function MerchCheckoutSuccessPage({
               Sign in with the buying account to view this order receipt.
             </p>
           ) : null}
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+          <div className="ttc-print-hidden mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
             {order ? <PrintReceiptButton /> : null}
             <Link
               className="flex h-11 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
