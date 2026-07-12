@@ -10,6 +10,9 @@ const urls = readFileSync("src/lib/urls.ts", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
 const gigsDetailPage = readFileSync("src/app/gigs/[id]/page.tsx", "utf8");
 const homePage = readFileSync("src/app/page.tsx", "utf8");
+const termsPage = readFileSync("src/app/terms/page.tsx", "utf8");
+const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
+const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
 const siteConfig = readFileSync("src/lib/site.ts", "utf8");
 const publicSource = [
   authLogin,
@@ -21,6 +24,9 @@ const publicSource = [
   profilePage,
   gigsDetailPage,
   homePage,
+  termsPage,
+  privacyPage,
+  supportPage,
   siteConfig,
 ].join("\n");
 const privateContactSnippets = [
@@ -109,6 +115,18 @@ const checks = [
     ok:
       siteConfig.includes('supportEmail = "support@thetattoocore.com"') &&
       privateContactSnippets.every((snippet) => !publicSource.includes(snippet)),
+  },
+  {
+    label: "public trust surfaces keep launch content policy stance",
+    ok:
+      siteConfig.includes("no AI art or scratcher promotion") &&
+      loginPage.includes("No AI feed") &&
+      loginPage.includes("No scratchers") &&
+      termsPage.includes("visible nudity is not allowed") &&
+      termsPage.includes("AI-generated art") &&
+      termsPage.includes("corporate takeover pressure") &&
+      privacyPage.includes("AI ad expansion") &&
+      supportPage.includes("supportEmail"),
   },
 ];
 
