@@ -43,6 +43,7 @@ type Notification = {
     | "follow_accepted"
     | "follow_request"
     | "message"
+    | "merch_fulfilled"
     | "new_follow"
     | "thread_comment"
     | "thread_like"
@@ -75,6 +76,7 @@ export const metadata: Metadata = {
 function notificationIcon(type: Notification["type"]) {
   if (type === "verification_approved") return BadgeCheck;
   if (type === "verification_rejected") return ShieldAlert;
+  if (type === "merch_fulfilled") return BadgeCheck;
   if (type === "message") return MessageCircle;
   if (type === "feed_like" || type === "thread_like") return Heart;
   if (type === "feed_comment" || type === "thread_comment") {
@@ -92,6 +94,8 @@ function subjectLabel(type: string) {
   if (type === "profile") return "Profile";
   if (type === "message") return "DM";
   if (type === "conversation") return "DM";
+  if (type === "merch_order") return "Merch order";
+  if (type === "merch_product") return "Merch";
   if (type === "license_verification_request") return "Verification";
 
   return type.replaceAll("_", " ");

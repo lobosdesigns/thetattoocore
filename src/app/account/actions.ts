@@ -4,6 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sendHostgatorEmail } from "@/lib/mail/hostgator";
 import { countryCodes, languageCodes } from "@/lib/localization";
+import {
+  allowsInAppNotification,
+  notificationPreferenceSelect,
+  type NotificationPreferenceProfile,
+} from "@/lib/notifications";
 import { siteName, siteUrl, supportEmail } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -698,8 +703,56 @@ export async function markMerchSaleFulfilled(formData: FormData) {
     );
   }
 
+  const { data: fulfilledItem } = await supabase
+    .from("merch_order_items")
+    .select(
+      "id, order_id, title_snapshot, quantity, merch_orders(id, buyer_id), merch_products(id)",
+    )
+    .eq("id", orderItemId)
+    .maybeSingle<{
+      id: string;
+      merch_orders: { buyer_id: string; id: string } | null;
+      merch_products: { id: string } | null;
+      order_id: string;
+      quantity: number;
+      title_snapshot: string;
+    }>();
+  const buyerId = fulfilledItem?.merch_orders?.buyer_id;
+
+  if (buyerId && buyerId !== claims.sub) {
+    const { data: buyerPreferences } = await supabase
+      .from("profiles")
+      .select(notificationPreferenceSelect("marketplace_gig"))
+      .eq("id", buyerId)
+      .maybeSingle<NotificationPreferenceProfile>();
+
+    if (allowsInAppNotification(buyerPreferences, "marketplace_gig")) {
+      await supabase.from("notifications").insert({
+        actor_id: claims.sub,
+        body: trackingNumber
+          ? `Tracking ${trackingCarrier ? `${trackingCarrier} ` : ""}${trackingNumber}`.slice(
+              0,
+              160,
+            )
+          : "Your seller marked this Merch order fulfilled.",
+        href: "/account#order-settings",
+        recipient_id: buyerId,
+        subject_id: fulfilledItem.merch_products?.id ?? fulfilledItem.order_id,
+        subject_type: fulfilledItem.merch_products?.id
+          ? "merch_product"
+          : "merch_order",
+        title: `Merch fulfilled: ${fulfilledItem.quantity} x ${fulfilledItem.title_snapshot}`.slice(
+          0,
+          120,
+        ),
+        type: "merch_fulfilled",
+      });
+    }
+  }
+
   revalidatePath("/account");
   revalidatePath("/admin/merch");
+  revalidatePath("/notifications");
   redirect(accountPath("Merch sale marked fulfilled.", "order-settings"));
 }
 
