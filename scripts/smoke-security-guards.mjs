@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 const authLogin = readFileSync("src/app/auth/login/route.ts", "utf8");
 const authConfirm = readFileSync("src/app/auth/confirm/route.ts", "utf8");
 const loginPage = readFileSync("src/app/login/page.tsx", "utf8");
+const signupPage = readFileSync("src/app/signup/page.tsx", "utf8");
 const notificationActions = readFileSync("src/app/notifications/actions.ts", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const urls = readFileSync("src/lib/urls.ts", "utf8");
@@ -14,6 +15,7 @@ const publicSource = [
   authLogin,
   authConfirm,
   loginPage,
+  signupPage,
   notificationActions,
   urls,
   profilePage,
@@ -41,6 +43,15 @@ const checks = [
     ok:
       loginPage.includes('params.return_to?.startsWith("/")') &&
       loginPage.includes("!params.return_to.startsWith(\"//\")"),
+  },
+  {
+    label: "signup form is separated from login page",
+    ok:
+      loginPage.includes('href="/signup"') &&
+      !loginPage.includes('action="/auth/signup"') &&
+      !loginPage.includes('name="age_confirmed"') &&
+      signupPage.includes('action="/auth/signup"') &&
+      signupPage.includes('name="age_confirmed"'),
   },
   {
     label: "auth confirm rejects protocol-relative next paths",

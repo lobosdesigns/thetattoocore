@@ -1,17 +1,17 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
-const setupSteps = [
-  ["1", "Confirm email", "New accounts get an email link before login."],
-  ["2", "Save profile", "Choose your username, account type, country, and 18+ confirmation."],
-  ["3", "Post with +", "Use the bottom-right plus button in 4U, Gossip, Stuff, Gigs, or planned Merch."],
+const accountSteps = [
+  ["1", "Create account", "Confirm you are 18+ and use your email/password."],
+  ["2", "Confirm email", "Check inbox and junk for the confirmation link."],
+  ["3", "Set up profile", "Choose your username, account type, country, and preferences."],
 ] as const;
 
-const stanceItems = [
-  ["No AI feed", "No AI art, AI search, or AI creator replacement."],
+const trustItems = [
+  ["18+ community", "TheTattooCore is built for adult body-art discussion and media."],
+  ["No visible nudity", "Crop or cover private areas before posting at launch."],
+  ["No AI art", "Real artists, studios, vendors, collectors, and enthusiasts."],
   ["No scratchers", "Unsafe or unlicensed tattooing is not welcome."],
-  ["Pro Stuff", "Buy, sell, trade, and vendor contact require verification."],
-  ["Independent core", "Built for body-art people, not corporate takeover."],
 ] as const;
 
 export const metadata: Metadata = {
@@ -19,19 +19,15 @@ export const metadata: Metadata = {
     follow: false,
     index: false,
   },
-  title: "Sign in",
+  title: "Create account",
 };
 
-export default async function LoginPage({
+export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string; return_to?: string }>;
+  searchParams: Promise<{ message?: string }>;
 }) {
   const params = await searchParams;
-  const returnTo =
-    params.return_to?.startsWith("/") && !params.return_to.startsWith("//")
-      ? params.return_to
-      : "";
 
   return (
     <main className="ttc-page min-h-screen px-4 py-10">
@@ -45,17 +41,16 @@ export default async function LoginPage({
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/60">
               The heart of the tattoo community
             </p>
-            <h1 className="mt-3 text-3xl font-bold">Join The Tattoo Core</h1>
+            <h1 className="mt-3 text-3xl font-bold">Create your account</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-white/75">
-              Find artists, share work, start Gossip, list Stuff, post Gigs,
-              and DM other members. The community is 18+ because tattoo,
-              piercing, and body-art documentation can include sensitive
-              placement, healing, or modification context. Visible nudity is
-              not allowed for launch.
+              Join an independent body-art community for tattoo artists,
+              studios, vendors, collectors, and enthusiasts. New accounts must
+              confirm email before posting, listing, messaging, or applying for
+              professional verification.
             </p>
 
-            <div className="mt-5 grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
-              {stanceItems.map(([title, body]) => (
+            <div className="mt-5 grid gap-2 sm:grid-cols-2">
+              {trustItems.map(([title, body]) => (
                 <div
                   className="rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_35%,transparent)] bg-[color-mix(in_srgb,var(--brand-gold)_12%,transparent)] p-3"
                   key={title}
@@ -67,7 +62,7 @@ export default async function LoginPage({
             </div>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-              {setupSteps.map(([number, title, body]) => (
+              {accountSteps.map(([number, title, body]) => (
                 <div
                   className="rounded-md border border-white/15 bg-[color-mix(in_srgb,var(--paper-warm)_8%,transparent)] p-3"
                   key={number}
@@ -76,9 +71,7 @@ export default async function LoginPage({
                     {number}
                   </span>
                   <h2 className="mt-3 text-sm font-bold">{title}</h2>
-                  <p className="mt-1 text-xs leading-5 text-white/70">
-                    {body}
-                  </p>
+                  <p className="mt-1 text-xs leading-5 text-white/70">{body}</p>
                 </div>
               ))}
             </div>
@@ -86,9 +79,10 @@ export default async function LoginPage({
 
           <div className="ttc-card rounded-lg p-5">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold">Sign in</h2>
+              <h2 className="text-2xl font-bold">Create account</h2>
               <p className="mt-1 text-sm text-[var(--muted-strong)]">
-                Existing members can sign in with email and password.
+                New members sign up here. Already have an account? Use the
+                sign-in page instead.
               </p>
             </div>
 
@@ -99,10 +93,7 @@ export default async function LoginPage({
             ) : null}
 
             <div className="space-y-5">
-              <form action="/auth/login" className="space-y-4" method="post">
-                {returnTo ? (
-                  <input name="return_to" type="hidden" value={returnTo} />
-                ) : null}
+              <form action="/auth/signup" className="space-y-4" method="post">
                 <label className="block">
                   <span className="text-sm font-medium">Email</span>
                   <input
@@ -118,7 +109,7 @@ export default async function LoginPage({
                   <span className="text-sm font-medium">Password</span>
                   <input
                     className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
-                    autoComplete="current-password"
+                    autoComplete="new-password"
                     minLength={8}
                     name="password"
                     required
@@ -126,30 +117,72 @@ export default async function LoginPage({
                   />
                 </label>
 
+                <label className="ttc-surface flex items-start gap-3 rounded-md border p-3 text-xs leading-5 text-[var(--muted)]">
+                  <input
+                    className="mt-1 size-4"
+                    name="age_confirmed"
+                    required
+                    type="checkbox"
+                  />
+                  <span>
+                    I confirm I am 18 or older. This is required to create a
+                    new account on TheTattooCore.
+                  </span>
+                </label>
+
                 <button className="h-11 w-full rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
-                  Sign in
+                  Create account
                 </button>
               </form>
 
-              <div className="ttc-surface rounded-md border p-4 text-center">
-                <p className="text-sm font-bold">New to TheTattooCore?</p>
-                <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
-                  Create a separate account with 18+ confirmation and email
-                  verification.
+              <form
+                action="/auth/resend-confirmation"
+                className="ttc-surface rounded-md border p-3"
+                method="post"
+              >
+                <input name="redirect_to" type="hidden" value="/signup" />
+                <p className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
+                  No confirmation email?
                 </p>
-                <Link
-                  className="mt-3 inline-flex h-10 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--brand-gold)_18%,var(--paper-warm))] px-4 text-sm font-semibold text-[var(--foreground)]"
-                  href="/signup"
-                >
-                  Create new account
-                </Link>
+                <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
+                  <input
+                    className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                    autoComplete="email"
+                    name="email"
+                    placeholder="email@example.com"
+                    required
+                    type="email"
+                  />
+                  <button className="ttc-surface h-10 rounded-md border px-3 text-sm font-semibold">
+                    Resend
+                  </button>
+                </div>
+              </form>
+
+              <div className="ttc-surface rounded-md border p-3 text-xs leading-5 text-[var(--muted)]">
+                Check inbox and junk after creating an account. After
+                confirming your email, save your profile before posting,
+                commenting, listing Stuff, adding Gigs, previewing Merch, or
+                sending DMs.
               </div>
+
+              <p className="text-xs leading-5 text-[var(--muted-strong)]">
+                By signing up, you confirm you are 18 or older and agree to the{" "}
+                <Link className="font-semibold underline" href="/terms">
+                  Terms
+                </Link>{" "}
+                and{" "}
+                <Link className="font-semibold underline" href="/privacy">
+                  Privacy
+                </Link>
+                .
+              </p>
 
               <Link
                 className="block text-center text-sm font-semibold text-[var(--muted-strong)]"
-                href="/forgot-password"
+                href="/login"
               >
-                Forgot password?
+                Already have an account? Sign in
               </Link>
               <Link
                 className="block text-center text-sm font-semibold text-[var(--muted-strong)]"

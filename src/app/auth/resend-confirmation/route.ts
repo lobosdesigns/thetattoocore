@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 
-function loginRedirect(request: Request, message: string) {
-  const url = new URL("/login", request.url);
+function messageRedirect(request: Request, message: string, path = "/login") {
+  const url = new URL(path === "/signup" ? "/signup" : "/login", request.url);
   url.searchParams.set("message", message);
 
   return NextResponse.redirect(url);
@@ -15,10 +15,16 @@ export async function POST(request: Request) {
   const email = String(formData.get("email") ?? "")
     .trim()
     .toLowerCase();
+  const redirectTo = String(formData.get("redirect_to") ?? "");
+  const messagePath = redirectTo === "/signup" ? "/signup" : "/login";
   const origin = request.headers.get("origin") ?? siteUrl;
 
   if (!email) {
-    return loginRedirect(request, "Enter your email to resend confirmation.");
+    return messageRedirect(
+      request,
+      "Enter your email to resend confirmation.",
+      messagePath,
+    );
   }
 
   const { error } = await supabase.auth.resend({
@@ -30,14 +36,16 @@ export async function POST(request: Request) {
   });
 
   if (error) {
-    return loginRedirect(
+    return messageRedirect(
       request,
       error.message || "Could not resend confirmation email.",
+      messagePath,
     );
   }
 
-  return loginRedirect(
+  return messageRedirect(
     request,
     "Confirmation email requested. Check inbox and junk.",
+    messagePath,
   );
 }

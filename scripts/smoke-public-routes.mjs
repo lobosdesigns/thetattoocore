@@ -44,7 +44,22 @@ const checks = [
   { path: "/messages", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fmessages"], redirect: "manual" },
   { path: "/notifications", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fnotifications"], redirect: "manual" },
   { path: "/saved", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fsaved"], redirect: "manual" },
-  { path: "/login", status: [200], includes: ["Sign in or sign up", "TheTattooCore"] },
+  {
+    path: "/login",
+    status: [200],
+    includes: ["Sign in", "Create new account", "TheTattooCore"],
+    excludes: ['action="/auth/signup"', 'name="age_confirmed"'],
+  },
+  {
+    path: "/signup",
+    status: [200],
+    includes: [
+      "Create account",
+      'action="/auth/signup"',
+      'name="age_confirmed"',
+      "Already have an account? Sign in",
+    ],
+  },
   {
     path: "/login?return_to=%2Fmessages",
     status: [200],
@@ -53,7 +68,7 @@ const checks = [
   {
     path: "/login?return_to=%2F%2Fevil.example",
     status: [200],
-    includes: ["Sign in or sign up"],
+    includes: ["Sign in"],
     excludes: ['name="return_to"', 'value="//evil.example"'],
   },
   { path: "/forgot-password", status: [200], includes: ["Reset password", "Send reset link"] },

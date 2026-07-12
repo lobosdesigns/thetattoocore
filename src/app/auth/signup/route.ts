@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 
-function loginRedirect(request: Request, message: string) {
-  const url = new URL("/login", request.url);
+function signupRedirect(request: Request, message: string) {
+  const url = new URL("/signup", request.url);
   url.searchParams.set("message", message);
 
   return NextResponse.redirect(url);
@@ -19,11 +19,11 @@ export async function POST(request: Request) {
   const ageConfirmed = formData.get("age_confirmed") === "on";
 
   if (!email || !password) {
-    return loginRedirect(request, "Enter an email and password to create an account.");
+    return signupRedirect(request, "Enter an email and password to create an account.");
   }
 
   if (!ageConfirmed) {
-    return loginRedirect(
+    return signupRedirect(
       request,
       "You must confirm you are 18 or older to create an account.",
     );
@@ -38,10 +38,10 @@ export async function POST(request: Request) {
   });
 
   if (error) {
-    return loginRedirect(request, error.message || "Could not create account.");
+    return signupRedirect(request, error.message || "Could not create account.");
   }
 
-  return loginRedirect(
+  return signupRedirect(
     request,
     "Signup request sent. Check inbox and junk for the confirmation email.",
   );
