@@ -30,7 +30,12 @@ function safeInternalHref(value: FormDataEntryValue | null) {
 
   if (!href.startsWith("/") || href.startsWith("//")) return "/notifications";
 
-  const url = new URL(href, "https://thetattoocore.local");
+  let url: URL;
+  try {
+    url = new URL(href, "https://thetattoocore.local");
+  } catch {
+    return "/notifications";
+  }
   const allowedPaths = [
     "/",
     "/account",

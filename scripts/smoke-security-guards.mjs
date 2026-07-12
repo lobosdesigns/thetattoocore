@@ -47,6 +47,14 @@ const checks = [
       notificationActions.includes('return "/notifications"'),
   },
   {
+    label: "notification open falls back if href parsing fails",
+    ok:
+      notificationActions.includes("try {") &&
+      notificationActions.includes('new URL(href, "https://thetattoocore.local")') &&
+      notificationActions.includes("} catch {") &&
+      notificationActions.includes('return "/notifications"'),
+  },
+  {
     label: "public smoke covers safe and unsafe login return paths",
     ok:
       publicSmoke.includes("/login?return_to=%2Fmessages") &&
