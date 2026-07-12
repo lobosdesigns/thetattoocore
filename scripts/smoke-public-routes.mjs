@@ -257,6 +257,7 @@ for (const check of checks) {
 await checkPwaManifest();
 await checkRobotsPolicy();
 await checkSitemapUrls();
+await checkRemovedScaffoldAssets();
 
 if (failures > 0) {
   console.error(`${failures} public route smoke check(s) failed for ${baseUrl}`);
@@ -457,4 +458,32 @@ async function checkSitemapUrls() {
   }
 
   console.log(`PASS sitemap URL sample (${sampledUrls.length}/${publicUrls.length})`);
+}
+
+async function checkRemovedScaffoldAssets() {
+  const removedAssets = [
+    "/file.svg",
+    "/globe.svg",
+    "/next.svg",
+    "/vercel.svg",
+    "/window.svg",
+  ];
+  const stillPublic = [];
+
+  for (const path of removedAssets) {
+    const response = await fetch(`${baseUrl}${path}`, { redirect: "manual" });
+
+    if (![404, 307, 308].includes(response.status)) {
+      stillPublic.push(`${path} (${response.status})`);
+    }
+  }
+
+  if (stillPublic.length > 0) {
+    failures += 1;
+    console.error("FAIL removed scaffold assets");
+    console.error(`  still public: ${stillPublic.join(", ")}`);
+    return;
+  }
+
+  console.log("PASS removed scaffold assets stay unavailable");
 }
