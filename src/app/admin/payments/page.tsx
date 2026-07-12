@@ -41,6 +41,7 @@ const adPaymentStatuses = [
   "paid",
   "payment_failed",
   "refunded",
+  "waived",
 ] as const;
 
 export const metadata: Metadata = {
@@ -113,6 +114,10 @@ function formatDateTime(value: string) {
   }).format(new Date(value));
 }
 
+function staleCheckoutCutoff() {
+  return new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+}
+
 async function statusCounts({
   column,
   statuses,
@@ -147,6 +152,7 @@ export default async function AdminPaymentsPage({
   const currentPage = pageNumber(params.page);
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
+  const staleCheckoutCreatedBefore = staleCheckoutCutoff();
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -171,6 +177,8 @@ export default async function AdminPaymentsPage({
     { count: stripeEventCount },
     merchStatusCounts,
     adStatusCounts,
+    { count: stalePendingCheckoutCount },
+    { count: activeUnpaidAdCount },
   ] = adminClient
     ? await Promise.all([
         adminClient
@@ -194,12 +202,28 @@ export default async function AdminPaymentsPage({
           supabase: adminClient,
           table: "ad_campaigns",
         }),
+        adminClient
+          .from("merch_orders")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "pending_checkout")
+          .lt("created_at", staleCheckoutCreatedBefore),
+        adminClient
+          .from("ad_campaigns")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "active")
+          .in("payment_status", [
+            "unpaid",
+            "checkout_started",
+            "payment_failed",
+          ]),
       ])
     : [
         { data: null },
         { count: null },
         [],
         [],
+        { count: null },
+        { count: null },
       ];
 
   const totalStripeEvents = stripeEventCount ?? stripeEvents?.length ?? 0;
@@ -207,6 +231,8 @@ export default async function AdminPaymentsPage({
   const hasNextPage = currentPage < totalPages;
   const rangeStart = totalStripeEvents > 0 ? from + 1 : 0;
   const rangeEnd = Math.min(to + 1, totalStripeEvents);
+  const hasPaymentWarnings =
+    Boolean(stalePendingCheckoutCount) || Boolean(activeUnpaidAdCount);
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -280,6 +306,41 @@ export default async function AdminPaymentsPage({
                 </p>
               </div>
             </div>
+
+            <section
+              className={`mb-4 rounded-lg border p-4 ${
+                hasPaymentWarnings
+                  ? "border-[color-mix(in_srgb,var(--danger)_35%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))]"
+                  : "border-[color-mix(in_srgb,#34a853_35%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_10%,var(--paper-warm))]"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                {hasPaymentWarnings ? (
+                  <ShieldAlert className="mt-0.5 size-5 shrink-0 text-[var(--danger)]" />
+                ) : (
+                  <BadgeCheck className="mt-0.5 size-5 shrink-0 text-[color-mix(in_srgb,#34a853_85%,var(--foreground))]" />
+                )}
+                <div className="min-w-0">
+                  <h2 className="text-sm font-bold uppercase tracking-wide">
+                    Payment ops watch
+                  </h2>
+                  <div className="mt-2 grid gap-2 text-sm text-[var(--muted)] sm:grid-cols-2">
+                    <p>
+                      Stale pending Merch checkouts over 24h:{" "}
+                      <span className="font-bold text-[var(--foreground)]">
+                        {stalePendingCheckoutCount ?? 0}
+                      </span>
+                    </p>
+                    <p>
+                      Active ads with unpaid/problem payment:{" "}
+                      <span className="font-bold text-[var(--foreground)]">
+                        {activeUnpaidAdCount ?? 0}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
 
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
               <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
