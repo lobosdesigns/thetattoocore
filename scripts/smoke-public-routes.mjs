@@ -68,6 +68,15 @@ const pwaManifestRequirements = {
   scope: "/",
   theme_color: "#171412",
 };
+const sitemapSampleLimit = Number.parseInt(process.env.SMOKE_SITEMAP_LIMIT || "25", 10);
+const privateSitemapPathPrefixes = [
+  "/account",
+  "/admin",
+  "/messages",
+  "/notifications",
+  "/reset-password",
+  "/saved",
+];
 
 let failures = 0;
 
@@ -132,6 +141,7 @@ for (const check of checks) {
 }
 
 await checkPwaManifest();
+await checkSitemapUrls();
 
 if (failures > 0) {
   console.error(`${failures} public route smoke check(s) failed for ${baseUrl}`);
@@ -208,4 +218,73 @@ async function checkPwaManifest() {
   }
 
   console.log("PASS PWA manifest installability fields");
+}
+
+async function checkSitemapUrls() {
+  const response = await fetch(`${baseUrl}/sitemap.xml`);
+
+  if (!response.ok) {
+    failures += 1;
+    console.error(`FAIL sitemap sample`);
+    console.error(`  status: ${response.status}, expected: 200`);
+    return;
+  }
+
+  const xml = await response.text();
+  const urls = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1]);
+  const badUrls = [];
+  const publicUrls = [];
+
+  for (const url of urls) {
+    try {
+      const parsed = new URL(url);
+
+      if (parsed.origin !== baseUrl) {
+        badUrls.push(`${url} (wrong origin)`);
+        continue;
+      }
+
+      if (privateSitemapPathPrefixes.some((prefix) => parsed.pathname.startsWith(prefix))) {
+        badUrls.push(`${url} (private path)`);
+        continue;
+      }
+
+      publicUrls.push(parsed);
+    } catch {
+      badUrls.push(`${url} (invalid URL)`);
+    }
+  }
+
+  if (badUrls.length > 0) {
+    failures += 1;
+    console.error(`FAIL sitemap URLs`);
+    console.error(`  invalid entries: ${badUrls.slice(0, 10).join(", ")}`);
+    return;
+  }
+
+  const sampledUrls = publicUrls.slice(0, Number.isFinite(sitemapSampleLimit) ? sitemapSampleLimit : 25);
+  const failedSamples = [];
+
+  for (const url of sampledUrls) {
+    const sampleResponse = await fetch(url, { redirect: "follow" });
+    const body = await sampleResponse.text();
+    const leakedText = forbiddenBodyText.filter((text) => body.includes(text));
+
+    if (!sampleResponse.ok || leakedText.length > 0) {
+      failedSamples.push(
+        `${url.pathname} (${sampleResponse.status}${
+          leakedText.length ? `, forbidden: ${leakedText.join(", ")}` : ""
+        })`,
+      );
+    }
+  }
+
+  if (failedSamples.length > 0) {
+    failures += 1;
+    console.error(`FAIL sitemap sample`);
+    console.error(`  failing URLs: ${failedSamples.join(", ")}`);
+    return;
+  }
+
+  console.log(`PASS sitemap URL sample (${sampledUrls.length}/${publicUrls.length})`);
 }
