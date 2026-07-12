@@ -26,6 +26,16 @@ type ProfileResult = {
   city: string | null;
   license_verified_at: string | null;
   region: string | null;
+  shop_profile:
+    | {
+        display_name: string;
+        username: string;
+      }
+    | {
+        display_name: string;
+        username: string;
+      }[]
+    | null;
 };
 
 type SearchProfileBadge = Pick<
@@ -182,6 +192,14 @@ function locationText(value: { city: string | null; region: string | null }) {
   return [value.city, value.region].filter(Boolean).join(", ");
 }
 
+function shopProfileText(profile: ProfileResult) {
+  const shop = Array.isArray(profile.shop_profile)
+    ? profile.shop_profile[0]
+    : profile.shop_profile;
+
+  return shop ? `Shop: ${shop.display_name}` : null;
+}
+
 function SearchSection({
   children,
   count,
@@ -283,7 +301,7 @@ export default async function SearchPage({
           ? supabase
               .from("profiles")
               .select(
-                "id, username, display_name, avatar_url, account_type, bio, city, license_verified_at, region",
+                "id, username, display_name, avatar_url, account_type, bio, city, license_verified_at, region, shop_profile:profiles!profiles_shop_profile_id_fkey(username, display_name)",
               )
               .or(
                 `username.ilike.${pattern},display_name.ilike.${pattern},account_type.ilike.${pattern},bio.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`,
@@ -586,6 +604,11 @@ export default async function SearchPage({
                         {locationText(profile) ? (
                           <p className="mt-1 text-xs text-[var(--muted-strong)]">
                             {locationText(profile)}
+                          </p>
+                        ) : null}
+                        {shopProfileText(profile) ? (
+                          <p className="mt-1 text-xs font-semibold text-[var(--muted-strong)]">
+                            {shopProfileText(profile)}
                           </p>
                         ) : null}
                         {profile.bio ? (
