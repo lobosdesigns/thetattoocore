@@ -95,6 +95,10 @@ function loginPathForMessages(params: {
   return `/login?return_to=${encodeURIComponent(returnTo)}`;
 }
 
+function messagesInboxPath(message: string) {
+  return `/messages?message=${encodeURIComponent(message)}`;
+}
+
 function timeAgo(value: string) {
   const diffMs = Date.now() - new Date(value).getTime();
   const minutes = Math.max(1, Math.round(diffMs / 60000));
@@ -312,6 +316,11 @@ export default async function MessagesPage({
     (hasSelectedConversationParam
       ? inbox.find((conversation) => conversation.id === requestedConversationId)
       : inbox[0]) ?? null;
+
+  if (hasSelectedConversationParam && !selectedConversation) {
+    redirect(messagesInboxPath("Conversation was not found or is no longer available."));
+  }
+
   const selectedMessages = selectedConversation
     ? messagesByConversation.get(selectedConversation.id) ?? []
     : [];
