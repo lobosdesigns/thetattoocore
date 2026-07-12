@@ -23,15 +23,25 @@ type StripeWebhookEvent = {
   event_type: string;
   received_at: string;
 };
-type StatusRow = {
-  status: string;
-};
-type AdPaymentStatusRow = {
-  payment_status: string;
-};
 
 const viewRoles: UserRole[] = ["moderator", "admin", "owner"];
 const pageSize = 50;
+const merchOrderStatuses = [
+  "pending_checkout",
+  "paid",
+  "payment_failed",
+  "cancelled",
+  "fulfilled",
+  "partially_refunded",
+  "refunded",
+] as const;
+const adPaymentStatuses = [
+  "unpaid",
+  "checkout_started",
+  "paid",
+  "payment_failed",
+  "refunded",
+] as const;
 
 export const metadata: Metadata = {
   robots: {
@@ -40,18 +50,6 @@ export const metadata: Metadata = {
   },
   title: "Admin Payments",
 };
-
-function countByStatus(rows: StatusRow[] | AdPaymentStatusRow[] | null) {
-  const counts = new Map<string, number>();
-
-  for (const row of rows ?? []) {
-    const status =
-      "payment_status" in row ? row.payment_status : row.status;
-    counts.set(status, (counts.get(status) ?? 0) + 1);
-  }
-
-  return Array.from(counts.entries()).sort(([a], [b]) => a.localeCompare(b));
-}
 
 function pageNumber(value: string | string[] | undefined) {
   const rawValue = Array.isArray(value) ? value[0] : value;
@@ -115,6 +113,31 @@ function formatDateTime(value: string) {
   }).format(new Date(value));
 }
 
+async function statusCounts({
+  column,
+  statuses,
+  supabase,
+  table,
+}: {
+  column: string;
+  statuses: readonly string[];
+  supabase: NonNullable<ReturnType<typeof createAdminClient>>;
+  table: string;
+}) {
+  const results = await Promise.all(
+    statuses.map(async (status) => {
+      const { count } = await supabase
+        .from(table)
+        .select(column, { count: "exact", head: true })
+        .eq(column, status);
+
+      return [status, count ?? 0] as const;
+    }),
+  );
+
+  return results.filter(([, count]) => count > 0);
+}
+
 export default async function AdminPaymentsPage({
   searchParams,
 }: {
@@ -146,8 +169,8 @@ export default async function AdminPaymentsPage({
   const [
     { data: stripeEvents },
     { count: stripeEventCount },
-    { data: merchStatuses },
-    { data: adStatuses },
+    merchStatusCounts,
+    adStatusCounts,
   ] = adminClient
     ? await Promise.all([
         adminClient
@@ -159,28 +182,26 @@ export default async function AdminPaymentsPage({
         adminClient
           .from("stripe_webhook_events")
           .select("event_id", { count: "exact", head: true }),
-        adminClient
-          .from("merch_orders")
-          .select("status")
-          .order("created_at", { ascending: false })
-          .limit(1000)
-          .returns<StatusRow[]>(),
-        adminClient
-          .from("ad_campaigns")
-          .select("payment_status")
-          .order("created_at", { ascending: false })
-          .limit(1000)
-          .returns<AdPaymentStatusRow[]>(),
+        statusCounts({
+          column: "status",
+          statuses: merchOrderStatuses,
+          supabase: adminClient,
+          table: "merch_orders",
+        }),
+        statusCounts({
+          column: "payment_status",
+          statuses: adPaymentStatuses,
+          supabase: adminClient,
+          table: "ad_campaigns",
+        }),
       ])
     : [
         { data: null },
         { count: null },
-        { data: null },
-        { data: null },
+        [],
+        [],
       ];
 
-  const merchStatusCounts = countByStatus(merchStatuses);
-  const adStatusCounts = countByStatus(adStatuses);
   const totalStripeEvents = stripeEventCount ?? stripeEvents?.length ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalStripeEvents / pageSize));
   const hasNextPage = currentPage < totalPages;
@@ -243,19 +264,19 @@ export default async function AdminPaymentsPage({
               <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
                 <CreditCard className="size-5 text-[var(--gold)]" />
                 <p className="mt-3 text-sm text-[var(--muted-strong)]">
-                  Merch orders sampled
+                  Merch orders
                 </p>
                 <p className="mt-1 text-2xl font-bold">
-                  {merchStatuses?.length ?? 0}
+                  {merchStatusCounts.reduce((sum, [, count]) => sum + count, 0)}
                 </p>
               </div>
               <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
                 <BadgeCheck className="size-5 text-[var(--gold)]" />
                 <p className="mt-3 text-sm text-[var(--muted-strong)]">
-                  Ad payments sampled
+                  Ad payment records
                 </p>
                 <p className="mt-1 text-2xl font-bold">
-                  {adStatuses?.length ?? 0}
+                  {adStatusCounts.reduce((sum, [, count]) => sum + count, 0)}
                 </p>
               </div>
             </div>
