@@ -309,6 +309,11 @@ export default async function MerchProductPage({
                 {available > 0
                   ? `${Intl.NumberFormat("en-US").format(available)} available`
                   : "Sold out"}
+                {product.inventory_reserved > 0 && isOwnProduct ? (
+                  <span className="block text-xs font-medium text-[var(--muted-strong)]">
+                    {Intl.NumberFormat("en-US").format(product.inventory_reserved)} reserved in active checkout
+                  </span>
+                ) : null}
               </p>
 
               {isOwnProduct ? (
@@ -385,6 +390,13 @@ export default async function MerchProductPage({
                           required
                           type="number"
                         />
+                        {product.inventory_reserved > 0 ? (
+                          <span className="mt-1 block text-[11px] normal-case leading-4 text-[var(--muted-strong)]">
+                            {Intl.NumberFormat("en-US").format(product.inventory_reserved)} unit(s)
+                            are reserved in active checkout, so inventory cannot
+                            be lowered below that amount.
+                          </span>
+                        ) : null}
                       </label>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
