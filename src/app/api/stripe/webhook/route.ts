@@ -13,6 +13,19 @@ function stripeResponse(message: string, status = 200) {
 type PaidOrderTransition = {
   id: string;
 };
+type PaidOrderRpcArgs = {
+  p_checkout_session_id: string;
+  p_customer_email: string | null;
+  p_discount_cents: number;
+  p_payment_intent_id: string | null;
+  p_platform_fee_cents: number;
+  p_shipping_address: Record<string, unknown>;
+  p_shipping_cents: number;
+  p_shipping_name: string | null;
+  p_subtotal_cents: number;
+  p_tax_cents: number;
+  p_total_cents: number;
+};
 type AdminSupabase = NonNullable<ReturnType<typeof createAdminClient>>;
 type OrderProductRow = {
   product_id: string;
@@ -83,6 +96,51 @@ async function markCheckoutSession({
     session.metadata?.merch_subtotal_cents,
     Math.max(0, (session.amount_subtotal ?? 0) - platformFeeCents),
   );
+
+  if (status === "paid") {
+    const { data: transitionedPaidOrders, error } = await supabase
+      .rpc("mark_paid_merch_order_for_checkout", {
+        p_checkout_session_id: session.id,
+        p_customer_email:
+          session.customer_details?.email ?? session.customer_email ?? null,
+        p_discount_cents: session.total_details?.amount_discount ?? 0,
+        p_payment_intent_id:
+          typeof session.payment_intent === "string"
+            ? session.payment_intent
+            : null,
+        p_platform_fee_cents: platformFeeCents,
+        p_shipping_address: collectedShippingDetails
+          ? {
+              address: collectedShippingDetails.address,
+              name: collectedShippingDetails.name,
+            }
+          : {},
+        p_shipping_cents: session.total_details?.amount_shipping ?? 0,
+        p_shipping_name: collectedShippingDetails?.name ?? null,
+        p_subtotal_cents: subtotalCents,
+        p_tax_cents: session.total_details?.amount_tax ?? 0,
+        p_total_cents: session.amount_total ?? 0,
+      } satisfies PaidOrderRpcArgs)
+      .returns<PaidOrderTransition[]>();
+
+    if (error) {
+      throw new Error(error.message || "Could not mark merch order paid.");
+    }
+
+    const paidOrderRows = Array.isArray(transitionedPaidOrders)
+      ? transitionedPaidOrders
+      : [];
+
+    await revalidateMerchOrderProducts(
+      supabase,
+      paidOrderRows.map((order) => order.id),
+    );
+    revalidatePath("/account");
+    revalidatePath("/admin");
+    revalidatePath("/admin/merch");
+    return;
+  }
+
   const updateValues = {
     customer_email: session.customer_details?.email ?? session.customer_email ?? null,
     shipping_address: collectedShippingDetails
@@ -105,41 +163,20 @@ async function markCheckoutSession({
     ...(status === "cancelled" ? { cancelled_at: now } : {}),
   };
 
-  const query = supabase
+  const { data: transitionedOrders, error } = await supabase
     .from("merch_orders")
     .update(updateValues)
-    .eq("stripe_checkout_session_id", session.id);
-  const { data: transitionedPaidOrders, error } =
-    status === "paid"
-      ? await query
-          .neq("status", "paid")
-          .neq("status", "fulfilled")
-          .select("id")
-          .returns<PaidOrderTransition[]>()
-      : await query.select("id").returns<PaidOrderTransition[]>();
+    .eq("stripe_checkout_session_id", session.id)
+    .select("id")
+    .returns<PaidOrderTransition[]>();
 
   if (error) {
     throw new Error(error.message || "Could not update merch order.");
   }
 
-  if (status === "paid") {
-    for (const order of transitionedPaidOrders ?? []) {
-      const { error: inventoryError } = await supabase.rpc(
-        "decrement_merch_inventory_for_order",
-        { p_order_id: order.id },
-      );
-
-      if (inventoryError) {
-        throw new Error(
-          inventoryError.message || "Could not update merch inventory.",
-        );
-      }
-    }
-  }
-
   await revalidateMerchOrderProducts(
     supabase,
-    (transitionedPaidOrders ?? []).map((order) => order.id),
+    (transitionedOrders ?? []).map((order) => order.id),
   );
   revalidatePath("/account");
   revalidatePath("/admin");
