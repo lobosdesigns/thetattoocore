@@ -91,7 +91,14 @@ const checks = [
   {
     path: "/support",
     status: [200],
-    includes: ["Support", "Request deletion", "/account#data-settings", "support@thetattoocore.com"],
+    includes: [
+      "Support",
+      "Request deletion",
+      "/account#data-settings",
+      "support@thetattoocore.com",
+      'href="/terms"',
+      'href="/privacy"',
+    ],
   },
   { path: "/privacy", status: [200], includes: ["Privacy", "support@thetattoocore.com"] },
   { path: "/terms", status: [200], includes: ["Terms", "support@thetattoocore.com"] },

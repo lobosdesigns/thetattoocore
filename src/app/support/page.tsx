@@ -113,6 +113,21 @@ export default function SupportPage() {
               {supportEmail}
             </a>
           </div>
+
+          <div className="mt-4 flex flex-col gap-2 text-sm font-semibold sm:flex-row">
+            <Link
+              className="ttc-surface inline-flex h-10 items-center justify-center rounded-md border px-4"
+              href="/terms"
+            >
+              Terms
+            </Link>
+            <Link
+              className="ttc-surface inline-flex h-10 items-center justify-center rounded-md border px-4"
+              href="/privacy"
+            >
+              Privacy
+            </Link>
+          </div>
         </div>
       </article>
     </main>
