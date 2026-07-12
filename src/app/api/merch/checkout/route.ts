@@ -284,6 +284,9 @@ export async function POST(request: Request) {
   }
 
   const cancelPendingOrder = async (message: string) => {
+    await adminSupabase.rpc("release_merch_inventory_for_order", {
+      p_order_id: orderId,
+    });
     await adminSupabase
       .from("merch_orders")
       .update({
@@ -300,6 +303,20 @@ export async function POST(request: Request) {
     revalidatePath("/admin/merch");
     revalidatePath(`/merch/${product.id}`);
   };
+
+  const { error: reserveError } = await adminSupabase.rpc(
+    "reserve_merch_inventory_for_order",
+    { p_order_id: orderId },
+  );
+
+  if (reserveError) {
+    await cancelPendingOrder("Inventory could not be reserved for checkout.");
+
+    return redirectWithMessage(
+      `/merch/${product.id}`,
+      reserveError.message || "Inventory could not be reserved for checkout.",
+    );
+  }
 
   let session: CheckoutSession;
 
@@ -333,6 +350,8 @@ export async function POST(request: Request) {
     .eq("buyer_id", claims.sub);
 
   if (sessionError) {
+    await cancelPendingOrder("Checkout started, but the order session could not be saved.");
+
     return redirectWithMessage(
       `/merch/${product.id}`,
       sessionError.message || "Checkout started, but the order session could not be saved.",

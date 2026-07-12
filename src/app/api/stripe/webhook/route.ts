@@ -174,6 +174,21 @@ async function markCheckoutSession({
     throw new Error(error.message || "Could not update merch order.");
   }
 
+  if (status === "cancelled" || status === "payment_failed") {
+    for (const order of transitionedOrders ?? []) {
+      const { error: releaseError } = await supabase.rpc(
+        "release_merch_inventory_for_order",
+        { p_order_id: order.id },
+      );
+
+      if (releaseError) {
+        throw new Error(
+          releaseError.message || "Could not release merch inventory hold.",
+        );
+      }
+    }
+  }
+
   await revalidateMerchOrderProducts(
     supabase,
     (transitionedOrders ?? []).map((order) => order.id),

@@ -1521,6 +1521,23 @@ export async function updateMerchOrderStatus(formData: FormData) {
     }
   }
 
+  if (status === "cancelled") {
+    const { error: releaseError } = await supabase.rpc(
+      "release_merch_inventory_for_order",
+      { p_order_id: orderId },
+    );
+
+    if (releaseError) {
+      redirect(
+        adminMerchMessage(
+          releaseError.message ||
+            "Order changed, but inventory reservation release failed.",
+          returnTo,
+        ),
+      );
+    }
+  }
+
   const { data: orderItems } = await supabase
     .from("merch_order_items")
     .select("product_id")
