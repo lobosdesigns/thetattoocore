@@ -111,7 +111,7 @@ type AdCampaign = {
   advertiserUsername: string;
   bidCents: number;
   body: string | null;
-  campaignType: "artist_growth" | "stuff_listing";
+  campaignType: "artist_growth" | "stuff_listing" | "merch_listing";
   city: string | null;
   countryCode: string | null;
   createdAt: string;
@@ -123,12 +123,15 @@ type AdCampaign = {
     | "engagement"
     | "listing_views"
     | "seller_messages"
-    | "marketplace_engagement";
+    | "marketplace_engagement"
+    | "product_views"
+    | "shop_visits"
+    | "purchases";
   id: string;
   keywords: string[];
   language: string | null;
   name: string;
-  placements: ("4u" | "gossip" | "stuff")[];
+  placements: ("4u" | "gossip" | "stuff" | "merch")[];
   region: string | null;
   reviewerNote: string | null;
   startsAt: string | null;
@@ -643,10 +646,10 @@ export default async function AdminPage({
       .returns<
         {
           ad_events: { event_type: "impression" | "click" | "message_lead" }[];
-          ad_campaign_placements: { placement: "4u" | "gossip" | "stuff" }[];
+          ad_campaign_placements: { placement: "4u" | "gossip" | "stuff" | "merch" }[];
           bid_cents: number;
           body: string | null;
-          campaign_type: "artist_growth" | "stuff_listing";
+          campaign_type: "artist_growth" | "stuff_listing" | "merch_listing";
           city: string | null;
           country_code: string | null;
           created_at: string;
@@ -658,7 +661,10 @@ export default async function AdminPage({
             | "engagement"
             | "listing_views"
             | "seller_messages"
-            | "marketplace_engagement";
+            | "marketplace_engagement"
+            | "product_views"
+            | "shop_visits"
+            | "purchases";
           id: string;
           keywords: string[];
           language: string | null;
