@@ -12,6 +12,7 @@
     "start": "next start",
     "lint": "eslint",
     "smoke:public": "node scripts/smoke-public-routes.mjs",
+    "smoke:media": "node scripts/smoke-media-guards.mjs",
     "smoke:theme": "node scripts/smoke-theme-tokens.mjs"
   },
   "dependencies": {

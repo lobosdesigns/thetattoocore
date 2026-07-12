@@ -23,8 +23,9 @@ export function ProtectedVideo({
     <video
       className={className}
       controls
-      controlsList="nodownload noplaybackrate"
+      controlsList="nodownload noplaybackrate noremoteplayback"
       disablePictureInPicture
+      disableRemotePlayback
       onClick={maybeStopClick}
       onContextMenu={(event) => event.preventDefault()}
       playsInline
