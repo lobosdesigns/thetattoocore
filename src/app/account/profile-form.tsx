@@ -39,6 +39,13 @@ type Profile = {
   notify_thread_activity: boolean | null;
   preferred_language: string | null;
   region: string | null;
+  shop_profile:
+    | {
+        display_name: string;
+        username: string;
+      }
+    | null;
+  shop_profile_id: string | null;
   theme_preference: "light" | "dark" | "system" | null;
   username: string;
   website_url: string | null;
@@ -289,6 +296,23 @@ export function ProfileForm({
           </select>
           <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
             Artists, studios, and vendors can apply for license verification.
+          </span>
+        </label>
+
+        <label className="block">
+          <span className="text-sm font-medium">Shop / studio profile</span>
+          <input
+            className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+            defaultValue={initialProfile?.shop_profile?.username ?? ""}
+            maxLength={30}
+            name="shop_profile_username"
+            pattern="@?[a-zA-Z0-9_]{3,30}"
+            placeholder="@shopusername"
+            title="Use a Studio account username."
+          />
+          <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
+            Artists can link the studio/shop profile they work from. The linked
+            profile must be a Studio account.
           </span>
         </label>
       </div>

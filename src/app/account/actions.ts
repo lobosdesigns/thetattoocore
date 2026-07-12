@@ -66,6 +66,14 @@ function cleanText(value: FormDataEntryValue | null, maxLength: number) {
     .slice(0, maxLength);
 }
 
+function cleanProfileUsername(value: FormDataEntryValue | null) {
+  return String(value ?? "")
+    .trim()
+    .replace(/^@/, "")
+    .toLowerCase()
+    .slice(0, 30);
+}
+
 function isPastDate(value: string | null) {
   if (!value) return false;
 
@@ -253,6 +261,9 @@ export async function updateProfile(formData: FormData) {
   const username = cleanText(formData.get("username"), 30).toLowerCase();
   const displayName = cleanText(formData.get("display_name"), 80);
   const accountType = cleanText(formData.get("account_type"), 30);
+  const shopProfileUsername = cleanProfileUsername(
+    formData.get("shop_profile_username"),
+  );
   const countryCode = cleanText(formData.get("country_code"), 2).toUpperCase();
   const isAdultConfirmed = formData.get("is_adult_confirmed") === "on";
   const preferredLanguage = cleanText(formData.get("preferred_language"), 8);
@@ -290,6 +301,38 @@ export async function updateProfile(formData: FormData) {
   const avatarUrl = avatar
     ? await uploadAvatar({ file: avatar, supabase, userId: claims.sub })
     : null;
+  let shopProfileId: string | null = null;
+
+  if (accountType === "artist" && shopProfileUsername) {
+    if (!/^[a-z0-9_]{3,30}$/.test(shopProfileUsername)) {
+      redirect(accountPath("Shop profile username must be 3-30 letters, numbers, or underscores."));
+    }
+
+    if (shopProfileUsername === username) {
+      redirect(accountPath("Choose a different shop profile than your own artist profile."));
+    }
+
+    const { data: shopProfile, error: shopProfileError } = await supabase
+      .from("profiles")
+      .select("id, account_type, username")
+      .eq("username", shopProfileUsername)
+      .maybeSingle<{
+        account_type: string;
+        id: string;
+        username: string;
+      }>();
+
+    if (shopProfileError || !shopProfile) {
+      redirect(accountPath(shopProfileError?.message || "Shop profile was not found."));
+    }
+
+    if (shopProfile.account_type !== "studio") {
+      redirect(accountPath("Shop profile must be a Studio account."));
+    }
+
+    shopProfileId = shopProfile.id;
+  }
+
   const profileUpdate = {
     account_type: accountType,
     adult_terms_accepted_at: new Date().toISOString(),
@@ -326,6 +369,7 @@ export async function updateProfile(formData: FormData) {
     notify_push_enabled: formData.get("notify_push_enabled") === "on",
     preferred_language: preferredLanguage,
     region: cleanText(formData.get("region"), 40) || null,
+    shop_profile_id: accountType === "artist" ? shopProfileId : null,
     theme_preference: themePreference,
     tiktok_url: cleanExternalUrl(formData.get("tiktok_url"), 240),
     updated_at: new Date().toISOString(),

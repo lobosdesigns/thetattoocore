@@ -52,6 +52,15 @@ type Claims = {
   sub: string;
 };
 
+type ShopProfile = {
+  account_type: string;
+  avatar_url: string | null;
+  display_name: string;
+  id: string;
+  license_verified_at: string | null;
+  username: string;
+};
+
 type Profile = {
   id: string;
   username: string;
@@ -68,6 +77,8 @@ type Profile = {
   facebook_url: string | null;
   youtube_url: string | null;
   x_url: string | null;
+  shop_profile: ShopProfile | null;
+  shop_profile_id: string | null;
   is_private: boolean;
   license_verified_at: string | null;
   created_at: string;
@@ -531,6 +542,24 @@ function ProfileDetailChip({
   );
 }
 
+function ProfileLinkChip({
+  href,
+  label,
+}: {
+  href: string;
+  label: string;
+}) {
+  return (
+    <Link
+      className="ttc-surface inline-flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-xs font-semibold text-[var(--foreground)]"
+      href={href}
+    >
+      <LinkIcon className="size-3.5" />
+      {label}
+    </Link>
+  );
+}
+
 function ProfileContentNav({
   items,
 }: {
@@ -824,7 +853,7 @@ export default async function ProfilePage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, username, display_name, avatar_url, account_type, bio, city, region, country, website_url, instagram_url, tiktok_url, facebook_url, youtube_url, x_url, is_private, license_verified_at, created_at",
+      "id, username, display_name, avatar_url, account_type, bio, city, region, country, website_url, instagram_url, tiktok_url, facebook_url, youtube_url, x_url, shop_profile_id, shop_profile:profiles!profiles_shop_profile_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at), is_private, license_verified_at, created_at",
     )
     .eq("username", cleanUsername)
     .maybeSingle<Profile>();
@@ -1105,6 +1134,12 @@ export default async function ProfilePage({
                   <ProfileDetailChip icon={MapPin}>
                     {profileLocation(profile)}
                   </ProfileDetailChip>
+                ) : null}
+                {profile.shop_profile ? (
+                  <ProfileLinkChip
+                    href={`/u/${profile.shop_profile.username}`}
+                    label={`Shop: ${profile.shop_profile.display_name}`}
+                  />
                 ) : null}
                 {profile.website_url ? (
                   <a

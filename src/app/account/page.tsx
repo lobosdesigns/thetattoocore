@@ -334,7 +334,7 @@ export default async function AccountPage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "username, display_name, avatar_url, account_type, bio, city, region, country_code, preferred_language, theme_preference, location_personalization_enabled, is_adult_confirmed, is_private, adult_terms_accepted_at, website_url, instagram_url, tiktok_url, facebook_url, youtube_url, x_url, license_verified_at, suspended_at, banned_at, role, notify_follow_activity, notify_message_activity, notify_feed_activity, notify_thread_activity, notify_marketplace_gig_activity, notification_quiet_hours_enabled, notification_quiet_hours_start, notification_quiet_hours_end, notification_timezone, notify_email_important, notify_push_enabled",
+      "username, display_name, avatar_url, account_type, bio, city, region, country_code, preferred_language, theme_preference, location_personalization_enabled, is_adult_confirmed, is_private, adult_terms_accepted_at, website_url, instagram_url, tiktok_url, facebook_url, youtube_url, x_url, shop_profile_id, shop_profile:profiles!profiles_shop_profile_id_fkey(username, display_name), license_verified_at, suspended_at, banned_at, role, notify_follow_activity, notify_message_activity, notify_feed_activity, notify_thread_activity, notify_marketplace_gig_activity, notification_quiet_hours_enabled, notification_quiet_hours_start, notification_quiet_hours_end, notification_timezone, notify_email_important, notify_push_enabled",
     )
     .eq("id", claims.sub)
     .maybeSingle();
@@ -478,6 +478,14 @@ export default async function AccountPage({
   const canSubmitAds =
     canSubmitLicense && isLicenseVerified && !profile?.suspended_at && !profile?.banned_at;
   const isFirstProfile = !profile;
+  const normalizedProfile = profile
+    ? {
+        ...profile,
+        shop_profile: Array.isArray(profile.shop_profile)
+          ? (profile.shop_profile[0] ?? null)
+          : profile.shop_profile,
+      }
+    : null;
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden px-4 py-8">
@@ -534,7 +542,7 @@ export default async function AccountPage({
           ))}
         </nav>
 
-        <ProfileForm claims={claims} initialProfile={profile} />
+        <ProfileForm claims={claims} initialProfile={normalizedProfile} />
 
         <section
           className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-5 backdrop-blur"
