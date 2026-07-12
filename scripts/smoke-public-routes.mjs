@@ -56,7 +56,16 @@ const checks = [
   { path: "/merch/checkout/success", status: [200], includes: ["Checkout received", "Back to Merch"] },
   { path: "/robots.txt", status: [200], includes: ["User-agent"], headers: false },
   { path: "/sitemap.xml", status: [200], includes: ["urlset"] },
+  { path: "/manifest.webmanifest", status: [200], includes: ["TheTattooCore", "/icons/icon-192.png"], headers: false },
+  { path: "/sw.js", status: [200], includes: ["skipWaiting", "fetch(event.request)"], headers: false },
 ];
+
+const pwaManifestRequirements = {
+  display: "standalone",
+  start_url: "/login",
+  scope: "/",
+  theme_color: "#171412",
+};
 
 let failures = 0;
 
@@ -120,9 +129,81 @@ for (const check of checks) {
   console.log(`PASS ${check.path}`);
 }
 
+await checkPwaManifest();
+
 if (failures > 0) {
   console.error(`${failures} public route smoke check(s) failed for ${baseUrl}`);
   process.exit(1);
 }
 
 console.log(`All public route smoke checks passed for ${baseUrl}`);
+
+async function checkPwaManifest() {
+  const manifestUrl = `${baseUrl}/manifest.webmanifest`;
+  const response = await fetch(manifestUrl);
+
+  if (!response.ok) {
+    failures += 1;
+    console.error(`FAIL /manifest.webmanifest`);
+    console.error(`  status: ${response.status}, expected: 200`);
+    return;
+  }
+
+  let manifest;
+  try {
+    manifest = await response.json();
+  } catch (error) {
+    failures += 1;
+    console.error(`FAIL /manifest.webmanifest`);
+    console.error(`  invalid JSON: ${error.message}`);
+    return;
+  }
+
+  const missingFields = Object.entries(pwaManifestRequirements)
+    .filter(([field, expected]) => manifest[field] !== expected)
+    .map(([field, expected]) => `${field}=${expected}`);
+  const requiredIcons = ["/icons/icon-192.png", "/icons/icon-512.png", "/icons/maskable-512.png"];
+  const requiredScreenshots = ["/screenshots/mobile-home.png", "/screenshots/desktop-home.png"];
+  const manifestIcons = new Set((manifest.icons || []).map((icon) => icon.src));
+  const manifestScreenshots = new Set((manifest.screenshots || []).map((screenshot) => screenshot.src));
+  const missingIcons = requiredIcons.filter((src) => !manifestIcons.has(src));
+  const missingScreenshots = requiredScreenshots.filter((src) => !manifestScreenshots.has(src));
+
+  if (
+    manifest.name !== "TheTattooCore" ||
+    manifest.short_name !== "TTC" ||
+    missingFields.length > 0 ||
+    missingIcons.length > 0 ||
+    missingScreenshots.length > 0
+  ) {
+    failures += 1;
+    console.error(`FAIL /manifest.webmanifest`);
+    if (manifest.name !== "TheTattooCore") console.error(`  name: ${manifest.name}`);
+    if (manifest.short_name !== "TTC") console.error(`  short_name: ${manifest.short_name}`);
+    if (missingFields.length > 0) console.error(`  missing/wrong fields: ${missingFields.join(", ")}`);
+    if (missingIcons.length > 0) console.error(`  missing icons: ${missingIcons.join(", ")}`);
+    if (missingScreenshots.length > 0) {
+      console.error(`  missing screenshots: ${missingScreenshots.join(", ")}`);
+    }
+    return;
+  }
+
+  const assetPaths = [...requiredIcons, ...requiredScreenshots];
+  const missingAssets = [];
+
+  for (const path of assetPaths) {
+    const assetResponse = await fetch(`${baseUrl}${path}`, { method: "HEAD" });
+    if (!assetResponse.ok) {
+      missingAssets.push(`${path} (${assetResponse.status})`);
+    }
+  }
+
+  if (missingAssets.length > 0) {
+    failures += 1;
+    console.error(`FAIL PWA assets`);
+    console.error(`  unreachable: ${missingAssets.join(", ")}`);
+    return;
+  }
+
+  console.log("PASS PWA manifest installability fields");
+}
