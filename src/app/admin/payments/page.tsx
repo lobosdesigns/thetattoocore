@@ -225,6 +225,7 @@ export default async function AdminPaymentsPage({
             "unpaid",
             "checkout_started",
             "payment_failed",
+            "refunded",
           ]),
       ])
     : [
