@@ -293,6 +293,7 @@ export default async function MessagesPage({
       return {
         id: membership.conversation_id,
         latestMessage,
+        myLastReadAt: membership.last_read_at,
         otherLastReadAt: otherMember?.last_read_at ?? null,
         otherProfile,
         unreadCount:
@@ -311,17 +312,32 @@ export default async function MessagesPage({
     (hasSelectedConversationParam
       ? inbox.find((conversation) => conversation.id === requestedConversationId)
       : inbox[0]) ?? null;
+  const selectedMessages = selectedConversation
+    ? messagesByConversation.get(selectedConversation.id) ?? []
+    : [];
 
   if (selectedConversation) {
-    const readAt = new Date().toISOString();
     const selectedUnreadNotificationIds = (unreadMessageNotifications ?? [])
       .filter(
         (notification) =>
           notificationConversationId(notification) === selectedConversation.id,
       )
       .map((notification) => notification.id);
+    const latestIncomingMessage = selectedMessages
+      .filter((message) => message.sender_id !== claims.sub)
+      .at(-1);
+    const latestIncomingAt = latestIncomingMessage
+      ? new Date(latestIncomingMessage.created_at).getTime()
+      : 0;
+    const myLastReadAt = selectedConversation.myLastReadAt
+      ? new Date(selectedConversation.myLastReadAt).getTime()
+      : 0;
+    const shouldMarkThreadRead =
+      selectedUnreadNotificationIds.length > 0 ||
+      (latestIncomingAt > 0 && latestIncomingAt > myLastReadAt);
 
     if (selectedUnreadNotificationIds.length) {
+      const readAt = new Date().toISOString();
       await supabase
         .from("notifications")
         .update({ read_at: readAt })
@@ -330,16 +346,15 @@ export default async function MessagesPage({
       unreadCountByConversation.set(selectedConversation.id, 0);
     }
 
-    await supabase
-      .from("conversation_members")
-      .update({ last_read_at: readAt })
-      .eq("conversation_id", selectedConversation.id)
-      .eq("user_id", claims.sub);
+    if (shouldMarkThreadRead) {
+      await supabase
+        .from("conversation_members")
+        .update({ last_read_at: new Date().toISOString() })
+        .eq("conversation_id", selectedConversation.id)
+        .eq("user_id", claims.sub);
+    }
   }
 
-  const selectedMessages = selectedConversation
-    ? messagesByConversation.get(selectedConversation.id) ?? []
-    : [];
   const selectedMessageIds = selectedMessages.map((message) => message.id);
   const { data: selectedAttachments } = selectedMessageIds.length
     ? await supabase
