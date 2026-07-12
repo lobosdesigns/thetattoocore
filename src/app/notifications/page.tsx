@@ -43,6 +43,8 @@ type Notification = {
     | "feed_like"
     | "follow_accepted"
     | "follow_request"
+    | "ad_paid"
+    | "ad_payment_failed"
     | "ad_refunded"
     | "message"
     | "merch_paid"
@@ -80,6 +82,8 @@ export const metadata: Metadata = {
 function notificationIcon(type: Notification["type"]) {
   if (type === "verification_approved") return BadgeCheck;
   if (type === "verification_rejected") return ShieldAlert;
+  if (type === "ad_payment_failed") return ShieldAlert;
+  if (type === "ad_paid") return CreditCard;
   if (type === "ad_refunded") return CreditCard;
   if (type === "merch_paid") return CreditCard;
   if (type === "merch_fulfilled") return BadgeCheck;

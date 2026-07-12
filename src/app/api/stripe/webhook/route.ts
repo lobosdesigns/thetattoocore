@@ -24,6 +24,11 @@ type RefundedAdTransition = {
   id: string;
   title: string;
 };
+type AdPaymentTransition = {
+  advertiser_id: string;
+  id: string;
+  title: string;
+};
 type PaidOrderRpcArgs = {
   p_checkout_session_id: string;
   p_customer_email: string | null;
@@ -392,7 +397,7 @@ async function markAdCheckoutSession({
     session.metadata?.prepaid_amount_cents,
     Math.max(0, (session.amount_total ?? 0) - platformFeeCents),
   );
-  const { error } = await supabase
+  const { data: transitionedCampaigns, error } = await supabase
     .from("ad_campaigns")
     .update({
       paid_at: status === "paid" ? now : null,
@@ -404,10 +409,52 @@ async function markAdCheckoutSession({
       updated_at: now,
     })
     .eq("id", campaignId)
-    .eq("stripe_checkout_session_id", session.id);
+    .eq("stripe_checkout_session_id", session.id)
+    .select("id, advertiser_id, title")
+    .returns<AdPaymentTransition[]>();
 
   if (error) {
     throw new Error(error.message || "Could not update ad payment status.");
+  }
+
+  const adPaymentNotifications = (transitionedCampaigns ?? []).map((campaign) => ({
+    actor_id: null,
+    body:
+      status === "paid"
+        ? "Stripe received payment for this ad campaign."
+        : "Stripe reported that this ad campaign payment failed.",
+    href: "/account#advertising-settings",
+    recipient_id: campaign.advertiser_id,
+    subject_id: campaign.id,
+    subject_type: "ad_campaign",
+    title:
+      status === "paid"
+        ? `Ad payment received: ${campaign.title}`.slice(0, 120)
+        : `Ad payment failed: ${campaign.title}`.slice(0, 120),
+    type: status === "paid" ? "ad_paid" : "ad_payment_failed",
+  }));
+
+  if (adPaymentNotifications.length) {
+    await supabase.from("notifications").insert(adPaymentNotifications);
+    revalidatePath("/notifications");
+  }
+
+  for (const campaign of transitionedCampaigns ?? []) {
+    const paid = status === "paid";
+    const body = paid
+      ? `Stripe received payment for your ad campaign: ${campaign.title}.`
+      : `Stripe reported that payment failed for your ad campaign: ${campaign.title}.`;
+
+    await maybeSendPaymentEmail({
+      headerKind: paid ? "ad-paid-advertiser" : "ad-payment-failed-advertiser",
+      htmlBody: body,
+      subject: paid
+        ? `${siteName} ad payment received`
+        : `${siteName} ad payment failed`,
+      supabase,
+      textBody: body,
+      userId: campaign.advertiser_id,
+    });
   }
 
   revalidatePath("/");
