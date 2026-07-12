@@ -39,6 +39,13 @@ type AdminSupabase = NonNullable<ReturnType<typeof createAdminClient>>;
 type OrderProductRow = {
   product_id: string;
 };
+type PaidOrderItemNotificationRow = {
+  order_id: string;
+  product_id: string | null;
+  quantity: number;
+  seller_id: string;
+  title_snapshot: string;
+};
 
 function metadataCents(value: string | null | undefined, fallback: number) {
   const parsed = Number.parseInt(value ?? "", 10);
@@ -63,6 +70,38 @@ async function revalidateMerchOrderProducts(
 
   for (const productId of productIds) {
     revalidatePath(`/merch/${productId}`);
+  }
+}
+
+async function notifyMerchSellersAboutPaidOrders(
+  supabase: AdminSupabase,
+  orderIds: string[],
+) {
+  if (!orderIds.length) return;
+
+  const { data: items } = await supabase
+    .from("merch_order_items")
+    .select("order_id, product_id, seller_id, title_snapshot, quantity")
+    .in("order_id", orderIds)
+    .returns<PaidOrderItemNotificationRow[]>();
+
+  const notifications = (items ?? []).map((item) => ({
+    actor_id: null,
+    body: "A paid Merch order is ready for fulfillment.",
+    href: "/account#order-settings",
+    recipient_id: item.seller_id,
+    subject_id: item.product_id ?? item.order_id,
+    subject_type: item.product_id ? "merch_product" : "merch_order",
+    title: `New paid Merch sale: ${item.quantity} x ${item.title_snapshot}`.slice(
+      0,
+      120,
+    ),
+    type: "merch_paid",
+  }));
+
+  if (notifications.length) {
+    await supabase.from("notifications").insert(notifications);
+    revalidatePath("/notifications");
   }
 }
 
@@ -141,6 +180,10 @@ async function markCheckoutSession({
       : [];
 
     await revalidateMerchOrderProducts(
+      supabase,
+      paidOrderRows.map((order) => order.id),
+    );
+    await notifyMerchSellersAboutPaidOrders(
       supabase,
       paidOrderRows.map((order) => order.id),
     );
