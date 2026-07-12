@@ -357,14 +357,18 @@ export async function POST(request: Request) {
     );
   }
 
-  const { error: sessionError } = await adminSupabase
+  const { data: sessionOrder, error: sessionError } = await adminSupabase
     .from("merch_orders")
     .update({
       stripe_checkout_session_id: session.id,
       updated_at: new Date().toISOString(),
     })
     .eq("id", orderId)
-    .eq("buyer_id", claims.sub);
+    .eq("buyer_id", claims.sub)
+    .eq("status", "pending_checkout")
+    .is("stripe_checkout_session_id", null)
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
   if (sessionError) {
     await cancelPendingOrder("Checkout started, but the order session could not be saved.");
@@ -372,6 +376,15 @@ export async function POST(request: Request) {
     return redirectWithMessage(
       `/merch/${product.id}`,
       sessionError.message || "Checkout started, but the order session could not be saved.",
+    );
+  }
+
+  if (!sessionOrder) {
+    await cancelPendingOrder("Checkout started, but the pending order could not be reserved for this Stripe session.");
+
+    return redirectWithMessage(
+      `/merch/${product.id}`,
+      "Checkout started, but the pending order could not be reserved for this Stripe session.",
     );
   }
 

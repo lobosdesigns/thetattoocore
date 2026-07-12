@@ -56,6 +56,15 @@ checks.push({
     merchCheckout.indexOf("await createCheckoutSession"),
 });
 checks.push({
+  label: "merch checkout only attaches Stripe session to pending unassigned order",
+  ok:
+    merchCheckout.includes('stripe_checkout_session_id: session.id') &&
+    merchCheckout.includes('.eq("status", "pending_checkout")') &&
+    merchCheckout.includes('.is("stripe_checkout_session_id", null)') &&
+    merchCheckout.includes('.select("id")') &&
+    merchCheckout.includes("if (!sessionOrder)"),
+});
+checks.push({
   label: "shared platform fee helper stays at launch rate",
   ok:
     fees.includes("export const platformFeeRate = 0.02") &&
