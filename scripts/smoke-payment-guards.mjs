@@ -2,7 +2,17 @@ import { readFileSync } from "node:fs";
 
 const adCheckout = readFileSync("src/app/api/ads/checkout/route.ts", "utf8");
 const merchCheckout = readFileSync("src/app/api/merch/checkout/route.ts", "utf8");
+const adminMerchPage = readFileSync("src/app/admin/merch/page.tsx", "utf8");
+const adminPaymentsPage = readFileSync("src/app/admin/payments/page.tsx", "utf8");
+const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
+const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
 const fees = readFileSync("src/lib/payments/fees.ts", "utf8");
+const paymentSafetySource = [
+  adminMerchPage,
+  adminPaymentsPage,
+  privacyPage,
+  supportPage,
+].join("\n");
 
 function indexOfOrFail(body, snippet) {
   const index = body.indexOf(snippet);
@@ -69,6 +79,26 @@ checks.push({
   ok:
     fees.includes("export const platformFeeRate = 0.02") &&
     fees.includes('export const platformFeePercentLabel = "2%"'),
+});
+checks.push({
+  label: "production commerce gates stay visible before real payments",
+  ok:
+    adminPaymentsPage.includes("Production payment gates") &&
+    adminPaymentsPage.includes("Choose Stripe Connect or a documented manual payout policy") &&
+    adminPaymentsPage.includes("do not collect bank or card payout data in TTC forms") &&
+    adminMerchPage.includes("Stripe checkout and refund-status webhooks are wired in test mode") &&
+    adminMerchPage.includes("finish tax, shipping, fulfillment, payouts, and payment-provider safety rules") &&
+    privacyPage.includes("Stripe checkout is in test mode") &&
+    supportPage.includes("Merch checkout is in test mode"),
+});
+checks.push({
+  label: "public payment copy avoids collecting raw payout credentials",
+  ok:
+    !paymentSafetySource.includes("bank account number") &&
+    !paymentSafetySource.includes("routing number") &&
+    !paymentSafetySource.includes("debit card number") &&
+    !paymentSafetySource.includes("card payout form") &&
+    adminPaymentsPage.includes("Stripe-hosted onboarding"),
 });
 
 const failures = checks.filter((check) => !check.ok);
