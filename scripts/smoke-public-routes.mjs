@@ -57,7 +57,7 @@ const checks = [
   { path: "/robots.txt", status: [200], includes: ["User-agent"], headers: false },
   { path: "/sitemap.xml", status: [200], includes: ["urlset"] },
   { path: "/manifest.webmanifest", status: [200], includes: ["TheTattooCore", "/icons/icon-192.png"], headers: false },
-  { path: "/sw.js", status: [200], includes: ["skipWaiting", "fetch(event.request)"], headers: false },
+  { path: "/sw.js", status: [200], includes: ["skipWaiting", "showNotification", "notificationclick"], headers: false },
 ];
 
 const pwaManifestRequirements = {

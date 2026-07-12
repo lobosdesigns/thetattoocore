@@ -21,6 +21,7 @@
 - Members can block and unblock profiles; blocked relationships prevent follow and DM attempts.
 - PWA manifest is active and starts installed sessions at `/login`.
 - Automatic mobile browser install prompts are suppressed during regular browsing so the install sheet does not interfere with feed scrolling; Account > Notifications has a deliberate install action when the browser supports installation.
+- The service worker is ready for future web-push notification display and safe same-origin click routing, but push subscriptions and delivery are not enabled yet.
 - PNG PWA icons are generated from the approved TTC shield, including a maskable launcher icon.
 - Branded splash and clean PWA screenshot assets are generated without user, sensitive, or copyrighted tattoo content.
 - DM thread reload loops from read-state realtime updates have been fixed, stale/unavailable DM thread links now return to the inbox instead of stranding mobile users on an empty thread view, and the deployed browser Supabase client config is stable for realtime/browser auth helpers.
