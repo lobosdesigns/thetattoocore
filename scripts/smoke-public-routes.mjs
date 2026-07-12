@@ -54,11 +54,13 @@ const checks = [
     path: "/signup",
     status: [200],
     includes: [
+      'name="robots" content="noindex, nofollow"',
       "Create account",
       'action="/auth/signup"',
       'name="age_confirmed"',
       "Already have an account? Sign in",
     ],
+    excludes: ['action="/auth/login"', 'name="return_to"'],
   },
   {
     path: "/login?return_to=%2Fmessages",
