@@ -32,6 +32,7 @@
 - Live Chrome QA on July 12, 2026 at 390px mobile width passed for `/login`, `/notifications`, `/account`, `/admin`, `/search?q=ceocore`, `/u/ceocore`, and `/merch/checkout/success`: no reload-loop text, no application-error text, no console errors, and no document-level horizontal overflow. Account and Search keep intentional horizontally scrollable tab rails.
 - Stripe checkout is still test-mode only, but webhook event dedupe, retry-safe Merch/ad payment status updates, ad checkout reservation before Stripe session creation, buyer/seller/advertiser in-app alerts, important payment emails, Admin > Payments ops visibility, filtered payment queues, and production payment-gate reminders are wired for the web app.
 - App routes now send basic security headers for MIME sniffing protection, frame blocking, referrer limits, HSTS, and camera/microphone restrictions; public smoke tests verify those headers on app-served pages.
+- Keep the security-header route hook on `src/middleware.ts` while using OpenNext Cloudflare. The Next `proxy.ts` migration builds locally but currently deploys as unsupported Node middleware on this adapter, so the deprecation warning is accepted until OpenNext Cloudflare supports the new proxy output.
 - Core social flows are web-first; native wrappers are not ready for submission yet.
 
 ## Before Google Play / App Store Submission
