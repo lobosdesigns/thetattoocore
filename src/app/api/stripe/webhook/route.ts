@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import Stripe from "stripe";
+import { sendHostgatorEmail } from "@/lib/mail/hostgator";
+import { siteName, siteUrl, supportEmail } from "@/lib/site";
 import { createStripeClient, stripeCryptoProvider } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -36,6 +38,17 @@ type PaidOrderRpcArgs = {
   p_total_cents: number;
 };
 type AdminSupabase = NonNullable<ReturnType<typeof createAdminClient>>;
+type MailSettings = {
+  from_email: string | null;
+  from_name: string;
+  smtp_host: string | null;
+  smtp_port: number | null;
+  smtp_username: string | null;
+  smtp_secure: boolean;
+  smtp_password_secret_name: string;
+  reply_to_email: string | null;
+  is_enabled: boolean;
+};
 type OrderProductRow = {
   product_id: string;
 };
@@ -51,6 +64,100 @@ function metadataCents(value: string | null | undefined, fallback: number) {
   const parsed = Number.parseInt(value ?? "", 10);
 
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+function isEmail(value?: string | null): value is string {
+  return Boolean(value && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value));
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+async function maybeSendPaymentEmail({
+  headerKind,
+  htmlBody,
+  subject,
+  supabase,
+  textBody,
+  userId,
+}: {
+  headerKind: string;
+  htmlBody: string;
+  subject: string;
+  supabase: AdminSupabase;
+  textBody: string;
+  userId: string;
+}) {
+  const [{ data: profile }, { data: settings }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("display_name, notify_email_important, username")
+      .eq("id", userId)
+      .maybeSingle<{
+        display_name: string | null;
+        notify_email_important: boolean | null;
+        username: string | null;
+      }>(),
+    supabase
+      .from("mail_settings")
+      .select(
+        "from_email, from_name, smtp_host, smtp_port, smtp_username, smtp_secure, smtp_password_secret_name, reply_to_email, is_enabled",
+      )
+      .maybeSingle<MailSettings>(),
+  ]);
+
+  if (profile?.notify_email_important === false || !settings?.is_enabled) {
+    return;
+  }
+
+  const { data: userData, error: userError } =
+    await supabase.auth.admin.getUserById(userId);
+
+  if (userError) {
+    console.error("Payment email user lookup failed", userError);
+    return;
+  }
+
+  const recipientEmail = userData.user?.email;
+  if (!isEmail(recipientEmail)) return;
+
+  const displayName = profile?.display_name || profile?.username || "there";
+
+  try {
+    await sendHostgatorEmail({
+      headers: {
+        "X-TheTattooCore-Transactional": headerKind,
+      },
+      html: [
+        `<h1>${escapeHtml(subject)}</h1>`,
+        `<p>Hi ${escapeHtml(displayName)},</p>`,
+        `<p>${escapeHtml(htmlBody)}</p>`,
+        `<p>Open <a href="${siteUrl}/account">${siteName} Account</a> to review the latest order or payment status.</p>`,
+        `<p>For help, email <a href="mailto:${supportEmail}">${supportEmail}</a>.</p>`,
+      ].join(""),
+      recipientEmail,
+      settings,
+      subject,
+      text: [
+        subject,
+        "",
+        `Hi ${displayName},`,
+        "",
+        textBody,
+        "",
+        `Open Account: ${siteUrl}/account`,
+        `Help: ${supportEmail}`,
+      ].join("\n"),
+    });
+  } catch (error) {
+    console.error("Payment email failed", error);
+  }
 }
 
 async function revalidateMerchOrderProducts(
@@ -102,6 +209,17 @@ async function notifyMerchSellersAboutPaidOrders(
   if (notifications.length) {
     await supabase.from("notifications").insert(notifications);
     revalidatePath("/notifications");
+  }
+
+  for (const item of items ?? []) {
+    await maybeSendPaymentEmail({
+      headerKind: "merch-paid-seller",
+      htmlBody: `A paid Merch sale is ready for fulfillment: ${item.quantity} x ${item.title_snapshot}.`,
+      subject: `${siteName} paid Merch sale`,
+      supabase,
+      textBody: `A paid Merch sale is ready for fulfillment: ${item.quantity} x ${item.title_snapshot}.`,
+      userId: item.seller_id,
+    });
   }
 }
 
@@ -342,6 +460,25 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
     await supabase.from("notifications").insert(refundNotifications);
   }
 
+  for (const order of refundedOrders ?? []) {
+    const body = fullyRefunded
+      ? "Stripe reported a full refund for your Merch order."
+      : "Stripe reported a partial refund for your Merch order.";
+
+    await maybeSendPaymentEmail({
+      headerKind: fullyRefunded
+        ? "merch-refunded-buyer"
+        : "merch-partially-refunded-buyer",
+      htmlBody: body,
+      subject: fullyRefunded
+        ? `${siteName} Merch order refunded`
+        : `${siteName} Merch order partially refunded`,
+      supabase,
+      textBody: body,
+      userId: order.buyer_id,
+    });
+  }
+
   revalidatePath("/account");
   revalidatePath("/admin");
   revalidatePath("/admin/merch");
@@ -377,6 +514,17 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
 
   if (adRefundNotifications.length) {
     await supabase.from("notifications").insert(adRefundNotifications);
+  }
+
+  for (const campaign of refundedAds ?? []) {
+    await maybeSendPaymentEmail({
+      headerKind: "ad-refunded-advertiser",
+      htmlBody: `Stripe reported a full refund for your ad payment: ${campaign.title}.`,
+      subject: `${siteName} ad payment refunded`,
+      supabase,
+      textBody: `Stripe reported a full refund for your ad payment: ${campaign.title}.`,
+      userId: campaign.advertiser_id,
+    });
   }
 
   revalidatePath("/");
