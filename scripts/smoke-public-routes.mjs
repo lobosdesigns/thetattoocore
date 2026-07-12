@@ -277,17 +277,21 @@ async function checkPwaManifest() {
     .map(([field, expected]) => `${field}=${expected}`);
   const requiredIcons = ["/icons/icon-192.png", "/icons/icon-512.png", "/icons/maskable-512.png"];
   const requiredScreenshots = ["/screenshots/mobile-home.png", "/screenshots/desktop-home.png"];
+  const requiredShortcuts = ["/#feed", "/messages", "/notifications", "/#merch"];
   const manifestIcons = new Set((manifest.icons || []).map((icon) => icon.src));
   const manifestScreenshots = new Set((manifest.screenshots || []).map((screenshot) => screenshot.src));
+  const manifestShortcuts = new Set((manifest.shortcuts || []).map((shortcut) => shortcut.url));
   const missingIcons = requiredIcons.filter((src) => !manifestIcons.has(src));
   const missingScreenshots = requiredScreenshots.filter((src) => !manifestScreenshots.has(src));
+  const missingShortcuts = requiredShortcuts.filter((url) => !manifestShortcuts.has(url));
 
   if (
     manifest.name !== "TheTattooCore" ||
     manifest.short_name !== "TTC" ||
     missingFields.length > 0 ||
     missingIcons.length > 0 ||
-    missingScreenshots.length > 0
+    missingScreenshots.length > 0 ||
+    missingShortcuts.length > 0
   ) {
     failures += 1;
     console.error(`FAIL /manifest.webmanifest`);
@@ -297,6 +301,9 @@ async function checkPwaManifest() {
     if (missingIcons.length > 0) console.error(`  missing icons: ${missingIcons.join(", ")}`);
     if (missingScreenshots.length > 0) {
       console.error(`  missing screenshots: ${missingScreenshots.join(", ")}`);
+    }
+    if (missingShortcuts.length > 0) {
+      console.error(`  missing shortcuts: ${missingShortcuts.join(", ")}`);
     }
     return;
   }

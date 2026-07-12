@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 
 const layout = readFileSync("src/app/layout.tsx", "utf8");
+const manifest = readFileSync("public/manifest.webmanifest", "utf8");
 const suppressor = readFileSync("src/app/pwa-install-suppressor.tsx", "utf8");
 const installButton = readFileSync("src/app/pwa-install-button.tsx", "utf8");
 const registrar = readFileSync("src/app/service-worker-registrar.tsx", "utf8");
@@ -14,6 +15,19 @@ const checks = [
     ok:
       layout.includes("<ServiceWorkerRegistrar />") &&
       layout.includes("<PwaInstallSuppressor />"),
+  },
+  {
+    label: "installed app shortcuts include launch columns and alerts",
+    ok:
+      manifest.includes('"start_url": "/login"') &&
+      manifest.includes('"name": "4U"') &&
+      manifest.includes('"url": "/#feed"') &&
+      manifest.includes('"name": "DM"') &&
+      manifest.includes('"url": "/messages"') &&
+      manifest.includes('"name": "Alerts"') &&
+      manifest.includes('"url": "/notifications"') &&
+      manifest.includes('"name": "Merch"') &&
+      manifest.includes('"url": "/#merch"'),
   },
   {
     label: "automatic install prompt is intercepted instead of shown during browsing",

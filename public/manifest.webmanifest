@@ -60,6 +60,11 @@
       "description": "Open notifications",
       "name": "Alerts",
       "url": "/notifications"
+    },
+    {
+      "description": "Browse safe fan-facing merch",
+      "name": "Merch",
+      "url": "/#merch"
     }
   ],
   "start_url": "/login",
