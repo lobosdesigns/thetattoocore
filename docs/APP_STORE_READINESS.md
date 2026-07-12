@@ -27,6 +27,7 @@
 - Live Chrome QA on a 390px-wide mobile viewport passed for the tester account on Account > Advertising and `/messages`: no horizontal overflow, no DM reload-loop error page, and no captured console errors.
 - Live Chrome QA on July 12, 2026 with the regular tester account passed for `/messages`, `/notifications`, and `/account` at mobile width: no reload-loop error page, no application-error text, and no horizontal overflow.
 - Stripe checkout is still test-mode only, but webhook event dedupe, retry-safe Merch/ad payment status updates, buyer/seller/advertiser in-app alerts, important payment emails, Admin > Payments ops visibility, filtered payment queues, and production payment-gate reminders are wired for the web app.
+- App routes now send basic security headers for MIME sniffing protection, frame blocking, referrer limits, HSTS, and camera/microphone restrictions; public smoke tests verify those headers on app-served pages.
 - Core social flows are web-first; native wrappers are not ready for submission yet.
 
 ## Before Google Play / App Store Submission
