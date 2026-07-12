@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
+  markMerchSaleFulfilled,
   requestAccountDeletion,
   submitAdCampaign,
   submitLicenseVerification,
@@ -662,13 +663,17 @@ export default async function AccountPage({
             </div>
             <p className="text-sm leading-6 text-[var(--muted-strong)]">
               Sales show paid or pending checkout items that belong to your
-              products. Fulfillment still needs admin/payment-provider review
-              before public production orders open.
+              products. Mark paid line items fulfilled only after shipping or
+              handoff is complete; refunds and disputes still need admin/payment
+              provider review during launch.
             </p>
             {visibleMerchSales.length ? (
               <div className="mt-4 grid gap-3">
                 {visibleMerchSales.map((item) => {
                   const order = item.merch_orders;
+                  const canMarkFulfilled =
+                    order?.status === "paid" &&
+                    item.fulfillment_status === "unfulfilled";
 
                   return (
                     <article
@@ -713,6 +718,24 @@ export default async function AccountPage({
                           <p>Cancelled: {formatDate(order.cancelled_at)}</p>
                         ) : null}
                       </div>
+                      <form action={markMerchSaleFulfilled} className="mt-4">
+                        <input
+                          name="order_item_id"
+                          type="hidden"
+                          value={item.id}
+                        />
+                        <PendingSubmitButton
+                          className="flex h-10 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[var(--ink)] px-4 text-sm font-bold text-white disabled:bg-[color-mix(in_srgb,var(--paper-soft)_90%,transparent)] disabled:text-[var(--muted-strong)] sm:w-fit"
+                          disabled={!canMarkFulfilled}
+                          pendingLabel="Updating"
+                        >
+                          {item.fulfillment_status === "fulfilled"
+                            ? "Fulfilled"
+                            : order?.status === "paid"
+                              ? "Mark fulfilled"
+                              : "Awaiting paid order"}
+                        </PendingSubmitButton>
+                      </form>
                     </article>
                   );
                 })}

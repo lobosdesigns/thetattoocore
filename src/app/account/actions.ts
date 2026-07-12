@@ -660,6 +660,39 @@ export async function submitAdCampaign(formData: FormData) {
   redirect(accountPath("Ad campaign submitted for review."));
 }
 
+export async function markMerchSaleFulfilled(formData: FormData) {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+
+  if (!claims?.sub) {
+    redirect("/login");
+  }
+
+  const orderItemId = cleanText(formData.get("order_item_id"), 80);
+
+  if (!orderItemId) {
+    redirect(accountPath("Choose a valid Merch sale.", "order-settings"));
+  }
+
+  const { error } = await supabase.rpc("mark_own_merch_order_item_fulfilled", {
+    p_order_item_id: orderItemId,
+  });
+
+  if (error) {
+    redirect(
+      accountPath(
+        error.message || "Could not mark this Merch sale fulfilled.",
+        "order-settings",
+      ),
+    );
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/admin/merch");
+  redirect(accountPath("Merch sale marked fulfilled.", "order-settings"));
+}
+
 export async function requestAccountDeletion(formData: FormData) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
