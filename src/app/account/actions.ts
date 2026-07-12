@@ -220,6 +220,108 @@ async function maybeSendAccountDeletionEmail({
   }
 }
 
+async function maybeSendMerchFulfillmentEmail({
+  buyerId,
+  quantity,
+  supabase,
+  title,
+  trackingCarrier,
+  trackingNumber,
+  trackingUrl,
+}: {
+  buyerId: string;
+  quantity: number;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  title: string;
+  trackingCarrier: string;
+  trackingNumber: string;
+  trackingUrl: string | null;
+}) {
+  const [{ data: profile }, { data: settings }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("display_name, notify_email_important, username")
+      .eq("id", buyerId)
+      .maybeSingle<{
+        display_name: string | null;
+        notify_email_important: boolean | null;
+        username: string | null;
+      }>(),
+    supabase
+      .from("mail_settings")
+      .select(
+        "from_email, from_name, smtp_host, smtp_port, smtp_username, smtp_secure, smtp_password_secret_name, reply_to_email, is_enabled",
+      )
+      .maybeSingle<MailSettings>(),
+  ]);
+
+  if (profile?.notify_email_important === false || !settings?.is_enabled) {
+    return;
+  }
+
+  const adminClient = createAdminClient();
+  if (!adminClient) {
+    console.warn("Merch fulfillment email skipped: missing service role key.");
+    return;
+  }
+
+  const { data: userData, error: userError } =
+    await adminClient.auth.admin.getUserById(buyerId);
+
+  if (userError) {
+    console.error("Merch fulfillment email user lookup failed", userError);
+    return;
+  }
+
+  const recipientEmail = userData.user?.email;
+  if (!isEmail(recipientEmail)) return;
+
+  const displayName = profile?.display_name || profile?.username || "there";
+  const accountUrl = `${siteUrl}/account#order-settings`;
+  const subject = `${siteName} Merch order fulfilled`;
+  const trackingText = trackingNumber
+    ? `Tracking: ${[trackingCarrier, trackingNumber].filter(Boolean).join(" ")}`
+    : null;
+
+  try {
+    await sendHostgatorEmail({
+      headers: {
+        "X-TheTattooCore-Transactional": "merch-fulfilled-buyer",
+      },
+      html: [
+        `<h1>${escapeHtml(subject)}</h1>`,
+        `<p>Hi ${escapeHtml(displayName)},</p>`,
+        `<p>Your seller marked this Merch item fulfilled: ${escapeHtml(`${quantity} x ${title}`)}.</p>`,
+        trackingText ? `<p>${escapeHtml(trackingText)}</p>` : "",
+        trackingUrl
+          ? `<p>Tracking link: <a href="${trackingUrl}">${trackingUrl}</a></p>`
+          : "",
+        `<p>You can review the latest order status from <a href="${accountUrl}">Account &gt; Orders</a>.</p>`,
+        `<p>For help, email <a href="mailto:${supportEmail}">${supportEmail}</a>.</p>`,
+      ].join(""),
+      recipientEmail,
+      settings,
+      subject,
+      text: [
+        subject,
+        "",
+        `Hi ${displayName},`,
+        "",
+        `Your seller marked this Merch item fulfilled: ${quantity} x ${title}.`,
+        trackingText,
+        trackingUrl ? `Tracking link: ${trackingUrl}` : null,
+        "",
+        `Review orders: ${accountUrl}`,
+        `Help: ${supportEmail}`,
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    });
+  } catch (error) {
+    console.error("Merch fulfillment email failed", error);
+  }
+}
+
 async function uploadAvatar({
   file,
   supabase,
@@ -748,6 +850,16 @@ export async function markMerchSaleFulfilled(formData: FormData) {
         type: "merch_fulfilled",
       });
     }
+
+    await maybeSendMerchFulfillmentEmail({
+      buyerId,
+      quantity: fulfilledItem.quantity,
+      supabase,
+      title: fulfilledItem.title_snapshot,
+      trackingCarrier,
+      trackingNumber,
+      trackingUrl,
+    });
   }
 
   revalidatePath("/account");
