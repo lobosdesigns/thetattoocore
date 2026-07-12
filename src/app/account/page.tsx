@@ -1162,6 +1162,22 @@ export default async function AccountPage({
             </div>
           ) : (
             <form action={submitAdCampaign} className="grid gap-4">
+              <div className="grid gap-2 text-xs leading-5 text-[var(--muted)] sm:grid-cols-3">
+                {[
+                  ["Artist growth", "4U + Gossip", "Leads, messages, engagement"],
+                  ["Stuff listing", "Stuff only", "Listing views, seller messages"],
+                  ["Merch listing", "Merch only", "Product views, shop visits, purchases"],
+                ].map(([title, placement, goals]) => (
+                  <div
+                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3"
+                    key={title}
+                  >
+                    <p className="font-semibold text-[var(--foreground)]">{title}</p>
+                    <p className="mt-1">{placement}</p>
+                    <p className="mt-1 text-[var(--muted-strong)]">{goals}</p>
+                  </div>
+                ))}
+              </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
                   <span className="text-sm font-medium">Campaign type</span>
@@ -1182,17 +1198,23 @@ export default async function AccountPage({
                     name="goal"
                     required
                   >
-                    <option value="leads">Leads</option>
-                    <option value="messages">Messages</option>
-                    <option value="engagement">Engagement</option>
-                    <option value="listing_views">Stuff listing views</option>
-                    <option value="seller_messages">Stuff seller messages</option>
-                    <option value="marketplace_engagement">
-                      Stuff marketplace engagement
-                    </option>
-                    <option value="product_views">Merch product views</option>
-                    <option value="shop_visits">Merch shop visits</option>
-                    <option value="purchases">Merch purchases</option>
+                    <optgroup label="Artist growth">
+                      <option value="leads">Leads</option>
+                      <option value="messages">Messages</option>
+                      <option value="engagement">Engagement</option>
+                    </optgroup>
+                    <optgroup label="Stuff listing">
+                      <option value="listing_views">Stuff listing views</option>
+                      <option value="seller_messages">Stuff seller messages</option>
+                      <option value="marketplace_engagement">
+                        Stuff marketplace engagement
+                      </option>
+                    </optgroup>
+                    <optgroup label="Merch listing">
+                      <option value="product_views">Merch product views</option>
+                      <option value="shop_visits">Merch shop visits</option>
+                      <option value="purchases">Merch purchases</option>
+                    </optgroup>
                   </select>
                 </label>
               </div>
@@ -1252,7 +1274,7 @@ export default async function AccountPage({
 
               <fieldset className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3">
                 <legend className="px-1 text-sm font-semibold">Placements</legend>
-                <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                <div className="mt-2 grid gap-2 sm:grid-cols-4">
                   {[
                     ["4u", "4U"],
                     ["gossip", "Gossip"],
