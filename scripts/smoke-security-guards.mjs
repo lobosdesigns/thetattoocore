@@ -35,6 +35,7 @@ const publicSource = [
   siteConfig,
 ].join("\n");
 const privateContactSnippets = [
+  "lobo3319@gmail.com",
   "lobosden@hotmail.com",
   "D@k0t",
   "Dakota",

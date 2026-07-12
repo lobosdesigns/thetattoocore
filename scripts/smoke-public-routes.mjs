@@ -6,6 +6,7 @@ const forbiddenBodyText = [
   "Internal Server Error",
   "SUPABASE_SERVICE_ROLE_KEY",
   "STRIPE_SECRET_KEY",
+  "lobo3319@gmail.com",
   "lobosden@hotmail.com",
   "D@k0t",
   "Dakota",
