@@ -169,7 +169,7 @@ const adminTabs = [
 const mediaOpsStages = [
   [
     "Live now",
-    "Browser WebP image optimization, saved-size feedback, server signature checks, dimension checks, and 60-second MP4/MOV/WebM reel validation.",
+    "Browser WebP image optimization, saved-size feedback, server signature checks, dimension checks, and 60-second MP4/MOV reel validation.",
   ],
   [
     "Next",

@@ -14,7 +14,7 @@ const viewRoles: UserRole[] = ["moderator", "admin", "owner"];
 const mediaOpsStages = [
   [
     "Live now",
-    "Browser WebP image optimization, saved-size feedback, server signature checks, dimension checks, and 60-second MP4/MOV/WebM reel validation.",
+    "Browser WebP image optimization, saved-size feedback, server signature checks, dimension checks, and 60-second MP4/MOV reel validation.",
   ],
   [
     "Next",
@@ -39,7 +39,7 @@ const mediaCostRules = [
 ] as const;
 const mediaLimits = [
   ["Feed images", "Optimized in-browser before upload; keep the longest edge around 1600-2200px."],
-  ["Reels", "MP4, MOV, and WebM clips stay capped at 60 seconds and 50 MB."],
+  ["Reels", "MP4 and MOV clips stay capped at 60 seconds and 50 MB."],
   ["DM media", "Photos and GIF-style images only until private video handling is worth the cost."],
   ["Sensitive media", "No nudity for launch policy; legacy sensitive flags should stay protected where present."],
 ] as const;

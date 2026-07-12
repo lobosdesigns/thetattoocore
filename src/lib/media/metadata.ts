@@ -20,7 +20,6 @@ const IMAGE_MIME_TYPES = new Set([
 const VIDEO_MIME_TYPES = new Set([
   "video/mp4",
   "video/quicktime",
-  "video/webm",
 ]);
 
 function ascii(bytes: Uint8Array, start: number, length: number) {
@@ -93,15 +92,6 @@ function detectMimeType(bytes: Uint8Array) {
   if (ascii(bytes, 4, 4) === "ftyp") {
     const brand = ascii(bytes, 8, 4).trim();
     return brand === "qt" ? "video/quicktime" : "video/mp4";
-  }
-
-  if (
-    bytes[0] === 0x1a &&
-    bytes[1] === 0x45 &&
-    bytes[2] === 0xdf &&
-    bytes[3] === 0xa3
-  ) {
-    return "video/webm";
   }
 
   return null;
@@ -302,7 +292,7 @@ export function validateMediaMetadata(metadata: MediaMetadata) {
     !IMAGE_MIME_TYPES.has(metadata.mimeType) &&
     !VIDEO_MIME_TYPES.has(metadata.mimeType)
   ) {
-    return "Use a JPG, PNG, WebP, GIF, MP4, MOV, or WebM file.";
+    return "Use a JPG, PNG, WebP, GIF, MP4, or MOV file.";
   }
 
   if (
