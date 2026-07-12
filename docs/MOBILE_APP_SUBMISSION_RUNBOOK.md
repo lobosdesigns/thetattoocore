@@ -5,6 +5,7 @@
 - TheTattooCore is web/PWA-first at `https://thetattoocore.com/login`.
 - Native Android and iOS projects are not created yet.
 - PWA manifest, icons, splash assets, service worker, support URL, privacy URL, and terms URL are ready for a wrapper later.
+- Draft store listing copy lives in `docs/STORE_LISTING_DRAFT.md`; review it against current store policies before submission.
 - Visible nudity is not allowed for launch to reduce review and moderation risk.
 - Merch and ads use Stripe in test mode; production payments, seller payouts, taxes, refunds, disputes, and app-store policy review must be finished before real commerce is promoted in native builds.
 
