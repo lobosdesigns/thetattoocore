@@ -460,6 +460,12 @@ async function markAdCheckoutSession({
     })
     .eq("id", campaignId)
     .eq("stripe_checkout_session_id", session.id)
+    .in(
+      "payment_status",
+      status === "paid"
+        ? ["checkout_started", "payment_failed"]
+        : ["checkout_started"],
+    )
     .select("id, advertiser_id, title")
     .returns<AdPaymentTransition[]>();
 
@@ -521,14 +527,20 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
   }
 
   const now = new Date().toISOString();
-  const { data: refundedOrders, error } = await supabase
+  let refundedOrderQuery = supabase
     .from("merch_orders")
     .update({
       refunded_at: now,
       status: fullyRefunded ? "refunded" : "partially_refunded",
       updated_at: now,
     })
-    .eq("stripe_payment_intent_id", paymentIntentId)
+    .eq("stripe_payment_intent_id", paymentIntentId);
+
+  refundedOrderQuery = fullyRefunded
+    ? refundedOrderQuery.neq("status", "refunded")
+    : refundedOrderQuery.eq("status", "paid");
+
+  const { data: refundedOrders, error } = await refundedOrderQuery
     .select("id, buyer_id")
     .returns<RefundedOrderTransition[]>();
 
@@ -591,6 +603,7 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
       updated_at: now,
     })
     .eq("stripe_payment_intent_id", paymentIntentId)
+    .neq("payment_status", "refunded")
     .select("id, advertiser_id, title")
     .returns<RefundedAdTransition[]>();
 
