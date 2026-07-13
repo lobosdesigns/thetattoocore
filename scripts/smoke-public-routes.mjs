@@ -45,6 +45,7 @@ const checks = [
   { path: "/api/ad-click", status: [303, 307, 308], redirectIncludes: "/", redirect: "manual" },
   { path: "/api/ad-click?campaign_id=bad&placement=4u", status: [303, 307, 308], redirectIncludes: "/", redirect: "manual" },
   { path: "/api/ad-click?campaign_id=bad&placement=evil", status: [303, 307, 308], redirectIncludes: "/", redirect: "manual" },
+  { path: "/api/bookings/bad/calendar", status: [303, 307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/messages", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fmessages"], redirect: "manual" },
   { path: "/notifications", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fnotifications"], redirect: "manual" },
   { path: "/saved", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fsaved"], redirect: "manual" },
