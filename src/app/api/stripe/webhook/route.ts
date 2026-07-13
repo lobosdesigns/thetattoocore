@@ -37,6 +37,22 @@ type AdPaymentTransition = {
   id: string;
   title: string;
 };
+type BookingPaymentTransition = {
+  artist_id: string;
+  client_id: string;
+  id: string;
+  title: string;
+};
+type NotificationInsert = {
+  actor_id: string | null;
+  body: string;
+  href: string;
+  recipient_id: string;
+  subject_id: string;
+  subject_type: string;
+  title: string;
+  type: string;
+};
 type PaidOrderRpcArgs = {
   p_checkout_session_id: string;
   p_customer_email: string | null;
@@ -523,6 +539,99 @@ async function markAdCheckoutSession({
   revalidatePath("/admin/ads");
 }
 
+async function markBookingCheckoutSession({
+  session,
+  status,
+}: {
+  session: Stripe.Checkout.Session;
+  status: "cancelled" | "paid" | "payment_failed";
+}) {
+  const supabase = createAdminClient();
+
+  if (!supabase) {
+    throw new Error("Missing Supabase service role key for Stripe webhook.");
+  }
+
+  const bookingId = session.metadata?.booking_request_id;
+  if (!bookingId) {
+    throw new Error("Missing booking request id on Stripe session.");
+  }
+
+  const now = new Date().toISOString();
+  const platformFeeCents = metadataCents(session.metadata?.platform_fee_cents, 0);
+  const depositAmountCents = metadataCents(
+    session.metadata?.booking_deposit_cents,
+    Math.max(0, (session.amount_total ?? 0) - platformFeeCents),
+  );
+  const updateValues = {
+    payment_status: status === "cancelled" ? "payment_failed" : status,
+    platform_fee_cents: platformFeeCents,
+    deposit_amount_cents: depositAmountCents,
+    status: status === "paid" ? "deposit_paid" : "accepted",
+    stripe_payment_intent_id:
+      typeof session.payment_intent === "string" ? session.payment_intent : null,
+    total_cents: session.amount_total ?? depositAmountCents + platformFeeCents,
+    updated_at: now,
+    ...(status === "paid" ? { paid_at: now } : {}),
+  };
+
+  const { data: bookings, error } = await supabase
+    .from("booking_requests")
+    .update(updateValues)
+    .eq("id", bookingId)
+    .eq("stripe_checkout_session_id", session.id)
+    .eq("payment_status", "checkout_started")
+    .eq("status", "deposit_pending")
+    .select("id, artist_id, client_id, title")
+    .returns<BookingPaymentTransition[]>();
+
+  if (error) {
+    throw new Error(error.message || "Could not update booking deposit status.");
+  }
+
+  const notifications: NotificationInsert[] = [];
+
+  for (const booking of bookings ?? []) {
+    if (status === "paid") {
+      notifications.push({
+        actor_id: booking.client_id,
+        body: "Stripe received the booking deposit.",
+        href: "/account#booking-settings",
+        recipient_id: booking.artist_id,
+        subject_id: booking.id,
+        subject_type: "booking_request",
+        title: `Booking deposit paid: ${booking.title}`.slice(0, 120),
+        type: "booking_deposit_paid",
+      });
+      continue;
+    }
+
+    notifications.push({
+      actor_id: null,
+      body:
+        status === "cancelled"
+          ? "Stripe checkout expired or was cancelled, so this booking deposit was not completed."
+          : "Stripe reported this booking deposit payment failed.",
+      href: "/account#booking-settings",
+      recipient_id: booking.client_id,
+      subject_id: booking.id,
+      subject_type: "booking_request",
+      title:
+        status === "cancelled"
+          ? "Booking deposit checkout cancelled"
+          : "Booking deposit payment failed",
+      type: "booking_declined",
+    });
+  }
+
+  if (notifications.length) {
+    await supabase.from("notifications").insert(notifications);
+    revalidatePath("/notifications");
+  }
+
+  revalidatePath("/account");
+}
+
 async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
   const supabase = createAdminClient();
 
@@ -711,6 +820,8 @@ export async function POST(request: Request) {
 
       if (session.metadata?.payment_kind === "ad_campaign") {
         await markAdCheckoutSession({ session, status: "paid" });
+      } else if (session.metadata?.payment_kind === "booking_deposit") {
+        await markBookingCheckoutSession({ session, status: "paid" });
       } else {
         await markCheckoutSession({
           session,
@@ -724,6 +835,8 @@ export async function POST(request: Request) {
 
       if (session.metadata?.payment_kind === "ad_campaign") {
         await markAdCheckoutSession({ session, status: "payment_failed" });
+      } else if (session.metadata?.payment_kind === "booking_deposit") {
+        await markBookingCheckoutSession({ session, status: "payment_failed" });
       } else {
         await markCheckoutSession({
           session,
@@ -737,6 +850,8 @@ export async function POST(request: Request) {
 
       if (session.metadata?.payment_kind === "ad_campaign") {
         await markAdCheckoutSession({ session, status: "payment_failed" });
+      } else if (session.metadata?.payment_kind === "booking_deposit") {
+        await markBookingCheckoutSession({ session, status: "cancelled" });
       } else {
         await markCheckoutSession({
           session,

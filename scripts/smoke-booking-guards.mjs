@@ -11,7 +11,9 @@ const shopIndexMigration = readFileSync(
 const actions = readFileSync("src/app/actions.ts", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
+const bookingCheckout = readFileSync("src/app/api/bookings/checkout/route.ts", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
+const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8");
 const notificationsPage = readFileSync("src/app/notifications/page.tsx", "utf8");
 const fees = readFileSync("src/lib/payments/fees.ts", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
@@ -99,6 +101,27 @@ const checks = [
       accountActions.includes('.eq("artist_id", claims.sub)') &&
       accountActions.includes('type: decision === "accept" ? "booking_accepted" : "booking_declined"') &&
       accountActions.includes("Deposit checkout is the next booking step."),
+  },
+  {
+    label: "accepted booking deposits use guarded Stripe checkout",
+    ok:
+      accountPage.includes('action="/api/bookings/checkout"') &&
+      accountPage.includes("Pay deposit") &&
+      bookingCheckout.includes("export async function POST") &&
+      bookingCheckout.includes('metadata[payment_kind]": "booking_deposit"') &&
+      bookingCheckout.includes("platformFeeDescription(\"booking\")") &&
+      bookingCheckout.includes('.eq("client_id", claims.sub)') &&
+      bookingCheckout.includes('status: "deposit_pending"') &&
+      bookingCheckout.includes('payment_status: "checkout_started"'),
+  },
+  {
+    label: "Stripe webhook understands booking deposit events",
+    ok:
+      stripeWebhook.includes("markBookingCheckoutSession") &&
+      stripeWebhook.includes('payment_kind === "booking_deposit"') &&
+      stripeWebhook.includes('type: "booking_deposit_paid"') &&
+      stripeWebhook.includes('status: status === "paid" ? "deposit_paid" : "accepted"') &&
+      stripeWebhook.includes('payment_status: status === "cancelled" ? "payment_failed" : status'),
   },
   {
     label: "plan records calendars, deposits, fees, and next booking steps",

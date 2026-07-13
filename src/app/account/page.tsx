@@ -834,6 +834,29 @@ export default async function AccountPage({
                         ) : null}
                         {booking.artist_note ? <p>Artist note: {booking.artist_note}</p> : null}
                       </div>
+                      {booking.status === "accepted" &&
+                      booking.payment_status !== "paid" &&
+                      booking.deposit_amount_cents > 0 ? (
+                        <form
+                          action="/api/bookings/checkout"
+                          className="mt-4"
+                          method="post"
+                        >
+                          <input
+                            name="booking_id"
+                            type="hidden"
+                            value={booking.id}
+                          />
+                          <button
+                            className="h-10 w-full rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)] sm:w-fit"
+                            disabled={booking.payment_status === "checkout_started"}
+                          >
+                            {booking.payment_status === "checkout_started"
+                              ? "Checkout started"
+                              : "Pay deposit"}
+                          </button>
+                        </form>
+                      ) : null}
                     </article>
                   ))}
                 </div>

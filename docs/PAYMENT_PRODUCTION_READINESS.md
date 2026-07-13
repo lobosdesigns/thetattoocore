@@ -1,10 +1,10 @@
 # Payment Production Readiness
 
-Stripe checkout is wired for test-mode Merch and ads. Booking deposits are in foundation/pre-checkout mode: requests can record a requested deposit and TTC processing fee, but checkout should open only after the artist or studio accepts. Keep production commerce gated until the items below are finished and reviewed.
+Stripe checkout is wired for test-mode Merch, ads, and accepted booking deposits. Keep production commerce gated until the items below are finished and reviewed.
 
 ## Current Position
 
-- Stripe Checkout is the shared gateway path for Merch and prepaid ad campaigns; booking deposits should use the same gateway after accepted-request controls are ready.
+- Stripe Checkout is the shared gateway path for Merch, prepaid ad campaigns, and accepted booking deposits.
 - Webhook event dedupe, retry-safe status transitions, failed/expired checkout handling, buyer/seller/advertiser alerts, and Admin > Payments visibility are wired.
 - A transparent 2% TTC platform fee is recorded in test-mode flows and booking deposit requests.
 - Merch order receipts, seller fulfillment updates, and basic admin order controls are present.
@@ -15,7 +15,7 @@ Stripe checkout is wired for test-mode Merch and ads. Booking deposits are in fo
 - Choose Stripe Connect or a documented manual payout policy for artists, studios, vendors, and TTC-owned products.
 - Use Stripe-hosted onboarding for seller payout details; do not collect bank, routing, card, or debit payout credentials in TTC forms.
 - Decide whether the TTC platform fee is buyer-paid, seller-deducted, or split by flow.
-- Finish booking accept/decline controls, calendar availability, deposit checkout creation, webhook updates, refund/cancellation handling, and appointment-confirmation rules before taking real booking deposits.
+- Finish calendar availability, booking refund/cancellation handling, artist/studio payout policy, and appointment-confirmation rules before taking real booking deposits.
 - Finalize tax handling, shipping-rate rules, fulfillment timelines, refund windows, dispute procedures, chargeback handling, and seller suspension rules.
 - Review app-store rules before exposing checkout inside native wrappers.
 - Review Stripe/provider policies for user-generated marketplaces, body-art products, ads, restricted goods, and adult-adjacent 18+ community positioning.
