@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 
 const authLogin = readFileSync("src/app/auth/login/route.ts", "utf8");
 const authConfirm = readFileSync("src/app/auth/confirm/route.ts", "utf8");
+const adClickRoute = readFileSync("src/app/api/ad-click/route.ts", "utf8");
 const loginPage = readFileSync("src/app/login/page.tsx", "utf8");
 const signupPage = readFileSync("src/app/signup/page.tsx", "utf8");
 const notificationActions = readFileSync("src/app/notifications/actions.ts", "utf8");
@@ -20,6 +21,7 @@ const siteConfig = readFileSync("src/lib/site.ts", "utf8");
 const publicSource = [
   authLogin,
   authConfirm,
+  adClickRoute,
   loginPage,
   signupPage,
   notificationActions,
@@ -107,6 +109,17 @@ const checks = [
     ok:
       urls.includes('["http:", "https:"].includes(url.protocol)') &&
       urls.includes("return null"),
+  },
+  {
+    label: "ad click redirects only to valid paid http or https campaign targets",
+    ok:
+      adClickRoute.includes('const fallback = new URL("/", request.url)') &&
+      adClickRoute.includes('const placements = new Set(["4u", "gossip", "stuff", "merch"])') &&
+      adClickRoute.includes('.eq("status", "active")') &&
+      adClickRoute.includes('.in("payment_status", ["paid", "waived"])') &&
+      adClickRoute.includes("new URL(campaign.target_url)") &&
+      adClickRoute.includes('!["http:", "https:"].includes(target.protocol)') &&
+      adClickRoute.includes("NextResponse.redirect(fallback"),
   },
   {
     label: "user-generated external links carry safe rel attributes",
