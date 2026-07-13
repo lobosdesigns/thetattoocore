@@ -989,6 +989,76 @@ export async function respondBookingRequest(formData: FormData) {
   );
 }
 
+export async function updateBookingSettings(formData: FormData) {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+
+  if (!claims?.sub) {
+    redirect("/login?return_to=%2Faccount%23booking-settings");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, account_type, license_verified_at, suspended_at, banned_at")
+    .eq("id", claims.sub)
+    .maybeSingle<{
+      account_type: string;
+      banned_at: string | null;
+      id: string;
+      license_verified_at: string | null;
+      suspended_at: string | null;
+    }>();
+
+  if (
+    !profile ||
+    !["artist", "studio"].includes(profile.account_type) ||
+    !profile.license_verified_at ||
+    profile.suspended_at ||
+    profile.banned_at
+  ) {
+    redirect(bookingPath("Verified artist or studio status is required for booking availability."));
+  }
+
+  const bookingEnabled = formData.get("booking_enabled") === "on";
+  const availabilitySummary = cleanText(formData.get("availability_summary"), 500);
+  const bookingNote = cleanText(formData.get("booking_note"), 500);
+  const depositPolicy = cleanText(formData.get("deposit_policy"), 20);
+  const defaultDepositAmountCents = centsFromDollars(
+    formData.get("default_deposit_amount"),
+    500000,
+  );
+
+  if (!["none", "optional", "required"].includes(depositPolicy)) {
+    redirect(bookingPath("Choose a valid deposit policy."));
+  }
+
+  if (defaultDepositAmountCents < 0) {
+    redirect(bookingPath("Default deposit must be a valid dollar amount."));
+  }
+
+  const { error } = await supabase.from("booking_settings").upsert({
+    booking_enabled: bookingEnabled,
+    booking_note: bookingNote || null,
+    calendar_connection_status: "manual",
+    default_deposit_amount_cents: defaultDepositAmountCents,
+    deposit_policy: depositPolicy,
+    profile_id: claims.sub,
+    timezone: cleanTimezone(formData.get("booking_timezone")),
+    updated_at: new Date().toISOString(),
+    weekly_availability: {
+      summary: availabilitySummary || null,
+    },
+  });
+
+  if (error) {
+    redirect(bookingPath(error.message || "Could not save booking settings."));
+  }
+
+  revalidatePath("/account");
+  redirect(bookingPath("Booking availability saved."));
+}
+
 export async function requestAccountDeletion(formData: FormData) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();

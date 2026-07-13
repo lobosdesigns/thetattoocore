@@ -92,6 +92,18 @@ type ViewerProfile = {
   is_adult_confirmed: boolean | null;
 };
 
+type BookingSettings = {
+  booking_enabled: boolean;
+  booking_note: string | null;
+  calendar_connection_status: string;
+  default_deposit_amount_cents: number;
+  deposit_policy: string;
+  timezone: string;
+  weekly_availability: {
+    summary?: string | null;
+  } | null;
+};
+
 type FeedMedia = {
   id: string;
   media_type: "image" | "video";
@@ -238,6 +250,14 @@ function formatPrice(listing: Listing) {
     maximumFractionDigits: 0,
     style: "currency",
   }).format(listing.price_cents / 100);
+}
+
+function formatMoney(cents: number, currency: string) {
+  return new Intl.NumberFormat("en-US", {
+    currency,
+    maximumFractionDigits: 0,
+    style: "currency",
+  }).format(cents / 100);
 }
 
 function formatGigDate(gig: Gig) {
@@ -930,6 +950,7 @@ export default async function ProfilePage({
     { data: gigs },
     { data: savedProfile },
     { data: linkedArtists },
+    { data: bookingSettings },
   ] = await Promise.all([
     supabase
       .from("follows")
@@ -1075,6 +1096,15 @@ export default async function ProfilePage({
           .limit(12)
           .returns<LinkedArtist[]>()
       : Promise.resolve({ data: [] as LinkedArtist[] }),
+    ["artist", "studio"].includes(profile.account_type)
+      ? supabase
+          .from("booking_settings")
+          .select(
+            "booking_enabled, timezone, weekly_availability, booking_note, deposit_policy, default_deposit_amount_cents, calendar_connection_status",
+          )
+          .eq("profile_id", profile.id)
+          .maybeSingle<BookingSettings>()
+      : Promise.resolve({ data: null }),
   ]);
 
   const isOwnProfile = claims?.sub === profile.id;
@@ -1102,6 +1132,12 @@ export default async function ProfilePage({
     !isPrivateLocked &&
     isVerifiedProfile(profile) &&
     ["artist", "studio"].includes(profile.account_type);
+  const canShowBookingAvailability = Boolean(
+    !isPrivateLocked &&
+      bookingSettings?.booking_enabled &&
+      isVerifiedProfile(profile) &&
+      ["artist", "studio"].includes(profile.account_type),
+  );
   const canShow = (item: VisibleContent) =>
     !isPrivateLocked && canRenderContent({ isOwnProfile, item, viewer });
   const visiblePosts = (posts ?? []).filter(canShow);
@@ -1284,6 +1320,50 @@ export default async function ProfilePage({
                   </a>
                 ) : null}
               </div>
+              ) : null}
+              {canShowBookingAvailability ? (
+                <section className="mt-5 rounded-lg border border-[color-mix(in_srgb,var(--gold)_34%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))] p-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-strong)]">
+                        Booking availability
+                      </p>
+                      <h3 className="mt-1 text-base font-bold">
+                        Open for requests
+                      </h3>
+                    </div>
+                    <span className="w-fit rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1 text-xs font-semibold">
+                      {bookingSettings?.timezone}
+                    </span>
+                  </div>
+                  {bookingSettings?.weekly_availability?.summary ? (
+                    <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">
+                      {bookingSettings.weekly_availability.summary}
+                    </p>
+                  ) : null}
+                  {bookingSettings?.booking_note ? (
+                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">
+                      {bookingSettings.booking_note}
+                    </p>
+                  ) : null}
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-[var(--muted-strong)]">
+                    <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1 capitalize">
+                      Deposit {bookingSettings?.deposit_policy}
+                    </span>
+                    {bookingSettings?.default_deposit_amount_cents ? (
+                      <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1">
+                        Typical deposit{" "}
+                        {formatMoney(
+                          bookingSettings.default_deposit_amount_cents,
+                          "USD",
+                        )}
+                      </span>
+                    ) : null}
+                    <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1">
+                      Calendar manual
+                    </span>
+                  </div>
+                </section>
               ) : null}
               {!isPrivateLocked ? (
               <div className="mt-5 grid max-w-xl grid-cols-3 gap-4 sm:grid-cols-6">
@@ -1481,6 +1561,11 @@ export default async function ProfilePage({
                       </span>
                       <input
                         className="mt-1 h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                        defaultValue={
+                          bookingSettings?.default_deposit_amount_cents
+                            ? (bookingSettings.default_deposit_amount_cents / 100).toFixed(2)
+                            : ""
+                        }
                         inputMode="decimal"
                         name="deposit_amount"
                         placeholder="Example: 100"

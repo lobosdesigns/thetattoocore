@@ -8,6 +8,10 @@ const shopIndexMigration = readFileSync(
   "supabase/migrations/20260713020644_booking_shop_profile_index.sql",
   "utf8",
 );
+const bookingSettingsMigration = readFileSync(
+  "supabase/migrations/20260713093653_booking_settings_foundation.sql",
+  "utf8",
+);
 const actions = readFileSync("src/app/actions.ts", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
@@ -44,6 +48,16 @@ const checks = [
       shopIndexMigration.includes("booking_requests_shop_profile_created_idx") &&
       shopIndexMigration.includes("on public.booking_requests (shop_profile_id, created_at desc)") &&
       shopIndexMigration.includes("where shop_profile_id is not null"),
+  },
+  {
+    label: "booking settings migration creates RLS-protected manual availability",
+    ok:
+      bookingSettingsMigration.includes("create table if not exists public.booking_settings") &&
+      bookingSettingsMigration.includes("alter table public.booking_settings enable row level security") &&
+      bookingSettingsMigration.includes('create policy "Public can read enabled verified booking settings"') &&
+      bookingSettingsMigration.includes('create policy "Verified artists manage own booking settings"') &&
+      bookingSettingsMigration.includes("weekly_availability jsonb not null default '{}'::jsonb") &&
+      bookingSettingsMigration.includes("calendar_connection_status in ('manual', 'google_planned', 'apple_ical_planned', 'connected')"),
   },
   {
     label: "booking money fields record deposit plus TTC fee",
@@ -98,6 +112,17 @@ const checks = [
       accountPage.includes("Stripe deposit checkout will open"),
   },
   {
+    label: "account page exposes manual booking availability settings",
+    ok:
+      accountActions.includes("export async function updateBookingSettings") &&
+      accountActions.includes('.from("booking_settings").upsert') &&
+      accountActions.includes("Verified artist or studio status is required for booking availability.") &&
+      accountPage.includes("updateBookingSettings") &&
+      accountPage.includes("Booking availability") &&
+      accountPage.includes("Show booking availability") &&
+      accountPage.includes("calendar_connection_status"),
+  },
+  {
     label: "artist booking responses are server-only and notify clients",
     ok:
       accountActions.includes("export async function respondBookingRequest") &&
@@ -127,6 +152,15 @@ const checks = [
       messagesPage.includes('.eq("conversation_id", selectedConversation.id)') &&
       messagesPage.includes("respondBookingRequest") &&
       messagesPage.includes('action="/api/bookings/checkout"'),
+  },
+  {
+    label: "public profiles show enabled booking availability",
+    ok:
+      profilePage.includes("type BookingSettings") &&
+      profilePage.includes('.from("booking_settings")') &&
+      profilePage.includes("canShowBookingAvailability") &&
+      profilePage.includes("Open for requests") &&
+      profilePage.includes("default_deposit_amount_cents"),
   },
   {
     label: "Stripe webhook understands booking deposit events",

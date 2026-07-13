@@ -7,6 +7,7 @@ import {
   respondBookingRequest,
   submitAdCampaign,
   submitLicenseVerification,
+  updateBookingSettings,
 } from "./actions";
 import { AdCampaignForm } from "./ad-campaign-form";
 import { LicenseDocumentInput } from "./license-document-input";
@@ -19,6 +20,18 @@ import { verificationEligibleAccountTypes } from "@/lib/verification";
 type Claims = {
   sub: string;
   email?: string;
+};
+
+type BookingSettings = {
+  booking_enabled: boolean;
+  booking_note: string | null;
+  calendar_connection_status: string;
+  default_deposit_amount_cents: number;
+  deposit_policy: string;
+  timezone: string;
+  weekly_availability: {
+    summary?: string | null;
+  } | null;
 };
 
 const adminRoles = ["moderator", "admin", "owner"];
@@ -540,6 +553,13 @@ export default async function AccountPage({
         total_cents: number;
       }[]
     >();
+  const { data: bookingSettings } = await supabase
+    .from("booking_settings")
+    .select(
+      "booking_enabled, timezone, weekly_availability, booking_note, deposit_policy, default_deposit_amount_cents, calendar_connection_status",
+    )
+    .eq("profile_id", claims.sub)
+    .maybeSingle<BookingSettings>();
   const { data: outgoingBookings } = await supabase
     .from("booking_requests")
     .select(
@@ -588,6 +608,13 @@ export default async function AccountPage({
   const canSubmitLicense =
     profile?.account_type &&
     verificationEligibleAccountTypes.includes(profile.account_type as string);
+  const canManageBookingSettings = Boolean(
+    profile?.account_type &&
+      ["artist", "studio"].includes(profile.account_type as string) &&
+      profile.license_verified_at &&
+      !profile.suspended_at &&
+      !profile.banned_at,
+  );
   const isLicenseVerified = Boolean(profile?.license_verified_at);
   const latestVerificationRequest = verificationRequests?.[0] ?? null;
   const hasPendingVerification = Boolean(
@@ -682,6 +709,106 @@ export default async function AccountPage({
             studios accept or decline here; Stripe deposit checkout will open
             only after acceptance and will include the TTC processing fee.
           </p>
+
+          {canManageBookingSettings ? (
+            <form
+              action={updateBookingSettings}
+              className="mt-5 rounded-lg border border-[color-mix(in_srgb,var(--gold)_32%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4"
+            >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h3 className="text-sm font-bold">Booking availability</h3>
+                  <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
+                    Manual availability first. Google Calendar, Apple/iCloud,
+                    and iCalendar connection come after policy and OAuth review.
+                  </p>
+                </div>
+                <label className="flex items-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 py-2 text-sm font-semibold">
+                  <input
+                    defaultChecked={bookingSettings?.booking_enabled ?? false}
+                    name="booking_enabled"
+                    type="checkbox"
+                  />
+                  Show booking availability
+                </label>
+              </div>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <label className="grid gap-1 text-sm font-semibold">
+                  Timezone
+                  <input
+                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                    defaultValue={bookingSettings?.timezone ?? "America/Chicago"}
+                    maxLength={80}
+                    name="booking_timezone"
+                    placeholder="America/Chicago"
+                  />
+                </label>
+                <label className="grid gap-1 text-sm font-semibold">
+                  Deposit policy
+                  <select
+                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                    defaultValue={bookingSettings?.deposit_policy ?? "optional"}
+                    name="deposit_policy"
+                  >
+                    <option value="optional">Optional per request</option>
+                    <option value="required">Usually required</option>
+                    <option value="none">No deposit</option>
+                  </select>
+                </label>
+                <label className="grid gap-1 text-sm font-semibold">
+                  Default deposit
+                  <input
+                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                    defaultValue={
+                      bookingSettings?.default_deposit_amount_cents
+                        ? (bookingSettings.default_deposit_amount_cents / 100).toFixed(2)
+                        : ""
+                    }
+                    inputMode="decimal"
+                    name="default_deposit_amount"
+                    placeholder="50.00"
+                  />
+                </label>
+                <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 py-2 text-sm">
+                  <p className="font-semibold">Calendar connection</p>
+                  <p className="mt-1 capitalize text-[var(--muted)]">
+                    {(bookingSettings?.calendar_connection_status ?? "manual").replaceAll("_", " ")}
+                  </p>
+                </div>
+                <label className="grid gap-1 text-sm font-semibold md:col-span-2">
+                  Weekly availability
+                  <textarea
+                    className="min-h-24 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                    defaultValue={bookingSettings?.weekly_availability?.summary ?? ""}
+                    maxLength={500}
+                    name="availability_summary"
+                    placeholder="Example: Tue-Fri 12-7, Saturdays by appointment, closed Sunday/Monday."
+                  />
+                </label>
+                <label className="grid gap-1 text-sm font-semibold md:col-span-2">
+                  Booking note
+                  <textarea
+                    className="min-h-20 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                    defaultValue={bookingSettings?.booking_note ?? ""}
+                    maxLength={500}
+                    name="booking_note"
+                    placeholder="Consultation notes, deposit expectations, preferred contact, or booking window."
+                  />
+                </label>
+              </div>
+              <PendingSubmitButton
+                className="mt-4 h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)]"
+                pendingLabel="Saving"
+              >
+                Save booking availability
+              </PendingSubmitButton>
+            </form>
+          ) : (
+            <div className="mt-5 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 text-sm leading-6 text-[var(--muted)]">
+              Verified artist or studio status unlocks public booking
+              availability, calendar preparation, and deposit settings.
+            </div>
+          )}
 
           <div className="mt-5 grid gap-5 lg:grid-cols-2">
             <div>
