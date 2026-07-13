@@ -24,6 +24,7 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 
 - Create a 4U image post and a short video post.
 - Create a Story image/GIF and confirm it appears in the Stories rail, opens in the media viewer, and expires from the rail after the expiry window in later QA.
+- Open a Story from a public profile and confirm signed-in viewers can react, send a DM reply, and report from the viewer without opening the wrong composer.
 - Confirm 4U captions respect the 40-word limit.
 - Open 4U media in the lightbox, zoom images, play videos, and confirm video controls do not show a download button.
 - Create a Gossip post with longer text and optional image.
@@ -64,6 +65,7 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 - Approve and reject verification from Admin > Verification.
 - Confirm member notifications and important email behavior for verification decisions.
 - Review Admin > Users, Verification, Reports, Content, Stuff, Gigs, Merch, Ads, Payments, Data Requests, Media Ops, and Mail Settings on mobile.
+- In Admin > Content > Stories, confirm temporary story rows show whether they expire soon or already expired.
 - Confirm each admin page uses pagination or focused queues and the overview remains short.
 - Confirm dark/light admin contrast is readable.
 
