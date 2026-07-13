@@ -210,7 +210,10 @@ const checks = [
       homePage.includes("recordStoryView") &&
       homePage.includes("openAction={") &&
       homePage.includes("story_views(count)") &&
-      homePage.includes("storyViewCount"),
+      homePage.includes("storyViewCount") &&
+      homePage.includes("ownerStoryFooter") &&
+      homePage.includes("Story stats") &&
+      homePage.includes("Expires in {timeUntil(story.expires_at)}"),
   },
   {
     label: "story reactions are RLS-protected and toggleable",
@@ -246,7 +249,8 @@ const checks = [
       productPlan.includes("Stories: add temporary story posts") &&
       productPlan.includes("DM-backed story replies") &&
       productPlan.includes("deduplicated signed-in view counts") &&
-      productPlan.includes("quick story reactions with in-app alerts"),
+      productPlan.includes("quick story reactions with in-app alerts") &&
+      productPlan.includes("opened-story owner stats"),
   },
 ];
 

@@ -1210,6 +1210,36 @@ function StoriesRail({
           );
           const storyViewCount = story.story_views?.[0]?.count ?? 0;
           const storyReactionCount = story.story_reactions?.[0]?.count ?? 0;
+          const ownerStoryFooter = isOwnStory ? (
+            <div className="mx-auto grid max-w-xl gap-3 rounded-lg border border-white/15 bg-black/75 p-4 text-white shadow-lg">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-white/60">
+                  Story stats
+                </p>
+                <p className="mt-1 text-sm text-white/75">
+                  Expires in {timeUntil(story.expires_at)}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-md border border-white/15 bg-white/10 p-3">
+                  <p className="text-2xl font-black">{storyViewCount}</p>
+                  <p className="text-xs font-semibold uppercase text-white/65">
+                    Views
+                  </p>
+                </div>
+                <div className="rounded-md border border-white/15 bg-white/10 p-3">
+                  <p className="text-2xl font-black">{storyReactionCount}</p>
+                  <p className="text-xs font-semibold uppercase text-white/65">
+                    Reactions
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs leading-5 text-white/60">
+                Story replies arrive in DM. Reactions create alerts while the
+                story is active.
+              </p>
+            </div>
+          ) : null;
           const reactionOptions = [
             ["fire", "🔥"],
             ["heart", "🖤"],
@@ -1228,7 +1258,8 @@ function StoriesRail({
                 alt={`${story.profiles?.display_name ?? "Member"} story`}
                 description={storyDescription}
                 footer={
-                  canReplyToStory ? (
+                  ownerStoryFooter ??
+                  (canReplyToStory ? (
                     <div className="mx-auto grid max-w-xl gap-2">
                       <div className="flex gap-2 overflow-x-auto">
                         {reactionOptions.map(([value, label]) => (
@@ -1275,7 +1306,7 @@ function StoriesRail({
                         ))}
                       </div>
                     </div>
-                  ) : null
+                  ) : null)
                 }
                 mediaType="image"
                 openAction={
