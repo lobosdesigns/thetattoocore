@@ -93,6 +93,13 @@ const forbiddenPublicInfraSnippets = [
   "test mode",
   "test-mode",
 ];
+const publicRoadmapSnippets = [
+  "future ads",
+  "future public Merch",
+  "future booking deposits",
+  "future sponsored placements",
+  "future translated UI",
+];
 
 const checks = [
   {
@@ -227,6 +234,10 @@ const checks = [
     ok: forbiddenPublicInfraSnippets.every(
       (snippet) => !publicCopySource.includes(snippet),
     ),
+  },
+  {
+    label: "public privacy copy avoids roadmap-style future wording",
+    ok: publicRoadmapSnippets.every((snippet) => !privacyPage.includes(snippet)),
   },
   {
     label: "public privacy copy covers data safety without raw payment credential collection",

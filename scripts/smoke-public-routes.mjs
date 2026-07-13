@@ -27,6 +27,86 @@ const requiredHeaders = [
   ["permissions-policy", "microphone=()"],
   ["permissions-policy", 'payment=(self "https://checkout.stripe.com")'],
 ];
+const smokeFetchHeaders = {
+  "user-agent": "TheTattooCore public smoke/1.0",
+};
+const transientStatuses = new Set([429, 502, 503, 504, 599]);
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchTextWithRetry(url, options = {}, retryOptions = {}) {
+  let lastResult;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    let response;
+    let body;
+
+    try {
+      response = await fetch(url, {
+        ...options,
+        headers: {
+          ...smokeFetchHeaders,
+          ...(options.headers || {}),
+        },
+        signal: AbortSignal.timeout(8000),
+      });
+      body = await response.text();
+    } catch (error) {
+      body = error instanceof Error ? error.message : String(error);
+      response = new Response(body, { status: 599 });
+    }
+
+    lastResult = { body, response };
+    const cloudflareChallenge = retryOptions.retryCloudflareBody && body.includes("Cloudflare");
+
+    if (!transientStatuses.has(response.status) && !cloudflareChallenge) {
+      return lastResult;
+    }
+
+    if (attempt < 2) {
+      await sleep(200 * (attempt + 1));
+    }
+  }
+
+  return lastResult;
+}
+
+async function fetchWithRetry(url, options = {}) {
+  let lastResponse;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    let response;
+
+    try {
+      response = await fetch(url, {
+        ...options,
+        headers: {
+          ...smokeFetchHeaders,
+          ...(options.headers || {}),
+        },
+        signal: AbortSignal.timeout(8000),
+      });
+    } catch (error) {
+      response = new Response(error instanceof Error ? error.message : String(error), {
+        status: 599,
+      });
+    }
+
+    lastResponse = response;
+
+    if (!transientStatuses.has(response.status)) {
+      return response;
+    }
+
+    if (attempt < 2) {
+      await sleep(200 * (attempt + 1));
+    }
+  }
+
+  return lastResponse;
+}
 
 const checks = [
   { path: "/", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
@@ -240,8 +320,11 @@ let failures = 0;
 
 for (const check of checks) {
   const url = `${baseUrl}${check.path}`;
-  const response = await fetch(url, { redirect: check.redirect || "follow" });
-  const body = await response.text();
+  const { response, body } = await fetchTextWithRetry(
+    url,
+    { redirect: check.redirect || "follow" },
+    { retryCloudflareBody: true },
+  );
   const searchableBody = body.replace(/<!--.*?-->/g, "");
   const okStatus = check.status.includes(response.status);
   const location = response.headers.get("location") || "";
@@ -306,6 +389,7 @@ for (const check of checks) {
   }
 
   console.log(`PASS ${check.path}`);
+  await sleep(75);
 }
 
 await checkPwaManifest();
@@ -322,7 +406,7 @@ console.log(`All public route smoke checks passed for ${baseUrl}`);
 
 async function checkPwaManifest() {
   const manifestUrl = `${baseUrl}/manifest.webmanifest`;
-  const response = await fetch(manifestUrl);
+  const { response, body } = await fetchTextWithRetry(manifestUrl);
 
   if (!response.ok) {
     failures += 1;
@@ -333,7 +417,7 @@ async function checkPwaManifest() {
 
   let manifest;
   try {
-    manifest = await response.json();
+    manifest = JSON.parse(body);
   } catch (error) {
     failures += 1;
     console.error(`FAIL /manifest.webmanifest`);
@@ -389,7 +473,7 @@ async function checkPwaManifest() {
   const missingAssets = [];
 
   for (const path of assetPaths) {
-    const assetResponse = await fetch(`${baseUrl}${path}`, { method: "HEAD" });
+    const assetResponse = await fetchWithRetry(`${baseUrl}${path}`, { method: "HEAD" });
     if (!assetResponse.ok) {
       missingAssets.push(`${path} (${assetResponse.status})`);
     }
@@ -406,7 +490,7 @@ async function checkPwaManifest() {
 }
 
 async function checkRobotsPolicy() {
-  const response = await fetch(`${baseUrl}/robots.txt`);
+  const { response, body } = await fetchTextWithRetry(`${baseUrl}/robots.txt`);
 
   if (!response.ok) {
     failures += 1;
@@ -415,7 +499,6 @@ async function checkRobotsPolicy() {
     return;
   }
 
-  const body = await response.text();
   const missingDisallows = requiredRobotsDisallows.filter(
     (path) => !body.includes(`Disallow: ${path}`),
   );
@@ -446,7 +529,7 @@ async function checkRobotsPolicy() {
 }
 
 async function checkSitemapUrls() {
-  const response = await fetch(`${baseUrl}/sitemap.xml`);
+  const { response, body } = await fetchTextWithRetry(`${baseUrl}/sitemap.xml`);
 
   if (!response.ok) {
     failures += 1;
@@ -455,7 +538,7 @@ async function checkSitemapUrls() {
     return;
   }
 
-  const xml = await response.text();
+  const xml = body;
   const urls = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1]);
   const badUrls = [];
   const publicUrls = [];
@@ -491,9 +574,14 @@ async function checkSitemapUrls() {
   const failedSamples = [];
 
   for (const url of sampledUrls) {
-    const sampleResponse = await fetch(url, { redirect: "follow" });
-    const body = await sampleResponse.text();
-    const leakedText = forbiddenBodyText.filter((text) => body.includes(text));
+    const { response: sampleResponse, body: sampleBody } = await fetchTextWithRetry(
+      url,
+      {
+        redirect: "follow",
+      },
+      { retryCloudflareBody: true },
+    );
+    const leakedText = forbiddenBodyText.filter((text) => sampleBody.includes(text));
 
     if (!sampleResponse.ok || leakedText.length > 0) {
       failedSamples.push(
@@ -525,7 +613,7 @@ async function checkRemovedScaffoldAssets() {
   const stillPublic = [];
 
   for (const path of removedAssets) {
-    const response = await fetch(`${baseUrl}${path}`, { redirect: "manual" });
+    const response = await fetchWithRetry(`${baseUrl}${path}`, { redirect: "manual" });
 
     if (![404, 307, 308].includes(response.status)) {
       stillPublic.push(`${path} (${response.status})`);

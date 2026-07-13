@@ -5,7 +5,7 @@ import { siteName, supportEmail } from "@/lib/site";
 
 export const metadata: Metadata = {
   description:
-    "TheTattooCore privacy overview for account data, public profiles, messages, location settings, and future ads.",
+    "TheTattooCore privacy overview for account data, public profiles, messages, location settings, and sponsored placements.",
   title: "Privacy",
 };
 
@@ -17,7 +17,7 @@ const sections = [
   },
   {
     body:
-      "Profiles, selected public posts, marketplace listings, gigs, and future public Merch items may be visible to other members and, where allowed, search engines. Account settings, private profile data, admin tools, draft content, and messages are not meant for public indexing.",
+      "Profiles, selected public posts, marketplace listings, gigs, and public Merch items may be visible to other members and, where allowed, search engines. Account settings, private profile data, admin tools, draft content, and messages are not meant for public indexing.",
     title: "What Can Be Public",
   },
   {
@@ -37,17 +37,17 @@ const sections = [
   },
   {
     body:
-      "Merch, ads, and future booking deposits can create checkout, order, receipt, fulfillment, refund, dispute, and support records. Checkout is limited during launch, and production purchases still need final seller approval, tax, shipping, refunds, fulfillment, payment rules, and buyer privacy notices. TheTattooCore should use hosted checkout flows and should not collect raw payment or payout credentials in member forms.",
+      "Merch, ads, and booking deposits can create checkout, order, receipt, fulfillment, refund, dispute, and support records. Checkout is limited during launch, and production purchases still need final seller approval, tax, shipping, refunds, fulfillment, payment rules, and buyer privacy notices. TheTattooCore should use hosted checkout flows and should not collect raw payment or payout credentials in member forms.",
     title: "Commerce And Payments",
   },
   {
     body:
-      "TheTattooCore stores coarse location settings such as city, region, and country code when you provide them. These settings can support marketplace discovery, gigs, events, and future sponsored placements. Precise browser geolocation should be requested separately before use and should not be required for the basic social app.",
+      "TheTattooCore stores coarse location settings such as city, region, and country code when you provide them. These settings can support marketplace discovery, gigs, events, and sponsored placements. Precise browser geolocation should be requested separately before use and should not be required for the basic social app.",
     title: "Location",
   },
   {
     body:
-      "Language settings start as a manual account preference for page language signals, discovery context, and future translated UI. Post translation should preserve the original text and clearly show when translation is added later.",
+      "Language settings start as a manual account preference for page language signals and discovery context. If translation is added, post translation should preserve the original text and clearly show when translated text is being shown.",
     title: "Language And Translation",
   },
   {
