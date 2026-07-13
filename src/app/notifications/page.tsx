@@ -53,6 +53,7 @@ type Notification = {
     | "booking_deposit_paid"
     | "booking_request"
     | "message"
+    | "story_reaction"
     | "merch_paid"
     | "merch_fulfilled"
     | "merch_refunded"
@@ -105,7 +106,9 @@ function notificationIcon(type: Notification["type"]) {
     return ShieldAlert;
   }
   if (type === "message") return MessageCircle;
-  if (type === "feed_like" || type === "thread_like") return Heart;
+  if (type === "feed_like" || type === "thread_like" || type === "story_reaction") {
+    return Heart;
+  }
   if (type === "feed_comment" || type === "thread_comment") {
     return MessageCircle;
   }
@@ -123,6 +126,7 @@ function subjectLabel(type: string) {
   if (type === "conversation") return "DM";
   if (type === "ad_campaign") return "Ad";
   if (type === "booking_request") return "Booking";
+  if (type === "story_post") return "Story";
   if (type === "merch_order") return "Merch order";
   if (type === "merch_product") return "Merch";
   if (type === "license_verification_request") return "Verification";

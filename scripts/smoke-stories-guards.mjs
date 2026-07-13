@@ -39,6 +39,7 @@ const adminReports = readFileSync("src/app/admin/reports/page.tsx", "utf8");
 const composer = readFileSync("src/app/floating-composer.tsx", "utf8");
 const composerShell = readFileSync("src/app/floating-composer-shell.tsx", "utf8");
 const homePage = readFileSync("src/app/page.tsx", "utf8");
+const notificationsPage = readFileSync("src/app/notifications/page.tsx", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 
 const checks = [
@@ -234,7 +235,10 @@ const checks = [
     ok:
       storyReactionNotificationsMigration.includes("'story_reaction'") &&
       storyReactionNotificationsMigration.includes("booking_deposit_paid") &&
-      storyReactionNotificationsMigration.includes("notifications_type_check"),
+      storyReactionNotificationsMigration.includes("notifications_type_check") &&
+      notificationsPage.includes('| "story_reaction"') &&
+      notificationsPage.includes('type === "story_reaction"') &&
+      notificationsPage.includes('if (type === "story_post") return "Story"'),
   },
   {
     label: "plan records Stories as started for launch",
