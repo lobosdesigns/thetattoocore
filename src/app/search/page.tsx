@@ -21,6 +21,7 @@ type ProfileResult = {
   username: string;
   display_name: string;
   avatar_url: string | null;
+  banner_url: string | null;
   account_type: string;
   bio: string | null;
   city: string | null;
@@ -309,7 +310,7 @@ export default async function SearchPage({
               let profileQuery = supabase
                 .from("profiles")
                 .select(
-                  "id, username, display_name, avatar_url, account_type, bio, city, license_verified_at, region, shop_profile_id",
+                  "id, username, display_name, avatar_url, banner_url, account_type, bio, city, license_verified_at, region, shop_profile_id",
                 )
                 .or(
                   `username.ilike.${pattern},display_name.ilike.${pattern},bio.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`,
@@ -642,36 +643,49 @@ export default async function SearchPage({
                 <div className="grid gap-3 sm:grid-cols-2">
                   {profileResults.map((profile) => (
                     <Link
-                      className="ttc-card flex items-center gap-3 rounded-md p-4"
+                      className="ttc-card overflow-hidden rounded-md"
                       href={`/u/${profile.username}`}
                       key={profile.id}
                     >
-                      <ProfileAvatar profile={profile} />
-                      <div className="min-w-0">
-                        <div className="flex min-w-0 items-center gap-1.5">
-                          <p className="truncate text-sm font-semibold">
-                            {profile.display_name}
+                      <div
+                        className="h-20 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--foreground)_88%,var(--brand-gold))] bg-cover bg-center"
+                        style={
+                          profile.banner_url
+                            ? { backgroundImage: `url(${profile.banner_url})` }
+                            : undefined
+                        }
+                      />
+                      <div className="flex items-start gap-3 p-4">
+                        <ProfileAvatar
+                          className="-mt-10 border-2 border-[var(--paper-warm)] shadow-lg"
+                          profile={profile}
+                        />
+                        <div className="min-w-0">
+                          <div className="flex min-w-0 items-center gap-1.5">
+                            <p className="truncate text-sm font-semibold">
+                              {profile.display_name}
+                            </p>
+                            <VerifiedBadge profile={profile} />
+                          </div>
+                          <p className="text-xs text-[var(--muted-strong)]">
+                            @{profile.username} - {profile.account_type}
                           </p>
-                          <VerifiedBadge profile={profile} />
+                          {locationText(profile) ? (
+                            <p className="mt-1 text-xs text-[var(--muted-strong)]">
+                              {locationText(profile)}
+                            </p>
+                          ) : null}
+                          {shopProfileText(profile) ? (
+                            <p className="mt-1 text-xs font-semibold text-[var(--muted-strong)]">
+                              {shopProfileText(profile)}
+                            </p>
+                          ) : null}
+                          {profile.bio ? (
+                            <p className="mt-1 line-clamp-2 text-xs leading-5 text-[var(--muted)]">
+                              {profile.bio}
+                            </p>
+                          ) : null}
                         </div>
-                        <p className="text-xs text-[var(--muted-strong)]">
-                          @{profile.username} - {profile.account_type}
-                        </p>
-                        {locationText(profile) ? (
-                          <p className="mt-1 text-xs text-[var(--muted-strong)]">
-                            {locationText(profile)}
-                          </p>
-                        ) : null}
-                        {shopProfileText(profile) ? (
-                          <p className="mt-1 text-xs font-semibold text-[var(--muted-strong)]">
-                            {shopProfileText(profile)}
-                          </p>
-                        ) : null}
-                        {profile.bio ? (
-                          <p className="mt-1 line-clamp-2 text-xs leading-5 text-[var(--muted)]">
-                            {profile.bio}
-                          </p>
-                        ) : null}
                       </div>
                     </Link>
                   ))}

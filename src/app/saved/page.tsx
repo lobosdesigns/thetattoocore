@@ -38,6 +38,7 @@ type SavedItem = {
 type ProfileBadge = {
   account_type: string;
   avatar_url?: string | null;
+  banner_url?: string | null;
   license_verified_at: string | null;
 };
 
@@ -101,6 +102,7 @@ type SavedCard = {
   meta: string;
   owner?: ProfileBadge | null;
   ownerName?: string | null;
+  profileBannerUrl?: string | null;
   subjectType: SavedItem["subject_type"];
   summary: string;
   title: string;
@@ -304,7 +306,7 @@ export default async function SavedPage({
       ? supabase
           .from("profiles")
           .select(
-            "id, username, display_name, avatar_url, account_type, city, region, license_verified_at",
+            "id, username, display_name, avatar_url, banner_url, account_type, city, region, license_verified_at",
           )
           .in("id", profileIds)
           .eq("is_private", false)
@@ -439,6 +441,7 @@ export default async function SavedPage({
         meta: [profile.account_type, locationText(profile)].filter(Boolean).join(" - "),
         owner: profile,
         ownerName: profile.display_name,
+        profileBannerUrl: profile.banner_url,
         subjectType: item.subject_type,
         summary: `@${profile.username}`,
         title: profile.display_name,
@@ -512,9 +515,20 @@ export default async function SavedPage({
 
                 return (
                   <article
-                    className="ttc-card rounded-md p-4"
+                    className="ttc-card overflow-hidden rounded-md"
                     key={`${card.subjectType}:${card.id}`}
                   >
+                    {card.subjectType === "profile" ? (
+                      <div
+                        className="h-20 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--foreground)_88%,var(--brand-gold))] bg-cover bg-center"
+                        style={
+                          card.profileBannerUrl
+                            ? { backgroundImage: `url(${card.profileBannerUrl})` }
+                            : undefined
+                        }
+                      />
+                    ) : null}
+                    <div className="p-4">
                     <div className="mb-3 flex items-start justify-between gap-3">
                       <div className="flex min-w-0 items-start gap-3">
                         <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--brand-gold)]">
@@ -554,6 +568,7 @@ export default async function SavedPage({
                         <VerifiedBadge profile={card.owner} />
                       </div>
                     ) : null}
+                    </div>
                   </article>
                 );
               })}

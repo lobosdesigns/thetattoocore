@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const profileForm = readFileSync("src/app/account/profile-form.tsx", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
+const savedPage = readFileSync("src/app/saved/page.tsx", "utf8");
 const searchPage = readFileSync("src/app/search/page.tsx", "utf8");
 const urls = readFileSync("src/lib/urls.ts", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
@@ -89,6 +90,15 @@ const checks = [
       searchPage.includes("shopProfileText(profile)") &&
       searchPage.includes("profileShopMap") &&
       searchPage.includes("profile.bio"),
+  },
+  {
+    label: "profile discovery surfaces can show profile banners",
+    ok:
+      searchPage.includes("banner_url") &&
+      searchPage.includes("profile.banner_url") &&
+      savedPage.includes("banner_url") &&
+      savedPage.includes("profileBannerUrl") &&
+      savedPage.includes("card.profileBannerUrl"),
   },
   {
     label: "outbound profile links use safe URL and rel policy",
