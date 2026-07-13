@@ -86,7 +86,19 @@ checks.push({
     bookingCheckout.includes('formData.get("return_to")') &&
     bookingCheckout.includes("createBookingCheckoutSession(booking, returnTo)") &&
     bookingCheckout.includes('"success_url": successUrl') &&
-    bookingCheckout.includes('"cancel_url": cancelUrl'),
+      bookingCheckout.includes('"cancel_url": cancelUrl'),
+});
+checks.push({
+  label: "ad checkout preserves only safe internal return paths",
+  ok:
+    adCheckout.includes("function safeInternalReturnPath") &&
+    adCheckout.includes("text.startsWith(\"/\")") &&
+    adCheckout.includes("text.startsWith(\"//\")") &&
+    adCheckout.includes("function pathWithMessage") &&
+    adCheckout.includes('formData.get("return_to")') &&
+    adCheckout.includes("returnTo: string | null") &&
+    adCheckout.includes('"success_url": successUrl') &&
+    adCheckout.includes('"cancel_url": cancelUrl'),
 });
 checks.push({
   label: "merch checkout creates local order before Stripe session",

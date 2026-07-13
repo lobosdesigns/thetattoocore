@@ -30,9 +30,31 @@ type CheckoutSession = {
   url: string | null;
 };
 
-function redirectWithMessage(path: string, message: string) {
+function safeInternalReturnPath(value: FormDataEntryValue | null) {
+  const text = String(value ?? "")
+    .trim()
+    .slice(0, 240);
+
+  if (!text || !text.startsWith("/") || text.startsWith("//") || text.includes("\\")) {
+    return null;
+  }
+
+  return text;
+}
+
+function pathWithMessage(returnTo: string | null, message: string) {
+  if (!returnTo) {
+    return `/account?message=${encodeURIComponent(message)}#advertising-settings`;
+  }
+
+  const separator = returnTo.includes("?") ? "&" : "?";
+
+  return `${returnTo}${separator}message=${encodeURIComponent(message)}`;
+}
+
+function redirectWithMessage(message: string, returnTo: string | null = null) {
   return NextResponse.redirect(
-    `${siteUrl}${path}?message=${encodeURIComponent(message)}#advertising-settings`,
+    `${siteUrl}${pathWithMessage(returnTo, message)}`,
     { status: 303 },
   );
 }
@@ -41,10 +63,12 @@ async function createAdCheckoutSession({
   campaign,
   platformFeeCents,
   prepaidAmountCents,
+  returnTo,
 }: {
   campaign: AdCampaign;
   platformFeeCents: number;
   prepaidAmountCents: number;
+  returnTo: string | null;
 }) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
 
@@ -52,12 +76,11 @@ async function createAdCheckoutSession({
     throw new Error("Checkout is almost ready. Payment setup is still being finished.");
   }
 
-  const successUrl = `${siteUrl}/account?message=${encodeURIComponent(
+  const successUrl = `${siteUrl}${pathWithMessage(
+    returnTo,
     "Ad payment received. Payment status will update soon.",
-  )}#advertising-settings`;
-  const cancelUrl = `${siteUrl}/account?message=${encodeURIComponent(
-    "Ad payment canceled.",
-  )}#advertising-settings`;
+  )}`;
+  const cancelUrl = `${siteUrl}${pathWithMessage(returnTo, "Ad payment canceled.")}`;
   const body = new URLSearchParams({
     "allow_promotion_codes": "false",
     "billing_address_collection": "auto",
@@ -129,23 +152,22 @@ export async function POST(request: Request) {
 
   if (!process.env.STRIPE_SECRET_KEY) {
     return redirectWithMessage(
-      "/account",
       "Ad checkout is almost ready. Payment setup is still being finished.",
     );
   }
 
   if (!canProcessStripeWebhooks) {
     return redirectWithMessage(
-      "/account",
       "Ad checkout is almost ready. Payment setup is still being finished.",
     );
   }
 
   const formData = await request.formData();
   const campaignId = String(formData.get("campaign_id") ?? "").trim();
+  const returnTo = safeInternalReturnPath(formData.get("return_to"));
 
   if (!campaignId) {
-    return redirectWithMessage("/account", "Choose an ad campaign first.");
+    return redirectWithMessage("Choose an ad campaign first.", returnTo);
   }
 
   const supabase = await createClient();
@@ -169,38 +191,38 @@ export async function POST(request: Request) {
     .maybeSingle<AdCampaign>();
 
   if (error || !campaign) {
-    return redirectWithMessage("/account", "That ad campaign was not found.");
+    return redirectWithMessage("That ad campaign was not found.", returnTo);
   }
 
   if (!["pending_review", "approved", "paused"].includes(campaign.status)) {
     return redirectWithMessage(
-      "/account",
       "Only pending, approved, or paused ads can start checkout.",
+      returnTo,
     );
   }
 
   if (campaign.payment_status === "paid") {
-    return redirectWithMessage("/account", "That ad campaign is already paid.");
+    return redirectWithMessage("That ad campaign is already paid.", returnTo);
   }
 
   if (campaign.payment_status === "waived") {
     return redirectWithMessage(
-      "/account",
       "That ad campaign payment has been waived.",
+      returnTo,
     );
   }
 
   if (campaign.payment_status === "checkout_started") {
     return redirectWithMessage(
-      "/account",
       "Ad checkout has already started. Finish that checkout or wait for it to expire before trying again.",
+      returnTo,
     );
   }
 
   if (campaign.daily_budget_cents <= 0) {
     return redirectWithMessage(
-      "/account",
       "Add a daily budget before starting ad checkout.",
+      returnTo,
     );
   }
 
@@ -223,15 +245,15 @@ export async function POST(request: Request) {
 
   if (reserveError) {
     return redirectWithMessage(
-      "/account",
       reserveError.message || "The ad payment could not be reserved before checkout.",
+      returnTo,
     );
   }
 
   if (!reservedCampaign) {
     return redirectWithMessage(
-      "/account",
       "Ad checkout has already started. Finish that checkout or wait for it to expire before trying again.",
+      returnTo,
     );
   }
 
@@ -257,20 +279,21 @@ export async function POST(request: Request) {
       campaign,
       platformFeeCents,
       prepaidAmountCents,
+      returnTo,
     });
   } catch (error) {
     await rollBackReservation();
     return redirectWithMessage(
-      "/account",
       error instanceof Error ? error.message : "Checkout could not open for this ad.",
+      returnTo,
     );
   }
 
   if (!session.url) {
     await rollBackReservation();
     return redirectWithMessage(
-      "/account",
       `${siteName} could not open checkout for this ad campaign.`,
+      returnTo,
     );
   }
 
@@ -292,15 +315,15 @@ export async function POST(request: Request) {
 
   if (updateError) {
     return redirectWithMessage(
-      "/account",
       updateError.message || "Checkout started, but the checkout could not be saved.",
+      returnTo,
     );
   }
 
   if (!updatedCampaign) {
     return redirectWithMessage(
-      "/account",
       "Ad checkout was reserved, but checkout could not finish opening. Wait for it to expire before trying again.",
+      returnTo,
     );
   }
 

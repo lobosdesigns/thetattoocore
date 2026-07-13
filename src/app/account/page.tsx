@@ -1861,6 +1861,11 @@ export default async function AccountPage({
                           type="hidden"
                           value={campaign.id}
                         />
+                        <input
+                          name="return_to"
+                          type="hidden"
+                          value="/account#advertising-settings"
+                        />
                         <button className="h-10 w-full rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
                           Pay {dollars(campaign.daily_budget_cents)} ad budget
                         </button>
