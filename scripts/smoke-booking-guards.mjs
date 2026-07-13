@@ -224,10 +224,22 @@ const checks = [
     ok:
       messagesPage.includes("type BookingRequest") &&
       messagesPage.includes("function BookingCards") &&
+      messagesPage.includes("returnPath") &&
+      messagesPage.includes('name="return_to"') &&
       messagesPage.includes('.from("booking_requests")') &&
       messagesPage.includes('.eq("conversation_id", selectedConversation.id)') &&
       messagesPage.includes("respondBookingRequest") &&
       messagesPage.includes('action="/api/bookings/checkout"'),
+  },
+  {
+    label: "booking actions can return to DM threads safely",
+    ok:
+      accountActions.includes("function safeInternalReturnPath") &&
+      accountActions.includes("text.startsWith(\"/\")") &&
+      accountActions.includes("text.startsWith(\"//\")") &&
+      accountActions.includes("function bookingRedirectPath") &&
+      accountActions.includes('formData.get("return_to")') &&
+      messagesPage.includes('returnPath={`/messages?c=${selectedConversation.id}`}'),
   },
   {
     label: "public profiles show enabled booking availability",

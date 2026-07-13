@@ -61,6 +61,25 @@ function accountPath(message: string, hash?: string) {
   return `/account?message=${encodeURIComponent(message)}${suffix}`;
 }
 
+function safeInternalReturnPath(value: FormDataEntryValue | null) {
+  const text = cleanText(value, 240);
+
+  if (!text || !text.startsWith("/") || text.startsWith("//") || text.includes("\\"))
+    return null;
+
+  return text;
+}
+
+function bookingRedirectPath(formData: FormData, message: string) {
+  const returnTo = safeInternalReturnPath(formData.get("return_to"));
+
+  if (!returnTo) return bookingPath(message);
+
+  const separator = returnTo.includes("?") ? "&" : "?";
+
+  return `${returnTo}${separator}message=${encodeURIComponent(message)}`;
+}
+
 function verificationPath(message: string) {
   return accountPath(message, "verification-settings");
 }
@@ -1026,7 +1045,8 @@ export async function respondBookingRequest(formData: FormData) {
   revalidatePath("/account");
   revalidatePath("/notifications");
   redirect(
-    bookingPath(
+    bookingRedirectPath(
+      formData,
       decision === "accept"
         ? "Booking accepted. Deposit checkout is the next booking step."
         : "Booking declined.",
@@ -1126,7 +1146,7 @@ export async function cancelBookingRequest(formData: FormData) {
   revalidatePath("/account");
   revalidatePath("/messages");
   revalidatePath("/notifications");
-  redirect(bookingPath("Booking request cancelled."));
+  redirect(bookingRedirectPath(formData, "Booking request cancelled."));
 }
 
 export async function cancelAcceptedBookingAsArtist(formData: FormData) {
@@ -1221,7 +1241,7 @@ export async function cancelAcceptedBookingAsArtist(formData: FormData) {
   revalidatePath("/account");
   revalidatePath("/messages");
   revalidatePath("/notifications");
-  redirect(bookingPath("Accepted booking cancelled."));
+  redirect(bookingRedirectPath(formData, "Accepted booking cancelled."));
 }
 
 export async function updateBookingSettings(formData: FormData) {

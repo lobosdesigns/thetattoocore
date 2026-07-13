@@ -195,9 +195,11 @@ function notificationConversationId(notification: MessageNotification) {
 function BookingCards({
   bookings,
   currentUserId,
+  returnPath,
 }: {
   bookings: BookingRequest[];
   currentUserId: string;
+  returnPath: string;
 }) {
   if (!bookings.length) return null;
 
@@ -279,6 +281,7 @@ function BookingCards({
               {canRespond ? (
                 <form action={respondBookingRequest} className="mt-4 grid gap-2">
                   <input name="booking_id" type="hidden" value={booking.id} />
+                  <input name="return_to" type="hidden" value={returnPath} />
                   <input
                     name="scheduled_timezone"
                     type="hidden"
@@ -358,6 +361,7 @@ function BookingCards({
               {canCancel ? (
                 <form action={cancelBookingRequest} className="mt-3">
                   <input name="booking_id" type="hidden" value={booking.id} />
+                  <input name="return_to" type="hidden" value={returnPath} />
                   <PendingSubmitButton
                     className="flex h-10 w-full items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--danger)_42%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] px-4 text-sm font-bold text-[var(--danger)] sm:w-fit"
                     pendingLabel="Cancelling"
@@ -369,6 +373,7 @@ function BookingCards({
               {canCancelAsArtist ? (
                 <form action={cancelAcceptedBookingAsArtist} className="mt-3">
                   <input name="booking_id" type="hidden" value={booking.id} />
+                  <input name="return_to" type="hidden" value={returnPath} />
                   <PendingSubmitButton
                     className="flex h-10 w-full items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--danger)_42%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] px-4 text-sm font-bold text-[var(--danger)] sm:w-fit"
                     pendingLabel="Cancelling"
@@ -869,6 +874,7 @@ export default async function MessagesPage({
               <BookingCards
                 bookings={selectedBookings ?? []}
                 currentUserId={claims.sub}
+                returnPath={`/messages?c=${selectedConversation.id}`}
               />
 
               <MessageThread
