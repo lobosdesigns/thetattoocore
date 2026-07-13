@@ -256,7 +256,9 @@ const checks = [
       homePage.includes("story_views(count)") &&
       homePage.includes("storyViewCount") &&
       homePage.includes("{storyViewCount} views") &&
+      homePage.includes("{storyViewCount}") &&
       homePage.includes("{storyReactionCount} reacts") &&
+      homePage.includes("{storyReactionCount}") &&
       homePage.includes("{timeUntil(story.expires_at)} left"),
   },
   {

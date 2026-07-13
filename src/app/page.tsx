@@ -1310,7 +1310,13 @@ function StoriesRail({
                 src={src ?? ""}
                 title={storyTitle}
               >
-                <button className="flex h-20 min-w-20 flex-col items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--gold)_48%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-center shadow-sm">
+                <button className="relative flex h-20 min-w-20 flex-col items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--gold)_48%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-center shadow-sm">
+                  <span className="absolute left-1 top-1 rounded-full bg-black/65 px-1.5 py-0.5 text-[9px] font-black leading-none text-white shadow-sm">
+                    {storyViewCount}
+                  </span>
+                  <span className="absolute right-1 top-1 rounded-full bg-[color-mix(in_srgb,var(--brand-gold)_88%,black)] px-1.5 py-0.5 text-[9px] font-black leading-none text-black shadow-sm">
+                    {storyReactionCount}
+                  </span>
                   {media?.media_type === "video" ? (
                     <span className="mb-1 flex size-10 items-center justify-center rounded-full border border-[var(--gold)] bg-[color-mix(in_srgb,var(--foreground)_88%,var(--gold))] text-[var(--background)]">
                       <Video className="size-4" />
@@ -3052,4 +3058,3 @@ export default async function Home({
     </main>
   );
 }
-
