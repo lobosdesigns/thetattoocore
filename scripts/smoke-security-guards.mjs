@@ -181,6 +181,17 @@ const checks = [
       profilePage.includes("loginHref={`/login?return_to=${encodeURIComponent(`/u/${profile.username}`)}`}"),
   },
   {
+    label: "home sign-in links preserve safe return paths",
+    ok:
+      homePage.includes("const loginReturnHref = (returnTo: string)") &&
+      homePage.includes("const memberHref = (href: string) => (isSignedIn ? href : loginReturnHref(href))") &&
+      homePage.includes('loginReturnHref("/#feed")') &&
+      homePage.includes('loginReturnHref("/#threads")') &&
+      homePage.includes('loginReturnHref("/#marketplace")') &&
+      homePage.includes('loginReturnHref("/#gigs")') &&
+      homePage.includes('loginReturnHref("/#merch")'),
+  },
+  {
     label: "external URL sanitizer only allows http and https",
     ok:
       urls.includes('["http:", "https:"].includes(url.protocol)') &&

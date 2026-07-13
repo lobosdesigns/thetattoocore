@@ -57,6 +57,9 @@ import { createClient } from "@/lib/supabase/server";
 import { userGeneratedLinkRel } from "@/lib/urls";
 import { isVerifiedProfessional } from "@/lib/verification";
 
+const loginReturnHref = (returnTo: string) =>
+  `/login?return_to=${encodeURIComponent(returnTo)}`;
+
 type Claims = {
   sub: string;
   email?: string;
@@ -1048,7 +1051,7 @@ function AuthCallout({ isSignedIn }: { isSignedIn: boolean }) {
   return (
     <Link
       className="flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-      href="/login"
+      href={loginReturnHref("/")}
     >
       <LogIn className="size-4" />
       Sign in
@@ -1094,7 +1097,7 @@ function MobileShortcutNav({
   profileHref: string;
   unreadDmBadge: number;
 }) {
-  const memberHref = (href: string) => (isSignedIn ? href : "/login");
+  const memberHref = (href: string) => (isSignedIn ? href : loginReturnHref(href));
   const items = [
     [Search, "Search", "/search", null],
     [Bookmark, "Saved", memberHref("/saved"), null],
@@ -1147,7 +1150,7 @@ function PublicVisitorGate({ lockedCount }: { lockedCount: number }) {
         </div>
         <Link
           className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-          href="/login"
+          href={loginReturnHref("/")}
         >
           <LogIn className="size-4" />
           Sign in
@@ -2126,7 +2129,7 @@ export default async function Home({
               <div className="p-4">
                 <EmptyColumnState
                   actionHref={
-                    !isSignedIn ? "/login" : canCreate ? undefined : "/account"
+                    !isSignedIn ? loginReturnHref("/#feed") : canCreate ? undefined : "/account"
                   }
                   actionLabel={
                     !isSignedIn
@@ -2348,7 +2351,7 @@ export default async function Home({
                 : (
                     <EmptyColumnState
                       actionHref={
-                        !isSignedIn ? "/login" : canCreate ? undefined : "/account"
+                        !isSignedIn ? loginReturnHref("/#threads") : canCreate ? undefined : "/account"
                       }
                       actionLabel={
                         !isSignedIn
@@ -2536,7 +2539,7 @@ export default async function Home({
                         ) : (
                           <Link
                             className="flex h-10 w-full items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-                            href="/login"
+                            href={loginReturnHref("/#marketplace")}
                           >
                             Sign in to message
                           </Link>
@@ -2554,7 +2557,7 @@ export default async function Home({
                       <EmptyColumnState
                         actionHref={
                           !isSignedIn
-                            ? "/login"
+                            ? loginReturnHref("/#marketplace")
                             : canCreateStuff
                               ? undefined
                               : "/account#verification-settings"
@@ -2759,7 +2762,7 @@ export default async function Home({
                         ) : (
                           <Link
                             className="flex h-10 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
-                            href={isSignedIn ? "/messages" : "/login"}
+                            href={isSignedIn ? "/messages" : loginReturnHref("/#gigs")}
                           >
                             {isSignedIn ? "Open DM" : "Sign in to respond"}
                           </Link>
@@ -2772,7 +2775,7 @@ export default async function Home({
                     <div className="sm:col-span-2">
                       <EmptyColumnState
                         actionHref={
-                          !isSignedIn ? "/login" : canCreate ? undefined : "/account"
+                          !isSignedIn ? loginReturnHref("/#gigs") : canCreate ? undefined : "/account"
                         }
                         actionLabel={
                           !isSignedIn
@@ -2914,7 +2917,7 @@ export default async function Home({
               ) : (
                 <div className="sm:col-span-2">
                   <EmptyColumnState
-                    actionHref={isSignedIn ? undefined : "/login"}
+                    actionHref={isSignedIn ? undefined : loginReturnHref("/#merch")}
                     actionLabel={isSignedIn ? "Approval-only" : "Sign in"}
                     body="Artist shirts, prints, art, stickers, vendor brand goods, and official TheTattooCore merchandise will live here. Merch is public-buyable, separate from verified-only Stuff, and checkout is limited during launch."
                     icon={Package}
