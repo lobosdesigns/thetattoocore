@@ -710,7 +710,7 @@ export async function endStoryPost(formData: FormData) {
   const { error } = await supabase
     .from("story_posts")
     .update({
-      expires_at: new Date().toISOString(),
+      moderation_status: "hidden",
     })
     .eq("id", storyId)
     .eq("author_id", userId);

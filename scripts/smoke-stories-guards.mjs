@@ -140,7 +140,7 @@ const checks = [
     label: "story owners can end active stories from the rail",
     ok:
       actions.includes("export async function endStoryPost") &&
-      actions.includes("expires_at: new Date().toISOString()") &&
+      actions.includes('moderation_status: "hidden"') &&
       actions.includes('.eq("author_id", userId)') &&
       homePage.includes("endStoryPost") &&
       homePage.includes("currentUserId") &&
