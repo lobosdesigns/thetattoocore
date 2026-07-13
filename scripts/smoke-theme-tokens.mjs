@@ -44,6 +44,9 @@ const requiredSnippets = [
     snippets: [
       ".ttc-card input:not([type=\"checkbox\"]):not([type=\"radio\"])",
       ".ttc-card input::placeholder",
+      "input[type=\"date\"]",
+      ":root[data-theme=\"dark\"] input[type=\"date\"]",
+      "input::file-selector-button",
       ".ttc-comment-controls button",
       ".ttc-comment-controls summary",
     ],

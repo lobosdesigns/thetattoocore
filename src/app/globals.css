@@ -195,6 +195,42 @@ textarea:focus-visible {
   color: var(--foreground);
 }
 
+input[type="date"],
+input[type="datetime-local"],
+input[type="file"],
+select {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] input[type="date"],
+:root[data-theme="dark"] input[type="datetime-local"],
+:root[data-theme="dark"] input[type="file"],
+:root[data-theme="dark"] select {
+  color-scheme: dark;
+}
+
+input::file-selector-button {
+  background: color-mix(in srgb, var(--accent) 32%, var(--paper-warm));
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--card-rim));
+  border-radius: 0.375rem;
+  color: var(--foreground);
+  cursor: pointer;
+  font-weight: 800;
+  margin-right: 0.75rem;
+  min-height: 2.5rem;
+  padding: 0.4rem 0.8rem;
+}
+
+:root[data-theme="dark"] input::file-selector-button {
+  background: color-mix(in srgb, var(--accent) 28%, var(--paper-warm));
+  color: var(--foreground);
+}
+
+button:disabled,
+input[type="submit"]:disabled {
+  cursor: not-allowed;
+}
+
 .ttc-card input::placeholder,
 .ttc-card textarea::placeholder {
   color: color-mix(in srgb, var(--foreground) 42%, transparent);
