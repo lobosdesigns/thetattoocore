@@ -339,6 +339,7 @@ function BookingCards({
               {canPay ? (
                 <form action="/api/bookings/checkout" className="mt-4" method="post">
                   <input name="booking_id" type="hidden" value={booking.id} />
+                  <input name="return_to" type="hidden" value={returnPath} />
                   <button
                     className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)] sm:w-fit"
                     disabled={booking.payment_status === "checkout_started"}

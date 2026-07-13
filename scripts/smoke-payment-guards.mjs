@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 
 const adCheckout = readFileSync("src/app/api/ads/checkout/route.ts", "utf8");
+const bookingCheckout = readFileSync("src/app/api/bookings/checkout/route.ts", "utf8");
 const merchCheckout = readFileSync("src/app/api/merch/checkout/route.ts", "utf8");
 const merchCheckoutSuccessPage = readFileSync("src/app/merch/checkout/success/page.tsx", "utf8");
 const merchPrintReceiptButton = readFileSync(
@@ -70,8 +71,22 @@ checks.push({
   ok:
     adCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&
     adCheckout.includes("Ad checkout is almost ready. Payment setup is still being finished.") &&
+    bookingCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&
+    bookingCheckout.includes("Booking checkout is almost ready. Payment setup is still being finished.") &&
     merchCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&
     merchCheckout.includes("Checkout is almost ready. Payment setup is still being finished."),
+});
+checks.push({
+  label: "booking checkout preserves only safe internal return paths",
+  ok:
+    bookingCheckout.includes("function safeInternalReturnPath") &&
+    bookingCheckout.includes("text.startsWith(\"/\")") &&
+    bookingCheckout.includes("text.startsWith(\"//\")") &&
+    bookingCheckout.includes("function pathWithMessage") &&
+    bookingCheckout.includes('formData.get("return_to")') &&
+    bookingCheckout.includes("createBookingCheckoutSession(booking, returnTo)") &&
+    bookingCheckout.includes('"success_url": successUrl') &&
+    bookingCheckout.includes('"cancel_url": cancelUrl'),
 });
 checks.push({
   label: "merch checkout creates local order before Stripe session",

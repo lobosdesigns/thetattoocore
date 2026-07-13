@@ -28,26 +28,53 @@ type CheckoutSession = {
   url: string | null;
 };
 
-function redirectWithMessage(message: string) {
+function safeInternalReturnPath(value: FormDataEntryValue | null) {
+  const text = String(value ?? "")
+    .trim()
+    .slice(0, 240);
+
+  if (!text || !text.startsWith("/") || text.startsWith("//") || text.includes("\\")) {
+    return null;
+  }
+
+  return text;
+}
+
+function pathWithMessage(returnTo: string | null, message: string) {
+  if (!returnTo) {
+    return `/account?message=${encodeURIComponent(message)}#booking-settings`;
+  }
+
+  const separator = returnTo.includes("?") ? "&" : "?";
+
+  return `${returnTo}${separator}message=${encodeURIComponent(message)}`;
+}
+
+function redirectWithMessage(message: string, returnTo: string | null = null) {
   return NextResponse.redirect(
-    `${siteUrl}/account?message=${encodeURIComponent(message)}#booking-settings`,
+    `${siteUrl}${pathWithMessage(returnTo, message)}`,
     { status: 303 },
   );
 }
 
-async function createBookingCheckoutSession(booking: BookingRequest) {
+async function createBookingCheckoutSession(
+  booking: BookingRequest,
+  returnTo: string | null,
+) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
 
   if (!secretKey) {
     throw new Error("Booking checkout is almost ready. Payment setup is still being finished.");
   }
 
-  const successUrl = `${siteUrl}/account?message=${encodeURIComponent(
+  const successUrl = `${siteUrl}${pathWithMessage(
+    returnTo,
     "Booking deposit received. Deposit status will update soon.",
-  )}#booking-settings`;
-  const cancelUrl = `${siteUrl}/account?message=${encodeURIComponent(
+  )}`;
+  const cancelUrl = `${siteUrl}${pathWithMessage(
+    returnTo,
     "Booking deposit checkout canceled.",
-  )}#booking-settings`;
+  )}`;
   const body = new URLSearchParams({
     "allow_promotion_codes": "false",
     "billing_address_collection": "auto",
@@ -141,9 +168,10 @@ export async function POST(request: Request) {
 
   const formData = await request.formData();
   const bookingId = String(formData.get("booking_id") ?? "").trim();
+  const returnTo = safeInternalReturnPath(formData.get("return_to"));
 
   if (!bookingId) {
-    return redirectWithMessage("Choose a booking request first.");
+    return redirectWithMessage("Choose a booking request first.", returnTo);
   }
 
   const supabase = await createClient();
@@ -167,35 +195,40 @@ export async function POST(request: Request) {
     .maybeSingle<BookingRequest>();
 
   if (error || !booking) {
-    return redirectWithMessage("That booking request was not found.");
+    return redirectWithMessage("That booking request was not found.", returnTo);
   }
 
   if (booking.status !== "accepted") {
-    return redirectWithMessage("The artist or studio must accept before deposit checkout opens.");
+    return redirectWithMessage(
+      "The artist or studio must accept before deposit checkout opens.",
+      returnTo,
+    );
   }
 
   if (booking.deposit_amount_cents <= 0 || booking.total_cents <= 0) {
-    return redirectWithMessage("This booking does not have a deposit to pay yet.");
+    return redirectWithMessage("This booking does not have a deposit to pay yet.", returnTo);
   }
 
   if (booking.payment_status === "paid") {
-    return redirectWithMessage("That booking deposit is already paid.");
+    return redirectWithMessage("That booking deposit is already paid.", returnTo);
   }
 
   if (booking.payment_status === "checkout_started") {
     return redirectWithMessage(
       "Booking deposit checkout has already started. Finish that checkout or wait for it to expire before trying again.",
+      returnTo,
     );
   }
 
   if (!["not_ready", "payment_failed"].includes(booking.payment_status)) {
-    return redirectWithMessage("That booking deposit is not ready for checkout.");
+    return redirectWithMessage("That booking deposit is not ready for checkout.", returnTo);
   }
 
   const adminSupabase = createAdminClient();
   if (!adminSupabase) {
     return redirectWithMessage(
       "Booking checkout is almost ready. Payment setup is still being finished.",
+      returnTo,
     );
   }
 
@@ -217,12 +250,14 @@ export async function POST(request: Request) {
   if (reserveError) {
     return redirectWithMessage(
       reserveError.message || "The booking deposit could not be reserved before checkout.",
+      returnTo,
     );
   }
 
   if (!reservedBooking) {
     return redirectWithMessage(
       "Booking deposit checkout has already started. Finish that checkout or wait for it to expire before trying again.",
+      returnTo,
     );
   }
 
@@ -245,11 +280,12 @@ export async function POST(request: Request) {
   let session: CheckoutSession;
 
   try {
-    session = await createBookingCheckoutSession(booking);
+    session = await createBookingCheckoutSession(booking, returnTo);
   } catch (error) {
     await rollBackReservation();
     return redirectWithMessage(
       error instanceof Error ? error.message : "Booking checkout could not open.",
+      returnTo,
     );
   }
 
@@ -257,6 +293,7 @@ export async function POST(request: Request) {
     await rollBackReservation();
     return redirectWithMessage(
       `${siteName} could not open checkout for this booking deposit.`,
+      returnTo,
     );
   }
 
@@ -279,12 +316,14 @@ export async function POST(request: Request) {
   if (updateError) {
     return redirectWithMessage(
       updateError.message || "Checkout started, but the checkout could not be saved.",
+      returnTo,
     );
   }
 
   if (!updatedBooking) {
     return redirectWithMessage(
       "Checkout started, but the booking could not be reserved for this checkout.",
+      returnTo,
     );
   }
 
