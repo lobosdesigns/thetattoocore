@@ -160,7 +160,7 @@ type Gig = {
 
 type StoryMedia = {
   id: string;
-  media_type: "image";
+  media_type: "image" | "video";
   storage_bucket: string;
   storage_path: string;
 };
@@ -1320,7 +1320,7 @@ function StoriesRail({
                     </div>
                   ) : null)
                 }
-                mediaType="image"
+                mediaType={media?.media_type ?? "image"}
                 openAction={
                   canRecordStoryView
                     ? recordStoryView.bind(null, story.id)
@@ -1330,10 +1330,16 @@ function StoriesRail({
                 title={storyTitle}
               >
                 <button className="flex h-20 min-w-20 flex-col items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--gold)_48%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-center shadow-sm">
-                  <span
-                    className="mb-1 block size-10 rounded-full border border-[var(--gold)] bg-cover bg-center bg-[color-mix(in_srgb,var(--foreground)_88%,var(--gold))]"
-                    style={src ? { backgroundImage: `url(${src})` } : undefined}
-                  />
+                  {media?.media_type === "video" ? (
+                    <span className="mb-1 flex size-10 items-center justify-center rounded-full border border-[var(--gold)] bg-[color-mix(in_srgb,var(--foreground)_88%,var(--gold))] text-[var(--background)]">
+                      <Video className="size-4" />
+                    </span>
+                  ) : (
+                    <span
+                      className="mb-1 block size-10 rounded-full border border-[var(--gold)] bg-cover bg-center bg-[color-mix(in_srgb,var(--foreground)_88%,var(--gold))]"
+                      style={src ? { backgroundImage: `url(${src})` } : undefined}
+                    />
+                  )}
                   <span className="max-w-16 truncate text-[11px] font-bold text-[var(--foreground)]">
                     {storyTitle}
                   </span>

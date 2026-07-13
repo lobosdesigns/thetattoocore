@@ -32,6 +32,10 @@ const storyReactionNotificationsMigration = readFileSync(
   "supabase/migrations/20260713115500_story_reaction_notifications.sql",
   "utf8",
 );
+const storyVideoMigration = readFileSync(
+  "supabase/migrations/20260713140503_allow_story_video_media.sql",
+  "utf8",
+);
 const actions = readFileSync("src/app/actions.ts", "utf8");
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
 const adminContent = readFileSync("src/app/admin/content/page.tsx", "utf8");
@@ -64,12 +68,16 @@ const checks = [
       migration.includes("is_sensitive = false"),
   },
   {
-    label: "story media starts image-only with safe metadata limits",
+    label: "story media starts safe and allows short launch videos",
     ok:
       migration.includes("media_type text not null default 'image' check (media_type = 'image')") &&
       migration.includes("file_size_bytes between 1 and 10485760") &&
       migration.includes("story_media_metadata_check") &&
-      migration.includes("story_media_story_sort_idx"),
+      migration.includes("story_media_story_sort_idx") &&
+      storyVideoMigration.includes("add column if not exists duration_seconds") &&
+      storyVideoMigration.includes("check (media_type in ('image', 'video'))") &&
+      storyVideoMigration.includes("file_size_bytes between 1 and 26214400") &&
+      storyVideoMigration.includes("duration_seconds <= 15"),
   },
   {
     label: "story media owner policies avoid overlapping authenticated select",
@@ -123,16 +131,18 @@ const checks = [
       storyPolicyConsolidationMigration.includes("expires_at <= created_at + interval '25 hours'"),
   },
   {
-    label: "story creation action requires a profile, image media, and 24-hour expiry",
+    label: "story creation action requires a profile, media, launch caps, and 24-hour expiry",
     ok:
       actions.includes("export async function createStoryPost") &&
       actions.includes("await requireProfile()") &&
-      actions.includes("Stories need a photo or GIF.") &&
-      actions.includes('metadata.mediaType !== "image"') &&
+      actions.includes("Stories need a photo, GIF, or short video.") &&
+      actions.includes("Story videos can be up to 25 MB for now.") &&
+      actions.includes("Story videos can be up to 15 seconds for now.") &&
       actions.includes("24 * 60 * 60 * 1000") &&
       actions.includes("const storyId = crypto.randomUUID()") &&
       actions.includes("await supabase.storage.from(MEDIA_BUCKET).remove([storagePath])") &&
       actions.includes("function storyMediaMetadataFields") &&
+      actions.includes("duration_seconds: metadata.durationSeconds") &&
       actions.includes("...storyMediaMetadataFields(metadata)") &&
       actions.includes('.from("story_posts")') &&
       actions.includes('.from("story_media")'),
@@ -190,13 +200,15 @@ const checks = [
       homePage.includes("<StoryCreateButton"),
   },
   {
-    label: "story composer is members-first, image-only, and launch-policy clear",
+    label: "story composer is members-first, short-video enabled, and launch-policy clear",
     ok:
       composer.includes("action={createStoryPost}") &&
       composer.includes('<VisibilityControl\n                defaultValue="members"') &&
-      composer.includes("Stories are temporary image/GIF posts") &&
+      composer.includes("Stories are temporary photo, GIF, or short-video posts") &&
       composer.includes("No visible nudity") &&
-      composer.includes("videoAllowed={false}") &&
+      composer.includes("accept={imageVideoAccept}") &&
+      composer.includes("maxVideoBytes={25 * 1024 * 1024}") &&
+      composer.includes("maxVideoSeconds={15}") &&
       composer.includes("Post story"),
   },
   {
@@ -209,6 +221,8 @@ const checks = [
       homePage.includes("24h") &&
       homePage.includes('.from("story_posts")') &&
       homePage.includes("author_id, caption") &&
+      homePage.includes('media_type: "image" | "video"') &&
+      homePage.includes("mediaType={media?.media_type ?? \"image\"}") &&
       homePage.includes('.gt("expires_at", new Date().toISOString())') &&
       storyCreateButton.includes("Add") &&
       homePage.includes("stories={visibleStories}"),
@@ -249,6 +263,7 @@ const checks = [
     label: "profile pages surface active stories safely",
     ok:
       profilePage.includes("type StoryPost =") &&
+      profilePage.includes('media_type: "image" | "video"') &&
       profilePage.includes("function ProfileStoryCard") &&
       profilePage.includes("function ProfileStoryPrompt") &&
       profilePage.includes('.from("story_posts")') &&
@@ -258,6 +273,7 @@ const checks = [
       profilePage.includes("<ProfileStoryPrompt />") &&
       profilePage.includes('href="/?compose=stories#stories"') &&
       profilePage.includes("recordStoryView.bind(null, story.id)") &&
+      profilePage.includes("mediaType={media.media_type}") &&
       profilePage.includes("toggleStoryReaction") &&
       profilePage.includes("replyToStory") &&
       profilePage.includes('subjectType="story_post"') &&

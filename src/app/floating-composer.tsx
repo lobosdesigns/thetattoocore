@@ -183,9 +183,9 @@ export function FloatingComposer({
                 24-hour story
               </p>
               <p className="mt-1">
-                Stories are temporary image/GIF posts for fresh work, shop
-                moments, events, and quick community updates. No visible nudity
-                for launch.
+                Stories are temporary photo, GIF, or short-video posts for
+                fresh work, shop moments, events, and quick community updates.
+                No visible nudity for launch.
               </p>
             </div>
             <WordLimitedField
@@ -203,11 +203,12 @@ export function FloatingComposer({
               />
             </ComposerDetails>
             <MediaInput
-              accept={imageAccept}
+              accept={imageVideoAccept}
               maxImageBytes={10 * 1024 * 1024}
+              maxVideoBytes={25 * 1024 * 1024}
+              maxVideoSeconds={15}
               name="media"
               required
-              videoAllowed={false}
             />
             <ComposerSubmit pendingLabel="Posting story">Post story</ComposerSubmit>
           </form>

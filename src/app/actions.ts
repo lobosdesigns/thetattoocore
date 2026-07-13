@@ -533,6 +533,7 @@ function mediaMetadataFields(metadata: MediaMetadata) {
 
 function storyMediaMetadataFields(metadata: MediaMetadata) {
   return {
+    duration_seconds: metadata.durationSeconds,
     file_size_bytes: metadata.fileSizeBytes,
     height: metadata.height,
     mime_type: metadata.mimeType,
@@ -632,7 +633,7 @@ export async function createStoryPost(formData: FormData) {
   const visibility = cleanVisibility(formData.get("visibility"), "members");
 
   if (!media) {
-    redirect(homeMessage("Stories need a photo or GIF.", "stories"));
+    redirect(homeMessage("Stories need a photo, GIF, or short video.", "stories"));
   }
 
   const metadata = await inspectMediaFile(media);
@@ -642,8 +643,16 @@ export async function createStoryPost(formData: FormData) {
     redirect(homeMessage(validationMessage, "stories"));
   }
 
-  if (metadata.mediaType !== "image") {
-    redirect(homeMessage("Stories support images and GIFs first. More story media options are coming later.", "stories"));
+  if (metadata.mediaType === "video" && metadata.fileSizeBytes > 25 * 1024 * 1024) {
+    redirect(homeMessage("Story videos can be up to 25 MB for now.", "stories"));
+  }
+
+  if (
+    metadata.mediaType === "video" &&
+    metadata.durationSeconds != null &&
+    metadata.durationSeconds > 15
+  ) {
+    redirect(homeMessage("Story videos can be up to 15 seconds for now.", "stories"));
   }
 
   const storyId = crypto.randomUUID();

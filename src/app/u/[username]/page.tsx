@@ -184,7 +184,7 @@ type Gig = {
 
 type StoryMedia = {
   id: string;
-  media_type: "image";
+  media_type: "image" | "video";
   storage_bucket: string;
   storage_path: string;
 };
@@ -960,7 +960,7 @@ function ProfileStoryCard({
             </div>
           ) : null
         }
-        mediaType="image"
+        mediaType={media.media_type}
         openAction={
           canRecordStoryView ? recordStoryView.bind(null, story.id) : undefined
         }
@@ -968,10 +968,16 @@ function ProfileStoryCard({
         title="Active story"
       >
         <button className="grid w-full grid-cols-[72px_1fr] items-center gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-2 text-left">
-          <span
-            className="block aspect-square rounded-md border border-[var(--card-rim)] bg-cover bg-center bg-[color-mix(in_srgb,var(--foreground)_88%,var(--gold))]"
-            style={{ backgroundImage: `url(${mediaSrc})` }}
-          />
+          {media.media_type === "video" ? (
+            <span className="flex aspect-square items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--foreground)_88%,var(--gold))] text-[var(--background)]">
+              <Video className="size-6" />
+            </span>
+          ) : (
+            <span
+              className="block aspect-square rounded-md border border-[var(--card-rim)] bg-cover bg-center bg-[color-mix(in_srgb,var(--foreground)_88%,var(--gold))]"
+              style={{ backgroundImage: `url(${mediaSrc})` }}
+            />
+          )}
           <span className="min-w-0">
             <span className="block text-sm font-bold">
               {story.caption || "Tap to view story"}
