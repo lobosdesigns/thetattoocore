@@ -113,6 +113,13 @@ function centsFromDollars(value: FormDataEntryValue | null, maxCents: number) {
   return Math.min(Math.round(amount * 100), maxCents);
 }
 
+function dollars(cents: number) {
+  return Intl.NumberFormat("en-US", {
+    currency: "USD",
+    style: "currency",
+  }).format(cents / 100);
+}
+
 function extensionFor(file: File) {
   if (file.type === "application/pdf") return "pdf";
   if (file.type === "image/png") return "png";
@@ -866,6 +873,120 @@ export async function markMerchSaleFulfilled(formData: FormData) {
   revalidatePath("/admin/merch");
   revalidatePath("/notifications");
   redirect(accountPath("Merch sale marked fulfilled.", "order-settings"));
+}
+
+function bookingPath(message: string) {
+  return accountPath(message, "booking-settings");
+}
+
+export async function respondBookingRequest(formData: FormData) {
+  const bookingId = cleanText(formData.get("booking_id"), 80);
+  const decision = cleanText(formData.get("decision"), 20);
+  const artistNote = cleanText(formData.get("artist_note"), 1000);
+
+  if (!bookingId || !["accept", "decline"].includes(decision)) {
+    redirect(bookingPath("Choose a booking request and response."));
+  }
+
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+
+  if (!claims?.sub) {
+    redirect("/login?return_to=%2Faccount%23booking-settings");
+  }
+
+  const { data: booking } = await supabase
+    .from("booking_requests")
+    .select(
+      "id, artist_id, client_id, title, deposit_amount_cents, platform_fee_cents, status, payment_status",
+    )
+    .eq("id", bookingId)
+    .maybeSingle<{
+      artist_id: string;
+      client_id: string;
+      deposit_amount_cents: number;
+      id: string;
+      payment_status: string;
+      platform_fee_cents: number;
+      status: string;
+      title: string;
+    }>();
+
+  if (!booking || booking.artist_id !== claims.sub) {
+    redirect(bookingPath("That booking request is not available."));
+  }
+
+  if (booking.status !== "requested" || booking.payment_status !== "not_ready") {
+    redirect(bookingPath("That booking request has already been handled."));
+  }
+
+  const admin = createAdminClient();
+
+  if (!admin) {
+    redirect(bookingPath("Booking responses need the server service key configured."));
+  }
+
+  const nextStatus = decision === "accept" ? "accepted" : "declined";
+  const now = new Date().toISOString();
+  const { error } = await admin
+    .from("booking_requests")
+    .update({
+      accepted_at: decision === "accept" ? now : null,
+      artist_note: artistNote || null,
+      declined_at: decision === "decline" ? now : null,
+      status: nextStatus,
+    })
+    .eq("id", booking.id)
+    .eq("artist_id", claims.sub)
+    .eq("status", "requested")
+    .eq("payment_status", "not_ready");
+
+  if (error) {
+    redirect(bookingPath(error.message || "Could not update booking request."));
+  }
+
+  const { data: artist } = await supabase
+    .from("profiles")
+    .select("display_name, username")
+    .eq("id", claims.sub)
+    .maybeSingle<{ display_name: string; username: string }>();
+  const { data: clientPreferences } = await supabase
+    .from("profiles")
+    .select(notificationPreferenceSelect("message"))
+    .eq("id", booking.client_id)
+    .maybeSingle<NotificationPreferenceProfile>();
+
+  if (allowsInAppNotification(clientPreferences, "message")) {
+    await admin.from("notifications").insert({
+      actor_id: claims.sub,
+      body:
+        decision === "accept"
+          ? booking.deposit_amount_cents > 0
+            ? `Accepted. Deposit checkout is the next step: ${dollars(booking.deposit_amount_cents)} plus TTC fee ${dollars(booking.platform_fee_cents)}.`
+            : "Accepted. Deposit checkout can be added next if needed."
+          : artistNote || "Declined for now.",
+      href: `/u/${artist?.username ?? ""}#booking-request`,
+      recipient_id: booking.client_id,
+      subject_id: booking.id,
+      subject_type: "booking_request",
+      title:
+        decision === "accept"
+          ? `${artist?.display_name ?? "Artist"} accepted your booking request`
+          : `${artist?.display_name ?? "Artist"} declined your booking request`,
+      type: decision === "accept" ? "booking_accepted" : "booking_declined",
+    });
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/notifications");
+  redirect(
+    bookingPath(
+      decision === "accept"
+        ? "Booking accepted. Deposit checkout is the next booking step."
+        : "Booking declined.",
+    ),
+  );
 }
 
 export async function requestAccountDeletion(formData: FormData) {

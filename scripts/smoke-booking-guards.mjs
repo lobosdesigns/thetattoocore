@@ -9,6 +9,8 @@ const shopIndexMigration = readFileSync(
   "utf8",
 );
 const actions = readFileSync("src/app/actions.ts", "utf8");
+const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
+const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
 const notificationsPage = readFileSync("src/app/notifications/page.tsx", "utf8");
 const fees = readFileSync("src/lib/payments/fees.ts", "utf8");
@@ -78,6 +80,25 @@ const checks = [
       actions.includes('.from("booking_requests")') &&
       actions.includes('type: "booking_request"') &&
       actions.includes("Deposit checkout opens after they accept."),
+  },
+  {
+    label: "account page exposes booking inbox and artist responses",
+    ok:
+      accountPage.includes('["#booking-settings", "Bookings"]') &&
+      accountPage.includes('.from("booking_requests")') &&
+      accountPage.includes("visibleIncomingBookings") &&
+      accountPage.includes("visibleOutgoingBookings") &&
+      accountPage.includes("respondBookingRequest") &&
+      accountPage.includes("Stripe deposit checkout will open"),
+  },
+  {
+    label: "artist booking responses are server-only and notify clients",
+    ok:
+      accountActions.includes("export async function respondBookingRequest") &&
+      accountActions.includes("createAdminClient()") &&
+      accountActions.includes('.eq("artist_id", claims.sub)') &&
+      accountActions.includes('type: decision === "accept" ? "booking_accepted" : "booking_declined"') &&
+      accountActions.includes("Deposit checkout is the next booking step."),
   },
   {
     label: "plan records calendars, deposits, fees, and next booking steps",

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import {
   markMerchSaleFulfilled,
   requestAccountDeletion,
+  respondBookingRequest,
   submitAdCampaign,
   submitLicenseVerification,
 } from "./actions";
@@ -22,6 +23,7 @@ type Claims = {
 
 const adminRoles = ["moderator", "admin", "owner"];
 const adPageSize = 25;
+const bookingPageSize = 25;
 const orderPageSize = 25;
 const accountNavItems = [
   ["#profile-settings", "Profile"],
@@ -30,6 +32,7 @@ const accountNavItems = [
   ["#privacy-settings", "Privacy"],
   ["#notification-settings", "Notifications"],
   ["#verification-settings", "Verify"],
+  ["#booking-settings", "Bookings"],
   ["#advertising-settings", "Ads"],
   ["#order-settings", "Orders"],
   ["#data-settings", "Data"],
@@ -52,10 +55,32 @@ function orderLimitHref({ adLimit, orderLimit }: { adLimit: number; orderLimit: 
   return `/account?ads=${adLimit}&orders=${orderLimit}#order-settings`;
 }
 
-function accountLoginPath({ adLimit, orderLimit }: { adLimit: number; orderLimit: number }) {
+function bookingLimitHref({
+  adLimit,
+  bookingLimit,
+  orderLimit,
+}: {
+  adLimit: number;
+  bookingLimit: number;
+  orderLimit: number;
+}) {
+  return `/account?ads=${adLimit}&bookings=${bookingLimit}&orders=${orderLimit}#booking-settings`;
+}
+
+function accountLoginPath({
+  adLimit,
+  bookingLimit,
+  orderLimit,
+}: {
+  adLimit: number;
+  bookingLimit: number;
+  orderLimit: number;
+}) {
   const returnTo =
-    adLimit !== adPageSize || orderLimit !== orderPageSize
-      ? `/account?ads=${adLimit}&orders=${orderLimit}`
+    adLimit !== adPageSize ||
+    bookingLimit !== bookingPageSize ||
+    orderLimit !== orderPageSize
+      ? `/account?ads=${adLimit}&bookings=${bookingLimit}&orders=${orderLimit}`
       : "/account";
 
   return `/login?return_to=${encodeURIComponent(returnTo)}`;
@@ -317,19 +342,21 @@ export default async function AccountPage({
 }: {
   searchParams: Promise<{
     ads?: string | string[];
+    bookings?: string | string[];
     message?: string;
     orders?: string | string[];
   }>;
 }) {
   const params = await searchParams;
   const adLimit = limitParam(params.ads);
+  const bookingLimit = limitParam(params.bookings);
   const orderLimit = limitParam(params.orders);
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
 
   if (!claims?.sub) {
-    redirect(accountLoginPath({ adLimit, orderLimit }));
+    redirect(accountLoginPath({ adLimit, bookingLimit, orderLimit }));
   }
 
   const { data: profile } = await supabase
@@ -479,10 +506,83 @@ export default async function AccountPage({
         unit_price_cents: number;
       }[]
     >();
+  const { data: incomingBookings } = await supabase
+    .from("booking_requests")
+    .select(
+      "id, title, body, placement, style_tags, preferred_city, preferred_dates, deposit_amount_cents, platform_fee_cents, total_cents, currency, status, payment_status, artist_note, created_at, accepted_at, declined_at, client:profiles!booking_requests_client_id_fkey(username, display_name, avatar_url)",
+    )
+    .eq("artist_id", claims.sub)
+    .order("created_at", { ascending: false })
+    .limit(bookingLimit + 1)
+    .returns<
+      {
+        accepted_at: string | null;
+        artist_note: string | null;
+        body: string;
+        client: {
+          avatar_url: string | null;
+          display_name: string;
+          username: string;
+        } | null;
+        created_at: string;
+        currency: string;
+        declined_at: string | null;
+        deposit_amount_cents: number;
+        id: string;
+        payment_status: string;
+        placement: string | null;
+        platform_fee_cents: number;
+        preferred_city: string | null;
+        preferred_dates: string | null;
+        status: string;
+        style_tags: string | null;
+        title: string;
+        total_cents: number;
+      }[]
+    >();
+  const { data: outgoingBookings } = await supabase
+    .from("booking_requests")
+    .select(
+      "id, title, body, placement, style_tags, preferred_city, preferred_dates, deposit_amount_cents, platform_fee_cents, total_cents, currency, status, payment_status, artist_note, created_at, accepted_at, declined_at, artist:profiles!booking_requests_artist_id_fkey(username, display_name, avatar_url)",
+    )
+    .eq("client_id", claims.sub)
+    .order("created_at", { ascending: false })
+    .limit(bookingLimit + 1)
+    .returns<
+      {
+        accepted_at: string | null;
+        artist: {
+          avatar_url: string | null;
+          display_name: string;
+          username: string;
+        } | null;
+        artist_note: string | null;
+        body: string;
+        created_at: string;
+        currency: string;
+        declined_at: string | null;
+        deposit_amount_cents: number;
+        id: string;
+        payment_status: string;
+        placement: string | null;
+        platform_fee_cents: number;
+        preferred_city: string | null;
+        preferred_dates: string | null;
+        status: string;
+        style_tags: string | null;
+        title: string;
+        total_cents: number;
+      }[]
+    >();
   const visibleMerchOrders = (merchOrders ?? []).slice(0, orderLimit);
   const hasMoreMerchOrders = (merchOrders?.length ?? 0) > orderLimit;
   const visibleMerchSales = (merchSales ?? []).slice(0, orderLimit);
   const hasMoreMerchSales = (merchSales?.length ?? 0) > orderLimit;
+  const visibleIncomingBookings = (incomingBookings ?? []).slice(0, bookingLimit);
+  const visibleOutgoingBookings = (outgoingBookings ?? []).slice(0, bookingLimit);
+  const hasMoreBookings =
+    (incomingBookings?.length ?? 0) > bookingLimit ||
+    (outgoingBookings?.length ?? 0) > bookingLimit;
   const visibleAdCampaigns = (adCampaigns ?? []).slice(0, adLimit);
   const hasMoreAdCampaigns = (adCampaigns?.length ?? 0) > adLimit;
   const canSubmitLicense =
@@ -561,6 +661,202 @@ export default async function AccountPage({
         </nav>
 
         <ProfileForm claims={claims} initialProfile={normalizedProfile} />
+
+        <section
+          className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-5 backdrop-blur"
+          id="booking-settings"
+        >
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
+                Appointments
+              </p>
+              <h2 className="text-xl font-bold">Booking requests</h2>
+            </div>
+            <span className="w-fit rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1 text-xs font-semibold">
+              Latest {bookingLimit}
+            </span>
+          </div>
+          <p className="text-sm leading-6 text-[var(--muted-strong)]">
+            Booking requests are request-first during launch. Artists and
+            studios accept or decline here; Stripe deposit checkout will open
+            only after acceptance and will include the TTC processing fee.
+          </p>
+
+          <div className="mt-5 grid gap-5 lg:grid-cols-2">
+            <div>
+              <h3 className="text-sm font-bold">Incoming</h3>
+              {visibleIncomingBookings.length ? (
+                <div className="mt-3 grid gap-3">
+                  {visibleIncomingBookings.map((booking) => {
+                    const canRespond =
+                      booking.status === "requested" &&
+                      booking.payment_status === "not_ready";
+
+                    return (
+                      <article
+                        className="rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4"
+                        key={booking.id}
+                      >
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <p className="text-sm font-bold">{booking.title}</p>
+                            <p className="mt-1 text-xs text-[var(--muted-strong)]">
+                              From{" "}
+                              {booking.client ? (
+                                <Link
+                                  className="font-semibold underline"
+                                  href={`/u/${booking.client.username}`}
+                                >
+                                  @{booking.client.username}
+                                </Link>
+                              ) : (
+                                "member"
+                              )}{" "}
+                              - {formatDate(booking.created_at)}
+                            </p>
+                          </div>
+                          <span
+                            className={`w-fit rounded-md border px-2 py-1 text-xs font-semibold capitalize ${orderStatusClass(
+                              booking.status,
+                            )}`}
+                          >
+                            {booking.status.replace("_", " ")}
+                          </span>
+                        </div>
+                        <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
+                          {booking.body}
+                        </p>
+                        <div className="mt-3 grid gap-1 text-xs leading-5 text-[var(--muted-strong)]">
+                          <p>
+                            Deposit: {money(booking.deposit_amount_cents, booking.currency)}
+                            {" "}+ TTC fee{" "}
+                            {money(booking.platform_fee_cents, booking.currency)}
+                          </p>
+                          {booking.placement ? <p>Placement: {booking.placement}</p> : null}
+                          {booking.style_tags ? <p>Style: {booking.style_tags}</p> : null}
+                          {booking.preferred_city ? <p>City: {booking.preferred_city}</p> : null}
+                          {booking.preferred_dates ? (
+                            <p>Dates: {booking.preferred_dates}</p>
+                          ) : null}
+                          {booking.artist_note ? <p>Note: {booking.artist_note}</p> : null}
+                        </div>
+                        {canRespond ? (
+                          <form action={respondBookingRequest} className="mt-4 grid gap-2">
+                            <input name="booking_id" type="hidden" value={booking.id} />
+                            <textarea
+                              className="min-h-20 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                              maxLength={1000}
+                              name="artist_note"
+                              placeholder="Optional note for the client"
+                            />
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              <PendingSubmitButton
+                                className="h-10 rounded-md border border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] px-4 text-sm font-bold text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]"
+                                name="decision"
+                                pendingLabel="Accepting"
+                                value="accept"
+                              >
+                                Accept
+                              </PendingSubmitButton>
+                              <PendingSubmitButton
+                                className="h-10 rounded-md border border-[color-mix(in_srgb,var(--danger)_42%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] px-4 text-sm font-bold text-[var(--danger)]"
+                                name="decision"
+                                pendingLabel="Declining"
+                                value="decline"
+                              >
+                                Decline
+                              </PendingSubmitButton>
+                            </div>
+                          </form>
+                        ) : null}
+                      </article>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 text-sm text-[var(--muted)]">
+                  No incoming booking requests yet.
+                </p>
+              )}
+            </div>
+
+            <div>
+              <h3 className="text-sm font-bold">Sent</h3>
+              {visibleOutgoingBookings.length ? (
+                <div className="mt-3 grid gap-3">
+                  {visibleOutgoingBookings.map((booking) => (
+                    <article
+                      className="rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4"
+                      key={booking.id}
+                    >
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-sm font-bold">{booking.title}</p>
+                          <p className="mt-1 text-xs text-[var(--muted-strong)]">
+                            To{" "}
+                            {booking.artist ? (
+                              <Link
+                                className="font-semibold underline"
+                                href={`/u/${booking.artist.username}`}
+                              >
+                                @{booking.artist.username}
+                              </Link>
+                            ) : (
+                              "artist"
+                            )}{" "}
+                            - {formatDate(booking.created_at)}
+                          </p>
+                        </div>
+                        <span
+                          className={`w-fit rounded-md border px-2 py-1 text-xs font-semibold capitalize ${orderStatusClass(
+                            booking.status,
+                          )}`}
+                        >
+                          {booking.status.replace("_", " ")}
+                        </span>
+                      </div>
+                      <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
+                        {booking.body}
+                      </p>
+                      <div className="mt-3 grid gap-1 text-xs leading-5 text-[var(--muted-strong)]">
+                        <p>
+                          Deposit: {money(booking.deposit_amount_cents, booking.currency)}
+                          {" "}+ TTC fee{" "}
+                          {money(booking.platform_fee_cents, booking.currency)}
+                        </p>
+                        <p>Payment: {booking.payment_status.replace("_", " ")}</p>
+                        {booking.accepted_at ? (
+                          <p>Accepted: {formatDate(booking.accepted_at)}</p>
+                        ) : null}
+                        {booking.declined_at ? (
+                          <p>Declined: {formatDate(booking.declined_at)}</p>
+                        ) : null}
+                        {booking.artist_note ? <p>Artist note: {booking.artist_note}</p> : null}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 text-sm text-[var(--muted)]">
+                  No sent booking requests yet.
+                </p>
+              )}
+            </div>
+          </div>
+          {hasMoreBookings ? (
+            <Link
+              className="mt-4 flex h-11 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-4 text-sm font-semibold"
+              href={bookingLimitHref({
+                adLimit,
+                bookingLimit: bookingLimit + bookingPageSize,
+                orderLimit,
+              })}
+            >
+              Load {bookingPageSize} more booking requests
+            </Link>
+          ) : null}
+        </section>
 
         <section
           className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-5 backdrop-blur"
