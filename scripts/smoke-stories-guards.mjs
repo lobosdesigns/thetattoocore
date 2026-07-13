@@ -184,6 +184,8 @@ const checks = [
       composerShell.includes('"stories", "feed"') &&
       composerShell.includes('"ttc-open-composer"') &&
       composerShell.includes("setActiveMode(mode)") &&
+      storyCreateButton.includes('aria-label="Add a Story"') &&
+      storyCreateButton.includes('href="/login?return_to=%2F%23stories"') &&
       storyCreateButton.includes('detail: { mode: "stories" }') &&
       homePage.includes("<StoryCreateButton"),
   },

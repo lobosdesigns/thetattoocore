@@ -9,7 +9,11 @@ export function StoryCreateButton({ isSignedIn }: { isSignedIn: boolean }) {
 
   if (!isSignedIn) {
     return (
-      <Link className={className} href="/login">
+      <Link
+        aria-label="Sign in to add a Story"
+        className={className}
+        href="/login?return_to=%2F%23stories"
+      >
         <Sparkles className="size-4 text-[var(--gold)]" />
         <span className="mt-1 text-[11px] font-bold text-[var(--muted)]">
           Add
@@ -23,6 +27,7 @@ export function StoryCreateButton({ isSignedIn }: { isSignedIn: boolean }) {
 
   return (
     <button
+      aria-label="Add a Story"
       className={className}
       onClick={() => {
         window.history.replaceState(null, "", "#stories");
