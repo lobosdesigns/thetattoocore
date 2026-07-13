@@ -139,7 +139,17 @@ export function FloatingComposerShell({
   }, [isOpen]);
 
   useEffect(() => {
-    const openComposer = () => setIsOpen(true);
+    const openComposer = (event: Event) => {
+      const mode = (event as CustomEvent<{ mode?: ComposerMode }>).detail?.mode;
+
+      if (mode && mode in modes) {
+        setActiveMode(mode);
+      } else {
+        setActiveMode(modeFromHash(window.location.hash));
+      }
+
+      setIsOpen(true);
+    };
 
     window.addEventListener("ttc-open-composer", openComposer);
 

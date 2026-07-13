@@ -171,7 +171,8 @@ const checks = [
       composerShell.includes('if (hash === "#stories") return "stories"') &&
       composerShell.includes('"stories", "feed"') &&
       composerShell.includes('"ttc-open-composer"') &&
-      storyCreateButton.includes('window.dispatchEvent(new CustomEvent("ttc-open-composer"))') &&
+      composerShell.includes("setActiveMode(mode)") &&
+      storyCreateButton.includes('detail: { mode: "stories" }') &&
       homePage.includes("<StoryCreateButton"),
   },
   {

@@ -26,8 +26,11 @@ export function StoryCreateButton({ isSignedIn }: { isSignedIn: boolean }) {
       className={className}
       onClick={() => {
         window.history.replaceState(null, "", "#stories");
-        window.dispatchEvent(new HashChangeEvent("hashchange"));
-        window.dispatchEvent(new CustomEvent("ttc-open-composer"));
+        window.dispatchEvent(
+          new CustomEvent("ttc-open-composer", {
+            detail: { mode: "stories" },
+          }),
+        );
       }}
       type="button"
     >
