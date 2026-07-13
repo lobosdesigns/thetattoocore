@@ -5,6 +5,7 @@
 - TheTattooCore is web/PWA-first at `https://thetattoocore.com/login`.
 - Native Android and iOS projects are not created yet.
 - PWA manifest, icons, splash assets, service worker, support URL, privacy URL, and terms URL are ready for a wrapper later.
+- Native wrapper prep lives in `docs/NATIVE_WRAPPER_PREP.md`; follow it before creating Android or iOS projects.
 - Draft store listing copy lives in `docs/STORE_LISTING_DRAFT.md`; review it against current store policies before submission.
 - Screenshot prep lives in `docs/SCREENSHOT_PREP.md`; use it before capturing public, PWA, Google Play, App Store, or press assets.
 - Age-rating prep notes live in `docs/AGE_RATING_PREP.md`; compare them to the live feature set and current store questionnaires before answering.
@@ -55,3 +56,5 @@ Start with a thin native wrapper only after core web QA is stable:
 4. Configure allowed domains for `thetattoocore.com`, Supabase auth redirects, Stripe Checkout, support, privacy, and terms.
 5. Test camera/photo-picker behavior only through normal browser file inputs unless a native upload bridge is added deliberately.
 6. Run Android internal testing and TestFlight before any public review submission.
+
+Use `docs/NATIVE_WRAPPER_PREP.md` as the detailed wrapper checklist for navigation, permissions, app links, hosted checkout handling, screenshots, and QA.

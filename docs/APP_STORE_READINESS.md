@@ -11,6 +11,7 @@
 ## Current Launch Position
 
 - Native submission details live in `docs/MOBILE_APP_SUBMISSION_RUNBOOK.md`.
+- Native wrapper prep lives in `docs/NATIVE_WRAPPER_PREP.md`.
 - Real-device QA gates live in `docs/REAL_DEVICE_QA_CHECKLIST.md`.
 - Production payment gates live in `docs/PAYMENT_PRODUCTION_READINESS.md`.
 - Draft store listing copy lives in `docs/STORE_LISTING_DRAFT.md` and should be policy-reviewed before submission.
@@ -78,6 +79,7 @@
 ## Before Google Play / App Store Submission
 
 - Map the generated splash/screenshot assets into the native wrapper once Android/iOS packaging starts.
+- Follow `docs/NATIVE_WRAPPER_PREP.md` before creating native wrapper projects or requesting native permissions.
 - Package native builds through the chosen wrapper path.
 - Add final production support/legal contact details and final counsel-reviewed Terms/Privacy. Current support contact is visible; counsel-reviewed final legal copy is still required before submission.
 - Have counsel review the final account deletion SLA, legal hold rules, and manual deletion checklist before store submission.

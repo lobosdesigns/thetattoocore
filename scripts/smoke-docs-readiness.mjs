@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 
 const docs = {
   "docs/APP_STORE_READINESS.md": readFileSync("docs/APP_STORE_READINESS.md", "utf8"),
+  "docs/NATIVE_WRAPPER_PREP.md": readFileSync("docs/NATIVE_WRAPPER_PREP.md", "utf8"),
   "docs/MOBILE_APP_SUBMISSION_RUNBOOK.md": readFileSync(
     "docs/MOBILE_APP_SUBMISSION_RUNBOOK.md",
     "utf8",
@@ -34,6 +35,12 @@ const forbiddenStoreListingProviderSnippets = [
 ];
 
 const checks = [
+  {
+    label: "readiness docs link native wrapper prep",
+    ok:
+      docs["docs/APP_STORE_READINESS.md"].includes("docs/NATIVE_WRAPPER_PREP.md") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("docs/NATIVE_WRAPPER_PREP.md"),
+  },
   {
     label: "readiness docs link the real-device QA checklist",
     ok:
@@ -80,6 +87,20 @@ const checks = [
     ok: forbiddenStoreListingProviderSnippets.every(
       (snippet) => !docs["docs/STORE_LISTING_DRAFT.md"].includes(snippet),
     ),
+  },
+  {
+    label: "native wrapper prep keeps app shell safe and minimal",
+    ok:
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Start URL: `https://thetattoocore.com/login`") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Do not place private API keys") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Allowed Navigation") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Native Permissions") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not request precise device location") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not prompt on first open") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Store Review Safety") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("docs/REAL_DEVICE_QA_CHECKLIST.md") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("docs/SCREENSHOT_PREP.md") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("raw payment or payout credentials"),
   },
   {
     label: "screenshot prep blocks private, unsafe, and technical visible content",
