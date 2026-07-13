@@ -125,10 +125,12 @@ const checks = [
       actions.includes("Story reply:") &&
       actions.includes('subject_type: "story_post"') &&
       actions.includes('href: `/messages?c=${conversationId}`') &&
+      actions.includes("ensureDirectConversation") &&
       actions.includes("blockRelationshipExists") &&
       homePage.includes("replyToStory") &&
       homePage.includes("canReplyToStory") &&
       homePage.includes('placeholder="Reply to story"') &&
+      homePage.includes('aria-label={`Reply ${reaction}`}') &&
       homePage.includes("footer={"),
   },
   {

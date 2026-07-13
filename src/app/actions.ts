@@ -161,7 +161,7 @@ async function findExistingConversation(
   return targetMembership?.conversation_id ?? null;
 }
 
-async function ensureBookingConversation({
+async function ensureDirectConversation({
   supabase,
   targetId,
   userId,
@@ -185,7 +185,7 @@ async function ensureBookingConversation({
     .single<{ id: string }>();
 
   if (conversationError || !conversation) {
-    throw new Error(conversationError?.message || "Could not start booking DM.");
+    throw new Error(conversationError?.message || "Could not start DM.");
   }
 
   const { error: creatorMemberError } = await supabase
@@ -193,7 +193,7 @@ async function ensureBookingConversation({
     .insert({ conversation_id: conversation.id, user_id: userId });
 
   if (creatorMemberError) {
-    throw new Error(creatorMemberError.message || "Could not add you to booking DM.");
+    throw new Error(creatorMemberError.message || "Could not add you to DM.");
   }
 
   const { error: targetMemberError } = await supabase
@@ -201,7 +201,7 @@ async function ensureBookingConversation({
     .insert({ conversation_id: conversation.id, user_id: targetId });
 
   if (targetMemberError) {
-    throw new Error(targetMemberError.message || "Could not add artist to booking DM.");
+    throw new Error(targetMemberError.message || "Could not add member to DM.");
   }
 
   return conversation.id;
@@ -736,7 +736,7 @@ export async function replyToStory(formData: FormData) {
   let conversationId: string;
 
   try {
-    conversationId = await ensureBookingConversation({
+    conversationId = await ensureDirectConversation({
       supabase,
       targetId: story.author_id,
       userId,
@@ -880,7 +880,7 @@ export async function createBookingRequest(formData: FormData) {
   let conversationId: string;
 
   try {
-    conversationId = await ensureBookingConversation({
+    conversationId = await ensureDirectConversation({
       supabase,
       targetId: artist.id,
       userId,

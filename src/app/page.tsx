@@ -1212,22 +1212,38 @@ function StoriesRail({
                 description={storyDescription}
                 footer={
                   canReplyToStory ? (
-                    <form action={replyToStory} className="mx-auto flex max-w-xl gap-2">
-                      <input name="story_id" type="hidden" value={story.id} />
-                      <input
-                        className="min-w-0 flex-1 rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-white outline-none placeholder:text-white/55 focus:border-white"
-                        maxLength={500}
-                        name="body"
-                        placeholder="Reply to story"
-                        required
-                      />
-                      <button
-                        aria-label="Send story reply"
-                        className="flex size-10 shrink-0 items-center justify-center rounded-md bg-white text-black"
-                      >
-                        <Send className="size-4" />
-                      </button>
-                    </form>
+                    <div className="mx-auto grid max-w-xl gap-2">
+                      <form action={replyToStory} className="flex gap-2">
+                        <input name="story_id" type="hidden" value={story.id} />
+                        <input
+                          className="min-w-0 flex-1 rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-white outline-none placeholder:text-white/55 focus:border-white"
+                          maxLength={500}
+                          name="body"
+                          placeholder="Reply to story"
+                          required
+                        />
+                        <button
+                          aria-label="Send story reply"
+                          className="flex size-10 shrink-0 items-center justify-center rounded-md bg-white text-black"
+                        >
+                          <Send className="size-4" />
+                        </button>
+                      </form>
+                      <div className="flex gap-2 overflow-x-auto">
+                        {["🔥", "🖤", "🙌", "💯"].map((reaction) => (
+                          <form action={replyToStory} key={reaction}>
+                            <input name="story_id" type="hidden" value={story.id} />
+                            <input name="body" type="hidden" value={reaction} />
+                            <button
+                              aria-label={`Reply ${reaction}`}
+                              className="flex h-9 min-w-11 items-center justify-center rounded-md border border-white/20 bg-white/10 px-3 text-lg"
+                            >
+                              {reaction}
+                            </button>
+                          </form>
+                        ))}
+                      </div>
+                    </div>
                   ) : null
                 }
                 mediaType="image"

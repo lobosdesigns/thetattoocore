@@ -80,7 +80,7 @@ const checks = [
       actions.includes("export async function createBookingRequest") &&
       actions.includes("await requireProfile()") &&
       actions.includes("calculatePlatformFeeCents(depositAmountCents)") &&
-      actions.includes("ensureBookingConversation") &&
+      actions.includes("ensureDirectConversation") &&
       actions.includes("conversation_id: conversationId") &&
       actions.includes('.from("booking_requests")') &&
       actions.includes('type: "booking_request"') &&
