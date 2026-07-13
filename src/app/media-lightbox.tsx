@@ -7,15 +7,19 @@ import { ProtectedVideo } from "./protected-video";
 type MediaLightboxProps = {
   alt?: string;
   children: ReactNode;
+  description?: string;
   mediaType: "image" | "video";
   src: string;
+  title?: string;
 };
 
 export function MediaLightbox({
   alt = "",
   children,
+  description,
   mediaType,
   src,
+  title = "Media viewer",
 }: MediaLightboxProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
@@ -79,12 +83,13 @@ export function MediaLightbox({
           <div className="flex items-center justify-between gap-3 border-b border-white/15 bg-black px-3 py-2 text-white">
             <div className="min-w-0">
               <div className="text-xs font-bold uppercase tracking-[0.22em] text-white">
-                Media viewer
+                {title}
               </div>
               <p className="mt-0.5 truncate text-[11px] text-white/75">
-                {mediaType === "image"
-                  ? "Double tap or use zoom controls to inspect detail."
-                  : "Focused playback opens here."}
+                {description ??
+                  (mediaType === "image"
+                    ? "Double tap or use zoom controls to inspect detail."
+                    : "Focused playback opens here.")}
               </p>
             </div>
             <div className="flex items-center gap-2">

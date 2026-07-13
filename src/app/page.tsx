@@ -28,6 +28,7 @@ import {
   deleteThreadPost,
   editFeedPost,
   editThreadPost,
+  endStoryPost,
   togglePostLike,
   toggleThreadLike,
 } from "./actions";
@@ -161,6 +162,7 @@ type StoryMedia = {
 };
 
 type StoryPost = {
+  author_id: string;
   caption: string | null;
   created_at: string;
   expires_at: string;
@@ -761,6 +763,18 @@ function timeAgo(value: string) {
   return `${Math.round(hours / 24)}d`;
 }
 
+function timeUntil(value: string) {
+  const diffMs = new Date(value).getTime() - Date.now();
+  const minutes = Math.max(1, Math.round(diffMs / 60000));
+
+  if (minutes < 60) return `${minutes}m`;
+
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+
+  return `${Math.round(hours / 24)}d`;
+}
+
 function formatPrice(listing: MarketplaceListing) {
   if (listing.price_cents == null) return "Contact";
 
@@ -1138,9 +1152,11 @@ function PublicVisitorGate({ lockedCount }: { lockedCount: number }) {
 }
 
 function StoriesRail({
+  currentUserId,
   isSignedIn,
   stories,
 }: {
+  currentUserId?: string;
   isSignedIn: boolean;
   stories: StoryPost[];
 }) {
@@ -1176,27 +1192,54 @@ function StoriesRail({
           const src = media
             ? mediaUrl(media.storage_bucket, media.storage_path)
             : null;
+          const isOwnStory = Boolean(currentUserId && story.author_id === currentUserId);
+          const storyTitle = story.profiles?.display_name ?? "Story";
+          const storyDescription =
+            story.caption ||
+            `${timeAgo(story.created_at)} story. Expires in ${timeUntil(story.expires_at)}.`;
 
           return (
-            <MediaLightbox
-              alt={`${story.profiles?.display_name ?? "Member"} story`}
+            <div
+              className="relative flex h-24 min-w-20 flex-col items-center"
               key={story.id}
-              mediaType="image"
-              src={src ?? ""}
             >
-              <button className="flex h-20 min-w-20 flex-col items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--gold)_48%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-center shadow-sm">
-                <span
-                  className="mb-1 block size-10 rounded-full border border-[var(--gold)] bg-cover bg-center bg-[color-mix(in_srgb,var(--foreground)_88%,var(--gold))]"
-                  style={src ? { backgroundImage: `url(${src})` } : undefined}
-                />
-                <span className="max-w-16 truncate text-[11px] font-bold text-[var(--foreground)]">
-                  {story.profiles?.display_name ?? "Story"}
+              <MediaLightbox
+                alt={`${story.profiles?.display_name ?? "Member"} story`}
+                description={storyDescription}
+                mediaType="image"
+                src={src ?? ""}
+                title={storyTitle}
+              >
+                <button className="flex h-20 min-w-20 flex-col items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--gold)_48%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-center shadow-sm">
+                  <span
+                    className="mb-1 block size-10 rounded-full border border-[var(--gold)] bg-cover bg-center bg-[color-mix(in_srgb,var(--foreground)_88%,var(--gold))]"
+                    style={src ? { backgroundImage: `url(${src})` } : undefined}
+                  />
+                  <span className="max-w-16 truncate text-[11px] font-bold text-[var(--foreground)]">
+                    {storyTitle}
+                  </span>
+                  <span className="text-[10px] font-semibold uppercase text-[var(--muted-strong)]">
+                    {timeAgo(story.created_at)}
+                  </span>
+                </button>
+              </MediaLightbox>
+              {story.caption ? (
+                <span className="mt-0.5 max-w-20 truncate text-[10px] font-semibold text-[var(--muted)]">
+                  {story.caption}
                 </span>
-                <span className="text-[10px] font-semibold uppercase text-[var(--muted-strong)]">
-                  {timeAgo(story.created_at)}
-                </span>
-              </button>
-            </MediaLightbox>
+              ) : null}
+              {isOwnStory ? (
+                <form action={endStoryPost} className="absolute -right-1 -top-1">
+                  <input name="story_id" type="hidden" value={story.id} />
+                  <button
+                    aria-label="End story"
+                    className="flex size-6 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[var(--foreground)] text-[10px] font-bold text-[var(--background)] shadow-sm"
+                  >
+                    X
+                  </button>
+                </form>
+              ) : null}
+            </div>
           );
         })}
         {!stories.length ? items.map(([label, Icon]) => (
@@ -1527,7 +1570,7 @@ export default async function Home({
     supabase
       .from("story_posts")
       .select(
-        "id, caption, visibility, created_at, expires_at, story_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!story_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, author_id, caption, visibility, created_at, expires_at, story_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!story_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("moderation_status", "active")
       .gt("expires_at", new Date().toISOString())
@@ -1742,7 +1785,11 @@ export default async function Home({
             <LanguageStatus preferredLanguage={preferredLanguage} />
           ) : null}
 
-          <StoriesRail isSignedIn={isSignedIn} stories={visibleStories} />
+          <StoriesRail
+            currentUserId={claims?.sub}
+            isSignedIn={isSignedIn}
+            stories={visibleStories}
+          />
 
           <ColumnSnapRail>
           <section

@@ -577,6 +577,30 @@ export async function createStoryPost(formData: FormData) {
   redirect(homeMessage("Story posted for 24 hours.", "stories"));
 }
 
+export async function endStoryPost(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const storyId = cleanId(formData.get("story_id"));
+
+  if (!storyId) {
+    redirect(homeMessage("Choose a story first.", "stories"));
+  }
+
+  const { error } = await supabase
+    .from("story_posts")
+    .update({
+      expires_at: new Date().toISOString(),
+    })
+    .eq("id", storyId)
+    .eq("author_id", userId);
+
+  if (error) {
+    redirect(homeMessage(error.message || "Could not end that story.", "stories"));
+  }
+
+  revalidatePath("/");
+  redirect(homeMessage("Story ended.", "stories"));
+}
+
 export async function createBookingRequest(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const artistId = cleanId(formData.get("artist_id"));

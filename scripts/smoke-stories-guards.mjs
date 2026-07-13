@@ -109,6 +109,16 @@ const checks = [
       actions.includes('.from("story_media")'),
   },
   {
+    label: "story owners can end active stories from the rail",
+    ok:
+      actions.includes("export async function endStoryPost") &&
+      actions.includes("expires_at: new Date().toISOString()") &&
+      actions.includes('.eq("author_id", userId)') &&
+      homePage.includes("endStoryPost") &&
+      homePage.includes("currentUserId") &&
+      homePage.includes('aria-label="End story"'),
+  },
+  {
     label: "story creation does not expose sensitive upload bypasses",
     ok:
       actions.includes("is_sensitive: false") &&
@@ -141,8 +151,17 @@ const checks = [
       homePage.includes("function StoriesRail") &&
       homePage.includes('id="stories"') &&
       homePage.includes('.from("story_posts")') &&
+      homePage.includes("author_id, caption") &&
       homePage.includes('.gt("expires_at", new Date().toISOString())') &&
-      homePage.includes("<StoriesRail isSignedIn={isSignedIn} stories={visibleStories} />"),
+      homePage.includes("stories={visibleStories}"),
+  },
+  {
+    label: "story viewer carries caption and author context",
+    ok:
+      homePage.includes("storyDescription") &&
+      homePage.includes("description={storyDescription}") &&
+      homePage.includes("title={storyTitle}") &&
+      homePage.includes("{story.caption}"),
   },
   {
     label: "plan records Stories as started for launch",
