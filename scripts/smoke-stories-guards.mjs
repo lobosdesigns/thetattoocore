@@ -28,6 +28,10 @@ const storyReactionsMigration = readFileSync(
   "supabase/migrations/20260713114000_story_reactions.sql",
   "utf8",
 );
+const storyReactionNotificationsMigration = readFileSync(
+  "supabase/migrations/20260713115500_story_reaction_notifications.sql",
+  "utf8",
+);
 const actions = readFileSync("src/app/actions.ts", "utf8");
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
 const adminContent = readFileSync("src/app/admin/content/page.tsx", "utf8");
@@ -219,9 +223,18 @@ const checks = [
       actions.includes("export async function toggleStoryReaction") &&
       actions.includes('.from("story_reactions").upsert') &&
       actions.includes('onConflict: "story_id,reactor_id"') &&
+      actions.includes('type: "story_reaction"') &&
+      actions.includes('notificationPreferenceSelect("feed")') &&
       homePage.includes("toggleStoryReaction") &&
       homePage.includes("story_reactions(count)") &&
       homePage.includes("storyReactionCount"),
+  },
+  {
+    label: "story reaction notifications are allowed by notification type guard",
+    ok:
+      storyReactionNotificationsMigration.includes("'story_reaction'") &&
+      storyReactionNotificationsMigration.includes("booking_deposit_paid") &&
+      storyReactionNotificationsMigration.includes("notifications_type_check"),
   },
   {
     label: "plan records Stories as started for launch",
@@ -229,7 +242,7 @@ const checks = [
       productPlan.includes("Stories: add temporary story posts") &&
       productPlan.includes("DM-backed story replies") &&
       productPlan.includes("deduplicated signed-in view counts") &&
-      productPlan.includes("quick story reactions"),
+      productPlan.includes("quick story reactions with in-app alerts"),
   },
 ];
 

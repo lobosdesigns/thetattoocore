@@ -43,6 +43,14 @@ const STORY_REACTIONS = new Set([
   "hundred",
   "sparkles",
 ]);
+const STORY_REACTION_LABELS: Record<string, string> = {
+  clap: "clapped for your story",
+  fire: "reacted fire to your story",
+  flash: "sent a flash reaction to your story",
+  heart: "loved your story",
+  hundred: "reacted 100 to your story",
+  sparkles: "sent sparkles to your story",
+};
 const MERCH_CATEGORIES = new Set([
   "accessory",
   "apparel",
@@ -806,7 +814,37 @@ export async function toggleStoryReaction(formData: FormData) {
     redirect(homeMessage(error.message || "Could not react to that story.", "stories"));
   }
 
+  const [{ data: senderProfile }, { data: authorPreferences }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", userId)
+      .maybeSingle<{ display_name: string }>(),
+    supabase
+      .from("profiles")
+      .select(notificationPreferenceSelect("feed"))
+      .eq("id", story.author_id)
+      .maybeSingle<NotificationPreferenceProfile>(),
+  ]);
+
+  if (allowsInAppNotification(authorPreferences, "feed")) {
+    await supabase.from("notifications").insert({
+      actor_id: userId,
+      body: STORY_REACTION_LABELS[reaction] ?? "reacted to your story",
+      href: "/#stories",
+      recipient_id: story.author_id,
+      subject_id: story.id,
+      subject_type: "story_post",
+      title: `Story reaction from ${senderProfile?.display_name ?? "a member"}`.slice(
+        0,
+        120,
+      ),
+      type: "story_reaction",
+    });
+  }
+
   revalidatePath("/");
+  revalidatePath("/notifications");
   redirect(homeMessage("Story reaction sent.", "stories"));
 }
 
