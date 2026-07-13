@@ -138,6 +138,14 @@ export function FloatingComposerShell({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [isOpen]);
 
+  useEffect(() => {
+    const openComposer = () => setIsOpen(true);
+
+    window.addEventListener("ttc-open-composer", openComposer);
+
+    return () => window.removeEventListener("ttc-open-composer", openComposer);
+  }, []);
+
   return (
     <>
       <button

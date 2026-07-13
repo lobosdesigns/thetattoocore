@@ -50,6 +50,7 @@ import { ProfileAvatar } from "./profile-avatar";
 import { SavedItemButton } from "./saved-item-button";
 import { SensitiveContentGate } from "./sensitive-content-gate";
 import { CompactShareButton } from "./share-actions";
+import { StoryCreateButton } from "./story-create-button";
 import { countryLabel, languageLabel, normalizedLanguage } from "@/lib/localization";
 import { siteName, siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
@@ -1180,18 +1181,7 @@ function StoriesRail({
       className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-4 py-3"
     >
       <div className="no-scrollbar flex gap-3 overflow-x-auto">
-        <a
-          className="flex h-20 min-w-20 flex-col items-center justify-center rounded-md border border-dashed border-[var(--gold)] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] px-3 text-center"
-          href={isSignedIn ? "#stories" : "/login"}
-        >
-          <Sparkles className="size-4 text-[var(--gold)]" />
-          <span className="mt-1 text-[11px] font-bold text-[var(--muted)]">
-            Create
-          </span>
-          <span className="text-[10px] font-semibold uppercase text-[var(--muted-strong)]">
-            Story
-          </span>
-        </a>
+        <StoryCreateButton isSignedIn={isSignedIn} />
         {stories.map((story) => {
           const media = story.story_media[0];
           const src = media

@@ -40,6 +40,7 @@ const composer = readFileSync("src/app/floating-composer.tsx", "utf8");
 const composerShell = readFileSync("src/app/floating-composer-shell.tsx", "utf8");
 const homePage = readFileSync("src/app/page.tsx", "utf8");
 const notificationsPage = readFileSync("src/app/notifications/page.tsx", "utf8");
+const storyCreateButton = readFileSync("src/app/story-create-button.tsx", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 
 const checks = [
@@ -168,7 +169,10 @@ const checks = [
       composerShell.includes('| "stories"') &&
       composerShell.includes('label: "Story"') &&
       composerShell.includes('if (hash === "#stories") return "stories"') &&
-      composerShell.includes('"stories", "feed"'),
+      composerShell.includes('"stories", "feed"') &&
+      composerShell.includes('"ttc-open-composer"') &&
+      storyCreateButton.includes('window.dispatchEvent(new CustomEvent("ttc-open-composer"))') &&
+      homePage.includes("<StoryCreateButton"),
   },
   {
     label: "story composer is members-first, image-only, and launch-policy clear",
