@@ -140,6 +140,7 @@ const checks = [
     label: "story owners can end active stories from the rail",
     ok:
       actions.includes("export async function endStoryPost") &&
+      actions.includes("const writeClient = createAdminClient() ?? supabase") &&
       actions.includes('moderation_status: "hidden"') &&
       actions.includes('.eq("author_id", userId)') &&
       homePage.includes("endStoryPost") &&

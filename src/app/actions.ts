@@ -702,12 +702,13 @@ export async function createStoryPost(formData: FormData) {
 export async function endStoryPost(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const storyId = cleanId(formData.get("story_id"));
+  const writeClient = createAdminClient() ?? supabase;
 
   if (!storyId) {
     redirect(homeMessage("Choose a story first.", "stories"));
   }
 
-  const { error } = await supabase
+  const { error } = await writeClient
     .from("story_posts")
     .update({
       moderation_status: "hidden",
