@@ -103,7 +103,9 @@ type ViewerProfile = {
 type BookingSettings = {
   booking_enabled: boolean;
   booking_note: string | null;
+  booking_url: string | null;
   calendar_connection_status: string;
+  calendar_notes: string | null;
   cancellation_policy: string | null;
   default_deposit_amount_cents: number;
   deposit_policy: string;
@@ -1332,7 +1334,7 @@ export default async function ProfilePage({
       ? supabase
           .from("booking_settings")
           .select(
-            "booking_enabled, timezone, weekly_availability, booking_note, cancellation_policy, deposit_policy, default_deposit_amount_cents, calendar_connection_status",
+            "booking_enabled, timezone, weekly_availability, booking_note, booking_url, calendar_notes, cancellation_policy, deposit_policy, default_deposit_amount_cents, calendar_connection_status",
           )
           .eq("profile_id", profile.id)
           .maybeSingle<BookingSettings>()
@@ -1603,6 +1605,22 @@ export default async function ProfilePage({
                     <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">
                       {bookingSettings.booking_note}
                     </p>
+                  ) : null}
+                  {bookingSettings?.calendar_notes ? (
+                    <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">
+                      {bookingSettings.calendar_notes}
+                    </p>
+                  ) : null}
+                  {bookingSettings?.booking_url ? (
+                    <a
+                      className="mt-3 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)]"
+                      href={bookingSettings.booking_url}
+                      rel={userGeneratedLinkRel}
+                      target="_blank"
+                    >
+                      <CalendarPlus className="size-4" />
+                      Open booking link
+                    </a>
                   ) : null}
                   {bookingSettings?.cancellation_policy ? (
                     <div className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2">

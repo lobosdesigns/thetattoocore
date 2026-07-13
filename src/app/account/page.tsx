@@ -26,7 +26,9 @@ type Claims = {
 type BookingSettings = {
   booking_enabled: boolean;
   booking_note: string | null;
+  booking_url: string | null;
   calendar_connection_status: string;
+  calendar_notes: string | null;
   cancellation_policy: string | null;
   default_deposit_amount_cents: number;
   deposit_policy: string;
@@ -558,7 +560,7 @@ export default async function AccountPage({
   const { data: bookingSettings } = await supabase
     .from("booking_settings")
     .select(
-      "booking_enabled, timezone, weekly_availability, booking_note, cancellation_policy, deposit_policy, default_deposit_amount_cents, calendar_connection_status",
+      "booking_enabled, timezone, weekly_availability, booking_note, booking_url, calendar_notes, cancellation_policy, deposit_policy, default_deposit_amount_cents, calendar_connection_status",
     )
     .eq("profile_id", claims.sub)
     .maybeSingle<BookingSettings>();
@@ -778,6 +780,17 @@ export default async function AccountPage({
                   </p>
                 </div>
                 <label className="grid gap-1 text-sm font-semibold md:col-span-2">
+                  Public booking link
+                  <input
+                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                    defaultValue={bookingSettings?.booking_url ?? ""}
+                    maxLength={500}
+                    name="booking_url"
+                    placeholder="https://your-booking-page.example"
+                    type="url"
+                  />
+                </label>
+                <label className="grid gap-1 text-sm font-semibold md:col-span-2">
                   Weekly availability
                   <textarea
                     className="min-h-24 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
@@ -785,6 +798,16 @@ export default async function AccountPage({
                     maxLength={500}
                     name="availability_summary"
                     placeholder="Example: Tue-Fri 12-7, Saturdays by appointment, closed Sunday/Monday."
+                  />
+                </label>
+                <label className="grid gap-1 text-sm font-semibold md:col-span-2">
+                  Calendar notes
+                  <textarea
+                    className="min-h-20 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                    defaultValue={bookingSettings?.calendar_notes ?? ""}
+                    maxLength={500}
+                    name="calendar_notes"
+                    placeholder="Example: check my public booking link first, then send a DM for deposit questions."
                   />
                 </label>
                 <label className="grid gap-1 text-sm font-semibold md:col-span-2">

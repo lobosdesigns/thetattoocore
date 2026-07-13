@@ -20,6 +20,10 @@ const bookingPolicyMigration = readFileSync(
   "supabase/migrations/20260713100845_booking_cancellation_policy.sql",
   "utf8",
 );
+const bookingCalendarMigration = readFileSync(
+  "supabase/migrations/20260713182530_booking_calendar_public_fields.sql",
+  "utf8",
+);
 const actions = readFileSync("src/app/actions.ts", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
@@ -187,6 +191,20 @@ const checks = [
       profilePage.includes("Open for requests") &&
       profilePage.includes("Cancellation policy") &&
       profilePage.includes("default_deposit_amount_cents"),
+  },
+  {
+    label: "booking settings support safe public calendar prep fields",
+    ok:
+      bookingCalendarMigration.includes("add column if not exists booking_url text") &&
+      bookingCalendarMigration.includes("add column if not exists calendar_notes text") &&
+      bookingCalendarMigration.includes("booking_settings_booking_url_check") &&
+      bookingCalendarMigration.includes("booking_url ~ '^https?://'") &&
+      accountActions.includes("const bookingUrl = cleanExternalUrl(formData.get(\"booking_url\"), 500)") &&
+      accountActions.includes("calendar_notes: calendarNotes || null") &&
+      accountPage.includes("Public booking link") &&
+      accountPage.includes("Calendar notes") &&
+      profilePage.includes("Open booking link") &&
+      profilePage.includes("bookingSettings.calendar_notes"),
   },
   {
     label: "Stripe webhook understands booking deposit events",

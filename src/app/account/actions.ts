@@ -1118,6 +1118,8 @@ export async function updateBookingSettings(formData: FormData) {
   const bookingEnabled = formData.get("booking_enabled") === "on";
   const availabilitySummary = cleanText(formData.get("availability_summary"), 500);
   const bookingNote = cleanText(formData.get("booking_note"), 500);
+  const bookingUrl = cleanExternalUrl(formData.get("booking_url"), 500);
+  const calendarNotes = cleanText(formData.get("calendar_notes"), 500);
   const cancellationPolicy = cleanText(formData.get("cancellation_policy"), 500);
   const depositPolicy = cleanText(formData.get("deposit_policy"), 20);
   const defaultDepositAmountCents = centsFromDollars(
@@ -1136,7 +1138,9 @@ export async function updateBookingSettings(formData: FormData) {
   const { error } = await supabase.from("booking_settings").upsert({
     booking_enabled: bookingEnabled,
     booking_note: bookingNote || null,
+    booking_url: bookingUrl,
     calendar_connection_status: "manual",
+    calendar_notes: calendarNotes || null,
     cancellation_policy: cancellationPolicy || null,
     default_deposit_amount_cents: defaultDepositAmountCents,
     deposit_policy: depositPolicy,
