@@ -143,6 +143,10 @@ function notificationHref(notification: Notification) {
     return `/t/${notification.subject_id}`;
   }
 
+  if (notification.subject_type === "story_post") {
+    return notification.href || "/#stories";
+  }
+
   return notification.href;
 }
 

@@ -291,7 +291,8 @@ const checks = [
       storyReactionNotificationsMigration.includes("notifications_type_check") &&
       notificationsPage.includes('| "story_reaction"') &&
       notificationsPage.includes('type === "story_reaction"') &&
-      notificationsPage.includes('if (type === "story_post") return "Story"'),
+      notificationsPage.includes('if (type === "story_post") return "Story"') &&
+      notificationsPage.includes('notification.href || "/#stories"'),
   },
   {
     label: "plan records Stories as started for launch",
