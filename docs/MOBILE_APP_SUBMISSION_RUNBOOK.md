@@ -7,6 +7,7 @@
 - PWA manifest, icons, splash assets, service worker, support URL, privacy URL, and terms URL are ready for a wrapper later.
 - Draft store listing copy lives in `docs/STORE_LISTING_DRAFT.md`; review it against current store policies before submission.
 - Age-rating prep notes live in `docs/AGE_RATING_PREP.md`; compare them to the live feature set and current store questionnaires before answering.
+- Real-device QA gates live in `docs/REAL_DEVICE_QA_CHECKLIST.md` and should pass before wrapper packaging.
 - Visible nudity is not allowed for launch to reduce review and moderation risk.
 - Merch and ads use Stripe in test mode; production payments, seller payouts, taxes, refunds, disputes, and app-store policy review must be finished before real commerce is promoted in native builds.
 
@@ -21,7 +22,7 @@ Start with a thin native wrapper only after core web QA is stable:
 
 ## Required Before Store Submission
 
-- Run real-device QA for signup, login, reset password, profile setup, 4U, Gossip, Stuff, Gigs, Merch browsing, DMs, notifications, reports, blocking, verification upload, and account deletion request.
+- Run the real-device checklist in `docs/REAL_DEVICE_QA_CHECKLIST.md` for signup, login, reset password, profile setup, 4U, Gossip, Stuff, Gigs, Merch browsing, DMs, notifications, reports, blocking, verification upload, payment test paths, and account deletion request.
 - Confirm app-store-safe screenshots use brand assets and safe sample content only.
 - Confirm support email and public legal/contact surfaces use `support@thetattoocore.com` or final company/legal contact details, not personal owner information.
 - Have counsel review Terms, Privacy, account deletion language, moderation policy, marketplace rules, and payment/refund language.
