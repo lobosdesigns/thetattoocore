@@ -368,7 +368,7 @@ async function checkRobotsPolicy() {
   const missingDisallows = requiredRobotsDisallows.filter(
     (path) => !body.includes(`Disallow: ${path}`),
   );
-  const missingAllows = ["/p/", "/t/", "/u/", "/stuff/", "/gigs/"].filter(
+  const missingAllows = ["/p/", "/t/", "/u/", "/stuff/", "/gigs/", "/merch/"].filter(
     (path) => !body.includes(`Allow: ${path}`),
   );
 
