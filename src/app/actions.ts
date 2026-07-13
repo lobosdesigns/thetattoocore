@@ -9,6 +9,7 @@ import {
   notificationPreferenceSelect,
   type NotificationPreferenceProfile,
 } from "@/lib/notifications";
+import { calculatePlatformFeeCents } from "@/lib/payments/fees";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { cleanExternalUrl } from "@/lib/urls";
@@ -124,6 +125,15 @@ function cleanWords(value: FormDataEntryValue | null, maxWords: number) {
 
 function cleanId(value: FormDataEntryValue | null) {
   return String(value ?? "").trim();
+}
+
+function cleanMoneyCents(value: FormDataEntryValue | null) {
+  const normalized = cleanText(value, 20).replace(/[$,]/g, "");
+  const parsed = normalized ? Number(normalized) : 0;
+
+  if (!Number.isFinite(parsed) || parsed <= 0) return 0;
+
+  return Math.min(500000, Math.round(parsed * 100));
 }
 
 export async function acceptAdultTerms(formData: FormData) {
@@ -565,6 +575,140 @@ export async function createStoryPost(formData: FormData) {
 
   revalidatePath("/");
   redirect(homeMessage("Story posted for 24 hours.", "stories"));
+}
+
+export async function createBookingRequest(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const artistId = cleanId(formData.get("artist_id"));
+  const returnPath = cleanText(formData.get("return_path"), 200) || "/";
+  const title = cleanText(formData.get("title"), 120);
+  const body = cleanText(formData.get("body"), 2000);
+  const placement = cleanText(formData.get("placement"), 120);
+  const styleTags = cleanText(formData.get("style_tags"), 160);
+  const preferredCity = cleanText(formData.get("preferred_city"), 120);
+  const preferredDates = cleanText(formData.get("preferred_dates"), 240);
+  const depositAmountCents = cleanMoneyCents(formData.get("deposit_amount"));
+  const platformFeeCents = calculatePlatformFeeCents(depositAmountCents);
+  const totalCents = depositAmountCents + platformFeeCents;
+
+  if (!artistId || artistId === userId) {
+    redirect(
+      redirectWithMessage({
+        hash: "booking-request",
+        message: "Choose a verified artist or studio for booking.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  if (title.length < 3 || body.length < 10) {
+    redirect(
+      redirectWithMessage({
+        hash: "booking-request",
+        message: "Add a title and at least 10 characters of booking details.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  const { data: artist, error: artistError } = await supabase
+    .from("profiles")
+    .select(
+      "id, username, display_name, account_type, license_verified_at, shop_profile_id, suspended_at, banned_at",
+    )
+    .eq("id", artistId)
+    .maybeSingle<{
+      account_type: string;
+      banned_at: string | null;
+      display_name: string;
+      id: string;
+      license_verified_at: string | null;
+      shop_profile_id: string | null;
+      suspended_at: string | null;
+      username: string;
+    }>();
+
+  if (
+    artistError ||
+    !artist ||
+    !["artist", "studio"].includes(artist.account_type) ||
+    !artist.license_verified_at ||
+    artist.suspended_at ||
+    artist.banned_at
+  ) {
+    redirect(
+      redirectWithMessage({
+        hash: "booking-request",
+        message: "Booking requests are available for verified artists and studios.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  const { data: booking, error } = await supabase
+    .from("booking_requests")
+    .insert({
+      artist_id: artist.id,
+      body,
+      client_id: userId,
+      currency: "USD",
+      deposit_amount_cents: depositAmountCents,
+      payment_status: "not_ready",
+      placement: placement || null,
+      platform_fee_cents: platformFeeCents,
+      preferred_city: preferredCity || null,
+      preferred_dates: preferredDates || null,
+      shop_profile_id:
+        artist.account_type === "artist" ? artist.shop_profile_id : artist.id,
+      status: "requested",
+      style_tags: styleTags || null,
+      title,
+      total_cents: totalCents,
+    })
+    .select("id")
+    .maybeSingle<{ id: string }>();
+
+  if (error || !booking) {
+    redirect(
+      redirectWithMessage({
+        hash: "booking-request",
+        message: error?.message || "Could not send booking request.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  const { data: artistPreferences } = await supabase
+    .from("profiles")
+    .select(notificationPreferenceSelect("message"))
+    .eq("id", artist.id)
+    .maybeSingle<NotificationPreferenceProfile>();
+
+  if (allowsInAppNotification(artistPreferences, "message")) {
+    await supabase.from("notifications").insert({
+      actor_id: userId,
+      body:
+        depositAmountCents > 0
+          ? `Requested deposit: $${(depositAmountCents / 100).toFixed(2)} plus TTC processing fee.`
+          : "No deposit requested yet.",
+      href: `/messages?to=${artist.username}`,
+      recipient_id: artist.id,
+      subject_id: booking.id,
+      subject_type: "booking_request",
+      title: "New booking request",
+      type: "booking_request",
+    });
+  }
+
+  revalidatePath(returnPath);
+  revalidatePath("/notifications");
+  redirect(
+    redirectWithMessage({
+      hash: "booking-request",
+      message: `Booking request sent to ${artist.display_name}. Deposit checkout opens after they accept.`,
+      path: returnPath,
+    }),
+  );
 }
 
 export async function editFeedPost(formData: FormData) {

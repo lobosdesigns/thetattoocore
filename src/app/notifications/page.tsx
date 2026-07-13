@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   BadgeCheck,
   Bell,
+  CalendarDays,
   Check,
   CreditCard,
   Heart,
@@ -46,6 +47,10 @@ type Notification = {
     | "ad_paid"
     | "ad_payment_failed"
     | "ad_refunded"
+    | "booking_accepted"
+    | "booking_declined"
+    | "booking_deposit_paid"
+    | "booking_request"
     | "message"
     | "merch_paid"
     | "merch_fulfilled"
@@ -87,6 +92,10 @@ function notificationIcon(type: Notification["type"]) {
   if (type === "ad_payment_failed") return ShieldAlert;
   if (type === "ad_paid") return CreditCard;
   if (type === "ad_refunded") return CreditCard;
+  if (type === "booking_deposit_paid") return CreditCard;
+  if (type === "booking_accepted") return BadgeCheck;
+  if (type === "booking_declined") return ShieldAlert;
+  if (type === "booking_request") return CalendarDays;
   if (type === "merch_paid") return CreditCard;
   if (type === "merch_fulfilled") return BadgeCheck;
   if (type === "merch_refunded") return CreditCard;
@@ -111,6 +120,7 @@ function subjectLabel(type: string) {
   if (type === "message") return "DM";
   if (type === "conversation") return "DM";
   if (type === "ad_campaign") return "Ad";
+  if (type === "booking_request") return "Booking";
   if (type === "merch_order") return "Merch order";
   if (type === "merch_product") return "Merch";
   if (type === "license_verification_request") return "Verification";

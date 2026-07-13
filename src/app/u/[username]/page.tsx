@@ -8,6 +8,7 @@ import {
   Ban,
   BriefcaseBusiness,
   CalendarDays,
+  CalendarPlus,
   Camera,
   LinkIcon,
   LogIn,
@@ -22,7 +23,7 @@ import {
   Video,
   type LucideIcon,
 } from "lucide-react";
-import { acceptAdultTerms, archiveGig } from "@/app/actions";
+import { acceptAdultTerms, archiveGig, createBookingRequest } from "@/app/actions";
 import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
@@ -30,6 +31,7 @@ import { ProtectedVideo } from "@/app/protected-video";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { createClient } from "@/lib/supabase/server";
+import { platformFeePercentLabel } from "@/lib/payments/fees";
 import {
   brandShareImage,
   brandShareImageAlt,
@@ -1093,6 +1095,13 @@ export default async function ProfilePage({
     ),
     isSignedIn: Boolean(claims?.sub),
   };
+  const canRequestBooking =
+    !isOwnProfile &&
+    Boolean(claims?.sub) &&
+    !hasBlockRelationship &&
+    !isPrivateLocked &&
+    isVerifiedProfile(profile) &&
+    ["artist", "studio"].includes(profile.account_type);
   const canShow = (item: VisibleContent) =>
     !isPrivateLocked && canRenderContent({ isOwnProfile, item, viewer });
   const visiblePosts = (posts ?? []).filter(canShow);
@@ -1405,6 +1414,90 @@ export default async function ProfilePage({
                   )
                 ) : null}
               </div>
+              {canRequestBooking ? (
+                <details
+                  className="mt-4 scroll-mt-28 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_84%,var(--brand-gold)_7%)] p-3"
+                  id="booking-request"
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                    <span className="inline-flex items-center gap-2 text-sm font-bold">
+                      <CalendarPlus className="size-4 text-[var(--gold)]" />
+                      Request booking
+                    </span>
+                    <span className="text-xs font-semibold text-[var(--muted-strong)]">
+                      Deposit later
+                    </span>
+                  </summary>
+                  <form action={createBookingRequest} className="mt-3 grid gap-3">
+                    <input name="artist_id" type="hidden" value={profile.id} />
+                    <input
+                      name="return_path"
+                      type="hidden"
+                      value={`/u/${profile.username}`}
+                    />
+                    <input
+                      className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                      maxLength={120}
+                      name="title"
+                      placeholder="Tattoo idea or appointment title"
+                      required
+                    />
+                    <textarea
+                      className="min-h-28 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                      maxLength={2000}
+                      name="body"
+                      placeholder="Describe placement, size, style, references, schedule needs, and anything the artist should know."
+                      required
+                    />
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <input
+                        className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                        maxLength={120}
+                        name="placement"
+                        placeholder="Placement"
+                      />
+                      <input
+                        className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                        maxLength={160}
+                        name="style_tags"
+                        placeholder="Style tags"
+                      />
+                      <input
+                        className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                        maxLength={120}
+                        name="preferred_city"
+                        placeholder="Preferred city"
+                      />
+                      <input
+                        className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                        maxLength={240}
+                        name="preferred_dates"
+                        placeholder="Preferred dates"
+                      />
+                    </div>
+                    <label className="block">
+                      <span className="text-xs font-semibold text-[var(--muted)]">
+                        Requested deposit amount
+                      </span>
+                      <input
+                        className="mt-1 h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                        inputMode="decimal"
+                        name="deposit_amount"
+                        placeholder="Example: 100"
+                      />
+                    </label>
+                    <p className="text-xs leading-5 text-[var(--muted-strong)]">
+                      Deposit checkout opens only after the artist or studio
+                      accepts. TTC records a transparent {platformFeePercentLabel}{" "}
+                      booking processing fee with the deposit.
+                    </p>
+                    <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
+                      <CalendarPlus className="size-4" />
+                      Send booking request
+                    </button>
+                  </form>
+                </details>
+              ) : null}
             </div>
           </div>
         </section>
