@@ -23,6 +23,31 @@ const requiredSnippets = [
     file: "src/app/pending-submit-button.tsx",
     snippets: ["ttc-disabled-state"],
   },
+  {
+    file: "src/app/media-lightbox.tsx",
+    snippets: [
+      "bg-black text-white",
+      "border-white/15 bg-black px-3 py-2 text-white",
+      "bg-white/10 text-white",
+    ],
+  },
+  {
+    file: "src/app/admin/page.tsx",
+    snippets: [
+      "bg-[#090806] px-5 py-5 text-white",
+      "text-sm font-semibold text-white",
+      "text-xs text-white/70",
+    ],
+  },
+  {
+    file: "src/app/globals.css",
+    snippets: [
+      ".ttc-card input:not([type=\"checkbox\"]):not([type=\"radio\"])",
+      ".ttc-card input::placeholder",
+      ".ttc-comment-controls button",
+      ".ttc-comment-controls summary",
+    ],
+  },
 ];
 
 let failures = 0;
