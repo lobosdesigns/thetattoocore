@@ -41,9 +41,27 @@ function cleanQuantity(value: FormDataEntryValue | null) {
   return Math.max(1, Math.min(10, parsed));
 }
 
+function safeInternalReturnPath(value: FormDataEntryValue | null) {
+  const text = String(value ?? "")
+    .trim()
+    .slice(0, 240);
+
+  if (!text || !text.startsWith("/") || text.startsWith("//") || text.includes("\\")) {
+    return null;
+  }
+
+  return text;
+}
+
+function pathWithMessage(path: string, message: string) {
+  const separator = path.includes("?") ? "&" : "?";
+
+  return `${path}${separator}message=${encodeURIComponent(message)}`;
+}
+
 function redirectWithMessage(path: string, message: string) {
   return NextResponse.redirect(
-    `${siteUrl}${path}?message=${encodeURIComponent(message)}`,
+    `${siteUrl}${pathWithMessage(path, message)}`,
     { status: 303 },
   );
 }
@@ -178,9 +196,10 @@ export async function POST(request: Request) {
   const formData = await request.formData();
   const productId = String(formData.get("product_id") ?? "").trim();
   const quantity = cleanQuantity(formData.get("quantity"));
+  const formReturnTo = safeInternalReturnPath(formData.get("return_to"));
 
   if (!productId) {
-    return redirectWithMessage("/#merch", "Choose a merch product first.");
+    return redirectWithMessage(formReturnTo ?? "/#merch", "Choose a merch product first.");
   }
 
   const supabase = await createClient();
@@ -205,25 +224,27 @@ export async function POST(request: Request) {
     .maybeSingle<Product>();
 
   if (error || !product) {
-    return redirectWithMessage("/#merch", "That merch product is not available.");
+    return redirectWithMessage(formReturnTo ?? "/#merch", "That merch product is not available.");
   }
+
+  const returnTo = formReturnTo ?? `/merch/${product.id}`;
 
   if (!product.is_official && !isVerifiedProfessional(product.profiles)) {
     return redirectWithMessage(
-      "/#merch",
+      returnTo,
       "That merch seller needs approval again before checkout can open.",
     );
   }
 
   if (product.seller_id === claims.sub) {
-    return redirectWithMessage(`/merch/${product.id}`, "You cannot buy your own merch.");
+    return redirectWithMessage(returnTo, "You cannot buy your own merch.");
   }
 
   const available = product.inventory_quantity - product.inventory_reserved;
 
   if (available < quantity) {
     return redirectWithMessage(
-      `/merch/${product.id}`,
+      returnTo,
       "Not enough inventory is available for that quantity.",
     );
   }
@@ -233,13 +254,11 @@ export async function POST(request: Request) {
   const platformFeeCents = calculatePlatformFeeCents(subtotalCents);
   const totalCents = subtotalCents + platformFeeCents;
   const successUrl = `${siteUrl}/merch/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
-  const cancelUrl = `${siteUrl}/merch/${product.id}?message=${encodeURIComponent(
-    "Checkout canceled.",
-  )}`;
+  const cancelUrl = `${siteUrl}${pathWithMessage(returnTo, "Checkout canceled.")}`;
   const adminSupabase = createAdminClient();
   if (!adminSupabase) {
     return redirectWithMessage(
-      `/merch/${product.id}`,
+      returnTo,
       "Checkout is almost ready. Payment setup is still being finished.",
     );
   }
@@ -274,7 +293,7 @@ export async function POST(request: Request) {
 
   if (orderError) {
     return redirectWithMessage(
-      `/merch/${product.id}`,
+      returnTo,
       orderError.message || "The order could not be saved before checkout.",
     );
   }
@@ -295,7 +314,7 @@ export async function POST(request: Request) {
     await cancelUnreservedPendingOrder("Order item could not be saved before checkout.");
 
     return redirectWithMessage(
-      `/merch/${product.id}`,
+      returnTo,
       itemError.message || "The order item could not be saved before checkout.",
     );
   }
@@ -330,7 +349,7 @@ export async function POST(request: Request) {
     await cancelPendingOrder("Inventory could not be reserved for checkout.");
 
     return redirectWithMessage(
-      `/merch/${product.id}`,
+      returnTo,
       reserveError.message || "Inventory could not be reserved for checkout.",
     );
   }
@@ -352,7 +371,7 @@ export async function POST(request: Request) {
     await cancelPendingOrder("Checkout could not open.");
 
     return redirectWithMessage(
-      `/merch/${product.id}`,
+      returnTo,
       error instanceof Error ? error.message : "Checkout could not open.",
     );
   }
@@ -374,7 +393,7 @@ export async function POST(request: Request) {
     await cancelPendingOrder("Checkout started, but the order session could not be saved.");
 
     return redirectWithMessage(
-      `/merch/${product.id}`,
+      returnTo,
       sessionError.message || "Checkout started, but the order session could not be saved.",
     );
   }
@@ -383,7 +402,7 @@ export async function POST(request: Request) {
     await cancelPendingOrder("Checkout started, but the pending order could not be reserved for this checkout.");
 
     return redirectWithMessage(
-      `/merch/${product.id}`,
+      returnTo,
       "Checkout started, but the pending order could not be reserved for this checkout.",
     );
   }
@@ -392,7 +411,7 @@ export async function POST(request: Request) {
     await cancelPendingOrder("Checkout did not return a secure payment link.");
 
     return redirectWithMessage(
-      `/merch/${product.id}`,
+      returnTo,
       `${siteName} could not open checkout for this product.`,
     );
   }

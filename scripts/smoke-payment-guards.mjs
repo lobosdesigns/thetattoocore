@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 const adCheckout = readFileSync("src/app/api/ads/checkout/route.ts", "utf8");
 const bookingCheckout = readFileSync("src/app/api/bookings/checkout/route.ts", "utf8");
 const merchCheckout = readFileSync("src/app/api/merch/checkout/route.ts", "utf8");
+const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const merchCheckoutSuccessPage = readFileSync("src/app/merch/checkout/success/page.tsx", "utf8");
 const merchPrintReceiptButton = readFileSync(
   "src/app/merch/checkout/success/print-receipt-button.tsx",
@@ -98,7 +99,20 @@ checks.push({
     adCheckout.includes('formData.get("return_to")') &&
     adCheckout.includes("returnTo: string | null") &&
     adCheckout.includes('"success_url": successUrl') &&
-    adCheckout.includes('"cancel_url": cancelUrl'),
+      adCheckout.includes('"cancel_url": cancelUrl'),
+});
+checks.push({
+  label: "merch checkout preserves only safe internal return paths",
+  ok:
+    merchCheckout.includes("function safeInternalReturnPath") &&
+    merchCheckout.includes("text.startsWith(\"/\")") &&
+    merchCheckout.includes("text.startsWith(\"//\")") &&
+    merchCheckout.includes("function pathWithMessage") &&
+    merchCheckout.includes('formData.get("return_to")') &&
+    merchCheckout.includes("formReturnTo ?? `/merch/${product.id}`") &&
+    merchCheckout.includes('"cancel_url": cancelUrl') &&
+    merchDetailPage.includes('name="return_to"') &&
+    merchDetailPage.includes('value={`/merch/${product.id}`}'),
 });
 checks.push({
   label: "merch checkout creates local order before Stripe session",

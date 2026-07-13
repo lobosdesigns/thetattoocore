@@ -491,6 +491,11 @@ export default async function MerchProductPage({
               {claims?.sub && available > 0 && !isOwnProduct ? (
                 <form action="/api/merch/checkout" method="post">
                   <input name="product_id" type="hidden" value={product.id} />
+                  <input
+                    name="return_to"
+                    type="hidden"
+                    value={`/merch/${product.id}`}
+                  />
                   <label className="block">
                     <span className="text-sm font-medium">Quantity</span>
                     <input
