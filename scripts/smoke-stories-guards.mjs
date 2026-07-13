@@ -258,6 +258,10 @@ const checks = [
       profilePage.includes("<ProfileStoryPrompt />") &&
       profilePage.includes('href="/?compose=stories#stories"') &&
       profilePage.includes("recordStoryView.bind(null, story.id)") &&
+      profilePage.includes("toggleStoryReaction") &&
+      profilePage.includes("replyToStory") &&
+      profilePage.includes('subjectType="story_post"') &&
+      profilePage.includes("profileUsername={profile.username}") &&
       profilePage.includes("endStoryPost") &&
       productPlan.includes("profile-page active story cards"),
   },

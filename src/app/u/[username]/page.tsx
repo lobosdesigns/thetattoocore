@@ -29,6 +29,8 @@ import {
   createBookingRequest,
   endStoryPost,
   recordStoryView,
+  replyToStory,
+  toggleStoryReaction,
 } from "@/app/actions";
 import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
@@ -825,10 +827,12 @@ function PostPreview({ post }: { post: FeedPost }) {
 
 function ProfileStoryCard({
   isOwnProfile,
+  profileUsername,
   story,
   viewerId,
 }: {
   isOwnProfile: boolean;
+  profileUsername: string;
   story: StoryPost;
   viewerId?: string;
 }) {
@@ -837,8 +841,18 @@ function ProfileStoryCard({
     ? mediaUrl(media.storage_bucket, media.storage_path)
     : null;
   const canRecordStoryView = Boolean(viewerId && viewerId !== story.author_id);
+  const canReplyToStory = Boolean(viewerId && viewerId !== story.author_id);
   const storyViewCount = story.story_views?.[0]?.count ?? 0;
   const storyReactionCount = story.story_reactions?.[0]?.count ?? 0;
+  const reactionOptions = [
+    ["fire", "\u{1F525}"],
+    ["heart", "\u{1F5A4}"],
+    ["clap", "\u{1F44F}"],
+    ["hundred", "\u{1F4AF}"],
+    ["flash", "\u26A1"],
+    ["sparkles", "\u2728"],
+  ] as const;
+  const quickReplies = ["\u{1F525}", "\u{1F5A4}", "\u{1F64C}", "\u{1F4AF}"];
 
   if (!mediaSrc) return null;
 
@@ -882,6 +896,66 @@ function ProfileStoryCard({
                 <p className="text-xs font-semibold uppercase text-white/65">
                   Reactions
                 </p>
+              </div>
+            </div>
+          ) : canReplyToStory ? (
+            <div className="mx-auto grid max-w-xl gap-2">
+              <p className="text-xs font-bold uppercase tracking-wide text-white/60">
+                React to story
+              </p>
+              <div className="flex gap-2 overflow-x-auto">
+                {reactionOptions.map(([value, label]) => (
+                  <form action={toggleStoryReaction} key={value}>
+                    <input name="story_id" type="hidden" value={story.id} />
+                    <input name="reaction" type="hidden" value={value} />
+                    <button
+                      aria-label={`React ${value}`}
+                      className="flex h-9 min-w-11 items-center justify-center rounded-md border border-white/20 bg-white/10 px-3 text-lg"
+                    >
+                      {label}
+                    </button>
+                  </form>
+                ))}
+              </div>
+              <p className="pt-1 text-xs font-bold uppercase tracking-wide text-white/60">
+                Send a DM reply
+              </p>
+              <form action={replyToStory} className="flex gap-2">
+                <input name="story_id" type="hidden" value={story.id} />
+                <input
+                  className="min-w-0 flex-1 rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-white outline-none placeholder:text-white/55 focus:border-white"
+                  maxLength={500}
+                  name="body"
+                  placeholder="Reply to story"
+                  required
+                />
+                <button
+                  aria-label="Send story reply"
+                  className="flex size-10 shrink-0 items-center justify-center rounded-md bg-white text-black"
+                >
+                  <Send className="size-4" />
+                </button>
+              </form>
+              <div className="flex gap-2 overflow-x-auto">
+                {quickReplies.map((reaction) => (
+                  <form action={replyToStory} key={reaction}>
+                    <input name="story_id" type="hidden" value={story.id} />
+                    <input name="body" type="hidden" value={reaction} />
+                    <button
+                      aria-label={`Reply ${reaction}`}
+                      className="flex h-9 min-w-11 items-center justify-center rounded-md border border-white/20 bg-white/10 px-3 text-lg"
+                    >
+                      {reaction}
+                    </button>
+                  </form>
+                ))}
+              </div>
+              <div className="max-w-sm">
+                <ContentReportForm
+                  returnPath={`/u/${profileUsername}`}
+                  subjectId={story.id}
+                  subjectType="story_post"
+                />
               </div>
             </div>
           ) : null
@@ -1492,6 +1566,7 @@ export default async function ProfilePage({
               {visibleStory ? (
                 <ProfileStoryCard
                   isOwnProfile={isOwnProfile}
+                  profileUsername={profile.username}
                   story={visibleStory}
                   viewerId={claims?.sub}
                 />
