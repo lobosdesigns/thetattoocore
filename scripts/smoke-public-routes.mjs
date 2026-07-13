@@ -104,7 +104,18 @@ const checks = [
       'href="/privacy"',
     ],
   },
-  { path: "/privacy", status: [200], includes: ["Privacy", "support@thetattoocore.com"] },
+  {
+    path: "/privacy",
+    status: [200],
+    includes: [
+      "Privacy",
+      "Account And Profile Data",
+      "Commerce And Payments",
+      "raw payment or payout credentials",
+      "Retention And Review",
+      "support@thetattoocore.com",
+    ],
+  },
   { path: "/terms", status: [200], includes: ["Terms", "support@thetattoocore.com"] },
   {
     path: "/search",
