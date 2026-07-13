@@ -131,6 +131,8 @@ const checks = [
       actions.includes("24 * 60 * 60 * 1000") &&
       actions.includes("const storyId = crypto.randomUUID()") &&
       actions.includes("await supabase.storage.from(MEDIA_BUCKET).remove([storagePath])") &&
+      actions.includes("function storyMediaMetadataFields") &&
+      actions.includes("...storyMediaMetadataFields(metadata)") &&
       actions.includes('.from("story_posts")') &&
       actions.includes('.from("story_media")'),
   },

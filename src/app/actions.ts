@@ -531,6 +531,16 @@ function mediaMetadataFields(metadata: MediaMetadata) {
   };
 }
 
+function storyMediaMetadataFields(metadata: MediaMetadata) {
+  return {
+    file_size_bytes: metadata.fileSizeBytes,
+    height: metadata.height,
+    mime_type: metadata.mimeType,
+    original_filename: metadata.originalFilename,
+    width: metadata.width,
+  };
+}
+
 export async function createFeedPost(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const caption = cleanWords(formData.get("caption"), 40);
@@ -676,7 +686,7 @@ export async function createStoryPost(formData: FormData) {
     sort_order: 0,
     storage_bucket: MEDIA_BUCKET,
     storage_path: storagePath,
-    ...mediaMetadataFields(metadata),
+    ...storyMediaMetadataFields(metadata),
   });
 
   if (mediaError) {
