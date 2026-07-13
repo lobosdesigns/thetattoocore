@@ -103,6 +103,17 @@ function cleanTimezone(value: FormDataEntryValue | null) {
   return text;
 }
 
+function bookingDateTime(value: FormDataEntryValue | null) {
+  const text = cleanText(value, 32);
+
+  if (!text) return null;
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(text)) return "invalid";
+
+  const date = new Date(`${text}:00Z`);
+
+  return Number.isFinite(date.getTime()) ? date.toISOString() : "invalid";
+}
+
 function centsFromDollars(value: FormDataEntryValue | null, maxCents: number) {
   const text = cleanText(value, 20);
   if (!text) return 0;
@@ -883,9 +894,30 @@ export async function respondBookingRequest(formData: FormData) {
   const bookingId = cleanText(formData.get("booking_id"), 80);
   const decision = cleanText(formData.get("decision"), 20);
   const artistNote = cleanText(formData.get("artist_note"), 1000);
+  const scheduledStartAt = bookingDateTime(formData.get("scheduled_start_at"));
+  const scheduledEndAt = bookingDateTime(formData.get("scheduled_end_at"));
+  const scheduledTimezone = cleanTimezone(formData.get("scheduled_timezone"));
 
   if (!bookingId || !["accept", "decline"].includes(decision)) {
     redirect(bookingPath("Choose a booking request and response."));
+  }
+
+  if (
+    decision === "accept" &&
+    (scheduledStartAt === "invalid" ||
+      scheduledEndAt === "invalid" ||
+      Boolean(scheduledStartAt) !== Boolean(scheduledEndAt))
+  ) {
+    redirect(bookingPath("Add both appointment start and end times, or leave both blank."));
+  }
+
+  if (decision === "accept" && scheduledStartAt && scheduledEndAt) {
+    const startTime = new Date(scheduledStartAt).getTime();
+    const endTime = new Date(scheduledEndAt).getTime();
+
+    if (endTime <= startTime || endTime - startTime > 12 * 60 * 60 * 1000) {
+      redirect(bookingPath("Appointment end time must be after the start and under 12 hours."));
+    }
   }
 
   const supabase = await createClient();
@@ -928,6 +960,18 @@ export async function respondBookingRequest(formData: FormData) {
   }
 
   const nextStatus = decision === "accept" ? "accepted" : "declined";
+  const scheduledFields =
+    decision === "accept" && scheduledStartAt && scheduledEndAt
+      ? {
+          scheduled_end_at: scheduledEndAt,
+          scheduled_start_at: scheduledStartAt,
+          scheduled_timezone: scheduledTimezone,
+        }
+      : {
+          scheduled_end_at: null,
+          scheduled_start_at: null,
+          scheduled_timezone: null,
+        };
   const now = new Date().toISOString();
   const { error } = await admin
     .from("booking_requests")
@@ -935,6 +979,7 @@ export async function respondBookingRequest(formData: FormData) {
       accepted_at: decision === "accept" ? now : null,
       artist_note: artistNote || null,
       declined_at: decision === "decline" ? now : null,
+      ...scheduledFields,
       status: nextStatus,
     })
     .eq("id", booking.id)
@@ -963,8 +1008,8 @@ export async function respondBookingRequest(formData: FormData) {
       body:
         decision === "accept"
           ? booking.deposit_amount_cents > 0
-            ? `Accepted. Deposit checkout is the next step: ${dollars(booking.deposit_amount_cents)} plus TTC fee ${dollars(booking.platform_fee_cents)}.`
-            : "Accepted. Deposit checkout can be added next if needed."
+            ? `Accepted. Deposit checkout is the next step: ${dollars(booking.deposit_amount_cents)} plus TTC fee ${dollars(booking.platform_fee_cents)}.${scheduledStartAt ? " Appointment time was added." : ""}`
+            : `Accepted.${scheduledStartAt ? " Appointment time was added." : " Deposit checkout can be added next if needed."}`
           : artistNote || "Declined for now.",
       href: `/u/${artist?.username ?? ""}#booking-request`,
       recipient_id: booking.client_id,

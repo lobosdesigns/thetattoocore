@@ -92,6 +92,9 @@ type BookingRequest = {
   platform_fee_cents: number;
   preferred_city: string | null;
   preferred_dates: string | null;
+  scheduled_end_at: string | null;
+  scheduled_start_at: string | null;
+  scheduled_timezone: string | null;
   status: string;
   style_tags: string | null;
   title: string;
@@ -145,6 +148,16 @@ function money(cents: number, currency: string) {
 
 function formatDate(value: string | null) {
   return value ? new Date(value).toLocaleDateString() : "Not provided";
+}
+
+function formatBookingDateTime(value: string | null, timezone?: string | null) {
+  if (!value) return null;
+
+  return new Date(value).toLocaleString("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "UTC",
+  }) + (timezone ? ` ${timezone}` : "");
 }
 
 function statusClass(status: string) {
@@ -244,17 +257,54 @@ function BookingCards({
                 {booking.preferred_dates ? (
                   <p>Dates: {booking.preferred_dates}</p>
                 ) : null}
+                {booking.scheduled_start_at ? (
+                  <p>
+                    Scheduled:{" "}
+                    {formatBookingDateTime(
+                      booking.scheduled_start_at,
+                      booking.scheduled_timezone,
+                    )}
+                  </p>
+                ) : null}
                 {booking.artist_note ? <p>Note: {booking.artist_note}</p> : null}
               </div>
               {canRespond ? (
                 <form action={respondBookingRequest} className="mt-4 grid gap-2">
                   <input name="booking_id" type="hidden" value={booking.id} />
+                  <input
+                    name="scheduled_timezone"
+                    type="hidden"
+                    value={booking.scheduled_timezone ?? "America/Chicago"}
+                  />
                   <textarea
                     className="ttc-surface min-h-16 rounded-md border px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
                     maxLength={1000}
                     name="artist_note"
                     placeholder="Optional note for the client"
                   />
+                  <details className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3">
+                    <summary className="cursor-pointer list-none text-xs font-bold">
+                      Add appointment time
+                    </summary>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      <label className="grid gap-1 text-xs font-semibold">
+                        Start
+                        <input
+                          className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                          name="scheduled_start_at"
+                          type="datetime-local"
+                        />
+                      </label>
+                      <label className="grid gap-1 text-xs font-semibold">
+                        End
+                        <input
+                          className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                          name="scheduled_end_at"
+                          type="datetime-local"
+                        />
+                      </label>
+                    </div>
+                  </details>
                   <div className="grid gap-2 sm:grid-cols-2">
                     <PendingSubmitButton
                       className="h-10 rounded-md border border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] px-4 text-sm font-bold text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]"
@@ -288,6 +338,14 @@ function BookingCards({
                       : "Pay deposit"}
                   </button>
                 </form>
+              ) : null}
+              {booking.scheduled_start_at ? (
+                <Link
+                  className="mt-3 inline-flex h-9 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 text-xs font-bold"
+                  href={`/api/bookings/${booking.id}/calendar`}
+                >
+                  Add to calendar
+                </Link>
               ) : null}
               {canCancel ? (
                 <form action={cancelBookingRequest} className="mt-3">
@@ -581,7 +639,7 @@ export default async function MessagesPage({
     ? await supabase
         .from("booking_requests")
         .select(
-          "id, client_id, artist_id, title, body, status, payment_status, deposit_amount_cents, platform_fee_cents, currency, style_tags, preferred_city, preferred_dates, artist_note, created_at",
+          "id, client_id, artist_id, title, body, status, payment_status, deposit_amount_cents, platform_fee_cents, currency, style_tags, preferred_city, preferred_dates, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at",
         )
         .eq("conversation_id", selectedConversation.id)
         .order("created_at", { ascending: false })

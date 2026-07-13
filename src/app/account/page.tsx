@@ -244,6 +244,16 @@ function formatDate(value: string | null) {
   return value ? new Date(value).toLocaleDateString() : "Not provided";
 }
 
+function formatBookingDateTime(value: string | null, timezone?: string | null) {
+  if (!value) return null;
+
+  return new Date(value).toLocaleString("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "UTC",
+  }) + (timezone ? ` ${timezone}` : "");
+}
+
 function isExpiredDate(value: string | null) {
   if (!value) return false;
 
@@ -526,7 +536,7 @@ export default async function AccountPage({
   const { data: incomingBookings } = await supabase
     .from("booking_requests")
     .select(
-      "id, title, body, placement, style_tags, preferred_city, preferred_dates, deposit_amount_cents, platform_fee_cents, total_cents, currency, status, payment_status, artist_note, created_at, accepted_at, declined_at, client:profiles!booking_requests_client_id_fkey(username, display_name, avatar_url)",
+      "id, title, body, placement, style_tags, preferred_city, preferred_dates, deposit_amount_cents, platform_fee_cents, total_cents, currency, status, payment_status, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at, accepted_at, declined_at, client:profiles!booking_requests_client_id_fkey(username, display_name, avatar_url)",
     )
     .eq("artist_id", claims.sub)
     .order("created_at", { ascending: false })
@@ -551,6 +561,9 @@ export default async function AccountPage({
         platform_fee_cents: number;
         preferred_city: string | null;
         preferred_dates: string | null;
+        scheduled_end_at: string | null;
+        scheduled_start_at: string | null;
+        scheduled_timezone: string | null;
         status: string;
         style_tags: string | null;
         title: string;
@@ -567,7 +580,7 @@ export default async function AccountPage({
   const { data: outgoingBookings } = await supabase
     .from("booking_requests")
     .select(
-      "id, title, body, placement, style_tags, preferred_city, preferred_dates, deposit_amount_cents, platform_fee_cents, total_cents, currency, status, payment_status, artist_note, created_at, accepted_at, declined_at, artist:profiles!booking_requests_artist_id_fkey(username, display_name, avatar_url)",
+      "id, title, body, placement, style_tags, preferred_city, preferred_dates, deposit_amount_cents, platform_fee_cents, total_cents, currency, status, payment_status, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at, accepted_at, declined_at, artist:profiles!booking_requests_artist_id_fkey(username, display_name, avatar_url)",
     )
     .eq("client_id", claims.sub)
     .order("created_at", { ascending: false })
@@ -592,6 +605,9 @@ export default async function AccountPage({
         platform_fee_cents: number;
         preferred_city: string | null;
         preferred_dates: string | null;
+        scheduled_end_at: string | null;
+        scheduled_start_at: string | null;
+        scheduled_timezone: string | null;
         status: string;
         style_tags: string | null;
         title: string;
@@ -901,17 +917,57 @@ export default async function AccountPage({
                           {booking.preferred_dates ? (
                             <p>Dates: {booking.preferred_dates}</p>
                           ) : null}
+                          {booking.scheduled_start_at ? (
+                            <p>
+                              Scheduled:{" "}
+                              {formatBookingDateTime(
+                                booking.scheduled_start_at,
+                                booking.scheduled_timezone,
+                              )}
+                            </p>
+                          ) : null}
                           {booking.artist_note ? <p>Note: {booking.artist_note}</p> : null}
                         </div>
                         {canRespond ? (
                           <form action={respondBookingRequest} className="mt-4 grid gap-2">
                             <input name="booking_id" type="hidden" value={booking.id} />
+                            <input
+                              name="scheduled_timezone"
+                              type="hidden"
+                              value={bookingSettings?.timezone ?? "America/Chicago"}
+                            />
                             <textarea
                               className="min-h-20 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
                               maxLength={1000}
                               name="artist_note"
                               placeholder="Optional note for the client"
                             />
+                            <details className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3">
+                              <summary className="cursor-pointer list-none text-xs font-bold">
+                                Add appointment time
+                              </summary>
+                              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                <label className="grid gap-1 text-xs font-semibold">
+                                  Start
+                                  <input
+                                    className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                                    name="scheduled_start_at"
+                                    type="datetime-local"
+                                  />
+                                </label>
+                                <label className="grid gap-1 text-xs font-semibold">
+                                  End
+                                  <input
+                                    className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                                    name="scheduled_end_at"
+                                    type="datetime-local"
+                                  />
+                                </label>
+                              </div>
+                              <p className="mt-2 text-xs leading-5 text-[var(--muted-strong)]">
+                                Saved in {bookingSettings?.timezone ?? "America/Chicago"} for calendar export.
+                              </p>
+                            </details>
                             <div className="grid gap-2 sm:grid-cols-2">
                               <PendingSubmitButton
                                 className="h-10 rounded-md border border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] px-4 text-sm font-bold text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]"
@@ -931,6 +987,14 @@ export default async function AccountPage({
                               </PendingSubmitButton>
                             </div>
                           </form>
+                        ) : null}
+                        {booking.scheduled_start_at ? (
+                          <Link
+                            className="mt-3 inline-flex h-9 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 text-xs font-bold"
+                            href={`/api/bookings/${booking.id}/calendar`}
+                          >
+                            Add to calendar
+                          </Link>
                         ) : null}
                       </article>
                     );
@@ -1000,7 +1064,24 @@ export default async function AccountPage({
                           <p>Declined: {formatDate(booking.declined_at)}</p>
                         ) : null}
                         {booking.artist_note ? <p>Artist note: {booking.artist_note}</p> : null}
+                        {booking.scheduled_start_at ? (
+                          <p>
+                            Scheduled:{" "}
+                            {formatBookingDateTime(
+                              booking.scheduled_start_at,
+                              booking.scheduled_timezone,
+                            )}
+                          </p>
+                        ) : null}
                       </div>
+                      {booking.scheduled_start_at ? (
+                        <Link
+                          className="mt-3 inline-flex h-9 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 text-xs font-bold"
+                          href={`/api/bookings/${booking.id}/calendar`}
+                        >
+                          Add to calendar
+                        </Link>
+                      ) : null}
                       {booking.status === "accepted" &&
                       booking.payment_status !== "paid" &&
                       booking.deposit_amount_cents > 0 ? (

@@ -24,10 +24,18 @@ const bookingCalendarMigration = readFileSync(
   "supabase/migrations/20260713182530_booking_calendar_public_fields.sql",
   "utf8",
 );
+const bookingScheduledMigration = readFileSync(
+  "supabase/migrations/20260713192618_booking_scheduled_calendar_fields.sql",
+  "utf8",
+);
 const actions = readFileSync("src/app/actions.ts", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const bookingCheckout = readFileSync("src/app/api/bookings/checkout/route.ts", "utf8");
+const bookingCalendarRoute = readFileSync(
+  "src/app/api/bookings/[id]/calendar/route.ts",
+  "utf8",
+);
 const messagesPage = readFileSync("src/app/messages/page.tsx", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
 const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8");
@@ -147,6 +155,32 @@ const checks = [
       accountActions.includes('.eq("artist_id", claims.sub)') &&
       accountActions.includes('type: decision === "accept" ? "booking_accepted" : "booking_declined"') &&
       accountActions.includes("Deposit checkout is the next booking step."),
+  },
+  {
+    label: "accepted booking requests can carry scheduled appointment times",
+    ok:
+      bookingScheduledMigration.includes("add column if not exists scheduled_start_at") &&
+      bookingScheduledMigration.includes("add column if not exists scheduled_end_at") &&
+      bookingScheduledMigration.includes("add column if not exists scheduled_timezone") &&
+      bookingScheduledMigration.includes("booking_requests_schedule_check") &&
+      bookingScheduledMigration.includes("scheduled_end_at <= scheduled_start_at + interval '12 hours'") &&
+      accountActions.includes("bookingDateTime(formData.get(\"scheduled_start_at\"))") &&
+      accountActions.includes("scheduled_timezone: scheduledTimezone") &&
+      accountPage.includes('name="scheduled_start_at"') &&
+      accountPage.includes('name="scheduled_end_at"') &&
+      messagesPage.includes('name="scheduled_start_at"') &&
+      messagesPage.includes('name="scheduled_end_at"'),
+  },
+  {
+    label: "booking participants can download private calendar files",
+    ok:
+      bookingCalendarRoute.includes('from("booking_requests")') &&
+      bookingCalendarRoute.includes("supabase.auth.getClaims()") &&
+      bookingCalendarRoute.includes("text/calendar") &&
+      bookingCalendarRoute.includes("DTSTART;TZID=") &&
+      bookingCalendarRoute.includes("Cache-Control") &&
+      accountPage.includes("/calendar") &&
+      messagesPage.includes("/calendar"),
   },
   {
     label: "clients can cancel unpaid booking requests safely",
