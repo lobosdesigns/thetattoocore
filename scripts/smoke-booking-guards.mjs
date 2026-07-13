@@ -12,6 +12,7 @@ const actions = readFileSync("src/app/actions.ts", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const bookingCheckout = readFileSync("src/app/api/bookings/checkout/route.ts", "utf8");
+const messagesPage = readFileSync("src/app/messages/page.tsx", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
 const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8");
 const notificationsPage = readFileSync("src/app/notifications/page.tsx", "utf8");
@@ -79,8 +80,11 @@ const checks = [
       actions.includes("export async function createBookingRequest") &&
       actions.includes("await requireProfile()") &&
       actions.includes("calculatePlatformFeeCents(depositAmountCents)") &&
+      actions.includes("ensureBookingConversation") &&
+      actions.includes("conversation_id: conversationId") &&
       actions.includes('.from("booking_requests")') &&
       actions.includes('type: "booking_request"') &&
+      actions.includes('href: `/messages?c=${conversationId}`') &&
       actions.includes("Deposit checkout opens after they accept."),
   },
   {
@@ -113,6 +117,16 @@ const checks = [
       bookingCheckout.includes('.eq("client_id", claims.sub)') &&
       bookingCheckout.includes('status: "deposit_pending"') &&
       bookingCheckout.includes('payment_status: "checkout_started"'),
+  },
+  {
+    label: "DM threads surface attached booking requests",
+    ok:
+      messagesPage.includes("type BookingRequest") &&
+      messagesPage.includes("function BookingCards") &&
+      messagesPage.includes('.from("booking_requests")') &&
+      messagesPage.includes('.eq("conversation_id", selectedConversation.id)') &&
+      messagesPage.includes("respondBookingRequest") &&
+      messagesPage.includes('action="/api/bookings/checkout"'),
   },
   {
     label: "Stripe webhook understands booking deposit events",

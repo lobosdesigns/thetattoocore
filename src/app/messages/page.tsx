@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
   ArrowLeft,
+  CalendarDays,
+  CreditCard,
   ImagePlus,
   Inbox,
   LoaderCircle,
@@ -15,6 +17,7 @@ import { MediaInput } from "@/app/media-input";
 import { PendingSubmitButton } from "@/app/pending-submit-button";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { WordLimitedField } from "@/app/word-limited-field";
+import { respondBookingRequest } from "@/app/account/actions";
 import { MessageThread } from "./message-thread";
 import { sendMessage, startConversation } from "./actions";
 
@@ -76,6 +79,24 @@ type MessageNotification = {
   subject_id: string | null;
 };
 
+type BookingRequest = {
+  artist_id: string;
+  artist_note: string | null;
+  body: string;
+  client_id: string;
+  created_at: string;
+  currency: string;
+  deposit_amount_cents: number;
+  id: string;
+  payment_status: string;
+  platform_fee_cents: number;
+  preferred_city: string | null;
+  preferred_dates: string | null;
+  status: string;
+  style_tags: string | null;
+  title: string;
+};
+
 const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
 
 function loginPathForMessages(params: {
@@ -115,6 +136,33 @@ function profileLocation(profile?: Profile) {
   return [profile?.city, profile?.region].filter(Boolean).join(", ");
 }
 
+function money(cents: number, currency: string) {
+  return Intl.NumberFormat("en-US", {
+    currency,
+    style: "currency",
+  }).format(cents / 100);
+}
+
+function formatDate(value: string | null) {
+  return value ? new Date(value).toLocaleDateString() : "Not provided";
+}
+
+function statusClass(status: string) {
+  if (status === "paid" || status === "deposit_paid" || status === "completed") {
+    return "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]";
+  }
+
+  if (status === "accepted" || status === "deposit_pending") {
+    return "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]";
+  }
+
+  if (status === "declined" || status === "cancelled" || status === "payment_failed") {
+    return "border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]";
+  }
+
+  return "border-[color-mix(in_srgb,#5078c8_35%,var(--card-rim))] bg-[color-mix(in_srgb,#5078c8_10%,var(--paper-warm))] text-[color-mix(in_srgb,#284f8a_78%,var(--foreground))]";
+}
+
 function notificationConversationId(notification: MessageNotification) {
   if (notification.href) {
     const [, query] = notification.href.split("?");
@@ -125,6 +173,124 @@ function notificationConversationId(notification: MessageNotification) {
   }
 
   return notification.subject_id;
+}
+
+function BookingCards({
+  bookings,
+  currentUserId,
+}: {
+  bookings: BookingRequest[];
+  currentUserId: string;
+}) {
+  if (!bookings.length) return null;
+
+  return (
+    <section className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] px-4 py-4">
+      <div className="mx-auto grid w-full max-w-3xl gap-3">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[var(--muted-strong)]">
+          <CalendarDays className="size-4 text-[var(--gold)]" />
+          Booking
+        </div>
+        {bookings.map((booking) => {
+          const isArtist = booking.artist_id === currentUserId;
+          const isClient = booking.client_id === currentUserId;
+          const canRespond =
+            isArtist &&
+            booking.status === "requested" &&
+            booking.payment_status === "not_ready";
+          const canPay =
+            isClient &&
+            booking.status === "accepted" &&
+            booking.payment_status !== "paid" &&
+            booking.deposit_amount_cents > 0;
+
+          return (
+            <article
+              className="rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 shadow-sm"
+              key={booking.id}
+            >
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold">{booking.title}</p>
+                  <p className="mt-1 text-xs text-[var(--muted-strong)]">
+                    {isArtist ? "Incoming request" : "Sent request"} -{" "}
+                    {formatDate(booking.created_at)}
+                  </p>
+                </div>
+                <span
+                  className={`w-fit rounded-md border px-2 py-1 text-xs font-semibold capitalize ${statusClass(
+                    booking.status,
+                  )}`}
+                >
+                  {booking.status.replace("_", " ")}
+                </span>
+              </div>
+              <p className="mt-3 line-clamp-3 text-sm leading-6 text-[var(--muted)]">
+                {booking.body}
+              </p>
+              <div className="mt-3 grid gap-1 text-xs leading-5 text-[var(--muted-strong)]">
+                <p>
+                  Deposit: {money(booking.deposit_amount_cents, booking.currency)}
+                  {" "}+ TTC fee{" "}
+                  {money(booking.platform_fee_cents, booking.currency)}
+                </p>
+                <p>Payment: {booking.payment_status.replace("_", " ")}</p>
+                {booking.style_tags ? <p>Style: {booking.style_tags}</p> : null}
+                {booking.preferred_city ? <p>City: {booking.preferred_city}</p> : null}
+                {booking.preferred_dates ? (
+                  <p>Dates: {booking.preferred_dates}</p>
+                ) : null}
+                {booking.artist_note ? <p>Note: {booking.artist_note}</p> : null}
+              </div>
+              {canRespond ? (
+                <form action={respondBookingRequest} className="mt-4 grid gap-2">
+                  <input name="booking_id" type="hidden" value={booking.id} />
+                  <textarea
+                    className="ttc-surface min-h-16 rounded-md border px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                    maxLength={1000}
+                    name="artist_note"
+                    placeholder="Optional note for the client"
+                  />
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <PendingSubmitButton
+                      className="h-10 rounded-md border border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] px-4 text-sm font-bold text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]"
+                      name="decision"
+                      pendingLabel="Accepting"
+                      value="accept"
+                    >
+                      Accept
+                    </PendingSubmitButton>
+                    <PendingSubmitButton
+                      className="h-10 rounded-md border border-[color-mix(in_srgb,var(--danger)_42%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] px-4 text-sm font-bold text-[var(--danger)]"
+                      name="decision"
+                      pendingLabel="Declining"
+                      value="decline"
+                    >
+                      Decline
+                    </PendingSubmitButton>
+                  </div>
+                </form>
+              ) : null}
+              {canPay ? (
+                <form action="/api/bookings/checkout" className="mt-4" method="post">
+                  <input name="booking_id" type="hidden" value={booking.id} />
+                  <button
+                    className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)] sm:w-fit"
+                    disabled={booking.payment_status === "checkout_started"}
+                  >
+                    <CreditCard className="size-4" />
+                    {booking.payment_status === "checkout_started"
+                      ? "Checkout started"
+                      : "Pay deposit"}
+                  </button>
+                </form>
+              ) : null}
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
 }
 
 export default async function MessagesPage({
@@ -396,6 +562,17 @@ export default async function MessagesPage({
     ...message,
     attachments: attachmentsByMessage.get(message.id) ?? [],
   }));
+  const { data: selectedBookings } = selectedConversation
+    ? await supabase
+        .from("booking_requests")
+        .select(
+          "id, client_id, artist_id, title, body, status, payment_status, deposit_amount_cents, platform_fee_cents, currency, style_tags, preferred_city, preferred_dates, artist_note, created_at",
+        )
+        .eq("conversation_id", selectedConversation.id)
+        .order("created_at", { ascending: false })
+        .limit(3)
+        .returns<BookingRequest[]>()
+    : { data: [] as BookingRequest[] };
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -596,6 +773,11 @@ export default async function MessagesPage({
                   </div>
                 </div>
               </header>
+
+              <BookingCards
+                bookings={selectedBookings ?? []}
+                currentUserId={claims.sub}
+              />
 
               <MessageThread
                 conversationId={selectedConversation.id}

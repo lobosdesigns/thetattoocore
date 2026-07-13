@@ -136,6 +136,94 @@ function cleanMoneyCents(value: FormDataEntryValue | null) {
   return Math.min(500000, Math.round(parsed * 100));
 }
 
+async function findExistingConversation(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  targetId: string,
+) {
+  const { data: myMemberships } = await supabase
+    .from("conversation_members")
+    .select("conversation_id")
+    .eq("user_id", userId);
+  const conversationIds =
+    myMemberships?.map((membership) => membership.conversation_id) ?? [];
+
+  if (!conversationIds.length) return null;
+
+  const { data: targetMembership } = await supabase
+    .from("conversation_members")
+    .select("conversation_id")
+    .eq("user_id", targetId)
+    .in("conversation_id", conversationIds)
+    .limit(1)
+    .maybeSingle<{ conversation_id: string }>();
+
+  return targetMembership?.conversation_id ?? null;
+}
+
+async function ensureBookingConversation({
+  supabase,
+  targetId,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  targetId: string;
+  userId: string;
+}) {
+  const existingConversationId = await findExistingConversation(
+    supabase,
+    userId,
+    targetId,
+  );
+
+  if (existingConversationId) return existingConversationId;
+
+  const { data: conversation, error: conversationError } = await supabase
+    .from("conversations")
+    .insert({ created_by: userId })
+    .select("id")
+    .single<{ id: string }>();
+
+  if (conversationError || !conversation) {
+    throw new Error(conversationError?.message || "Could not start booking DM.");
+  }
+
+  const { error: creatorMemberError } = await supabase
+    .from("conversation_members")
+    .insert({ conversation_id: conversation.id, user_id: userId });
+
+  if (creatorMemberError) {
+    throw new Error(creatorMemberError.message || "Could not add you to booking DM.");
+  }
+
+  const { error: targetMemberError } = await supabase
+    .from("conversation_members")
+    .insert({ conversation_id: conversation.id, user_id: targetId });
+
+  if (targetMemberError) {
+    throw new Error(targetMemberError.message || "Could not add artist to booking DM.");
+  }
+
+  return conversation.id;
+}
+
+async function blockRelationshipExists(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  targetId: string,
+) {
+  const { data } = await supabase
+    .from("user_blocks")
+    .select("blocker_id")
+    .or(
+      `and(blocker_id.eq.${userId},blocked_id.eq.${targetId}),and(blocker_id.eq.${targetId},blocked_id.eq.${userId})`,
+    )
+    .limit(1)
+    .maybeSingle<{ blocker_id: string }>();
+
+  return Boolean(data);
+}
+
 export async function acceptAdultTerms(formData: FormData) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -669,12 +757,44 @@ export async function createBookingRequest(formData: FormData) {
     );
   }
 
+  if (await blockRelationshipExists(supabase, userId, artist.id)) {
+    redirect(
+      redirectWithMessage({
+        hash: "booking-request",
+        message: "You cannot send a booking request to a blocked profile.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  let conversationId: string;
+
+  try {
+    conversationId = await ensureBookingConversation({
+      supabase,
+      targetId: artist.id,
+      userId,
+    });
+  } catch (error) {
+    redirect(
+      redirectWithMessage({
+        hash: "booking-request",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Could not open a DM for this booking request.",
+        path: returnPath,
+      }),
+    );
+  }
+
   const { data: booking, error } = await supabase
     .from("booking_requests")
     .insert({
       artist_id: artist.id,
       body,
       client_id: userId,
+      conversation_id: conversationId,
       currency: "USD",
       deposit_amount_cents: depositAmountCents,
       payment_status: "not_ready",
@@ -702,6 +822,12 @@ export async function createBookingRequest(formData: FormData) {
     );
   }
 
+  await supabase.from("messages").insert({
+    body: `Booking request: ${title}. ${depositAmountCents > 0 ? `Requested deposit ${(depositAmountCents / 100).toLocaleString("en-US", { currency: "USD", style: "currency" })} plus TTC fee.` : "No deposit requested yet."}`,
+    conversation_id: conversationId,
+    sender_id: userId,
+  });
+
   const { data: artistPreferences } = await supabase
     .from("profiles")
     .select(notificationPreferenceSelect("message"))
@@ -715,7 +841,7 @@ export async function createBookingRequest(formData: FormData) {
         depositAmountCents > 0
           ? `Requested deposit: $${(depositAmountCents / 100).toFixed(2)} plus TTC processing fee.`
           : "No deposit requested yet.",
-      href: `/messages?to=${artist.username}`,
+      href: `/messages?c=${conversationId}`,
       recipient_id: artist.id,
       subject_id: booking.id,
       subject_type: "booking_request",
@@ -725,6 +851,7 @@ export async function createBookingRequest(formData: FormData) {
   }
 
   revalidatePath(returnPath);
+  revalidatePath("/messages");
   revalidatePath("/notifications");
   redirect(
     redirectWithMessage({
