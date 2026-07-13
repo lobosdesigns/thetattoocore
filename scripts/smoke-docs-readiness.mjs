@@ -13,6 +13,7 @@ const docs = {
   ),
   "docs/STORE_LISTING_DRAFT.md": readFileSync("docs/STORE_LISTING_DRAFT.md", "utf8"),
   "docs/AGE_RATING_PREP.md": readFileSync("docs/AGE_RATING_PREP.md", "utf8"),
+  "docs/DATA_SAFETY_PREP.md": readFileSync("docs/DATA_SAFETY_PREP.md", "utf8"),
 };
 const allDocs = Object.values(docs).join("\n");
 const forbiddenContactSnippets = [
@@ -29,6 +30,12 @@ const checks = [
     ok:
       docs["docs/APP_STORE_READINESS.md"].includes("docs/REAL_DEVICE_QA_CHECKLIST.md") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("docs/REAL_DEVICE_QA_CHECKLIST.md"),
+  },
+  {
+    label: "readiness docs link data safety prep",
+    ok:
+      docs["docs/APP_STORE_READINESS.md"].includes("docs/DATA_SAFETY_PREP.md") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("docs/DATA_SAFETY_PREP.md"),
   },
   {
     label: "readiness docs link production payment gates",
@@ -60,6 +67,18 @@ const checks = [
       docs["docs/AGE_RATING_PREP.md"].includes("Ads") &&
       docs["docs/AGE_RATING_PREP.md"].includes("Marketplace/commerce") &&
       docs["docs/AGE_RATING_PREP.md"].includes("AI"),
+  },
+  {
+    label: "data safety prep covers launch data and privacy review areas",
+    ok:
+      docs["docs/DATA_SAFETY_PREP.md"].includes("Account data") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("User-generated content") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("direct messages") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("private verification/license documents") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("Raw card, bank, routing, and payout credentials must not be collected") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("coarse location") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("account deletion requests") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("support@thetattoocore.com"),
   },
   {
     label: "real-device QA checklist covers launch-critical flows",

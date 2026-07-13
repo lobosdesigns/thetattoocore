@@ -15,6 +15,7 @@
 - Production payment gates live in `docs/PAYMENT_PRODUCTION_READINESS.md`.
 - Draft store listing copy lives in `docs/STORE_LISTING_DRAFT.md` and should be policy-reviewed before submission.
 - Age-rating prep notes live in `docs/AGE_RATING_PREP.md` and should be checked against the current store questionnaires before submission.
+- Data-safety/privacy questionnaire prep lives in `docs/DATA_SAFETY_PREP.md` and should be checked against the live build before submission.
 - TheTattooCore is 18+ only.
 - Visible nudity is not allowed for launch.
 - Sensitive non-nude body-art media stays behind login and 18+ confirmation.
@@ -80,3 +81,4 @@
 - Before production marketplace purchases, finish the gates in `docs/PAYMENT_PRODUCTION_READINESS.md`, including seller payout policy, Stripe Connect or manual payout process, tax/shipping rules, refund/dispute procedures, and payment-provider review.
 - Prepare final store screenshots after mobile QA, using no sensitive or copyrighted user content.
 - Confirm no AI-generated tattoo art claims appear in store metadata or screenshots.
+- Prepare Google Play Data Safety and App Store privacy answers from `docs/DATA_SAFETY_PREP.md`, then verify them against the submitted build and final Privacy policy.
