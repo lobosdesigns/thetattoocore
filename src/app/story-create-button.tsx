@@ -12,7 +12,7 @@ export function StoryCreateButton({ isSignedIn }: { isSignedIn: boolean }) {
       <Link className={className} href="/login">
         <Sparkles className="size-4 text-[var(--gold)]" />
         <span className="mt-1 text-[11px] font-bold text-[var(--muted)]">
-          Create
+          Add
         </span>
         <span className="text-[10px] font-semibold uppercase text-[var(--muted-strong)]">
           Story
@@ -36,7 +36,7 @@ export function StoryCreateButton({ isSignedIn }: { isSignedIn: boolean }) {
     >
       <Sparkles className="size-4 text-[var(--gold)]" />
       <span className="mt-1 text-[11px] font-bold text-[var(--muted)]">
-        Create
+        Add
       </span>
       <span className="text-[10px] font-semibold uppercase text-[var(--muted-strong)]">
         Story

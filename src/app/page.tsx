@@ -1180,6 +1180,14 @@ function StoriesRail({
       id="stories"
       className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-4 py-3"
     >
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <p className="text-xs font-black uppercase tracking-wide text-[var(--foreground)]">
+          Stories
+        </p>
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted-strong)]">
+          24h
+        </p>
+      </div>
       <div className="no-scrollbar flex gap-3 overflow-x-auto">
         <StoryCreateButton isSignedIn={isSignedIn} />
         {stories.map((story) => {

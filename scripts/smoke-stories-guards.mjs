@@ -195,9 +195,12 @@ const checks = [
       homePage.includes("type StoryPost =") &&
       homePage.includes("function StoriesRail") &&
       homePage.includes('id="stories"') &&
+      homePage.includes("Stories") &&
+      homePage.includes("24h") &&
       homePage.includes('.from("story_posts")') &&
       homePage.includes("author_id, caption") &&
       homePage.includes('.gt("expires_at", new Date().toISOString())') &&
+      storyCreateButton.includes("Add") &&
       homePage.includes("stories={visibleStories}"),
   },
   {
