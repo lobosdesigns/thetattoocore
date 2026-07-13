@@ -18,6 +18,7 @@ const LICENSE_BUCKET = "license-documents";
 const AVATAR_BUCKET = "profile-avatars";
 const AVATAR_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024;
+const MAX_BANNER_BYTES = 6 * 1024 * 1024;
 const LICENSE_TYPES = new Set([
   "application/pdf",
   "image/jpeg",
@@ -393,6 +394,40 @@ async function uploadAvatar({
     .publicUrl;
 }
 
+async function uploadBanner({
+  file,
+  supabase,
+  userId,
+}: {
+  file: File;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId: string;
+}) {
+  if (!AVATAR_TYPES.has(file.type)) {
+    redirect(accountPath("Use a JPG, PNG, or WebP banner photo."));
+  }
+
+  if (file.size > MAX_BANNER_BYTES) {
+    redirect(accountPath("Banner photos can be up to 6 MB after optimization."));
+  }
+
+  const storagePath = `${userId}/banners/${crypto.randomUUID()}.${extensionFor(file)}`;
+  const { error } = await supabase.storage
+    .from(AVATAR_BUCKET)
+    .upload(storagePath, file, {
+      cacheControl: "31536000",
+      contentType: file.type,
+      upsert: false,
+    });
+
+  if (error) {
+    redirect(accountPath(error.message || "Could not upload banner photo."));
+  }
+
+  return supabase.storage.from(AVATAR_BUCKET).getPublicUrl(storagePath).data
+    .publicUrl;
+}
+
 export async function updateProfile(formData: FormData) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -413,6 +448,7 @@ export async function updateProfile(formData: FormData) {
   const preferredLanguage = cleanText(formData.get("preferred_language"), 8);
   const themePreference = cleanText(formData.get("theme_preference"), 16);
   const avatar = fileFromForm(formData, "avatar");
+  const banner = fileFromForm(formData, "banner");
 
   if (!/^[a-z0-9_]{3,30}$/.test(username)) {
     redirect(accountPath("Username must be 3-30 letters, numbers, or underscores."));
@@ -444,6 +480,9 @@ export async function updateProfile(formData: FormData) {
 
   const avatarUrl = avatar
     ? await uploadAvatar({ file: avatar, supabase, userId: claims.sub })
+    : null;
+  const bannerUrl = banner
+    ? await uploadBanner({ file: banner, supabase, userId: claims.sub })
     : null;
   let shopProfileId: string | null = null;
 
@@ -522,6 +561,7 @@ export async function updateProfile(formData: FormData) {
     x_url: cleanExternalUrl(formData.get("x_url"), 240),
     youtube_url: cleanExternalUrl(formData.get("youtube_url"), 240),
     ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
+    ...(bannerUrl ? { banner_url: bannerUrl } : {}),
   };
 
   const { error } = await supabase.from("profiles").upsert(profileUpdate);

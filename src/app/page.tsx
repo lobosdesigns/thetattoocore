@@ -1211,44 +1211,86 @@ function StoriesRail({
           );
           const storyViewCount = story.story_views?.[0]?.count ?? 0;
           const storyReactionCount = story.story_reactions?.[0]?.count ?? 0;
-          const ownerStoryFooter = isOwnStory ? (
-            <div className="mx-auto grid max-w-xl gap-3 rounded-lg border border-white/15 bg-black/75 p-4 text-white shadow-lg">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-white/60">
-                  Story stats
-                </p>
-                <p className="mt-1 text-sm text-white/75">
-                  Expires in {timeUntil(story.expires_at)}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-md border border-white/15 bg-white/10 p-3">
-                  <p className="text-2xl font-black">{storyViewCount}</p>
-                  <p className="text-xs font-semibold uppercase text-white/65">
-                    Views
-                  </p>
-                </div>
-                <div className="rounded-md border border-white/15 bg-white/10 p-3">
-                  <p className="text-2xl font-black">{storyReactionCount}</p>
-                  <p className="text-xs font-semibold uppercase text-white/65">
-                    Reactions
-                  </p>
-                </div>
-              </div>
-              <p className="text-xs leading-5 text-white/60">
-                Story replies arrive in DM. Reactions create alerts while the
-                story is active.
-              </p>
-            </div>
-          ) : null;
           const reactionOptions = [
-            ["fire", "🔥"],
-            ["heart", "🖤"],
-            ["clap", "👏"],
-            ["hundred", "💯"],
-            ["flash", "⚡"],
-            ["sparkles", "✨"],
+            ["fire", "\u{1F525}"],
+            ["heart", "\u{1F5A4}"],
+            ["clap", "\u{1F44F}"],
+            ["hundred", "\u{1F4AF}"],
+            ["flash", "\u26A1"],
+            ["sparkles", "\u2728"],
           ] as const;
+          const quickReplies = ["\u{1F525}", "\u{1F5A4}", "\u{1F64C}", "\u{1F4AF}"];
+          const storyOverlay = (
+            <div className="pointer-events-auto mx-auto flex w-full max-w-xl flex-col gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-white/15 bg-black/60 px-3 py-1 text-xs font-black text-white shadow-lg backdrop-blur">
+                  {storyViewCount} views
+                </span>
+                <span className="rounded-full border border-white/15 bg-black/60 px-3 py-1 text-xs font-black text-white shadow-lg backdrop-blur">
+                  {storyReactionCount} reacts
+                </span>
+                <span className="rounded-full border border-white/15 bg-black/60 px-3 py-1 text-xs font-black text-white shadow-lg backdrop-blur">
+                  {timeUntil(story.expires_at)} left
+                </span>
+              </div>
+              {canReplyToStory ? (
+                <div className="grid gap-2 rounded-lg border border-white/15 bg-black/55 p-3 text-white shadow-2xl backdrop-blur">
+                  <div className="flex gap-2 overflow-x-auto">
+                    {reactionOptions.map(([value, label]) => (
+                      <form action={toggleStoryReaction} key={value}>
+                        <input name="story_id" type="hidden" value={story.id} />
+                        <input name="reaction" type="hidden" value={value} />
+                        <button
+                          aria-label={`React ${value}`}
+                          className="flex h-10 min-w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 px-3 text-lg shadow-sm"
+                        >
+                          {label}
+                        </button>
+                      </form>
+                    ))}
+                  </div>
+                  <form action={replyToStory} className="flex gap-2">
+                    <input name="story_id" type="hidden" value={story.id} />
+                    <input
+                      className="min-w-0 flex-1 rounded-full border border-white/20 bg-white/10 px-3 py-2 text-sm text-white outline-none placeholder:text-white/55 focus:border-white"
+                      maxLength={500}
+                      name="body"
+                      placeholder="Reply to story"
+                      required
+                    />
+                    <button
+                      aria-label="Send story reply"
+                      className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-black"
+                    >
+                      <Send className="size-4" />
+                    </button>
+                  </form>
+                  <div className="flex items-center gap-2 overflow-x-auto">
+                    {quickReplies.map((reaction) => (
+                      <form action={replyToStory} key={reaction}>
+                        <input name="story_id" type="hidden" value={story.id} />
+                        <input name="body" type="hidden" value={reaction} />
+                        <button
+                          aria-label={`Reply ${reaction}`}
+                          className="flex h-9 min-w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 px-3 text-lg"
+                        >
+                          {reaction}
+                        </button>
+                      </form>
+                    ))}
+                    <div className="ml-auto min-w-28">
+                      <ContentReportForm
+                        returnHash="stories"
+                        returnPath="/"
+                        subjectId={story.id}
+                        subjectType="story_post"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          );
 
           return (
             <div
@@ -1258,77 +1300,13 @@ function StoriesRail({
               <MediaLightbox
                 alt={`${story.profiles?.display_name ?? "Member"} story`}
                 description={storyDescription}
-                footer={
-                  ownerStoryFooter ??
-                  (canReplyToStory ? (
-                    <div className="mx-auto grid max-w-xl gap-2">
-                      <p className="text-xs font-bold uppercase tracking-wide text-white/60">
-                        React to story
-                      </p>
-                      <div className="flex gap-2 overflow-x-auto">
-                        {reactionOptions.map(([value, label]) => (
-                          <form action={toggleStoryReaction} key={value}>
-                            <input name="story_id" type="hidden" value={story.id} />
-                            <input name="reaction" type="hidden" value={value} />
-                            <button
-                              aria-label={`React ${value}`}
-                              className="flex h-9 min-w-11 items-center justify-center rounded-md border border-white/20 bg-white/10 px-3 text-lg"
-                            >
-                              {label}
-                            </button>
-                          </form>
-                        ))}
-                      </div>
-                      <p className="pt-1 text-xs font-bold uppercase tracking-wide text-white/60">
-                        Send a DM reply
-                      </p>
-                      <form action={replyToStory} className="flex gap-2">
-                        <input name="story_id" type="hidden" value={story.id} />
-                        <input
-                          className="min-w-0 flex-1 rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-white outline-none placeholder:text-white/55 focus:border-white"
-                          maxLength={500}
-                          name="body"
-                          placeholder="Reply to story"
-                          required
-                        />
-                        <button
-                          aria-label="Send story reply"
-                          className="flex size-10 shrink-0 items-center justify-center rounded-md bg-white text-black"
-                        >
-                          <Send className="size-4" />
-                        </button>
-                      </form>
-                      <div className="flex gap-2 overflow-x-auto">
-                        {["🔥", "🖤", "🙌", "💯"].map((reaction) => (
-                          <form action={replyToStory} key={reaction}>
-                            <input name="story_id" type="hidden" value={story.id} />
-                            <input name="body" type="hidden" value={reaction} />
-                            <button
-                              aria-label={`Reply ${reaction}`}
-                              className="flex h-9 min-w-11 items-center justify-center rounded-md border border-white/20 bg-white/10 px-3 text-lg"
-                            >
-                              {reaction}
-                            </button>
-                          </form>
-                        ))}
-                      </div>
-                      <div className="max-w-sm">
-                        <ContentReportForm
-                          returnHash="stories"
-                          returnPath="/"
-                          subjectId={story.id}
-                          subjectType="story_post"
-                        />
-                      </div>
-                    </div>
-                  ) : null)
-                }
                 mediaType={media?.media_type ?? "image"}
                 openAction={
                   canRecordStoryView
                     ? recordStoryView.bind(null, story.id)
                     : undefined
                 }
+                overlay={storyOverlay}
                 src={src ?? ""}
                 title={storyTitle}
               >
@@ -1348,7 +1326,7 @@ function StoriesRail({
                   </span>
                   <span className="text-[10px] font-semibold uppercase text-[var(--muted-strong)]">
                     {isOwnStory
-                      ? `${storyViewCount} views · ${storyReactionCount} reacts`
+                      ? `${storyViewCount} views / ${storyReactionCount} reacts`
                       : timeAgo(story.created_at)}
                   </span>
                 </button>

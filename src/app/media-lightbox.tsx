@@ -17,6 +17,7 @@ type MediaLightboxProps = {
   footer?: ReactNode;
   mediaType: "image" | "video";
   openAction?: () => Promise<void>;
+  overlay?: ReactNode;
   src: string;
   title?: string;
 };
@@ -28,6 +29,7 @@ export function MediaLightbox({
   footer,
   mediaType,
   openAction,
+  overlay,
   src,
   title = "Media viewer",
 }: MediaLightboxProps) {
@@ -154,7 +156,7 @@ export function MediaLightbox({
           </div>
 
           <div
-            className="flex min-h-0 flex-1 items-center justify-center overflow-auto bg-black p-3"
+            className="relative flex min-h-0 flex-1 items-center justify-center overflow-auto bg-black p-3"
             onClick={() => {
               setIsOpen(false);
               setZoom(1);
@@ -184,6 +186,14 @@ export function MediaLightbox({
                 }}
               />
             )}
+            {overlay ? (
+              <div
+                className="absolute inset-x-3 bottom-3 z-10"
+                onClick={(event) => event.stopPropagation()}
+              >
+                {overlay}
+              </div>
+            ) : null}
           </div>
           {footer ? (
             <div className="border-t border-white/15 bg-black px-3 py-3 text-white">

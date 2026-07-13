@@ -18,10 +18,12 @@ const socialFields = [
 
 const checks = [
   {
-    label: "profile form keeps bio, avatar, social links, and shop link editable",
+    label: "profile form keeps bio, avatar, banner, social links, and shop link editable",
     ok:
       profileForm.includes("Profile photo") &&
       profileForm.includes('name="avatar"') &&
+      profileForm.includes("Banner photo") &&
+      profileForm.includes('name="banner"') &&
       profileForm.includes('name="bio"') &&
       profileForm.includes("maxLength={500}") &&
       profileForm.includes('name="shop_profile_username"') &&
@@ -43,7 +45,10 @@ const checks = [
     label: "profile updates sanitize public text and outbound URLs",
     ok:
       accountActions.includes("export async function updateProfile") &&
+      accountActions.includes("async function uploadBanner") &&
       accountActions.includes("bio: cleanText(formData.get(\"bio\"), 500) || null") &&
+      accountActions.includes('const banner = fileFromForm(formData, "banner")') &&
+      accountActions.includes("...(bannerUrl ? { banner_url: bannerUrl } : {})") &&
       socialFields.every((field) =>
         accountActions.includes(`${field}: cleanExternalUrl(formData.get("${field}"), 240)`),
       ),
@@ -62,6 +67,7 @@ const checks = [
     label: "public profile renders bio, shop chip, and social link chips safely",
     ok:
       profilePage.includes("{profile.bio}") &&
+      profilePage.includes("profile.banner_url") &&
       profilePage.includes("profile.shop_profile") &&
       profilePage.includes('label={`Shop: ${profile.shop_profile.display_name}`}') &&
       socialFields.every((field) => profilePage.includes(`profile.${field}`)) &&
@@ -94,6 +100,7 @@ const checks = [
     label: "plan records public bio, socials, and artist-to-shop links",
     ok:
       productPlan.includes("Profiles need a small public bio plus safe outbound links") &&
+      productPlan.includes("Profiles need a wide banner/cover photo") &&
       productPlan.includes("Instagram, TikTok, Facebook, YouTube, and X links") &&
       productPlan.includes("artist-to-studio/shop profile link") &&
       productPlan.includes("public linked-artist list on studio/shop profiles"),

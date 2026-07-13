@@ -17,6 +17,7 @@ type Claims = {
 type Profile = {
   account_type: "artist" | "enthusiast" | "studio" | "supplier" | "vendor";
   avatar_url: string | null;
+  banner_url: string | null;
   bio: string | null;
   city: string | null;
   country_code: string | null;
@@ -206,6 +207,47 @@ export function ProfileForm({
       </div>
 
       <div className={panelClass("profile")}>
+        <div className="ttc-surface rounded-md border p-3 sm:col-span-2">
+          <div
+            className="relative overflow-hidden rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--foreground)_88%,var(--brand-gold))]"
+            style={{ aspectRatio: "3 / 1" }}
+          >
+            {initialProfile?.banner_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                alt=""
+                className="size-full object-cover"
+                src={initialProfile.banner_url}
+              />
+            ) : (
+              <div className="flex size-full items-end bg-[linear-gradient(135deg,color-mix(in_srgb,var(--foreground)_92%,var(--brand-gold)),color-mix(in_srgb,var(--paper-warm)_76%,var(--brand-gold)))] p-4">
+                <span className="rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_40%,transparent)] bg-black/45 px-3 py-1 text-xs font-black uppercase tracking-wide text-white">
+                  Profile banner
+                </span>
+              </div>
+            )}
+          </div>
+          <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-sm font-bold">Banner photo</h2>
+              <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
+                Add a wide cover image for your profile. Shop fronts, flash
+                sheets, healed work, or brand textures work well. No visible
+                nudity for launch.
+              </p>
+            </div>
+            <div className="sm:min-w-80">
+              <MediaInput
+                accept="image/jpeg,image/png,image/webp"
+                compact
+                maxImageBytes={6 * 1024 * 1024}
+                name="banner"
+                videoAllowed={false}
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="ttc-surface rounded-md border p-3 sm:col-span-2">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[var(--foreground)] text-xl font-bold text-[var(--brand-gold)]">

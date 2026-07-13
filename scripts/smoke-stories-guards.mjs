@@ -117,8 +117,8 @@ const checks = [
       homePage.includes("ContentReportForm") &&
       homePage.includes('subjectType="story_post"') &&
       homePage.includes('returnHash="stories"') &&
-      homePage.includes("React to story") &&
-      homePage.includes("Send a DM reply"),
+      homePage.includes("overlay={storyOverlay}") &&
+      homePage.includes("storyOverlay"),
   },
   {
     label: "story post read and update policies are consolidated",
@@ -171,7 +171,7 @@ const checks = [
       homePage.includes("canReplyToStory") &&
       homePage.includes('placeholder="Reply to story"') &&
       homePage.includes('aria-label={`Reply ${reaction}`}') &&
-      homePage.includes("footer={"),
+      homePage.includes("overlay={storyOverlay}"),
   },
   {
     label: "story creation does not expose sensitive upload bypasses",
@@ -255,9 +255,9 @@ const checks = [
       homePage.includes("openAction={") &&
       homePage.includes("story_views(count)") &&
       homePage.includes("storyViewCount") &&
-      homePage.includes("ownerStoryFooter") &&
-      homePage.includes("Story stats") &&
-      homePage.includes("Expires in {timeUntil(story.expires_at)}"),
+      homePage.includes("{storyViewCount} views") &&
+      homePage.includes("{storyReactionCount} reacts") &&
+      homePage.includes("{timeUntil(story.expires_at)} left"),
   },
   {
     label: "profile pages surface active stories safely",
@@ -317,7 +317,7 @@ const checks = [
       productPlan.includes("DM-backed story replies") &&
       productPlan.includes("deduplicated signed-in view counts") &&
       productPlan.includes("quick story reactions with in-app alerts") &&
-      productPlan.includes("opened-story owner stats"),
+      productPlan.includes("floating story reaction/reply/report overlays"),
   },
 ];
 

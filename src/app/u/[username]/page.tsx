@@ -76,6 +76,7 @@ type Profile = {
   username: string;
   display_name: string;
   avatar_url: string | null;
+  banner_url: string | null;
   account_type: string;
   bio: string | null;
   city: string | null;
@@ -857,6 +858,76 @@ function ProfileStoryCard({
     ["sparkles", "\u2728"],
   ] as const;
   const quickReplies = ["\u{1F525}", "\u{1F5A4}", "\u{1F64C}", "\u{1F4AF}"];
+  const storyOverlay = (
+    <div className="pointer-events-auto mx-auto flex w-full max-w-xl flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="rounded-full border border-white/15 bg-black/60 px-3 py-1 text-xs font-black text-white shadow-lg backdrop-blur">
+          {storyViewCount} views
+        </span>
+        <span className="rounded-full border border-white/15 bg-black/60 px-3 py-1 text-xs font-black text-white shadow-lg backdrop-blur">
+          {storyReactionCount} reacts
+        </span>
+        <span className="rounded-full border border-white/15 bg-black/60 px-3 py-1 text-xs font-black text-white shadow-lg backdrop-blur">
+          {timeUntil(story.expires_at)} left
+        </span>
+      </div>
+      {canReplyToStory ? (
+        <div className="grid gap-2 rounded-lg border border-white/15 bg-black/55 p-3 text-white shadow-2xl backdrop-blur">
+          <div className="flex gap-2 overflow-x-auto">
+            {reactionOptions.map(([value, label]) => (
+              <form action={toggleStoryReaction} key={value}>
+                <input name="story_id" type="hidden" value={story.id} />
+                <input name="reaction" type="hidden" value={value} />
+                <button
+                  aria-label={`React ${value}`}
+                  className="flex h-10 min-w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 px-3 text-lg shadow-sm"
+                >
+                  {label}
+                </button>
+              </form>
+            ))}
+          </div>
+          <form action={replyToStory} className="flex gap-2">
+            <input name="story_id" type="hidden" value={story.id} />
+            <input
+              className="min-w-0 flex-1 rounded-full border border-white/20 bg-white/10 px-3 py-2 text-sm text-white outline-none placeholder:text-white/55 focus:border-white"
+              maxLength={500}
+              name="body"
+              placeholder="Reply to story"
+              required
+            />
+            <button
+              aria-label="Send story reply"
+              className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-black"
+            >
+              <Send className="size-4" />
+            </button>
+          </form>
+          <div className="flex items-center gap-2 overflow-x-auto">
+            {quickReplies.map((reaction) => (
+              <form action={replyToStory} key={reaction}>
+                <input name="story_id" type="hidden" value={story.id} />
+                <input name="body" type="hidden" value={reaction} />
+                <button
+                  aria-label={`Reply ${reaction}`}
+                  className="flex h-9 min-w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 px-3 text-lg"
+                >
+                  {reaction}
+                </button>
+              </form>
+            ))}
+            <div className="ml-auto min-w-28">
+              <ContentReportForm
+                returnPath={`/u/${profileUsername}`}
+                subjectId={story.id}
+                subjectType="story_post"
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
 
   if (!mediaSrc) return null;
 
@@ -886,88 +957,11 @@ function ProfileStoryCard({
           story.caption ||
           `${timeAgo(story.created_at)} story. Expires in ${timeUntil(story.expires_at)}.`
         }
-        footer={
-          isOwnProfile ? (
-            <div className="mx-auto grid max-w-sm grid-cols-2 gap-2 text-white">
-              <div className="rounded-md border border-white/15 bg-white/10 p-3">
-                <p className="text-2xl font-black">{storyViewCount}</p>
-                <p className="text-xs font-semibold uppercase text-white/65">
-                  Views
-                </p>
-              </div>
-              <div className="rounded-md border border-white/15 bg-white/10 p-3">
-                <p className="text-2xl font-black">{storyReactionCount}</p>
-                <p className="text-xs font-semibold uppercase text-white/65">
-                  Reactions
-                </p>
-              </div>
-            </div>
-          ) : canReplyToStory ? (
-            <div className="mx-auto grid max-w-xl gap-2">
-              <p className="text-xs font-bold uppercase tracking-wide text-white/60">
-                React to story
-              </p>
-              <div className="flex gap-2 overflow-x-auto">
-                {reactionOptions.map(([value, label]) => (
-                  <form action={toggleStoryReaction} key={value}>
-                    <input name="story_id" type="hidden" value={story.id} />
-                    <input name="reaction" type="hidden" value={value} />
-                    <button
-                      aria-label={`React ${value}`}
-                      className="flex h-9 min-w-11 items-center justify-center rounded-md border border-white/20 bg-white/10 px-3 text-lg"
-                    >
-                      {label}
-                    </button>
-                  </form>
-                ))}
-              </div>
-              <p className="pt-1 text-xs font-bold uppercase tracking-wide text-white/60">
-                Send a DM reply
-              </p>
-              <form action={replyToStory} className="flex gap-2">
-                <input name="story_id" type="hidden" value={story.id} />
-                <input
-                  className="min-w-0 flex-1 rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-white outline-none placeholder:text-white/55 focus:border-white"
-                  maxLength={500}
-                  name="body"
-                  placeholder="Reply to story"
-                  required
-                />
-                <button
-                  aria-label="Send story reply"
-                  className="flex size-10 shrink-0 items-center justify-center rounded-md bg-white text-black"
-                >
-                  <Send className="size-4" />
-                </button>
-              </form>
-              <div className="flex gap-2 overflow-x-auto">
-                {quickReplies.map((reaction) => (
-                  <form action={replyToStory} key={reaction}>
-                    <input name="story_id" type="hidden" value={story.id} />
-                    <input name="body" type="hidden" value={reaction} />
-                    <button
-                      aria-label={`Reply ${reaction}`}
-                      className="flex h-9 min-w-11 items-center justify-center rounded-md border border-white/20 bg-white/10 px-3 text-lg"
-                    >
-                      {reaction}
-                    </button>
-                  </form>
-                ))}
-              </div>
-              <div className="max-w-sm">
-                <ContentReportForm
-                  returnPath={`/u/${profileUsername}`}
-                  subjectId={story.id}
-                  subjectType="story_post"
-                />
-              </div>
-            </div>
-          ) : null
-        }
         mediaType={media.media_type}
         openAction={
           canRecordStoryView ? recordStoryView.bind(null, story.id) : undefined
         }
+        overlay={storyOverlay}
         src={mediaSrc}
         title="Active story"
       >
@@ -987,7 +981,7 @@ function ProfileStoryCard({
               {story.caption || "Tap to view story"}
             </span>
             <span className="mt-1 block text-xs font-semibold text-[var(--muted-strong)]">
-              {timeAgo(story.created_at)} · 24h story
+              {timeAgo(story.created_at)} / 24h story
             </span>
           </span>
         </button>
@@ -1033,13 +1027,14 @@ export async function generateMetadata({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, username, display_name, avatar_url, account_type, bio, city, region, country, is_private",
+      "id, username, display_name, avatar_url, banner_url, account_type, bio, city, region, country, is_private",
     )
     .eq("username", cleanUsername)
     .maybeSingle<Pick<
       Profile,
       | "account_type"
       | "avatar_url"
+      | "banner_url"
       | "bio"
       | "city"
       | "country"
@@ -1096,18 +1091,22 @@ export async function generateMetadata({
   );
   const profileShareImage = profile.is_private
     ? brandShareImage
-    : profile.avatar_url
-      ? profile.avatar_url
+    : profile.banner_url
+      ? profile.banner_url
+      : profile.avatar_url
+        ? profile.avatar_url
       : shareImageMedia
         ? mediaUrl(shareImageMedia.storage_bucket, shareImageMedia.storage_path)
         : brandShareImage;
   const profileShareImageAlt = profile.is_private
     ? brandShareImageAlt
-    : profile.avatar_url
-      ? `${profile.display_name} profile photo on ${siteName}`
-      : shareImageMedia
-        ? `${profile.display_name} public tattoo work on ${siteName}`
-        : brandShareImageAlt;
+    : profile.banner_url
+      ? `${profile.display_name} profile banner on ${siteName}`
+      : profile.avatar_url
+        ? `${profile.display_name} profile photo on ${siteName}`
+        : shareImageMedia
+          ? `${profile.display_name} public tattoo work on ${siteName}`
+          : brandShareImageAlt;
 
   return {
     alternates: {
@@ -1149,7 +1148,7 @@ export default async function ProfilePage({
   const { data: profileRow } = await supabase
     .from("profiles")
     .select(
-      "id, username, display_name, avatar_url, account_type, bio, city, region, country, website_url, instagram_url, tiktok_url, facebook_url, youtube_url, x_url, shop_profile_id, is_private, license_verified_at, created_at",
+      "id, username, display_name, avatar_url, banner_url, account_type, bio, city, region, country, website_url, instagram_url, tiktok_url, facebook_url, youtube_url, x_url, shop_profile_id, is_private, license_verified_at, created_at",
     )
     .eq("username", cleanUsername)
     .maybeSingle<Omit<Profile, "shop_profile">>();
@@ -1435,6 +1434,27 @@ export default async function ProfilePage({
         ) : null}
 
         <section className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-4 py-6">
+          <div className="mb-5 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--foreground)_90%,var(--brand-gold))] shadow-[0_18px_45px_rgba(23,20,18,0.16)]">
+            <div
+              className="relative min-h-36 bg-[linear-gradient(135deg,color-mix(in_srgb,var(--foreground)_92%,var(--brand-gold)),color-mix(in_srgb,var(--paper-warm)_72%,var(--brand-gold)))] sm:min-h-56"
+              style={{ aspectRatio: "3 / 1" }}
+            >
+              {profile.banner_url && !isPrivateLocked ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  alt=""
+                  className="size-full object-cover"
+                  src={profile.banner_url}
+                />
+              ) : (
+                <div className="flex size-full items-end p-4">
+                  <span className="rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_36%,transparent)] bg-black/45 px-3 py-1 text-xs font-black uppercase tracking-wide text-white">
+                    {formatAccountType(profile.account_type)} profile
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
             <ProfileAvatar
               className="shadow-[0_12px_30px_rgba(23,20,18,0.22)]"
