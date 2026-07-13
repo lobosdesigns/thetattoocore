@@ -135,9 +135,9 @@ function profileTabFromHash(hash: string): ProfileTab {
 
 const pushRoadmap = [
   "Current switches control in-app notifications and unread badges.",
-  "The same choices will feed email and web push when those channels are turned on.",
-  "Quiet hours will suppress noisy future email/push while keeping safety and account alerts available.",
-  "Native app push will use APNs for iPhone and FCM for Android after app-store builds.",
+  "The same choices can guide important email and installed-app alerts when those channels are ready.",
+  "Quiet hours help reduce noisy alerts while keeping safety and account alerts available.",
+  "Phone app alerts will stay off until app builds and delivery settings are ready.",
 ] as const;
 
 function RequiredMark() {
@@ -324,9 +324,8 @@ export function ProfileForm({
         >
           <h2 className="text-sm font-bold">Appearance</h2>
           <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
-            Choose Light, Dark, or System mode on this device. Account sync can
-            come after the full color system moves from hardcoded colors to
-            theme tokens.
+            Choose Light, Dark, or System mode. Signed-in members can save the
+            preference with the rest of their profile settings.
           </p>
           <div className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
             <ThemePreferencePicker
@@ -345,9 +344,8 @@ export function ProfileForm({
           <h2 className="text-sm font-bold">Language and region</h2>
           <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
             These settings power the page language signal, local discovery,
-            future translated UI, and simple ad targeting by country, region,
-            city, and language. We use the location you type here, not precise
-            browser GPS.
+            and clearly labeled regional discovery. We use the location you type
+            here, not precise browser GPS.
           </p>
           <div className="mt-3 grid gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3 text-xs leading-5 text-[var(--muted)] sm:grid-cols-3">
             <p>
@@ -356,8 +354,8 @@ export function ProfileForm({
             </p>
             <p>
               <span className="block font-semibold">Post translation</span>
-              Original text now; manual language choice first, provider-backed
-              translation later.
+              Original text is shown by default. If translation is added, the
+              original should stay available.
             </p>
             <p>
               <span className="block font-semibold">Discovery</span>
@@ -528,8 +526,8 @@ export function ProfileForm({
             </span>
             <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
               Uses your city, region, and country settings for marketplace,
-              local discovery, and future sponsored placements. Precise device
-              location should be asked separately before it is ever used.
+              local discovery, and clearly labeled sponsored placements. Precise
+              device location should be asked separately before it is ever used.
             </span>
           </span>
         </label>
@@ -586,8 +584,8 @@ export function ProfileForm({
             <h2 className="text-sm font-bold">Notification preferences</h2>
             <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
               Choose which in-app notifications create alerts and badges now.
-              These same choices will become the base for email, PWA push, and
-              native app push later.
+              These same choices can guide important email and installed-app
+              alerts when those channels are ready.
             </p>
           </div>
           <span className="w-fit rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--muted)]">
@@ -624,8 +622,9 @@ export function ProfileForm({
               <div>
                 <h3 className="text-sm font-semibold">Quiet hours</h3>
                 <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
-                  Store a do-not-disturb window now so email, PWA push, and
-                  native app push can respect it later.
+                  Store a do-not-disturb window so important email and
+                  installed-app alerts can respect it when those channels are
+                  ready.
                 </p>
               </div>
               <label className="flex items-center gap-2 text-sm font-medium">
@@ -698,8 +697,8 @@ export function ProfileForm({
                   Important email alerts
                 </span>
                 <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
-                  Account, verification, security, Stuff, and Gigs email can
-                  use this when transactional email is expanded.
+                  Account, verification, security, Stuff, and Gigs email can use
+                  this preference when important email alerts are enabled.
                 </span>
               </span>
             </label>
@@ -715,8 +714,8 @@ export function ProfileForm({
                   Prepare push notifications
                 </span>
                 <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
-                  Saves your preference only. Browser and native push still
-                  need install/device-token setup later.
+                  Saves your preference only. Push alerts stay off until device
+                  setup and delivery settings are ready.
                 </span>
               </span>
             </label>

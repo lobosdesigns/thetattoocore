@@ -21,6 +21,7 @@ const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
+const profileForm = readFileSync("src/app/account/profile-form.tsx", "utf8");
 const mediaInput = readFileSync("src/app/media-input.tsx", "utf8");
 const floatingComposer = readFileSync("src/app/floating-composer.tsx", "utf8");
 const searchPage = readFileSync("src/app/search/page.tsx", "utf8");
@@ -67,6 +68,7 @@ const publicCopySource = [
   privacyPage,
   supportPage,
   accountPage,
+  profileForm,
   mediaInput,
   floatingComposer,
   searchPage,
@@ -99,6 +101,9 @@ const publicRoadmapSnippets = [
   "future booking deposits",
   "future sponsored placements",
   "future translated UI",
+  "provider-backed",
+  "APNs",
+  "FCM",
 ];
 
 const checks = [
