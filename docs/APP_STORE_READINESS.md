@@ -18,6 +18,7 @@
 - TheTattooCore is 18+ only.
 - Visible nudity is not allowed for launch.
 - Sensitive non-nude body-art media stays behind login and 18+ confirmation.
+- Content-policy smoke guards verify new member uploads default to non-sensitive, member upload forms do not expose a sensitive/nudity bypass, legacy sensitive gates require login or 18+ confirmation, and public policy copy keeps the no-visible-nudity launch stance.
 - Public support and account deletion request paths exist.
 - Public support, privacy, and terms pages expose the current support contact email for account, privacy, policy, and safety questions.
 - HostGator transactional mail is configured around `support@thetattoocore.com`; public support/reply-to mail should stay on company addresses instead of personal owner contact details.
