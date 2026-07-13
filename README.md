@@ -25,8 +25,7 @@ creative work.
   marketplace engagement.
 - Photos, reels, videos, listing media, gig media, and DM attachments should
   open in a focused lightbox so people can zoom in and inspect body-art detail.
-- Stories are planned for later, after the core feed, Gossip, Stuff, Gigs, and
-  DMs are stable.
+- Stories are started with photo, GIF, and short-video moments for launch.
 - TheTattooCore supports freedom of body-art expression when content follows
   safety, consent, legality, and adult-content guidelines.
 - Visible nudity is not allowed for launch. Members should crop or cover

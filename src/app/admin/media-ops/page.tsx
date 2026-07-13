@@ -101,7 +101,7 @@ export default async function AdminMediaOpsPage() {
               </p>
               <h1 className="text-2xl font-bold sm:text-3xl">Media ops</h1>
               <p className="mt-1 text-sm text-[var(--muted-strong)]">
-                Upload limits, image optimization, thumbnails, and future video pipeline.
+                Upload limits, image optimization, thumbnails, and video readiness.
               </p>
             </div>
           </div>
