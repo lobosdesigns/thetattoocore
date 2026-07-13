@@ -1,0 +1,124 @@
+import { readFileSync } from "node:fs";
+
+const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
+const adminNav = readFileSync("src/app/admin/admin-section-nav.tsx", "utf8");
+const adminOverview = readFileSync("src/app/admin/page.tsx", "utf8");
+const adminUsers = readFileSync("src/app/admin/users/page.tsx", "utf8");
+const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
+const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
+
+const pagedAdminPages = [
+  "ads",
+  "content",
+  "data-requests",
+  "gigs",
+  "merch",
+  "payments",
+  "reports",
+  "stuff",
+  "users",
+  "verification",
+];
+
+const adminSections = [
+  "/admin/users",
+  "/admin/verification",
+  "/admin/reports",
+  "/admin/content",
+  "/admin/stuff",
+  "/admin/gigs",
+  "/admin/merch",
+  "/admin/ads",
+  "/admin/payments",
+  "/admin/media-ops",
+  "/admin/mail-settings",
+  "/admin/data-requests",
+];
+
+const pagedPageSources = pagedAdminPages.map((page) => [
+  page,
+  readFileSync(`src/app/admin/${page}/page.tsx`, "utf8"),
+]);
+
+const checks = [
+  {
+    label: "admin section nav exposes each dedicated admin area",
+    ok:
+      adminNav.includes('aria-label="Admin sections"') &&
+      adminSections.every((href) => adminNav.includes(`"${href}"`)),
+  },
+  {
+    label: "public route smoke protects every dedicated admin area behind login",
+    ok: adminSections.every((href) => publicSmoke.includes(`path: "${href}"`)),
+  },
+  {
+    label: "long admin queues use 50-item pagination",
+    ok: pagedPageSources.every(
+      ([, source]) =>
+        source.includes("const pageSize = 50") &&
+        source.includes("const from = (currentPage - 1) * pageSize") &&
+        source.includes("const to = from + pageSize - 1") &&
+        source.includes("totalPages"),
+    ),
+  },
+  {
+    label: "admin overview stays a short command center with dedicated links",
+    ok:
+      adminOverview.includes("const overviewCards = [") &&
+      adminOverview.includes("This overview intentionally stays short.") &&
+      adminOverview.includes("Full queues belong on") &&
+      adminSections
+        .filter((href) => href !== "/admin/media-ops")
+        .every((href) => adminOverview.includes(`href: "${href}"`) || adminOverview.includes(`href="${href}"`)),
+  },
+  {
+    label: "owner-only role changes cannot demote the current owner",
+    ok:
+      adminActions.includes("async function requireOwner()") &&
+      adminActions.includes('if (profile?.role !== "owner")') &&
+      adminActions.includes('if (profileId === userId && role !== "owner")') &&
+      adminActions.includes("Owners cannot demote their own account.") &&
+      adminActions.includes('event_type: "profile_role_changed"'),
+  },
+  {
+    label: "tester account creation is owner-only, confirmed, service-role backed, and audited",
+    ok:
+      adminActions.includes("export async function createTestAccount") &&
+      adminActions.includes("await requireOwner()") &&
+      adminActions.includes("const adminClient = createAdminClient()") &&
+      adminActions.includes("Supabase service role key is missing") &&
+      adminActions.includes("email_confirm: true") &&
+      adminActions.includes("adminClient.auth.admin.createUser") &&
+      adminActions.includes("adminClient.auth.admin.deleteUser(profileId)") &&
+      adminActions.includes('event_type: "tester_account_created"'),
+  },
+  {
+    label: "admin users page shows tester creation only to owners with service key readiness",
+    ok:
+      adminUsers.includes("const canManageRoles = profile.role === \"owner\"") &&
+      adminUsers.includes("const canCreateTestAccounts = canManageRoles && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)") &&
+      adminUsers.includes("Create tester account") &&
+      adminUsers.includes("Service key ready") &&
+      adminUsers.includes("Needs service key") &&
+      adminUsers.includes("disabled={!canCreateTestAccounts}"),
+  },
+  {
+    label: "plan records dedicated admin pages and tester account tooling",
+    ok:
+      productPlan.includes("Admin sections must become dedicated pages") &&
+      productPlan.includes("Admin `/admin` must stay an overview-only command center") &&
+      productPlan.includes("Owner/admin support tooling should include a controlled way to create tester/member accounts") &&
+      productPlan.includes("owner-only access, server-only Supabase admin auth, confirmed tester creation, and audit logging"),
+  },
+];
+
+const failures = checks.filter((check) => !check.ok);
+
+for (const check of checks) {
+  console.log(`${check.ok ? "PASS" : "FAIL"} ${check.label}`);
+}
+
+if (failures.length) {
+  console.error(`${failures.length} admin guard smoke check(s) failed.`);
+  process.exit(1);
+}
