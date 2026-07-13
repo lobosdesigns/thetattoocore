@@ -229,6 +229,17 @@ const checks = [
     ),
   },
   {
+    label: "public privacy copy covers data safety without raw payment credential collection",
+    ok:
+      privacyPage.includes("Account And Profile Data") &&
+      privacyPage.includes("Commerce And Payments") &&
+      privacyPage.includes("hosted checkout flows") &&
+      privacyPage.includes("should not collect raw card numbers") &&
+      privacyPage.includes("bank account details") &&
+      privacyPage.includes("Retention And Review") &&
+      privacyPage.includes("verification documents"),
+  },
+  {
     label: "public trust surfaces keep launch content policy stance",
     ok:
       siteConfig.includes("no AI art or scratcher promotion") &&

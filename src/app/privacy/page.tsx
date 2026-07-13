@@ -12,6 +12,11 @@ export const metadata: Metadata = {
 const sections = [
   {
     body:
+      "Account and profile data can include your email, username, display name, 18+ confirmation, account type, avatar, bio, website or social links, language preference, appearance preference, notification settings, and coarse location settings you choose to provide.",
+    title: "Account And Profile Data",
+  },
+  {
+    body:
       "Profiles, selected public posts, marketplace listings, gigs, and future public Merch items may be visible to other members and, where allowed, search engines. Account settings, private profile data, admin tools, draft content, and messages are not meant for public indexing.",
     title: "What Can Be Public",
   },
@@ -32,8 +37,8 @@ const sections = [
   },
   {
     body:
-      "Merch is a separate public-buyable area for approved artist, studio, vendor, and TheTattooCore brand goods. Checkout is limited during launch, and production purchases still need final seller approval, tax, shipping, refunds, fulfillment, payment rules, and buyer privacy notices.",
-    title: "Merch",
+      "Merch, ads, and future booking deposits can create checkout, order, receipt, fulfillment, refund, dispute, and support records. Checkout is limited during launch, and production purchases still need final seller approval, tax, shipping, refunds, fulfillment, payment rules, and buyer privacy notices. TheTattooCore should use hosted checkout flows and should not collect raw card numbers, bank account details, routing numbers, or payout credentials in member forms.",
+    title: "Commerce And Payments",
   },
   {
     body:
@@ -59,6 +64,11 @@ const sections = [
     body:
       "Members can update profile information from account settings, make profiles private, and request account deletion from Account > Data. During launch, deletion requests are reviewed manually so safety reports, marketplace issues, fraud concerns, disputes, and legal obligations can be handled correctly. The launch target is to review deletion requests within 30 days unless a safety, dispute, or legal hold requires more time.",
     title: "Controls",
+  },
+  {
+    body:
+      "Some records may need to be kept for safety, fraud prevention, moderation audits, account deletion review, marketplace disputes, payment records, legal holds, or professional verification history. Store and app-review screenshots should avoid private DMs, verification documents, personal emails, real payment data, sensitive content, and copyrighted tattoo art.",
+    title: "Retention And Review",
   },
 ];
 
