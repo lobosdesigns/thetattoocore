@@ -112,7 +112,8 @@ checks.push({
     merchCheckout.includes("formReturnTo ?? `/merch/${product.id}`") &&
     merchCheckout.includes('"cancel_url": cancelUrl') &&
     merchDetailPage.includes('name="return_to"') &&
-    merchDetailPage.includes('value={`/merch/${product.id}`}'),
+    merchDetailPage.includes('value={`/merch/${product.id}`}') &&
+    merchDetailPage.includes('href={`/login?return_to=${encodeURIComponent(`/merch/${product.id}`)}`}'),
 });
 checks.push({
   label: "merch checkout creates local order before Stripe session",

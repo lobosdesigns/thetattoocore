@@ -523,7 +523,7 @@ export default async function MerchProductPage({
               ) : (
                 <Link
                   className="flex h-11 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-                  href="/login"
+                  href={`/login?return_to=${encodeURIComponent(`/merch/${product.id}`)}`}
                 >
                   Sign in to buy
                 </Link>
