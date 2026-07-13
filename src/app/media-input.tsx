@@ -278,8 +278,8 @@ export function MediaInput({
       </p>
       {videoAllowed && !compact ? (
         <p className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
-          {videoPipelineLabel} Use short MP4/MOV clips for now; richer
-          playback and thumbnails will come later.
+          {videoPipelineLabel} Use short MP4/MOV clips for now; more video
+          viewing features are coming soon.
         </p>
       ) : null}
       {isOptimizing && !selected ? (

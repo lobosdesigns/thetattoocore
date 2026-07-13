@@ -35,6 +35,11 @@ const forbiddenMemberUploadSnippets = [
   "Mark sensitive",
   "Sensitive upload",
   "body-art nudity context",
+  "managed video pipeline",
+  "Cloudflare",
+  "Supabase",
+  "server",
+  "Stream",
 ];
 
 const checks = [
