@@ -23,7 +23,13 @@ import {
   Video,
   type LucideIcon,
 } from "lucide-react";
-import { acceptAdultTerms, archiveGig, createBookingRequest } from "@/app/actions";
+import {
+  acceptAdultTerms,
+  archiveGig,
+  createBookingRequest,
+  endStoryPost,
+  recordStoryView,
+} from "@/app/actions";
 import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { NotificationBellLink } from "@/app/notification-bell-link";
@@ -174,6 +180,26 @@ type Gig = {
   gig_media: GigMedia[];
 };
 
+type StoryMedia = {
+  id: string;
+  media_type: "image";
+  storage_bucket: string;
+  storage_path: string;
+};
+
+type StoryPost = {
+  id: string;
+  author_id: string;
+  caption: string | null;
+  created_at: string;
+  expires_at: string;
+  is_sensitive: boolean;
+  visibility: "public_preview" | "members" | "private";
+  story_media: StoryMedia[];
+  story_reactions?: { count: number }[];
+  story_views?: { count: number }[];
+};
+
 type FollowRecord = {
   following_id: string;
   status: "pending" | "accepted";
@@ -234,6 +260,18 @@ function isVerifiedProfile(
 function timeAgo(value: string) {
   const diffMs = Date.now() - new Date(value).getTime();
   const minutes = Math.max(1, Math.round(diffMs / 60000));
+
+  if (minutes < 60) return `${minutes}m`;
+
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+
+  return `${Math.round(hours / 24)}d`;
+}
+
+function timeUntil(value: string) {
+  const diffMs = new Date(value).getTime() - Date.now();
+  const minutes = Math.max(0, Math.round(diffMs / 60000));
 
   if (minutes < 60) return `${minutes}m`;
 
@@ -785,6 +823,95 @@ function PostPreview({ post }: { post: FeedPost }) {
   );
 }
 
+function ProfileStoryCard({
+  isOwnProfile,
+  story,
+  viewerId,
+}: {
+  isOwnProfile: boolean;
+  story: StoryPost;
+  viewerId?: string;
+}) {
+  const media = story.story_media[0];
+  const mediaSrc = media
+    ? mediaUrl(media.storage_bucket, media.storage_path)
+    : null;
+  const canRecordStoryView = Boolean(viewerId && viewerId !== story.author_id);
+  const storyViewCount = story.story_views?.[0]?.count ?? 0;
+  const storyReactionCount = story.story_reactions?.[0]?.count ?? 0;
+
+  if (!mediaSrc) return null;
+
+  return (
+    <section className="mt-5 max-w-xl rounded-lg border border-[color-mix(in_srgb,var(--gold)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_11%,var(--paper-warm))] p-3">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-black uppercase tracking-wide text-[var(--muted-strong)]">
+            Active story
+          </p>
+          <p className="text-sm font-semibold">
+            Expires in {timeUntil(story.expires_at)}
+          </p>
+        </div>
+        {isOwnProfile ? (
+          <form action={endStoryPost}>
+            <input name="story_id" type="hidden" value={story.id} />
+            <button className="h-8 rounded-md border border-[var(--card-rim)] bg-[var(--foreground)] px-3 text-xs font-bold text-[var(--background)]">
+              End
+            </button>
+          </form>
+        ) : null}
+      </div>
+      <MediaLightbox
+        alt="Profile story"
+        description={
+          story.caption ||
+          `${timeAgo(story.created_at)} story. Expires in ${timeUntil(story.expires_at)}.`
+        }
+        footer={
+          isOwnProfile ? (
+            <div className="mx-auto grid max-w-sm grid-cols-2 gap-2 text-white">
+              <div className="rounded-md border border-white/15 bg-white/10 p-3">
+                <p className="text-2xl font-black">{storyViewCount}</p>
+                <p className="text-xs font-semibold uppercase text-white/65">
+                  Views
+                </p>
+              </div>
+              <div className="rounded-md border border-white/15 bg-white/10 p-3">
+                <p className="text-2xl font-black">{storyReactionCount}</p>
+                <p className="text-xs font-semibold uppercase text-white/65">
+                  Reactions
+                </p>
+              </div>
+            </div>
+          ) : null
+        }
+        mediaType="image"
+        openAction={
+          canRecordStoryView ? recordStoryView.bind(null, story.id) : undefined
+        }
+        src={mediaSrc}
+        title="Active story"
+      >
+        <button className="grid w-full grid-cols-[72px_1fr] items-center gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-2 text-left">
+          <span
+            className="block aspect-square rounded-md border border-[var(--card-rim)] bg-cover bg-center bg-[color-mix(in_srgb,var(--foreground)_88%,var(--gold))]"
+            style={{ backgroundImage: `url(${mediaSrc})` }}
+          />
+          <span className="min-w-0">
+            <span className="block text-sm font-bold">
+              {story.caption || "Tap to view story"}
+            </span>
+            <span className="mt-1 block text-xs font-semibold text-[var(--muted-strong)]">
+              {timeAgo(story.created_at)} · 24h story
+            </span>
+          </span>
+        </button>
+      </MediaLightbox>
+    </section>
+  );
+}
+
 type ProfilePageProps = {
   params: Promise<{ username: string }>;
   searchParams: Promise<{ message?: string }>;
@@ -952,6 +1079,7 @@ export default async function ProfilePage({
     { data: savedProfile },
     { data: linkedArtists },
     { data: bookingSettings },
+    { data: activeStories },
   ] = await Promise.all([
     supabase
       .from("follows")
@@ -1106,6 +1234,21 @@ export default async function ProfilePage({
           .eq("profile_id", profile.id)
           .maybeSingle<BookingSettings>()
       : Promise.resolve({ data: null }),
+    supabase
+      .from("story_posts")
+      .select(
+        "id, author_id, caption, visibility, is_sensitive, created_at, expires_at, story_media(id, storage_bucket, storage_path, media_type, sort_order), story_reactions(count), story_views(count)",
+      )
+      .eq("author_id", profile.id)
+      .eq("moderation_status", "active")
+      .gt("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false })
+      .order("sort_order", {
+        ascending: true,
+        referencedTable: "story_media",
+      })
+      .limit(1)
+      .returns<StoryPost[]>(),
   ]);
 
   const isOwnProfile = claims?.sub === profile.id;
@@ -1145,6 +1288,7 @@ export default async function ProfilePage({
   const visibleThreads = (threads ?? []).filter(canShow);
   const visibleListings = (listings ?? []).filter(canShow);
   const visibleGigs = (gigs ?? []).filter(canShow);
+  const visibleStory = (activeStories ?? []).find(canShow);
   const hiddenContentCount = isPrivateLocked
     ? 0
     : (posts?.length ?? 0) -
@@ -1321,6 +1465,13 @@ export default async function ProfilePage({
                   </a>
                 ) : null}
               </div>
+              ) : null}
+              {visibleStory ? (
+                <ProfileStoryCard
+                  isOwnProfile={isOwnProfile}
+                  story={visibleStory}
+                  viewerId={claims?.sub}
+                />
               ) : null}
               {canShowBookingAvailability ? (
                 <section className="mt-5 rounded-lg border border-[color-mix(in_srgb,var(--gold)_34%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))] p-4">

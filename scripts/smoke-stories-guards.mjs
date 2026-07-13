@@ -40,6 +40,7 @@ const composer = readFileSync("src/app/floating-composer.tsx", "utf8");
 const composerShell = readFileSync("src/app/floating-composer-shell.tsx", "utf8");
 const homePage = readFileSync("src/app/page.tsx", "utf8");
 const notificationsPage = readFileSync("src/app/notifications/page.tsx", "utf8");
+const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
 const storyCreateButton = readFileSync("src/app/story-create-button.tsx", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 
@@ -237,6 +238,19 @@ const checks = [
       homePage.includes("ownerStoryFooter") &&
       homePage.includes("Story stats") &&
       homePage.includes("Expires in {timeUntil(story.expires_at)}"),
+  },
+  {
+    label: "profile pages surface active stories safely",
+    ok:
+      profilePage.includes("type StoryPost =") &&
+      profilePage.includes("function ProfileStoryCard") &&
+      profilePage.includes('.from("story_posts")') &&
+      profilePage.includes('.gt("expires_at", new Date().toISOString())') &&
+      profilePage.includes("const visibleStory =") &&
+      profilePage.includes("<ProfileStoryCard") &&
+      profilePage.includes("recordStoryView.bind(null, story.id)") &&
+      profilePage.includes("endStoryPost") &&
+      productPlan.includes("profile-page active story cards"),
   },
   {
     label: "story reactions are RLS-protected and toggleable",
