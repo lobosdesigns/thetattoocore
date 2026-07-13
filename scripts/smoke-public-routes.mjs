@@ -6,6 +6,12 @@ const forbiddenBodyText = [
   "Internal Server Error",
   "SUPABASE_SERVICE_ROLE_KEY",
   "STRIPE_SECRET_KEY",
+  "Cloudflare",
+  "Supabase",
+  "HostGator",
+  "Stripe",
+  "service key",
+  "service role",
   "lobo3319@gmail.com",
   "lobosden@hotmail.com",
   "D@k0t",
@@ -183,7 +189,13 @@ const checks = [
     status: [200],
     includes: ['name="robots" content="noindex, nofollow"', "Checkout received", "Back to Merch"],
   },
-  { path: "/robots.txt", status: [200], includes: ["User-agent"], headers: false },
+  {
+    path: "/robots.txt",
+    status: [200],
+    includes: ["User-agent"],
+    headers: false,
+    allowedForbiddenText: ["Cloudflare"],
+  },
   { path: "/sitemap.xml", status: [200], includes: ["urlset"] },
   { path: "/manifest.webmanifest", status: [200], includes: ["TheTattooCore", "/icons/icon-192.png"], headers: false },
   { path: "/sw.js", status: [200], includes: ["skipWaiting", "showNotification", "notificationclick"], headers: false },
@@ -243,7 +255,10 @@ for (const check of checks) {
   const unexpectedText = (check.excludes || []).filter(
     (text) => searchableBody.includes(text),
   );
-  const leakedText = forbiddenBodyText.filter((text) => body.includes(text));
+  const allowedForbiddenText = check.allowedForbiddenText || [];
+  const leakedText = forbiddenBodyText.filter(
+    (text) => !allowedForbiddenText.includes(text) && body.includes(text),
+  );
   const missingHeaders = check.redirect || check.headers === false
     ? []
     : requiredHeaders.filter(([header, value]) => {
