@@ -17,7 +17,7 @@ import { MediaInput } from "@/app/media-input";
 import { PendingSubmitButton } from "@/app/pending-submit-button";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { WordLimitedField } from "@/app/word-limited-field";
-import { respondBookingRequest } from "@/app/account/actions";
+import { cancelBookingRequest, respondBookingRequest } from "@/app/account/actions";
 import { MessageThread } from "./message-thread";
 import { sendMessage, startConversation } from "./actions";
 
@@ -203,6 +203,10 @@ function BookingCards({
             booking.status === "accepted" &&
             booking.payment_status !== "paid" &&
             booking.deposit_amount_cents > 0;
+          const canCancel =
+            isClient &&
+            ["requested", "accepted"].includes(booking.status) &&
+            ["not_ready", "payment_failed"].includes(booking.payment_status);
 
           return (
             <article
@@ -283,6 +287,17 @@ function BookingCards({
                       ? "Checkout started"
                       : "Pay deposit"}
                   </button>
+                </form>
+              ) : null}
+              {canCancel ? (
+                <form action={cancelBookingRequest} className="mt-3">
+                  <input name="booking_id" type="hidden" value={booking.id} />
+                  <PendingSubmitButton
+                    className="flex h-10 w-full items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--danger)_42%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] px-4 text-sm font-bold text-[var(--danger)] sm:w-fit"
+                    pendingLabel="Cancelling"
+                  >
+                    Cancel request
+                  </PendingSubmitButton>
                 </form>
               ) : null}
             </article>

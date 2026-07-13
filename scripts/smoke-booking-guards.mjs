@@ -12,6 +12,10 @@ const bookingSettingsMigration = readFileSync(
   "supabase/migrations/20260713093653_booking_settings_foundation.sql",
   "utf8",
 );
+const bookingCancellationMigration = readFileSync(
+  "supabase/migrations/20260713100043_booking_cancellation_notifications.sql",
+  "utf8",
+);
 const actions = readFileSync("src/app/actions.ts", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
@@ -75,7 +79,9 @@ const checks = [
       migration.includes("'booking_accepted'") &&
       migration.includes("'booking_declined'") &&
       migration.includes("'booking_deposit_paid'") &&
+      bookingCancellationMigration.includes("'booking_cancelled'") &&
       notificationsPage.includes('"booking_request"') &&
+      notificationsPage.includes('"booking_cancelled"') &&
       notificationsPage.includes("CalendarDays") &&
       notificationsPage.includes('return "Booking"'),
   },
@@ -130,6 +136,18 @@ const checks = [
       accountActions.includes('.eq("artist_id", claims.sub)') &&
       accountActions.includes('type: decision === "accept" ? "booking_accepted" : "booking_declined"') &&
       accountActions.includes("Deposit checkout is the next booking step."),
+  },
+  {
+    label: "clients can cancel unpaid booking requests safely",
+    ok:
+      accountActions.includes("export async function cancelBookingRequest") &&
+      accountActions.includes('type: "booking_cancelled"') &&
+      accountActions.includes('.in("status", ["requested", "accepted"])') &&
+      accountActions.includes('.in("payment_status", ["not_ready", "payment_failed"])') &&
+      accountPage.includes("cancelBookingRequest") &&
+      accountPage.includes("Cancel request") &&
+      messagesPage.includes("cancelBookingRequest") &&
+      messagesPage.includes("canCancel"),
   },
   {
     label: "accepted booking deposits use guarded Stripe checkout",

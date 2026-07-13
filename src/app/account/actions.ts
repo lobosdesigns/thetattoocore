@@ -989,6 +989,101 @@ export async function respondBookingRequest(formData: FormData) {
   );
 }
 
+export async function cancelBookingRequest(formData: FormData) {
+  const bookingId = cleanText(formData.get("booking_id"), 80);
+
+  if (!bookingId) {
+    redirect(bookingPath("Choose a booking request first."));
+  }
+
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+
+  if (!claims?.sub) {
+    redirect("/login?return_to=%2Faccount%23booking-settings");
+  }
+
+  const { data: booking } = await supabase
+    .from("booking_requests")
+    .select("id, artist_id, client_id, title, status, payment_status")
+    .eq("id", bookingId)
+    .maybeSingle<{
+      artist_id: string;
+      client_id: string;
+      id: string;
+      payment_status: string;
+      status: string;
+      title: string;
+    }>();
+
+  if (!booking || booking.client_id !== claims.sub) {
+    redirect(bookingPath("That booking request is not available."));
+  }
+
+  const canCancel =
+    ["requested", "accepted"].includes(booking.status) &&
+    ["not_ready", "payment_failed"].includes(booking.payment_status);
+
+  if (!canCancel) {
+    redirect(bookingPath("That booking cannot be cancelled from here."));
+  }
+
+  const admin = createAdminClient();
+
+  if (!admin) {
+    redirect(bookingPath("Booking cancellation needs the server service key configured."));
+  }
+
+  const now = new Date().toISOString();
+  const { error } = await admin
+    .from("booking_requests")
+    .update({
+      cancelled_at: now,
+      status: "cancelled",
+      updated_at: now,
+    })
+    .eq("id", booking.id)
+    .eq("client_id", claims.sub)
+    .in("status", ["requested", "accepted"])
+    .in("payment_status", ["not_ready", "payment_failed"]);
+
+  if (error) {
+    redirect(bookingPath(error.message || "Could not cancel booking request."));
+  }
+
+  const [{ data: client }, { data: artistPreferences }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", claims.sub)
+      .maybeSingle<{ display_name: string }>(),
+    supabase
+      .from("profiles")
+      .select(notificationPreferenceSelect("message"))
+      .eq("id", booking.artist_id)
+      .maybeSingle<NotificationPreferenceProfile>(),
+  ]);
+
+  if (allowsInAppNotification(artistPreferences, "message")) {
+    await admin.from("notifications").insert({
+      actor_id: claims.sub,
+      body: `${client?.display_name ?? "Client"} cancelled before deposit payment.`,
+      href: "/account#booking-settings",
+      recipient_id: booking.artist_id,
+      subject_id: booking.id,
+      subject_type: "booking_request",
+      title: `Booking cancelled: ${booking.title}`.slice(0, 120),
+      type: "booking_cancelled",
+    });
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/messages");
+  revalidatePath("/notifications");
+  redirect(bookingPath("Booking request cancelled."));
+}
+
 export async function updateBookingSettings(formData: FormData) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();

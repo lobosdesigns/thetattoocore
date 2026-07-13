@@ -48,6 +48,7 @@ type Notification = {
     | "ad_payment_failed"
     | "ad_refunded"
     | "booking_accepted"
+    | "booking_cancelled"
     | "booking_declined"
     | "booking_deposit_paid"
     | "booking_request"
@@ -94,6 +95,7 @@ function notificationIcon(type: Notification["type"]) {
   if (type === "ad_refunded") return CreditCard;
   if (type === "booking_deposit_paid") return CreditCard;
   if (type === "booking_accepted") return BadgeCheck;
+  if (type === "booking_cancelled") return ShieldAlert;
   if (type === "booking_declined") return ShieldAlert;
   if (type === "booking_request") return CalendarDays;
   if (type === "merch_paid") return CreditCard;

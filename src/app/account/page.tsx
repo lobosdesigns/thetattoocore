@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
+  cancelBookingRequest,
   markMerchSaleFulfilled,
   requestAccountDeletion,
   respondBookingRequest,
@@ -912,7 +913,12 @@ export default async function AccountPage({
               <h3 className="text-sm font-bold">Sent</h3>
               {visibleOutgoingBookings.length ? (
                 <div className="mt-3 grid gap-3">
-                  {visibleOutgoingBookings.map((booking) => (
+                  {visibleOutgoingBookings.map((booking) => {
+                    const canCancelBooking =
+                      ["requested", "accepted"].includes(booking.status) &&
+                      ["not_ready", "payment_failed"].includes(booking.payment_status);
+
+                    return (
                     <article
                       className="rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4"
                       key={booking.id}
@@ -984,8 +990,20 @@ export default async function AccountPage({
                           </button>
                         </form>
                       ) : null}
+                      {canCancelBooking ? (
+                        <form action={cancelBookingRequest} className="mt-3">
+                          <input name="booking_id" type="hidden" value={booking.id} />
+                          <PendingSubmitButton
+                            className="h-10 w-full rounded-md border border-[color-mix(in_srgb,var(--danger)_42%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] px-4 text-sm font-bold text-[var(--danger)] sm:w-fit"
+                            pendingLabel="Cancelling"
+                          >
+                            Cancel request
+                          </PendingSubmitButton>
+                        </form>
+                      ) : null}
                     </article>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 text-sm text-[var(--muted)]">
