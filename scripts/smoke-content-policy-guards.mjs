@@ -16,6 +16,10 @@ const commentMediaMigration = readFileSync(
   "supabase/migrations/20260713185241_comment_media_attachments.sql",
   "utf8",
 );
+const tightenedCommentMediaMigration = readFileSync(
+  "supabase/migrations/20260713191332_tighten_comment_media_policies.sql",
+  "utf8",
+);
 
 const memberUploadSource = [composer, mediaInput].join("\n");
 const policyCopySource = [
@@ -99,6 +103,21 @@ const checks = [
       commentMediaMigration.includes("grant select, insert, delete on public.post_comment_media to authenticated") &&
       commentMediaMigration.includes("grant select, insert, delete on public.thread_comment_media to authenticated") &&
       !commentMediaMigration.includes(" to anon"),
+  },
+  {
+    label: "comment media policies inherit parent visibility and hidden-comment guards",
+    ok:
+      tightenedCommentMediaMigration.includes("join public.feed_posts") &&
+      tightenedCommentMediaMigration.includes("join public.thread_posts") &&
+      tightenedCommentMediaMigration.includes("post_comments.deleted_at is null") &&
+      tightenedCommentMediaMigration.includes("thread_comments.deleted_at is null") &&
+      tightenedCommentMediaMigration.includes("post_comment_hides") &&
+      tightenedCommentMediaMigration.includes("thread_comment_hides") &&
+      tightenedCommentMediaMigration.includes("adult_terms_accepted_at is not null") &&
+      tightenedCommentMediaMigration.includes("feed_posts.moderation_status = 'active'") &&
+      tightenedCommentMediaMigration.includes("thread_posts.moderation_status = 'active'") &&
+      tightenedCommentMediaMigration.includes("feed_posts.author_id = (select auth.uid())") &&
+      tightenedCommentMediaMigration.includes("thread_posts.author_id = (select auth.uid())"),
   },
   {
     label: "comment create actions accept optional photo and GIF attachments",
