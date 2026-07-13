@@ -37,7 +37,7 @@ const sections = [
   },
   {
     body:
-      "Merch, ads, and future booking deposits can create checkout, order, receipt, fulfillment, refund, dispute, and support records. Checkout is limited during launch, and production purchases still need final seller approval, tax, shipping, refunds, fulfillment, payment rules, and buyer privacy notices. TheTattooCore should use hosted checkout flows and should not collect raw card numbers, bank account details, routing numbers, or payout credentials in member forms.",
+      "Merch, ads, and future booking deposits can create checkout, order, receipt, fulfillment, refund, dispute, and support records. Checkout is limited during launch, and production purchases still need final seller approval, tax, shipping, refunds, fulfillment, payment rules, and buyer privacy notices. TheTattooCore should use hosted checkout flows and should not collect raw payment or payout credentials in member forms.",
     title: "Commerce And Payments",
   },
   {

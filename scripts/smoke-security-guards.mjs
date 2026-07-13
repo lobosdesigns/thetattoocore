@@ -234,8 +234,7 @@ const checks = [
       privacyPage.includes("Account And Profile Data") &&
       privacyPage.includes("Commerce And Payments") &&
       privacyPage.includes("hosted checkout flows") &&
-      privacyPage.includes("should not collect raw card numbers") &&
-      privacyPage.includes("bank account details") &&
+      privacyPage.includes("should not collect raw payment or payout credentials") &&
       privacyPage.includes("Retention And Review") &&
       privacyPage.includes("verification documents"),
   },
