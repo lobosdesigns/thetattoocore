@@ -6,6 +6,8 @@ const adClickRoute = readFileSync("src/app/api/ad-click/route.ts", "utf8");
 const loginPage = readFileSync("src/app/login/page.tsx", "utf8");
 const signupPage = readFileSync("src/app/signup/page.tsx", "utf8");
 const notificationActions = readFileSync("src/app/notifications/actions.ts", "utf8");
+const messageActions = readFileSync("src/app/messages/actions.ts", "utf8");
+const messageThread = readFileSync("src/app/messages/message-thread.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const urls = readFileSync("src/lib/urls.ts", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
@@ -33,6 +35,8 @@ const publicSource = [
   loginPage,
   signupPage,
   notificationActions,
+  messageActions,
+  messageThread,
   urls,
   profilePage,
   gigsDetailPage,
@@ -133,6 +137,23 @@ const checks = [
       notificationActions.includes('new URL(href, "https://thetattoocore.local")') &&
       notificationActions.includes("} catch {") &&
       notificationActions.includes('return "/notifications"'),
+  },
+  {
+    label: "DM unread deletion keeps ownership, read-state, and attachment cleanup guards",
+    ok:
+      messageActions.includes("export async function deleteUnreadMessage") &&
+      messageActions.includes("message.sender_id !== userId") &&
+      messageActions.includes("otherMember?.last_read_at") &&
+      messageActions.includes("That DM has already been read, so it cannot be deleted.") &&
+      messageActions.includes("createAdminClient()") &&
+      messageActions.includes('.from("message_attachments")') &&
+      messageActions.includes("attachmentsByBucket") &&
+      messageActions.includes("adminClient.storage.from(bucket).remove(paths)") &&
+      messageActions.includes('.from("messages")') &&
+      messageActions.includes(".delete()") &&
+      !messageActions.includes("private owner tools enabled") &&
+      messageThread.includes("const canDeleteUnread = mine && !hasBeenRead") &&
+      messageThread.includes("title=\"Delete before the other member reads it\""),
   },
   {
     label: "public smoke covers safe and unsafe login return paths",
