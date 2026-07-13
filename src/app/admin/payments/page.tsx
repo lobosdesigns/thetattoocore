@@ -43,9 +43,18 @@ const adPaymentStatuses = [
   "refunded",
   "waived",
 ] as const;
+const bookingPaymentStatuses = [
+  "not_ready",
+  "checkout_started",
+  "paid",
+  "payment_failed",
+  "refunded",
+  "waived",
+] as const;
 const productionPaymentGates = [
   "Choose Stripe Connect or a documented manual payout policy before real seller payouts.",
   "Finish tax, shipping-rate, refund, dispute, and chargeback procedures before public Merch orders.",
+  "Finish booking refund, cancellation, appointment-confirmation, and deposit payout procedures before taking real appointment deposits.",
   "Keep seller payout details inside Stripe-hosted onboarding; do not collect bank or card payout data in TTC forms.",
   "Review platform fees, app-store rules, and payment-provider policy before turning on production purchases.",
 ] as const;
@@ -187,7 +196,9 @@ export default async function AdminPaymentsPage({
     { count: stripeEventCount },
     merchStatusCounts,
     adStatusCounts,
+    bookingPaymentStatusCounts,
     { count: stalePendingCheckoutCount },
+    { count: staleBookingCheckoutCount },
     { count: activeUnpaidAdCount },
   ] = adminClient
     ? await Promise.all([
@@ -212,11 +223,23 @@ export default async function AdminPaymentsPage({
           supabase: adminClient,
           table: "ad_campaigns",
         }),
+        statusCounts({
+          column: "payment_status",
+          statuses: bookingPaymentStatuses,
+          supabase: adminClient,
+          table: "booking_requests",
+        }),
         adminClient
           .from("merch_orders")
           .select("id", { count: "exact", head: true })
           .eq("status", "pending_checkout")
           .lt("created_at", staleCheckoutCreatedBefore),
+        adminClient
+          .from("booking_requests")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "deposit_pending")
+          .eq("payment_status", "checkout_started")
+          .lt("updated_at", staleCheckoutCreatedBefore),
         adminClient
           .from("ad_campaigns")
           .select("id", { count: "exact", head: true })
@@ -233,6 +256,8 @@ export default async function AdminPaymentsPage({
         { count: null },
         [],
         [],
+        [],
+        { count: null },
         { count: null },
         { count: null },
       ];
@@ -243,7 +268,9 @@ export default async function AdminPaymentsPage({
   const rangeStart = totalStripeEvents > 0 ? from + 1 : 0;
   const rangeEnd = Math.min(to + 1, totalStripeEvents);
   const hasPaymentWarnings =
-    Boolean(stalePendingCheckoutCount) || Boolean(activeUnpaidAdCount);
+    Boolean(stalePendingCheckoutCount) ||
+    Boolean(staleBookingCheckoutCount) ||
+    Boolean(activeUnpaidAdCount);
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -288,7 +315,7 @@ export default async function AdminPaymentsPage({
           </section>
         ) : (
           <>
-            <div className="mb-4 grid gap-3 sm:grid-cols-3">
+            <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
                 <ReceiptText className="size-5 text-[var(--gold)]" />
                 <p className="mt-3 text-sm text-[var(--muted-strong)]">
@@ -316,6 +343,18 @@ export default async function AdminPaymentsPage({
                   {adStatusCounts.reduce((sum, [, count]) => sum + count, 0)}
                 </p>
               </div>
+              <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+                <CreditCard className="size-5 text-[var(--gold)]" />
+                <p className="mt-3 text-sm text-[var(--muted-strong)]">
+                  Booking deposits
+                </p>
+                <p className="mt-1 text-2xl font-bold">
+                  {bookingPaymentStatusCounts.reduce(
+                    (sum, [, count]) => sum + count,
+                    0,
+                  )}
+                </p>
+              </div>
             </div>
 
             <section
@@ -335,7 +374,7 @@ export default async function AdminPaymentsPage({
                   <h2 className="text-sm font-bold uppercase tracking-wide">
                     Payment ops watch
                   </h2>
-                  <div className="mt-2 grid gap-2 text-sm text-[var(--muted)] sm:grid-cols-2">
+                  <div className="mt-2 grid gap-2 text-sm text-[var(--muted)] lg:grid-cols-3">
                     <p>
                       <Link
                         className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
@@ -346,6 +385,15 @@ export default async function AdminPaymentsPage({
                       :{" "}
                       <span className="font-bold text-[var(--foreground)]">
                         {stalePendingCheckoutCount ?? 0}
+                      </span>
+                    </p>
+                    <p>
+                      <span className="font-semibold text-[var(--foreground)]">
+                        Stale booking deposit checkouts over 24h
+                      </span>
+                      :{" "}
+                      <span className="font-bold text-[var(--foreground)]">
+                        {staleBookingCheckoutCount ?? 0}
                       </span>
                     </p>
                     <p>
@@ -475,6 +523,31 @@ export default async function AdminPaymentsPage({
                     ) : (
                       <p className="text-sm text-[var(--muted)]">
                         No ad payment states found.
+                      </p>
+                    )}
+                  </div>
+                </section>
+
+                <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
+                  <h2 className="text-lg font-bold">Booking deposit states</h2>
+                  <div className="mt-3 space-y-2">
+                    {bookingPaymentStatusCounts.length ? (
+                      bookingPaymentStatusCounts.map(([status, count]) => (
+                        <div
+                          className="flex items-center justify-between rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-sm"
+                          key={status}
+                        >
+                          <span className="font-semibold capitalize">
+                            {statusLabel(status)}
+                          </span>
+                          <span className="text-[var(--muted-strong)]">
+                            {count}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-[var(--muted)]">
+                        No booking deposit states found.
                       </p>
                     )}
                   </div>

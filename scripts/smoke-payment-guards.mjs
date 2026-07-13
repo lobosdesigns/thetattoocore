@@ -112,11 +112,22 @@ checks.push({
   ok:
     adminPaymentsPage.includes("Production payment gates") &&
     adminPaymentsPage.includes("Choose Stripe Connect or a documented manual payout policy") &&
+    adminPaymentsPage.includes("booking refund, cancellation, appointment-confirmation") &&
     adminPaymentsPage.includes("do not collect bank or card payout data in TTC forms") &&
     adminMerchPage.includes("Stripe checkout and refund-status webhooks are wired in test mode") &&
     adminMerchPage.includes("finish tax, shipping, fulfillment, payouts, and payment-provider safety rules") &&
     privacyPage.includes("Stripe checkout is in test mode") &&
     supportPage.includes("Merch checkout is in test mode"),
+});
+checks.push({
+  label: "admin payments watches booking deposit state",
+  ok:
+    adminPaymentsPage.includes("const bookingPaymentStatuses") &&
+    adminPaymentsPage.includes('table: "booking_requests"') &&
+    adminPaymentsPage.includes("Stale booking deposit checkouts over 24h") &&
+    adminPaymentsPage.includes("Booking deposit states") &&
+    adminPaymentsPage.includes('.eq("status", "deposit_pending")') &&
+    adminPaymentsPage.includes('.eq("payment_status", "checkout_started")'),
 });
 checks.push({
   label: "public payment copy avoids collecting raw payout credentials",
