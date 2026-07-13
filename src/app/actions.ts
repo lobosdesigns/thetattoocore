@@ -35,6 +35,14 @@ const SAVED_SUBJECT_TYPES = new Set([
   "profile",
   "thread_post",
 ]);
+const STORY_REACTIONS = new Set([
+  "clap",
+  "fire",
+  "flash",
+  "heart",
+  "hundred",
+  "sparkles",
+]);
 const MERCH_CATEGORIES = new Set([
   "accessory",
   "apparel",
@@ -726,6 +734,80 @@ export async function recordStoryView(storyId: string) {
       onConflict: "story_id,viewer_id",
     },
   );
+}
+
+export async function toggleStoryReaction(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const storyId = cleanId(formData.get("story_id"));
+  const reaction = cleanText(formData.get("reaction"), 20);
+
+  if (!storyId) {
+    redirect(homeMessage("Choose a story to react to.", "stories"));
+  }
+
+  if (!STORY_REACTIONS.has(reaction)) {
+    redirect(homeMessage("Choose a valid story reaction.", "stories"));
+  }
+
+  const { data: story, error: storyError } = await supabase
+    .from("story_posts")
+    .select("id, author_id, expires_at, moderation_status")
+    .eq("id", storyId)
+    .gt("expires_at", new Date().toISOString())
+    .maybeSingle<{
+      author_id: string;
+      expires_at: string;
+      id: string;
+      moderation_status: string;
+    }>();
+
+  if (storyError || !story || story.moderation_status !== "active") {
+    redirect(homeMessage("That story is no longer available.", "stories"));
+  }
+
+  if (story.author_id === userId) {
+    redirect(homeMessage("You cannot react to your own story.", "stories"));
+  }
+
+  if (await blockRelationshipExists(supabase, userId, story.author_id)) {
+    redirect(homeMessage("You cannot react to a blocked profile.", "stories"));
+  }
+
+  const { data: existingReaction } = await supabase
+    .from("story_reactions")
+    .select("reaction")
+    .eq("story_id", storyId)
+    .eq("reactor_id", userId)
+    .maybeSingle<{ reaction: string }>();
+
+  if (existingReaction?.reaction === reaction) {
+    await supabase
+      .from("story_reactions")
+      .delete()
+      .eq("story_id", storyId)
+      .eq("reactor_id", userId);
+    revalidatePath("/");
+    redirect(homeMessage("Story reaction removed.", "stories"));
+  }
+
+  const { error } = await supabase.from("story_reactions").upsert(
+    {
+      reaction,
+      story_id: storyId,
+      reactor_id: userId,
+      updated_at: new Date().toISOString(),
+    },
+    {
+      onConflict: "story_id,reactor_id",
+    },
+  );
+
+  if (error) {
+    redirect(homeMessage(error.message || "Could not react to that story.", "stories"));
+  }
+
+  revalidatePath("/");
+  redirect(homeMessage("Story reaction sent.", "stories"));
 }
 
 export async function replyToStory(formData: FormData) {

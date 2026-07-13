@@ -31,6 +31,7 @@ import {
   endStoryPost,
   recordStoryView,
   replyToStory,
+  toggleStoryReaction,
   togglePostLike,
   toggleThreadLike,
 } from "./actions";
@@ -170,6 +171,7 @@ type StoryPost = {
   expires_at: string;
   id: string;
   story_media: StoryMedia[];
+  story_reactions?: { count: number }[];
   story_views?: { count: number }[];
   visibility: "public_preview" | "members" | "private";
   profiles: Profile | null;
@@ -1207,6 +1209,15 @@ function StoriesRail({
             isSignedIn && currentUserId && story.author_id !== currentUserId,
           );
           const storyViewCount = story.story_views?.[0]?.count ?? 0;
+          const storyReactionCount = story.story_reactions?.[0]?.count ?? 0;
+          const reactionOptions = [
+            ["fire", "🔥"],
+            ["heart", "🖤"],
+            ["clap", "👏"],
+            ["hundred", "💯"],
+            ["flash", "⚡"],
+            ["sparkles", "✨"],
+          ] as const;
 
           return (
             <div
@@ -1219,6 +1230,20 @@ function StoriesRail({
                 footer={
                   canReplyToStory ? (
                     <div className="mx-auto grid max-w-xl gap-2">
+                      <div className="flex gap-2 overflow-x-auto">
+                        {reactionOptions.map(([value, label]) => (
+                          <form action={toggleStoryReaction} key={value}>
+                            <input name="story_id" type="hidden" value={story.id} />
+                            <input name="reaction" type="hidden" value={value} />
+                            <button
+                              aria-label={`React ${value}`}
+                              className="flex h-9 min-w-11 items-center justify-center rounded-md border border-white/20 bg-white/10 px-3 text-lg"
+                            >
+                              {label}
+                            </button>
+                          </form>
+                        ))}
+                      </div>
                       <form action={replyToStory} className="flex gap-2">
                         <input name="story_id" type="hidden" value={story.id} />
                         <input
@@ -1270,7 +1295,9 @@ function StoriesRail({
                     {storyTitle}
                   </span>
                   <span className="text-[10px] font-semibold uppercase text-[var(--muted-strong)]">
-                    {isOwnStory ? `${storyViewCount} views` : timeAgo(story.created_at)}
+                    {isOwnStory
+                      ? `${storyViewCount} views · ${storyReactionCount} reacts`
+                      : timeAgo(story.created_at)}
                   </span>
                 </button>
               </MediaLightbox>
@@ -1621,7 +1648,7 @@ export default async function Home({
     supabase
       .from("story_posts")
       .select(
-        "id, author_id, caption, visibility, created_at, expires_at, story_media(id, storage_bucket, storage_path, media_type, sort_order), story_views(count), profiles:profiles!story_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, author_id, caption, visibility, created_at, expires_at, story_media(id, storage_bucket, storage_path, media_type, sort_order), story_reactions(count), story_views(count), profiles:profiles!story_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("moderation_status", "active")
       .gt("expires_at", new Date().toISOString())
