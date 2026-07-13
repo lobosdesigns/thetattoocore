@@ -274,6 +274,7 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
     isSensitive: listing.is_sensitive,
     profile: currentProfile,
   });
+  const returnPath = `/stuff/${listing.id}`;
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -599,7 +600,7 @@ export default async function StuffPage({ params, searchParams }: StuffPageProps
               ) : (
                 <Link
                   className="flex h-11 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-                  href="/login"
+                  href={`/login?return_to=${encodeURIComponent(returnPath)}`}
                 >
                   Sign in to message
                 </Link>

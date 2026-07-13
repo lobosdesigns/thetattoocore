@@ -12,6 +12,9 @@ const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const urls = readFileSync("src/lib/urls.ts", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
 const gigsDetailPage = readFileSync("src/app/gigs/[id]/page.tsx", "utf8");
+const postDetailPage = readFileSync("src/app/p/[id]/page.tsx", "utf8");
+const stuffDetailPage = readFileSync("src/app/stuff/[id]/page.tsx", "utf8");
+const threadDetailPage = readFileSync("src/app/t/[id]/page.tsx", "utf8");
 const homePage = readFileSync("src/app/page.tsx", "utf8");
 const termsPage = readFileSync("src/app/terms/page.tsx", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
@@ -40,6 +43,9 @@ const publicSource = [
   urls,
   profilePage,
   gigsDetailPage,
+  postDetailPage,
+  stuffDetailPage,
+  threadDetailPage,
   homePage,
   termsPage,
   privacyPage,
@@ -53,6 +59,9 @@ const publicCopySource = [
   signupPage,
   profilePage,
   gigsDetailPage,
+  postDetailPage,
+  stuffDetailPage,
+  threadDetailPage,
   homePage,
   termsPage,
   privacyPage,
@@ -161,6 +170,15 @@ const checks = [
       publicSmoke.includes("/login?return_to=%2Fmessages") &&
       publicSmoke.includes("/login?return_to=%2F%2Fevil.example") &&
       publicSmoke.includes("excludes"),
+  },
+  {
+    label: "public detail sign-in links preserve safe return paths",
+    ok:
+      postDetailPage.includes("`/login?return_to=${encodeURIComponent(returnPath)}`") &&
+      threadDetailPage.includes("`/login?return_to=${encodeURIComponent(returnPath)}`") &&
+      gigsDetailPage.includes("`/login?return_to=${encodeURIComponent(returnPath)}`") &&
+      stuffDetailPage.includes("`/login?return_to=${encodeURIComponent(returnPath)}`") &&
+      profilePage.includes("loginHref={`/login?return_to=${encodeURIComponent(`/u/${profile.username}`)}`}"),
   },
   {
     label: "external URL sanitizer only allows http and https",

@@ -408,10 +408,12 @@ function PublicProfileNotice({
   hiddenCount,
   isAdultConfirmed,
   isSignedIn,
+  loginHref,
 }: {
   hiddenCount: number;
   isAdultConfirmed: boolean;
   isSignedIn: boolean;
+  loginHref: string;
 }) {
   if (isSignedIn && isAdultConfirmed && hiddenCount === 0) return null;
 
@@ -461,7 +463,7 @@ function PublicProfileNotice({
           <div className="mt-3 flex flex-wrap gap-2">
             <Link
               className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-              href="/login"
+              href={loginHref}
             >
               Sign in
             </Link>
@@ -1951,6 +1953,7 @@ export default async function ProfilePage({
             hiddenCount={hiddenContentCount}
             isAdultConfirmed={viewer.isAdultConfirmed}
             isSignedIn={viewer.isSignedIn}
+            loginHref={`/login?return_to=${encodeURIComponent(`/u/${profile.username}`)}`}
           />
         ) : null}
 

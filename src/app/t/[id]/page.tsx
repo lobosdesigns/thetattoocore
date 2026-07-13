@@ -378,7 +378,7 @@ export default async function ThreadPage({
               </p>
               <Link
                 className="flex h-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-                href="/login"
+                href={`/login?return_to=${encodeURIComponent(returnPath)}`}
               >
                 Sign in
               </Link>
@@ -530,7 +530,7 @@ export default async function ThreadPage({
               ) : (
                 <Link
                   className="mt-3 flex h-11 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-                  href="/login"
+                  href={`/login?return_to=${encodeURIComponent(returnPath)}`}
                 >
                   Sign in to like
                 </Link>
@@ -601,7 +601,11 @@ export default async function ThreadPage({
               ) : (
                 <Link
                   className="mb-4 flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm font-semibold"
-                  href={isSignedIn ? "/terms" : "/login"}
+                  href={
+                    isSignedIn
+                      ? "/terms"
+                      : `/login?return_to=${encodeURIComponent(returnPath)}`
+                  }
                 >
                   {isSignedIn ? "Confirm 18+ to reply" : "Sign in to reply"}
                 </Link>

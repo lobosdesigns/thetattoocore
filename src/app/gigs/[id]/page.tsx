@@ -274,6 +274,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
     profile: currentProfile,
   });
   const isPublicPreview = gig.visibility === "public_preview" && !gig.is_sensitive;
+  const returnPath = `/gigs/${gig.id}`;
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -313,7 +314,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
               </p>
               <Link
                 className="flex h-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-                href="/login"
+                href={`/login?return_to=${encodeURIComponent(returnPath)}`}
               >
                 Sign in
               </Link>
@@ -622,7 +623,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
               ) : (
                 <Link
                   className="flex h-11 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-                  href="/login"
+                  href={`/login?return_to=${encodeURIComponent(returnPath)}`}
                 >
                   Sign in to respond
                 </Link>
