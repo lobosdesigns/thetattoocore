@@ -99,6 +99,8 @@ const checks = [
       "Support",
       "Request deletion",
       "/account#data-settings",
+      "visible nudity",
+      "Merch checkout is limited during launch",
       "support@thetattoocore.com",
       'href="/terms"',
       'href="/privacy"',
@@ -116,7 +118,18 @@ const checks = [
       "support@thetattoocore.com",
     ],
   },
-  { path: "/terms", status: [200], includes: ["Terms", "support@thetattoocore.com"] },
+  {
+    path: "/terms",
+    status: [200],
+    includes: [
+      "Terms",
+      "visible nudity is not allowed",
+      "No AI And No Scratchers",
+      "Marketplace And Gigs",
+      "Public And Sensitive Visibility",
+      "support@thetattoocore.com",
+    ],
+  },
   {
     path: "/search",
     status: [200],
