@@ -11,7 +11,7 @@ Use this as an internal checklist before answering Google Play, App Store, payme
 - User-generated content exists across 4U, Gossip, Stuff, Gigs, Merch, comments, profiles, DMs, and uploads.
 - Reporting, blocking, admin queues, moderation statuses, and content removal tools are present.
 - DMs exist and can include text plus private image attachments.
-- Merch and ads use Stripe in test mode only until production payment, tax, payout, refund, dispute, and policy review is complete.
+- Merch and ads use hosted checkout in test mode only until production payment, tax, payout, refund, dispute, and policy review is complete.
 
 ## Store Questionnaire Themes
 

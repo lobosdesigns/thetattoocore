@@ -41,6 +41,12 @@ const forbiddenSubmissionRunbookProviderSnippets = [
   "service-role",
   "service role",
 ];
+const forbiddenStorePrepProviderSnippets = [
+  "Cloudflare",
+  "Supabase",
+  "HostGator",
+  "Stripe",
+];
 
 const checks = [
   {
@@ -127,6 +133,12 @@ const checks = [
       docs["docs/SCREENSHOT_PREP.md"].includes("infrastructure names") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("no-visible-nudity rules") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("no-AI stance"),
+  },
+  {
+    label: "age rating prep avoids visible provider names",
+    ok: forbiddenStorePrepProviderSnippets.every(
+      (snippet) => !docs["docs/AGE_RATING_PREP.md"].includes(snippet),
+    ),
   },
   {
     label: "age rating prep covers UGC, ads, commerce, AI, and no visible nudity",
