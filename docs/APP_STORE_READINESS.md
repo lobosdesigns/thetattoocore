@@ -34,6 +34,7 @@
 - Branded splash and clean PWA screenshot assets are generated without user, sensitive, or copyrighted tattoo content.
 - Default scaffold SVG assets have been removed from the public package so install/review assets stay TTC-branded.
 - PWA smoke guards verify TTC icon, maskable icon, screenshot, and splash PNG dimensions, and public route smoke guards confirm removed scaffold asset URLs stay unavailable.
+- Public robots policy explicitly allows public Merch detail paths alongside public profiles, posts, Gossip, Stuff, Gigs, support, and legal pages, while keeping private app areas disallowed.
 - Login and signup are split into separate pages for clarity: `/login` is sign-in only, `/signup` contains the 18+ account creation flow, and the public smoke test verifies `/signup` stays `noindex, nofollow`.
 - DM thread reload loops from read-state realtime updates have been fixed, stale/unavailable DM thread links now return to the inbox instead of stranding mobile users on an empty thread view, and the deployed browser Supabase client config is stable for realtime/browser auth helpers.
 - Live Chrome QA on a 390px-wide mobile viewport passed for the tester account on Account > Advertising and `/messages`: no horizontal overflow, no DM reload-loop error page, and no captured console errors.
@@ -45,6 +46,7 @@
 - Live Chrome QA on July 12, 2026 after adding Support legal links passed at mobile width for `/support`: support email plus Terms and Privacy links were present, with no reload-loop text, no application-error text, no console errors, and no document-level horizontal overflow.
 - Live browser QA on July 12, 2026 at 390px mobile width passed for `/login`, `/signup`, `/support`, `/privacy`, `/terms`, `/u/ceocore`, and `/merch/checkout/success`: no reload-loop text, no application-error text, and no document-level horizontal overflow. Support, Privacy, and Terms showed `support@thetattoocore.com`.
 - Live route QA on July 12, 2026 passed for invalid sponsored-click URLs at `/api/ad-click`: missing, bad, or invalid-placement clicks returned `303` to `https://thetattoocore.com/` with security headers intact instead of redirecting to an unsafe target.
+- Deployed Cloudflare version `1773e353-44d4-495f-9a30-ab8e0cf94d9e` on July 12, 2026 after adding explicit public Merch robots allow rules; live public smoke passed and `/robots.txt` showed `Allow: /merch/`.
 - Full verification on July 12, 2026 passed after the expanded PWA shortcuts and Admin Merch readiness copy updates: lint, production build, hydration guards, media guards, payment guards, PWA guards, security guards, theme guards, and live public route smoke.
 - Full verification on July 12, 2026 passed again after public asset cleanup: lint, production build, hydration guards, media guards, payment guards, PWA guards, security guards, theme guards, and live public route smoke.
 - Full verification on July 12, 2026 passed after adding the real-device QA checklist and docs readiness guard: lint, production build, hydration guards, media guards, payment guards, PWA guards, security guards, theme guards, docs readiness guard, and live public route smoke.
