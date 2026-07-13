@@ -1251,6 +1251,9 @@ function StoriesRail({
                   ownerStoryFooter ??
                   (canReplyToStory ? (
                     <div className="mx-auto grid max-w-xl gap-2">
+                      <p className="text-xs font-bold uppercase tracking-wide text-white/60">
+                        React to story
+                      </p>
                       <div className="flex gap-2 overflow-x-auto">
                         {reactionOptions.map(([value, label]) => (
                           <form action={toggleStoryReaction} key={value}>
@@ -1265,6 +1268,9 @@ function StoriesRail({
                           </form>
                         ))}
                       </div>
+                      <p className="pt-1 text-xs font-bold uppercase tracking-wide text-white/60">
+                        Send a DM reply
+                      </p>
                       <form action={replyToStory} className="flex gap-2">
                         <input name="story_id" type="hidden" value={story.id} />
                         <input

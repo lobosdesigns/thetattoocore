@@ -107,7 +107,9 @@ const checks = [
       actions.includes('story_post: { ownerColumn: "author_id", table: "story_posts" }') &&
       homePage.includes("ContentReportForm") &&
       homePage.includes('subjectType="story_post"') &&
-      homePage.includes('returnHash="stories"'),
+      homePage.includes('returnHash="stories"') &&
+      homePage.includes("React to story") &&
+      homePage.includes("Send a DM reply"),
   },
   {
     label: "story post read and update policies are consolidated",
