@@ -24,6 +24,7 @@ import {
 } from "@/app/actions";
 import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
+import { MediaInput } from "@/app/media-input";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { PendingSubmitButton } from "@/app/pending-submit-button";
 import { ProtectedVideo } from "@/app/protected-video";
@@ -89,7 +90,18 @@ type PostComment = {
   parent_id: string | null;
   post_comment_hides: { hidden_by: string }[] | { hidden_by: string } | null;
   post_comment_likes: PostLike[];
+  post_comment_media: CommentMedia[];
   profiles: Pick<Profile, "avatar_url" | "display_name" | "id" | "username"> | null;
+};
+
+type CommentMedia = {
+  height: number | null;
+  id: string;
+  media_type: "image";
+  mime_type: string | null;
+  storage_bucket: string;
+  storage_path: string;
+  width: number | null;
 };
 
 type PostLike = {
@@ -102,6 +114,7 @@ type PostPageProps = {
 };
 
 const commentsPageSize = 25;
+const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
 
 function pageNumber(value: string | string[] | undefined) {
   const rawValue = Array.isArray(value) ? value[0] : value;
@@ -149,6 +162,32 @@ function VerifiedBadge({ profile }: { profile?: Profile | null }) {
   );
 }
 
+function CommentMediaPreview({ media }: { media?: CommentMedia | null }) {
+  if (!media) return null;
+
+  const src = mediaUrl(media.storage_bucket, media.storage_path);
+
+  return (
+    <MediaLightbox
+      alt="Comment attachment"
+      description="Comment image attachment"
+      mediaType="image"
+      src={src}
+      title="Comment media"
+    >
+      <button className="mt-2 block overflow-hidden rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          alt=""
+          className="max-h-64 w-full object-cover"
+          loading="lazy"
+          src={src}
+        />
+      </button>
+    </MediaLightbox>
+  );
+}
+
 function canViewPost({
   isOwnPost,
   post,
@@ -171,7 +210,7 @@ async function getPost(id: string) {
   const { data } = await supabase
     .from("feed_posts")
     .select(
-      "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, parent_id, deleted_at, created_at, post_comment_hides(hidden_by), post_comment_likes(user_id), profiles:profiles!post_comments_author_id_fkey(id, avatar_url, display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
+      "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, parent_id, deleted_at, created_at, post_comment_media(id, storage_bucket, storage_path, media_type, mime_type, width, height), post_comment_hides(hidden_by), post_comment_likes(user_id), profiles:profiles!post_comments_author_id_fkey(id, avatar_url, display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -566,7 +605,11 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                 <h2 className="text-sm font-bold">Comments</h2>
               </div>
               {isSignedIn && showPost ? (
-                <form action={createPostComment} className="mb-4 space-y-2">
+                <form
+                  action={createPostComment}
+                  className="mb-4 space-y-2"
+                  encType="multipart/form-data"
+                >
                   <input name="post_id" type="hidden" value={post.id} />
                   <input name="return_path" type="hidden" value={returnPath} />
                   <WordLimitedField
@@ -574,13 +617,24 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                     emojiShortcuts
                     maxLength={220}
                     maxWords={40}
-                    minTrimmedLength={1}
                     name="body"
                     placeholder="Add a short comment"
-                    required
-                    validationMessage="Comment cannot be empty."
                     wrapperClassName="w-full"
                   />
+                  <details className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
+                    <summary className="cursor-pointer list-none text-xs font-bold">
+                      Attach photo or GIF
+                    </summary>
+                    <div className="mt-2">
+                      <MediaInput
+                        accept={imageAccept}
+                        compact
+                        maxImageBytes={5 * 1024 * 1024}
+                        name="media"
+                        videoAllowed={false}
+                      />
+                    </div>
+                  </details>
                   <PendingSubmitButton
                     className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-[var(--background)]"
                     pendingLabel="Posting"
@@ -631,9 +685,12 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                   "Member"
                                 )}
                               </p>
-                              <p className="mt-1 break-words leading-5 text-[var(--muted)]">
-                                {comment.body}
-                              </p>
+                              {comment.body ? (
+                                <p className="mt-1 break-words leading-5 text-[var(--muted)]">
+                                  {comment.body}
+                                </p>
+                              ) : null}
+                              <CommentMediaPreview media={comment.post_comment_media[0]} />
                             </div>
                           </div>
                           <div className="ttc-comment-controls mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold">
@@ -670,7 +727,8 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                               </summary>
                               <form
                                 action={createPostComment}
-                                className="mt-2 flex items-start gap-2"
+                                className="mt-2 grid gap-2"
+                                encType="multipart/form-data"
                               >
                                 <input
                                   name="post_id"
@@ -687,23 +745,29 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                   type="hidden"
                                   value={returnPath}
                                 />
-                                <WordLimitedField
-                                  className="h-9 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2 text-xs outline-none focus:border-[var(--foreground)]"
-                                  emojiShortcuts
-                                  maxLength={220}
-                                  maxWords={40}
-                                  minTrimmedLength={1}
-                                  name="body"
-                                  placeholder="Reply"
-                                  required
-                                  validationMessage="Reply cannot be empty."
+                                <div className="flex items-start gap-2">
+                                  <WordLimitedField
+                                    className="h-9 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2 text-xs outline-none focus:border-[var(--foreground)]"
+                                    emojiShortcuts
+                                    maxLength={220}
+                                    maxWords={40}
+                                    name="body"
+                                    placeholder="Reply"
+                                  />
+                                  <PendingSubmitButton
+                                    aria-label="Post reply"
+                                    className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]"
+                                  >
+                                    <Send className="size-4" />
+                                  </PendingSubmitButton>
+                                </div>
+                                <MediaInput
+                                  accept={imageAccept}
+                                  compact
+                                  maxImageBytes={5 * 1024 * 1024}
+                                  name="media"
+                                  videoAllowed={false}
                                 />
-                                <PendingSubmitButton
-                                  aria-label="Post reply"
-                                  className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]"
-                                >
-                                  <Send className="size-4" />
-                                </PendingSubmitButton>
                               </form>
                             </details>
                             {isOwnComment ? (
@@ -828,12 +892,15 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                           profile={reply.profiles}
                                           size="sm"
                                         />
-                                        <p className="min-w-0 flex-1 break-words">
+                                        <div className="min-w-0 flex-1">
+                                        <p className="break-words">
                                           <span className="font-semibold text-[var(--foreground)]">
                                             {reply.profiles?.display_name ?? "Member"}
                                           </span>{" "}
                                           {reply.body}
                                         </p>
+                                        <CommentMediaPreview media={reply.post_comment_media[0]} />
+                                        </div>
                                       </div>
                                       <form action={togglePostCommentLike}>
                                         <input

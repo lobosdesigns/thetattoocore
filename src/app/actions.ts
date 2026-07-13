@@ -520,6 +520,43 @@ async function uploadPostMedia({
   };
 }
 
+async function uploadCommentMedia({
+  commentId,
+  file,
+  metadata,
+  supabase,
+  userId,
+}: {
+  commentId: string;
+  file: File;
+  metadata: MediaMetadata;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId: string;
+}) {
+  const path = `${userId}/comment/${commentId}/${crypto.randomUUID()}.${extensionFor(file)}`;
+  const { error } = await supabase.storage.from(MEDIA_BUCKET).upload(path, file, {
+    cacheControl: "31536000",
+    contentType: metadata.mimeType,
+    upsert: false,
+  });
+
+  if (error) {
+    return {
+      bucket: MEDIA_BUCKET,
+      error: error.message || "Could not upload comment media.",
+      mediaType: metadata.mediaType,
+      path: null,
+    };
+  }
+
+  return {
+    bucket: MEDIA_BUCKET,
+    error: null,
+    mediaType: metadata.mediaType,
+    path,
+  };
+}
+
 function mediaMetadataFields(metadata: MediaMetadata) {
   return {
     duration_seconds: metadata.durationSeconds,
@@ -2264,6 +2301,7 @@ export async function toggleSavedItem(formData: FormData) {
 export async function createPostComment(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const body = cleanWords(formData.get("body"), 40);
+  const media = mediaFromForm(formData, "media");
   const postId = cleanId(formData.get("post_id"));
   const parentId = cleanId(formData.get("parent_id"));
   const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
@@ -2272,11 +2310,43 @@ export async function createPostComment(formData: FormData) {
     redirect(homeMessage("Choose a post first."));
   }
 
-  if (!body) {
-    redirect(homeMessage("Comment cannot be empty."));
+  if (!body && !media) {
+    redirect(homeMessage("Comment needs text, a photo, or a GIF."));
+  }
+
+  let metadata: MediaMetadata | null = null;
+
+  if (media) {
+    metadata = await inspectMediaFile(media);
+    const validationMessage = validateMediaMetadata(metadata);
+
+    if (validationMessage || metadata.mediaType !== "image") {
+      redirect(homeMessage(validationMessage || "Comments support photos and GIFs only."));
+    }
+
+    if (metadata.fileSizeBytes > 5 * 1024 * 1024) {
+      redirect(homeMessage("Comment images and GIFs can be up to 5 MB."));
+    }
+  }
+
+  const commentId = crypto.randomUUID();
+  const upload =
+    media && metadata
+      ? await uploadCommentMedia({
+          commentId,
+          file: media,
+          metadata,
+          supabase,
+          userId,
+        })
+      : null;
+
+  if (upload?.error || (media && !upload?.path)) {
+    redirect(homeMessage(upload?.error || "Could not upload comment media."));
   }
 
   const { error } = await supabase.from("post_comments").insert({
+    id: commentId,
     author_id: userId,
     body,
     parent_id: parentId || null,
@@ -2284,7 +2354,26 @@ export async function createPostComment(formData: FormData) {
   });
 
   if (error) {
+    if (upload?.path) await supabase.storage.from(MEDIA_BUCKET).remove([upload.path]);
     redirect(homeMessage(error.message || "Could not add comment."));
+  }
+
+  if (upload?.path && metadata) {
+    const { error: mediaError } = await supabase.from("post_comment_media").insert({
+      ...mediaMetadataFields(metadata),
+      comment_id: commentId,
+      media_type: upload.mediaType,
+      storage_bucket: upload.bucket,
+      storage_path: upload.path,
+    });
+
+    if (mediaError) {
+      await supabase.storage.from(MEDIA_BUCKET).remove([upload.path]);
+      await supabase.rpc("delete_post_comment_for_current_user", {
+        target_comment_id: commentId,
+      });
+      redirect(homeMessage(mediaError.message || "Could not attach comment media."));
+    }
   }
 
   const [{ data: post }, { data: parentComment }, actorName] = await Promise.all([
@@ -2305,7 +2394,7 @@ export async function createPostComment(formData: FormData) {
 
   await notifyContentOwner({
     actorId: userId,
-    body: `${actorName}: ${body}`,
+    body: `${actorName}: ${body || "sent a photo or GIF comment."}`,
     href: `/p/${postId}`,
     ownerId: post?.author_id,
     subjectId: postId,
@@ -2318,7 +2407,7 @@ export async function createPostComment(formData: FormData) {
   if (parentComment?.author_id && parentComment.author_id !== post?.author_id) {
     await notifyContentOwner({
       actorId: userId,
-      body: `${actorName} replied: ${body}`,
+      body: `${actorName} replied: ${body || "sent a photo or GIF reply."}`,
       href: `/p/${postId}`,
       ownerId: parentComment.author_id,
       subjectId: postId,
@@ -2590,6 +2679,7 @@ export async function toggleThreadLike(formData: FormData) {
 export async function createThreadComment(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const body = cleanText(formData.get("body"), 2000);
+  const media = mediaFromForm(formData, "media");
   const threadId = cleanId(formData.get("thread_id"));
   const parentId = cleanId(formData.get("parent_id"));
   const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
@@ -2598,11 +2688,43 @@ export async function createThreadComment(formData: FormData) {
     redirect(homeMessage("Choose a thread first."));
   }
 
-  if (!body) {
-    redirect(homeMessage("Thread comment cannot be empty."));
+  if (!body && !media) {
+    redirect(homeMessage("Reply needs text, a photo, or a GIF."));
+  }
+
+  let metadata: MediaMetadata | null = null;
+
+  if (media) {
+    metadata = await inspectMediaFile(media);
+    const validationMessage = validateMediaMetadata(metadata);
+
+    if (validationMessage || metadata.mediaType !== "image") {
+      redirect(homeMessage(validationMessage || "Gossip comments support photos and GIFs only."));
+    }
+
+    if (metadata.fileSizeBytes > 5 * 1024 * 1024) {
+      redirect(homeMessage("Comment images and GIFs can be up to 5 MB."));
+    }
+  }
+
+  const commentId = crypto.randomUUID();
+  const upload =
+    media && metadata
+      ? await uploadCommentMedia({
+          commentId,
+          file: media,
+          metadata,
+          supabase,
+          userId,
+        })
+      : null;
+
+  if (upload?.error || (media && !upload?.path)) {
+    redirect(homeMessage(upload?.error || "Could not upload comment media."));
   }
 
   const { error } = await supabase.from("thread_comments").insert({
+    id: commentId,
     author_id: userId,
     body,
     parent_id: parentId || null,
@@ -2610,7 +2732,26 @@ export async function createThreadComment(formData: FormData) {
   });
 
   if (error) {
+    if (upload?.path) await supabase.storage.from(MEDIA_BUCKET).remove([upload.path]);
     redirect(homeMessage(error.message || "Could not add thread comment."));
+  }
+
+  if (upload?.path && metadata) {
+    const { error: mediaError } = await supabase.from("thread_comment_media").insert({
+      ...mediaMetadataFields(metadata),
+      comment_id: commentId,
+      media_type: upload.mediaType,
+      storage_bucket: upload.bucket,
+      storage_path: upload.path,
+    });
+
+    if (mediaError) {
+      await supabase.storage.from(MEDIA_BUCKET).remove([upload.path]);
+      await supabase.rpc("delete_thread_comment_for_current_user", {
+        target_comment_id: commentId,
+      });
+      redirect(homeMessage(mediaError.message || "Could not attach comment media."));
+    }
   }
 
   const [{ data: thread }, { data: parentComment }, actorName] = await Promise.all([
@@ -2631,7 +2772,7 @@ export async function createThreadComment(formData: FormData) {
 
   await notifyContentOwner({
     actorId: userId,
-    body: `${actorName}: ${body}`,
+    body: `${actorName}: ${body || "sent a photo or GIF comment."}`,
     href: `/t/${threadId}`,
     ownerId: thread?.author_id,
     subjectId: threadId,
@@ -2644,7 +2785,7 @@ export async function createThreadComment(formData: FormData) {
   if (parentComment?.author_id && parentComment.author_id !== thread?.author_id) {
     await notifyContentOwner({
       actorId: userId,
-      body: `${actorName} replied: ${body}`,
+      body: `${actorName} replied: ${body || "sent a photo or GIF reply."}`,
       href: `/t/${threadId}`,
       ownerId: parentComment.author_id,
       subjectId: threadId,

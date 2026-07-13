@@ -10,6 +10,12 @@ const accountProfileForm = readFileSync("src/app/account/profile-form.tsx", "utf
 const termsPage = readFileSync("src/app/terms/page.tsx", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
+const postDetailPage = readFileSync("src/app/p/[id]/page.tsx", "utf8");
+const threadDetailPage = readFileSync("src/app/t/[id]/page.tsx", "utf8");
+const commentMediaMigration = readFileSync(
+  "supabase/migrations/20260713185241_comment_media_attachments.sql",
+  "utf8",
+);
 
 const memberUploadSource = [composer, mediaInput].join("\n");
 const policyCopySource = [
@@ -79,6 +85,53 @@ const checks = [
       policyCopySource.includes("crop or cover") &&
       policyCopySource.includes("Pornography") &&
       policyCopySource.includes("sexual solicitation"),
+  },
+  {
+    label: "comment media schema is authenticated, image-only, and size-limited",
+    ok:
+      commentMediaMigration.includes("create table if not exists public.post_comment_media") &&
+      commentMediaMigration.includes("create table if not exists public.thread_comment_media") &&
+      commentMediaMigration.includes("alter table public.post_comment_media enable row level security") &&
+      commentMediaMigration.includes("alter table public.thread_comment_media enable row level security") &&
+      commentMediaMigration.includes("media_type = 'image'") &&
+      commentMediaMigration.includes("5242880") &&
+      commentMediaMigration.includes("'image/gif'") &&
+      commentMediaMigration.includes("grant select, insert, delete on public.post_comment_media to authenticated") &&
+      commentMediaMigration.includes("grant select, insert, delete on public.thread_comment_media to authenticated") &&
+      !commentMediaMigration.includes(" to anon"),
+  },
+  {
+    label: "comment create actions accept optional photo and GIF attachments",
+    ok:
+      actions.includes("async function uploadCommentMedia") &&
+      actions.includes('mediaFromForm(formData, "media")') &&
+      actions.includes("Comment needs text, a photo, or a GIF.") &&
+      actions.includes("Reply needs text, a photo, or a GIF.") &&
+      actions.includes("Comments support photos and GIFs only.") &&
+      actions.includes("Gossip comments support photos and GIFs only.") &&
+      actions.includes("Comment images and GIFs can be up to 5 MB.") &&
+      actions.includes('supabase.from("post_comment_media").insert') &&
+      actions.includes('supabase.from("thread_comment_media").insert') &&
+      actions.includes('supabase.rpc("delete_post_comment_for_current_user"') &&
+      actions.includes('supabase.rpc("delete_thread_comment_for_current_user"'),
+  },
+  {
+    label: "4U and Gossip detail pages render comment media with lightbox controls",
+    ok:
+      [postDetailPage, threadDetailPage].every(
+        (source) =>
+          source.includes("import { MediaInput }") &&
+          source.includes("type CommentMedia") &&
+          source.includes("function CommentMediaPreview") &&
+          source.includes("MediaLightbox") &&
+          source.includes("image/jpeg,image/png,image/webp,image/gif") &&
+          source.includes("maxImageBytes={5 * 1024 * 1024}") &&
+          source.includes("videoAllowed={false}"),
+      ) &&
+      postDetailPage.includes("post_comment_media(id, storage_bucket, storage_path, media_type, mime_type, width, height)") &&
+      postDetailPage.includes("CommentMediaPreview media={comment.post_comment_media[0]}") &&
+      threadDetailPage.includes("thread_comment_media(id, storage_bucket, storage_path, media_type, mime_type, width, height)") &&
+      threadDetailPage.includes("CommentMediaPreview media={comment.thread_comment_media[0]}"),
   },
 ];
 
