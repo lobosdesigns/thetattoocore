@@ -18,6 +18,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { PwaInstallButton } from "@/app/pwa-install-button";
 import { ProfileAvatar } from "@/app/profile-avatar";
+import { PushSubscriptionControl } from "@/app/push-subscription-control";
 import {
   markAllNotificationsRead,
   markNotificationRead,
@@ -298,6 +299,7 @@ export default async function NotificationsPage({
               <div className="mt-3 max-w-xs">
                 <PwaInstallButton />
               </div>
+              <PushSubscriptionControl />
             </div>
           </div>
         </section>

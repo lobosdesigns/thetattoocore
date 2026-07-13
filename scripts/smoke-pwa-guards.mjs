@@ -8,6 +8,12 @@ const installButton = readFileSync("src/app/pwa-install-button.tsx", "utf8");
 const registrar = readFileSync("src/app/service-worker-registrar.tsx", "utf8");
 const notificationPrefs = readFileSync("src/lib/notifications.ts", "utf8");
 const serviceWorker = readFileSync("public/sw.js", "utf8");
+const pushControl = readFileSync("src/app/push-subscription-control.tsx", "utf8");
+const pushRoute = readFileSync("src/app/api/push/subscriptions/route.ts", "utf8");
+const pushMigration = readFileSync(
+  "supabase/migrations/20260713183514_push_subscription_foundation.sql",
+  "utf8",
+);
 const allClientPwaSource = [suppressor, installButton, registrar].join("\n");
 
 function pngDimensions(path) {
@@ -98,13 +104,29 @@ const checks = [
       registrar.includes("Installability should not block normal browsing."),
   },
   {
-    label: "push display is prepared but push subscription is not enabled yet",
+    label: "push display is prepared and browser subscription is key-gated",
     ok:
       serviceWorker.includes('self.addEventListener("push"') &&
       serviceWorker.includes("showNotification") &&
       !allClientPwaSource.includes("Notification.requestPermission") &&
-      !allClientPwaSource.includes(".pushManager.subscribe") &&
-      !allClientPwaSource.includes("PushManager"),
+      pushControl.includes("NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY") &&
+      pushControl.includes("Notification.requestPermission") &&
+      pushControl.includes(".pushManager.subscribe") &&
+      pushControl.includes("/api/push/subscriptions"),
+  },
+  {
+    label: "push subscriptions are stored behind authenticated RLS",
+    ok:
+      pushMigration.includes("create table if not exists public.push_subscriptions") &&
+      pushMigration.includes("alter table public.push_subscriptions enable row level security") &&
+      pushMigration.includes('create policy "Users insert own push subscriptions"') &&
+      pushMigration.includes('create policy "Users update own push subscriptions"') &&
+      pushMigration.includes("profile_id, endpoint") &&
+      pushRoute.includes("await supabase.auth.getClaims()") &&
+      pushRoute.includes('.from("push_subscriptions").upsert') &&
+      pushRoute.includes('onConflict: "profile_id,endpoint"') &&
+      pushRoute.includes("export async function DELETE") &&
+      pushControl.includes('method: "DELETE"'),
   },
   {
     label: "future noisy push/email delivery has preference and quiet-hour helpers",

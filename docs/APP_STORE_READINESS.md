@@ -29,7 +29,7 @@
 - PWA manifest is active and starts installed sessions at `/login`.
 - Installed-app shortcuts cover the launch columns and key destinations: 4U, Gossip, Stuff, Gigs, Merch, DM, and Alerts.
 - Automatic mobile browser install prompts are suppressed during regular browsing so the install sheet does not interfere with feed scrolling; Account > Notifications has a deliberate install action when the browser supports installation.
-- The service worker is ready for future web-push notification display and safe same-origin click routing, but push subscriptions and delivery are not enabled yet.
+- The service worker is ready for web-push notification display and safe same-origin click routing. Browser subscription storage is started behind signed-in account controls, while production push keys, delivery jobs, and native APNs/FCM sending remain pre-launch gates.
 - PNG PWA icons are generated from the approved TTC shield, including a maskable launcher icon.
 - Branded splash and clean PWA screenshot assets are generated without user, sensitive, or copyrighted tattoo content.
 - Default scaffold SVG assets have been removed from the public package so install/review assets stay TTC-branded.
