@@ -172,12 +172,14 @@ const checks = [
       !composer.includes('name="sensitive_reason"'),
   },
   {
-    label: "floating composer has a stories mode and observes the stories rail",
+    label: "floating composer has a stories mode and locks explicit story opens",
     ok:
       composerShell.includes('| "stories"') &&
       composerShell.includes('label: "Story"') &&
       composerShell.includes('if (hash === "#stories") return "stories"') &&
       composerShell.includes('get(\n      "compose",') &&
+      composerShell.includes("explicitOpenModeRef") &&
+      composerShell.includes("if (explicitOpenModeRef.current) return") &&
       composerShell.includes("window.history.replaceState") &&
       composerShell.includes('"stories", "feed"') &&
       composerShell.includes('"ttc-open-composer"') &&
