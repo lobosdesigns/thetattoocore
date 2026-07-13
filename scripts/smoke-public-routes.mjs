@@ -52,7 +52,18 @@ const checks = [
   {
     path: "/login",
     status: [200],
-    includes: ['name="robots" content="noindex, nofollow"', "Sign in", "Create new account", "Support", "Terms", "Privacy", "TheTattooCore"],
+    includes: [
+      'name="robots" content="noindex, nofollow"',
+      "Sign in",
+      "Create new account",
+      "No AI feed",
+      "No scratchers",
+      "18+",
+      "Support",
+      "Terms",
+      "Privacy",
+      "TheTattooCore",
+    ],
     excludes: ['action="/auth/signup"', 'name="age_confirmed"'],
   },
   {
