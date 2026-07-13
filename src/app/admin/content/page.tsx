@@ -23,6 +23,8 @@ type ReviewItem = {
   authorUsername: string;
   body: string | null;
   createdAt: string;
+  expiresLabel?: string;
+  isExpired?: boolean;
   id: string;
   isSensitive: boolean;
   sensitiveReason: string | null;
@@ -93,6 +95,22 @@ function timeAgo(value: string) {
 
 function statusLabel(status: ModerationStatus) {
   return status.replace("_", " ");
+}
+
+function storyExpiryState(value: string) {
+  const expiresAt = new Date(value);
+  const diffMs = expiresAt.getTime() - Date.now();
+  const minutes = Math.ceil(Math.abs(diffMs) / 60000);
+  const suffix = diffMs >= 0 ? "left" : "ago";
+  const isExpired = diffMs < 0;
+  const makeState = (label: string) => ({ isExpired, label });
+
+  if (minutes < 60) return makeState(`${minutes}m ${suffix}`);
+
+  const hours = Math.ceil(minutes / 60);
+  if (hours <= 24) return makeState(`${hours}h ${suffix}`);
+
+  return makeState(`${Math.ceil(hours / 24)}d ${suffix}`);
 }
 
 function contentTypeLabel(type: ContentType) {
@@ -186,6 +204,17 @@ function ReviewCard({
         {item.isSensitive ? (
           <span className="rounded-md bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] px-2 py-1 text-xs font-semibold text-[var(--danger)]">
             Sensitive: {item.sensitiveReason?.replaceAll("_", " ") ?? "body art"}
+          </span>
+        ) : null}
+        {item.expiresLabel ? (
+          <span
+            className={`rounded-md px-2 py-1 text-xs font-semibold ${
+              item.isExpired
+                ? "bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]"
+                : "bg-[color-mix(in_srgb,var(--gold)_14%,var(--paper-warm))] text-[var(--foreground)]"
+            }`}
+          >
+            Story {item.isExpired ? "expired" : "expires"} {item.expiresLabel}
           </span>
         ) : null}
       </div>
@@ -456,21 +485,27 @@ export default async function AdminContentPage({
         }[]
       >();
     totalItems = count ?? 0;
-    items = (data ?? []).map((story) => ({
-      authorName: story.profiles?.display_name ?? "Member",
-      authorUsername: story.profiles?.username ?? "member",
-      body: story.caption
-        ? `${story.caption} Expires ${new Date(story.expires_at).toLocaleString("en-US")}.`
-        : `Expires ${new Date(story.expires_at).toLocaleString("en-US")}.`,
-      createdAt: story.created_at,
-      id: story.id,
-      isSensitive: story.is_sensitive,
-      sensitiveReason: story.sensitive_reason,
-      status: story.moderation_status,
-      subjectType: "story_post",
-      title: story.caption || "Story",
-      visibility: story.visibility,
-    }));
+    items = (data ?? []).map((story) => {
+      const expiry = storyExpiryState(story.expires_at);
+
+      return {
+        authorName: story.profiles?.display_name ?? "Member",
+        authorUsername: story.profiles?.username ?? "member",
+        body: story.caption
+          ? `${story.caption} Expires ${new Date(story.expires_at).toLocaleString("en-US")}.`
+          : `Expires ${new Date(story.expires_at).toLocaleString("en-US")}.`,
+        createdAt: story.created_at,
+        expiresLabel: expiry.label,
+        id: story.id,
+        isExpired: expiry.isExpired,
+        isSensitive: story.is_sensitive,
+        sensitiveReason: story.sensitive_reason,
+        status: story.moderation_status,
+        subjectType: "story_post" as const,
+        title: story.caption || "Story",
+        visibility: story.visibility,
+      };
+    });
   }
 
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));

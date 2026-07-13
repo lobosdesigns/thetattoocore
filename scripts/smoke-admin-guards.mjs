@@ -62,6 +62,19 @@ const checks = [
     ),
   },
   {
+    label: "admin content marks temporary stories with expiry state",
+    ok:
+      readFileSync("src/app/admin/content/page.tsx", "utf8").includes(
+        "function storyExpiryState",
+      ) &&
+      readFileSync("src/app/admin/content/page.tsx", "utf8").includes(
+        "expiresLabel: expiry.label",
+      ) &&
+      readFileSync("src/app/admin/content/page.tsx", "utf8").includes(
+        'Story {item.isExpired ? "expired" : "expires"}',
+      ),
+  },
+  {
     label: "admin overview stays a short command center with dedicated links",
     ok:
       adminOverview.includes("const overviewCards = [") &&
