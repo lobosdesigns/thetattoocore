@@ -35,6 +35,7 @@
 - Default scaffold SVG assets have been removed from the public package so install/review assets stay TTC-branded.
 - PWA smoke guards verify TTC icon, maskable icon, screenshot, and splash PNG dimensions, and public route smoke guards confirm removed scaffold asset URLs stay unavailable.
 - Public robots policy explicitly allows public Merch detail paths alongside public profiles, posts, Gossip, Stuff, Gigs, support, and legal pages, while keeping private app areas disallowed.
+- Share metadata guard coverage now checks that 4U, Gossip, Stuff, and Gigs index only non-sensitive public previews, use the real media image only for those safe previews, and fall back to the TTC brand shield for private/sensitive links. Merch and public profiles are also covered for safe Open Graph/Twitter cards.
 - Login and signup are split into separate pages for clarity: `/login` is sign-in only, `/signup` contains the 18+ account creation flow, and the public smoke test verifies `/signup` stays `noindex, nofollow`.
 - DM thread reload loops from read-state realtime updates have been fixed, stale/unavailable DM thread links now return to the inbox instead of stranding mobile users on an empty thread view, and the deployed browser Supabase client config is stable for realtime/browser auth helpers.
 - Live Chrome QA on a 390px-wide mobile viewport passed for the tester account on Account > Advertising and `/messages`: no horizontal overflow, no DM reload-loop error page, and no captured console errors.
