@@ -33,6 +33,14 @@ const forbiddenStoreListingProviderSnippets = [
   "service key",
   "service role",
 ];
+const forbiddenSubmissionRunbookProviderSnippets = [
+  "Cloudflare",
+  "Supabase",
+  "HostGator",
+  "Stripe",
+  "service-role",
+  "service role",
+];
 
 const checks = [
   {
@@ -73,6 +81,12 @@ const checks = [
     ok:
       allDocs.includes("support@thetattoocore.com") &&
       forbiddenContactSnippets.every((snippet) => !allDocs.includes(snippet)),
+  },
+  {
+    label: "mobile submission runbook avoids visible provider names",
+    ok: forbiddenSubmissionRunbookProviderSnippets.every(
+      (snippet) => !docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes(snippet),
+    ),
   },
   {
     label: "store listing draft includes launch safety stance",

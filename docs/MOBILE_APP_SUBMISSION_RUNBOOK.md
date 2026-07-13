@@ -13,7 +13,7 @@
 - Real-device QA gates live in `docs/REAL_DEVICE_QA_CHECKLIST.md` and should pass before wrapper packaging.
 - Production payment gates live in `docs/PAYMENT_PRODUCTION_READINESS.md` and should pass before real commerce appears in native builds.
 - Visible nudity is not allowed for launch to reduce review and moderation risk.
-- Merch and ads use Stripe in test mode; production payments, seller payouts, taxes, refunds, disputes, and app-store policy review from `docs/PAYMENT_PRODUCTION_READINESS.md` must be finished before real commerce is promoted in native builds.
+- Merch and ads use hosted checkout in test mode; production payments, seller payouts, taxes, refunds, disputes, and app-store policy review from `docs/PAYMENT_PRODUCTION_READINESS.md` must be finished before real commerce is promoted in native builds.
 
 ## Wrapper Decision
 
@@ -21,7 +21,7 @@ Start with a thin native wrapper only after core web QA is stable:
 
 - Use Capacitor or a similar maintained wrapper unless a fully native rebuild becomes necessary.
 - Keep the canonical app experience served from the production web app.
-- Do not store payment, mail, Supabase service-role, Stripe secret, or admin secrets in native code.
+- Do not store payment, mail, privileged server, checkout, admin, or database secrets in native code.
 - Keep app links pointed at `thetattoocore.com` so shared content, login, support, privacy, and terms remain consistent.
 
 ## Required Before Store Submission
@@ -32,7 +32,7 @@ Start with a thin native wrapper only after core web QA is stable:
 - Confirm support email and public legal/contact surfaces use `support@thetattoocore.com` or final company/legal contact details, not personal owner information.
 - Have counsel review Terms, Privacy, account deletion language, moderation policy, marketplace rules, and payment/refund language.
 - Decide whether native builds expose Merch checkout at launch or keep it web-only/test-mode until production payment policy is approved.
-- Prepare store age rating answers around 18+, user-generated content, moderation/reporting, no visible nudity policy, social interaction, DMs, marketplace-like browsing, and Stripe checkout.
+- Prepare store age rating answers around 18+, user-generated content, moderation/reporting, no visible nudity policy, social interaction, DMs, marketplace-like browsing, and hosted checkout.
 - Prepare store data-safety/privacy answers around account/profile data, user-generated content, DMs, verification documents, moderation records, payment references, coarse location, notifications, deletion requests, and public-search visibility.
 
 ## Push Notifications
@@ -53,7 +53,7 @@ Start with a thin native wrapper only after core web QA is stable:
 1. Create the wrapper project in a separate app folder after web QA is stable.
 2. Point the wrapper start URL to `https://thetattoocore.com/login`.
 3. Add app icons and splash assets from the approved TTC shield assets.
-4. Configure allowed domains for `thetattoocore.com`, Supabase auth redirects, Stripe Checkout, support, privacy, and terms.
+4. Configure allowed domains for `thetattoocore.com`, auth redirects, hosted checkout, support, privacy, and terms.
 5. Test camera/photo-picker behavior only through normal browser file inputs unless a native upload bridge is added deliberately.
 6. Run Android internal testing and TestFlight before any public review submission.
 
