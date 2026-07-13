@@ -14,6 +14,7 @@ type SubjectType =
   | "gig"
   | "marketplace_listing"
   | "merch_product"
+  | "story_post"
   | "thread_post";
 type ModerationStatus = "active" | "under_review" | "hidden" | "removed";
 type ReportStatus = "open" | "reviewing" | "resolved" | "dismissed";
@@ -115,6 +116,11 @@ const subjectConfig = {
     idColumn: "id",
     ownerColumn: "seller_id",
     table: "merch_products",
+  },
+  story_post: {
+    idColumn: "id",
+    ownerColumn: "author_id",
+    table: "story_posts",
   },
   thread_post: {
     idColumn: "id",

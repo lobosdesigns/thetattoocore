@@ -16,6 +16,7 @@ type ContentType =
   | "gig"
   | "marketplace_listing"
   | "merch_product"
+  | "story_post"
   | "thread_post";
 type ReviewItem = {
   authorName: string;
@@ -39,6 +40,7 @@ const contentTabs = [
   ["marketplace_listing", "Stuff"],
   ["gig", "Gigs"],
   ["merch_product", "Merch"],
+  ["story_post", "Stories"],
 ] as const;
 
 export const metadata: Metadata = {
@@ -64,7 +66,8 @@ function contentType(value: string | string[] | undefined): ContentType {
     rawValue === "thread_post" ||
     rawValue === "marketplace_listing" ||
     rawValue === "gig" ||
-    rawValue === "merch_product"
+    rawValue === "merch_product" ||
+    rawValue === "story_post"
   ) {
     return rawValue;
   }
@@ -97,6 +100,7 @@ function contentTypeLabel(type: ContentType) {
   if (type === "thread_post") return "Gossip";
   if (type === "marketplace_listing") return "Stuff";
   if (type === "merch_product") return "Merch";
+  if (type === "story_post") return "Stories";
 
   return "Gigs";
 }
@@ -394,7 +398,7 @@ export default async function AdminContentPage({
       title: gig.title,
       visibility: gig.visibility,
     }));
-  } else {
+  } else if (activeType === "merch_product") {
     const { count, data } = await supabase
       .from("merch_products")
       .select(
@@ -427,6 +431,45 @@ export default async function AdminContentPage({
       subjectType: "merch_product",
       title: product.title,
       visibility: "public_preview",
+    }));
+  } else {
+    const { count, data } = await supabase
+      .from("story_posts")
+      .select(
+        "id, caption, created_at, expires_at, is_sensitive, sensitive_reason, moderation_status, visibility, profiles:profiles!story_posts_author_id_fkey(display_name, username)",
+        { count: "exact" },
+      )
+      .or("is_sensitive.eq.true,moderation_status.neq.active")
+      .order("created_at", { ascending: false })
+      .range(from, to)
+      .returns<
+        {
+          caption: string | null;
+          created_at: string;
+          expires_at: string;
+          id: string;
+          is_sensitive: boolean;
+          moderation_status: ModerationStatus;
+          profiles: { display_name: string; username: string } | null;
+          sensitive_reason: string | null;
+          visibility: "public_preview" | "members" | "private";
+        }[]
+      >();
+    totalItems = count ?? 0;
+    items = (data ?? []).map((story) => ({
+      authorName: story.profiles?.display_name ?? "Member",
+      authorUsername: story.profiles?.username ?? "member",
+      body: story.caption
+        ? `${story.caption} Expires ${new Date(story.expires_at).toLocaleString("en-US")}.`
+        : `Expires ${new Date(story.expires_at).toLocaleString("en-US")}.`,
+      createdAt: story.created_at,
+      id: story.id,
+      isSensitive: story.is_sensitive,
+      sensitiveReason: story.sensitive_reason,
+      status: story.moderation_status,
+      subjectType: "story_post",
+      title: story.caption || "Story",
+      visibility: story.visibility,
     }));
   }
 

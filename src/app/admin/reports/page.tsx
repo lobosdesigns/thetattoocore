@@ -41,6 +41,7 @@ const reportModerationSubjectTypes = new Set<string>([
   "thread_post",
   "marketplace_listing",
   "merch_product",
+  "story_post",
 ]);
 
 export const metadata: Metadata = {
@@ -499,6 +500,24 @@ export default async function AdminReportsPage({
           ownerUsername: product.profiles?.username ?? null,
           preview: product.description,
           title: product.title,
+        });
+      }
+    })(),
+    (async () => {
+      const ids = reportSubjectIds("story_post");
+      if (!ids.length) return;
+      const { data } = await supabase
+        .from("story_posts")
+        .select("id, caption, profiles:profiles!story_posts_author_id_fkey(username)")
+        .in("id", ids)
+        .returns<
+          { caption: string | null; id: string; profiles: { username: string } | null }[]
+        >();
+      for (const story of data ?? []) {
+        reportSubjectPreviews.set(reportSubjectKey("story_post", story.id), {
+          ownerUsername: story.profiles?.username ?? null,
+          preview: story.caption,
+          title: "Story",
         });
       }
     })(),

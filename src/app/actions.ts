@@ -24,6 +24,7 @@ const REPORT_SUBJECT_TYPES = new Set([
   "thread_post",
   "marketplace_listing",
   "merch_product",
+  "story_post",
 ]);
 const SAVED_SUBJECT_TYPES = new Set([
   "feed_post",

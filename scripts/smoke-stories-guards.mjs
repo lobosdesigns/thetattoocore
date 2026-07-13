@@ -12,7 +12,18 @@ const postPolicyTighteningMigration = readFileSync(
   "supabase/migrations/20260713011855_tighten_story_post_updates.sql",
   "utf8",
 );
+const storyModerationMigration = readFileSync(
+  "supabase/migrations/20260713012809_story_moderation_admin.sql",
+  "utf8",
+);
+const storyPolicyConsolidationMigration = readFileSync(
+  "supabase/migrations/20260713013247_consolidate_story_post_policies.sql",
+  "utf8",
+);
 const actions = readFileSync("src/app/actions.ts", "utf8");
+const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
+const adminContent = readFileSync("src/app/admin/content/page.tsx", "utf8");
+const adminReports = readFileSync("src/app/admin/reports/page.tsx", "utf8");
 const composer = readFileSync("src/app/floating-composer.tsx", "utf8");
 const composerShell = readFileSync("src/app/floating-composer-shell.tsx", "utf8");
 const homePage = readFileSync("src/app/page.tsx", "utf8");
@@ -62,6 +73,29 @@ const checks = [
       postPolicyTighteningMigration.includes("is_sensitive = false") &&
       postPolicyTighteningMigration.includes("sensitive_reason is null") &&
       postPolicyTighteningMigration.includes("expires_at <= created_at + interval '25 hours'"),
+  },
+  {
+    label: "story posts are wired into admin moderation safely",
+    ok:
+      storyModerationMigration.includes("alter type public.report_subject_type add value if not exists 'story_post'") &&
+      storyModerationMigration.includes('create policy "Moderators can review story posts"') &&
+      storyModerationMigration.includes('create policy "Moderators can update story posts"') &&
+      adminActions.includes('| "story_post"') &&
+      adminActions.includes("story_posts") &&
+      adminContent.includes('["story_post", "Stories"]') &&
+      adminContent.includes('.from("story_posts")') &&
+      adminReports.includes('"story_post"') &&
+      adminReports.includes('reportSubjectKey("story_post", story.id)'),
+  },
+  {
+    label: "story post read and update policies are consolidated",
+    ok:
+      storyPolicyConsolidationMigration.includes('drop policy if exists "Visible active stories can be read"') &&
+      storyPolicyConsolidationMigration.includes('create policy "Anon can read public active stories"') &&
+      storyPolicyConsolidationMigration.includes('create policy "Members can read visible or moderated stories"') &&
+      storyPolicyConsolidationMigration.includes('create policy "Members update own safe stories or moderate stories"') &&
+      storyPolicyConsolidationMigration.includes("private.current_user_can_moderate()") &&
+      storyPolicyConsolidationMigration.includes("expires_at <= created_at + interval '25 hours'"),
   },
   {
     label: "story creation action requires a profile, image media, and 24-hour expiry",
