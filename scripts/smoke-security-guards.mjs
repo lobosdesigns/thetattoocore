@@ -77,6 +77,8 @@ const forbiddenPublicInfraSnippets = [
   "server webhook",
   "payment-provider",
   "Cloudflare Stream",
+  "test mode",
+  "test-mode",
 ];
 
 const checks = [

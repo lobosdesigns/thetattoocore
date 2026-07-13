@@ -2840,7 +2840,7 @@ export default async function Home({
                   <EmptyColumnState
                     actionHref={isSignedIn ? undefined : "/login"}
                     actionLabel={isSignedIn ? "Approval-only" : "Sign in"}
-                    body="Artist shirts, prints, art, stickers, vendor brand goods, and official TheTattooCore merchandise will live here. Merch is public-buyable, separate from verified-only Stuff, and checkout is in test mode."
+                    body="Artist shirts, prints, art, stickers, vendor brand goods, and official TheTattooCore merchandise will live here. Merch is public-buyable, separate from verified-only Stuff, and checkout is limited during launch."
                     icon={Package}
                     tips={["T-shirts", "Prints", "TTC merch"]}
                     title="No Merch yet"

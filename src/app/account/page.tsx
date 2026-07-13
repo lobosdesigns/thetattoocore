@@ -1053,8 +1053,8 @@ export default async function AccountPage({
             </span>
           </div>
           <p className="text-sm leading-6 text-[var(--muted-strong)]">
-            Merch checkout is in test mode while fulfillment, shipping, refund,
-            tax, and production seller rules are finished.
+            Merch checkout is limited during launch while seller and order rules
+            are finished. More buying and selling tools are coming soon.
           </p>
           {visibleMerchOrders.length ? (
             <div className="mt-4 grid gap-3">
