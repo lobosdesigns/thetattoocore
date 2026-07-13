@@ -31,6 +31,7 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 - Like, save, share, report, edit, and delete owned 4U/Gossip content.
 - Confirm home cards show comment counts only, then open detail pages for full comments.
 - Add, like, reply to, edit, delete, and report comments where supported.
+- Attach a photo/GIF to 4U and Gossip detail comments/replies, then open the attachment in the lightbox.
 - Confirm post owners can hide/delete disruptive comments where supported.
 
 ## Commerce And Listings
@@ -50,6 +51,7 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 - Confirm delivered/read indicators update.
 - Delete an unread outgoing DM and confirm it disappears for the sender without breaking the thread.
 - Open a DM notification and confirm it routes to the correct thread without reload loops.
+- Create a booking request, accept it with an appointment time, and confirm both Account and DM cards show the scheduled time plus a private Add to calendar download.
 
 ## Notifications
 

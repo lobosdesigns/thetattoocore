@@ -72,6 +72,8 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Gigs") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Merch") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("DM") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Attach a photo/GIF") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("private Add to calendar download") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("verification") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Stripe test checkout") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("No reload-loop screens"),
@@ -92,7 +94,9 @@ const checks = [
     label: "readiness docs mention PWA asset and scaffold guards",
     ok:
       docs["docs/APP_STORE_READINESS.md"].includes("PWA smoke guards verify") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("removed scaffold asset URLs stay unavailable"),
+      docs["docs/APP_STORE_READINESS.md"].includes("removed scaffold asset URLs stay unavailable") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("photo/GIF attachments") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("participant-only `.ics` calendar downloads"),
   },
 ];
 
