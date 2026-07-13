@@ -926,7 +926,7 @@ function ProfileStoryPrompt() {
         </div>
         <Link
           className="inline-flex h-9 items-center justify-center rounded-md bg-[var(--foreground)] px-3 text-xs font-bold text-[var(--background)]"
-          href="/#stories"
+          href="/?compose=stories#stories"
         >
           Add story
         </Link>

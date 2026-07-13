@@ -177,6 +177,8 @@ const checks = [
       composerShell.includes('| "stories"') &&
       composerShell.includes('label: "Story"') &&
       composerShell.includes('if (hash === "#stories") return "stories"') &&
+      composerShell.includes('get(\n      "compose",') &&
+      composerShell.includes("window.history.replaceState") &&
       composerShell.includes('"stories", "feed"') &&
       composerShell.includes('"ttc-open-composer"') &&
       composerShell.includes("setActiveMode(mode)") &&
@@ -250,7 +252,7 @@ const checks = [
       profilePage.includes("const visibleStory =") &&
       profilePage.includes("<ProfileStoryCard") &&
       profilePage.includes("<ProfileStoryPrompt />") &&
-      profilePage.includes('href="/#stories"') &&
+      profilePage.includes('href="/?compose=stories#stories"') &&
       profilePage.includes("recordStoryView.bind(null, story.id)") &&
       profilePage.includes("endStoryPost") &&
       productPlan.includes("profile-page active story cards"),

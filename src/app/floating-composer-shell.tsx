@@ -98,6 +98,22 @@ export function FloatingComposerShell({
     onHashChange();
     window.addEventListener("hashchange", onHashChange);
 
+    const composeMode = new URLSearchParams(window.location.search).get(
+      "compose",
+    );
+    const composeOpenTimer =
+      composeMode && composeMode in modes
+        ? window.setTimeout(() => {
+            setActiveMode(composeMode as ComposerMode);
+            setIsOpen(true);
+            window.history.replaceState(
+              null,
+              "",
+              `${window.location.pathname}${window.location.hash || ""}`,
+            );
+          }, 0)
+        : undefined;
+
     const sections = ["stories", "feed", "threads", "marketplace", "gigs", "merch", "messages"]
       .map((id) => document.getElementById(id))
       .filter(Boolean) as HTMLElement[];
@@ -122,6 +138,7 @@ export function FloatingComposerShell({
 
     return () => {
       window.removeEventListener("hashchange", onHashChange);
+      if (composeOpenTimer) window.clearTimeout(composeOpenTimer);
       observer.disconnect();
     };
   }, []);
