@@ -244,10 +244,13 @@ const checks = [
     ok:
       profilePage.includes("type StoryPost =") &&
       profilePage.includes("function ProfileStoryCard") &&
+      profilePage.includes("function ProfileStoryPrompt") &&
       profilePage.includes('.from("story_posts")') &&
       profilePage.includes('.gt("expires_at", new Date().toISOString())') &&
       profilePage.includes("const visibleStory =") &&
       profilePage.includes("<ProfileStoryCard") &&
+      profilePage.includes("<ProfileStoryPrompt />") &&
+      profilePage.includes('href="/#stories"') &&
       profilePage.includes("recordStoryView.bind(null, story.id)") &&
       profilePage.includes("endStoryPost") &&
       productPlan.includes("profile-page active story cards"),

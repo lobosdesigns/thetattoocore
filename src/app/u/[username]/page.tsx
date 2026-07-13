@@ -912,6 +912,29 @@ function ProfileStoryCard({
   );
 }
 
+function ProfileStoryPrompt() {
+  return (
+    <section className="mt-5 max-w-xl rounded-lg border border-dashed border-[color-mix(in_srgb,var(--gold)_42%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_8%,var(--paper-warm))] p-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-xs font-black uppercase tracking-wide text-[var(--muted-strong)]">
+            No active story
+          </p>
+          <p className="mt-1 text-sm font-semibold">
+            Add a 24h image update from the Stories rail.
+          </p>
+        </div>
+        <Link
+          className="inline-flex h-9 items-center justify-center rounded-md bg-[var(--foreground)] px-3 text-xs font-bold text-[var(--background)]"
+          href="/#stories"
+        >
+          Add story
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 type ProfilePageProps = {
   params: Promise<{ username: string }>;
   searchParams: Promise<{ message?: string }>;
@@ -1472,6 +1495,8 @@ export default async function ProfilePage({
                   story={visibleStory}
                   viewerId={claims?.sub}
                 />
+              ) : isOwnProfile && !isPrivateLocked ? (
+                <ProfileStoryPrompt />
               ) : null}
               {canShowBookingAvailability ? (
                 <section className="mt-5 rounded-lg border border-[color-mix(in_srgb,var(--gold)_34%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))] p-4">
