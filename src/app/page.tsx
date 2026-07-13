@@ -29,6 +29,7 @@ import {
   editFeedPost,
   editThreadPost,
   endStoryPost,
+  recordStoryView,
   replyToStory,
   togglePostLike,
   toggleThreadLike,
@@ -169,6 +170,7 @@ type StoryPost = {
   expires_at: string;
   id: string;
   story_media: StoryMedia[];
+  story_views?: { count: number }[];
   visibility: "public_preview" | "members" | "private";
   profiles: Profile | null;
 };
@@ -1201,6 +1203,10 @@ function StoriesRail({
           const canReplyToStory = Boolean(
             isSignedIn && currentUserId && story.author_id !== currentUserId,
           );
+          const canRecordStoryView = Boolean(
+            isSignedIn && currentUserId && story.author_id !== currentUserId,
+          );
+          const storyViewCount = story.story_views?.[0]?.count ?? 0;
 
           return (
             <div
@@ -1247,6 +1253,11 @@ function StoriesRail({
                   ) : null
                 }
                 mediaType="image"
+                openAction={
+                  canRecordStoryView
+                    ? recordStoryView.bind(null, story.id)
+                    : undefined
+                }
                 src={src ?? ""}
                 title={storyTitle}
               >
@@ -1259,7 +1270,7 @@ function StoriesRail({
                     {storyTitle}
                   </span>
                   <span className="text-[10px] font-semibold uppercase text-[var(--muted-strong)]">
-                    {timeAgo(story.created_at)}
+                    {isOwnStory ? `${storyViewCount} views` : timeAgo(story.created_at)}
                   </span>
                 </button>
               </MediaLightbox>
@@ -1610,7 +1621,7 @@ export default async function Home({
     supabase
       .from("story_posts")
       .select(
-        "id, author_id, caption, visibility, created_at, expires_at, story_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!story_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, author_id, caption, visibility, created_at, expires_at, story_media(id, storage_bucket, storage_path, media_type, sort_order), story_views(count), profiles:profiles!story_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("moderation_status", "active")
       .gt("expires_at", new Date().toISOString())

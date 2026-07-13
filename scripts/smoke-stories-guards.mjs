@@ -20,6 +20,10 @@ const storyPolicyConsolidationMigration = readFileSync(
   "supabase/migrations/20260713013247_consolidate_story_post_policies.sql",
   "utf8",
 );
+const storyViewsMigration = readFileSync(
+  "supabase/migrations/20260713095318_story_view_events.sql",
+  "utf8",
+);
 const actions = readFileSync("src/app/actions.ts", "utf8");
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
 const adminContent = readFileSync("src/app/admin/content/page.tsx", "utf8");
@@ -179,10 +183,32 @@ const checks = [
       homePage.includes("{story.caption}"),
   },
   {
+    label: "story views are RLS-protected and deduplicated per viewer",
+    ok:
+      storyViewsMigration.includes("create table if not exists public.story_views") &&
+      storyViewsMigration.includes("unique (story_id, viewer_id)") &&
+      storyViewsMigration.includes("alter table public.story_views enable row level security") &&
+      storyViewsMigration.includes('create policy "Members can record visible story views"') &&
+      storyViewsMigration.includes('create policy "Authors can read their story views"') &&
+      storyViewsMigration.includes("story_views_story_viewed_idx"),
+  },
+  {
+    label: "story rail records signed-in views and shows owner counts",
+    ok:
+      actions.includes("export async function recordStoryView") &&
+      actions.includes('.from("story_views").upsert') &&
+      actions.includes('onConflict: "story_id,viewer_id"') &&
+      homePage.includes("recordStoryView") &&
+      homePage.includes("openAction={") &&
+      homePage.includes("story_views(count)") &&
+      homePage.includes("storyViewCount"),
+  },
+  {
     label: "plan records Stories as started for launch",
     ok:
       productPlan.includes("Stories: add temporary story posts") &&
-      productPlan.includes("Started for launch with a 24-hour image/GIF story foundation"),
+      productPlan.includes("DM-backed story replies") &&
+      productPlan.includes("deduplicated signed-in view counts"),
   },
 ];
 

@@ -689,6 +689,45 @@ export async function endStoryPost(formData: FormData) {
   redirect(homeMessage("Story ended.", "stories"));
 }
 
+export async function recordStoryView(storyId: string) {
+  const cleanStoryId = String(storyId ?? "").trim();
+
+  if (!cleanStoryId) return;
+
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+
+  if (!claims?.sub) return;
+
+  const { data: story } = await supabase
+    .from("story_posts")
+    .select("id, author_id, expires_at, moderation_status")
+    .eq("id", cleanStoryId)
+    .gt("expires_at", new Date().toISOString())
+    .maybeSingle<{
+      author_id: string;
+      expires_at: string;
+      id: string;
+      moderation_status: string;
+    }>();
+
+  if (!story || story.author_id === claims.sub || story.moderation_status !== "active") {
+    return;
+  }
+
+  await supabase.from("story_views").upsert(
+    {
+      story_id: cleanStoryId,
+      viewed_at: new Date().toISOString(),
+      viewer_id: claims.sub,
+    },
+    {
+      onConflict: "story_id,viewer_id",
+    },
+  );
+}
+
 export async function replyToStory(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const storyId = cleanId(formData.get("story_id"));

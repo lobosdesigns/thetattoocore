@@ -1,6 +1,12 @@
 "use client";
 
-import { type KeyboardEvent, type ReactNode, useEffect, useState } from "react";
+import {
+  type KeyboardEvent,
+  type ReactNode,
+  useEffect,
+  useState,
+  useTransition,
+} from "react";
 import { Maximize2, Minus, Plus, X } from "lucide-react";
 import { ProtectedVideo } from "./protected-video";
 
@@ -10,6 +16,7 @@ type MediaLightboxProps = {
   description?: string;
   footer?: ReactNode;
   mediaType: "image" | "video";
+  openAction?: () => Promise<void>;
   src: string;
   title?: string;
 };
@@ -20,9 +27,12 @@ export function MediaLightbox({
   description,
   footer,
   mediaType,
+  openAction,
   src,
   title = "Media viewer",
 }: MediaLightboxProps) {
+  const [, startTransition] = useTransition();
+  const [hasRunOpenAction, setHasRunOpenAction] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
 
@@ -45,13 +55,24 @@ export function MediaLightbox({
     };
   }, [isOpen]);
 
+  function openViewer() {
+    if (!src) return;
+
+    setZoom(1);
+    setIsOpen(true);
+
+    if (openAction && !hasRunOpenAction) {
+      setHasRunOpenAction(true);
+      startTransition(() => {
+        void openAction();
+      });
+    }
+  }
+
   function openFromKeyboard(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      if (src) {
-        setZoom(1);
-        setIsOpen(true);
-      }
+      openViewer();
     }
   }
 
@@ -60,12 +81,7 @@ export function MediaLightbox({
       <div
         aria-label="Open media viewer"
         className="group relative cursor-zoom-in"
-        onClick={() => {
-          if (src) {
-            setZoom(1);
-            setIsOpen(true);
-          }
-        }}
+        onClick={openViewer}
         onKeyDown={openFromKeyboard}
         role="button"
         tabIndex={0}
