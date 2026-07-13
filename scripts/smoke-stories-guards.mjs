@@ -129,6 +129,8 @@ const checks = [
       actions.includes("Stories need a photo or GIF.") &&
       actions.includes('metadata.mediaType !== "image"') &&
       actions.includes("24 * 60 * 60 * 1000") &&
+      actions.includes("const storyId = crypto.randomUUID()") &&
+      actions.includes("await supabase.storage.from(MEDIA_BUCKET).remove([storagePath])") &&
       actions.includes('.from("story_posts")') &&
       actions.includes('.from("story_media")'),
   },

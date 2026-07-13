@@ -636,9 +636,24 @@ export async function createStoryPost(formData: FormData) {
     redirect(homeMessage("Stories support images and GIFs first. More story media options are coming later.", "stories"));
   }
 
+  const storyId = crypto.randomUUID();
+  const storagePath = `${userId}/story/${storyId}/${crypto.randomUUID()}.${extensionFor(media)}`;
+  const { error: uploadError } = await supabase.storage
+    .from(MEDIA_BUCKET)
+    .upload(storagePath, media, {
+      cacheControl: "31536000",
+      contentType: metadata.mimeType,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    redirect(homeMessage(uploadError.message || "Could not upload story media.", "stories"));
+  }
+
   const { data: story, error } = await supabase
     .from("story_posts")
     .insert({
+      id: storyId,
       author_id: userId,
       caption: caption || null,
       expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -651,29 +666,21 @@ export async function createStoryPost(formData: FormData) {
     .single<{ id: string }>();
 
   if (error || !story) {
+    await supabase.storage.from(MEDIA_BUCKET).remove([storagePath]);
     redirect(homeMessage(error?.message || "Could not create story.", "stories"));
   }
 
-  const upload = await uploadPostMedia({
-    file: media,
-    id: story.id,
-    kind: "story",
-    metadata,
-    supabase,
-    userId,
-  });
-
   const { error: mediaError } = await supabase.from("story_media").insert({
     story_id: story.id,
-    media_type: upload.mediaType,
+    media_type: metadata.mediaType,
     sort_order: 0,
-    storage_bucket: upload.bucket,
-    storage_path: upload.path,
+    storage_bucket: MEDIA_BUCKET,
+    storage_path: storagePath,
     ...mediaMetadataFields(metadata),
   });
 
   if (mediaError) {
-    await supabase.storage.from(MEDIA_BUCKET).remove([upload.path]);
+    await supabase.storage.from(MEDIA_BUCKET).remove([storagePath]);
     await supabase.from("story_posts").delete().eq("id", story.id).eq("author_id", userId);
     redirect(homeMessage(mediaError.message || "Could not attach story media.", "stories"));
   }
