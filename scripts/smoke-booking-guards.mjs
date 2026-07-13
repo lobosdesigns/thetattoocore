@@ -195,6 +195,19 @@ const checks = [
       messagesPage.includes("canCancel"),
   },
   {
+    label: "artists can cancel unpaid accepted booking requests safely",
+    ok:
+      accountActions.includes("export async function cancelAcceptedBookingAsArtist") &&
+      accountActions.includes('.eq("artist_id", claims.sub)') &&
+      accountActions.includes('booking.status === "accepted"') &&
+      accountActions.includes('["not_ready", "payment_failed"].includes(booking.payment_status)') &&
+      accountActions.includes('type: "booking_cancelled"') &&
+      accountPage.includes("cancelAcceptedBookingAsArtist") &&
+      accountPage.includes("Cancel accepted booking") &&
+      messagesPage.includes("cancelAcceptedBookingAsArtist") &&
+      messagesPage.includes("canCancelAsArtist"),
+  },
+  {
     label: "accepted booking deposits use guarded Stripe checkout",
     ok:
       accountPage.includes('action="/api/bookings/checkout"') &&

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
+  cancelAcceptedBookingAsArtist,
   cancelBookingRequest,
   markMerchSaleFulfilled,
   requestAccountDeletion,
@@ -870,6 +871,9 @@ export default async function AccountPage({
                     const canRespond =
                       booking.status === "requested" &&
                       booking.payment_status === "not_ready";
+                    const canCancelAcceptedBooking =
+                      booking.status === "accepted" &&
+                      ["not_ready", "payment_failed"].includes(booking.payment_status);
 
                     return (
                       <article
@@ -995,6 +999,17 @@ export default async function AccountPage({
                           >
                             Add to calendar
                           </Link>
+                        ) : null}
+                        {canCancelAcceptedBooking ? (
+                          <form action={cancelAcceptedBookingAsArtist} className="mt-3">
+                            <input name="booking_id" type="hidden" value={booking.id} />
+                            <PendingSubmitButton
+                              className="h-10 w-full rounded-md border border-[color-mix(in_srgb,var(--danger)_42%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] px-4 text-sm font-bold text-[var(--danger)] sm:w-fit"
+                              pendingLabel="Cancelling"
+                            >
+                              Cancel accepted booking
+                            </PendingSubmitButton>
+                          </form>
                         ) : null}
                       </article>
                     );

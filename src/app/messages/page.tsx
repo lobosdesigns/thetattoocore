@@ -17,7 +17,11 @@ import { MediaInput } from "@/app/media-input";
 import { PendingSubmitButton } from "@/app/pending-submit-button";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { WordLimitedField } from "@/app/word-limited-field";
-import { cancelBookingRequest, respondBookingRequest } from "@/app/account/actions";
+import {
+  cancelAcceptedBookingAsArtist,
+  cancelBookingRequest,
+  respondBookingRequest,
+} from "@/app/account/actions";
 import { MessageThread } from "./message-thread";
 import { sendMessage, startConversation } from "./actions";
 
@@ -220,6 +224,10 @@ function BookingCards({
             isClient &&
             ["requested", "accepted"].includes(booking.status) &&
             ["not_ready", "payment_failed"].includes(booking.payment_status);
+          const canCancelAsArtist =
+            isArtist &&
+            booking.status === "accepted" &&
+            ["not_ready", "payment_failed"].includes(booking.payment_status);
 
           return (
             <article
@@ -355,6 +363,17 @@ function BookingCards({
                     pendingLabel="Cancelling"
                   >
                     Cancel request
+                  </PendingSubmitButton>
+                </form>
+              ) : null}
+              {canCancelAsArtist ? (
+                <form action={cancelAcceptedBookingAsArtist} className="mt-3">
+                  <input name="booking_id" type="hidden" value={booking.id} />
+                  <PendingSubmitButton
+                    className="flex h-10 w-full items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--danger)_42%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] px-4 text-sm font-bold text-[var(--danger)] sm:w-fit"
+                    pendingLabel="Cancelling"
+                  >
+                    Cancel accepted booking
                   </PendingSubmitButton>
                 </form>
               ) : null}
