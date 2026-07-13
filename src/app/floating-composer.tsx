@@ -4,6 +4,7 @@ import { ChevronDown, Search, Send } from "lucide-react";
 import {
   createFeedPost,
   createMarketplaceListing,
+  createStoryPost,
   createThreadPost,
 } from "./actions";
 import { FloatingComposerShell } from "./floating-composer-shell";
@@ -66,13 +67,20 @@ function ComposerSubmit({
   );
 }
 
-function VisibilityControl() {
+function VisibilityControl({
+  defaultValue = "public_preview",
+  helper,
+}: {
+  defaultValue?: "members" | "private" | "public_preview";
+  helper?: string;
+}) {
   return (
     <section className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
       <label className="block">
         <span className="text-sm font-semibold">Visibility</span>
         <select
           className="mt-2 h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+          defaultValue={defaultValue}
           name="visibility"
         >
           <option value="public_preview">Public preview</option>
@@ -80,6 +88,11 @@ function VisibilityControl() {
           <option value="private">Private</option>
         </select>
       </label>
+      {helper ? (
+        <p className="mt-3 text-xs leading-5 text-[var(--muted-strong)]">
+          {helper}
+        </p>
+      ) : null}
       <div className="mt-3 grid gap-2">
         {visibilityOptions.map(([label, description]) => (
           <p className="text-xs leading-5 text-[var(--muted-strong)]" key={label}>
@@ -157,6 +170,46 @@ export function FloatingComposer({
             </ComposerDetails>
             <MediaInput accept={imageVideoAccept} name="media" required />
             <ComposerSubmit pendingLabel="Publishing">Publish</ComposerSubmit>
+          </form>
+        ),
+        stories: (
+          <form
+            action={createStoryPost}
+            className="space-y-3"
+            encType="multipart/form-data"
+          >
+            <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3 text-xs leading-5 text-[var(--muted)]">
+              <p className="font-semibold text-[var(--foreground)]">
+                24-hour story
+              </p>
+              <p className="mt-1">
+                Stories are temporary image/GIF posts for fresh work, shop
+                moments, events, and quick community updates. No visible nudity
+                for launch.
+              </p>
+            </div>
+            <WordLimitedField
+              as="textarea"
+              className="min-h-20 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+              maxCharacters={240}
+              maxLength={240}
+              name="caption"
+              placeholder="Short story caption"
+            />
+            <ComposerDetails title="Visibility">
+              <VisibilityControl
+                defaultValue="members"
+                helper="Members-only is the default for Stories. Public-preview stories must stay non-sensitive and can be visible to logged-out visitors while active."
+              />
+            </ComposerDetails>
+            <MediaInput
+              accept={imageAccept}
+              maxImageBytes={10 * 1024 * 1024}
+              name="media"
+              required
+              videoAllowed={false}
+            />
+            <ComposerSubmit pendingLabel="Posting story">Post story</ComposerSubmit>
           </form>
         ),
         threads: (

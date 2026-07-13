@@ -10,11 +10,13 @@ import {
   Plus,
   Send,
   ShoppingBag,
+  Sparkles,
   X,
 } from "lucide-react";
 
 type ComposerMode =
   | "feed"
+  | "stories"
   | "threads"
   | "marketplace"
   | "gigs"
@@ -33,6 +35,11 @@ const modes: Record<
     icon: Camera,
     label: "4U",
     title: "4U post",
+  },
+  stories: {
+    icon: Sparkles,
+    label: "Story",
+    title: "Story",
   },
   threads: {
     icon: MessageCircle,
@@ -62,6 +69,7 @@ const modes: Record<
 };
 
 function modeFromHash(hash: string): ComposerMode {
+  if (hash === "#stories") return "stories";
   if (hash === "#threads") return "threads";
   if (hash === "#marketplace") return "marketplace";
   if (hash === "#gigs") return "gigs";
@@ -90,7 +98,7 @@ export function FloatingComposerShell({
     onHashChange();
     window.addEventListener("hashchange", onHashChange);
 
-    const sections = ["feed", "threads", "marketplace", "gigs", "merch", "messages"]
+    const sections = ["stories", "feed", "threads", "marketplace", "gigs", "merch", "messages"]
       .map((id) => document.getElementById(id))
       .filter(Boolean) as HTMLElement[];
 

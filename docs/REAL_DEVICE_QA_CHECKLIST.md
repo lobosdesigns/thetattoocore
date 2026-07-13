@@ -23,6 +23,7 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 ## Core Social
 
 - Create a 4U image post and a short video post.
+- Create a Story image/GIF and confirm it appears in the Stories rail, opens in the media viewer, and expires from the rail after the expiry window in later QA.
 - Confirm 4U captions respect the 40-word limit.
 - Open 4U media in the lightbox, zoom images, play videos, and confirm video controls do not show a download button.
 - Create a Gossip post with longer text and optional image.

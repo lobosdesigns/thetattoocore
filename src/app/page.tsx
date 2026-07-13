@@ -153,6 +153,23 @@ type Gig = {
   profiles: Profile | null;
 };
 
+type StoryMedia = {
+  id: string;
+  media_type: "image";
+  storage_bucket: string;
+  storage_path: string;
+};
+
+type StoryPost = {
+  caption: string | null;
+  created_at: string;
+  expires_at: string;
+  id: string;
+  story_media: StoryMedia[];
+  visibility: "public_preview" | "members" | "private";
+  profiles: Profile | null;
+};
+
 type SavedItem = {
   subject_id: string;
   subject_type:
@@ -1120,7 +1137,13 @@ function PublicVisitorGate({ lockedCount }: { lockedCount: number }) {
   );
 }
 
-function StoriesRail() {
+function StoriesRail({
+  isSignedIn,
+  stories,
+}: {
+  isSignedIn: boolean;
+  stories: StoryPost[];
+}) {
   const items = [
     ["Artists", ImageIcon],
     ["Studios", HomeIcon],
@@ -1132,16 +1155,51 @@ function StoriesRail() {
   return (
     <section
       aria-label="Stories"
+      id="stories"
       className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-4 py-3"
     >
       <div className="no-scrollbar flex gap-3 overflow-x-auto">
-        <div className="flex h-16 min-w-20 flex-col items-center justify-center rounded-md border border-dashed border-[var(--gold)] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] px-3 text-center">
+        <a
+          className="flex h-20 min-w-20 flex-col items-center justify-center rounded-md border border-dashed border-[var(--gold)] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] px-3 text-center"
+          href={isSignedIn ? "#stories" : "/login"}
+        >
           <Sparkles className="size-4 text-[var(--gold)]" />
           <span className="mt-1 text-[11px] font-bold text-[var(--muted)]">
-            Stories
+            Create
           </span>
-        </div>
-        {items.map(([label, Icon]) => (
+          <span className="text-[10px] font-semibold uppercase text-[var(--muted-strong)]">
+            Story
+          </span>
+        </a>
+        {stories.map((story) => {
+          const media = story.story_media[0];
+          const src = media
+            ? mediaUrl(media.storage_bucket, media.storage_path)
+            : null;
+
+          return (
+            <MediaLightbox
+              alt={`${story.profiles?.display_name ?? "Member"} story`}
+              key={story.id}
+              mediaType="image"
+              src={src ?? ""}
+            >
+              <button className="flex h-20 min-w-20 flex-col items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--gold)_48%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-center shadow-sm">
+                <span
+                  className="mb-1 block size-10 rounded-full border border-[var(--gold)] bg-cover bg-center bg-[color-mix(in_srgb,var(--foreground)_88%,var(--gold))]"
+                  style={src ? { backgroundImage: `url(${src})` } : undefined}
+                />
+                <span className="max-w-16 truncate text-[11px] font-bold text-[var(--foreground)]">
+                  {story.profiles?.display_name ?? "Story"}
+                </span>
+                <span className="text-[10px] font-semibold uppercase text-[var(--muted-strong)]">
+                  {timeAgo(story.created_at)}
+                </span>
+              </button>
+            </MediaLightbox>
+          );
+        })}
+        {!stories.length ? items.map(([label, Icon]) => (
           <div
             className="flex h-16 min-w-20 flex-col items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-center"
             key={label}
@@ -1154,7 +1212,7 @@ function StoriesRail() {
               Soon
             </span>
           </div>
-        ))}
+        )) : null}
       </div>
     </section>
   );
@@ -1388,6 +1446,7 @@ export default async function Home({
     { data: listings },
     { data: gigs },
     { data: merchProducts },
+    { data: storyPosts },
     { data: follows },
     { count: unreadDmCount },
     { data: savedItems },
@@ -1465,6 +1524,20 @@ export default async function Home({
       })
       .limit(merchLimit)
       .returns<MerchProduct[]>(),
+    supabase
+      .from("story_posts")
+      .select(
+        "id, caption, visibility, created_at, expires_at, story_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!story_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+      )
+      .eq("moderation_status", "active")
+      .gt("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false })
+      .order("sort_order", {
+        ascending: true,
+        referencedTable: "story_media",
+      })
+      .limit(25)
+      .returns<StoryPost[]>(),
     claims?.sub
       ? supabase
           .from("follows")
@@ -1545,6 +1618,11 @@ export default async function Home({
     ),
     rankingContext,
     "merch_product",
+  );
+  const visibleStories = (storyPosts ?? []).filter(
+    (story) =>
+      story.visibility !== "private" &&
+      (story.visibility === "public_preview" || isSignedIn),
   );
   const lockedPublicItemCount = [
     ...(feedPosts ?? []),
@@ -1664,7 +1742,7 @@ export default async function Home({
             <LanguageStatus preferredLanguage={preferredLanguage} />
           ) : null}
 
-          <StoriesRail />
+          <StoriesRail isSignedIn={isSignedIn} stories={visibleStories} />
 
           <ColumnSnapRail>
           <section

@@ -79,8 +79,9 @@ function homeMessage(message: string, hash?: string) {
   return `/?message=${encodeURIComponent(message)}${hash ? `#${hash}` : ""}`;
 }
 
-function hashForMediaKind(kind: "feed" | "gig" | "marketplace" | "thread") {
+function hashForMediaKind(kind: "feed" | "gig" | "marketplace" | "story" | "thread") {
   if (kind === "thread") return "threads";
+  if (kind === "story") return "stories";
 
   return kind;
 }
@@ -375,7 +376,7 @@ async function uploadPostMedia({
 }: {
   file: File;
   id: string;
-  kind: "feed" | "gig" | "marketplace" | "thread";
+  kind: "feed" | "gig" | "marketplace" | "story" | "thread";
   metadata: MediaMetadata;
   supabase: Awaited<ReturnType<typeof createClient>>;
   userId: string;
@@ -496,6 +497,73 @@ export async function createFeedPost(formData: FormData) {
 
   revalidatePath("/");
   redirect(homeMessage("Feed post published.", "feed"));
+}
+
+export async function createStoryPost(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const caption = cleanText(formData.get("caption"), 240);
+  const media = mediaFromForm(formData, "media");
+  const visibility = cleanVisibility(formData.get("visibility"), "members");
+
+  if (!media) {
+    redirect(homeMessage("Stories need a photo or GIF.", "stories"));
+  }
+
+  const metadata = await inspectMediaFile(media);
+  const validationMessage = validateMediaMetadata(metadata);
+
+  if (validationMessage) {
+    redirect(homeMessage(validationMessage, "stories"));
+  }
+
+  if (metadata.mediaType !== "image") {
+    redirect(homeMessage("Stories support images and GIFs first. Reels can come later with Stream.", "stories"));
+  }
+
+  const { data: story, error } = await supabase
+    .from("story_posts")
+    .insert({
+      author_id: userId,
+      caption: caption || null,
+      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      is_sensitive: false,
+      moderation_status: "active",
+      sensitive_reason: null,
+      visibility,
+    })
+    .select("id")
+    .single<{ id: string }>();
+
+  if (error || !story) {
+    redirect(homeMessage(error?.message || "Could not create story.", "stories"));
+  }
+
+  const upload = await uploadPostMedia({
+    file: media,
+    id: story.id,
+    kind: "story",
+    metadata,
+    supabase,
+    userId,
+  });
+
+  const { error: mediaError } = await supabase.from("story_media").insert({
+    story_id: story.id,
+    media_type: upload.mediaType,
+    sort_order: 0,
+    storage_bucket: upload.bucket,
+    storage_path: upload.path,
+    ...mediaMetadataFields(metadata),
+  });
+
+  if (mediaError) {
+    await supabase.storage.from(MEDIA_BUCKET).remove([upload.path]);
+    await supabase.from("story_posts").delete().eq("id", story.id).eq("author_id", userId);
+    redirect(homeMessage(mediaError.message || "Could not attach story media.", "stories"));
+  }
+
+  revalidatePath("/");
+  redirect(homeMessage("Story posted for 24 hours.", "stories"));
 }
 
 export async function editFeedPost(formData: FormData) {
