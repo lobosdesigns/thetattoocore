@@ -449,6 +449,7 @@ export async function updateProfile(formData: FormData) {
   const themePreference = cleanText(formData.get("theme_preference"), 16);
   const avatar = fileFromForm(formData, "avatar");
   const banner = fileFromForm(formData, "banner");
+  const removeBanner = formData.get("remove_banner") === "on";
 
   if (!/^[a-z0-9_]{3,30}$/.test(username)) {
     redirect(accountPath("Username must be 3-30 letters, numbers, or underscores."));
@@ -561,7 +562,7 @@ export async function updateProfile(formData: FormData) {
     x_url: cleanExternalUrl(formData.get("x_url"), 240),
     youtube_url: cleanExternalUrl(formData.get("youtube_url"), 240),
     ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
-    ...(bannerUrl ? { banner_url: bannerUrl } : {}),
+    ...(bannerUrl ? { banner_url: bannerUrl } : removeBanner ? { banner_url: null } : {}),
   };
 
   const { error } = await supabase.from("profiles").upsert(profileUpdate);

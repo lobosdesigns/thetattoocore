@@ -26,6 +26,7 @@ const checks = [
       profileForm.includes('name="avatar"') &&
       profileForm.includes("Banner photo") &&
       profileForm.includes('name="banner"') &&
+      profileForm.includes('name="remove_banner"') &&
       profileForm.includes('name="bio"') &&
       profileForm.includes("maxLength={500}") &&
       profileForm.includes('name="shop_profile_username"') &&
@@ -50,7 +51,8 @@ const checks = [
       accountActions.includes("async function uploadBanner") &&
       accountActions.includes("bio: cleanText(formData.get(\"bio\"), 500) || null") &&
       accountActions.includes('const banner = fileFromForm(formData, "banner")') &&
-      accountActions.includes("...(bannerUrl ? { banner_url: bannerUrl } : {})") &&
+      accountActions.includes('formData.get("remove_banner") === "on"') &&
+      accountActions.includes("removeBanner ? { banner_url: null }") &&
       socialFields.every((field) =>
         accountActions.includes(`${field}: cleanExternalUrl(formData.get("${field}"), 240)`),
       ),

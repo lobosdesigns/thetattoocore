@@ -246,6 +246,20 @@ export function ProfileForm({
               />
             </div>
           </div>
+          {initialProfile?.banner_url ? (
+            <label className="mt-3 flex items-start gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
+              <input className="mt-1 size-4" name="remove_banner" type="checkbox" />
+              <span>
+                <span className="block text-sm font-semibold">
+                  Remove current banner
+                </span>
+                <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
+                  Use this if you want the profile to fall back to the default
+                  TTC cover style. A newly uploaded banner replaces this choice.
+                </span>
+              </span>
+            </label>
+          ) : null}
         </div>
 
         <div className="ttc-surface rounded-md border p-3 sm:col-span-2">
