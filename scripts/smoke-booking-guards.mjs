@@ -16,6 +16,10 @@ const bookingCancellationMigration = readFileSync(
   "supabase/migrations/20260713100043_booking_cancellation_notifications.sql",
   "utf8",
 );
+const bookingPolicyMigration = readFileSync(
+  "supabase/migrations/20260713100845_booking_cancellation_policy.sql",
+  "utf8",
+);
 const actions = readFileSync("src/app/actions.ts", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
@@ -57,6 +61,8 @@ const checks = [
     label: "booking settings migration creates RLS-protected manual availability",
     ok:
       bookingSettingsMigration.includes("create table if not exists public.booking_settings") &&
+      bookingPolicyMigration.includes("add column if not exists cancellation_policy text") &&
+      bookingPolicyMigration.includes("booking_settings_cancellation_policy_check") &&
       bookingSettingsMigration.includes("alter table public.booking_settings enable row level security") &&
       bookingSettingsMigration.includes('create policy "Public can read enabled verified booking settings"') &&
       bookingSettingsMigration.includes('create policy "Verified artists manage own booking settings"') &&
@@ -126,6 +132,7 @@ const checks = [
       accountPage.includes("updateBookingSettings") &&
       accountPage.includes("Booking availability") &&
       accountPage.includes("Show booking availability") &&
+      accountPage.includes("cancellation_policy") &&
       accountPage.includes("calendar_connection_status"),
   },
   {
@@ -178,6 +185,7 @@ const checks = [
       profilePage.includes('.from("booking_settings")') &&
       profilePage.includes("canShowBookingAvailability") &&
       profilePage.includes("Open for requests") &&
+      profilePage.includes("Cancellation policy") &&
       profilePage.includes("default_deposit_amount_cents"),
   },
   {
@@ -195,7 +203,8 @@ const checks = [
       productPlan.includes("Google Calendar, Apple/iCloud Calendar, or standard iCalendar") &&
       productPlan.includes("booking_requests") &&
       productPlan.includes("transparent TTC processing fee") &&
-      productPlan.includes("Stripe Checkout for accepted deposits only"),
+      productPlan.includes("Stripe Checkout for accepted deposits only") &&
+      productPlan.includes("cancellation policy"),
   },
 ];
 

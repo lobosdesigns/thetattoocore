@@ -27,6 +27,7 @@ type BookingSettings = {
   booking_enabled: boolean;
   booking_note: string | null;
   calendar_connection_status: string;
+  cancellation_policy: string | null;
   default_deposit_amount_cents: number;
   deposit_policy: string;
   timezone: string;
@@ -557,7 +558,7 @@ export default async function AccountPage({
   const { data: bookingSettings } = await supabase
     .from("booking_settings")
     .select(
-      "booking_enabled, timezone, weekly_availability, booking_note, deposit_policy, default_deposit_amount_cents, calendar_connection_status",
+      "booking_enabled, timezone, weekly_availability, booking_note, cancellation_policy, deposit_policy, default_deposit_amount_cents, calendar_connection_status",
     )
     .eq("profile_id", claims.sub)
     .maybeSingle<BookingSettings>();
@@ -794,6 +795,16 @@ export default async function AccountPage({
                     maxLength={500}
                     name="booking_note"
                     placeholder="Consultation notes, deposit expectations, preferred contact, or booking window."
+                  />
+                </label>
+                <label className="grid gap-1 text-sm font-semibold md:col-span-2">
+                  Cancellation policy
+                  <textarea
+                    className="min-h-20 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                    defaultValue={bookingSettings?.cancellation_policy ?? ""}
+                    maxLength={500}
+                    name="cancellation_policy"
+                    placeholder="Example: deposits are reviewed case by case; reschedules need 48 hours notice."
                   />
                 </label>
               </div>

@@ -1118,6 +1118,7 @@ export async function updateBookingSettings(formData: FormData) {
   const bookingEnabled = formData.get("booking_enabled") === "on";
   const availabilitySummary = cleanText(formData.get("availability_summary"), 500);
   const bookingNote = cleanText(formData.get("booking_note"), 500);
+  const cancellationPolicy = cleanText(formData.get("cancellation_policy"), 500);
   const depositPolicy = cleanText(formData.get("deposit_policy"), 20);
   const defaultDepositAmountCents = centsFromDollars(
     formData.get("default_deposit_amount"),
@@ -1136,6 +1137,7 @@ export async function updateBookingSettings(formData: FormData) {
     booking_enabled: bookingEnabled,
     booking_note: bookingNote || null,
     calendar_connection_status: "manual",
+    cancellation_policy: cancellationPolicy || null,
     default_deposit_amount_cents: defaultDepositAmountCents,
     deposit_policy: depositPolicy,
     profile_id: claims.sub,

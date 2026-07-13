@@ -96,6 +96,7 @@ type BookingSettings = {
   booking_enabled: boolean;
   booking_note: string | null;
   calendar_connection_status: string;
+  cancellation_policy: string | null;
   default_deposit_amount_cents: number;
   deposit_policy: string;
   timezone: string;
@@ -1100,7 +1101,7 @@ export default async function ProfilePage({
       ? supabase
           .from("booking_settings")
           .select(
-            "booking_enabled, timezone, weekly_availability, booking_note, deposit_policy, default_deposit_amount_cents, calendar_connection_status",
+            "booking_enabled, timezone, weekly_availability, booking_note, cancellation_policy, deposit_policy, default_deposit_amount_cents, calendar_connection_status",
           )
           .eq("profile_id", profile.id)
           .maybeSingle<BookingSettings>()
@@ -1345,6 +1346,16 @@ export default async function ProfilePage({
                     <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">
                       {bookingSettings.booking_note}
                     </p>
+                  ) : null}
+                  {bookingSettings?.cancellation_policy ? (
+                    <div className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2">
+                      <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
+                        Cancellation policy
+                      </p>
+                      <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">
+                        {bookingSettings.cancellation_policy}
+                      </p>
+                    </div>
                   ) : null}
                   <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-[var(--muted-strong)]">
                     <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1 capitalize">
