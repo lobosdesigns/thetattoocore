@@ -77,6 +77,7 @@ const REPORT_SUBJECT_CONFIG = {
   marketplace_listing: { ownerColumn: "seller_id", table: "marketplace_listings" },
   merch_product: { ownerColumn: "seller_id", table: "merch_products" },
   profile: { ownerColumn: "id", table: "profiles" },
+  story_post: { ownerColumn: "author_id", table: "story_posts" },
   thread_post: { ownerColumn: "author_id", table: "thread_posts" },
 } as const;
 

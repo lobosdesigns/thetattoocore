@@ -1305,6 +1305,14 @@ function StoriesRail({
                           </form>
                         ))}
                       </div>
+                      <div className="max-w-sm">
+                        <ContentReportForm
+                          returnHash="stories"
+                          returnPath="/"
+                          subjectId={story.id}
+                          subjectType="story_post"
+                        />
+                      </div>
                     </div>
                   ) : null)
                 }

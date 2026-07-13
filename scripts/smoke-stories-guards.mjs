@@ -101,6 +101,14 @@ const checks = [
       adminReports.includes('reportSubjectKey("story_post", story.id)'),
   },
   {
+    label: "story viewers can report stories from the lightbox",
+    ok:
+      actions.includes('story_post: { ownerColumn: "author_id", table: "story_posts" }') &&
+      homePage.includes("ContentReportForm") &&
+      homePage.includes('subjectType="story_post"') &&
+      homePage.includes('returnHash="stories"'),
+  },
+  {
     label: "story post read and update policies are consolidated",
     ok:
       storyPolicyConsolidationMigration.includes('drop policy if exists "Visible active stories can be read"') &&

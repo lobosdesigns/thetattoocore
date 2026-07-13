@@ -8,6 +8,7 @@ type ReportSubjectType =
   | "marketplace_listing"
   | "merch_product"
   | "profile"
+  | "story_post"
   | "thread_post";
 
 function reportTitle(subjectType: ReportSubjectType) {
@@ -26,6 +27,10 @@ function reportDescription(subjectType: ReportSubjectType) {
 
   if (subjectType === "merch_product") {
     return "Report unsafe, counterfeit, scammy, sexual, illegal, or miscategorized Merch products.";
+  }
+
+  if (subjectType === "story_post") {
+    return "Report unsafe, sexual, harassing, scammy, illegal, or policy-breaking Stories.";
   }
 
   return "Report unsafe, scammy, sexual, illegal, harassing, or miscategorized body-art content.";
