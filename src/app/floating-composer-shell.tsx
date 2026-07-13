@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import {
   BriefcaseBusiness,
   Camera,
@@ -90,11 +90,20 @@ export function FloatingComposerShell({
 }) {
   const [activeMode, setActiveMode] = useState<ComposerMode>("feed");
   const [isOpen, setIsOpen] = useState(false);
+  const explicitOpenModeRef = useRef<ComposerMode | null>(null);
   const active = modes[activeMode];
   const ActiveIcon = active.icon;
 
+  const closeComposer = () => {
+    explicitOpenModeRef.current = null;
+    setIsOpen(false);
+  };
+
   useEffect(() => {
-    const onHashChange = () => setActiveMode(modeFromHash(window.location.hash));
+    const onHashChange = () => {
+      if (explicitOpenModeRef.current) return;
+      setActiveMode(modeFromHash(window.location.hash));
+    };
     onHashChange();
     window.addEventListener("hashchange", onHashChange);
 
@@ -104,6 +113,7 @@ export function FloatingComposerShell({
     const composeOpenTimer =
       composeMode && composeMode in modes
         ? window.setTimeout(() => {
+            explicitOpenModeRef.current = composeMode as ComposerMode;
             setActiveMode(composeMode as ComposerMode);
             setIsOpen(true);
             window.history.replaceState(
@@ -120,6 +130,8 @@ export function FloatingComposerShell({
 
     const observer = new IntersectionObserver(
       (entries) => {
+        if (explicitOpenModeRef.current) return;
+
         const visible = entries
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
@@ -147,7 +159,7 @@ export function FloatingComposerShell({
     if (!isOpen) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsOpen(false);
+      if (event.key === "Escape") closeComposer();
     };
 
     window.addEventListener("keydown", onKeyDown);
@@ -160,8 +172,10 @@ export function FloatingComposerShell({
       const mode = (event as CustomEvent<{ mode?: ComposerMode }>).detail?.mode;
 
       if (mode && mode in modes) {
+        explicitOpenModeRef.current = mode;
         setActiveMode(mode);
       } else {
+        explicitOpenModeRef.current = null;
         setActiveMode(modeFromHash(window.location.hash));
       }
 
@@ -178,7 +192,10 @@ export function FloatingComposerShell({
       <button
         aria-label={`Create ${active.label}`}
         className="fixed bottom-24 right-5 z-30 flex h-14 max-w-[calc(100vw-2.5rem)] items-center gap-2 rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_28%,transparent)] bg-[var(--foreground)] px-3 text-[var(--background)] shadow-[0_14px_34px_rgba(0,0,0,0.34)] transition hover:scale-105 focus:outline-none focus:ring-4 focus:ring-[#c8953b]/35 lg:bottom-5"
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          explicitOpenModeRef.current = null;
+          setIsOpen(true);
+        }}
       >
         <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[var(--brand-gold)] text-[var(--ink)]">
           <ActiveIcon className="size-5" />
@@ -209,7 +226,7 @@ export function FloatingComposerShell({
                 <button
                   aria-label="Close composer"
                   className="flex size-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)]"
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeComposer}
                 >
                   <X className="size-5" />
                 </button>
