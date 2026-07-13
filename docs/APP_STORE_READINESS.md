@@ -12,6 +12,7 @@
 
 - Native submission details live in `docs/MOBILE_APP_SUBMISSION_RUNBOOK.md`.
 - Real-device QA gates live in `docs/REAL_DEVICE_QA_CHECKLIST.md`.
+- Production payment gates live in `docs/PAYMENT_PRODUCTION_READINESS.md`.
 - Draft store listing copy lives in `docs/STORE_LISTING_DRAFT.md` and should be policy-reviewed before submission.
 - Age-rating prep notes live in `docs/AGE_RATING_PREP.md` and should be checked against the current store questionnaires before submission.
 - TheTattooCore is 18+ only.
@@ -58,6 +59,6 @@
 - Have counsel review the final account deletion SLA, legal hold rules, and manual deletion checklist before store submission.
 - Decide when to automate irreversible user-data deletion versus keeping early launch deletion manual.
 - Test signup, login, posting, reporting, blocking/safety, DMs, verification review, and account deletion requests on real mobile devices using `docs/REAL_DEVICE_QA_CHECKLIST.md`. A reusable confirmed tester account exists, one-way DM send plus notification creation passed from `ttc_tester` to `checkouttest`, and Admin > Users can create confirmed tester accounts when signed in as owner. The full two-user DM read/reply pass still needs a second known test login.
-- Before production marketplace purchases, finish seller payout policy, Stripe Connect or manual payout process, tax/shipping rules, refund/dispute procedures, and payment-provider review.
+- Before production marketplace purchases, finish the gates in `docs/PAYMENT_PRODUCTION_READINESS.md`, including seller payout policy, Stripe Connect or manual payout process, tax/shipping rules, refund/dispute procedures, and payment-provider review.
 - Prepare final store screenshots after mobile QA, using no sensitive or copyrighted user content.
 - Confirm no AI-generated tattoo art claims appear in store metadata or screenshots.

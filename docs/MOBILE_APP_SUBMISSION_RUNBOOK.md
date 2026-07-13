@@ -8,8 +8,9 @@
 - Draft store listing copy lives in `docs/STORE_LISTING_DRAFT.md`; review it against current store policies before submission.
 - Age-rating prep notes live in `docs/AGE_RATING_PREP.md`; compare them to the live feature set and current store questionnaires before answering.
 - Real-device QA gates live in `docs/REAL_DEVICE_QA_CHECKLIST.md` and should pass before wrapper packaging.
+- Production payment gates live in `docs/PAYMENT_PRODUCTION_READINESS.md` and should pass before real commerce appears in native builds.
 - Visible nudity is not allowed for launch to reduce review and moderation risk.
-- Merch and ads use Stripe in test mode; production payments, seller payouts, taxes, refunds, disputes, and app-store policy review must be finished before real commerce is promoted in native builds.
+- Merch and ads use Stripe in test mode; production payments, seller payouts, taxes, refunds, disputes, and app-store policy review from `docs/PAYMENT_PRODUCTION_READINESS.md` must be finished before real commerce is promoted in native builds.
 
 ## Wrapper Decision
 

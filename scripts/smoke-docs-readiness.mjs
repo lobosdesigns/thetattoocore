@@ -7,6 +7,10 @@ const docs = {
     "utf8",
   ),
   "docs/REAL_DEVICE_QA_CHECKLIST.md": readFileSync("docs/REAL_DEVICE_QA_CHECKLIST.md", "utf8"),
+  "docs/PAYMENT_PRODUCTION_READINESS.md": readFileSync(
+    "docs/PAYMENT_PRODUCTION_READINESS.md",
+    "utf8",
+  ),
   "docs/STORE_LISTING_DRAFT.md": readFileSync("docs/STORE_LISTING_DRAFT.md", "utf8"),
   "docs/AGE_RATING_PREP.md": readFileSync("docs/AGE_RATING_PREP.md", "utf8"),
 };
@@ -25,6 +29,14 @@ const checks = [
     ok:
       docs["docs/APP_STORE_READINESS.md"].includes("docs/REAL_DEVICE_QA_CHECKLIST.md") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("docs/REAL_DEVICE_QA_CHECKLIST.md"),
+  },
+  {
+    label: "readiness docs link production payment gates",
+    ok:
+      docs["docs/APP_STORE_READINESS.md"].includes("docs/PAYMENT_PRODUCTION_READINESS.md") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes(
+        "docs/PAYMENT_PRODUCTION_READINESS.md",
+      ),
   },
   {
     label: "public readiness docs use company support contact",
@@ -63,6 +75,18 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("verification") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Stripe test checkout") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("No reload-loop screens"),
+  },
+  {
+    label: "payment readiness doc keeps real-money gates explicit",
+    ok:
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Stripe Checkout") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Stripe Connect") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Stripe-hosted onboarding") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("do not collect bank") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("tax handling") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("refund") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("dispute") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("app-store rules"),
   },
   {
     label: "readiness docs mention PWA asset and scaffold guards",
