@@ -16,6 +16,14 @@ const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
+const mediaInput = readFileSync("src/app/media-input.tsx", "utf8");
+const floatingComposer = readFileSync("src/app/floating-composer.tsx", "utf8");
+const searchPage = readFileSync("src/app/search/page.tsx", "utf8");
+const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
+const merchCheckoutSuccessPage = readFileSync(
+  "src/app/merch/checkout/success/page.tsx",
+  "utf8",
+);
 const nextConfig = readFileSync("next.config.ts", "utf8");
 const siteConfig = readFileSync("src/lib/site.ts", "utf8");
 const publicSource = [
@@ -36,12 +44,39 @@ const publicSource = [
   accountPage,
   siteConfig,
 ].join("\n");
+const publicCopySource = [
+  loginPage,
+  signupPage,
+  profilePage,
+  gigsDetailPage,
+  homePage,
+  termsPage,
+  privacyPage,
+  supportPage,
+  accountPage,
+  mediaInput,
+  floatingComposer,
+  searchPage,
+  merchDetailPage,
+  merchCheckoutSuccessPage,
+].join("\n");
 const privateContactSnippets = [
   "lobo3319@gmail.com",
   "lobosden@hotmail.com",
   "D@k0t",
   "Dakota",
   "Calder",
+];
+const forbiddenPublicInfraSnippets = [
+  "Cloudflare",
+  "Supabase",
+  "HostGator",
+  "Stripe",
+  "service key",
+  "service role",
+  "server webhook",
+  "payment-provider",
+  "Cloudflare Stream",
 ];
 
 const checks = [
@@ -134,6 +169,12 @@ const checks = [
     ok:
       siteConfig.includes('supportEmail = "support@thetattoocore.com"') &&
       privateContactSnippets.every((snippet) => !publicSource.includes(snippet)),
+  },
+  {
+    label: "public copy does not disclose infrastructure providers or secret setup",
+    ok: forbiddenPublicInfraSnippets.every(
+      (snippet) => !publicCopySource.includes(snippet),
+    ),
   },
   {
     label: "public trust surfaces keep launch content policy stance",

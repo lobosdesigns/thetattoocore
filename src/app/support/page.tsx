@@ -27,7 +27,7 @@ const sections = [
   },
   {
     body:
-      "Merch checkout is in test mode while seller approval, product safety review, shipping, fulfillment, refunds, tax, and payment-provider review are finished. Public production purchases should stay limited until those rules are ready.",
+      "Merch checkout is limited during launch while seller approval, product safety review, shipping, fulfillment, refunds, tax, and payment review are finished. Public production purchases should stay limited until those rules are ready.",
     title: "Merch Support",
   },
   {

@@ -57,7 +57,7 @@ const checks = [
     label: "member upload copy reinforces optimization and launch video limits",
     ok:
       mediaInput.includes("Phone photos are resized before upload.") &&
-      mediaInput.includes("Video upload is intentionally capped until Cloudflare Stream is worth turning on.") &&
+      mediaInput.includes("Video upload is intentionally capped for now. More video features are coming soon.") &&
       mediaInput.includes("MP4/MOV preferred") &&
       composer.includes("video/mp4,video/quicktime"),
   },

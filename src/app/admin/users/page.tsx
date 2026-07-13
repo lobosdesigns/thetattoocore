@@ -252,7 +252,7 @@ export default async function AdminUsersPage({
                 </p>
                 <h2 className="mt-1 text-xl font-bold">Create tester account</h2>
                 <p className="mt-1 text-sm text-[var(--muted-strong)]">
-                  Make confirmed QA or demo users without opening Supabase.
+                  Make confirmed QA or demo users from owner tools.
                 </p>
               </div>
               <span
@@ -262,7 +262,7 @@ export default async function AdminUsersPage({
                     : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[var(--muted-strong)]"
                 }`}
               >
-                {canCreateTestAccounts ? "Service key ready" : "Needs service key"}
+                {canCreateTestAccounts ? "Owner tools ready" : "Owner tools disabled"}
               </span>
             </div>
 
@@ -336,8 +336,7 @@ export default async function AdminUsersPage({
             </form>
             {!canCreateTestAccounts ? (
               <p className="mt-3 text-xs font-medium text-[var(--muted-strong)]">
-                Add `SUPABASE_SERVICE_ROLE_KEY` as a server-only Cloudflare secret
-                to enable this. Public browser keys cannot create confirmed users.
+                Enable private owner tools before creating confirmed users here.
               </p>
             ) : null}
           </section>

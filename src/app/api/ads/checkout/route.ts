@@ -49,11 +49,11 @@ async function createAdCheckoutSession({
   const secretKey = process.env.STRIPE_SECRET_KEY;
 
   if (!secretKey) {
-    throw new Error("Stripe is not configured yet. Add the Stripe secret key before checkout.");
+    throw new Error("Checkout is almost ready. Payment setup is still being finished.");
   }
 
   const successUrl = `${siteUrl}/account?message=${encodeURIComponent(
-    "Ad payment received. Stripe webhook will update payment status.",
+    "Ad payment received. Payment status will update soon.",
   )}#advertising-settings`;
   const cancelUrl = `${siteUrl}/account?message=${encodeURIComponent(
     "Ad payment canceled.",
@@ -114,7 +114,7 @@ async function createAdCheckoutSession({
     const message =
       "error" in session && session.error?.message
         ? session.error.message
-        : "Stripe could not create ad checkout.";
+        : "Checkout could not open for this ad.";
 
     throw new Error(message);
   }
@@ -130,14 +130,14 @@ export async function POST(request: Request) {
   if (!process.env.STRIPE_SECRET_KEY) {
     return redirectWithMessage(
       "/account",
-      "Stripe is not configured yet. Add the Stripe secret key before checkout.",
+      "Ad checkout is almost ready. Payment setup is still being finished.",
     );
   }
 
   if (!canProcessStripeWebhooks) {
     return redirectWithMessage(
       "/account",
-      "Ad checkout is almost ready. Finish server webhook setup before taking payments.",
+      "Ad checkout is almost ready. Payment setup is still being finished.",
     );
   }
 
@@ -193,7 +193,7 @@ export async function POST(request: Request) {
   if (campaign.payment_status === "checkout_started") {
     return redirectWithMessage(
       "/account",
-      "Ad checkout has already started. Finish that Stripe session or wait for it to expire before trying again.",
+      "Ad checkout has already started. Finish that checkout or wait for it to expire before trying again.",
     );
   }
 
@@ -231,7 +231,7 @@ export async function POST(request: Request) {
   if (!reservedCampaign) {
     return redirectWithMessage(
       "/account",
-      "Ad checkout has already started. Finish that Stripe session or wait for it to expire before trying again.",
+      "Ad checkout has already started. Finish that checkout or wait for it to expire before trying again.",
     );
   }
 
@@ -262,7 +262,7 @@ export async function POST(request: Request) {
     await rollBackReservation();
     return redirectWithMessage(
       "/account",
-      error instanceof Error ? error.message : "Stripe could not create ad checkout.",
+      error instanceof Error ? error.message : "Checkout could not open for this ad.",
     );
   }
 
@@ -270,7 +270,7 @@ export async function POST(request: Request) {
     await rollBackReservation();
     return redirectWithMessage(
       "/account",
-      `${siteName} could not open Stripe Checkout for this ad campaign.`,
+      `${siteName} could not open checkout for this ad campaign.`,
     );
   }
 
@@ -293,14 +293,14 @@ export async function POST(request: Request) {
   if (updateError) {
     return redirectWithMessage(
       "/account",
-      updateError.message || "Checkout started, but the Stripe session could not be saved.",
+      updateError.message || "Checkout started, but the checkout could not be saved.",
     );
   }
 
   if (!updatedCampaign) {
     return redirectWithMessage(
       "/account",
-      "Ad checkout was reserved, but the Stripe session could not be attached. Wait for it to expire before trying again.",
+      "Ad checkout was reserved, but checkout could not finish opening. Wait for it to expire before trying again.",
     );
   }
 

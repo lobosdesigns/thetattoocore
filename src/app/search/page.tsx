@@ -576,9 +576,9 @@ export default async function SearchPage({
           <div className="ttc-surface mt-3 flex items-start gap-2 rounded-md border px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
             <Package className="mt-0.5 size-4 shrink-0 text-[var(--brand-gold)]" />
             <p>
-              Merch checkout is in test mode. Public discovery should stay
+              Merch checkout is limited during launch. Public discovery should stay
               limited to active, safe, approved products until production
-              seller, tax, shipping, refund, and payment-provider rules are ready.
+              seller, tax, shipping, refund, and payment rules are ready.
             </p>
           </div>
           <form

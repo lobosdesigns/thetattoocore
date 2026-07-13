@@ -32,7 +32,7 @@ const sections = [
   },
   {
     body:
-      "Merch is a separate public-buyable area for approved artist, studio, vendor, and TheTattooCore brand goods. Stripe checkout is in test mode, and production purchases still need final seller approval, tax, shipping, refunds, fulfillment, payment-provider rules, and buyer privacy notices.",
+      "Merch is a separate public-buyable area for approved artist, studio, vendor, and TheTattooCore brand goods. Checkout is limited during launch, and production purchases still need final seller approval, tax, shipping, refunds, fulfillment, payment rules, and buyer privacy notices.",
     title: "Merch",
   },
   {
@@ -42,7 +42,7 @@ const sections = [
   },
   {
     body:
-      "Language settings start as a manual account preference for page language signals, discovery context, and future translated UI. Post translation should preserve the original text and clearly show when provider-backed translation is added later.",
+      "Language settings start as a manual account preference for page language signals, discovery context, and future translated UI. Post translation should preserve the original text and clearly show when translation is added later.",
     title: "Language And Translation",
   },
   {

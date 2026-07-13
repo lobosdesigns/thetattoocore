@@ -97,7 +97,7 @@ const merchRules = [
   "Merch is public-buyable brand goods, separate from verified-only professional Stuff.",
   "Artist, studio, vendor, and official TheTattooCore sellers still need approval before listing products.",
   "Do not allow professional equipment, regulated services, unsafe products, counterfeits, adult sexual products, or scratcher-facing supplies.",
-  "Stripe checkout and refund-status webhooks are wired in test mode; finish tax, shipping, fulfillment, payouts, and payment-provider safety rules before public production orders.",
+  "Checkout and refund status are limited during launch; finish tax, shipping, fulfillment, payouts, and payment safety rules before public production orders.",
 ] as const;
 const buildSteps = [
   [
@@ -106,11 +106,11 @@ const buildSteps = [
   ],
   [
     "Product catalog",
-    "Product, inventory, image, moderation, and future Stripe ids are now modeled in the database foundation.",
+    "Product, inventory, image, moderation, and future payment ids are now modeled.",
   ],
   [
     "Checkout",
-    "Stripe Checkout, paid/failed/refunded webhooks, inventory decrement, and buyer printable receipts are wired in test mode. Next: taxes, fulfillment, payouts, and production review.",
+    "Checkout, paid/failed/refunded status updates, inventory decrement, and buyer printable receipts are wired for launch testing. Next: taxes, fulfillment, payouts, and production review.",
   ],
   [
     "Admin operations",
@@ -564,7 +564,7 @@ function OrderCard({
           </button>
         </div>
         <p className="text-xs leading-5 text-[var(--muted-strong)]">
-          Refund paid orders in Stripe first; the webhook updates refunded status.
+          Refund paid orders in the payment dashboard first; payment updates will sync status here.
         </p>
       </form>
     </article>
@@ -826,8 +826,8 @@ export default async function AdminMerchPage({
 
         {productError ? (
           <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] p-4 text-sm leading-6 text-[var(--muted)]">
-            Merch products could not load. Check Supabase table access,
-            migrations, or the database error before reviewing products.
+            Merch products could not load. Check private data access,
+            migrations, or the admin error before reviewing products.
           </p>
         ) : null}
 
@@ -1021,7 +1021,7 @@ export default async function AdminMerchPage({
             <div>
               <h2 className="text-lg font-bold">Recent Orders</h2>
               <p className="mt-1 text-sm text-[var(--muted)]">
-                Stripe checkout writes paid, failed, expired, and refunded order states here.
+                Checkout writes paid, failed, expired, and refunded order states here.
               </p>
             </div>
             <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-sm font-semibold">

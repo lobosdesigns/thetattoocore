@@ -554,7 +554,7 @@ export async function deleteUnreadMessage(formData: FormData) {
   if (!adminClient) {
     redirect(
       messagesPath(
-        "Message deletion needs the server service key configured first.",
+        "Message deletion needs private owner tools enabled first.",
         conversationId,
       ),
     );

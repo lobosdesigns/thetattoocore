@@ -241,15 +241,15 @@ export default async function AdminMailSettingsPage() {
                 <h2 className="text-lg font-bold">Guardrails</h2>
               </div>
               <ul className="space-y-2 text-sm leading-6 text-[var(--muted)]">
-                <li>Keep passwords in Cloudflare secrets, never in source code.</li>
+                <li>Keep passwords in private environment settings, never in source code.</li>
                 <li>
                   Keep public support and reply-to mail on company addresses
                   such as {supportEmail}.
                 </li>
-                <li>Use HostGator SMTP for transactional account mail only.</li>
+                <li>Use company mailboxes for transactional account mail only.</li>
                 <li>
-                  Add the server-only Supabase service role secret before
-                  verification-decision email can look up member addresses.
+                  Enable private owner tools before verification-decision email
+                  can look up member addresses.
                 </li>
                 <li>Check inbox and junk when testing deliverability.</li>
               </ul>

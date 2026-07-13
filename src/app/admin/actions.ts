@@ -618,7 +618,7 @@ export async function createTestAccount(formData: FormData) {
   if (!adminClient) {
     redirect(
       adminUsersMessage(
-        "Supabase service role key is missing, so Admin cannot create tester accounts yet.",
+        "Private owner tools are not enabled, so Admin cannot create tester accounts yet.",
         returnTo,
       ),
     );
@@ -1472,7 +1472,7 @@ export async function updateMerchOrderStatus(formData: FormData) {
   ) {
     redirect(
       adminMerchMessage(
-        "Only pending, failed, or already-cancelled orders can be cancelled here. Refund paid orders in Stripe.",
+        "Only pending, failed, or already-cancelled orders can be cancelled here. Refund paid orders in the payment dashboard first.",
         returnTo,
       ),
     );

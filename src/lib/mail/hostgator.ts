@@ -101,7 +101,7 @@ export async function sendHostgatorTestEmail({
     },
     html: [
       "<h1>TheTattooCore mail test</h1>",
-      "<p>The production app sent this through the configured HostGator SMTP mailbox.</p>",
+      "<p>The production app sent this through the configured company mailbox.</p>",
       `<p><strong>Sent at:</strong> ${sentAt}</p>`,
       sentByEmail
         ? `<p><strong>Requested by:</strong> ${sentByEmail}</p>`

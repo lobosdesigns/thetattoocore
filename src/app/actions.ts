@@ -616,7 +616,7 @@ export async function createStoryPost(formData: FormData) {
   }
 
   if (metadata.mediaType !== "image") {
-    redirect(homeMessage("Stories support images and GIFs first. Reels can come later with Stream.", "stories"));
+    redirect(homeMessage("Stories support images and GIFs first. More story media options are coming later.", "stories"));
   }
 
   const { data: story, error } = await supabase
@@ -1878,7 +1878,7 @@ export async function editMerchProduct(formData: FormData) {
   if (!adminClient) {
     redirect(
       redirectWithMessage({
-        message: "Merch edits need the server service key configured first.",
+        message: "Merch edits need owner tools enabled first.",
         path: returnPath,
       }),
     );

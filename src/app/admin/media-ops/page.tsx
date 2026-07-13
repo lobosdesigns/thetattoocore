@@ -14,7 +14,7 @@ const viewRoles: UserRole[] = ["moderator", "admin", "owner"];
 const mediaOpsStages = [
   [
     "Live now",
-    "Browser WebP image optimization, saved-size feedback, server signature checks, dimension checks, and 60-second MP4/MOV reel validation.",
+    "Browser image optimization, saved-size feedback, file checks, dimension checks, and 60-second MP4/MOV reel validation.",
   ],
   [
     "Next",
@@ -22,7 +22,7 @@ const mediaOpsStages = [
   ],
   [
     "Scale trigger",
-    "Move active reels to Cloudflare Stream when video usage justifies paid transcoding, adaptive playback, and managed thumbnails.",
+    "Move active reels to managed video processing when usage justifies adaptive playback and generated thumbnails.",
   ],
   [
     "Later",
@@ -30,12 +30,12 @@ const mediaOpsStages = [
   ],
 ] as const;
 const mediaCostRules = [
-  "Cloudflare Pro is active for the domain; use it first for CDN, security, and image-delivery polish before adding new paid media products.",
-  "Keep original media in Supabase Storage while early traffic is small.",
+  "Use the current delivery setup first for security and image-delivery polish before adding new paid media products.",
+  "Keep original media on the current storage path while early traffic is small.",
   "Use client-side image compression first because it is free and reduces storage before upload.",
-  "Keep current reel caps strict: 60 seconds and 50 MB while videos are uploaded raw.",
+  "Keep current reel caps strict: 60 seconds and 50 MB for now.",
   "Do not enable paid video transcoding until reels are getting enough real usage to justify it.",
-  "Consider Cloudflare Images for image variants and Cloudflare Stream for video only after upload volume grows.",
+  "Consider managed image and video upgrades only after upload volume grows.",
 ] as const;
 const mediaLimits = [
   ["Feed images", "Optimized in-browser before upload; keep the longest edge around 1600-2200px."],
@@ -44,9 +44,9 @@ const mediaLimits = [
   ["Sensitive media", "No nudity for launch policy; legacy sensitive flags should stay protected where present."],
 ] as const;
 const streamReadiness = [
-  "Weekly reel uploads are high enough that raw Storage delivery is slowing feeds or raising bandwidth cost.",
+  "Weekly reel uploads are high enough that current video delivery is slowing feeds or raising bandwidth cost.",
   "Moderation has enough volume that generated posters and review thumbnails save real admin time.",
-  "Stripe, app-store, and policy review are stable enough that paid video infrastructure will not be wasted on rework.",
+  "Payment, app-store, and policy review are stable enough that paid video upgrades will not be wasted on rework.",
   "A fallback path exists for failed transcodes so member posts do not disappear silently.",
 ] as const;
 const thumbnailContract = [
@@ -129,7 +129,7 @@ export default async function AdminMediaOpsPage() {
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
             <ServerCog className="size-5 text-[var(--gold)]" />
             <p className="mt-3 text-sm text-[var(--muted-strong)]">Scale option</p>
-            <p className="mt-1 text-xl font-bold">Pro now, Stream later</p>
+            <p className="mt-1 text-xl font-bold">Upgrade later</p>
           </div>
         </div>
 
@@ -181,9 +181,9 @@ export default async function AdminMediaOpsPage() {
 
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
-            <h2 className="text-lg font-bold">Stream switch checklist</h2>
+            <h2 className="text-lg font-bold">Video upgrade checklist</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
-              Use this before paying for managed video. The current raw-video
+              Use this before paying for managed video. The current capped-video
               path should stay in place until the cost and moderation benefits
               are obvious.
             </p>

@@ -65,7 +65,7 @@ function statusCopy(status?: string) {
     return {
       heading: "Payment confirmed",
       message:
-        "Stripe confirmed the payment. You can track fulfillment from your account orders.",
+        "Payment is confirmed. You can track fulfillment from your account orders.",
     };
   }
 
@@ -73,7 +73,7 @@ function statusCopy(status?: string) {
     return {
       heading: "Checkout was not completed",
       message:
-        "Stripe did not confirm this payment. No fulfillment should start for this order.",
+        "Payment was not confirmed. No fulfillment should start for this order.",
     };
   }
 
@@ -81,14 +81,14 @@ function statusCopy(status?: string) {
     return {
       heading: "Refund status updated",
       message:
-        "Stripe reported a refund update. Check your account orders for the latest status.",
+        "A refund update was recorded. Check your account orders for the latest status.",
     };
   }
 
   return {
     heading: "Checkout received",
     message:
-      "Stripe is processing the payment result. The order status updates after the webhook confirms it.",
+      "Payment is processing. The order status updates after confirmation.",
   };
 }
 
@@ -210,7 +210,7 @@ export default async function MerchCheckoutSuccessPage({
               <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_90%,transparent)] p-3 text-xs leading-5 text-[var(--muted-strong)]">
                 Fulfillment starts only after payment is confirmed and seller/admin
                 review rules are satisfied. Refunds and disputes are handled
-                through Stripe records.
+                through payment records.
               </p>
             </div>
           ) : sessionId && !claims?.sub ? (

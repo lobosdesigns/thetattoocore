@@ -504,7 +504,7 @@ export default async function MerchProductPage({
                   </label>
                   <button className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
                     <Package className="size-4" />
-                    Checkout with Stripe
+                    Checkout
                   </button>
                 </form>
               ) : claims?.sub && isOwnProduct ? (
@@ -524,10 +524,9 @@ export default async function MerchProductPage({
                 </Link>
               )}
               <p className="mt-3 text-xs leading-5 text-[var(--muted-strong)]">
-                Checkout uses Stripe and includes a transparent{" "}
-                {platformFeePercentLabel} TTC platform fee in test mode. Orders
-                are confirmed after Stripe sends the payment webhook back to
-                TheTattooCore.
+                Checkout includes a transparent {platformFeePercentLabel} TTC
+                platform fee during launch. Orders are confirmed after payment
+                status updates.
               </p>
             </section>
 

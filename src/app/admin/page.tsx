@@ -169,7 +169,7 @@ const adminTabs = [
 const mediaOpsStages = [
   [
     "Live now",
-    "Browser WebP image optimization, saved-size feedback, server signature checks, dimension checks, and 60-second MP4/MOV reel validation.",
+    "Browser image optimization, saved-size feedback, file checks, dimension checks, and 60-second MP4/MOV reel validation.",
   ],
   [
     "Next",
@@ -177,7 +177,7 @@ const mediaOpsStages = [
   ],
   [
     "Scale trigger",
-    "Move active reels to Cloudflare Stream when video usage justifies paid transcoding, adaptive playback, and managed thumbnails.",
+    "Move active reels to managed video processing when usage justifies adaptive playback and generated thumbnails.",
   ],
   [
     "Later",
@@ -186,13 +186,13 @@ const mediaOpsStages = [
 ] as const;
 
 const mediaCostRules = [
-  "Cloudflare Pro is active for CDN, security, and image-delivery polish before adding new paid media products.",
-  "Keep original media in Supabase Storage while early traffic is small.",
-  "Keep HostGator for company email and static backups only, not active user media or video delivery.",
+  "Use the current delivery setup first for security and image-delivery polish before adding new paid media products.",
+  "Keep original media on the current storage path while early traffic is small.",
+  "Keep company email and static backups separate from active user media or video delivery.",
   "Use client-side image compression first because it is free and reduces storage before upload.",
   "Keep current reel caps strict: 60 seconds and 50 MB while videos are uploaded raw.",
   "Do not enable paid video transcoding until reels are getting enough real usage to justify it.",
-  "Consider Cloudflare Images for image variants and Cloudflare Stream for video only after upload volume grows.",
+  "Consider managed image and video upgrades only after upload volume grows.",
 ] as const;
 
 const moderateRoles: UserRole[] = ["moderator", "admin", "owner"];
@@ -1233,11 +1233,11 @@ export default async function AdminPage({
     },
     {
       action: "Open payments",
-      body: "Stripe checkout, webhook event receipts, payment status, refund status, and future payout readiness live on a focused ops page.",
+      body: "Checkout receipts, payment status, refund status, and future payout readiness live on a focused ops page.",
       count: 0,
       href: "/admin/payments",
       label: "Payments",
-      meta: "Stripe events, Merch orders, and ad payments",
+      meta: "Payment events, Merch orders, and ad payments",
     },
     {
       action: "Open mail",

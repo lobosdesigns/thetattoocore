@@ -81,25 +81,25 @@ const checks = [
       adminActions.includes('event_type: "profile_role_changed"'),
   },
   {
-    label: "tester account creation is owner-only, confirmed, service-role backed, and audited",
+    label: "tester account creation is owner-only, confirmed, privately backed, and audited",
     ok:
       adminActions.includes("export async function createTestAccount") &&
       adminActions.includes("await requireOwner()") &&
       adminActions.includes("const adminClient = createAdminClient()") &&
-      adminActions.includes("Supabase service role key is missing") &&
+      adminActions.includes("Private owner tools are not enabled") &&
       adminActions.includes("email_confirm: true") &&
       adminActions.includes("adminClient.auth.admin.createUser") &&
       adminActions.includes("adminClient.auth.admin.deleteUser(profileId)") &&
       adminActions.includes('event_type: "tester_account_created"'),
   },
   {
-    label: "admin users page shows tester creation only to owners with service key readiness",
+    label: "admin users page shows tester creation only to owners with private tool readiness",
     ok:
       adminUsers.includes("const canManageRoles = profile.role === \"owner\"") &&
       adminUsers.includes("const canCreateTestAccounts = canManageRoles && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)") &&
       adminUsers.includes("Create tester account") &&
-      adminUsers.includes("Service key ready") &&
-      adminUsers.includes("Needs service key") &&
+      adminUsers.includes("Owner tools ready") &&
+      adminUsers.includes("Owner tools disabled") &&
       adminUsers.includes("disabled={!canCreateTestAccounts}"),
   },
   {

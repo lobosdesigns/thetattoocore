@@ -121,7 +121,7 @@ const checks = [
       accountPage.includes("visibleIncomingBookings") &&
       accountPage.includes("visibleOutgoingBookings") &&
       accountPage.includes("respondBookingRequest") &&
-      accountPage.includes("Stripe deposit checkout will open"),
+      accountPage.includes("deposit checkout will open"),
   },
   {
     label: "account page exposes manual booking availability settings",

@@ -708,7 +708,7 @@ export default async function AccountPage({
           </div>
           <p className="text-sm leading-6 text-[var(--muted-strong)]">
             Booking requests are request-first during launch. Artists and
-            studios accept or decline here; Stripe deposit checkout will open
+            studios accept or decline here; deposit checkout will open
             only after acceptance and will include the TTC processing fee.
           </p>
 
@@ -721,8 +721,8 @@ export default async function AccountPage({
                 <div>
                   <h3 className="text-sm font-bold">Booking availability</h3>
                   <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
-                    Manual availability first. Google Calendar, Apple/iCloud,
-                    and iCalendar connection come after policy and OAuth review.
+                    Manual availability first. Calendar connections come later
+                    after policy review.
                   </p>
                 </div>
                 <label className="flex items-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 py-2 text-sm font-semibold">

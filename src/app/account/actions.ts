@@ -924,7 +924,7 @@ export async function respondBookingRequest(formData: FormData) {
   const admin = createAdminClient();
 
   if (!admin) {
-    redirect(bookingPath("Booking responses need the server service key configured."));
+    redirect(bookingPath("Booking responses need owner tools enabled first."));
   }
 
   const nextStatus = decision === "accept" ? "accepted" : "declined";
@@ -1032,7 +1032,7 @@ export async function cancelBookingRequest(formData: FormData) {
   const admin = createAdminClient();
 
   if (!admin) {
-    redirect(bookingPath("Booking cancellation needs the server service key configured."));
+    redirect(bookingPath("Booking cancellation needs owner tools enabled first."));
   }
 
   const now = new Date().toISOString();

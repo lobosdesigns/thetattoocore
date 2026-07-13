@@ -18,7 +18,7 @@ type UserRole = "user" | "moderator" | "admin" | "owner";
 type Claims = {
   sub: string;
 };
-type StripeWebhookEvent = {
+type PaymentEvent = {
   event_id: string;
   event_type: string;
   received_at: string;
@@ -52,11 +52,11 @@ const bookingPaymentStatuses = [
   "waived",
 ] as const;
 const productionPaymentGates = [
-  "Choose Stripe Connect or a documented manual payout policy before real seller payouts.",
+  "Choose a documented payout policy before real seller payouts.",
   "Finish tax, shipping-rate, refund, dispute, and chargeback procedures before public Merch orders.",
   "Finish booking refund, cancellation, appointment-confirmation, and deposit payout procedures before taking real appointment deposits.",
-  "Keep seller payout details inside Stripe-hosted onboarding; do not collect bank or card payout data in TTC forms.",
-  "Review platform fees, app-store rules, and payment-provider policy before turning on production purchases.",
+  "Keep seller payout details inside a secure hosted onboarding flow; do not collect bank or card payout data in TTC forms.",
+  "Review platform fees, app-store rules, and payment policy before turning on production purchases.",
 ] as const;
 
 export const metadata: Metadata = {
@@ -207,7 +207,7 @@ export default async function AdminPaymentsPage({
           .select("event_id, event_type, received_at", { count: "exact" })
           .order("received_at", { ascending: false })
           .range(from, to)
-          .returns<StripeWebhookEvent[]>(),
+          .returns<PaymentEvent[]>(),
         adminClient
           .from("stripe_webhook_events")
           .select("event_id", { count: "exact", head: true }),
@@ -290,7 +290,7 @@ export default async function AdminPaymentsPage({
               </p>
               <h1 className="text-2xl font-bold sm:text-3xl">Payments</h1>
               <p className="mt-1 text-sm text-[var(--muted-strong)]">
-                Stripe webhook receipts, Merch order states, and ad payment states.
+                Payment receipts, Merch order states, and ad payment states.
               </p>
             </div>
           </div>
@@ -307,10 +307,9 @@ export default async function AdminPaymentsPage({
         {!adminClient ? (
           <section className="ttc-card rounded-lg border border-[var(--danger)] bg-[color-mix(in_srgb,var(--danger)_12%,var(--paper-warm))] p-5">
             <ShieldAlert className="size-5 text-[var(--danger)]" />
-            <h2 className="mt-3 text-lg font-bold">Service role unavailable</h2>
+            <h2 className="mt-3 text-lg font-bold">Private payment tools unavailable</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-              Add the Supabase service role secret before reading private Stripe
-              event receipts.
+              Enable private owner tools before reading payment event receipts.
             </p>
           </section>
         ) : (
@@ -319,7 +318,7 @@ export default async function AdminPaymentsPage({
               <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
                 <ReceiptText className="size-5 text-[var(--gold)]" />
                 <p className="mt-3 text-sm text-[var(--muted-strong)]">
-                  Stripe events
+                  Payment events
                 </p>
                 <p className="mt-1 text-2xl font-bold">
                   {totalStripeEvents}
@@ -416,7 +415,7 @@ export default async function AdminPaymentsPage({
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
               <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                  <h2 className="text-lg font-bold">Recent Stripe events</h2>
+                  <h2 className="text-lg font-bold">Recent payment events</h2>
                   <p className="text-sm text-[var(--muted-strong)]">
                     Showing {rangeStart}-{rangeEnd} of {totalStripeEvents}
                   </p>
@@ -443,7 +442,7 @@ export default async function AdminPaymentsPage({
                     ))
                   ) : (
                     <p className="rounded-md border border-dashed border-[var(--card-rim)] p-4 text-sm text-[var(--muted)]">
-                      No Stripe webhook events have been recorded yet.
+                      No payment events have been recorded yet.
                     </p>
                   )}
                 </div>
@@ -461,7 +460,7 @@ export default async function AdminPaymentsPage({
                     Production payment gates
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                    Stripe is wired for test-mode checkout. Keep real commerce
+                    Checkout is limited during launch. Keep real commerce
                     gated until these items are handled.
                   </p>
                   <ul className="mt-3 space-y-2 text-sm leading-6 text-[var(--muted)]">

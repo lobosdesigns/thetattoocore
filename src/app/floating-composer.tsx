@@ -430,9 +430,9 @@ export function FloatingComposer({
               professional equipment and trade.
             </p>
             <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] p-3 text-xs leading-5 text-[var(--muted)]">
-              Stripe checkout is in test mode. Seller product creation stays
+              Checkout is limited during launch. Seller product creation stays
               closed until approval, tax, shipping, refunds, fulfillment, and
-              payment-provider rules are ready.
+              payment rules are ready.
             </p>
           </div>
         ),

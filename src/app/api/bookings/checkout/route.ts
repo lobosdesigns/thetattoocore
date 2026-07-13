@@ -39,11 +39,11 @@ async function createBookingCheckoutSession(booking: BookingRequest) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
 
   if (!secretKey) {
-    throw new Error("Stripe is not configured yet. Add the Stripe secret key before checkout.");
+    throw new Error("Booking checkout is almost ready. Payment setup is still being finished.");
   }
 
   const successUrl = `${siteUrl}/account?message=${encodeURIComponent(
-    "Booking deposit received. Stripe webhook will confirm the appointment deposit.",
+    "Booking deposit received. Deposit status will update soon.",
   )}#booking-settings`;
   const cancelUrl = `${siteUrl}/account?message=${encodeURIComponent(
     "Booking deposit checkout canceled.",
@@ -114,7 +114,7 @@ async function createBookingCheckoutSession(booking: BookingRequest) {
     const message =
       "error" in session && session.error?.message
         ? session.error.message
-        : "Stripe could not create booking checkout.";
+        : "Booking checkout could not open.";
 
     throw new Error(message);
   }
@@ -129,13 +129,13 @@ export async function POST(request: Request) {
 
   if (!process.env.STRIPE_SECRET_KEY) {
     return redirectWithMessage(
-      "Stripe is not configured yet. Add the Stripe secret key before checkout.",
+      "Booking checkout is almost ready. Payment setup is still being finished.",
     );
   }
 
   if (!canProcessStripeWebhooks) {
     return redirectWithMessage(
-      "Booking checkout is almost ready. Finish server webhook setup before taking deposits.",
+      "Booking checkout is almost ready. Payment setup is still being finished.",
     );
   }
 
@@ -184,7 +184,7 @@ export async function POST(request: Request) {
 
   if (booking.payment_status === "checkout_started") {
     return redirectWithMessage(
-      "Booking deposit checkout has already started. Finish that Stripe session or wait for it to expire before trying again.",
+      "Booking deposit checkout has already started. Finish that checkout or wait for it to expire before trying again.",
     );
   }
 
@@ -195,7 +195,7 @@ export async function POST(request: Request) {
   const adminSupabase = createAdminClient();
   if (!adminSupabase) {
     return redirectWithMessage(
-      "Booking checkout is almost ready. Finish server webhook setup before taking deposits.",
+      "Booking checkout is almost ready. Payment setup is still being finished.",
     );
   }
 
@@ -222,7 +222,7 @@ export async function POST(request: Request) {
 
   if (!reservedBooking) {
     return redirectWithMessage(
-      "Booking deposit checkout has already started. Finish that Stripe session or wait for it to expire before trying again.",
+      "Booking deposit checkout has already started. Finish that checkout or wait for it to expire before trying again.",
     );
   }
 
@@ -249,14 +249,14 @@ export async function POST(request: Request) {
   } catch (error) {
     await rollBackReservation();
     return redirectWithMessage(
-      error instanceof Error ? error.message : "Stripe could not create booking checkout.",
+      error instanceof Error ? error.message : "Booking checkout could not open.",
     );
   }
 
   if (!session.url) {
     await rollBackReservation();
     return redirectWithMessage(
-      `${siteName} could not open Stripe Checkout for this booking deposit.`,
+      `${siteName} could not open checkout for this booking deposit.`,
     );
   }
 
@@ -278,13 +278,13 @@ export async function POST(request: Request) {
 
   if (updateError) {
     return redirectWithMessage(
-      updateError.message || "Checkout started, but the Stripe session could not be saved.",
+      updateError.message || "Checkout started, but the checkout could not be saved.",
     );
   }
 
   if (!updatedBooking) {
     return redirectWithMessage(
-      "Checkout started, but the booking could not be reserved for this Stripe session.",
+      "Checkout started, but the booking could not be reserved for this checkout.",
     );
   }
 

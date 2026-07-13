@@ -70,7 +70,7 @@ async function createCheckoutSession({
   const secretKey = process.env.STRIPE_SECRET_KEY;
 
   if (!secretKey) {
-    throw new Error("Stripe is not configured yet. Add the Stripe secret key before checkout.");
+    throw new Error("Checkout is almost ready. Payment setup is still being finished.");
   }
 
   const body = new URLSearchParams({
@@ -148,7 +148,7 @@ async function createCheckoutSession({
     const message =
       "error" in session && session.error?.message
         ? session.error.message
-        : "Stripe could not create checkout.";
+        : "Checkout could not open.";
 
     throw new Error(message);
   }
@@ -164,14 +164,14 @@ export async function POST(request: Request) {
   if (!process.env.STRIPE_SECRET_KEY) {
     return redirectWithMessage(
       "/#merch",
-      "Stripe is not configured yet. Add the Stripe secret key before checkout.",
+      "Checkout is almost ready. Payment setup is still being finished.",
     );
   }
 
   if (!canProcessStripeWebhooks) {
     return redirectWithMessage(
       "/#merch",
-      "Checkout is almost ready. Finish server webhook setup before taking payments.",
+      "Checkout is almost ready. Payment setup is still being finished.",
     );
   }
 
@@ -240,7 +240,7 @@ export async function POST(request: Request) {
   if (!adminSupabase) {
     return redirectWithMessage(
       `/merch/${product.id}`,
-      "Checkout is almost ready. Finish server webhook setup before taking payments.",
+      "Checkout is almost ready. Payment setup is still being finished.",
     );
   }
 
@@ -349,11 +349,11 @@ export async function POST(request: Request) {
       successUrl,
     });
   } catch (error) {
-    await cancelPendingOrder("Stripe could not create checkout.");
+    await cancelPendingOrder("Checkout could not open.");
 
     return redirectWithMessage(
       `/merch/${product.id}`,
-      error instanceof Error ? error.message : "Stripe could not create checkout.",
+      error instanceof Error ? error.message : "Checkout could not open.",
     );
   }
 
@@ -380,20 +380,20 @@ export async function POST(request: Request) {
   }
 
   if (!sessionOrder) {
-    await cancelPendingOrder("Checkout started, but the pending order could not be reserved for this Stripe session.");
+    await cancelPendingOrder("Checkout started, but the pending order could not be reserved for this checkout.");
 
     return redirectWithMessage(
       `/merch/${product.id}`,
-      "Checkout started, but the pending order could not be reserved for this Stripe session.",
+      "Checkout started, but the pending order could not be reserved for this checkout.",
     );
   }
 
   if (!session.url) {
-    await cancelPendingOrder("Stripe did not return a checkout URL.");
+    await cancelPendingOrder("Checkout did not return a secure payment link.");
 
     return redirectWithMessage(
       `/merch/${product.id}`,
-      `${siteName} could not open Stripe Checkout for this product.`,
+      `${siteName} could not open checkout for this product.`,
     );
   }
 

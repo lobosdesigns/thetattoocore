@@ -34,7 +34,7 @@ const compressionPasses = [
 ] as const;
 const imageOptimizerLabel = "Phone photos are resized before upload.";
 const videoPipelineLabel =
-  "Video upload is intentionally capped until Cloudflare Stream is worth turning on.";
+  "Video upload is intentionally capped for now. More video features are coming soon.";
 
 function formatBytes(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -278,8 +278,8 @@ export function MediaInput({
       </p>
       {videoAllowed && !compact ? (
         <p className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
-          {videoPipelineLabel} Use short MP4/MOV clips for now; adaptive
-          playback and thumbnails come with the managed video pipeline later.
+          {videoPipelineLabel} Use short MP4/MOV clips for now; richer
+          playback and thumbnails will come later.
         </p>
       ) : null}
       {isOptimizing && !selected ? (

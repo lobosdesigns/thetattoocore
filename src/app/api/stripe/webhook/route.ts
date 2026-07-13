@@ -393,8 +393,8 @@ async function markCheckoutSession({
     actor_id: null,
     body:
       status === "cancelled"
-        ? "Stripe checkout expired or was cancelled, so this Merch order was not completed."
-        : "Stripe reported this Merch payment failed, so this order was not completed.",
+        ? "Checkout expired or was cancelled, so this Merch order was not completed."
+        : "This Merch payment failed, so this order was not completed.",
     href: "/account#order-settings",
     recipient_id: order.buyer_id,
     subject_id: order.id,
@@ -419,8 +419,8 @@ async function markCheckoutSession({
           : "merch-payment-failed",
       htmlBody:
         status === "cancelled"
-          ? "Stripe checkout expired or was cancelled, so your Merch order was not completed."
-          : "Stripe reported your Merch payment failed, so your order was not completed.",
+          ? "Checkout expired or was cancelled, so your Merch order was not completed."
+          : "Your Merch payment failed, so your order was not completed.",
       subject:
         status === "cancelled"
           ? `${siteName} Merch checkout cancelled`
@@ -428,8 +428,8 @@ async function markCheckoutSession({
       supabase,
       textBody:
         status === "cancelled"
-          ? "Stripe checkout expired or was cancelled, so your Merch order was not completed."
-          : "Stripe reported your Merch payment failed, so your order was not completed.",
+          ? "Checkout expired or was cancelled, so your Merch order was not completed."
+          : "Your Merch payment failed, so your order was not completed.",
       userId: order.buyer_id,
     });
   }
@@ -497,8 +497,8 @@ async function markAdCheckoutSession({
     actor_id: null,
     body:
       status === "paid"
-        ? "Stripe received payment for this ad campaign."
-        : "Stripe reported that this ad campaign payment failed.",
+        ? "Payment was received for this ad campaign."
+        : "This ad campaign payment failed.",
     href: "/account#advertising-settings",
     recipient_id: campaign.advertiser_id,
     subject_id: campaign.id,
@@ -518,8 +518,8 @@ async function markAdCheckoutSession({
   for (const campaign of transitionedCampaigns ?? []) {
     const paid = status === "paid";
     const body = paid
-      ? `Stripe received payment for your ad campaign: ${campaign.title}.`
-      : `Stripe reported that payment failed for your ad campaign: ${campaign.title}.`;
+      ? `Payment was received for your ad campaign: ${campaign.title}.`
+      : `Payment failed for your ad campaign: ${campaign.title}.`;
 
     await maybeSendPaymentEmail({
       headerKind: paid ? "ad-paid-advertiser" : "ad-payment-failed-advertiser",
@@ -595,7 +595,7 @@ async function markBookingCheckoutSession({
     if (status === "paid") {
       notifications.push({
         actor_id: booking.client_id,
-        body: "Stripe received the booking deposit.",
+        body: "Booking deposit received.",
         href: "/account#booking-settings",
         recipient_id: booking.artist_id,
         subject_id: booking.id,
@@ -610,8 +610,8 @@ async function markBookingCheckoutSession({
       actor_id: null,
       body:
         status === "cancelled"
-          ? "Stripe checkout expired or was cancelled, so this booking deposit was not completed."
-          : "Stripe reported this booking deposit payment failed.",
+          ? "Checkout expired or was cancelled, so this booking deposit was not completed."
+          : "This booking deposit payment failed.",
       href: "/account#booking-settings",
       recipient_id: booking.client_id,
       subject_id: booking.id,
@@ -668,8 +668,8 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
   const refundNotifications = (refundedOrders ?? []).map((order) => ({
     actor_id: null,
     body: fullyRefunded
-      ? "Stripe reported a full refund for this Merch order."
-      : "Stripe reported a partial refund for this Merch order.",
+      ? "A full refund was recorded for this Merch order."
+      : "A partial refund was recorded for this Merch order.",
     href: "/account#order-settings",
     recipient_id: order.buyer_id,
     subject_id: order.id,
@@ -684,8 +684,8 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
 
   for (const order of refundedOrders ?? []) {
     const body = fullyRefunded
-      ? "Stripe reported a full refund for your Merch order."
-      : "Stripe reported a partial refund for your Merch order.";
+      ? "A full refund was recorded for your Merch order."
+      : "A partial refund was recorded for your Merch order.";
 
     await maybeSendPaymentEmail({
       headerKind: fullyRefunded
@@ -726,7 +726,7 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
 
   const adRefundNotifications = (refundedAds ?? []).map((campaign) => ({
     actor_id: null,
-    body: "Stripe reported a full refund for this ad payment.",
+    body: "A full refund was recorded for this ad payment.",
     href: "/account#advertising-settings",
     recipient_id: campaign.advertiser_id,
     subject_id: campaign.id,
@@ -742,10 +742,10 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
   for (const campaign of refundedAds ?? []) {
     await maybeSendPaymentEmail({
       headerKind: "ad-refunded-advertiser",
-      htmlBody: `Stripe reported a full refund for your ad payment: ${campaign.title}.`,
+      htmlBody: `A full refund was recorded for your ad payment: ${campaign.title}.`,
       subject: `${siteName} ad payment refunded`,
       supabase,
-      textBody: `Stripe reported a full refund for your ad payment: ${campaign.title}.`,
+      textBody: `A full refund was recorded for your ad payment: ${campaign.title}.`,
       userId: campaign.advertiser_id,
     });
   }
@@ -763,13 +763,13 @@ export async function POST(request: Request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   if (!stripe || !webhookSecret) {
-    return stripeResponse("Stripe webhook is not configured.", 500);
+    return stripeResponse("Payment updates are not configured.", 500);
   }
 
   const signature = request.headers.get("stripe-signature");
 
   if (!signature) {
-    return stripeResponse("Missing Stripe signature.", 400);
+    return stripeResponse("Missing payment verification.", 400);
   }
 
   const body = await request.text();
@@ -784,9 +784,8 @@ export async function POST(request: Request) {
       stripeCryptoProvider,
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Invalid webhook.";
-
-    return stripeResponse(message, 400);
+    console.error("Payment update verification failed.", error);
+    return stripeResponse("Invalid payment update.", 400);
   }
 
   try {
@@ -883,10 +882,8 @@ export async function POST(request: Request) {
       );
     }
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Could not process Stripe webhook.";
-
-    return stripeResponse(message, 500);
+    console.error("Payment update processing failed.", error);
+    return stripeResponse("Could not process payment update.", 500);
   }
 
   return stripeResponse("ok");

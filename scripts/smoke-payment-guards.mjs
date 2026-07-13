@@ -66,12 +66,12 @@ try {
 }
 
 checks.push({
-  label: "checkout routes require webhook and service-role gates before payments",
+  label: "checkout routes require private payment gates before payments",
   ok:
     adCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&
-    adCheckout.includes("Ad checkout is almost ready. Finish server webhook setup before taking payments.") &&
+    adCheckout.includes("Ad checkout is almost ready. Payment setup is still being finished.") &&
     merchCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&
-    merchCheckout.includes("Checkout is almost ready. Finish server webhook setup before taking payments."),
+    merchCheckout.includes("Checkout is almost ready. Payment setup is still being finished."),
 });
 checks.push({
   label: "merch checkout creates local order before Stripe session",
@@ -111,13 +111,13 @@ checks.push({
   label: "production commerce gates stay visible before real payments",
   ok:
     adminPaymentsPage.includes("Production payment gates") &&
-    adminPaymentsPage.includes("Choose Stripe Connect or a documented manual payout policy") &&
+    adminPaymentsPage.includes("Choose a documented payout policy") &&
     adminPaymentsPage.includes("booking refund, cancellation, appointment-confirmation") &&
     adminPaymentsPage.includes("do not collect bank or card payout data in TTC forms") &&
-    adminMerchPage.includes("Stripe checkout and refund-status webhooks are wired in test mode") &&
-    adminMerchPage.includes("finish tax, shipping, fulfillment, payouts, and payment-provider safety rules") &&
-    privacyPage.includes("Stripe checkout is in test mode") &&
-    supportPage.includes("Merch checkout is in test mode"),
+    adminMerchPage.includes("Checkout and refund status are limited during launch") &&
+    adminMerchPage.includes("finish tax, shipping, fulfillment, payouts, and payment safety rules") &&
+    privacyPage.includes("Checkout is limited during launch") &&
+    supportPage.includes("Merch checkout is limited during launch"),
 });
 checks.push({
   label: "admin payments watches booking deposit state",
@@ -136,7 +136,7 @@ checks.push({
     !paymentSafetySource.includes("routing number") &&
     !paymentSafetySource.includes("debit card number") &&
     !paymentSafetySource.includes("card payout form") &&
-    adminPaymentsPage.includes("Stripe-hosted onboarding"),
+    adminPaymentsPage.includes("secure hosted onboarding flow"),
 });
 
 const failures = checks.filter((check) => !check.ok);
