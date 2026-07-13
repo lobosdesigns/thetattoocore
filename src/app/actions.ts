@@ -689,6 +689,116 @@ export async function endStoryPost(formData: FormData) {
   redirect(homeMessage("Story ended.", "stories"));
 }
 
+export async function replyToStory(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const storyId = cleanId(formData.get("story_id"));
+  const body = cleanText(formData.get("body"), 500);
+
+  if (!storyId) {
+    redirect(homeMessage("Choose a story to reply to.", "stories"));
+  }
+
+  if (body.length < 1) {
+    redirect(homeMessage("Write a story reply first.", "stories"));
+  }
+
+  const { data: story, error: storyError } = await supabase
+    .from("story_posts")
+    .select(
+      "id, author_id, caption, expires_at, moderation_status, profiles:profiles!story_posts_author_id_fkey(username, display_name)",
+    )
+    .eq("id", storyId)
+    .gt("expires_at", new Date().toISOString())
+    .maybeSingle<{
+      author_id: string;
+      caption: string | null;
+      expires_at: string;
+      id: string;
+      moderation_status: string;
+      profiles: {
+        display_name: string;
+        username: string;
+      } | null;
+    }>();
+
+  if (storyError || !story || story.moderation_status !== "active") {
+    redirect(homeMessage("That story is no longer available.", "stories"));
+  }
+
+  if (story.author_id === userId) {
+    redirect(homeMessage("You cannot DM yourself from your own story.", "stories"));
+  }
+
+  if (await blockRelationshipExists(supabase, userId, story.author_id)) {
+    redirect(homeMessage("You cannot reply to a blocked profile.", "stories"));
+  }
+
+  let conversationId: string;
+
+  try {
+    conversationId = await ensureBookingConversation({
+      supabase,
+      targetId: story.author_id,
+      userId,
+    });
+  } catch (error) {
+    redirect(
+      homeMessage(
+        error instanceof Error ? error.message : "Could not open a DM for that story.",
+        "stories",
+      ),
+    );
+  }
+
+  const messageBody = `Story reply: ${body}`.slice(0, 4000);
+  const { data: message, error: messageError } = await supabase
+    .from("messages")
+    .insert({
+      body: messageBody,
+      conversation_id: conversationId,
+      sender_id: userId,
+    })
+    .select("id")
+    .single<{ id: string }>();
+
+  if (messageError || !message) {
+    redirect(
+      homeMessage(messageError?.message || "Could not send story reply.", "stories"),
+    );
+  }
+
+  const [{ data: senderProfile }, { data: authorPreferences }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", userId)
+      .maybeSingle<{ display_name: string }>(),
+    supabase
+      .from("profiles")
+      .select(notificationPreferenceSelect("message"))
+      .eq("id", story.author_id)
+      .maybeSingle<NotificationPreferenceProfile>(),
+  ]);
+
+  if (allowsInAppNotification(authorPreferences, "message")) {
+    await supabase.from("notifications").insert({
+      actor_id: userId,
+      body: body.slice(0, 160),
+      href: `/messages?c=${conversationId}`,
+      recipient_id: story.author_id,
+      subject_id: story.id,
+      subject_type: "story_post",
+      title: `Story reply from ${senderProfile?.display_name ?? "a member"}`.slice(0, 120),
+      type: "message",
+    });
+  }
+
+  revalidatePath("/");
+  revalidatePath("/messages");
+  revalidatePath("/notifications");
+  redirect(homeMessage(`Reply sent to ${story.profiles?.display_name ?? "story owner"}.`, "stories"));
+}
+
 export async function createBookingRequest(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const artistId = cleanId(formData.get("artist_id"));

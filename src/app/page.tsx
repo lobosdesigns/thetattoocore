@@ -29,6 +29,7 @@ import {
   editFeedPost,
   editThreadPost,
   endStoryPost,
+  replyToStory,
   togglePostLike,
   toggleThreadLike,
 } from "./actions";
@@ -1197,6 +1198,9 @@ function StoriesRail({
           const storyDescription =
             story.caption ||
             `${timeAgo(story.created_at)} story. Expires in ${timeUntil(story.expires_at)}.`;
+          const canReplyToStory = Boolean(
+            isSignedIn && currentUserId && story.author_id !== currentUserId,
+          );
 
           return (
             <div
@@ -1206,6 +1210,26 @@ function StoriesRail({
               <MediaLightbox
                 alt={`${story.profiles?.display_name ?? "Member"} story`}
                 description={storyDescription}
+                footer={
+                  canReplyToStory ? (
+                    <form action={replyToStory} className="mx-auto flex max-w-xl gap-2">
+                      <input name="story_id" type="hidden" value={story.id} />
+                      <input
+                        className="min-w-0 flex-1 rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-white outline-none placeholder:text-white/55 focus:border-white"
+                        maxLength={500}
+                        name="body"
+                        placeholder="Reply to story"
+                        required
+                      />
+                      <button
+                        aria-label="Send story reply"
+                        className="flex size-10 shrink-0 items-center justify-center rounded-md bg-white text-black"
+                      >
+                        <Send className="size-4" />
+                      </button>
+                    </form>
+                  ) : null
+                }
                 mediaType="image"
                 src={src ?? ""}
                 title={storyTitle}

@@ -119,6 +119,19 @@ const checks = [
       homePage.includes('aria-label="End story"'),
   },
   {
+    label: "story viewers can reply through DMs",
+    ok:
+      actions.includes("export async function replyToStory") &&
+      actions.includes("Story reply:") &&
+      actions.includes('subject_type: "story_post"') &&
+      actions.includes('href: `/messages?c=${conversationId}`') &&
+      actions.includes("blockRelationshipExists") &&
+      homePage.includes("replyToStory") &&
+      homePage.includes("canReplyToStory") &&
+      homePage.includes('placeholder="Reply to story"') &&
+      homePage.includes("footer={"),
+  },
+  {
     label: "story creation does not expose sensitive upload bypasses",
     ok:
       actions.includes("is_sensitive: false") &&

@@ -8,6 +8,7 @@ type MediaLightboxProps = {
   alt?: string;
   children: ReactNode;
   description?: string;
+  footer?: ReactNode;
   mediaType: "image" | "video";
   src: string;
   title?: string;
@@ -17,6 +18,7 @@ export function MediaLightbox({
   alt = "",
   children,
   description,
+  footer,
   mediaType,
   src,
   title = "Media viewer",
@@ -167,6 +169,11 @@ export function MediaLightbox({
               />
             )}
           </div>
+          {footer ? (
+            <div className="border-t border-white/15 bg-black px-3 py-3 text-white">
+              {footer}
+            </div>
+          ) : null}
         </div>
       ) : null}
     </>
