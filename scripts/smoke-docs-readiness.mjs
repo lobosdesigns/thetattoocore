@@ -24,6 +24,14 @@ const forbiddenContactSnippets = [
   "Dakota",
   "Calder",
 ];
+const forbiddenStoreListingProviderSnippets = [
+  "Cloudflare",
+  "Supabase",
+  "HostGator",
+  "Stripe",
+  "service key",
+  "service role",
+];
 
 const checks = [
   {
@@ -66,6 +74,12 @@ const checks = [
       docs["docs/STORE_LISTING_DRAFT.md"].includes("visible nudity is not allowed") &&
       docs["docs/STORE_LISTING_DRAFT.md"].includes("No AI art") &&
       docs["docs/STORE_LISTING_DRAFT.md"].includes("no scratcher promotion"),
+  },
+  {
+    label: "store listing draft avoids visible provider names",
+    ok: forbiddenStoreListingProviderSnippets.every(
+      (snippet) => !docs["docs/STORE_LISTING_DRAFT.md"].includes(snippet),
+    ),
   },
   {
     label: "screenshot prep blocks private, unsafe, and technical visible content",
