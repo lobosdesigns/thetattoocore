@@ -23,6 +23,7 @@ type FollowListKind = "followers" | "following";
 type Profile = {
   account_type: string;
   avatar_url: string | null;
+  banner_url: string | null;
   display_name: string;
   id: string;
   is_private: boolean;
@@ -40,6 +41,7 @@ type FollowListRow = {
     Profile,
     | "account_type"
     | "avatar_url"
+    | "banner_url"
     | "display_name"
     | "id"
     | "license_verified_at"
@@ -148,7 +150,7 @@ export async function FollowListPage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, username, display_name, avatar_url, account_type, is_private, license_verified_at",
+      "id, username, display_name, avatar_url, banner_url, account_type, is_private, license_verified_at",
     )
     .eq("username", cleanUsername)
     .maybeSingle<Profile>();
@@ -188,14 +190,14 @@ export async function FollowListPage({
       ? supabase
           .from("follows")
           .select(
-            "created_at, profiles:profiles!follows_follower_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
+            "created_at, profiles:profiles!follows_follower_id_fkey(id, username, display_name, avatar_url, banner_url, account_type, license_verified_at)",
             { count: "exact" },
           )
           .eq("following_id", profile.id)
       : supabase
           .from("follows")
           .select(
-            "created_at, profiles:profiles!follows_following_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
+            "created_at, profiles:profiles!follows_following_id_fkey(id, username, display_name, avatar_url, banner_url, account_type, license_verified_at)",
             { count: "exact" },
           )
           .eq("follower_id", profile.id);
@@ -239,8 +241,19 @@ export async function FollowListPage({
         </header>
 
         <section className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-4 py-5">
+          <div
+            className="mb-4 h-28 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--foreground)_88%,var(--brand-gold))] bg-cover bg-center shadow-[0_14px_34px_rgba(23,20,18,0.14)]"
+            style={
+              profile.banner_url
+                ? { backgroundImage: `url(${profile.banner_url})` }
+                : undefined
+            }
+          />
           <div className="flex items-center gap-3">
-            <ProfileAvatar profile={profile} className="size-14 text-lg" />
+            <ProfileAvatar
+              profile={profile}
+              className="-mt-10 size-14 border-2 border-[var(--paper-warm)] text-lg shadow-lg"
+            />
             <div className="min-w-0">
               <div className="flex min-w-0 items-center gap-2">
                 <h2 className="truncate text-lg font-bold">
@@ -315,23 +328,36 @@ export async function FollowListPage({
 
               return (
                 <Link
-                  className="ttc-card flex items-center gap-3 rounded-md p-4"
+                  className="ttc-card overflow-hidden rounded-md"
                   href={`/u/${person.username}`}
                   key={person.id}
                 >
-                  <ProfileAvatar profile={person} />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex min-w-0 items-center gap-1.5">
-                      <p className="truncate text-sm font-bold">
-                        {person.display_name}
+                  <div
+                    className="h-16 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--foreground)_88%,var(--brand-gold))] bg-cover bg-center"
+                    style={
+                      person.banner_url
+                        ? { backgroundImage: `url(${person.banner_url})` }
+                        : undefined
+                    }
+                  />
+                  <div className="flex items-center gap-3 p-4">
+                    <ProfileAvatar
+                      className="-mt-8 border-2 border-[var(--paper-warm)] shadow-md"
+                      profile={person}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex min-w-0 items-center gap-1.5">
+                        <p className="truncate text-sm font-bold">
+                          {person.display_name}
+                        </p>
+                        {isVerifiedProfile(person) ? (
+                          <BadgeCheck className="size-3.5 shrink-0" />
+                        ) : null}
+                      </div>
+                      <p className="text-xs text-[var(--muted-strong)]">
+                        @{person.username} - {person.account_type}
                       </p>
-                      {isVerifiedProfile(person) ? (
-                        <BadgeCheck className="size-3.5 shrink-0" />
-                      ) : null}
                     </div>
-                    <p className="text-xs text-[var(--muted-strong)]">
-                      @{person.username} - {person.account_type}
-                    </p>
                   </div>
                 </Link>
               );

@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const profileForm = readFileSync("src/app/account/profile-form.tsx", "utf8");
+const followListPage = readFileSync("src/app/u/[username]/follow-list-page.tsx", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
 const savedPage = readFileSync("src/app/saved/page.tsx", "utf8");
 const searchPage = readFileSync("src/app/search/page.tsx", "utf8");
@@ -98,7 +99,9 @@ const checks = [
       searchPage.includes("profile.banner_url") &&
       savedPage.includes("banner_url") &&
       savedPage.includes("profileBannerUrl") &&
-      savedPage.includes("card.profileBannerUrl"),
+      savedPage.includes("card.profileBannerUrl") &&
+      followListPage.includes("banner_url") &&
+      followListPage.includes("person.banner_url"),
   },
   {
     label: "outbound profile links use safe URL and rel policy",
