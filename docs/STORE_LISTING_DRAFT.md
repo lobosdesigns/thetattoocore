@@ -43,9 +43,11 @@ TheTattooCore is for adults 18+ because tattoo, piercing, healing, scar cover, a
 
 ## Screenshot Rules
 
-Use only brand assets, clean UI states, safe sample posts, and non-sensitive content.
+Use `docs/SCREENSHOT_PREP.md` before capture. Use only brand assets, clean UI states, safe sample posts, and non-sensitive content.
 
 Do not use screenshots containing copyrighted tattoo art, visible nudity, private messages, personal email addresses, real payment data, license documents, or admin-only private information.
+
+Do not show visible provider, server, hosting, database, storage, mail-server, payment-processor, API-key, or infrastructure names in screenshot copy.
 
 ## Submission Notes
 

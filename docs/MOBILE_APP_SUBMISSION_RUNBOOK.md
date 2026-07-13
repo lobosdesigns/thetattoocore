@@ -6,6 +6,7 @@
 - Native Android and iOS projects are not created yet.
 - PWA manifest, icons, splash assets, service worker, support URL, privacy URL, and terms URL are ready for a wrapper later.
 - Draft store listing copy lives in `docs/STORE_LISTING_DRAFT.md`; review it against current store policies before submission.
+- Screenshot prep lives in `docs/SCREENSHOT_PREP.md`; use it before capturing public, PWA, Google Play, App Store, or press assets.
 - Age-rating prep notes live in `docs/AGE_RATING_PREP.md`; compare them to the live feature set and current store questionnaires before answering.
 - Data-safety/privacy prep lives in `docs/DATA_SAFETY_PREP.md`; compare it to the live feature set and final Privacy policy before answering store data-safety questions.
 - Real-device QA gates live in `docs/REAL_DEVICE_QA_CHECKLIST.md` and should pass before wrapper packaging.
@@ -26,6 +27,7 @@ Start with a thin native wrapper only after core web QA is stable:
 
 - Run the real-device checklist in `docs/REAL_DEVICE_QA_CHECKLIST.md` for signup, login, reset password, profile setup, 4U, Gossip, Stuff, Gigs, Merch browsing, DMs, notifications, reports, blocking, verification upload, payment test paths, and account deletion request.
 - Confirm app-store-safe screenshots use brand assets and safe sample content only.
+- Confirm screenshots do not expose private DMs, license documents, admin queues, real payment data, personal owner contact data, or visible infrastructure/provider names.
 - Confirm support email and public legal/contact surfaces use `support@thetattoocore.com` or final company/legal contact details, not personal owner information.
 - Have counsel review Terms, Privacy, account deletion language, moderation policy, marketplace rules, and payment/refund language.
 - Decide whether native builds expose Merch checkout at launch or keep it web-only/test-mode until production payment policy is approved.

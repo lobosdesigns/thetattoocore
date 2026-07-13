@@ -12,6 +12,7 @@ const docs = {
     "utf8",
   ),
   "docs/STORE_LISTING_DRAFT.md": readFileSync("docs/STORE_LISTING_DRAFT.md", "utf8"),
+  "docs/SCREENSHOT_PREP.md": readFileSync("docs/SCREENSHOT_PREP.md", "utf8"),
   "docs/AGE_RATING_PREP.md": readFileSync("docs/AGE_RATING_PREP.md", "utf8"),
   "docs/DATA_SAFETY_PREP.md": readFileSync("docs/DATA_SAFETY_PREP.md", "utf8"),
 };
@@ -38,6 +39,13 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("docs/DATA_SAFETY_PREP.md"),
   },
   {
+    label: "readiness docs link screenshot prep",
+    ok:
+      docs["docs/APP_STORE_READINESS.md"].includes("docs/SCREENSHOT_PREP.md") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("docs/SCREENSHOT_PREP.md") &&
+      docs["docs/STORE_LISTING_DRAFT.md"].includes("docs/SCREENSHOT_PREP.md"),
+  },
+  {
     label: "readiness docs link production payment gates",
     ok:
       docs["docs/APP_STORE_READINESS.md"].includes("docs/PAYMENT_PRODUCTION_READINESS.md") &&
@@ -58,6 +66,18 @@ const checks = [
       docs["docs/STORE_LISTING_DRAFT.md"].includes("visible nudity is not allowed") &&
       docs["docs/STORE_LISTING_DRAFT.md"].includes("No AI art") &&
       docs["docs/STORE_LISTING_DRAFT.md"].includes("no scratcher promotion"),
+  },
+  {
+    label: "screenshot prep blocks private, unsafe, and technical visible content",
+    ok:
+      docs["docs/SCREENSHOT_PREP.md"].includes("Required Screenshot Set") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("Do Not Capture") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("private DMs") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("license/certification documents") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("real payment data") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("infrastructure names") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("no-visible-nudity rules") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("no-AI stance"),
   },
   {
     label: "age rating prep covers UGC, ads, commerce, AI, and no visible nudity",
