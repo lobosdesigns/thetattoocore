@@ -10,6 +10,7 @@ const accountProfileForm = readFileSync("src/app/account/profile-form.tsx", "utf
 const termsPage = readFileSync("src/app/terms/page.tsx", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
+const homePage = readFileSync("src/app/page.tsx", "utf8");
 const postDetailPage = readFileSync("src/app/p/[id]/page.tsx", "utf8");
 const threadDetailPage = readFileSync("src/app/t/[id]/page.tsx", "utf8");
 const commentMediaMigration = readFileSync(
@@ -176,6 +177,23 @@ const checks = [
           !body.includes("revalidatePath(returnPath)")
         );
       }),
+  },
+  {
+    label: "home ranking filters blocked profiles before personalization",
+    ok:
+      homePage.includes('from("user_blocks")') &&
+      homePage.includes("blocker_id.eq.") &&
+      homePage.includes("blocked_id.eq.") &&
+      homePage.includes("const blockedProfileIds = new Set") &&
+      homePage.includes("function profileIsNotBlocked") &&
+      homePage.includes("unblockedFeedPosts") &&
+      homePage.includes("unblockedThreadPosts") &&
+      homePage.includes("unblockedListings") &&
+      homePage.includes("unblockedGigs") &&
+      homePage.includes("unblockedMerchProducts") &&
+      homePage.includes("unblockedStories") &&
+      homePage.includes("feedPosts: unblockedFeedPosts") &&
+      homePage.includes("threadPosts: unblockedThreadPosts"),
   },
   {
     label: "4U and Gossip detail pages render comment media with lightbox controls",

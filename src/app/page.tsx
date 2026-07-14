@@ -195,6 +195,11 @@ type FollowedProfile = {
   following_id: string;
 };
 
+type BlockRelation = {
+  blocked_id: string;
+  blocker_id: string;
+};
+
 type PostMedia = {
   id: string;
   media_type: "image" | "video";
@@ -255,6 +260,17 @@ type RankingContext = {
 
 function savedKey(subjectType: SavedItem["subject_type"], subjectId: string) {
   return `${subjectType}:${subjectId}`;
+}
+
+function profileIsNotBlocked(
+  profile: Pick<Profile, "id"> | null | undefined,
+  blockedProfileIds: Set<string>,
+) {
+  const profileId = profile?.id;
+
+  if (!profileId) return false;
+
+  return !blockedProfileIds.has(profileId);
 }
 
 function ageScore(createdAt: string) {
@@ -1605,6 +1621,7 @@ export default async function Home({
     { data: merchProducts },
     { data: storyPosts },
     { data: follows },
+    { data: blockRows },
     { count: unreadDmCount },
     { data: savedItems },
     fourUAd,
@@ -1705,6 +1722,15 @@ export default async function Home({
       : Promise.resolve({ data: [] as FollowedProfile[] }),
     claims?.sub
       ? supabase
+          .from("user_blocks")
+          .select("blocker_id, blocked_id")
+          .or(
+            `blocker_id.eq.${claims.sub},blocked_id.eq.${claims.sub}`,
+          )
+          .returns<BlockRelation[]>()
+      : Promise.resolve({ data: [] as BlockRelation[] }),
+    claims?.sub
+      ? supabase
           .from("notifications")
           .select("*", { count: "exact", head: true })
           .eq("recipient_id", claims.sub)
@@ -1739,53 +1765,77 @@ export default async function Home({
     ),
     isSignedIn,
   };
+  const blockedProfileIds = new Set(
+    (blockRows ?? []).map((block) =>
+      block.blocker_id === claims?.sub ? block.blocked_id : block.blocker_id,
+    ),
+  );
+  const unblockedFeedPosts = (feedPosts ?? []).filter((post) =>
+    profileIsNotBlocked(post.profiles, blockedProfileIds),
+  );
+  const unblockedThreadPosts = (threadPosts ?? []).filter((thread) =>
+    profileIsNotBlocked(thread.profiles, blockedProfileIds),
+  );
+  const unblockedListings = (listings ?? []).filter((listing) =>
+    profileIsNotBlocked(listing.profiles, blockedProfileIds),
+  );
+  const unblockedGigs = (gigs ?? []).filter((gig) =>
+    profileIsNotBlocked(gig.profiles, blockedProfileIds),
+  );
+  const unblockedMerchProducts = (merchProducts ?? []).filter((product) =>
+    product.is_official ||
+    profileIsNotBlocked(product.profiles, blockedProfileIds),
+  );
+  const unblockedStories = (storyPosts ?? []).filter((story) =>
+    profileIsNotBlocked(story.profiles, blockedProfileIds),
+  );
   const rankingContext = buildRankingContext({
     currentProfile: currentProfile ?? null,
-    feedPosts: feedPosts ?? [],
+    feedPosts: unblockedFeedPosts,
     followedProfileIds: new Set((follows ?? []).map((follow) => follow.following_id)),
-    gigs: gigs ?? [],
-    listings: listings ?? [],
-    merchProducts: merchProducts ?? [],
+    gigs: unblockedGigs,
+    listings: unblockedListings,
+    merchProducts: unblockedMerchProducts,
     savedItems: savedItems ?? [],
-    threadPosts: threadPosts ?? [],
+    threadPosts: unblockedThreadPosts,
     userId: claims?.sub ?? null,
   });
   const visibleFeedPosts = rankFeedPosts(
-    (feedPosts ?? []).filter((post) => canRenderContent(post, viewer)),
+    unblockedFeedPosts.filter((post) => canRenderContent(post, viewer)),
     rankingContext,
   );
   const visibleThreadPosts = rankThreadPosts(
-    (threadPosts ?? []).filter((thread) => canRenderContent(thread, viewer)),
+    unblockedThreadPosts.filter((thread) => canRenderContent(thread, viewer)),
     rankingContext,
   );
   const visibleListings = rankCategoryItems(
-    (listings ?? []).filter((listing) => canRenderContent(listing, viewer)),
+    unblockedListings.filter((listing) => canRenderContent(listing, viewer)),
     rankingContext,
     "marketplace_listing",
   );
   const visibleGigs = rankCategoryItems(
-    (gigs ?? []).filter((gig) => canRenderContent(gig, viewer)),
+    unblockedGigs.filter((gig) => canRenderContent(gig, viewer)),
     rankingContext,
     "gig",
   );
   const visibleMerchProducts = rankCategoryItems(
-    (merchProducts ?? []).filter(
+    unblockedMerchProducts.filter(
       (product) =>
         product.is_official || isVerifiedProfessional(product.profiles),
     ),
     rankingContext,
     "merch_product",
   );
-  const visibleStories = (storyPosts ?? []).filter(
+  const visibleStories = unblockedStories.filter(
     (story) =>
       story.visibility !== "private" &&
       (story.visibility === "public_preview" || isSignedIn),
   );
   const lockedPublicItemCount = [
-    ...(feedPosts ?? []),
-    ...(threadPosts ?? []),
-    ...(listings ?? []),
-    ...(gigs ?? []),
+    ...unblockedFeedPosts,
+    ...unblockedThreadPosts,
+    ...unblockedListings,
+    ...unblockedGigs,
   ].filter(
     (item) =>
       item.visibility !== "private" &&
