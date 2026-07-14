@@ -982,18 +982,28 @@ export default async function AccountPage({
                     see the expected deposit before they request a booking.
                   </span>
                 </label>
-                <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 py-2 text-sm">
-                  <p className="font-semibold">Calendar connection</p>
-                  <p className="mt-1 text-[var(--muted)]">
+                <label className="grid gap-1 text-sm font-semibold">
+                  Calendar connection
+                  <select
+                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                    defaultValue={bookingSettings?.calendar_connection_status ?? "manual"}
+                    name="calendar_connection_status"
+                  >
+                    <option value="manual">Manual setup</option>
+                    <option value="google_planned">Google calendar planned</option>
+                    <option value="apple_ical_planned">
+                      Apple or iCalendar planned
+                    </option>
+                  </select>
+                  <span className="text-xs font-normal leading-5 text-[var(--muted-strong)]">
+                    Current:{" "}
                     {calendarConnectionStatusLabel(
                       bookingSettings?.calendar_connection_status,
                     )}
-                  </p>
-                  <p className="mt-2 text-xs leading-5 text-[var(--muted-strong)]">
-                    Add your public booking page or calendar request link
+                    . Add your public booking page or calendar request link
                     below.
-                  </p>
-                </div>
+                  </span>
+                </label>
                 <label className="grid gap-1 text-sm font-semibold md:col-span-2">
                   Public booking link
                   <input

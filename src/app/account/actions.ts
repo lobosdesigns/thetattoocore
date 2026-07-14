@@ -56,6 +56,11 @@ const stuffListingGoals = new Set([
 const merchListingGoals = new Set(["product_views", "shop_visits", "purchases"]);
 const adPlacements = new Set(["4u", "gossip", "stuff", "merch"]);
 const themePreferences = new Set(["light", "dark", "system"]);
+const calendarConnectionStatuses = new Set([
+  "manual",
+  "google_planned",
+  "apple_ical_planned",
+]);
 
 function accountPath(message: string, hash?: string) {
   const suffix = hash ? `#${hash}` : "";
@@ -1888,6 +1893,10 @@ export async function updateBookingSettings(formData: FormData) {
   const availabilitySummary = cleanText(formData.get("availability_summary"), 500);
   const bookingNote = cleanText(formData.get("booking_note"), 500);
   const bookingUrl = cleanExternalUrl(formData.get("booking_url"), 500);
+  const calendarConnectionStatus = cleanText(
+    formData.get("calendar_connection_status"),
+    40,
+  );
   const calendarNotes = cleanText(formData.get("calendar_notes"), 500);
   const cancellationPolicy = cleanText(formData.get("cancellation_policy"), 500);
   const depositPolicy = cleanText(formData.get("deposit_policy"), 20);
@@ -1898,6 +1907,10 @@ export async function updateBookingSettings(formData: FormData) {
 
   if (!["none", "optional", "required"].includes(depositPolicy)) {
     redirect(bookingPath("Choose a valid deposit policy."));
+  }
+
+  if (!calendarConnectionStatuses.has(calendarConnectionStatus)) {
+    redirect(bookingPath("Choose a valid calendar connection option."));
   }
 
   if (defaultDepositAmountCents < 0) {
@@ -1912,7 +1925,7 @@ export async function updateBookingSettings(formData: FormData) {
     booking_enabled: bookingEnabled,
     booking_note: bookingNote || null,
     booking_url: bookingUrl,
-    calendar_connection_status: "manual",
+    calendar_connection_status: calendarConnectionStatus,
     calendar_notes: calendarNotes || null,
     cancellation_policy: cancellationPolicy || null,
     default_deposit_amount_cents: defaultDepositAmountCents,
