@@ -2026,6 +2026,47 @@ export default async function ProfilePage({
                       type="hidden"
                       value={`/u/${profile.username}`}
                     />
+                    {visibleBookingAppointmentTypes.length ? (
+                      <label className="grid gap-1 text-xs font-semibold text-[var(--muted)]">
+                        Appointment type
+                        <select
+                          className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+                          name="appointment_type_id"
+                        >
+                          <option value="">Not sure yet</option>
+                          {visibleBookingAppointmentTypes.map((type) => (
+                            <option key={type.id} value={type.id}>
+                              {type.name} - {type.duration_minutes} min
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    ) : null}
+                    {visibleBookingSlots.length ? (
+                      <label className="grid gap-1 text-xs font-semibold text-[var(--muted)]">
+                        Preferred weekly slot
+                        <select
+                          className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+                          name="preferred_slot_id"
+                        >
+                          <option value="">Flexible</option>
+                          {visibleBookingSlots.map((slot) => {
+                            const type = visibleBookingAppointmentTypes.find(
+                              (item) => item.id === slot.appointment_type_id,
+                            );
+
+                            return (
+                              <option key={slot.id} value={slot.id}>
+                                {weekdays[slot.weekday] ?? "Day"}{" "}
+                                {formatSlotTime(slot.starts_at)}-
+                                {formatSlotTime(slot.ends_at)}
+                                {type ? ` - ${type.name}` : ""}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </label>
+                    ) : null}
                     <input
                       className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                       maxLength={120}

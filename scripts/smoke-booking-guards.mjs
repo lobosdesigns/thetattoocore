@@ -32,6 +32,10 @@ const bookingSlotMigration = readFileSync(
   "supabase/migrations/20260714154123_booking_slot_foundation.sql",
   "utf8",
 );
+const bookingRequestSlotMigration = readFileSync(
+  "supabase/migrations/20260714161754_booking_request_slot_references.sql",
+  "utf8",
+);
 const actions = readFileSync("src/app/actions.ts", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
@@ -114,6 +118,8 @@ const checks = [
       profilePage.includes("createBookingRequest") &&
       profilePage.includes("canRequestBooking") &&
       profilePage.includes('id="booking-request"') &&
+      profilePage.includes('name="appointment_type_id"') &&
+      profilePage.includes('name="preferred_slot_id"') &&
       profilePage.includes("Deposit checkout opens only after") &&
       profilePage.includes("platformFeePercentLabel"),
   },
@@ -123,8 +129,14 @@ const checks = [
       actions.includes("export async function createBookingRequest") &&
       actions.includes("await requireProfile()") &&
       actions.includes("calculatePlatformFeeCents(depositAmountCents)") &&
+      actions.includes('formData.get("appointment_type_id")') &&
+      actions.includes('formData.get("preferred_slot_id")') &&
+      actions.includes('.from("booking_appointment_types")') &&
+      actions.includes('.from("booking_availability_slots")') &&
       actions.includes("ensureDirectConversation") &&
       actions.includes("conversation_id: conversationId") &&
+      actions.includes("appointment_type_id: appointmentTypeId || null") &&
+      actions.includes("preferred_slot_id: preferredSlotId || null") &&
       actions.includes('.from("booking_requests")') &&
       actions.includes('type: "booking_request"') &&
       actions.includes('href: `/messages?c=${conversationId}`') &&
@@ -367,6 +379,17 @@ const checks = [
       bookingSlotMigration.includes("duration_minutes between 10 and 720") &&
       bookingSlotMigration.includes("slot_interval_minutes in (15, 20, 30, 45, 60, 90, 120)") &&
       bookingSlotMigration.includes("provider in ('google', 'apple_ical', 'ical_feed')"),
+  },
+  {
+    label: "booking requests can reference selected appointment types and preferred slots",
+    ok:
+      bookingRequestSlotMigration.includes("add column if not exists appointment_type_id uuid") &&
+      bookingRequestSlotMigration.includes("references public.booking_appointment_types(id) on delete set null") &&
+      bookingRequestSlotMigration.includes("add column if not exists preferred_slot_id uuid") &&
+      bookingRequestSlotMigration.includes("references public.booking_availability_slots(id) on delete set null") &&
+      bookingRequestSlotMigration.includes("booking_requests_appointment_type_created_idx") &&
+      bookingRequestSlotMigration.includes("booking_requests_preferred_slot_created_idx") &&
+      productPlan.includes("booking request references to selected appointment types or preferred weekly slots"),
   },
   {
     label: "booking slot foundation keeps RLS and verified-owner policies",

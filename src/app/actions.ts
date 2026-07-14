@@ -1046,6 +1046,8 @@ export async function replyToStory(formData: FormData) {
 export async function createBookingRequest(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const artistId = cleanId(formData.get("artist_id"));
+  const appointmentTypeId = cleanId(formData.get("appointment_type_id"));
+  const preferredSlotId = cleanId(formData.get("preferred_slot_id"));
   const returnPath = cleanReturnPath(formData.get("return_path"), "/");
   const title = cleanText(formData.get("title"), 120);
   const body = cleanText(formData.get("body"), 2000);
@@ -1121,6 +1123,67 @@ export async function createBookingRequest(formData: FormData) {
     );
   }
 
+  let appointmentTypeName: string | null = null;
+  let preferredSlotLabel: string | null = null;
+
+  if (appointmentTypeId) {
+    const { data: appointmentType } = await supabase
+      .from("booking_appointment_types")
+      .select("id, name, profile_id, is_active")
+      .eq("id", appointmentTypeId)
+      .eq("profile_id", artist.id)
+      .eq("is_active", true)
+      .maybeSingle<{ id: string; is_active: boolean; name: string; profile_id: string }>();
+
+    if (!appointmentType) {
+      redirect(
+        redirectWithMessage({
+          hash: "booking-request",
+          message: "Choose an available appointment type for this artist or studio.",
+          path: returnPath,
+        }),
+      );
+    }
+
+    appointmentTypeName = appointmentType.name;
+  }
+
+  if (preferredSlotId) {
+    const { data: preferredSlot } = await supabase
+      .from("booking_availability_slots")
+      .select("id, appointment_type_id, profile_id, weekday, starts_at, ends_at, is_active")
+      .eq("id", preferredSlotId)
+      .eq("profile_id", artist.id)
+      .eq("is_active", true)
+      .maybeSingle<{
+        appointment_type_id: string | null;
+        ends_at: string;
+        id: string;
+        is_active: boolean;
+        profile_id: string;
+        starts_at: string;
+        weekday: number;
+      }>();
+
+    if (
+      !preferredSlot ||
+      (appointmentTypeId &&
+        preferredSlot.appointment_type_id &&
+        preferredSlot.appointment_type_id !== appointmentTypeId)
+    ) {
+      redirect(
+        redirectWithMessage({
+          hash: "booking-request",
+          message: "Choose an available weekly slot for this appointment type.",
+          path: returnPath,
+        }),
+      );
+    }
+
+    const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    preferredSlotLabel = `${weekdayLabels[preferredSlot.weekday] ?? "Day"} ${preferredSlot.starts_at.slice(0, 5)}-${preferredSlot.ends_at.slice(0, 5)}`;
+  }
+
   let conversationId: string;
 
   try {
@@ -1145,6 +1208,7 @@ export async function createBookingRequest(formData: FormData) {
   const { data: booking, error } = await supabase
     .from("booking_requests")
     .insert({
+      appointment_type_id: appointmentTypeId || null,
       artist_id: artist.id,
       body,
       client_id: userId,
@@ -1156,6 +1220,7 @@ export async function createBookingRequest(formData: FormData) {
       platform_fee_cents: platformFeeCents,
       preferred_city: preferredCity || null,
       preferred_dates: preferredDates || null,
+      preferred_slot_id: preferredSlotId || null,
       shop_profile_id:
         artist.account_type === "artist" ? artist.shop_profile_id : artist.id,
       status: "requested",
@@ -1177,7 +1242,7 @@ export async function createBookingRequest(formData: FormData) {
   }
 
   await supabase.from("messages").insert({
-    body: `Booking request: ${title}. ${depositAmountCents > 0 ? `Requested deposit ${(depositAmountCents / 100).toLocaleString("en-US", { currency: "USD", style: "currency" })} plus TTC fee.` : "No deposit requested yet."}`,
+    body: `Booking request: ${title}.${appointmentTypeName ? ` Type: ${appointmentTypeName}.` : ""}${preferredSlotLabel ? ` Preferred slot: ${preferredSlotLabel}.` : ""} ${depositAmountCents > 0 ? `Requested deposit ${(depositAmountCents / 100).toLocaleString("en-US", { currency: "USD", style: "currency" })} plus TTC fee.` : "No deposit requested yet."}`,
     conversation_id: conversationId,
     sender_id: userId,
   });
