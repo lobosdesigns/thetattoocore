@@ -264,6 +264,9 @@ const checks = [
       bookingCalendarRoute.includes("supabase.auth.getClaims()") &&
       bookingCalendarRoute.includes("text/calendar") &&
       bookingCalendarRoute.includes("DTSTART;TZID=") &&
+      bookingCalendarRoute.includes("appointment_type_label") &&
+      bookingCalendarRoute.includes("preferred_slot_label") &&
+      bookingCalendarRoute.includes("Preferred slot:") &&
       bookingCalendarRoute.includes("Cache-Control") &&
       accountPage.includes("/calendar") &&
       messagesPage.includes("/calendar"),

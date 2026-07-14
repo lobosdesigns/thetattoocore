@@ -9,11 +9,13 @@ type CalendarRouteProps = {
 type BookingCalendarRow = {
   artist_id: string;
   artist_note: string | null;
+  appointment_type_label: string | null;
   body: string;
   client_id: string;
   id: string;
   placement: string | null;
   preferred_city: string | null;
+  preferred_slot_label: string | null;
   scheduled_end_at: string | null;
   scheduled_start_at: string | null;
   scheduled_timezone: string | null;
@@ -63,7 +65,7 @@ export async function GET(_request: Request, { params }: CalendarRouteProps) {
   const { data: booking } = await supabase
     .from("booking_requests")
     .select(
-      "id, client_id, artist_id, title, body, placement, preferred_city, artist_note, status, scheduled_start_at, scheduled_end_at, scheduled_timezone",
+      "id, client_id, artist_id, title, body, placement, preferred_city, appointment_type_label, preferred_slot_label, artist_note, status, scheduled_start_at, scheduled_end_at, scheduled_timezone",
     )
     .eq("id", bookingId)
     .maybeSingle<BookingCalendarRow>();
@@ -82,6 +84,8 @@ export async function GET(_request: Request, { params }: CalendarRouteProps) {
     booking.body,
     booking.placement ? `Placement: ${booking.placement}` : null,
     booking.preferred_city ? `City: ${booking.preferred_city}` : null,
+    booking.appointment_type_label ? `Type: ${booking.appointment_type_label}` : null,
+    booking.preferred_slot_label ? `Preferred slot: ${booking.preferred_slot_label}` : null,
     booking.artist_note ? `Artist note: ${booking.artist_note}` : null,
   ]
     .filter(Boolean)
