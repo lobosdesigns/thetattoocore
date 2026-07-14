@@ -116,6 +116,10 @@ type PostPageProps = {
 const commentsPageSize = 25;
 const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
 
+function asArray<T>(value: T[] | null | undefined) {
+  return Array.isArray(value) ? value : [];
+}
+
 function pageNumber(value: string | string[] | undefined) {
   const rawValue = Array.isArray(value) ? value[0] : value;
   const parsed = Number.parseInt(rawValue ?? "1", 10);
@@ -250,7 +254,8 @@ export async function generateMetadata({
     ? `Sensitive non-nude body-art 4U post on ${siteName}. Sign in to view eligible content.`
     : post.caption?.slice(0, 155) ||
       `A 4U post by ${post.profiles?.display_name ?? "a member"} on ${siteName}.`;
-  const shareMedia = post.feed_media.find((media) => media.media_type === "image");
+  const postMedia = asArray(post.feed_media);
+  const shareMedia = postMedia.find((media) => media.media_type === "image");
   const image =
     publicIndexable && shareMedia
       ? mediaUrl(shareMedia.storage_bucket, shareMedia.storage_path)
@@ -331,11 +336,15 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
     isSignedIn,
   };
   const showPost = canViewPost({ isOwnPost, post, viewer });
-  const media = post.feed_media[0];
+  const postMedia = asArray(post.feed_media);
+  const postLikes = asArray(post.post_likes);
+  const postComments = asArray(post.post_comments);
+  const styleTags = asArray(post.style_tags);
+  const media = postMedia[0];
   const mediaSrc = media ? mediaUrl(media.storage_bucket, media.storage_path) : null;
-  const liked = post.post_likes.some((like) => like.user_id === claims?.sub);
+  const liked = postLikes.some((like) => like.user_id === claims?.sub);
   const returnPath = `/p/${post.id}`;
-  const visibleComments = post.post_comments.filter(
+  const visibleComments = postComments.filter(
     (comment) => !comment.deleted_at && !hasCommentHide(comment.post_comment_hides),
   );
   const topLevelComments = visibleComments.filter((comment) => !comment.parent_id);
@@ -475,7 +484,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
               )}
 
               <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-[var(--muted)]">
-                {post.style_tags.map((tag) => (
+                {styleTags.map((tag) => (
                   <span className="rounded-md bg-[color-mix(in_srgb,var(--brand-gold)_16%,var(--paper-warm))] px-2 py-1" key={tag}>
                     {tag}
                   </span>
@@ -516,7 +525,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                       Style tags
                       <input
                         className="mt-1 h-10 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
-                        defaultValue={post.style_tags.join(", ")}
+                        defaultValue={styleTags.join(", ")}
                         maxLength={160}
                         name="style_tags"
                         placeholder="blackwork, fine line"
@@ -552,7 +561,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
             <section className="ttc-card rounded-md p-4">
               <div className="grid grid-cols-2 gap-2 text-center text-sm">
                 <div className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_84%,transparent)] p-3">
-                  <p className="text-lg font-bold">{post.post_likes.length}</p>
+                  <p className="text-lg font-bold">{postLikes.length}</p>
                   <p className="text-xs text-[var(--muted-strong)]">likes</p>
                 </div>
                 <div className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_84%,transparent)] p-3">
@@ -659,7 +668,9 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                 {isSignedIn && showPost && visibleComments.length ? (
                   visibleTopLevelComments
                     .map((comment) => {
-                      const likedComment = comment.post_comment_likes.some(
+                      const commentLikes = asArray(comment.post_comment_likes);
+                      const commentMedia = asArray(comment.post_comment_media);
+                      const likedComment = commentLikes.some(
                         (like) => like.user_id === claims?.sub,
                       );
                       const replies = visibleComments.filter(
@@ -694,7 +705,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                   {comment.body}
                                 </p>
                               ) : null}
-                              <CommentMediaPreview media={comment.post_comment_media[0]} />
+                              <CommentMediaPreview media={commentMedia[0]} />
                             </div>
                           </div>
                           <div className="ttc-comment-controls mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold">
@@ -722,7 +733,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                       : ""
                                   }`}
                                 />
-                                {comment.post_comment_likes.length}
+                                {commentLikes.length}
                               </button>
                             </form>
                             <details>
@@ -877,7 +888,9 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                           {replies.length ? (
                             <div className="mt-3 space-y-2 border-l border-[var(--card-rim)] pl-3">
                               {replies.map((reply) => {
-                                const likedReply = reply.post_comment_likes.some(
+                                const replyLikes = asArray(reply.post_comment_likes);
+                                const replyMedia = asArray(reply.post_comment_media);
+                                const likedReply = replyLikes.some(
                                   (like) => like.user_id === claims?.sub,
                                 );
                                 const isOwnReply =
@@ -903,7 +916,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                           </span>{" "}
                                           {reply.body}
                                         </p>
-                                        <CommentMediaPreview media={reply.post_comment_media[0]} />
+                                        <CommentMediaPreview media={replyMedia[0]} />
                                         </div>
                                       </div>
                                       <form action={togglePostCommentLike}>
@@ -930,7 +943,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                                 : ""
                                             }`}
                                           />
-                                          {reply.post_comment_likes.length}
+                                          {replyLikes.length}
                                         </button>
                                       </form>
                                     </div>

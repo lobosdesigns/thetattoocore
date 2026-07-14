@@ -191,9 +191,11 @@ const checks = [
           source.includes("videoAllowed={false}"),
       ) &&
       postDetailPage.includes("post_comment_media(id, storage_bucket, storage_path, media_type, mime_type, width, height)") &&
-      postDetailPage.includes("CommentMediaPreview media={comment.post_comment_media[0]}") &&
+      postDetailPage.includes("const commentMedia = asArray(comment.post_comment_media)") &&
+      postDetailPage.includes("CommentMediaPreview media={commentMedia[0]}") &&
       threadDetailPage.includes("thread_comment_media(id, storage_bucket, storage_path, media_type, mime_type, width, height)") &&
-      threadDetailPage.includes("CommentMediaPreview media={comment.thread_comment_media[0]}"),
+      threadDetailPage.includes("const commentMedia = asArray(comment.thread_comment_media)") &&
+      threadDetailPage.includes("CommentMediaPreview media={commentMedia[0]}"),
   },
 ];
 

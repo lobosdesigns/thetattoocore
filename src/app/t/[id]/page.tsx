@@ -112,6 +112,10 @@ type ThreadPageProps = {
 const commentsPageSize = 25;
 const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
 
+function asArray<T>(value: T[] | null | undefined) {
+  return Array.isArray(value) ? value : [];
+}
+
 function pageNumber(value: string | string[] | undefined) {
   const rawValue = Array.isArray(value) ? value[0] : value;
   const parsed = Number.parseInt(rawValue ?? "1", 10);
@@ -245,7 +249,8 @@ export async function generateMetadata({
     ? `Sensitive non-nude body-art Gossip thread on ${siteName}. Sign in to view eligible content.`
     : thread.body.slice(0, 155) ||
       `A Gossip thread by ${thread.profiles?.display_name ?? "a member"} on ${siteName}.`;
-  const shareMedia = thread.thread_media[0];
+  const threadMedia = asArray(thread.thread_media);
+  const shareMedia = threadMedia[0];
   const image =
     publicIndexable && shareMedia
       ? mediaUrl(shareMedia.storage_bucket, shareMedia.storage_path)
@@ -331,11 +336,14 @@ export default async function ThreadPage({
     isSignedIn,
   };
   const showThread = canViewThread({ isOwnThread, thread, viewer });
-  const media = thread.thread_media[0];
+  const threadMedia = asArray(thread.thread_media);
+  const threadLikes = asArray(thread.thread_likes);
+  const threadComments = asArray(thread.thread_comments);
+  const media = threadMedia[0];
   const mediaSrc = media ? mediaUrl(media.storage_bucket, media.storage_path) : null;
-  const liked = thread.thread_likes.some((like) => like.user_id === claims?.sub);
+  const liked = threadLikes.some((like) => like.user_id === claims?.sub);
   const returnPath = `/t/${thread.id}`;
-  const visibleComments = thread.thread_comments.filter(
+  const visibleComments = threadComments.filter(
     (comment) =>
       !comment.deleted_at && !hasCommentHide(comment.thread_comment_hides),
   );
@@ -504,7 +512,7 @@ export default async function ThreadPage({
             <section className="ttc-card rounded-md p-4">
               <div className="grid grid-cols-2 gap-2 text-center text-sm">
                 <div className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_84%,transparent)] p-3">
-                  <p className="text-lg font-bold">{thread.thread_likes.length}</p>
+                  <p className="text-lg font-bold">{threadLikes.length}</p>
                   <p className="text-xs text-[var(--muted-strong)]">likes</p>
                 </div>
                 <div className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_84%,transparent)] p-3">
@@ -614,7 +622,9 @@ export default async function ThreadPage({
                 {isSignedIn && showThread && visibleComments.length ? (
                   visibleTopLevelComments
                     .map((comment) => {
-                      const likedComment = comment.thread_comment_likes.some(
+                      const commentLikes = asArray(comment.thread_comment_likes);
+                      const commentMedia = asArray(comment.thread_comment_media);
+                      const likedComment = commentLikes.some(
                         (like) => like.user_id === claims?.sub,
                       );
                       const replies = visibleComments.filter(
@@ -649,7 +659,7 @@ export default async function ThreadPage({
                                   {comment.body}
                                 </p>
                               ) : null}
-                              <CommentMediaPreview media={comment.thread_comment_media[0]} />
+                              <CommentMediaPreview media={commentMedia[0]} />
                             </div>
                           </div>
                           <div className="ttc-comment-controls mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold">
@@ -677,7 +687,7 @@ export default async function ThreadPage({
                                       : ""
                                   }`}
                                 />
-                                {comment.thread_comment_likes.length}
+                                {commentLikes.length}
                               </button>
                             </form>
                             <details>
@@ -832,8 +842,10 @@ export default async function ThreadPage({
                           {replies.length ? (
                             <div className="mt-3 space-y-2 border-l border-[var(--card-rim)] pl-3">
                               {replies.map((reply) => {
+                                const replyLikes = asArray(reply.thread_comment_likes);
+                                const replyMedia = asArray(reply.thread_comment_media);
                                 const likedReply =
-                                  reply.thread_comment_likes.some(
+                                  replyLikes.some(
                                     (like) => like.user_id === claims?.sub,
                                   );
                                 const isOwnReply =
@@ -860,7 +872,7 @@ export default async function ThreadPage({
                                             </span>{" "}
                                             {reply.body}
                                           </p>
-                                          <CommentMediaPreview media={reply.thread_comment_media[0]} />
+                                          <CommentMediaPreview media={replyMedia[0]} />
                                         </div>
                                       </div>
                                       <form action={toggleThreadCommentLike}>
@@ -887,7 +899,7 @@ export default async function ThreadPage({
                                                 : ""
                                             }`}
                                           />
-                                          {reply.thread_comment_likes.length}
+                                          {replyLikes.length}
                                         </button>
                                       </form>
                                     </div>
