@@ -447,6 +447,11 @@ const checks = [
     ],
   },
   {
+    path: "/u/ceocore?profile_4u=50&profile_gossip=50&profile_stuff=50&profile_gigs=50#profile-4u",
+    status: [200],
+    includes: ["CEOCore", "@ceocore", "4U", "Gossip", "Stuff", "Gigs"],
+  },
+  {
     path: "/u/ceocore/followers",
     status: [200],
     includes: ['name="robots" content="noindex, nofollow"', "Private community", "Back to profile"],

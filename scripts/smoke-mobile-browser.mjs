@@ -25,6 +25,11 @@ const routes = [
   { path: "/terms", textIncludes: "visible nudity is not allowed", titleIncludes: "Terms" },
   { path: "/search?q=ceocore", textIncludes: "@ceocore", titleIncludes: "Search" },
   { path: "/u/ceocore", textIncludes: "@ceocore", titleIncludes: "CEOCore" },
+  {
+    path: "/u/ceocore?profile_4u=50&profile_gossip=50&profile_stuff=50&profile_gigs=50#profile-4u",
+    textIncludes: "@ceocore",
+    titleIncludes: "CEOCore",
+  },
   { path: "/u/ceocore/followers", textIncludes: "community", titleIncludes: "Followers" },
   { path: "/u/ceocore/following", textIncludes: "community", titleIncludes: "Following" },
   { allowMainDocument404: true, path: "/p/not-a-real-post", titleIncludes: "404" },
