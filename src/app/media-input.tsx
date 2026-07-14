@@ -18,6 +18,8 @@ type SelectedMedia = {
   cropApplied: boolean;
   error: string | null;
   file: File;
+  imageHeight: number | null;
+  imageWidth: number | null;
   mediaType: "image" | "video" | "unknown";
   originalFileSize: number | null;
   previewUrl: string | null;
@@ -149,6 +151,20 @@ function cropAspectValue(aspect: CropAspect, width: number, height: number) {
   return width / height;
 }
 
+function cropPreviewAspectRatio(
+  aspect: CropAspect,
+  width: number | null,
+  height: number | null,
+) {
+  if (aspect === "square") return "1 / 1";
+  if (aspect === "portrait") return "4 / 5";
+  if (aspect === "landscape") return "16 / 9";
+  if (aspect === "banner") return "3 / 1";
+  if (width && height) return `${width} / ${height}`;
+
+  return "1 / 1";
+}
+
 function cropRectForImage(bitmap: ImageBitmap, crop: CropSettings) {
   const targetAspect = cropAspectValue(crop.aspect, bitmap.width, bitmap.height);
   const sourceAspect = bitmap.width / bitmap.height;
@@ -176,6 +192,16 @@ function cropRectForImage(bitmap: ImageBitmap, crop: CropSettings) {
     sourceX,
     sourceY,
   };
+}
+
+async function imageDimensions(file: File) {
+  if (!file.type.startsWith("image/")) return { height: null, width: null };
+
+  const bitmap = await createImageBitmap(file);
+  const dimensions = { height: bitmap.height, width: bitmap.width };
+  bitmap.close();
+
+  return dimensions;
 }
 
 async function compressImageFile(file: File, targetBytes: number) {
@@ -316,6 +342,13 @@ export function MediaInput({
     setIsOptimizing(false);
 
     const mediaType = mediaTypeFor(optimizedFile);
+    const dimensions =
+      mediaType === "image"
+        ? await imageDimensions(optimizedFile).catch(() => ({
+            height: null,
+            width: null,
+          }))
+        : { height: null, width: null };
     const durationSeconds =
       mediaType === "video" ? await videoDuration(optimizedFile) : null;
     const maxBytes = mediaType === "video" ? maxVideoBytes : maxImageBytes;
@@ -342,6 +375,8 @@ export function MediaInput({
       cropApplied: false,
       error,
       file: optimizedFile,
+      imageHeight: dimensions.height,
+      imageWidth: dimensions.width,
       mediaType,
       originalFileSize: optimizedFile.size < file.size ? file.size : null,
       previewUrl:
@@ -364,6 +399,11 @@ export function MediaInput({
       cropSettings,
     ).catch(() => selected.file);
 
+    const dimensions = await imageDimensions(croppedFile).catch(() => ({
+      height: selected.imageHeight,
+      width: selected.imageWidth,
+    }));
+
     replaceInputFile(input, croppedFile);
     if (selected.previewUrl) URL.revokeObjectURL(selected.previewUrl);
     setIsOptimizing(false);
@@ -375,6 +415,8 @@ export function MediaInput({
           ? `Image limit is ${formatBytes(maxImageBytes)}.`
           : null,
       file: croppedFile,
+      imageHeight: dimensions.height,
+      imageWidth: dimensions.width,
       originalFileSize:
         croppedFile.size < selected.sourceFile.size ? selected.sourceFile.size : null,
       previewUrl: URL.createObjectURL(croppedFile),
@@ -481,6 +523,35 @@ export function MediaInput({
                   <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
                     Edit crop
                   </p>
+                  {selected.previewUrl ? (
+                    <div className="mt-2 rounded-md border border-[var(--card-rim)] bg-[var(--foreground)] p-2">
+                      <div
+                        className="mx-auto max-h-48 w-full max-w-80 overflow-hidden rounded bg-black"
+                        style={{
+                          aspectRatio: cropPreviewAspectRatio(
+                            cropSettings.aspect,
+                            selected.imageWidth,
+                            selected.imageHeight,
+                          ),
+                        }}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          alt="Crop preview"
+                          className="size-full object-cover"
+                          src={selected.previewUrl}
+                          style={{
+                            objectPosition: `${cropSettings.focusX}% ${cropSettings.focusY}%`,
+                            transform: `scale(${cropSettings.zoom})`,
+                            transformOrigin: `${cropSettings.focusX}% ${cropSettings.focusY}%`,
+                          }}
+                        />
+                      </div>
+                      <p className="mt-2 text-xs text-[var(--background)]">
+                        Preview the framing, then apply before publishing.
+                      </p>
+                    </div>
+                  ) : null}
                   <div className="mt-2 grid gap-2 sm:grid-cols-2">
                     <label className="grid gap-1 text-xs font-semibold">
                       Shape

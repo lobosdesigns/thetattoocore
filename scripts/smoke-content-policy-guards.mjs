@@ -111,8 +111,11 @@ const checks = [
     ok:
       mediaInput.includes('type CropAspect = "original" | "square" | "portrait" | "landscape" | "banner"') &&
       mediaInput.includes("function cropRectForImage") &&
+      mediaInput.includes("function cropPreviewAspectRatio") &&
       mediaInput.includes("async function cropAndCompressImageFile") &&
       mediaInput.includes("Edit crop") &&
+      mediaInput.includes("Crop preview") &&
+      mediaInput.includes("Preview the framing, then apply before publishing.") &&
       mediaInput.includes("Apply crop") &&
       mediaInput.includes("Left / right focus") &&
       mediaInput.includes("Up / down focus") &&
