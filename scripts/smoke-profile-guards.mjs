@@ -132,6 +132,25 @@ const checks = [
       profilePage.includes("artists={visibleLinkedArtists}"),
   },
   {
+    label: "profile content sections page deeper content 25 at a time",
+    ok:
+      profilePage.includes("const profileContentPageSize = 25") &&
+      profilePage.includes("function profileSectionLimit") &&
+      profilePage.includes("function profileLoadMoreHref") &&
+      profilePage.includes("const feedProfileLimit = profileSectionLimit(query.profile_4u)") &&
+      profilePage.includes(".limit(feedProfileLimit + 1)") &&
+      profilePage.includes(".limit(gossipProfileLimit + 1)") &&
+      profilePage.includes(".limit(stuffProfileLimit + 1)") &&
+      profilePage.includes(".limit(gigsProfileLimit + 1)") &&
+      profilePage.includes("const hasMoreProfilePosts =") &&
+      profilePage.includes("<ProfileLoadMoreLink") &&
+      profilePage.includes('label="Load more 4U"') &&
+      profilePage.includes('label="Load more Gossip"') &&
+      profilePage.includes('label="Load more Stuff"') &&
+      profilePage.includes('label="Load more Gigs"') &&
+      productPlan.includes("public profile 4U, Gossip, Stuff, and Gigs sections"),
+  },
+  {
     label: "search discovery filters blocked profiles and owned content",
     ok:
       searchPage.includes("async function getBlockedProfileIds") &&

@@ -231,10 +231,72 @@ type StoryPost = {
   story_views?: { count: number }[];
 };
 
+type ProfileQuery = {
+  message?: string | string[];
+  profile_4u?: string | string[];
+  profile_gigs?: string | string[];
+  profile_gossip?: string | string[];
+  profile_stuff?: string | string[];
+};
+
 type FollowRecord = {
   following_id: string;
   status: "pending" | "accepted";
 };
+
+const profileContentPageSize = 25;
+const maxProfileContentLimit = 200;
+
+function firstQueryValue(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function profileSectionLimit(value?: string | string[]) {
+  const parsed = Number.parseInt(firstQueryValue(value) ?? "", 10);
+
+  if (!Number.isFinite(parsed) || parsed <= 0) return profileContentPageSize;
+
+  return Math.min(
+    maxProfileContentLimit,
+    Math.max(profileContentPageSize, parsed),
+  );
+}
+
+function profileLoadMoreHref({
+  anchor,
+  key,
+  query,
+  username,
+  value,
+}: {
+  anchor: string;
+  key: keyof Pick<
+    ProfileQuery,
+    "profile_4u" | "profile_gigs" | "profile_gossip" | "profile_stuff"
+  >;
+  query: ProfileQuery;
+  username: string;
+  value: number;
+}) {
+  const params = new URLSearchParams();
+
+  for (const paramKey of [
+    "profile_4u",
+    "profile_gossip",
+    "profile_stuff",
+    "profile_gigs",
+  ] as const) {
+    const current = firstQueryValue(query[paramKey]);
+
+    if (current) params.set(paramKey, current);
+  }
+
+  const message = firstQueryValue(query.message);
+  if (message) params.set("message", message);
+  params.set(key, String(Math.min(maxProfileContentLimit, value)));
+
+  return `/u/${username}?${params.toString()}#${anchor}`;
+}
 
 type BlockRecord = {
   blocked_id: string;
@@ -799,6 +861,25 @@ function ProfileSectionHeading({
   );
 }
 
+function ProfileLoadMoreLink({
+  href,
+  label,
+}: {
+  href: string;
+  label: string;
+}) {
+  return (
+    <div className="mt-4 flex justify-center">
+      <Link
+        className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-4 text-sm font-bold hover:border-[var(--foreground)]"
+        href={href}
+      >
+        {label}
+      </Link>
+    </div>
+  );
+}
+
 function ProfileEmptyState({
   actionHref,
   actionLabel,
@@ -1106,7 +1187,7 @@ function ProfileStoryPrompt() {
 
 type ProfilePageProps = {
   params: Promise<{ username: string }>;
-  searchParams: Promise<{ message?: string }>;
+  searchParams: Promise<ProfileQuery>;
 };
 
 export async function generateMetadata({
@@ -1235,6 +1316,10 @@ export default async function ProfilePage({
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
+  const feedProfileLimit = profileSectionLimit(query.profile_4u);
+  const gossipProfileLimit = profileSectionLimit(query.profile_gossip);
+  const stuffProfileLimit = profileSectionLimit(query.profile_stuff);
+  const gigsProfileLimit = profileSectionLimit(query.profile_gigs);
 
   const { data: profileRow } = await supabase
     .from("profiles")
@@ -1361,7 +1446,7 @@ export default async function ProfilePage({
         ascending: true,
         referencedTable: "feed_media",
       })
-      .limit(9)
+      .limit(feedProfileLimit + 1)
       .returns<FeedPost[]>(),
     supabase
       .from("thread_posts")
@@ -1369,7 +1454,7 @@ export default async function ProfilePage({
       .eq("author_id", profile.id)
       .eq("moderation_status", "active")
       .order("created_at", { ascending: false })
-      .limit(5)
+      .limit(gossipProfileLimit + 1)
       .returns<ThreadPost[]>(),
     supabase
       .from("marketplace_listings")
@@ -1384,7 +1469,7 @@ export default async function ProfilePage({
         ascending: true,
         referencedTable: "marketplace_media",
       })
-      .limit(6)
+      .limit(stuffProfileLimit + 1)
       .returns<Listing[]>(),
     supabase
       .from("gigs")
@@ -1399,7 +1484,7 @@ export default async function ProfilePage({
         ascending: true,
         referencedTable: "gig_media",
       })
-      .limit(6)
+      .limit(gigsProfileLimit + 1)
       .returns<Gig[]>(),
     claims?.sub && claims.sub !== profile.id
       ? supabase
@@ -1522,10 +1607,18 @@ export default async function ProfilePage({
     defaultBookingDepositCents + defaultBookingFeeCents;
   const canShow = (item: VisibleContent) =>
     !isPrivateLocked && canRenderContent({ isOwnProfile, item, viewer });
-  const visiblePosts = (posts ?? []).filter(canShow);
-  const visibleThreads = (threads ?? []).filter(canShow);
-  const visibleListings = (listings ?? []).filter(canShow);
-  const visibleGigs = (gigs ?? []).filter(canShow);
+  const profilePostRows = (posts ?? []).slice(0, feedProfileLimit);
+  const profileThreadRows = (threads ?? []).slice(0, gossipProfileLimit);
+  const profileListingRows = (listings ?? []).slice(0, stuffProfileLimit);
+  const profileGigRows = (gigs ?? []).slice(0, gigsProfileLimit);
+  const visiblePosts = profilePostRows.filter(canShow);
+  const visibleThreads = profileThreadRows.filter(canShow);
+  const visibleListings = profileListingRows.filter(canShow);
+  const visibleGigs = profileGigRows.filter(canShow);
+  const hasMoreProfilePosts = (posts?.length ?? 0) > feedProfileLimit;
+  const hasMoreProfileThreads = (threads?.length ?? 0) > gossipProfileLimit;
+  const hasMoreProfileListings = (listings?.length ?? 0) > stuffProfileLimit;
+  const hasMoreProfileGigs = (gigs?.length ?? 0) > gigsProfileLimit;
   const visibleStory = (activeStories ?? []).find(canShow);
   const visibleFollowerPreview = (followerPreview ?? []).filter(
     (follow) => follow.profiles && !blockedProfileIds.has(follow.profiles.id),
@@ -1538,11 +1631,11 @@ export default async function ProfilePage({
   );
   const hiddenContentCount = isPrivateLocked
     ? 0
-    : (posts?.length ?? 0) -
+    : profilePostRows.length -
       visiblePosts.length +
-      ((threads?.length ?? 0) - visibleThreads.length) +
-      ((listings?.length ?? 0) - visibleListings.length) +
-      ((gigs?.length ?? 0) - visibleGigs.length);
+      (profileThreadRows.length - visibleThreads.length) +
+      (profileListingRows.length - visibleListings.length) +
+      (profileGigRows.length - visibleGigs.length);
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -1568,9 +1661,9 @@ export default async function ProfilePage({
           </div>
         </header>
 
-        {query.message ? (
+        {firstQueryValue(query.message) ? (
           <p className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_88%,var(--brand-gold)_12%)] px-4 py-3 text-sm font-medium">
-            {query.message}
+            {firstQueryValue(query.message)}
           </p>
         ) : null}
 
@@ -2284,11 +2377,25 @@ export default async function ProfilePage({
             title="4U"
           />
           {visiblePosts.length ? (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {visiblePosts.map((post) => (
-                <PostPreview key={post.id} post={post} />
-              ))}
-            </div>
+            <>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {visiblePosts.map((post) => (
+                  <PostPreview key={post.id} post={post} />
+                ))}
+              </div>
+              {hasMoreProfilePosts ? (
+                <ProfileLoadMoreLink
+                  href={profileLoadMoreHref({
+                    anchor: "profile-4u",
+                    key: "profile_4u",
+                    query,
+                    username: profile.username,
+                    value: feedProfileLimit + profileContentPageSize,
+                  })}
+                  label="Load more 4U"
+                />
+              ) : null}
+            </>
           ) : (
             <ProfileEmptyState
               actionHref={isOwnProfile ? "/#feed" : undefined}
@@ -2348,6 +2455,18 @@ export default async function ProfilePage({
                 />
               )}
             </div>
+            {hasMoreProfileThreads ? (
+              <ProfileLoadMoreLink
+                href={profileLoadMoreHref({
+                  anchor: "profile-gossip",
+                  key: "profile_gossip",
+                  query,
+                  username: profile.username,
+                  value: gossipProfileLimit + profileContentPageSize,
+                })}
+                label="Load more Gossip"
+              />
+            ) : null}
           </div>
 
           <div className="scroll-mt-28" id="profile-stuff">
@@ -2418,6 +2537,18 @@ export default async function ProfilePage({
                 />
               )}
             </div>
+            {hasMoreProfileListings ? (
+              <ProfileLoadMoreLink
+                href={profileLoadMoreHref({
+                  anchor: "profile-stuff",
+                  key: "profile_stuff",
+                  query,
+                  username: profile.username,
+                  value: stuffProfileLimit + profileContentPageSize,
+                })}
+                label="Load more Stuff"
+              />
+            ) : null}
           </div>
 
           <div className="scroll-mt-28" id="profile-gigs">
@@ -2518,6 +2649,18 @@ export default async function ProfilePage({
                 />
               )}
             </div>
+            {hasMoreProfileGigs ? (
+              <ProfileLoadMoreLink
+                href={profileLoadMoreHref({
+                  anchor: "profile-gigs",
+                  key: "profile_gigs",
+                  query,
+                  username: profile.username,
+                  value: gigsProfileLimit + profileContentPageSize,
+                })}
+                label="Load more Gigs"
+              />
+            ) : null}
           </div>
         </section>
           </>
