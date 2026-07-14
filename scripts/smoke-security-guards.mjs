@@ -205,6 +205,14 @@ const checks = [
       publicSmoke.includes('"Invalid event."'),
   },
   {
+    label: "public smoke covers logged-out admin mail and gig create APIs",
+    ok:
+      publicSmoke.includes('path: "/api/admin/mail/test"') &&
+      publicSmoke.includes('path: "/api/gigs"') &&
+      publicSmoke.includes('"Sign in required."') &&
+      publicSmoke.includes('redirectIncludes: "/login"'),
+  },
+  {
     label: "support deletion action routes through safe sign-in return",
     ok:
       supportPage.includes('href: "/login?return_to=%2Faccount%23data-settings"') &&

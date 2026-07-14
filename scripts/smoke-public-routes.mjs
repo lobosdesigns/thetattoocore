@@ -35,6 +35,18 @@ const smokeFetchHeaders = {
 };
 const transientStatuses = new Set([429, 502, 503, 504, 599]);
 const requestDelayMs = Number.parseInt(process.env.SMOKE_REQUEST_DELAY_MS || "200", 10);
+const fetchAttempts = Math.max(
+  1,
+  Number.parseInt(process.env.SMOKE_FETCH_ATTEMPTS || "3", 10),
+);
+const fetchTimeoutMs = Math.max(
+  1000,
+  Number.parseInt(process.env.SMOKE_FETCH_TIMEOUT_MS || "5000", 10),
+);
+const fetchBackoffMs = Math.max(
+  100,
+  Number.parseInt(process.env.SMOKE_FETCH_BACKOFF_MS || "400", 10),
+);
 
 function isEdgeChallenge(body) {
   const text = body.toLowerCase();
@@ -55,7 +67,7 @@ function sleep(ms) {
 async function fetchTextWithRetry(url, options = {}, retryOptions = {}) {
   let lastResult;
 
-  for (let attempt = 0; attempt < 5; attempt += 1) {
+  for (let attempt = 0; attempt < fetchAttempts; attempt += 1) {
     let response;
     let body;
 
@@ -66,7 +78,7 @@ async function fetchTextWithRetry(url, options = {}, retryOptions = {}) {
           ...smokeFetchHeaders,
           ...(options.headers || {}),
         },
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(fetchTimeoutMs),
       });
       body = await response.text();
     } catch (error) {
@@ -81,8 +93,8 @@ async function fetchTextWithRetry(url, options = {}, retryOptions = {}) {
       return lastResult;
     }
 
-    if (attempt < 4) {
-      await sleep(750 * (attempt + 1));
+    if (attempt < fetchAttempts - 1) {
+      await sleep(fetchBackoffMs * (attempt + 1));
     }
   }
 
@@ -92,7 +104,7 @@ async function fetchTextWithRetry(url, options = {}, retryOptions = {}) {
 async function fetchWithRetry(url, options = {}) {
   let lastResponse;
 
-  for (let attempt = 0; attempt < 5; attempt += 1) {
+  for (let attempt = 0; attempt < fetchAttempts; attempt += 1) {
     let response;
 
     try {
@@ -102,7 +114,7 @@ async function fetchWithRetry(url, options = {}) {
           ...smokeFetchHeaders,
           ...(options.headers || {}),
         },
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(fetchTimeoutMs),
       });
     } catch (error) {
       response = new Response(error instanceof Error ? error.message : String(error), {
@@ -116,8 +128,8 @@ async function fetchWithRetry(url, options = {}) {
       return response;
     }
 
-    if (attempt < 4) {
-      await sleep(750 * (attempt + 1));
+    if (attempt < fetchAttempts - 1) {
+      await sleep(fetchBackoffMs * (attempt + 1));
     }
   }
 
@@ -173,6 +185,23 @@ const checks = [
     status: [303],
     redirectIncludes: "/login",
     locationIncludes: ["Sign%20in%20to%20buy%20merch"],
+    redirect: "manual",
+  },
+  {
+    body: JSON.stringify({ recipientEmail: "support@thetattoocore.com" }),
+    method: "POST",
+    path: "/api/admin/mail/test",
+    requestHeaders: { "content-type": "application/json" },
+    status: [401],
+    includes: ['"Sign in required."'],
+    headers: false,
+  },
+  {
+    body: "title=Guest%20spot",
+    method: "POST",
+    path: "/api/gigs",
+    status: [303],
+    redirectIncludes: "/login",
     redirect: "manual",
   },
   {
