@@ -203,7 +203,10 @@ const checks = [
       !docs["docs/PRODUCT_PLAN.md"].includes("APNs") &&
       !docs["docs/PRODUCT_PLAN.md"].includes("FCM") &&
       !docs["docs/PRODUCT_PLAN.md"].includes("Firebase Cloud Messaging") &&
-      !docs["docs/PRODUCT_PLAN.md"].includes("provider-backed"),
+      !docs["docs/PRODUCT_PLAN.md"].includes("provider-backed") &&
+      !docs["docs/PRODUCT_PLAN.md"].includes("payment-provider review") &&
+      !docs["docs/PRODUCT_PLAN.md"].includes("payment-provider rules") &&
+      !docs["docs/APP_STORE_READINESS.md"].includes("payment-provider review"),
   },
   {
     label: "payment readiness doc keeps real-money gates explicit",
