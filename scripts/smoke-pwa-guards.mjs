@@ -121,11 +121,13 @@ const checks = [
     label: "user-facing push copy avoids technical install-channel wording",
     ok:
       userFacingPushSource.includes("Installed app push") &&
-      userFacingPushSource.includes("iOS and Android push after mobile apps are ready") &&
+      userFacingPushSource.includes("Phone app alerts are off for now") &&
+      userFacingPushSource.includes("Alert settings") &&
       !userFacingPushSource.includes('"PWA"') &&
       !userFacingPushSource.includes("Browser push") &&
       !userFacingPushSource.includes("installed-web-app") &&
-      !userFacingPushSource.includes("Native iOS"),
+      !userFacingPushSource.includes("Native iOS") &&
+      !userFacingPushSource.includes("Push roadmap"),
   },
   {
     label: "push subscriptions are stored behind authenticated RLS",

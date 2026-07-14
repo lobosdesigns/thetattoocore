@@ -112,7 +112,7 @@ const notificationSummary = [
   ["Live now", "In-app alerts and badges"],
   ["Next", "Email for important account events"],
   ["Installed", "Installed app push after opt-in"],
-  ["Mobile", "iOS and Android push after mobile apps are ready"],
+  ["Mobile", "Phone app alerts are off for now"],
 ] as const;
 
 const profileTabs = [
@@ -134,11 +134,11 @@ function profileTabFromHash(hash: string): ProfileTab {
   return "profile";
 }
 
-const pushRoadmap = [
+const alertSettingNotes = [
   "Current switches control in-app notifications and unread badges.",
-  "The same choices can guide important email and installed-app alerts when those channels are ready.",
+  "The same choices can guide important email and installed-app alerts as those features open up.",
   "Quiet hours help reduce noisy alerts while keeping safety and account alerts available.",
-  "Phone app alerts will stay off until app builds and delivery settings are ready.",
+  "Phone app alerts are off for now.",
 ] as const;
 
 function RequiredMark() {
@@ -665,10 +665,10 @@ export function ProfileForm({
           </div>
           <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
             <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
-              Push roadmap
+              Alert settings
             </p>
             <ul className="mt-2 grid gap-2 text-xs leading-5 text-[var(--muted)]">
-              {pushRoadmap.map((item) => (
+              {alertSettingNotes.map((item) => (
                 <li key={item}>{item}</li>
               ))}
             </ul>
