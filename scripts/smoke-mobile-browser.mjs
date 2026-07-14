@@ -7,24 +7,24 @@ const baseUrl = (process.env.SMOKE_BASE_URL || "https://thetattoocore.com").repl
 const width = Number(process.env.SMOKE_MOBILE_WIDTH || 390);
 const height = Number(process.env.SMOKE_MOBILE_HEIGHT || 844);
 const routes = [
-  { path: "/" },
-  { path: "/login" },
-  { path: "/signup" },
-  { path: "/forgot-password" },
-  { path: "/reset-password" },
-  { path: "/support" },
-  { path: "/privacy" },
-  { path: "/terms" },
-  { path: "/search?q=ceocore" },
-  { path: "/u/ceocore" },
-  { path: "/u/ceocore/followers" },
-  { path: "/u/ceocore/following" },
-  { allowMainDocument404: true, path: "/p/not-a-real-post" },
-  { allowMainDocument404: true, path: "/t/not-a-real-thread" },
-  { allowMainDocument404: true, path: "/stuff/not-a-real-listing" },
-  { allowMainDocument404: true, path: "/gigs/not-a-real-gig" },
-  { allowMainDocument404: true, path: "/merch/not-a-real-product" },
-  { path: "/merch/checkout/success" },
+  { path: "/", titleIncludes: "Sign in" },
+  { path: "/login", titleIncludes: "Sign in" },
+  { path: "/signup", titleIncludes: "Create account" },
+  { path: "/forgot-password", textIncludes: "Send reset link", titleIncludes: "Reset password" },
+  { path: "/reset-password", textIncludes: "Create new password", titleIncludes: "Reset password" },
+  { path: "/support", textIncludes: "support@thetattoocore.com", titleIncludes: "Support" },
+  { path: "/privacy", textIncludes: "support@thetattoocore.com", titleIncludes: "Privacy" },
+  { path: "/terms", textIncludes: "visible nudity is not allowed", titleIncludes: "Terms" },
+  { path: "/search?q=ceocore", textIncludes: "@ceocore", titleIncludes: "Search" },
+  { path: "/u/ceocore", textIncludes: "@ceocore", titleIncludes: "CEOCore" },
+  { path: "/u/ceocore/followers", textIncludes: "community", titleIncludes: "Followers" },
+  { path: "/u/ceocore/following", textIncludes: "community", titleIncludes: "Following" },
+  { allowMainDocument404: true, path: "/p/not-a-real-post", titleIncludes: "404" },
+  { allowMainDocument404: true, path: "/t/not-a-real-thread", titleIncludes: "404" },
+  { allowMainDocument404: true, path: "/stuff/not-a-real-listing", titleIncludes: "404" },
+  { allowMainDocument404: true, path: "/gigs/not-a-real-gig", titleIncludes: "404" },
+  { allowMainDocument404: true, path: "/merch/not-a-real-product", titleIncludes: "404" },
+  { path: "/merch/checkout/success", titleIncludes: "Merch checkout status" },
 ];
 const forbiddenText = [
   "This page couldn't load",
@@ -145,6 +145,7 @@ async function checkRoute(portNumber, url, route) {
           finalUrl: location.href,
           forbidden: ${JSON.stringify(forbiddenText)}.filter((snippet) => text.includes(snippet)),
           scrollWidth: maxScrollWidth,
+          text,
           title: document.title,
         };
       })()`,
@@ -156,6 +157,12 @@ async function checkRoute(portNumber, url, route) {
 
     if (value.forbidden?.length) {
       reasons.push(`found reload/error text: ${value.forbidden.join(", ")}`);
+    }
+    if (route.titleIncludes && !String(value.title || "").includes(route.titleIncludes)) {
+      reasons.push(`title "${value.title || ""}" did not include "${route.titleIncludes}"`);
+    }
+    if (route.textIncludes && !String(value.text || "").includes(route.textIncludes)) {
+      reasons.push(`page text did not include "${route.textIncludes}"`);
     }
     if (overflow > 2) {
       reasons.push(`horizontal overflow ${overflow}px (${value.scrollWidth}px document on ${value.clientWidth}px viewport)`);
