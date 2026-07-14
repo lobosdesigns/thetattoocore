@@ -3,7 +3,12 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ArrowLeft, ChevronLeft, ChevronRight, ShieldCheck, Users } from "lucide-react";
 import { AdminSectionNav } from "../admin-section-nav";
-import { changeUserRole, changeUserStatus, createTestAccount } from "../actions";
+import {
+  changeUserRole,
+  changeUserStatus,
+  createTestAccount,
+  grantUserAdCredit,
+} from "../actions";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -21,6 +26,7 @@ type AdminUser = {
   role: UserRole;
   suspendedAt: string | null;
   username: string;
+  adCreditBalanceCents: number;
 };
 
 const moderateRoles: UserRole[] = ["moderator", "admin", "owner"];
@@ -50,6 +56,13 @@ function userStatus(user: Pick<AdminUser, "bannedAt" | "suspendedAt">) {
 
 function pageHref(page: number) {
   return `/admin/users?page=${page}`;
+}
+
+function money(cents: number) {
+  return new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    style: "currency",
+  }).format(cents / 100);
 }
 
 function statusClass(user: AdminUser) {
@@ -155,6 +168,7 @@ export default async function AdminUsersPage({
     >();
   const users: AdminUser[] = (userRows ?? []).map((user) => ({
     accountType: user.account_type,
+    adCreditBalanceCents: 0,
     bannedAt: user.banned_at,
     createdAt: user.created_at,
     displayName: user.display_name,
@@ -164,10 +178,47 @@ export default async function AdminUsersPage({
     suspendedAt: user.suspended_at,
     username: user.username,
   }));
+  const userIds = users.map((user) => user.id);
+  const { data: creditRows } = userIds.length
+    ? await supabase
+        .from("ad_credit_ledger")
+        .select("profile_id, amount_cents, used_cents, status, expires_at")
+        .in("profile_id", userIds)
+        .returns<
+          {
+            amount_cents: number;
+            expires_at: string | null;
+            profile_id: string;
+            status: string;
+            used_cents: number;
+          }[]
+        >()
+    : { data: [] };
+  const creditBalances = new Map<string, number>();
+
+  for (const credit of creditRows ?? []) {
+    if (credit.status !== "active") continue;
+
+    creditBalances.set(
+      credit.profile_id,
+      (creditBalances.get(credit.profile_id) ?? 0) +
+        Math.max(0, credit.amount_cents - credit.used_cents),
+    );
+  }
+
+  for (const user of users) {
+    user.adCreditBalanceCents = creditBalances.get(user.id) ?? 0;
+  }
+
+  const visibleAdCreditTotalCents = users.reduce(
+    (total, user) => total + user.adCreditBalanceCents,
+    0,
+  );
   const totalUsers = count ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalUsers / pageSize));
   const hasNextPage = currentPage < totalPages;
   const canManageRoles = profile.role === "owner";
+  const canGrantAdCredits = profile.role === "admin" || profile.role === "owner";
   const canCreateTestAccounts = canManageRoles && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
   return (
@@ -208,7 +259,7 @@ export default async function AdminUsersPage({
           </p>
         ) : null}
 
-        <div className="mb-4 grid gap-3 sm:grid-cols-3">
+        <div className="mb-4 grid gap-3 sm:grid-cols-4">
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
             <p className="text-sm text-[var(--muted-strong)]">Total accounts</p>
             <p className="mt-2 text-3xl font-bold">
@@ -226,6 +277,12 @@ export default async function AdminUsersPage({
             <p className="mt-2 flex items-center gap-2 text-lg font-bold">
               <ShieldCheck className="size-5 text-[var(--gold)]" />
               {canManageRoles ? "Owner enabled" : "Moderator safety only"}
+            </p>
+          </div>
+          <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+            <p className="text-sm text-[var(--muted-strong)]">Visible ad credits</p>
+            <p className="mt-2 text-3xl font-bold">
+              {money(visibleAdCreditTotalCents)}
             </p>
           </div>
         </div>
@@ -365,6 +422,9 @@ export default async function AdminUsersPage({
                     >
                       {userStatus(user)}
                     </span>
+                    <span className="rounded-md border border-[color-mix(in_srgb,var(--gold)_35%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] px-2 py-1 text-xs font-semibold text-[var(--foreground)]">
+                      Ad credit {money(user.adCreditBalanceCents)}
+                    </span>
                   </div>
                   <p className="mt-1 text-sm text-[var(--muted-strong)]">
                     @{user.username} - {user.accountType} - joined{" "}
@@ -437,6 +497,66 @@ export default async function AdminUsersPage({
                   </div>
                 </form>
               </div>
+              {canGrantAdCredits ? (
+                <details className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_72%,transparent)] p-3">
+                  <summary className="cursor-pointer text-sm font-bold">
+                    Add ad credit
+                  </summary>
+                  <form
+                    action={grantUserAdCredit}
+                    className="mt-3 grid gap-2 lg:grid-cols-[130px_150px_1fr_150px_auto]"
+                  >
+                    <input name="profile_id" type="hidden" value={user.id} />
+                    <input name="return_to" type="hidden" value={pageHref(currentPage)} />
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-strong)]">
+                      Amount
+                      <input
+                        className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+                        min="1"
+                        name="credit_amount"
+                        placeholder="50.00"
+                        required
+                        step="0.01"
+                        type="number"
+                      />
+                    </label>
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-strong)]">
+                      Reason
+                      <select
+                        className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+                        defaultValue="promo"
+                        name="credit_reason"
+                      >
+                        <option value="promo">Promo</option>
+                        <option value="trade">Trade</option>
+                        <option value="sponsor">Sponsor</option>
+                        <option value="makegood">Make-good</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </label>
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-strong)]">
+                      Note
+                      <input
+                        className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+                        maxLength={500}
+                        name="credit_note"
+                        placeholder="Promo, sponsor trade, or make-good reason"
+                      />
+                    </label>
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-strong)]">
+                      Expires
+                      <input
+                        className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+                        name="expires_at"
+                        type="date"
+                      />
+                    </label>
+                    <button className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)] lg:self-end">
+                      Grant
+                    </button>
+                  </form>
+                </details>
+              ) : null}
             </article>
           ))}
         </section>

@@ -744,6 +744,74 @@ export async function createTestAccount(formData: FormData) {
   redirect(adminUsersMessage(`Tester @${username} created.`, returnTo));
 }
 
+export async function grantUserAdCredit(formData: FormData) {
+  const profileId = cleanText(formData.get("profile_id"), 80);
+  const returnTo = cleanText(formData.get("return_to"), 120);
+  const reason = cleanText(formData.get("credit_reason"), 40) as AdCreditReason;
+  const note = cleanText(formData.get("credit_note"), 500);
+  const expiresAt = cleanText(formData.get("expires_at"), 20);
+  const creditAmountCents = centsFromDollars(formData.get("credit_amount"), 10000000);
+
+  if (!profileId || !adCreditReasons.has(reason)) {
+    redirect(adminUsersMessage("Choose a valid user and ad credit reason.", returnTo));
+  }
+
+  if (creditAmountCents <= 0) {
+    redirect(adminUsersMessage("Ad credit amount must be greater than zero.", returnTo));
+  }
+
+  const expiration =
+    expiresAt && Number.isFinite(new Date(`${expiresAt}T23:59:59Z`).getTime())
+      ? new Date(`${expiresAt}T23:59:59Z`).toISOString()
+      : null;
+  const { supabase, userId } = await requireAdmin();
+  const { data: target, error: targetError } = await supabase
+    .from("profiles")
+    .select("id, username")
+    .eq("id", profileId)
+    .maybeSingle<{ id: string; username: string }>();
+
+  if (targetError || !target) {
+    redirect(
+      adminUsersMessage(targetError?.message || "Profile was not found.", returnTo),
+    );
+  }
+
+  const { error: insertError } = await supabase.from("ad_credit_ledger").insert({
+    actor_id: userId,
+    amount_cents: creditAmountCents,
+    credit_reason: reason,
+    expires_at: expiration,
+    note: note || null,
+    profile_id: profileId,
+  });
+
+  if (insertError) {
+    redirect(
+      adminUsersMessage(insertError.message || "Could not grant ad credit.", returnTo),
+    );
+  }
+
+  await supabase.from("admin_audit_logs").insert({
+    actor_id: userId,
+    event_type: "user_ad_credit_granted",
+    metadata: {
+      amount_cents: creditAmountCents,
+      expires_at: expiration,
+      reason,
+    },
+    summary: note || `Manual ad credit granted to @${target.username}.`,
+    target_id: profileId,
+    target_type: "profile",
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/users");
+  revalidatePath("/admin/ads");
+  revalidatePath("/account");
+  redirect(adminUsersMessage(`Ad credit granted to @${target.username}.`, returnTo));
+}
+
 export async function moderateContent(formData: FormData) {
   const subjectType = cleanText(formData.get("subject_type"), 40) as SubjectType;
   const subjectId = cleanText(formData.get("subject_id"), 80);

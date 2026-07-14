@@ -9,6 +9,10 @@ const adminDataRequests = readFileSync("src/app/admin/data-requests/page.tsx", "
 const adminContent = readFileSync("src/app/admin/content/page.tsx", "utf8");
 const adminGigs = readFileSync("src/app/admin/gigs/page.tsx", "utf8");
 const adminStuff = readFileSync("src/app/admin/stuff/page.tsx", "utf8");
+const adCreditMigration = readFileSync(
+  "supabase/migrations/20260715033000_ad_credit_ledger.sql",
+  "utf8",
+);
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
@@ -120,6 +124,22 @@ const checks = [
       adminUsers.includes("Owner tools ready") &&
       adminUsers.includes("Owner tools disabled") &&
       adminUsers.includes("disabled={!canCreateTestAccounts}"),
+  },
+  {
+    label: "admin users can grant account-level ad credits with audit logging",
+    ok:
+      adCreditMigration.includes("create table if not exists public.ad_credit_ledger") &&
+      adCreditMigration.includes("private.current_user_can_admin()") &&
+      adCreditMigration.includes("Users can view own ad credits") &&
+      adminActions.includes("export async function grantUserAdCredit") &&
+      adminActions.includes("await requireAdmin()") &&
+      adminActions.includes('event_type: "user_ad_credit_granted"') &&
+      adminActions.includes('.from("ad_credit_ledger").insert') &&
+      adminUsers.includes("grantUserAdCredit") &&
+      adminUsers.includes("Add ad credit") &&
+      adminUsers.includes("Visible ad credits") &&
+      adminUsers.includes("Ad credit {money(user.adCreditBalanceCents)}") &&
+      productPlan.includes("Account-level ad credits are also started"),
   },
   {
     label: "account deletion queues show friendly status labels",
