@@ -136,6 +136,10 @@ const checks = [
       actions.includes('.from("booking_settings")') &&
       actions.includes("bookingSettings?.booking_enabled") &&
       actions.includes("not accepting booking requests right now") &&
+      actions.includes("minimumDepositAmountCents") &&
+      actions.includes("bookingSettings.deposit_policy === \"required\"") &&
+      actions.includes("appointmentType.deposit_policy === \"required\"") &&
+      actions.includes("depositAmountCents = Math.max(depositAmountCents, minimumDepositAmountCents)") &&
       actions.includes('formData.get("appointment_type_id")') &&
       actions.includes('formData.get("preferred_slot_id")') &&
       actions.includes('.from("booking_appointment_types")') &&

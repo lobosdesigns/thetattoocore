@@ -1055,9 +1055,7 @@ export async function createBookingRequest(formData: FormData) {
   const styleTags = cleanText(formData.get("style_tags"), 160);
   const preferredCity = cleanText(formData.get("preferred_city"), 120);
   const preferredDates = cleanText(formData.get("preferred_dates"), 240);
-  const depositAmountCents = cleanMoneyCents(formData.get("deposit_amount"));
-  const platformFeeCents = calculatePlatformFeeCents(depositAmountCents);
-  const totalCents = depositAmountCents + platformFeeCents;
+  let depositAmountCents = cleanMoneyCents(formData.get("deposit_amount"));
 
   if (!artistId || artistId === userId) {
     redirect(
@@ -1125,9 +1123,13 @@ export async function createBookingRequest(formData: FormData) {
 
   const { data: bookingSettings } = await supabase
     .from("booking_settings")
-    .select("booking_enabled")
+    .select("booking_enabled, deposit_policy, default_deposit_amount_cents")
     .eq("profile_id", artist.id)
-    .maybeSingle<{ booking_enabled: boolean }>();
+    .maybeSingle<{
+      booking_enabled: boolean;
+      default_deposit_amount_cents: number;
+      deposit_policy: string;
+    }>();
 
   if (!bookingSettings?.booking_enabled) {
     redirect(
@@ -1141,15 +1143,26 @@ export async function createBookingRequest(formData: FormData) {
 
   let appointmentTypeName: string | null = null;
   let preferredSlotLabel: string | null = null;
+  let minimumDepositAmountCents =
+    bookingSettings.deposit_policy === "required"
+      ? bookingSettings.default_deposit_amount_cents
+      : 0;
 
   if (appointmentTypeId) {
     const { data: appointmentType } = await supabase
       .from("booking_appointment_types")
-      .select("id, name, profile_id, is_active")
+      .select("id, name, profile_id, is_active, deposit_policy, deposit_amount_cents")
       .eq("id", appointmentTypeId)
       .eq("profile_id", artist.id)
       .eq("is_active", true)
-      .maybeSingle<{ id: string; is_active: boolean; name: string; profile_id: string }>();
+      .maybeSingle<{
+        deposit_amount_cents: number;
+        deposit_policy: string;
+        id: string;
+        is_active: boolean;
+        name: string;
+        profile_id: string;
+      }>();
 
     if (!appointmentType) {
       redirect(
@@ -1162,6 +1175,11 @@ export async function createBookingRequest(formData: FormData) {
     }
 
     appointmentTypeName = appointmentType.name;
+    if (appointmentType.deposit_policy === "none" || appointmentType.deposit_policy === "optional") {
+      minimumDepositAmountCents = 0;
+    } else if (appointmentType.deposit_policy === "required") {
+      minimumDepositAmountCents = appointmentType.deposit_amount_cents;
+    }
   }
 
   if (preferredSlotId) {
@@ -1199,6 +1217,10 @@ export async function createBookingRequest(formData: FormData) {
     const weekdayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     preferredSlotLabel = `${weekdayLabels[preferredSlot.weekday] ?? "Day"} ${preferredSlot.starts_at.slice(0, 5)}-${preferredSlot.ends_at.slice(0, 5)}`;
   }
+
+  depositAmountCents = Math.max(depositAmountCents, minimumDepositAmountCents);
+  const platformFeeCents = calculatePlatformFeeCents(depositAmountCents);
+  const totalCents = depositAmountCents + platformFeeCents;
 
   let conversationId: string;
 
