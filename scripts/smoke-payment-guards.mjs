@@ -91,6 +91,10 @@ checks.push({
     adCheckout.includes("Ad credit applied. Campaign payment is covered.") &&
     adCheckout.indexOf('"spend_ad_credit_for_campaign"') <
       adCheckout.indexOf("const { data: reservedCampaign") &&
+    accountPage.includes(".from(\"ad_credit_ledger\")") &&
+    accountPage.includes("Available ad credit") &&
+    accountPage.includes("Use ${dollars(campaign.daily_budget_cents)} ad credit") &&
+    productPlan.includes("member-visible Account > Advertising balance summaries") &&
     productPlan.includes("atomic spend path that lets campaign checkout consume enough active account credit"),
 });
 checks.push({

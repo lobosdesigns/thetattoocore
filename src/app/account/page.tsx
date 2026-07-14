@@ -555,6 +555,18 @@ export default async function AccountPage({
         title: string;
       }[]
     >();
+  const { data: adCredits } = await supabase
+    .from("ad_credit_ledger")
+    .select("amount_cents, used_cents, status")
+    .eq("profile_id", claims.sub)
+    .eq("status", "active")
+    .returns<
+      {
+        amount_cents: number;
+        status: string;
+        used_cents: number;
+      }[]
+    >();
   const { data: deletionRequests } = await supabase
     .from("account_deletion_requests")
     .select("id, status, requested_at, reviewer_note")
@@ -787,6 +799,13 @@ export default async function AccountPage({
     (outgoingBookings?.length ?? 0) > bookingLimit;
   const visibleAdCampaigns = (adCampaigns ?? []).slice(0, adLimit);
   const hasMoreAdCampaigns = (adCampaigns?.length ?? 0) > adLimit;
+  const adCreditBalanceCents = (adCredits ?? []).reduce(
+    (total, credit) =>
+      credit.status === "active"
+        ? total + Math.max(0, credit.amount_cents - credit.used_cents)
+        : total,
+    0,
+  );
   const canSubmitLicense =
     profile?.account_type &&
     verificationEligibleAccountTypes.includes(profile.account_type as string);
@@ -2730,6 +2749,18 @@ export default async function AccountPage({
               for admin review. Artist growth ads can run in 4U and Gossip.
               Stuff ads stay in Stuff.
             </p>
+            <div className="mt-4 rounded-md border border-[color-mix(in_srgb,var(--gold)_35%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] p-3">
+              <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
+                Available ad credit
+              </p>
+              <p className="mt-1 text-2xl font-bold">
+                {dollars(adCreditBalanceCents)}
+              </p>
+              <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
+                If your credit covers a campaign daily budget, checkout applies
+                it before opening card payment.
+              </p>
+            </div>
             <div className="mt-4 grid gap-2 sm:grid-cols-3">
               {advertisingStandards.map((standard) => (
                 <p
@@ -2829,7 +2860,9 @@ export default async function AccountPage({
                           value="/account#advertising-settings"
                         />
                         <button className="h-10 w-full rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
-                          Pay {dollars(campaign.daily_budget_cents)} ad budget
+                          {adCreditBalanceCents >= campaign.daily_budget_cents
+                            ? `Use ${dollars(campaign.daily_budget_cents)} ad credit`
+                            : `Pay ${dollars(campaign.daily_budget_cents)} ad budget`}
                         </button>
                       </form>
                     ) : null}
