@@ -147,6 +147,28 @@ function profileLocation(profile?: Profile) {
   return [profile?.city, profile?.region].filter(Boolean).join(", ");
 }
 
+async function getBlockedProfileIds({
+  supabase,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId?: string | null;
+}) {
+  if (!userId) return new Set<string>();
+
+  const { data } = await supabase
+    .from("user_blocks")
+    .select("blocker_id, blocked_id")
+    .or(`blocker_id.eq.${userId},blocked_id.eq.${userId}`)
+    .returns<{ blocked_id: string; blocker_id: string }[]>();
+
+  return new Set(
+    (data ?? []).map((block) =>
+      block.blocker_id === userId ? block.blocked_id : block.blocker_id,
+    ),
+  );
+}
+
 function money(cents: number, currency: string) {
   return Intl.NumberFormat("en-US", {
     currency,
@@ -451,6 +473,11 @@ export default async function MessagesPage({
     );
   }
 
+  const blockedProfileIds = await getBlockedProfileIds({
+    supabase,
+    userId: claims.sub,
+  });
+
   const { data: membershipRows } = await supabase
     .from("conversation_members")
     .select("conversation_id, created_at, last_read_at")
@@ -557,6 +584,7 @@ export default async function MessagesPage({
       const otherProfile = otherMember
         ? profileById.get(otherMember.user_id)
         : undefined;
+
       const conversationMessages =
         messagesByConversation.get(membership.conversation_id) ?? [];
       const latestMessage =
@@ -564,6 +592,9 @@ export default async function MessagesPage({
 
       return {
         id: membership.conversation_id,
+        isBlockedConversation: Boolean(
+          otherMember && blockedProfileIds.has(otherMember.user_id),
+        ),
         latestMessage,
         myLastReadAt: membership.last_read_at,
         otherLastReadAt: otherMember?.last_read_at ?? null,
@@ -572,6 +603,7 @@ export default async function MessagesPage({
           unreadCountByConversation.get(membership.conversation_id) ?? 0,
       };
     })
+    .filter((conversation) => !conversation.isBlockedConversation)
     .sort((a, b) => {
       const aTime = new Date(a.latestMessage?.created_at ?? 0).getTime();
       const bTime = new Date(b.latestMessage?.created_at ?? 0).getTime();

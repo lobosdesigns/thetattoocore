@@ -10,6 +10,7 @@ const notificationActions = readFileSync("src/app/notifications/actions.ts", "ut
 const notificationPage = readFileSync("src/app/notifications/page.tsx", "utf8");
 const mainActions = readFileSync("src/app/actions.ts", "utf8");
 const messageActions = readFileSync("src/app/messages/actions.ts", "utf8");
+const messagePage = readFileSync("src/app/messages/page.tsx", "utf8");
 const messageThread = readFileSync("src/app/messages/message-thread.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const urls = readFileSync("src/lib/urls.ts", "utf8");
@@ -204,6 +205,17 @@ const checks = [
       !messageActions.includes("private owner tools enabled") &&
       messageThread.includes("const canDeleteUnread = mine && !hasBeenRead") &&
       messageThread.includes("title=\"Delete before the other member reads it\""),
+  },
+  {
+    label: "DM inbox filters blocked conversation members",
+    ok:
+      messagePage.includes("async function getBlockedProfileIds") &&
+      messagePage.includes("const blockedProfileIds = await getBlockedProfileIds") &&
+      messagePage.includes('from("user_blocks")') &&
+      messagePage.includes("blockedProfileIds.has(otherMember.user_id)") &&
+      messagePage.includes("isBlockedConversation") &&
+      messagePage.includes("!conversation.isBlockedConversation") &&
+      messageActions.includes("You cannot message a blocked profile."),
   },
   {
     label: "public smoke covers safe and unsafe login return paths",
