@@ -25,6 +25,7 @@
     "smoke:hydration": "node scripts/smoke-hydration-guards.mjs",
     "smoke:security": "node scripts/smoke-security-guards.mjs",
     "smoke:docs": "node scripts/smoke-docs-readiness.mjs",
+    "smoke:mobile": "node scripts/smoke-mobile-browser.mjs",
     "smoke:theme": "node scripts/smoke-theme-tokens.mjs"
   },
   "dependencies": {
