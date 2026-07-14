@@ -55,7 +55,7 @@ type FeedPost = {
   id: string;
   is_sensitive: boolean;
   location_label: string | null;
-  profiles: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"> | null;
+  profiles: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"> | null;
   style_tags: string[];
 };
 
@@ -63,7 +63,7 @@ type ThreadPost = {
   body: string;
   id: string;
   is_sensitive: boolean;
-  profiles: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"> | null;
+  profiles: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"> | null;
 };
 
 type Listing = {
@@ -71,7 +71,7 @@ type Listing = {
   city: string | null;
   id: string;
   is_sensitive: boolean;
-  profiles: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"> | null;
+  profiles: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"> | null;
   region: string | null;
   title: string;
 };
@@ -81,7 +81,7 @@ type Gig = {
   city: string | null;
   id: string;
   is_sensitive: boolean;
-  profiles: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"> | null;
+  profiles: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"> | null;
   region: string | null;
   title: string;
 };
@@ -92,7 +92,7 @@ type MerchProduct = {
   id: string;
   is_official: boolean;
   price_cents: number;
-  profiles: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"> | null;
+  profiles: Pick<Profile, "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"> | null;
   title: string;
 };
 
@@ -140,6 +140,28 @@ function idsFor(items: SavedItem[], type: SavedItem["subject_type"]) {
   return items
     .filter((item) => item.subject_type === type)
     .map((item) => item.subject_id);
+}
+
+async function getBlockedProfileIds({
+  supabase,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId?: string | null;
+}) {
+  if (!userId) return new Set<string>();
+
+  const { data } = await supabase
+    .from("user_blocks")
+    .select("blocker_id, blocked_id")
+    .or(`blocker_id.eq.${userId},blocked_id.eq.${userId}`)
+    .returns<{ blocked_id: string; blocker_id: string }[]>();
+
+  return new Set(
+    (data ?? []).map((block) =>
+      block.blocker_id === userId ? block.blocked_id : block.blocker_id,
+    ),
+  );
 }
 
 function itemIcon(type: SavedItem["subject_type"]) {
@@ -207,6 +229,10 @@ export default async function SavedPage({
     viewerProfile?.is_adult_confirmed &&
       viewerProfile.adult_terms_accepted_at,
   );
+  const blockedProfileIds = await getBlockedProfileIds({
+    supabase,
+    userId: claims.sub,
+  });
 
   const { data: savedItems } = await supabase
     .from("saved_items")
@@ -237,7 +263,7 @@ export default async function SavedPage({
           const query = supabase
             .from("feed_posts")
             .select(
-              "id, caption, is_sensitive, style_tags, location_label, profiles:profiles!feed_posts_author_id_fkey(username, display_name, avatar_url, account_type, license_verified_at)",
+              "id, caption, is_sensitive, style_tags, location_label, profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
             )
             .in("id", feedIds)
             .eq("is_published", true)
@@ -252,7 +278,7 @@ export default async function SavedPage({
           const query = supabase
             .from("thread_posts")
             .select(
-              "id, body, is_sensitive, profiles:profiles!thread_posts_author_id_fkey(username, display_name, avatar_url, account_type, license_verified_at)",
+              "id, body, is_sensitive, profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
             )
             .in("id", threadIds)
             .eq("moderation_status", "active");
@@ -266,7 +292,7 @@ export default async function SavedPage({
           const query = supabase
             .from("marketplace_listings")
             .select(
-              "id, title, category, city, region, is_sensitive, profiles:profiles!marketplace_listings_seller_id_fkey(username, display_name, avatar_url, account_type, license_verified_at)",
+              "id, title, category, city, region, is_sensitive, profiles:profiles!marketplace_listings_seller_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
             )
             .in("id", listingIds)
             .eq("status", "active")
@@ -281,7 +307,7 @@ export default async function SavedPage({
           const query = supabase
             .from("gigs")
             .select(
-              "id, title, category, city, region, is_sensitive, profiles:profiles!gigs_poster_id_fkey(username, display_name, avatar_url, account_type, license_verified_at)",
+              "id, title, category, city, region, is_sensitive, profiles:profiles!gigs_poster_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
             )
             .in("id", gigIds)
             .eq("status", "active")
@@ -295,7 +321,7 @@ export default async function SavedPage({
       ? supabase
           .from("merch_products")
           .select(
-            "id, title, category, price_cents, currency, is_official, profiles:profiles!merch_products_seller_id_fkey(username, display_name, avatar_url, account_type, license_verified_at)",
+            "id, title, category, price_cents, currency, is_official, profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
           )
           .in("id", merchIds)
           .eq("status", "active")
@@ -316,14 +342,52 @@ export default async function SavedPage({
       : Promise.resolve({ data: [] as Profile[] }),
   ]);
 
-  const feedMap = new Map((feedPosts ?? []).map((post) => [post.id, post]));
-  const threadMap = new Map((threadPosts ?? []).map((thread) => [thread.id, thread]));
-  const listingMap = new Map((listings ?? []).map((listing) => [listing.id, listing]));
-  const gigMap = new Map((gigs ?? []).map((gig) => [gig.id, gig]));
-  const merchMap = new Map(
-    (merchProducts ?? []).map((product) => [product.id, product]),
+  const feedMap = new Map(
+    (feedPosts ?? [])
+      .filter(
+        (post) =>
+          !post.profiles?.id || !blockedProfileIds.has(post.profiles.id),
+      )
+      .map((post) => [post.id, post]),
   );
-  const profileMap = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
+  const threadMap = new Map(
+    (threadPosts ?? [])
+      .filter(
+        (thread) =>
+          !thread.profiles?.id || !blockedProfileIds.has(thread.profiles.id),
+      )
+      .map((thread) => [thread.id, thread]),
+  );
+  const listingMap = new Map(
+    (listings ?? [])
+      .filter(
+        (listing) =>
+          !listing.profiles?.id || !blockedProfileIds.has(listing.profiles.id),
+      )
+      .map((listing) => [listing.id, listing]),
+  );
+  const gigMap = new Map(
+    (gigs ?? [])
+      .filter(
+        (gig) => !gig.profiles?.id || !blockedProfileIds.has(gig.profiles.id),
+      )
+      .map((gig) => [gig.id, gig]),
+  );
+  const merchMap = new Map(
+    (merchProducts ?? [])
+      .filter(
+        (product) =>
+          product.is_official ||
+          !product.profiles?.id ||
+          !blockedProfileIds.has(product.profiles.id),
+      )
+      .map((product) => [product.id, product]),
+  );
+  const profileMap = new Map(
+    (profiles ?? [])
+      .filter((profile) => !blockedProfileIds.has(profile.id))
+      .map((profile) => [profile.id, profile]),
+  );
 
   const cards: SavedCard[] = saved
     .map((item) => {

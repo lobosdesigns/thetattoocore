@@ -46,7 +46,7 @@ type FeedResult = {
   style_tags: string[];
   profiles: Pick<
     ProfileResult,
-    "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"
+    "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"
   > | null;
 };
 
@@ -55,7 +55,7 @@ type ThreadResult = {
   body: string;
   profiles: Pick<
     ProfileResult,
-    "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"
+    "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"
   > | null;
 };
 
@@ -67,7 +67,7 @@ type ListingResult = {
   region: string | null;
   profiles: Pick<
     ProfileResult,
-    "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"
+    "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"
   > | null;
 };
 
@@ -79,7 +79,7 @@ type GigResult = {
   region: string | null;
   profiles: Pick<
     ProfileResult,
-    "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"
+    "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"
   > | null;
 };
 
@@ -92,7 +92,7 @@ type MerchResult = {
   price_cents: number;
   profiles: Pick<
     ProfileResult,
-    "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"
+    "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"
   > | null;
   region: string | null;
   title: string;
@@ -183,6 +183,28 @@ function typedHref(type: SearchType, params: URLSearchParams) {
 
 function isVerifiedProfile(profile?: SearchProfileBadge) {
   return isVerifiedProfessional(profile);
+}
+
+async function getBlockedProfileIds({
+  supabase,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId?: string | null;
+}) {
+  if (!userId) return new Set<string>();
+
+  const { data } = await supabase
+    .from("user_blocks")
+    .select("blocker_id, blocked_id")
+    .or(`blocker_id.eq.${userId},blocked_id.eq.${userId}`)
+    .returns<{ blocked_id: string; blocker_id: string }[]>();
+
+  return new Set(
+    (data ?? []).map((block) =>
+      block.blocker_id === userId ? block.blocked_id : block.blocker_id,
+    ),
+  );
 }
 
 function VerifiedBadge({ profile }: { profile?: SearchProfileBadge }) {
@@ -289,6 +311,12 @@ export default async function SearchPage({
 
   const hasSearch = Boolean(query || category || city || region);
   const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as { sub: string } | undefined;
+  const blockedProfileIds = await getBlockedProfileIds({
+    supabase,
+    userId: claims?.sub,
+  });
   const shouldRunProfiles = hasSearch && runSection(type, "profiles");
   const shouldRunFeed = hasSearch && runSection(type, "feed");
   const shouldRunThreads = hasSearch && runSection(type, "threads");
@@ -331,7 +359,7 @@ export default async function SearchPage({
               let feedQuery = supabase
                 .from("feed_posts")
                 .select(
-                  "id, caption, location_label, style_tags, profiles:profiles!feed_posts_author_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
+                  "id, caption, location_label, style_tags, profiles:profiles!feed_posts_author_id_fkey(id, display_name, avatar_url, username, account_type, license_verified_at)",
                 )
                 .eq("is_published", true)
                 .eq("moderation_status", "active")
@@ -355,7 +383,7 @@ export default async function SearchPage({
           ? supabase
               .from("thread_posts")
               .select(
-                "id, body, profiles:profiles!thread_posts_author_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
+                "id, body, profiles:profiles!thread_posts_author_id_fkey(id, display_name, avatar_url, username, account_type, license_verified_at)",
               )
               .eq("moderation_status", "active")
               .eq("visibility", "public_preview")
@@ -370,7 +398,7 @@ export default async function SearchPage({
               let listingQuery = supabase
                 .from("marketplace_listings")
                 .select(
-                  "id, title, category, city, region, profiles:profiles!marketplace_listings_seller_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
+                  "id, title, category, city, region, profiles:profiles!marketplace_listings_seller_id_fkey(id, display_name, avatar_url, username, account_type, license_verified_at)",
                 )
                 .eq("status", "active")
                 .eq("moderation_status", "active")
@@ -397,7 +425,7 @@ export default async function SearchPage({
               let gigQuery = supabase
                 .from("gigs")
                 .select(
-                  "id, title, category, city, region, profiles:profiles!gigs_poster_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
+                  "id, title, category, city, region, profiles:profiles!gigs_poster_id_fkey(id, display_name, avatar_url, username, account_type, license_verified_at)",
                 )
                 .eq("status", "active")
                 .eq("moderation_status", "active")
@@ -425,7 +453,7 @@ export default async function SearchPage({
               let merchQuery = supabase
                 .from("merch_products")
                 .select(
-                  "id, title, category, price_cents, currency, is_official, ships_from_city, ships_from_region, profiles:profiles!merch_products_seller_id_fkey(display_name, avatar_url, username, account_type, license_verified_at)",
+                  "id, title, category, price_cents, currency, is_official, ships_from_city, ships_from_region, profiles:profiles!merch_products_seller_id_fkey(id, display_name, avatar_url, username, account_type, license_verified_at)",
                 )
                 .eq("status", "active")
                 .eq("moderation_status", "active")
@@ -504,29 +532,51 @@ export default async function SearchPage({
   const profileShopMap = new Map(
     (profileShops ?? []).map((shop) => [shop.id, shop]),
   );
-  const profileResults = (profiles ?? []).map((profile) => ({
-    ...profile,
-    shop_profile: profile.shop_profile_id
-      ? (profileShopMap.get(profile.shop_profile_id) ?? null)
-      : null,
-  }));
+  const profileResults = (profiles ?? [])
+    .filter((profile) => !blockedProfileIds.has(profile.id))
+    .map((profile) => ({
+      ...profile,
+      shop_profile: profile.shop_profile_id
+        ? (profileShopMap.get(profile.shop_profile_id) ?? null)
+        : null,
+    }));
+  const feedResults = (feedPosts ?? []).filter(
+    (post) => !post.profiles?.id || !blockedProfileIds.has(post.profiles.id),
+  );
+  const threadResults = (threads ?? []).filter(
+    (thread) =>
+      !thread.profiles?.id || !blockedProfileIds.has(thread.profiles.id),
+  );
+  const listingResults = (listings ?? []).filter(
+    (listing) =>
+      !listing.profiles?.id || !blockedProfileIds.has(listing.profiles.id),
+  );
+  const gigResults = (gigs ?? []).filter(
+    (gig) => !gig.profiles?.id || !blockedProfileIds.has(gig.profiles.id),
+  );
+  const merchResults = (merchProducts ?? []).filter(
+    (product) =>
+      product.is_official ||
+      !product.profiles?.id ||
+      !blockedProfileIds.has(product.profiles.id),
+  );
 
   const total =
     profileResults.length +
-    (feedPosts?.length ?? 0) +
-    (threads?.length ?? 0) +
-    (listings?.length ?? 0) +
-    (gigs?.length ?? 0) +
-    (merchProducts?.length ?? 0);
+    feedResults.length +
+    threadResults.length +
+    listingResults.length +
+    gigResults.length +
+    merchResults.length;
   const canLoadMore =
     hasSearch &&
     [
       shouldRunProfiles ? profileResults.length : 0,
-      shouldRunFeed ? feedPosts?.length ?? 0 : 0,
-      shouldRunThreads ? threads?.length ?? 0 : 0,
-      shouldRunListings ? listings?.length ?? 0 : 0,
-      shouldRunGigs ? gigs?.length ?? 0 : 0,
-      shouldRunMerch ? merchProducts?.length ?? 0 : 0,
+      shouldRunFeed ? feedResults.length : 0,
+      shouldRunThreads ? threadResults.length : 0,
+      shouldRunListings ? listingResults.length : 0,
+      shouldRunGigs ? gigResults.length : 0,
+      shouldRunMerch ? merchResults.length : 0,
     ].some((count) => count === resultLimit);
 
   return (
@@ -697,10 +747,10 @@ export default async function SearchPage({
             ) : null}
 
             {runSection(type, "feed") ? (
-            <SearchSection count={feedPosts?.length ?? 0} icon={Camera} title="4U">
-              {feedPosts?.length ? (
+            <SearchSection count={feedResults.length} icon={Camera} title="4U">
+              {feedResults.length ? (
                 <div className="space-y-3">
-                  {feedPosts.map((post) => (
+                  {feedResults.map((post) => (
                     <Link
                       className="ttc-card block rounded-md p-4"
                       href={`/p/${post.id}`}
@@ -733,10 +783,10 @@ export default async function SearchPage({
             ) : null}
 
             {runSection(type, "threads") ? (
-            <SearchSection count={threads?.length ?? 0} icon={MessageCircle} title="Gossip">
-              {threads?.length ? (
+            <SearchSection count={threadResults.length} icon={MessageCircle} title="Gossip">
+              {threadResults.length ? (
                 <div className="space-y-3">
-                  {threads.map((thread) => (
+                  {threadResults.map((thread) => (
                     <Link
                       className="ttc-card block rounded-md p-4"
                       href={`/t/${thread.id}`}
@@ -768,10 +818,10 @@ export default async function SearchPage({
             ) : null}
 
             {runSection(type, "marketplace") ? (
-            <SearchSection count={listings?.length ?? 0} icon={ShoppingBag} title="Stuff">
-              {listings?.length ? (
+            <SearchSection count={listingResults.length} icon={ShoppingBag} title="Stuff">
+              {listingResults.length ? (
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {listings.map((listing) => (
+                  {listingResults.map((listing) => (
                     <Link
                       className="ttc-card block rounded-md p-4"
                       href={`/stuff/${listing.id}`}
@@ -810,10 +860,10 @@ export default async function SearchPage({
             ) : null}
 
             {runSection(type, "gigs") ? (
-            <SearchSection count={gigs?.length ?? 0} icon={BriefcaseBusiness} title="Gigs">
-              {gigs?.length ? (
+            <SearchSection count={gigResults.length} icon={BriefcaseBusiness} title="Gigs">
+              {gigResults.length ? (
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {gigs.map((gig) => (
+                  {gigResults.map((gig) => (
                     <Link
                       className="ttc-card block rounded-md p-4"
                       href={`/gigs/${gig.id}`}
@@ -847,10 +897,10 @@ export default async function SearchPage({
             ) : null}
 
             {runSection(type, "merch") ? (
-            <SearchSection count={merchProducts?.length ?? 0} icon={Package} title="Merch">
-              {merchProducts?.length ? (
+            <SearchSection count={merchResults.length} icon={Package} title="Merch">
+              {merchResults.length ? (
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {merchProducts.map((product) => (
+                  {merchResults.map((product) => (
                     <Link
                       className="ttc-card block rounded-md p-4"
                       href={`/merch/${product.id}`}

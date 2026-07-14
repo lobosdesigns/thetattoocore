@@ -127,6 +127,36 @@ const checks = [
       profilePage.includes("artists={visibleLinkedArtists}"),
   },
   {
+    label: "search discovery filters blocked profiles and owned content",
+    ok:
+      searchPage.includes("async function getBlockedProfileIds") &&
+      searchPage.includes("const blockedProfileIds = await getBlockedProfileIds") &&
+      searchPage.includes("const feedResults = (feedPosts ?? []).filter") &&
+      searchPage.includes("const threadResults = (threads ?? []).filter") &&
+      searchPage.includes("const listingResults = (listings ?? []).filter") &&
+      searchPage.includes("const gigResults = (gigs ?? []).filter") &&
+      searchPage.includes("const merchResults = (merchProducts ?? []).filter") &&
+      searchPage.includes("product.is_official ||") &&
+      searchPage.includes("!blockedProfileIds.has(profile.id)") &&
+      searchPage.includes("!blockedProfileIds.has(post.profiles.id)") &&
+      searchPage.includes("feedResults.map"),
+  },
+  {
+    label: "saved discovery filters blocked profiles and owned content",
+    ok:
+      savedPage.includes("async function getBlockedProfileIds") &&
+      savedPage.includes("const blockedProfileIds = await getBlockedProfileIds") &&
+      savedPage.includes("const feedMap = new Map") &&
+      savedPage.includes("const threadMap = new Map") &&
+      savedPage.includes("const listingMap = new Map") &&
+      savedPage.includes("const gigMap = new Map") &&
+      savedPage.includes("const merchMap = new Map") &&
+      savedPage.includes("const profileMap = new Map") &&
+      savedPage.includes("product.is_official ||") &&
+      savedPage.includes("!blockedProfileIds.has(profile.id)") &&
+      savedPage.includes("!blockedProfileIds.has(post.profiles.id)"),
+  },
+  {
     label: "outbound profile links use safe URL and rel policy",
     ok:
       urls.includes('["http:", "https:"].includes(url.protocol)') &&
