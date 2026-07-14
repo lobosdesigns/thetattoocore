@@ -99,6 +99,8 @@ const checks = [
     ok:
       docs["docs/STORE_LISTING_DRAFT.md"].includes("18+") &&
       docs["docs/STORE_LISTING_DRAFT.md"].includes("visible nudity is not allowed") &&
+      docs["docs/STORE_LISTING_DRAFT.md"].includes("Temporary Stories") &&
+      docs["docs/STORE_LISTING_DRAFT.md"].includes("banner photo") &&
       docs["docs/STORE_LISTING_DRAFT.md"].includes("No AI art") &&
       docs["docs/STORE_LISTING_DRAFT.md"].includes("no scratcher promotion"),
   },
