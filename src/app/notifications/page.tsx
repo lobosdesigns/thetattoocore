@@ -265,8 +265,8 @@ export default async function NotificationsPage({
               <h2 className="text-sm font-bold">Push notifications later</h2>
               <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
                 In-app alerts and badges are live now. These preferences will
-                carry forward to email, installed-web-app push, and native
-                iOS/Android push when those channels are added.
+                carry forward to email, installed app push, and iOS or Android
+                push when those channels are added.
               </p>
               <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted)] sm:grid-cols-3">
                 <p className="ttc-surface rounded-md border px-2 py-1">

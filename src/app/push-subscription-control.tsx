@@ -62,12 +62,12 @@ export function PushSubscriptionControl() {
       setSupported(hasSupport);
 
       if (!readyForSetup) {
-        setMessage("Installed-app push is being prepared.");
+        setMessage("Push notifications are being prepared.");
         return;
       }
 
       if (!hasSupport) {
-        setMessage("This browser does not support installed-app push.");
+        setMessage("This browser does not support installed app push.");
         return;
       }
 
@@ -147,7 +147,7 @@ export function PushSubscriptionControl() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-strong)]">
-            Installed-app push
+            Installed app push
           </p>
           <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
             {message || (enabled ? "Enabled for this browser." : "Ready when you turn it on.")}

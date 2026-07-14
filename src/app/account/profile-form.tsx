@@ -111,8 +111,8 @@ const notificationGroups = [
 const notificationSummary = [
   ["Live now", "In-app alerts and badges"],
   ["Next", "Email for important account events"],
-  ["PWA", "Browser push after install"],
-  ["Apps", "Native iOS and Android push"],
+  ["Installed", "Installed app push after opt-in"],
+  ["Mobile", "iOS and Android push after mobile apps are ready"],
 ] as const;
 
 const profileTabs = [

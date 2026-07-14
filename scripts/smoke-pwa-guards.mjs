@@ -9,12 +9,15 @@ const registrar = readFileSync("src/app/service-worker-registrar.tsx", "utf8");
 const notificationPrefs = readFileSync("src/lib/notifications.ts", "utf8");
 const serviceWorker = readFileSync("public/sw.js", "utf8");
 const pushControl = readFileSync("src/app/push-subscription-control.tsx", "utf8");
+const accountProfileForm = readFileSync("src/app/account/profile-form.tsx", "utf8");
+const notificationsPage = readFileSync("src/app/notifications/page.tsx", "utf8");
 const pushRoute = readFileSync("src/app/api/push/subscriptions/route.ts", "utf8");
 const pushMigration = readFileSync(
   "supabase/migrations/20260713183514_push_subscription_foundation.sql",
   "utf8",
 );
 const allClientPwaSource = [suppressor, installButton, registrar].join("\n");
+const userFacingPushSource = [accountProfileForm, notificationsPage, pushControl].join("\n");
 
 function pngDimensions(path) {
   const bytes = readFileSync(path);
@@ -113,6 +116,16 @@ const checks = [
       pushControl.includes("Notification.requestPermission") &&
       pushControl.includes(".pushManager.subscribe") &&
       pushControl.includes("/api/push/subscriptions"),
+  },
+  {
+    label: "user-facing push copy avoids technical install-channel wording",
+    ok:
+      userFacingPushSource.includes("Installed app push") &&
+      userFacingPushSource.includes("iOS and Android push after mobile apps are ready") &&
+      !userFacingPushSource.includes('"PWA"') &&
+      !userFacingPushSource.includes("Browser push") &&
+      !userFacingPushSource.includes("installed-web-app") &&
+      !userFacingPushSource.includes("Native iOS"),
   },
   {
     label: "push subscriptions are stored behind authenticated RLS",
