@@ -257,6 +257,7 @@ checks.push({
     adminPaymentsPage.includes("audit_page") &&
     adminPaymentsPage.includes("const paymentEventTypes") &&
     adminPaymentsPage.includes("const paymentAuditTypes") &&
+    adminPaymentsPage.includes("const paymentDisputeAuditTypes") &&
     adminPaymentsPage.includes("function paymentEventFilterHref") &&
     adminPaymentsPage.includes("function auditFilterHref") &&
     adminPaymentsPage.includes("function bookingFilterHref") &&
@@ -269,6 +270,7 @@ checks.push({
     adminPaymentsPage.includes("paymentAuditLogs") &&
     adminPaymentsPage.includes("paymentDisputeAuditCount") &&
     adminPaymentsPage.includes("booking_refund_problem") &&
+    adminPaymentsPage.includes("payment_disputes") &&
     adminPaymentsPage.includes("merch_payment_dispute") &&
     adminPaymentsPage.includes("ad_payment_dispute") &&
     adminPaymentsPage.includes("booking_payment_dispute") &&
@@ -301,7 +303,7 @@ checks.push({
     adminPaymentsPage.includes('bookingFilterHref("checkout_started")') &&
     adminPaymentsPage.includes("Reset stale booking checkouts") &&
     adminPaymentsPage.includes("Dispute audit entries need review") &&
-    adminPaymentsPage.includes('auditFilterHref("booking_payment_dispute")') &&
+    adminPaymentsPage.includes('auditFilterHref("payment_disputes")') &&
     adminPaymentsPage.includes("Booking deposit states") &&
     adminPaymentsPage.includes('.eq("status", "deposit_pending")') &&
     adminPaymentsPage.includes('.eq("payment_status", "checkout_started")'),

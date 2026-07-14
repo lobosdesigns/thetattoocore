@@ -97,6 +97,12 @@ const paymentAuditTypes = [
   "reset_stale_booking_deposit_checkouts",
   "refund_booking_deposit_requested",
   "booking_refund_problem",
+  "payment_disputes",
+  "merch_payment_dispute",
+  "ad_payment_dispute",
+  "booking_payment_dispute",
+] as const;
+const paymentDisputeAuditTypes = [
   "merch_payment_dispute",
   "ad_payment_dispute",
   "booking_payment_dispute",
@@ -269,6 +275,7 @@ function auditLabel(value: string) {
     return "Booking refund requested";
   }
   if (value === "booking_refund_problem") return "Booking refund needs review";
+  if (value === "payment_disputes") return "All payment disputes";
   if (value === "merch_payment_dispute") return "Merch dispute";
   if (value === "ad_payment_dispute") return "Ad dispute";
   if (value === "booking_payment_dispute") return "Booking dispute";
@@ -439,11 +446,7 @@ export default async function AdminPaymentsPage({
         adminClient
           .from("admin_audit_logs")
           .select("id", { count: "exact", head: true })
-          .in("event_type", [
-            "merch_payment_dispute",
-            "ad_payment_dispute",
-            "booking_payment_dispute",
-          ]),
+          .in("event_type", paymentDisputeAuditTypes),
         (() => {
           const query = adminClient
             .from("admin_audit_logs")
@@ -452,6 +455,13 @@ export default async function AdminPaymentsPage({
               { count: "exact" },
             )
             .order("created_at", { ascending: false });
+
+          if (paymentAuditTypeFilter === "payment_disputes") {
+            return query
+              .in("event_type", paymentDisputeAuditTypes)
+              .range(auditFrom, auditTo)
+              .returns<PaymentAuditRecord[]>();
+          }
 
           if (paymentAuditTypeFilter) {
             return query
@@ -683,7 +693,7 @@ export default async function AdminPaymentsPage({
                     <p>
                       <Link
                         className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
-                        href={auditFilterHref("booking_payment_dispute")}
+                        href={auditFilterHref("payment_disputes")}
                       >
                         Dispute audit entries need review
                       </Link>

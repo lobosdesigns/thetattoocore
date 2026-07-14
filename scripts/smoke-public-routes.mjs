@@ -155,6 +155,7 @@ const checks = [
   { path: "/admin/payments?event_type=refund.failed", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?event_type=charge.dispute.created", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?audit_type=booking_refund_problem", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  { path: "/admin/payments?audit_type=payment_disputes", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?audit_type=booking_payment_dispute", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/reports", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/stuff", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
