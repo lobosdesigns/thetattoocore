@@ -228,6 +228,8 @@ checks.push({
     adminPaymentsPage.includes("Recent booking deposits") &&
     adminPaymentsPage.includes("recentBookingDeposits") &&
     adminPaymentsPage.includes(".gt(\"total_cents\", 0)") &&
+    adminPaymentsPage.includes("href={`/u/${booking.client.username}`}") &&
+    adminPaymentsPage.includes("href={`/u/${booking.artist.username}`}") &&
     adminPaymentsPage.includes("bookingPaymentStatusLabel(booking.payment_status)") &&
     adminPaymentsPage.includes("TTC fee") &&
     adminPaymentsPage.includes("Stale booking deposit checkouts over 24h") &&

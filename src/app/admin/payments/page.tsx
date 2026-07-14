@@ -540,17 +540,33 @@ export default async function AdminPaymentsPage({
                             <div className="flex justify-between gap-2">
                               <dt>Client</dt>
                               <dd className="text-right">
-                                {booking.client?.display_name ??
-                                  booking.client?.username ??
-                                  "Unknown"}
+                                {booking.client?.username ? (
+                                  <Link
+                                    className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
+                                    href={`/u/${booking.client.username}`}
+                                  >
+                                    {booking.client.display_name ??
+                                      booking.client.username}
+                                  </Link>
+                                ) : (
+                                  "Unknown"
+                                )}
                               </dd>
                             </div>
                             <div className="flex justify-between gap-2">
                               <dt>Artist/studio</dt>
                               <dd className="text-right">
-                                {booking.artist?.display_name ??
-                                  booking.artist?.username ??
-                                  "Unknown"}
+                                {booking.artist?.username ? (
+                                  <Link
+                                    className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
+                                    href={`/u/${booking.artist.username}`}
+                                  >
+                                    {booking.artist.display_name ??
+                                      booking.artist.username}
+                                  </Link>
+                                ) : (
+                                  "Unknown"
+                                )}
                               </dd>
                             </div>
                             <div className="flex justify-between gap-2">
