@@ -5,7 +5,7 @@ import { AuthLegalLinks } from "../auth-legal-links";
 const setupSteps = [
   ["1", "Confirm email", "New accounts get an email link before login."],
   ["2", "Save profile", "Choose your username, account type, country, and 18+ confirmation."],
-  ["3", "Post with +", "Use the bottom-right plus button in 4U, Gossip, Stuff, Gigs, or planned Merch."],
+  ["3", "Post with +", "Use the bottom-right plus button in 4U, Gossip, Stuff, Gigs, or Merch."],
 ] as const;
 
 const stanceItems = [

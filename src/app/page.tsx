@@ -1433,7 +1433,7 @@ function TranslationCue({ preferredLanguage }: { preferredLanguage: string }) {
         Original text
       </span>
       <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1">
-        Translation planned
+        Original-language view
       </span>
     </div>
   );

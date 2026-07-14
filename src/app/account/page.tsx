@@ -120,7 +120,7 @@ function AccountSetupGuide({
 }) {
   const steps = [
     ["1", "Save profile", "Choose a username, account type, country, language, and confirm 18+."],
-    ["2", "Start posting", "Use the bottom-right plus button from 4U, Gossip, Stuff, Gigs, or planned Merch."],
+    ["2", "Start posting", "Use the bottom-right plus button from 4U, Gossip, Stuff, Gigs, or Merch."],
     ["3", "Verify later", "Artists, studios, and vendors can upload license or business documents for admin review."],
   ] as const;
 

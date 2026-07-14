@@ -110,6 +110,8 @@ const publicRoadmapSnippets = [
   "Calendar connections come later",
   "More buying and selling tools are coming soon",
   "planned ad system",
+  "planned Merch",
+  "Translation planned",
   "provider-backed",
   "APNs",
   "FCM",
