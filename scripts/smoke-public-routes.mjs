@@ -244,6 +244,31 @@ const checks = [
     includes: ['name="robots" content="noindex, nofollow"', "CEOCore", "@ceocore"],
   },
   {
+    path: "/p/not-a-real-post",
+    status: [404],
+    includes: ["4U post not found"],
+  },
+  {
+    path: "/t/not-a-real-thread",
+    status: [404],
+    includes: ["Gossip thread not found"],
+  },
+  {
+    path: "/stuff/not-a-real-listing",
+    status: [404],
+    includes: ["Stuff listing not found"],
+  },
+  {
+    path: "/gigs/not-a-real-gig",
+    status: [404],
+    includes: ["Gig not found"],
+  },
+  {
+    path: "/merch/not-a-real-product",
+    status: [404],
+    includes: ["Merch not found"],
+  },
+  {
     path: "/u/ceocore",
     status: [200],
     includes: [
