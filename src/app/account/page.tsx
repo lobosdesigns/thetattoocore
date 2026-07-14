@@ -23,6 +23,7 @@ import {
   calendarConnectionStatusLabel,
   commerceStatusLabel,
   fulfillmentStatusLabel,
+  titleCaseStatus,
 } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
 import { verificationEligibleAccountTypes } from "@/lib/verification";
@@ -178,7 +179,7 @@ export const metadata: Metadata = {
 function adLabel(value: string) {
   if (value === "4u") return "4U";
 
-  return value.replaceAll("_", " ");
+  return titleCaseStatus(value);
 }
 
 const verificationStandards = [

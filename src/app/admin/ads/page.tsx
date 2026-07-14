@@ -5,6 +5,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react"
 import { AdminSectionNav } from "../admin-section-nav";
 import { updateAdCampaignStatus } from "../actions";
 import { countryLabel, languageLabel } from "@/lib/localization";
+import { titleCaseStatus } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -167,7 +168,7 @@ function dollars(cents: number) {
 function adLabel(value: string) {
   if (value === "4u") return "4U";
 
-  return value.replaceAll("_", " ");
+  return titleCaseStatus(value);
 }
 
 function targetingText(campaign: AdCampaign) {

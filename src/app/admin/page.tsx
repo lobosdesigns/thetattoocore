@@ -15,6 +15,7 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
+import { titleCaseStatus } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -227,7 +228,7 @@ function fileNameFromPath(path: string) {
 }
 
 function activityLabel(value: string) {
-  return value.replaceAll("_", " ");
+  return titleCaseStatus(value);
 }
 
 function activitySubject(value: string | null) {

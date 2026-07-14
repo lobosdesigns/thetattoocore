@@ -6,6 +6,7 @@ const merchCheckout = readFileSync("src/app/api/merch/checkout/route.ts", "utf8"
 const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const merchCheckoutSuccessPage = readFileSync("src/app/merch/checkout/success/page.tsx", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
+const adminAdsPage = readFileSync("src/app/admin/ads/page.tsx", "utf8");
 const merchPrintReceiptButton = readFileSync(
   "src/app/merch/checkout/success/print-receipt-button.tsx",
   "utf8",
@@ -190,6 +191,14 @@ checks.push({
     !adminMerchPage.includes('product.moderationStatus.replace("_", " ")') &&
     !adminMerchPage.includes('order.status.replace("_", " ")') &&
     !adminPaymentsPage.includes("return value.replaceAll(\"_\", \" \")"),
+});
+checks.push({
+  label: "ad campaign surfaces use shared friendly labels",
+  ok:
+    accountPage.includes("titleCaseStatus(value)") &&
+    adminAdsPage.includes("titleCaseStatus(value)") &&
+    !accountPage.includes('return value.replaceAll("_", " ")') &&
+    !adminAdsPage.includes('return value.replaceAll("_", " ")'),
 });
 checks.push({
   label: "admin payments watches booking deposit state",

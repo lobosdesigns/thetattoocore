@@ -137,8 +137,10 @@ const checks = [
     ok:
       statusLabels.includes("export function titleCaseStatus") &&
       adminContent.includes("titleCaseStatus(status)") &&
+      adminOverview.includes("titleCaseStatus(value)") &&
       adminGigs.includes("titleCaseStatus(gig.moderationStatus)") &&
       adminStuff.includes("titleCaseStatus(listing.moderationStatus)") &&
+      !adminOverview.includes('return value.replaceAll("_", " ")') &&
       !adminContent.includes('status.replace("_", " ")') &&
       !adminGigs.includes('moderationStatus.replace("_", " ")') &&
       !adminStuff.includes('moderationStatus.replace("_", " ")'),
