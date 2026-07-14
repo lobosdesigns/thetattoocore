@@ -28,6 +28,10 @@ const bookingScheduledMigration = readFileSync(
   "supabase/migrations/20260713192618_booking_scheduled_calendar_fields.sql",
   "utf8",
 );
+const bookingSlotMigration = readFileSync(
+  "supabase/migrations/20260714154123_booking_slot_foundation.sql",
+  "utf8",
+);
 const actions = readFileSync("src/app/actions.ts", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
@@ -300,6 +304,40 @@ const checks = [
       profilePage.includes("bookingSettings.calendar_notes"),
   },
   {
+    label: "booking slot foundation models appointment types, slots, blackouts, and calendar connections",
+    ok:
+      bookingSlotMigration.includes("create table if not exists public.booking_appointment_types") &&
+      bookingSlotMigration.includes("create table if not exists public.booking_availability_slots") &&
+      bookingSlotMigration.includes("create table if not exists public.booking_blackout_dates") &&
+      bookingSlotMigration.includes("create table if not exists public.booking_calendar_connections") &&
+      bookingSlotMigration.includes("duration_minutes between 10 and 720") &&
+      bookingSlotMigration.includes("slot_interval_minutes in (15, 20, 30, 45, 60, 90, 120)") &&
+      bookingSlotMigration.includes("provider in ('google', 'apple_ical', 'ical_feed')"),
+  },
+  {
+    label: "booking slot foundation keeps RLS and verified-owner policies",
+    ok:
+      bookingSlotMigration.includes("alter table public.booking_appointment_types enable row level security") &&
+      bookingSlotMigration.includes("alter table public.booking_availability_slots enable row level security") &&
+      bookingSlotMigration.includes("alter table public.booking_blackout_dates enable row level security") &&
+      bookingSlotMigration.includes("alter table public.booking_calendar_connections enable row level security") &&
+      bookingSlotMigration.includes('create policy "Public can read active booking appointment types"') &&
+      bookingSlotMigration.includes('create policy "Public can read active booking slots"') &&
+      bookingSlotMigration.includes('create policy "Owners manage booking blackout dates"') &&
+      bookingSlotMigration.includes('create policy "Owners manage booking calendar connections"') &&
+      bookingSlotMigration.includes("profiles.license_verified_at is not null") &&
+      bookingSlotMigration.includes("booking_settings.booking_enabled"),
+  },
+  {
+    label: "booking calendar connections avoid storing raw OAuth secrets",
+    ok:
+      bookingSlotMigration.includes("booking_calendar_connections") &&
+      !bookingSlotMigration.includes("access_token") &&
+      !bookingSlotMigration.includes("refresh_token") &&
+      !bookingSlotMigration.includes("client_secret") &&
+      !bookingSlotMigration.includes("oauth_token"),
+  },
+  {
     label: "Stripe webhook understands booking deposit events",
     ok:
       stripeWebhook.includes("markBookingCheckoutSession") &&
@@ -312,6 +350,10 @@ const checks = [
     label: "plan records calendars, deposits, fees, and next booking steps",
     ok:
       productPlan.includes("Google Calendar, Apple/iCloud Calendar, or standard iCalendar") &&
+      productPlan.includes("TimeTix-style booking system") &&
+      productPlan.includes("appointment types") &&
+      productPlan.includes("blackout dates") &&
+      productPlan.includes("slot-template tables") &&
       productPlan.includes("booking_requests") &&
       productPlan.includes("transparent TTC processing fee") &&
       productPlan.includes("Stripe Checkout for accepted deposits only") &&
