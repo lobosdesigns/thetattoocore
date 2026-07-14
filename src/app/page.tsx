@@ -200,6 +200,10 @@ type BlockRelation = {
   blocker_id: string;
 };
 
+type NotificationActor = {
+  actor_id: string | null;
+};
+
 type PostMedia = {
   id: string;
   media_type: "image" | "video";
@@ -1622,7 +1626,7 @@ export default async function Home({
     { data: storyPosts },
     { data: follows },
     { data: blockRows },
-    { count: unreadDmCount },
+    { data: unreadDmNotifications },
     { data: savedItems },
     fourUAd,
     gossipAd,
@@ -1732,11 +1736,13 @@ export default async function Home({
     claims?.sub
       ? supabase
           .from("notifications")
-          .select("*", { count: "exact", head: true })
+          .select("actor_id")
           .eq("recipient_id", claims.sub)
           .eq("type", "message")
           .is("read_at", null)
-      : Promise.resolve({ count: 0 }),
+          .limit(50)
+          .returns<NotificationActor[]>()
+      : Promise.resolve({ data: [] as NotificationActor[] }),
     claims?.sub
       ? supabase
           .from("saved_items")
@@ -1770,6 +1776,11 @@ export default async function Home({
       block.blocker_id === claims?.sub ? block.blocked_id : block.blocker_id,
     ),
   );
+  const unreadDmBadge =
+    unreadDmNotifications?.filter(
+      (notification) =>
+        !notification.actor_id || !blockedProfileIds.has(notification.actor_id),
+    ).length ?? 0;
   const unblockedFeedPosts = (feedPosts ?? []).filter((post) =>
     profileIsNotBlocked(post.profiles, blockedProfileIds),
   );
@@ -1846,7 +1857,6 @@ export default async function Home({
   const adminRole = currentProfile?.role;
   const profileHref = currentProfile ? `/u/${currentProfile.username}` : "/account";
   const preferredLanguage = normalizedLanguage(currentProfile?.preferred_language);
-  const unreadDmBadge = unreadDmCount ?? 0;
   const savedItemKeys = new Set(
     (savedItems ?? []).map((item) => `${item.subject_type}:${item.subject_id}`),
   );

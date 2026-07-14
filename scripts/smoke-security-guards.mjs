@@ -7,6 +7,7 @@ const adClickRoute = readFileSync("src/app/api/ad-click/route.ts", "utf8");
 const loginPage = readFileSync("src/app/login/page.tsx", "utf8");
 const signupPage = readFileSync("src/app/signup/page.tsx", "utf8");
 const notificationActions = readFileSync("src/app/notifications/actions.ts", "utf8");
+const notificationBell = readFileSync("src/app/notification-bell-link.tsx", "utf8");
 const notificationPage = readFileSync("src/app/notifications/page.tsx", "utf8");
 const mainActions = readFileSync("src/app/actions.ts", "utf8");
 const messageActions = readFileSync("src/app/messages/actions.ts", "utf8");
@@ -199,6 +200,18 @@ const checks = [
       notificationPage.includes("!blockedProfileIds.has(notification.profiles.id)") &&
       notificationPage.includes("visibleNotifications.map") &&
       notificationPage.includes("visibleNotifications.filter"),
+  },
+  {
+    label: "notification badges filter blocked actor profiles",
+    ok:
+      notificationBell.includes("async function getBlockedProfileIds") &&
+      notificationBell.includes('from("user_blocks")') &&
+      notificationBell.includes(".select(\"actor_id\")") &&
+      notificationBell.includes("!notification.actor_id || !blockedProfileIds.has(notification.actor_id)") &&
+      homePage.includes("{ data: unreadDmNotifications }") &&
+      homePage.includes(".select(\"actor_id\")") &&
+      homePage.includes("const unreadDmBadge =") &&
+      homePage.includes("!notification.actor_id || !blockedProfileIds.has(notification.actor_id)"),
   },
   {
     label: "content notifications skip blocked profile relationships",

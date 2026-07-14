@@ -6,6 +6,32 @@ type Claims = {
   sub: string;
 };
 
+type BlockRelation = {
+  blocked_id: string;
+  blocker_id: string;
+};
+
+type NotificationActor = {
+  actor_id: string | null;
+};
+
+async function getBlockedProfileIds(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+) {
+  const { data } = await supabase
+    .from("user_blocks")
+    .select("blocker_id, blocked_id")
+    .or(`blocker_id.eq.${userId},blocked_id.eq.${userId}`)
+    .returns<BlockRelation[]>();
+
+  return new Set(
+    (data ?? []).map((block) =>
+      block.blocker_id === userId ? block.blocked_id : block.blocker_id,
+    ),
+  );
+}
+
 export async function NotificationBellLink({
   className = "",
   userId,
@@ -22,15 +48,24 @@ export async function NotificationBellLink({
     recipientId = claims?.sub;
   }
 
-  const { count } = recipientId
-    ? await supabase
-        .from("notifications")
-        .select("*", { count: "exact", head: true })
-        .eq("recipient_id", recipientId)
-        .is("read_at", null)
-    : { count: 0 };
+  const [blockedProfileIds, unreadNotifications] = recipientId
+    ? await Promise.all([
+        getBlockedProfileIds(supabase, recipientId),
+        supabase
+          .from("notifications")
+          .select("actor_id")
+          .eq("recipient_id", recipientId)
+          .is("read_at", null)
+          .limit(50)
+          .returns<NotificationActor[]>(),
+      ])
+    : [new Set<string>(), { data: [] as NotificationActor[] }];
 
-  const unreadCount = count ?? 0;
+  const unreadCount =
+    unreadNotifications.data?.filter(
+      (notification) =>
+        !notification.actor_id || !blockedProfileIds.has(notification.actor_id),
+    ).length ?? 0;
   const label = unreadCount
     ? `Notifications, ${unreadCount} unread`
     : "Notifications";
