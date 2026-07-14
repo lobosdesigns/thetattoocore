@@ -215,7 +215,13 @@ checks.push({
   label: "admin payments watches booking deposit state",
   ok:
     adminActions.includes("export async function resetStaleBookingDepositCheckouts") &&
+    adminActions.includes("export async function refundBookingDeposit") &&
     adminActions.includes('event_type: "reset_stale_booking_deposit_checkouts"') &&
+    adminActions.includes('event_type: "refund_booking_deposit_requested"') &&
+    adminActions.includes("createStripeClient") &&
+    adminActions.includes("stripe.refunds.create") &&
+    adminActions.includes('payment_intent: booking.stripe_payment_intent_id') &&
+    adminActions.includes('confirm !== "refund"') &&
     adminActions.includes('.eq("status", "deposit_pending")') &&
     adminActions.includes('.eq("payment_status", "checkout_started")') &&
     adminActions.includes('payment_status: "payment_failed"') &&
@@ -223,11 +229,14 @@ checks.push({
     adminActions.includes('stripe_checkout_session_id: null') &&
     adminActions.includes('profile?.role !== "admin" && profile?.role !== "owner"') &&
     adminPaymentsPage.includes("const bookingPaymentStatuses") &&
+    adminPaymentsPage.includes("refundBookingDeposit") &&
     adminPaymentsPage.includes("resetStaleBookingDepositCheckouts") &&
     adminPaymentsPage.includes('table: "booking_requests"') &&
     adminPaymentsPage.includes("Recent booking deposits") &&
     adminPaymentsPage.includes("recentBookingDeposits") &&
     adminPaymentsPage.includes(".gt(\"total_cents\", 0)") &&
+    adminPaymentsPage.includes("stripe_payment_intent_id") &&
+    adminPaymentsPage.includes("Type refund to send full refund") &&
     adminPaymentsPage.includes("href={`/u/${booking.client.username}`}") &&
     adminPaymentsPage.includes("href={`/u/${booking.artist.username}`}") &&
     adminPaymentsPage.includes("bookingPaymentStatusLabel(booking.payment_status)") &&

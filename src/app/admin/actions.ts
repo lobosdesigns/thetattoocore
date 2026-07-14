@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sendHostgatorEmail } from "@/lib/mail/hostgator";
 import { siteName, siteUrl, supportEmail } from "@/lib/site";
+import { createStripeClient } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -1758,6 +1759,119 @@ export async function resetStaleBookingDepositCheckouts(formData: FormData) {
   redirect(
     adminPaymentsMessage(
       `Reset ${resetCount} stale booking deposit checkout${resetCount === 1 ? "" : "s"}.`,
+      returnTo,
+    ),
+  );
+}
+
+export async function refundBookingDeposit(formData: FormData) {
+  const returnTo = cleanText(formData.get("return_to"), 160);
+  const bookingId = cleanText(formData.get("booking_id"), 80);
+  const confirm = cleanText(formData.get("confirm"), 20).toLowerCase();
+
+  if (!bookingId) {
+    redirect(adminPaymentsMessage("Choose a booking deposit first.", returnTo));
+  }
+
+  if (confirm !== "refund") {
+    redirect(
+      adminPaymentsMessage(
+        "Type refund to confirm the booking deposit refund.",
+        returnTo,
+      ),
+    );
+  }
+
+  const { supabase, userId } = await requireModerator();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle<{ role: UserRole }>();
+
+  if (profile?.role !== "admin" && profile?.role !== "owner") {
+    redirect(adminPaymentsMessage("Admin payment access required.", returnTo));
+  }
+
+  const adminClient = createAdminClient();
+  const stripe = createStripeClient();
+
+  if (!adminClient || !stripe) {
+    redirect(adminPaymentsMessage("Private payment tools unavailable.", returnTo));
+  }
+
+  const { data: booking, error } = await adminClient
+    .from("booking_requests")
+    .select(
+      "id, title, payment_status, status, total_cents, stripe_payment_intent_id",
+    )
+    .eq("id", bookingId)
+    .maybeSingle<{
+      id: string;
+      payment_status: string;
+      status: string;
+      stripe_payment_intent_id: string | null;
+      title: string;
+      total_cents: number;
+    }>();
+
+  if (error || !booking) {
+    redirect(
+      adminPaymentsMessage(error?.message || "Booking deposit not found.", returnTo),
+    );
+  }
+
+  if (
+    booking.payment_status !== "paid" ||
+    booking.status !== "deposit_paid" ||
+    !booking.stripe_payment_intent_id ||
+    booking.total_cents <= 0
+  ) {
+    redirect(
+      adminPaymentsMessage(
+        "Only paid booking deposits with a payment record can be refunded here.",
+        returnTo,
+      ),
+    );
+  }
+
+  try {
+    const refund = await stripe.refunds.create({
+      metadata: {
+        booking_request_id: booking.id,
+        refund_kind: "booking_deposit",
+      },
+      payment_intent: booking.stripe_payment_intent_id,
+      reason: "requested_by_customer",
+    });
+
+    await supabase.from("admin_audit_logs").insert({
+      actor_id: userId,
+      event_type: "refund_booking_deposit_requested",
+      metadata: {
+        booking_request_id: booking.id,
+        payment_intent_id: booking.stripe_payment_intent_id,
+        refund_id: refund.id,
+        refund_status: refund.status,
+        total_cents: booking.total_cents,
+      },
+      summary: `Requested full booking deposit refund for ${booking.title}.`,
+      target_id: booking.id,
+      target_type: "booking_request",
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Could not request booking refund.";
+
+    redirect(adminPaymentsMessage(message, returnTo));
+  }
+
+  revalidatePath("/admin/payments");
+  revalidatePath("/account");
+  revalidatePath("/messages");
+  redirect(
+    adminPaymentsMessage(
+      "Booking deposit refund requested. Stripe will update the final status shortly.",
       returnTo,
     ),
   );

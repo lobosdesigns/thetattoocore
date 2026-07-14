@@ -15,7 +15,10 @@ import {
   bookingPaymentStatusLabel,
   titleCaseStatus,
 } from "@/lib/status-labels";
-import { resetStaleBookingDepositCheckouts } from "../actions";
+import {
+  refundBookingDeposit,
+  resetStaleBookingDepositCheckouts,
+} from "../actions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -37,6 +40,7 @@ type BookingDepositRecord = {
   payment_status: string;
   platform_fee_cents: number;
   status: string;
+  stripe_payment_intent_id: string | null;
   title: string;
   total_cents: number;
   updated_at: string;
@@ -280,7 +284,7 @@ export default async function AdminPaymentsPage({
         adminClient
           .from("booking_requests")
           .select(
-            "id, title, status, payment_status, deposit_amount_cents, platform_fee_cents, total_cents, currency, updated_at, client:profiles!booking_requests_client_id_fkey(display_name, username), artist:profiles!booking_requests_artist_id_fkey(display_name, username)",
+            "id, title, status, payment_status, deposit_amount_cents, platform_fee_cents, total_cents, currency, stripe_payment_intent_id, updated_at, client:profiles!booking_requests_client_id_fkey(display_name, username), artist:profiles!booking_requests_artist_id_fkey(display_name, username)",
           )
           .gt("total_cents", 0)
           .order("updated_at", { ascending: false })
@@ -586,6 +590,42 @@ export default async function AdminPaymentsPage({
                               <dd>{formatDateTime(booking.updated_at)}</dd>
                             </div>
                           </dl>
+                          {booking.payment_status === "paid" &&
+                          booking.status === "deposit_paid" &&
+                          booking.stripe_payment_intent_id ? (
+                            <form
+                              action={refundBookingDeposit}
+                              className="mt-3 rounded-md border border-[color-mix(in_srgb,var(--gold)_34%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_8%,var(--paper-warm))] p-2"
+                            >
+                              <input
+                                name="booking_id"
+                                type="hidden"
+                                value={booking.id}
+                              />
+                              <input
+                                name="return_to"
+                                type="hidden"
+                                value="/admin/payments"
+                              />
+                              <label className="block text-xs font-bold text-[var(--muted-strong)]">
+                                Type refund to send full refund
+                              </label>
+                              <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                                <input
+                                  className="min-h-10 flex-1 rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                                  name="confirm"
+                                  placeholder="refund"
+                                  type="text"
+                                />
+                                <button
+                                  className="min-h-10 rounded-md border border-[var(--foreground)] bg-[var(--foreground)] px-3 text-sm font-bold text-[var(--background)]"
+                                  type="submit"
+                                >
+                                  Refund
+                                </button>
+                              </div>
+                            </form>
+                          ) : null}
                         </article>
                       ))
                     ) : (
