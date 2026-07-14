@@ -308,6 +308,8 @@ checks.push({
     adminPaymentsPage.includes("booking_refund_problem") &&
     adminPaymentsPage.includes("ad_campaign_credit_granted") &&
     adminPaymentsPage.includes("Ad credit granted") &&
+    adminPaymentsPage.includes("user_ad_credit_granted") &&
+    adminPaymentsPage.includes("User ad credit granted") &&
     adminPaymentsPage.includes("payment_disputes") &&
     adminPaymentsPage.includes("merch_payment_dispute") &&
     adminPaymentsPage.includes("ad_payment_dispute") &&
