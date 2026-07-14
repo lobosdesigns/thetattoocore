@@ -749,8 +749,8 @@ export default async function AccountPage({
                 <div>
                   <h3 className="text-sm font-bold">Booking availability</h3>
                   <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
-                    Manual availability first. Calendar connections come later
-                    after policy review.
+                    Share your public booking link or calendar request link
+                    while managing appointment requests here.
                   </p>
                 </div>
                 <label className="flex items-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 py-2 text-sm font-semibold">
@@ -1200,7 +1200,7 @@ export default async function AccountPage({
           </div>
           <p className="text-sm leading-6 text-[var(--muted-strong)]">
             Merch checkout is limited during launch while seller and order rules
-            are finished. More buying and selling tools are coming soon.
+            are finished. Additional order tools will appear here as they open.
           </p>
           {visibleMerchOrders.length ? (
             <div className="mt-4 grid gap-3">

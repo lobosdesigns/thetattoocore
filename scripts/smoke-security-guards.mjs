@@ -107,6 +107,8 @@ const publicRoadmapSnippets = [
   "future booking deposits",
   "future sponsored placements",
   "future translated UI",
+  "Calendar connections come later",
+  "More buying and selling tools are coming soon",
   "provider-backed",
   "APNs",
   "FCM",
