@@ -235,6 +235,10 @@ const checks = [
       accountActions.includes("export async function respondBookingRequest") &&
       accountActions.includes("createAdminClient()") &&
       accountActions.includes('.eq("artist_id", claims.sub)') &&
+      accountActions.includes('.from("booking_blackout_dates")') &&
+      accountActions.includes("overlaps a blackout window") &&
+      accountActions.includes("overlaps another scheduled booking") &&
+      accountActions.includes('.in("status", ["accepted", "deposit_pending", "deposit_paid", "completed"])') &&
       accountActions.includes('type: decision === "accept" ? "booking_accepted" : "booking_declined"') &&
       accountActions.includes("Deposit checkout is the next booking step."),
   },

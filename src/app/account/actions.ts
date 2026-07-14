@@ -1060,6 +1060,36 @@ export async function respondBookingRequest(formData: FormData) {
     redirect(bookingPath("That booking request has already been handled."));
   }
 
+  if (decision === "accept" && scheduledStartAt && scheduledEndAt) {
+    const { data: blackoutConflict } = await supabase
+      .from("booking_blackout_dates")
+      .select("id")
+      .eq("profile_id", claims.sub)
+      .lt("starts_at", scheduledEndAt)
+      .gt("ends_at", scheduledStartAt)
+      .limit(1)
+      .maybeSingle<{ id: string }>();
+
+    if (blackoutConflict) {
+      redirect(bookingPath("That appointment time overlaps a blackout window."));
+    }
+
+    const { data: bookingConflict } = await supabase
+      .from("booking_requests")
+      .select("id")
+      .eq("artist_id", claims.sub)
+      .neq("id", booking.id)
+      .in("status", ["accepted", "deposit_pending", "deposit_paid", "completed"])
+      .lt("scheduled_start_at", scheduledEndAt)
+      .gt("scheduled_end_at", scheduledStartAt)
+      .limit(1)
+      .maybeSingle<{ id: string }>();
+
+    if (bookingConflict) {
+      redirect(bookingPath("That appointment time overlaps another scheduled booking."));
+    }
+  }
+
   const admin = createAdminClient();
 
   if (!admin) {
