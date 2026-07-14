@@ -443,6 +443,7 @@ const requiredRobotsDisallows = [
   "/search",
   "/signup",
 ];
+const representativeSitemapPrefixes = ["/p/", "/t/", "/stuff/", "/gigs/", "/merch/", "/u/"];
 
 let failures = 0;
 
@@ -728,7 +729,16 @@ async function checkSitemapUrls() {
     return;
   }
 
-  const sampledUrls = publicUrls.slice(0, Number.isFinite(sitemapSampleLimit) ? sitemapSampleLimit : 25);
+  const sampleLimit = Number.isFinite(sitemapSampleLimit) ? sitemapSampleLimit : 25;
+  const representativeUrls = representativeSitemapPrefixes
+    .map((prefix) => publicUrls.find((url) => url.pathname.startsWith(prefix)))
+    .filter(Boolean);
+  const sampledUrls = [
+    ...representativeUrls,
+    ...publicUrls.filter(
+      (url) => !representativeUrls.some((sampled) => sampled.href === url.href),
+    ),
+  ].slice(0, sampleLimit);
   const failedSamples = [];
 
   for (const url of sampledUrls) {
