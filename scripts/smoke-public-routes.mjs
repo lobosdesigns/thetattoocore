@@ -39,7 +39,7 @@ function sleep(ms) {
 async function fetchTextWithRetry(url, options = {}, retryOptions = {}) {
   let lastResult;
 
-  for (let attempt = 0; attempt < 3; attempt += 1) {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
     let response;
     let body;
 
@@ -65,8 +65,8 @@ async function fetchTextWithRetry(url, options = {}, retryOptions = {}) {
       return lastResult;
     }
 
-    if (attempt < 2) {
-      await sleep(200 * (attempt + 1));
+    if (attempt < 4) {
+      await sleep(350 * (attempt + 1));
     }
   }
 
@@ -76,7 +76,7 @@ async function fetchTextWithRetry(url, options = {}, retryOptions = {}) {
 async function fetchWithRetry(url, options = {}) {
   let lastResponse;
 
-  for (let attempt = 0; attempt < 3; attempt += 1) {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
     let response;
 
     try {
@@ -100,8 +100,8 @@ async function fetchWithRetry(url, options = {}) {
       return response;
     }
 
-    if (attempt < 2) {
-      await sleep(200 * (attempt + 1));
+    if (attempt < 4) {
+      await sleep(350 * (attempt + 1));
     }
   }
 
@@ -131,7 +131,34 @@ const checks = [
   { path: "/api/ad-click", status: [303, 307, 308], redirectIncludes: "/", redirect: "manual" },
   { path: "/api/ad-click?campaign_id=bad&placement=4u", status: [303, 307, 308], redirectIncludes: "/", redirect: "manual" },
   { path: "/api/ad-click?campaign_id=bad&placement=evil", status: [303, 307, 308], redirectIncludes: "/", redirect: "manual" },
+  {
+    body: "campaign_id=bad",
+    method: "POST",
+    path: "/api/ads/checkout",
+    status: [303],
+    redirectIncludes: "/login",
+    locationIncludes: ["Sign%20in%20to%20pay%20for%20ads"],
+    redirect: "manual",
+  },
+  {
+    body: "booking_id=bad",
+    method: "POST",
+    path: "/api/bookings/checkout",
+    status: [303],
+    redirectIncludes: "/login",
+    locationIncludes: ["Sign%20in%20to%20pay%20a%20booking%20deposit"],
+    redirect: "manual",
+  },
   { path: "/api/bookings/bad/calendar", status: [303, 307, 308], redirectIncludes: "/login", redirect: "manual" },
+  {
+    body: "product_id=bad&quantity=1",
+    method: "POST",
+    path: "/api/merch/checkout",
+    status: [303],
+    redirectIncludes: "/login",
+    locationIncludes: ["Sign%20in%20to%20buy%20merch"],
+    redirect: "manual",
+  },
   { path: "/messages", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fmessages"], redirect: "manual" },
   { path: "/notifications", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fnotifications"], redirect: "manual" },
   { path: "/saved", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fsaved"], redirect: "manual" },
@@ -348,7 +375,12 @@ for (const check of checks) {
   const url = `${baseUrl}${check.path}`;
   const { response, body } = await fetchTextWithRetry(
     url,
-    { redirect: check.redirect || "follow" },
+    {
+      body: check.body,
+      headers: check.method === "POST" ? { "content-type": "application/x-www-form-urlencoded" } : undefined,
+      method: check.method || "GET",
+      redirect: check.redirect || "follow",
+    },
     { retryCloudflareBody: true },
   );
   const searchableBody = body.replace(/<!--.*?-->/g, "");
@@ -639,7 +671,11 @@ async function checkRemovedScaffoldAssets() {
   const stillPublic = [];
 
   for (const path of removedAssets) {
-    const response = await fetchWithRetry(`${baseUrl}${path}`, { redirect: "manual" });
+    const { response } = await fetchTextWithRetry(
+      `${baseUrl}${path}`,
+      { redirect: "manual" },
+      { retryCloudflareBody: true },
+    );
 
     if (![404, 307, 308].includes(response.status)) {
       stillPublic.push(`${path} (${response.status})`);

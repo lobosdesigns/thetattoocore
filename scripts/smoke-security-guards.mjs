@@ -184,6 +184,17 @@ const checks = [
       publicSmoke.includes("excludes"),
   },
   {
+    label: "public smoke covers logged-out checkout POST redirects",
+    ok:
+      publicSmoke.includes('path: "/api/ads/checkout"') &&
+      publicSmoke.includes('path: "/api/bookings/checkout"') &&
+      publicSmoke.includes('path: "/api/merch/checkout"') &&
+      publicSmoke.includes('method: "POST"') &&
+      publicSmoke.includes("Sign%20in%20to%20pay%20for%20ads") &&
+      publicSmoke.includes("Sign%20in%20to%20pay%20a%20booking%20deposit") &&
+      publicSmoke.includes("Sign%20in%20to%20buy%20merch"),
+  },
+  {
     label: "support deletion action routes through safe sign-in return",
     ok:
       supportPage.includes('href: "/login?return_to=%2Faccount%23data-settings"') &&
