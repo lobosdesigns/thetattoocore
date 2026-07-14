@@ -1569,6 +1569,57 @@ export async function createBookingSlot(formData: FormData) {
   redirect(bookingPath("Booking slot added."));
 }
 
+export async function updateBookingSlot(formData: FormData) {
+  const { profile, supabase } = await requireBookingManager();
+  const slotId = cleanText(formData.get("slot_id"), 80);
+  const appointmentTypeId = cleanText(formData.get("slot_appointment_type_id"), 80);
+  const weekday = cleanInteger(formData.get("slot_weekday"), 1, 0, 6);
+  const startsAt = cleanTime(formData.get("slot_starts_at"), "10:00");
+  const endsAt = cleanTime(formData.get("slot_ends_at"), "17:00");
+  const slotIntervalMinutes = cleanInteger(
+    formData.get("slot_interval_minutes"),
+    30,
+    15,
+    120,
+  );
+  const maxBookingsPerSlot = cleanInteger(formData.get("max_bookings_per_slot"), 1, 1, 20);
+  const timezone = cleanTimezone(formData.get("slot_timezone"));
+
+  if (!slotId) {
+    redirect(bookingPath("Choose a booking slot first."));
+  }
+
+  if (startsAt >= endsAt) {
+    redirect(bookingPath("Slot end time must be after the start time."));
+  }
+
+  if (![15, 20, 30, 45, 60, 90, 120].includes(slotIntervalMinutes)) {
+    redirect(bookingPath("Choose a valid slot interval."));
+  }
+
+  const { error } = await supabase
+    .from("booking_availability_slots")
+    .update({
+      appointment_type_id: appointmentTypeId || null,
+      ends_at: endsAt,
+      max_bookings_per_slot: maxBookingsPerSlot,
+      slot_interval_minutes: slotIntervalMinutes,
+      starts_at: startsAt,
+      timezone,
+      updated_at: new Date().toISOString(),
+      weekday,
+    })
+    .eq("id", slotId)
+    .eq("profile_id", profile.id);
+
+  if (error) {
+    redirect(bookingPath(error.message || "Could not update booking slot."));
+  }
+
+  revalidatePath("/account");
+  redirect(bookingPath("Booking slot updated."));
+}
+
 export async function toggleBookingSlot(formData: FormData) {
   const { profile, supabase } = await requireBookingManager();
   const slotId = cleanText(formData.get("slot_id"), 80);

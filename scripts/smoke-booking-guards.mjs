@@ -213,17 +213,22 @@ const checks = [
     label: "account page exposes weekly booking slot template controls",
     ok:
       accountActions.includes("export async function createBookingSlot") &&
+      accountActions.includes("export async function updateBookingSlot") &&
       accountActions.includes("export async function toggleBookingSlot") &&
       accountActions.includes("export async function deleteBookingSlot") &&
       accountActions.includes('.from("booking_availability_slots")') &&
+      accountActions.includes("Booking slot updated") &&
       accountActions.includes("Booking slot paused") &&
       accountActions.includes("slot_interval_minutes: slotIntervalMinutes") &&
       accountActions.includes("max_bookings_per_slot: maxBookingsPerSlot") &&
       accountActions.includes("startsAt >= endsAt") &&
       accountPage.includes("createBookingSlot") &&
+      accountPage.includes("updateBookingSlot") &&
       accountPage.includes("toggleBookingSlot") &&
       accountPage.includes("deleteBookingSlot") &&
       accountPage.includes("Weekly slot templates") &&
+      accountPage.includes("Edit slot") &&
+      accountPage.includes("Save slot template") &&
       accountPage.includes('!slot.is_active ? " - paused" : ""') &&
       accountPage.includes("Interval") &&
       accountPage.includes("Capacity") &&

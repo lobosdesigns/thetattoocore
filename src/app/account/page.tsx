@@ -19,6 +19,7 @@ import {
   toggleBookingSlot,
   updateBookingAppointmentType,
   updateBookingSettings,
+  updateBookingSlot,
 } from "./actions";
 import { AdCampaignForm } from "./ad-campaign-form";
 import { LicenseDocumentInput } from "./license-document-input";
@@ -1328,46 +1329,147 @@ export default async function AccountPage({
 
                       return (
                         <article
-                          className="flex flex-col gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-3 sm:flex-row sm:items-center sm:justify-between"
+                          className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-3"
                           key={slot.id}
                         >
-                          <div>
-                            <p className="text-sm font-bold">
-                              {weekdays[slot.weekday] ?? "Day"} {slot.starts_at.slice(0, 5)}
-                              -{slot.ends_at.slice(0, 5)}
-                            </p>
-                            <p className="mt-1 text-xs text-[var(--muted-strong)]">
-                              {type?.name ?? "Any type"} - every{" "}
-                              {slot.slot_interval_minutes} min - capacity{" "}
-                              {slot.max_bookings_per_slot}
-                              {!slot.is_active ? " - paused" : ""}
-                            </p>
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <p className="text-sm font-bold">
+                                {weekdays[slot.weekday] ?? "Day"}{" "}
+                                {slot.starts_at.slice(0, 5)}-{slot.ends_at.slice(0, 5)}
+                              </p>
+                              <p className="mt-1 text-xs text-[var(--muted-strong)]">
+                                {type?.name ?? "Any type"} - every{" "}
+                                {slot.slot_interval_minutes} min - capacity{" "}
+                                {slot.max_bookings_per_slot}
+                                {!slot.is_active ? " - paused" : ""}
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <form action={toggleBookingSlot}>
+                                <input name="slot_id" type="hidden" value={slot.id} />
+                                <input
+                                  name="is_active"
+                                  type="hidden"
+                                  value={String(!slot.is_active)}
+                                />
+                                <PendingSubmitButton
+                                  className="h-9 rounded-md border border-[var(--card-rim)] px-3 text-xs font-bold"
+                                  pendingLabel="Saving"
+                                >
+                                  {slot.is_active ? "Pause" : "Restore"}
+                                </PendingSubmitButton>
+                              </form>
+                              <form action={deleteBookingSlot}>
+                                <input name="slot_id" type="hidden" value={slot.id} />
+                                <PendingSubmitButton
+                                  className="h-9 rounded-md border border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] px-3 text-xs font-bold text-[var(--danger)]"
+                                  pendingLabel="Removing"
+                                >
+                                  Remove
+                                </PendingSubmitButton>
+                              </form>
+                            </div>
                           </div>
-                          <div className="flex flex-wrap gap-2">
-                            <form action={toggleBookingSlot}>
+                          <details className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_86%,transparent)] p-3">
+                            <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.08em] text-[var(--muted-strong)]">
+                              Edit slot
+                            </summary>
+                            <form action={updateBookingSlot} className="mt-3 grid gap-3">
                               <input name="slot_id" type="hidden" value={slot.id} />
-                              <input
-                                name="is_active"
-                                type="hidden"
-                                value={String(!slot.is_active)}
-                              />
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                <label className="grid gap-1 text-sm font-semibold">
+                                  Day
+                                  <select
+                                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                                    defaultValue={slot.weekday}
+                                    name="slot_weekday"
+                                  >
+                                    {weekdays.map((day, index) => (
+                                      <option key={day} value={index}>
+                                        {day}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </label>
+                                <label className="grid gap-1 text-sm font-semibold">
+                                  Type
+                                  <select
+                                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                                    defaultValue={slot.appointment_type_id ?? ""}
+                                    name="slot_appointment_type_id"
+                                  >
+                                    <option value="">Any appointment type</option>
+                                    {(bookingAppointmentTypes ?? []).map((item) => (
+                                      <option key={item.id} value={item.id}>
+                                        {item.name}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </label>
+                              </div>
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                <label className="grid gap-1 text-sm font-semibold">
+                                  Starts
+                                  <input
+                                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                                    defaultValue={slot.starts_at.slice(0, 5)}
+                                    name="slot_starts_at"
+                                    type="time"
+                                  />
+                                </label>
+                                <label className="grid gap-1 text-sm font-semibold">
+                                  Ends
+                                  <input
+                                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                                    defaultValue={slot.ends_at.slice(0, 5)}
+                                    name="slot_ends_at"
+                                    type="time"
+                                  />
+                                </label>
+                              </div>
+                              <div className="grid gap-3 sm:grid-cols-3">
+                                <label className="grid gap-1 text-sm font-semibold">
+                                  Interval
+                                  <select
+                                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                                    defaultValue={slot.slot_interval_minutes}
+                                    name="slot_interval_minutes"
+                                  >
+                                    {slotIntervals.map((interval) => (
+                                      <option key={interval} value={interval}>
+                                        {interval} min
+                                      </option>
+                                    ))}
+                                  </select>
+                                </label>
+                                <label className="grid gap-1 text-sm font-semibold">
+                                  Capacity
+                                  <input
+                                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                                    defaultValue={slot.max_bookings_per_slot}
+                                    inputMode="numeric"
+                                    name="max_bookings_per_slot"
+                                  />
+                                </label>
+                                <label className="grid gap-1 text-sm font-semibold">
+                                  Timezone
+                                  <input
+                                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                                    defaultValue={slot.timezone}
+                                    maxLength={80}
+                                    name="slot_timezone"
+                                  />
+                                </label>
+                              </div>
                               <PendingSubmitButton
-                                className="h-9 rounded-md border border-[var(--card-rim)] px-3 text-xs font-bold"
+                                className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)]"
                                 pendingLabel="Saving"
                               >
-                                {slot.is_active ? "Pause" : "Restore"}
+                                Save slot template
                               </PendingSubmitButton>
                             </form>
-                            <form action={deleteBookingSlot}>
-                              <input name="slot_id" type="hidden" value={slot.id} />
-                              <PendingSubmitButton
-                                className="h-9 rounded-md border border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] px-3 text-xs font-bold text-[var(--danger)]"
-                                pendingLabel="Removing"
-                              >
-                                Remove
-                              </PendingSubmitButton>
-                            </form>
-                          </div>
+                          </details>
                         </article>
                       );
                     })
