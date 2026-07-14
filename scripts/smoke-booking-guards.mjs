@@ -36,6 +36,10 @@ const bookingRequestSlotMigration = readFileSync(
   "supabase/migrations/20260714161754_booking_request_slot_references.sql",
   "utf8",
 );
+const bookingRequestChoiceMigration = readFileSync(
+  "supabase/migrations/20260714162718_booking_request_choice_snapshots.sql",
+  "utf8",
+);
 const actions = readFileSync("src/app/actions.ts", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
@@ -137,6 +141,8 @@ const checks = [
       actions.includes("conversation_id: conversationId") &&
       actions.includes("appointment_type_id: appointmentTypeId || null") &&
       actions.includes("preferred_slot_id: preferredSlotId || null") &&
+      actions.includes("appointment_type_label: appointmentTypeName") &&
+      actions.includes("preferred_slot_label: preferredSlotLabel") &&
       actions.includes('.from("booking_requests")') &&
       actions.includes('type: "booking_request"') &&
       actions.includes('href: `/messages?c=${conversationId}`') &&
@@ -149,6 +155,8 @@ const checks = [
       accountPage.includes('.from("booking_requests")') &&
       accountPage.includes("visibleIncomingBookings") &&
       accountPage.includes("visibleOutgoingBookings") &&
+      accountPage.includes("appointment_type_label") &&
+      accountPage.includes("preferred_slot_label") &&
       accountPage.includes("respondBookingRequest") &&
       accountPage.includes("deposit checkout will open"),
   },
@@ -320,6 +328,8 @@ const checks = [
       messagesPage.includes('name="return_to"') &&
       messagesPage.includes('.from("booking_requests")') &&
       messagesPage.includes('.eq("conversation_id", selectedConversation.id)') &&
+      messagesPage.includes("appointment_type_label") &&
+      messagesPage.includes("preferred_slot_label") &&
       messagesPage.includes("respondBookingRequest") &&
       messagesPage.includes('action="/api/bookings/checkout"'),
   },
@@ -390,6 +400,19 @@ const checks = [
       bookingRequestSlotMigration.includes("booking_requests_appointment_type_created_idx") &&
       bookingRequestSlotMigration.includes("booking_requests_preferred_slot_created_idx") &&
       productPlan.includes("booking request references to selected appointment types or preferred weekly slots"),
+  },
+  {
+    label: "booking requests snapshot selected booking labels for cards",
+    ok:
+      bookingRequestChoiceMigration.includes("add column if not exists appointment_type_label text") &&
+      bookingRequestChoiceMigration.includes("add column if not exists preferred_slot_label text") &&
+      bookingRequestChoiceMigration.includes("booking_requests_choice_snapshot_check") &&
+      bookingRequestChoiceMigration.includes("char_length(appointment_type_label) <= 120") &&
+      bookingRequestChoiceMigration.includes("char_length(preferred_slot_label) <= 120") &&
+      accountPage.includes("Type: {booking.appointment_type_label}") &&
+      accountPage.includes("Preferred slot: {booking.preferred_slot_label}") &&
+      messagesPage.includes("Type: {booking.appointment_type_label}") &&
+      messagesPage.includes("Preferred slot: {booking.preferred_slot_label}"),
   },
   {
     label: "booking slot foundation keeps RLS and verified-owner policies",

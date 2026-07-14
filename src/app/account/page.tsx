@@ -590,7 +590,7 @@ export default async function AccountPage({
   const { data: incomingBookings } = await supabase
     .from("booking_requests")
     .select(
-      "id, title, body, placement, style_tags, preferred_city, preferred_dates, deposit_amount_cents, platform_fee_cents, total_cents, currency, status, payment_status, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at, accepted_at, declined_at, client:profiles!booking_requests_client_id_fkey(username, display_name, avatar_url)",
+      "id, title, body, placement, style_tags, preferred_city, preferred_dates, appointment_type_label, preferred_slot_label, deposit_amount_cents, platform_fee_cents, total_cents, currency, status, payment_status, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at, accepted_at, declined_at, client:profiles!booking_requests_client_id_fkey(username, display_name, avatar_url)",
     )
     .eq("artist_id", claims.sub)
     .order("created_at", { ascending: false })
@@ -598,6 +598,7 @@ export default async function AccountPage({
     .returns<
       {
         accepted_at: string | null;
+        appointment_type_label: string | null;
         artist_note: string | null;
         body: string;
         client: {
@@ -615,6 +616,7 @@ export default async function AccountPage({
         platform_fee_cents: number;
         preferred_city: string | null;
         preferred_dates: string | null;
+        preferred_slot_label: string | null;
         scheduled_end_at: string | null;
         scheduled_start_at: string | null;
         scheduled_timezone: string | null;
@@ -669,7 +671,7 @@ export default async function AccountPage({
   const { data: outgoingBookings } = await supabase
     .from("booking_requests")
     .select(
-      "id, title, body, placement, style_tags, preferred_city, preferred_dates, deposit_amount_cents, platform_fee_cents, total_cents, currency, status, payment_status, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at, accepted_at, declined_at, artist:profiles!booking_requests_artist_id_fkey(username, display_name, avatar_url)",
+      "id, title, body, placement, style_tags, preferred_city, preferred_dates, appointment_type_label, preferred_slot_label, deposit_amount_cents, platform_fee_cents, total_cents, currency, status, payment_status, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at, accepted_at, declined_at, artist:profiles!booking_requests_artist_id_fkey(username, display_name, avatar_url)",
     )
     .eq("client_id", claims.sub)
     .order("created_at", { ascending: false })
@@ -677,6 +679,7 @@ export default async function AccountPage({
     .returns<
       {
         accepted_at: string | null;
+        appointment_type_label: string | null;
         artist: {
           avatar_url: string | null;
           display_name: string;
@@ -694,6 +697,7 @@ export default async function AccountPage({
         platform_fee_cents: number;
         preferred_city: string | null;
         preferred_dates: string | null;
+        preferred_slot_label: string | null;
         scheduled_end_at: string | null;
         scheduled_start_at: string | null;
         scheduled_timezone: string | null;
@@ -1387,6 +1391,12 @@ export default async function AccountPage({
                           {booking.placement ? <p>Placement: {booking.placement}</p> : null}
                           {booking.style_tags ? <p>Style: {booking.style_tags}</p> : null}
                           {booking.preferred_city ? <p>City: {booking.preferred_city}</p> : null}
+                          {booking.appointment_type_label ? (
+                            <p>Type: {booking.appointment_type_label}</p>
+                          ) : null}
+                          {booking.preferred_slot_label ? (
+                            <p>Preferred slot: {booking.preferred_slot_label}</p>
+                          ) : null}
                           {booking.preferred_dates ? (
                             <p>Dates: {booking.preferred_dates}</p>
                           ) : null}
@@ -1546,6 +1556,12 @@ export default async function AccountPage({
                         ) : null}
                         {booking.declined_at ? (
                           <p>Declined: {formatDate(booking.declined_at)}</p>
+                        ) : null}
+                        {booking.appointment_type_label ? (
+                          <p>Type: {booking.appointment_type_label}</p>
+                        ) : null}
+                        {booking.preferred_slot_label ? (
+                          <p>Preferred slot: {booking.preferred_slot_label}</p>
                         ) : null}
                         {booking.artist_note ? <p>Artist note: {booking.artist_note}</p> : null}
                         {booking.scheduled_start_at ? (

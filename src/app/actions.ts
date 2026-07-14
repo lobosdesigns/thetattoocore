@@ -1209,6 +1209,7 @@ export async function createBookingRequest(formData: FormData) {
     .from("booking_requests")
     .insert({
       appointment_type_id: appointmentTypeId || null,
+      appointment_type_label: appointmentTypeName?.slice(0, 120) ?? null,
       artist_id: artist.id,
       body,
       client_id: userId,
@@ -1221,6 +1222,7 @@ export async function createBookingRequest(formData: FormData) {
       preferred_city: preferredCity || null,
       preferred_dates: preferredDates || null,
       preferred_slot_id: preferredSlotId || null,
+      preferred_slot_label: preferredSlotLabel?.slice(0, 120) ?? null,
       shop_profile_id:
         artist.account_type === "artist" ? artist.shop_profile_id : artist.id,
       status: "requested",

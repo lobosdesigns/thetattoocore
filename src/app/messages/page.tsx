@@ -88,6 +88,7 @@ type MessageNotification = {
 };
 
 type BookingRequest = {
+  appointment_type_label: string | null;
   artist_id: string;
   artist_note: string | null;
   body: string;
@@ -100,6 +101,7 @@ type BookingRequest = {
   platform_fee_cents: number;
   preferred_city: string | null;
   preferred_dates: string | null;
+  preferred_slot_label: string | null;
   scheduled_end_at: string | null;
   scheduled_start_at: string | null;
   scheduled_timezone: string | null;
@@ -290,6 +292,12 @@ function BookingCards({
                 <p>Payment: {bookingPaymentStatusLabel(booking.payment_status)}</p>
                 {booking.style_tags ? <p>Style: {booking.style_tags}</p> : null}
                 {booking.preferred_city ? <p>City: {booking.preferred_city}</p> : null}
+                {booking.appointment_type_label ? (
+                  <p>Type: {booking.appointment_type_label}</p>
+                ) : null}
+                {booking.preferred_slot_label ? (
+                  <p>Preferred slot: {booking.preferred_slot_label}</p>
+                ) : null}
                 {booking.preferred_dates ? (
                   <p>Dates: {booking.preferred_dates}</p>
                 ) : null}
@@ -705,7 +713,7 @@ export default async function MessagesPage({
     ? await supabase
         .from("booking_requests")
         .select(
-          "id, client_id, artist_id, title, body, status, payment_status, deposit_amount_cents, platform_fee_cents, currency, style_tags, preferred_city, preferred_dates, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at",
+          "id, client_id, artist_id, title, body, status, payment_status, deposit_amount_cents, platform_fee_cents, currency, style_tags, preferred_city, preferred_dates, appointment_type_label, preferred_slot_label, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at",
         )
         .eq("conversation_id", selectedConversation.id)
         .order("created_at", { ascending: false })
