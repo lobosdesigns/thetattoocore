@@ -7,19 +7,24 @@ const baseUrl = (process.env.SMOKE_BASE_URL || "https://thetattoocore.com").repl
 const width = Number(process.env.SMOKE_MOBILE_WIDTH || 390);
 const height = Number(process.env.SMOKE_MOBILE_HEIGHT || 844);
 const routes = [
-  "/",
-  "/login",
-  "/signup",
-  "/forgot-password",
-  "/reset-password",
-  "/support",
-  "/privacy",
-  "/terms",
-  "/search?q=ceocore",
-  "/u/ceocore",
-  "/u/ceocore/followers",
-  "/u/ceocore/following",
-  "/merch/checkout/success",
+  { path: "/" },
+  { path: "/login" },
+  { path: "/signup" },
+  { path: "/forgot-password" },
+  { path: "/reset-password" },
+  { path: "/support" },
+  { path: "/privacy" },
+  { path: "/terms" },
+  { path: "/search?q=ceocore" },
+  { path: "/u/ceocore" },
+  { path: "/u/ceocore/followers" },
+  { path: "/u/ceocore/following" },
+  { allowMainDocument404: true, path: "/p/not-a-real-post" },
+  { allowMainDocument404: true, path: "/t/not-a-real-thread" },
+  { allowMainDocument404: true, path: "/stuff/not-a-real-listing" },
+  { allowMainDocument404: true, path: "/gigs/not-a-real-gig" },
+  { allowMainDocument404: true, path: "/merch/not-a-real-product" },
+  { path: "/merch/checkout/success" },
 ];
 const forbiddenText = [
   "This page couldn't load",
@@ -60,9 +65,9 @@ try {
 
   let failures = 0;
   for (const route of routes) {
-    const result = await checkRoute(port, `${baseUrl}${route}`);
+    const result = await checkRoute(port, `${baseUrl}${route.path}`, route);
     const prefix = result.ok ? "PASS" : "FAIL";
-    console.log(`${prefix} ${route}`);
+    console.log(`${prefix} ${route.path}`);
 
     if (!result.ok) {
       failures += 1;
@@ -83,7 +88,7 @@ try {
   removeTempProfile(userDataDir);
 }
 
-async function checkRoute(portNumber, url) {
+async function checkRoute(portNumber, url, route) {
   const tab = await newTab(portNumber, url);
   const client = await connectCdp(tab.webSocketDebuggerUrl);
   const errors = [];
@@ -144,8 +149,12 @@ async function checkRoute(portNumber, url) {
     if (overflow > 2) {
       reasons.push(`horizontal overflow ${overflow}px (${value.scrollWidth}px document on ${value.clientWidth}px viewport)`);
     }
-    if (errors.length) {
-      reasons.push(`console/page errors: ${dedupe(errors).slice(0, 3).join(" | ")}`);
+    const filteredErrors = route.allowMainDocument404
+      ? errors.filter((error) => !error.includes("the server responded with a status of 404"))
+      : errors;
+
+    if (filteredErrors.length) {
+      reasons.push(`console/page errors: ${dedupe(filteredErrors).slice(0, 3).join(" | ")}`);
     }
 
     return { ok: reasons.length === 0, reasons };
