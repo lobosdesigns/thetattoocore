@@ -174,6 +174,11 @@ const checks = [
       accountPage.includes('.from("booking_requests")') &&
       accountPage.includes("visibleIncomingBookings") &&
       accountPage.includes("visibleOutgoingBookings") &&
+      accountPage.includes("bookingStatusFilters") &&
+      accountPage.includes("bookingStatusParam") &&
+      accountPage.includes('booking_status') &&
+      accountPage.includes('query.eq("status", bookingStatusFilter)') &&
+      accountPage.includes("bookingStatusHref") &&
       accountPage.includes("appointment_type_label") &&
       accountPage.includes("preferred_slot_label") &&
       accountPage.includes("respondBookingRequest") &&

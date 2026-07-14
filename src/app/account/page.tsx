@@ -93,6 +93,14 @@ const adminRoles = ["moderator", "admin", "owner"];
 const adPageSize = 25;
 const bookingPageSize = 25;
 const orderPageSize = 25;
+const bookingStatusFilters = [
+  "requested",
+  "accepted",
+  "deposit_paid",
+  "declined",
+  "cancelled",
+  "completed",
+] as const;
 const accountNavItems = [
   ["#profile-settings", "Profile"],
   ["#appearance-settings", "Appearance"],
@@ -117,6 +125,14 @@ function limitParam(value: string | string[] | undefined) {
   return Math.max(orderPageSize, Math.min(250, parsed));
 }
 
+function bookingStatusParam(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+
+  return rawValue && bookingStatusFilters.includes(rawValue as (typeof bookingStatusFilters)[number])
+    ? rawValue
+    : null;
+}
+
 function adLimitHref({ adLimit, orderLimit }: { adLimit: number; orderLimit: number }) {
   return `/account?ads=${adLimit}&orders=${orderLimit}#advertising-settings`;
 }
@@ -128,29 +144,51 @@ function orderLimitHref({ adLimit, orderLimit }: { adLimit: number; orderLimit: 
 function bookingLimitHref({
   adLimit,
   bookingLimit,
+  bookingStatus,
   orderLimit,
 }: {
   adLimit: number;
   bookingLimit: number;
+  bookingStatus?: string | null;
   orderLimit: number;
 }) {
-  return `/account?ads=${adLimit}&bookings=${bookingLimit}&orders=${orderLimit}#booking-settings`;
+  const status = bookingStatus ? `&booking_status=${bookingStatus}` : "";
+
+  return `/account?ads=${adLimit}&bookings=${bookingLimit}&orders=${orderLimit}${status}#booking-settings`;
+}
+
+function bookingStatusHref({
+  adLimit,
+  bookingStatus,
+  orderLimit,
+}: {
+  adLimit: number;
+  bookingStatus: string | null;
+  orderLimit: number;
+}) {
+  const status = bookingStatus ? `&booking_status=${bookingStatus}` : "";
+
+  return `/account?ads=${adLimit}&bookings=${bookingPageSize}&orders=${orderLimit}${status}#booking-settings`;
 }
 
 function accountLoginPath({
   adLimit,
   bookingLimit,
+  bookingStatus,
   orderLimit,
 }: {
   adLimit: number;
   bookingLimit: number;
+  bookingStatus?: string | null;
   orderLimit: number;
 }) {
+  const status = bookingStatus ? `&booking_status=${bookingStatus}` : "";
   const returnTo =
     adLimit !== adPageSize ||
     bookingLimit !== bookingPageSize ||
-    orderLimit !== orderPageSize
-      ? `/account?ads=${adLimit}&bookings=${bookingLimit}&orders=${orderLimit}`
+    orderLimit !== orderPageSize ||
+    Boolean(bookingStatus)
+      ? `/account?ads=${adLimit}&bookings=${bookingLimit}&orders=${orderLimit}${status}`
       : "/account";
 
   return `/login?return_to=${encodeURIComponent(returnTo)}`;
@@ -422,6 +460,7 @@ export default async function AccountPage({
 }: {
   searchParams: Promise<{
     ads?: string | string[];
+    booking_status?: string | string[];
     bookings?: string | string[];
     message?: string;
     orders?: string | string[];
@@ -430,13 +469,21 @@ export default async function AccountPage({
   const params = await searchParams;
   const adLimit = limitParam(params.ads);
   const bookingLimit = limitParam(params.bookings);
+  const bookingStatusFilter = bookingStatusParam(params.booking_status);
   const orderLimit = limitParam(params.orders);
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
 
   if (!claims?.sub) {
-    redirect(accountLoginPath({ adLimit, bookingLimit, orderLimit }));
+    redirect(
+      accountLoginPath({
+        adLimit,
+        bookingLimit,
+        bookingStatus: bookingStatusFilter,
+        orderLimit,
+      }),
+    );
   }
 
   const { data: profile } = await supabase
@@ -593,45 +640,53 @@ export default async function AccountPage({
         unit_price_cents: number;
       }[]
     >();
-  const { data: incomingBookings } = await supabase
-    .from("booking_requests")
-    .select(
-      "id, title, body, placement, style_tags, preferred_city, preferred_dates, appointment_type_label, preferred_slot_label, deposit_amount_cents, platform_fee_cents, total_cents, currency, status, payment_status, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at, accepted_at, declined_at, client:profiles!booking_requests_client_id_fkey(username, display_name, avatar_url)",
-    )
-    .eq("artist_id", claims.sub)
-    .order("created_at", { ascending: false })
-    .limit(bookingLimit + 1)
-    .returns<
-      {
-        accepted_at: string | null;
-        appointment_type_label: string | null;
-        artist_note: string | null;
-        body: string;
-        client: {
-          avatar_url: string | null;
-          display_name: string;
-          username: string;
-        } | null;
-        created_at: string;
-        currency: string;
-        declined_at: string | null;
-        deposit_amount_cents: number;
-        id: string;
-        payment_status: string;
-        placement: string | null;
-        platform_fee_cents: number;
-        preferred_city: string | null;
-        preferred_dates: string | null;
-        preferred_slot_label: string | null;
-        scheduled_end_at: string | null;
-        scheduled_start_at: string | null;
-        scheduled_timezone: string | null;
-        status: string;
-        style_tags: string | null;
-        title: string;
-        total_cents: number;
-      }[]
-    >();
+  const { data: incomingBookings } = await (() => {
+    let query = supabase
+      .from("booking_requests")
+      .select(
+        "id, title, body, placement, style_tags, preferred_city, preferred_dates, appointment_type_label, preferred_slot_label, deposit_amount_cents, platform_fee_cents, total_cents, currency, status, payment_status, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at, accepted_at, declined_at, client:profiles!booking_requests_client_id_fkey(username, display_name, avatar_url)",
+      )
+      .eq("artist_id", claims.sub);
+
+    if (bookingStatusFilter) {
+      query = query.eq("status", bookingStatusFilter);
+    }
+
+    return query
+      .order("created_at", { ascending: false })
+      .limit(bookingLimit + 1)
+      .returns<
+        {
+          accepted_at: string | null;
+          appointment_type_label: string | null;
+          artist_note: string | null;
+          body: string;
+          client: {
+            avatar_url: string | null;
+            display_name: string;
+            username: string;
+          } | null;
+          created_at: string;
+          currency: string;
+          declined_at: string | null;
+          deposit_amount_cents: number;
+          id: string;
+          payment_status: string;
+          placement: string | null;
+          platform_fee_cents: number;
+          preferred_city: string | null;
+          preferred_dates: string | null;
+          preferred_slot_label: string | null;
+          scheduled_end_at: string | null;
+          scheduled_start_at: string | null;
+          scheduled_timezone: string | null;
+          status: string;
+          style_tags: string | null;
+          title: string;
+          total_cents: number;
+        }[]
+      >();
+  })();
   const { data: bookingSettings } = await supabase
     .from("booking_settings")
     .select(
@@ -674,45 +729,53 @@ export default async function AccountPage({
         .limit(25)
         .returns<BookingBlackout[]>()
     : { data: null };
-  const { data: outgoingBookings } = await supabase
-    .from("booking_requests")
-    .select(
-      "id, title, body, placement, style_tags, preferred_city, preferred_dates, appointment_type_label, preferred_slot_label, deposit_amount_cents, platform_fee_cents, total_cents, currency, status, payment_status, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at, accepted_at, declined_at, artist:profiles!booking_requests_artist_id_fkey(username, display_name, avatar_url)",
-    )
-    .eq("client_id", claims.sub)
-    .order("created_at", { ascending: false })
-    .limit(bookingLimit + 1)
-    .returns<
-      {
-        accepted_at: string | null;
-        appointment_type_label: string | null;
-        artist: {
-          avatar_url: string | null;
-          display_name: string;
-          username: string;
-        } | null;
-        artist_note: string | null;
-        body: string;
-        created_at: string;
-        currency: string;
-        declined_at: string | null;
-        deposit_amount_cents: number;
-        id: string;
-        payment_status: string;
-        placement: string | null;
-        platform_fee_cents: number;
-        preferred_city: string | null;
-        preferred_dates: string | null;
-        preferred_slot_label: string | null;
-        scheduled_end_at: string | null;
-        scheduled_start_at: string | null;
-        scheduled_timezone: string | null;
-        status: string;
-        style_tags: string | null;
-        title: string;
-        total_cents: number;
-      }[]
-    >();
+  const { data: outgoingBookings } = await (() => {
+    let query = supabase
+      .from("booking_requests")
+      .select(
+        "id, title, body, placement, style_tags, preferred_city, preferred_dates, appointment_type_label, preferred_slot_label, deposit_amount_cents, platform_fee_cents, total_cents, currency, status, payment_status, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at, accepted_at, declined_at, artist:profiles!booking_requests_artist_id_fkey(username, display_name, avatar_url)",
+      )
+      .eq("client_id", claims.sub);
+
+    if (bookingStatusFilter) {
+      query = query.eq("status", bookingStatusFilter);
+    }
+
+    return query
+      .order("created_at", { ascending: false })
+      .limit(bookingLimit + 1)
+      .returns<
+        {
+          accepted_at: string | null;
+          appointment_type_label: string | null;
+          artist: {
+            avatar_url: string | null;
+            display_name: string;
+            username: string;
+          } | null;
+          artist_note: string | null;
+          body: string;
+          created_at: string;
+          currency: string;
+          declined_at: string | null;
+          deposit_amount_cents: number;
+          id: string;
+          payment_status: string;
+          placement: string | null;
+          platform_fee_cents: number;
+          preferred_city: string | null;
+          preferred_dates: string | null;
+          preferred_slot_label: string | null;
+          scheduled_end_at: string | null;
+          scheduled_start_at: string | null;
+          scheduled_timezone: string | null;
+          status: string;
+          style_tags: string | null;
+          title: string;
+          total_cents: number;
+        }[]
+      >();
+  })();
   const visibleMerchOrders = (merchOrders ?? []).slice(0, orderLimit);
   const hasMoreMerchOrders = (merchOrders?.length ?? 0) > orderLimit;
   const visibleMerchSales = (merchSales ?? []).slice(0, orderLimit);
@@ -821,6 +884,39 @@ export default async function AccountPage({
             studios accept or decline here; deposit checkout will open
             only after acceptance and will include the TTC processing fee.
           </p>
+          <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+            <Link
+              className={`h-9 shrink-0 rounded-md border px-3 py-2 text-xs font-bold ${
+                !bookingStatusFilter
+                  ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                  : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] text-[var(--foreground)]"
+              }`}
+              href={bookingStatusHref({
+                adLimit,
+                bookingStatus: null,
+                orderLimit,
+              })}
+            >
+              All
+            </Link>
+            {bookingStatusFilters.map((status) => (
+              <Link
+                className={`h-9 shrink-0 rounded-md border px-3 py-2 text-xs font-bold ${
+                  bookingStatusFilter === status
+                    ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                    : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] text-[var(--foreground)]"
+                }`}
+                href={bookingStatusHref({
+                  adLimit,
+                  bookingStatus: status,
+                  orderLimit,
+                })}
+                key={status}
+              >
+                {bookingStatusLabel(status)}
+              </Link>
+            ))}
+          </div>
 
           {canManageBookingSettings ? (
             <>
@@ -2001,6 +2097,7 @@ export default async function AccountPage({
               href={bookingLimitHref({
                 adLimit,
                 bookingLimit: bookingLimit + bookingPageSize,
+                bookingStatus: bookingStatusFilter,
                 orderLimit,
               })}
             >
