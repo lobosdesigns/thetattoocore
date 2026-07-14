@@ -139,6 +139,7 @@ async function fetchWithRetry(url, options = {}) {
 const checks = [
   { path: "/", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/account", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Faccount"], redirect: "manual" },
+  { path: "/account?booking_status=requested", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Faccount%3Fads%3D25%26bookings%3D25%26orders%3D25%26booking_status%3Drequested"], redirect: "manual" },
   { path: "/admin", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fadmin"], redirect: "manual" },
   { path: "/admin/ads", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/ads?payment_status=problem", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
@@ -154,6 +155,7 @@ const checks = [
   { path: "/admin/payments", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?event_type=refund.failed", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?event_type=charge.dispute.created", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  { path: "/admin/payments?audit_type=booking_refund_review_requested", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?audit_type=booking_refund_problem", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?audit_type=payment_disputes", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?audit_type=booking_payment_dispute", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
