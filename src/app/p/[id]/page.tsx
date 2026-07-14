@@ -254,6 +254,28 @@ async function hasBlockRelationship({
   return Boolean(data);
 }
 
+async function getBlockedProfileIds({
+  supabase,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId?: string | null;
+}) {
+  if (!userId) return new Set<string>();
+
+  const { data } = await supabase
+    .from("user_blocks")
+    .select("blocker_id, blocked_id")
+    .or(`blocker_id.eq.${userId},blocked_id.eq.${userId}`)
+    .returns<{ blocked_id: string; blocker_id: string }[]>();
+
+  return new Set(
+    (data ?? []).map((block) =>
+      block.blocker_id === userId ? block.blocked_id : block.blocker_id,
+    ),
+  );
+}
+
 export async function generateMetadata({
   params,
 }: PostPageProps): Promise<Metadata> {
@@ -368,6 +390,10 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
     isSignedIn,
   };
   const showPost = canViewPost({ isOwnPost, post, viewer });
+  const blockedCommentProfileIds = await getBlockedProfileIds({
+    supabase,
+    userId: claims?.sub,
+  });
   const postMedia = asArray(post.feed_media);
   const postLikes = asArray(post.post_likes);
   const postComments = asArray(post.post_comments);
@@ -377,7 +403,12 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
   const liked = postLikes.some((like) => like.user_id === claims?.sub);
   const returnPath = `/p/${post.id}`;
   const visibleComments = postComments.filter(
-    (comment) => !comment.deleted_at && !hasCommentHide(comment.post_comment_hides),
+    (comment) =>
+      !comment.deleted_at &&
+      !hasCommentHide(comment.post_comment_hides) &&
+      (!comment.profiles?.id ||
+        comment.profiles.id === claims?.sub ||
+        !blockedCommentProfileIds.has(comment.profiles.id)),
   );
   const topLevelComments = visibleComments.filter((comment) => !comment.parent_id);
   const visibleTopLevelComments = topLevelComments.slice(0, commentLimit);

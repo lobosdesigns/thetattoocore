@@ -223,6 +223,17 @@ const checks = [
       merchDetailPage.includes("!isOwnProduct"),
   },
   {
+    label: "4U and Gossip detail comments hide blocked profiles",
+    ok:
+      [postDetailPage, threadDetailPage].every(
+        (source) =>
+          source.includes("async function getBlockedProfileIds") &&
+          source.includes("const blockedCommentProfileIds") &&
+          source.includes("blockedCommentProfileIds.has(comment.profiles.id)") &&
+          source.includes("comment.profiles.id === claims?.sub"),
+      ),
+  },
+  {
     label: "4U and Gossip detail pages render comment media with lightbox controls",
     ok:
       [postDetailPage, threadDetailPage].every(

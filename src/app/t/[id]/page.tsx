@@ -249,6 +249,28 @@ async function hasBlockRelationship({
   return Boolean(data);
 }
 
+async function getBlockedProfileIds({
+  supabase,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId?: string | null;
+}) {
+  if (!userId) return new Set<string>();
+
+  const { data } = await supabase
+    .from("user_blocks")
+    .select("blocker_id, blocked_id")
+    .or(`blocker_id.eq.${userId},blocked_id.eq.${userId}`)
+    .returns<{ blocked_id: string; blocker_id: string }[]>();
+
+  return new Set(
+    (data ?? []).map((block) =>
+      block.blocker_id === userId ? block.blocked_id : block.blocker_id,
+    ),
+  );
+}
+
 export async function generateMetadata({
   params,
 }: ThreadPageProps): Promise<Metadata> {
@@ -368,6 +390,10 @@ export default async function ThreadPage({
     isSignedIn,
   };
   const showThread = canViewThread({ isOwnThread, thread, viewer });
+  const blockedCommentProfileIds = await getBlockedProfileIds({
+    supabase,
+    userId: claims?.sub,
+  });
   const threadMedia = asArray(thread.thread_media);
   const threadLikes = asArray(thread.thread_likes);
   const threadComments = asArray(thread.thread_comments);
@@ -377,7 +403,11 @@ export default async function ThreadPage({
   const returnPath = `/t/${thread.id}`;
   const visibleComments = threadComments.filter(
     (comment) =>
-      !comment.deleted_at && !hasCommentHide(comment.thread_comment_hides),
+      !comment.deleted_at &&
+      !hasCommentHide(comment.thread_comment_hides) &&
+      (!comment.profiles?.id ||
+        comment.profiles.id === claims?.sub ||
+        !blockedCommentProfileIds.has(comment.profiles.id)),
   );
   const topLevelComments = visibleComments.filter((comment) => !comment.parent_id);
   const visibleTopLevelComments = topLevelComments.slice(0, commentLimit);
