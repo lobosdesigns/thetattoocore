@@ -5,6 +5,7 @@ const bookingCheckout = readFileSync("src/app/api/bookings/checkout/route.ts", "
 const merchCheckout = readFileSync("src/app/api/merch/checkout/route.ts", "utf8");
 const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const merchCheckoutSuccessPage = readFileSync("src/app/merch/checkout/success/page.tsx", "utf8");
+const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const merchPrintReceiptButton = readFileSync(
   "src/app/merch/checkout/success/print-receipt-button.tsx",
   "utf8",
@@ -142,6 +143,21 @@ checks.push({
     globalsCss.includes("@media print") &&
     globalsCss.includes(".ttc-print-hidden") &&
     globalsCss.includes(".ttc-print-receipt"),
+});
+checks.push({
+  label: "member commerce surfaces show friendly order and fulfillment labels",
+  ok:
+    accountPage.includes("function commerceStatusLabel") &&
+    accountPage.includes("function fulfillmentStatusLabel") &&
+    accountPage.includes('if (status === "pending_checkout") return "Checkout pending"') &&
+    accountPage.includes('if (status === "unfulfilled") return "Not fulfilled"') &&
+    !accountPage.includes("order.status.replace(\"_\", \" \")") &&
+    !accountPage.includes("item.fulfillment_status.replace(\"_\", \" \")") &&
+    !accountPage.includes("payment provider review during launch") &&
+    merchCheckoutSuccessPage.includes("function commerceStatusLabel") &&
+    merchCheckoutSuccessPage.includes('if (status === "pending_checkout") return "Checkout pending"') &&
+    merchCheckoutSuccessPage.includes('if (status === "payment_failed") return "Payment failed"') &&
+    !merchCheckoutSuccessPage.includes("order.status.replace(\"_\", \" \")"),
 });
 checks.push({
   label: "shared platform fee helper stays at launch rate",

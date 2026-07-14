@@ -264,6 +264,21 @@ function bookingPaymentStatusLabel(status: string) {
   return titleCaseStatus(status);
 }
 
+function commerceStatusLabel(status: string) {
+  if (status === "pending_checkout") return "Checkout pending";
+  if (status === "payment_failed") return "Payment failed";
+  if (status === "partially_refunded") return "Partially refunded";
+
+  return titleCaseStatus(status);
+}
+
+function fulfillmentStatusLabel(status: string) {
+  if (status === "unfulfilled") return "Not fulfilled";
+  if (status === "partially_fulfilled") return "Partially fulfilled";
+
+  return titleCaseStatus(status);
+}
+
 function formatDate(value: string | null) {
   return value ? new Date(value).toLocaleDateString() : "Not provided";
 }
@@ -1224,7 +1239,7 @@ export default async function AccountPage({
                         order.status,
                       )}`}
                     >
-                      {order.status.replace("_", " ")}
+                      {commerceStatusLabel(order.status)}
                     </span>
                   </div>
                   <div className="mt-3 space-y-1 text-sm text-[var(--muted)]">
@@ -1238,7 +1253,7 @@ export default async function AccountPage({
                         </p>
                         <div className="mt-1 space-y-1 text-xs leading-5 text-[var(--muted-strong)]">
                           <p className="capitalize">
-                            Fulfillment: {item.fulfillment_status.replace("_", " ")}
+                            Fulfillment: {fulfillmentStatusLabel(item.fulfillment_status)}
                           </p>
                           {item.seller_fulfilled_at ? (
                             <p>
@@ -1333,7 +1348,7 @@ export default async function AccountPage({
               Sales show paid or pending checkout items that belong to your
               products. Mark paid line items fulfilled only after shipping or
               handoff is complete; refunds and disputes still need admin/payment
-              provider review during launch.
+              review during launch.
             </p>
             {visibleMerchSales.length ? (
               <div className="mt-4 grid gap-3">
@@ -1363,7 +1378,9 @@ export default async function AccountPage({
                             order?.status ?? item.fulfillment_status,
                           )}`}
                         >
-                          {(order?.status ?? item.fulfillment_status).replace("_", " ")}
+                          {order
+                            ? commerceStatusLabel(order.status)
+                            : fulfillmentStatusLabel(item.fulfillment_status)}
                         </span>
                       </div>
                       <div className="mt-3 grid gap-2 text-sm text-[var(--muted)] sm:grid-cols-2">
@@ -1373,7 +1390,7 @@ export default async function AccountPage({
                         <p>
                           Unit price: {money(item.unit_price_cents, item.currency)}
                         </p>
-                        <p>Fulfillment: {item.fulfillment_status.replace("_", " ")}</p>
+                        <p>Fulfillment: {fulfillmentStatusLabel(item.fulfillment_status)}</p>
                         <p>Ship to: {order?.shipping_name || "Not collected"}</p>
                         <p>Email: {order?.customer_email || "Not collected"}</p>
                         {order?.fulfilled_at ? (

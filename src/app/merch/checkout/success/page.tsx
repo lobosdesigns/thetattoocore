@@ -60,6 +60,23 @@ function statusClass(status?: string) {
   return "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]";
 }
 
+function titleCaseStatus(value: string) {
+  return value
+    .split("_")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function commerceStatusLabel(status?: string) {
+  if (!status) return "Processing";
+  if (status === "pending_checkout") return "Checkout pending";
+  if (status === "payment_failed") return "Payment failed";
+  if (status === "partially_refunded") return "Partially refunded";
+
+  return titleCaseStatus(status);
+}
+
 function statusCopy(status?: string) {
   if (status === "paid" || status === "fulfilled") {
     return {
@@ -161,7 +178,7 @@ export default async function MerchCheckoutSuccessPage({
                       order.status,
                     )}`}
                   >
-                    {order.status.replace("_", " ")}
+                    {commerceStatusLabel(order.status)}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
