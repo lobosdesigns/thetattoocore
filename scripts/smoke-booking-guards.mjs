@@ -133,6 +133,9 @@ const checks = [
       actions.includes("export async function createBookingRequest") &&
       actions.includes("await requireProfile()") &&
       actions.includes("calculatePlatformFeeCents(depositAmountCents)") &&
+      actions.includes('.from("booking_settings")') &&
+      actions.includes("bookingSettings?.booking_enabled") &&
+      actions.includes("not accepting booking requests right now") &&
       actions.includes('formData.get("appointment_type_id")') &&
       actions.includes('formData.get("preferred_slot_id")') &&
       actions.includes('.from("booking_appointment_types")') &&

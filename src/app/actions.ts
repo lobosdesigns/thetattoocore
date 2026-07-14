@@ -1123,6 +1123,22 @@ export async function createBookingRequest(formData: FormData) {
     );
   }
 
+  const { data: bookingSettings } = await supabase
+    .from("booking_settings")
+    .select("booking_enabled")
+    .eq("profile_id", artist.id)
+    .maybeSingle<{ booking_enabled: boolean }>();
+
+  if (!bookingSettings?.booking_enabled) {
+    redirect(
+      redirectWithMessage({
+        hash: "booking-request",
+        message: "This artist or studio is not accepting booking requests right now.",
+        path: returnPath,
+      }),
+    );
+  }
+
   let appointmentTypeName: string | null = null;
   let preferredSlotLabel: string | null = null;
 
