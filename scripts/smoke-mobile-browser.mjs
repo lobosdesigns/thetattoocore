@@ -34,6 +34,7 @@ const routes = [
   { allowMainDocument404: true, path: "/merch/not-a-real-product", titleIncludes: "404" },
   { path: "/merch/checkout/success", titleIncludes: "Merch checkout status" },
 ];
+const representativeSitemapPrefixes = ["/p/", "/t/", "/stuff/", "/gigs/", "/merch/", "/u/"];
 const forbiddenText = [
   "This page couldn't load",
   "Reload to try again",
@@ -46,6 +47,8 @@ if (!chromePath) {
   console.error("FAIL mobile browser smoke needs Chrome or Chromium. Set CHROME_PATH to a browser executable.");
   process.exit(1);
 }
+
+routes.push(...(await representativeSitemapRoutes()));
 
 const port = 9400 + Math.floor(Math.random() * 300);
 const userDataDir = mkdtempSync(join(tmpdir(), "ttc-mobile-smoke-"));
@@ -325,6 +328,37 @@ function findChrome() {
 
 function dedupe(items) {
   return [...new Set(items.map((item) => item.trim()).filter(Boolean))];
+}
+
+async function representativeSitemapRoutes() {
+  try {
+    const response = await fetch(`${baseUrl}/sitemap.xml`, {
+      signal: AbortSignal.timeout(6000),
+    });
+
+    if (!response.ok) return [];
+
+    const xml = await response.text();
+    const urls = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)]
+      .map((match) => {
+        try {
+          return new URL(match[1]);
+        } catch {
+          return null;
+        }
+      })
+      .filter((url) => url?.origin === baseUrl);
+    const sampled = representativeSitemapPrefixes
+      .map((prefix) => urls.find((url) => url.pathname.startsWith(prefix)))
+      .filter(Boolean);
+
+    return sampled.map((url) => ({
+      path: `${url.pathname}${url.search}`,
+      titleIncludes: "",
+    }));
+  } catch {
+    return [];
+  }
 }
 
 async function stopBrowser() {
