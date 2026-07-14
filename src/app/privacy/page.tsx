@@ -117,6 +117,13 @@ export default function PrivacyPage() {
             <a className="font-semibold underline" href={`mailto:${supportEmail}`}>
               {supportEmail}
             </a>
+            . Signed-in members can also{" "}
+            <Link
+              className="font-semibold underline"
+              href="/login?return_to=%2Faccount%23data-settings"
+            >
+              request account deletion from Account Data
+            </Link>
             .
           </p>
         </div>

@@ -212,6 +212,7 @@ const checks = [
       "Commerce And Payments",
       "raw payment or payout credentials",
       "Retention And Review",
+      "/login?return_to=%2Faccount%23data-settings",
       "support@thetattoocore.com",
     ],
   },

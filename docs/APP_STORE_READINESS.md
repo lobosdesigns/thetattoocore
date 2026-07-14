@@ -86,6 +86,7 @@
 - Full verification on July 14, 2026 passed after adding friendly Account labels for booking calendar connection states. Live deploy version `c3b7b7a1-7462-4d74-acc9-fbd7a49e114b` passed public route smoke.
 - Full verification on July 14, 2026 passed after adding friendly Account/Admin labels for account deletion request states. Live deploy version `7266c8ff-f3b7-40e4-8630-1bdfab805295` passed public route smoke.
 - Full verification on July 14, 2026 passed after routing the Support deletion quick action through sign-in to Account Data. Live deploy version `c1b60d22-acb8-472f-bf39-188d60304137` passed public route smoke.
+- Full verification on July 14, 2026 passed after adding a Privacy-page account deletion link that sends members through sign-in to Account Data. Live deploy version `1535a53c-b3a9-4f8e-aff6-0ec1b5bcb640` passed public route smoke.
 - Stripe checkout is still test-mode only, but webhook event dedupe, retry-safe Merch/ad payment status updates, ad checkout reservation before Stripe session creation, buyer/seller/advertiser in-app alerts, important payment emails, Admin > Payments ops visibility, filtered payment queues, and production payment-gate reminders are wired for the web app.
 - Buyer Merch checkout success now shows a printable receipt action when a signed-in buyer opens a matching Stripe session receipt; print styling hides page actions and keeps receipt text readable.
 - 4U and Gossip detail comments support photo/GIF attachments with lightbox viewing, while home feeds keep comment counts collapsed for speed.

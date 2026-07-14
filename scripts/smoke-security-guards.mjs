@@ -188,6 +188,7 @@ const checks = [
     ok:
       supportPage.includes('href: "/login?return_to=%2Faccount%23data-settings"') &&
       !supportPage.includes('href: "/account#data-settings"') &&
+      privacyPage.includes('href="/login?return_to=%2Faccount%23data-settings"') &&
       publicSmoke.includes("/login?return_to=%2Faccount%23data-settings"),
   },
   {
