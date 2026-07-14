@@ -200,6 +200,14 @@ const checks = [
       notificationPage.includes("visibleNotifications.filter"),
   },
   {
+    label: "content notifications skip blocked profile relationships",
+    ok:
+      mainActions.includes("async function blockRelationshipExists") &&
+      mainActions.includes('.from("user_blocks")') &&
+      mainActions.includes("async function notifyContentOwner") &&
+      mainActions.includes("if (await blockRelationshipExists(supabase, actorId, ownerId)) return"),
+  },
+  {
     label: "DM unread deletion keeps ownership, read-state, and attachment cleanup guards",
     ok:
       messageActions.includes("export async function deleteUnreadMessage") &&

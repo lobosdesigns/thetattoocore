@@ -471,6 +471,7 @@ async function notifyContentOwner({
   type: "feed_like" | "feed_comment" | "thread_like" | "thread_comment";
 }) {
   if (!ownerId || ownerId === actorId) return;
+  if (await blockRelationshipExists(supabase, actorId, ownerId)) return;
 
   const preferenceCategory =
     type === "feed_like" || type === "feed_comment" ? "feed" : "thread";
