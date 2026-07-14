@@ -222,6 +222,10 @@ export async function acceptFollowRequest(formData: FormData) {
     redirect("/");
   }
 
+  if (await blockRelationshipExists({ supabase, targetId: followerId, userId })) {
+    redirect(profilePath(username, "You cannot approve a blocked profile."));
+  }
+
   const { error } = await supabase
     .from("follows")
     .update({

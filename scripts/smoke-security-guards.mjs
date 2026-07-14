@@ -15,6 +15,7 @@ const messageThread = readFileSync("src/app/messages/message-thread.tsx", "utf8"
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const urls = readFileSync("src/lib/urls.ts", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
+const profileActions = readFileSync("src/app/u/[username]/actions.ts", "utf8");
 const gigsDetailPage = readFileSync("src/app/gigs/[id]/page.tsx", "utf8");
 const postDetailPage = readFileSync("src/app/p/[id]/page.tsx", "utf8");
 const stuffDetailPage = readFileSync("src/app/stuff/[id]/page.tsx", "utf8");
@@ -206,6 +207,16 @@ const checks = [
       mainActions.includes('.from("user_blocks")') &&
       mainActions.includes("async function notifyContentOwner") &&
       mainActions.includes("if (await blockRelationshipExists(supabase, actorId, ownerId)) return"),
+  },
+  {
+    label: "follow request approvals respect blocked relationships",
+    ok:
+      profileActions.includes("export async function acceptFollowRequest") &&
+      profileActions.includes('redirect(profilePath(username, "You cannot approve a blocked profile."))') &&
+      notificationActions.includes("async function blockRelationshipExists") &&
+      notificationActions.includes("const hasBlockRelationship = await blockRelationshipExists") &&
+      notificationActions.includes("if (!hasBlockRelationship)") &&
+      notificationActions.includes(".eq(\"status\", \"pending\")"),
   },
   {
     label: "DM unread deletion keeps ownership, read-state, and attachment cleanup guards",

@@ -25,6 +25,27 @@ async function requireUser() {
   return { supabase, userId: claims.sub };
 }
 
+async function blockRelationshipExists({
+  supabase,
+  targetId,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  targetId: string;
+  userId: string;
+}) {
+  const { data } = await supabase
+    .from("user_blocks")
+    .select("blocker_id")
+    .or(
+      `and(blocker_id.eq.${userId},blocked_id.eq.${targetId}),and(blocker_id.eq.${targetId},blocked_id.eq.${userId})`,
+    )
+    .limit(1)
+    .maybeSingle<{ blocker_id: string }>();
+
+  return Boolean(data);
+}
+
 function safeInternalHref(value: FormDataEntryValue | null) {
   const href = String(value ?? "").trim();
 
@@ -113,38 +134,46 @@ export async function respondToFollowRequest(formData: FormData) {
   }
 
   if (decision === "accept") {
-    await supabase
-      .from("follows")
-      .update({
-        responded_at: readAt,
-        status: "accepted",
-      })
-      .eq("follower_id", followerId)
-      .eq("following_id", userId)
-      .eq("status", "pending");
+    const hasBlockRelationship = await blockRelationshipExists({
+      supabase,
+      targetId: followerId,
+      userId,
+    });
 
-    const { data: ownerProfile } = await supabase
-      .from("profiles")
-      .select("display_name, username")
-      .eq("id", userId)
-      .maybeSingle<{ display_name: string; username: string }>();
-    const { data: followerPreferences } = await supabase
-      .from("profiles")
-      .select(notificationPreferenceSelect("follow"))
-      .eq("id", followerId)
-      .maybeSingle<NotificationPreferenceProfile>();
+    if (!hasBlockRelationship) {
+      await supabase
+        .from("follows")
+        .update({
+          responded_at: readAt,
+          status: "accepted",
+        })
+        .eq("follower_id", followerId)
+        .eq("following_id", userId)
+        .eq("status", "pending");
 
-    if (allowsInAppNotification(followerPreferences, "follow")) {
-      await supabase.from("notifications").insert({
-        actor_id: userId,
-        body: `${ownerProfile?.display_name ?? "A member"} approved your follow request.`,
-        href: ownerProfile?.username ? `/u/${ownerProfile.username}` : "/",
-        recipient_id: followerId,
-        subject_id: userId,
-        subject_type: "profile",
-        title: "Follow request approved",
-        type: "follow_accepted",
-      });
+      const { data: ownerProfile } = await supabase
+        .from("profiles")
+        .select("display_name, username")
+        .eq("id", userId)
+        .maybeSingle<{ display_name: string; username: string }>();
+      const { data: followerPreferences } = await supabase
+        .from("profiles")
+        .select(notificationPreferenceSelect("follow"))
+        .eq("id", followerId)
+        .maybeSingle<NotificationPreferenceProfile>();
+
+      if (allowsInAppNotification(followerPreferences, "follow")) {
+        await supabase.from("notifications").insert({
+          actor_id: userId,
+          body: `${ownerProfile?.display_name ?? "A member"} approved your follow request.`,
+          href: ownerProfile?.username ? `/u/${ownerProfile.username}` : "/",
+          recipient_id: followerId,
+          subject_id: userId,
+          subject_type: "profile",
+          title: "Follow request approved",
+          type: "follow_accepted",
+        });
+      }
     }
   } else if (decision === "decline") {
     await supabase
