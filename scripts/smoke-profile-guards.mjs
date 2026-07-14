@@ -106,6 +106,15 @@ const checks = [
       followListPage.includes("person.banner_url"),
   },
   {
+    label: "follow lists hide blocked relationships and blocked row profiles",
+    ok:
+      followListPage.includes("async function getBlockedProfileIds") &&
+      followListPage.includes('from("user_blocks")') &&
+      followListPage.includes("const hasBlockRelationship = Boolean(blockRecord)") &&
+      followListPage.includes("!hasBlockRelationship") &&
+      followListPage.includes("!blockedProfileIds.has(row.profiles.id)"),
+  },
+  {
     label: "outbound profile links use safe URL and rel policy",
     ok:
       urls.includes('["http:", "https:"].includes(url.protocol)') &&

@@ -35,6 +35,11 @@ type FollowRecord = {
   status: "accepted" | "pending";
 };
 
+type BlockRecord = {
+  blocked_id: string;
+  blocker_id: string;
+};
+
 type FollowListRow = {
   created_at: string;
   profiles: Pick<
@@ -80,6 +85,28 @@ function pageNumber(value: string | string[] | undefined) {
 
 function pageHref(username: string, kind: FollowListKind, page: number) {
   return `/u/${username}/${kind}?page=${page}`;
+}
+
+async function getBlockedProfileIds({
+  supabase,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId?: string | null;
+}) {
+  if (!userId) return new Set<string>();
+
+  const { data } = await supabase
+    .from("user_blocks")
+    .select("blocker_id, blocked_id")
+    .or(`blocker_id.eq.${userId},blocked_id.eq.${userId}`)
+    .returns<BlockRecord[]>();
+
+  return new Set(
+    (data ?? []).map((block) =>
+      block.blocker_id === userId ? block.blocked_id : block.blocker_id,
+    ),
+  );
 }
 
 function Pagination({
@@ -159,8 +186,13 @@ export async function FollowListPage({
     notFound();
   }
 
-  const [{ count: followerCount }, { count: followingCount }, { data: followRecord }] =
-    await Promise.all([
+  const [
+    { count: followerCount },
+    { count: followingCount },
+    { data: followRecord },
+    { data: blockRecord },
+    blockedProfileIds,
+  ] = await Promise.all([
       supabase
         .from("follows")
         .select("*", { count: "exact", head: true })
@@ -179,11 +211,24 @@ export async function FollowListPage({
             .eq("following_id", profile.id)
             .maybeSingle<FollowRecord>()
         : Promise.resolve({ data: null }),
+      claims?.sub && claims.sub !== profile.id
+        ? supabase
+            .from("user_blocks")
+            .select("blocker_id, blocked_id")
+            .or(
+              `and(blocker_id.eq.${claims.sub},blocked_id.eq.${profile.id}),and(blocker_id.eq.${profile.id},blocked_id.eq.${claims.sub})`,
+            )
+            .limit(1)
+            .maybeSingle<BlockRecord>()
+        : Promise.resolve({ data: null }),
+      getBlockedProfileIds({ supabase, userId: claims?.sub }),
     ]);
 
   const isOwnProfile = claims?.sub === profile.id;
+  const hasBlockRelationship = Boolean(blockRecord);
   const canView =
     Boolean(claims?.sub) &&
+    !hasBlockRelationship &&
     (!profile.is_private || isOwnProfile || followRecord?.status === "accepted");
   const listQuery =
     kind === "followers"
@@ -212,7 +257,9 @@ export async function FollowListPage({
     listCount ?? (kind === "followers" ? followerCount : followingCount) ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
   const hasNextPage = currentPage < totalPages;
-  const visibleRows = (rows ?? []).filter((row) => row.profiles);
+  const visibleRows = (rows ?? []).filter(
+    (row) => row.profiles && !blockedProfileIds.has(row.profiles.id),
+  );
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
