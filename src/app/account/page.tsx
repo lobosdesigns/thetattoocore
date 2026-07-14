@@ -4,11 +4,17 @@ import { redirect } from "next/navigation";
 import {
   cancelAcceptedBookingAsArtist,
   cancelBookingRequest,
+  createBookingAppointmentType,
+  createBookingBlackoutDate,
+  createBookingSlot,
+  deleteBookingBlackoutDate,
+  deleteBookingSlot,
   markMerchSaleFulfilled,
   requestAccountDeletion,
   respondBookingRequest,
   submitAdCampaign,
   submitLicenseVerification,
+  toggleBookingAppointmentType,
   updateBookingSettings,
 } from "./actions";
 import { AdCampaignForm } from "./ad-campaign-form";
@@ -47,6 +53,35 @@ type BookingSettings = {
     summary?: string | null;
   } | null;
 };
+type BookingAppointmentType = {
+  buffer_after_minutes: number;
+  buffer_before_minutes: number;
+  deposit_amount_cents: number;
+  deposit_policy: string;
+  description: string | null;
+  duration_minutes: number;
+  id: string;
+  is_active: boolean;
+  name: string;
+};
+type BookingSlot = {
+  appointment_type_id: string | null;
+  ends_at: string;
+  id: string;
+  is_active: boolean;
+  max_bookings_per_slot: number;
+  slot_interval_minutes: number;
+  starts_at: string;
+  timezone: string;
+  weekday: number;
+};
+type BookingBlackout = {
+  ends_at: string;
+  id: string;
+  is_all_day: boolean;
+  reason: string | null;
+  starts_at: string;
+};
 
 const adminRoles = ["moderator", "admin", "owner"];
 const adPageSize = 25;
@@ -64,6 +99,8 @@ const accountNavItems = [
   ["#order-settings", "Orders"],
   ["#data-settings", "Data"],
 ] as const;
+const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+const slotIntervals = [15, 20, 30, 45, 60, 90, 120] as const;
 
 function limitParam(value: string | string[] | undefined) {
   const rawValue = Array.isArray(value) ? value[0] : value;
@@ -411,6 +448,13 @@ export default async function AccountPage({
         .maybeSingle<{ display_name: string; username: string }>()
     : { data: null };
 
+  const canManageBookingSettings = Boolean(
+    profile?.account_type &&
+      ["artist", "studio"].includes(profile.account_type as string) &&
+      profile.license_verified_at &&
+      !profile.suspended_at &&
+      !profile.banned_at,
+  );
   const role = profile?.role as string | undefined;
   const { data: verificationRequests } = await supabase
     .from("license_verification_requests")
@@ -587,6 +631,41 @@ export default async function AccountPage({
     )
     .eq("profile_id", claims.sub)
     .maybeSingle<BookingSettings>();
+  const { data: bookingAppointmentTypes } = canManageBookingSettings
+    ? await supabase
+        .from("booking_appointment_types")
+        .select(
+          "id, name, description, duration_minutes, buffer_before_minutes, buffer_after_minutes, deposit_policy, deposit_amount_cents, is_active",
+        )
+        .eq("profile_id", claims.sub)
+        .order("is_active", { ascending: false })
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: false })
+        .limit(25)
+        .returns<BookingAppointmentType[]>()
+    : { data: null };
+  const { data: bookingSlots } = canManageBookingSettings
+    ? await supabase
+        .from("booking_availability_slots")
+        .select(
+          "id, appointment_type_id, weekday, starts_at, ends_at, timezone, slot_interval_minutes, max_bookings_per_slot, is_active",
+        )
+        .eq("profile_id", claims.sub)
+        .order("weekday", { ascending: true })
+        .order("starts_at", { ascending: true })
+        .limit(50)
+        .returns<BookingSlot[]>()
+    : { data: null };
+  const { data: bookingBlackouts } = canManageBookingSettings
+    ? await supabase
+        .from("booking_blackout_dates")
+        .select("id, starts_at, ends_at, reason, is_all_day")
+        .eq("profile_id", claims.sub)
+        .gte("ends_at", new Date().toISOString())
+        .order("starts_at", { ascending: true })
+        .limit(25)
+        .returns<BookingBlackout[]>()
+    : { data: null };
   const { data: outgoingBookings } = await supabase
     .from("booking_requests")
     .select(
@@ -638,13 +717,6 @@ export default async function AccountPage({
   const canSubmitLicense =
     profile?.account_type &&
     verificationEligibleAccountTypes.includes(profile.account_type as string);
-  const canManageBookingSettings = Boolean(
-    profile?.account_type &&
-      ["artist", "studio"].includes(profile.account_type as string) &&
-      profile.license_verified_at &&
-      !profile.suspended_at &&
-      !profile.banned_at,
-  );
   const isLicenseVerified = Boolean(profile?.license_verified_at);
   const latestVerificationRequest = verificationRequests?.[0] ?? null;
   const hasPendingVerification = Boolean(
@@ -741,6 +813,7 @@ export default async function AccountPage({
           </p>
 
           {canManageBookingSettings ? (
+            <>
             <form
               action={updateBookingSettings}
               className="mt-5 rounded-lg border border-[color-mix(in_srgb,var(--gold)_32%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4"
@@ -882,6 +955,375 @@ export default async function AccountPage({
                 Save booking availability
               </PendingSubmitButton>
             </form>
+            <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+              <section className="rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+                <div>
+                  <h3 className="text-sm font-bold">Appointment types</h3>
+                  <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
+                    Create consultation or tattoo session types with duration,
+                    buffers, and deposit rules.
+                  </p>
+                </div>
+                <form action={createBookingAppointmentType} className="mt-4 grid gap-3">
+                  <label className="grid gap-1 text-sm font-semibold">
+                    Name
+                    <input
+                      className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                      maxLength={80}
+                      name="appointment_name"
+                      placeholder="Consultation"
+                      required
+                    />
+                  </label>
+                  <label className="grid gap-1 text-sm font-semibold">
+                    Description
+                    <textarea
+                      className="min-h-16 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                      maxLength={500}
+                      name="appointment_description"
+                      placeholder="Small tattoo consult, sleeve planning, touch-up review..."
+                    />
+                  </label>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <label className="grid gap-1 text-sm font-semibold">
+                      Minutes
+                      <input
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                        defaultValue="60"
+                        inputMode="numeric"
+                        name="duration_minutes"
+                      />
+                    </label>
+                    <label className="grid gap-1 text-sm font-semibold">
+                      Buffer before
+                      <input
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                        defaultValue="0"
+                        inputMode="numeric"
+                        name="buffer_before_minutes"
+                      />
+                    </label>
+                    <label className="grid gap-1 text-sm font-semibold">
+                      Buffer after
+                      <input
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                        defaultValue="0"
+                        inputMode="numeric"
+                        name="buffer_after_minutes"
+                      />
+                    </label>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="grid gap-1 text-sm font-semibold">
+                      Deposit rule
+                      <select
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                        defaultValue="inherit"
+                        name="appointment_deposit_policy"
+                      >
+                        <option value="inherit">Use account default</option>
+                        <option value="optional">Optional</option>
+                        <option value="required">Required</option>
+                        <option value="none">No deposit</option>
+                      </select>
+                    </label>
+                    <label className="grid gap-1 text-sm font-semibold">
+                      Deposit amount
+                      <input
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                        inputMode="decimal"
+                        name="appointment_deposit_amount"
+                        placeholder="50.00"
+                      />
+                    </label>
+                  </div>
+                  <PendingSubmitButton
+                    className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)]"
+                    pendingLabel="Adding"
+                  >
+                    Add appointment type
+                  </PendingSubmitButton>
+                </form>
+                <div className="mt-4 grid gap-2">
+                  {(bookingAppointmentTypes ?? []).length ? (
+                    bookingAppointmentTypes?.map((type) => (
+                      <article
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-3"
+                        key={type.id}
+                      >
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <p className="text-sm font-bold">{type.name}</p>
+                            <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
+                              {type.duration_minutes} min
+                              {type.buffer_before_minutes || type.buffer_after_minutes
+                                ? ` - buffer ${type.buffer_before_minutes}/${type.buffer_after_minutes} min`
+                                : ""}{" "}
+                              - {type.deposit_policy}
+                              {type.deposit_amount_cents
+                                ? ` - ${money(type.deposit_amount_cents, "USD")}`
+                                : ""}
+                            </p>
+                            {type.description ? (
+                              <p className="mt-2 text-sm leading-5 text-[var(--muted)]">
+                                {type.description}
+                              </p>
+                            ) : null}
+                          </div>
+                          <form action={toggleBookingAppointmentType}>
+                            <input
+                              name="appointment_type_id"
+                              type="hidden"
+                              value={type.id}
+                            />
+                            <input
+                              name="is_active"
+                              type="hidden"
+                              value={String(!type.is_active)}
+                            />
+                            <PendingSubmitButton
+                              className="h-9 rounded-md border border-[var(--card-rim)] px-3 text-xs font-bold"
+                              pendingLabel="Saving"
+                            >
+                              {type.is_active ? "Pause" : "Restore"}
+                            </PendingSubmitButton>
+                          </form>
+                        </div>
+                      </article>
+                    ))
+                  ) : (
+                    <p className="rounded-md border border-dashed border-[var(--card-rim)] p-3 text-sm text-[var(--muted)]">
+                      No appointment types yet.
+                    </p>
+                  )}
+                </div>
+              </section>
+
+              <section className="rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+                <div>
+                  <h3 className="text-sm font-bold">Weekly slot templates</h3>
+                  <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
+                    Add repeatable days and times. Blackouts below can block
+                    travel, conventions, or private days.
+                  </p>
+                </div>
+                <form action={createBookingSlot} className="mt-4 grid gap-3">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="grid gap-1 text-sm font-semibold">
+                      Day
+                      <select
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                        name="slot_weekday"
+                      >
+                        {weekdays.map((day, index) => (
+                          <option key={day} value={index}>
+                            {day}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="grid gap-1 text-sm font-semibold">
+                      Type
+                      <select
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                        name="slot_appointment_type_id"
+                      >
+                        <option value="">Any appointment type</option>
+                        {(bookingAppointmentTypes ?? [])
+                          .filter((type) => type.is_active)
+                          .map((type) => (
+                            <option key={type.id} value={type.id}>
+                              {type.name}
+                            </option>
+                          ))}
+                      </select>
+                    </label>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="grid gap-1 text-sm font-semibold">
+                      Starts
+                      <input
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                        defaultValue="10:00"
+                        name="slot_starts_at"
+                        type="time"
+                      />
+                    </label>
+                    <label className="grid gap-1 text-sm font-semibold">
+                      Ends
+                      <input
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                        defaultValue="17:00"
+                        name="slot_ends_at"
+                        type="time"
+                      />
+                    </label>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <label className="grid gap-1 text-sm font-semibold">
+                      Interval
+                      <select
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                        defaultValue="30"
+                        name="slot_interval_minutes"
+                      >
+                        {slotIntervals.map((interval) => (
+                          <option key={interval} value={interval}>
+                            {interval} min
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="grid gap-1 text-sm font-semibold">
+                      Capacity
+                      <input
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                        defaultValue="1"
+                        inputMode="numeric"
+                        name="max_bookings_per_slot"
+                      />
+                    </label>
+                    <label className="grid gap-1 text-sm font-semibold">
+                      Timezone
+                      <input
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                        defaultValue={bookingSettings?.timezone ?? "America/Chicago"}
+                        maxLength={80}
+                        name="slot_timezone"
+                      />
+                    </label>
+                  </div>
+                  <PendingSubmitButton
+                    className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)]"
+                    pendingLabel="Adding"
+                  >
+                    Add slot template
+                  </PendingSubmitButton>
+                </form>
+                <div className="mt-4 grid gap-2">
+                  {(bookingSlots ?? []).length ? (
+                    bookingSlots?.map((slot) => {
+                      const type = bookingAppointmentTypes?.find(
+                        (item) => item.id === slot.appointment_type_id,
+                      );
+
+                      return (
+                        <article
+                          className="flex flex-col gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-3 sm:flex-row sm:items-center sm:justify-between"
+                          key={slot.id}
+                        >
+                          <div>
+                            <p className="text-sm font-bold">
+                              {weekdays[slot.weekday] ?? "Day"} {slot.starts_at.slice(0, 5)}
+                              -{slot.ends_at.slice(0, 5)}
+                            </p>
+                            <p className="mt-1 text-xs text-[var(--muted-strong)]">
+                              {type?.name ?? "Any type"} - every{" "}
+                              {slot.slot_interval_minutes} min - capacity{" "}
+                              {slot.max_bookings_per_slot}
+                            </p>
+                          </div>
+                          <form action={deleteBookingSlot}>
+                            <input name="slot_id" type="hidden" value={slot.id} />
+                            <PendingSubmitButton
+                              className="h-9 rounded-md border border-[var(--card-rim)] px-3 text-xs font-bold"
+                              pendingLabel="Removing"
+                            >
+                              Remove
+                            </PendingSubmitButton>
+                          </form>
+                        </article>
+                      );
+                    })
+                  ) : (
+                    <p className="rounded-md border border-dashed border-[var(--card-rim)] p-3 text-sm text-[var(--muted)]">
+                      No weekly slot templates yet.
+                    </p>
+                  )}
+                </div>
+              </section>
+            </div>
+
+            <section className="mt-4 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+              <div>
+                <h3 className="text-sm font-bold">Blackout dates</h3>
+                <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
+                  Block conventions, travel, private days, or shop closures
+                  before they become bookable.
+                </p>
+              </div>
+              <form action={createBookingBlackoutDate} className="mt-4 grid gap-3 md:grid-cols-2">
+                <label className="grid gap-1 text-sm font-semibold">
+                  Starts
+                  <input
+                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                    name="blackout_starts_at"
+                    type="datetime-local"
+                  />
+                </label>
+                <label className="grid gap-1 text-sm font-semibold">
+                  Ends
+                  <input
+                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                    name="blackout_ends_at"
+                    type="datetime-local"
+                  />
+                </label>
+                <label className="grid gap-1 text-sm font-semibold md:col-span-2">
+                  Reason
+                  <input
+                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                    maxLength={160}
+                    name="blackout_reason"
+                    placeholder="Convention, travel, private booking, shop closure..."
+                  />
+                </label>
+                <label className="flex items-center gap-2 text-sm font-semibold">
+                  <input name="blackout_all_day" type="checkbox" />
+                  All day
+                </label>
+                <PendingSubmitButton
+                  className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)]"
+                  pendingLabel="Adding"
+                >
+                  Add blackout
+                </PendingSubmitButton>
+              </form>
+              <div className="mt-4 grid gap-2">
+                {(bookingBlackouts ?? []).length ? (
+                  bookingBlackouts?.map((blackout) => (
+                    <article
+                      className="flex flex-col gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-3 sm:flex-row sm:items-center sm:justify-between"
+                      key={blackout.id}
+                    >
+                      <div>
+                        <p className="text-sm font-bold">
+                          {formatDate(blackout.starts_at)} - {formatDate(blackout.ends_at)}
+                        </p>
+                        <p className="mt-1 text-xs text-[var(--muted-strong)]">
+                          {blackout.reason ?? "Blocked time"}
+                          {blackout.is_all_day ? " - all day" : ""}
+                        </p>
+                      </div>
+                      <form action={deleteBookingBlackoutDate}>
+                        <input name="blackout_id" type="hidden" value={blackout.id} />
+                        <PendingSubmitButton
+                          className="h-9 rounded-md border border-[var(--card-rim)] px-3 text-xs font-bold"
+                          pendingLabel="Removing"
+                        >
+                          Remove
+                        </PendingSubmitButton>
+                      </form>
+                    </article>
+                  ))
+                ) : (
+                  <p className="rounded-md border border-dashed border-[var(--card-rim)] p-3 text-sm text-[var(--muted)]">
+                    No upcoming blackout dates.
+                  </p>
+                )}
+              </div>
+            </section>
+            </>
           ) : (
             <div className="mt-5 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 text-sm leading-6 text-[var(--muted)]">
               Verified artist or studio status unlocks public booking

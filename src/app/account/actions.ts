@@ -950,6 +950,53 @@ function bookingPath(message: string) {
   return accountPath(message, "booking-settings");
 }
 
+async function requireBookingManager() {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+
+  if (!claims?.sub) {
+    redirect("/login?return_to=%2Faccount%23booking-settings");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, account_type, license_verified_at, suspended_at, banned_at")
+    .eq("id", claims.sub)
+    .maybeSingle<{
+      account_type: string;
+      banned_at: string | null;
+      id: string;
+      license_verified_at: string | null;
+      suspended_at: string | null;
+    }>();
+
+  if (
+    !profile ||
+    !["artist", "studio"].includes(profile.account_type) ||
+    !profile.license_verified_at ||
+    profile.suspended_at ||
+    profile.banned_at
+  ) {
+    redirect(bookingPath("Verified artist or studio status is required for booking tools."));
+  }
+
+  return { profile, supabase };
+}
+
+function cleanInteger(
+  value: FormDataEntryValue | null,
+  fallback: number,
+  min: number,
+  max: number,
+) {
+  const parsed = Number.parseInt(cleanText(value, 12), 10);
+
+  if (!Number.isFinite(parsed)) return fallback;
+
+  return Math.max(min, Math.min(max, parsed));
+}
+
 export async function respondBookingRequest(formData: FormData) {
   const bookingId = cleanText(formData.get("booking_id"), 80);
   const decision = cleanText(formData.get("decision"), 20);
@@ -1283,6 +1330,202 @@ export async function cancelAcceptedBookingAsArtist(formData: FormData) {
   revalidatePath("/messages");
   revalidatePath("/notifications");
   redirect(bookingRedirectPath(formData, "Accepted booking cancelled."));
+}
+
+export async function createBookingAppointmentType(formData: FormData) {
+  const { profile, supabase } = await requireBookingManager();
+  const name = cleanText(formData.get("appointment_name"), 80);
+  const description = cleanText(formData.get("appointment_description"), 500);
+  const durationMinutes = cleanInteger(formData.get("duration_minutes"), 60, 10, 720);
+  const bufferBeforeMinutes = cleanInteger(
+    formData.get("buffer_before_minutes"),
+    0,
+    0,
+    240,
+  );
+  const bufferAfterMinutes = cleanInteger(
+    formData.get("buffer_after_minutes"),
+    0,
+    0,
+    240,
+  );
+  const depositPolicy = cleanText(formData.get("appointment_deposit_policy"), 20);
+  const depositAmountCents = centsFromDollars(
+    formData.get("appointment_deposit_amount"),
+    500000,
+  );
+
+  if (name.length < 2) {
+    redirect(bookingPath("Appointment types need a name."));
+  }
+
+  if (!["inherit", "none", "optional", "required"].includes(depositPolicy)) {
+    redirect(bookingPath("Choose a valid appointment deposit policy."));
+  }
+
+  if (depositAmountCents < 0) {
+    redirect(bookingPath("Appointment deposit must be a valid dollar amount."));
+  }
+
+  const { error } = await supabase.from("booking_appointment_types").insert({
+    buffer_after_minutes: bufferAfterMinutes,
+    buffer_before_minutes: bufferBeforeMinutes,
+    deposit_amount_cents: depositAmountCents,
+    deposit_policy: depositPolicy,
+    description: description || null,
+    duration_minutes: durationMinutes,
+    name,
+    profile_id: profile.id,
+  });
+
+  if (error) {
+    redirect(bookingPath(error.message || "Could not add appointment type."));
+  }
+
+  revalidatePath("/account");
+  redirect(bookingPath("Appointment type added."));
+}
+
+export async function toggleBookingAppointmentType(formData: FormData) {
+  const { profile, supabase } = await requireBookingManager();
+  const appointmentTypeId = cleanText(formData.get("appointment_type_id"), 80);
+  const isActive = formData.get("is_active") === "true";
+
+  if (!appointmentTypeId) {
+    redirect(bookingPath("Choose an appointment type first."));
+  }
+
+  const { error } = await supabase
+    .from("booking_appointment_types")
+    .update({
+      is_active: isActive,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", appointmentTypeId)
+    .eq("profile_id", profile.id);
+
+  if (error) {
+    redirect(bookingPath(error.message || "Could not update appointment type."));
+  }
+
+  revalidatePath("/account");
+  redirect(bookingPath(isActive ? "Appointment type restored." : "Appointment type paused."));
+}
+
+export async function createBookingSlot(formData: FormData) {
+  const { profile, supabase } = await requireBookingManager();
+  const appointmentTypeId = cleanText(formData.get("slot_appointment_type_id"), 80);
+  const weekday = cleanInteger(formData.get("slot_weekday"), 1, 0, 6);
+  const startsAt = cleanTime(formData.get("slot_starts_at"), "10:00");
+  const endsAt = cleanTime(formData.get("slot_ends_at"), "17:00");
+  const slotIntervalMinutes = cleanInteger(
+    formData.get("slot_interval_minutes"),
+    30,
+    15,
+    120,
+  );
+  const maxBookingsPerSlot = cleanInteger(formData.get("max_bookings_per_slot"), 1, 1, 20);
+  const timezone = cleanTimezone(formData.get("slot_timezone"));
+
+  if (startsAt >= endsAt) {
+    redirect(bookingPath("Slot end time must be after the start time."));
+  }
+
+  if (![15, 20, 30, 45, 60, 90, 120].includes(slotIntervalMinutes)) {
+    redirect(bookingPath("Choose a valid slot interval."));
+  }
+
+  const { error } = await supabase.from("booking_availability_slots").insert({
+    appointment_type_id: appointmentTypeId || null,
+    ends_at: endsAt,
+    max_bookings_per_slot: maxBookingsPerSlot,
+    profile_id: profile.id,
+    slot_interval_minutes: slotIntervalMinutes,
+    starts_at: startsAt,
+    timezone,
+    weekday,
+  });
+
+  if (error) {
+    redirect(bookingPath(error.message || "Could not add booking slot."));
+  }
+
+  revalidatePath("/account");
+  redirect(bookingPath("Booking slot added."));
+}
+
+export async function deleteBookingSlot(formData: FormData) {
+  const { profile, supabase } = await requireBookingManager();
+  const slotId = cleanText(formData.get("slot_id"), 80);
+
+  if (!slotId) {
+    redirect(bookingPath("Choose a booking slot first."));
+  }
+
+  const { error } = await supabase
+    .from("booking_availability_slots")
+    .delete()
+    .eq("id", slotId)
+    .eq("profile_id", profile.id);
+
+  if (error) {
+    redirect(bookingPath(error.message || "Could not remove booking slot."));
+  }
+
+  revalidatePath("/account");
+  redirect(bookingPath("Booking slot removed."));
+}
+
+export async function createBookingBlackoutDate(formData: FormData) {
+  const { profile, supabase } = await requireBookingManager();
+  const startsAt = bookingDateTime(formData.get("blackout_starts_at"));
+  const endsAt = bookingDateTime(formData.get("blackout_ends_at"));
+  const reason = cleanText(formData.get("blackout_reason"), 160);
+
+  if (!startsAt || !endsAt || startsAt === "invalid" || endsAt === "invalid") {
+    redirect(bookingPath("Add valid blackout start and end times."));
+  }
+
+  if (new Date(startsAt).getTime() >= new Date(endsAt).getTime()) {
+    redirect(bookingPath("Blackout end time must be after the start time."));
+  }
+
+  const { error } = await supabase.from("booking_blackout_dates").insert({
+    ends_at: endsAt,
+    is_all_day: formData.get("blackout_all_day") === "on",
+    profile_id: profile.id,
+    reason: reason || null,
+    starts_at: startsAt,
+  });
+
+  if (error) {
+    redirect(bookingPath(error.message || "Could not add blackout window."));
+  }
+
+  revalidatePath("/account");
+  redirect(bookingPath("Blackout window added."));
+}
+
+export async function deleteBookingBlackoutDate(formData: FormData) {
+  const { profile, supabase } = await requireBookingManager();
+  const blackoutId = cleanText(formData.get("blackout_id"), 80);
+
+  if (!blackoutId) {
+    redirect(bookingPath("Choose a blackout window first."));
+  }
+
+  const { error } = await supabase
+    .from("booking_blackout_dates")
+    .delete()
+    .eq("id", blackoutId)
+    .eq("profile_id", profile.id);
+
+  if (error) {
+    redirect(bookingPath(error.message || "Could not remove blackout window."));
+  }
+
+  revalidatePath("/account");
+  redirect(bookingPath("Blackout window removed."));
 }
 
 export async function updateBookingSettings(formData: FormData) {

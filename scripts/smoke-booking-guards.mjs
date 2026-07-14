@@ -157,6 +157,52 @@ const checks = [
       accountPage.includes("calendar_connection_status"),
   },
   {
+    label: "account page exposes TimeTix-style appointment type controls",
+    ok:
+      accountActions.includes("export async function createBookingAppointmentType") &&
+      accountActions.includes("export async function toggleBookingAppointmentType") &&
+      accountActions.includes('.from("booking_appointment_types")') &&
+      accountActions.includes("duration_minutes: durationMinutes") &&
+      accountActions.includes("buffer_before_minutes: bufferBeforeMinutes") &&
+      accountActions.includes("buffer_after_minutes: bufferAfterMinutes") &&
+      accountActions.includes("deposit_amount_cents: depositAmountCents") &&
+      accountPage.includes("createBookingAppointmentType") &&
+      accountPage.includes("toggleBookingAppointmentType") &&
+      accountPage.includes("Appointment types") &&
+      accountPage.includes("Minutes") &&
+      accountPage.includes("Buffer after") &&
+      accountPage.includes("Deposit amount"),
+  },
+  {
+    label: "account page exposes weekly booking slot template controls",
+    ok:
+      accountActions.includes("export async function createBookingSlot") &&
+      accountActions.includes("export async function deleteBookingSlot") &&
+      accountActions.includes('.from("booking_availability_slots")') &&
+      accountActions.includes("slot_interval_minutes: slotIntervalMinutes") &&
+      accountActions.includes("max_bookings_per_slot: maxBookingsPerSlot") &&
+      accountActions.includes("startsAt >= endsAt") &&
+      accountPage.includes("createBookingSlot") &&
+      accountPage.includes("deleteBookingSlot") &&
+      accountPage.includes("Weekly slot templates") &&
+      accountPage.includes("Interval") &&
+      accountPage.includes("Capacity") &&
+      accountPage.includes("Add slot template"),
+  },
+  {
+    label: "account page exposes booking blackout date controls",
+    ok:
+      accountActions.includes("export async function createBookingBlackoutDate") &&
+      accountActions.includes("export async function deleteBookingBlackoutDate") &&
+      accountActions.includes('.from("booking_blackout_dates")') &&
+      accountActions.includes("Blackout end time must be after the start time.") &&
+      accountPage.includes("createBookingBlackoutDate") &&
+      accountPage.includes("deleteBookingBlackoutDate") &&
+      accountPage.includes("Blackout dates") &&
+      accountPage.includes("All day") &&
+      accountPage.includes("Add blackout"),
+  },
+  {
     label: "artist booking responses are server-only and notify clients",
     ok:
       accountActions.includes("export async function respondBookingRequest") &&
