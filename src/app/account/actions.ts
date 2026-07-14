@@ -1434,6 +1434,24 @@ export async function requestBookingRefundReview(formData: FormData) {
     redirect(bookingPath("Refund review requests need owner tools enabled first."));
   }
 
+  const { data: existingReviewRequest } = await admin
+    .from("admin_audit_logs")
+    .select("id")
+    .eq("actor_id", claims.sub)
+    .eq("event_type", "booking_refund_review_requested")
+    .eq("target_id", booking.id)
+    .eq("target_type", "booking_request")
+    .maybeSingle<{ id: string }>();
+
+  if (existingReviewRequest) {
+    redirect(
+      bookingRedirectPath(
+        formData,
+        "Booking refund review is already waiting for admin review.",
+      ),
+    );
+  }
+
   const { error } = await admin.from("admin_audit_logs").insert({
     actor_id: claims.sub,
     event_type: "booking_refund_review_requested",

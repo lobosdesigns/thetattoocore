@@ -358,6 +358,8 @@ const checks = [
       accountActions.includes("export async function requestBookingRefundReview") &&
       accountActions.includes('event_type: "booking_refund_review_requested"') &&
       accountActions.includes("Only paid booking deposits can request refund review.") &&
+      accountActions.includes("existingReviewRequest") &&
+      accountActions.includes("Booking refund review is already waiting for admin review.") &&
       accountActions.includes("stripe_payment_intent_id") &&
       accountActions.includes("requester_role") &&
       accountPage.includes("requestBookingRefundReview") &&
