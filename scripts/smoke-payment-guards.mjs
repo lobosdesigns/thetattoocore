@@ -261,6 +261,7 @@ checks.push({
     adminPaymentsPage.includes("bookingPaymentStatusLabel(booking.payment_status)") &&
     adminPaymentsPage.includes("TTC fee") &&
     adminPaymentsPage.includes("Stale booking deposit checkouts over 24h") &&
+    adminPaymentsPage.includes('bookingFilterHref("checkout_started")') &&
     adminPaymentsPage.includes("Reset stale booking checkouts") &&
     adminPaymentsPage.includes("Booking deposit states") &&
     adminPaymentsPage.includes('.eq("status", "deposit_pending")') &&

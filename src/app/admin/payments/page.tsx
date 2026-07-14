@@ -533,9 +533,12 @@ export default async function AdminPaymentsPage({
                     </p>
                     <div>
                       <p>
-                        <span className="font-semibold text-[var(--foreground)]">
+                        <Link
+                          className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
+                          href={bookingFilterHref("checkout_started")}
+                        >
                           Stale booking deposit checkouts over 24h
-                        </span>
+                        </Link>
                         :{" "}
                         <span className="font-bold text-[var(--foreground)]">
                           {staleBookingCheckoutCount ?? 0}
