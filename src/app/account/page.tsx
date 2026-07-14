@@ -17,6 +17,7 @@ import { ProfileForm } from "./profile-form";
 import { PendingSubmitButton } from "../pending-submit-button";
 import { countryOptions, languageOptions } from "@/lib/localization";
 import {
+  accountDeletionStatusLabel,
   bookingPaymentStatusLabel,
   bookingStatusLabel,
   calendarConnectionStatusLabel,
@@ -1494,8 +1495,8 @@ export default async function AccountPage({
                   key={request.id}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-semibold capitalize">
-                      {request.status} deletion request
+                    <p className="font-semibold">
+                      {accountDeletionStatusLabel(request.status)} deletion request
                     </p>
                     <p className="text-xs text-[var(--muted-strong)]">
                       {formatDate(request.requested_at)}

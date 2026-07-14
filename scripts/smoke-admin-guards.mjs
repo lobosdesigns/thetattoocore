@@ -4,8 +4,11 @@ const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
 const adminNav = readFileSync("src/app/admin/admin-section-nav.tsx", "utf8");
 const adminOverview = readFileSync("src/app/admin/page.tsx", "utf8");
 const adminUsers = readFileSync("src/app/admin/users/page.tsx", "utf8");
+const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
+const adminDataRequests = readFileSync("src/app/admin/data-requests/page.tsx", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
+const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
 
 const pagedAdminPages = [
   "ads",
@@ -114,6 +117,17 @@ const checks = [
       adminUsers.includes("Owner tools ready") &&
       adminUsers.includes("Owner tools disabled") &&
       adminUsers.includes("disabled={!canCreateTestAccounts}"),
+  },
+  {
+    label: "account deletion queues show friendly status labels",
+    ok:
+      statusLabels.includes("export function accountDeletionStatusLabel") &&
+      statusLabels.includes('if (status === "pending") return "Pending review"') &&
+      statusLabels.includes('if (status === "reviewing") return "In review"') &&
+      accountPage.includes("accountDeletionStatusLabel(request.status)") &&
+      !accountPage.includes("{request.status} deletion request") &&
+      adminDataRequests.includes("accountDeletionStatusLabel(request.status)") &&
+      !adminDataRequests.includes(">{request.status}</span>"),
   },
   {
     label: "plan records dedicated admin pages and tester account tooling",

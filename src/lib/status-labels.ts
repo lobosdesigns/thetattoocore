@@ -45,3 +45,13 @@ export function calendarConnectionStatusLabel(status?: string | null) {
 
   return titleCaseStatus(status);
 }
+
+export function accountDeletionStatusLabel(status: string) {
+  if (status === "pending") return "Pending review";
+  if (status === "reviewing") return "In review";
+  if (status === "completed") return "Completed";
+  if (status === "rejected") return "Rejected";
+  if (status === "cancelled") return "Cancelled";
+
+  return titleCaseStatus(status);
+}

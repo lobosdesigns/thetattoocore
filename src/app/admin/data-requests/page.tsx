@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ArrowLeft, ChevronLeft, ChevronRight, ShieldCheck, Trash2 } from "lucide-react";
 import { AdminSectionNav } from "../admin-section-nav";
 import { updateAccountDeletionRequest } from "../actions";
+import { accountDeletionStatusLabel } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -136,11 +137,11 @@ function AccountDeletionRequestCard({
           </p>
         </div>
         <span
-          className={`shrink-0 rounded-md border px-2 py-1 text-xs font-semibold capitalize ${accountDeletionStatusClass(
+          className={`shrink-0 rounded-md border px-2 py-1 text-xs font-semibold ${accountDeletionStatusClass(
             request.status,
           )}`}
         >
-          {request.status}
+          {accountDeletionStatusLabel(request.status)}
         </span>
       </div>
       <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3">
