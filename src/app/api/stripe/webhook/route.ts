@@ -32,6 +32,12 @@ type RefundedAdTransition = {
   id: string;
   title: string;
 };
+type RefundedBookingTransition = {
+  artist_id: string;
+  client_id: string;
+  id: string;
+  title: string;
+};
 type AdPaymentTransition = {
   advertiser_id: string;
   id: string;
@@ -750,9 +756,64 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
     });
   }
 
+  const { data: refundedBookings, error: bookingError } = await supabase
+    .from("booking_requests")
+    .update({
+      payment_status: "refunded",
+      status: "accepted",
+      updated_at: now,
+    })
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .eq("payment_status", "paid")
+    .select("id, artist_id, client_id, title")
+    .returns<RefundedBookingTransition[]>();
+
+  if (bookingError) {
+    throw new Error(bookingError.message || "Could not update booking refund status.");
+  }
+
+  const bookingRefundNotifications = (refundedBookings ?? []).flatMap((booking) => [
+    {
+      actor_id: null,
+      body: "A full refund was recorded for this booking deposit.",
+      href: "/account#booking-settings",
+      recipient_id: booking.client_id,
+      subject_id: booking.id,
+      subject_type: "booking_request",
+      title: `Booking deposit refunded: ${booking.title}`.slice(0, 120),
+      type: "booking_refunded",
+    },
+    {
+      actor_id: null,
+      body: "A full refund was recorded for this booking deposit.",
+      href: "/account#booking-settings",
+      recipient_id: booking.artist_id,
+      subject_id: booking.id,
+      subject_type: "booking_request",
+      title: `Booking deposit refunded: ${booking.title}`.slice(0, 120),
+      type: "booking_refunded",
+    },
+  ]);
+
+  if (bookingRefundNotifications.length) {
+    await supabase.from("notifications").insert(bookingRefundNotifications);
+  }
+
+  for (const booking of refundedBookings ?? []) {
+    await maybeSendPaymentEmail({
+      headerKind: "booking-refunded-client",
+      htmlBody: `A full refund was recorded for your booking deposit: ${booking.title}.`,
+      subject: `${siteName} booking deposit refunded`,
+      supabase,
+      textBody: `A full refund was recorded for your booking deposit: ${booking.title}.`,
+      userId: booking.client_id,
+    });
+  }
+
   revalidatePath("/");
   revalidatePath("/account");
   revalidatePath("/admin");
+  revalidatePath("/admin/payments");
   revalidatePath("/admin/ads");
   revalidatePath("/admin/merch");
   revalidatePath("/notifications");
