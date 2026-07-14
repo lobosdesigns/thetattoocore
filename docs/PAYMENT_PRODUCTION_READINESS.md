@@ -5,7 +5,7 @@ Stripe checkout is wired for test-mode Merch, ads, and accepted booking deposits
 ## Current Position
 
 - Stripe Checkout is the shared gateway path for Merch, prepaid ad campaigns, and accepted booking deposits.
-- Webhook event dedupe, retry-safe status transitions, failed/expired checkout handling, buyer/seller/advertiser alerts, and Admin > Payments visibility are wired.
+- Webhook event dedupe, retry-safe status transitions, failed/expired checkout handling, buyer/seller/advertiser alerts, dispute audit logging, and Admin > Payments visibility are wired.
 - A transparent 2% TTC platform fee is recorded in test-mode flows and booking deposit requests.
 - Merch order receipts, seller fulfillment updates, and basic admin order controls are present.
 - Production purchases, real seller payouts, and real ad spending should stay gated until policy, tax, payout, refund, dispute, and provider review is complete.
@@ -31,6 +31,7 @@ Stripe checkout is wired for test-mode Merch, ads, and accepted booking deposits
 - Confirm Admin > Payments shows live webhook events, order states, ad payment states, booking deposit states, and ops warnings.
 - Confirm buyer receipts, seller sale alerts, advertiser alerts, and support emails send from company addresses.
 - Confirm refunds are initiated and tracked through the approved process.
+- Confirm payment disputes and chargebacks create admin audit entries before any production payout, fulfillment, booking, or advertiser-credit decisions are made.
 - Confirm failed, expired, refunded, partially refunded, and disputed orders cannot accidentally activate fulfillment or ads.
 
 ## Native App Notes

@@ -38,6 +38,17 @@ type RefundedBookingTransition = {
   id: string;
   title: string;
 };
+type DisputedAdPayment = {
+  id: string;
+  title: string;
+};
+type DisputedBookingPayment = {
+  id: string;
+  title: string;
+};
+type DisputedMerchPayment = {
+  id: string;
+};
 type RefundProblemBooking = {
   id: string;
   payment_status: string;
@@ -100,6 +111,13 @@ type PaidOrderItemNotificationRow = {
   seller_id: string;
   title_snapshot: string;
 };
+const disputeWebhookEvents = [
+  "charge.dispute.created",
+  "charge.dispute.updated",
+  "charge.dispute.closed",
+  "charge.dispute.funds_withdrawn",
+  "charge.dispute.funds_reinstated",
+] as const;
 
 function metadataCents(value: string | null | undefined, fallback: number) {
   const parsed = Number.parseInt(value ?? "", 10);
@@ -873,6 +891,149 @@ async function recordRefundProblem({
   revalidatePath("/admin/payments");
 }
 
+function disputePaymentIntentId(dispute: Stripe.Dispute) {
+  const paymentIntent = (
+    dispute as Stripe.Dispute & {
+      payment_intent?: string | Stripe.PaymentIntent | null;
+    }
+  ).payment_intent;
+
+  return typeof paymentIntent === "string" ? paymentIntent : null;
+}
+
+function disputeAuditEventType(targetType: string) {
+  if (targetType === "ad_campaign") return "ad_payment_dispute";
+  if (targetType === "booking_request") return "booking_payment_dispute";
+
+  return "merch_payment_dispute";
+}
+
+function disputeAuditSummary({
+  eventType,
+  label,
+  status,
+}: {
+  eventType: string;
+  label: string;
+  status: string | null;
+}) {
+  const suffix = status ? ` (${status})` : "";
+
+  if (eventType === "charge.dispute.created") {
+    return `Payment dispute opened${suffix}: ${label}`.slice(0, 180);
+  }
+  if (eventType === "charge.dispute.closed") {
+    return `Payment dispute closed${suffix}: ${label}`.slice(0, 180);
+  }
+  if (eventType === "charge.dispute.funds_withdrawn") {
+    return `Dispute funds withdrawn${suffix}: ${label}`.slice(0, 180);
+  }
+  if (eventType === "charge.dispute.funds_reinstated") {
+    return `Dispute funds reinstated${suffix}: ${label}`.slice(0, 180);
+  }
+
+  return `Payment dispute updated${suffix}: ${label}`.slice(0, 180);
+}
+
+async function recordPaymentDispute({
+  dispute,
+  eventType,
+}: {
+  dispute: Stripe.Dispute;
+  eventType: string;
+}) {
+  const paymentIntentId = disputePaymentIntentId(dispute);
+
+  if (!paymentIntentId) return;
+
+  const supabase = createAdminClient();
+
+  if (!supabase) {
+    throw new Error("Missing Supabase service role key for Stripe webhook.");
+  }
+
+  const [merchResult, adResult, bookingResult] = await Promise.all([
+    supabase
+      .from("merch_orders")
+      .select("id")
+      .eq("stripe_payment_intent_id", paymentIntentId)
+      .returns<DisputedMerchPayment[]>(),
+    supabase
+      .from("ad_campaigns")
+      .select("id, title")
+      .eq("stripe_payment_intent_id", paymentIntentId)
+      .returns<DisputedAdPayment[]>(),
+    supabase
+      .from("booking_requests")
+      .select("id, title")
+      .eq("stripe_payment_intent_id", paymentIntentId)
+      .returns<DisputedBookingPayment[]>(),
+  ]);
+
+  const firstError = merchResult.error ?? adResult.error ?? bookingResult.error;
+
+  if (firstError) {
+    throw new Error(firstError.message || "Could not inspect disputed payment.");
+  }
+
+  const sharedMetadata = {
+    dispute_amount: dispute.amount,
+    dispute_currency: dispute.currency,
+    dispute_id: dispute.id,
+    dispute_reason: dispute.reason,
+    dispute_status: dispute.status,
+    payment_intent_id: paymentIntentId,
+    stripe_event_type: eventType,
+  };
+  const auditLogs = [
+    ...(merchResult.data ?? []).map((order) => ({
+      actor_id: null,
+      event_type: disputeAuditEventType("merch_order"),
+      metadata: sharedMetadata,
+      summary: disputeAuditSummary({
+        eventType,
+        label: `Merch order ${order.id}`,
+        status: dispute.status,
+      }),
+      target_id: order.id,
+      target_type: "merch_order",
+    })),
+    ...(adResult.data ?? []).map((campaign) => ({
+      actor_id: null,
+      event_type: disputeAuditEventType("ad_campaign"),
+      metadata: sharedMetadata,
+      summary: disputeAuditSummary({
+        eventType,
+        label: campaign.title,
+        status: dispute.status,
+      }),
+      target_id: campaign.id,
+      target_type: "ad_campaign",
+    })),
+    ...(bookingResult.data ?? []).map((booking) => ({
+      actor_id: null,
+      event_type: disputeAuditEventType("booking_request"),
+      metadata: sharedMetadata,
+      summary: disputeAuditSummary({
+        eventType,
+        label: booking.title,
+        status: dispute.status,
+      }),
+      target_id: booking.id,
+      target_type: "booking_request",
+    })),
+  ];
+
+  if (auditLogs.length) {
+    await supabase.from("admin_audit_logs").insert(auditLogs);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/payments");
+  revalidatePath("/admin/ads");
+  revalidatePath("/admin/merch");
+}
+
 export async function POST(request: Request) {
   const stripe = createStripeClient();
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -996,6 +1157,15 @@ export async function POST(request: Request) {
           status: refund.status,
         });
       }
+    }
+
+    if (
+      disputeWebhookEvents.includes(
+        event.type as (typeof disputeWebhookEvents)[number],
+      )
+    ) {
+      const dispute = event.data.object as Stripe.Dispute;
+      await recordPaymentDispute({ dispute, eventType: event.type });
     }
 
     const { error: recordEventError } = await supabase

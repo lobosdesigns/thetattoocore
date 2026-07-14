@@ -87,12 +87,19 @@ const paymentEventTypes = [
   "checkout.session.async_payment_failed",
   "checkout.session.expired",
   "charge.refunded",
+  "charge.dispute.created",
+  "charge.dispute.closed",
+  "charge.dispute.funds_withdrawn",
+  "charge.dispute.funds_reinstated",
   "refund.failed",
 ] as const;
 const paymentAuditTypes = [
   "reset_stale_booking_deposit_checkouts",
   "refund_booking_deposit_requested",
   "booking_refund_problem",
+  "merch_payment_dispute",
+  "ad_payment_dispute",
+  "booking_payment_dispute",
 ] as const;
 const productionPaymentGates = [
   "Choose a documented payout policy before real seller payouts.",
@@ -245,6 +252,10 @@ function eventTypeLabel(value: string) {
   if (value === "checkout.session.async_payment_failed") return "Payment failed";
   if (value === "checkout.session.expired") return "Checkout expired";
   if (value === "charge.refunded") return "Charge refunded";
+  if (value === "charge.dispute.created") return "Dispute opened";
+  if (value === "charge.dispute.closed") return "Dispute closed";
+  if (value === "charge.dispute.funds_withdrawn") return "Funds withdrawn";
+  if (value === "charge.dispute.funds_reinstated") return "Funds reinstated";
   if (value === "refund.failed") return "Refund failed";
 
   return value;
@@ -258,6 +269,9 @@ function auditLabel(value: string) {
     return "Booking refund requested";
   }
   if (value === "booking_refund_problem") return "Booking refund needs review";
+  if (value === "merch_payment_dispute") return "Merch dispute";
+  if (value === "ad_payment_dispute") return "Ad dispute";
+  if (value === "booking_payment_dispute") return "Booking dispute";
 
   return titleCaseStatus(value);
 }

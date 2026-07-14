@@ -91,6 +91,17 @@ checks.push({
     stripeWebhook.includes('event.type === "refund.failed"') &&
     stripeWebhook.includes("recordRefundProblem") &&
     stripeWebhook.includes('event_type: "booking_refund_problem"') &&
+    stripeWebhook.includes("const disputeWebhookEvents") &&
+    stripeWebhook.includes('"charge.dispute.created"') &&
+    stripeWebhook.includes('"charge.dispute.closed"') &&
+    stripeWebhook.includes('"charge.dispute.funds_withdrawn"') &&
+    stripeWebhook.includes('"charge.dispute.funds_reinstated"') &&
+    stripeWebhook.includes("recordPaymentDispute") &&
+    stripeWebhook.includes("merch_payment_dispute") &&
+    stripeWebhook.includes("ad_payment_dispute") &&
+    stripeWebhook.includes("booking_payment_dispute") &&
+    stripeWebhook.includes("stripe_event_type: eventType") &&
+    stripeWebhook.includes("payment_intent_id: paymentIntentId") &&
     stripeWebhook.indexOf("Missing payment verification.") <
       stripeWebhook.indexOf("constructEventAsync"),
 });
@@ -253,6 +264,13 @@ checks.push({
     adminPaymentsPage.includes("Payment audit") &&
     adminPaymentsPage.includes("paymentAuditLogs") &&
     adminPaymentsPage.includes("booking_refund_problem") &&
+    adminPaymentsPage.includes("merch_payment_dispute") &&
+    adminPaymentsPage.includes("ad_payment_dispute") &&
+    adminPaymentsPage.includes("booking_payment_dispute") &&
+    adminPaymentsPage.includes("charge.dispute.created") &&
+    adminPaymentsPage.includes("charge.dispute.closed") &&
+    adminPaymentsPage.includes("charge.dispute.funds_withdrawn") &&
+    adminPaymentsPage.includes("charge.dispute.funds_reinstated") &&
     adminPaymentsPage.includes("refund_booking_deposit_requested") &&
     adminPaymentsPage.includes("reset_stale_booking_deposit_checkouts") &&
     adminPaymentsPage.includes(".range(auditFrom, auditTo)") &&
