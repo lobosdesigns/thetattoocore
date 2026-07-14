@@ -810,6 +810,10 @@ export default async function AccountPage({
                       bookingSettings?.calendar_connection_status,
                     )}
                   </p>
+                  <p className="mt-2 text-xs leading-5 text-[var(--muted-strong)]">
+                    Connect a real calendar later; for launch, add your public
+                    booking page or calendar request link below.
+                  </p>
                 </div>
                 <label className="grid gap-1 text-sm font-semibold md:col-span-2">
                   Public booking link
@@ -821,6 +825,10 @@ export default async function AccountPage({
                     placeholder="https://your-booking-page.example"
                     type="url"
                   />
+                  <span className="text-xs font-normal leading-5 text-[var(--muted-strong)]">
+                    Use a public booking, calendar, or request page you already
+                    trust. Members will open it in a new tab.
+                  </span>
                 </label>
                 <label className="grid gap-1 text-sm font-semibold md:col-span-2">
                   Weekly availability
@@ -841,6 +849,10 @@ export default async function AccountPage({
                     name="calendar_notes"
                     placeholder="Example: check my public booking link first, then send a DM for deposit questions."
                   />
+                  <span className="text-xs font-normal leading-5 text-[var(--muted-strong)]">
+                    Good place for calendar instructions, booking-window notes,
+                    or which days you usually approve.
+                  </span>
                 </label>
                 <label className="grid gap-1 text-sm font-semibold md:col-span-2">
                   Booking note

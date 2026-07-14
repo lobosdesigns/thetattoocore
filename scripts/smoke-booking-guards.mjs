@@ -292,7 +292,11 @@ const checks = [
       accountActions.includes("calendar_notes: calendarNotes || null") &&
       accountPage.includes("Public booking link") &&
       accountPage.includes("Calendar notes") &&
+      accountPage.includes("Connect a real calendar later") &&
+      accountPage.includes("Use a public booking, calendar, or request page") &&
       profilePage.includes("Open booking link") &&
+      profilePage.includes("calendarConnectionStatusLabel") &&
+      profilePage.includes("trusted booking or calendar") &&
       profilePage.includes("bookingSettings.calendar_notes"),
   },
   {

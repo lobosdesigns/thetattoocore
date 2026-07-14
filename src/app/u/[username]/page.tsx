@@ -38,6 +38,7 @@ import { NotificationBellLink } from "@/app/notification-bell-link";
 import { ProtectedVideo } from "@/app/protected-video";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { SavedItemButton } from "@/app/saved-item-button";
+import { calendarConnectionStatusLabel } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
 import { platformFeePercentLabel } from "@/lib/payments/fees";
 import {
@@ -1658,6 +1659,12 @@ export default async function ProfilePage({
                       Open booking link
                     </a>
                   ) : null}
+                  {bookingSettings?.booking_url ? (
+                    <p className="mt-2 text-xs leading-5 text-[var(--muted-strong)]">
+                      This opens the artist&apos;s trusted booking or calendar
+                      request page.
+                    </p>
+                  ) : null}
                   {bookingSettings?.cancellation_policy ? (
                     <div className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2">
                       <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
@@ -1682,7 +1689,9 @@ export default async function ProfilePage({
                       </span>
                     ) : null}
                     <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1">
-                      Calendar manual
+                      {calendarConnectionStatusLabel(
+                        bookingSettings?.calendar_connection_status,
+                      )}
                     </span>
                   </div>
                 </section>
