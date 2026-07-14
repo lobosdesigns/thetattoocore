@@ -224,6 +224,22 @@ const checks = [
       bookingCheckout.includes('payment_status: "checkout_started"'),
   },
   {
+    label: "booking cards show friendly status labels instead of raw payment states",
+    ok:
+      accountPage.includes("function bookingStatusLabel") &&
+      accountPage.includes("function bookingPaymentStatusLabel") &&
+      accountPage.includes('if (status === "checkout_started") return "Checkout started"') &&
+      accountPage.includes('if (status === "payment_failed") return "Payment failed"') &&
+      !accountPage.includes("booking.payment_status.replace(\"_\", \" \")") &&
+      !accountPage.includes("booking.status.replace(\"_\", \" \")") &&
+      messagesPage.includes("function bookingStatusLabel") &&
+      messagesPage.includes("function bookingPaymentStatusLabel") &&
+      messagesPage.includes('if (status === "checkout_started") return "Checkout started"') &&
+      messagesPage.includes('if (status === "payment_failed") return "Payment failed"') &&
+      !messagesPage.includes("booking.payment_status.replace(\"_\", \" \")") &&
+      !messagesPage.includes("booking.status.replace(\"_\", \" \")"),
+  },
+  {
     label: "DM threads surface attached booking requests",
     ok:
       messagesPage.includes("type BookingRequest") &&

@@ -241,6 +241,29 @@ function orderStatusClass(status: string) {
   return "border-[color-mix(in_srgb,#5078c8_35%,var(--card-rim))] bg-[color-mix(in_srgb,#5078c8_10%,var(--paper-warm))] text-[color-mix(in_srgb,#284f8a_78%,var(--foreground))]";
 }
 
+function titleCaseStatus(value: string) {
+  return value
+    .split("_")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function bookingStatusLabel(status: string) {
+  if (status === "deposit_paid") return "Deposit paid";
+  if (status === "deposit_pending") return "Deposit pending";
+
+  return titleCaseStatus(status);
+}
+
+function bookingPaymentStatusLabel(status: string) {
+  if (status === "not_ready") return "Not ready";
+  if (status === "checkout_started") return "Checkout started";
+  if (status === "payment_failed") return "Payment failed";
+
+  return titleCaseStatus(status);
+}
+
 function formatDate(value: string | null) {
   return value ? new Date(value).toLocaleDateString() : "Not provided";
 }
@@ -907,7 +930,7 @@ export default async function AccountPage({
                               booking.status,
                             )}`}
                           >
-                            {booking.status.replace("_", " ")}
+                            {bookingStatusLabel(booking.status)}
                           </span>
                         </div>
                         <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
@@ -1063,7 +1086,7 @@ export default async function AccountPage({
                             booking.status,
                           )}`}
                         >
-                          {booking.status.replace("_", " ")}
+                          {bookingStatusLabel(booking.status)}
                         </span>
                       </div>
                       <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
@@ -1075,7 +1098,7 @@ export default async function AccountPage({
                           {" "}+ TTC fee{" "}
                           {money(booking.platform_fee_cents, booking.currency)}
                         </p>
-                        <p>Payment: {booking.payment_status.replace("_", " ")}</p>
+                        <p>Payment: {bookingPaymentStatusLabel(booking.payment_status)}</p>
                         {booking.accepted_at ? (
                           <p>Accepted: {formatDate(booking.accepted_at)}</p>
                         ) : null}
