@@ -31,6 +31,15 @@ type PaymentEvent = {
   event_type: string;
   received_at: string;
 };
+type PaymentAuditRecord = {
+  created_at: string;
+  event_type: string;
+  id: string;
+  profiles: { display_name: string | null; username: string | null } | null;
+  summary: string | null;
+  target_id: string | null;
+  target_type: string | null;
+};
 type BookingDepositRecord = {
   artist: { display_name: string | null; username: string | null } | null;
   client: { display_name: string | null; username: string | null } | null;
@@ -104,6 +113,10 @@ function bookingPageHref(page: number) {
   return `/admin/payments?booking_page=${page}`;
 }
 
+function auditPageHref(page: number) {
+  return `/admin/payments?audit_page=${page}`;
+}
+
 function Pagination({
   currentPage,
   hrefForPage = pageHref,
@@ -167,6 +180,18 @@ function statusLabel(value: string) {
   return titleCaseStatus(value);
 }
 
+function auditLabel(value: string) {
+  if (value === "reset_stale_booking_deposit_checkouts") {
+    return "Reset stale booking checkouts";
+  }
+  if (value === "refund_booking_deposit_requested") {
+    return "Booking refund requested";
+  }
+  if (value === "booking_refund_problem") return "Booking refund needs review";
+
+  return titleCaseStatus(value);
+}
+
 function money(cents: number, currency = "USD") {
   return new Intl.NumberFormat("en-US", {
     currency,
@@ -203,6 +228,7 @@ export default async function AdminPaymentsPage({
   searchParams,
 }: {
   searchParams: Promise<{
+    audit_page?: string | string[];
     booking_page?: string | string[];
     message?: string | string[];
     page?: string | string[];
@@ -210,10 +236,13 @@ export default async function AdminPaymentsPage({
 }) {
   const params = await searchParams;
   const currentPage = pageNumber(params.page);
+  const auditCurrentPage = pageNumber(params.audit_page);
   const bookingCurrentPage = pageNumber(params.booking_page);
   const message = Array.isArray(params.message) ? params.message[0] : params.message;
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
+  const auditFrom = (auditCurrentPage - 1) * pageSize;
+  const auditTo = auditFrom + pageSize - 1;
   const bookingFrom = (bookingCurrentPage - 1) * pageSize;
   const bookingTo = bookingFrom + pageSize - 1;
   const staleCheckoutCreatedBefore = staleCheckoutCutoff();
@@ -245,6 +274,7 @@ export default async function AdminPaymentsPage({
     { count: stalePendingCheckoutCount },
     { count: staleBookingCheckoutCount },
     { count: activeUnpaidAdCount },
+    { count: paymentAuditCount, data: paymentAuditLogs },
     { count: bookingDepositCount, data: recentBookingDeposits },
   ] = adminClient
     ? await Promise.all([
@@ -297,6 +327,20 @@ export default async function AdminPaymentsPage({
             "refunded",
           ]),
         adminClient
+          .from("admin_audit_logs")
+          .select(
+            "id, event_type, target_type, target_id, summary, created_at, profiles:profiles!admin_audit_logs_actor_id_fkey(display_name, username)",
+            { count: "exact" },
+          )
+          .in("event_type", [
+            "reset_stale_booking_deposit_checkouts",
+            "refund_booking_deposit_requested",
+            "booking_refund_problem",
+          ])
+          .order("created_at", { ascending: false })
+          .range(auditFrom, auditTo)
+          .returns<PaymentAuditRecord[]>(),
+        adminClient
           .from("booking_requests")
           .select(
             "id, title, status, payment_status, deposit_amount_cents, platform_fee_cents, total_cents, currency, stripe_payment_intent_id, updated_at, client:profiles!booking_requests_client_id_fkey(display_name, username), artist:profiles!booking_requests_artist_id_fkey(display_name, username)",
@@ -316,7 +360,8 @@ export default async function AdminPaymentsPage({
         { count: null },
         { count: null },
         { count: null },
-        { data: null },
+        { count: null, data: null },
+        { count: null, data: null },
       ];
 
   const totalStripeEvents = stripeEventCount ?? stripeEvents?.length ?? 0;
@@ -324,6 +369,11 @@ export default async function AdminPaymentsPage({
   const hasNextPage = currentPage < totalPages;
   const rangeStart = totalStripeEvents > 0 ? from + 1 : 0;
   const rangeEnd = Math.min(to + 1, totalStripeEvents);
+  const totalPaymentAudits = paymentAuditCount ?? paymentAuditLogs?.length ?? 0;
+  const auditTotalPages = Math.max(1, Math.ceil(totalPaymentAudits / pageSize));
+  const auditHasNextPage = auditCurrentPage < auditTotalPages;
+  const auditRangeStart = totalPaymentAudits > 0 ? auditFrom + 1 : 0;
+  const auditRangeEnd = Math.min(auditTo + 1, totalPaymentAudits);
   const totalBookingDeposits =
     bookingDepositCount ?? recentBookingDeposits?.length ?? 0;
   const bookingTotalPages = Math.max(1, Math.ceil(totalBookingDeposits / pageSize));
@@ -540,7 +590,70 @@ export default async function AdminPaymentsPage({
                 />
               </section>
 
-              <aside className="space-y-4">
+              <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5 lg:col-start-1">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <h2 className="text-lg font-bold">Payment audit</h2>
+                    <p className="text-sm text-[var(--muted-strong)]">
+                      Showing {auditRangeStart}-{auditRangeEnd} of{" "}
+                      {totalPaymentAudits}
+                    </p>
+                  </div>
+                  <p className="text-xs font-bold text-[var(--muted-strong)]">
+                    Refunds and payment ops
+                  </p>
+                </div>
+                <div className="mt-4 space-y-2">
+                  {paymentAuditLogs?.length ? (
+                    paymentAuditLogs.map((audit) => (
+                      <article
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3"
+                        key={audit.id}
+                      >
+                        <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0">
+                            <p className="break-words text-sm font-bold">
+                              {auditLabel(audit.event_type)}
+                            </p>
+                            {audit.summary ? (
+                              <p className="mt-1 break-words text-xs text-[var(--muted)]">
+                                {audit.summary}
+                              </p>
+                            ) : null}
+                          </div>
+                          <p className="shrink-0 text-xs text-[var(--muted-strong)]">
+                            {formatDateTime(audit.created_at)}
+                          </p>
+                        </div>
+                        <p className="mt-2 text-xs text-[var(--muted-strong)]">
+                          Actor:{" "}
+                          {audit.profiles?.display_name ??
+                            audit.profiles?.username ??
+                            "System"}
+                        </p>
+                        {audit.target_type || audit.target_id ? (
+                          <p className="mt-1 break-all text-xs text-[var(--muted-strong)]">
+                            Target: {audit.target_type ?? "item"}{" "}
+                            {audit.target_id ?? ""}
+                          </p>
+                        ) : null}
+                      </article>
+                    ))
+                  ) : (
+                    <p className="rounded-md border border-dashed border-[var(--card-rim)] p-4 text-sm text-[var(--muted)]">
+                      No payment audit entries have been recorded yet.
+                    </p>
+                  )}
+                </div>
+                <Pagination
+                  currentPage={auditCurrentPage}
+                  hasNextPage={auditHasNextPage}
+                  hrefForPage={auditPageHref}
+                  totalPages={auditTotalPages}
+                />
+              </section>
+
+              <aside className="space-y-4 lg:col-start-2 lg:row-span-2 lg:row-start-1">
                 <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
                   <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                     <div>

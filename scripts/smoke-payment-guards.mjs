@@ -236,8 +236,16 @@ checks.push({
     adminPaymentsPage.includes("resetStaleBookingDepositCheckouts") &&
     adminPaymentsPage.includes('table: "booking_requests"') &&
     adminPaymentsPage.includes("booking_page") &&
+    adminPaymentsPage.includes("audit_page") &&
     adminPaymentsPage.includes("function bookingPageHref") &&
+    adminPaymentsPage.includes("function auditPageHref") &&
     adminPaymentsPage.includes("bookingCurrentPage") &&
+    adminPaymentsPage.includes("Payment audit") &&
+    adminPaymentsPage.includes("paymentAuditLogs") &&
+    adminPaymentsPage.includes("booking_refund_problem") &&
+    adminPaymentsPage.includes("refund_booking_deposit_requested") &&
+    adminPaymentsPage.includes("reset_stale_booking_deposit_checkouts") &&
+    adminPaymentsPage.includes(".range(auditFrom, auditTo)") &&
     adminPaymentsPage.includes("Booking deposits") &&
     adminPaymentsPage.includes("recentBookingDeposits") &&
     adminPaymentsPage.includes(".gt(\"total_cents\", 0)") &&
