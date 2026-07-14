@@ -1442,6 +1442,28 @@ export async function toggleBookingAppointmentType(formData: FormData) {
   redirect(bookingPath(isActive ? "Appointment type restored." : "Appointment type paused."));
 }
 
+export async function deleteBookingAppointmentType(formData: FormData) {
+  const { profile, supabase } = await requireBookingManager();
+  const appointmentTypeId = cleanText(formData.get("appointment_type_id"), 80);
+
+  if (!appointmentTypeId) {
+    redirect(bookingPath("Choose an appointment type first."));
+  }
+
+  const { error } = await supabase
+    .from("booking_appointment_types")
+    .delete()
+    .eq("id", appointmentTypeId)
+    .eq("profile_id", profile.id);
+
+  if (error) {
+    redirect(bookingPath(error.message || "Could not delete appointment type."));
+  }
+
+  revalidatePath("/account");
+  redirect(bookingPath("Appointment type deleted."));
+}
+
 export async function createBookingSlot(formData: FormData) {
   const { profile, supabase } = await requireBookingManager();
   const appointmentTypeId = cleanText(formData.get("slot_appointment_type_id"), 80);

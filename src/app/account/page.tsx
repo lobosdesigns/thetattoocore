@@ -7,6 +7,7 @@ import {
   createBookingAppointmentType,
   createBookingBlackoutDate,
   createBookingSlot,
+  deleteBookingAppointmentType,
   deleteBookingBlackoutDate,
   deleteBookingSlot,
   markMerchSaleFulfilled,
@@ -1074,24 +1075,39 @@ export default async function AccountPage({
                               </p>
                             ) : null}
                           </div>
-                          <form action={toggleBookingAppointmentType}>
-                            <input
-                              name="appointment_type_id"
-                              type="hidden"
-                              value={type.id}
-                            />
-                            <input
-                              name="is_active"
-                              type="hidden"
-                              value={String(!type.is_active)}
-                            />
-                            <PendingSubmitButton
-                              className="h-9 rounded-md border border-[var(--card-rim)] px-3 text-xs font-bold"
-                              pendingLabel="Saving"
-                            >
-                              {type.is_active ? "Pause" : "Restore"}
-                            </PendingSubmitButton>
-                          </form>
+                          <div className="flex flex-wrap gap-2">
+                            <form action={toggleBookingAppointmentType}>
+                              <input
+                                name="appointment_type_id"
+                                type="hidden"
+                                value={type.id}
+                              />
+                              <input
+                                name="is_active"
+                                type="hidden"
+                                value={String(!type.is_active)}
+                              />
+                              <PendingSubmitButton
+                                className="h-9 rounded-md border border-[var(--card-rim)] px-3 text-xs font-bold"
+                                pendingLabel="Saving"
+                              >
+                                {type.is_active ? "Pause" : "Restore"}
+                              </PendingSubmitButton>
+                            </form>
+                            <form action={deleteBookingAppointmentType}>
+                              <input
+                                name="appointment_type_id"
+                                type="hidden"
+                                value={type.id}
+                              />
+                              <PendingSubmitButton
+                                className="h-9 rounded-md border border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] px-3 text-xs font-bold text-[var(--danger)]"
+                                pendingLabel="Deleting"
+                              >
+                                Delete
+                              </PendingSubmitButton>
+                            </form>
+                          </div>
                         </div>
                       </article>
                     ))

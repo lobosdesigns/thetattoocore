@@ -188,17 +188,21 @@ const checks = [
     ok:
       accountActions.includes("export async function createBookingAppointmentType") &&
       accountActions.includes("export async function toggleBookingAppointmentType") &&
+      accountActions.includes("export async function deleteBookingAppointmentType") &&
       accountActions.includes('.from("booking_appointment_types")') &&
+      accountActions.includes("Could not delete appointment type") &&
       accountActions.includes("duration_minutes: durationMinutes") &&
       accountActions.includes("buffer_before_minutes: bufferBeforeMinutes") &&
       accountActions.includes("buffer_after_minutes: bufferAfterMinutes") &&
       accountActions.includes("deposit_amount_cents: depositAmountCents") &&
       accountPage.includes("createBookingAppointmentType") &&
       accountPage.includes("toggleBookingAppointmentType") &&
+      accountPage.includes("deleteBookingAppointmentType") &&
       accountPage.includes("Appointment types") &&
       accountPage.includes("Minutes") &&
       accountPage.includes("Buffer after") &&
-      accountPage.includes("Deposit amount"),
+      accountPage.includes("Deposit amount") &&
+      accountPage.includes("Delete"),
   },
   {
     label: "account page exposes weekly booking slot template controls",
