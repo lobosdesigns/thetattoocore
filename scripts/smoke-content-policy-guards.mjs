@@ -15,6 +15,7 @@ const postDetailPage = readFileSync("src/app/p/[id]/page.tsx", "utf8");
 const threadDetailPage = readFileSync("src/app/t/[id]/page.tsx", "utf8");
 const stuffDetailPage = readFileSync("src/app/stuff/[id]/page.tsx", "utf8");
 const gigsDetailPage = readFileSync("src/app/gigs/[id]/page.tsx", "utf8");
+const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const commentMediaMigration = readFileSync(
   "supabase/migrations/20260713185241_comment_media_attachments.sql",
   "utf8",
@@ -200,7 +201,13 @@ const checks = [
   {
     label: "direct detail pages hide blocked profile content",
     ok:
-      [postDetailPage, threadDetailPage, stuffDetailPage, gigsDetailPage].every(
+      [
+        postDetailPage,
+        threadDetailPage,
+        stuffDetailPage,
+        gigsDetailPage,
+        merchDetailPage,
+      ].every(
         (source) =>
           source.includes("async function hasBlockRelationship") &&
           source.includes('from("user_blocks")') &&
@@ -211,7 +218,9 @@ const checks = [
       postDetailPage.includes("!isOwnPost") &&
       threadDetailPage.includes("!isOwnThread") &&
       stuffDetailPage.includes("!isOwnListing") &&
-      gigsDetailPage.includes("!isOwnGig"),
+      gigsDetailPage.includes("!isOwnGig") &&
+      merchDetailPage.includes("!product.is_official") &&
+      merchDetailPage.includes("!isOwnProduct"),
   },
   {
     label: "4U and Gossip detail pages render comment media with lightbox controls",

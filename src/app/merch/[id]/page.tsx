@@ -136,6 +136,28 @@ async function getProduct(id: string) {
   return data;
 }
 
+async function hasBlockRelationship({
+  profileId,
+  supabase,
+  userId,
+}: {
+  profileId?: string | null;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId?: string | null;
+}) {
+  if (!userId || !profileId || userId === profileId) return false;
+
+  const { data } = await supabase
+    .from("user_blocks")
+    .select("blocker_id")
+    .or(
+      `and(blocker_id.eq.${userId},blocked_id.eq.${profileId}),and(blocker_id.eq.${profileId},blocked_id.eq.${userId})`,
+    )
+    .maybeSingle<{ blocker_id: string }>();
+
+  return Boolean(data);
+}
+
 export async function generateMetadata({
   params,
 }: MerchPageProps): Promise<Metadata> {
@@ -216,6 +238,17 @@ export default async function MerchProductPage({
   const mediaSrc = media ? mediaUrl(media.storage_bucket, media.storage_path) : null;
   const available = product.inventory_quantity - product.inventory_reserved;
   const isOwnProduct = claims?.sub === product.profiles?.id;
+  if (
+    !product.is_official &&
+    !isOwnProduct &&
+    (await hasBlockRelationship({
+      profileId: product.profiles?.id,
+      supabase,
+      userId: claims?.sub,
+    }))
+  ) {
+    notFound();
+  }
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
