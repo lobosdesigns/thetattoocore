@@ -232,9 +232,13 @@ checks.push({
     adminPaymentsPage.includes("refundBookingDeposit") &&
     adminPaymentsPage.includes("resetStaleBookingDepositCheckouts") &&
     adminPaymentsPage.includes('table: "booking_requests"') &&
-    adminPaymentsPage.includes("Recent booking deposits") &&
+    adminPaymentsPage.includes("booking_page") &&
+    adminPaymentsPage.includes("function bookingPageHref") &&
+    adminPaymentsPage.includes("bookingCurrentPage") &&
+    adminPaymentsPage.includes("Booking deposits") &&
     adminPaymentsPage.includes("recentBookingDeposits") &&
     adminPaymentsPage.includes(".gt(\"total_cents\", 0)") &&
+    adminPaymentsPage.includes(".range(bookingFrom, bookingTo)") &&
     adminPaymentsPage.includes("stripe_payment_intent_id") &&
     adminPaymentsPage.includes("Type refund to send full refund") &&
     adminPaymentsPage.includes("href={`/u/${booking.client.username}`}") &&

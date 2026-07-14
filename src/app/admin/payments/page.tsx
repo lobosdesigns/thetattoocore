@@ -100,12 +100,20 @@ function pageHref(page: number) {
   return `/admin/payments?page=${page}`;
 }
 
+function bookingPageHref(page: number) {
+  return `/admin/payments?booking_page=${page}`;
+}
+
 function Pagination({
   currentPage,
+  hrefForPage = pageHref,
+  itemLabel = "50",
   hasNextPage,
   totalPages,
 }: {
   currentPage: number;
+  hrefForPage?: (page: number) => string;
+  itemLabel?: string;
   hasNextPage: boolean;
   totalPages: number;
 }) {
@@ -122,10 +130,10 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
           }`}
-          href={pageHref(Math.max(1, currentPage - 1))}
+          href={hrefForPage(Math.max(1, currentPage - 1))}
         >
           <ChevronLeft className="size-4" />
-          Previous 50
+          Previous {itemLabel}
         </Link>
         <Link
           aria-disabled={!hasNextPage}
@@ -134,9 +142,9 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
           }`}
-          href={pageHref(currentPage + 1)}
+          href={hrefForPage(currentPage + 1)}
         >
-          Next 50
+          Next {itemLabel}
           <ChevronRight className="size-4" />
         </Link>
       </div>
@@ -194,13 +202,20 @@ async function statusCounts({
 export default async function AdminPaymentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string | string[]; page?: string | string[] }>;
+  searchParams: Promise<{
+    booking_page?: string | string[];
+    message?: string | string[];
+    page?: string | string[];
+  }>;
 }) {
   const params = await searchParams;
   const currentPage = pageNumber(params.page);
+  const bookingCurrentPage = pageNumber(params.booking_page);
   const message = Array.isArray(params.message) ? params.message[0] : params.message;
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
+  const bookingFrom = (bookingCurrentPage - 1) * pageSize;
+  const bookingTo = bookingFrom + pageSize - 1;
   const staleCheckoutCreatedBefore = staleCheckoutCutoff();
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -230,7 +245,7 @@ export default async function AdminPaymentsPage({
     { count: stalePendingCheckoutCount },
     { count: staleBookingCheckoutCount },
     { count: activeUnpaidAdCount },
-    { data: recentBookingDeposits },
+    { count: bookingDepositCount, data: recentBookingDeposits },
   ] = adminClient
     ? await Promise.all([
         adminClient
@@ -285,10 +300,11 @@ export default async function AdminPaymentsPage({
           .from("booking_requests")
           .select(
             "id, title, status, payment_status, deposit_amount_cents, platform_fee_cents, total_cents, currency, stripe_payment_intent_id, updated_at, client:profiles!booking_requests_client_id_fkey(display_name, username), artist:profiles!booking_requests_artist_id_fkey(display_name, username)",
+            { count: "exact" },
           )
           .gt("total_cents", 0)
           .order("updated_at", { ascending: false })
-          .limit(10)
+          .range(bookingFrom, bookingTo)
           .returns<BookingDepositRecord[]>(),
       ])
     : [
@@ -308,6 +324,12 @@ export default async function AdminPaymentsPage({
   const hasNextPage = currentPage < totalPages;
   const rangeStart = totalStripeEvents > 0 ? from + 1 : 0;
   const rangeEnd = Math.min(to + 1, totalStripeEvents);
+  const totalBookingDeposits =
+    bookingDepositCount ?? recentBookingDeposits?.length ?? 0;
+  const bookingTotalPages = Math.max(1, Math.ceil(totalBookingDeposits / pageSize));
+  const bookingHasNextPage = bookingCurrentPage < bookingTotalPages;
+  const bookingRangeStart = totalBookingDeposits > 0 ? bookingFrom + 1 : 0;
+  const bookingRangeEnd = Math.min(bookingTo + 1, totalBookingDeposits);
   const hasPaymentWarnings =
     Boolean(stalePendingCheckoutCount) ||
     Boolean(staleBookingCheckoutCount) ||
@@ -520,7 +542,18 @@ export default async function AdminPaymentsPage({
 
               <aside className="space-y-4">
                 <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
-                  <h2 className="text-lg font-bold">Recent booking deposits</h2>
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                      <h2 className="text-lg font-bold">Booking deposits</h2>
+                      <p className="text-xs font-semibold text-[var(--muted)]">
+                        Showing {bookingRangeStart}-{bookingRangeEnd} of{" "}
+                        {totalBookingDeposits}
+                      </p>
+                    </div>
+                    <p className="text-xs font-bold text-[var(--muted-strong)]">
+                      50 per page
+                    </p>
+                  </div>
                   <div className="mt-3 space-y-2">
                     {recentBookingDeposits?.length ? (
                       recentBookingDeposits.map((booking) => (
@@ -634,6 +667,12 @@ export default async function AdminPaymentsPage({
                       </p>
                     )}
                   </div>
+                  <Pagination
+                    currentPage={bookingCurrentPage}
+                    hasNextPage={bookingHasNextPage}
+                    hrefForPage={bookingPageHref}
+                    totalPages={bookingTotalPages}
+                  />
                 </section>
 
                 <section className="ttc-card rounded-lg border border-[color-mix(in_srgb,var(--gold)_42%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))] p-5">
