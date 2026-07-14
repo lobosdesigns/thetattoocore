@@ -285,6 +285,9 @@ const checks = [
     ok:
       bookingCalendarRoute.includes('from("booking_requests")') &&
       bookingCalendarRoute.includes("supabase.auth.getClaims()") &&
+      bookingCalendarRoute.includes("booking.client_id !== claims.sub") &&
+      bookingCalendarRoute.includes("booking.artist_id !== claims.sub") &&
+      bookingCalendarRoute.includes("return_to=") &&
       bookingCalendarRoute.includes("text/calendar") &&
       bookingCalendarRoute.includes("DTSTART;TZID=") &&
       bookingCalendarRoute.includes("appointment_type_label") &&
@@ -328,6 +331,7 @@ const checks = [
       bookingCheckout.includes('metadata[payment_kind]": "booking_deposit"') &&
       bookingCheckout.includes("platformFeeDescription(\"booking\")") &&
       bookingCheckout.includes('.eq("client_id", claims.sub)') &&
+      bookingCheckout.includes('return_to: returnTo ?? "/account#booking-settings"') &&
       bookingCheckout.includes('status: "deposit_pending"') &&
       bookingCheckout.includes('payment_status: "checkout_started"'),
   },

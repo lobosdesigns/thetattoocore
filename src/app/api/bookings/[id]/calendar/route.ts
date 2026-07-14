@@ -59,7 +59,13 @@ export async function GET(_request: Request, { params }: CalendarRouteProps) {
   const claims = claimsData?.claims as { sub?: string } | undefined;
 
   if (!claims?.sub) {
-    return NextResponse.redirect(new URL("/login", siteUrl), { status: 303 });
+    return NextResponse.redirect(
+      new URL(
+        `/login?return_to=${encodeURIComponent(`/api/bookings/${bookingId}/calendar`)}`,
+        siteUrl,
+      ),
+      { status: 303 },
+    );
   }
 
   const { data: booking } = await supabase
@@ -72,6 +78,7 @@ export async function GET(_request: Request, { params }: CalendarRouteProps) {
 
   if (
     !booking ||
+    (booking.client_id !== claims.sub && booking.artist_id !== claims.sub) ||
     !booking.scheduled_start_at ||
     !booking.scheduled_end_at ||
     !["accepted", "deposit_pending", "deposit_paid", "completed"].includes(booking.status)

@@ -179,10 +179,12 @@ export async function POST(request: Request) {
   const claims = claimsData?.claims as Claims | undefined;
 
   if (!claims?.sub) {
-    return NextResponse.redirect(
-      `${siteUrl}/login?message=${encodeURIComponent("Sign in to pay a booking deposit.")}`,
-      { status: 303 },
-    );
+    const params = new URLSearchParams({
+      message: "Sign in to pay a booking deposit.",
+      return_to: returnTo ?? "/account#booking-settings",
+    });
+
+    return NextResponse.redirect(`${siteUrl}/login?${params.toString()}`, { status: 303 });
   }
 
   const { data: booking, error } = await supabase
