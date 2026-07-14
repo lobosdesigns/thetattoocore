@@ -92,6 +92,7 @@ async function checkRoute(portNumber, url, route) {
   const tab = await newTab(portNumber, url);
   const client = await connectCdp(tab.webSocketDebuggerUrl);
   const errors = [];
+  const networkErrors = [];
 
   client.on("Runtime.exceptionThrown", (event) => {
     const text = event.exceptionDetails?.text || event.exceptionDetails?.exception?.description || "page exception";
@@ -102,11 +103,21 @@ async function checkRoute(portNumber, url, route) {
       errors.push(event.entry.text);
     }
   });
+  client.on("Network.responseReceived", (event) => {
+    const status = event.response?.status || 0;
+    const isAllowedMainDocument404 =
+      route.allowMainDocument404 && event.type === "Document" && status === 404;
+
+    if (status >= 400 && !isAllowedMainDocument404) {
+      networkErrors.push(`${status} ${event.response?.url || "resource"}`);
+    }
+  });
 
   try {
     await client.send("Page.enable");
     await client.send("Runtime.enable");
     await client.send("Log.enable");
+    await client.send("Network.enable");
     await client.send("Emulation.setDeviceMetricsOverride", {
       deviceScaleFactor: 3,
       height,
@@ -155,6 +166,9 @@ async function checkRoute(portNumber, url, route) {
 
     if (filteredErrors.length) {
       reasons.push(`console/page errors: ${dedupe(filteredErrors).slice(0, 3).join(" | ")}`);
+    }
+    if (networkErrors.length) {
+      reasons.push(`network errors: ${dedupe(networkErrors).slice(0, 3).join(" | ")}`);
     }
 
     return { ok: reasons.length === 0, reasons };
