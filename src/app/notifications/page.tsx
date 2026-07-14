@@ -243,6 +243,7 @@ export default async function NotificationsPage({
     redirect(notificationsLoginPath(page));
   }
 
+  const notificationFetchLimit = notificationLimit + 25;
   const { data: notifications } = await supabase
     .from("notifications")
     .select(
@@ -250,17 +251,21 @@ export default async function NotificationsPage({
     )
     .eq("recipient_id", claims.sub)
     .order("created_at", { ascending: false })
-    .limit(notificationLimit)
+    .limit(notificationFetchLimit)
     .returns<Notification[]>();
   const blockedProfileIds = await getBlockedProfileIds({
     supabase,
     userId: claims.sub,
   });
-  const visibleNotifications = (notifications ?? []).filter(
+  const filteredNotifications = (notifications ?? []).filter(
     (notification) =>
       !notification.profiles?.id ||
       !blockedProfileIds.has(notification.profiles.id),
   );
+  const visibleNotifications = filteredNotifications.slice(0, notificationLimit);
+  const hasMoreNotifications =
+    filteredNotifications.length > notificationLimit ||
+    (notifications?.length ?? 0) === notificationFetchLimit;
   const { data: profile } = await supabase
     .from("profiles")
     .select(
@@ -494,7 +499,7 @@ export default async function NotificationsPage({
             </div>
           )}
         </section>
-        {visibleNotifications.length === notificationLimit ? (
+        {hasMoreNotifications ? (
           <div className="border-t border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] px-4 py-5 text-center">
             <Link
               className="ttc-surface inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-semibold"

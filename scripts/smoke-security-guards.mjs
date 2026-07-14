@@ -196,10 +196,14 @@ const checks = [
     ok:
       notificationPage.includes("async function getBlockedProfileIds") &&
       notificationPage.includes("const blockedProfileIds = await getBlockedProfileIds") &&
-      notificationPage.includes("const visibleNotifications = (notifications ?? []).filter") &&
+      notificationPage.includes("const notificationFetchLimit = notificationLimit + 25") &&
+      notificationPage.includes("const filteredNotifications = (notifications ?? []).filter") &&
+      notificationPage.includes("const visibleNotifications = filteredNotifications.slice(0, notificationLimit)") &&
+      notificationPage.includes("const hasMoreNotifications =") &&
       notificationPage.includes("!blockedProfileIds.has(notification.profiles.id)") &&
       notificationPage.includes("visibleNotifications.map") &&
-      notificationPage.includes("visibleNotifications.filter"),
+      notificationPage.includes("visibleNotifications.filter") &&
+      notificationPage.includes("{hasMoreNotifications ?"),
   },
   {
     label: "notification badges filter blocked actor profiles",
