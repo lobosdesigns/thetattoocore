@@ -6,6 +6,14 @@ import { spawn } from "node:child_process";
 const baseUrl = (process.env.SMOKE_BASE_URL || "https://thetattoocore.com").replace(/\/$/, "");
 const width = Number(process.env.SMOKE_MOBILE_WIDTH || 390);
 const height = Number(process.env.SMOKE_MOBILE_HEIGHT || 844);
+const routeAttempts = Math.max(
+  1,
+  Number.parseInt(process.env.SMOKE_MOBILE_ROUTE_ATTEMPTS || "2", 10),
+);
+const routeRetryDelayMs = Math.max(
+  100,
+  Number.parseInt(process.env.SMOKE_MOBILE_ROUTE_RETRY_MS || "1500", 10),
+);
 const routes = [
   { path: "/", titleIncludes: "Sign in" },
   { path: "/login", titleIncludes: "Sign in" },
@@ -65,7 +73,7 @@ try {
 
   let failures = 0;
   for (const route of routes) {
-    const result = await checkRoute(port, `${baseUrl}${route.path}`, route);
+    const result = await checkRouteWithRetry(port, `${baseUrl}${route.path}`, route);
     const prefix = result.ok ? "PASS" : "FAIL";
     console.log(`${prefix} ${route.path}`);
 
@@ -86,6 +94,34 @@ try {
 } finally {
   await stopBrowser();
   removeTempProfile(userDataDir);
+}
+
+async function checkRouteWithRetry(portNumber, url, route) {
+  let lastResult;
+
+  for (let attempt = 0; attempt < routeAttempts; attempt += 1) {
+    const result = await checkRoute(portNumber, url, route);
+    lastResult = result;
+
+    if (result.ok || !isTransientRouteFailure(result)) {
+      return result;
+    }
+
+    if (attempt < routeAttempts - 1) {
+      await sleep(routeRetryDelayMs * (attempt + 1));
+    }
+  }
+
+  return lastResult;
+}
+
+function isTransientRouteFailure(result) {
+  return result.reasons.some(
+    (reason) =>
+      reason.includes("503 ") ||
+      reason.includes("429 ") ||
+      reason.includes("Worker exceeded resource limits"),
+  );
 }
 
 async function checkRoute(portNumber, url, route) {
