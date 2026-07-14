@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode, TouchEvent, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { ReactNode, TouchEvent, useCallback, useEffect, useRef } from "react";
 import { languageStatusDismissEvent } from "./language-status-banner";
 
 const columnIds = [
@@ -42,14 +43,16 @@ function scrollPageToTop(behavior: ScrollBehavior = "smooth") {
 }
 
 export function ColumnSnapRail({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const railRef = useRef<HTMLDivElement>(null);
   const activeIndex = useRef(0);
+  const lastRefreshAt = useRef(0);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const touchStartIndex = useRef(0);
   const snapTimer = useRef<number | null>(null);
 
-  function scrollToIndex({
+  const scrollToIndex = useCallback(function scrollToIndex({
     behavior = "smooth",
     index,
     resetPage = true,
@@ -72,8 +75,14 @@ export function ColumnSnapRail({ children }: { children: ReactNode }) {
 
     if (resetPage && didChangeColumn) {
       scrollPageToTop(behavior);
+
+      const now = Date.now();
+      if (now - lastRefreshAt.current > 5000) {
+        lastRefreshAt.current = now;
+        router.refresh();
+      }
     }
-  }
+  }, [router]);
 
   function nearestIndex() {
     const rail = railRef.current;
@@ -144,7 +153,7 @@ export function ColumnSnapRail({ children }: { children: ReactNode }) {
         window.clearTimeout(snapTimer.current);
       }
     };
-  }, []);
+  }, [scrollToIndex]);
 
   return (
     <div

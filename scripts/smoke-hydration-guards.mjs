@@ -13,6 +13,7 @@ let failures = 0;
 const clientFiles = listTsxFiles(sourceRoot).filter((file) =>
   readFileSync(file, "utf8").startsWith('"use client";'),
 );
+const columnSnapRail = readFileSync("src/app/column-snap-rail.tsx", "utf8");
 
 for (const file of clientFiles) {
   const body = readFileSync(file, "utf8");
@@ -25,6 +26,17 @@ for (const file of clientFiles) {
       "  browser-only state must sync after hydration, not inside the initial render",
     );
   }
+}
+
+if (
+  !columnSnapRail.includes("const router = useRouter()") ||
+  !columnSnapRail.includes("lastRefreshAt") ||
+  !columnSnapRail.includes("router.refresh()") ||
+  !columnSnapRail.includes("now - lastRefreshAt.current > 5000")
+) {
+  failures += 1;
+  console.error("FAIL src/app/column-snap-rail.tsx");
+  console.error("  column switches should refresh fresh server-ranked column data with a cooldown");
 }
 
 if (failures > 0) {
