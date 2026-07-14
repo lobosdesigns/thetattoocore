@@ -366,6 +366,7 @@ export default async function AdminPaymentsPage({
     { count: stalePendingCheckoutCount },
     { count: staleBookingCheckoutCount },
     { count: activeUnpaidAdCount },
+    { count: paymentDisputeAuditCount },
     { count: paymentAuditCount, data: paymentAuditLogs },
     { count: bookingDepositCount, data: recentBookingDeposits },
   ] = adminClient
@@ -435,6 +436,14 @@ export default async function AdminPaymentsPage({
             "payment_failed",
             "refunded",
           ]),
+        adminClient
+          .from("admin_audit_logs")
+          .select("id", { count: "exact", head: true })
+          .in("event_type", [
+            "merch_payment_dispute",
+            "ad_payment_dispute",
+            "booking_payment_dispute",
+          ]),
         (() => {
           const query = adminClient
             .from("admin_audit_logs")
@@ -482,6 +491,7 @@ export default async function AdminPaymentsPage({
         { count: null },
         { count: null },
         { count: null },
+        { count: null },
         { count: null, data: null },
         { count: null, data: null },
       ];
@@ -505,7 +515,8 @@ export default async function AdminPaymentsPage({
   const hasPaymentWarnings =
     Boolean(stalePendingCheckoutCount) ||
     Boolean(staleBookingCheckoutCount) ||
-    Boolean(activeUnpaidAdCount);
+    Boolean(activeUnpaidAdCount) ||
+    Boolean(paymentDisputeAuditCount);
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -614,7 +625,7 @@ export default async function AdminPaymentsPage({
                   <h2 className="text-sm font-bold uppercase tracking-wide">
                     Payment ops watch
                   </h2>
-                  <div className="mt-2 grid gap-2 text-sm text-[var(--muted)] lg:grid-cols-3">
+                  <div className="mt-2 grid gap-2 text-sm text-[var(--muted)] lg:grid-cols-4">
                     <p>
                       <Link
                         className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
@@ -667,6 +678,18 @@ export default async function AdminPaymentsPage({
                       :{" "}
                       <span className="font-bold text-[var(--foreground)]">
                         {activeUnpaidAdCount ?? 0}
+                      </span>
+                    </p>
+                    <p>
+                      <Link
+                        className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
+                        href={auditFilterHref("booking_payment_dispute")}
+                      >
+                        Dispute audit entries need review
+                      </Link>
+                      :{" "}
+                      <span className="font-bold text-[var(--foreground)]">
+                        {paymentDisputeAuditCount ?? 0}
                       </span>
                     </p>
                   </div>

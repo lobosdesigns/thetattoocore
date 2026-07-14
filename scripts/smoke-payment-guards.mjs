@@ -267,6 +267,7 @@ checks.push({
     adminPaymentsPage.includes("bookingCurrentPage") &&
     adminPaymentsPage.includes("Payment audit") &&
     adminPaymentsPage.includes("paymentAuditLogs") &&
+    adminPaymentsPage.includes("paymentDisputeAuditCount") &&
     adminPaymentsPage.includes("booking_refund_problem") &&
     adminPaymentsPage.includes("merch_payment_dispute") &&
     adminPaymentsPage.includes("ad_payment_dispute") &&
@@ -299,6 +300,8 @@ checks.push({
     adminPaymentsPage.includes("Stale booking deposit checkouts over 24h") &&
     adminPaymentsPage.includes('bookingFilterHref("checkout_started")') &&
     adminPaymentsPage.includes("Reset stale booking checkouts") &&
+    adminPaymentsPage.includes("Dispute audit entries need review") &&
+    adminPaymentsPage.includes('auditFilterHref("booking_payment_dispute")') &&
     adminPaymentsPage.includes("Booking deposit states") &&
     adminPaymentsPage.includes('.eq("status", "deposit_pending")') &&
     adminPaymentsPage.includes('.eq("payment_status", "checkout_started")'),
