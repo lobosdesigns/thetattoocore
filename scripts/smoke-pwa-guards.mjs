@@ -120,11 +120,13 @@ const checks = [
   {
     label: "user-facing push copy avoids technical install-channel wording",
     ok:
-      userFacingPushSource.includes("Installed app push") &&
+      userFacingPushSource.includes("App alerts") &&
       userFacingPushSource.includes("Phone app alerts are off for now") &&
       userFacingPushSource.includes("Alert settings") &&
       !userFacingPushSource.includes('"PWA"') &&
       !userFacingPushSource.includes("Browser push") &&
+      !userFacingPushSource.includes("installed app push") &&
+      !userFacingPushSource.includes("iOS or Android push") &&
       !userFacingPushSource.includes("installed-web-app") &&
       !userFacingPushSource.includes("Native iOS") &&
       !userFacingPushSource.includes("Push roadmap"),

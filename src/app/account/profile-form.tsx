@@ -111,7 +111,7 @@ const notificationGroups = [
 const notificationSummary = [
   ["Live now", "In-app alerts and badges"],
   ["Next", "Email for important account events"],
-  ["Installed", "Installed app push after opt-in"],
+  ["App alerts", "Available after opt-in"],
   ["Mobile", "Phone app alerts are off for now"],
 ] as const;
 

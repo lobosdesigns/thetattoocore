@@ -262,11 +262,10 @@ export default async function NotificationsPage({
               <Smartphone className="size-5" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-sm font-bold">Push notifications later</h2>
+              <h2 className="text-sm font-bold">App alerts</h2>
               <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
                 In-app alerts and badges are live now. These preferences will
-                carry forward to email, installed app push, and iOS or Android
-                push when those channels are added.
+                carry forward as more alert options are added.
               </p>
               <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted)] sm:grid-cols-3">
                 <p className="ttc-surface rounded-md border px-2 py-1">
@@ -290,7 +289,7 @@ export default async function NotificationsPage({
                   </span>
                 </p>
                 <p className="ttc-surface rounded-md border px-2 py-1">
-                  Push intent:{" "}
+                  App alerts:{" "}
                   <span className="font-semibold">
                     {profile?.notify_push_enabled ? "Saved" : "Off"}
                   </span>

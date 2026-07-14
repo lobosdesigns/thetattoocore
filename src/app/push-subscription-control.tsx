@@ -67,7 +67,7 @@ export function PushSubscriptionControl() {
       }
 
       if (!hasSupport) {
-        setMessage("This browser does not support installed app push.");
+        setMessage("This device does not support app alerts yet.");
         return;
       }
 
@@ -108,7 +108,7 @@ export function PushSubscriptionControl() {
 
       await postSubscription(subscription);
       setEnabled(true);
-      setMessage("Push is enabled for this browser.");
+      setMessage("App alerts are enabled on this device.");
     } catch {
       setMessage("Push setup could not be completed.");
     } finally {
@@ -134,7 +134,7 @@ export function PushSubscriptionControl() {
       }
 
       setEnabled(false);
-      setMessage("Push is off for this browser.");
+      setMessage("App alerts are off on this device.");
     } catch {
       setMessage("Push could not be turned off.");
     } finally {
@@ -147,10 +147,10 @@ export function PushSubscriptionControl() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-strong)]">
-            Installed app push
+            App alerts
           </p>
           <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
-            {message || (enabled ? "Enabled for this browser." : "Ready when you turn it on.")}
+            {message || (enabled ? "Enabled on this device." : "Ready when you turn it on.")}
           </p>
         </div>
         {supported ? (
