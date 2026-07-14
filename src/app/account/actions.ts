@@ -1336,6 +1336,10 @@ export async function updateBookingSettings(formData: FormData) {
     redirect(bookingPath("Default deposit must be a valid dollar amount."));
   }
 
+  if (depositPolicy === "required" && defaultDepositAmountCents <= 0) {
+    redirect(bookingPath("Required deposit settings need a default deposit amount."));
+  }
+
   const { error } = await supabase.from("booking_settings").upsert({
     booking_enabled: bookingEnabled,
     booking_note: bookingNote || null,

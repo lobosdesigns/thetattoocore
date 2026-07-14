@@ -141,9 +141,13 @@ const checks = [
       accountActions.includes("export async function updateBookingSettings") &&
       accountActions.includes('.from("booking_settings").upsert') &&
       accountActions.includes("Verified artist or studio status is required for booking availability.") &&
+      accountActions.includes("depositPolicy === \"required\" && defaultDepositAmountCents <= 0") &&
+      accountActions.includes("Required deposit settings need a default deposit amount.") &&
       accountPage.includes("updateBookingSettings") &&
       accountPage.includes("Booking availability") &&
       accountPage.includes("Show booking availability") &&
+      accountPage.includes("clients") &&
+      accountPage.includes("see the expected deposit") &&
       accountPage.includes("cancellation_policy") &&
       accountPage.includes("calendar_connection_status"),
   },

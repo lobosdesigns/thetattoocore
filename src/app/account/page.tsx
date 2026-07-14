@@ -789,6 +789,10 @@ export default async function AccountPage({
                     name="default_deposit_amount"
                     placeholder="50.00"
                   />
+                  <span className="text-xs font-normal leading-5 text-[var(--muted-strong)]">
+                    Required deposit settings need a default amount so clients
+                    see the expected deposit before they request a booking.
+                  </span>
                 </label>
                 <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 py-2 text-sm">
                   <p className="font-semibold">Calendar connection</p>
