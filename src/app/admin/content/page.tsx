@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ArrowLeft, ChevronLeft, ChevronRight, Gavel } from "lucide-react";
 import { AdminSectionNav } from "../admin-section-nav";
 import { moderateContent } from "../actions";
+import { titleCaseStatus } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -94,7 +95,7 @@ function timeAgo(value: string) {
 }
 
 function statusLabel(status: ModerationStatus) {
-  return status.replace("_", " ");
+  return titleCaseStatus(status);
 }
 
 function storyExpiryState(value: string) {

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ArrowLeft, ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
 import { AdminSectionNav } from "../admin-section-nav";
+import { titleCaseStatus } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -138,7 +139,7 @@ function ListingCard({ listing }: { listing: Listing }) {
               listing.moderationStatus,
             )}`}
           >
-            {listing.moderationStatus.replace("_", " ")}
+            {titleCaseStatus(listing.moderationStatus)}
           </span>
           <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold capitalize text-[var(--muted)]">
             {listing.status}

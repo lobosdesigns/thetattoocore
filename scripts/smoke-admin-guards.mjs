@@ -6,6 +6,9 @@ const adminOverview = readFileSync("src/app/admin/page.tsx", "utf8");
 const adminUsers = readFileSync("src/app/admin/users/page.tsx", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const adminDataRequests = readFileSync("src/app/admin/data-requests/page.tsx", "utf8");
+const adminContent = readFileSync("src/app/admin/content/page.tsx", "utf8");
+const adminGigs = readFileSync("src/app/admin/gigs/page.tsx", "utf8");
+const adminStuff = readFileSync("src/app/admin/stuff/page.tsx", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
@@ -128,6 +131,17 @@ const checks = [
       !accountPage.includes("{request.status} deletion request") &&
       adminDataRequests.includes("accountDeletionStatusLabel(request.status)") &&
       !adminDataRequests.includes(">{request.status}</span>"),
+  },
+  {
+    label: "admin moderation queues use shared friendly status labels",
+    ok:
+      statusLabels.includes("export function titleCaseStatus") &&
+      adminContent.includes("titleCaseStatus(status)") &&
+      adminGigs.includes("titleCaseStatus(gig.moderationStatus)") &&
+      adminStuff.includes("titleCaseStatus(listing.moderationStatus)") &&
+      !adminContent.includes('status.replace("_", " ")') &&
+      !adminGigs.includes('moderationStatus.replace("_", " ")') &&
+      !adminStuff.includes('moderationStatus.replace("_", " ")'),
   },
   {
     label: "plan records dedicated admin pages and tester account tooling",
