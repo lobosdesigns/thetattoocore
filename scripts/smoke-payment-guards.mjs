@@ -16,6 +16,7 @@ const globalsCss = readFileSync("src/app/globals.css", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
 const fees = readFileSync("src/lib/payments/fees.ts", "utf8");
+const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
 const paymentSafetySource = [
   adminMerchPage,
   adminPaymentsPage,
@@ -147,17 +148,18 @@ checks.push({
 checks.push({
   label: "member commerce surfaces show friendly order and fulfillment labels",
   ok:
-    accountPage.includes("function commerceStatusLabel") &&
-    accountPage.includes("function fulfillmentStatusLabel") &&
-    accountPage.includes('if (status === "pending_checkout") return "Checkout pending"') &&
-    accountPage.includes('if (status === "unfulfilled") return "Not fulfilled"') &&
+    accountPage.includes("commerceStatusLabel") &&
+    accountPage.includes("fulfillmentStatusLabel") &&
     !accountPage.includes("order.status.replace(\"_\", \" \")") &&
     !accountPage.includes("item.fulfillment_status.replace(\"_\", \" \")") &&
     !accountPage.includes("payment provider review during launch") &&
-    merchCheckoutSuccessPage.includes("function commerceStatusLabel") &&
-    merchCheckoutSuccessPage.includes('if (status === "pending_checkout") return "Checkout pending"') &&
-    merchCheckoutSuccessPage.includes('if (status === "payment_failed") return "Payment failed"') &&
-    !merchCheckoutSuccessPage.includes("order.status.replace(\"_\", \" \")"),
+    merchCheckoutSuccessPage.includes("commerceStatusLabel") &&
+    !merchCheckoutSuccessPage.includes("order.status.replace(\"_\", \" \")") &&
+    statusLabels.includes("export function commerceStatusLabel") &&
+    statusLabels.includes("export function fulfillmentStatusLabel") &&
+    statusLabels.includes('if (status === "pending_checkout") return "Checkout pending"') &&
+    statusLabels.includes('if (status === "payment_failed") return "Payment failed"') &&
+    statusLabels.includes('if (status === "unfulfilled") return "Not fulfilled"'),
 });
 checks.push({
   label: "shared platform fee helper stays at launch rate",

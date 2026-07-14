@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { CheckCircle2, Package } from "lucide-react";
 import { PrintReceiptButton } from "./print-receipt-button";
+import { commerceStatusLabel } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
 
 type Order = {
@@ -58,23 +59,6 @@ function statusClass(status?: string) {
   }
 
   return "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]";
-}
-
-function titleCaseStatus(value: string) {
-  return value
-    .split("_")
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-function commerceStatusLabel(status?: string) {
-  if (!status) return "Processing";
-  if (status === "pending_checkout") return "Checkout pending";
-  if (status === "payment_failed") return "Payment failed";
-  if (status === "partially_refunded") return "Partially refunded";
-
-  return titleCaseStatus(status);
 }
 
 function statusCopy(status?: string) {

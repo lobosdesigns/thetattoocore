@@ -41,6 +41,7 @@ const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
 const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8");
 const notificationsPage = readFileSync("src/app/notifications/page.tsx", "utf8");
 const fees = readFileSync("src/lib/payments/fees.ts", "utf8");
+const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 
 const checks = [
@@ -226,18 +227,18 @@ const checks = [
   {
     label: "booking cards show friendly status labels instead of raw payment states",
     ok:
-      accountPage.includes("function bookingStatusLabel") &&
-      accountPage.includes("function bookingPaymentStatusLabel") &&
-      accountPage.includes('if (status === "checkout_started") return "Checkout started"') &&
-      accountPage.includes('if (status === "payment_failed") return "Payment failed"') &&
+      accountPage.includes("bookingStatusLabel") &&
+      accountPage.includes("bookingPaymentStatusLabel") &&
       !accountPage.includes("booking.payment_status.replace(\"_\", \" \")") &&
       !accountPage.includes("booking.status.replace(\"_\", \" \")") &&
-      messagesPage.includes("function bookingStatusLabel") &&
-      messagesPage.includes("function bookingPaymentStatusLabel") &&
-      messagesPage.includes('if (status === "checkout_started") return "Checkout started"') &&
-      messagesPage.includes('if (status === "payment_failed") return "Payment failed"') &&
+      messagesPage.includes("bookingStatusLabel") &&
+      messagesPage.includes("bookingPaymentStatusLabel") &&
       !messagesPage.includes("booking.payment_status.replace(\"_\", \" \")") &&
-      !messagesPage.includes("booking.status.replace(\"_\", \" \")"),
+      !messagesPage.includes("booking.status.replace(\"_\", \" \")") &&
+      statusLabels.includes("export function bookingStatusLabel") &&
+      statusLabels.includes("export function bookingPaymentStatusLabel") &&
+      statusLabels.includes('if (status === "checkout_started") return "Checkout started"') &&
+      statusLabels.includes('if (status === "payment_failed") return "Payment failed"'),
   },
   {
     label: "DM threads surface attached booking requests",

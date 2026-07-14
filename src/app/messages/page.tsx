@@ -18,6 +18,10 @@ import { PendingSubmitButton } from "@/app/pending-submit-button";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { WordLimitedField } from "@/app/word-limited-field";
 import {
+  bookingPaymentStatusLabel,
+  bookingStatusLabel,
+} from "@/lib/status-labels";
+import {
   cancelAcceptedBookingAsArtist,
   cancelBookingRequest,
   respondBookingRequest,
@@ -178,29 +182,6 @@ function statusClass(status: string) {
   }
 
   return "border-[color-mix(in_srgb,#5078c8_35%,var(--card-rim))] bg-[color-mix(in_srgb,#5078c8_10%,var(--paper-warm))] text-[color-mix(in_srgb,#284f8a_78%,var(--foreground))]";
-}
-
-function titleCaseStatus(value: string) {
-  return value
-    .split("_")
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-function bookingStatusLabel(status: string) {
-  if (status === "deposit_paid") return "Deposit paid";
-  if (status === "deposit_pending") return "Deposit pending";
-
-  return titleCaseStatus(status);
-}
-
-function bookingPaymentStatusLabel(status: string) {
-  if (status === "not_ready") return "Not ready";
-  if (status === "checkout_started") return "Checkout started";
-  if (status === "payment_failed") return "Payment failed";
-
-  return titleCaseStatus(status);
 }
 
 function notificationConversationId(notification: MessageNotification) {

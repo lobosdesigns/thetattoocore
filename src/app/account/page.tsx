@@ -16,6 +16,12 @@ import { LicenseDocumentInput } from "./license-document-input";
 import { ProfileForm } from "./profile-form";
 import { PendingSubmitButton } from "../pending-submit-button";
 import { countryOptions, languageOptions } from "@/lib/localization";
+import {
+  bookingPaymentStatusLabel,
+  bookingStatusLabel,
+  commerceStatusLabel,
+  fulfillmentStatusLabel,
+} from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
 import { verificationEligibleAccountTypes } from "@/lib/verification";
 
@@ -239,44 +245,6 @@ function orderStatusClass(status: string) {
   }
 
   return "border-[color-mix(in_srgb,#5078c8_35%,var(--card-rim))] bg-[color-mix(in_srgb,#5078c8_10%,var(--paper-warm))] text-[color-mix(in_srgb,#284f8a_78%,var(--foreground))]";
-}
-
-function titleCaseStatus(value: string) {
-  return value
-    .split("_")
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-function bookingStatusLabel(status: string) {
-  if (status === "deposit_paid") return "Deposit paid";
-  if (status === "deposit_pending") return "Deposit pending";
-
-  return titleCaseStatus(status);
-}
-
-function bookingPaymentStatusLabel(status: string) {
-  if (status === "not_ready") return "Not ready";
-  if (status === "checkout_started") return "Checkout started";
-  if (status === "payment_failed") return "Payment failed";
-
-  return titleCaseStatus(status);
-}
-
-function commerceStatusLabel(status: string) {
-  if (status === "pending_checkout") return "Checkout pending";
-  if (status === "payment_failed") return "Payment failed";
-  if (status === "partially_refunded") return "Partially refunded";
-
-  return titleCaseStatus(status);
-}
-
-function fulfillmentStatusLabel(status: string) {
-  if (status === "unfulfilled") return "Not fulfilled";
-  if (status === "partially_fulfilled") return "Partially fulfilled";
-
-  return titleCaseStatus(status);
 }
 
 function formatDate(value: string | null) {
