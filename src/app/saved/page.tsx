@@ -209,6 +209,7 @@ export default async function SavedPage({
   const params = await searchParams;
   const page = Math.max(1, Math.min(20, Number(params.page ?? "1") || 1));
   const savedLimit = page * 25;
+  const savedFetchLimit = savedLimit + 25;
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -239,7 +240,7 @@ export default async function SavedPage({
     .select("subject_type, subject_id, created_at")
     .eq("user_id", claims.sub)
     .order("created_at", { ascending: false })
-    .limit(savedLimit)
+    .limit(savedFetchLimit)
     .returns<SavedItem[]>();
 
   const saved = savedItems ?? [];
@@ -389,7 +390,7 @@ export default async function SavedPage({
       .map((profile) => [profile.id, profile]),
   );
 
-  const cards: SavedCard[] = saved
+  const allCards = saved
     .map((item) => {
       if (item.subject_type === "feed_post") {
         const post = feedMap.get(item.subject_id);
@@ -513,6 +514,9 @@ export default async function SavedPage({
       };
     })
     .filter(Boolean) as SavedCard[];
+  const cards = allCards.slice(0, savedLimit);
+  const hasMoreSaved =
+    allCards.length > savedLimit || saved.length === savedFetchLimit;
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -653,7 +657,7 @@ export default async function SavedPage({
               </Link>
             </div>
           )}
-          {saved.length === savedLimit ? (
+          {hasMoreSaved ? (
             <div className="mt-5 text-center">
               <Link
                 className="ttc-surface inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-semibold"

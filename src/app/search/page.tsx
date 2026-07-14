@@ -295,6 +295,7 @@ export default async function SearchPage({
   const type = cleanType(params.type);
   const page = Math.max(1, Math.min(20, Number(params.page ?? "1") || 1));
   const resultLimit = page * 25;
+  const resultFetchLimit = resultLimit + 25;
   const pattern = searchPattern(query);
   const cityPattern = searchPattern(city);
   const regionPattern = searchPattern(region);
@@ -350,7 +351,7 @@ export default async function SearchPage({
 
               return profileQuery
                 .order("display_name", { ascending: true })
-                .limit(resultLimit)
+                .limit(resultFetchLimit)
                 .returns<ProfileResult[]>();
             })()
           : Promise.resolve({ data: [] as ProfileResult[] }),
@@ -375,7 +376,7 @@ export default async function SearchPage({
 
               return feedQuery
                 .order("created_at", { ascending: false })
-                .limit(resultLimit)
+                .limit(resultFetchLimit)
                 .returns<FeedResult[]>();
             })()
           : Promise.resolve({ data: [] as FeedResult[] }),
@@ -390,7 +391,7 @@ export default async function SearchPage({
               .eq("is_sensitive", false)
               .ilike("body", pattern)
               .order("created_at", { ascending: false })
-              .limit(resultLimit)
+              .limit(resultFetchLimit)
               .returns<ThreadResult[]>()
           : Promise.resolve({ data: [] as ThreadResult[] }),
         shouldRunListings
@@ -416,7 +417,7 @@ export default async function SearchPage({
 
               return listingQuery
                 .order("created_at", { ascending: false })
-                .limit(resultLimit)
+                .limit(resultFetchLimit)
                 .returns<ListingResult[]>();
             })()
           : Promise.resolve({ data: [] as ListingResult[] }),
@@ -443,7 +444,7 @@ export default async function SearchPage({
 
               return gigQuery
                 .order("created_at", { ascending: false })
-                .limit(resultLimit)
+                .limit(resultFetchLimit)
                 .returns<GigResult[]>();
             })()
           : Promise.resolve({ data: [] as GigResult[] }),
@@ -474,7 +475,7 @@ export default async function SearchPage({
 
               return merchQuery
                 .order("created_at", { ascending: false })
-                .limit(resultLimit)
+                .limit(resultFetchLimit)
                 .returns<
                   {
                     category: string;
@@ -532,7 +533,7 @@ export default async function SearchPage({
   const profileShopMap = new Map(
     (profileShops ?? []).map((shop) => [shop.id, shop]),
   );
-  const profileResults = (profiles ?? [])
+  const filteredProfileResults = (profiles ?? [])
     .filter((profile) => !blockedProfileIds.has(profile.id))
     .map((profile) => ({
       ...profile,
@@ -540,26 +541,32 @@ export default async function SearchPage({
         ? (profileShopMap.get(profile.shop_profile_id) ?? null)
         : null,
     }));
-  const feedResults = (feedPosts ?? []).filter(
+  const filteredFeedResults = (feedPosts ?? []).filter(
     (post) => !post.profiles?.id || !blockedProfileIds.has(post.profiles.id),
   );
-  const threadResults = (threads ?? []).filter(
+  const filteredThreadResults = (threads ?? []).filter(
     (thread) =>
       !thread.profiles?.id || !blockedProfileIds.has(thread.profiles.id),
   );
-  const listingResults = (listings ?? []).filter(
+  const filteredListingResults = (listings ?? []).filter(
     (listing) =>
       !listing.profiles?.id || !blockedProfileIds.has(listing.profiles.id),
   );
-  const gigResults = (gigs ?? []).filter(
+  const filteredGigResults = (gigs ?? []).filter(
     (gig) => !gig.profiles?.id || !blockedProfileIds.has(gig.profiles.id),
   );
-  const merchResults = (merchProducts ?? []).filter(
+  const filteredMerchResults = (merchProducts ?? []).filter(
     (product) =>
       product.is_official ||
       !product.profiles?.id ||
       !blockedProfileIds.has(product.profiles.id),
   );
+  const profileResults = filteredProfileResults.slice(0, resultLimit);
+  const feedResults = filteredFeedResults.slice(0, resultLimit);
+  const threadResults = filteredThreadResults.slice(0, resultLimit);
+  const listingResults = filteredListingResults.slice(0, resultLimit);
+  const gigResults = filteredGigResults.slice(0, resultLimit);
+  const merchResults = filteredMerchResults.slice(0, resultLimit);
 
   const total =
     profileResults.length +
@@ -571,13 +578,31 @@ export default async function SearchPage({
   const canLoadMore =
     hasSearch &&
     [
-      shouldRunProfiles ? profileResults.length : 0,
-      shouldRunFeed ? feedResults.length : 0,
-      shouldRunThreads ? threadResults.length : 0,
-      shouldRunListings ? listingResults.length : 0,
-      shouldRunGigs ? gigResults.length : 0,
-      shouldRunMerch ? merchResults.length : 0,
-    ].some((count) => count === resultLimit);
+      shouldRunProfiles
+        ? filteredProfileResults.length > resultLimit ||
+          (profiles?.length ?? 0) === resultFetchLimit
+        : false,
+      shouldRunFeed
+        ? filteredFeedResults.length > resultLimit ||
+          (feedPosts?.length ?? 0) === resultFetchLimit
+        : false,
+      shouldRunThreads
+        ? filteredThreadResults.length > resultLimit ||
+          (threads?.length ?? 0) === resultFetchLimit
+        : false,
+      shouldRunListings
+        ? filteredListingResults.length > resultLimit ||
+          (listings?.length ?? 0) === resultFetchLimit
+        : false,
+      shouldRunGigs
+        ? filteredGigResults.length > resultLimit ||
+          (gigs?.length ?? 0) === resultFetchLimit
+        : false,
+      shouldRunMerch
+        ? filteredMerchResults.length > resultLimit ||
+          (merchProducts?.length ?? 0) === resultFetchLimit
+        : false,
+    ].some(Boolean);
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">

@@ -131,11 +131,14 @@ const checks = [
     ok:
       searchPage.includes("async function getBlockedProfileIds") &&
       searchPage.includes("const blockedProfileIds = await getBlockedProfileIds") &&
-      searchPage.includes("const feedResults = (feedPosts ?? []).filter") &&
-      searchPage.includes("const threadResults = (threads ?? []).filter") &&
-      searchPage.includes("const listingResults = (listings ?? []).filter") &&
-      searchPage.includes("const gigResults = (gigs ?? []).filter") &&
-      searchPage.includes("const merchResults = (merchProducts ?? []).filter") &&
+      searchPage.includes("const resultFetchLimit = resultLimit + 25") &&
+      searchPage.includes("const filteredFeedResults = (feedPosts ?? []).filter") &&
+      searchPage.includes("const filteredThreadResults = (threads ?? []).filter") &&
+      searchPage.includes("const filteredListingResults = (listings ?? []).filter") &&
+      searchPage.includes("const filteredGigResults = (gigs ?? []).filter") &&
+      searchPage.includes("const filteredMerchResults = (merchProducts ?? []).filter") &&
+      searchPage.includes("const feedResults = filteredFeedResults.slice(0, resultLimit)") &&
+      searchPage.includes("(feedPosts?.length ?? 0) === resultFetchLimit") &&
       searchPage.includes("product.is_official ||") &&
       searchPage.includes("!blockedProfileIds.has(profile.id)") &&
       searchPage.includes("!blockedProfileIds.has(post.profiles.id)") &&
@@ -146,6 +149,11 @@ const checks = [
     ok:
       savedPage.includes("async function getBlockedProfileIds") &&
       savedPage.includes("const blockedProfileIds = await getBlockedProfileIds") &&
+      savedPage.includes("const savedFetchLimit = savedLimit + 25") &&
+      savedPage.includes("const allCards = saved") &&
+      savedPage.includes("const cards = allCards.slice(0, savedLimit)") &&
+      savedPage.includes("const hasMoreSaved =") &&
+      savedPage.includes("saved.length === savedFetchLimit") &&
       savedPage.includes("const feedMap = new Map") &&
       savedPage.includes("const threadMap = new Map") &&
       savedPage.includes("const listingMap = new Map") &&
