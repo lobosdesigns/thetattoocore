@@ -331,7 +331,7 @@ const checks = [
       bookingCheckout.includes('metadata[payment_kind]": "booking_deposit"') &&
       bookingCheckout.includes("platformFeeDescription(\"booking\")") &&
       bookingCheckout.includes('.eq("client_id", claims.sub)') &&
-      bookingCheckout.includes('return_to: returnTo ?? "/account#booking-settings"') &&
+      bookingCheckout.includes('encodeURIComponent(returnTo ?? "/account#booking-settings")') &&
       bookingCheckout.includes('status: "deposit_pending"') &&
       bookingCheckout.includes('payment_status: "checkout_started"'),
   },

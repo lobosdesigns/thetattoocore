@@ -15,6 +15,7 @@ import {
   bookingPaymentStatusLabel,
   titleCaseStatus,
 } from "@/lib/status-labels";
+import { resetStaleBookingDepositCheckouts } from "../actions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -169,10 +170,11 @@ async function statusCounts({
 export default async function AdminPaymentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string | string[] }>;
+  searchParams: Promise<{ message?: string | string[]; page?: string | string[] }>;
 }) {
   const params = await searchParams;
   const currentPage = pageNumber(params.page);
+  const message = Array.isArray(params.message) ? params.message[0] : params.message;
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
   const staleCheckoutCreatedBefore = staleCheckoutCutoff();
@@ -308,6 +310,12 @@ export default async function AdminPaymentsPage({
 
         <AdminSectionNav activeHref="/admin/payments" />
 
+        {message ? (
+          <p className="ttc-surface mb-4 rounded-md border px-4 py-3 text-sm font-medium">
+            {message}
+          </p>
+        ) : null}
+
         {!adminClient ? (
           <section className="ttc-card rounded-lg border border-[var(--danger)] bg-[color-mix(in_srgb,var(--danger)_12%,var(--paper-warm))] p-5">
             <ShieldAlert className="size-5 text-[var(--danger)]" />
@@ -390,15 +398,33 @@ export default async function AdminPaymentsPage({
                         {stalePendingCheckoutCount ?? 0}
                       </span>
                     </p>
-                    <p>
-                      <span className="font-semibold text-[var(--foreground)]">
-                        Stale booking deposit checkouts over 24h
-                      </span>
-                      :{" "}
-                      <span className="font-bold text-[var(--foreground)]">
-                        {staleBookingCheckoutCount ?? 0}
-                      </span>
-                    </p>
+                    <div>
+                      <p>
+                        <span className="font-semibold text-[var(--foreground)]">
+                          Stale booking deposit checkouts over 24h
+                        </span>
+                        :{" "}
+                        <span className="font-bold text-[var(--foreground)]">
+                          {staleBookingCheckoutCount ?? 0}
+                        </span>
+                      </p>
+                      {profile.role === "admin" || profile.role === "owner" ? (
+                        <form action={resetStaleBookingDepositCheckouts} className="mt-2">
+                          <input name="confirm" type="hidden" value="reset" />
+                          <input
+                            name="return_to"
+                            type="hidden"
+                            value="/admin/payments"
+                          />
+                          <button
+                            className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-1.5 text-xs font-bold text-[var(--foreground)]"
+                            type="submit"
+                          >
+                            Reset stale booking checkouts
+                          </button>
+                        </form>
+                      ) : null}
+                    </div>
                     <p>
                       <Link
                         className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"

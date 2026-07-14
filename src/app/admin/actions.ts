@@ -190,6 +190,24 @@ function adminMerchMessage(message: string, returnTo?: string) {
   return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
 }
 
+function adminPaymentsMessage(message: string, returnTo?: string) {
+  const safeReturnTo =
+    returnTo?.startsWith("/admin/payments") || returnTo === "/admin"
+      ? returnTo
+      : "/admin/payments";
+  const separator = safeReturnTo.includes("?") ? "&" : "?";
+  const hashIndex = safeReturnTo.indexOf("#");
+
+  if (hashIndex >= 0) {
+    const base = safeReturnTo.slice(0, hashIndex);
+    const hash = safeReturnTo.slice(hashIndex);
+
+    return `${base}${separator}message=${encodeURIComponent(message)}${hash}`;
+  }
+
+  return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
+}
+
 function adminDataRequestsMessage(message: string, returnTo?: string) {
   const safeReturnTo =
     returnTo?.startsWith("/admin/data-requests") || returnTo === "/admin"
@@ -1665,4 +1683,82 @@ export async function updateAccountDeletionRequest(formData: FormData) {
   revalidatePath("/admin/data-requests");
   revalidatePath("/account");
   redirect(adminDataRequestsMessage("Account deletion request updated.", returnTo));
+}
+
+export async function resetStaleBookingDepositCheckouts(formData: FormData) {
+  const returnTo = cleanText(formData.get("return_to"), 160);
+  const confirm = cleanText(formData.get("confirm"), 20);
+
+  if (confirm !== "reset") {
+    redirect(
+      adminPaymentsMessage(
+        "Confirm stale booking checkout reset before running it.",
+        returnTo,
+      ),
+    );
+  }
+
+  const { supabase, userId } = await requireModerator();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle<{ role: UserRole }>();
+
+  if (profile?.role !== "admin" && profile?.role !== "owner") {
+    redirect(adminPaymentsMessage("Admin payment access required.", returnTo));
+  }
+
+  const adminClient = createAdminClient();
+
+  if (!adminClient) {
+    redirect(adminPaymentsMessage("Private payment tools unavailable.", returnTo));
+  }
+
+  const staleCutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { data: resetRows, error } = await adminClient
+    .from("booking_requests")
+    .update({
+      payment_status: "payment_failed",
+      status: "accepted",
+      stripe_checkout_session_id: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("status", "deposit_pending")
+    .eq("payment_status", "checkout_started")
+    .lt("updated_at", staleCutoff)
+    .select("id");
+
+  if (error) {
+    redirect(
+      adminPaymentsMessage(
+        error.message || "Could not reset stale booking checkouts.",
+        returnTo,
+      ),
+    );
+  }
+
+  const resetCount = resetRows?.length ?? 0;
+
+  await supabase.from("admin_audit_logs").insert({
+    actor_id: userId,
+    event_type: "reset_stale_booking_deposit_checkouts",
+    metadata: {
+      reset_count: resetCount,
+      stale_before: staleCutoff,
+    },
+    summary: `Reset ${resetCount} stale booking deposit checkout${resetCount === 1 ? "" : "s"}.`,
+    target_id: userId,
+    target_type: "payment_ops",
+  });
+
+  revalidatePath("/admin/payments");
+  revalidatePath("/account");
+  revalidatePath("/messages");
+  redirect(
+    adminPaymentsMessage(
+      `Reset ${resetCount} stale booking deposit checkout${resetCount === 1 ? "" : "s"}.`,
+      returnTo,
+    ),
+  );
 }

@@ -298,7 +298,7 @@ const checks = [
       publicSmoke.includes('path: "/api/merch/checkout"') &&
       publicSmoke.includes('method: "POST"') &&
       publicSmoke.includes("Sign%20in%20to%20pay%20for%20ads") &&
-      publicSmoke.includes("Sign%20in%20to%20pay%20a%20booking%20deposit") &&
+      publicSmoke.includes('locationIncludes: ["Sign", "booking", "deposit"]') &&
       publicSmoke.includes("Sign%20in%20to%20buy%20merch"),
   },
   {

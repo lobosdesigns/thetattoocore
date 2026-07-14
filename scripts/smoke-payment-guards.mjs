@@ -14,6 +14,7 @@ const merchPrintReceiptButton = readFileSync(
 );
 const adminMerchPage = readFileSync("src/app/admin/merch/page.tsx", "utf8");
 const adminPaymentsPage = readFileSync("src/app/admin/payments/page.tsx", "utf8");
+const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
 const globalsCss = readFileSync("src/app/globals.css", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
@@ -213,9 +214,19 @@ checks.push({
 checks.push({
   label: "admin payments watches booking deposit state",
   ok:
+    adminActions.includes("export async function resetStaleBookingDepositCheckouts") &&
+    adminActions.includes('event_type: "reset_stale_booking_deposit_checkouts"') &&
+    adminActions.includes('.eq("status", "deposit_pending")') &&
+    adminActions.includes('.eq("payment_status", "checkout_started")') &&
+    adminActions.includes('payment_status: "payment_failed"') &&
+    adminActions.includes('status: "accepted"') &&
+    adminActions.includes('stripe_checkout_session_id: null') &&
+    adminActions.includes('profile?.role !== "admin" && profile?.role !== "owner"') &&
     adminPaymentsPage.includes("const bookingPaymentStatuses") &&
+    adminPaymentsPage.includes("resetStaleBookingDepositCheckouts") &&
     adminPaymentsPage.includes('table: "booking_requests"') &&
     adminPaymentsPage.includes("Stale booking deposit checkouts over 24h") &&
+    adminPaymentsPage.includes("Reset stale booking checkouts") &&
     adminPaymentsPage.includes("Booking deposit states") &&
     adminPaymentsPage.includes('.eq("status", "deposit_pending")') &&
     adminPaymentsPage.includes('.eq("payment_status", "checkout_started")'),

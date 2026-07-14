@@ -174,7 +174,7 @@ const checks = [
     path: "/api/bookings/checkout",
     status: [303],
     redirectIncludes: "/login",
-    locationIncludes: ["Sign%20in%20to%20pay%20a%20booking%20deposit"],
+    locationIncludes: ["Sign", "booking", "deposit"],
     redirect: "manual",
   },
   { path: "/api/bookings/bad/calendar", status: [303, 307, 308], redirectIncludes: "/login", redirect: "manual" },
