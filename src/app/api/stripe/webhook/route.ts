@@ -620,7 +620,7 @@ async function markBookingCheckoutSession({
         status === "cancelled"
           ? "Booking deposit checkout cancelled"
           : "Booking deposit payment failed",
-      type: "booking_declined",
+      type: "booking_payment_failed",
     });
   }
 

@@ -40,6 +40,10 @@ const bookingRequestChoiceMigration = readFileSync(
   "supabase/migrations/20260714162718_booking_request_choice_snapshots.sql",
   "utf8",
 );
+const bookingPaymentFailedNotificationsMigration = readFileSync(
+  "supabase/migrations/20260714190121_booking_payment_failed_notifications.sql",
+  "utf8",
+);
 const actions = readFileSync("src/app/actions.ts", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
@@ -111,7 +115,9 @@ const checks = [
       migration.includes("'booking_declined'") &&
       migration.includes("'booking_deposit_paid'") &&
       bookingCancellationMigration.includes("'booking_cancelled'") &&
+      bookingPaymentFailedNotificationsMigration.includes("'booking_payment_failed'") &&
       notificationsPage.includes('"booking_request"') &&
+      notificationsPage.includes('"booking_payment_failed"') &&
       notificationsPage.includes('"booking_cancelled"') &&
       notificationsPage.includes("CalendarDays") &&
       notificationsPage.includes('return "Booking"'),
@@ -497,6 +503,7 @@ const checks = [
       stripeWebhook.includes("markBookingCheckoutSession") &&
       stripeWebhook.includes('payment_kind === "booking_deposit"') &&
       stripeWebhook.includes('type: "booking_deposit_paid"') &&
+      stripeWebhook.includes('type: "booking_payment_failed"') &&
       stripeWebhook.includes('status: status === "paid" ? "deposit_paid" : "accepted"') &&
       stripeWebhook.includes('payment_status: status === "cancelled" ? "payment_failed" : status'),
   },
