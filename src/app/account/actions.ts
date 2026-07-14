@@ -1569,6 +1569,32 @@ export async function createBookingSlot(formData: FormData) {
   redirect(bookingPath("Booking slot added."));
 }
 
+export async function toggleBookingSlot(formData: FormData) {
+  const { profile, supabase } = await requireBookingManager();
+  const slotId = cleanText(formData.get("slot_id"), 80);
+  const isActive = formData.get("is_active") === "true";
+
+  if (!slotId) {
+    redirect(bookingPath("Choose a booking slot first."));
+  }
+
+  const { error } = await supabase
+    .from("booking_availability_slots")
+    .update({
+      is_active: isActive,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", slotId)
+    .eq("profile_id", profile.id);
+
+  if (error) {
+    redirect(bookingPath(error.message || "Could not update booking slot."));
+  }
+
+  revalidatePath("/account");
+  redirect(bookingPath(isActive ? "Booking slot restored." : "Booking slot paused."));
+}
+
 export async function deleteBookingSlot(formData: FormData) {
   const { profile, supabase } = await requireBookingManager();
   const slotId = cleanText(formData.get("slot_id"), 80);

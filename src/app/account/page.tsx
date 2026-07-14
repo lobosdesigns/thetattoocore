@@ -16,6 +16,7 @@ import {
   submitAdCampaign,
   submitLicenseVerification,
   toggleBookingAppointmentType,
+  toggleBookingSlot,
   updateBookingAppointmentType,
   updateBookingSettings,
 } from "./actions";
@@ -1339,17 +1340,34 @@ export default async function AccountPage({
                               {type?.name ?? "Any type"} - every{" "}
                               {slot.slot_interval_minutes} min - capacity{" "}
                               {slot.max_bookings_per_slot}
+                              {!slot.is_active ? " - paused" : ""}
                             </p>
                           </div>
-                          <form action={deleteBookingSlot}>
-                            <input name="slot_id" type="hidden" value={slot.id} />
-                            <PendingSubmitButton
-                              className="h-9 rounded-md border border-[var(--card-rim)] px-3 text-xs font-bold"
-                              pendingLabel="Removing"
-                            >
-                              Remove
-                            </PendingSubmitButton>
-                          </form>
+                          <div className="flex flex-wrap gap-2">
+                            <form action={toggleBookingSlot}>
+                              <input name="slot_id" type="hidden" value={slot.id} />
+                              <input
+                                name="is_active"
+                                type="hidden"
+                                value={String(!slot.is_active)}
+                              />
+                              <PendingSubmitButton
+                                className="h-9 rounded-md border border-[var(--card-rim)] px-3 text-xs font-bold"
+                                pendingLabel="Saving"
+                              >
+                                {slot.is_active ? "Pause" : "Restore"}
+                              </PendingSubmitButton>
+                            </form>
+                            <form action={deleteBookingSlot}>
+                              <input name="slot_id" type="hidden" value={slot.id} />
+                              <PendingSubmitButton
+                                className="h-9 rounded-md border border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] px-3 text-xs font-bold text-[var(--danger)]"
+                                pendingLabel="Removing"
+                              >
+                                Remove
+                              </PendingSubmitButton>
+                            </form>
+                          </div>
                         </article>
                       );
                     })
