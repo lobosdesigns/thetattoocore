@@ -227,6 +227,28 @@ async function getThread(id: string) {
   return data;
 }
 
+async function hasBlockRelationship({
+  profileId,
+  supabase,
+  userId,
+}: {
+  profileId?: string | null;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId?: string | null;
+}) {
+  if (!userId || !profileId || userId === profileId) return false;
+
+  const { data } = await supabase
+    .from("user_blocks")
+    .select("blocker_id")
+    .or(
+      `and(blocker_id.eq.${userId},blocked_id.eq.${profileId}),and(blocker_id.eq.${profileId},blocked_id.eq.${userId})`,
+    )
+    .maybeSingle<{ blocker_id: string }>();
+
+  return Boolean(data);
+}
+
 export async function generateMetadata({
   params,
 }: ThreadPageProps): Promise<Metadata> {
@@ -328,6 +350,16 @@ export default async function ThreadPage({
 
   const isSignedIn = Boolean(claims?.sub);
   const isOwnThread = claims?.sub === thread.profiles?.id;
+  if (
+    !isOwnThread &&
+    (await hasBlockRelationship({
+      profileId: thread.profiles?.id,
+      supabase,
+      userId: claims?.sub,
+    }))
+  ) {
+    notFound();
+  }
   const viewer = {
     isAdultConfirmed: Boolean(
       currentProfile?.is_adult_confirmed &&

@@ -172,6 +172,28 @@ async function getGig(id: string) {
   return data;
 }
 
+async function hasBlockRelationship({
+  profileId,
+  supabase,
+  userId,
+}: {
+  profileId?: string | null;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId?: string | null;
+}) {
+  if (!userId || !profileId || userId === profileId) return false;
+
+  const { data } = await supabase
+    .from("user_blocks")
+    .select("blocker_id")
+    .or(
+      `and(blocker_id.eq.${userId},blocked_id.eq.${profileId}),and(blocker_id.eq.${profileId},blocked_id.eq.${userId})`,
+    )
+    .maybeSingle<{ blocker_id: string }>();
+
+  return Boolean(data);
+}
+
 export async function generateMetadata({
   params,
 }: GigPageProps): Promise<Metadata> {
@@ -265,6 +287,16 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
         .maybeSingle<ViewerProfile>()
     : { data: null };
   const isOwnGig = claims?.sub === gig.profiles?.id;
+  if (
+    !isOwnGig &&
+    (await hasBlockRelationship({
+      profileId: gig.profiles?.id,
+      supabase,
+      userId: claims?.sub,
+    }))
+  ) {
+    notFound();
+  }
   const media = gig.gig_media[0];
   const mediaSrc = media
     ? mediaUrl(media.storage_bucket, media.storage_path)
