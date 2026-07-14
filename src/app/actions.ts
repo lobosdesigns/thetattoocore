@@ -125,6 +125,22 @@ function redirectWithMessage({
   }`;
 }
 
+function cleanReturnPath(value: FormDataEntryValue | null, fallback: string) {
+  const path = cleanText(value, 220) || fallback;
+
+  if (!path.startsWith("/") || path.startsWith("//") || path.includes("://")) {
+    return fallback;
+  }
+
+  return path;
+}
+
+function revalidateReturnPath(path: string) {
+  const pathname = path.split("#")[0]?.split("?")[0] || "/";
+
+  revalidatePath(pathname.startsWith("/") ? pathname : "/");
+}
+
 function cleanText(value: FormDataEntryValue | null, maxLength: number) {
   return String(value ?? "")
     .trim()
@@ -1199,7 +1215,7 @@ export async function createBookingRequest(formData: FormData) {
 export async function editFeedPost(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const postId = cleanId(formData.get("post_id"));
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#feed");
   const caption = cleanWords(formData.get("caption"), 40);
   const locationLabel = cleanText(formData.get("location_label"), 80);
   const styleTags = cleanText(formData.get("style_tags"), 160)
@@ -2194,7 +2210,7 @@ export async function togglePostLike(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const postId = cleanId(formData.get("post_id"));
   const liked = cleanText(formData.get("liked"), 8) === "true";
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#feed");
 
   if (!postId) {
     redirect(homeMessage("Choose a post first."));
@@ -2239,7 +2255,7 @@ export async function togglePostLike(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath(returnPath);
+  revalidateReturnPath(returnPath);
   redirect(returnPath);
 }
 
@@ -2304,7 +2320,7 @@ export async function createPostComment(formData: FormData) {
   const media = mediaFromForm(formData, "media");
   const postId = cleanId(formData.get("post_id"));
   const parentId = cleanId(formData.get("parent_id"));
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#feed");
 
   if (!postId) {
     redirect(homeMessage("Choose a post first."));
@@ -2419,7 +2435,7 @@ export async function createPostComment(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath(returnPath);
+  revalidateReturnPath(returnPath);
   redirect(returnPath);
 }
 
@@ -2427,7 +2443,7 @@ export async function togglePostCommentLike(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const commentId = cleanId(formData.get("comment_id"));
   const liked = cleanText(formData.get("liked"), 8) === "true";
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#feed");
 
   if (!commentId) {
     redirect(homeMessage("Choose a comment first."));
@@ -2472,7 +2488,7 @@ export async function togglePostCommentLike(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath(returnPath);
+  revalidateReturnPath(returnPath);
   redirect(returnPath);
 }
 
@@ -2480,7 +2496,7 @@ export async function editPostComment(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const commentId = cleanId(formData.get("comment_id"));
   const body = cleanWords(formData.get("body"), 40);
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#feed");
 
   if (!commentId || !body) {
     redirect(homeMessage("Comment cannot be empty.", "feed"));
@@ -2502,14 +2518,14 @@ export async function editPostComment(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath(returnPath);
+  revalidateReturnPath(returnPath);
   redirect(returnPath);
 }
 
 export async function deletePostComment(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const commentId = cleanId(formData.get("comment_id"));
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#feed");
 
   if (!commentId) {
     redirect(homeMessage("Choose a comment first.", "feed"));
@@ -2544,14 +2560,14 @@ export async function deletePostComment(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath(returnPath);
+  revalidateReturnPath(returnPath);
   redirect(returnPath);
 }
 
 export async function hidePostComment(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const commentId = cleanId(formData.get("comment_id"));
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#feed");
   const reason = cleanText(formData.get("reason"), 240);
 
   if (!commentId) {
@@ -2569,14 +2585,14 @@ export async function hidePostComment(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath(returnPath);
+  revalidateReturnPath(returnPath);
   redirect(returnPath);
 }
 
 export async function blockPostCommentAuthor(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const commentId = cleanId(formData.get("comment_id"));
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#feed");
 
   if (!commentId) {
     redirect(homeMessage("Choose a comment first.", "feed"));
@@ -2619,7 +2635,7 @@ export async function blockPostCommentAuthor(formData: FormData) {
   });
 
   revalidatePath("/");
-  revalidatePath(returnPath);
+  revalidateReturnPath(returnPath);
   redirect(returnPath);
 }
 
@@ -2627,7 +2643,7 @@ export async function toggleThreadLike(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const threadId = cleanId(formData.get("thread_id"));
   const liked = cleanText(formData.get("liked"), 8) === "true";
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#threads");
 
   if (!threadId) {
     redirect(homeMessage("Choose a thread first."));
@@ -2672,7 +2688,7 @@ export async function toggleThreadLike(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath(returnPath);
+  revalidateReturnPath(returnPath);
   redirect(returnPath);
 }
 
@@ -2682,7 +2698,7 @@ export async function createThreadComment(formData: FormData) {
   const media = mediaFromForm(formData, "media");
   const threadId = cleanId(formData.get("thread_id"));
   const parentId = cleanId(formData.get("parent_id"));
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#threads");
 
   if (!threadId) {
     redirect(homeMessage("Choose a thread first."));
@@ -2797,7 +2813,7 @@ export async function createThreadComment(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath(returnPath);
+  revalidateReturnPath(returnPath);
   redirect(returnPath);
 }
 
@@ -2805,7 +2821,7 @@ export async function toggleThreadCommentLike(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const commentId = cleanId(formData.get("comment_id"));
   const liked = cleanText(formData.get("liked"), 8) === "true";
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#threads");
 
   if (!commentId) {
     redirect(homeMessage("Choose a comment first."));
@@ -2850,7 +2866,7 @@ export async function toggleThreadCommentLike(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath(returnPath);
+  revalidateReturnPath(returnPath);
   redirect(returnPath);
 }
 
@@ -2858,7 +2874,7 @@ export async function editThreadComment(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const commentId = cleanId(formData.get("comment_id"));
   const body = cleanText(formData.get("body"), 2000);
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#threads");
 
   if (!commentId || !body) {
     redirect(homeMessage("Comment cannot be empty.", "threads"));
@@ -2880,14 +2896,14 @@ export async function editThreadComment(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath(returnPath);
+  revalidateReturnPath(returnPath);
   redirect(returnPath);
 }
 
 export async function deleteThreadComment(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const commentId = cleanId(formData.get("comment_id"));
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#threads");
 
   if (!commentId) {
     redirect(homeMessage("Choose a comment first.", "threads"));
@@ -2924,14 +2940,14 @@ export async function deleteThreadComment(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath(returnPath);
+  revalidateReturnPath(returnPath);
   redirect(returnPath);
 }
 
 export async function hideThreadComment(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const commentId = cleanId(formData.get("comment_id"));
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#threads");
   const reason = cleanText(formData.get("reason"), 240);
 
   if (!commentId) {
@@ -2949,14 +2965,14 @@ export async function hideThreadComment(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath(returnPath);
+  revalidateReturnPath(returnPath);
   redirect(returnPath);
 }
 
 export async function blockThreadCommentAuthor(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const commentId = cleanId(formData.get("comment_id"));
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#threads");
 
   if (!commentId) {
     redirect(homeMessage("Choose a comment first.", "threads"));
@@ -3001,6 +3017,6 @@ export async function blockThreadCommentAuthor(formData: FormData) {
   });
 
   revalidatePath("/");
-  revalidatePath(returnPath);
+  revalidateReturnPath(returnPath);
   redirect(returnPath);
 }

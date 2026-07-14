@@ -41,6 +41,29 @@ const forbiddenMemberUploadSnippets = [
   "server",
   "Stream",
 ];
+const commentActionNames = [
+  "createPostComment",
+  "togglePostCommentLike",
+  "editPostComment",
+  "deletePostComment",
+  "hidePostComment",
+  "blockPostCommentAuthor",
+  "createThreadComment",
+  "toggleThreadCommentLike",
+  "editThreadComment",
+  "deleteThreadComment",
+  "hideThreadComment",
+  "blockThreadCommentAuthor",
+];
+
+function actionBody(name) {
+  const start = actions.indexOf(`export async function ${name}`);
+  if (start === -1) return "";
+
+  const next = actions.indexOf("\nexport async function ", start + 1);
+
+  return actions.slice(start, next === -1 ? undefined : next);
+}
 
 const checks = [
   {
@@ -138,6 +161,21 @@ const checks = [
       actions.includes('supabase.from("thread_comment_media").insert') &&
       actions.includes('supabase.rpc("delete_post_comment_for_current_user"') &&
       actions.includes('supabase.rpc("delete_thread_comment_for_current_user"'),
+  },
+  {
+    label: "comment actions sanitize return paths before redirect and revalidation",
+    ok:
+      actions.includes("function cleanReturnPath") &&
+      actions.includes("function revalidateReturnPath") &&
+      commentActionNames.every((name) => {
+        const body = actionBody(name);
+
+        return (
+          body.includes("cleanReturnPath(formData.get(\"return_path\")") &&
+          body.includes("revalidateReturnPath(returnPath)") &&
+          !body.includes("revalidatePath(returnPath)")
+        );
+      }),
   },
   {
     label: "4U and Gossip detail pages render comment media with lightbox controls",
