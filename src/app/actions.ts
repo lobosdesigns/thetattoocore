@@ -1278,7 +1278,7 @@ export async function editFeedPost(formData: FormData) {
 export async function deleteFeedPost(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const postId = cleanId(formData.get("post_id"));
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#feed";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#feed");
 
   if (!postId) {
     redirect(redirectWithMessage({ message: "Choose a 4U post first.", path: returnPath }));
@@ -1393,7 +1393,7 @@ export async function createThreadPost(formData: FormData) {
 export async function editThreadPost(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const threadId = cleanId(formData.get("thread_id"));
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#threads");
   const body = cleanText(formData.get("body"), 8000);
 
   if (!threadId) {
@@ -1444,7 +1444,7 @@ export async function editThreadPost(formData: FormData) {
 export async function deleteThreadPost(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const threadId = cleanId(formData.get("thread_id"));
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/#threads";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/#threads");
 
   if (!threadId) {
     redirect(redirectWithMessage({ message: "Choose a Gossip post first.", path: returnPath }));
@@ -1590,9 +1590,10 @@ export async function createMarketplaceListing(formData: FormData) {
 export async function editMarketplaceListing(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const listingId = cleanId(formData.get("listing_id"));
-  const returnPath =
-    cleanText(formData.get("return_path"), 200) ||
-    (listingId ? `/stuff/${listingId}` : "/#marketplace");
+  const returnPath = cleanReturnPath(
+    formData.get("return_path"),
+    listingId ? `/stuff/${listingId}` : "/#marketplace",
+  );
   const title = cleanText(formData.get("title"), 120);
   const description = cleanText(formData.get("description"), 2000);
   const category = cleanText(formData.get("category"), 40) || "flash";
@@ -1862,9 +1863,10 @@ const GIG_CATEGORIES = new Set([
 export async function editGig(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const gigId = cleanId(formData.get("gig_id"));
-  const returnPath =
-    cleanText(formData.get("return_path"), 200) ||
-    (gigId ? `/gigs/${gigId}` : "/#gigs");
+  const returnPath = cleanReturnPath(
+    formData.get("return_path"),
+    gigId ? `/gigs/${gigId}` : "/#gigs",
+  );
   const title = cleanText(formData.get("title"), 140);
   const description = cleanText(formData.get("description"), 2400);
   const rawCategory = cleanText(formData.get("category"), 40);
@@ -1966,9 +1968,10 @@ export async function archiveGigFromDetail(formData: FormData) {
 export async function editMerchProduct(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const productId = cleanId(formData.get("product_id"));
-  const returnPath =
-    cleanText(formData.get("return_path"), 200) ||
-    (productId ? `/merch/${productId}` : "/#merch");
+  const returnPath = cleanReturnPath(
+    formData.get("return_path"),
+    productId ? `/merch/${productId}` : "/#merch",
+  );
   const title = cleanText(formData.get("title"), 120);
   const description = cleanText(formData.get("description"), 4000);
   const rawCategory = cleanText(formData.get("category"), 40);
@@ -2271,7 +2274,7 @@ export async function toggleSavedItem(formData: FormData) {
   ) as SavedSubjectType;
   const subjectId = cleanId(formData.get("subject_id"));
   const saved = cleanText(formData.get("saved"), 8) === "true";
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/");
   const returnHash = cleanText(formData.get("return_hash"), 80);
 
   if (!SAVED_SUBJECT_TYPES.has(subjectType) || !subjectId) {

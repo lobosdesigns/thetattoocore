@@ -354,6 +354,7 @@ const checks = [
       mainActions.includes('const separator = pathWithoutHash.includes("?") ? "&" : "?"') &&
       mainActions.includes("const targetHash = cleanHash || existingHash?.replace") &&
       mainActions.includes("`${pathWithoutHash}${separator}message=") &&
+      !mainActions.includes('cleanText(formData.get("return_path"), 200)') &&
       !mainActions.includes("revalidatePath(returnPath)") &&
       !accountActions.includes("revalidatePath(returnPath)") &&
       !messageActions.includes("revalidatePath(returnPath)") &&
