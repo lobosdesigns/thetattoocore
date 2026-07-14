@@ -39,8 +39,8 @@ const sections = [
 
 const quickActions = [
   {
-    body: "Signed-in members can request deletion from the Account data controls.",
-    href: "/account#data-settings",
+    body: "Sign in and go straight to the Account data controls.",
+    href: "/login?return_to=%2Faccount%23data-settings",
     label: "Request deletion",
   },
   {

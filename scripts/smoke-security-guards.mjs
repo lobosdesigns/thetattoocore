@@ -184,6 +184,13 @@ const checks = [
       publicSmoke.includes("excludes"),
   },
   {
+    label: "support deletion action routes through safe sign-in return",
+    ok:
+      supportPage.includes('href: "/login?return_to=%2Faccount%23data-settings"') &&
+      !supportPage.includes('href: "/account#data-settings"') &&
+      publicSmoke.includes("/login?return_to=%2Faccount%23data-settings"),
+  },
+  {
     label: "public detail sign-in links preserve safe return paths",
     ok:
       postDetailPage.includes("`/login?return_to=${encodeURIComponent(returnPath)}`") &&

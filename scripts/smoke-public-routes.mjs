@@ -195,7 +195,7 @@ const checks = [
     includes: [
       "Support",
       "Request deletion",
-      "/account#data-settings",
+      "/login?return_to=%2Faccount%23data-settings",
       "visible nudity",
       "Merch checkout is limited during launch",
       "support@thetattoocore.com",
