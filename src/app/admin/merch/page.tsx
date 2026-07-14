@@ -110,11 +110,11 @@ const buildSteps = [
   ],
   [
     "Product catalog",
-    "Product, inventory, image, moderation, and future payment ids are now modeled.",
+    "Product, inventory, image, moderation, and payment tracking are now modeled.",
   ],
   [
     "Checkout",
-    "Checkout, paid/failed/refunded status updates, inventory decrement, and buyer printable receipts are wired for launch testing. Next: taxes, fulfillment, payouts, and production review.",
+    "Checkout, paid/failed/refunded status updates, inventory decrement, and buyer printable receipts are wired for launch testing. Remaining review areas: taxes, fulfillment, payouts, and production rules.",
   ],
   [
     "Admin operations",

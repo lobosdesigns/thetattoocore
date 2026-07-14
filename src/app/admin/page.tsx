@@ -1234,7 +1234,7 @@ export default async function AdminPage({
     },
     {
       action: "Open payments",
-      body: "Checkout receipts, payment status, refund status, and future payout readiness live on a focused ops page.",
+      body: "Checkout receipts, payment status, refund status, and payout readiness live on a focused ops page.",
       count: 0,
       href: "/admin/payments",
       label: "Payments",
@@ -1242,7 +1242,7 @@ export default async function AdminPage({
     },
     {
       action: "Open mail",
-      body: "SMTP status, sender identity, secret binding, and test tools now live on a focused settings page.",
+      body: "Mail status, sender identity, secure credentials, and test tools now live on a focused settings page.",
       count: mailSettings?.is_enabled ? 1 : 0,
       href: "/admin/mail-settings",
       label: "Mail",

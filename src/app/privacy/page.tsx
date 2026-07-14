@@ -52,7 +52,7 @@ const sections = [
   },
   {
     body:
-      "The planned ad system should use simple targeting such as country, region, city, language, style keywords, marketplace category, and placement. It should avoid hidden behavioral profiling, sensitive personal targeting, adult/minor targeting, AI ad expansion, and opaque lookalike-style automation. Sponsored placements should be clearly labeled and should explain the coarse reason they may be relevant.",
+      "Sponsored placements use simple inputs such as country, region, city, language, style keywords, marketplace category, and placement. They should avoid hidden behavioral profiling, sensitive personal targeting, adult/minor targeting, AI ad expansion, and opaque lookalike-style automation. Sponsored placements should be clearly labeled and should explain the coarse reason they may be relevant.",
     title: "Ads",
   },
   {

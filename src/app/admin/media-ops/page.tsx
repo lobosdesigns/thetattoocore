@@ -17,7 +17,7 @@ const mediaOpsStages = [
     "Browser image optimization, saved-size feedback, file checks, dimension checks, and 60-second MP4/MOV reel validation.",
   ],
   [
-    "Next",
+    "Preview prep",
     "Store generated thumbnails and poster images so feeds, search, profiles, and share previews can load lighter media without exposing originals.",
   ],
   [
@@ -25,7 +25,7 @@ const mediaOpsStages = [
     "Move active reels to managed video processing when usage justifies adaptive playback and generated thumbnails.",
   ],
   [
-    "Later",
+    "Review queue",
     "Add a retryable processing queue for video transcodes, moderation thumbnails, failed media jobs, and post-upload safety review.",
   ],
 ] as const;
@@ -129,7 +129,7 @@ export default async function AdminMediaOpsPage() {
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
             <ServerCog className="size-5 text-[var(--gold)]" />
             <p className="mt-3 text-sm text-[var(--muted-strong)]">Scale option</p>
-            <p className="mt-1 text-xl font-bold">Upgrade later</p>
+            <p className="mt-1 text-xl font-bold">Ready when needed</p>
           </div>
         </div>
 
