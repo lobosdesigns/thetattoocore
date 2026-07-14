@@ -171,6 +171,8 @@ checks.push({
   label: "production commerce gates stay visible before real payments",
   ok:
     adminPaymentsPage.includes("Production payment gates") &&
+    adminPaymentsPage.includes("bookingPaymentStatusLabel(status)") &&
+    adminPaymentsPage.includes("titleCaseStatus(value)") &&
     adminPaymentsPage.includes("Choose a documented payout policy") &&
     adminPaymentsPage.includes("booking refund, cancellation, appointment-confirmation") &&
     adminPaymentsPage.includes("do not collect bank or card payout data in TTC forms") &&
@@ -178,6 +180,16 @@ checks.push({
     adminMerchPage.includes("finish tax, shipping, fulfillment, payouts, and payment safety rules") &&
     privacyPage.includes("Checkout is limited during launch") &&
     supportPage.includes("Merch checkout is limited during launch"),
+});
+checks.push({
+  label: "admin Merch and payment queues use friendly status labels",
+  ok:
+    adminMerchPage.includes("commerceStatusLabel(order.status)") &&
+    adminMerchPage.includes("titleCaseStatus(value)") &&
+    !adminMerchPage.includes('product.status.replace("_", " ")') &&
+    !adminMerchPage.includes('product.moderationStatus.replace("_", " ")') &&
+    !adminMerchPage.includes('order.status.replace("_", " ")') &&
+    !adminPaymentsPage.includes("return value.replaceAll(\"_\", \" \")"),
 });
 checks.push({
   label: "admin payments watches booking deposit state",

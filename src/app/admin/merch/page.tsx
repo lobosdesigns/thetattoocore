@@ -12,6 +12,10 @@ import {
 } from "lucide-react";
 import { AdminSectionNav } from "../admin-section-nav";
 import { updateMerchOrderStatus, updateMerchProductStatus } from "../actions";
+import {
+  commerceStatusLabel,
+  titleCaseStatus,
+} from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -195,7 +199,7 @@ function money(cents: number, currency: string) {
 }
 
 function statusLabel(value: string) {
-  return value.replaceAll("_", " ");
+  return titleCaseStatus(value);
 }
 
 function statusClass(status: ProductStatus) {
@@ -296,14 +300,14 @@ function ProductCard({
               product.status,
             )}`}
           >
-            {product.status.replace("_", " ")}
+            {statusLabel(product.status)}
           </span>
           <span
             className={`rounded-md border px-2 py-1 text-xs font-semibold capitalize ${moderationStatusClass(
               product.moderationStatus,
             )}`}
           >
-            Moderation {product.moderationStatus.replace("_", " ")}
+            Moderation {statusLabel(product.moderationStatus)}
           </span>
           {product.isOfficial ? (
             <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] px-2 py-1 text-xs font-semibold">
@@ -414,7 +418,7 @@ function OrderCard({
           </p>
         </div>
         <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold capitalize text-[var(--muted)]">
-          {order.status.replace("_", " ")}
+          {commerceStatusLabel(order.status)}
         </span>
       </div>
       <dl className="mt-4 grid gap-3 text-sm text-[var(--muted)] sm:grid-cols-2 lg:grid-cols-4">

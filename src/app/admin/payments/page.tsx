@@ -11,6 +11,10 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { AdminSectionNav } from "../admin-section-nav";
+import {
+  bookingPaymentStatusLabel,
+  titleCaseStatus,
+} from "@/lib/status-labels";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -134,7 +138,7 @@ function staleCheckoutCutoff() {
 }
 
 function statusLabel(value: string) {
-  return value.replaceAll("_", " ");
+  return titleCaseStatus(value);
 }
 
 async function statusCounts({
@@ -537,7 +541,7 @@ export default async function AdminPaymentsPage({
                           key={status}
                         >
                           <span className="font-semibold capitalize">
-                            {statusLabel(status)}
+                            {bookingPaymentStatusLabel(status)}
                           </span>
                           <span className="text-[var(--muted-strong)]">
                             {count}
