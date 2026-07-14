@@ -147,6 +147,7 @@ const checks = [
     ok:
       docs["docs/AGE_RATING_PREP.md"].includes("User-generated content") &&
       docs["docs/AGE_RATING_PREP.md"].includes("Visible nudity is not allowed") &&
+      docs["docs/AGE_RATING_PREP.md"].includes("Stories") &&
       docs["docs/AGE_RATING_PREP.md"].includes("Ads") &&
       docs["docs/AGE_RATING_PREP.md"].includes("Marketplace/commerce") &&
       docs["docs/AGE_RATING_PREP.md"].includes("AI"),
@@ -169,6 +170,7 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Create a new account") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("forgot-password") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("4U") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Story photo/GIF/short video") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Gossip") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Stuff") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Gigs") &&
