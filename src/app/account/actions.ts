@@ -1416,6 +1416,69 @@ export async function createBookingAppointmentType(formData: FormData) {
   redirect(bookingPath("Appointment type added."));
 }
 
+export async function updateBookingAppointmentType(formData: FormData) {
+  const { profile, supabase } = await requireBookingManager();
+  const appointmentTypeId = cleanText(formData.get("appointment_type_id"), 80);
+  const name = cleanText(formData.get("appointment_name"), 80);
+  const description = cleanText(formData.get("appointment_description"), 500);
+  const durationMinutes = cleanInteger(formData.get("duration_minutes"), 60, 10, 720);
+  const bufferBeforeMinutes = cleanInteger(
+    formData.get("buffer_before_minutes"),
+    0,
+    0,
+    240,
+  );
+  const bufferAfterMinutes = cleanInteger(
+    formData.get("buffer_after_minutes"),
+    0,
+    0,
+    240,
+  );
+  const depositPolicy = cleanText(formData.get("appointment_deposit_policy"), 20);
+  const depositAmountCents = centsFromDollars(
+    formData.get("appointment_deposit_amount"),
+    500000,
+  );
+
+  if (!appointmentTypeId) {
+    redirect(bookingPath("Choose an appointment type first."));
+  }
+
+  if (name.length < 2) {
+    redirect(bookingPath("Appointment types need a name."));
+  }
+
+  if (!["inherit", "none", "optional", "required"].includes(depositPolicy)) {
+    redirect(bookingPath("Choose a valid appointment deposit policy."));
+  }
+
+  if (depositAmountCents < 0) {
+    redirect(bookingPath("Appointment deposit must be a valid dollar amount."));
+  }
+
+  const { error } = await supabase
+    .from("booking_appointment_types")
+    .update({
+      buffer_after_minutes: bufferAfterMinutes,
+      buffer_before_minutes: bufferBeforeMinutes,
+      deposit_amount_cents: depositAmountCents,
+      deposit_policy: depositPolicy,
+      description: description || null,
+      duration_minutes: durationMinutes,
+      name,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", appointmentTypeId)
+    .eq("profile_id", profile.id);
+
+  if (error) {
+    redirect(bookingPath(error.message || "Could not update appointment type."));
+  }
+
+  revalidatePath("/account");
+  redirect(bookingPath("Appointment type updated."));
+}
+
 export async function toggleBookingAppointmentType(formData: FormData) {
   const { profile, supabase } = await requireBookingManager();
   const appointmentTypeId = cleanText(formData.get("appointment_type_id"), 80);

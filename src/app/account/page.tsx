@@ -16,6 +16,7 @@ import {
   submitAdCampaign,
   submitLicenseVerification,
   toggleBookingAppointmentType,
+  updateBookingAppointmentType,
   updateBookingSettings,
 } from "./actions";
 import { AdCampaignForm } from "./ad-campaign-form";
@@ -1109,6 +1110,103 @@ export default async function AccountPage({
                             </form>
                           </div>
                         </div>
+                        <details className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_86%,transparent)] p-3">
+                          <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.08em] text-[var(--muted-strong)]">
+                            Edit details
+                          </summary>
+                          <form
+                            action={updateBookingAppointmentType}
+                            className="mt-3 grid gap-3"
+                          >
+                            <input
+                              name="appointment_type_id"
+                              type="hidden"
+                              value={type.id}
+                            />
+                            <label className="grid gap-1 text-sm font-semibold">
+                              Name
+                              <input
+                                className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                                defaultValue={type.name}
+                                maxLength={80}
+                                name="appointment_name"
+                                required
+                              />
+                            </label>
+                            <label className="grid gap-1 text-sm font-semibold">
+                              Description
+                              <textarea
+                                className="min-h-16 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                                defaultValue={type.description ?? ""}
+                                maxLength={500}
+                                name="appointment_description"
+                              />
+                            </label>
+                            <div className="grid gap-3 sm:grid-cols-3">
+                              <label className="grid gap-1 text-sm font-semibold">
+                                Minutes
+                                <input
+                                  className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                                  defaultValue={type.duration_minutes}
+                                  inputMode="numeric"
+                                  name="duration_minutes"
+                                />
+                              </label>
+                              <label className="grid gap-1 text-sm font-semibold">
+                                Buffer before
+                                <input
+                                  className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                                  defaultValue={type.buffer_before_minutes}
+                                  inputMode="numeric"
+                                  name="buffer_before_minutes"
+                                />
+                              </label>
+                              <label className="grid gap-1 text-sm font-semibold">
+                                Buffer after
+                                <input
+                                  className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                                  defaultValue={type.buffer_after_minutes}
+                                  inputMode="numeric"
+                                  name="buffer_after_minutes"
+                                />
+                              </label>
+                            </div>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <label className="grid gap-1 text-sm font-semibold">
+                                Deposit rule
+                                <select
+                                  className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                                  defaultValue={type.deposit_policy}
+                                  name="appointment_deposit_policy"
+                                >
+                                  <option value="inherit">Use account default</option>
+                                  <option value="optional">Optional</option>
+                                  <option value="required">Required</option>
+                                  <option value="none">No deposit</option>
+                                </select>
+                              </label>
+                              <label className="grid gap-1 text-sm font-semibold">
+                                Deposit amount
+                                <input
+                                  className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                                  defaultValue={
+                                    type.deposit_amount_cents
+                                      ? (type.deposit_amount_cents / 100).toFixed(2)
+                                      : ""
+                                  }
+                                  inputMode="decimal"
+                                  name="appointment_deposit_amount"
+                                />
+                              </label>
+                            </div>
+                            <PendingSubmitButton
+                              className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)]"
+                              pendingLabel="Saving"
+                            >
+                              Save appointment type
+                            </PendingSubmitButton>
+                          </form>
+                        </details>
                       </article>
                     ))
                   ) : (

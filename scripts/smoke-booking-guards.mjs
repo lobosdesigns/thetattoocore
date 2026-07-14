@@ -187,18 +187,23 @@ const checks = [
     label: "account page exposes TimeTix-style appointment type controls",
     ok:
       accountActions.includes("export async function createBookingAppointmentType") &&
+      accountActions.includes("export async function updateBookingAppointmentType") &&
       accountActions.includes("export async function toggleBookingAppointmentType") &&
       accountActions.includes("export async function deleteBookingAppointmentType") &&
       accountActions.includes('.from("booking_appointment_types")') &&
       accountActions.includes("Could not delete appointment type") &&
+      accountActions.includes("Appointment type updated") &&
       accountActions.includes("duration_minutes: durationMinutes") &&
       accountActions.includes("buffer_before_minutes: bufferBeforeMinutes") &&
       accountActions.includes("buffer_after_minutes: bufferAfterMinutes") &&
       accountActions.includes("deposit_amount_cents: depositAmountCents") &&
       accountPage.includes("createBookingAppointmentType") &&
+      accountPage.includes("updateBookingAppointmentType") &&
       accountPage.includes("toggleBookingAppointmentType") &&
       accountPage.includes("deleteBookingAppointmentType") &&
       accountPage.includes("Appointment types") &&
+      accountPage.includes("Edit details") &&
+      accountPage.includes("Save appointment type") &&
       accountPage.includes("Minutes") &&
       accountPage.includes("Buffer after") &&
       accountPage.includes("Deposit amount") &&
