@@ -276,6 +276,10 @@ const checks = [
       profilePage.includes('href="/?compose=stories#stories"') &&
       profilePage.includes("recordStoryView.bind(null, story.id)") &&
       profilePage.includes("mediaType={media.media_type}") &&
+      profilePage.includes('data-story-count="views"') &&
+      profilePage.includes('data-story-count="reactions"') &&
+      profilePage.includes("{storyViewCount}") &&
+      profilePage.includes("{storyReactionCount}") &&
       profilePage.includes("toggleStoryReaction") &&
       profilePage.includes("replyToStory") &&
       profilePage.includes('subjectType="story_post"') &&

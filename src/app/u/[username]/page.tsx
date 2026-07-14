@@ -966,16 +966,30 @@ function ProfileStoryCard({
         title="Active story"
       >
         <button className="grid w-full grid-cols-[72px_1fr] items-center gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-2 text-left">
-          {media.media_type === "video" ? (
-            <span className="flex aspect-square items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--foreground)_88%,var(--gold))] text-[var(--background)]">
-              <Video className="size-6" />
-            </span>
-          ) : (
+          <span className="relative block aspect-square overflow-hidden rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--foreground)_88%,var(--gold))]">
             <span
-              className="block aspect-square rounded-md border border-[var(--card-rim)] bg-cover bg-center bg-[color-mix(in_srgb,var(--foreground)_88%,var(--gold))]"
-              style={{ backgroundImage: `url(${mediaSrc})` }}
-            />
-          )}
+              className="absolute left-1 top-1 z-10 rounded-full bg-black/65 px-1.5 py-0.5 text-[10px] font-black leading-none text-white shadow-sm"
+              data-story-count="views"
+            >
+              {storyViewCount}
+            </span>
+            <span
+              className="absolute right-1 top-1 z-10 rounded-full bg-[color-mix(in_srgb,var(--gold)_92%,black)] px-1.5 py-0.5 text-[10px] font-black leading-none text-black shadow-sm"
+              data-story-count="reactions"
+            >
+              {storyReactionCount}
+            </span>
+            {media.media_type === "video" ? (
+              <span className="flex size-full items-center justify-center text-[var(--background)]">
+                <Video className="size-6" />
+              </span>
+            ) : (
+              <span
+                className="block size-full bg-cover bg-center"
+                style={{ backgroundImage: `url(${mediaSrc})` }}
+              />
+            )}
+          </span>
           <span className="min-w-0">
             <span className="block text-sm font-bold">
               {story.caption || "Tap to view story"}
