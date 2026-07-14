@@ -68,6 +68,7 @@ type Notification = {
   profiles: {
     avatar_url: string | null;
     display_name: string;
+    id: string;
     username: string;
   } | null;
 };
@@ -133,6 +134,28 @@ function subjectLabel(type: string) {
   if (type === "license_verification_request") return "Verification";
 
   return type.replaceAll("_", " ");
+}
+
+async function getBlockedProfileIds({
+  supabase,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId?: string | null;
+}) {
+  if (!userId) return new Set<string>();
+
+  const { data } = await supabase
+    .from("user_blocks")
+    .select("blocker_id, blocked_id")
+    .or(`blocker_id.eq.${userId},blocked_id.eq.${userId}`)
+    .returns<{ blocked_id: string; blocker_id: string }[]>();
+
+  return new Set(
+    (data ?? []).map((block) =>
+      block.blocker_id === userId ? block.blocked_id : block.blocker_id,
+    ),
+  );
 }
 
 function notificationHref(notification: Notification) {
@@ -223,12 +246,21 @@ export default async function NotificationsPage({
   const { data: notifications } = await supabase
     .from("notifications")
     .select(
-      "id, actor_id, subject_id, type, subject_type, title, body, href, read_at, created_at, profiles:profiles!notifications_actor_id_fkey(avatar_url, display_name, username)",
+      "id, actor_id, subject_id, type, subject_type, title, body, href, read_at, created_at, profiles:profiles!notifications_actor_id_fkey(id, avatar_url, display_name, username)",
     )
     .eq("recipient_id", claims.sub)
     .order("created_at", { ascending: false })
     .limit(notificationLimit)
     .returns<Notification[]>();
+  const blockedProfileIds = await getBlockedProfileIds({
+    supabase,
+    userId: claims.sub,
+  });
+  const visibleNotifications = (notifications ?? []).filter(
+    (notification) =>
+      !notification.profiles?.id ||
+      !blockedProfileIds.has(notification.profiles.id),
+  );
   const { data: profile } = await supabase
     .from("profiles")
     .select(
@@ -238,7 +270,8 @@ export default async function NotificationsPage({
     .maybeSingle<NotificationProfile>();
 
   const unreadCount =
-    notifications?.filter((notification) => !notification.read_at).length ?? 0;
+    visibleNotifications.filter((notification) => !notification.read_at)
+      .length ?? 0;
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -332,8 +365,8 @@ export default async function NotificationsPage({
         </section>
 
         <section className="divide-y divide-[var(--card-rim)]">
-          {notifications?.length ? (
-            notifications.map((notification) => {
+          {visibleNotifications.length ? (
+            visibleNotifications.map((notification) => {
               const Icon = notificationIcon(notification.type);
               const href = notificationHref(notification);
               const card = (
@@ -461,7 +494,7 @@ export default async function NotificationsPage({
             </div>
           )}
         </section>
-        {notifications?.length === notificationLimit ? (
+        {visibleNotifications.length === notificationLimit ? (
           <div className="border-t border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_92%,transparent)] px-4 py-5 text-center">
             <Link
               className="ttc-surface inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-semibold"

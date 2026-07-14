@@ -190,6 +190,16 @@ const checks = [
       notificationActions.includes('return "/notifications"'),
   },
   {
+    label: "notification center filters blocked actor profiles",
+    ok:
+      notificationPage.includes("async function getBlockedProfileIds") &&
+      notificationPage.includes("const blockedProfileIds = await getBlockedProfileIds") &&
+      notificationPage.includes("const visibleNotifications = (notifications ?? []).filter") &&
+      notificationPage.includes("!blockedProfileIds.has(notification.profiles.id)") &&
+      notificationPage.includes("visibleNotifications.map") &&
+      notificationPage.includes("visibleNotifications.filter"),
+  },
+  {
     label: "DM unread deletion keeps ownership, read-state, and attachment cleanup guards",
     ok:
       messageActions.includes("export async function deleteUnreadMessage") &&
