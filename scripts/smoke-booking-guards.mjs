@@ -374,6 +374,8 @@ const checks = [
       messagesPage.includes("appointment_type_label") &&
       messagesPage.includes("preferred_slot_label") &&
       messagesPage.includes("respondBookingRequest") &&
+      messagesPage.includes("#booking-request") &&
+      messagesPage.includes("Request booking") &&
       messagesPage.includes('action="/api/bookings/checkout"'),
   },
   {

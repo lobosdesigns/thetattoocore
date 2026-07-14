@@ -925,7 +925,31 @@ export default async function MessagesPage({
                       @{selectedConversation.otherProfile?.username ?? "member"}
                     </p>
                   </div>
+                  {selectedConversation.otherProfile &&
+                  ["artist", "studio"].includes(
+                    selectedConversation.otherProfile.account_type,
+                  ) ? (
+                    <Link
+                      className="ml-auto hidden h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-[color-mix(in_srgb,var(--gold)_40%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_14%,var(--paper-warm))] px-3 text-xs font-bold text-[var(--foreground)] sm:inline-flex"
+                      href={`/u/${selectedConversation.otherProfile.username}#booking-request`}
+                    >
+                      <CalendarDays className="size-4" />
+                      Request booking
+                    </Link>
+                  ) : null}
                 </div>
+                {selectedConversation.otherProfile &&
+                ["artist", "studio"].includes(
+                  selectedConversation.otherProfile.account_type,
+                ) ? (
+                  <Link
+                    className="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-[color-mix(in_srgb,var(--gold)_40%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_14%,var(--paper-warm))] px-3 text-xs font-bold text-[var(--foreground)] sm:hidden"
+                    href={`/u/${selectedConversation.otherProfile.username}#booking-request`}
+                  >
+                    <CalendarDays className="size-4" />
+                    Request booking
+                  </Link>
+                ) : null}
               </header>
 
               <BookingCards
