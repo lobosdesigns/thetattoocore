@@ -38,6 +38,12 @@ type RefundedBookingTransition = {
   id: string;
   title: string;
 };
+type RefundProblemBooking = {
+  id: string;
+  payment_status: string;
+  status: string;
+  title: string;
+};
 type AdPaymentTransition = {
   advertiser_id: string;
   id: string;
@@ -819,6 +825,54 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
   revalidatePath("/notifications");
 }
 
+async function recordRefundProblem({
+  paymentIntentId,
+  refundId,
+  status,
+}: {
+  paymentIntentId: string;
+  refundId: string;
+  status: string | null;
+}) {
+  const supabase = createAdminClient();
+
+  if (!supabase) {
+    throw new Error("Missing Supabase service role key for Stripe webhook.");
+  }
+
+  const { data: bookings, error } = await supabase
+    .from("booking_requests")
+    .select("id, title, status, payment_status")
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .returns<RefundProblemBooking[]>();
+
+  if (error) {
+    throw new Error(error.message || "Could not inspect booking refund status.");
+  }
+
+  const auditLogs = (bookings ?? []).map((booking) => ({
+    actor_id: null,
+    event_type: "booking_refund_problem",
+    metadata: {
+      booking_payment_status: booking.payment_status,
+      booking_status: booking.status,
+      payment_intent_id: paymentIntentId,
+      refund_id: refundId,
+      refund_status: status,
+    },
+    summary: `Booking refund needs review: ${booking.title}`.slice(0, 180),
+    target_id: booking.id,
+    target_type: "booking_request",
+  }));
+
+  if (auditLogs.length) {
+    await supabase.from("admin_audit_logs").insert(auditLogs);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/payments");
+}
+
 export async function POST(request: Request) {
   const stripe = createStripeClient();
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -927,6 +981,20 @@ export async function POST(request: Request) {
 
       if (paymentIntentId) {
         await markRefunded(paymentIntentId, charge.amount_refunded >= charge.amount);
+      }
+    }
+
+    if (event.type === "refund.failed") {
+      const refund = event.data.object as Stripe.Refund;
+      const paymentIntentId =
+        typeof refund.payment_intent === "string" ? refund.payment_intent : null;
+
+      if (paymentIntentId) {
+        await recordRefundProblem({
+          paymentIntentId,
+          refundId: refund.id,
+          status: refund.status,
+        });
       }
     }
 

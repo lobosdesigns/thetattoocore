@@ -88,6 +88,9 @@ checks.push({
     stripeWebhook.includes("const signature = request.headers.get(\"stripe-signature\")") &&
     stripeWebhook.includes("Missing payment verification.") &&
     stripeWebhook.includes("constructEventAsync") &&
+    stripeWebhook.includes('event.type === "refund.failed"') &&
+    stripeWebhook.includes("recordRefundProblem") &&
+    stripeWebhook.includes('event_type: "booking_refund_problem"') &&
     stripeWebhook.indexOf("Missing payment verification.") <
       stripeWebhook.indexOf("constructEventAsync"),
 });
