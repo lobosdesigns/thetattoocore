@@ -7,6 +7,7 @@ const mediaInput = readFileSync("src/app/media-input.tsx", "utf8");
 const sensitiveGate = readFileSync("src/app/sensitive-content-gate.tsx", "utf8");
 const signupPage = readFileSync("src/app/signup/page.tsx", "utf8");
 const accountProfileForm = readFileSync("src/app/account/profile-form.tsx", "utf8");
+const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const termsPage = readFileSync("src/app/terms/page.tsx", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
@@ -104,6 +105,21 @@ const checks = [
       mediaInput.includes("Use short MP4/MOV clips for now.") &&
       mediaInput.includes("MP4/MOV preferred") &&
       composer.includes("video/mp4,video/quicktime"),
+  },
+  {
+    label: "shared image uploads expose crop tools before upload",
+    ok:
+      mediaInput.includes('type CropAspect = "original" | "square" | "portrait" | "landscape" | "banner"') &&
+      mediaInput.includes("function cropRectForImage") &&
+      mediaInput.includes("async function cropAndCompressImageFile") &&
+      mediaInput.includes("Edit crop") &&
+      mediaInput.includes("Apply crop") &&
+      mediaInput.includes("Left / right focus") &&
+      mediaInput.includes("Up / down focus") &&
+      mediaInput.includes("const inputRef = useRef<HTMLInputElement>(null)") &&
+      accountProfileForm.includes("<MediaInput") &&
+      productPlan.includes("Image upload flows should let members adjust photos") &&
+      productPlan.includes("Private license/business verification documents should stay unedited evidence uploads"),
   },
   {
     label: "sensitive legacy gate requires login or adult confirmation",

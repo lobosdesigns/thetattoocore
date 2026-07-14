@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ImageIcon, Video } from "lucide-react";
 
 type MediaInputProps = {
@@ -15,12 +15,21 @@ type MediaInputProps = {
 };
 
 type SelectedMedia = {
+  cropApplied: boolean;
   error: string | null;
   file: File;
   mediaType: "image" | "video" | "unknown";
   originalFileSize: number | null;
   previewUrl: string | null;
+  sourceFile: File;
   videoDurationSeconds: number | null;
+};
+type CropAspect = "original" | "square" | "portrait" | "landscape" | "banner";
+type CropSettings = {
+  aspect: CropAspect;
+  focusX: number;
+  focusY: number;
+  zoom: number;
 };
 
 const inputClass =
@@ -35,6 +44,19 @@ const compressionPasses = [
 const imageOptimizerLabel = "Phone photos are resized before upload.";
 const videoUploadLabel =
   "Video upload is capped for now. More video options are coming soon.";
+const defaultCropSettings: CropSettings = {
+  aspect: "original",
+  focusX: 50,
+  focusY: 50,
+  zoom: 1,
+};
+const cropAspects: { label: string; value: CropAspect }[] = [
+  { label: "Original", value: "original" },
+  { label: "Square", value: "square" },
+  { label: "Portrait", value: "portrait" },
+  { label: "Landscape", value: "landscape" },
+  { label: "Banner", value: "banner" },
+];
 
 function formatBytes(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -85,25 +107,75 @@ function replaceInputFile(input: HTMLInputElement, file: File) {
 async function canvasBlobForImage({
   bitmap,
   edge,
+  sourceHeight,
+  sourceWidth,
+  sourceX,
+  sourceY,
   quality,
 }: {
   bitmap: ImageBitmap;
   edge: number;
+  sourceHeight?: number;
+  sourceWidth?: number;
+  sourceX?: number;
+  sourceY?: number;
   quality: number;
 }) {
-  const scale = Math.min(1, edge / Math.max(bitmap.width, bitmap.height));
+  const sx = sourceX ?? 0;
+  const sy = sourceY ?? 0;
+  const sw = sourceWidth ?? bitmap.width;
+  const sh = sourceHeight ?? bitmap.height;
+  const scale = Math.min(1, edge / Math.max(sw, sh));
   const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
-  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  canvas.width = Math.max(1, Math.round(sw * scale));
+  canvas.height = Math.max(1, Math.round(sh * scale));
 
   const context = canvas.getContext("2d");
   if (!context) return null;
 
-  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  context.drawImage(bitmap, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
 
   return new Promise<Blob | null>((resolve) => {
     canvas.toBlob(resolve, "image/webp", quality);
   });
+}
+
+function cropAspectValue(aspect: CropAspect, width: number, height: number) {
+  if (aspect === "square") return 1;
+  if (aspect === "portrait") return 4 / 5;
+  if (aspect === "landscape") return 16 / 9;
+  if (aspect === "banner") return 3;
+
+  return width / height;
+}
+
+function cropRectForImage(bitmap: ImageBitmap, crop: CropSettings) {
+  const targetAspect = cropAspectValue(crop.aspect, bitmap.width, bitmap.height);
+  const sourceAspect = bitmap.width / bitmap.height;
+  let width = bitmap.width;
+  let height = bitmap.height;
+
+  if (sourceAspect > targetAspect) {
+    width = height * targetAspect;
+  } else {
+    height = width / targetAspect;
+  }
+
+  const zoom = Math.min(2.5, Math.max(1, crop.zoom));
+  width = Math.max(1, width / zoom);
+  height = Math.max(1, height / zoom);
+
+  const maxX = Math.max(0, bitmap.width - width);
+  const maxY = Math.max(0, bitmap.height - height);
+  const sourceX = maxX * (Math.min(100, Math.max(0, crop.focusX)) / 100);
+  const sourceY = maxY * (Math.min(100, Math.max(0, crop.focusY)) / 100);
+
+  return {
+    sourceHeight: height,
+    sourceWidth: width,
+    sourceX,
+    sourceY,
+  };
 }
 
 async function compressImageFile(file: File, targetBytes: number) {
@@ -135,6 +207,34 @@ async function compressImageFile(file: File, targetBytes: number) {
   if (!bestBlob || bestBlob.size >= file.size) return file;
 
   return fileFromBlob(bestBlob, file);
+}
+
+async function cropAndCompressImageFile(
+  file: File,
+  targetBytes: number,
+  crop: CropSettings,
+) {
+  if (file.type === "image/gif") return file;
+  if (!file.type.startsWith("image/")) return file;
+  if (crop.aspect === "original" && crop.zoom === 1 && crop.focusX === 50 && crop.focusY === 50) {
+    return compressImageFile(file, targetBytes);
+  }
+
+  const bitmap = await createImageBitmap(file);
+  const cropRect = cropRectForImage(bitmap, crop);
+  let bestBlob: Blob | null = null;
+
+  for (const pass of compressionPasses) {
+    const blob = await canvasBlobForImage({ bitmap, ...cropRect, ...pass });
+
+    if (!blob) continue;
+    if (!bestBlob || blob.size < bestBlob.size) bestBlob = blob;
+    if (blob.size <= targetBytes) break;
+  }
+
+  bitmap.close();
+
+  return bestBlob ? fileFromBlob(bestBlob, file) : compressImageFile(file, targetBytes);
 }
 
 async function videoDuration(file: File) {
@@ -171,6 +271,9 @@ export function MediaInput({
 }: MediaInputProps) {
   const [selected, setSelected] = useState<SelectedMedia | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [cropSettings, setCropSettings] =
+    useState<CropSettings>(defaultCropSettings);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const acceptedTypes = useMemo(
     () => new Set(accept.split(",").map((item) => item.trim()).filter(Boolean)),
@@ -192,6 +295,7 @@ export function MediaInput({
     if (!file) {
       input.setCustomValidity("");
       setSelected(null);
+      setCropSettings(defaultCropSettings);
       return;
     }
 
@@ -200,6 +304,7 @@ export function MediaInput({
       originalMediaType === "video" ? maxVideoBytes : maxImageBytes;
 
     setIsOptimizing(file.type.startsWith("image/") && file.type !== "image/gif");
+    setCropSettings(defaultCropSettings);
 
     const optimizedFile = await compressImageFile(file, originalMaxBytes).catch(
       () => file,
@@ -234,14 +339,51 @@ export function MediaInput({
     input.setCustomValidity(error ?? "");
 
     setSelected({
+      cropApplied: false,
       error,
       file: optimizedFile,
       mediaType,
       originalFileSize: optimizedFile.size < file.size ? file.size : null,
       previewUrl:
         mediaType === "image" ? URL.createObjectURL(optimizedFile) : null,
+      sourceFile: file,
       videoDurationSeconds: durationSeconds,
     });
+  }
+
+  async function applyCrop() {
+    const input = inputRef.current;
+
+    if (!selected || selected.mediaType !== "image" || !input) return;
+
+    setIsOptimizing(true);
+
+    const croppedFile = await cropAndCompressImageFile(
+      selected.sourceFile,
+      maxImageBytes,
+      cropSettings,
+    ).catch(() => selected.file);
+
+    replaceInputFile(input, croppedFile);
+    if (selected.previewUrl) URL.revokeObjectURL(selected.previewUrl);
+    setIsOptimizing(false);
+    setSelected({
+      ...selected,
+      cropApplied: true,
+      error:
+        croppedFile.size > maxImageBytes
+          ? `Image limit is ${formatBytes(maxImageBytes)}.`
+          : null,
+      file: croppedFile,
+      originalFileSize:
+        croppedFile.size < selected.sourceFile.size ? selected.sourceFile.size : null,
+      previewUrl: URL.createObjectURL(croppedFile),
+    });
+    input.setCustomValidity(
+      croppedFile.size > maxImageBytes
+        ? `Image limit is ${formatBytes(maxImageBytes)}.`
+        : "",
+    );
   }
 
   const isVideo = selected?.mediaType === "video";
@@ -264,6 +406,7 @@ export function MediaInput({
         className={inputClass}
         name={name}
         onChange={onChange}
+        ref={inputRef}
         required={required}
         type="file"
       />
@@ -332,6 +475,87 @@ export function MediaInput({
                   Video will upload as-is for now. Keep it short, clear, and
                   under the cap.
                 </p>
+              ) : null}
+              {selected.mediaType === "image" && selected.file.type !== "image/gif" ? (
+                <div className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_86%,transparent)] p-3">
+                  <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
+                    Edit crop
+                  </p>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                    <label className="grid gap-1 text-xs font-semibold">
+                      Shape
+                      <select
+                        className="h-9 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-xs text-[var(--foreground)]"
+                        onChange={(event) =>
+                          setCropSettings((current) => ({
+                            ...current,
+                            aspect: event.target.value as CropAspect,
+                          }))
+                        }
+                        value={cropSettings.aspect}
+                      >
+                        {cropAspects.map((item) => (
+                          <option key={item.value} value={item.value}>
+                            {item.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="grid gap-1 text-xs font-semibold">
+                      Zoom
+                      <input
+                        max="2.5"
+                        min="1"
+                        onChange={(event) =>
+                          setCropSettings((current) => ({
+                            ...current,
+                            zoom: Number(event.target.value),
+                          }))
+                        }
+                        step="0.05"
+                        type="range"
+                        value={cropSettings.zoom}
+                      />
+                    </label>
+                    <label className="grid gap-1 text-xs font-semibold">
+                      Left / right focus
+                      <input
+                        max="100"
+                        min="0"
+                        onChange={(event) =>
+                          setCropSettings((current) => ({
+                            ...current,
+                            focusX: Number(event.target.value),
+                          }))
+                        }
+                        type="range"
+                        value={cropSettings.focusX}
+                      />
+                    </label>
+                    <label className="grid gap-1 text-xs font-semibold">
+                      Up / down focus
+                      <input
+                        max="100"
+                        min="0"
+                        onChange={(event) =>
+                          setCropSettings((current) => ({
+                            ...current,
+                            focusY: Number(event.target.value),
+                          }))
+                        }
+                        type="range"
+                        value={cropSettings.focusY}
+                      />
+                    </label>
+                  </div>
+                  <button
+                    className="mt-3 h-9 rounded-md bg-[var(--foreground)] px-4 text-xs font-semibold text-[var(--background)]"
+                    onClick={applyCrop}
+                    type="button"
+                  >
+                    {selected.cropApplied ? "Apply crop again" : "Apply crop"}
+                  </button>
+                </div>
               ) : null}
               {selected.error ? (
                 <p className="mt-2 text-xs font-semibold">{selected.error}</p>
