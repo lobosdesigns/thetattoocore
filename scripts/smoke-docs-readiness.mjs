@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 
 const docs = {
   "docs/APP_STORE_READINESS.md": readFileSync("docs/APP_STORE_READINESS.md", "utf8"),
+  "docs/PRODUCT_PLAN.md": readFileSync("docs/PRODUCT_PLAN.md", "utf8"),
   "docs/NATIVE_WRAPPER_PREP.md": readFileSync("docs/NATIVE_WRAPPER_PREP.md", "utf8"),
   "docs/MOBILE_APP_SUBMISSION_RUNBOOK.md": readFileSync(
     "docs/MOBILE_APP_SUBMISSION_RUNBOOK.md",
@@ -189,6 +190,20 @@ const checks = [
     ok:
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("4U, Stories, Gossip") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("booking/deposit paths"),
+  },
+  {
+    label: "product plan uses plain push and translation roadmap wording",
+    ok:
+      docs["docs/PRODUCT_PLAN.md"].includes("installed app push third") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("mobile app push for iOS and Android apps") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("vetted translation service") &&
+      !docs["docs/PRODUCT_PLAN.md"].includes("PWA browser push") &&
+      !docs["docs/PRODUCT_PLAN.md"].includes("installed-PWA") &&
+      !docs["docs/PRODUCT_PLAN.md"].includes("PWA web push") &&
+      !docs["docs/PRODUCT_PLAN.md"].includes("APNs") &&
+      !docs["docs/PRODUCT_PLAN.md"].includes("FCM") &&
+      !docs["docs/PRODUCT_PLAN.md"].includes("Firebase Cloud Messaging") &&
+      !docs["docs/PRODUCT_PLAN.md"].includes("provider-backed"),
   },
   {
     label: "payment readiness doc keeps real-money gates explicit",

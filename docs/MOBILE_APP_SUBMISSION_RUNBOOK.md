@@ -38,7 +38,7 @@ Start with a thin native wrapper only after core web QA is stable:
 ## Push Notifications
 
 - Web push is prepared at the service-worker display/click level, with signed-in browser subscription storage started. Production push keys and delivery jobs still need to be enabled before relying on web push.
-- Native push comes later through APNs for iOS and FCM for Android.
+- Mobile app push comes later after separate iOS and Android delivery setup.
 - Store device tokens separately from profile preferences.
 - Respect quiet hours, category preferences, and per-device opt-out before sending native push.
 
