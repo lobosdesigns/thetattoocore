@@ -175,6 +175,36 @@ const checks = [
     locationIncludes: ["Sign%20in%20to%20buy%20merch"],
     redirect: "manual",
   },
+  {
+    body: JSON.stringify({
+      endpoint: "https://example.com/push",
+      keys: { auth: "1234567890", p256dh: "123456789012345678901" },
+    }),
+    method: "POST",
+    path: "/api/push/subscriptions",
+    requestHeaders: { "content-type": "application/json" },
+    status: [401],
+    includes: ['"Sign in required."'],
+    headers: false,
+  },
+  {
+    body: JSON.stringify({ endpoint: "https://example.com/push" }),
+    method: "DELETE",
+    path: "/api/push/subscriptions",
+    requestHeaders: { "content-type": "application/json" },
+    status: [401],
+    includes: ['"Sign in required."'],
+    headers: false,
+  },
+  {
+    body: JSON.stringify({ campaign_id: "bad", placement: "evil" }),
+    method: "POST",
+    path: "/api/ad-events",
+    requestHeaders: { "content-type": "application/json" },
+    status: [400],
+    includes: ['"Invalid event."'],
+    headers: false,
+  },
   { path: "/messages", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fmessages"], redirect: "manual" },
   { path: "/notifications", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fnotifications"], redirect: "manual" },
   { path: "/saved", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fsaved"], redirect: "manual" },
@@ -393,7 +423,11 @@ for (const check of checks) {
     url,
     {
       body: check.body,
-      headers: check.method === "POST" ? { "content-type": "application/x-www-form-urlencoded" } : undefined,
+      headers:
+        check.requestHeaders ||
+        (check.method === "POST"
+          ? { "content-type": "application/x-www-form-urlencoded" }
+          : undefined),
       method: check.method || "GET",
       redirect: check.redirect || "follow",
     },

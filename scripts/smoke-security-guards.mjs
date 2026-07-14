@@ -195,6 +195,16 @@ const checks = [
       publicSmoke.includes("Sign%20in%20to%20buy%20merch"),
   },
   {
+    label: "public smoke covers unauthenticated push and invalid ad event APIs",
+    ok:
+      publicSmoke.includes('path: "/api/push/subscriptions"') &&
+      publicSmoke.includes('method: "DELETE"') &&
+      publicSmoke.includes('method: "POST"') &&
+      publicSmoke.includes('"Sign in required."') &&
+      publicSmoke.includes('path: "/api/ad-events"') &&
+      publicSmoke.includes('"Invalid event."'),
+  },
+  {
     label: "support deletion action routes through safe sign-in return",
     ok:
       supportPage.includes('href: "/login?return_to=%2Faccount%23data-settings"') &&
