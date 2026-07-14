@@ -266,7 +266,7 @@ export async function acceptAdultTerms(formData: FormData) {
     redirect("/login");
   }
 
-  const returnPath = cleanText(formData.get("return_path"), 160) || "/";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/");
   const returnHash = cleanText(formData.get("return_hash"), 40);
   const now = new Date().toISOString();
   const { data: profile, error } = await supabase
@@ -292,7 +292,7 @@ export async function acceptAdultTerms(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/account");
-  revalidatePath(returnPath);
+  revalidateReturnPath(returnPath);
   redirect(
     redirectWithMessage({
       hash: returnHash,
@@ -1042,7 +1042,7 @@ export async function replyToStory(formData: FormData) {
 export async function createBookingRequest(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const artistId = cleanId(formData.get("artist_id"));
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/");
   const title = cleanText(formData.get("title"), 120);
   const body = cleanText(formData.get("body"), 2000);
   const placement = cleanText(formData.get("placement"), 120);
@@ -1200,7 +1200,7 @@ export async function createBookingRequest(formData: FormData) {
     });
   }
 
-  revalidatePath(returnPath);
+  revalidateReturnPath(returnPath);
   revalidatePath("/messages");
   revalidatePath("/notifications");
   redirect(
@@ -1700,7 +1700,7 @@ export async function createContentReport(formData: FormData) {
   const subjectId = cleanId(formData.get("subject_id"));
   const reason = cleanReportReason(formData.get("reason"));
   const details = cleanText(formData.get("details"), 500);
-  const returnPath = cleanText(formData.get("return_path"), 200) || "/";
+  const returnPath = cleanReturnPath(formData.get("return_path"), "/");
   const returnHash = cleanText(formData.get("return_hash"), 80);
   if (!REPORT_SUBJECT_TYPES.has(subjectType) || !subjectId) {
     reportRedirect({
@@ -2304,7 +2304,7 @@ export async function toggleSavedItem(formData: FormData) {
   }
 
   revalidatePath("/");
-  revalidatePath(returnPath);
+  revalidateReturnPath(returnPath);
   redirect(
     redirectWithMessage({
       hash: returnHash,

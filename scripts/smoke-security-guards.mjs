@@ -6,6 +6,7 @@ const adClickRoute = readFileSync("src/app/api/ad-click/route.ts", "utf8");
 const loginPage = readFileSync("src/app/login/page.tsx", "utf8");
 const signupPage = readFileSync("src/app/signup/page.tsx", "utf8");
 const notificationActions = readFileSync("src/app/notifications/actions.ts", "utf8");
+const mainActions = readFileSync("src/app/actions.ts", "utf8");
 const messageActions = readFileSync("src/app/messages/actions.ts", "utf8");
 const messageThread = readFileSync("src/app/messages/message-thread.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
@@ -245,6 +246,16 @@ const checks = [
     ok:
       urls.includes('["http:", "https:"].includes(url.protocol)') &&
       urls.includes("return null"),
+  },
+  {
+    label: "server actions do not revalidate raw return paths",
+    ok:
+      mainActions.includes("function cleanReturnPath") &&
+      mainActions.includes("function revalidateReturnPath") &&
+      !mainActions.includes("revalidatePath(returnPath)") &&
+      !accountActions.includes("revalidatePath(returnPath)") &&
+      !messageActions.includes("revalidatePath(returnPath)") &&
+      !notificationActions.includes("revalidatePath(returnPath)"),
   },
   {
     label: "ad click redirects only to valid paid http or https campaign targets",
