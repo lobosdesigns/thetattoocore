@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 const adCheckout = readFileSync("src/app/api/ads/checkout/route.ts", "utf8");
 const bookingCheckout = readFileSync("src/app/api/bookings/checkout/route.ts", "utf8");
 const merchCheckout = readFileSync("src/app/api/merch/checkout/route.ts", "utf8");
+const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8");
 const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const merchCheckoutSuccessPage = readFileSync("src/app/merch/checkout/success/page.tsx", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
@@ -79,6 +80,15 @@ checks.push({
     bookingCheckout.includes("Booking checkout is almost ready. Payment setup is still being finished.") &&
     merchCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&
     merchCheckout.includes("Checkout is almost ready. Payment setup is still being finished."),
+});
+checks.push({
+  label: "payment webhook rejects unsigned events before processing",
+  ok:
+    stripeWebhook.includes("const signature = request.headers.get(\"stripe-signature\")") &&
+    stripeWebhook.includes("Missing payment verification.") &&
+    stripeWebhook.includes("constructEventAsync") &&
+    stripeWebhook.indexOf("Missing payment verification.") <
+      stripeWebhook.indexOf("constructEventAsync"),
 });
 checks.push({
   label: "booking checkout preserves only safe internal return paths",

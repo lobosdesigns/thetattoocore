@@ -218,6 +218,15 @@ const checks = [
     redirect: "manual",
   },
   {
+    body: JSON.stringify({ id: "evt_unsigned_smoke" }),
+    method: "POST",
+    path: "/api/stripe/webhook",
+    requestHeaders: { "content-type": "application/json" },
+    status: [400],
+    includes: ['"Missing payment verification."'],
+    headers: false,
+  },
+  {
     body: JSON.stringify({ recipientEmail: "support@thetattoocore.com" }),
     method: "POST",
     path: "/api/admin/mail/test",
