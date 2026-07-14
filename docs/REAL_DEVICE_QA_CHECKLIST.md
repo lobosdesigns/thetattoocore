@@ -4,6 +4,8 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 
 ## Setup
 
+- Run `npm run smoke:public` against production and confirm public routes, private redirects, public fallback detail pages, metadata, and safety-copy checks pass.
+- Run `npm run smoke:mobile` against production and confirm the 390px mobile browser checks pass for auth, support/legal, search/profile, missing-detail fallback, and checkout-status routes before manual device testing.
 - Confirm the build points at `https://thetattoocore.com/login`.
 - Confirm support, privacy, and terms links open from logged-out and logged-in surfaces.
 - Confirm public app copy uses `support@thetattoocore.com` or final company contact details, not personal owner contact data.
