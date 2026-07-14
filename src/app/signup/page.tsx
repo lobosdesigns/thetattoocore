@@ -26,9 +26,16 @@ export const metadata: Metadata = {
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string }>;
+  searchParams: Promise<{ message?: string; return_to?: string }>;
 }) {
   const params = await searchParams;
+  const returnTo =
+    params.return_to?.startsWith("/") && !params.return_to.startsWith("//")
+      ? params.return_to
+      : "";
+  const loginHref = returnTo
+    ? `/login?return_to=${encodeURIComponent(returnTo)}`
+    : "/login";
 
   return (
     <main className="ttc-page min-h-screen px-4 py-10">
@@ -95,6 +102,9 @@ export default async function SignupPage({
 
             <div className="space-y-5">
               <form action="/auth/signup" className="space-y-4" method="post">
+                {returnTo ? (
+                  <input name="return_to" type="hidden" value={returnTo} />
+                ) : null}
                 <label className="block">
                   <span className="text-sm font-medium">Email</span>
                   <input
@@ -142,6 +152,9 @@ export default async function SignupPage({
                 method="post"
               >
                 <input name="redirect_to" type="hidden" value="/signup" />
+                {returnTo ? (
+                  <input name="return_to" type="hidden" value={returnTo} />
+                ) : null}
                 <p className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
                   No confirmation email?
                 </p>
@@ -181,7 +194,7 @@ export default async function SignupPage({
 
               <Link
                 className="block text-center text-sm font-semibold text-[var(--muted-strong)]"
-                href="/login"
+                href={loginHref}
               >
                 Already have an account? Sign in
               </Link>

@@ -275,6 +275,22 @@ const checks = [
     includes: ['name="robots" content="noindex, nofollow"', 'name="return_to"', 'value="/messages"'],
   },
   {
+    path: "/signup?return_to=%2Fp%2Fnot-a-real-post",
+    status: [200],
+    includes: [
+      'name="robots" content="noindex, nofollow"',
+      'name="return_to"',
+      'value="/p/not-a-real-post"',
+      "/login?return_to=%2Fp%2Fnot-a-real-post",
+    ],
+  },
+  {
+    path: "/signup?return_to=%2F%2Fevil.example",
+    status: [200],
+    includes: ['name="robots" content="noindex, nofollow"', "Create account"],
+    excludes: ['name="return_to"', 'value="//evil.example"'],
+  },
+  {
     path: "/login?return_to=%2F%2Fevil.example",
     status: [200],
     includes: ['name="robots" content="noindex, nofollow"', "Sign in"],

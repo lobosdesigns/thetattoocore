@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 
 const authLogin = readFileSync("src/app/auth/login/route.ts", "utf8");
+const authSignup = readFileSync("src/app/auth/signup/route.ts", "utf8");
 const authConfirm = readFileSync("src/app/auth/confirm/route.ts", "utf8");
 const adClickRoute = readFileSync("src/app/api/ad-click/route.ts", "utf8");
 const loginPage = readFileSync("src/app/login/page.tsx", "utf8");
@@ -125,11 +126,25 @@ const checks = [
   {
     label: "signup form is separated from login page",
     ok:
-      loginPage.includes('href="/signup"') &&
+      loginPage.includes("signupHref") &&
       !loginPage.includes('action="/auth/signup"') &&
       !loginPage.includes('name="age_confirmed"') &&
       signupPage.includes('action="/auth/signup"') &&
       signupPage.includes('name="age_confirmed"'),
+  },
+  {
+    label: "signup confirmation preserves only safe internal return paths",
+    ok:
+      signupPage.includes('params.return_to?.startsWith("/")') &&
+      signupPage.includes("!params.return_to.startsWith(\"//\")") &&
+      signupPage.includes('name="return_to"') &&
+      authSignup.includes("function cleanReturnTo") &&
+      authSignup.includes("text.startsWith(\"//\")") &&
+      authSignup.includes("emailRedirectTo") &&
+      authSignup.includes("encodeURIComponent(returnTo)") &&
+      signupPage.includes("loginHref") &&
+      authConfirm.includes("next?.startsWith(\"/\")") &&
+      authConfirm.includes("!next.startsWith(\"//\")"),
   },
   {
     label: "auth confirm rejects protocol-relative next paths",
@@ -194,6 +209,8 @@ const checks = [
     label: "public smoke covers safe and unsafe login return paths",
     ok:
       publicSmoke.includes("/login?return_to=%2Fmessages") &&
+      publicSmoke.includes("/signup?return_to=%2Fp%2Fnot-a-real-post") &&
+      publicSmoke.includes("/signup?return_to=%2F%2Fevil.example") &&
       publicSmoke.includes("/login?return_to=%2F%2Fevil.example") &&
       publicSmoke.includes("excludes"),
   },

@@ -2,9 +2,20 @@ import { NextResponse } from "next/server";
 import { siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 
-function signupRedirect(request: Request, message: string) {
+function cleanReturnTo(value: FormDataEntryValue | null) {
+  const text = String(value ?? "").trim();
+
+  if (!text.startsWith("/") || text.startsWith("//")) return "/account";
+
+  return text;
+}
+
+function signupRedirect(request: Request, message: string, returnTo = "/account") {
   const url = new URL("/signup", request.url);
   url.searchParams.set("message", message);
+  if (returnTo !== "/account") {
+    url.searchParams.set("return_to", returnTo);
+  }
 
   return NextResponse.redirect(url);
 }
@@ -17,15 +28,21 @@ export async function POST(request: Request) {
     .toLowerCase();
   const password = String(formData.get("password") ?? "");
   const ageConfirmed = formData.get("age_confirmed") === "on";
+  const returnTo = cleanReturnTo(formData.get("return_to"));
 
   if (!email || !password) {
-    return signupRedirect(request, "Enter an email and password to create an account.");
+    return signupRedirect(
+      request,
+      "Enter an email and password to create an account.",
+      returnTo,
+    );
   }
 
   if (!ageConfirmed) {
     return signupRedirect(
       request,
       "You must confirm you are 18 or older to create an account.",
+      returnTo,
     );
   }
 
@@ -33,16 +50,21 @@ export async function POST(request: Request) {
     email,
     password,
     options: {
-      emailRedirectTo: `${siteUrl}/auth/confirm`,
+      emailRedirectTo: `${siteUrl}/auth/confirm?next=${encodeURIComponent(returnTo)}`,
     },
   });
 
   if (error) {
-    return signupRedirect(request, error.message || "Could not create account.");
+    return signupRedirect(
+      request,
+      error.message || "Could not create account.",
+      returnTo,
+    );
   }
 
   return signupRedirect(
     request,
     "Signup request sent. Check inbox and junk for the confirmation email.",
+    returnTo,
   );
 }

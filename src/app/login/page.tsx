@@ -33,6 +33,9 @@ export default async function LoginPage({
     params.return_to?.startsWith("/") && !params.return_to.startsWith("//")
       ? params.return_to
       : "";
+  const signupHref = returnTo
+    ? `/signup?return_to=${encodeURIComponent(returnTo)}`
+    : "/signup";
 
   return (
     <main className="ttc-page min-h-screen px-4 py-10">
@@ -140,7 +143,7 @@ export default async function LoginPage({
                 </p>
                 <Link
                   className="mt-3 inline-flex h-10 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--brand-gold)_18%,var(--paper-warm))] px-4 text-sm font-semibold text-[var(--foreground)]"
-                  href="/signup"
+                  href={signupHref}
                 >
                   Create new account
                 </Link>
