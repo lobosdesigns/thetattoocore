@@ -112,6 +112,9 @@ const publicRoadmapSnippets = [
   "planned ad system",
   "planned Merch",
   "Translation planned",
+  "production purchases still need",
+  "If translation is added",
+  "should use hosted checkout",
   "provider-backed",
   "APNs",
   "FCM",
@@ -405,8 +408,8 @@ const checks = [
     ok:
       privacyPage.includes("Account And Profile Data") &&
       privacyPage.includes("Commerce And Payments") &&
-      privacyPage.includes("hosted checkout flows") &&
-      privacyPage.includes("should not collect raw payment or payout credentials") &&
+      privacyPage.includes("hosted checkout pages") &&
+      privacyPage.includes("does not collect raw payment or payout credentials") &&
       privacyPage.includes("Retention And Review") &&
       privacyPage.includes("verification documents"),
   },

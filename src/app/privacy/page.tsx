@@ -37,7 +37,7 @@ const sections = [
   },
   {
     body:
-      "Merch, ads, and booking deposits can create checkout, order, receipt, fulfillment, refund, dispute, and support records. Checkout is limited during launch, and production purchases still need final seller approval, tax, shipping, refunds, fulfillment, payment rules, and buyer privacy notices. TheTattooCore should use hosted checkout flows and should not collect raw payment or payout credentials in member forms.",
+      "Merch, ads, and booking deposits can create checkout, order, receipt, fulfillment, refund, dispute, and support records. Checkout is limited during launch while seller approval, tax, shipping, fulfillment, payment, and buyer notice rules are reviewed. TheTattooCore uses hosted checkout pages where available and does not collect raw payment or payout credentials in member forms.",
     title: "Commerce And Payments",
   },
   {
@@ -47,7 +47,7 @@ const sections = [
   },
   {
     body:
-      "Language settings start as a manual account preference for page language signals and discovery context. If translation is added, post translation should preserve the original text and clearly show when translated text is being shown.",
+      "Language settings start as a manual account preference for page language signals and discovery context. Posts stay tied to their original text unless a translation view clearly labels translated text and keeps the original available.",
     title: "Language And Translation",
   },
   {

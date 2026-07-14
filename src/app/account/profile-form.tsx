@@ -410,8 +410,8 @@ export function ProfileForm({
             </p>
             <p>
               <span className="block font-semibold">Post translation</span>
-              Original text is shown by default. If translation is added, the
-              original should stay available.
+              Original text is shown by default. Translated views should stay
+              clearly labeled with the original available.
             </p>
             <p>
               <span className="block font-semibold">Discovery</span>
