@@ -1381,6 +1381,81 @@ export async function cancelAcceptedBookingAsArtist(formData: FormData) {
   redirect(bookingRedirectPath(formData, "Accepted booking cancelled."));
 }
 
+export async function requestBookingRefundReview(formData: FormData) {
+  const bookingId = cleanText(formData.get("booking_id"), 80);
+  const reason = cleanText(formData.get("refund_reason"), 500);
+
+  if (!bookingId) {
+    redirect(bookingPath("Choose a booking request first."));
+  }
+
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+
+  if (!claims?.sub) {
+    redirect("/login?return_to=%2Faccount%23booking-settings");
+  }
+
+  const { data: booking } = await supabase
+    .from("booking_requests")
+    .select("id, artist_id, client_id, title, status, payment_status, stripe_payment_intent_id")
+    .eq("id", bookingId)
+    .maybeSingle<{
+      artist_id: string;
+      client_id: string;
+      id: string;
+      payment_status: string;
+      status: string;
+      stripe_payment_intent_id: string | null;
+      title: string;
+    }>();
+
+  if (!booking || ![booking.artist_id, booking.client_id].includes(claims.sub)) {
+    redirect(bookingPath("That booking request is not available."));
+  }
+
+  if (
+    booking.status !== "deposit_paid" ||
+    booking.payment_status !== "paid" ||
+    !booking.stripe_payment_intent_id
+  ) {
+    redirect(bookingPath("Only paid booking deposits can request refund review."));
+  }
+
+  const admin = createAdminClient();
+
+  if (!admin) {
+    redirect(bookingPath("Refund review requests need owner tools enabled first."));
+  }
+
+  const { error } = await admin.from("admin_audit_logs").insert({
+    actor_id: claims.sub,
+    event_type: "booking_refund_review_requested",
+    metadata: {
+      payment_intent_id: booking.stripe_payment_intent_id,
+      reason: reason || null,
+      requester_role: booking.client_id === claims.sub ? "client" : "artist",
+    },
+    summary: `Booking refund review requested: ${booking.title}`.slice(0, 180),
+    target_id: booking.id,
+    target_type: "booking_request",
+  });
+
+  if (error) {
+    redirect(bookingPath(error.message || "Could not request refund review."));
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/admin/payments");
+  redirect(
+    bookingRedirectPath(
+      formData,
+      "Booking refund review requested. An admin will review it before any refund is sent.",
+    ),
+  );
+}
+
 export async function createBookingAppointmentType(formData: FormData) {
   const { profile, supabase } = await requireBookingManager();
   const name = cleanText(formData.get("appointment_name"), 80);

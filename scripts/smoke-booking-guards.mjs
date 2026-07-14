@@ -343,6 +343,19 @@ const checks = [
       messagesPage.includes("canCancelAsArtist"),
   },
   {
+    label: "paid booking deposits can request admin refund review",
+    ok:
+      accountActions.includes("export async function requestBookingRefundReview") &&
+      accountActions.includes('event_type: "booking_refund_review_requested"') &&
+      accountActions.includes("Only paid booking deposits can request refund review.") &&
+      accountActions.includes("stripe_payment_intent_id") &&
+      accountActions.includes("requester_role") &&
+      accountPage.includes("requestBookingRefundReview") &&
+      accountPage.includes("Request refund review") &&
+      messagesPage.includes("requestBookingRefundReview") &&
+      messagesPage.includes("Request refund review"),
+  },
+  {
     label: "accepted booking deposits use guarded Stripe checkout",
     ok:
       accountPage.includes('action="/api/bookings/checkout"') &&

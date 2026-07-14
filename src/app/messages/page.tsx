@@ -24,6 +24,7 @@ import {
 import {
   cancelAcceptedBookingAsArtist,
   cancelBookingRequest,
+  requestBookingRefundReview,
   respondBookingRequest,
 } from "@/app/account/actions";
 import { MessageThread } from "./message-thread";
@@ -417,6 +418,30 @@ function BookingCards({
                 >
                   Add to calendar
                 </Link>
+              ) : null}
+              {booking.status === "deposit_paid" &&
+              booking.payment_status === "paid" ? (
+                <details className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3">
+                  <summary className="cursor-pointer list-none text-xs font-bold">
+                    Request refund review
+                  </summary>
+                  <form action={requestBookingRefundReview} className="mt-3 grid gap-2">
+                    <input name="booking_id" type="hidden" value={booking.id} />
+                    <input name="return_to" type="hidden" value={returnPath} />
+                    <textarea
+                      className="min-h-20 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                      maxLength={500}
+                      name="refund_reason"
+                      placeholder="Reason for admin review"
+                    />
+                    <PendingSubmitButton
+                      className="flex h-10 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)] sm:w-fit"
+                      pendingLabel="Requesting"
+                    >
+                      Send review request
+                    </PendingSubmitButton>
+                  </form>
+                </details>
               ) : null}
               {canCancel ? (
                 <form action={cancelBookingRequest} className="mt-3">

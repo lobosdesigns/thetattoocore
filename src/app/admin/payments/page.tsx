@@ -96,6 +96,7 @@ const paymentEventTypes = [
 const paymentAuditTypes = [
   "reset_stale_booking_deposit_checkouts",
   "refund_booking_deposit_requested",
+  "booking_refund_review_requested",
   "booking_refund_problem",
   "payment_disputes",
   "merch_payment_dispute",
@@ -273,6 +274,9 @@ function auditLabel(value: string) {
   }
   if (value === "refund_booking_deposit_requested") {
     return "Booking refund requested";
+  }
+  if (value === "booking_refund_review_requested") {
+    return "Booking refund review requested";
   }
   if (value === "booking_refund_problem") return "Booking refund needs review";
   if (value === "payment_disputes") return "All payment disputes";

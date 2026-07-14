@@ -269,6 +269,7 @@ checks.push({
     adminPaymentsPage.includes("Payment audit") &&
     adminPaymentsPage.includes("paymentAuditLogs") &&
     adminPaymentsPage.includes("paymentDisputeAuditCount") &&
+    adminPaymentsPage.includes("booking_refund_review_requested") &&
     adminPaymentsPage.includes("booking_refund_problem") &&
     adminPaymentsPage.includes("payment_disputes") &&
     adminPaymentsPage.includes("merch_payment_dispute") &&

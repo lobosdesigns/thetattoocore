@@ -12,6 +12,7 @@ import {
   deleteBookingSlot,
   markMerchSaleFulfilled,
   requestAccountDeletion,
+  requestBookingRefundReview,
   respondBookingRequest,
   submitAdCampaign,
   submitLicenseVerification,
@@ -1793,6 +1794,29 @@ export default async function AccountPage({
                             Add to calendar
                           </Link>
                         ) : null}
+                        {booking.status === "deposit_paid" &&
+                        booking.payment_status === "paid" ? (
+                          <details className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3">
+                            <summary className="cursor-pointer list-none text-xs font-bold">
+                              Request refund review
+                            </summary>
+                            <form action={requestBookingRefundReview} className="mt-3 grid gap-2">
+                              <input name="booking_id" type="hidden" value={booking.id} />
+                              <textarea
+                                className="min-h-20 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                                maxLength={500}
+                                name="refund_reason"
+                                placeholder="Reason for admin review"
+                              />
+                              <PendingSubmitButton
+                                className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)] sm:w-fit"
+                                pendingLabel="Requesting"
+                              >
+                                Send review request
+                              </PendingSubmitButton>
+                            </form>
+                          </details>
+                        ) : null}
                         {canCancelAcceptedBooking ? (
                           <form action={cancelAcceptedBookingAsArtist} className="mt-3">
                             <input name="booking_id" type="hidden" value={booking.id} />
@@ -1902,6 +1926,29 @@ export default async function AccountPage({
                         >
                           Add to calendar
                         </Link>
+                      ) : null}
+                      {booking.status === "deposit_paid" &&
+                      booking.payment_status === "paid" ? (
+                        <details className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3">
+                          <summary className="cursor-pointer list-none text-xs font-bold">
+                            Request refund review
+                          </summary>
+                          <form action={requestBookingRefundReview} className="mt-3 grid gap-2">
+                            <input name="booking_id" type="hidden" value={booking.id} />
+                            <textarea
+                              className="min-h-20 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                              maxLength={500}
+                              name="refund_reason"
+                              placeholder="Reason for admin review"
+                            />
+                            <PendingSubmitButton
+                              className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)] sm:w-fit"
+                              pendingLabel="Requesting"
+                            >
+                              Send review request
+                            </PendingSubmitButton>
+                          </form>
+                        </details>
                       ) : null}
                       {booking.status === "accepted" &&
                       booking.payment_status !== "paid" &&
