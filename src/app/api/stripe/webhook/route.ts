@@ -891,14 +891,28 @@ async function recordRefundProblem({
   revalidatePath("/admin/payments");
 }
 
-function disputePaymentIntentId(dispute: Stripe.Dispute) {
+function disputeChargeId(dispute: Stripe.Dispute) {
+  const charge = dispute.charge;
+
+  if (typeof charge === "string") return charge;
+  return charge?.id ?? null;
+}
+
+async function disputePaymentIntentId(dispute: Stripe.Dispute, stripe: Stripe) {
   const paymentIntent = (
     dispute as Stripe.Dispute & {
       payment_intent?: string | Stripe.PaymentIntent | null;
     }
   ).payment_intent;
 
-  return typeof paymentIntent === "string" ? paymentIntent : null;
+  if (typeof paymentIntent === "string") return paymentIntent;
+
+  const chargeId = disputeChargeId(dispute);
+  if (!chargeId) return null;
+
+  const charge = await stripe.charges.retrieve(chargeId);
+
+  return typeof charge.payment_intent === "string" ? charge.payment_intent : null;
 }
 
 function disputeAuditEventType(targetType: string) {
@@ -938,11 +952,13 @@ function disputeAuditSummary({
 async function recordPaymentDispute({
   dispute,
   eventType,
+  stripe,
 }: {
   dispute: Stripe.Dispute;
   eventType: string;
+  stripe: Stripe;
 }) {
-  const paymentIntentId = disputePaymentIntentId(dispute);
+  const paymentIntentId = await disputePaymentIntentId(dispute, stripe);
 
   if (!paymentIntentId) return;
 
@@ -982,6 +998,7 @@ async function recordPaymentDispute({
     dispute_id: dispute.id,
     dispute_reason: dispute.reason,
     dispute_status: dispute.status,
+    stripe_charge_id: disputeChargeId(dispute),
     payment_intent_id: paymentIntentId,
     stripe_event_type: eventType,
   };
@@ -1165,7 +1182,7 @@ export async function POST(request: Request) {
       )
     ) {
       const dispute = event.data.object as Stripe.Dispute;
-      await recordPaymentDispute({ dispute, eventType: event.type });
+      await recordPaymentDispute({ dispute, eventType: event.type, stripe });
     }
 
     const { error: recordEventError } = await supabase

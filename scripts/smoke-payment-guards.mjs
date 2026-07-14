@@ -100,6 +100,10 @@ checks.push({
     stripeWebhook.includes("merch_payment_dispute") &&
     stripeWebhook.includes("ad_payment_dispute") &&
     stripeWebhook.includes("booking_payment_dispute") &&
+    stripeWebhook.includes("function disputeChargeId") &&
+    stripeWebhook.includes("stripe.charges.retrieve(chargeId)") &&
+    stripeWebhook.includes("stripe_charge_id: disputeChargeId(dispute)") &&
+    stripeWebhook.includes("recordPaymentDispute({ dispute, eventType: event.type, stripe })") &&
     stripeWebhook.includes("stripe_event_type: eventType") &&
     stripeWebhook.includes("payment_intent_id: paymentIntentId") &&
     stripeWebhook.indexOf("Missing payment verification.") <
