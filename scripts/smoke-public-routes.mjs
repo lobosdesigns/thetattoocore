@@ -179,6 +179,36 @@ const checks = [
   },
   { path: "/api/bookings/bad/calendar", status: [303, 307, 308], redirectIncludes: "/login", redirect: "manual" },
   {
+    body: "email=smoke%40example.invalid&password=notlongenough&return_to=%2Fmessages",
+    method: "POST",
+    path: "/auth/signup",
+    requestHeaders: { "content-type": "application/x-www-form-urlencoded" },
+    status: [307, 308],
+    redirectIncludes: "/signup",
+    locationIncludes: ["return_to=%2Fmessages"],
+    redirect: "manual",
+  },
+  {
+    body: "email=smoke%40example.invalid&password=notlongenough&return_to=%2F%2Fevil.example",
+    method: "POST",
+    path: "/auth/signup",
+    requestHeaders: { "content-type": "application/x-www-form-urlencoded" },
+    status: [307, 308],
+    redirectIncludes: "/signup",
+    locationExcludes: ["return_to=%2F%2Fevil.example"],
+    redirect: "manual",
+  },
+  {
+    body: "redirect_to=%2Fsignup&return_to=%2Fmessages",
+    method: "POST",
+    path: "/auth/resend-confirmation",
+    requestHeaders: { "content-type": "application/x-www-form-urlencoded" },
+    status: [307, 308],
+    redirectIncludes: "/signup",
+    locationIncludes: ["return_to=%2Fmessages"],
+    redirect: "manual",
+  },
+  {
     body: "product_id=bad&quantity=1",
     method: "POST",
     path: "/api/merch/checkout",
@@ -492,6 +522,9 @@ for (const check of checks) {
   const missingLocationText = (check.locationIncludes || []).filter(
     (text) => !location.includes(text),
   );
+  const unexpectedLocationText = (check.locationExcludes || []).filter(
+    (text) => location.includes(text),
+  );
   const missingText = (check.includes || []).filter(
     (text) => !searchableBody.includes(text),
   );
@@ -514,6 +547,7 @@ for (const check of checks) {
     !okStatus ||
     !okRedirect ||
     missingLocationText.length > 0 ||
+    unexpectedLocationText.length > 0 ||
     missingText.length > 0 ||
     unexpectedText.length > 0 ||
     leakedText.length > 0 ||
@@ -534,6 +568,10 @@ for (const check of checks) {
     if (missingLocationText.length > 0) {
       console.error(`  location: ${location || "(none)"}`);
       console.error(`  missing location text: ${missingLocationText.join(", ")}`);
+    }
+    if (unexpectedLocationText.length > 0) {
+      console.error(`  location: ${location || "(none)"}`);
+      console.error(`  unexpected location text: ${unexpectedLocationText.join(", ")}`);
     }
     if (leakedText.length > 0) {
       console.error(`  forbidden text present: ${leakedText.join(", ")}`);

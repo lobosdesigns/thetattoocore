@@ -211,6 +211,9 @@ const checks = [
       publicSmoke.includes("/login?return_to=%2Fmessages") &&
       publicSmoke.includes("/signup?return_to=%2Fp%2Fnot-a-real-post") &&
       publicSmoke.includes("/signup?return_to=%2F%2Fevil.example") &&
+      publicSmoke.includes('path: "/auth/signup"') &&
+      publicSmoke.includes('path: "/auth/resend-confirmation"') &&
+      publicSmoke.includes("locationExcludes") &&
       publicSmoke.includes("/login?return_to=%2F%2Fevil.example") &&
       publicSmoke.includes("excludes"),
   },
