@@ -400,7 +400,9 @@ const checks = [
       profilePage.includes("visibleBookingAppointmentTypes") &&
       profilePage.includes("visibleBookingSlots") &&
       profilePage.includes("Cancellation policy") &&
-      profilePage.includes("default_deposit_amount_cents"),
+      profilePage.includes("default_deposit_amount_cents") &&
+      profilePage.includes("calculatePlatformFeeCents") &&
+      profilePage.includes("Default estimate: deposit"),
   },
   {
     label: "booking settings support safe public calendar prep fields",

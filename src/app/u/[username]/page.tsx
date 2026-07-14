@@ -40,7 +40,10 @@ import { ProfileAvatar } from "@/app/profile-avatar";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { calendarConnectionStatusLabel } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
-import { platformFeePercentLabel } from "@/lib/payments/fees";
+import {
+  calculatePlatformFeeCents,
+  platformFeePercentLabel,
+} from "@/lib/payments/fees";
 import {
   brandShareImage,
   brandShareImageAlt,
@@ -1510,6 +1513,13 @@ export default async function ProfilePage({
     ? (bookingAppointmentTypes ?? [])
     : [];
   const visibleBookingSlots = canShowBookingAvailability ? (bookingSlots ?? []) : [];
+  const defaultBookingDepositCents =
+    bookingSettings?.default_deposit_amount_cents ?? 0;
+  const defaultBookingFeeCents = calculatePlatformFeeCents(
+    defaultBookingDepositCents,
+  );
+  const defaultBookingTotalCents =
+    defaultBookingDepositCents + defaultBookingFeeCents;
   const canShow = (item: VisibleContent) =>
     !isPrivateLocked && canRenderContent({ isOwnProfile, item, viewer });
   const visiblePosts = (posts ?? []).filter(canShow);
@@ -2127,6 +2137,15 @@ export default async function ProfilePage({
                       Deposit checkout opens only after the artist or studio
                       accepts. TTC records a transparent {platformFeePercentLabel}{" "}
                       booking processing fee with the deposit.
+                      {defaultBookingDepositCents > 0 ? (
+                        <>
+                          {" "}
+                          Default estimate: deposit{" "}
+                          {formatMoney(defaultBookingDepositCents, "USD")} + TTC
+                          fee {formatMoney(defaultBookingFeeCents, "USD")} ={" "}
+                          {formatMoney(defaultBookingTotalCents, "USD")}.
+                        </>
+                      ) : null}
                     </p>
                     <button className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
                       <CalendarPlus className="size-4" />
