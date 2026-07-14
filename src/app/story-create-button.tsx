@@ -6,6 +6,14 @@ import { Sparkles } from "lucide-react";
 export function StoryCreateButton({ isSignedIn }: { isSignedIn: boolean }) {
   const className =
     "flex h-20 min-w-20 flex-col items-center justify-center rounded-md border border-dashed border-[var(--gold)] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] px-3 text-center";
+  const openStoryComposer = () => {
+    window.history.replaceState(null, "", "#stories");
+    window.dispatchEvent(
+      new CustomEvent("ttc-open-composer", {
+        detail: { mode: "stories", source: "story-rail" },
+      }),
+    );
+  };
 
   if (!isSignedIn) {
     return (
@@ -29,14 +37,8 @@ export function StoryCreateButton({ isSignedIn }: { isSignedIn: boolean }) {
     <button
       aria-label="Add a Story"
       className={className}
-      onClick={() => {
-        window.history.replaceState(null, "", "#stories");
-        window.dispatchEvent(
-          new CustomEvent("ttc-open-composer", {
-            detail: { mode: "stories" },
-          }),
-        );
-      }}
+      data-composer-mode="stories"
+      onClick={openStoryComposer}
       type="button"
     >
       <Sparkles className="size-4 text-[var(--gold)]" />

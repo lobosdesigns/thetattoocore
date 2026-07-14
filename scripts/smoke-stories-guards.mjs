@@ -196,7 +196,9 @@ const checks = [
       composerShell.includes("setActiveMode(mode)") &&
       storyCreateButton.includes('aria-label="Add a Story"') &&
       storyCreateButton.includes('href="/login?return_to=%2F%23stories"') &&
-      storyCreateButton.includes('detail: { mode: "stories" }') &&
+      storyCreateButton.includes('data-composer-mode="stories"') &&
+      storyCreateButton.includes('mode: "stories"') &&
+      storyCreateButton.includes('source: "story-rail"') &&
       homePage.includes("<StoryCreateButton"),
   },
   {

@@ -76,6 +76,7 @@
 - Full verification on July 13, 2026 passed after adding account-side banner removal controls. Live deploy version `a07a9b81-ea7f-4477-9b9c-81f6b0738834` passed public route smoke.
 - Full verification on July 13, 2026 passed after adding compact story rail view/reaction count chips. Live deploy version `6fd51800-aeab-432d-b138-432cfd0fd8d2` passed public route smoke after one transient deploy retry.
 - Full verification on July 13, 2026 passed after adding compact profile story preview view/reaction count chips. Live deploy version `2580b423-2f0c-4d17-9d62-b7777877a1dc` passed public route smoke.
+- Full verification on July 13, 2026 passed after hardening the Story rail create action so it explicitly opens the Story composer. Live deploy version `1210b965-e6c6-4c1a-80b9-95a50e11481c` passed public route smoke.
 - Stripe checkout is still test-mode only, but webhook event dedupe, retry-safe Merch/ad payment status updates, ad checkout reservation before Stripe session creation, buyer/seller/advertiser in-app alerts, important payment emails, Admin > Payments ops visibility, filtered payment queues, and production payment-gate reminders are wired for the web app.
 - Buyer Merch checkout success now shows a printable receipt action when a signed-in buyer opens a matching Stripe session receipt; print styling hides page actions and keeps receipt text readable.
 - 4U and Gossip detail comments support photo/GIF attachments with lightbox viewing, while home feeds keep comment counts collapsed for speed.
