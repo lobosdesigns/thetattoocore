@@ -228,6 +228,29 @@ export async function POST(request: Request) {
 
   const prepaidAmountCents = campaign.daily_budget_cents;
   const platformFeeCents = calculatePlatformFeeCents(prepaidAmountCents);
+  const { data: creditApplied, error: creditError } = await supabase.rpc(
+    "spend_ad_credit_for_campaign",
+    { p_campaign_id: campaign.id },
+  );
+
+  if (creditError) {
+    return redirectWithMessage(
+      creditError.message || "Ad credit could not be checked for this campaign.",
+      returnTo,
+    );
+  }
+
+  if (creditApplied) {
+    revalidatePath("/account");
+    revalidatePath("/admin");
+    revalidatePath("/admin/ads");
+
+    return redirectWithMessage(
+      "Ad credit applied. Campaign payment is covered.",
+      returnTo,
+    );
+  }
+
   const { data: reservedCampaign, error: reserveError } = await supabase
     .from("ad_campaigns")
     .update({

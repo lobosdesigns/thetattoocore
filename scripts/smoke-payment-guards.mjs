@@ -15,6 +15,10 @@ const merchPrintReceiptButton = readFileSync(
 const adminMerchPage = readFileSync("src/app/admin/merch/page.tsx", "utf8");
 const adminPaymentsPage = readFileSync("src/app/admin/payments/page.tsx", "utf8");
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
+const adCreditSpendMigration = readFileSync(
+  "supabase/migrations/20260715041500_spend_ad_credit_for_campaign.sql",
+  "utf8",
+);
 const globalsCss = readFileSync("src/app/globals.css", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
@@ -73,6 +77,22 @@ try {
   });
 }
 
+checks.push({
+  label: "ad checkout can consume account-level ad credits before Stripe",
+  ok:
+    adCreditSpendMigration.includes(
+      "create or replace function public.spend_ad_credit_for_campaign",
+    ) &&
+    adCreditSpendMigration.includes("for update") &&
+    adCreditSpendMigration.includes("v_available_cents < v_needed_cents") &&
+    adCreditSpendMigration.includes("payment_status = 'waived'") &&
+    adCreditSpendMigration.includes("used_cents = used_cents + v_use_cents") &&
+    adCheckout.includes('"spend_ad_credit_for_campaign"') &&
+    adCheckout.includes("Ad credit applied. Campaign payment is covered.") &&
+    adCheckout.indexOf('"spend_ad_credit_for_campaign"') <
+      adCheckout.indexOf("const { data: reservedCampaign") &&
+    productPlan.includes("atomic spend path that lets campaign checkout consume enough active account credit"),
+});
 checks.push({
   label: "checkout routes require private payment gates before payments",
   ok:
