@@ -33,8 +33,8 @@ const compressionPasses = [
   { edge: 1200, quality: 0.62 },
 ] as const;
 const imageOptimizerLabel = "Phone photos are resized before upload.";
-const videoPipelineLabel =
-  "Video upload is intentionally capped for now. More video features are coming soon.";
+const videoUploadLabel =
+  "Video upload is capped for now. More video options are coming soon.";
 
 function formatBytes(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -278,8 +278,7 @@ export function MediaInput({
       </p>
       {videoAllowed && !compact ? (
         <p className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
-          {videoPipelineLabel} Use short MP4/MOV clips for now; more video
-          viewing features are coming soon.
+          {videoUploadLabel} Use short MP4/MOV clips for now.
         </p>
       ) : null}
       {isOptimizing && !selected ? (

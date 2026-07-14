@@ -117,7 +117,7 @@ function DmAttachmentControl() {
       />
       <p className="text-xs leading-5 text-[var(--muted-strong)]">
         Photo DMs stay private to the conversation. GIFs are allowed; video DMs
-        can come later when private video tools are ready.
+        are not open yet.
       </p>
     </ComposerDetails>
   );

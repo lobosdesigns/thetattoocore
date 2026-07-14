@@ -40,6 +40,7 @@ const forbiddenMemberUploadSnippets = [
   "Sensitive upload",
   "body-art nudity context",
   "managed video pipeline",
+  "private video tools",
   "Cloudflare",
   "Supabase",
   "server",
@@ -99,7 +100,8 @@ const checks = [
     label: "member upload copy reinforces optimization and launch video limits",
     ok:
       mediaInput.includes("Phone photos are resized before upload.") &&
-      mediaInput.includes("Video upload is intentionally capped for now. More video features are coming soon.") &&
+      mediaInput.includes("Video upload is capped for now. More video options are coming soon.") &&
+      mediaInput.includes("Use short MP4/MOV clips for now.") &&
       mediaInput.includes("MP4/MOV preferred") &&
       composer.includes("video/mp4,video/quicktime"),
   },
