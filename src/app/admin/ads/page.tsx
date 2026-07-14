@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ArrowLeft, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
 import { AdminSectionNav } from "../admin-section-nav";
-import { updateAdCampaignStatus } from "../actions";
+import { grantAdCampaignCredit, updateAdCampaignStatus } from "../actions";
 import { countryLabel, languageLabel } from "@/lib/localization";
 import { titleCaseStatus } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
@@ -247,12 +247,16 @@ function Pagination({
 }
 
 function AdCampaignCard({
+  canGrantAdCredits,
   campaign,
   returnTo,
 }: {
+  canGrantAdCredits: boolean;
   campaign: AdCampaign;
   returnTo: string;
 }) {
+  const canApplyCredit = canGrantAdCredits && !["paid", "checkout_started"].includes(campaign.paymentStatus);
+
   return (
     <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
       <div className="mb-3 flex min-w-0 flex-col gap-3 min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between">
@@ -358,6 +362,57 @@ function AdCampaignCard({
         <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-xs text-[var(--muted)]">
           {campaign.reviewerNote}
         </p>
+      ) : null}
+      {canApplyCredit ? (
+        <details className="mt-4 rounded-md border border-[color-mix(in_srgb,var(--gold)_34%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))] p-3">
+          <summary className="cursor-pointer list-none text-sm font-bold">
+            Apply ad credit
+          </summary>
+          <form action={grantAdCampaignCredit} className="mt-3 grid gap-2 sm:grid-cols-[130px_150px_minmax(0,1fr)_auto]">
+            <input name="campaign_id" type="hidden" value={campaign.id} />
+            <input name="return_to" type="hidden" value={returnTo} />
+            <label className="grid gap-1 text-xs font-semibold text-[var(--muted)]">
+              Amount
+              <input
+                className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+                defaultValue={
+                  campaign.dailyBudgetCents
+                    ? (campaign.dailyBudgetCents / 100).toFixed(2)
+                    : ""
+                }
+                inputMode="decimal"
+                name="credit_amount"
+                placeholder="50.00"
+              />
+            </label>
+            <label className="grid gap-1 text-xs font-semibold text-[var(--muted)]">
+              Reason
+              <select
+                className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+                defaultValue="promo"
+                name="credit_reason"
+              >
+                <option value="promo">Promo</option>
+                <option value="trade">Trade</option>
+                <option value="sponsor">Sponsor</option>
+                <option value="makegood">Make-good</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+            <label className="grid gap-1 text-xs font-semibold text-[var(--muted)]">
+              Note
+              <input
+                className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+                maxLength={500}
+                name="credit_note"
+                placeholder="Promo, trade, sponsor, or make-good details"
+              />
+            </label>
+            <button className="h-10 self-end rounded-md bg-[var(--foreground)] px-3 text-sm font-bold text-[var(--background)]">
+              Grant credit
+            </button>
+          </form>
+        </details>
       ) : null}
       <form action={updateAdCampaignStatus} className="mt-4 space-y-2">
         <input name="campaign_id" type="hidden" value={campaign.id} />
@@ -550,6 +605,7 @@ export default async function AdminAdsPage({
   const reviewedCampaigns = campaigns.filter(
     (campaign) => campaign.status !== "pending_review",
   );
+  const canGrantAdCredits = profile.role === "admin" || profile.role === "owner";
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -714,6 +770,7 @@ export default async function AdminAdsPage({
           <section className="mt-4 grid gap-4">
             {campaigns.map((campaign) => (
               <AdCampaignCard
+                canGrantAdCredits={canGrantAdCredits}
                 campaign={campaign}
                 key={campaign.id}
                 returnTo={currentHref}

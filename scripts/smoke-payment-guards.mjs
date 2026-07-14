@@ -20,6 +20,7 @@ const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
 const fees = readFileSync("src/lib/payments/fees.ts", "utf8");
 const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
+const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const paymentSafetySource = [
   adminMerchPage,
   adminPaymentsPage,
@@ -226,6 +227,15 @@ checks.push({
   ok:
     accountPage.includes("titleCaseStatus(value)") &&
     adminAdsPage.includes("titleCaseStatus(value)") &&
+    adminAdsPage.includes("grantAdCampaignCredit") &&
+    adminAdsPage.includes("Apply ad credit") &&
+    adminActions.includes("export async function grantAdCampaignCredit") &&
+    adminActions.includes("await requireAdmin()") &&
+    adminActions.includes('payment_status: "waived"') &&
+    adminActions.includes('event_type: "ad_campaign_credit_granted"') &&
+    adminActions.includes("credit_amount_cents") &&
+    adminActions.includes("Only unpaid, failed, refunded, or already-waived ad campaigns can receive manual credit.") &&
+    productPlan.includes("manual ad credits are started as campaign-level payment waivers") &&
     !accountPage.includes('return value.replaceAll("_", " ")') &&
     !adminAdsPage.includes('return value.replaceAll("_", " ")'),
 });

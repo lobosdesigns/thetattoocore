@@ -124,7 +124,7 @@ export function FloatingComposerShell({
           }, 0)
         : undefined;
 
-    const sections = ["stories", "feed", "threads", "marketplace", "gigs", "merch", "messages"]
+    const sections = ["feed", "threads", "marketplace", "gigs", "merch", "messages"]
       .map((id) => document.getElementById(id))
       .filter(Boolean) as HTMLElement[];
 

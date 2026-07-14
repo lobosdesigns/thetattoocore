@@ -26,6 +26,7 @@ type AdCampaignStatus = "approved" | "active" | "paused" | "rejected" | "archive
 type MerchProductStatus = "approved" | "active" | "paused" | "rejected" | "archived";
 type MerchOrderAdminStatus = "fulfilled" | "cancelled";
 type AccountDeletionStatus = "reviewing" | "completed" | "rejected" | "cancelled";
+type AdCreditReason = "promo" | "trade" | "sponsor" | "makegood" | "other";
 type MerchOrderProductRow = {
   product_id: string;
 };
@@ -95,6 +96,13 @@ const accountDeletionStatuses = new Set<AccountDeletionStatus>([
   "completed",
   "rejected",
   "cancelled",
+]);
+const adCreditReasons = new Set<AdCreditReason>([
+  "promo",
+  "trade",
+  "sponsor",
+  "makegood",
+  "other",
 ]);
 
 const subjectConfig = {
@@ -287,6 +295,16 @@ function cleanText(value: FormDataEntryValue | null, maxLength: number) {
     .slice(0, maxLength);
 }
 
+function centsFromDollars(value: FormDataEntryValue | null, maxCents: number) {
+  const text = cleanText(value, 20);
+  if (!text) return 0;
+
+  const amount = Number(text);
+  if (!Number.isFinite(amount) || amount < 0) return -1;
+
+  return Math.min(Math.round(amount * 100), maxCents);
+}
+
 function isPastDate(value: string | null) {
   if (!value) return false;
 
@@ -441,6 +459,21 @@ async function requireOwner() {
 
   if (profile?.role !== "owner") {
     redirect("/admin?message=Owner access required.#users");
+  }
+
+  return { supabase, userId };
+}
+
+async function requireAdmin() {
+  const { supabase, userId } = await requireModerator();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle<{ role: UserRole }>();
+
+  if (profile?.role !== "admin" && profile?.role !== "owner") {
+    redirect("/admin?message=Admin access required.");
   }
 
   return { supabase, userId };
@@ -1349,6 +1382,93 @@ export async function updateAdCampaignStatus(formData: FormData) {
   revalidatePath("/admin/ads");
   revalidatePath("/");
   redirect(adminAdsMessage("Ad campaign updated.", returnTo));
+}
+
+export async function grantAdCampaignCredit(formData: FormData) {
+  const campaignId = cleanText(formData.get("campaign_id"), 80);
+  const returnTo = cleanText(formData.get("return_to"), 120);
+  const reason = cleanText(formData.get("credit_reason"), 40) as AdCreditReason;
+  const note = cleanText(formData.get("credit_note"), 500);
+  const creditAmountCents = centsFromDollars(formData.get("credit_amount"), 10000000);
+
+  if (!campaignId || !adCreditReasons.has(reason)) {
+    redirect(adminAdsMessage("Choose a valid ad credit reason.", returnTo));
+  }
+
+  if (creditAmountCents <= 0) {
+    redirect(adminAdsMessage("Ad credit amount must be a valid dollar amount.", returnTo));
+  }
+
+  const { supabase, userId } = await requireAdmin();
+  const { data: campaign, error: campaignError } = await supabase
+    .from("ad_campaigns")
+    .select("id, advertiser_id, status, payment_status, prepaid_amount_cents, daily_budget_cents, campaign_type, goal")
+    .eq("id", campaignId)
+    .maybeSingle<{
+      advertiser_id: string;
+      campaign_type: string;
+      daily_budget_cents: number;
+      goal: string;
+      id: string;
+      payment_status: string;
+      prepaid_amount_cents: number;
+      status: string;
+    }>();
+
+  if (campaignError || !campaign) {
+    redirect(
+      adminAdsMessage(
+        campaignError?.message || "Ad campaign was not found.",
+        returnTo,
+      ),
+    );
+  }
+
+  if (campaign.payment_status === "paid" || campaign.payment_status === "checkout_started") {
+    redirect(
+      adminAdsMessage(
+        "Only unpaid, failed, refunded, or already-waived ad campaigns can receive manual credit.",
+        returnTo,
+      ),
+    );
+  }
+
+  const now = new Date().toISOString();
+  const { error: updateError } = await supabase
+    .from("ad_campaigns")
+    .update({
+      payment_status: "waived",
+      platform_fee_cents: 0,
+      prepaid_amount_cents: creditAmountCents,
+      reviewer_note: note || "Ad credit applied.",
+      updated_at: now,
+    })
+    .eq("id", campaign.id);
+
+  if (updateError) {
+    redirect(adminAdsMessage(updateError.message || "Could not apply ad credit.", returnTo));
+  }
+
+  await supabase.from("admin_audit_logs").insert({
+    actor_id: userId,
+    event_type: "ad_campaign_credit_granted",
+    metadata: {
+      campaign_type: campaign.campaign_type,
+      credit_amount_cents: creditAmountCents,
+      from_payment_status: campaign.payment_status,
+      goal: campaign.goal,
+      reason,
+    },
+    summary: note || `Manual ad credit granted for ${reason}.`,
+    target_id: campaign.id,
+    target_type: "ad_campaign",
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/ads");
+  revalidatePath("/admin/payments");
+  revalidatePath("/");
+  redirect(adminAdsMessage("Ad credit applied. Campaign payment is now waived.", returnTo));
 }
 
 export async function updateMerchProductStatus(formData: FormData) {
