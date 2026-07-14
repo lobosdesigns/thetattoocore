@@ -112,6 +112,11 @@ const checks = [
       followListPage.includes('from("user_blocks")') &&
       followListPage.includes("const hasBlockRelationship = Boolean(blockRecord)") &&
       followListPage.includes("!hasBlockRelationship") &&
+      followListPage.includes("const fetchTo = to + pageSize") &&
+      followListPage.includes(".range(from, fetchTo)") &&
+      followListPage.includes("const filteredRows = (rows ?? []).filter") &&
+      followListPage.includes("const visibleRows = filteredRows.slice(0, pageSize)") &&
+      followListPage.includes("filteredRows.length > pageSize") &&
       followListPage.includes("!blockedProfileIds.has(row.profiles.id)"),
   },
   {

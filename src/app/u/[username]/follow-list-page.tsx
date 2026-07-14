@@ -170,6 +170,7 @@ export async function FollowListPage({
   const currentPage = pageNumber(page);
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
+  const fetchTo = to + pageSize;
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -250,16 +251,17 @@ export async function FollowListPage({
     ? await listQuery
         .eq("status", "accepted")
         .order("created_at", { ascending: false })
-        .range(from, to)
+        .range(from, fetchTo)
         .returns<FollowListRow[]>()
     : { count: 0, data: [] as FollowListRow[] };
   const totalRows =
     listCount ?? (kind === "followers" ? followerCount : followingCount) ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
-  const hasNextPage = currentPage < totalPages;
-  const visibleRows = (rows ?? []).filter(
+  const filteredRows = (rows ?? []).filter(
     (row) => row.profiles && !blockedProfileIds.has(row.profiles.id),
   );
+  const visibleRows = filteredRows.slice(0, pageSize);
+  const hasNextPage = filteredRows.length > pageSize || currentPage < totalPages;
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
