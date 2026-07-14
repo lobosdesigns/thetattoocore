@@ -2046,10 +2046,15 @@ export default async function ProfilePage({
                           <option value="">Not sure yet</option>
                           {visibleBookingAppointmentTypes.map((type) => (
                             <option key={type.id} value={type.id}>
-                              {type.name} - {type.duration_minutes} min
+                              {type.name} - {type.duration_minutes} min -{" "}
+                              {formatDepositRule(type)}
                             </option>
                           ))}
                         </select>
+                        <span className="text-[11px] font-normal leading-4 text-[var(--muted-strong)]">
+                          Appointment type deposit rules can set the minimum
+                          deposit before checkout opens.
+                        </span>
                       </label>
                     ) : null}
                     {visibleBookingSlots.length ? (
