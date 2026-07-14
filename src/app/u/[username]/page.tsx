@@ -257,6 +257,28 @@ function profileLocation(profile: Profile) {
     .join(", ");
 }
 
+async function getBlockedProfileIds({
+  supabase,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId?: string | null;
+}) {
+  if (!userId) return new Set<string>();
+
+  const { data } = await supabase
+    .from("user_blocks")
+    .select("blocker_id, blocked_id")
+    .or(`blocker_id.eq.${userId},blocked_id.eq.${userId}`)
+    .returns<BlockRecord[]>();
+
+  return new Set(
+    (data ?? []).map((block) =>
+      block.blocker_id === userId ? block.blocked_id : block.blocker_id,
+    ),
+  );
+}
+
 function isVerifiedProfile(
   profile: Pick<Profile, "account_type" | "license_verified_at">,
 ) {
@@ -1201,6 +1223,7 @@ export default async function ProfilePage({
     { data: linkedArtists },
     { data: bookingSettings },
     { data: activeStories },
+    blockedProfileIds,
   ] = await Promise.all([
     supabase
       .from("follows")
@@ -1370,6 +1393,7 @@ export default async function ProfilePage({
       })
       .limit(1)
       .returns<StoryPost[]>(),
+    getBlockedProfileIds({ supabase, userId: claims?.sub }),
   ]);
 
   const isOwnProfile = claims?.sub === profile.id;
@@ -1410,6 +1434,15 @@ export default async function ProfilePage({
   const visibleListings = (listings ?? []).filter(canShow);
   const visibleGigs = (gigs ?? []).filter(canShow);
   const visibleStory = (activeStories ?? []).find(canShow);
+  const visibleFollowerPreview = (followerPreview ?? []).filter(
+    (follow) => follow.profiles && !blockedProfileIds.has(follow.profiles.id),
+  );
+  const visibleFollowingPreview = (followingPreview ?? []).filter(
+    (follow) => follow.profiles && !blockedProfileIds.has(follow.profiles.id),
+  );
+  const visibleLinkedArtists = (linkedArtists ?? []).filter(
+    (artist) => !blockedProfileIds.has(artist.id),
+  );
   const hiddenContentCount = isPrivateLocked
     ? 0
     : (posts?.length ?? 0) -
@@ -1979,14 +2012,14 @@ export default async function ProfilePage({
 
         {!isPrivateLocked && viewer.isSignedIn ? (
           <FollowPreviewSection
-            followers={followerPreview ?? []}
-            following={followingPreview ?? []}
+            followers={visibleFollowerPreview}
+            following={visibleFollowingPreview}
           />
         ) : null}
 
         {!isPrivateLocked ? (
           <LinkedArtistsSection
-            artists={linkedArtists ?? []}
+            artists={visibleLinkedArtists}
             shopName={profile.display_name}
           />
         ) : null}

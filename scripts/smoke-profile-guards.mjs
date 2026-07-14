@@ -115,6 +115,18 @@ const checks = [
       followListPage.includes("!blockedProfileIds.has(row.profiles.id)"),
   },
   {
+    label: "profile preview widgets filter blocked profiles",
+    ok:
+      profilePage.includes("async function getBlockedProfileIds") &&
+      profilePage.includes("const visibleFollowerPreview") &&
+      profilePage.includes("const visibleFollowingPreview") &&
+      profilePage.includes("const visibleLinkedArtists") &&
+      profilePage.includes("!blockedProfileIds.has(follow.profiles.id)") &&
+      profilePage.includes("!blockedProfileIds.has(artist.id)") &&
+      profilePage.includes("followers={visibleFollowerPreview}") &&
+      profilePage.includes("artists={visibleLinkedArtists}"),
+  },
+  {
     label: "outbound profile links use safe URL and rel policy",
     ok:
       urls.includes('["http:", "https:"].includes(url.protocol)') &&
