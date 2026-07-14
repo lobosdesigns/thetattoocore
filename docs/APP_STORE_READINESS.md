@@ -159,6 +159,7 @@
 - Focused booking verification on July 14, 2026 passed after public booking request appointment-type choices began showing deposit rules and minimum-deposit guidance inside the form. Full verification and live deployment are next.
 - Full verification on July 14, 2026 passed after Account and DM booking cards began showing total checkout amounts for deposit plus TTC fee. Live deployment is next.
 - Full verification on July 14, 2026 passed after DM threads with artist/studio accounts gained a direct Request booking link back to the profile booking form. Live deployment is next.
+- Full verification on July 14, 2026 passed after artist/studio booking acceptance gained a final deposit amount field that recalculates the TTC fee and checkout total before the client pays. Live deployment is next.
 - Stripe checkout is still test-mode only, but webhook event dedupe, retry-safe Merch/ad payment status updates, ad checkout reservation before Stripe session creation, buyer/seller/advertiser in-app alerts, important payment emails, Admin > Payments ops visibility, filtered payment queues, and production payment-gate reminders are wired for the web app.
 - Buyer Merch checkout success now shows a printable receipt action when a signed-in buyer opens a matching Stripe session receipt; print styling hides page actions and keeps receipt text readable.
 - 4U and Gossip detail comments support photo/GIF attachments with lightbox viewing, while home feeds keep comment counts collapsed for speed.
