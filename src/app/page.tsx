@@ -1571,6 +1571,11 @@ export default async function Home({
   const stuffLimit = pageParam(params.stuffPage) * pageSize;
   const merchLimit = pageParam(params.merchPage) * pageSize;
   const gigsLimit = pageParam(params.gigsPage) * pageSize;
+  const feedFetchLimit = feedLimit + pageSize;
+  const gossipFetchLimit = gossipLimit + pageSize;
+  const stuffFetchLimit = stuffLimit + pageSize;
+  const gigsFetchLimit = gigsLimit + pageSize;
+  const merchFetchLimit = merchLimit + pageSize;
   const loadMoreHref = (
     key: "feedPage" | "gigsPage" | "gossipPage" | "merchPage" | "stuffPage",
     currentLimit: number,
@@ -1645,7 +1650,7 @@ export default async function Home({
         ascending: true,
         referencedTable: "feed_media",
       })
-      .limit(feedLimit)
+      .limit(feedFetchLimit)
       .returns<FeedPost[]>(),
     supabase
       .from("thread_posts")
@@ -1658,7 +1663,7 @@ export default async function Home({
         ascending: true,
         referencedTable: "thread_media",
       })
-      .limit(gossipLimit)
+      .limit(gossipFetchLimit)
       .returns<ThreadPost[]>(),
     supabase
       .from("marketplace_listings")
@@ -1672,7 +1677,7 @@ export default async function Home({
         ascending: true,
         referencedTable: "marketplace_media",
       })
-      .limit(stuffLimit)
+      .limit(stuffFetchLimit)
       .returns<MarketplaceListing[]>(),
     supabase
       .from("gigs")
@@ -1686,7 +1691,7 @@ export default async function Home({
         ascending: true,
         referencedTable: "gig_media",
       })
-      .limit(gigsLimit)
+      .limit(gigsFetchLimit)
       .returns<Gig[]>(),
     supabase
       .from("merch_products")
@@ -1700,7 +1705,7 @@ export default async function Home({
         ascending: true,
         referencedTable: "merch_product_media",
       })
-      .limit(merchLimit)
+      .limit(merchFetchLimit)
       .returns<MerchProduct[]>(),
     supabase
       .from("story_posts")
@@ -1811,25 +1816,25 @@ export default async function Home({
     threadPosts: unblockedThreadPosts,
     userId: claims?.sub ?? null,
   });
-  const visibleFeedPosts = rankFeedPosts(
+  const rankedFeedPosts = rankFeedPosts(
     unblockedFeedPosts.filter((post) => canRenderContent(post, viewer)),
     rankingContext,
   );
-  const visibleThreadPosts = rankThreadPosts(
+  const rankedThreadPosts = rankThreadPosts(
     unblockedThreadPosts.filter((thread) => canRenderContent(thread, viewer)),
     rankingContext,
   );
-  const visibleListings = rankCategoryItems(
+  const rankedListings = rankCategoryItems(
     unblockedListings.filter((listing) => canRenderContent(listing, viewer)),
     rankingContext,
     "marketplace_listing",
   );
-  const visibleGigs = rankCategoryItems(
+  const rankedGigs = rankCategoryItems(
     unblockedGigs.filter((gig) => canRenderContent(gig, viewer)),
     rankingContext,
     "gig",
   );
-  const visibleMerchProducts = rankCategoryItems(
+  const rankedMerchProducts = rankCategoryItems(
     unblockedMerchProducts.filter(
       (product) =>
         product.is_official || isVerifiedProfessional(product.profiles),
@@ -1837,6 +1842,24 @@ export default async function Home({
     rankingContext,
     "merch_product",
   );
+  const visibleFeedPosts = rankedFeedPosts.slice(0, feedLimit);
+  const visibleThreadPosts = rankedThreadPosts.slice(0, gossipLimit);
+  const visibleListings = rankedListings.slice(0, stuffLimit);
+  const visibleGigs = rankedGigs.slice(0, gigsLimit);
+  const visibleMerchProducts = rankedMerchProducts.slice(0, merchLimit);
+  const hasMoreFeed =
+    rankedFeedPosts.length > feedLimit || (feedPosts?.length ?? 0) === feedFetchLimit;
+  const hasMoreThreads =
+    rankedThreadPosts.length > gossipLimit ||
+    (threadPosts?.length ?? 0) === gossipFetchLimit;
+  const hasMoreListings =
+    rankedListings.length > stuffLimit ||
+    (listings?.length ?? 0) === stuffFetchLimit;
+  const hasMoreGigs =
+    rankedGigs.length > gigsLimit || (gigs?.length ?? 0) === gigsFetchLimit;
+  const hasMoreMerch =
+    rankedMerchProducts.length > merchLimit ||
+    (merchProducts?.length ?? 0) === merchFetchLimit;
   const visibleStories = unblockedStories.filter(
     (story) =>
       story.visibility !== "private" &&
@@ -2189,7 +2212,7 @@ export default async function Home({
                 />
               </div>
             )}
-            {(feedPosts?.length ?? 0) >= feedLimit ? (
+            {hasMoreFeed ? (
               <LoadMoreLink
                 href={loadMoreHref("feedPage", feedLimit, "feed")}
                 label="Load 25 more 4U posts"
@@ -2411,7 +2434,7 @@ export default async function Home({
                     />
                   )}
             </div>
-            {(threadPosts?.length ?? 0) >= gossipLimit ? (
+            {hasMoreThreads ? (
               <LoadMoreLink
                 href={loadMoreHref("gossipPage", gossipLimit, "threads")}
                 label="Load 25 more Gossip posts"
@@ -2621,7 +2644,7 @@ export default async function Home({
                     </div>
                   )}
             </div>
-            {(listings?.length ?? 0) >= stuffLimit ? (
+            {hasMoreListings ? (
               <LoadMoreLink
                 href={loadMoreHref("stuffPage", stuffLimit, "marketplace")}
                 label="Load 25 more Stuff listings"
@@ -2836,7 +2859,7 @@ export default async function Home({
                     </div>
                   )}
             </div>
-            {(gigs?.length ?? 0) >= gigsLimit ? (
+            {hasMoreGigs ? (
               <LoadMoreLink
                 href={loadMoreHref("gigsPage", gigsLimit, "gigs")}
                 label="Load 25 more Gigs"
@@ -2971,7 +2994,7 @@ export default async function Home({
                 </div>
               )}
             </div>
-            {(merchProducts?.length ?? 0) >= merchLimit ? (
+            {hasMoreMerch ? (
               <LoadMoreLink
                 href={loadMoreHref("merchPage", merchLimit, "merch")}
                 label="Load 25 more Merch products"

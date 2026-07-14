@@ -188,6 +188,12 @@ const checks = [
       homePage.includes("blocker_id.eq.") &&
       homePage.includes("blocked_id.eq.") &&
       homePage.includes("const blockedProfileIds = new Set") &&
+      homePage.includes("const feedFetchLimit = feedLimit + pageSize") &&
+      homePage.includes("const gossipFetchLimit = gossipLimit + pageSize") &&
+      homePage.includes("const rankedFeedPosts = rankFeedPosts") &&
+      homePage.includes("const visibleFeedPosts = rankedFeedPosts.slice(0, feedLimit)") &&
+      homePage.includes("const hasMoreFeed =") &&
+      homePage.includes("(feedPosts?.length ?? 0) === feedFetchLimit") &&
       homePage.includes("function profileIsNotBlocked") &&
       homePage.includes("unblockedFeedPosts") &&
       homePage.includes("unblockedThreadPosts") &&
