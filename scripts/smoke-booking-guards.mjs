@@ -238,13 +238,18 @@ const checks = [
     label: "account page exposes booking blackout date controls",
     ok:
       accountActions.includes("export async function createBookingBlackoutDate") &&
+      accountActions.includes("export async function updateBookingBlackoutDate") &&
       accountActions.includes("export async function deleteBookingBlackoutDate") &&
       accountActions.includes('.from("booking_blackout_dates")') &&
+      accountActions.includes("Blackout window updated") &&
       accountActions.includes("Blackout end time must be after the start time.") &&
       accountPage.includes("createBookingBlackoutDate") &&
+      accountPage.includes("updateBookingBlackoutDate") &&
       accountPage.includes("deleteBookingBlackoutDate") &&
       accountPage.includes("Blackout dates") &&
+      accountPage.includes("Edit blackout") &&
       accountPage.includes("All day") &&
+      accountPage.includes("Save blackout") &&
       accountPage.includes("Add blackout"),
   },
   {

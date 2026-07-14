@@ -18,6 +18,7 @@ import {
   toggleBookingAppointmentType,
   toggleBookingSlot,
   updateBookingAppointmentType,
+  updateBookingBlackoutDate,
   updateBookingSettings,
   updateBookingSlot,
 } from "./actions";
@@ -1531,27 +1532,81 @@ export default async function AccountPage({
                 {(bookingBlackouts ?? []).length ? (
                   bookingBlackouts?.map((blackout) => (
                     <article
-                      className="flex flex-col gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-3 sm:flex-row sm:items-center sm:justify-between"
+                      className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-3"
                       key={blackout.id}
                     >
-                      <div>
-                        <p className="text-sm font-bold">
-                          {formatDate(blackout.starts_at)} - {formatDate(blackout.ends_at)}
-                        </p>
-                        <p className="mt-1 text-xs text-[var(--muted-strong)]">
-                          {blackout.reason ?? "Blocked time"}
-                          {blackout.is_all_day ? " - all day" : ""}
-                        </p>
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="text-sm font-bold">
+                            {formatDate(blackout.starts_at)} - {formatDate(blackout.ends_at)}
+                          </p>
+                          <p className="mt-1 text-xs text-[var(--muted-strong)]">
+                            {blackout.reason ?? "Blocked time"}
+                            {blackout.is_all_day ? " - all day" : ""}
+                          </p>
+                        </div>
+                        <form action={deleteBookingBlackoutDate}>
+                          <input name="blackout_id" type="hidden" value={blackout.id} />
+                          <PendingSubmitButton
+                            className="h-9 rounded-md border border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] px-3 text-xs font-bold text-[var(--danger)]"
+                            pendingLabel="Removing"
+                          >
+                            Remove
+                          </PendingSubmitButton>
+                        </form>
                       </div>
-                      <form action={deleteBookingBlackoutDate}>
-                        <input name="blackout_id" type="hidden" value={blackout.id} />
-                        <PendingSubmitButton
-                          className="h-9 rounded-md border border-[var(--card-rim)] px-3 text-xs font-bold"
-                          pendingLabel="Removing"
+                      <details className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_86%,transparent)] p-3">
+                        <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.08em] text-[var(--muted-strong)]">
+                          Edit blackout
+                        </summary>
+                        <form
+                          action={updateBookingBlackoutDate}
+                          className="mt-3 grid gap-3 md:grid-cols-2"
                         >
-                          Remove
-                        </PendingSubmitButton>
-                      </form>
+                          <input name="blackout_id" type="hidden" value={blackout.id} />
+                          <label className="grid gap-1 text-sm font-semibold">
+                            Starts
+                            <input
+                              className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                              defaultValue={blackout.starts_at.slice(0, 16)}
+                              name="blackout_starts_at"
+                              type="datetime-local"
+                            />
+                          </label>
+                          <label className="grid gap-1 text-sm font-semibold">
+                            Ends
+                            <input
+                              className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                              defaultValue={blackout.ends_at.slice(0, 16)}
+                              name="blackout_ends_at"
+                              type="datetime-local"
+                            />
+                          </label>
+                          <label className="grid gap-1 text-sm font-semibold md:col-span-2">
+                            Reason
+                            <input
+                              className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                              defaultValue={blackout.reason ?? ""}
+                              maxLength={160}
+                              name="blackout_reason"
+                            />
+                          </label>
+                          <label className="flex items-center gap-2 text-sm font-semibold">
+                            <input
+                              defaultChecked={blackout.is_all_day}
+                              name="blackout_all_day"
+                              type="checkbox"
+                            />
+                            All day
+                          </label>
+                          <PendingSubmitButton
+                            className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)]"
+                            pendingLabel="Saving"
+                          >
+                            Save blackout
+                          </PendingSubmitButton>
+                        </form>
+                      </details>
                     </article>
                   ))
                 ) : (

@@ -1698,6 +1698,45 @@ export async function createBookingBlackoutDate(formData: FormData) {
   redirect(bookingPath("Blackout window added."));
 }
 
+export async function updateBookingBlackoutDate(formData: FormData) {
+  const { profile, supabase } = await requireBookingManager();
+  const blackoutId = cleanText(formData.get("blackout_id"), 80);
+  const startsAt = bookingDateTime(formData.get("blackout_starts_at"));
+  const endsAt = bookingDateTime(formData.get("blackout_ends_at"));
+  const reason = cleanText(formData.get("blackout_reason"), 160);
+
+  if (!blackoutId) {
+    redirect(bookingPath("Choose a blackout window first."));
+  }
+
+  if (!startsAt || !endsAt || startsAt === "invalid" || endsAt === "invalid") {
+    redirect(bookingPath("Add valid blackout start and end times."));
+  }
+
+  if (new Date(startsAt).getTime() >= new Date(endsAt).getTime()) {
+    redirect(bookingPath("Blackout end time must be after the start time."));
+  }
+
+  const { error } = await supabase
+    .from("booking_blackout_dates")
+    .update({
+      ends_at: endsAt,
+      is_all_day: formData.get("blackout_all_day") === "on",
+      reason: reason || null,
+      starts_at: startsAt,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", blackoutId)
+    .eq("profile_id", profile.id);
+
+  if (error) {
+    redirect(bookingPath(error.message || "Could not update blackout window."));
+  }
+
+  revalidatePath("/account");
+  redirect(bookingPath("Blackout window updated."));
+}
+
 export async function deleteBookingBlackoutDate(formData: FormData) {
   const { profile, supabase } = await requireBookingManager();
   const blackoutId = cleanText(formData.get("blackout_id"), 80);
