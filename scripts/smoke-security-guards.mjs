@@ -350,6 +350,10 @@ const checks = [
     ok:
       mainActions.includes("function cleanReturnPath") &&
       mainActions.includes("function revalidateReturnPath") &&
+      mainActions.includes("const [pathWithoutHash, existingHash] = cleanPath.split(\"#\", 2)") &&
+      mainActions.includes('const separator = pathWithoutHash.includes("?") ? "&" : "?"') &&
+      mainActions.includes("const targetHash = cleanHash || existingHash?.replace") &&
+      mainActions.includes("`${pathWithoutHash}${separator}message=") &&
       !mainActions.includes("revalidatePath(returnPath)") &&
       !accountActions.includes("revalidatePath(returnPath)") &&
       !messageActions.includes("revalidatePath(returnPath)") &&

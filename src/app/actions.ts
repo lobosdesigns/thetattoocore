@@ -119,9 +119,12 @@ function redirectWithMessage({
       ? path
       : "/";
   const cleanHash = hash?.replace(/[^a-z0-9_-]/gi, "");
+  const [pathWithoutHash, existingHash] = cleanPath.split("#", 2);
+  const separator = pathWithoutHash.includes("?") ? "&" : "?";
+  const targetHash = cleanHash || existingHash?.replace(/[^a-z0-9_-]/gi, "");
 
-  return `${cleanPath}?message=${encodeURIComponent(message)}${
-    cleanHash ? `#${cleanHash}` : ""
+  return `${pathWithoutHash}${separator}message=${encodeURIComponent(message)}${
+    targetHash ? `#${targetHash}` : ""
   }`;
 }
 
