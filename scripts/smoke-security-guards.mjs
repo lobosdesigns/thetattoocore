@@ -258,9 +258,16 @@ const checks = [
       messagePage.includes("async function getBlockedProfileIds") &&
       messagePage.includes("const blockedProfileIds = await getBlockedProfileIds") &&
       messagePage.includes('from("user_blocks")') &&
+      messagePage.includes("const conversationFetchLimit = conversationLimit + inboxPageSize") &&
+      messagePage.includes(".limit(conversationFetchLimit)") &&
+      messagePage.includes("const filteredInbox = memberships") &&
+      messagePage.includes("const inbox = filteredInbox.slice(0, conversationLimit)") &&
+      messagePage.includes("const hasMoreInbox =") &&
+      messagePage.includes("filteredInbox.length > conversationLimit") &&
       messagePage.includes("blockedProfileIds.has(otherMember.user_id)") &&
       messagePage.includes("isBlockedConversation") &&
       messagePage.includes("!conversation.isBlockedConversation") &&
+      messagePage.includes("{hasMoreInbox ?") &&
       messageActions.includes("You cannot message a blocked profile."),
   },
   {

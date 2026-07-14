@@ -431,7 +431,8 @@ export default async function MessagesPage({
   const inboxPageSize = 25;
   const inboxPage = Math.max(1, Math.min(20, Number(params.inboxPage ?? "1") || 1));
   const conversationLimit = inboxPage * inboxPageSize;
-  const messageWindowLimit = Math.min(conversationLimit * 25, 500);
+  const conversationFetchLimit = conversationLimit + inboxPageSize;
+  const messageWindowLimit = Math.min(conversationFetchLimit * 25, 500);
   const requestedConversationId = String(params.c ?? "")
     .replace(/[^a-zA-Z0-9_-]/g, "")
     .slice(0, 80);
@@ -483,7 +484,7 @@ export default async function MessagesPage({
     .select("conversation_id, created_at, last_read_at")
     .eq("user_id", claims.sub)
     .order("created_at", { ascending: false })
-    .limit(conversationLimit)
+    .limit(conversationFetchLimit)
     .returns<Membership[]>();
   const memberships = [...(membershipRows ?? [])];
 
@@ -572,7 +573,7 @@ export default async function MessagesPage({
     }
   }
 
-  const inbox = memberships
+  const filteredInbox = memberships
     .map((membership) => {
       const conversationMembers =
         members?.filter(
@@ -610,6 +611,10 @@ export default async function MessagesPage({
 
       return bTime - aTime;
     });
+  const inbox = filteredInbox.slice(0, conversationLimit);
+  const hasMoreInbox =
+    filteredInbox.length > conversationLimit ||
+    (membershipRows?.length ?? 0) === conversationFetchLimit;
 
   const hasSelectedConversationParam = Boolean(requestedConversationId);
   const selectedConversation =
@@ -867,7 +872,7 @@ export default async function MessagesPage({
               </div>
             )}
           </section>
-          {memberships.length >= conversationLimit ? (
+          {hasMoreInbox ? (
             <div className="border-t border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_96%,transparent)] px-4 py-4">
               <Link
                 className="ttc-surface flex h-10 items-center justify-center rounded-md border px-4 text-sm font-bold shadow-sm"
