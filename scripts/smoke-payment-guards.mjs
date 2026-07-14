@@ -225,6 +225,11 @@ checks.push({
     adminPaymentsPage.includes("const bookingPaymentStatuses") &&
     adminPaymentsPage.includes("resetStaleBookingDepositCheckouts") &&
     adminPaymentsPage.includes('table: "booking_requests"') &&
+    adminPaymentsPage.includes("Recent booking deposits") &&
+    adminPaymentsPage.includes("recentBookingDeposits") &&
+    adminPaymentsPage.includes(".gt(\"total_cents\", 0)") &&
+    adminPaymentsPage.includes("bookingPaymentStatusLabel(booking.payment_status)") &&
+    adminPaymentsPage.includes("TTC fee") &&
     adminPaymentsPage.includes("Stale booking deposit checkouts over 24h") &&
     adminPaymentsPage.includes("Reset stale booking checkouts") &&
     adminPaymentsPage.includes("Booking deposit states") &&

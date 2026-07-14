@@ -28,6 +28,19 @@ type PaymentEvent = {
   event_type: string;
   received_at: string;
 };
+type BookingDepositRecord = {
+  artist: { display_name: string | null; username: string | null } | null;
+  client: { display_name: string | null; username: string | null } | null;
+  currency: string;
+  deposit_amount_cents: number;
+  id: string;
+  payment_status: string;
+  platform_fee_cents: number;
+  status: string;
+  title: string;
+  total_cents: number;
+  updated_at: string;
+};
 
 const viewRoles: UserRole[] = ["moderator", "admin", "owner"];
 const pageSize = 50;
@@ -142,6 +155,13 @@ function statusLabel(value: string) {
   return titleCaseStatus(value);
 }
 
+function money(cents: number, currency = "USD") {
+  return new Intl.NumberFormat("en-US", {
+    currency,
+    style: "currency",
+  }).format(cents / 100);
+}
+
 async function statusCounts({
   column,
   statuses,
@@ -206,6 +226,7 @@ export default async function AdminPaymentsPage({
     { count: stalePendingCheckoutCount },
     { count: staleBookingCheckoutCount },
     { count: activeUnpaidAdCount },
+    { data: recentBookingDeposits },
   ] = adminClient
     ? await Promise.all([
         adminClient
@@ -256,6 +277,15 @@ export default async function AdminPaymentsPage({
             "payment_failed",
             "refunded",
           ]),
+        adminClient
+          .from("booking_requests")
+          .select(
+            "id, title, status, payment_status, deposit_amount_cents, platform_fee_cents, total_cents, currency, updated_at, client:profiles!booking_requests_client_id_fkey(display_name, username), artist:profiles!booking_requests_artist_id_fkey(display_name, username)",
+          )
+          .gt("total_cents", 0)
+          .order("updated_at", { ascending: false })
+          .limit(10)
+          .returns<BookingDepositRecord[]>(),
       ])
     : [
         { data: null },
@@ -266,6 +296,7 @@ export default async function AdminPaymentsPage({
         { count: null },
         { count: null },
         { count: null },
+        { data: null },
       ];
 
   const totalStripeEvents = stripeEventCount ?? stripeEvents?.length ?? 0;
@@ -484,6 +515,71 @@ export default async function AdminPaymentsPage({
               </section>
 
               <aside className="space-y-4">
+                <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
+                  <h2 className="text-lg font-bold">Recent booking deposits</h2>
+                  <div className="mt-3 space-y-2">
+                    {recentBookingDeposits?.length ? (
+                      recentBookingDeposits.map((booking) => (
+                        <article
+                          className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3 text-sm"
+                          key={booking.id}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="break-words font-bold">{booking.title}</p>
+                              <p className="mt-1 text-xs text-[var(--muted-strong)]">
+                                {bookingPaymentStatusLabel(booking.payment_status)} -{" "}
+                                {statusLabel(booking.status)}
+                              </p>
+                            </div>
+                            <p className="shrink-0 text-right text-xs font-bold text-[var(--foreground)]">
+                              {money(booking.total_cents, booking.currency)}
+                            </p>
+                          </div>
+                          <dl className="mt-2 grid gap-1 text-xs text-[var(--muted)]">
+                            <div className="flex justify-between gap-2">
+                              <dt>Client</dt>
+                              <dd className="text-right">
+                                {booking.client?.display_name ??
+                                  booking.client?.username ??
+                                  "Unknown"}
+                              </dd>
+                            </div>
+                            <div className="flex justify-between gap-2">
+                              <dt>Artist/studio</dt>
+                              <dd className="text-right">
+                                {booking.artist?.display_name ??
+                                  booking.artist?.username ??
+                                  "Unknown"}
+                              </dd>
+                            </div>
+                            <div className="flex justify-between gap-2">
+                              <dt>Deposit</dt>
+                              <dd>
+                                {money(booking.deposit_amount_cents, booking.currency)}
+                              </dd>
+                            </div>
+                            <div className="flex justify-between gap-2">
+                              <dt>TTC fee</dt>
+                              <dd>
+                                {money(booking.platform_fee_cents, booking.currency)}
+                              </dd>
+                            </div>
+                            <div className="flex justify-between gap-2">
+                              <dt>Updated</dt>
+                              <dd>{formatDateTime(booking.updated_at)}</dd>
+                            </div>
+                          </dl>
+                        </article>
+                      ))
+                    ) : (
+                      <p className="text-sm text-[var(--muted)]">
+                        No booking deposits found.
+                      </p>
+                    )}
+                  </div>
+                </section>
+
                 <section className="ttc-card rounded-lg border border-[color-mix(in_srgb,var(--gold)_42%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))] p-5">
                   <ShieldAlert className="size-5 text-[var(--gold)]" />
                   <h2 className="mt-3 text-lg font-bold">
