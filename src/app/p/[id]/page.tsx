@@ -75,7 +75,7 @@ type FeedPost = {
   id: string;
   is_sensitive: boolean;
   location_label: string | null;
-  post_comments: PostComment[];
+  post_comments?: PostComment[];
   post_likes: PostLike[];
   profiles: Profile | null;
   style_tags: string[];
@@ -115,6 +115,8 @@ type PostPageProps = {
 
 const commentsPageSize = 25;
 const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
+const postCommentSelect =
+  "id, body, parent_id, deleted_at, created_at, post_comment_media(id, storage_bucket, storage_path, media_type, mime_type, width, height), post_comment_hides(hidden_by), post_comment_likes(user_id), profiles:profiles!post_comments_author_id_fkey(id, avatar_url, display_name, username)";
 
 function asArray<T>(value: T[] | null | undefined) {
   return Array.isArray(value) ? value : [];
@@ -214,7 +216,7 @@ async function getPost(id: string) {
   const { data } = await supabase
     .from("feed_posts")
     .select(
-      "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, body, parent_id, deleted_at, created_at, post_comment_media(id, storage_bucket, storage_path, media_type, mime_type, width, height), post_comment_hides(hidden_by), post_comment_likes(user_id), profiles:profiles!post_comments_author_id_fkey(id, avatar_url, display_name, username)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
+      "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -223,13 +225,70 @@ async function getPost(id: string) {
       ascending: true,
       referencedTable: "feed_media",
     })
-    .order("created_at", {
-      ascending: false,
-      referencedTable: "post_comments",
-    })
     .maybeSingle<FeedPost>();
 
   return data;
+}
+
+async function getVisiblePostComments({
+  blockedCommentProfileIds,
+  commentLimit,
+  postId,
+  supabase,
+  userId,
+}: {
+  blockedCommentProfileIds: Set<string>;
+  commentLimit: number;
+  postId: string;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId?: string | null;
+}) {
+  const commentFetchLimit = commentLimit + commentsPageSize;
+  const { count: topLevelCommentCount, data: topLevelCommentRows } =
+    await supabase
+      .from("post_comments")
+      .select(postCommentSelect, { count: "exact" })
+      .eq("post_id", postId)
+      .is("parent_id", null)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(commentFetchLimit)
+      .returns<PostComment[]>();
+  const visibleTopLevelComments = (topLevelCommentRows ?? [])
+    .filter(
+      (comment) =>
+        !hasCommentHide(comment.post_comment_hides) &&
+        (!comment.profiles?.id ||
+          comment.profiles.id === userId ||
+          !blockedCommentProfileIds.has(comment.profiles.id)),
+    )
+    .slice(0, commentLimit);
+  const visibleTopLevelIds = visibleTopLevelComments.map((comment) => comment.id);
+  const { data: replyRows } = visibleTopLevelIds.length
+    ? await supabase
+        .from("post_comments")
+        .select(postCommentSelect)
+        .eq("post_id", postId)
+        .in("parent_id", visibleTopLevelIds)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true })
+        .returns<PostComment[]>()
+    : { data: [] as PostComment[] };
+  const visibleReplies = (replyRows ?? []).filter(
+    (comment) =>
+      !hasCommentHide(comment.post_comment_hides) &&
+      (!comment.profiles?.id ||
+        comment.profiles.id === userId ||
+        !blockedCommentProfileIds.has(comment.profiles.id)),
+  );
+
+  return {
+    hasMoreComments:
+      (topLevelCommentRows?.length ?? 0) === commentFetchLimit ||
+      (topLevelCommentCount ?? 0) > commentLimit,
+    visibleComments: [...visibleTopLevelComments, ...visibleReplies],
+    visibleTopLevelComments,
+  };
 }
 
 async function hasBlockRelationship({
@@ -396,23 +455,19 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
   });
   const postMedia = asArray(post.feed_media);
   const postLikes = asArray(post.post_likes);
-  const postComments = asArray(post.post_comments);
   const styleTags = asArray(post.style_tags);
   const media = postMedia[0];
   const mediaSrc = media ? mediaUrl(media.storage_bucket, media.storage_path) : null;
   const liked = postLikes.some((like) => like.user_id === claims?.sub);
   const returnPath = `/p/${post.id}`;
-  const visibleComments = postComments.filter(
-    (comment) =>
-      !comment.deleted_at &&
-      !hasCommentHide(comment.post_comment_hides) &&
-      (!comment.profiles?.id ||
-        comment.profiles.id === claims?.sub ||
-        !blockedCommentProfileIds.has(comment.profiles.id)),
-  );
-  const topLevelComments = visibleComments.filter((comment) => !comment.parent_id);
-  const visibleTopLevelComments = topLevelComments.slice(0, commentLimit);
-  const hasMoreComments = topLevelComments.length > visibleTopLevelComments.length;
+  const { hasMoreComments, visibleComments, visibleTopLevelComments } =
+    await getVisiblePostComments({
+      blockedCommentProfileIds,
+      commentLimit,
+      postId: post.id,
+      supabase,
+      userId: claims?.sub,
+    });
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">

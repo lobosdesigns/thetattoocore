@@ -72,7 +72,7 @@ type ThreadPost = {
   id: string;
   is_sensitive: boolean;
   profiles: Profile | null;
-  thread_comments: ThreadComment[];
+  thread_comments?: ThreadComment[];
   thread_likes: ThreadLike[];
   thread_media: ThreadMedia[];
   visibility: "public_preview" | "members" | "private";
@@ -111,6 +111,8 @@ type ThreadPageProps = {
 
 const commentsPageSize = 25;
 const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
+const threadCommentSelect =
+  "id, body, parent_id, deleted_at, created_at, thread_comment_media(id, storage_bucket, storage_path, media_type, mime_type, width, height), thread_comment_hides(hidden_by), thread_comment_likes(user_id), profiles:profiles!thread_comments_author_id_fkey(id, avatar_url, display_name, username)";
 
 function asArray<T>(value: T[] | null | undefined) {
   return Array.isArray(value) ? value : [];
@@ -210,7 +212,7 @@ async function getThread(id: string) {
   const { data } = await supabase
     .from("thread_posts")
     .select(
-      "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, body, parent_id, deleted_at, created_at, thread_comment_media(id, storage_bucket, storage_path, media_type, mime_type, width, height), thread_comment_hides(hidden_by), thread_comment_likes(user_id), profiles:profiles!thread_comments_author_id_fkey(id, avatar_url, display_name, username)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
+      "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
     )
     .eq("id", id)
     .eq("moderation_status", "active")
@@ -218,13 +220,70 @@ async function getThread(id: string) {
       ascending: true,
       referencedTable: "thread_media",
     })
-    .order("created_at", {
-      ascending: false,
-      referencedTable: "thread_comments",
-    })
     .maybeSingle<ThreadPost>();
 
   return data;
+}
+
+async function getVisibleThreadComments({
+  blockedCommentProfileIds,
+  commentLimit,
+  supabase,
+  threadId,
+  userId,
+}: {
+  blockedCommentProfileIds: Set<string>;
+  commentLimit: number;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  threadId: string;
+  userId?: string | null;
+}) {
+  const commentFetchLimit = commentLimit + commentsPageSize;
+  const { count: topLevelCommentCount, data: topLevelCommentRows } =
+    await supabase
+      .from("thread_comments")
+      .select(threadCommentSelect, { count: "exact" })
+      .eq("thread_id", threadId)
+      .is("parent_id", null)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(commentFetchLimit)
+      .returns<ThreadComment[]>();
+  const visibleTopLevelComments = (topLevelCommentRows ?? [])
+    .filter(
+      (comment) =>
+        !hasCommentHide(comment.thread_comment_hides) &&
+        (!comment.profiles?.id ||
+          comment.profiles.id === userId ||
+          !blockedCommentProfileIds.has(comment.profiles.id)),
+    )
+    .slice(0, commentLimit);
+  const visibleTopLevelIds = visibleTopLevelComments.map((comment) => comment.id);
+  const { data: replyRows } = visibleTopLevelIds.length
+    ? await supabase
+        .from("thread_comments")
+        .select(threadCommentSelect)
+        .eq("thread_id", threadId)
+        .in("parent_id", visibleTopLevelIds)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true })
+        .returns<ThreadComment[]>()
+    : { data: [] as ThreadComment[] };
+  const visibleReplies = (replyRows ?? []).filter(
+    (comment) =>
+      !hasCommentHide(comment.thread_comment_hides) &&
+      (!comment.profiles?.id ||
+        comment.profiles.id === userId ||
+        !blockedCommentProfileIds.has(comment.profiles.id)),
+  );
+
+  return {
+    hasMoreComments:
+      (topLevelCommentRows?.length ?? 0) === commentFetchLimit ||
+      (topLevelCommentCount ?? 0) > commentLimit,
+    visibleComments: [...visibleTopLevelComments, ...visibleReplies],
+    visibleTopLevelComments,
+  };
 }
 
 async function hasBlockRelationship({
@@ -396,22 +455,18 @@ export default async function ThreadPage({
   });
   const threadMedia = asArray(thread.thread_media);
   const threadLikes = asArray(thread.thread_likes);
-  const threadComments = asArray(thread.thread_comments);
   const media = threadMedia[0];
   const mediaSrc = media ? mediaUrl(media.storage_bucket, media.storage_path) : null;
   const liked = threadLikes.some((like) => like.user_id === claims?.sub);
   const returnPath = `/t/${thread.id}`;
-  const visibleComments = threadComments.filter(
-    (comment) =>
-      !comment.deleted_at &&
-      !hasCommentHide(comment.thread_comment_hides) &&
-      (!comment.profiles?.id ||
-        comment.profiles.id === claims?.sub ||
-        !blockedCommentProfileIds.has(comment.profiles.id)),
-  );
-  const topLevelComments = visibleComments.filter((comment) => !comment.parent_id);
-  const visibleTopLevelComments = topLevelComments.slice(0, commentLimit);
-  const hasMoreComments = topLevelComments.length > visibleTopLevelComments.length;
+  const { hasMoreComments, visibleComments, visibleTopLevelComments } =
+    await getVisibleThreadComments({
+      blockedCommentProfileIds,
+      commentLimit,
+      supabase,
+      threadId: thread.id,
+      userId: claims?.sub,
+    });
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">

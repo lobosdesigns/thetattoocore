@@ -237,8 +237,14 @@ const checks = [
         (source) =>
           source.includes("async function getBlockedProfileIds") &&
           source.includes("const blockedCommentProfileIds") &&
+          source.includes("const commentFetchLimit = commentLimit + commentsPageSize") &&
+          source.includes(".is(\"parent_id\", null)") &&
+          source.includes(".limit(commentFetchLimit)") &&
+          source.includes("const visibleTopLevelIds = visibleTopLevelComments.map") &&
+          source.includes(".in(\"parent_id\", visibleTopLevelIds)") &&
+          source.includes("visibleComments: [...visibleTopLevelComments, ...visibleReplies]") &&
           source.includes("blockedCommentProfileIds.has(comment.profiles.id)") &&
-          source.includes("comment.profiles.id === claims?.sub"),
+          source.includes("comment.profiles.id === userId"),
       ),
   },
   {
