@@ -325,9 +325,17 @@ const checks = [
     label: "public profiles show enabled booking availability",
     ok:
       profilePage.includes("type BookingSettings") &&
+      profilePage.includes("type PublicBookingAppointmentType") &&
+      profilePage.includes("type PublicBookingSlot") &&
       profilePage.includes('.from("booking_settings")') &&
+      profilePage.includes('.from("booking_appointment_types")') &&
+      profilePage.includes('.from("booking_availability_slots")') &&
       profilePage.includes("canShowBookingAvailability") &&
       profilePage.includes("Open for requests") &&
+      profilePage.includes("Appointment types") &&
+      profilePage.includes("Weekly slots") &&
+      profilePage.includes("visibleBookingAppointmentTypes") &&
+      profilePage.includes("visibleBookingSlots") &&
       profilePage.includes("Cancellation policy") &&
       profilePage.includes("default_deposit_amount_cents"),
   },

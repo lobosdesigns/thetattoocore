@@ -117,6 +117,28 @@ type BookingSettings = {
   } | null;
 };
 
+type PublicBookingAppointmentType = {
+  buffer_after_minutes: number;
+  buffer_before_minutes: number;
+  deposit_amount_cents: number;
+  deposit_policy: string;
+  description: string | null;
+  duration_minutes: number;
+  id: string;
+  name: string;
+};
+
+type PublicBookingSlot = {
+  appointment_type_id: string | null;
+  ends_at: string;
+  id: string;
+  max_bookings_per_slot: number;
+  slot_interval_minutes: number;
+  starts_at: string;
+  timezone: string;
+  weekday: number;
+};
+
 type FeedMedia = {
   id: string;
   media_type: "image" | "video";
@@ -245,6 +267,8 @@ type LinkedArtist = Pick<
   | "username"
 >;
 
+const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+
 function mediaUrl(bucket: string, path: string) {
   const encodedPath = path.split("/").map(encodeURIComponent).join("/");
 
@@ -349,6 +373,33 @@ function formatJoinedDate(value: string) {
     month: "short",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function formatSlotTime(value: string) {
+  const [hourText = "0", minuteText = "0"] = value.split(":");
+  const hour = Number.parseInt(hourText, 10);
+  const minute = Number.parseInt(minuteText, 10);
+
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return value.slice(0, 5);
+
+  const date = new Date(Date.UTC(2026, 0, 1, hour, minute));
+
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: minute ? "2-digit" : undefined,
+    timeZone: "UTC",
+  }).format(date);
+}
+
+function formatDepositRule(type: PublicBookingAppointmentType) {
+  if (type.deposit_policy === "required" && type.deposit_amount_cents > 0) {
+    return `Deposit ${formatMoney(type.deposit_amount_cents, "USD")}`;
+  }
+
+  if (type.deposit_policy === "none") return "No deposit";
+  if (type.deposit_policy === "optional") return "Optional deposit";
+
+  return "Uses profile deposit";
 }
 
 function ContentLabels({
@@ -1222,6 +1273,8 @@ export default async function ProfilePage({
     { data: savedProfile },
     { data: linkedArtists },
     { data: bookingSettings },
+    { data: bookingAppointmentTypes },
+    { data: bookingSlots },
     { data: activeStories },
     blockedProfileIds,
   ] = await Promise.all([
@@ -1378,6 +1431,32 @@ export default async function ProfilePage({
           .eq("profile_id", profile.id)
           .maybeSingle<BookingSettings>()
       : Promise.resolve({ data: null }),
+    ["artist", "studio"].includes(profile.account_type)
+      ? supabase
+          .from("booking_appointment_types")
+          .select(
+            "id, name, description, duration_minutes, buffer_before_minutes, buffer_after_minutes, deposit_policy, deposit_amount_cents",
+          )
+          .eq("profile_id", profile.id)
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true })
+          .order("created_at", { ascending: false })
+          .limit(8)
+          .returns<PublicBookingAppointmentType[]>()
+      : Promise.resolve({ data: [] as PublicBookingAppointmentType[] }),
+    ["artist", "studio"].includes(profile.account_type)
+      ? supabase
+          .from("booking_availability_slots")
+          .select(
+            "id, appointment_type_id, weekday, starts_at, ends_at, timezone, slot_interval_minutes, max_bookings_per_slot",
+          )
+          .eq("profile_id", profile.id)
+          .eq("is_active", true)
+          .order("weekday", { ascending: true })
+          .order("starts_at", { ascending: true })
+          .limit(14)
+          .returns<PublicBookingSlot[]>()
+      : Promise.resolve({ data: [] as PublicBookingSlot[] }),
     supabase
       .from("story_posts")
       .select(
@@ -1427,6 +1506,10 @@ export default async function ProfilePage({
       isVerifiedProfile(profile) &&
       ["artist", "studio"].includes(profile.account_type),
   );
+  const visibleBookingAppointmentTypes = canShowBookingAvailability
+    ? (bookingAppointmentTypes ?? [])
+    : [];
+  const visibleBookingSlots = canShowBookingAvailability ? (bookingSlots ?? []) : [];
   const canShow = (item: VisibleContent) =>
     !isPrivateLocked && canRenderContent({ isOwnProfile, item, viewer });
   const visiblePosts = (posts ?? []).filter(canShow);
@@ -1680,6 +1763,70 @@ export default async function ProfilePage({
                     <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">
                       {bookingSettings.calendar_notes}
                     </p>
+                  ) : null}
+                  {visibleBookingAppointmentTypes.length ? (
+                    <div className="mt-4">
+                      <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-strong)]">
+                        Appointment types
+                      </p>
+                      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                        {visibleBookingAppointmentTypes.map((type) => (
+                          <article
+                            className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2"
+                            key={type.id}
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <p className="text-sm font-bold">{type.name}</p>
+                              <span className="rounded-md bg-[var(--foreground)] px-2 py-1 text-xs font-bold text-[var(--background)]">
+                                {type.duration_minutes} min
+                              </span>
+                            </div>
+                            {type.description ? (
+                              <p className="mt-2 line-clamp-2 text-xs leading-5 text-[var(--muted)]">
+                                {type.description}
+                              </p>
+                            ) : null}
+                            <div className="mt-2 flex flex-wrap gap-1.5 text-xs font-semibold text-[var(--muted-strong)]">
+                              <span className="rounded-md border border-[var(--card-rim)] px-2 py-1">
+                                {formatDepositRule(type)}
+                              </span>
+                              {type.buffer_before_minutes || type.buffer_after_minutes ? (
+                                <span className="rounded-md border border-[var(--card-rim)] px-2 py-1">
+                                  Buffer {type.buffer_before_minutes}/
+                                  {type.buffer_after_minutes} min
+                                </span>
+                              ) : null}
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                  {visibleBookingSlots.length ? (
+                    <div className="mt-4">
+                      <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-strong)]">
+                        Weekly slots
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {visibleBookingSlots.map((slot) => {
+                          const type = visibleBookingAppointmentTypes.find(
+                            (item) => item.id === slot.appointment_type_id,
+                          );
+
+                          return (
+                            <span
+                              className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2.5 py-1.5 text-xs font-semibold text-[var(--foreground)]"
+                              key={slot.id}
+                            >
+                              {weekdays[slot.weekday] ?? "Day"}{" "}
+                              {formatSlotTime(slot.starts_at)}-
+                              {formatSlotTime(slot.ends_at)}
+                              {type ? ` - ${type.name}` : ""}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
                   ) : null}
                   {bookingSettings?.booking_url ? (
                     <a
