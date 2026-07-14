@@ -36,3 +36,12 @@ export function fulfillmentStatusLabel(status: string) {
 
   return titleCaseStatus(status);
 }
+
+export function calendarConnectionStatusLabel(status?: string | null) {
+  if (!status || status === "manual") return "Manual setup";
+  if (status === "google_planned") return "Google calendar planned";
+  if (status === "apple_ical_planned") return "Apple or iCalendar planned";
+  if (status === "connected") return "Connected";
+
+  return titleCaseStatus(status);
+}

@@ -241,6 +241,15 @@ const checks = [
       statusLabels.includes('if (status === "payment_failed") return "Payment failed"'),
   },
   {
+    label: "booking calendar connection status uses friendly account labels",
+    ok:
+      accountPage.includes("calendarConnectionStatusLabel") &&
+      !accountPage.includes('calendar_connection_status ?? "manual").replaceAll("_", " ")') &&
+      statusLabels.includes("export function calendarConnectionStatusLabel") &&
+      statusLabels.includes('if (!status || status === "manual") return "Manual setup"') &&
+      statusLabels.includes('if (status === "apple_ical_planned") return "Apple or iCalendar planned"'),
+  },
+  {
     label: "DM threads surface attached booking requests",
     ok:
       messagesPage.includes("type BookingRequest") &&

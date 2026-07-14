@@ -19,6 +19,7 @@ import { countryOptions, languageOptions } from "@/lib/localization";
 import {
   bookingPaymentStatusLabel,
   bookingStatusLabel,
+  calendarConnectionStatusLabel,
   commerceStatusLabel,
   fulfillmentStatusLabel,
 } from "@/lib/status-labels";
@@ -802,8 +803,10 @@ export default async function AccountPage({
                 </label>
                 <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 py-2 text-sm">
                   <p className="font-semibold">Calendar connection</p>
-                  <p className="mt-1 capitalize text-[var(--muted)]">
-                    {(bookingSettings?.calendar_connection_status ?? "manual").replaceAll("_", " ")}
+                  <p className="mt-1 text-[var(--muted)]">
+                    {calendarConnectionStatusLabel(
+                      bookingSettings?.calendar_connection_status,
+                    )}
                   </p>
                 </div>
                 <label className="grid gap-1 text-sm font-semibold md:col-span-2">
