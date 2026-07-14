@@ -109,8 +109,14 @@ function pageHref(page: number) {
   return `/admin/payments?page=${page}`;
 }
 
-function bookingPageHref(page: number) {
-  return `/admin/payments?booking_page=${page}`;
+function bookingFilterHref(status?: string | null, page = 1) {
+  const params = new URLSearchParams();
+
+  if (status) params.set("booking_payment_status", status);
+  if (page > 1) params.set("booking_page", String(page));
+
+  const query = params.toString();
+  return query ? `/admin/payments?${query}` : "/admin/payments";
 }
 
 function auditPageHref(page: number) {
@@ -180,6 +186,16 @@ function statusLabel(value: string) {
   return titleCaseStatus(value);
 }
 
+function paymentStatusFilter(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+
+  return bookingPaymentStatuses.includes(
+    rawValue as (typeof bookingPaymentStatuses)[number],
+  )
+    ? rawValue
+    : null;
+}
+
 function auditLabel(value: string) {
   if (value === "reset_stale_booking_deposit_checkouts") {
     return "Reset stale booking checkouts";
@@ -229,6 +245,7 @@ export default async function AdminPaymentsPage({
 }: {
   searchParams: Promise<{
     audit_page?: string | string[];
+    booking_payment_status?: string | string[];
     booking_page?: string | string[];
     message?: string | string[];
     page?: string | string[];
@@ -238,6 +255,9 @@ export default async function AdminPaymentsPage({
   const currentPage = pageNumber(params.page);
   const auditCurrentPage = pageNumber(params.audit_page);
   const bookingCurrentPage = pageNumber(params.booking_page);
+  const bookingPaymentStatusFilter = paymentStatusFilter(
+    params.booking_payment_status,
+  );
   const message = Array.isArray(params.message) ? params.message[0] : params.message;
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
@@ -340,16 +360,22 @@ export default async function AdminPaymentsPage({
           .order("created_at", { ascending: false })
           .range(auditFrom, auditTo)
           .returns<PaymentAuditRecord[]>(),
-        adminClient
+        (() => {
+          let query = adminClient
           .from("booking_requests")
           .select(
             "id, title, status, payment_status, deposit_amount_cents, platform_fee_cents, total_cents, currency, stripe_payment_intent_id, updated_at, client:profiles!booking_requests_client_id_fkey(display_name, username), artist:profiles!booking_requests_artist_id_fkey(display_name, username)",
             { count: "exact" },
           )
           .gt("total_cents", 0)
-          .order("updated_at", { ascending: false })
-          .range(bookingFrom, bookingTo)
-          .returns<BookingDepositRecord[]>(),
+          .order("updated_at", { ascending: false });
+
+          if (bookingPaymentStatusFilter) {
+            query = query.eq("payment_status", bookingPaymentStatusFilter);
+          }
+
+          return query.range(bookingFrom, bookingTo).returns<BookingDepositRecord[]>();
+        })(),
       ])
     : [
         { data: null },
@@ -664,8 +690,35 @@ export default async function AdminPaymentsPage({
                       </p>
                     </div>
                     <p className="text-xs font-bold text-[var(--muted-strong)]">
-                      50 per page
+                      {bookingPaymentStatusFilter
+                        ? bookingPaymentStatusLabel(bookingPaymentStatusFilter)
+                        : "All states"}
                     </p>
+                  </div>
+                  <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                    <Link
+                      className={`shrink-0 rounded-md border px-3 py-2 text-xs font-bold ${
+                        bookingPaymentStatusFilter
+                          ? "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
+                          : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                      }`}
+                      href={bookingFilterHref(null)}
+                    >
+                      All
+                    </Link>
+                    {bookingPaymentStatuses.map((status) => (
+                      <Link
+                        className={`shrink-0 rounded-md border px-3 py-2 text-xs font-bold ${
+                          bookingPaymentStatusFilter === status
+                            ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                            : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
+                        }`}
+                        href={bookingFilterHref(status)}
+                        key={status}
+                      >
+                        {bookingPaymentStatusLabel(status)}
+                      </Link>
+                    ))}
                   </div>
                   <div className="mt-3 space-y-2">
                     {recentBookingDeposits?.length ? (
@@ -783,7 +836,9 @@ export default async function AdminPaymentsPage({
                   <Pagination
                     currentPage={bookingCurrentPage}
                     hasNextPage={bookingHasNextPage}
-                    hrefForPage={bookingPageHref}
+                    hrefForPage={(nextPage) =>
+                      bookingFilterHref(bookingPaymentStatusFilter, nextPage)
+                    }
                     totalPages={bookingTotalPages}
                   />
                 </section>
@@ -866,8 +921,9 @@ export default async function AdminPaymentsPage({
                   <div className="mt-3 space-y-2">
                     {bookingPaymentStatusCounts.length ? (
                       bookingPaymentStatusCounts.map(([status, count]) => (
-                        <div
+                        <Link
                           className="flex items-center justify-between rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-sm"
+                          href={bookingFilterHref(status)}
                           key={status}
                         >
                           <span className="font-semibold capitalize">
@@ -876,7 +932,7 @@ export default async function AdminPaymentsPage({
                           <span className="text-[var(--muted-strong)]">
                             {count}
                           </span>
-                        </div>
+                        </Link>
                       ))
                     ) : (
                       <p className="text-sm text-[var(--muted)]">

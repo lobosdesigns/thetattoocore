@@ -236,9 +236,11 @@ checks.push({
     adminPaymentsPage.includes("resetStaleBookingDepositCheckouts") &&
     adminPaymentsPage.includes('table: "booking_requests"') &&
     adminPaymentsPage.includes("booking_page") &&
+    adminPaymentsPage.includes("booking_payment_status") &&
     adminPaymentsPage.includes("audit_page") &&
-    adminPaymentsPage.includes("function bookingPageHref") &&
+    adminPaymentsPage.includes("function bookingFilterHref") &&
     adminPaymentsPage.includes("function auditPageHref") &&
+    adminPaymentsPage.includes("paymentStatusFilter") &&
     adminPaymentsPage.includes("bookingCurrentPage") &&
     adminPaymentsPage.includes("Payment audit") &&
     adminPaymentsPage.includes("paymentAuditLogs") &&
@@ -250,6 +252,8 @@ checks.push({
     adminPaymentsPage.includes("recentBookingDeposits") &&
     adminPaymentsPage.includes(".gt(\"total_cents\", 0)") &&
     adminPaymentsPage.includes(".range(bookingFrom, bookingTo)") &&
+    adminPaymentsPage.includes('query.eq("payment_status", bookingPaymentStatusFilter)') &&
+    adminPaymentsPage.includes("bookingFilterHref(status)") &&
     adminPaymentsPage.includes("stripe_payment_intent_id") &&
     adminPaymentsPage.includes("Type refund to send full refund") &&
     adminPaymentsPage.includes("href={`/u/${booking.client.username}`}") &&
