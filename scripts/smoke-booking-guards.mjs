@@ -165,7 +165,9 @@ const checks = [
       accountPage.includes("appointment_type_label") &&
       accountPage.includes("preferred_slot_label") &&
       accountPage.includes("respondBookingRequest") &&
-      accountPage.includes("deposit checkout will open"),
+      accountPage.includes("deposit checkout will open") &&
+      accountPage.includes("Total checkout") &&
+      messagesPage.includes("Total checkout"),
   },
   {
     label: "account page exposes manual booking availability settings",

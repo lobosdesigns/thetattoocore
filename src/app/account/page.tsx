@@ -1677,6 +1677,13 @@ export default async function AccountPage({
                             {" "}+ TTC fee{" "}
                             {money(booking.platform_fee_cents, booking.currency)}
                           </p>
+                          <p>
+                            Total checkout:{" "}
+                            {money(
+                              booking.deposit_amount_cents + booking.platform_fee_cents,
+                              booking.currency,
+                            )}
+                          </p>
                           {booking.placement ? <p>Placement: {booking.placement}</p> : null}
                           {booking.style_tags ? <p>Style: {booking.style_tags}</p> : null}
                           {booking.preferred_city ? <p>City: {booking.preferred_city}</p> : null}
@@ -1838,6 +1845,13 @@ export default async function AccountPage({
                           Deposit: {money(booking.deposit_amount_cents, booking.currency)}
                           {" "}+ TTC fee{" "}
                           {money(booking.platform_fee_cents, booking.currency)}
+                        </p>
+                        <p>
+                          Total checkout:{" "}
+                          {money(
+                            booking.deposit_amount_cents + booking.platform_fee_cents,
+                            booking.currency,
+                          )}
                         </p>
                         <p>Payment: {bookingPaymentStatusLabel(booking.payment_status)}</p>
                         {booking.accepted_at ? (

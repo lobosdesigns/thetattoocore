@@ -289,6 +289,13 @@ function BookingCards({
                   {" "}+ TTC fee{" "}
                   {money(booking.platform_fee_cents, booking.currency)}
                 </p>
+                <p>
+                  Total checkout:{" "}
+                  {money(
+                    booking.deposit_amount_cents + booking.platform_fee_cents,
+                    booking.currency,
+                  )}
+                </p>
                 <p>Payment: {bookingPaymentStatusLabel(booking.payment_status)}</p>
                 {booking.style_tags ? <p>Style: {booking.style_tags}</p> : null}
                 {booking.preferred_city ? <p>City: {booking.preferred_city}</p> : null}
