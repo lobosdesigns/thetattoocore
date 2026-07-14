@@ -116,6 +116,8 @@ const checks = [
     ok:
       productPlan.includes("Profiles need a small public bio plus safe outbound links") &&
       productPlan.includes("Profiles need a wide banner/cover photo") &&
+      productPlan.includes("Done for launch with editable banner upload/removal") &&
+      productPlan.includes("banner-aware discovery surfaces") &&
       productPlan.includes("Instagram, TikTok, Facebook, YouTube, and X links") &&
       productPlan.includes("artist-to-studio/shop profile link") &&
       productPlan.includes("public linked-artist list on studio/shop profiles"),
