@@ -82,6 +82,13 @@ const bookingPaymentStatuses = [
   "refunded",
   "waived",
 ] as const;
+const paymentEventTypes = [
+  "checkout.session.completed",
+  "checkout.session.async_payment_failed",
+  "checkout.session.expired",
+  "charge.refunded",
+  "refund.failed",
+] as const;
 const productionPaymentGates = [
   "Choose a documented payout policy before real seller payouts.",
   "Finish tax, shipping-rate, refund, dispute, and chargeback procedures before public Merch orders.",
@@ -107,6 +114,16 @@ function pageNumber(value: string | string[] | undefined) {
 
 function pageHref(page: number) {
   return `/admin/payments?page=${page}`;
+}
+
+function paymentEventFilterHref(eventType?: string | null, page = 1) {
+  const params = new URLSearchParams();
+
+  if (eventType) params.set("event_type", eventType);
+  if (page > 1) params.set("page", String(page));
+
+  const query = params.toString();
+  return query ? `/admin/payments?${query}` : "/admin/payments";
 }
 
 function bookingFilterHref(status?: string | null, page = 1) {
@@ -196,6 +213,24 @@ function paymentStatusFilter(value: string | string[] | undefined) {
     : null;
 }
 
+function eventTypeFilter(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+
+  return paymentEventTypes.includes(rawValue as (typeof paymentEventTypes)[number])
+    ? rawValue
+    : null;
+}
+
+function eventTypeLabel(value: string) {
+  if (value === "checkout.session.completed") return "Checkout paid";
+  if (value === "checkout.session.async_payment_failed") return "Payment failed";
+  if (value === "checkout.session.expired") return "Checkout expired";
+  if (value === "charge.refunded") return "Charge refunded";
+  if (value === "refund.failed") return "Refund failed";
+
+  return value;
+}
+
 function auditLabel(value: string) {
   if (value === "reset_stale_booking_deposit_checkouts") {
     return "Reset stale booking checkouts";
@@ -247,6 +282,7 @@ export default async function AdminPaymentsPage({
     audit_page?: string | string[];
     booking_payment_status?: string | string[];
     booking_page?: string | string[];
+    event_type?: string | string[];
     message?: string | string[];
     page?: string | string[];
   }>;
@@ -258,6 +294,7 @@ export default async function AdminPaymentsPage({
   const bookingPaymentStatusFilter = paymentStatusFilter(
     params.booking_payment_status,
   );
+  const paymentEventTypeFilter = eventTypeFilter(params.event_type);
   const message = Array.isArray(params.message) ? params.message[0] : params.message;
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
@@ -298,15 +335,32 @@ export default async function AdminPaymentsPage({
     { count: bookingDepositCount, data: recentBookingDeposits },
   ] = adminClient
     ? await Promise.all([
-        adminClient
-          .from("stripe_webhook_events")
-          .select("event_id, event_type, received_at", { count: "exact" })
-          .order("received_at", { ascending: false })
-          .range(from, to)
-          .returns<PaymentEvent[]>(),
-        adminClient
-          .from("stripe_webhook_events")
-          .select("event_id", { count: "exact", head: true }),
+        (() => {
+          const query = adminClient
+            .from("stripe_webhook_events")
+            .select("event_id, event_type, received_at", { count: "exact" })
+            .order("received_at", { ascending: false });
+
+          if (paymentEventTypeFilter) {
+            return query
+              .eq("event_type", paymentEventTypeFilter)
+              .range(from, to)
+              .returns<PaymentEvent[]>();
+          }
+
+          return query.range(from, to).returns<PaymentEvent[]>();
+        })(),
+        (() => {
+          const query = adminClient
+            .from("stripe_webhook_events")
+            .select("event_id", { count: "exact", head: true });
+
+          if (paymentEventTypeFilter) {
+            return query.eq("event_type", paymentEventTypeFilter);
+          }
+
+          return query;
+        })(),
         statusCounts({
           column: "status",
           statuses: merchOrderStatuses,
@@ -582,9 +636,41 @@ export default async function AdminPaymentsPage({
               <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                   <h2 className="text-lg font-bold">Recent payment events</h2>
-                  <p className="text-sm text-[var(--muted-strong)]">
-                    Showing {rangeStart}-{rangeEnd} of {totalStripeEvents}
-                  </p>
+                  <div className="text-sm text-[var(--muted-strong)] sm:text-right">
+                    <p>
+                      Showing {rangeStart}-{rangeEnd} of {totalStripeEvents}
+                    </p>
+                    <p className="text-xs font-semibold">
+                      {paymentEventTypeFilter
+                        ? eventTypeLabel(paymentEventTypeFilter)
+                        : "All event types"}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                  <Link
+                    className={`shrink-0 rounded-md border px-3 py-2 text-xs font-bold ${
+                      paymentEventTypeFilter
+                        ? "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
+                        : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                    }`}
+                    href={paymentEventFilterHref(null)}
+                  >
+                    All
+                  </Link>
+                  {paymentEventTypes.map((eventType) => (
+                    <Link
+                      className={`shrink-0 rounded-md border px-3 py-2 text-xs font-bold ${
+                        paymentEventTypeFilter === eventType
+                          ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                          : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
+                      }`}
+                      href={paymentEventFilterHref(eventType)}
+                      key={eventType}
+                    >
+                      {eventTypeLabel(eventType)}
+                    </Link>
+                  ))}
                 </div>
                 <div className="mt-4 space-y-2">
                   {stripeEvents?.length ? (
@@ -615,6 +701,9 @@ export default async function AdminPaymentsPage({
                 <Pagination
                   currentPage={currentPage}
                   hasNextPage={hasNextPage}
+                  hrefForPage={(page) =>
+                    paymentEventFilterHref(paymentEventTypeFilter, page)
+                  }
                   totalPages={totalPages}
                 />
               </section>
