@@ -41,7 +41,7 @@ Use this before creating Android or iOS wrapper projects. The goal is a thin, po
 
 - Run `npm.cmd run verify` against the web app.
 - Run the full `docs/REAL_DEVICE_QA_CHECKLIST.md` on mobile web before packaging.
-- Confirm `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/support`, `/privacy`, `/terms`, `/messages`, `/notifications`, `/account`, public profiles, public posts, Stuff, Gigs, and Merch do not reload-loop or overflow horizontally.
+- Confirm `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/support`, `/privacy`, `/terms`, `/messages`, `/notifications`, `/account`, public profiles, public posts, Stories, Stuff, Gigs, Merch, and booking/deposit routes do not reload-loop or overflow horizontally.
 - Confirm install prompts or browser banners do not block scrolling in the wrapper.
 - Confirm videos do not show a visible download control in the wrapper media player.
 - Confirm file uploads work through normal mobile file pickers.
@@ -52,7 +52,7 @@ Use this before creating Android or iOS wrapper projects. The goal is a thin, po
 1. Create the wrapper in a separate native app folder after mobile web QA is stable.
 2. Point the wrapper to `/login`.
 3. Reuse TTC shield icons, maskable icon, splash, and store screenshots.
-4. Configure app links/universal links for public profile, post, Gossip, Stuff, Gigs, Merch, support, privacy, and terms routes.
+4. Configure app links/universal links for public profile, post, Story, Gossip, Stuff, Gigs, Merch, booking, support, privacy, and terms routes.
 5. Keep native permissions minimal.
 6. Run Android internal testing and TestFlight before public submission.
 7. Re-run real-device QA after every wrapper permission, deep-link, checkout, push, or upload change.

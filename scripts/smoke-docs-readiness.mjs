@@ -120,6 +120,8 @@ const checks = [
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not request precise device location") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not prompt on first open") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Store Review Safety") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Stories, Stuff, Gigs, Merch, and booking/deposit routes") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Story, Gossip, Stuff, Gigs, Merch, booking") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("docs/REAL_DEVICE_QA_CHECKLIST.md") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("docs/SCREENSHOT_PREP.md") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("raw payment or payout credentials"),
@@ -181,6 +183,12 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("verification") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Stripe test checkout") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("No reload-loop screens"),
+  },
+  {
+    label: "mobile submission runbook includes Stories and booking deposit QA",
+    ok:
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("4U, Stories, Gossip") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("booking/deposit paths"),
   },
   {
     label: "payment readiness doc keeps real-money gates explicit",
