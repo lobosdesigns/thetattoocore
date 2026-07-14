@@ -238,14 +238,17 @@ checks.push({
     adminPaymentsPage.includes("booking_page") &&
     adminPaymentsPage.includes("booking_payment_status") &&
     adminPaymentsPage.includes("event_type") &&
+    adminPaymentsPage.includes("audit_type") &&
     adminPaymentsPage.includes("audit_page") &&
     adminPaymentsPage.includes("const paymentEventTypes") &&
+    adminPaymentsPage.includes("const paymentAuditTypes") &&
     adminPaymentsPage.includes("function paymentEventFilterHref") &&
+    adminPaymentsPage.includes("function auditFilterHref") &&
     adminPaymentsPage.includes("function bookingFilterHref") &&
-    adminPaymentsPage.includes("function auditPageHref") &&
     adminPaymentsPage.includes("paymentStatusFilter") &&
     adminPaymentsPage.includes("eventTypeFilter") &&
     adminPaymentsPage.includes("eventTypeLabel") &&
+    adminPaymentsPage.includes("auditTypeFilter") &&
     adminPaymentsPage.includes("bookingCurrentPage") &&
     adminPaymentsPage.includes("Payment audit") &&
     adminPaymentsPage.includes("paymentAuditLogs") &&
@@ -258,9 +261,12 @@ checks.push({
     adminPaymentsPage.includes(".gt(\"total_cents\", 0)") &&
     adminPaymentsPage.includes(".range(bookingFrom, bookingTo)") &&
     adminPaymentsPage.includes('query.eq("event_type", paymentEventTypeFilter)') &&
+    adminPaymentsPage.includes('.eq("event_type", paymentAuditTypeFilter)') &&
     adminPaymentsPage.includes('query.eq("payment_status", bookingPaymentStatusFilter)') &&
     adminPaymentsPage.includes("paymentEventFilterHref(eventType)") &&
     adminPaymentsPage.includes("paymentEventFilterHref(paymentEventTypeFilter, page)") &&
+    adminPaymentsPage.includes("auditFilterHref(auditType)") &&
+    adminPaymentsPage.includes("auditFilterHref(paymentAuditTypeFilter, page)") &&
     adminPaymentsPage.includes("bookingFilterHref(status)") &&
     adminPaymentsPage.includes("stripe_payment_intent_id") &&
     adminPaymentsPage.includes("Type refund to send full refund") &&

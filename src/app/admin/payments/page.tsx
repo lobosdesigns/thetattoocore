@@ -89,6 +89,11 @@ const paymentEventTypes = [
   "charge.refunded",
   "refund.failed",
 ] as const;
+const paymentAuditTypes = [
+  "reset_stale_booking_deposit_checkouts",
+  "refund_booking_deposit_requested",
+  "booking_refund_problem",
+] as const;
 const productionPaymentGates = [
   "Choose a documented payout policy before real seller payouts.",
   "Finish tax, shipping-rate, refund, dispute, and chargeback procedures before public Merch orders.",
@@ -136,8 +141,14 @@ function bookingFilterHref(status?: string | null, page = 1) {
   return query ? `/admin/payments?${query}` : "/admin/payments";
 }
 
-function auditPageHref(page: number) {
-  return `/admin/payments?audit_page=${page}`;
+function auditFilterHref(auditType?: string | null, page = 1) {
+  const params = new URLSearchParams();
+
+  if (auditType) params.set("audit_type", auditType);
+  if (page > 1) params.set("audit_page", String(page));
+
+  const query = params.toString();
+  return query ? `/admin/payments?${query}` : "/admin/payments";
 }
 
 function Pagination({
@@ -221,6 +232,14 @@ function eventTypeFilter(value: string | string[] | undefined) {
     : null;
 }
 
+function auditTypeFilter(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+
+  return paymentAuditTypes.includes(rawValue as (typeof paymentAuditTypes)[number])
+    ? rawValue
+    : null;
+}
+
 function eventTypeLabel(value: string) {
   if (value === "checkout.session.completed") return "Checkout paid";
   if (value === "checkout.session.async_payment_failed") return "Payment failed";
@@ -280,6 +299,7 @@ export default async function AdminPaymentsPage({
 }: {
   searchParams: Promise<{
     audit_page?: string | string[];
+    audit_type?: string | string[];
     booking_payment_status?: string | string[];
     booking_page?: string | string[];
     event_type?: string | string[];
@@ -291,6 +311,7 @@ export default async function AdminPaymentsPage({
   const currentPage = pageNumber(params.page);
   const auditCurrentPage = pageNumber(params.audit_page);
   const bookingCurrentPage = pageNumber(params.booking_page);
+  const paymentAuditTypeFilter = auditTypeFilter(params.audit_type);
   const bookingPaymentStatusFilter = paymentStatusFilter(
     params.booking_payment_status,
   );
@@ -400,20 +421,27 @@ export default async function AdminPaymentsPage({
             "payment_failed",
             "refunded",
           ]),
-        adminClient
-          .from("admin_audit_logs")
-          .select(
-            "id, event_type, target_type, target_id, summary, created_at, profiles:profiles!admin_audit_logs_actor_id_fkey(display_name, username)",
-            { count: "exact" },
-          )
-          .in("event_type", [
-            "reset_stale_booking_deposit_checkouts",
-            "refund_booking_deposit_requested",
-            "booking_refund_problem",
-          ])
-          .order("created_at", { ascending: false })
-          .range(auditFrom, auditTo)
-          .returns<PaymentAuditRecord[]>(),
+        (() => {
+          const query = adminClient
+            .from("admin_audit_logs")
+            .select(
+              "id, event_type, target_type, target_id, summary, created_at, profiles:profiles!admin_audit_logs_actor_id_fkey(display_name, username)",
+              { count: "exact" },
+            )
+            .order("created_at", { ascending: false });
+
+          if (paymentAuditTypeFilter) {
+            return query
+              .eq("event_type", paymentAuditTypeFilter)
+              .range(auditFrom, auditTo)
+              .returns<PaymentAuditRecord[]>();
+          }
+
+          return query
+            .in("event_type", paymentAuditTypes)
+            .range(auditFrom, auditTo)
+            .returns<PaymentAuditRecord[]>();
+        })(),
         (() => {
           let query = adminClient
           .from("booking_requests")
@@ -718,8 +746,35 @@ export default async function AdminPaymentsPage({
                     </p>
                   </div>
                   <p className="text-xs font-bold text-[var(--muted-strong)]">
-                    Refunds and payment ops
+                    {paymentAuditTypeFilter
+                      ? auditLabel(paymentAuditTypeFilter)
+                      : "Refunds and payment ops"}
                   </p>
+                </div>
+                <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                  <Link
+                    className={`shrink-0 rounded-md border px-3 py-2 text-xs font-bold ${
+                      paymentAuditTypeFilter
+                        ? "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
+                        : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                    }`}
+                    href={auditFilterHref(null)}
+                  >
+                    All
+                  </Link>
+                  {paymentAuditTypes.map((auditType) => (
+                    <Link
+                      className={`shrink-0 rounded-md border px-3 py-2 text-xs font-bold ${
+                        paymentAuditTypeFilter === auditType
+                          ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                          : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
+                      }`}
+                      href={auditFilterHref(auditType)}
+                      key={auditType}
+                    >
+                      {auditLabel(auditType)}
+                    </Link>
+                  ))}
                 </div>
                 <div className="mt-4 space-y-2">
                   {paymentAuditLogs?.length ? (
@@ -766,7 +821,9 @@ export default async function AdminPaymentsPage({
                 <Pagination
                   currentPage={auditCurrentPage}
                   hasNextPage={auditHasNextPage}
-                  hrefForPage={auditPageHref}
+                  hrefForPage={(page) =>
+                    auditFilterHref(paymentAuditTypeFilter, page)
+                  }
                   totalPages={auditTotalPages}
                 />
               </section>
