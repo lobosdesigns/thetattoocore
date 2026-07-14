@@ -811,8 +811,8 @@ export default async function AccountPage({
                     )}
                   </p>
                   <p className="mt-2 text-xs leading-5 text-[var(--muted-strong)]">
-                    Connect a real calendar later; for launch, add your public
-                    booking page or calendar request link below.
+                    Add your public booking page or calendar request link
+                    below.
                   </p>
                 </div>
                 <label className="grid gap-1 text-sm font-semibold md:col-span-2">
