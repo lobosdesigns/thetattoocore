@@ -6,6 +6,7 @@ const adClickRoute = readFileSync("src/app/api/ad-click/route.ts", "utf8");
 const loginPage = readFileSync("src/app/login/page.tsx", "utf8");
 const signupPage = readFileSync("src/app/signup/page.tsx", "utf8");
 const notificationActions = readFileSync("src/app/notifications/actions.ts", "utf8");
+const notificationPage = readFileSync("src/app/notifications/page.tsx", "utf8");
 const mainActions = readFileSync("src/app/actions.ts", "utf8");
 const messageActions = readFileSync("src/app/messages/actions.ts", "utf8");
 const messageThread = readFileSync("src/app/messages/message-thread.tsx", "utf8");
@@ -151,6 +152,18 @@ const checks = [
       notificationActions.includes('"/messages"') &&
       notificationActions.includes('"/p/"') &&
       notificationActions.includes('return "/notifications"'),
+  },
+  {
+    label: "notification page has safe fallbacks for older notification rows",
+    ok:
+      notificationPage.includes('return notification.href || `/messages?c=${notification.subject_id}`') &&
+      notificationPage.includes('return notification.href || `/u/${notification.profiles.username}`') &&
+      notificationPage.includes('return notification.href || `/merch/${notification.subject_id}`') &&
+      notificationPage.includes('return notification.href || "/account#order-settings"') &&
+      notificationPage.includes('return notification.href || "/account#advertising-settings"') &&
+      notificationPage.includes('return notification.href || "/account#booking-settings"') &&
+      notificationPage.includes('return notification.href || "/account#verification-settings"') &&
+      notificationPage.includes('return notification.href || "/notifications"'),
   },
   {
     label: "notification open falls back if href parsing fails",
