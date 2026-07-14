@@ -1721,6 +1721,24 @@ export default async function AccountPage({
                               name="artist_note"
                               placeholder="Optional note for the client"
                             />
+                            <label className="grid gap-1 text-xs font-semibold text-[var(--muted)]">
+                              Final deposit amount
+                              <input
+                                className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+                                defaultValue={
+                                  booking.deposit_amount_cents
+                                    ? (booking.deposit_amount_cents / 100).toFixed(2)
+                                    : ""
+                                }
+                                inputMode="decimal"
+                                name="final_deposit_amount"
+                                placeholder="Example: 100"
+                              />
+                              <span className="text-[11px] font-normal leading-4 text-[var(--muted-strong)]">
+                                This is the deposit checkout amount before the
+                                TTC fee is added.
+                              </span>
+                            </label>
                             <details className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3">
                               <summary className="cursor-pointer list-none text-xs font-bold">
                                 Add appointment time

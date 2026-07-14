@@ -258,6 +258,10 @@ const checks = [
     label: "artist booking responses are server-only and notify clients",
     ok:
       accountActions.includes("export async function respondBookingRequest") &&
+      accountActions.includes('formData.get("final_deposit_amount")') &&
+      accountActions.includes("finalDepositAmountCents") &&
+      accountActions.includes("finalPlatformFeeCents") &&
+      accountActions.includes("total_cents: finalTotalCents") &&
       accountActions.includes("createAdminClient()") &&
       accountActions.includes('.eq("artist_id", claims.sub)') &&
       accountActions.includes('.from("booking_blackout_dates")') &&
@@ -265,7 +269,9 @@ const checks = [
       accountActions.includes("overlaps another scheduled booking") &&
       accountActions.includes('.in("status", ["accepted", "deposit_pending", "deposit_paid", "completed"])') &&
       accountActions.includes('type: decision === "accept" ? "booking_accepted" : "booking_declined"') &&
-      accountActions.includes("Deposit checkout is the next booking step."),
+      accountActions.includes("Deposit checkout is the next booking step.") &&
+      accountPage.includes('name="final_deposit_amount"') &&
+      messagesPage.includes('name="final_deposit_amount"'),
   },
   {
     label: "accepted booking requests can carry scheduled appointment times",

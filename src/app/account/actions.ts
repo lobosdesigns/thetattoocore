@@ -12,6 +12,7 @@ import {
 import { siteName, siteUrl, supportEmail } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { calculatePlatformFeeCents } from "@/lib/payments/fees";
 import { cleanExternalUrl } from "@/lib/urls";
 
 const LICENSE_BUCKET = "license-documents";
@@ -1001,6 +1002,10 @@ export async function respondBookingRequest(formData: FormData) {
   const bookingId = cleanText(formData.get("booking_id"), 80);
   const decision = cleanText(formData.get("decision"), 20);
   const artistNote = cleanText(formData.get("artist_note"), 1000);
+  const finalDepositText = cleanText(formData.get("final_deposit_amount"), 20);
+  const finalDepositInputCents = finalDepositText
+    ? centsFromDollars(formData.get("final_deposit_amount"), 500000)
+    : null;
   const scheduledStartAt = bookingDateTime(formData.get("scheduled_start_at"));
   const scheduledEndAt = bookingDateTime(formData.get("scheduled_end_at"));
   const scheduledTimezone = cleanTimezone(formData.get("scheduled_timezone"));
@@ -1060,6 +1065,17 @@ export async function respondBookingRequest(formData: FormData) {
     redirect(bookingPath("That booking request has already been handled."));
   }
 
+  if (decision === "accept" && finalDepositInputCents != null && finalDepositInputCents < 0) {
+    redirect(bookingPath("Final deposit must be a valid dollar amount."));
+  }
+
+  const finalDepositAmountCents =
+    decision === "accept" && finalDepositInputCents != null
+      ? finalDepositInputCents
+      : booking.deposit_amount_cents;
+  const finalPlatformFeeCents = calculatePlatformFeeCents(finalDepositAmountCents);
+  const finalTotalCents = finalDepositAmountCents + finalPlatformFeeCents;
+
   if (decision === "accept" && scheduledStartAt && scheduledEndAt) {
     const { data: blackoutConflict } = await supabase
       .from("booking_blackout_dates")
@@ -1115,9 +1131,12 @@ export async function respondBookingRequest(formData: FormData) {
     .update({
       accepted_at: decision === "accept" ? now : null,
       artist_note: artistNote || null,
+      deposit_amount_cents: finalDepositAmountCents,
       declined_at: decision === "decline" ? now : null,
+      platform_fee_cents: finalPlatformFeeCents,
       ...scheduledFields,
       status: nextStatus,
+      total_cents: finalTotalCents,
     })
     .eq("id", booking.id)
     .eq("artist_id", claims.sub)
@@ -1144,8 +1163,8 @@ export async function respondBookingRequest(formData: FormData) {
       actor_id: claims.sub,
       body:
         decision === "accept"
-          ? booking.deposit_amount_cents > 0
-            ? `Accepted. Deposit checkout is the next step: ${dollars(booking.deposit_amount_cents)} plus TTC fee ${dollars(booking.platform_fee_cents)}.${scheduledStartAt ? " Appointment time was added." : ""}`
+          ? finalDepositAmountCents > 0
+            ? `Accepted. Deposit checkout is the next step: ${dollars(finalDepositAmountCents)} plus TTC fee ${dollars(finalPlatformFeeCents)}.${scheduledStartAt ? " Appointment time was added." : ""}`
             : `Accepted.${scheduledStartAt ? " Appointment time was added." : " Deposit checkout can be added next if needed."}`
           : artistNote || "Declined for now.",
       href: `/u/${artist?.username ?? ""}#booking-request`,
