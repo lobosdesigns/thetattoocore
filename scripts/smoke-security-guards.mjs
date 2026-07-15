@@ -244,6 +244,16 @@ const checks = [
       notificationActions.includes(".eq(\"status\", \"pending\")"),
   },
   {
+    label: "new public follows create follower notifications",
+    ok:
+      profileActions.includes('const status = targetProfile.is_private ? "pending" : "accepted"') &&
+      profileActions.includes('title: "New follower"') &&
+      profileActions.includes('type: "new_follow"') &&
+      profileActions.includes("started following you") &&
+      profileActions.includes('href: actorProfile?.username ? `/u/${actorProfile.username}` : "/notifications"') &&
+      profileForm.includes("New followers, follow requests, and approved follow requests."),
+  },
+  {
     label: "DM unread deletion keeps ownership, read-state, and attachment cleanup guards",
     ok:
       messageActions.includes("export async function deleteUnreadMessage") &&
