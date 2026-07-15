@@ -69,6 +69,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
       url: `${siteUrl}/support`,
     },
+    {
+      changeFrequency: "daily",
+      lastModified: now,
+      priority: 0.7,
+      url: `${siteUrl}/merch`,
+    },
   ];
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

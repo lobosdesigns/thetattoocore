@@ -952,6 +952,15 @@ async function checkSitemapUrls() {
   const urls = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1]);
   const badUrls = [];
   const publicUrls = [];
+  const requiredSitemapUrls = [`${baseUrl}/merch`];
+  const missingRequiredUrls = requiredSitemapUrls.filter((url) => !urls.includes(url));
+
+  if (missingRequiredUrls.length > 0) {
+    failures += 1;
+    console.error(`FAIL sitemap required URLs`);
+    console.error(`  missing: ${missingRequiredUrls.join(", ")}`);
+    return;
+  }
 
   for (const url of urls) {
     try {
