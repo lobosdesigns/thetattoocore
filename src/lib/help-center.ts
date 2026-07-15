@@ -147,13 +147,18 @@ export const helpArticles = [
     faqs: [
       {
         answer:
-          "Deposits are handled through the platform checkout flow when a request is accepted and a deposit is required.",
+          "Deposits are handled through the platform checkout flow when a request is accepted and a deposit is required. Any TTC processing/platform fee should be shown before checkout instead of hidden later.",
         question: "When does a client pay a deposit?",
       },
       {
         answer:
-          "Calendar export files are available for scheduled bookings now. Deeper external calendar account connection is planned for the booking tools as they mature.",
+          "Calendar export files are available for scheduled bookings now. Deeper Google Calendar, Apple/iCloud Calendar, and standard iCalendar connection is planned for the booking tools as they mature.",
         question: "Can bookings connect to my calendar?",
+      },
+      {
+        answer:
+          "Use blackout dates and buffer time to keep clients from requesting days or times that are not workable. Review the request before accepting any deposit.",
+        question: "How do I prevent bad appointment times?",
       },
     ],
     lastReviewed: "July 15, 2026",
@@ -163,7 +168,9 @@ export const helpArticles = [
       "Open Account and choose the Booking tools.",
       "Create appointment types with duration, notes, buffer time, and deposit rules.",
       "Add weekly time slots and blackout dates so clients only request workable times.",
+      "Use public booking notes or links for existing calendar/request pages during launch if your shop already has one.",
       "Review incoming booking requests, accept the right slot, and let the client pay the deposit when required.",
+      "Download the private calendar file from accepted scheduled bookings when you need to add the appointment to your calendar.",
     ],
     title: "How to create appointment types, time slots, and booking deposits",
   },
