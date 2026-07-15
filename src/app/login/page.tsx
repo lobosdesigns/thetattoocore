@@ -161,6 +161,12 @@ export default async function LoginPage({
               >
                 Support and account help
               </Link>
+              <Link
+                className="block text-center text-sm font-semibold text-[var(--muted-strong)]"
+                href="/help"
+              >
+                Help Center
+              </Link>
               <AuthLegalLinks />
             </div>
           </div>
