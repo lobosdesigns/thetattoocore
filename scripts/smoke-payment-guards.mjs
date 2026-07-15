@@ -128,6 +128,7 @@ checks.push({
     accountPage.includes("Your Merch products") &&
     accountPage.includes("Submitted products stay here while admin reviews them") &&
     accountPage.includes('href={`/merch/${product.id}`}') &&
+    accountPage.includes('href="/merch"') &&
     accountPage.includes("Load {orderPageSize} more products"),
 });
 checks.push({
@@ -177,7 +178,8 @@ checks.push({
     merchDetailPage.includes("const isOwner = Boolean(viewerId && viewerId === data.profiles?.id)") &&
     merchDetailPage.includes("if (!isPublic && !isOwner)") &&
     merchDetailPage.includes("Seller-only product view") &&
-    merchDetailPage.includes("Checkout and public discovery open only after admin approval"),
+    merchDetailPage.includes("Checkout and public discovery open only after admin approval") &&
+    merchDetailPage.includes('href="/merch"'),
 });
 checks.push({
   label: "checkout routes require private payment gates before payments",

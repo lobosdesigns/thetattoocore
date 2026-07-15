@@ -279,7 +279,7 @@ export default async function MerchProductPage({
               <Link
                 aria-label="Back to Merch"
                 className="ttc-surface flex size-10 shrink-0 items-center justify-center rounded-md border"
-                href="/#merch"
+                href="/merch"
               >
                 <ArrowLeft className="size-5" />
               </Link>

@@ -2542,7 +2542,7 @@ export default async function AccountPage({
                           </Link>
                           <Link
                             className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
-                            href="/#merch"
+                            href="/merch"
                           >
                             View Merch
                           </Link>
