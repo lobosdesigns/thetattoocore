@@ -53,7 +53,7 @@ export const helpCategories = [
     description:
       "Posting to 4U, Gossip, Gigs, Stories, and DMs, including media uploads, comments, reports, blocking, and no-visible-nudity launch rules.",
     title: "Posting And Safety",
-    topics: ["4U and Gossip", "Stories and DMs", "Reports"],
+    topics: ["4U and Gossip", "Stories and DMs", "Reports", "Privacy controls"],
   },
 ] as const satisfies readonly HelpCategory[];
 
@@ -102,7 +102,7 @@ export const helpArticles = [
       },
     ],
     lastReviewed: "July 15, 2026",
-    relatedSlugs: ["artist-profile-shop-links", "posting-stories-dms"],
+    relatedSlugs: ["artist-profile-shop-links", "posting-stories-dms", "privacy-safety-support"],
     slug: "search-saved-people",
     steps: [
       "Open Search from the bottom navigation or header.",
@@ -238,7 +238,7 @@ export const helpArticles = [
       },
     ],
     lastReviewed: "July 15, 2026",
-    relatedSlugs: ["artist-profile-shop-links", "verification-documents"],
+    relatedSlugs: ["artist-profile-shop-links", "verification-documents", "privacy-safety-support"],
     slug: "posting-stories-dms",
     steps: [
       "Use the create button from the section you are viewing so the right post type opens.",
@@ -247,6 +247,33 @@ export const helpArticles = [
       "Report unsafe content, block users when needed, and contact support for urgent safety issues.",
     ],
     title: "How to create Stuff listings, Gigs, Stories, and DMs safely",
+  },
+  {
+    category: "Posting And Safety",
+    description:
+      "Use reports, blocks, privacy settings, account deletion requests, and support without exposing private details publicly.",
+    faqs: [
+      {
+        answer:
+          "Use report controls on the content or profile when available. For urgent safety, privacy, or account questions, use Support so the issue can be handled privately.",
+        question: "When should I report something?",
+      },
+      {
+        answer:
+          "Use Account data controls or Support for deletion requests. Some safety, dispute, fraud, legal, or payment records may need review before final handling.",
+        question: "How do account deletion requests work?",
+      },
+    ],
+    lastReviewed: "July 15, 2026",
+    relatedSlugs: ["posting-stories-dms", "search-saved-people", "verification-documents"],
+    slug: "privacy-safety-support",
+    steps: [
+      "Use report controls on posts, comments, profiles, Stuff, Gigs, Merch, or Stories when something breaks community rules.",
+      "Block a member when you need to stop unwanted profile access, comments, or DMs.",
+      "Keep private contact details, license documents, payment issues, disputes, and account-specific questions inside Support or Account tools.",
+      "Use Account data controls or Support for account deletion requests, then watch for follow-up if review is needed.",
+    ],
+    title: "How to use reports, blocks, privacy, and support",
   },
 ] as const satisfies readonly HelpArticle[];
 
