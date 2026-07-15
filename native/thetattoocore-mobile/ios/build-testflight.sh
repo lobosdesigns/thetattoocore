@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export LANG="${LANG:-en_US.UTF-8}"
+export LC_ALL="${LC_ALL:-en_US.UTF-8}"
+
 cd "$(dirname "$0")/App"
 
 if ! command -v xcodebuild >/dev/null 2>&1; then

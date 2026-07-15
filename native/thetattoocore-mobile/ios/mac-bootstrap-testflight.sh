@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export LANG="${LANG:-en_US.UTF-8}"
+export LC_ALL="${LC_ALL:-en_US.UTF-8}"
+
 LOG="$HOME/Desktop/ttc-ios-build.log"
 REPO_URL="https://github.com/lobosdesigns/thetattoocore.git"
 WORKDIR="$HOME/Desktop/thetattoocore"
