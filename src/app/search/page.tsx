@@ -351,6 +351,54 @@ function EmptySection({ label }: { label: string }) {
   );
 }
 
+function SearchNoResultsTips({
+  category,
+  city,
+  query,
+  region,
+}: {
+  category: string;
+  city: string;
+  query: string;
+  region: string;
+}) {
+  const hasFilters = Boolean(category || city || region);
+
+  return (
+    <section className="border-t border-[var(--card-rim)] px-4 py-5">
+      <div className="ttc-card rounded-md p-4">
+        <h2 className="text-lg font-bold">No matches yet</h2>
+        <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+          Try the exact username, a display name, city, style, shop name, or a
+          broader word. Search can only show public and privacy-safe results.
+        </p>
+        <ul className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted-strong)] sm:grid-cols-3">
+          <li className="rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] p-3">
+            Usernames work best without spaces, like{" "}
+            <span className="font-bold text-[var(--text)]">@artistname</span>.
+          </li>
+          <li className="rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] p-3">
+            Search by city or state when you know where the artist, shop, gig,
+            or seller is based.
+          </li>
+          <li className="rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] p-3">
+            Switch tabs between Profiles, 4U, Gossip, Stuff, Gigs, and Merch if
+            the result type matters.
+          </li>
+        </ul>
+        {hasFilters ? (
+          <Link
+            className="ttc-surface mt-4 inline-flex h-9 items-center rounded-md border px-3 text-xs font-bold"
+            href={query ? `/search?q=${encodeURIComponent(query)}` : "/search"}
+          >
+            Clear filters
+          </Link>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
 function ResultAction({ children }: { children: React.ReactNode }) {
   return (
     <span className="ttc-surface mt-3 inline-flex h-8 items-center rounded-md border px-3 text-xs font-semibold">
@@ -1023,6 +1071,14 @@ export default async function SearchPage({
 
         {!hasSearch ? null : (
           <>
+            {total === 0 ? (
+              <SearchNoResultsTips
+                category={category}
+                city={city}
+                query={query}
+                region={region}
+              />
+            ) : null}
             {runSection(type, "profiles") ? (
             <SearchSection count={profileResults.length} icon={UserRound} title="Profiles">
               {profileResults.length ? (
