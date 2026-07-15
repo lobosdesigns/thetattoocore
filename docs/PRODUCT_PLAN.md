@@ -193,7 +193,7 @@
 - Artist ads should appear in randomized bidded spots inside 4U and Gossip, clearly labeled as sponsored.
 - Stuff ads should run only inside Stuff, using the same simple bidding and rotation model but never leaking into 4U or Gossip.
 - Stuff ad goals should focus on listing views, seller messages from eligible users, and marketplace engagement.
-- Merch ads should run only inside Merch or safe brand placements and focus on product views, shop visits, and public purchases without mixing with professional Stuff equipment campaigns. Started for launch with a dedicated Merch campaign type, Merch-only placement, Merch goals, admin review visibility, click/impression tracking, and a sponsored Merch slot in the main Merch column.
+- Merch ads should run only inside Merch or safe brand placements and focus on product views, shop visits, and public purchases without mixing with professional Stuff equipment campaigns. Started for launch with a dedicated Merch campaign type, Merch-only placement, Merch goals, admin review visibility, click/impression tracking, a sponsored Merch slot in the main Merch column, and a reviewed sponsored placement in the dedicated `/merch` storefront.
 - Safety rules: no sensitive personal targeting, no hidden behavioral profiling, no adult/minor targeting, and clear sponsor labels.
 - Privacy language should also reject AI ad expansion, opaque lookalike-style automation, and confusing ad targeting that members cannot understand.
 - Sponsored cards should show clear ad labeling plus simple relevance context such as placement, coarse location, language, or keywords. Started for launch with reviewed sponsored cards showing placement, country/language labels, keywords, and no-AI-profiling copy.

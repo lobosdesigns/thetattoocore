@@ -157,6 +157,18 @@ checks.push({
     merchIndexPage.includes('url={`${siteUrl}/merch/${product.id}`}'),
 });
 checks.push({
+  label: "public Merch storefront includes reviewed Merch ad slot",
+  ok:
+    merchIndexPage.includes("async function fetchMerchSponsoredCampaign") &&
+    merchIndexPage.includes('.eq("campaign_type", "merch_listing")') &&
+    merchIndexPage.includes('.eq("ad_campaign_placements.placement", "merch")') &&
+    merchIndexPage.includes("function MerchSponsoredCard") &&
+    merchIndexPage.includes('<AdImpressionBeacon campaignId={campaign.id} placement="merch" />') &&
+    merchIndexPage.includes("Reviewed sponsored placement") &&
+    merchIndexPage.includes("No AI ad expansion") &&
+    merchIndexPage.includes("<MerchSponsoredCard campaign={merchAd} />"),
+});
+checks.push({
   label: "Merch detail allows owner-only non-public product review",
   ok:
     merchDetailPage.includes("async function getProductForViewer") &&

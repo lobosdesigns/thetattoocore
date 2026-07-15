@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -9,11 +10,13 @@ import {
   ShieldCheck,
   SlidersHorizontal,
 } from "lucide-react";
+import { AdImpressionBeacon } from "@/app/ad-impression-beacon";
 import { ContentReportForm } from "@/app/content-report-form";
 import { LogoLockup } from "@/app/logo-mark";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { CompactShareButton } from "@/app/share-actions";
+import { countryLabel, languageLabel } from "@/lib/localization";
 import { createClient } from "@/lib/supabase/server";
 import { siteName, siteUrl } from "@/lib/site";
 import { isVerifiedProfessional } from "@/lib/verification";
@@ -26,11 +29,33 @@ type Profile = {
   account_type: string;
   avatar_url?: string | null;
   city: string | null;
+  country_code?: string | null;
   display_name: string;
   id: string;
   license_verified_at?: string | null;
+  location_personalization_enabled?: boolean | null;
+  preferred_language?: string | null;
   region: string | null;
   username: string;
+};
+
+type SponsoredCampaign = {
+  advertiser: Pick<
+    Profile,
+    "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"
+  > | null;
+  body: string | null;
+  campaign_type: "artist_growth" | "stuff_listing" | "merch_listing";
+  city: string | null;
+  country_code: string | null;
+  goal: string;
+  id: string;
+  keywords: string[];
+  language: string | null;
+  matchLabels: string[];
+  region: string | null;
+  target_url: string | null;
+  title: string;
 };
 
 type MerchMedia = {
@@ -181,6 +206,215 @@ function ProductMedia({ media, title }: { media?: MerchMedia; title: string }) {
   );
 }
 
+async function fetchMerchSponsoredCampaign(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  viewer?: Pick<
+    Profile,
+    | "city"
+    | "country_code"
+    | "location_personalization_enabled"
+    | "preferred_language"
+    | "region"
+  > | null,
+) {
+  const now = new Date().toISOString();
+  const countryCode = viewer?.country_code?.toUpperCase() || null;
+  const language = viewer?.preferred_language?.toLowerCase() || null;
+  const useLocal = Boolean(viewer?.location_personalization_enabled);
+  const city = useLocal ? viewer?.city || null : null;
+  const region = useLocal ? viewer?.region || null : null;
+  let query = supabase
+    .from("ad_campaigns")
+    .select(
+      "id, title, body, target_url, campaign_type, goal, bid_cents, city, region, country_code, language, keywords, profiles:profiles!ad_campaigns_advertiser_id_fkey(username, display_name, avatar_url, account_type, license_verified_at), ad_campaign_placements!inner(placement)",
+    )
+    .eq("status", "active")
+    .in("payment_status", ["paid", "waived"])
+    .or(`starts_at.is.null,starts_at.lte.${now}`)
+    .or(`ends_at.is.null,ends_at.gt.${now}`)
+    .eq("campaign_type", "merch_listing")
+    .eq("ad_campaign_placements.placement", "merch");
+
+  if (countryCode) {
+    query = query.or(`country_code.is.null,country_code.eq.${countryCode}`);
+  }
+  if (language) {
+    query = query.or(`language.is.null,language.eq.${language}`);
+  }
+  if (region) {
+    query = query.or(`region.is.null,region.eq.${region}`);
+  } else {
+    query = query.is("region", null);
+  }
+  if (city) {
+    query = query.or(`city.is.null,city.eq.${city}`);
+  } else {
+    query = query.is("city", null);
+  }
+
+  const { data } = await query
+    .order("bid_cents", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(8)
+    .returns<
+      {
+        bid_cents: number;
+        body: string | null;
+        campaign_type: "artist_growth" | "stuff_listing" | "merch_listing";
+        city: string | null;
+        country_code: string | null;
+        goal: string;
+        id: string;
+        keywords: string[];
+        language: string | null;
+        profiles: Pick<
+          Profile,
+          "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"
+        > | null;
+        region: string | null;
+        target_url: string | null;
+        title: string;
+      }[]
+    >();
+
+  const campaign = data
+    ?.map((item) => ({
+      item,
+      score:
+        item.bid_cents +
+        (countryCode && item.country_code === countryCode ? 250 : 0) +
+        (language && item.language === language ? 200 : 0) +
+        (region && item.region === region ? 150 : 0) +
+        (city && item.city === city ? 200 : 0),
+    }))
+    .sort((first, second) => second.score - first.score)[0]?.item;
+
+  if (!campaign) return null;
+
+  const matchLabels = [
+    countryCode && campaign.country_code === countryCode ? "Country match" : null,
+    language && campaign.language === language ? "Language match" : null,
+    region && campaign.region === region ? "Region match" : null,
+    city && campaign.city === city ? "City match" : null,
+  ].filter(Boolean) as string[];
+
+  return {
+    advertiser: campaign.profiles,
+    body: campaign.body,
+    campaign_type: campaign.campaign_type,
+    city: campaign.city,
+    country_code: campaign.country_code,
+    goal: campaign.goal,
+    id: campaign.id,
+    keywords: campaign.keywords ?? [],
+    language: campaign.language,
+    matchLabels,
+    region: campaign.region,
+    target_url: campaign.target_url,
+    title: campaign.title,
+  } satisfies SponsoredCampaign;
+}
+
+function MerchSponsoredCard({ campaign }: { campaign?: SponsoredCampaign | null }) {
+  if (!campaign) return null;
+
+  const location = [
+    campaign.city,
+    campaign.region,
+    countryLabel(campaign.country_code),
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const targetingSummary = [
+    location ? "local area" : null,
+    campaign.language ? languageLabel(campaign.language) : null,
+    campaign.keywords.length ? "product keywords" : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const card = (
+    <article className="ttc-card overflow-hidden rounded-lg border border-[color-mix(in_srgb,var(--gold)_60%,var(--card-rim))] bg-[var(--ink)] p-4 text-[var(--paper-warm)] shadow-[0_16px_36px_rgba(0,0,0,0.22)]">
+      <AdImpressionBeacon campaignId={campaign.id} placement="merch" />
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--gold)]">
+            Sponsored in Merch
+          </p>
+          <h2 className="mt-2 line-clamp-2 text-lg font-bold">
+            {campaign.title}
+          </h2>
+        </div>
+        <span className="shrink-0 rounded-md border border-white/15 bg-white/10 px-2 py-1 text-xs font-semibold">
+          Ad
+        </span>
+      </div>
+      {campaign.body ? (
+        <p className="mt-3 line-clamp-3 text-sm leading-6 text-white/75">
+          {campaign.body}
+        </p>
+      ) : null}
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold capitalize text-white/80">
+          {campaign.goal.replaceAll("_", " ")}
+        </span>
+        <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80">
+          Merch listing
+        </span>
+        {campaign.matchLabels.map((label) => (
+          <span
+            className="rounded-md bg-[color-mix(in_srgb,var(--gold)_20%,transparent)] px-2 py-1 text-xs font-semibold text-[color-mix(in_srgb,var(--gold)_70%,var(--background))]"
+            key={label}
+          >
+            {label}
+          </span>
+        ))}
+        {campaign.keywords.slice(0, 3).map((keyword) => (
+          <span
+            className="rounded-md bg-white/10 px-2 py-1 text-xs font-semibold text-white/80"
+            key={keyword}
+          >
+            {keyword}
+          </span>
+        ))}
+      </div>
+      <p className="mt-3 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-xs leading-5 text-white/65">
+        Reviewed sponsored placement
+        {targetingSummary ? ` using ${targetingSummary}` : ""}. No AI ad expansion.
+      </p>
+      <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <ProfileAvatar profile={campaign.advertiser} size="md" />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">
+              {campaign.advertiser?.display_name ?? "TheTattooCore advertiser"}
+            </p>
+            <p className="mt-1 truncate text-xs text-white/60">
+              @{campaign.advertiser?.username ?? "advertiser"}
+            </p>
+          </div>
+        </div>
+        <span className="shrink-0 text-sm font-bold text-[var(--gold)]">
+          View
+        </span>
+      </div>
+    </article>
+  );
+
+  if (!campaign.target_url) return card;
+
+  return (
+    <a
+      className="block"
+      href={`/api/ad-click?campaign_id=${encodeURIComponent(
+        campaign.id,
+      )}&placement=merch`}
+      rel="nofollow sponsored"
+    >
+      {card}
+    </a>
+  );
+}
+
 export default async function MerchIndexPage({ searchParams }: MerchIndexProps) {
   const params = (await searchParams) ?? {};
   const activeCategory = merchCategoryFilters.some(
@@ -202,6 +436,15 @@ export default async function MerchIndexPage({ searchParams }: MerchIndexProps) 
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
+  const { data: currentProfile } = claims?.sub
+    ? await supabase
+        .from("profiles")
+        .select(
+          "id, username, display_name, avatar_url, account_type, city, country_code, preferred_language, location_personalization_enabled, license_verified_at, region",
+        )
+        .eq("id", claims.sub)
+        .maybeSingle<Profile>()
+    : { data: null };
   let productQuery = supabase
     .from("merch_products")
     .select(
@@ -235,6 +478,7 @@ export default async function MerchIndexPage({ searchParams }: MerchIndexProps) 
     })
     .limit(fetchLimit)
     .returns<MerchProduct[]>();
+  const merchAd = await fetchMerchSponsoredCampaign(supabase, currentProfile);
   const products = (productRows ?? []).filter(
     (product) => product.is_official || isVerifiedProfessional(product.profiles),
   );
@@ -361,9 +605,9 @@ export default async function MerchIndexPage({ searchParams }: MerchIndexProps) 
                 product.inventory_quantity - product.inventory_reserved;
 
               return (
+                <Fragment key={product.id}>
                 <article
                   className="ttc-card overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)]"
-                  key={product.id}
                 >
                   <Link href={`/merch/${product.id}`}>
                     <ProductMedia
@@ -445,6 +689,10 @@ export default async function MerchIndexPage({ searchParams }: MerchIndexProps) 
                     </div>
                   </div>
                 </article>
+                {product.id === visibleProducts[Math.min(1, visibleProducts.length - 1)]?.id ? (
+                  <MerchSponsoredCard campaign={merchAd} />
+                ) : null}
+                </Fragment>
               );
             })}
           </section>
