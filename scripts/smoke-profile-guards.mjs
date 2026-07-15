@@ -6,6 +6,7 @@ const followListPage = readFileSync("src/app/u/[username]/follow-list-page.tsx",
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
 const savedPage = readFileSync("src/app/saved/page.tsx", "utf8");
 const searchPage = readFileSync("src/app/search/page.tsx", "utf8");
+const recentSearches = readFileSync("src/app/search/recent-searches.tsx", "utf8");
 const urls = readFileSync("src/lib/urls.ts", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 
@@ -233,6 +234,18 @@ const checks = [
       searchPage.includes("{ value: gig.compensation, weight: 10 }") &&
       searchPage.includes("{ value: product.category, weight: 20 }") &&
       productPlan.includes("prefix/token matching"),
+  },
+  {
+    label: "search remembers recent searches locally without profiling",
+    ok:
+      searchPage.includes("RecentSearches") &&
+      recentSearches.includes('const storageKey = "ttc.recent-searches.v1"') &&
+      recentSearches.includes("const maxRecentSearches = 8") &&
+      recentSearches.includes("localStorage.getItem(storageKey)") &&
+      recentSearches.includes("localStorage.removeItem(storageKey)") &&
+      recentSearches.includes("Recent searches") &&
+      recentSearches.includes("hrefFor") &&
+      productPlan.includes("browser-local recent search chips"),
   },
   {
     label: "outbound profile links use safe URL and rel policy",

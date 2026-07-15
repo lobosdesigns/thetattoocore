@@ -15,6 +15,7 @@ import { NotificationBellLink } from "@/app/notification-bell-link";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
+import { RecentSearches } from "./recent-searches";
 
 type ProfileResult = {
   id: string;
@@ -1009,6 +1010,15 @@ export default async function SearchPage({
               </Link>
             ))}
           </div>
+          <RecentSearches
+            current={{
+              category,
+              city,
+              q: query,
+              region,
+              type,
+            }}
+          />
         </section>
 
         {!hasSearch ? null : (
