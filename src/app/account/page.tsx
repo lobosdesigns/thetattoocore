@@ -115,6 +115,20 @@ const accountNavItems = [
 ] as const;
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 const slotIntervals = [15, 20, 30, 45, 60, 90, 120] as const;
+const bookingCalendarPrepItems = [
+  [
+    "Manual calendar plan",
+    "Use your current booking or calendar request link while TTC handles requests, deposits, and private calendar downloads.",
+  ],
+  [
+    "Appointment cards",
+    "Accepted bookings with a scheduled time give both people a private Add to calendar download.",
+  ],
+  [
+    "Future sync",
+    "Google, Apple, or iCalendar account sync is planned after launch payment and policy review.",
+  ],
+] as const;
 
 function limitParam(value: string | string[] | undefined) {
   const rawValue = Array.isArray(value) ? value[0] : value;
@@ -959,6 +973,19 @@ export default async function AccountPage({
                   />
                   Show booking availability
                 </label>
+              </div>
+              <div className="mt-4 grid gap-3 lg:grid-cols-3">
+                {bookingCalendarPrepItems.map(([title, body]) => (
+                  <div
+                    className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3"
+                    key={title}
+                  >
+                    <p className="text-sm font-bold">{title}</p>
+                    <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
+                      {body}
+                    </p>
+                  </div>
+                ))}
               </div>
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 <label className="grid gap-1 text-sm font-semibold">

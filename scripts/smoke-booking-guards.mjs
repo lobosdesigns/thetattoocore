@@ -471,6 +471,15 @@ const checks = [
       profilePage.includes("bookingSettings.calendar_notes"),
   },
   {
+    label: "account booking settings explain manual calendar prep before future sync",
+    ok:
+      accountPage.includes("bookingCalendarPrepItems") &&
+      accountPage.includes("Manual calendar plan") &&
+      accountPage.includes("private Add to calendar download") &&
+      accountPage.includes("Future sync") &&
+      accountPage.includes("Google, Apple, or iCalendar account sync is planned"),
+  },
+  {
     label: "booking slot foundation models appointment types, slots, blackouts, and calendar connections",
     ok:
       bookingSlotMigration.includes("create table if not exists public.booking_appointment_types") &&
