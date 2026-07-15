@@ -37,6 +37,7 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 - Add, like, reply to, edit, delete, and report comments where supported.
 - Attach a photo/GIF to 4U and Gossip detail comments/replies, then open the attachment in the lightbox.
 - Confirm post owners can hide/delete disruptive comments where supported.
+- Search for a public profile and a private profile connected by an accepted follow relationship; confirm signed-in search finds both while logged-out search stays public-only.
 
 ## Commerce And Listings
 
@@ -49,9 +50,12 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 
 ## Messaging
 
+- Confirm the main swipe tabs are 4U, Gossip, Stuff, Gigs, and Merch only; DM access should come from the bottom DM shortcut, profile DM buttons, notifications, Story replies, or `/messages`.
 - Start a DM from another user's profile and confirm the recipient field/thread target is correct.
 - Send and receive a text message between two known test accounts.
 - Send and receive a DM photo attachment.
+- Open a selected DM thread on mobile and confirm the header and message input stay fixed while only the sent-message list scrolls.
+- Tap the other member's name/avatar in the DM header and message list; confirm it opens that member's profile.
 - Confirm delivered/read indicators update.
 - Delete an unread outgoing DM and confirm it disappears for the sender without breaking the thread.
 - Open a DM notification and confirm it routes to the correct thread without reload loops.
