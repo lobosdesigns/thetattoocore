@@ -112,6 +112,9 @@ const checks = [
       messagePage.includes("connectedProfileIds") &&
       messagePage.includes("connectedProfilesForPicker") &&
       messageStartForm.includes("People you follow or who follow you") &&
+      messageStartForm.includes("Search username, name, city, or account type") &&
+      messageStartForm.includes("function canSendToTarget") &&
+      messageStartForm.includes("disabled={!canSend}") &&
       messageStartForm.includes('name="username"') &&
       messageStartForm.includes("type=\"hidden\"") &&
       messageStartForm.includes("setSelectedUsername") &&

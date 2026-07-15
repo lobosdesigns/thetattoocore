@@ -43,6 +43,10 @@ function profileLocation(profile: ConnectedProfile) {
   return [profile.city, profile.region].filter(Boolean).join(", ");
 }
 
+function canSendToTarget(value: string) {
+  return /^[a-z0-9_]{3,30}$/.test(value);
+}
+
 export function MessageStartForm({
   connectedProfiles,
   imageAccept,
@@ -56,6 +60,7 @@ export function MessageStartForm({
   const [selectedUsername, setSelectedUsername] = useState(prefillUsername);
   const cleanQuery = cleanUsername(query);
   const targetUsername = selectedUsername || cleanQuery;
+  const canSend = canSendToTarget(targetUsername);
   const filteredProfiles = useMemo(() => {
     const terms = query
       .toLowerCase()
@@ -102,17 +107,18 @@ export function MessageStartForm({
             autoComplete="off"
             className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--muted)]"
             id="dm-username-search"
-            maxLength={30}
-            minLength={3}
+            maxLength={80}
             onChange={(event) => updateQuery(event.target.value)}
-            pattern="@?[a-zA-Z0-9_]{3,30}"
-            placeholder="username"
-            required
-            title="Search connected members, or type an exact username."
+            placeholder="Search username, name, city, or account type"
+            title="Search connected members, tap a profile, or type an exact username."
             type="search"
             value={query}
           />
         </div>
+        <p className="text-xs leading-5 text-[var(--muted)]">
+          Tap a connected profile, or type an exact username if the member is
+          not listed.
+        </p>
         {connectedProfiles.length ? (
           <div className="grid max-h-52 gap-2 overflow-y-auto pr-1">
             {filteredProfiles.length ? (
@@ -187,6 +193,7 @@ export function MessageStartForm({
       </details>
       <PendingSubmitButton
         className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
+        disabled={!canSend}
         pendingLabel="Sending"
       >
         <Send className="size-4" />
