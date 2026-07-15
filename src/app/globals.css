@@ -231,6 +231,20 @@ input[type="submit"]:disabled {
   cursor: not-allowed;
 }
 
+button:disabled:not(.ttc-disabled-state),
+input[type="submit"]:disabled:not(.ttc-disabled-state) {
+  background-color: color-mix(in srgb, var(--paper-soft) 88%, transparent) !important;
+  border-color: var(--card-rim) !important;
+  color: color-mix(in srgb, var(--foreground) 58%, transparent) !important;
+  opacity: 1;
+}
+
+:root[data-theme="dark"] button:disabled:not(.ttc-disabled-state),
+:root[data-theme="dark"] input[type="submit"]:disabled:not(.ttc-disabled-state) {
+  background-color: color-mix(in srgb, var(--paper-warm) 58%, #000) !important;
+  color: color-mix(in srgb, var(--foreground) 78%, transparent) !important;
+}
+
 .ttc-card input::placeholder,
 .ttc-card textarea::placeholder {
   color: color-mix(in srgb, var(--foreground) 42%, transparent);

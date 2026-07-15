@@ -17,6 +17,8 @@ const requiredSnippets = [
     snippets: [
       ".ttc-disabled-state:disabled",
       ':root[data-theme="dark"] .ttc-disabled-state:disabled',
+      "button:disabled:not(.ttc-disabled-state)",
+      ':root[data-theme="dark"] button:disabled:not(.ttc-disabled-state)',
     ],
   },
   {
