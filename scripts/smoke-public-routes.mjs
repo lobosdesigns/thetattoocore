@@ -223,7 +223,7 @@ const checks = [
     path: "/api/merch/checkout",
     status: [303],
     redirectIncludes: "/login",
-    locationIncludes: ["Sign%20in%20to%20buy%20merch"],
+    locationIncludes: ["Sign+in+to+buy+merch", "return_to=%2Fmerch%2Fbad"],
     redirect: "manual",
   },
   {
