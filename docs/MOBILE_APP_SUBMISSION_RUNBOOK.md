@@ -27,6 +27,7 @@ Start with a thin native wrapper only after core web QA is stable:
 ## Required Before Store Submission
 
 - Run the real-device checklist in `docs/REAL_DEVICE_QA_CHECKLIST.md` for signup, login, reset password, profile setup, 4U, Stories, Gossip, Stuff, Gigs, Merch browsing, DMs, booking/deposit paths, notifications, reports, blocking, verification upload, payment test paths, and account deletion request.
+- Confirm `npm run smoke:mobile` covers support/help/legal routes and the Search/Saved guide before store screenshots or wrapper QA.
 - Confirm app-store-safe screenshots use brand assets and safe sample content only.
 - Confirm screenshots do not expose private DMs, license documents, admin queues, real payment data, personal owner contact data, or visible infrastructure/provider names.
 - Confirm support email and public legal/contact surfaces use `support@thetattoocore.com` or final company/legal contact details, not personal owner information.

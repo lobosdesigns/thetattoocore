@@ -198,10 +198,12 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("No reload-loop screens"),
   },
   {
-    label: "mobile submission runbook includes Stories and booking deposit QA",
+    label: "mobile submission runbook includes Stories, help, and booking deposit QA",
     ok:
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("4U, Stories, Gossip") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("booking/deposit paths"),
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("booking/deposit paths") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("support/help/legal routes") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Search/Saved guide"),
   },
   {
     label: "product plan uses plain push and translation roadmap wording",
