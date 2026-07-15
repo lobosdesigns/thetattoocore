@@ -18,6 +18,7 @@ const docs = {
   "docs/AGE_RATING_PREP.md": readFileSync("docs/AGE_RATING_PREP.md", "utf8"),
   "docs/DATA_SAFETY_PREP.md": readFileSync("docs/DATA_SAFETY_PREP.md", "utf8"),
 };
+const packageJson = readFileSync("package.json", "utf8");
 const allDocs = Object.values(docs).join("\n");
 const forbiddenContactSnippets = [
   "lobo3319@gmail.com",
@@ -232,6 +233,13 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("removed scaffold asset URLs stay unavailable") &&
       docs["docs/APP_STORE_READINESS.md"].includes("photo/GIF attachments") &&
       docs["docs/APP_STORE_READINESS.md"].includes("participant-only `.ics` calendar downloads"),
+  },
+  {
+    label: "full verification keeps focused DM guards in the chain",
+    ok:
+      packageJson.includes('"smoke:dm": "node scripts/smoke-dm-guards.mjs"') &&
+      packageJson.includes("npm run smoke:stories && npm run smoke:dm && npm run smoke:booking") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("dedicated DM smoke guard suite"),
   },
 ];
 
