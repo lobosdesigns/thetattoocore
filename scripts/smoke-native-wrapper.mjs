@@ -61,8 +61,10 @@ const checks = [
       source.androidManifest.includes('android:allowBackup="false"') &&
       source.androidManifest.includes('android:screenOrientation="portrait"') &&
       source.iosInfo.includes("<string>UIInterfaceOrientationPortrait</string>") &&
-      !source.iosInfo.includes("UIInterfaceOrientationLandscapeLeft") &&
-      !source.iosInfo.includes("UIInterfaceOrientationLandscapeRight") &&
+      source.iosInfo.includes("<key>UISupportedInterfaceOrientations~ipad</key>") &&
+      source.iosInfo.includes("<string>UIInterfaceOrientationPortraitUpsideDown</string>") &&
+      source.iosInfo.includes("<string>UIInterfaceOrientationLandscapeLeft</string>") &&
+      source.iosInfo.includes("<string>UIInterfaceOrientationLandscapeRight</string>") &&
       source.iosInfo.includes("ITSAppUsesNonExemptEncryption") &&
       source.capacitorConfig.includes("cleartext: false"),
   },
