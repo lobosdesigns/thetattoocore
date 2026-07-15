@@ -151,6 +151,8 @@ checks.push({
     merchIndexPage.includes("SavedItemButton") &&
     merchIndexPage.includes("CompactShareButton") &&
     merchIndexPage.includes("ContentReportForm") &&
+    merchIndexPage.includes('href="/account#order-settings"') &&
+    !merchIndexPage.includes("#seller-settings") &&
     merchIndexPage.includes('subjectType="merch_product"') &&
     merchIndexPage.includes("const currentMerchPath = productHref({") &&
     merchIndexPage.includes("returnPath={currentMerchPath}") &&

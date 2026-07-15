@@ -527,7 +527,7 @@ export default async function MerchIndexPage({ searchParams }: MerchIndexProps) 
           </div>
           <Link
             className="inline-flex h-11 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-            href="/account#seller-settings"
+            href="/account#order-settings"
           >
             Seller tools
           </Link>
