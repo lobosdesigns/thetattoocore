@@ -88,7 +88,7 @@ type BookingBlackout = {
   reason: string | null;
   starts_at: string;
 };
-type StripeConnectAccount = {
+type SellerPayoutAccount = {
   charges_enabled: boolean;
   details_submitted: boolean;
   disabled_reason: string | null;
@@ -690,13 +690,13 @@ export default async function AccountPage({
         unit_price_cents: number;
       }[]
     >();
-  const { data: stripeConnectAccount } = await supabase
+  const { data: sellerPayoutAccount } = await supabase
     .from("stripe_connect_accounts")
     .select(
       "charges_enabled, payouts_enabled, details_submitted, disabled_reason, requirements_currently_due, onboarding_started_at, last_synced_at",
     )
     .eq("profile_id", claims.sub)
-    .maybeSingle<StripeConnectAccount>();
+    .maybeSingle<SellerPayoutAccount>();
   const { data: incomingBookings } = await (() => {
     let query = supabase
       .from("booking_requests")
@@ -869,10 +869,10 @@ export default async function AccountPage({
       profile?.account_type &&
         ["artist", "studio", "vendor"].includes(profile.account_type as string),
     );
-  const stripePayoutReady = Boolean(
-    stripeConnectAccount?.charges_enabled &&
-      stripeConnectAccount.payouts_enabled &&
-      stripeConnectAccount.details_submitted,
+  const sellerPayoutReady = Boolean(
+    sellerPayoutAccount?.charges_enabled &&
+      sellerPayoutAccount.payouts_enabled &&
+      sellerPayoutAccount.details_submitted,
   );
   const isFirstProfile = !profile;
   const normalizedProfile = profile
@@ -2376,9 +2376,9 @@ export default async function AccountPage({
                     Seller payout setup
                   </p>
                   <h4 className="mt-1 text-base font-bold">
-                    {stripePayoutReady
+                    {sellerPayoutReady
                       ? "Payout setup ready"
-                      : stripeConnectAccount
+                      : sellerPayoutAccount
                         ? "Payout setup needs review"
                         : "Set up seller payouts"}
                   </h4>
@@ -2390,27 +2390,27 @@ export default async function AccountPage({
                 </div>
                 <span
                   className={`w-fit rounded-md border px-2 py-1 text-xs font-semibold ${
-                    stripePayoutReady
+                    sellerPayoutReady
                       ? "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]"
                       : "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]"
                   }`}
                 >
-                  {stripePayoutReady ? "Ready" : "Setup needed"}
+                  {sellerPayoutReady ? "Ready" : "Setup needed"}
                 </span>
               </div>
-              {stripeConnectAccount ? (
+              {sellerPayoutAccount ? (
                 <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted-strong)] sm:grid-cols-3">
-                  <p>Charges: {stripeConnectAccount.charges_enabled ? "Ready" : "Not ready"}</p>
-                  <p>Payouts: {stripeConnectAccount.payouts_enabled ? "Ready" : "Not ready"}</p>
+                  <p>Charges: {sellerPayoutAccount.charges_enabled ? "Ready" : "Not ready"}</p>
+                  <p>Payouts: {sellerPayoutAccount.payouts_enabled ? "Ready" : "Not ready"}</p>
                   <p>
-                    Details: {stripeConnectAccount.details_submitted ? "Submitted" : "Needed"}
+                    Details: {sellerPayoutAccount.details_submitted ? "Submitted" : "Needed"}
                   </p>
-                  {stripeConnectAccount.disabled_reason ? (
+                  {sellerPayoutAccount.disabled_reason ? (
                     <p className="sm:col-span-3">
-                      Status note: {stripeConnectAccount.disabled_reason}
+                      Status note: {sellerPayoutAccount.disabled_reason}
                     </p>
                   ) : null}
-                  {stripeConnectAccount.requirements_currently_due.length ? (
+                  {sellerPayoutAccount.requirements_currently_due.length ? (
                     <p className="sm:col-span-3">
                       More details may be required in the hosted setup flow.
                     </p>
@@ -2427,7 +2427,7 @@ export default async function AccountPage({
                     className="flex h-10 w-full items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)] sm:w-fit"
                     pendingLabel="Opening setup"
                   >
-                    {stripeConnectAccount ? "Continue payout setup" : "Start payout setup"}
+                    {sellerPayoutAccount ? "Continue payout setup" : "Start payout setup"}
                   </PendingSubmitButton>
                 </form>
               ) : null}

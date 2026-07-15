@@ -17,6 +17,7 @@ const config: CapacitorConfig = {
     },
   },
   server: {
+    allowNavigation: ["thetattoocore.com", "www.thetattoocore.com"],
     androidScheme: "https",
     cleartext: false,
     url: "https://thetattoocore.com/login",

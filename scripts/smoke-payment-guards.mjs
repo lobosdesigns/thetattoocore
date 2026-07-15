@@ -252,7 +252,8 @@ checks.push({
   label: "Stripe Connect seller onboarding stays hosted and server-side",
   ok:
     accountPage.includes(".from(\"stripe_connect_accounts\")") &&
-    accountPage.includes("stripePayoutReady") &&
+    accountPage.includes("sellerPayoutReady") &&
+    accountPage.includes("sellerPayoutAccount") &&
     accountPage.includes("Continue payout setup") &&
     accountPage.includes("Start payout setup") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("stripe.accounts.create") &&

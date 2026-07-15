@@ -39,6 +39,7 @@ const checks = [
       source.capacitorConfig.includes('appId: "com.thetattoocore.app"') &&
       source.capacitorConfig.includes('appName: "TheTattooCore"') &&
       source.capacitorConfig.includes('url: "https://thetattoocore.com/login"') &&
+      source.capacitorConfig.includes('allowNavigation: ["thetattoocore.com", "www.thetattoocore.com"]') &&
       !source.capacitorConfig.includes("bundledWebRuntime") &&
       source.webFallback.includes("https://thetattoocore.com/login"),
   },
