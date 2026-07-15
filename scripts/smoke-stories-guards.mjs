@@ -276,6 +276,7 @@ const checks = [
       profilePage.includes("<ProfileStoryCard") &&
       profilePage.includes("<ProfileStoryPrompt />") &&
       profilePage.includes('href="/?compose=stories#stories"') &&
+      profilePage.includes("Add a 24h photo, GIF, or short-video update") &&
       profilePage.includes("recordStoryView.bind(null, story.id)") &&
       profilePage.includes("mediaType={media.media_type}") &&
       profilePage.includes('data-story-count="views"') &&

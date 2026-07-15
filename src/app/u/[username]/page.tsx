@@ -1191,7 +1191,7 @@ function ProfileStoryPrompt() {
             No active story
           </p>
           <p className="mt-1 text-sm font-semibold">
-            Add a 24h image update from the Stories rail.
+            Add a 24h photo, GIF, or short-video update from the Stories rail.
           </p>
         </div>
         <Link
