@@ -5,6 +5,7 @@ const files = {
   androidManifest: `${wrapperRoot}/android/app/src/main/AndroidManifest.xml`,
   capacitorConfig: `${wrapperRoot}/capacitor.config.ts`,
   iosBuildScript: `${wrapperRoot}/ios/build-testflight.sh`,
+  iosBootstrapScript: `${wrapperRoot}/ios/mac-bootstrap-testflight.sh`,
   iosExportOptions: `${wrapperRoot}/ios/ExportOptions-AppStore.template.plist`,
   iosInfo: `${wrapperRoot}/ios/App/App/Info.plist`,
   iosPrivacy: `${wrapperRoot}/ios/App/App/PrivacyInfo.xcprivacy`,
@@ -108,6 +109,15 @@ const checks = [
       source.iosUploadChecklist.includes("TestFlight internal testing") &&
       source.iosUploadChecklist.includes("https://thetattoocore.com/support") &&
       source.iosUploadChecklist.includes("Windows machine cannot run Xcode"),
+  },
+  {
+    label: "native iOS wrapper has one-command Mac bootstrap",
+    ok:
+      source.iosBootstrapScript.includes("github.com/lobosdesigns/thetattoocore.git") &&
+      source.iosBootstrapScript.includes("ttc-ios-build.log") &&
+      source.iosBootstrapScript.includes("npm run sync") &&
+      source.iosBootstrapScript.includes("./build-testflight.sh") &&
+      source.iosUploadChecklist.includes("mac-bootstrap-testflight.sh"),
   },
 ];
 

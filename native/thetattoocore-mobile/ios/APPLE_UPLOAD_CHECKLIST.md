@@ -18,6 +18,14 @@ npm install
 npm run sync
 ```
 
+Or run the one-command bootstrap from the Mac terminal:
+
+```bash
+curl -L https://raw.githubusercontent.com/lobosdesigns/thetattoocore/main/native/thetattoocore-mobile/ios/mac-bootstrap-testflight.sh | bash
+```
+
+The bootstrap writes logs to `~/Desktop/ttc-ios-build.log`.
+
 ## 3. Open Xcode
 
 ```bash
