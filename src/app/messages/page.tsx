@@ -772,10 +772,10 @@ export default async function MessagesPage({
     : { data: [] as BookingRequest[] };
 
   return (
-    <main className="ttc-page min-h-screen overflow-x-hidden">
-      <div className="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 overflow-x-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)] lg:grid-cols-[320px_minmax(0,1fr)]">
+    <main className="ttc-page h-[100dvh] overflow-hidden">
+      <div className="mx-auto grid h-full w-full max-w-7xl grid-cols-1 overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)] lg:grid-cols-[320px_minmax(0,1fr)]">
         <aside
-          className={`ttc-page-panel min-w-0 border-r border-[var(--card-rim)] ${
+          className={`ttc-page-panel min-h-0 min-w-0 overflow-y-auto border-r border-[var(--card-rim)] ${
             hasSelectedConversationParam ? "hidden lg:block" : "block"
           }`}
         >
@@ -943,13 +943,13 @@ export default async function MessagesPage({
         </aside>
 
         <section
-          className={`ttc-page-panel min-w-0 flex-col ${
-            hasSelectedConversationParam ? "flex min-h-[100dvh]" : "hidden min-h-screen lg:flex"
+          className={`ttc-page-panel min-h-0 min-w-0 flex-col overflow-hidden ${
+            hasSelectedConversationParam ? "flex h-[100dvh]" : "hidden h-full lg:flex"
           }`}
         >
           {selectedConversation ? (
             <>
-              <header className="sticky top-0 z-10 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_95%,transparent)] px-4 py-4 backdrop-blur">
+              <header className="z-10 shrink-0 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_95%,transparent)] px-4 py-4 backdrop-blur">
                 <div className="flex items-center gap-3">
                   <Link
                     aria-label="Back to DM inbox"
@@ -958,16 +958,34 @@ export default async function MessagesPage({
                   >
                     <ArrowLeft className="size-5" />
                   </Link>
-                  <ProfileAvatar profile={selectedConversation.otherProfile} />
-                  <div className="min-w-0">
-                    <h2 className="truncate text-base font-bold">
-                      {selectedConversation.otherProfile?.display_name ??
-                        "TattooCore member"}
-                    </h2>
-                    <p className="truncate text-xs text-[var(--muted-strong)]">
-                      @{selectedConversation.otherProfile?.username ?? "member"}
-                    </p>
-                  </div>
+                  {selectedConversation.otherProfile?.username ? (
+                    <Link
+                      className="flex min-w-0 items-center gap-3"
+                      href={`/u/${selectedConversation.otherProfile.username}`}
+                    >
+                      <ProfileAvatar profile={selectedConversation.otherProfile} />
+                      <div className="min-w-0">
+                        <h2 className="truncate text-base font-bold">
+                          {selectedConversation.otherProfile.display_name}
+                        </h2>
+                        <p className="truncate text-xs text-[var(--muted-strong)]">
+                          @{selectedConversation.otherProfile.username}
+                        </p>
+                      </div>
+                    </Link>
+                  ) : (
+                    <>
+                      <ProfileAvatar profile={selectedConversation.otherProfile} />
+                      <div className="min-w-0">
+                        <h2 className="truncate text-base font-bold">
+                          TattooCore member
+                        </h2>
+                        <p className="truncate text-xs text-[var(--muted-strong)]">
+                          @member
+                        </p>
+                      </div>
+                    </>
+                  )}
                   {selectedConversation.otherProfile &&
                   ["artist", "studio"].includes(
                     selectedConversation.otherProfile.account_type,
@@ -1019,7 +1037,7 @@ export default async function MessagesPage({
 
               <form
                 action={sendMessage}
-                className="sticky bottom-0 space-y-3 border-t border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_95%,transparent)] p-4"
+                className="shrink-0 space-y-3 border-t border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_95%,transparent)] p-4"
                 encType="multipart/form-data"
               >
                 <input

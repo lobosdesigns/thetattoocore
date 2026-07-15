@@ -10,7 +10,6 @@ const columnIds = [
   "marketplace",
   "gigs",
   "merch",
-  "messages",
 ] as const;
 
 function clampColumn(index: number) {

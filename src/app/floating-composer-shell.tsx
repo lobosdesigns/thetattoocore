@@ -8,7 +8,6 @@ import {
   MessageCircle,
   Package,
   Plus,
-  Send,
   ShoppingBag,
   Sparkles,
   X,
@@ -20,8 +19,7 @@ type ComposerMode =
   | "threads"
   | "marketplace"
   | "gigs"
-  | "merch"
-  | "messages";
+  | "merch";
 
 const modes: Record<
   ComposerMode,
@@ -61,11 +59,6 @@ const modes: Record<
     label: "Merch",
     title: "Merch item",
   },
-  messages: {
-    icon: Send,
-    label: "DM",
-    title: "New DM",
-  },
 };
 
 function modeFromHash(hash: string): ComposerMode {
@@ -74,7 +67,6 @@ function modeFromHash(hash: string): ComposerMode {
   if (hash === "#marketplace") return "marketplace";
   if (hash === "#gigs") return "gigs";
   if (hash === "#merch") return "merch";
-  if (hash === "#messages") return "messages";
 
   return "feed";
 }
@@ -124,7 +116,7 @@ export function FloatingComposerShell({
           }, 0)
         : undefined;
 
-    const sections = ["feed", "threads", "marketplace", "gigs", "merch", "messages"]
+    const sections = ["feed", "threads", "marketplace", "gigs", "merch"]
       .map((id) => document.getElementById(id))
       .filter(Boolean) as HTMLElement[];
 

@@ -34,6 +34,12 @@ type ProfileResult = {
   shop_profile_id: string | null;
 };
 
+type FollowRelation = {
+  follower_id: string;
+  following_id: string;
+  status: string;
+};
+
 type SearchProfileBadge = Pick<
   ProfileResult,
   "account_type" | "license_verified_at"
@@ -318,6 +324,19 @@ export default async function SearchPage({
     supabase,
     userId: claims?.sub,
   });
+  const { data: visiblePrivateFollowRows } = claims?.sub
+    ? await supabase
+        .from("follows")
+        .select("follower_id, following_id, status")
+        .or(`follower_id.eq.${claims.sub},following_id.eq.${claims.sub}`)
+        .eq("status", "accepted")
+        .returns<FollowRelation[]>()
+    : { data: [] as FollowRelation[] };
+  const visiblePrivateProfileIds = new Set(
+    (visiblePrivateFollowRows ?? []).map((follow) =>
+      follow.follower_id === claims?.sub ? follow.following_id : follow.follower_id,
+    ),
+  );
   const shouldRunProfiles = hasSearch && runSection(type, "profiles");
   const shouldRunFeed = hasSearch && runSection(type, "feed");
   const shouldRunThreads = hasSearch && runSection(type, "threads");
@@ -336,7 +355,7 @@ export default async function SearchPage({
     ? await Promise.all([
         shouldRunProfiles
           ? (() => {
-              let profileQuery = supabase
+              let publicProfileQuery = supabase
                 .from("profiles")
                 .select(
                   "id, username, display_name, avatar_url, banner_url, account_type, bio, city, license_verified_at, region, shop_profile_id",
@@ -346,13 +365,56 @@ export default async function SearchPage({
                 )
                 .eq("is_private", false);
 
-              if (city) profileQuery = profileQuery.ilike("city", cityPattern);
-              if (region) profileQuery = profileQuery.ilike("region", regionPattern);
+              if (city) publicProfileQuery = publicProfileQuery.ilike("city", cityPattern);
+              if (region) publicProfileQuery = publicProfileQuery.ilike("region", regionPattern);
 
-              return profileQuery
+              const publicProfilesPromise = publicProfileQuery
                 .order("display_name", { ascending: true })
                 .limit(resultFetchLimit)
                 .returns<ProfileResult[]>();
+              const privateProfilesPromise = visiblePrivateProfileIds.size
+                ? (() => {
+                    let privateProfileQuery = supabase
+                      .from("profiles")
+                      .select(
+                        "id, username, display_name, avatar_url, banner_url, account_type, bio, city, license_verified_at, region, shop_profile_id",
+                      )
+                      .in("id", Array.from(visiblePrivateProfileIds))
+                      .or(
+                        `username.ilike.${pattern},display_name.ilike.${pattern},bio.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`,
+                      );
+
+                    if (city) privateProfileQuery = privateProfileQuery.ilike("city", cityPattern);
+                    if (region) {
+                      privateProfileQuery = privateProfileQuery.ilike("region", regionPattern);
+                    }
+
+                    return privateProfileQuery
+                      .order("display_name", { ascending: true })
+                      .limit(resultFetchLimit)
+                      .returns<ProfileResult[]>();
+                  })()
+                : Promise.resolve({ data: [] as ProfileResult[] });
+
+              return Promise.all([publicProfilesPromise, privateProfilesPromise]).then(
+                ([publicProfiles, privateProfiles]) => {
+                  const profileMap = new Map<string, ProfileResult>();
+
+                  for (const profile of publicProfiles.data ?? []) {
+                    profileMap.set(profile.id, profile);
+                  }
+                  for (const profile of privateProfiles.data ?? []) {
+                    profileMap.set(profile.id, profile);
+                  }
+
+                  return {
+                    ...publicProfiles,
+                    data: Array.from(profileMap.values()).sort((a, b) =>
+                      a.display_name.localeCompare(b.display_name),
+                    ),
+                  };
+                },
+              );
             })()
           : Promise.resolve({ data: [] as ProfileResult[] }),
         shouldRunFeed

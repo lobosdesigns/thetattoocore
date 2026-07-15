@@ -191,7 +191,7 @@ const checks = [
       composerShell.includes("explicitOpenModeRef") &&
       composerShell.includes("if (explicitOpenModeRef.current) return") &&
       composerShell.includes("window.history.replaceState") &&
-      composerShell.includes('const sections = ["feed", "threads", "marketplace", "gigs", "merch", "messages"]') &&
+      composerShell.includes('const sections = ["feed", "threads", "marketplace", "gigs", "merch"]') &&
       composerShell.includes('"ttc-open-composer"') &&
       composerShell.includes("setActiveMode(mode)") &&
       storyCreateButton.includes('aria-label="Add a Story"') &&

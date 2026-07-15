@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ChevronDown, Search, Send } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import {
   createFeedPost,
   createMarketplaceListing,
@@ -9,7 +9,6 @@ import {
 } from "./actions";
 import { FloatingComposerShell } from "./floating-composer-shell";
 import { MediaInput } from "./media-input";
-import { startConversation } from "./messages/actions";
 import { PendingSubmitButton } from "./pending-submit-button";
 import { WordLimitedField } from "./word-limited-field";
 
@@ -102,24 +101,6 @@ function VisibilityControl({
         ))}
       </div>
     </section>
-  );
-}
-
-function DmAttachmentControl() {
-  return (
-    <ComposerDetails title="Photo attachment">
-      <MediaInput
-        accept={imageAccept}
-        compact
-        maxImageBytes={10 * 1024 * 1024}
-        name="media"
-        videoAllowed={false}
-      />
-      <p className="text-xs leading-5 text-[var(--muted-strong)]">
-        Photo DMs stay private to the conversation. GIFs are allowed; video DMs
-        are not open yet.
-      </p>
-    </ComposerDetails>
   );
 }
 
@@ -436,44 +417,6 @@ export function FloatingComposer({
               payment rules are ready.
             </p>
           </div>
-        ),
-        messages: (
-          <form
-            action={startConversation}
-            className="space-y-3"
-            encType="multipart/form-data"
-          >
-            <div className="flex items-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3">
-              <Search className="size-4 text-[var(--muted-strong)]" />
-              <input
-                className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none"
-                maxLength={30}
-                minLength={3}
-                name="username"
-                pattern="@?[a-zA-Z0-9_]{3,30}"
-                placeholder="username"
-                required
-                title="Use 3-30 letters, numbers, or underscores."
-              />
-            </div>
-            <WordLimitedField
-              as="textarea"
-              className="min-h-28 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
-              emojiShortcuts
-              maxCharacters={4000}
-              maxLength={4000}
-              minTrimmedLength={1}
-              name="body"
-              placeholder="Message"
-              required
-              validationMessage="Write a message before sending."
-            />
-            <DmAttachmentControl />
-            <ComposerSubmit pendingLabel="Sending">
-              <Send className="size-4" />
-              Send
-            </ComposerSubmit>
-          </form>
         ),
       }}
       isSignedIn={isSignedIn}

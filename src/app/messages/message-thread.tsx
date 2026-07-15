@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Check, CheckCheck, Trash2 } from "lucide-react";
@@ -40,6 +41,22 @@ function timeAgo(value: string) {
   if (hours < 24) return `${hours}h`;
 
   return `${Math.round(hours / 24)}d`;
+}
+
+function ProfileAvatarLink({ profile }: { profile?: Profile }) {
+  if (!profile?.username) {
+    return <ProfileAvatar profile={profile} size="sm" />;
+  }
+
+  return (
+    <Link
+      aria-label={`Open ${profile.display_name || profile.username} profile`}
+      className="shrink-0"
+      href={`/u/${profile.username}`}
+    >
+      <ProfileAvatar profile={profile} size="sm" />
+    </Link>
+  );
 }
 
 export function MessageThread({
@@ -123,7 +140,7 @@ export function MessageThread({
   }, [conversationId, router]);
 
   return (
-    <div className="min-w-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-4 py-5">
+    <div className="min-h-0 min-w-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-4 py-5">
       {initialMessages.map((message) => {
         const mine = message.sender_id === currentUserId;
         const sender = profileById.get(message.sender_id);
@@ -139,7 +156,7 @@ export function MessageThread({
             <div
               className={`min-w-0 flex items-end gap-2 ${mine ? "justify-end" : "justify-start"}`}
             >
-              {!mine ? <ProfileAvatar profile={sender} size="sm" /> : null}
+              {!mine ? <ProfileAvatarLink profile={sender} /> : null}
               <div
                 className={`max-w-[82%] overflow-hidden rounded-md px-4 py-3 sm:max-w-[78%] ${
                   mine
@@ -195,7 +212,7 @@ export function MessageThread({
                   {timeAgo(message.created_at)}
                 </p>
               </div>
-              {mine ? <ProfileAvatar profile={sender} size="sm" /> : null}
+              {mine ? <ProfileAvatarLink profile={sender} /> : null}
             </div>
             {mine ? (
               <div className="mt-1 flex justify-end">

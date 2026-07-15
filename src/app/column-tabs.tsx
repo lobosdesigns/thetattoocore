@@ -8,8 +8,7 @@ type ColumnId =
   | "threads"
   | "marketplace"
   | "gigs"
-  | "merch"
-  | "messages";
+  | "merch";
 
 const tabs: { href: string; id?: ColumnId; label: string }[] = [
   { href: "#feed", id: "feed", label: "4U" },
@@ -17,7 +16,6 @@ const tabs: { href: string; id?: ColumnId; label: string }[] = [
   { href: "#marketplace", id: "marketplace", label: "Stuff" },
   { href: "#gigs", id: "gigs", label: "Gigs" },
   { href: "#merch", id: "merch", label: "Merch" },
-  { href: "#messages", id: "messages", label: "DM" },
 ];
 
 function idFromHash(hash: string): ColumnId {
@@ -25,12 +23,11 @@ function idFromHash(hash: string): ColumnId {
   if (hash === "#marketplace") return "marketplace";
   if (hash === "#gigs") return "gigs";
   if (hash === "#merch") return "merch";
-  if (hash === "#messages") return "messages";
 
   return "feed";
 }
 
-export function ColumnTabs({ unreadDmCount = 0 }: { unreadDmCount?: number }) {
+export function ColumnTabs() {
   const [activeId, setActiveId] = useState<ColumnId>("feed");
 
   useEffect(() => {
@@ -89,17 +86,6 @@ export function ColumnTabs({ unreadDmCount = 0 }: { unreadDmCount?: number }) {
             }}
           >
             {tab.label}
-            {tab.label === "DM" && unreadDmCount ? (
-              <span
-                className={`ml-2 flex min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
-                  isActive
-                    ? "bg-[var(--background)] text-[var(--foreground)]"
-                    : "bg-[var(--foreground)] text-[var(--background)]"
-                }`}
-              >
-                {unreadDmCount > 9 ? "9+" : unreadDmCount}
-              </span>
-            ) : null}
           </Link>
         );
       })}

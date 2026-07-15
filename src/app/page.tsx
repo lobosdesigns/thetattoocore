@@ -1949,7 +1949,7 @@ export default async function Home({
             </div>
           </header>
 
-          <ColumnTabs unreadDmCount={unreadDmBadge} />
+          <ColumnTabs />
 
           {params.message ? (
             <p
@@ -3003,26 +3003,6 @@ export default async function Home({
             </div>
           </section>
 
-          <section
-            className="min-w-full snap-start snap-always border-l border-[var(--card-rim)] px-4 py-5"
-            id="messages"
-          >
-            <div className="mb-4 flex items-center gap-2">
-              <Send className="size-5" />
-              <h2 className="text-lg font-bold">DM</h2>
-            </div>
-            <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-4 text-sm leading-6 text-[var(--muted)]">
-              DMs are live. Start conversations, view your inbox,
-              and reply from the dedicated messenger.
-              <Link
-                className="mt-3 flex h-10 w-fit items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-                href="/messages"
-              >
-                <Send className="size-4" />
-                Open DM
-              </Link>
-            </div>
-          </section>
           </ColumnSnapRail>
         </section>
 

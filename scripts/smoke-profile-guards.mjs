@@ -210,6 +210,15 @@ const checks = [
       savedPage.includes("!blockedProfileIds.has(post.profiles.id)"),
   },
   {
+    label: "signed-in profile search can find accepted private follows",
+    ok:
+      searchPage.includes('.from("follows")') &&
+      searchPage.includes('.eq("status", "accepted")') &&
+      searchPage.includes("visiblePrivateProfileIds") &&
+      searchPage.includes("privateProfilesPromise") &&
+      productPlan.includes("private profiles they are connected to through accepted follower/following relationships"),
+  },
+  {
     label: "outbound profile links use safe URL and rel policy",
     ok:
       urls.includes('["http:", "https:"].includes(url.protocol)') &&

@@ -3,6 +3,9 @@ import { readFileSync } from "node:fs";
 const messageActions = readFileSync("src/app/messages/actions.ts", "utf8");
 const messagePage = readFileSync("src/app/messages/page.tsx", "utf8");
 const messageThread = readFileSync("src/app/messages/message-thread.tsx", "utf8");
+const columnTabs = readFileSync("src/app/column-tabs.tsx", "utf8");
+const columnSnapRail = readFileSync("src/app/column-snap-rail.tsx", "utf8");
+const homePage = readFileSync("src/app/page.tsx", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const qaChecklist = readFileSync("docs/REAL_DEVICE_QA_CHECKLIST.md", "utf8");
 
@@ -79,6 +82,25 @@ const checks = [
       productPlan.includes("Real send/receive testing still needs logged-in test sessions") &&
       qaChecklist.includes("Send and receive a text message between two known test accounts") &&
       qaChecklist.includes("Open a DM notification and confirm it routes to the correct thread without reload loops"),
+  },
+  {
+    label: "DM is dedicated to messenger routes instead of a main swipe column",
+    ok:
+      !columnTabs.includes("#messages") &&
+      !columnSnapRail.includes('"messages"') &&
+      !homePage.includes('id="messages"') &&
+      homePage.includes('href="/messages"') &&
+      productPlan.includes("removing the DM tab/rail column"),
+  },
+  {
+    label: "DM thread keeps composer fixed and profile identity clickable",
+    ok:
+      messagePage.includes('className="ttc-page h-[100dvh] overflow-hidden"') &&
+      messagePage.includes('className="shrink-0 space-y-3 border-t') &&
+      messagePage.includes('href={`/u/${selectedConversation.otherProfile.username}`}') &&
+      messageThread.includes("function ProfileAvatarLink") &&
+      messageThread.includes("min-h-0 min-w-0 flex-1 space-y-3 overflow-y-auto") &&
+      productPlan.includes("only already-sent messages scroll"),
   },
 ];
 
