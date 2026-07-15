@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { HelpCenterSearch } from "./help-center-search";
 import { LogoLockup } from "../logo-mark";
-import { helpArticles, helpCategories } from "@/lib/help-center";
 import { siteName, supportEmail } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -37,53 +37,7 @@ export default function HelpCenterPage() {
             into screenshot walkthroughs, short clips, and searchable answers.
           </p>
 
-          <div className="mt-7 grid gap-4 md:grid-cols-2">
-            {helpCategories.map((category) => (
-              <section
-                className="ttc-surface rounded-lg border border-[var(--card-rim)] p-4"
-                key={category.title}
-              >
-                <h2 className="text-lg font-bold">{category.title}</h2>
-                <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                  {category.description}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {category.topics.map((topic) => (
-                    <span
-                      className="rounded-full border border-[var(--card-rim)] px-3 py-1 text-xs font-semibold text-[var(--muted-strong)]"
-                      key={topic}
-                    >
-                      {topic}
-                    </span>
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
-
-          <section className="mt-7 rounded-lg border border-[var(--card-rim)] p-4">
-            <h2 className="text-lg font-bold">Tutorial Library</h2>
-            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-              These are the first screenshot tutorials planned for launch
-              support. Articles will be public when safe, and account-specific
-              questions will stay in private support.
-            </p>
-            <ul className="mt-4 grid gap-2 text-sm leading-6 text-[var(--muted)] md:grid-cols-2">
-              {helpArticles.map((article) => (
-                <li
-                  className="rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] px-3 py-2"
-                  key={article.slug}
-                >
-                  <Link className="font-semibold underline" href={`/help/${article.slug}`}>
-                    {article.title}
-                  </Link>
-                  <span className="mt-1 block text-xs text-[var(--muted)]">
-                    {article.category}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
+          <HelpCenterSearch />
 
           <section className="ttc-surface mt-7 rounded-lg border border-[var(--card-rim)] p-4">
             <h2 className="text-lg font-bold">Article Comments</h2>

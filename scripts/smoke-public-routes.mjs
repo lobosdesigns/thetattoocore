@@ -378,6 +378,8 @@ const checks = [
     status: [200],
     includes: [
       "Help Center",
+      "Search Help Center",
+      "Search bookings, ads, Merch, verification",
       "Tutorial Library",
       "Article Comments",
       "/help/booking-appointments",
