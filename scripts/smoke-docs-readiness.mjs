@@ -21,6 +21,8 @@ const docs = {
 const packageJson = readFileSync("package.json", "utf8");
 const helpArticlePage = readFileSync("src/app/help/[slug]/page.tsx", "utf8");
 const helpActions = readFileSync("src/app/help/actions.ts", "utf8");
+const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
+const adminContentPage = readFileSync("src/app/admin/content/page.tsx", "utf8");
 const helpCommentsMigration = readFileSync(
   "supabase/migrations/20260715232157_help_article_comments.sql",
   "utf8",
@@ -243,7 +245,8 @@ const checks = [
       docs["docs/PRODUCT_PLAN.md"].includes("Each Help Center article should support member comments") &&
       docs["docs/PRODUCT_PLAN.md"].includes("Started for launch with RLS-protected `help_article_comments`") &&
       docs["docs/PRODUCT_PLAN.md"].includes("pin official answers") &&
-      docs["docs/PRODUCT_PLAN.md"].includes("turn repeated questions into new FAQ entries"),
+      docs["docs/PRODUCT_PLAN.md"].includes("turn repeated questions into new FAQ entries") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("Admin > Content Help review"),
   },
   {
     label: "help article questions have schema, RLS, and signed-in submit flow",
@@ -261,6 +264,19 @@ const checks = [
       helpActions.includes("getHelpArticle(slug)") &&
       helpActions.includes("status: \"pending_review\"") &&
       helpActions.includes("Question submitted for moderation."),
+  },
+  {
+    label: "help article questions have admin moderation controls",
+    ok:
+      adminContentPage.includes("[\"help_article_comment\", \"Help\"]") &&
+      adminContentPage.includes("HelpQuestionCard") &&
+      adminContentPage.includes("moderateHelpArticleComment") &&
+      adminContentPage.includes("Official answer") &&
+      adminContentPage.includes("Pin on guide") &&
+      adminActions.includes("export async function moderateHelpArticleComment") &&
+      adminActions.includes("help_comment_${status}") &&
+      adminActions.includes("target_type: \"help_article_comment\"") &&
+      adminActions.includes("revalidatePath(helpArticlePath(comment.article_slug))"),
   },
   {
     label: "payment readiness doc keeps real-money gates explicit",

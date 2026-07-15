@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ArrowLeft, ChevronLeft, ChevronRight, Gavel } from "lucide-react";
 import { AdminSectionNav } from "../admin-section-nav";
-import { moderateContent } from "../actions";
+import { moderateContent, moderateHelpArticleComment } from "../actions";
 import { titleCaseStatus } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
 
@@ -12,9 +12,11 @@ type Claims = {
   sub: string;
 };
 type ModerationStatus = "active" | "under_review" | "hidden" | "removed";
+type HelpCommentStatus = "pending_review" | "visible" | "hidden" | "removed";
 type ContentType =
   | "feed_post"
   | "gig"
+  | "help_article_comment"
   | "marketplace_listing"
   | "merch_product"
   | "story_post"
@@ -27,9 +29,11 @@ type ReviewItem = {
   expiresLabel?: string;
   isExpired?: boolean;
   id: string;
+  isOfficialAnswer?: boolean;
+  isPinned?: boolean;
   isSensitive: boolean;
   sensitiveReason: string | null;
-  status: ModerationStatus;
+  status: ModerationStatus | HelpCommentStatus;
   subjectType: ContentType;
   title: string;
   visibility: "public_preview" | "members" | "private";
@@ -44,6 +48,7 @@ const contentTabs = [
   ["gig", "Gigs"],
   ["merch_product", "Merch"],
   ["story_post", "Stories"],
+  ["help_article_comment", "Help"],
 ] as const;
 
 export const metadata: Metadata = {
@@ -69,6 +74,7 @@ function contentType(value: string | string[] | undefined): ContentType {
     rawValue === "thread_post" ||
     rawValue === "marketplace_listing" ||
     rawValue === "gig" ||
+    rawValue === "help_article_comment" ||
     rawValue === "merch_product" ||
     rawValue === "story_post"
   ) {
@@ -94,7 +100,7 @@ function timeAgo(value: string) {
   return `${Math.round(hours / 24)}d`;
 }
 
-function statusLabel(status: ModerationStatus) {
+function statusLabel(status: ModerationStatus | HelpCommentStatus) {
   return titleCaseStatus(status);
 }
 
@@ -120,6 +126,7 @@ function contentTypeLabel(type: ContentType) {
   if (type === "marketplace_listing") return "Stuff";
   if (type === "merch_product") return "Merch";
   if (type === "story_post") return "Stories";
+  if (type === "help_article_comment") return "Help";
 
   return "Gigs";
 }
@@ -240,6 +247,95 @@ function ReviewCard({
               className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)]"
               key={value}
               name="moderation_status"
+              value={value}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </form>
+    </article>
+  );
+}
+
+function HelpQuestionCard({
+  currentPage,
+  item,
+}: {
+  currentPage: number;
+  item: ReviewItem;
+}) {
+  const returnTo = pageHref("help_article_comment", currentPage);
+
+  return (
+    <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+      <div className="mb-3 flex min-w-0 flex-col gap-3 min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between">
+        <div className="min-w-0 break-words">
+          <p className="truncate text-base font-bold">{item.title}</p>
+          <p className="mt-1 text-xs text-[var(--muted-strong)]">
+            @{item.authorUsername} - {timeAgo(item.createdAt)}
+          </p>
+        </div>
+        <span className="shrink-0 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold capitalize text-[var(--muted)]">
+          {statusLabel(item.status)}
+        </span>
+      </div>
+      <p className="text-sm leading-6 text-[var(--muted)]">{item.body}</p>
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-medium">
+          Help Center
+        </span>
+        {item.isOfficialAnswer ? (
+          <span className="rounded-md bg-[color-mix(in_srgb,var(--gold)_14%,var(--paper-warm))] px-2 py-1 text-xs font-semibold text-[var(--foreground)]">
+            Official answer
+          </span>
+        ) : null}
+        {item.isPinned ? (
+          <span className="rounded-md bg-[color-mix(in_srgb,var(--gold)_14%,var(--paper-warm))] px-2 py-1 text-xs font-semibold text-[var(--foreground)]">
+            Pinned
+          </span>
+        ) : null}
+      </div>
+      <form action={moderateHelpArticleComment} className="mt-4 space-y-3">
+        <input name="return_to" type="hidden" value={returnTo} />
+        <input name="comment_id" type="hidden" value={item.id} />
+        <input
+          className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+          maxLength={500}
+          name="note"
+          placeholder="Review note"
+        />
+        <div className="grid gap-2 min-[430px]:grid-cols-2">
+          <label className="flex min-h-10 items-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm font-semibold">
+            <input
+              className="size-4 accent-[var(--gold)]"
+              defaultChecked={item.isOfficialAnswer}
+              name="is_official_answer"
+              type="checkbox"
+            />
+            Official answer
+          </label>
+          <label className="flex min-h-10 items-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm font-semibold">
+            <input
+              className="size-4 accent-[var(--gold)]"
+              defaultChecked={item.isPinned}
+              name="is_pinned"
+              type="checkbox"
+            />
+            Pin on guide
+          </label>
+        </div>
+        <div className="grid grid-cols-2 gap-2 min-[430px]:grid-cols-4">
+          {[
+            ["pending_review", "Pending"],
+            ["hidden", "Hide"],
+            ["removed", "Remove"],
+            ["visible", "Approve"],
+          ].map(([value, label]) => (
+            <button
+              className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)]"
+              key={value}
+              name="status"
               value={value}
             >
               {label}
@@ -462,6 +558,43 @@ export default async function AdminContentPage({
       title: product.title,
       visibility: "public_preview",
     }));
+  } else if (activeType === "help_article_comment") {
+    const { count, data } = await supabase
+      .from("help_article_comments")
+      .select(
+        "id, article_slug, body, created_at, status, is_official_answer, is_pinned, profiles:profiles!help_article_comments_author_id_fkey(display_name, username)",
+        { count: "exact" },
+      )
+      .order("created_at", { ascending: false })
+      .range(from, to)
+      .returns<
+        {
+          article_slug: string;
+          body: string;
+          created_at: string;
+          id: string;
+          is_official_answer: boolean;
+          is_pinned: boolean;
+          profiles: { display_name: string; username: string } | null;
+          status: HelpCommentStatus;
+        }[]
+      >();
+    totalItems = count ?? 0;
+    items = (data ?? []).map((comment) => ({
+      authorName: comment.profiles?.display_name ?? "Member",
+      authorUsername: comment.profiles?.username ?? "member",
+      body: comment.body,
+      createdAt: comment.created_at,
+      id: comment.id,
+      isOfficialAnswer: comment.is_official_answer,
+      isPinned: comment.is_pinned,
+      isSensitive: false,
+      sensitiveReason: null,
+      status: comment.status,
+      subjectType: "help_article_comment",
+      title: `Help: ${comment.article_slug.replaceAll("-", " ")}`,
+      visibility: "public_preview",
+    }));
   } else {
     const { count, data } = await supabase
       .from("story_posts")
@@ -511,8 +644,13 @@ export default async function AdminContentPage({
 
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const hasNextPage = currentPage < totalPages;
-  const activeCount = items.filter((item) => item.status === "active").length;
-  const underReviewCount = items.filter((item) => item.status === "under_review").length;
+  const activeCount = items.filter(
+    (item) => item.status === "active" || item.status === "visible",
+  ).length;
+  const underReviewCount = items.filter(
+    (item) =>
+      item.status === "under_review" || item.status === "pending_review",
+  ).length;
   const restrictedCount = items.filter(
     (item) => item.status === "hidden" || item.status === "removed" || item.isSensitive,
   ).length;
@@ -596,8 +734,8 @@ export default async function AdminContentPage({
           <Gavel className="mt-1 size-5 shrink-0 text-[var(--gold)]" />
           <p>
             Review sensitive, hidden, removed, or under-review content by type.
-            Use reports for user-submitted abuse context; use this page for
-            direct content state cleanup and audit notes.
+            Use Help for guide questions that need approval, pinned official
+            replies, or cleanup before they become searchable.
           </p>
         </div>
 
@@ -611,7 +749,15 @@ export default async function AdminContentPage({
         {items.length ? (
           <section className="mt-4 grid gap-4">
             {items.map((item) => (
-              <ReviewCard currentPage={currentPage} item={item} key={item.id} />
+              item.subjectType === "help_article_comment" ? (
+                <HelpQuestionCard
+                  currentPage={currentPage}
+                  item={item}
+                  key={item.id}
+                />
+              ) : (
+                <ReviewCard currentPage={currentPage} item={item} key={item.id} />
+              )
             ))}
           </section>
         ) : (

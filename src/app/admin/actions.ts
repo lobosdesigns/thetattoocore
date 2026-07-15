@@ -27,6 +27,7 @@ type MerchProductStatus = "approved" | "active" | "paused" | "rejected" | "archi
 type MerchOrderAdminStatus = "fulfilled" | "cancelled";
 type AccountDeletionStatus = "reviewing" | "completed" | "rejected" | "cancelled";
 type AdCreditReason = "promo" | "trade" | "sponsor" | "makegood" | "other";
+type HelpCommentStatus = "pending_review" | "visible" | "hidden" | "removed";
 type MerchOrderProductRow = {
   product_id: string;
 };
@@ -103,6 +104,12 @@ const adCreditReasons = new Set<AdCreditReason>([
   "sponsor",
   "makegood",
   "other",
+]);
+const helpCommentStatuses = new Set<HelpCommentStatus>([
+  "pending_review",
+  "visible",
+  "hidden",
+  "removed",
 ]);
 
 const subjectConfig = {
@@ -287,6 +294,10 @@ function adminContentMessage(message: string, returnTo?: string) {
   }
 
   return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
+}
+
+function helpArticlePath(slug: string) {
+  return `/help/${slug}`;
 }
 
 function cleanText(value: FormDataEntryValue | null, maxLength: number) {
@@ -991,6 +1002,81 @@ export async function moderateContent(formData: FormData) {
       ? adminReportsMessage("Moderation status and report updated.", returnTo)
       : adminContentMessage("Moderation status updated.", returnTo),
   );
+}
+
+export async function moderateHelpArticleComment(formData: FormData) {
+  const commentId = cleanText(formData.get("comment_id"), 80);
+  const returnTo = cleanText(formData.get("return_to"), 140);
+  const status = cleanText(formData.get("status"), 40) as HelpCommentStatus;
+  const note = cleanText(formData.get("note"), 500);
+  const isOfficialAnswer = formData.get("is_official_answer") === "on";
+  const isPinned = formData.get("is_pinned") === "on";
+
+  if (!commentId || !helpCommentStatuses.has(status)) {
+    redirect(adminContentMessage("Choose a valid Help question status.", returnTo));
+  }
+
+  const { supabase, userId } = await requireModerator();
+  const { data: comment, error: commentError } = await supabase
+    .from("help_article_comments")
+    .select("id, article_slug, author_id, status")
+    .eq("id", commentId)
+    .maybeSingle<{
+      article_slug: string;
+      author_id: string;
+      id: string;
+      status: HelpCommentStatus;
+    }>();
+
+  if (commentError || !comment) {
+    redirect(
+      adminContentMessage(
+        commentError?.message || "Help question was not found.",
+        returnTo,
+      ),
+    );
+  }
+
+  const now = new Date().toISOString();
+  const { error: updateError } = await supabase
+    .from("help_article_comments")
+    .update({
+      hidden_at: status === "hidden" || status === "removed" ? now : null,
+      is_official_answer: isOfficialAnswer,
+      is_pinned: isPinned,
+      reviewed_at: now,
+      reviewed_by: userId,
+      status,
+      updated_at: now,
+    })
+    .eq("id", commentId);
+
+  if (updateError) {
+    redirect(
+      adminContentMessage(
+        updateError.message || "Could not update Help question.",
+        returnTo,
+      ),
+    );
+  }
+
+  await supabase.from("admin_audit_logs").insert({
+    actor_id: userId,
+    event_type: `help_comment_${status}`,
+    metadata: {
+      is_official_answer: isOfficialAnswer,
+      is_pinned: isPinned,
+      previous_status: comment.status,
+    },
+    summary: note || `Help question marked ${status.replaceAll("_", " ")}.`,
+    target_id: commentId,
+    target_type: "help_article_comment",
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/content");
+  revalidatePath(helpArticlePath(comment.article_slug));
+  redirect(adminContentMessage("Help question updated.", returnTo));
 }
 
 export async function updateReportStatus(formData: FormData) {
