@@ -123,6 +123,10 @@ const checks = [
       userFacingPushSource.includes("App alerts") &&
       userFacingPushSource.includes("Phone app alerts are off for now") &&
       userFacingPushSource.includes("Alert settings") &&
+      userFacingPushSource.includes("App alert setup could not be completed.") &&
+      !userFacingPushSource.includes("Push setup could not be completed.") &&
+      !userFacingPushSource.includes("Push permission was not enabled.") &&
+      !userFacingPushSource.includes("Push could not be turned off.") &&
       !userFacingPushSource.includes('"PWA"') &&
       !userFacingPushSource.includes("Browser push") &&
       !userFacingPushSource.includes("installed app push") &&

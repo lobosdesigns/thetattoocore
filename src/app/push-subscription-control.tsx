@@ -37,7 +37,7 @@ async function postSubscription(subscription: PushSubscription) {
     method: "POST",
   });
 
-  if (!response.ok) throw new Error("Push setup failed.");
+  if (!response.ok) throw new Error("App alert setup failed.");
 }
 
 export function PushSubscriptionControl() {
@@ -77,7 +77,7 @@ export function PushSubscriptionControl() {
           if (!cancelled) setEnabled(Boolean(subscription));
         })
         .catch(() => {
-          if (!cancelled) setMessage("Push status could not be checked.");
+          if (!cancelled) setMessage("App alert status could not be checked.");
         });
     });
 
@@ -94,7 +94,7 @@ export function PushSubscriptionControl() {
       const permission = await Notification.requestPermission();
 
       if (permission !== "granted") {
-        setMessage("Push permission was not enabled.");
+      setMessage("App alert permission was not enabled.");
         return;
       }
 
@@ -110,7 +110,7 @@ export function PushSubscriptionControl() {
       setEnabled(true);
       setMessage("App alerts are enabled on this device.");
     } catch {
-      setMessage("Push setup could not be completed.");
+      setMessage("App alert setup could not be completed.");
     } finally {
       setPending(false);
     }
@@ -136,7 +136,7 @@ export function PushSubscriptionControl() {
       setEnabled(false);
       setMessage("App alerts are off on this device.");
     } catch {
-      setMessage("Push could not be turned off.");
+      setMessage("App alerts could not be turned off.");
     } finally {
       setPending(false);
     }
