@@ -256,6 +256,7 @@
 - Decide when to automate irreversible user-data deletion versus keeping early launch deletion manual.
 - Test signup, login, posting, reporting, blocking/safety, DMs, verification review, and account deletion requests on real mobile devices using `docs/REAL_DEVICE_QA_CHECKLIST.md`. A reusable confirmed tester account exists, one-way DM send plus notification creation passed from `ttc_tester` to `checkouttest`, and Admin > Users can create confirmed tester accounts when signed in as owner. The full two-user DM read/reply pass still needs a second known test login.
 - Before production marketplace purchases, finish the gates in `docs/PAYMENT_PRODUCTION_READINESS.md`, including seller payout policy, Stripe Connect or manual payout process, tax/shipping rules, refund/dispute procedures, and payment review.
+- Stripe Connect Express seller onboarding foundation was added on July 15, 2026 with server-side account creation, hosted onboarding links, return-status sync, RLS-protected payout readiness rows, and Account-side seller payout status. Production seller payout releases remain gated pending policy, tax, refund, dispute, and provider review.
 - Prepare final store screenshots after mobile QA, using no sensitive or copyrighted user content.
 - Confirm screenshots do not expose private messages, license documents, admin queues, real payment data, personal owner contact data, or visible infrastructure/provider names.
 - Confirm no AI-generated tattoo art claims appear in store metadata or screenshots.

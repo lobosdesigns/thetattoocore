@@ -4,6 +4,16 @@
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-07-07",
   "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "thetattoocore.com",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.thetattoocore.com",
+      "custom_domain": true
+    }
+  ],
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"

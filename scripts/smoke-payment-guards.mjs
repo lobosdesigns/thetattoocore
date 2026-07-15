@@ -131,6 +131,10 @@ checks.push({
     stripeWebhook.includes("recordPaymentDispute({ dispute, eventType: event.type, stripe })") &&
     stripeWebhook.includes("stripe_event_type: eventType") &&
     stripeWebhook.includes("payment_intent_id: paymentIntentId") &&
+    stripeWebhook.includes('event.type === "account.updated"') &&
+    stripeWebhook.includes("syncStripeConnectAccountFromWebhook") &&
+    stripeWebhook.includes('from("stripe_connect_accounts")') &&
+    stripeWebhook.includes("stripeConnectStatus(account)") &&
     stripeWebhook.indexOf("Missing payment verification.") <
       stripeWebhook.indexOf("constructEventAsync"),
 });
@@ -235,11 +239,32 @@ checks.push({
     adminMerchPage.includes("finish tax, shipping, fulfillment, payouts, and payment safety rules") &&
     accountPage.includes("merchSellerReadinessItems") &&
     accountPage.includes("Seller payout path") &&
-    accountPage.includes("Production payouts stay gated") &&
+    accountPage.includes("Seller payout setup") &&
+    accountPage.includes("secure hosted setup flow") &&
+    accountPage.includes("raw bank, routing, card, or debit payout numbers") &&
+    accountPage.includes('action="/api/stripe/connect/onboarding"') &&
     accountPage.includes("Fulfillment gate") &&
     accountPage.includes("Refunds, disputes, and unusual order issues stay in admin review") &&
     privacyPage.includes("Checkout is limited during launch") &&
     supportPage.includes("Merch checkout is limited during launch"),
+});
+checks.push({
+  label: "Stripe Connect seller onboarding stays hosted and server-side",
+  ok:
+    accountPage.includes(".from(\"stripe_connect_accounts\")") &&
+    accountPage.includes("stripePayoutReady") &&
+    accountPage.includes("Continue payout setup") &&
+    accountPage.includes("Start payout setup") &&
+    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("stripe.accounts.create") &&
+    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("stripe.accountLinks.create") &&
+    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("type: \"account_onboarding\"") &&
+    readFileSync("src/app/api/stripe/connect/return/route.ts", "utf8").includes("stripe.accounts.retrieve") &&
+    readFileSync("src/lib/stripe/connect.ts", "utf8").includes("stripeConnectStatus") &&
+    stripeWebhook.includes("stripeConnectStatus") &&
+    stripeWebhook.includes('event.type === "account.updated"') &&
+    readFileSync("supabase/migrations/20260715101500_stripe_connect_seller_accounts.sql", "utf8").includes("create table if not exists public.stripe_connect_accounts") &&
+    readFileSync("supabase/migrations/20260715101500_stripe_connect_seller_accounts.sql", "utf8").includes("enable row level security") &&
+    readFileSync("supabase/migrations/20260715101500_stripe_connect_seller_accounts.sql", "utf8").includes("grant select, insert, update, delete on public.stripe_connect_accounts to service_role"),
 });
 checks.push({
   label: "admin Merch and payment queues use friendly status labels",
@@ -364,7 +389,8 @@ checks.push({
     !paymentSafetySource.includes("routing number") &&
     !paymentSafetySource.includes("debit card number") &&
     !paymentSafetySource.includes("card payout form") &&
-    adminPaymentsPage.includes("secure hosted onboarding flow"),
+    adminPaymentsPage.includes("secure hosted onboarding flow") &&
+    accountPage.includes("TTC stores payout readiness status only"),
 });
 
 const failures = checks.filter((check) => !check.ok);

@@ -227,6 +227,14 @@ const checks = [
     redirect: "manual",
   },
   {
+    method: "POST",
+    path: "/api/stripe/connect/onboarding",
+    status: [303],
+    redirectIncludes: "/login",
+    locationIncludes: ["return_to=%2Faccount%23order-settings"],
+    redirect: "manual",
+  },
+  {
     body: JSON.stringify({ id: "evt_unsigned_smoke" }),
     method: "POST",
     path: "/api/stripe/webhook",

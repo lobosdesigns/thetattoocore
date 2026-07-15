@@ -4,6 +4,7 @@ import Stripe from "stripe";
 import { sendHostgatorEmail } from "@/lib/mail/hostgator";
 import { siteName, siteUrl, supportEmail } from "@/lib/site";
 import { createStripeClient, stripeCryptoProvider } from "@/lib/stripe/server";
+import { stripeConnectStatus } from "@/lib/stripe/connect";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -237,6 +238,46 @@ async function revalidateMerchOrderProducts(
   for (const productId of productIds) {
     revalidatePath(`/merch/${productId}`);
   }
+}
+
+async function syncStripeConnectAccountFromWebhook(
+  supabase: AdminSupabase,
+  account: Stripe.Account,
+) {
+  const { data: existingAccount, error: existingAccountError } = await supabase
+    .from("stripe_connect_accounts")
+    .select("profile_id")
+    .eq("stripe_account_id", account.id)
+    .maybeSingle<{ profile_id: string }>();
+
+  if (existingAccountError) {
+    throw new Error(
+      existingAccountError.message || "Could not read Stripe Connect account.",
+    );
+  }
+
+  if (!existingAccount) {
+    console.warn("Ignoring Stripe Connect account update for unknown account", {
+      stripeAccountId: account.id,
+    });
+    return;
+  }
+
+  const { error: updateError } = await supabase
+    .from("stripe_connect_accounts")
+    .update(stripeConnectStatus(account))
+    .eq("profile_id", existingAccount.profile_id)
+    .eq("stripe_account_id", account.id);
+
+  if (updateError) {
+    throw new Error(
+      updateError.message || "Could not sync Stripe Connect account.",
+    );
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/admin/users");
+  revalidatePath("/admin/verification");
 }
 
 async function notifyMerchSellersAboutPaidOrders(
@@ -1183,6 +1224,11 @@ export async function POST(request: Request) {
     ) {
       const dispute = event.data.object as Stripe.Dispute;
       await recordPaymentDispute({ dispute, eventType: event.type, stripe });
+    }
+
+    if (event.type === "account.updated") {
+      const account = event.data.object as Stripe.Account;
+      await syncStripeConnectAccountFromWebhook(supabase, account);
     }
 
     const { error: recordEventError } = await supabase

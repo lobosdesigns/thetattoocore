@@ -88,6 +88,15 @@ type BookingBlackout = {
   reason: string | null;
   starts_at: string;
 };
+type StripeConnectAccount = {
+  charges_enabled: boolean;
+  details_submitted: boolean;
+  disabled_reason: string | null;
+  last_synced_at: string | null;
+  onboarding_started_at: string | null;
+  payouts_enabled: boolean;
+  requirements_currently_due: string[];
+};
 
 const adminRoles = ["moderator", "admin", "owner"];
 const adPageSize = 25;
@@ -132,7 +141,7 @@ const bookingCalendarPrepItems = [
 const merchSellerReadinessItems = [
   [
     "Seller payout path",
-    "Production payouts stay gated until seller approval, payout policy, taxes, refunds, and dispute rules are finalized.",
+    "Seller payout setup uses a secure hosted flow. TTC forms never ask for raw bank, routing, card, or debit payout numbers.",
   ],
   [
     "Fulfillment gate",
@@ -681,6 +690,13 @@ export default async function AccountPage({
         unit_price_cents: number;
       }[]
     >();
+  const { data: stripeConnectAccount } = await supabase
+    .from("stripe_connect_accounts")
+    .select(
+      "charges_enabled, payouts_enabled, details_submitted, disabled_reason, requirements_currently_due, onboarding_started_at, last_synced_at",
+    )
+    .eq("profile_id", claims.sub)
+    .maybeSingle<StripeConnectAccount>();
   const { data: incomingBookings } = await (() => {
     let query = supabase
       .from("booking_requests")
@@ -847,6 +863,17 @@ export default async function AccountPage({
     Boolean(canSubmitLicense) && !isLicenseVerified && !hasPendingVerification;
   const canSubmitAds =
     canSubmitLicense && isLicenseVerified && !profile?.suspended_at && !profile?.banned_at;
+  const canSetupSellerPayouts =
+    canSubmitAds &&
+    Boolean(
+      profile?.account_type &&
+        ["artist", "studio", "vendor"].includes(profile.account_type as string),
+    );
+  const stripePayoutReady = Boolean(
+    stripeConnectAccount?.charges_enabled &&
+      stripeConnectAccount.payouts_enabled &&
+      stripeConnectAccount.details_submitted,
+  );
   const isFirstProfile = !profile;
   const normalizedProfile = profile
     ? {
@@ -2341,6 +2368,69 @@ export default async function AccountPage({
                   </p>
                 </div>
               ))}
+            </div>
+            <div className="mt-4 rounded-lg border border-[color-mix(in_srgb,var(--gold)_28%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-warm)_92%,var(--gold)_8%)] p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
+                    Seller payout setup
+                  </p>
+                  <h4 className="mt-1 text-base font-bold">
+                    {stripePayoutReady
+                      ? "Payout setup ready"
+                      : stripeConnectAccount
+                        ? "Payout setup needs review"
+                        : "Set up seller payouts"}
+                  </h4>
+                  <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
+                    {canSetupSellerPayouts
+                      ? "Use the secure hosted setup flow for seller payout details. TTC stores payout readiness status only, not bank or card credentials."
+                      : "Verified artist, studio, or vendor status is required before seller payout setup opens."}
+                  </p>
+                </div>
+                <span
+                  className={`w-fit rounded-md border px-2 py-1 text-xs font-semibold ${
+                    stripePayoutReady
+                      ? "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]"
+                      : "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]"
+                  }`}
+                >
+                  {stripePayoutReady ? "Ready" : "Setup needed"}
+                </span>
+              </div>
+              {stripeConnectAccount ? (
+                <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted-strong)] sm:grid-cols-3">
+                  <p>Charges: {stripeConnectAccount.charges_enabled ? "Ready" : "Not ready"}</p>
+                  <p>Payouts: {stripeConnectAccount.payouts_enabled ? "Ready" : "Not ready"}</p>
+                  <p>
+                    Details: {stripeConnectAccount.details_submitted ? "Submitted" : "Needed"}
+                  </p>
+                  {stripeConnectAccount.disabled_reason ? (
+                    <p className="sm:col-span-3">
+                      Status note: {stripeConnectAccount.disabled_reason}
+                    </p>
+                  ) : null}
+                  {stripeConnectAccount.requirements_currently_due.length ? (
+                    <p className="sm:col-span-3">
+                      More details may be required in the hosted setup flow.
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+              {canSetupSellerPayouts ? (
+                <form
+                  action="/api/stripe/connect/onboarding"
+                  className="mt-4"
+                  method="post"
+                >
+                  <PendingSubmitButton
+                    className="flex h-10 w-full items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)] sm:w-fit"
+                    pendingLabel="Opening setup"
+                  >
+                    {stripeConnectAccount ? "Continue payout setup" : "Start payout setup"}
+                  </PendingSubmitButton>
+                </form>
+              ) : null}
             </div>
             {visibleMerchSales.length ? (
               <div className="mt-4 grid gap-3">
