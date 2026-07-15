@@ -94,6 +94,13 @@ const checks = [
       productPlan.includes("removing the DM tab/rail column"),
   },
   {
+    label: "product plan keeps DM out of the main column order",
+    ok:
+      productPlan.includes("Column order for launch planning is 4U, Gossip, Stuff, Gigs, and Merch.") &&
+      productPlan.includes("DM is intentionally not a main swipe column") &&
+      !productPlan.includes("Merch, then DM"),
+  },
+  {
     label: "DM thread keeps composer fixed and profile identity clickable",
     ok:
       messagePage.includes('className="ttc-page h-[100dvh] overflow-hidden"') &&
