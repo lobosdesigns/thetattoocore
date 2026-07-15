@@ -581,7 +581,7 @@ export function ProfileForm({
               Use my location for discovery and local ads
             </span>
             <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
-              Uses your city, region, and country settings for marketplace,
+              Uses your city, region, and country settings for Stuff,
               local discovery, and clearly labeled sponsored placements. Precise
               device location should be asked separately before it is ever used.
             </span>

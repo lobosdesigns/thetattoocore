@@ -17,7 +17,7 @@ const sections = [
   },
   {
     body:
-      "Profiles, selected public posts, marketplace listings, gigs, and public Merch items may be visible to other members and, where allowed, search engines. Account settings, private profile data, admin tools, draft content, and messages are not meant for public indexing.",
+      "Profiles, selected public posts, Stuff listings, Gigs, and public Merch items may be visible to other members and, where allowed, search engines. Account settings, private profile data, admin tools, draft content, and messages are not meant for public indexing.",
     title: "What Can Be Public",
   },
   {

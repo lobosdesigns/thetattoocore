@@ -2511,7 +2511,7 @@ export default async function ProfilePage({
                       : "Longer posts, questions, and community threads from this profile will appear here."
                   }
                   icon={MessageCircle}
-                  tips={["Shop talk", "Questions", "Threads"]}
+                  tips={["Shop talk", "Questions", "Gossip"]}
                   title="No Gossip yet"
                 />
               )}
@@ -2590,7 +2590,7 @@ export default async function ProfilePage({
                   body={
                     isOwnProfile
                       ? "List flash, supplies, chair rentals, machines, furniture, or services. Seller contact and pro gear activity stay verified-only."
-                      : "Marketplace listings from this profile will appear here when they have active Stuff. Fans can browse; seller contact is verified-only."
+                      : "Stuff listings from this profile will appear here when they are active. Fans can browse; seller contact is verified-only."
                   }
                   icon={ShoppingBag}
                   tips={["Flash", "Supplies", "Verified gear"]}

@@ -1210,7 +1210,7 @@ export default async function AdminPage({
     },
     {
       action: "Open Stuff",
-      body: "Verified-only marketplace listings get their own paged review page for seller, price, status, and access checks.",
+      body: "Verified-only Stuff listings get their own paged review page for seller, price, status, and access checks.",
       count: marketplaceQueue ?? 0,
       href: "/admin/stuff",
       label: "Stuff",

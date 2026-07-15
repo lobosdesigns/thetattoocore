@@ -1077,7 +1077,7 @@ export default async function MessagesPage({
                 <h2 className="text-lg font-bold">Your DMs</h2>
                 <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
                   Start a conversation from the inbox panel to trade booking
-                  details, flash info, guest spots, and marketplace questions.
+                  details, flash info, guest spots, and Stuff questions.
                 </p>
               </div>
             </div>

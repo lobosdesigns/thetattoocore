@@ -38,7 +38,7 @@ const mediaCostRules = [
   "Consider managed image and video upgrades only after upload volume grows.",
 ] as const;
 const mediaLimits = [
-  ["Feed images", "Optimized in-browser before upload; keep the longest edge around 1600-2200px."],
+  ["4U images", "Optimized in-browser before upload; keep the longest edge around 1600-2200px."],
   ["Reels", "MP4 and MOV clips stay capped at 60 seconds and 50 MB."],
   ["DM media", "Photos and GIF-style images only until private video handling is worth the cost."],
   ["Sensitive media", "No nudity for launch policy; legacy sensitive flags should stay protected where present."],

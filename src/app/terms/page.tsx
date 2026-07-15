@@ -5,7 +5,7 @@ import { supportEmail } from "@/lib/site";
 
 export const metadata: Metadata = {
   description:
-    "TheTattooCore community terms, 18+ policy, content rules, marketplace expectations, and moderation standards.",
+    "TheTattooCore community terms, 18+ policy, content rules, Stuff, Merch, Gigs, and moderation standards.",
   title: "Terms and Content Policy",
 };
 
@@ -32,8 +32,8 @@ const sections = [
   },
   {
     body:
-      "Stuff listings are for verified artists, studios, and approved vendors. Fans can browse listings, but buy, sell, trade, and seller-contact actions require verified professional or vendor status. Tattoo machines, needles, pigments, tubes, and other professional shop equipment must not be offered to unverified or unqualified buyers where the platform can reasonably enforce it. Merch is a separate fan-facing marketplace for safe artist, studio, vendor, and TheTattooCore brand goods such as shirts, prints, art, and stickers. Merch checkout is limited during launch, sellers still need approval, and Merch must not include professional equipment, regulated services, counterfeit goods, adult sexual products, or unsafe products. Marketplace, merch, and gig posts must be honest, lawful, and clear about location, pricing or compensation, availability, shipping, and contact details. TheTattooCore is not a party to member-to-member transactions unless a paid platform feature explicitly says otherwise.",
-    title: "Marketplace And Gigs",
+      "Stuff listings are for verified artists, studios, and approved vendors. Fans can browse listings, but buy, sell, trade, and seller-contact actions require verified professional or vendor status. Tattoo machines, needles, pigments, tubes, and other professional shop equipment must not be offered to unverified or unqualified buyers where the platform can reasonably enforce it. Merch is a separate fan-facing market for safe artist, studio, vendor, and TheTattooCore brand goods such as shirts, prints, art, and stickers. Merch checkout is limited during launch, sellers still need approval, and Merch must not include professional equipment, regulated services, counterfeit goods, adult sexual products, or unsafe products. Stuff, Merch, and Gig posts must be honest, lawful, and clear about location, pricing or compensation, availability, shipping, and contact details. TheTattooCore is not a party to member-to-member transactions unless a paid platform feature explicitly says otherwise.",
+    title: "Stuff, Merch, And Gigs",
   },
   {
     body:

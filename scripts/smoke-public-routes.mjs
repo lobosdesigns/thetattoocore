@@ -540,7 +540,7 @@ const checks = [
       "Terms",
       "visible nudity is not allowed",
       "No AI And No Scratchers",
-      "Marketplace And Gigs",
+      "Stuff, Merch, And Gigs",
       "Public And Sensitive Visibility",
       "support@thetattoocore.com",
     ],

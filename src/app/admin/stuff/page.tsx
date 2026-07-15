@@ -290,7 +290,7 @@ export default async function AdminStuffPage({
               </p>
               <h1 className="text-2xl font-bold sm:text-3xl">Stuff</h1>
               <p className="mt-1 text-sm text-[var(--muted-strong)]">
-                50 marketplace listings per page for seller, status, and pricing review.
+                50 Stuff listings per page for seller, status, and pricing review.
               </p>
             </div>
           </div>

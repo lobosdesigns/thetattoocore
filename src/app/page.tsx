@@ -828,7 +828,7 @@ function formatGigCategory(category: string) {
 }
 
 function listingMessage(listing: MarketplaceListing) {
-  return `Hi, I am interested in your marketplace listing: ${listing.title}`;
+  return `Hi, I am interested in your Stuff listing: ${listing.title}`;
 }
 
 function ContentLabels({
