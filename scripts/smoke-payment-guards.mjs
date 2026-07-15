@@ -255,6 +255,8 @@ checks.push({
   label: "ad campaign surfaces use shared friendly labels",
   ok:
     accountPage.includes("titleCaseStatus(value)") &&
+    accountPage.includes("Merch ads stay in Merch.") &&
+    accountPage.includes("Merch campaigns stay in Merch and focus on product views") &&
     adminAdsPage.includes("titleCaseStatus(value)") &&
     adminAdsPage.includes("grantAdCampaignCredit") &&
     adminAdsPage.includes("Apply ad credit") &&

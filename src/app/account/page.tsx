@@ -301,6 +301,7 @@ const verificationStandards = [
 const advertisingStandards = [
   "Artist growth campaigns can appear in 4U and Gossip for leads, messages, and engagement.",
   "Stuff campaigns stay in Stuff and focus on listing views, eligible seller messages, and marketplace engagement.",
+  "Merch campaigns stay in Merch and focus on product views, shop visits, and safe fan purchases.",
   "Targeting stays simple: coarse location, language, style keywords, category, and chosen placement.",
 ] as const;
 
@@ -2801,7 +2802,7 @@ export default async function AccountPage({
             <p className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">
               Verified artists, studios, and vendors can submit simple campaigns
               for admin review. Artist growth ads can run in 4U and Gossip.
-              Stuff ads stay in Stuff.
+              Stuff ads stay in Stuff. Merch ads stay in Merch.
             </p>
             <div className="mt-4 rounded-md border border-[color-mix(in_srgb,var(--gold)_35%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] p-3">
               <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
@@ -2815,7 +2816,7 @@ export default async function AccountPage({
                 it before opening card payment.
               </p>
             </div>
-            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+            <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
               {advertisingStandards.map((standard) => (
                 <p
                   className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 text-xs leading-5 text-[var(--muted)]"
