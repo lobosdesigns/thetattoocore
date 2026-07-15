@@ -177,11 +177,11 @@ const checks = [
       searchPage.includes("async function getBlockedProfileIds") &&
       searchPage.includes("const blockedProfileIds = await getBlockedProfileIds") &&
       searchPage.includes("const resultFetchLimit = resultLimit + 25") &&
-      searchPage.includes("const filteredFeedResults = (feedPosts ?? []).filter") &&
-      searchPage.includes("const filteredThreadResults = (threads ?? []).filter") &&
-      searchPage.includes("const filteredListingResults = (listings ?? []).filter") &&
-      searchPage.includes("const filteredGigResults = (gigs ?? []).filter") &&
-      searchPage.includes("const filteredMerchResults = (merchProducts ?? []).filter") &&
+      searchPage.includes("const filteredFeedResults = (feedPosts ?? [])") &&
+      searchPage.includes("const filteredThreadResults = (threads ?? [])") &&
+      searchPage.includes("const filteredListingResults = (listings ?? [])") &&
+      searchPage.includes("const filteredGigResults = (gigs ?? [])") &&
+      searchPage.includes("const filteredMerchResults = (merchProducts ?? [])") &&
       searchPage.includes("const feedResults = filteredFeedResults.slice(0, resultLimit)") &&
       searchPage.includes("(feedPosts?.length ?? 0) === resultFetchLimit") &&
       searchPage.includes("product.is_official ||") &&
@@ -217,6 +217,22 @@ const checks = [
       searchPage.includes("visiblePrivateProfileIds") &&
       searchPage.includes("privateProfilesPromise") &&
       productPlan.includes("private profiles they are connected to through accepted follower/following relationships"),
+  },
+  {
+    label: "search uses tokenized matching and weighted ranking",
+    ok:
+      searchPage.includes("function searchTerms") &&
+      searchPage.includes("function searchOr") &&
+      searchPage.includes("function weightedSearchScore") &&
+      searchPage.includes("function compareSearchResults") &&
+      searchPage.includes("account_type") &&
+      searchPage.includes("visiblePrivateProfileIds.has(profile.id) ? 8 : 0") &&
+      searchPage.includes("{ value: profile.username, weight: 40 }") &&
+      searchPage.includes("{ value: post.style_tags, weight: 24 }") &&
+      searchPage.includes("{ value: listing.category, weight: 20 }") &&
+      searchPage.includes("{ value: gig.compensation, weight: 10 }") &&
+      searchPage.includes("{ value: product.category, weight: 20 }") &&
+      productPlan.includes("prefix/token matching"),
   },
   {
     label: "outbound profile links use safe URL and rel policy",

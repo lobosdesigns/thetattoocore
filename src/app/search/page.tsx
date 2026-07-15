@@ -66,6 +66,7 @@ type ThreadResult = {
 };
 
 type ListingResult = {
+  description: string | null;
   id: string;
   title: string;
   category: string;
@@ -78,6 +79,8 @@ type ListingResult = {
 };
 
 type GigResult = {
+  compensation: string | null;
+  description: string | null;
   id: string;
   title: string;
   category: string;
@@ -93,6 +96,7 @@ type MerchResult = {
   category: string;
   city: string | null;
   currency: string;
+  description: string | null;
   id: string;
   is_official: boolean;
   price_cents: number;
@@ -165,7 +169,80 @@ function cleanType(value?: string): SearchType {
 }
 
 function searchPattern(query: string) {
-  return `%${query.replaceAll("%", "").replaceAll("_", "")}%`;
+  const clean = query
+    .replace(/[%,_()]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return `%${clean}%`;
+}
+
+function searchTerms(query: string) {
+  return query
+    .toLowerCase()
+    .split(/[^a-z0-9_]+/)
+    .map((term) => term.trim())
+    .filter((term) => term.length >= 2)
+    .slice(0, 6);
+}
+
+function searchOr(fields: string[], query: string, fallbackFields = fields) {
+  const terms = searchTerms(query);
+
+  if (!terms.length) {
+    return fallbackFields
+      .map((field) => `${field}.ilike.${searchPattern("")}`)
+      .join(",");
+  }
+
+  return terms
+    .flatMap((term) =>
+      fields.map((field) => `${field}.ilike.${searchPattern(term)}`),
+    )
+    .join(",");
+}
+
+function textValue(value: unknown) {
+  if (Array.isArray(value)) return value.filter(Boolean).join(" ");
+
+  return String(value ?? "");
+}
+
+function weightedSearchScore(
+  terms: string[],
+  fields: { value: unknown; weight: number }[],
+  boosts: number[] = [],
+) {
+  if (!terms.length) return boosts.reduce((total, boost) => total + boost, 0);
+
+  let score = boosts.reduce((total, boost) => total + boost, 0);
+
+  for (const term of terms) {
+    for (const field of fields) {
+      const text = textValue(field.value).toLowerCase();
+
+      if (!text) continue;
+      if (text === term) score += field.weight * 3;
+      else if (text.startsWith(term)) score += field.weight * 2;
+      else if (text.includes(term)) score += field.weight;
+    }
+  }
+
+  return score;
+}
+
+function compareSearchResults<T>(
+  terms: string[],
+  score: (item: T) => number,
+  fallback: (item: T) => string,
+) {
+  return (a: T, b: T) => {
+    const scoreDiff = score(b) - score(a);
+
+    if (scoreDiff !== 0) return scoreDiff;
+
+    return fallback(a).localeCompare(fallback(b));
+  };
 }
 
 function runSection(type: SearchType, section: Exclude<SearchType, "all">) {
@@ -302,7 +379,7 @@ export default async function SearchPage({
   const page = Math.max(1, Math.min(20, Number(params.page ?? "1") || 1));
   const resultLimit = page * 25;
   const resultFetchLimit = resultLimit + 25;
-  const pattern = searchPattern(query);
+  const terms = searchTerms(query);
   const cityPattern = searchPattern(city);
   const regionPattern = searchPattern(region);
   const categoryPattern = searchPattern(category);
@@ -361,7 +438,16 @@ export default async function SearchPage({
                   "id, username, display_name, avatar_url, banner_url, account_type, bio, city, license_verified_at, region, shop_profile_id",
                 )
                 .or(
-                  `username.ilike.${pattern},display_name.ilike.${pattern},bio.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`,
+                  searchOr(
+                    [
+                      "username",
+                      "display_name",
+                      "bio",
+                      "city",
+                      "region",
+                    ],
+                    query,
+                  ),
                 )
                 .eq("is_private", false);
 
@@ -381,7 +467,16 @@ export default async function SearchPage({
                       )
                       .in("id", Array.from(visiblePrivateProfileIds))
                       .or(
-                        `username.ilike.${pattern},display_name.ilike.${pattern},bio.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`,
+                        searchOr(
+                          [
+                            "username",
+                            "display_name",
+                            "bio",
+                            "city",
+                            "region",
+                          ],
+                          query,
+                        ),
                       );
 
                     if (city) privateProfileQuery = privateProfileQuery.ilike("city", cityPattern);
@@ -410,7 +505,26 @@ export default async function SearchPage({
                   return {
                     ...publicProfiles,
                     data: Array.from(profileMap.values()).sort((a, b) =>
-                      a.display_name.localeCompare(b.display_name),
+                      compareSearchResults<ProfileResult>(
+                        terms,
+                        (profile) =>
+                          weightedSearchScore(
+                            terms,
+                            [
+                              { value: profile.username, weight: 40 },
+                              { value: profile.display_name, weight: 34 },
+                              { value: profile.account_type, weight: 18 },
+                              { value: profile.city, weight: 14 },
+                              { value: profile.region, weight: 12 },
+                              { value: profile.bio, weight: 8 },
+                            ],
+                            [
+                              visiblePrivateProfileIds.has(profile.id) ? 8 : 0,
+                              isVerifiedProfile(profile) ? 5 : 0,
+                            ],
+                          ),
+                        (profile) => profile.display_name,
+                      )(a, b),
                     ),
                   };
                 },
@@ -430,7 +544,7 @@ export default async function SearchPage({
                 .eq("is_sensitive", false)
                 .or(
                   query
-                    ? `caption.ilike.${pattern},location_label.ilike.${pattern}`
+                    ? searchOr(["caption", "location_label"], query)
                     : `caption.ilike.%,location_label.ilike.%`,
                 );
 
@@ -451,7 +565,7 @@ export default async function SearchPage({
               .eq("moderation_status", "active")
               .eq("visibility", "public_preview")
               .eq("is_sensitive", false)
-              .ilike("body", pattern)
+              .or(searchOr(["body"], query))
               .order("created_at", { ascending: false })
               .limit(resultFetchLimit)
               .returns<ThreadResult[]>()
@@ -461,7 +575,7 @@ export default async function SearchPage({
               let listingQuery = supabase
                 .from("marketplace_listings")
                 .select(
-                  "id, title, category, city, region, profiles:profiles!marketplace_listings_seller_id_fkey(id, display_name, avatar_url, username, account_type, license_verified_at)",
+                  "id, title, description, category, city, region, profiles:profiles!marketplace_listings_seller_id_fkey(id, display_name, avatar_url, username, account_type, license_verified_at)",
                 )
                 .eq("status", "active")
                 .eq("moderation_status", "active")
@@ -469,7 +583,10 @@ export default async function SearchPage({
                 .eq("is_sensitive", false)
                 .or(
                   query
-                    ? `title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern}`
+                    ? searchOr(
+                        ["title", "description", "category", "city", "region"],
+                        query,
+                      )
                     : `title.ilike.%,description.ilike.%,category.ilike.%,city.ilike.%,region.ilike.%`,
                 );
 
@@ -488,7 +605,7 @@ export default async function SearchPage({
               let gigQuery = supabase
                 .from("gigs")
                 .select(
-                  "id, title, category, city, region, profiles:profiles!gigs_poster_id_fkey(id, display_name, avatar_url, username, account_type, license_verified_at)",
+                  "id, title, description, category, city, region, compensation, profiles:profiles!gigs_poster_id_fkey(id, display_name, avatar_url, username, account_type, license_verified_at)",
                 )
                 .eq("status", "active")
                 .eq("moderation_status", "active")
@@ -496,7 +613,17 @@ export default async function SearchPage({
                 .eq("is_sensitive", false)
                 .or(
                   query
-                    ? `title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern},city.ilike.${pattern},region.ilike.${pattern},compensation.ilike.${pattern}`
+                    ? searchOr(
+                        [
+                          "title",
+                          "description",
+                          "category",
+                          "city",
+                          "region",
+                          "compensation",
+                        ],
+                        query,
+                      )
                     : `title.ilike.%,description.ilike.%,category.ilike.%,city.ilike.%,region.ilike.%,compensation.ilike.%`,
                 );
 
@@ -516,14 +643,23 @@ export default async function SearchPage({
               let merchQuery = supabase
                 .from("merch_products")
                 .select(
-                  "id, title, category, price_cents, currency, is_official, ships_from_city, ships_from_region, profiles:profiles!merch_products_seller_id_fkey(id, display_name, avatar_url, username, account_type, license_verified_at)",
+                  "id, title, description, category, price_cents, currency, is_official, ships_from_city, ships_from_region, profiles:profiles!merch_products_seller_id_fkey(id, display_name, avatar_url, username, account_type, license_verified_at)",
                 )
                 .eq("status", "active")
                 .eq("moderation_status", "active")
                 .eq("is_indexable", true)
                 .or(
                   query
-                    ? `title.ilike.${pattern},description.ilike.${pattern},ships_from_city.ilike.${pattern},ships_from_region.ilike.${pattern}`
+                    ? searchOr(
+                        [
+                          "title",
+                          "description",
+                          "category",
+                          "ships_from_city",
+                          "ships_from_region",
+                        ],
+                        query,
+                      )
                     : `title.ilike.%,description.ilike.%,ships_from_city.ilike.%,ships_from_region.ilike.%`,
                 );
 
@@ -542,6 +678,7 @@ export default async function SearchPage({
                   {
                     category: string;
                     currency: string;
+                    description: string | null;
                     id: string;
                     is_official: boolean;
                     price_cents: number;
@@ -562,6 +699,7 @@ export default async function SearchPage({
                       category: product.category,
                       city: product.ships_from_city,
                       currency: product.currency,
+                      description: product.description,
                       id: product.id,
                       is_official: product.is_official,
                       price_cents: product.price_cents,
@@ -602,27 +740,128 @@ export default async function SearchPage({
       shop_profile: profile.shop_profile_id
         ? (profileShopMap.get(profile.shop_profile_id) ?? null)
         : null,
-    }));
-  const filteredFeedResults = (feedPosts ?? []).filter(
-    (post) => !post.profiles?.id || !blockedProfileIds.has(post.profiles.id),
-  );
-  const filteredThreadResults = (threads ?? []).filter(
-    (thread) =>
-      !thread.profiles?.id || !blockedProfileIds.has(thread.profiles.id),
-  );
-  const filteredListingResults = (listings ?? []).filter(
-    (listing) =>
-      !listing.profiles?.id || !blockedProfileIds.has(listing.profiles.id),
-  );
-  const filteredGigResults = (gigs ?? []).filter(
-    (gig) => !gig.profiles?.id || !blockedProfileIds.has(gig.profiles.id),
-  );
-  const filteredMerchResults = (merchProducts ?? []).filter(
-    (product) =>
-      product.is_official ||
-      !product.profiles?.id ||
-      !blockedProfileIds.has(product.profiles.id),
-  );
+    }))
+    .sort(
+      compareSearchResults<ProfileResult>(
+        terms,
+        (profile) =>
+          weightedSearchScore(
+            terms,
+            [
+              { value: profile.username, weight: 40 },
+              { value: profile.display_name, weight: 34 },
+              { value: profile.account_type, weight: 18 },
+              { value: profile.city, weight: 14 },
+              { value: profile.region, weight: 12 },
+              { value: shopProfileText(profile), weight: 10 },
+              { value: profile.bio, weight: 8 },
+            ],
+            [
+              visiblePrivateProfileIds.has(profile.id) ? 8 : 0,
+              isVerifiedProfile(profile) ? 5 : 0,
+            ],
+          ),
+        (profile) => profile.display_name,
+      ),
+    );
+  const filteredFeedResults = (feedPosts ?? [])
+    .filter(
+      (post) => !post.profiles?.id || !blockedProfileIds.has(post.profiles.id),
+    )
+    .sort(
+      compareSearchResults<FeedResult>(
+        terms,
+        (post) =>
+          weightedSearchScore(terms, [
+            { value: post.caption, weight: 30 },
+            { value: post.style_tags, weight: 24 },
+            { value: post.location_label, weight: 14 },
+            { value: post.profiles?.username, weight: 12 },
+            { value: post.profiles?.display_name, weight: 10 },
+          ]),
+        (post) => post.caption || post.style_tags.join(" ") || post.id,
+      ),
+    );
+  const filteredThreadResults = (threads ?? [])
+    .filter(
+      (thread) =>
+        !thread.profiles?.id || !blockedProfileIds.has(thread.profiles.id),
+    )
+    .sort(
+      compareSearchResults<ThreadResult>(
+        terms,
+        (thread) =>
+          weightedSearchScore(terms, [
+            { value: thread.body, weight: 30 },
+            { value: thread.profiles?.username, weight: 12 },
+            { value: thread.profiles?.display_name, weight: 10 },
+          ]),
+        (thread) => thread.body,
+      ),
+    );
+  const filteredListingResults = (listings ?? [])
+    .filter(
+      (listing) =>
+        !listing.profiles?.id || !blockedProfileIds.has(listing.profiles.id),
+    )
+    .sort(
+      compareSearchResults<ListingResult>(
+        terms,
+        (listing) =>
+          weightedSearchScore(terms, [
+            { value: listing.title, weight: 34 },
+            { value: listing.category, weight: 20 },
+            { value: listing.city, weight: 14 },
+            { value: listing.region, weight: 12 },
+            { value: listing.description, weight: 8 },
+            { value: listing.profiles?.username, weight: 8 },
+            { value: listing.profiles?.display_name, weight: 6 },
+          ]),
+        (listing) => listing.title,
+      ),
+    );
+  const filteredGigResults = (gigs ?? [])
+    .filter((gig) => !gig.profiles?.id || !blockedProfileIds.has(gig.profiles.id))
+    .sort(
+      compareSearchResults<GigResult>(
+        terms,
+        (gig) =>
+          weightedSearchScore(terms, [
+            { value: gig.title, weight: 34 },
+            { value: gig.category, weight: 20 },
+            { value: gig.city, weight: 14 },
+            { value: gig.region, weight: 12 },
+            { value: gig.compensation, weight: 10 },
+            { value: gig.description, weight: 8 },
+            { value: gig.profiles?.username, weight: 8 },
+            { value: gig.profiles?.display_name, weight: 6 },
+          ]),
+        (gig) => gig.title,
+      ),
+    );
+  const filteredMerchResults = (merchProducts ?? [])
+    .filter(
+      (product) =>
+        product.is_official ||
+        !product.profiles?.id ||
+        !blockedProfileIds.has(product.profiles.id),
+    )
+    .sort(
+      compareSearchResults<MerchResult>(
+        terms,
+        (product) =>
+          weightedSearchScore(terms, [
+            { value: product.title, weight: 34 },
+            { value: product.category, weight: 20 },
+            { value: product.city, weight: 14 },
+            { value: product.region, weight: 12 },
+            { value: product.description, weight: 8 },
+            { value: product.profiles?.username, weight: 8 },
+            { value: product.profiles?.display_name, weight: 6 },
+          ]),
+        (product) => product.title,
+      ),
+    );
   const profileResults = filteredProfileResults.slice(0, resultLimit);
   const feedResults = filteredFeedResults.slice(0, resultLimit);
   const threadResults = filteredThreadResults.slice(0, resultLimit);
