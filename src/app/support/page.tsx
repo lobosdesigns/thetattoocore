@@ -65,6 +65,29 @@ const quickActions = [
   },
 ] as const;
 
+const guideLinks = [
+  {
+    body: "Appointment types, slots, deposits, fees, and calendar files.",
+    href: "/help/booking-appointments",
+    label: "Booking guide",
+  },
+  {
+    body: "Usernames, private results, saved searches, and search wording.",
+    href: "/help/search-saved-people",
+    label: "Search and Saved",
+  },
+  {
+    body: "Reports, blocks, deletion requests, and private support issues.",
+    href: "/help/privacy-safety-support",
+    label: "Privacy and safety",
+  },
+  {
+    body: "Artist, studio, and vendor document review basics.",
+    href: "/help/verification-documents",
+    label: "Verification guide",
+  },
+] as const;
+
 export default function SupportPage() {
   return (
     <main className="ttc-page min-h-screen px-4 py-8">
@@ -116,6 +139,24 @@ export default function SupportPage() {
               </section>
             ))}
           </div>
+
+          <section className="ttc-surface mt-7 rounded-md border p-4">
+            <h2 className="text-lg font-bold">Popular Help Guides</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {guideLinks.map((guide) => (
+                <Link
+                  className="rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] p-3 text-sm font-semibold hover:border-[var(--gold)]"
+                  href={guide.href}
+                  key={guide.href}
+                >
+                  <span className="block">{guide.label}</span>
+                  <span className="mt-2 block text-xs font-medium leading-5 text-[var(--muted)]">
+                    {guide.body}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </section>
 
           <div className="ttc-surface mt-7 rounded-md border p-4 text-sm leading-6 text-[var(--muted)]">
             <p className="font-semibold">Support email</p>
