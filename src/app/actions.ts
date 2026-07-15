@@ -60,6 +60,7 @@ const MERCH_CATEGORIES = new Set([
   "print",
   "sticker",
 ]);
+const MERCH_BUCKET = "merch-media";
 const REPORT_REASONS = new Set([
   "sensitive non-nude body-art",
   "body-art nudity context",
@@ -535,6 +536,37 @@ async function uploadPostMedia({
 
   return {
     bucket: MEDIA_BUCKET,
+    mediaType: metadata.mediaType,
+    path,
+  };
+}
+
+async function uploadMerchMedia({
+  file,
+  metadata,
+  productId,
+  supabase,
+  userId,
+}: {
+  file: File;
+  metadata: MediaMetadata;
+  productId: string;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId: string;
+}) {
+  const path = `${userId}/merch/${productId}/${crypto.randomUUID()}.${extensionFor(file)}`;
+  const { error } = await supabase.storage.from(MERCH_BUCKET).upload(path, file, {
+    cacheControl: "31536000",
+    contentType: metadata.mimeType,
+    upsert: false,
+  });
+
+  if (error) {
+    throw new Error(error.message || "Could not upload Merch media.");
+  }
+
+  return {
+    bucket: MERCH_BUCKET,
     mediaType: metadata.mediaType,
     path,
   };
@@ -1690,6 +1722,142 @@ export async function createMarketplaceListing(formData: FormData) {
 
   revalidatePath("/");
   redirect(homeMessage("Stuff listing published.", "marketplace"));
+}
+
+export async function createMerchProduct(formData: FormData) {
+  const { supabase, userId } = await requireProfile();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("account_type, license_verified_at")
+    .eq("id", userId)
+    .maybeSingle<{
+      account_type: string;
+      license_verified_at: string | null;
+    }>();
+
+  if (!isVerifiedProfessional(profile)) {
+    redirect(
+      homeMessage(
+        "Verified artist, studio, or vendor status is required to submit Merch.",
+        "merch",
+      ),
+    );
+  }
+
+  const title = cleanText(formData.get("title"), 120);
+  const description = cleanText(formData.get("description"), 4000);
+  const rawCategory = cleanText(formData.get("category"), 40);
+  const category = MERCH_CATEGORIES.has(rawCategory) ? rawCategory : "other";
+  const media = mediaFromForm(formData, "media");
+  const priceCents = cleanMoneyCents(formData.get("price"));
+  const inventoryInput = cleanText(formData.get("inventory_quantity"), 12);
+  const inventoryNumber = inventoryInput ? Number(inventoryInput) : NaN;
+  const inventoryQuantity = Number.isFinite(inventoryNumber)
+    ? Math.max(0, Math.min(100000, Math.floor(inventoryNumber)))
+    : null;
+  const shippingRequired = formData.get("shipping_required") === "on";
+  const shipsFromCity = cleanText(formData.get("ships_from_city"), 80);
+  const shipsFromRegion = cleanText(formData.get("ships_from_region"), 80);
+
+  if (title.length < 3) {
+    redirect(homeMessage("Merch title needs at least 3 characters.", "merch"));
+  }
+
+  if (!description || description.length < 10) {
+    redirect(homeMessage("Add at least 10 characters of Merch details.", "merch"));
+  }
+
+  if (!priceCents) {
+    redirect(homeMessage("Add a valid Merch price.", "merch"));
+  }
+
+  if (inventoryQuantity == null || inventoryQuantity < 1) {
+    redirect(homeMessage("Add at least 1 Merch item in inventory.", "merch"));
+  }
+
+  if (!media) {
+    redirect(homeMessage("Merch needs a product photo, GIF, or short video.", "merch"));
+  }
+
+  const metadata = await inspectMediaFile(media);
+  const validationMessage = validateMediaMetadata(metadata);
+
+  if (validationMessage) {
+    redirect(homeMessage(validationMessage, "merch"));
+  }
+
+  const { data: product, error } = await supabase
+    .from("merch_products")
+    .insert({
+      category,
+      currency: "USD",
+      description,
+      inventory_quantity: inventoryQuantity,
+      is_indexable: false,
+      is_official: false,
+      price_cents: priceCents,
+      seller_id: userId,
+      shipping_required: shippingRequired,
+      ships_from_city: shipsFromCity || null,
+      ships_from_region: shipsFromRegion || null,
+      status: "pending_review",
+      title,
+    })
+    .select("id")
+    .single<{ id: string }>();
+
+  if (error || !product) {
+    redirect(
+      homeMessage(error?.message || "Could not submit Merch for review.", "merch"),
+    );
+  }
+
+  let upload: Awaited<ReturnType<typeof uploadMerchMedia>>;
+
+  try {
+    upload = await uploadMerchMedia({
+      file: media,
+      metadata,
+      productId: product.id,
+      supabase,
+      userId,
+    });
+  } catch (error) {
+    await supabase.from("merch_products").delete().eq("id", product.id).eq("seller_id", userId);
+    redirect(
+      homeMessage(
+        error instanceof Error ? error.message : "Could not upload Merch media.",
+        "merch",
+      ),
+    );
+  }
+  const { error: mediaError } = await supabase.from("merch_product_media").insert({
+    alt_text: title,
+    duration_seconds: metadata.durationSeconds,
+    height: metadata.height,
+    media_type: upload.mediaType,
+    product_id: product.id,
+    sort_order: 0,
+    storage_bucket: upload.bucket,
+    storage_path: upload.path,
+    width: metadata.width,
+  });
+
+  if (mediaError) {
+    await supabase.storage.from(MERCH_BUCKET).remove([upload.path]);
+    await supabase.from("merch_products").delete().eq("id", product.id).eq("seller_id", userId);
+    redirect(
+      homeMessage(
+        mediaError.message || "Media uploaded but could not attach to the Merch product.",
+        "merch",
+      ),
+    );
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin");
+  revalidatePath("/admin/merch");
+  redirect(homeMessage("Merch submitted for admin review.", "merch"));
 }
 
 export async function editMarketplaceListing(formData: FormData) {

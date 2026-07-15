@@ -7,6 +7,8 @@ const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8"
 const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const merchCheckoutSuccessPage = readFileSync("src/app/merch/checkout/success/page.tsx", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
+const appActions = readFileSync("src/app/actions.ts", "utf8");
+const floatingComposer = readFileSync("src/app/floating-composer.tsx", "utf8");
 const adminAdsPage = readFileSync("src/app/admin/ads/page.tsx", "utf8");
 const merchPrintReceiptButton = readFileSync(
   "src/app/merch/checkout/success/print-receipt-button.tsx",
@@ -96,6 +98,23 @@ checks.push({
     accountPage.includes("Use ${dollars(campaign.daily_budget_cents)} ad credit") &&
     productPlan.includes("member-visible Account > Advertising balance summaries") &&
     productPlan.includes("atomic spend path that lets campaign checkout consume enough active account credit"),
+});
+checks.push({
+  label: "verified sellers can submit Merch products for review",
+  ok:
+    floatingComposer.includes("action={createMerchProduct}") &&
+    floatingComposer.includes("canCreateStuff ?") &&
+    floatingComposer.includes("Submit Merch") &&
+    floatingComposer.includes("New Merch goes to admin review first") &&
+    floatingComposer.includes('href={isSignedIn ? "/account#verification-settings" : "/login"}') &&
+    appActions.includes("export async function createMerchProduct") &&
+    appActions.includes("Verified artist, studio, or vendor status is required to submit Merch.") &&
+    appActions.includes('status: "pending_review"') &&
+    appActions.includes('is_indexable: false') &&
+    appActions.includes('from("merch_products")') &&
+    appActions.includes('from("merch_product_media")') &&
+    appActions.includes("Merch needs a product photo, GIF, or short video.") &&
+    appActions.includes("await supabase.from(\"merch_products\").delete()"),
 });
 checks.push({
   label: "checkout routes require private payment gates before payments",

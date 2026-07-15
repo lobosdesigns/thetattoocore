@@ -4,6 +4,7 @@ import { ChevronDown } from "lucide-react";
 import {
   createFeedPost,
   createMarketplaceListing,
+  createMerchProduct,
   createStoryPost,
   createThreadPost,
 } from "./actions";
@@ -403,20 +404,127 @@ export function FloatingComposer({
           </form>
         ),
         merch: (
-          <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-4">
-            <p className="text-sm font-semibold">Merch listings are approval-only.</p>
-            <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
-              Merch will be for public fan purchases like artist shirts, prints,
-              art, stickers, vendor brand goods, and official TheTattooCore
-              merchandise. It stays separate from Stuff, which is for verified
-              professional equipment and trade.
-            </p>
-            <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] p-3 text-xs leading-5 text-[var(--muted)]">
-              Checkout is limited during launch. Seller product creation stays
-              closed until approval, tax, shipping, refunds, fulfillment, and
-              payment rules are ready.
-            </p>
-          </div>
+          canCreateStuff ? (
+            <form
+              action={createMerchProduct}
+              className="space-y-3"
+              encType="multipart/form-data"
+            >
+              <WordLimitedField
+                className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                maxCharacters={120}
+                maxLength={120}
+                minTrimmedLength={3}
+                name="title"
+                placeholder="Shop shirt, flash print, sticker pack"
+                required
+                validationMessage="Merch title needs at least 3 characters."
+                wrapperClassName="w-full"
+              />
+              <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3 text-xs leading-5 text-[var(--muted)]">
+                <p className="font-semibold text-[var(--foreground)]">
+                  Public fan merch
+                </p>
+                <p className="mt-1">
+                  Shirts, prints, art, stickers, vendor brand goods, and official
+                  TTC products belong here. Professional equipment and trade stay
+                  in Stuff.
+                </p>
+              </div>
+              <WordLimitedField
+                as="textarea"
+                className="min-h-28 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                maxCharacters={4000}
+                maxLength={4000}
+                minTrimmedLength={10}
+                name="description"
+                placeholder="Sizing, material, edition, pickup or shipping notes"
+                required
+                validationMessage="Add at least 10 characters of Merch details."
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                  inputMode="decimal"
+                  name="price"
+                  placeholder="25"
+                  required
+                />
+                <input
+                  className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                  min="1"
+                  name="inventory_quantity"
+                  placeholder="Qty"
+                  required
+                  type="number"
+                />
+              </div>
+              <ComposerDetails title="Product type and shipping">
+                <select
+                  className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                  name="category"
+                >
+                  <option value="apparel">Apparel</option>
+                  <option value="print">Print</option>
+                  <option value="art">Art</option>
+                  <option value="sticker">Sticker</option>
+                  <option value="accessory">Accessory</option>
+                  <option value="other">Other</option>
+                </select>
+                <label className="flex min-h-10 items-center gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm font-semibold">
+                  <input
+                    className="size-4 accent-[var(--gold)]"
+                    defaultChecked
+                    name="shipping_required"
+                    type="checkbox"
+                  />
+                  Requires shipping address
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                    name="ships_from_city"
+                    placeholder="Ships from city"
+                  />
+                  <input
+                    className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                    name="ships_from_region"
+                    placeholder="State/region"
+                  />
+                </div>
+              </ComposerDetails>
+              <MediaInput
+                accept={imageVideoAccept}
+                maxImageBytes={10 * 1024 * 1024}
+                maxVideoBytes={50 * 1024 * 1024}
+                maxVideoSeconds={60}
+                name="media"
+                required
+              />
+              <div className="rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_28%,var(--card-rim))] bg-[color-mix(in_srgb,var(--brand-gold)_10%,var(--paper-warm))] p-3 text-xs leading-5 text-[var(--muted)]">
+                New Merch goes to admin review first. Checkout only opens after
+                the product and seller rules are approved.
+              </div>
+              <ComposerSubmit pendingLabel="Submitting" type="submit">
+                Submit Merch
+              </ComposerSubmit>
+            </form>
+          ) : (
+            <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-4">
+              <p className="text-sm font-semibold">Merch listings are approval-only.</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
+                Verified artists, studios, and vendors can submit public-buyable
+                shirts, prints, art, stickers, vendor brand goods, and official
+                TTC-style products for admin review.
+              </p>
+              <Link
+                className="mt-3 inline-flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
+                href={isSignedIn ? "/account#verification-settings" : "/login"}
+              >
+                {isSignedIn ? "Verify seller status" : "Sign in"}
+              </Link>
+            </div>
+          )
         ),
       }}
       isSignedIn={isSignedIn}
