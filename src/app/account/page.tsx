@@ -129,6 +129,20 @@ const bookingCalendarPrepItems = [
     "Google, Apple, or iCalendar account sync is planned after launch payment and policy review.",
   ],
 ] as const;
+const merchSellerReadinessItems = [
+  [
+    "Seller payout path",
+    "Production payouts stay gated until seller approval, payout policy, taxes, refunds, and dispute rules are finalized.",
+  ],
+  [
+    "Fulfillment gate",
+    "Mark items fulfilled only after a paid order is ready for shipping, pickup, or handoff.",
+  ],
+  [
+    "Review trail",
+    "Refunds, disputes, and unusual order issues stay in admin review during launch testing.",
+  ],
+] as const;
 
 function limitParam(value: string | string[] | undefined) {
   const rawValue = Array.isArray(value) ? value[0] : value;
@@ -2314,6 +2328,19 @@ export default async function AccountPage({
               handoff is complete; refunds and disputes still need admin/payment
               review during launch.
             </p>
+            <div className="mt-4 grid gap-3 lg:grid-cols-3">
+              {merchSellerReadinessItems.map(([title, body]) => (
+                <div
+                  className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3"
+                  key={title}
+                >
+                  <p className="text-sm font-bold">{title}</p>
+                  <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
+                    {body}
+                  </p>
+                </div>
+              ))}
+            </div>
             {visibleMerchSales.length ? (
               <div className="mt-4 grid gap-3">
                 {visibleMerchSales.map((item) => {

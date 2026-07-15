@@ -233,6 +233,11 @@ checks.push({
     adminPaymentsPage.includes("do not collect bank or card payout data in TTC forms") &&
     adminMerchPage.includes("Checkout and refund status are limited during launch") &&
     adminMerchPage.includes("finish tax, shipping, fulfillment, payouts, and payment safety rules") &&
+    accountPage.includes("merchSellerReadinessItems") &&
+    accountPage.includes("Seller payout path") &&
+    accountPage.includes("Production payouts stay gated") &&
+    accountPage.includes("Fulfillment gate") &&
+    accountPage.includes("Refunds, disputes, and unusual order issues stay in admin review") &&
     privacyPage.includes("Checkout is limited during launch") &&
     supportPage.includes("Merch checkout is limited during launch"),
 });
