@@ -37,7 +37,7 @@ const sections = [
   },
   {
     body:
-      "A fuller Help Center will add FAQ and screenshot tutorials for bookings, ads, Merch setup, verification, Stuff, Gigs, Stories, DMs, and account settings. Until then, email support with the feature name and where you got stuck.",
+      "The Help Center is starting with FAQ and screenshot tutorial topics for bookings, ads, Merch setup, verification, Stuff, Gigs, Stories, DMs, and account settings. Email support with the feature name and where you got stuck if the guide you need is not live yet.",
     title: "How-To Library",
   },
 ] as const;
@@ -47,6 +47,11 @@ const quickActions = [
     body: "Sign in and go straight to the Account data controls.",
     href: "/login?return_to=%2Faccount%23data-settings",
     label: "Request deletion",
+  },
+  {
+    body: "Read FAQ and tutorial topics for bookings, ads, Merch, verification, and member safety.",
+    href: "/help",
+    label: "Help Center",
   },
   {
     body: "Use this for login trouble, privacy help, urgent safety, or verification questions.",

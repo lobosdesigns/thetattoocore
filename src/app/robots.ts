@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
-        allow: ["/", "/gigs/", "/merch/", "/p/", "/stuff/", "/support", "/t/", "/u/"],
+        allow: ["/", "/gigs/", "/help", "/merch/", "/p/", "/stuff/", "/support", "/t/", "/u/"],
         disallow: [
           "/account",
           "/admin",
