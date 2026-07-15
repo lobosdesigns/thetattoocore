@@ -18,8 +18,16 @@ const routes = [
   { path: "/", titleIncludes: "Sign in" },
   { path: "/login", titleIncludes: "Sign in" },
   { path: "/signup", titleIncludes: "Create account" },
-  { path: "/forgot-password", textIncludes: "Send reset link", titleIncludes: "Reset password" },
-  { path: "/reset-password", textIncludes: "Create new password", titleIncludes: "Reset password" },
+  {
+    path: "/forgot-password",
+    textIncludes: ["Send reset link", "Help Center"],
+    titleIncludes: "Reset password",
+  },
+  {
+    path: "/reset-password",
+    textIncludes: ["Create new password", "Help Center"],
+    titleIncludes: "Reset password",
+  },
   { path: "/support", textIncludes: "support@thetattoocore.com", titleIncludes: "Support" },
   { path: "/help", textIncludes: "Search Help Center", titleIncludes: "Help Center" },
   {
@@ -148,6 +156,11 @@ function isTransientRouteFailure(result) {
   );
 }
 
+function routeTextIncludes(route) {
+  if (!route.textIncludes) return [];
+  return Array.isArray(route.textIncludes) ? route.textIncludes : [route.textIncludes];
+}
+
 async function checkRoute(portNumber, url, route) {
   const tab = await newTab(portNumber, url);
   const client = await connectCdp(tab.webSocketDebuggerUrl);
@@ -221,8 +234,10 @@ async function checkRoute(portNumber, url, route) {
     if (route.titleIncludes && !String(value.title || "").includes(route.titleIncludes)) {
       reasons.push(`title "${value.title || ""}" did not include "${route.titleIncludes}"`);
     }
-    if (route.textIncludes && !String(value.text || "").includes(route.textIncludes)) {
-      reasons.push(`page text did not include "${route.textIncludes}"`);
+    for (const requiredText of routeTextIncludes(route)) {
+      if (!String(value.text || "").includes(requiredText)) {
+        reasons.push(`page text did not include "${requiredText}"`);
+      }
     }
     if (overflow > 2) {
       reasons.push(`horizontal overflow ${overflow}px (${value.scrollWidth}px document on ${value.clientWidth}px viewport)`);
