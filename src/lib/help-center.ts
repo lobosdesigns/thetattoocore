@@ -11,6 +11,7 @@ export type HelpArticle = {
     answer: string;
     question: string;
   }[];
+  lastReviewed: string;
   relatedSlugs: readonly string[];
   steps: readonly string[];
   title: string;
@@ -73,6 +74,7 @@ export const helpArticles = [
         question: "Can artists connect to a shop profile?",
       },
     ],
+    lastReviewed: "July 15, 2026",
     relatedSlugs: ["search-saved-people", "verification-documents"],
     slug: "artist-profile-shop-links",
     steps: [
@@ -99,6 +101,7 @@ export const helpArticles = [
         question: "Why can I not find someone or something?",
       },
     ],
+    lastReviewed: "July 15, 2026",
     relatedSlugs: ["artist-profile-shop-links", "posting-stories-dms"],
     slug: "search-saved-people",
     steps: [
@@ -125,6 +128,7 @@ export const helpArticles = [
         question: "Will my license document be public?",
       },
     ],
+    lastReviewed: "July 15, 2026",
     relatedSlugs: ["artist-profile-shop-links", "merch-products-orders"],
     slug: "verification-documents",
     steps: [
@@ -151,6 +155,7 @@ export const helpArticles = [
         question: "Can bookings connect to my calendar?",
       },
     ],
+    lastReviewed: "July 15, 2026",
     relatedSlugs: ["artist-profile-shop-links", "ads-and-credits"],
     slug: "booking-appointments",
     steps: [
@@ -177,6 +182,7 @@ export const helpArticles = [
         question: "Why does my ad need review?",
       },
     ],
+    lastReviewed: "July 15, 2026",
     relatedSlugs: ["merch-products-orders", "posting-stories-dms"],
     slug: "ads-and-credits",
     steps: [
@@ -203,6 +209,7 @@ export const helpArticles = [
         question: "Can fans buy Merch?",
       },
     ],
+    lastReviewed: "July 15, 2026",
     relatedSlugs: ["verification-documents", "ads-and-credits"],
     slug: "merch-products-orders",
     steps: [
@@ -229,6 +236,7 @@ export const helpArticles = [
         question: "Can I post tattoo placement photos with nudity?",
       },
     ],
+    lastReviewed: "July 15, 2026",
     relatedSlugs: ["artist-profile-shop-links", "verification-documents"],
     slug: "posting-stories-dms",
     steps: [

@@ -9,6 +9,10 @@ type HelpArticlePageProps = {
   params: Promise<{ slug: string }>;
 };
 
+function reviewLabel(lastReviewed: string) {
+  return `Last reviewed ${lastReviewed}`;
+}
+
 export function generateStaticParams() {
   return helpArticles.map((article) => ({ slug: article.slug }));
 }
@@ -66,6 +70,9 @@ export default async function HelpArticlePage({ params }: HelpArticlePageProps) 
           <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
             {article.description}
           </p>
+          <p className="mt-3 inline-flex rounded-full border border-[var(--card-rim)] bg-[var(--surface-subtle)] px-3 py-1 text-xs font-semibold text-[var(--muted-strong)]">
+            {reviewLabel(article.lastReviewed)}
+          </p>
 
           <section className="mt-7">
             <h2 className="text-lg font-bold">Steps</h2>
@@ -119,6 +126,9 @@ export default async function HelpArticlePage({ params }: HelpArticlePageProps) 
                   </Link>
                   <span className="mt-1 block text-xs text-[var(--muted)]">
                     {relatedArticle.category}
+                  </span>
+                  <span className="mt-1 block text-xs font-semibold text-[var(--muted-strong)]">
+                    {reviewLabel(relatedArticle.lastReviewed)}
                   </span>
                 </li>
               ))}

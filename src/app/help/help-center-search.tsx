@@ -9,6 +9,10 @@ function includesTerm(value: string, term: string) {
   return value.toLowerCase().includes(term);
 }
 
+function reviewLabel(lastReviewed: string) {
+  return `Last reviewed ${lastReviewed}`;
+}
+
 export function HelpCenterSearch() {
   const [query, setQuery] = useState("");
   const normalizedQuery = query.trim().toLowerCase();
@@ -22,6 +26,7 @@ export function HelpCenterSearch() {
       const haystack = [
         article.category,
         article.description,
+        article.lastReviewed,
         article.title,
         ...article.faqs.flatMap((faq) => [faq.question, faq.answer]),
         ...article.steps,
@@ -106,6 +111,9 @@ export function HelpCenterSearch() {
               </Link>
               <span className="mt-1 block text-xs text-[var(--muted)]">
                 {article.category}
+              </span>
+              <span className="mt-1 block text-xs font-semibold text-[var(--muted-strong)]">
+                {reviewLabel(article.lastReviewed)}
               </span>
             </li>
           ))}
