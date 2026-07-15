@@ -2039,7 +2039,7 @@ export default async function ProfilePage({
                 </section>
               ) : null}
               {!isPrivateLocked ? (
-              <div className="mt-5 grid max-w-xl grid-cols-3 gap-4 sm:grid-cols-6">
+              <div className="mt-5 grid max-w-3xl grid-cols-3 gap-4 sm:grid-cols-4 lg:grid-cols-7">
                 <ProfileStat label="4U" value={visiblePosts.length} />
                 <ProfileStat label="Gossip" value={visibleThreads.length} />
                 <ProfileStat label="Stuff" value={visibleListings.length} />

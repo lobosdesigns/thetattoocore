@@ -167,6 +167,7 @@ const checks = [
       profilePage.includes(".eq(\"subject_type\", \"merch_product\")") &&
       profilePage.includes("const savedMerchIds = new Set") &&
       profilePage.includes("isSaved={savedMerchIds.has(product.id)}") &&
+      profilePage.includes("lg:grid-cols-7") &&
       profilePage.includes("Open merch") &&
       productPlan.includes("profile Merch previews for approved active products"),
   },
