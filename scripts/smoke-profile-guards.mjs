@@ -241,11 +241,22 @@ const checks = [
       searchPage.includes("RecentSearches") &&
       recentSearches.includes('const storageKey = "ttc.recent-searches.v1"') &&
       recentSearches.includes("const maxRecentSearches = 8") &&
-      recentSearches.includes("localStorage.getItem(storageKey)") &&
+      recentSearches.includes("localStorage.getItem(key)") &&
       recentSearches.includes("localStorage.removeItem(storageKey)") &&
       recentSearches.includes("Recent searches") &&
       recentSearches.includes("hrefFor") &&
       productPlan.includes("browser-local recent search chips"),
+  },
+  {
+    label: "search can pin saved search shortcuts locally",
+    ok:
+      recentSearches.includes('const savedStorageKey = "ttc.saved-searches.v1"') &&
+      recentSearches.includes("const maxSavedSearches = 12") &&
+      recentSearches.includes("Saved searches") &&
+      recentSearches.includes("currentIsSaved") &&
+      recentSearches.includes("writeSavedSearches") &&
+      recentSearches.includes("localStorage.removeItem(savedStorageKey)") &&
+      productPlan.includes("browser-local saved search shortcuts"),
   },
   {
     label: "outbound profile links use safe URL and rel policy",
