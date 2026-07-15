@@ -1681,6 +1681,20 @@ export default async function ProfilePage({
       (profileThreadRows.length - visibleThreads.length) +
       (profileListingRows.length - visibleListings.length) +
       (profileGigRows.length - visibleGigs.length);
+  const visibleMerchProductIds = visibleMerchProducts.map((product) => product.id);
+  const { data: savedMerchRows } =
+    claims?.sub && visibleMerchProductIds.length
+      ? await supabase
+          .from("saved_items")
+          .select("subject_id")
+          .eq("user_id", claims.sub)
+          .eq("subject_type", "merch_product")
+          .in("subject_id", visibleMerchProductIds)
+          .returns<{ subject_id: string }[]>()
+      : { data: [] as { subject_id: string }[] };
+  const savedMerchIds = new Set(
+    (savedMerchRows ?? []).map((item) => item.subject_id),
+  );
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -2784,6 +2798,15 @@ export default async function ProfilePage({
                             >
                               Open merch
                             </Link>
+                            {claims?.sub ? (
+                              <SavedItemButton
+                                className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm font-semibold"
+                                isSaved={savedMerchIds.has(product.id)}
+                                returnPath={`/u/${profile.username}`}
+                                subjectId={product.id}
+                                subjectType="merch_product"
+                              />
+                            ) : null}
                             {claims?.sub && product.profiles?.id !== claims.sub ? (
                               <ContentReportForm
                                 returnPath={`/u/${profile.username}`}

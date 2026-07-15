@@ -66,7 +66,7 @@ const notificationOptions = [
   [
     "notify_follow_activity",
     "Follow activity",
-    "Follow requests and approved follow requests.",
+    "New followers, follow requests, and approved follow requests.",
   ],
   [
     "notify_message_activity",

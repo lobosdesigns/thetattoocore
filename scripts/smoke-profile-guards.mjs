@@ -163,6 +163,10 @@ const checks = [
       profilePage.includes(".eq(\"moderation_status\", \"active\")") &&
       profilePage.includes("product.is_official || isVerifiedProfessional(product.profiles)") &&
       profilePage.includes("visibleMerchProducts") &&
+      profilePage.includes("const visibleMerchProductIds = visibleMerchProducts.map") &&
+      profilePage.includes(".eq(\"subject_type\", \"merch_product\")") &&
+      profilePage.includes("const savedMerchIds = new Set") &&
+      profilePage.includes("isSaved={savedMerchIds.has(product.id)}") &&
       profilePage.includes("Open merch") &&
       productPlan.includes("profile Merch previews for approved active products"),
   },
