@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { LogoLockup } from "../logo-mark";
+import { helpArticles, helpCategories } from "@/lib/help-center";
 import { siteName, supportEmail } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -8,54 +9,6 @@ export const metadata: Metadata = {
     "TheTattooCore Help Center for account setup, verification, bookings, ads, Merch, Stuff, Gigs, Stories, DMs, and safety basics.",
   title: "Help Center",
 };
-
-const helpCategories = [
-  {
-    description:
-      "Profile setup, profile photo, banner image, bio, website links, social links, shop links, light or dark mode, and account data controls.",
-    title: "Account And Profile",
-    topics: ["Edit profile", "Profile links", "Privacy basics"],
-  },
-  {
-    description:
-      "Artist, studio, and vendor approval steps, what documents to prepare, resubmission basics, and why unlicensed work is not allowed.",
-    title: "Verification",
-    topics: ["Artist review", "Studio review", "Vendor review"],
-  },
-  {
-    description:
-      "Appointment request basics, time-slot setup, deposit expectations, cancellation rules, calendar files, and future calendar connection guidance.",
-    title: "Bookings",
-    topics: ["Set availability", "Request appointments", "Deposits"],
-  },
-  {
-    description:
-      "Creating ads, choosing placements, using ad credits, reading campaign status, and keeping promotions inside the content rules.",
-    title: "Advertising",
-    topics: ["Create ads", "Ad credits", "Campaign review"],
-  },
-  {
-    description:
-      "Merch product setup, seller review, Stuff listings, public browsing, approved buyer interactions, fulfillment, refunds, and dispute basics.",
-    title: "Merch And Stuff",
-    topics: ["Merch setup", "Stuff listings", "Order support"],
-  },
-  {
-    description:
-      "Posting to 4U, Gossip, Gigs, Stories, and DMs, including media uploads, comments, reports, blocking, and no-visible-nudity launch rules.",
-    title: "Posting And Safety",
-    topics: ["4U and Gossip", "Stories and DMs", "Reports"],
-  },
-] as const;
-
-const articlePlans = [
-  "How to set up an artist profile and link a studio",
-  "How to submit artist, studio, or vendor verification",
-  "How to create appointment types, time slots, and booking deposits",
-  "How to create an ad and use ad credits",
-  "How to set up Merch products and handle orders",
-  "How to create Stuff listings, Gigs, Stories, and DMs safely",
-] as const;
 
 export default function HelpCenterPage() {
   return (
@@ -116,12 +69,17 @@ export default function HelpCenterPage() {
               questions will stay in private support.
             </p>
             <ul className="mt-4 grid gap-2 text-sm leading-6 text-[var(--muted)] md:grid-cols-2">
-              {articlePlans.map((article) => (
+              {helpArticles.map((article) => (
                 <li
                   className="rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] px-3 py-2"
-                  key={article}
+                  key={article.slug}
                 >
-                  {article}
+                  <Link className="font-semibold underline" href={`/help/${article.slug}`}>
+                    {article.title}
+                  </Link>
+                  <span className="mt-1 block text-xs text-[var(--muted)]">
+                    {article.category}
+                  </span>
                 </li>
               ))}
             </ul>

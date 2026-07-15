@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
+import { helpArticles } from "@/lib/help-center";
 import { siteUrl } from "@/lib/site";
 import { isVerifiedProfessional } from "@/lib/verification";
 
@@ -56,6 +57,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
       url: `${siteUrl}/help`,
     },
+    ...helpArticles.map((article) => ({
+      changeFrequency: "monthly" as const,
+      lastModified: now,
+      priority: 0.5,
+      url: `${siteUrl}/help/${article.slug}`,
+    })),
     {
       changeFrequency: "monthly",
       lastModified: now,
