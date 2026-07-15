@@ -9,6 +9,7 @@ const files = {
   googleShort: "native/store-metadata/google-play/en-US/short-description.txt",
   googleTitle: "native/store-metadata/google-play/en-US/title.txt",
   readme: "native/store-metadata/README.md",
+  screenshotInventory: "native/store-metadata/screenshot-inventory.md",
 };
 
 const read = (path) => (existsSync(path) ? readFileSync(path, "utf8").trim() : "");
@@ -57,6 +58,15 @@ const checks = [
   {
     label: "store metadata avoids public infrastructure details",
     ok: blockedTerms.every((term) => !allText.includes(term)),
+  },
+  {
+    label: "store screenshot inventory blocks unsafe review images",
+    ok:
+      source.screenshotInventory.includes("public/screenshots/mobile-home.png") &&
+      source.screenshotInventory.includes("private DMs") &&
+      source.screenshotInventory.includes("license documents") &&
+      source.screenshotInventory.includes("visible nudity") &&
+      source.screenshotInventory.includes("infrastructure/provider names"),
   },
 ];
 

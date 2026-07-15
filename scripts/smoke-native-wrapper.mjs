@@ -5,6 +5,8 @@ const files = {
   androidManifest: `${wrapperRoot}/android/app/src/main/AndroidManifest.xml`,
   capacitorConfig: `${wrapperRoot}/capacitor.config.ts`,
   iosInfo: `${wrapperRoot}/ios/App/App/Info.plist`,
+  iosPrivacy: `${wrapperRoot}/ios/App/App/PrivacyInfo.xcprivacy`,
+  iosProject: `${wrapperRoot}/ios/App/App.xcodeproj/project.pbxproj`,
   packageJson: `${wrapperRoot}/package.json`,
   readme: `${wrapperRoot}/README.md`,
   webFallback: `${wrapperRoot}/www/index.html`,
@@ -75,6 +77,14 @@ const checks = [
       fileSize(`${wrapperRoot}/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png`) > 20000 &&
       fileSize(`${wrapperRoot}/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png`) > 100000 &&
       fileSize(`${wrapperRoot}/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png`) > 1000000,
+  },
+  {
+    label: "native iOS wrapper includes privacy manifest resource",
+    ok:
+      source.iosPrivacy.includes("NSPrivacyTracking") &&
+      source.iosPrivacy.includes("<false/>") &&
+      source.iosPrivacy.includes("NSPrivacyCollectedDataTypes") &&
+      source.iosProject.includes("PrivacyInfo.xcprivacy in Resources"),
   },
 ];
 
