@@ -192,6 +192,8 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Stripe test checkout") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm run smoke:public") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm run smoke:mobile") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("support/help/legal") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Search/Saved guide") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("missing-detail fallback") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("No reload-loop screens"),
   },
