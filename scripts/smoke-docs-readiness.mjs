@@ -19,6 +19,12 @@ const docs = {
   "docs/DATA_SAFETY_PREP.md": readFileSync("docs/DATA_SAFETY_PREP.md", "utf8"),
 };
 const packageJson = readFileSync("package.json", "utf8");
+const helpArticlePage = readFileSync("src/app/help/[slug]/page.tsx", "utf8");
+const helpActions = readFileSync("src/app/help/actions.ts", "utf8");
+const helpCommentsMigration = readFileSync(
+  "supabase/migrations/20260715232157_help_article_comments.sql",
+  "utf8",
+);
 const allDocs = Object.values(docs).join("\n");
 const forbiddenContactSnippets = [
   "lobo3319@gmail.com",
@@ -235,8 +241,26 @@ const checks = [
       docs["docs/PRODUCT_PLAN.md"].includes("setting up Merch products") &&
       docs["docs/PRODUCT_PLAN.md"].includes("Verification education") &&
       docs["docs/PRODUCT_PLAN.md"].includes("Each Help Center article should support member comments") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("Started for launch with RLS-protected `help_article_comments`") &&
       docs["docs/PRODUCT_PLAN.md"].includes("pin official answers") &&
       docs["docs/PRODUCT_PLAN.md"].includes("turn repeated questions into new FAQ entries"),
+  },
+  {
+    label: "help article questions have schema, RLS, and signed-in submit flow",
+    ok:
+      helpCommentsMigration.includes("create table if not exists public.help_article_comments") &&
+      helpCommentsMigration.includes("alter table public.help_article_comments enable row level security") &&
+      helpCommentsMigration.includes("Visible help comments are public") &&
+      helpCommentsMigration.includes("Members can submit help comments") &&
+      helpCommentsMigration.includes("Moderators can update help comments") &&
+      helpCommentsMigration.includes("status = 'pending_review'") &&
+      helpArticlePage.includes("createHelpArticleComment") &&
+      helpArticlePage.includes("Guide Questions") &&
+      helpArticlePage.includes("Submit question") &&
+      helpArticlePage.includes("help_article_comments") &&
+      helpActions.includes("getHelpArticle(slug)") &&
+      helpActions.includes("status: \"pending_review\"") &&
+      helpActions.includes("Question submitted for moderation."),
   },
   {
     label: "payment readiness doc keeps real-money gates explicit",
