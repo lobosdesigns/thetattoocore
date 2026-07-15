@@ -27,6 +27,11 @@ const routes = [
     textIncludes: "How to search, find people, and use Saved",
     titleIncludes: "Help Center",
   },
+  {
+    path: "/help/privacy-safety-support",
+    textIncludes: "How to use reports, blocks, privacy, and support",
+    titleIncludes: "Help Center",
+  },
   { path: "/privacy", textIncludes: "support@thetattoocore.com", titleIncludes: "Privacy" },
   { path: "/terms", textIncludes: "visible nudity is not allowed", titleIncludes: "Terms" },
   { path: "/search?q=ceocore", textIncludes: "@ceocore", titleIncludes: "Search" },
