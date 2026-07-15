@@ -64,7 +64,7 @@ async function createBookingCheckoutSession(
   const secretKey = process.env.STRIPE_SECRET_KEY;
 
   if (!secretKey) {
-    throw new Error("Booking checkout is almost ready. Payment setup is still being finished.");
+    throw new Error("Booking checkout is temporarily unavailable. Please try again later.");
   }
 
   const successUrl = `${siteUrl}${pathWithMessage(
@@ -156,13 +156,13 @@ export async function POST(request: Request) {
 
   if (!process.env.STRIPE_SECRET_KEY) {
     return redirectWithMessage(
-      "Booking checkout is almost ready. Payment setup is still being finished.",
+      "Booking checkout is temporarily unavailable. Please try again later.",
     );
   }
 
   if (!canProcessStripeWebhooks) {
     return redirectWithMessage(
-      "Booking checkout is almost ready. Payment setup is still being finished.",
+      "Booking checkout is temporarily unavailable. Please try again later.",
     );
   }
 
@@ -227,7 +227,7 @@ export async function POST(request: Request) {
   const adminSupabase = createAdminClient();
   if (!adminSupabase) {
     return redirectWithMessage(
-      "Booking checkout is almost ready. Payment setup is still being finished.",
+      "Booking checkout is temporarily unavailable. Please try again later.",
       returnTo,
     );
   }

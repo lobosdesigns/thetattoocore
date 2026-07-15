@@ -73,7 +73,7 @@ async function createAdCheckoutSession({
   const secretKey = process.env.STRIPE_SECRET_KEY;
 
   if (!secretKey) {
-    throw new Error("Checkout is almost ready. Payment setup is still being finished.");
+    throw new Error("Checkout is temporarily unavailable. Please try again later.");
   }
 
   const successUrl = `${siteUrl}${pathWithMessage(
@@ -152,13 +152,13 @@ export async function POST(request: Request) {
 
   if (!process.env.STRIPE_SECRET_KEY) {
     return redirectWithMessage(
-      "Ad checkout is almost ready. Payment setup is still being finished.",
+      "Ad checkout is temporarily unavailable. Please try again later.",
     );
   }
 
   if (!canProcessStripeWebhooks) {
     return redirectWithMessage(
-      "Ad checkout is almost ready. Payment setup is still being finished.",
+      "Ad checkout is temporarily unavailable. Please try again later.",
     );
   }
 

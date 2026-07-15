@@ -101,11 +101,11 @@ checks.push({
   label: "checkout routes require private payment gates before payments",
   ok:
     adCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&
-    adCheckout.includes("Ad checkout is almost ready. Payment setup is still being finished.") &&
+    adCheckout.includes("Ad checkout is temporarily unavailable. Please try again later.") &&
     bookingCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&
-    bookingCheckout.includes("Booking checkout is almost ready. Payment setup is still being finished.") &&
+    bookingCheckout.includes("Booking checkout is temporarily unavailable. Please try again later.") &&
     merchCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&
-    merchCheckout.includes("Checkout is almost ready. Payment setup is still being finished."),
+    merchCheckout.includes("Checkout is temporarily unavailable. Please try again later."),
 });
 checks.push({
   label: "payment webhook rejects unsigned events before processing",

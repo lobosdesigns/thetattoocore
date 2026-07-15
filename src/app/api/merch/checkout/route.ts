@@ -88,7 +88,7 @@ async function createCheckoutSession({
   const secretKey = process.env.STRIPE_SECRET_KEY;
 
   if (!secretKey) {
-    throw new Error("Checkout is almost ready. Payment setup is still being finished.");
+    throw new Error("Checkout is temporarily unavailable. Please try again later.");
   }
 
   const body = new URLSearchParams({
@@ -182,14 +182,14 @@ export async function POST(request: Request) {
   if (!process.env.STRIPE_SECRET_KEY) {
     return redirectWithMessage(
       "/#merch",
-      "Checkout is almost ready. Payment setup is still being finished.",
+      "Checkout is temporarily unavailable. Please try again later.",
     );
   }
 
   if (!canProcessStripeWebhooks) {
     return redirectWithMessage(
       "/#merch",
-      "Checkout is almost ready. Payment setup is still being finished.",
+      "Checkout is temporarily unavailable. Please try again later.",
     );
   }
 
@@ -259,7 +259,7 @@ export async function POST(request: Request) {
   if (!adminSupabase) {
     return redirectWithMessage(
       returnTo,
-      "Checkout is almost ready. Payment setup is still being finished.",
+      "Checkout is temporarily unavailable. Please try again later.",
     );
   }
 
