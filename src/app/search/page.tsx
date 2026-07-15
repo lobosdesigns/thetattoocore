@@ -171,11 +171,19 @@ function cleanType(value?: string): SearchType {
 
 function searchPattern(query: string) {
   const clean = query
-    .replace(/[%,_()]/g, " ")
+    .replace(/[^a-zA-Z0-9_]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 
   return `%${clean}%`;
+}
+
+function usernameQuery(query: string) {
+  return query
+    .replace(/^@/, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, "")
+    .slice(0, 30);
 }
 
 function searchTerms(query: string) {
@@ -429,6 +437,7 @@ export default async function SearchPage({
   const resultLimit = page * 25;
   const resultFetchLimit = resultLimit + 25;
   const terms = searchTerms(query);
+  const exactUsername = usernameQuery(query);
   const cityPattern = searchPattern(city);
   const regionPattern = searchPattern(region);
   const categoryPattern = searchPattern(category);
@@ -806,6 +815,8 @@ export default async function SearchPage({
               { value: profile.bio, weight: 8 },
             ],
             [
+              exactUsername && profile.username === exactUsername ? 70 : 0,
+              exactUsername && profile.username.startsWith(exactUsername) ? 20 : 0,
               visiblePrivateProfileIds.has(profile.id) ? 8 : 0,
               isVerifiedProfile(profile) ? 5 : 0,
             ],

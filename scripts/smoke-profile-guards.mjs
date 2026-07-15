@@ -224,11 +224,14 @@ const checks = [
     ok:
       searchPage.includes("function searchTerms") &&
       searchPage.includes("function searchOr") &&
+      searchPage.includes("function usernameQuery") &&
+      searchPage.includes("const exactUsername = usernameQuery(query)") &&
       searchPage.includes("function weightedSearchScore") &&
       searchPage.includes("function compareSearchResults") &&
       searchPage.includes("function SearchNoResultsTips") &&
       searchPage.includes("Try the exact username") &&
       searchPage.includes("Clear filters") &&
+      searchPage.includes("profile.username === exactUsername") &&
       searchPage.includes("account_type") &&
       searchPage.includes("visiblePrivateProfileIds.has(profile.id) ? 8 : 0") &&
       searchPage.includes("{ value: profile.username, weight: 40 }") &&
