@@ -9,6 +9,7 @@ const files = {
   iosInfo: `${wrapperRoot}/ios/App/App/Info.plist`,
   iosPrivacy: `${wrapperRoot}/ios/App/App/PrivacyInfo.xcprivacy`,
   iosProject: `${wrapperRoot}/ios/App/App.xcodeproj/project.pbxproj`,
+  iosUploadChecklist: `${wrapperRoot}/ios/APPLE_UPLOAD_CHECKLIST.md`,
   packageJson: `${wrapperRoot}/package.json`,
   readme: `${wrapperRoot}/README.md`,
   webFallback: `${wrapperRoot}/www/index.html`,
@@ -98,6 +99,15 @@ const checks = [
       source.iosBuildScript.includes("App.xcworkspace") &&
       source.iosExportOptions.includes("app-store-connect") &&
       source.iosExportOptions.includes("signingStyle"),
+  },
+  {
+    label: "native iOS wrapper documents TestFlight upload handoff",
+    ok:
+      source.iosUploadChecklist.includes("App.xcworkspace") &&
+      source.iosUploadChecklist.includes("com.thetattoocore.app") &&
+      source.iosUploadChecklist.includes("TestFlight internal testing") &&
+      source.iosUploadChecklist.includes("https://thetattoocore.com/support") &&
+      source.iosUploadChecklist.includes("Windows machine cannot run Xcode"),
   },
 ];
 
