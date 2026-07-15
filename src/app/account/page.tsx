@@ -13,6 +13,7 @@ import {
   markMerchSaleFulfilled,
   requestAccountDeletion,
   requestBookingRefundReview,
+  requestMerchRefundReview,
   respondBookingRequest,
   submitAdCampaign,
   submitLicenseVerification,
@@ -622,7 +623,7 @@ export default async function AccountPage({
   const { data: merchOrders } = await supabase
     .from("merch_orders")
     .select(
-      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, created_at, fulfilled_at, cancelled_at, refunded_at, merch_order_items(title_snapshot, quantity, fulfillment_status, seller_fulfilled_at, tracking_carrier, tracking_number, tracking_url)",
+      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, stripe_payment_intent_id, created_at, fulfilled_at, cancelled_at, refunded_at, merch_order_items(title_snapshot, quantity, fulfillment_status, seller_fulfilled_at, tracking_carrier, tracking_number, tracking_url)",
     )
     .eq("buyer_id", claims.sub)
     .order("created_at", { ascending: false })
@@ -650,6 +651,7 @@ export default async function AccountPage({
         shipping_cents: number;
         shipping_name: string | null;
         status: string;
+        stripe_payment_intent_id: string | null;
         subtotal_cents: number;
         tax_cents: number;
         total_cents: number;
@@ -2345,6 +2347,39 @@ export default async function AccountPage({
                       <p>Cancelled: {formatDate(order.cancelled_at)}</p>
                     ) : null}
                   </div>
+                  {["paid", "fulfilled"].includes(order.status) &&
+                  !order.refunded_at &&
+                  !order.cancelled_at &&
+                  order.stripe_payment_intent_id ? (
+                    <details className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-3">
+                      <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.08em] text-[var(--muted-strong)]">
+                        Request refund review
+                      </summary>
+                      <form
+                        action={requestMerchRefundReview}
+                        className="mt-3 space-y-2"
+                      >
+                        <input name="order_id" type="hidden" value={order.id} />
+                        <textarea
+                          className="min-h-20 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                          maxLength={500}
+                          name="refund_reason"
+                          placeholder="Briefly explain the refund issue for admin review."
+                        />
+                        <PendingSubmitButton
+                          className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[var(--foreground)] px-3 text-sm font-bold text-[var(--background)]"
+                          pendingLabel="Sending..."
+                        >
+                          Send refund review request
+                        </PendingSubmitButton>
+                        <p className="text-xs leading-5 text-[var(--muted-strong)]">
+                          This does not send money automatically. An admin
+                          reviews the order, seller fulfillment, and payment
+                          status first.
+                        </p>
+                      </form>
+                    </details>
+                  ) : null}
                 </article>
               ))}
             </div>

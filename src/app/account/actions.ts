@@ -952,6 +952,101 @@ export async function markMerchSaleFulfilled(formData: FormData) {
   redirect(accountPath("Merch sale marked fulfilled.", "order-settings"));
 }
 
+export async function requestMerchRefundReview(formData: FormData) {
+  const orderId = cleanText(formData.get("order_id"), 80);
+  const reason = cleanText(formData.get("refund_reason"), 500);
+
+  if (!orderId) {
+    redirect(accountPath("Choose a Merch order first.", "order-settings"));
+  }
+
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+
+  if (!claims?.sub) {
+    redirect("/login?return_to=%2Faccount%23order-settings");
+  }
+
+  const { data: order } = await supabase
+    .from("merch_orders")
+    .select("id, buyer_id, status, stripe_payment_intent_id, total_cents")
+    .eq("id", orderId)
+    .maybeSingle<{
+      buyer_id: string;
+      id: string;
+      status: string;
+      stripe_payment_intent_id: string | null;
+      total_cents: number;
+    }>();
+
+  if (!order || order.buyer_id !== claims.sub) {
+    redirect(accountPath("That Merch order is not available.", "order-settings"));
+  }
+
+  if (
+    !["paid", "fulfilled"].includes(order.status) ||
+    !order.stripe_payment_intent_id ||
+    order.total_cents <= 0
+  ) {
+    redirect(accountPath("Only paid Merch orders can request refund review.", "order-settings"));
+  }
+
+  const admin = createAdminClient();
+
+  if (!admin) {
+    redirect(accountPath("Refund review requests need owner tools enabled first.", "order-settings"));
+  }
+
+  const { data: existingReviewRequest } = await admin
+    .from("admin_audit_logs")
+    .select("id")
+    .eq("actor_id", claims.sub)
+    .eq("event_type", "merch_refund_review_requested")
+    .eq("target_id", order.id)
+    .eq("target_type", "merch_order")
+    .maybeSingle<{ id: string }>();
+
+  if (existingReviewRequest) {
+    redirect(
+      accountPath(
+        "Merch refund review is already waiting for admin review.",
+        "order-settings",
+      ),
+    );
+  }
+
+  const { error } = await admin.from("admin_audit_logs").insert({
+    actor_id: claims.sub,
+    event_type: "merch_refund_review_requested",
+    metadata: {
+      payment_intent_id: order.stripe_payment_intent_id,
+      reason: reason || null,
+      status: order.status,
+      total_cents: order.total_cents,
+    },
+    summary: `Merch refund review requested: order ${order.id.slice(0, 8)}`.slice(
+      0,
+      180,
+    ),
+    target_id: order.id,
+    target_type: "merch_order",
+  });
+
+  if (error) {
+    redirect(accountPath(error.message || "Could not request refund review.", "order-settings"));
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/admin/payments");
+  redirect(
+    accountPath(
+      "Merch refund review requested. An admin will review it before any refund is sent.",
+      "order-settings",
+    ),
+  );
+}
+
 function bookingPath(message: string) {
   return accountPath(message, "booking-settings");
 }

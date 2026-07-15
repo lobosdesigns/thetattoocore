@@ -7,6 +7,7 @@ const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8"
 const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const merchIndexPage = readFileSync("src/app/merch/page.tsx", "utf8");
 const merchCheckoutSuccessPage = readFileSync("src/app/merch/checkout/success/page.tsx", "utf8");
+const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const homePage = readFileSync("src/app/page.tsx", "utf8");
 const appActions = readFileSync("src/app/actions.ts", "utf8");
@@ -29,6 +30,7 @@ const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
 const fees = readFileSync("src/lib/payments/fees.ts", "utf8");
 const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
+const paymentReadiness = readFileSync("docs/PAYMENT_PRODUCTION_READINESS.md", "utf8");
 const paymentSafetySource = [
   adminMerchPage,
   adminPaymentsPage,
@@ -308,6 +310,20 @@ checks.push({
     statusLabels.includes('if (status === "pending_checkout") return "Checkout pending"') &&
     statusLabels.includes('if (status === "payment_failed") return "Payment failed"') &&
     statusLabels.includes('if (status === "unfulfilled") return "Not fulfilled"'),
+});
+checks.push({
+  label: "merch refund reviews are audit-only before production refund rules",
+  ok:
+    accountActions.includes("export async function requestMerchRefundReview") &&
+    accountActions.includes('event_type: "merch_refund_review_requested"') &&
+    accountActions.includes("Only paid Merch orders can request refund review.") &&
+    accountActions.includes("Merch refund review is already waiting for admin review.") &&
+    accountPage.includes("requestMerchRefundReview") &&
+    accountPage.includes("Request refund review") &&
+    accountPage.includes("This does not send money automatically") &&
+    adminPaymentsPage.includes("\"merch_refund_review_requested\"") &&
+    adminPaymentsPage.includes("Merch refund reviews need admin review") &&
+    paymentReadiness.includes("buyer refund-review requests"),
 });
 checks.push({
   label: "shared platform fee helper stays at launch rate",

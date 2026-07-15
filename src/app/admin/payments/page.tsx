@@ -96,6 +96,7 @@ const paymentEventTypes = [
 const paymentAuditTypes = [
   "reset_stale_booking_deposit_checkouts",
   "refund_booking_deposit_requested",
+  "merch_refund_review_requested",
   "booking_refund_review_requested",
   "booking_refund_problem",
   "ad_campaign_credit_granted",
@@ -277,6 +278,9 @@ function auditLabel(value: string) {
   if (value === "refund_booking_deposit_requested") {
     return "Booking refund requested";
   }
+  if (value === "merch_refund_review_requested") {
+    return "Merch refund review requested";
+  }
   if (value === "booking_refund_review_requested") {
     return "Booking refund review requested";
   }
@@ -382,6 +386,7 @@ export default async function AdminPaymentsPage({
     { count: staleBookingCheckoutCount },
     { count: activeUnpaidAdCount },
     { count: paymentDisputeAuditCount },
+    { count: merchRefundReviewCount },
     { count: bookingRefundReviewCount },
     { count: paymentAuditCount, data: paymentAuditLogs },
     { count: bookingDepositCount, data: recentBookingDeposits },
@@ -459,6 +464,10 @@ export default async function AdminPaymentsPage({
         adminClient
           .from("admin_audit_logs")
           .select("id", { count: "exact", head: true })
+          .eq("event_type", "merch_refund_review_requested"),
+        adminClient
+          .from("admin_audit_logs")
+          .select("id", { count: "exact", head: true })
           .eq("event_type", "booking_refund_review_requested"),
         (() => {
           const query = adminClient
@@ -516,6 +525,7 @@ export default async function AdminPaymentsPage({
         { count: null },
         { count: null },
         { count: null },
+        { count: null },
         { count: null, data: null },
         { count: null, data: null },
       ];
@@ -541,6 +551,7 @@ export default async function AdminPaymentsPage({
     Boolean(staleBookingCheckoutCount) ||
     Boolean(activeUnpaidAdCount) ||
     Boolean(paymentDisputeAuditCount) ||
+    Boolean(merchRefundReviewCount) ||
     Boolean(bookingRefundReviewCount);
 
   return (
@@ -727,6 +738,18 @@ export default async function AdminPaymentsPage({
                       :{" "}
                       <span className="font-bold text-[var(--foreground)]">
                         {bookingRefundReviewCount ?? 0}
+                      </span>
+                    </p>
+                    <p>
+                      <Link
+                        className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
+                        href={auditFilterHref("merch_refund_review_requested")}
+                      >
+                        Merch refund reviews need admin review
+                      </Link>
+                      :{" "}
+                      <span className="font-bold text-[var(--foreground)]">
+                        {merchRefundReviewCount ?? 0}
                       </span>
                     </p>
                   </div>
