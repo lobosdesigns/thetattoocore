@@ -27,6 +27,19 @@ const tightenedCommentMediaMigration = readFileSync(
 );
 
 const memberUploadSource = [composer, mediaInput].join("\n");
+const currentCreateCopySource = [actions, composer].join("\n");
+const staleCreateLabels = [
+  "Feed post needs",
+  "Feed posts need",
+  "Feed post published",
+  "Could not publish feed",
+  "Thread post needs",
+  "Thread posts support",
+  "Thread posted",
+  "Could not publish thread",
+  "Marketplace listing published",
+  "Listing title needs",
+];
 const policyCopySource = [
   signupPage,
   accountProfileForm,
@@ -146,6 +159,16 @@ const checks = [
       policyCopySource.includes("crop or cover") &&
       policyCopySource.includes("Pornography") &&
       policyCopySource.includes("sexual solicitation"),
+  },
+  {
+    label: "create-flow copy uses 4U, Gossip, and Stuff launch labels",
+    ok:
+      currentCreateCopySource.includes("4U caption needs at least 3 characters.") &&
+      currentCreateCopySource.includes("4U posts need a photo or reel.") &&
+      currentCreateCopySource.includes("Gossip post needs at least 3 characters.") &&
+      currentCreateCopySource.includes("Gossip posts support images right now.") &&
+      currentCreateCopySource.includes("Stuff title needs at least 3 characters.") &&
+      staleCreateLabels.every((label) => !currentCreateCopySource.includes(label)),
   },
   {
     label: "comment media schema is authenticated, image-only, and size-limited",

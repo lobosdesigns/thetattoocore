@@ -132,7 +132,7 @@ export function FloatingComposer({
               name="caption"
               placeholder="Short caption, 40 words max"
               required
-              validationMessage="Feed caption needs at least 3 characters."
+              validationMessage="4U caption needs at least 3 characters."
             />
             <ComposerDetails title="Style and location">
               <input

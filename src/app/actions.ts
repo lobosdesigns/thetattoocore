@@ -613,11 +613,11 @@ export async function createFeedPost(formData: FormData) {
     .slice(0, 6);
 
   if (caption.length < 3) {
-    redirect(homeMessage("Feed post needs at least 3 characters.", "feed"));
+    redirect(homeMessage("4U caption needs at least 3 characters.", "feed"));
   }
 
   if (!media) {
-    redirect(homeMessage("Feed posts need a photo or reel.", "feed"));
+    redirect(homeMessage("4U posts need a photo or reel.", "feed"));
   }
 
   const metadata = await inspectMediaFile(media);
@@ -646,7 +646,7 @@ export async function createFeedPost(formData: FormData) {
 
   if (error) {
     redirect(
-      homeMessage(error.message || "Could not publish feed post.", "feed"),
+      homeMessage(error.message || "Could not publish 4U post.", "feed"),
     );
   }
 
@@ -680,7 +680,7 @@ export async function createFeedPost(formData: FormData) {
   }
 
   revalidatePath("/");
-  redirect(homeMessage("Feed post published.", "feed"));
+  redirect(homeMessage("4U post published.", "feed"));
 }
 
 export async function createStoryPost(formData: FormData) {
@@ -1426,7 +1426,7 @@ export async function createThreadPost(formData: FormData) {
   const visibility = cleanVisibility(formData.get("visibility"), "members");
 
   if (body.length < 3) {
-    redirect(homeMessage("Thread post needs at least 3 characters.", "threads"));
+    redirect(homeMessage("Gossip post needs at least 3 characters.", "threads"));
   }
 
   if (metadata) {
@@ -1438,7 +1438,7 @@ export async function createThreadPost(formData: FormData) {
   }
 
   if (metadata && metadata.mediaType !== "image") {
-    redirect(homeMessage("Thread posts support images right now.", "threads"));
+    redirect(homeMessage("Gossip posts support images right now.", "threads"));
   }
 
   const { data: thread, error } = await supabase
@@ -1457,7 +1457,7 @@ export async function createThreadPost(formData: FormData) {
 
   if (error) {
     redirect(
-      homeMessage(error.message || "Could not publish thread post.", "threads"),
+      homeMessage(error.message || "Could not publish Gossip post.", "threads"),
     );
   }
 
@@ -1484,7 +1484,7 @@ export async function createThreadPost(formData: FormData) {
       redirect(
         homeMessage(
           mediaError.message ||
-            "Image uploaded but could not attach to the thread.",
+            "Image uploaded but could not attach to the Gossip post.",
           "threads",
         ),
       );
@@ -1492,7 +1492,7 @@ export async function createThreadPost(formData: FormData) {
   }
 
   revalidatePath("/");
-  redirect(homeMessage("Thread posted.", "threads"));
+  redirect(homeMessage("Gossip post published.", "threads"));
 }
 
 export async function editThreadPost(formData: FormData) {
@@ -1620,7 +1620,7 @@ export async function createMarketplaceListing(formData: FormData) {
 
   if (title.length < 3) {
     redirect(
-      homeMessage("Listing title needs at least 3 characters.", "marketplace"),
+      homeMessage("Stuff title needs at least 3 characters.", "marketplace"),
     );
   }
 
@@ -1654,7 +1654,7 @@ export async function createMarketplaceListing(formData: FormData) {
 
   if (error) {
     redirect(
-      homeMessage(error.message || "Could not publish listing.", "marketplace"),
+      homeMessage(error.message || "Could not publish Stuff listing.", "marketplace"),
     );
   }
 
@@ -1681,7 +1681,7 @@ export async function createMarketplaceListing(formData: FormData) {
       redirect(
         homeMessage(
           mediaError.message ||
-            "Media uploaded but could not attach to the listing.",
+            "Media uploaded but could not attach to the Stuff listing.",
           "marketplace",
         ),
       );
@@ -1689,7 +1689,7 @@ export async function createMarketplaceListing(formData: FormData) {
   }
 
   revalidatePath("/");
-  redirect(homeMessage("Marketplace listing published.", "marketplace"));
+  redirect(homeMessage("Stuff listing published.", "marketplace"));
 }
 
 export async function editMarketplaceListing(formData: FormData) {
@@ -1722,7 +1722,7 @@ export async function editMarketplaceListing(formData: FormData) {
   if (title.length < 3) {
     redirect(
       redirectWithMessage({
-        message: "Listing title needs at least 3 characters.",
+        message: "Stuff title needs at least 3 characters.",
         path: returnPath,
       }),
     );
