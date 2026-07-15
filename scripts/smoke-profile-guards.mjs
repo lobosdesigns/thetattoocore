@@ -223,6 +223,10 @@ const checks = [
     label: "search uses tokenized matching and weighted ranking",
     ok:
       searchPage.includes("function searchTerms") &&
+      searchPage.includes("const searchTermAliases") &&
+      searchPage.includes("function expandSearchTerm") &&
+      searchPage.includes('shops: ["shop", "studio"]') &&
+      searchPage.includes('dms: ["dm", "message"]') &&
       searchPage.includes("function searchOr") &&
       searchPage.includes("function usernameQuery") &&
       searchPage.includes("const exactUsername = usernameQuery(query)") &&
@@ -239,7 +243,7 @@ const checks = [
       searchPage.includes("{ value: listing.category, weight: 20 }") &&
       searchPage.includes("{ value: gig.compensation, weight: 10 }") &&
       searchPage.includes("{ value: product.category, weight: 20 }") &&
-      productPlan.includes("prefix/token matching"),
+      productPlan.includes("common plural and platform-term aliases"),
   },
   {
     label: "search remembers recent searches locally without profiling",

@@ -186,13 +186,40 @@ function usernameQuery(query: string) {
     .slice(0, 30);
 }
 
+const searchTermAliases: Record<string, readonly string[]> = {
+  appointments: ["appointment", "booking"],
+  appointment: ["booking"],
+  bookings: ["booking", "appointment"],
+  comments: ["comment"],
+  dms: ["dm", "message"],
+  messages: ["message", "dm"],
+  sellers: ["seller", "vendor"],
+  shops: ["shop", "studio"],
+  studios: ["studio", "shop"],
+  tattooers: ["tattooer", "artist"],
+  tattooists: ["tattooist", "artist"],
+  tattoos: ["tattoo"],
+  vendors: ["vendor", "seller"],
+};
+
+function expandSearchTerm(term: string) {
+  const variants = [term, ...(searchTermAliases[term] ?? [])];
+
+  if (term.length > 3 && term.endsWith("s")) {
+    variants.push(term.slice(0, -1));
+  }
+
+  return variants;
+}
+
 function searchTerms(query: string) {
-  return query
+  const terms = query
     .toLowerCase()
     .split(/[^a-z0-9_]+/)
     .map((term) => term.trim())
-    .filter((term) => term.length >= 2)
-    .slice(0, 6);
+    .filter((term) => term.length >= 2);
+
+  return Array.from(new Set(terms.flatMap(expandSearchTerm))).slice(0, 10);
 }
 
 function searchOr(fields: string[], query: string, fallbackFields = fields) {
