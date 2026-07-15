@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { ArrowLeft, Film, ImageIcon, ServerCog } from "lucide-react";
+import { ArrowLeft, Film, ImageIcon, Settings2 } from "lucide-react";
 import { AdminSectionNav } from "../admin-section-nav";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,23 +18,23 @@ const mediaOpsStages = [
   ],
   [
     "Preview prep",
-    "Store generated thumbnails and poster images so feeds, search, profiles, and share previews can load lighter media without exposing originals.",
+    "Add generated thumbnails and poster images so feeds, search, profiles, and share previews can load lighter previews before full media opens.",
   ],
   [
     "Scale trigger",
-    "Move active reels to managed video processing when usage justifies adaptive playback and generated thumbnails.",
+    "Upgrade active reels when usage justifies smoother playback, automatic poster images, and faster browsing.",
   ],
   [
     "Review queue",
-    "Add a retryable processing queue for video transcodes, moderation thumbnails, failed media jobs, and post-upload safety review.",
+    "Add retry tools for poster generation, moderation thumbnails, failed media jobs, and post-upload safety review.",
   ],
 ] as const;
 const mediaCostRules = [
-  "Use the current delivery setup first for security and image-delivery polish before adding new paid media products.",
-  "Keep original media on the current storage path while early traffic is small.",
+  "Use the current delivery path first for safety and image polish before adding new paid media products.",
+  "Keep original media on the current private path while early traffic is small.",
   "Use client-side image compression first because it is free and reduces storage before upload.",
   "Keep current reel caps strict: 60 seconds and 50 MB for now.",
-  "Do not enable paid video transcoding until reels are getting enough real usage to justify it.",
+  "Do not enable paid video upgrades until reels are getting enough real usage to justify it.",
   "Consider managed image and video upgrades only after upload volume grows.",
 ] as const;
 const mediaLimits = [
@@ -124,10 +124,10 @@ export default async function AdminMediaOpsPage() {
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
             <Film className="size-5 text-[var(--gold)]" />
             <p className="mt-3 text-sm text-[var(--muted-strong)]">Video route</p>
-            <p className="mt-1 text-xl font-bold">Raw capped reels</p>
+            <p className="mt-1 text-xl font-bold">Capped reels</p>
           </div>
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
-            <ServerCog className="size-5 text-[var(--gold)]" />
+            <Settings2 className="size-5 text-[var(--gold)]" />
             <p className="mt-3 text-sm text-[var(--muted-strong)]">Scale option</p>
             <p className="mt-1 text-xl font-bold">Ready when needed</p>
           </div>
@@ -183,9 +183,9 @@ export default async function AdminMediaOpsPage() {
           <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
             <h2 className="text-lg font-bold">Video upgrade checklist</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
-              Use this before paying for managed video. The current capped-video
-              path should stay in place until the cost and moderation benefits
-              are obvious.
+              Use this before paying for higher-volume video tools. The current
+              capped-video path should stay in place until the cost and
+              moderation benefits are obvious.
             </p>
             <ul className="mt-4 space-y-2 text-sm leading-6 text-[var(--muted)]">
               {streamReadiness.map((item) => (
@@ -204,7 +204,7 @@ export default async function AdminMediaOpsPage() {
             <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
               The first media-processing job should be lightweight poster and
               thumbnail generation, because it improves feed speed before full
-              video transcoding is needed.
+              video upgrades are needed.
             </p>
             <ul className="mt-4 space-y-2 text-sm leading-6 text-[var(--muted)]">
               {thumbnailContract.map((item) => (

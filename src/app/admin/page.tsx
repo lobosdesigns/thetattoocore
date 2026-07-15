@@ -174,25 +174,25 @@ const mediaOpsStages = [
   ],
   [
     "Next",
-    "Store generated thumbnails and poster images so feeds, search, profiles, and share previews can load lighter media without exposing originals.",
+    "Add generated thumbnails and poster images so feeds, search, profiles, and share previews can load lighter previews before full media opens.",
   ],
   [
     "Scale trigger",
-    "Move active reels to managed video processing when usage justifies adaptive playback and generated thumbnails.",
+    "Upgrade active reels when usage justifies smoother playback, automatic poster images, and faster browsing.",
   ],
   [
     "Later",
-    "Add a retryable processing queue for video transcodes, moderation thumbnails, failed media jobs, and post-upload safety review.",
+    "Add retry tools for poster generation, moderation thumbnails, failed media jobs, and post-upload safety review.",
   ],
 ] as const;
 
 const mediaCostRules = [
-  "Use the current delivery setup first for security and image-delivery polish before adding new paid media products.",
-  "Keep original media on the current storage path while early traffic is small.",
+  "Use the current delivery path first for safety and image-delivery polish before adding new paid media products.",
+  "Keep original media on the current private path while early traffic is small.",
   "Keep company email and static backups separate from active user media or video delivery.",
   "Use client-side image compression first because it is free and reduces storage before upload.",
-  "Keep current reel caps strict: 60 seconds and 50 MB while videos are uploaded raw.",
-  "Do not enable paid video transcoding until reels are getting enough real usage to justify it.",
+  "Keep current reel caps strict: 60 seconds and 50 MB for now.",
+  "Do not enable paid video upgrades until reels are getting enough real usage to justify it.",
   "Consider managed image and video upgrades only after upload volume grows.",
 ] as const;
 

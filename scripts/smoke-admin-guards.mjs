@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
 const adminNav = readFileSync("src/app/admin/admin-section-nav.tsx", "utf8");
 const adminOverview = readFileSync("src/app/admin/page.tsx", "utf8");
+const adminMediaOps = readFileSync("src/app/admin/media-ops/page.tsx", "utf8");
 const adminUsers = readFileSync("src/app/admin/users/page.tsx", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const adminDataRequests = readFileSync("src/app/admin/data-requests/page.tsx", "utf8");
@@ -49,6 +50,7 @@ const pagedPageSources = pagedAdminPages.map((page) => [
   page,
   readFileSync(`src/app/admin/${page}/page.tsx`, "utf8"),
 ]);
+const mediaOpsSource = [adminOverview, adminMediaOps].join("\n");
 
 const checks = [
   {
@@ -95,6 +97,19 @@ const checks = [
       adminSections
         .filter((href) => href !== "/admin/media-ops")
         .every((href) => adminOverview.includes(`href: "${href}"`) || adminOverview.includes(`href="${href}"`)),
+  },
+  {
+    label: "admin media ops copy stays launch-safe and avoids raw provider/process wording",
+    ok:
+      mediaOpsSource.includes("Capped reels") &&
+      mediaOpsSource.includes("higher-volume video tools") &&
+      mediaOpsSource.includes("video upgrades") &&
+      !mediaOpsSource.includes("Raw capped reels") &&
+      !mediaOpsSource.includes("uploaded raw") &&
+      !mediaOpsSource.includes("video transcodes") &&
+      !mediaOpsSource.includes("video transcoding") &&
+      !mediaOpsSource.includes("managed video processing") &&
+      !mediaOpsSource.includes("current storage path"),
   },
   {
     label: "owner-only role changes cannot demote the current owner",
