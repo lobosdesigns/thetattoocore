@@ -1189,14 +1189,6 @@ function StoriesRail({
   isSignedIn: boolean;
   stories: StoryPost[];
 }) {
-  const items = [
-    ["Artists", ImageIcon],
-    ["Studios", HomeIcon],
-    ["Vendors", ShoppingBag],
-    ["Merch", Package],
-    ["Events", CalendarDays],
-  ] as const;
-
   return (
     <section
       aria-label="Stories"
@@ -1376,20 +1368,18 @@ function StoriesRail({
             </div>
           );
         })}
-        {!stories.length ? items.map(([label, Icon]) => (
+        {!stories.length ? (
           <div
-            className="flex h-16 min-w-20 flex-col items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-center"
-            key={label}
+            className="flex h-16 min-w-44 flex-col justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3"
           >
-            <Icon className="size-4 text-[var(--muted-strong)]" />
-            <span className="mt-1 text-[11px] font-semibold text-[var(--muted)]">
-              {label}
+            <span className="text-[11px] font-black uppercase tracking-wide text-[var(--foreground)]">
+              No active stories yet
             </span>
-            <span className="text-[10px] font-semibold uppercase text-[var(--muted-strong)]">
-              Soon
+            <span className="mt-1 text-[11px] font-semibold text-[var(--muted)]">
+              Share a 24h photo, GIF, or short video.
             </span>
           </div>
-        )) : null}
+        ) : null}
       </div>
     </section>
   );

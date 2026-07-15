@@ -226,6 +226,9 @@ const checks = [
       homePage.includes('media_type: "image" | "video"') &&
       homePage.includes("mediaType={media?.media_type ?? \"image\"}") &&
       homePage.includes('.gt("expires_at", new Date().toISOString())') &&
+      homePage.includes("No active stories yet") &&
+      homePage.includes("Share a 24h photo, GIF, or short video.") &&
+      !homePage.includes(">Soon<") &&
       storyCreateButton.includes("Add") &&
       homePage.includes("stories={visibleStories}"),
   },
