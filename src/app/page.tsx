@@ -2956,6 +2956,12 @@ export default async function Home({
             <div className="mb-4 flex items-center gap-2">
               <Package className="size-5" />
               <h2 className="text-lg font-bold">Merch</h2>
+              <Link
+                className="ml-auto rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-1.5 text-xs font-semibold"
+                href="/merch"
+              >
+                Storefront
+              </Link>
             </div>
             <div className="mb-4 space-y-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3">
               <div className="flex items-center gap-2 text-xs font-bold uppercase text-[var(--muted-strong)]">
@@ -3109,6 +3115,14 @@ export default async function Home({
                     tips={["T-shirts", "Prints", "TTC merch"]}
                     title="No Merch yet"
                   />
+                  <div className="mt-3 flex justify-center">
+                    <Link
+                      className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
+                      href="/merch"
+                    >
+                      Open Merch storefront
+                    </Link>
+                  </div>
                 </div>
               )}
             </div>

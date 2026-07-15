@@ -569,6 +569,21 @@ const checks = [
     includes: ['name="robots" content="noindex, nofollow"', "CEOCore", "@ceocore"],
   },
   {
+    path: "/merch",
+    status: [200],
+    includes: ["Merch", "Search shirts, prints, art, stickers", "Filters"],
+  },
+  {
+    path: "/merch?category=apparel&sort=price_low",
+    status: [200],
+    includes: ["Merch", "Apparel", "Low price"],
+  },
+  {
+    path: "/merch?q=shirt",
+    status: [200],
+    includes: ["Merch", "Search shirts, prints, art, stickers"],
+  },
+  {
     path: "/p/not-a-real-post",
     status: [404],
     includes: ["4U post not found"],
