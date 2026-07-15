@@ -39,6 +39,10 @@ export default async function HelpArticlePage({ params }: HelpArticlePageProps) 
     notFound();
   }
 
+  const relatedArticles = article.relatedSlugs
+    .map((relatedSlug) => getHelpArticle(relatedSlug))
+    .filter((relatedArticle) => relatedArticle !== null);
+
   return (
     <main className="ttc-page min-h-screen px-4 py-8">
       <article className="mx-auto max-w-3xl">
@@ -78,6 +82,47 @@ export default async function HelpArticlePage({ params }: HelpArticlePageProps) 
                 </li>
               ))}
             </ol>
+          </section>
+
+          <section className="ttc-surface mt-7 rounded-lg border border-[var(--card-rim)] p-4">
+            <h2 className="text-lg font-bold">FAQ</h2>
+            <div className="mt-4 space-y-3">
+              {article.faqs.map((faq) => (
+                <details
+                  className="rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] p-3"
+                  key={faq.question}
+                >
+                  <summary className="cursor-pointer text-sm font-bold text-[var(--text)]">
+                    {faq.question}
+                  </summary>
+                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                    {faq.answer}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </section>
+
+          <section className="ttc-surface mt-7 rounded-lg border border-[var(--card-rim)] p-4">
+            <h2 className="text-lg font-bold">Related Guides</h2>
+            <ul className="mt-4 grid gap-2 text-sm leading-6 text-[var(--muted)] sm:grid-cols-2">
+              {relatedArticles.map((relatedArticle) => (
+                <li
+                  className="rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] px-3 py-2"
+                  key={relatedArticle.slug}
+                >
+                  <Link
+                    className="font-semibold underline"
+                    href={`/help/${relatedArticle.slug}`}
+                  >
+                    {relatedArticle.title}
+                  </Link>
+                  <span className="mt-1 block text-xs text-[var(--muted)]">
+                    {relatedArticle.category}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </section>
 
           <section className="ttc-surface mt-7 rounded-lg border border-[var(--card-rim)] p-4">

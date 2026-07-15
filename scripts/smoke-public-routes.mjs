@@ -397,6 +397,10 @@ const checks = [
     includes: [
       "How to create appointment types, time slots, and booking deposits",
       "Steps",
+      "FAQ",
+      "When does a client pay a deposit?",
+      "Related Guides",
+      "/help/artist-profile-shop-links",
       "Screenshots And Tutorials",
       "Guide Comments",
       "pin official replies",

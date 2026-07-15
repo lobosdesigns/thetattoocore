@@ -7,6 +7,11 @@ export type HelpCategory = {
 export type HelpArticle = {
   category: string;
   description: string;
+  faqs: readonly {
+    answer: string;
+    question: string;
+  }[];
+  relatedSlugs: readonly string[];
   steps: readonly string[];
   title: string;
   slug: string;
@@ -56,6 +61,19 @@ export const helpArticles = [
     category: "Account And Profile",
     description:
       "Set up your public profile, bio, profile photo, banner, website links, social links, and shop connection.",
+    faqs: [
+      {
+        answer:
+          "Use public-facing links only. Do not add private phone numbers, private emails, or personal contact details you do not want members to see.",
+        question: "What links should I put on my profile?",
+      },
+      {
+        answer:
+          "A linked studio helps visitors understand where you work, but the studio still needs its own approved profile before verified shop details appear publicly.",
+        question: "Can artists connect to a shop profile?",
+      },
+    ],
+    relatedSlugs: ["verification-documents", "booking-appointments"],
     slug: "artist-profile-shop-links",
     steps: [
       "Open Account and choose the Profile tab.",
@@ -69,6 +87,19 @@ export const helpArticles = [
     category: "Verification",
     description:
       "Prepare artist, studio, or vendor documents for review so professional tools stay protected.",
+    faqs: [
+      {
+        answer:
+          "The reviewer needs enough proof to confirm professional eligibility, such as license, certification, or business documentation that matches the account type.",
+        question: "What document should I upload?",
+      },
+      {
+        answer:
+          "No. Verification documents stay private for account review and are not shown on public profiles or public feeds.",
+        question: "Will my license document be public?",
+      },
+    ],
+    relatedSlugs: ["artist-profile-shop-links", "merch-products-orders"],
     slug: "verification-documents",
     steps: [
       "Open Account and choose the Verification area.",
@@ -82,6 +113,19 @@ export const helpArticles = [
     category: "Bookings",
     description:
       "Create appointment types, weekly time slots, blackout dates, and deposit rules before clients request sessions.",
+    faqs: [
+      {
+        answer:
+          "Deposits are handled through the platform checkout flow when a request is accepted and a deposit is required.",
+        question: "When does a client pay a deposit?",
+      },
+      {
+        answer:
+          "Calendar export files are available for scheduled bookings now. Deeper external calendar account connection is planned for the booking tools as they mature.",
+        question: "Can bookings connect to my calendar?",
+      },
+    ],
+    relatedSlugs: ["artist-profile-shop-links", "ads-and-credits"],
     slug: "booking-appointments",
     steps: [
       "Open Account and choose the Booking tools.",
@@ -95,6 +139,19 @@ export const helpArticles = [
     category: "Advertising",
     description:
       "Create ads, choose placements, use ad credits, and keep promotions inside the launch content rules.",
+    faqs: [
+      {
+        answer:
+          "Credits can reduce or cover eligible campaign checkout amounts when they are available on the account.",
+        question: "How do ad credits work?",
+      },
+      {
+        answer:
+          "Ads are reviewed before delivery so unsafe claims, unlicensed promotion, restricted goods, and policy-breaking creative can be blocked.",
+        question: "Why does my ad need review?",
+      },
+    ],
+    relatedSlugs: ["merch-products-orders", "posting-stories-dms"],
     slug: "ads-and-credits",
     steps: [
       "Open the advertising tools from Account.",
@@ -108,6 +165,19 @@ export const helpArticles = [
     category: "Merch And Stuff",
     description:
       "Set up products, prepare order support, and understand review before public purchases expand.",
+    faqs: [
+      {
+        answer:
+          "Merch is for fan-safe products such as shirts, prints, art, stickers, and brand goods. Professional equipment and restricted goods belong outside public fan checkout.",
+        question: "What belongs in Merch?",
+      },
+      {
+        answer:
+          "Approved public products can be browsed by fans. Seller tools and fulfillment controls require the right account access.",
+        question: "Can fans buy Merch?",
+      },
+    ],
+    relatedSlugs: ["verification-documents", "ads-and-credits"],
     slug: "merch-products-orders",
     steps: [
       "Open Account and choose Merch tools.",
@@ -121,6 +191,19 @@ export const helpArticles = [
     category: "Posting And Safety",
     description:
       "Post safely across 4U, Gossip, Stuff, Gigs, Stories, and DMs while using reports, blocks, and comments correctly.",
+    faqs: [
+      {
+        answer:
+          "Use the create button from the section you are in. The form changes based on whether you are posting to 4U, Gossip, Stuff, Gigs, Merch, Stories, or DMs.",
+        question: "Why does the create form change?",
+      },
+      {
+        answer:
+          "Visible nudity is not allowed during launch. Crop or cover private areas before posting, even when the purpose is tattoo or body-art documentation.",
+        question: "Can I post tattoo placement photos with nudity?",
+      },
+    ],
+    relatedSlugs: ["artist-profile-shop-links", "verification-documents"],
     slug: "posting-stories-dms",
     steps: [
       "Use the create button from the section you are viewing so the right post type opens.",

@@ -23,6 +23,7 @@ export function HelpCenterSearch() {
         article.category,
         article.description,
         article.title,
+        ...article.faqs.flatMap((faq) => [faq.question, faq.answer]),
         ...article.steps,
       ].join(" ");
 
