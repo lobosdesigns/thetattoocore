@@ -22,7 +22,7 @@ export const helpCategories = [
     description:
       "Profile setup, profile photo, banner image, bio, website links, social links, shop links, light or dark mode, and account data controls.",
     title: "Account And Profile",
-    topics: ["Edit profile", "Profile links", "Privacy basics"],
+    topics: ["Edit profile", "Profile links", "Search and saved"],
   },
   {
     description:
@@ -73,7 +73,7 @@ export const helpArticles = [
         question: "Can artists connect to a shop profile?",
       },
     ],
-    relatedSlugs: ["verification-documents", "booking-appointments"],
+    relatedSlugs: ["search-saved-people", "verification-documents"],
     slug: "artist-profile-shop-links",
     steps: [
       "Open Account and choose the Profile tab.",
@@ -82,6 +82,32 @@ export const helpArticles = [
       "Save changes, then review your public profile to make sure the public details look right.",
     ],
     title: "How to set up an artist profile and link a studio",
+  },
+  {
+    category: "Account And Profile",
+    description:
+      "Find people, shops, posts, Stuff, Gigs, and Merch while understanding why private or unsafe content may not appear.",
+    faqs: [
+      {
+        answer:
+          "Use exact usernames with or without @ when you know them. You can also search display names, cities, regions, account types, styles, categories, shop names, Gigs, Stuff, and Merch.",
+        question: "What should I type in Search?",
+      },
+      {
+        answer:
+          "A result may be private, blocked, hidden, removed, not public, not approved, or only visible after sign-in and required account checks.",
+        question: "Why can I not find someone or something?",
+      },
+    ],
+    relatedSlugs: ["artist-profile-shop-links", "posting-stories-dms"],
+    slug: "search-saved-people",
+    steps: [
+      "Open Search from the bottom navigation or header.",
+      "Try an exact username first when you know it, then broaden to display name, city, shop name, style, category, or keyword.",
+      "Use the Profiles, 4U, Gossip, Stuff, Gigs, and Merch tabs to narrow the result type.",
+      "Use recent searches or saved search shortcuts for searches you run often, and save posts or products from their cards when you want to find them again later.",
+    ],
+    title: "How to search, find people, and use Saved",
   },
   {
     category: "Verification",
