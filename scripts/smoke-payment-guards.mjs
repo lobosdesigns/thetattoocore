@@ -7,6 +7,7 @@ const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8"
 const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const merchCheckoutSuccessPage = readFileSync("src/app/merch/checkout/success/page.tsx", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
+const homePage = readFileSync("src/app/page.tsx", "utf8");
 const appActions = readFileSync("src/app/actions.ts", "utf8");
 const floatingComposer = readFileSync("src/app/floating-composer.tsx", "utf8");
 const adminAdsPage = readFileSync("src/app/admin/ads/page.tsx", "utf8");
@@ -127,6 +128,21 @@ checks.push({
     accountPage.includes("Submitted products stay here while admin reviews them") &&
     accountPage.includes('href={`/merch/${product.id}`}') &&
     accountPage.includes("Load {orderPageSize} more products"),
+});
+checks.push({
+  label: "public Merch browse keeps category and sort controls",
+  ok:
+    homePage.includes("const merchCategoryFilters = [") &&
+    homePage.includes("const merchSortOptions = [") &&
+    homePage.includes("merchCategory?: string") &&
+    homePage.includes("merchSort?: string") &&
+    homePage.includes("const merchFilterHref = ({") &&
+    homePage.includes('nextParams.set("merchCategory", category)') &&
+    homePage.includes('nextParams.set("merchSort", sort)') &&
+    homePage.includes("Browse Merch") &&
+    homePage.includes('aria-label="Merch categories"') &&
+    homePage.includes('aria-label="Merch sorting"') &&
+    homePage.includes("browsableMerchProducts.slice(0, merchLimit)"),
 });
 checks.push({
   label: "Merch detail allows owner-only non-public product review",

@@ -17,6 +17,7 @@ import {
   Search,
   Send,
   ShoppingBag,
+  SlidersHorizontal,
   Sparkles,
   UserRound,
   Video,
@@ -141,6 +142,26 @@ type MerchProduct = {
   shipping_required: boolean;
   title: string;
 };
+
+const merchCategoryFilters = [
+  ["all", "All"] as const,
+  ["apparel", "Apparel"] as const,
+  ["print", "Prints"] as const,
+  ["art", "Art"] as const,
+  ["sticker", "Stickers"] as const,
+  ["accessory", "Accessories"] as const,
+  ["other", "Other"] as const,
+];
+
+const merchSortOptions = [
+  ["newest", "Newest"] as const,
+  ["price_low", "Low price"] as const,
+  ["price_high", "High price"] as const,
+  ["available", "Available"] as const,
+];
+
+type MerchCategoryFilter = (typeof merchCategoryFilters)[number][0];
+type MerchSort = (typeof merchSortOptions)[number][0];
 
 type Gig = {
   id: string;
@@ -1546,13 +1567,23 @@ export default async function Home({
   searchParams: Promise<{
     feedPage?: string;
     gigsPage?: string;
+    merchCategory?: string;
     gossipPage?: string;
     merchPage?: string;
+    merchSort?: string;
     message?: string;
     stuffPage?: string;
   }>;
 }) {
   const params = await searchParams;
+  const merchCategory = merchCategoryFilters.some(
+    ([value]) => value === params.merchCategory,
+  )
+    ? (params.merchCategory as MerchCategoryFilter)
+    : "all";
+  const merchSort = merchSortOptions.some(([value]) => value === params.merchSort)
+    ? (params.merchSort as MerchSort)
+    : "newest";
   const pageSize = 25;
   const pageParam = (value: string | undefined) =>
     Math.max(1, Math.min(20, Number(value ?? "1") || 1));
@@ -1587,12 +1618,38 @@ export default async function Home({
     if (params.gigsPage && key !== "gigsPage") {
       nextParams.set("gigsPage", params.gigsPage);
     }
+    if (merchCategory !== "all") {
+      nextParams.set("merchCategory", merchCategory);
+    }
+    if (merchSort !== "newest") {
+      nextParams.set("merchSort", merchSort);
+    }
     if (params.merchPage && key !== "merchPage") {
       nextParams.set("merchPage", params.merchPage);
     }
     nextParams.set(key, String(nextPage));
 
     return `/?${nextParams.toString()}#${hash}`;
+  };
+  const merchFilterHref = ({
+    category = merchCategory,
+    sort = merchSort,
+  }: {
+    category?: MerchCategoryFilter;
+    sort?: MerchSort;
+  }) => {
+    const nextParams = new URLSearchParams();
+
+    if (params.message) nextParams.set("message", params.message);
+    if (params.feedPage) nextParams.set("feedPage", params.feedPage);
+    if (params.gossipPage) nextParams.set("gossipPage", params.gossipPage);
+    if (params.stuffPage) nextParams.set("stuffPage", params.stuffPage);
+    if (params.gigsPage) nextParams.set("gigsPage", params.gigsPage);
+    if (category !== "all") nextParams.set("merchCategory", category);
+    if (sort !== "newest") nextParams.set("merchSort", sort);
+
+    const query = nextParams.toString();
+    return query ? `/?${query}#merch` : "/#merch";
   };
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -1611,6 +1668,37 @@ export default async function Home({
         .eq("id", claims.sub)
         .maybeSingle<Profile>()
     : { data: null };
+  const merchProductsQuery = (() => {
+    let query = supabase
+      .from("merch_products")
+      .select(
+        "id, title, description, category, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, is_official, created_at, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+      )
+      .eq("status", "active")
+      .eq("moderation_status", "active");
+
+    if (merchCategory !== "all") {
+      query = query.eq("category", merchCategory);
+    }
+
+    if (merchSort === "price_low") {
+      query = query.order("price_cents", { ascending: true });
+    } else if (merchSort === "price_high") {
+      query = query.order("price_cents", { ascending: false });
+    } else if (merchSort === "available") {
+      query = query.order("inventory_quantity", { ascending: false });
+    } else {
+      query = query.order("created_at", { ascending: false });
+    }
+
+    return query
+      .order("sort_order", {
+        ascending: true,
+        referencedTable: "merch_product_media",
+      })
+      .limit(merchFetchLimit)
+      .returns<MerchProduct[]>();
+  })();
 
   const [
     { data: feedPosts },
@@ -1683,20 +1771,7 @@ export default async function Home({
       })
       .limit(gigsFetchLimit)
       .returns<Gig[]>(),
-    supabase
-      .from("merch_products")
-      .select(
-        "id, title, description, category, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, is_official, created_at, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
-      )
-      .eq("status", "active")
-      .eq("moderation_status", "active")
-      .order("created_at", { ascending: false })
-      .order("sort_order", {
-        ascending: true,
-        referencedTable: "merch_product_media",
-      })
-      .limit(merchFetchLimit)
-      .returns<MerchProduct[]>(),
+    merchProductsQuery,
     supabase
       .from("story_posts")
       .select(
@@ -1832,11 +1907,28 @@ export default async function Home({
     rankingContext,
     "merch_product",
   );
+  const browsableMerchProducts =
+    merchSort === "newest"
+      ? rankedMerchProducts
+      : [...rankedMerchProducts].sort((first, second) => {
+          if (merchSort === "price_low") {
+            return first.price_cents - second.price_cents;
+          }
+          if (merchSort === "price_high") {
+            return second.price_cents - first.price_cents;
+          }
+
+          const firstAvailable =
+            first.inventory_quantity - first.inventory_reserved;
+          const secondAvailable =
+            second.inventory_quantity - second.inventory_reserved;
+          return secondAvailable - firstAvailable;
+        });
   const visibleFeedPosts = rankedFeedPosts.slice(0, feedLimit);
   const visibleThreadPosts = rankedThreadPosts.slice(0, gossipLimit);
   const visibleListings = rankedListings.slice(0, stuffLimit);
   const visibleGigs = rankedGigs.slice(0, gigsLimit);
-  const visibleMerchProducts = rankedMerchProducts.slice(0, merchLimit);
+  const visibleMerchProducts = browsableMerchProducts.slice(0, merchLimit);
   const hasMoreFeed =
     rankedFeedPosts.length > feedLimit || (feedPosts?.length ?? 0) === feedFetchLimit;
   const hasMoreThreads =
@@ -1848,7 +1940,7 @@ export default async function Home({
   const hasMoreGigs =
     rankedGigs.length > gigsLimit || (gigs?.length ?? 0) === gigsFetchLimit;
   const hasMoreMerch =
-    rankedMerchProducts.length > merchLimit ||
+    browsableMerchProducts.length > merchLimit ||
     (merchProducts?.length ?? 0) === merchFetchLimit;
   const visibleStories = unblockedStories.filter(
     (story) =>
@@ -2864,6 +2956,42 @@ export default async function Home({
             <div className="mb-4 flex items-center gap-2">
               <Package className="size-5" />
               <h2 className="text-lg font-bold">Merch</h2>
+            </div>
+            <div className="mb-4 space-y-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase text-[var(--muted-strong)]">
+                <SlidersHorizontal className="size-4" />
+                Browse Merch
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-1" aria-label="Merch categories">
+                {merchCategoryFilters.map(([value, label]) => (
+                  <Link
+                    className={`shrink-0 rounded-md border px-3 py-2 text-xs font-semibold ${
+                      merchCategory === value
+                        ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                        : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_86%,transparent)] text-[var(--foreground)]"
+                    }`}
+                    href={merchFilterHref({ category: value })}
+                    key={value}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-1" aria-label="Merch sorting">
+                {merchSortOptions.map(([value, label]) => (
+                  <Link
+                    className={`shrink-0 rounded-md border px-3 py-2 text-xs font-semibold ${
+                      merchSort === value
+                        ? "border-[var(--gold)] bg-[color-mix(in_srgb,var(--gold)_24%,var(--paper-warm))] text-[var(--foreground)]"
+                        : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_86%,transparent)] text-[var(--foreground)]"
+                    }`}
+                    href={merchFilterHref({ sort: value })}
+                    key={value}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {visibleMerchProducts.length ? (
