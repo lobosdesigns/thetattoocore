@@ -56,6 +56,7 @@ type MerchProduct = {
   inventory_reserved: number;
   is_official: boolean;
   merch_product_media: MerchMedia[];
+  moderation_status: string;
   price_cents: number;
   profiles: Profile | null;
   shipping_required: boolean;
@@ -87,6 +88,10 @@ function formatCategory(value: string) {
   return value.replaceAll("_", " ");
 }
 
+function formatStatus(value: string) {
+  return value.replaceAll("_", " ");
+}
+
 function priceInputValue(product: Pick<MerchProduct, "price_cents">) {
   return String(product.price_cents / 100);
 }
@@ -112,24 +117,39 @@ function VerifiedBadge({ profile }: { profile?: Profile | null }) {
 }
 
 async function getProduct(id: string) {
+  return getProductForViewer(id, null);
+}
+
+async function getProductForViewer(id: string, viewerId?: string | null) {
   const supabase = await createClient();
-  const { data } = await supabase
+  let query = supabase
     .from("merch_products")
     .select(
-      "id, title, description, category, status, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, ships_from_city, ships_from_region, is_official, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, account_type, license_verified_at)",
+      "id, title, description, category, status, moderation_status, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, ships_from_city, ships_from_region, is_official, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, account_type, license_verified_at)",
     )
     .eq("id", id)
-    .eq("status", "active")
-    .eq("moderation_status", "active")
     .order("sort_order", {
       ascending: true,
       referencedTable: "merch_product_media",
-    })
-    .maybeSingle<MerchProduct>();
+    });
+
+  if (!viewerId) {
+    query = query.eq("status", "active").eq("moderation_status", "active");
+  }
+
+  const { data } = await query.maybeSingle<MerchProduct>();
 
   if (!data) return null;
 
-  if (!data.is_official && !isVerifiedProfessional(data.profiles)) {
+  const isPublic =
+    data.status === "active" && data.moderation_status === "active";
+  const isOwner = Boolean(viewerId && viewerId === data.profiles?.id);
+
+  if (!isPublic && !isOwner) {
+    return null;
+  }
+
+  if (!data.is_official && !isOwner && !isVerifiedProfessional(data.profiles)) {
     return null;
   }
 
@@ -216,15 +236,15 @@ export default async function MerchProductPage({
 }: MerchPageProps) {
   const { id } = await params;
   const message = (await searchParams)?.message;
-  const product = await getProduct(id);
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+  const product = await getProductForViewer(id, claims?.sub);
 
   if (!product) {
     notFound();
   }
 
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const claims = claimsData?.claims as Claims | undefined;
   const { data: savedItem } = claims?.sub
     ? await supabase
         .from("saved_items")
@@ -338,6 +358,24 @@ export default async function MerchProductPage({
                   No description has been added yet.
                 </p>
               )}
+
+              {isOwnProduct &&
+              (product.status !== "active" ||
+                product.moderation_status !== "active") ? (
+                <div className="mt-5 rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_34%,var(--card-rim))] bg-[color-mix(in_srgb,var(--brand-gold)_10%,var(--paper-warm))] p-3 text-sm leading-6 text-[var(--muted)]">
+                  <p className="font-bold text-[var(--foreground)]">
+                    Seller-only product view
+                  </p>
+                  <p className="mt-1 capitalize">
+                    Product status: {formatStatus(product.status)}. Review
+                    status: {formatStatus(product.moderation_status)}.
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
+                    Checkout and public discovery open only after admin approval
+                    and active review status.
+                  </p>
+                </div>
+              ) : null}
 
               <p className="mt-5 text-sm font-semibold text-[var(--muted)]">
                 {available > 0

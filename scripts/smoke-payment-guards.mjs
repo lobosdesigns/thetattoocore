@@ -117,6 +117,27 @@ checks.push({
     appActions.includes("await supabase.from(\"merch_products\").delete()"),
 });
 checks.push({
+  label: "seller account keeps submitted Merch products visible",
+  ok:
+    accountPage.includes('const { data: merchProducts }') &&
+    accountPage.includes('.from("merch_products")') &&
+    accountPage.includes("visibleMerchProducts") &&
+    accountPage.includes("hasMoreMerchProducts") &&
+    accountPage.includes("Your Merch products") &&
+    accountPage.includes("Submitted products stay here while admin reviews them") &&
+    accountPage.includes('href={`/merch/${product.id}`}') &&
+    accountPage.includes("Load {orderPageSize} more products"),
+});
+checks.push({
+  label: "Merch detail allows owner-only non-public product review",
+  ok:
+    merchDetailPage.includes("async function getProductForViewer") &&
+    merchDetailPage.includes("const isOwner = Boolean(viewerId && viewerId === data.profiles?.id)") &&
+    merchDetailPage.includes("if (!isPublic && !isOwner)") &&
+    merchDetailPage.includes("Seller-only product view") &&
+    merchDetailPage.includes("Checkout and public discovery open only after admin approval"),
+});
+checks.push({
   label: "checkout routes require private payment gates before payments",
   ok:
     adCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&

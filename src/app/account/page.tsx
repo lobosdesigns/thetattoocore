@@ -690,6 +690,31 @@ export default async function AccountPage({
         unit_price_cents: number;
       }[]
     >();
+  const { data: merchProducts } = await supabase
+    .from("merch_products")
+    .select(
+      "id, title, category, status, moderation_status, price_cents, currency, inventory_quantity, inventory_reserved, is_official, created_at, reviewed_at, reviewer_note",
+    )
+    .eq("seller_id", claims.sub)
+    .order("created_at", { ascending: false })
+    .limit(orderLimit + 1)
+    .returns<
+      {
+        category: string;
+        created_at: string;
+        currency: string;
+        id: string;
+        inventory_quantity: number;
+        inventory_reserved: number;
+        is_official: boolean;
+        moderation_status: string;
+        price_cents: number;
+        reviewed_at: string | null;
+        reviewer_note: string | null;
+        status: string;
+        title: string;
+      }[]
+    >();
   const { data: sellerPayoutAccount } = await supabase
     .from("stripe_connect_accounts")
     .select(
@@ -837,6 +862,8 @@ export default async function AccountPage({
   const hasMoreMerchOrders = (merchOrders?.length ?? 0) > orderLimit;
   const visibleMerchSales = (merchSales ?? []).slice(0, orderLimit);
   const hasMoreMerchSales = (merchSales?.length ?? 0) > orderLimit;
+  const visibleMerchProducts = (merchProducts ?? []).slice(0, orderLimit);
+  const hasMoreMerchProducts = (merchProducts?.length ?? 0) > orderLimit;
   const visibleIncomingBookings = (incomingBookings ?? []).slice(0, bookingLimit);
   const visibleOutgoingBookings = (outgoingBookings ?? []).slice(0, bookingLimit);
   const hasMoreBookings =
@@ -2430,6 +2457,116 @@ export default async function AccountPage({
                     {sellerPayoutAccount ? "Continue payout setup" : "Start payout setup"}
                   </PendingSubmitButton>
                 </form>
+              ) : null}
+            </div>
+            <div className="mt-6 border-t border-[var(--card-rim)] pt-5">
+              <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
+                    Seller products
+                  </p>
+                  <h3 className="text-lg font-bold">Your Merch products</h3>
+                </div>
+                <span className="w-fit rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1 text-xs font-semibold">
+                  Latest {visibleMerchProducts.length || orderLimit}
+                </span>
+              </div>
+              <p className="text-sm leading-6 text-[var(--muted-strong)]">
+                Submitted products stay here while admin reviews them. Active or
+                owner-visible products can be opened for edits, inventory updates,
+                and archive controls.
+              </p>
+              {visibleMerchProducts.length ? (
+                <div className="mt-4 grid gap-3">
+                  {visibleMerchProducts.map((product) => {
+                    const available =
+                      product.inventory_quantity - product.inventory_reserved;
+                    const reviewLabel =
+                      product.moderation_status === "active"
+                        ? "Review clear"
+                        : titleCaseStatus(product.moderation_status);
+
+                    return (
+                      <article
+                        className="rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4"
+                        key={product.id}
+                      >
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold">
+                              {product.title}
+                            </p>
+                            <p className="mt-1 text-xs capitalize text-[var(--muted-strong)]">
+                              {product.category.replaceAll("_", " ")} -{" "}
+                              {money(product.price_cents, product.currency)} -{" "}
+                              {formatDate(product.created_at)}
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <span
+                              className={`w-fit rounded-md border px-2 py-1 text-xs font-semibold ${orderStatusClass(
+                                product.status,
+                              )}`}
+                            >
+                              {titleCaseStatus(product.status)}
+                            </span>
+                            <span
+                              className={`w-fit rounded-md border px-2 py-1 text-xs font-semibold ${orderStatusClass(
+                                product.moderation_status,
+                              )}`}
+                            >
+                              {reviewLabel}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted-strong)] sm:grid-cols-3">
+                          <p>Available: {Intl.NumberFormat("en-US").format(available)}</p>
+                          <p>Inventory: {Intl.NumberFormat("en-US").format(product.inventory_quantity)}</p>
+                          <p>Reserved: {Intl.NumberFormat("en-US").format(product.inventory_reserved)}</p>
+                          {product.reviewed_at ? (
+                            <p>Reviewed: {formatDate(product.reviewed_at)}</p>
+                          ) : null}
+                          {product.is_official ? <p>Official TTC product</p> : null}
+                        </div>
+                        {product.reviewer_note ? (
+                          <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-3 text-xs leading-5 text-[var(--muted)]">
+                            Admin note: {product.reviewer_note}
+                          </p>
+                        ) : null}
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <Link
+                            className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
+                            href={`/merch/${product.id}`}
+                          >
+                            Open product
+                          </Link>
+                          <Link
+                            className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
+                            href="/#merch"
+                          >
+                            View Merch
+                          </Link>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 text-sm text-[var(--muted)]">
+                  No Merch products yet. Verified sellers can submit products
+                  from the Merch column plus button.
+                </p>
+              )}
+              {hasMoreMerchProducts ? (
+                <Link
+                  className="mt-4 flex h-11 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-4 text-sm font-semibold"
+                  href={orderLimitHref({
+                    adLimit,
+                    orderLimit: orderLimit + orderPageSize,
+                  })}
+                >
+                  Load {orderPageSize} more products
+                </Link>
               ) : null}
             </div>
             {visibleMerchSales.length ? (
