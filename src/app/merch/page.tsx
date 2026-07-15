@@ -9,11 +9,18 @@ import {
   ShieldCheck,
   SlidersHorizontal,
 } from "lucide-react";
+import { ContentReportForm } from "@/app/content-report-form";
 import { LogoLockup } from "@/app/logo-mark";
 import { ProfileAvatar } from "@/app/profile-avatar";
+import { SavedItemButton } from "@/app/saved-item-button";
+import { CompactShareButton } from "@/app/share-actions";
 import { createClient } from "@/lib/supabase/server";
 import { siteName, siteUrl } from "@/lib/site";
 import { isVerifiedProfessional } from "@/lib/verification";
+
+type Claims = {
+  sub: string;
+};
 
 type Profile = {
   account_type: string;
@@ -193,6 +200,8 @@ export default async function MerchIndexPage({ searchParams }: MerchIndexProps) 
   const limit = currentPage * pageSize;
   const fetchLimit = limit + pageSize;
   const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
   let productQuery = supabase
     .from("merch_products")
     .select(
@@ -231,6 +240,23 @@ export default async function MerchIndexPage({ searchParams }: MerchIndexProps) 
   );
   const visibleProducts = products.slice(0, limit);
   const hasMore = products.length > limit || (productRows?.length ?? 0) === fetchLimit;
+  const currentMerchPath = productHref({
+    category: activeCategory,
+    page: currentPage,
+    query,
+    sort: activeSort,
+  });
+  const visibleProductIds = visibleProducts.map((product) => product.id);
+  const { data: savedItems } = claims?.sub && visibleProductIds.length
+    ? await supabase
+        .from("saved_items")
+        .select("subject_id")
+        .eq("user_id", claims.sub)
+        .eq("subject_type", "merch_product")
+        .in("subject_id", visibleProductIds)
+        .returns<{ subject_id: string }[]>()
+    : { data: [] as { subject_id: string }[] };
+  const savedMerchIds = new Set((savedItems ?? []).map((item) => item.subject_id));
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -392,6 +418,30 @@ export default async function MerchIndexPage({ searchParams }: MerchIndexProps) 
                       >
                         Open
                       </Link>
+                    </div>
+                    <div className="mt-3 grid gap-2">
+                      {claims?.sub ? (
+                        <SavedItemButton
+                          className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-xs font-semibold"
+                          isSaved={savedMerchIds.has(product.id)}
+                          returnPath={currentMerchPath}
+                          subjectId={product.id}
+                          subjectType="merch_product"
+                        />
+                      ) : null}
+                      <CompactShareButton
+                        className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-xs font-semibold"
+                        text={`Check this Merch on ${siteName}: ${product.title}`}
+                        title={product.title}
+                        url={`${siteUrl}/merch/${product.id}`}
+                      />
+                      {claims?.sub && product.profiles?.id !== claims.sub ? (
+                        <ContentReportForm
+                          returnPath={currentMerchPath}
+                          subjectId={product.id}
+                          subjectType="merch_product"
+                        />
+                      ) : null}
                     </div>
                   </div>
                 </article>

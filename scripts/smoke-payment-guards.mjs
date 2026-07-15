@@ -5,6 +5,7 @@ const bookingCheckout = readFileSync("src/app/api/bookings/checkout/route.ts", "
 const merchCheckout = readFileSync("src/app/api/merch/checkout/route.ts", "utf8");
 const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8");
 const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
+const merchIndexPage = readFileSync("src/app/merch/page.tsx", "utf8");
 const merchCheckoutSuccessPage = readFileSync("src/app/merch/checkout/success/page.tsx", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const homePage = readFileSync("src/app/page.tsx", "utf8");
@@ -143,6 +144,17 @@ checks.push({
     homePage.includes('aria-label="Merch categories"') &&
     homePage.includes('aria-label="Merch sorting"') &&
     homePage.includes("browsableMerchProducts.slice(0, merchLimit)"),
+});
+checks.push({
+  label: "public Merch storefront supports save share and report actions",
+  ok:
+    merchIndexPage.includes("SavedItemButton") &&
+    merchIndexPage.includes("CompactShareButton") &&
+    merchIndexPage.includes("ContentReportForm") &&
+    merchIndexPage.includes('subjectType="merch_product"') &&
+    merchIndexPage.includes("const currentMerchPath = productHref({") &&
+    merchIndexPage.includes("returnPath={currentMerchPath}") &&
+    merchIndexPage.includes('url={`${siteUrl}/merch/${product.id}`}'),
 });
 checks.push({
   label: "Merch detail allows owner-only non-public product review",
