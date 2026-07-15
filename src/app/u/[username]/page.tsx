@@ -15,6 +15,7 @@ import {
   LockKeyhole,
   MapPin,
   MessageCircle,
+  Package,
   Send,
   ShieldCheck,
   ShoppingBag,
@@ -211,6 +212,22 @@ type Gig = {
   gig_media: GigMedia[];
 };
 
+type MerchProduct = {
+  category: string;
+  created_at: string;
+  currency: string;
+  description: string | null;
+  id: string;
+  inventory_quantity: number;
+  inventory_reserved: number;
+  is_official: boolean;
+  merch_product_media: ListingMedia[];
+  price_cents: number;
+  profiles: ShopProfile | null;
+  shipping_required: boolean;
+  title: string;
+};
+
 type StoryMedia = {
   id: string;
   media_type: "image" | "video";
@@ -236,6 +253,7 @@ type ProfileQuery = {
   profile_4u?: string | string[];
   profile_gigs?: string | string[];
   profile_gossip?: string | string[];
+  profile_merch?: string | string[];
   profile_stuff?: string | string[];
 };
 
@@ -273,6 +291,7 @@ function profileLoadMoreHref({
   key: keyof Pick<
     ProfileQuery,
     "profile_4u" | "profile_gigs" | "profile_gossip" | "profile_stuff"
+    | "profile_merch"
   >;
   query: ProfileQuery;
   username: string;
@@ -285,6 +304,7 @@ function profileLoadMoreHref({
     "profile_gossip",
     "profile_stuff",
     "profile_gigs",
+    "profile_merch",
   ] as const) {
     const current = firstQueryValue(query[paramKey]);
 
@@ -1320,6 +1340,7 @@ export default async function ProfilePage({
   const gossipProfileLimit = profileSectionLimit(query.profile_gossip);
   const stuffProfileLimit = profileSectionLimit(query.profile_stuff);
   const gigsProfileLimit = profileSectionLimit(query.profile_gigs);
+  const merchProfileLimit = profileSectionLimit(query.profile_merch);
 
   const { data: profileRow } = await supabase
     .from("profiles")
@@ -1358,6 +1379,7 @@ export default async function ProfilePage({
     { data: threads },
     { data: listings },
     { data: gigs },
+    { data: merchProducts },
     { data: savedProfile },
     { data: linkedArtists },
     { data: bookingSettings },
@@ -1486,6 +1508,21 @@ export default async function ProfilePage({
       })
       .limit(gigsProfileLimit + 1)
       .returns<Gig[]>(),
+    supabase
+      .from("merch_products")
+      .select(
+        "id, title, description, category, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, is_official, created_at, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
+      )
+      .eq("seller_id", profile.id)
+      .eq("status", "active")
+      .eq("moderation_status", "active")
+      .order("created_at", { ascending: false })
+      .order("sort_order", {
+        ascending: true,
+        referencedTable: "merch_product_media",
+      })
+      .limit(merchProfileLimit + 1)
+      .returns<MerchProduct[]>(),
     claims?.sub && claims.sub !== profile.id
       ? supabase
           .from("saved_items")
@@ -1611,14 +1648,22 @@ export default async function ProfilePage({
   const profileThreadRows = (threads ?? []).slice(0, gossipProfileLimit);
   const profileListingRows = (listings ?? []).slice(0, stuffProfileLimit);
   const profileGigRows = (gigs ?? []).slice(0, gigsProfileLimit);
+  const profileMerchRows = (merchProducts ?? [])
+    .filter((product) => product.is_official || isVerifiedProfessional(product.profiles))
+    .slice(0, merchProfileLimit);
   const visiblePosts = profilePostRows.filter(canShow);
   const visibleThreads = profileThreadRows.filter(canShow);
   const visibleListings = profileListingRows.filter(canShow);
   const visibleGigs = profileGigRows.filter(canShow);
+  const visibleMerchProducts = isPrivateLocked ? [] : profileMerchRows;
   const hasMoreProfilePosts = (posts?.length ?? 0) > feedProfileLimit;
   const hasMoreProfileThreads = (threads?.length ?? 0) > gossipProfileLimit;
   const hasMoreProfileListings = (listings?.length ?? 0) > stuffProfileLimit;
   const hasMoreProfileGigs = (gigs?.length ?? 0) > gigsProfileLimit;
+  const hasMoreProfileMerch =
+    (merchProducts ?? []).filter(
+      (product) => product.is_official || isVerifiedProfessional(product.profiles),
+    ).length > merchProfileLimit;
   const visibleStory = (activeStories ?? []).find(canShow);
   const visibleFollowerPreview = (followerPreview ?? []).filter(
     (follow) => follow.profiles && !blockedProfileIds.has(follow.profiles.id),
@@ -1985,6 +2030,7 @@ export default async function ProfilePage({
                 <ProfileStat label="Gossip" value={visibleThreads.length} />
                 <ProfileStat label="Stuff" value={visibleListings.length} />
                 <ProfileStat label="Gigs" value={visibleGigs.length} />
+                <ProfileStat label="Merch" value={visibleMerchProducts.length} />
                 <ProfileStat
                   href={
                     viewer.isSignedIn
@@ -2364,6 +2410,7 @@ export default async function ProfilePage({
             ["#profile-gossip", "Gossip", visibleThreads.length],
             ["#profile-stuff", "Stuff", visibleListings.length],
             ["#profile-gigs", "Gigs", visibleGigs.length],
+            ["#profile-merch", "Merch", visibleMerchProducts.length],
           ]}
         />
         <section
@@ -2659,6 +2706,122 @@ export default async function ProfilePage({
                   value: gigsProfileLimit + profileContentPageSize,
                 })}
                 label="Load more Gigs"
+              />
+            ) : null}
+          </div>
+
+          <div className="scroll-mt-28" id="profile-merch">
+            <ProfileSectionHeading
+              count={visibleMerchProducts.length}
+              description="Fan-facing shirts, prints, art, stickers, and brand goods."
+              icon={Package}
+              title="Merch"
+            />
+            <div className="space-y-3">
+              {visibleMerchProducts.length ? (
+                visibleMerchProducts.map((product) => {
+                  const media = product.merch_product_media[0];
+                  const available =
+                    product.inventory_quantity - product.inventory_reserved;
+
+                  return (
+                    <article className="ttc-card rounded-md p-4" key={product.id}>
+                      <div className="flex gap-3">
+                        {media?.media_type === "video" ? (
+                          <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--background)]">
+                            <Video className="size-6" />
+                          </div>
+                        ) : media ? (
+                          <div
+                            className="size-16 shrink-0 rounded-md bg-cover bg-center"
+                            style={{
+                              backgroundImage: `url(${mediaUrl(
+                                media.storage_bucket,
+                                media.storage_path,
+                              )})`,
+                            }}
+                          />
+                        ) : (
+                          <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--brand-gold)_16%,var(--paper-warm))]">
+                            <Package className="size-6" />
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Link
+                              className="font-semibold hover:underline"
+                              href={`/merch/${product.id}`}
+                            >
+                              {product.title}
+                            </Link>
+                            {product.is_official ? (
+                              <span className="rounded-md bg-[var(--foreground)] px-2 py-1 text-xs font-semibold text-[var(--background)]">
+                                Official TTC
+                              </span>
+                            ) : null}
+                          </div>
+                          <p className="mt-1 text-sm font-bold">
+                            {formatMoney(product.price_cents, product.currency)}
+                          </p>
+                          <p className="mt-1 text-xs capitalize text-[var(--muted-strong)]">
+                            {product.category.replaceAll("_", " ")} /{" "}
+                            {product.shipping_required
+                              ? "shipping required"
+                              : "no shipping"}
+                          </p>
+                          <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--muted-strong)]">
+                            {product.description || "No description yet."}
+                          </p>
+                          <p className="mt-2 text-xs font-semibold text-[var(--muted-strong)]">
+                            {available > 0
+                              ? `${Intl.NumberFormat("en-US").format(available)} available`
+                              : "Sold out"}
+                          </p>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <Link
+                              className="inline-flex h-9 items-center justify-center rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-[var(--background)]"
+                              href={`/merch/${product.id}`}
+                            >
+                              Open merch
+                            </Link>
+                            {claims?.sub && product.profiles?.id !== claims.sub ? (
+                              <ContentReportForm
+                                returnPath={`/u/${profile.username}`}
+                                subjectId={product.id}
+                                subjectType="merch_product"
+                              />
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })
+              ) : (
+                <ProfileEmptyState
+                  actionHref={isOwnProfile ? "/#merch" : undefined}
+                  actionLabel={isOwnProfile ? "Add Merch" : undefined}
+                  body={
+                    isOwnProfile
+                      ? "Add artist shirts, prints, art, stickers, vendor brand goods, or official TTC-safe products from the Merch column."
+                      : "Public fan-facing products from this profile will appear here when they have active Merch."
+                  }
+                  icon={Package}
+                  tips={["T-shirts", "Prints", "Brand goods"]}
+                  title="No Merch yet"
+                />
+              )}
+            </div>
+            {hasMoreProfileMerch ? (
+              <ProfileLoadMoreLink
+                href={profileLoadMoreHref({
+                  anchor: "profile-merch",
+                  key: "profile_merch",
+                  query,
+                  username: profile.username,
+                  value: merchProfileLimit + profileContentPageSize,
+                })}
+                label="Load more Merch"
               />
             ) : null}
           </div>

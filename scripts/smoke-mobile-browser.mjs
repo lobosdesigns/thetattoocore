@@ -26,7 +26,7 @@ const routes = [
   { path: "/search?q=ceocore", textIncludes: "@ceocore", titleIncludes: "Search" },
   { path: "/u/ceocore", textIncludes: "@ceocore", titleIncludes: "CEOCore" },
   {
-    path: "/u/ceocore?profile_4u=50&profile_gossip=50&profile_stuff=50&profile_gigs=50#profile-4u",
+    path: "/u/ceocore?profile_4u=50&profile_gossip=50&profile_stuff=50&profile_gigs=50&profile_merch=50#profile-4u",
     textIncludes: "@ceocore",
     titleIncludes: "CEOCore",
   },

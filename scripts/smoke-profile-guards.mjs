@@ -138,17 +138,33 @@ const checks = [
       profilePage.includes("function profileSectionLimit") &&
       profilePage.includes("function profileLoadMoreHref") &&
       profilePage.includes("const feedProfileLimit = profileSectionLimit(query.profile_4u)") &&
+      profilePage.includes("const merchProfileLimit = profileSectionLimit(query.profile_merch)") &&
       profilePage.includes(".limit(feedProfileLimit + 1)") &&
       profilePage.includes(".limit(gossipProfileLimit + 1)") &&
       profilePage.includes(".limit(stuffProfileLimit + 1)") &&
       profilePage.includes(".limit(gigsProfileLimit + 1)") &&
+      profilePage.includes(".limit(merchProfileLimit + 1)") &&
       profilePage.includes("const hasMoreProfilePosts =") &&
       profilePage.includes("<ProfileLoadMoreLink") &&
       profilePage.includes('label="Load more 4U"') &&
       profilePage.includes('label="Load more Gossip"') &&
       profilePage.includes('label="Load more Stuff"') &&
       profilePage.includes('label="Load more Gigs"') &&
-      productPlan.includes("public profile 4U, Gossip, Stuff, and Gigs sections"),
+      profilePage.includes('label="Load more Merch"') &&
+      productPlan.includes("public profile 4U, Gossip, Stuff, Gigs, and Merch sections"),
+  },
+  {
+    label: "public profiles render approved Merch previews",
+    ok:
+      profilePage.includes('id="profile-merch"') &&
+      profilePage.includes(".from(\"merch_products\")") &&
+      profilePage.includes(".eq(\"seller_id\", profile.id)") &&
+      profilePage.includes(".eq(\"status\", \"active\")") &&
+      profilePage.includes(".eq(\"moderation_status\", \"active\")") &&
+      profilePage.includes("product.is_official || isVerifiedProfessional(product.profiles)") &&
+      profilePage.includes("visibleMerchProducts") &&
+      profilePage.includes("Open merch") &&
+      productPlan.includes("profile Merch previews for approved active products"),
   },
   {
     label: "search discovery filters blocked profiles and owned content",

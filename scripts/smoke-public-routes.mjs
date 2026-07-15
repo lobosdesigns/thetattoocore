@@ -447,9 +447,9 @@ const checks = [
     ],
   },
   {
-    path: "/u/ceocore?profile_4u=50&profile_gossip=50&profile_stuff=50&profile_gigs=50#profile-4u",
+    path: "/u/ceocore?profile_4u=50&profile_gossip=50&profile_stuff=50&profile_gigs=50&profile_merch=50#profile-4u",
     status: [200],
-    includes: ["CEOCore", "@ceocore", "4U", "Gossip", "Stuff", "Gigs"],
+    includes: ["CEOCore", "@ceocore", "4U", "Gossip", "Stuff", "Gigs", "Merch"],
   },
   {
     path: "/u/ceocore/followers",
