@@ -364,6 +364,8 @@ const checks = [
       "/login?return_to=%2Faccount%23data-settings",
       "visible nudity",
       "Merch checkout is limited during launch",
+      "How-To Library",
+      "FAQ and screenshot tutorials",
       "support@thetattoocore.com",
       'href="/terms"',
       'href="/privacy"',

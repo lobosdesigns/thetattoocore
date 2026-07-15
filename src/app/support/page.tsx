@@ -35,6 +35,11 @@ const sections = [
       "For login issues, verification questions, privacy requests, or urgent safety concerns, email support. Include your username and the link or screenshot that needs review when possible.",
     title: "Contact",
   },
+  {
+    body:
+      "A fuller Help Center will add FAQ and screenshot tutorials for bookings, ads, Merch setup, verification, Stuff, Gigs, Stories, DMs, and account settings. Until then, email support with the feature name and where you got stuck.",
+    title: "How-To Library",
+  },
 ] as const;
 
 const quickActions = [
