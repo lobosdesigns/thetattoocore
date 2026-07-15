@@ -21,6 +21,12 @@ const routes = [
   { path: "/forgot-password", textIncludes: "Send reset link", titleIncludes: "Reset password" },
   { path: "/reset-password", textIncludes: "Create new password", titleIncludes: "Reset password" },
   { path: "/support", textIncludes: "support@thetattoocore.com", titleIncludes: "Support" },
+  { path: "/help", textIncludes: "Search Help Center", titleIncludes: "Help Center" },
+  {
+    path: "/help/search-saved-people",
+    textIncludes: "How to search, find people, and use Saved",
+    titleIncludes: "Help Center",
+  },
   { path: "/privacy", textIncludes: "support@thetattoocore.com", titleIncludes: "Privacy" },
   { path: "/terms", textIncludes: "visible nudity is not allowed", titleIncludes: "Terms" },
   { path: "/search?q=ceocore", textIncludes: "@ceocore", titleIncludes: "Search" },
