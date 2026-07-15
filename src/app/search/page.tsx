@@ -407,7 +407,7 @@ function SearchNoResultsTips({
           Try the exact username, a display name, city, style, shop name, or a
           broader word. Search can only show public and privacy-safe results.
         </p>
-        <ul className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted-strong)] sm:grid-cols-3">
+        <ul className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted-strong)] sm:grid-cols-2">
           <li className="rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] p-3">
             Usernames work best without spaces, like{" "}
             <span className="font-bold text-[var(--text)]">@artistname</span>.
@@ -419,6 +419,10 @@ function SearchNoResultsTips({
           <li className="rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] p-3">
             Switch tabs between Profiles, 4U, Gossip, Stuff, Gigs, and Merch if
             the result type matters.
+          </li>
+          <li className="rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] p-3">
+            TTC terms work too: try shops or studios, artists or tattooers,
+            bookings or appointments, DMs or messages, and vendors or sellers.
           </li>
         </ul>
         {hasFilters ? (

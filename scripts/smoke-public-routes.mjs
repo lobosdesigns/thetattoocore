@@ -422,6 +422,8 @@ const checks = [
       "Steps",
       "FAQ",
       "What should I type in Search?",
+      "shops/studios",
+      "bookings/appointments",
       "Why can I not find someone or something?",
       "FAQPage",
       "acceptedAnswer",

@@ -235,6 +235,7 @@ const checks = [
       searchPage.includes("function SearchNoResultsTips") &&
       searchPage.includes("Try the exact username") &&
       searchPage.includes("Clear filters") &&
+      searchPage.includes("TTC terms work too") &&
       searchPage.includes("profile.username === exactUsername") &&
       searchPage.includes("account_type") &&
       searchPage.includes("visiblePrivateProfileIds.has(profile.id) ? 8 : 0") &&
