@@ -219,6 +219,7 @@ const checks = [
     ok:
       docs["docs/PRODUCT_PLAN.md"].includes("## Help Center And Education") &&
       docs["docs/PRODUCT_PLAN.md"].includes("FAQ, how-to articles, and step-by-step tutorials") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("Started for launch with public `/help`, `/help/[slug]` guide pages") &&
       docs["docs/PRODUCT_PLAN.md"].includes("screenshots, short clips where useful") &&
       docs["docs/PRODUCT_PLAN.md"].includes("setting appointments") &&
       docs["docs/PRODUCT_PLAN.md"].includes("creating ads") &&
