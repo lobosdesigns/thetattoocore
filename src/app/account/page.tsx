@@ -125,8 +125,8 @@ const bookingCalendarPrepItems = [
     "Accepted bookings with a scheduled time give both people a private Add to calendar download.",
   ],
   [
-    "Future sync",
-    "Google, Apple, or iCalendar account sync is planned after launch payment and policy review.",
+    "Calendar sync later",
+    "Google, Apple, or iCalendar account sync can be added after launch payment and policy review.",
   ],
 ] as const;
 const merchSellerReadinessItems = [
@@ -1050,9 +1050,9 @@ export default async function AccountPage({
                     name="calendar_connection_status"
                   >
                     <option value="manual">Manual setup</option>
-                    <option value="google_planned">Google calendar planned</option>
+                    <option value="google_planned">Google calendar later</option>
                     <option value="apple_ical_planned">
-                      Apple or iCalendar planned
+                      Apple or iCalendar later
                     </option>
                   </select>
                   <span className="text-xs font-normal leading-5 text-[var(--muted-strong)]">
