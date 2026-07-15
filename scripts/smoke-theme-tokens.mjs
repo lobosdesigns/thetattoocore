@@ -51,6 +51,25 @@ const requiredSnippets = [
       ".ttc-comment-controls summary",
     ],
   },
+  {
+    file: "src/app/language-status-banner.tsx",
+    snippets: [
+      'const storageKey = "ttc-language-status-dismissed"',
+      'window.addEventListener("click", dismiss, options)',
+      'window.addEventListener("pointerdown", dismiss, options)',
+      'window.addEventListener("scroll", dismiss, options)',
+      'window.addEventListener("touchstart", dismiss, options)',
+      "window.addEventListener(languageStatusDismissEvent, dismiss, options)",
+    ],
+  },
+  {
+    file: "src/app/column-snap-rail.tsx",
+    snippets: [
+      "import { languageStatusDismissEvent } from \"./language-status-banner\"",
+      "function dismissLanguageStatus()",
+      "dismissLanguageStatus();",
+    ],
+  },
 ];
 
 let failures = 0;
