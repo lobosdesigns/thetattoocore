@@ -223,7 +223,7 @@ export default async function MerchCheckoutSuccessPage({
             {order ? <PrintReceiptButton /> : null}
             <Link
               className="flex h-11 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-              href="/#merch"
+              href="/merch"
             >
               Back to Merch
             </Link>

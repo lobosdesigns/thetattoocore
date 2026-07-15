@@ -66,6 +66,17 @@ function redirectWithMessage(path: string, message: string) {
   );
 }
 
+function loginRedirect(returnTo: string, message: string) {
+  const params = new URLSearchParams({
+    message,
+    return_to: returnTo,
+  });
+
+  return NextResponse.redirect(`${siteUrl}/login?${params.toString()}`, {
+    status: 303,
+  });
+}
+
 async function createCheckoutSession({
   buyerId,
   cancelUrl,
@@ -181,14 +192,14 @@ export async function POST(request: Request) {
 
   if (!process.env.STRIPE_SECRET_KEY) {
     return redirectWithMessage(
-      "/#merch",
+      "/merch",
       "Checkout is temporarily unavailable. Please try again later.",
     );
   }
 
   if (!canProcessStripeWebhooks) {
     return redirectWithMessage(
-      "/#merch",
+      "/merch",
       "Checkout is temporarily unavailable. Please try again later.",
     );
   }
@@ -199,7 +210,7 @@ export async function POST(request: Request) {
   const formReturnTo = safeInternalReturnPath(formData.get("return_to"));
 
   if (!productId) {
-    return redirectWithMessage(formReturnTo ?? "/#merch", "Choose a merch product first.");
+    return redirectWithMessage(formReturnTo ?? "/merch", "Choose a merch product first.");
   }
 
   const supabase = await createClient();
@@ -207,9 +218,9 @@ export async function POST(request: Request) {
   const claims = claimsData?.claims as Claims | undefined;
 
   if (!claims?.sub) {
-    return NextResponse.redirect(
-      `${siteUrl}/login?message=${encodeURIComponent("Sign in to buy merch.")}`,
-      { status: 303 },
+    return loginRedirect(
+      formReturnTo ?? `/merch/${productId}`,
+      "Sign in to buy merch.",
     );
   }
 
@@ -224,7 +235,7 @@ export async function POST(request: Request) {
     .maybeSingle<Product>();
 
   if (error || !product) {
-    return redirectWithMessage(formReturnTo ?? "/#merch", "That merch product is not available.");
+    return redirectWithMessage(formReturnTo ?? "/merch", "That merch product is not available.");
   }
 
   const returnTo = formReturnTo ?? `/merch/${product.id}`;

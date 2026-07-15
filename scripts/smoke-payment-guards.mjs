@@ -225,7 +225,11 @@ checks.push({
     merchCheckout.includes("text.startsWith(\"/\")") &&
     merchCheckout.includes("text.startsWith(\"//\")") &&
     merchCheckout.includes("function pathWithMessage") &&
+    merchCheckout.includes("function loginRedirect") &&
     merchCheckout.includes('formData.get("return_to")') &&
+    merchCheckout.includes('return_to: returnTo') &&
+    merchCheckout.includes('formReturnTo ?? `/merch/${productId}`') &&
+    merchCheckout.includes('formReturnTo ?? "/merch"') &&
     merchCheckout.includes("formReturnTo ?? `/merch/${product.id}`") &&
     merchCheckout.includes('"cancel_url": cancelUrl') &&
     merchDetailPage.includes('name="return_to"') &&
@@ -251,6 +255,7 @@ checks.push({
   label: "buyer checkout success keeps printable receipt action",
   ok:
     merchCheckoutSuccessPage.includes("<PrintReceiptButton />") &&
+    merchCheckoutSuccessPage.includes('href="/merch"') &&
     merchCheckoutSuccessPage.includes("ttc-print-receipt") &&
     merchCheckoutSuccessPage.includes("ttc-print-hidden") &&
     merchPrintReceiptButton.includes('"use client"') &&
