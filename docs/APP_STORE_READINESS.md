@@ -234,6 +234,7 @@
 - Public and mobile route smoke on July 15, 2026 passed after making Account advertising guidance explicitly cover Merch-only campaigns and keeping the four ad-standard cards responsive. Live deploy version `4bce4128-9ad2-4f8c-8d7e-8cc833c55685` passed public route smoke and optional 390px mobile browser smoke.
 - Public and mobile route smoke on July 15, 2026 passed after aligning create-flow validation and publish messages with current 4U, Gossip, and Stuff labels, plus adding a content smoke guard against stale Feed/Thread/Marketplace create copy. Live deploy version `6f1f287d-0a22-4e4a-b7d4-d976e0ba7af1` passed public route smoke and optional 390px mobile browser smoke.
 - Public and mobile route smoke on July 15, 2026 passed after replacing remaining visible Stuff/Gossip label drift in Terms, privacy copy, profile empty states, DM empty states, profile location settings, and admin media/review labels. Live deploy version `cf002f30-fa7d-45f3-b8c2-8794d075f2d5` passed public route smoke and optional 390px mobile browser smoke.
+- Native beta-wrapper work started on July 15, 2026 with `native/thetattoocore-mobile`, Capacitor Android/iOS scaffolds, production `/login` start URL, minimal launch permissions, Android backup disabled, portrait orientation, and native smoke coverage in `npm run verify`. Android debug build is currently blocked on this Windows machine until Android SDK is installed or `ANDROID_HOME`/`android/local.properties` points to a valid SDK. iOS needs the Mac/remote Mac pass for CocoaPods and Xcode.
 - Read-only production data check on July 15, 2026 confirmed the reported missing profile is private and connected to the owner account by an accepted follow relationship, matching the signed-in private-follow Search fix.
 - Stripe checkout is still test-mode only, but webhook event dedupe, retry-safe Merch/ad payment status updates, ad checkout reservation before Stripe session creation, buyer/seller/advertiser in-app alerts, important payment emails, Admin > Payments ops visibility, filtered payment queues, and production payment-gate reminders are wired for the web app.
 - Buyer Merch checkout success now shows a printable receipt action when a signed-in buyer opens a matching Stripe session receipt; print styling hides page actions and keeps receipt text readable.
@@ -241,10 +242,12 @@
 - Booking requests can be accepted with optional scheduled appointment times and private participant-only `.ics` calendar downloads from Account and DM booking cards.
 - App routes now send basic security headers for MIME sniffing protection, frame blocking, referrer limits, HSTS, and camera/microphone restrictions; public smoke tests verify those headers on app-served pages.
 - Keep the security-header route hook on `src/middleware.ts` while using OpenNext Cloudflare. The Next `proxy.ts` migration builds locally but currently deploys as unsupported Node middleware on this adapter, so the deprecation warning is accepted until OpenNext Cloudflare supports the new proxy output.
-- Core social flows are web-first; native wrappers are not ready for submission yet.
+- Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
 
+- Create and validate the beta wrapper in `native/thetattoocore-mobile`, then build Android on local Android tooling and iOS on the Mac/remote Mac with Xcode.
+- Upload first builds to Google Play internal testing and Apple TestFlight before requesting public review.
 - Map the generated splash/screenshot assets into the native wrapper once Android/iOS packaging starts.
 - Follow `docs/NATIVE_WRAPPER_PREP.md` before creating native wrapper projects or requesting native permissions.
 - Package native builds through the chosen wrapper path.

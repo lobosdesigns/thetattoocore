@@ -52,4 +52,4 @@ Do not show visible provider, server, hosting, database, storage, mail-server, p
 
 ## Submission Notes
 
-Native Android and iOS wrappers are not ready yet. Before submission, complete real-device QA, final legal review, production payment decisions, app-store-safe screenshots, and a current official policy review for user-generated content, 18+ positioning, marketplace features, and hosted checkout.
+Native Android and iOS beta wrappers are started in `native/thetattoocore-mobile` for Google Play internal testing and Apple TestFlight. Before public submission, complete real-device QA, final legal review, production payment decisions, app-store-safe screenshots, and a current policy review for user-generated content, 18+ positioning, Stuff/Merch/Gigs features, and hosted checkout.

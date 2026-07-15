@@ -3,9 +3,9 @@
 ## Current Position
 
 - TheTattooCore is web/PWA-first at `https://thetattoocore.com/login`.
-- Native Android and iOS projects are not created yet.
-- PWA manifest, icons, splash assets, service worker, support URL, privacy URL, and terms URL are ready for a wrapper later.
-- Native wrapper prep lives in `docs/NATIVE_WRAPPER_PREP.md`; follow it before creating Android or iOS projects.
+- Native Android and iOS beta-wrapper work is starting from `native/thetattoocore-mobile`.
+- PWA manifest, icons, splash assets, service worker, support URL, privacy URL, and terms URL are ready for the beta wrapper path.
+- Native wrapper prep lives in `docs/NATIVE_WRAPPER_PREP.md`; follow it before adding native permissions, deep links, checkout handling, push, or store-review changes.
 - Draft store listing copy lives in `docs/STORE_LISTING_DRAFT.md`; review it against current store policies before submission.
 - Screenshot prep lives in `docs/SCREENSHOT_PREP.md`; use it before capturing public, PWA, Google Play, App Store, or press assets.
 - Age-rating prep notes live in `docs/AGE_RATING_PREP.md`; compare them to the live feature set and current store questionnaires before answering.
@@ -17,7 +17,7 @@
 
 ## Wrapper Decision
 
-Start with a thin native wrapper only after core web QA is stable:
+Start with a thin native wrapper now that core web smoke/390px mobile checks are stable:
 
 - Use Capacitor or a similar maintained wrapper unless a fully native rebuild becomes necessary.
 - Keep the canonical app experience served from the production web app.
@@ -51,11 +51,12 @@ Start with a thin native wrapper only after core web QA is stable:
 
 ## First Native Build Steps
 
-1. Create the wrapper project in a separate app folder after web QA is stable.
+1. Keep the wrapper project in `native/thetattoocore-mobile`.
 2. Point the wrapper start URL to `https://thetattoocore.com/login`.
 3. Add app icons and splash assets from the approved TTC shield assets.
 4. Configure allowed domains for `thetattoocore.com`, auth redirects, hosted checkout, support, privacy, and terms.
-5. Test camera/photo-picker behavior only through normal browser file inputs unless a native upload bridge is added deliberately.
-6. Run Android internal testing and TestFlight before any public review submission.
+5. Build Android first on this Windows machine if Android tooling is installed; build iOS on the Mac/remote Mac because Xcode is required.
+6. Upload to Google Play internal testing and Apple TestFlight before any public review submission.
+7. Test camera/photo-picker behavior only through normal browser file inputs unless a native upload bridge is added deliberately.
 
 Use `docs/NATIVE_WRAPPER_PREP.md` as the detailed wrapper checklist for navigation, permissions, app links, hosted checkout handling, screenshots, and QA.

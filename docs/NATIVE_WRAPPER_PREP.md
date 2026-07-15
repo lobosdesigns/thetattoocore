@@ -49,10 +49,42 @@ Use this before creating Android or iOS wrapper projects. The goal is a thin, po
 
 ## First Wrapper Steps
 
-1. Create the wrapper in a separate native app folder after mobile web QA is stable.
+1. Keep the wrapper in `native/thetattoocore-mobile`.
 2. Point the wrapper to `/login`.
 3. Reuse TTC shield icons, maskable icon, splash, and store screenshots.
 4. Configure app links/universal links for public profile, post, Story, Gossip, Stuff, Gigs, Merch, booking, support, privacy, and terms routes.
 5. Keep native permissions minimal.
 6. Run Android internal testing and TestFlight before public submission.
 7. Re-run real-device QA after every wrapper permission, deep-link, checkout, push, or upload change.
+
+## Local Build Commands
+
+From `native/thetattoocore-mobile`:
+
+```powershell
+npm.cmd install
+npm.cmd run doctor
+npm.cmd run sync
+```
+
+Android on Windows:
+
+```powershell
+cd android
+.\gradlew.bat assembleDebug
+.\gradlew.bat bundleRelease
+```
+
+Current Windows blocker: Android SDK is not installed or configured on this machine. Install Android Studio, install the Android SDK, then set `ANDROID_HOME` or create `android/local.properties` with the local SDK path before running Gradle.
+
+iOS on Mac:
+
+```bash
+npm install
+npm run sync
+cd ios/App
+pod install
+open App.xcworkspace
+```
+
+Use Xcode to set the Apple team, confirm the bundle ID `com.thetattoocore.app`, archive, and upload the first build to TestFlight. iOS packaging cannot be completed from Windows.

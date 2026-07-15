@@ -1,0 +1,26 @@
+{
+  "name": "thetattoocore-mobile",
+  "version": "0.1.0-beta.1",
+  "private": true,
+  "description": "Thin native beta wrapper for TheTattooCore.",
+  "scripts": {
+    "cap": "capacitor",
+    "doctor": "capacitor doctor",
+    "sync": "capacitor sync",
+    "add:android": "capacitor add android",
+    "add:ios": "capacitor add ios",
+    "open:android": "capacitor open android",
+    "open:ios": "capacitor open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/app": "^7.1.0",
+    "@capacitor/browser": "^7.0.2",
+    "@capacitor/core": "^7.4.3",
+    "@capacitor/ios": "^7.4.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.3",
+    "typescript": "^5.8.3"
+  }
+}

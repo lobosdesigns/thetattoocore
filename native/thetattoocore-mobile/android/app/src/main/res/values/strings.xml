@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TheTattooCore</string>
+    <string name="title_activity_main">TheTattooCore</string>
+    <string name="package_name">com.thetattoocore.app</string>
+    <string name="custom_url_scheme">com.thetattoocore.app</string>
+</resources>

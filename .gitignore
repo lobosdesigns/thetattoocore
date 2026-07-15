@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -21,6 +22,11 @@
 
 # production
 /build
+**/build/
+**/.gradle/
+**/DerivedData/
+**/Pods/
+**/local.properties
 
 # misc
 .DS_Store
