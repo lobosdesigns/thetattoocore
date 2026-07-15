@@ -461,6 +461,66 @@ const checks = [
     ],
   },
   {
+    path: "/help/artist-profile-shop-links",
+    status: [200],
+    includes: [
+      "How to set up an artist profile and link a studio",
+      "profile photo, banner, short bio, website, and social links",
+      "Can artists connect to a shop profile?",
+      "FAQPage",
+      "Last reviewed July 15, 2026",
+      "support@thetattoocore.com",
+    ],
+  },
+  {
+    path: "/help/verification-documents",
+    status: [200],
+    includes: [
+      "How to submit artist, studio, or vendor verification",
+      "What document should I upload?",
+      "Will my license document be public?",
+      "FAQPage",
+      "Last reviewed July 15, 2026",
+      "support@thetattoocore.com",
+    ],
+  },
+  {
+    path: "/help/ads-and-credits",
+    status: [200],
+    includes: [
+      "How to create an ad and use ad credits",
+      "How do ad credits work?",
+      "Why does my ad need review?",
+      "FAQPage",
+      "Last reviewed July 15, 2026",
+      "support@thetattoocore.com",
+    ],
+  },
+  {
+    path: "/help/merch-products-orders",
+    status: [200],
+    includes: [
+      "How to set up Merch products and handle orders",
+      "What belongs in Merch?",
+      "Can fans buy Merch?",
+      "FAQPage",
+      "Last reviewed July 15, 2026",
+      "support@thetattoocore.com",
+    ],
+  },
+  {
+    path: "/help/posting-stories-dms",
+    status: [200],
+    includes: [
+      "How to create Stuff listings, Gigs, Stories, and DMs safely",
+      "Why does the create form change?",
+      "Can I post tattoo placement photos with nudity?",
+      "FAQPage",
+      "Last reviewed July 15, 2026",
+      "support@thetattoocore.com",
+    ],
+  },
+  {
     path: "/privacy",
     status: [200],
     includes: [
