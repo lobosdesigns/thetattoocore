@@ -215,6 +215,20 @@ const checks = [
       !docs["docs/APP_STORE_READINESS.md"].includes("payment-provider review"),
   },
   {
+    label: "product plan records final-phase help center and article comments",
+    ok:
+      docs["docs/PRODUCT_PLAN.md"].includes("## Help Center And Education") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("FAQ, how-to articles, and step-by-step tutorials") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("screenshots, short clips where useful") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("setting appointments") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("creating ads") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("setting up Merch products") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("Verification education") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("Each Help Center article should support member comments") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("pin official answers") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("turn repeated questions into new FAQ entries"),
+  },
+  {
     label: "payment readiness doc keeps real-money gates explicit",
     ok:
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Stripe Checkout") &&
