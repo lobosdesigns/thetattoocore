@@ -4,6 +4,8 @@ const wrapperRoot = "native/thetattoocore-mobile";
 const files = {
   androidManifest: `${wrapperRoot}/android/app/src/main/AndroidManifest.xml`,
   capacitorConfig: `${wrapperRoot}/capacitor.config.ts`,
+  iosBuildScript: `${wrapperRoot}/ios/build-testflight.sh`,
+  iosExportOptions: `${wrapperRoot}/ios/ExportOptions-AppStore.template.plist`,
   iosInfo: `${wrapperRoot}/ios/App/App/Info.plist`,
   iosPrivacy: `${wrapperRoot}/ios/App/App/PrivacyInfo.xcprivacy`,
   iosProject: `${wrapperRoot}/ios/App/App.xcodeproj/project.pbxproj`,
@@ -59,6 +61,7 @@ const checks = [
       source.iosInfo.includes("<string>UIInterfaceOrientationPortrait</string>") &&
       !source.iosInfo.includes("UIInterfaceOrientationLandscapeLeft") &&
       !source.iosInfo.includes("UIInterfaceOrientationLandscapeRight") &&
+      source.iosInfo.includes("ITSAppUsesNonExemptEncryption") &&
       source.capacitorConfig.includes("cleartext: false"),
   },
   {
@@ -85,6 +88,16 @@ const checks = [
       source.iosPrivacy.includes("<false/>") &&
       source.iosPrivacy.includes("NSPrivacyCollectedDataTypes") &&
       source.iosProject.includes("PrivacyInfo.xcprivacy in Resources"),
+  },
+  {
+    label: "native iOS wrapper has App Store archive/export script",
+    ok:
+      source.iosBuildScript.includes("xcodebuild") &&
+      source.iosBuildScript.includes("clean archive") &&
+      source.iosBuildScript.includes("-exportArchive") &&
+      source.iosBuildScript.includes("App.xcworkspace") &&
+      source.iosExportOptions.includes("app-store-connect") &&
+      source.iosExportOptions.includes("signingStyle"),
   },
 ];
 
