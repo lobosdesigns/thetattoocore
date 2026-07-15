@@ -90,6 +90,8 @@ const checks = [
       adminOverview.includes("const overviewCards = [") &&
       adminOverview.includes("This overview intentionally stays short.") &&
       adminOverview.includes("Full queues belong on") &&
+      adminOverview.includes("count: merchReview?.length ?? 0") &&
+      adminOverview.includes("latest product review signals") &&
       adminSections
         .filter((href) => href !== "/admin/media-ops")
         .every((href) => adminOverview.includes(`href: "${href}"`) || adminOverview.includes(`href="${href}"`)),

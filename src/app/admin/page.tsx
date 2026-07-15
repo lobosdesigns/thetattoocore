@@ -1226,11 +1226,11 @@ export default async function AdminPage({
     },
     {
       action: "Open Merch",
-      body: "Public-buyable artist, studio, vendor, and official TTC merchandise is planned separately from professional Stuff.",
-      count: 0,
+      body: "Public-buyable artist, studio, vendor, and official TTC products get their own paged product and order review page.",
+      count: merchReview?.length ?? 0,
       href: "/admin/merch",
       label: "Merch",
-      meta: "Catalog, seller approval, checkout, refund status, tax, and shipping",
+      meta: `${merchReview?.length ?? 0} latest product review signals`,
     },
     {
       action: "Open payments",
