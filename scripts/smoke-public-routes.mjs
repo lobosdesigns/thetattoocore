@@ -427,7 +427,7 @@ const checks = [
       "Last reviewed July 15, 2026",
       "/help/artist-profile-shop-links",
       "Screenshots And Tutorials",
-      "Guide Comments",
+      "Guide Questions",
       "pin official replies",
       "All guides",
       "support@thetattoocore.com",
