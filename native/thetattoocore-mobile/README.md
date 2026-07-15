@@ -16,7 +16,7 @@ This folder is the starting point for Apple TestFlight and Google Play internal 
 1. Run `npm install` in this folder.
 2. Run `npm run doctor`.
 3. Run `npm run sync`.
-4. Build Android on a machine with Android Studio/SDK:
+4. Build Android on a machine with Android SDK and JDK 21:
    - `cd android`
    - `.\gradlew.bat assembleDebug`
    - `.\gradlew.bat bundleRelease`
@@ -30,7 +30,7 @@ This folder is the starting point for Apple TestFlight and Google Play internal 
    - `npm.cmd run smoke:mobile`
 8. Run `../../docs/REAL_DEVICE_QA_CHECKLIST.md` on real devices before wider beta invites.
 
-Android packaging is blocked until Android SDK is installed/configured. iOS packaging requires the Mac/Xcode path.
+Android packaging is configured on this Windows machine. A signed Google Play upload bundle builds at `android/app/build/outputs/bundle/release/app-release.aab` when the local signing environment variables are set. The upload keystore and recovery details are intentionally kept out of git; the local recovery note is saved on the Desktop as `TheTattooCore Android Upload Key.txt`. iOS packaging requires the Mac/Xcode path.
 
 ## Store Path
 

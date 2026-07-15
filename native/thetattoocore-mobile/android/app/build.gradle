@@ -3,6 +3,24 @@ apply plugin: 'com.android.application'
 android {
     namespace "com.thetattoocore.app"
     compileSdk rootProject.ext.compileSdkVersion
+
+    def ttcUploadStoreFile = project.findProperty("TTC_ANDROID_UPLOAD_STORE_FILE") ?: System.getenv("TTC_ANDROID_UPLOAD_STORE_FILE")
+    def ttcUploadStorePassword = project.findProperty("TTC_ANDROID_UPLOAD_STORE_PASSWORD") ?: System.getenv("TTC_ANDROID_UPLOAD_STORE_PASSWORD")
+    def ttcUploadKeyAlias = project.findProperty("TTC_ANDROID_UPLOAD_KEY_ALIAS") ?: System.getenv("TTC_ANDROID_UPLOAD_KEY_ALIAS")
+    def ttcUploadKeyPassword = project.findProperty("TTC_ANDROID_UPLOAD_KEY_PASSWORD") ?: System.getenv("TTC_ANDROID_UPLOAD_KEY_PASSWORD")
+    def hasTtcUploadSigning = ttcUploadStoreFile && ttcUploadStorePassword && ttcUploadKeyAlias && ttcUploadKeyPassword
+
+    signingConfigs {
+        if (hasTtcUploadSigning) {
+            release {
+                storeFile file(ttcUploadStoreFile)
+                storePassword ttcUploadStorePassword
+                keyAlias ttcUploadKeyAlias
+                keyPassword ttcUploadKeyPassword
+            }
+        }
+    }
+
     defaultConfig {
         applicationId "com.thetattoocore.app"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -19,6 +37,9 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+            if (hasTtcUploadSigning) {
+                signingConfig signingConfigs.release
+            }
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }

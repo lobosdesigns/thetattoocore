@@ -75,7 +75,7 @@ cd android
 .\gradlew.bat bundleRelease
 ```
 
-Current Windows blocker: Android SDK is not installed or configured on this machine. Install Android Studio, install the Android SDK, then set `ANDROID_HOME` or create `android/local.properties` with the local SDK path before running Gradle.
+Android SDK and JDK 21 are configured on this Windows machine. For a Google Play upload build, load the local signing environment variables from the private Desktop recovery note, then run `.\gradlew.bat bundleRelease`. The signed upload bundle is `native/thetattoocore-mobile/android/app/build/outputs/bundle/release/app-release.aab`. Keep `android/local.properties`, `android/keystores/`, and all keystore recovery notes out of git.
 
 iOS on Mac:
 
