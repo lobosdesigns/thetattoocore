@@ -430,7 +430,7 @@ export function MediaInput({
 
   const isVideo = selected?.mediaType === "video";
   const guidance = videoAllowed
-    ? `${imageOptimizerLabel} Videos stay raw for now: ${formatSeconds(
+    ? `${imageOptimizerLabel} Videos keep their original quality for now: ${formatSeconds(
         maxVideoSeconds,
       )} max, ${formatBytes(maxVideoBytes)} max, MP4/MOV preferred.`
     : `${imageOptimizerLabel} Max image size after optimization is ${formatBytes(
@@ -514,8 +514,8 @@ export function MediaInput({
               ) : null}
               {isVideo && !selected.error ? (
                 <p className="mt-1 text-xs text-[var(--muted-strong)]">
-                  Video will upload as-is for now. Keep it short, clear, and
-                  under the cap.
+                  Video will keep its original quality for now. Keep it short,
+                  clear, and under the cap.
                 </p>
               ) : null}
               {selected.mediaType === "image" && selected.file.type !== "image/gif" ? (
