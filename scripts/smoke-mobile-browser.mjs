@@ -23,6 +23,11 @@ const routes = [
   { path: "/support", textIncludes: "support@thetattoocore.com", titleIncludes: "Support" },
   { path: "/help", textIncludes: "Search Help Center", titleIncludes: "Help Center" },
   {
+    path: "/help/booking-appointments",
+    textIncludes: "How to create appointment types, time slots, and booking deposits",
+    titleIncludes: "Help Center",
+  },
+  {
     path: "/help/search-saved-people",
     textIncludes: "How to search, find people, and use Saved",
     titleIncludes: "Help Center",
