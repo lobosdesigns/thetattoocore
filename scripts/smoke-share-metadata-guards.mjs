@@ -96,7 +96,9 @@ const checks = [
       robots.includes('"/t/"') &&
       robots.includes('"/stuff/"') &&
       robots.includes('"/gigs/"') &&
+      robots.includes('"/help"') &&
       robots.includes('"/merch/"') &&
+      robots.includes('"/support"') &&
       robots.includes('"/u/"') &&
       robots.includes('"/messages"') &&
       robots.includes('"/notifications"') &&
