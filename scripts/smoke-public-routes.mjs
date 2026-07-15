@@ -349,12 +349,12 @@ const checks = [
   {
     path: "/forgot-password",
     status: [200],
-    includes: ['name="robots" content="noindex, nofollow"', "Reset password", "Send reset link", "Support", "Terms", "Privacy"],
+    includes: ['name="robots" content="noindex, nofollow"', "Reset password", "Send reset link", "Support", "Help Center", "Terms", "Privacy"],
   },
   {
     path: "/reset-password",
     status: [200],
-    includes: ['name="robots" content="noindex, nofollow"', "Create new password", "Support", "Terms", "Privacy"],
+    includes: ['name="robots" content="noindex, nofollow"', "Create new password", "Support", "Help Center", "Terms", "Privacy"],
   },
   { path: "/auth/confirm?next=%2F%2Fevil.example&code=bad", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   {

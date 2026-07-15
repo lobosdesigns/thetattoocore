@@ -8,6 +8,10 @@ export function AuthLegalLinks() {
         Support
       </Link>
       ,{" "}
+      <Link className="font-semibold underline" href="/help">
+        Help Center
+      </Link>
+      ,{" "}
       <Link className="font-semibold underline" href="/terms">
         Terms
       </Link>
