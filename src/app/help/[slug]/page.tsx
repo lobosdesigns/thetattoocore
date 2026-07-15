@@ -46,9 +46,25 @@ export default async function HelpArticlePage({ params }: HelpArticlePageProps) 
   const relatedArticles = article.relatedSlugs
     .map((relatedSlug) => getHelpArticle(relatedSlug))
     .filter((relatedArticle) => relatedArticle !== null);
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: article.faqs.map((faq) => ({
+      "@type": "Question",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+      name: faq.question,
+    })),
+  };
 
   return (
     <main className="ttc-page min-h-screen px-4 py-8">
+      <script
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        type="application/ld+json"
+      />
       <article className="mx-auto max-w-3xl">
         <div className="mb-8 flex items-center justify-between gap-4">
           <Link href="/" aria-label={`${siteName} home`}>
