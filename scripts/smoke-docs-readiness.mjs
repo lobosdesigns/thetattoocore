@@ -173,7 +173,9 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Create a new account") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("forgot-password") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("4U") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Use the image crop tools") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Story photo/GIF/short video") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("No active stories yet") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Gossip") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Stuff") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Gigs") &&
