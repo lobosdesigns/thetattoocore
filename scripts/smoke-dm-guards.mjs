@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 
 const messageActions = readFileSync("src/app/messages/actions.ts", "utf8");
 const messagePage = readFileSync("src/app/messages/page.tsx", "utf8");
+const messageStartForm = readFileSync("src/app/messages/message-start-form.tsx", "utf8");
 const messageThread = readFileSync("src/app/messages/message-thread.tsx", "utf8");
 const columnTabs = readFileSync("src/app/column-tabs.tsx", "utf8");
 const columnSnapRail = readFileSync("src/app/column-snap-rail.tsx", "utf8");
@@ -101,6 +102,23 @@ const checks = [
       messageThread.includes("function ProfileAvatarLink") &&
       messageThread.includes("min-h-0 min-w-0 flex-1 space-y-3 overflow-y-auto") &&
       productPlan.includes("only already-sent messages scroll"),
+  },
+  {
+    label: "DM start form searches accepted follower/following profiles",
+    ok:
+      messagePage.includes("MessageStartForm") &&
+      messagePage.includes('.from("follows")') &&
+      messagePage.includes('.eq("status", "accepted")') &&
+      messagePage.includes("connectedProfileIds") &&
+      messagePage.includes("connectedProfilesForPicker") &&
+      messageStartForm.includes("People you follow or who follow you") &&
+      messageStartForm.includes('name="username"') &&
+      messageStartForm.includes("type=\"hidden\"") &&
+      messageStartForm.includes("setSelectedUsername") &&
+      messageStartForm.includes("profile.display_name") &&
+      messageStartForm.includes("profile.city") &&
+      messageStartForm.includes("profile.region") &&
+      productPlan.includes("DM compose now uses a connected-people picker"),
   },
 ];
 

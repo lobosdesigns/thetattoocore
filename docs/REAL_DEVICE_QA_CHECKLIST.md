@@ -52,6 +52,7 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 
 - Confirm the main swipe tabs are 4U, Gossip, Stuff, Gigs, and Merch only; DM access should come from the bottom DM shortcut, profile DM buttons, notifications, Story replies, or `/messages`.
 - Start a DM from another user's profile and confirm the recipient field/thread target is correct.
+- In the DM inbox start form, type part of a connected follower/following member's username, display name, city, or region; confirm matching profile suggestions appear, selecting one fills the target, and the first message opens the correct thread.
 - Send and receive a text message between two known test accounts.
 - Send and receive a DM photo attachment.
 - Open a selected DM thread on mobile and confirm the header and message input stay fixed while only the sent-message list scrolls.

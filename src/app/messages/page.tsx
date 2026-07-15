@@ -9,7 +9,6 @@ import {
   Inbox,
   LoaderCircle,
   MessageCircle,
-  Search,
   Send,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -27,8 +26,9 @@ import {
   requestBookingRefundReview,
   respondBookingRequest,
 } from "@/app/account/actions";
+import { MessageStartForm } from "./message-start-form";
 import { MessageThread } from "./message-thread";
-import { sendMessage, startConversation } from "./actions";
+import { sendMessage } from "./actions";
 
 export const metadata: Metadata = {
   robots: {
@@ -86,6 +86,11 @@ type MessageNotification = {
   href: string | null;
   id: string;
   subject_id: string | null;
+};
+
+type FollowRow = {
+  follower_id: string;
+  following_id: string;
 };
 
 type BookingRequest = {
@@ -536,6 +541,35 @@ export default async function MessagesPage({
     supabase,
     userId: claims.sub,
   });
+  const { data: connectedFollowRows } = await supabase
+    .from("follows")
+    .select("follower_id, following_id")
+    .eq("status", "accepted")
+    .or(`follower_id.eq.${claims.sub},following_id.eq.${claims.sub}`)
+    .returns<FollowRow[]>();
+  const connectedProfileIds = Array.from(
+    new Set(
+      (connectedFollowRows ?? [])
+        .map((follow) =>
+          follow.follower_id === claims.sub
+            ? follow.following_id
+            : follow.follower_id,
+        )
+        .filter((id) => id !== claims.sub && !blockedProfileIds.has(id)),
+    ),
+  );
+  const { data: connectedProfiles } = connectedProfileIds.length
+    ? await supabase
+        .from("profiles")
+        .select("id, username, display_name, avatar_url, account_type, city, region")
+        .in("id", connectedProfileIds)
+        .is("banned_at", null)
+        .is("suspended_at", null)
+        .returns<Profile[]>()
+    : { data: [] as Profile[] };
+  const connectedProfilesForPicker = [...(connectedProfiles ?? [])].sort((a, b) =>
+    a.display_name.localeCompare(b.display_name),
+  );
 
   const { data: membershipRows } = await supabase
     .from("conversation_members")
@@ -797,58 +831,11 @@ export default async function MessagesPage({
               <ProfileAvatar profile={currentProfile} size="md" />
             </div>
 
-            <form
-              action={startConversation}
-              className="space-y-2"
-              encType="multipart/form-data"
-            >
-              <div className="ttc-surface flex items-center gap-2 rounded-md border px-3">
-                <Search className="size-4 text-[var(--muted-strong)]" />
-                <input
-                  className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none"
-                  defaultValue={prefillUsername}
-                  maxLength={30}
-                  minLength={3}
-                  name="username"
-                  pattern="@?[a-zA-Z0-9_]{3,30}"
-                  placeholder="username"
-                  required
-                  title="Use 3-30 letters, numbers, or underscores."
-                />
-              </div>
-              <WordLimitedField
-                as="textarea"
-                className="ttc-surface min-h-20 w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
-                emojiShortcuts
-                maxCharacters={4000}
-                maxLength={4000}
-                name="body"
-                placeholder="Start a message"
-                wrapperClassName="space-y-2"
-              />
-              <details className="ttc-surface rounded-md border p-3">
-                <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold">
-                  <ImagePlus className="size-4" />
-                  Attach photo
-                </summary>
-                <div className="mt-3">
-                  <MediaInput
-                    accept={imageAccept}
-                    compact
-                    maxImageBytes={10 * 1024 * 1024}
-                    name="media"
-                    videoAllowed={false}
-                  />
-                </div>
-              </details>
-              <PendingSubmitButton
-                className="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-                pendingLabel="Sending"
-              >
-                <Send className="size-4" />
-                Send
-              </PendingSubmitButton>
-            </form>
+            <MessageStartForm
+              connectedProfiles={connectedProfilesForPicker}
+              imageAccept={imageAccept}
+              prefillUsername={prefillUsername}
+            />
           </header>
 
           {params.message ? (
