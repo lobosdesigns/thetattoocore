@@ -2145,7 +2145,7 @@ export async function refundBookingDeposit(formData: FormData) {
   revalidatePath("/messages");
   redirect(
     adminPaymentsMessage(
-      "Booking deposit refund requested. Stripe will update the final status shortly.",
+      "Booking deposit refund requested. The payment processor will update the final status shortly.",
       returnTo,
     ),
   );

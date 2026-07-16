@@ -231,6 +231,14 @@ checks.push({
       stripeWebhook.indexOf("constructEventAsync"),
 });
 checks.push({
+  label: "admin refund requests keep processor names out of redirect copy",
+  ok:
+    adminActions.includes(
+      "Booking deposit refund requested. The payment processor will update the final status shortly.",
+    ) &&
+    !adminActions.includes("Stripe will update the final status shortly."),
+});
+checks.push({
   label: "booking checkout preserves only safe internal return paths",
   ok:
     bookingCheckout.includes("function safeInternalReturnPath") &&
