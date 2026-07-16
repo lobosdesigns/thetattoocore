@@ -558,19 +558,6 @@ export default async function MessagesPage({
         .filter((id) => id !== claims.sub && !blockedProfileIds.has(id)),
     ),
   );
-  const { data: connectedProfiles } = connectedProfileIds.length
-    ? await supabase
-        .from("profiles")
-        .select("id, username, display_name, avatar_url, account_type, city, region")
-        .in("id", connectedProfileIds)
-        .is("banned_at", null)
-        .is("suspended_at", null)
-        .returns<Profile[]>()
-    : { data: [] as Profile[] };
-  const connectedProfilesForPicker = [...(connectedProfiles ?? [])].sort((a, b) =>
-    a.display_name.localeCompare(b.display_name),
-  );
-
   const { data: membershipRows } = await supabase
     .from("conversation_members")
     .select("conversation_id, created_at, last_read_at")
@@ -636,14 +623,26 @@ export default async function MessagesPage({
   const profileIds = Array.from(
     new Set((members ?? []).map((member) => member.user_id)),
   );
-  const { data: profiles } = profileIds.length
+  const profileFetchIds = Array.from(
+    new Set(
+      [...connectedProfileIds, ...profileIds].filter(
+        (id) => id === claims.sub || !blockedProfileIds.has(id),
+      ),
+    ),
+  );
+  const { data: profiles } = profileFetchIds.length
     ? await supabase
         .from("profiles")
         .select("id, username, display_name, avatar_url, account_type, city, region")
-        .in("id", profileIds)
+        .in("id", profileFetchIds)
+        .is("banned_at", null)
+        .is("suspended_at", null)
         .returns<Profile[]>()
     : { data: [] as Profile[] };
   const profileById = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
+  const connectedProfilesForPicker = [...(profiles ?? [])]
+    .filter((profile) => profile.id !== claims.sub && !blockedProfileIds.has(profile.id))
+    .sort((a, b) => a.display_name.localeCompare(b.display_name));
   const messagesByConversation = new Map<string, Message[]>();
 
   for (const message of (messages ?? []).toReversed()) {

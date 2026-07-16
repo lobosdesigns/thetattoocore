@@ -111,14 +111,16 @@ const checks = [
       productPlan.includes("only already-sent messages scroll"),
   },
   {
-    label: "DM start form searches accepted follower/following profiles",
+    label: "DM start form searches accepted follows and active DM profiles",
     ok:
       messagePage.includes("MessageStartForm") &&
       messagePage.includes('.from("follows")') &&
       messagePage.includes('.eq("status", "accepted")') &&
       messagePage.includes("connectedProfileIds") &&
+      messagePage.includes("profileFetchIds") &&
+      messagePage.includes("[...connectedProfileIds, ...profileIds]") &&
       messagePage.includes("connectedProfilesForPicker") &&
-      messageStartForm.includes("People you follow or who follow you") &&
+      messageStartForm.includes("Connected people and active DMs") &&
       messageStartForm.includes("Search username, name, city, or account type") &&
       messageStartForm.includes("function canSendToTarget") &&
       messageStartForm.includes("disabled={!canSend}") &&

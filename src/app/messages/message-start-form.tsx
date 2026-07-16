@@ -99,7 +99,7 @@ export function MessageStartForm({
           className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted-strong)]"
           htmlFor="dm-username-search"
         >
-          People you follow or who follow you
+          Connected people and active DMs
         </label>
         <div className="ttc-surface flex items-center gap-2 rounded-md border px-3">
           <Search className="size-4 text-[var(--muted-strong)]" />
@@ -116,8 +116,8 @@ export function MessageStartForm({
           />
         </div>
         <p className="text-xs leading-5 text-[var(--muted)]">
-          Tap a connected profile, or type an exact username if the member is
-          not listed.
+          Tap someone from your follows or existing DMs, or type an exact
+          username if the member is not listed.
         </p>
         {connectedProfiles.length ? (
           <div className="grid max-h-52 gap-2 overflow-y-auto pr-1">
@@ -154,15 +154,15 @@ export function MessageStartForm({
               })
             ) : (
               <p className="ttc-surface rounded-md border px-3 py-2 text-xs text-[var(--muted-strong)]">
-                No connected profiles matched that search. Type the exact
-                username if you know it.
+                No connected profiles or active DMs matched that search. Type
+                the exact username if you know it.
               </p>
             )}
           </div>
         ) : (
           <p className="ttc-surface rounded-md border px-3 py-2 text-xs text-[var(--muted-strong)]">
-            No connected profiles found yet. Type an exact username to start a
-            DM.
+            No connected profiles or active DMs found yet. Type an exact
+            username to start a DM.
           </p>
         )}
       </div>
