@@ -133,6 +133,9 @@ const publicRoadmapSnippets = [
   "planned for the booking tools",
   "Public discovery should stay limited",
   "production purchases still need",
+  "privacy shape we are building toward",
+  "launch foundation and should be reviewed",
+  "Store and app-review screenshots should avoid",
   "If translation is added",
   "should use hosted checkout",
   "provider-backed",
@@ -498,9 +501,11 @@ const checks = [
     ok:
       privacyPage.includes("Account And Profile Data") &&
       privacyPage.includes("Commerce And Payments") &&
+      privacyPage.includes("payment questions are handled through private account or support review") &&
       privacyPage.includes("hosted checkout pages") &&
       privacyPage.includes("does not collect raw payment or payout credentials") &&
       privacyPage.includes("Retention And Review") &&
+      privacyPage.includes("Public examples, help screenshots, and support images") &&
       privacyPage.includes("verification documents"),
   },
   {

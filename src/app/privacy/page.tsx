@@ -37,7 +37,7 @@ const sections = [
   },
   {
     body:
-      "Merch, ads, and booking deposits can create checkout, order, receipt, fulfillment, refund, dispute, and support records. Checkout is limited during launch while seller approval, tax, shipping, fulfillment, payment, and buyer notice rules are reviewed. TheTattooCore uses hosted checkout pages where available and does not collect raw payment or payout credentials in member forms.",
+      "Merch, ads, and booking deposits can create checkout, order, receipt, fulfillment, refund, dispute, and support records. Checkout is limited during launch, and payment questions are handled through private account or support review. TheTattooCore uses hosted checkout pages where available and does not collect raw payment or payout credentials in member forms.",
     title: "Commerce And Payments",
   },
   {
@@ -67,7 +67,7 @@ const sections = [
   },
   {
     body:
-      "Some records may need to be kept for safety, fraud prevention, moderation audits, account deletion review, marketplace disputes, payment records, legal holds, or professional verification history. Store and app-review screenshots should avoid private DMs, verification documents, personal emails, real payment data, sensitive content, and copyrighted tattoo art.",
+      "Some records may need to be kept for safety, fraud prevention, moderation audits, account deletion review, marketplace disputes, payment records, legal holds, or professional verification history. Public examples, help screenshots, and support images should avoid private DMs, verification documents, personal emails, real payment data, sensitive content, and copyrighted tattoo art.",
     title: "Retention And Review",
   },
 ];
@@ -94,9 +94,9 @@ export default function PrivacyPage() {
           </p>
           <h1 className="mt-2 text-3xl font-bold">Privacy</h1>
           <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
-            This overview explains the privacy shape we are building toward:
-            public discovery where it helps the community, protected account
-            and message areas where privacy matters.
+            This overview explains how TheTattooCore treats public discovery,
+            account controls, messages, verification documents, commerce
+            records, and support requests.
           </p>
 
           <div className="mt-7 space-y-5">
@@ -111,9 +111,7 @@ export default function PrivacyPage() {
           </div>
 
           <p className="ttc-surface mt-7 rounded-md border p-4 text-sm leading-6 text-[var(--muted)]">
-            This privacy page is a launch foundation and should be reviewed
-            before payments, paid ads, app store release, or international
-            expansion. Privacy requests can be sent to{" "}
+            Privacy requests can be sent to{" "}
             <a className="font-semibold underline" href={`mailto:${supportEmail}`}>
               {supportEmail}
             </a>
