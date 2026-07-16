@@ -137,8 +137,8 @@ const bookingCalendarPrepItems = [
     "Accepted bookings with a scheduled time give both people a private Add to calendar download.",
   ],
   [
-    "Calendar prep",
-    "Use Google, Apple, or iCalendar prep notes to keep booking expectations clear while TTC handles requests, deposits, and private calendar downloads.",
+    "Calendar notes",
+    "Use Google, Apple, or iCalendar notes to keep booking expectations clear while TTC handles requests, deposits, and private calendar downloads.",
   ],
 ] as const;
 const merchSellerReadinessItems = [
@@ -1919,7 +1919,7 @@ export default async function AccountPage({
           ) : (
             <div className="mt-5 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 text-sm leading-6 text-[var(--muted)]">
               Verified artist or studio status unlocks public booking
-              availability, calendar preparation, and deposit settings.
+              availability, calendar notes, and deposit settings.
             </div>
           )}
 

@@ -62,7 +62,7 @@ export function PushSubscriptionControl() {
       setSupported(hasSupport);
 
       if (!readyForSetup) {
-        setMessage("App alerts are being prepared.");
+        setMessage("App alerts are not available on this device yet.");
         return;
       }
 

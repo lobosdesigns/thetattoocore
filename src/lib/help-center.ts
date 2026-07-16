@@ -33,7 +33,7 @@ export const helpCategories = [
   },
   {
     description:
-      "Appointment request basics, time-slot setup, deposit expectations, cancellation rules, calendar files, and calendar prep guidance.",
+      "Appointment request basics, time-slot setup, deposit expectations, cancellation rules, calendar files, and calendar notes.",
     title: "Bookings",
     topics: ["Set availability", "Request appointments", "Deposits"],
   },
@@ -220,7 +220,7 @@ export const helpArticles = [
       },
       {
         answer:
-          "Calendar export files are available for scheduled bookings. Use Google, Apple/iCloud, or standard iCalendar prep notes to keep appointment details clear while booking tools mature.",
+          "Calendar export files are available for scheduled bookings. Use Google, Apple/iCloud, or standard iCalendar notes to keep appointment details clear with clients.",
         question: "Can bookings connect to my calendar?",
       },
       {
