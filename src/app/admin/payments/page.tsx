@@ -134,35 +134,66 @@ function pageNumber(value: string | string[] | undefined) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 }
 
-function pageHref(page: number) {
-  return `/admin/payments?page=${page}`;
+function searchTerm(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+  const normalized = (rawValue ?? "")
+    .trim()
+    .replace(/[^a-zA-Z0-9 @._:-]/g, " ")
+    .replace(/\s+/g, " ");
+
+  return normalized.slice(0, 100);
 }
 
-function paymentEventFilterHref(eventType?: string | null, page = 1) {
+function pageHref(page: number, search?: string | null) {
+  const params = new URLSearchParams();
+
+  if (page > 1) params.set("page", String(page));
+  if (search) params.set("q", search);
+
+  const query = params.toString();
+  return query ? `/admin/payments?${query}` : "/admin/payments";
+}
+
+function paymentEventFilterHref(
+  eventType?: string | null,
+  page = 1,
+  search?: string | null,
+) {
   const params = new URLSearchParams();
 
   if (eventType) params.set("event_type", eventType);
   if (page > 1) params.set("page", String(page));
+  if (search) params.set("q", search);
 
   const query = params.toString();
   return query ? `/admin/payments?${query}` : "/admin/payments";
 }
 
-function bookingFilterHref(status?: string | null, page = 1) {
+function bookingFilterHref(
+  status?: string | null,
+  page = 1,
+  search?: string | null,
+) {
   const params = new URLSearchParams();
 
   if (status) params.set("booking_payment_status", status);
   if (page > 1) params.set("booking_page", String(page));
+  if (search) params.set("q", search);
 
   const query = params.toString();
   return query ? `/admin/payments?${query}` : "/admin/payments";
 }
 
-function auditFilterHref(auditType?: string | null, page = 1) {
+function auditFilterHref(
+  auditType?: string | null,
+  page = 1,
+  search?: string | null,
+) {
   const params = new URLSearchParams();
 
   if (auditType) params.set("audit_type", auditType);
   if (page > 1) params.set("audit_page", String(page));
+  if (search) params.set("q", search);
 
   const query = params.toString();
   return query ? `/admin/payments?${query}` : "/admin/payments";
@@ -338,6 +369,7 @@ export default async function AdminPaymentsPage({
     event_type?: string | string[];
     message?: string | string[];
     page?: string | string[];
+    q?: string | string[];
   }>;
 }) {
   const params = await searchParams;
@@ -350,6 +382,7 @@ export default async function AdminPaymentsPage({
   );
   const paymentEventTypeFilter = eventTypeFilter(params.event_type);
   const message = Array.isArray(params.message) ? params.message[0] : params.message;
+  const activeSearch = searchTerm(params.q);
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
   const auditFrom = (auditCurrentPage - 1) * pageSize;
@@ -393,10 +426,16 @@ export default async function AdminPaymentsPage({
   ] = adminClient
     ? await Promise.all([
         (() => {
-          const query = adminClient
+          let query = adminClient
             .from("stripe_webhook_events")
             .select("event_id, event_type, received_at", { count: "exact" })
             .order("received_at", { ascending: false });
+
+          if (activeSearch) {
+            query = query.or(
+              `event_id.ilike.%${activeSearch}%,event_type.ilike.%${activeSearch}%`,
+            );
+          }
 
           if (paymentEventTypeFilter) {
             return query
@@ -408,9 +447,15 @@ export default async function AdminPaymentsPage({
           return query.range(from, to).returns<PaymentEvent[]>();
         })(),
         (() => {
-          const query = adminClient
+          let query = adminClient
             .from("stripe_webhook_events")
             .select("event_id", { count: "exact", head: true });
+
+          if (activeSearch) {
+            query = query.or(
+              `event_id.ilike.%${activeSearch}%,event_type.ilike.%${activeSearch}%`,
+            );
+          }
 
           if (paymentEventTypeFilter) {
             return query.eq("event_type", paymentEventTypeFilter);
@@ -470,13 +515,19 @@ export default async function AdminPaymentsPage({
           .select("id", { count: "exact", head: true })
           .eq("event_type", "booking_refund_review_requested"),
         (() => {
-          const query = adminClient
+          let query = adminClient
             .from("admin_audit_logs")
             .select(
               "id, event_type, target_type, target_id, summary, created_at, profiles:profiles!admin_audit_logs_actor_id_fkey(display_name, username)",
               { count: "exact" },
             )
             .order("created_at", { ascending: false });
+
+          if (activeSearch) {
+            query = query.or(
+              `event_type.ilike.%${activeSearch}%,target_type.ilike.%${activeSearch}%,target_id.ilike.%${activeSearch}%,summary.ilike.%${activeSearch}%`,
+            );
+          }
 
           if (paymentAuditTypeFilter === "payment_disputes") {
             return query
@@ -509,6 +560,11 @@ export default async function AdminPaymentsPage({
 
           if (bookingPaymentStatusFilter) {
             query = query.eq("payment_status", bookingPaymentStatusFilter);
+          }
+          if (activeSearch) {
+            query = query.or(
+              `id.ilike.%${activeSearch}%,title.ilike.%${activeSearch}%,stripe_payment_intent_id.ilike.%${activeSearch}%`,
+            );
           }
 
           return query.range(bookingFrom, bookingTo).returns<BookingDepositRecord[]>();
@@ -602,6 +658,54 @@ export default async function AdminPaymentsPage({
           </section>
         ) : (
           <>
+            {activeSearch ? (
+              <div className="mb-4 flex flex-col gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+                <p className="font-semibold">
+                  Searching payment records for &ldquo;{activeSearch}&rdquo;
+                </p>
+                <Link
+                  className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 font-semibold text-[var(--foreground)]"
+                  href="/admin/payments"
+                >
+                  Clear search
+                </Link>
+              </div>
+            ) : null}
+
+            <form
+              action="/admin/payments"
+              className="mb-4 grid gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm sm:grid-cols-[minmax(0,1fr)_auto]"
+            >
+              {paymentEventTypeFilter ? (
+                <input name="event_type" type="hidden" value={paymentEventTypeFilter} />
+              ) : null}
+              {paymentAuditTypeFilter ? (
+                <input name="audit_type" type="hidden" value={paymentAuditTypeFilter} />
+              ) : null}
+              {bookingPaymentStatusFilter ? (
+                <input
+                  name="booking_payment_status"
+                  type="hidden"
+                  value={bookingPaymentStatusFilter}
+                />
+              ) : null}
+              <label className="min-w-0">
+                <span className="mb-1 block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                  Search payment admin
+                </span>
+                <input
+                  className="h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-strong)] focus:border-[var(--foreground)]"
+                  defaultValue={activeSearch}
+                  maxLength={100}
+                  name="q"
+                  placeholder="Event ID, payment intent, booking title, target ID, or audit summary"
+                />
+              </label>
+              <button className="h-11 self-end rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
+                Search
+              </button>
+            </form>
+
             <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
                 <ReceiptText className="size-5 text-[var(--gold)]" />
@@ -678,7 +782,7 @@ export default async function AdminPaymentsPage({
                       <p>
                         <Link
                           className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
-                          href={bookingFilterHref("checkout_started")}
+                          href={bookingFilterHref("checkout_started", 1, activeSearch)}
                         >
                           Stale booking deposit checkouts over 24h
                         </Link>
@@ -719,7 +823,7 @@ export default async function AdminPaymentsPage({
                     <p>
                       <Link
                         className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
-                        href={auditFilterHref("payment_disputes")}
+                        href={auditFilterHref("payment_disputes", 1, activeSearch)}
                       >
                         Dispute audit entries need review
                       </Link>
@@ -731,7 +835,11 @@ export default async function AdminPaymentsPage({
                     <p>
                       <Link
                         className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
-                        href={auditFilterHref("booking_refund_review_requested")}
+                        href={auditFilterHref(
+                          "booking_refund_review_requested",
+                          1,
+                          activeSearch,
+                        )}
                       >
                         Booking refund reviews need admin review
                       </Link>
@@ -743,7 +851,11 @@ export default async function AdminPaymentsPage({
                     <p>
                       <Link
                         className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
-                        href={auditFilterHref("merch_refund_review_requested")}
+                        href={auditFilterHref(
+                          "merch_refund_review_requested",
+                          1,
+                          activeSearch,
+                        )}
                       >
                         Merch refund reviews need admin review
                       </Link>
@@ -779,7 +891,7 @@ export default async function AdminPaymentsPage({
                         ? "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
                         : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
                     }`}
-                    href={paymentEventFilterHref(null)}
+                    href={paymentEventFilterHref(null, 1, activeSearch)}
                   >
                     All
                   </Link>
@@ -790,7 +902,7 @@ export default async function AdminPaymentsPage({
                           ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
                           : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
                       }`}
-                      href={paymentEventFilterHref(eventType)}
+                      href={paymentEventFilterHref(eventType, 1, activeSearch)}
                       key={eventType}
                     >
                       {eventTypeLabel(eventType)}
@@ -827,7 +939,7 @@ export default async function AdminPaymentsPage({
                   currentPage={currentPage}
                   hasNextPage={hasNextPage}
                   hrefForPage={(page) =>
-                    paymentEventFilterHref(paymentEventTypeFilter, page)
+                    paymentEventFilterHref(paymentEventTypeFilter, page, activeSearch)
                   }
                   totalPages={totalPages}
                 />
@@ -855,7 +967,7 @@ export default async function AdminPaymentsPage({
                         ? "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
                         : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
                     }`}
-                    href={auditFilterHref(null)}
+                    href={auditFilterHref(null, 1, activeSearch)}
                   >
                     All
                   </Link>
@@ -866,7 +978,7 @@ export default async function AdminPaymentsPage({
                           ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
                           : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
                       }`}
-                      href={auditFilterHref(auditType)}
+                      href={auditFilterHref(auditType, 1, activeSearch)}
                       key={auditType}
                     >
                       {auditLabel(auditType)}
@@ -919,7 +1031,7 @@ export default async function AdminPaymentsPage({
                   currentPage={auditCurrentPage}
                   hasNextPage={auditHasNextPage}
                   hrefForPage={(page) =>
-                    auditFilterHref(paymentAuditTypeFilter, page)
+                    auditFilterHref(paymentAuditTypeFilter, page, activeSearch)
                   }
                   totalPages={auditTotalPages}
                 />
@@ -948,7 +1060,7 @@ export default async function AdminPaymentsPage({
                           ? "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
                           : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
                       }`}
-                      href={bookingFilterHref(null)}
+                      href={bookingFilterHref(null, 1, activeSearch)}
                     >
                       All
                     </Link>
@@ -959,7 +1071,7 @@ export default async function AdminPaymentsPage({
                             ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
                             : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
                         }`}
-                        href={bookingFilterHref(status)}
+                        href={bookingFilterHref(status, 1, activeSearch)}
                         key={status}
                       >
                         {bookingPaymentStatusLabel(status)}
@@ -1083,7 +1195,11 @@ export default async function AdminPaymentsPage({
                     currentPage={bookingCurrentPage}
                     hasNextPage={bookingHasNextPage}
                     hrefForPage={(nextPage) =>
-                      bookingFilterHref(bookingPaymentStatusFilter, nextPage)
+                      bookingFilterHref(
+                        bookingPaymentStatusFilter,
+                        nextPage,
+                        activeSearch,
+                      )
                     }
                     totalPages={bookingTotalPages}
                   />
@@ -1169,7 +1285,7 @@ export default async function AdminPaymentsPage({
                       bookingPaymentStatusCounts.map(([status, count]) => (
                         <Link
                           className="flex items-center justify-between rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-sm"
-                          href={bookingFilterHref(status)}
+                          href={bookingFilterHref(status, 1, activeSearch)}
                           key={status}
                         >
                           <span className="font-semibold capitalize">

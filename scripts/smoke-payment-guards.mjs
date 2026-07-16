@@ -507,11 +507,16 @@ checks.push({
     adminPaymentsPage.includes('query.eq("event_type", paymentEventTypeFilter)') &&
     adminPaymentsPage.includes('.eq("event_type", paymentAuditTypeFilter)') &&
     adminPaymentsPage.includes('query.eq("payment_status", bookingPaymentStatusFilter)') &&
-    adminPaymentsPage.includes("paymentEventFilterHref(eventType)") &&
-    adminPaymentsPage.includes("paymentEventFilterHref(paymentEventTypeFilter, page)") &&
-    adminPaymentsPage.includes("auditFilterHref(auditType)") &&
-    adminPaymentsPage.includes("auditFilterHref(paymentAuditTypeFilter, page)") &&
-    adminPaymentsPage.includes("bookingFilterHref(status)") &&
+    adminPaymentsPage.includes("Search payment admin") &&
+    adminPaymentsPage.includes("Event ID, payment intent, booking title, target ID, or audit summary") &&
+    adminPaymentsPage.includes("event_id.ilike") &&
+    adminPaymentsPage.includes("target_id.ilike") &&
+    adminPaymentsPage.includes("stripe_payment_intent_id.ilike") &&
+    adminPaymentsPage.includes("paymentEventFilterHref(eventType, 1, activeSearch)") &&
+    adminPaymentsPage.includes("paymentEventFilterHref(paymentEventTypeFilter, page, activeSearch)") &&
+    adminPaymentsPage.includes("auditFilterHref(auditType, 1, activeSearch)") &&
+    adminPaymentsPage.includes("auditFilterHref(paymentAuditTypeFilter, page, activeSearch)") &&
+    adminPaymentsPage.includes("bookingFilterHref(status, 1, activeSearch)") &&
     adminPaymentsPage.includes("stripe_payment_intent_id") &&
     adminPaymentsPage.includes("Type refund to send full refund") &&
     adminPaymentsPage.includes("href={`/u/${booking.client.username}`}") &&
@@ -519,15 +524,16 @@ checks.push({
     adminPaymentsPage.includes("bookingPaymentStatusLabel(booking.payment_status)") &&
     adminPaymentsPage.includes("TTC fee") &&
     adminPaymentsPage.includes("Stale booking deposit checkouts over 24h") &&
-    adminPaymentsPage.includes('bookingFilterHref("checkout_started")') &&
+    adminPaymentsPage.includes('bookingFilterHref("checkout_started", 1, activeSearch)') &&
     adminPaymentsPage.includes("Reset stale booking checkouts") &&
     adminPaymentsPage.includes("Dispute audit entries need review") &&
-    adminPaymentsPage.includes('auditFilterHref("payment_disputes")') &&
+    adminPaymentsPage.includes('auditFilterHref("payment_disputes", 1, activeSearch)') &&
     adminPaymentsPage.includes("Booking refund reviews need admin review") &&
-    adminPaymentsPage.includes('auditFilterHref("booking_refund_review_requested")') &&
+    adminPaymentsPage.includes('"booking_refund_review_requested"') &&
     adminPaymentsPage.includes("Booking deposit states") &&
     adminPaymentsPage.includes('.eq("status", "deposit_pending")') &&
-    adminPaymentsPage.includes('.eq("payment_status", "checkout_started")'),
+    adminPaymentsPage.includes('.eq("payment_status", "checkout_started")') &&
+    productPlan.includes("supports event/audit/booking payment search"),
 });
 checks.push({
   label: "public payment copy avoids collecting raw payout credentials",

@@ -154,6 +154,7 @@ const checks = [
   { path: "/admin/merch?product_status=pending_review", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/merch?q=shirt", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  { path: "/admin/payments?q=pi_test", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?event_type=refund.failed", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?event_type=charge.dispute.created", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?audit_type=booking_refund_review_requested", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
