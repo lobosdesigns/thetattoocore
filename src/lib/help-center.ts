@@ -160,6 +160,21 @@ export const helpArticles = [
           "Use blackout dates and buffer time to keep clients from requesting days or times that are not workable. Review the request before accepting any deposit.",
         question: "How do I prevent bad appointment times?",
       },
+      {
+        answer:
+          "Artists and studios should accept the request only after the date, time, deposit, and notes are clear. The client should see the deposit amount and TTC fee before checkout starts.",
+        question: "What should be confirmed before accepting?",
+      },
+      {
+        answer:
+          "Refund requests for paid deposits stay in review during launch. Support checks the appointment status, cancellation reason, artist/shop policy, and payment state before any refund decision.",
+        question: "How do deposit refunds work?",
+      },
+      {
+        answer:
+          "Calendar files should only include appointment details needed by the client and artist/studio. Do not put private payment details, legal notes, admin review notes, or private contact details into public booking notes.",
+        question: "What should stay out of calendar notes?",
+      },
     ],
     lastReviewed: "July 15, 2026",
     relatedSlugs: ["artist-profile-shop-links", "ads-and-credits"],
@@ -170,7 +185,9 @@ export const helpArticles = [
       "Add weekly time slots and blackout dates so clients only request workable times.",
       "Use public booking notes or links for existing calendar/request pages during launch if your shop already has one.",
       "Review incoming booking requests, accept the right slot, and let the client pay the deposit when required.",
+      "Confirm the appointment type, scheduled time, deposit amount, TTC fee, cancellation expectation, and artist note before asking a client to check out.",
       "Download the private calendar file from accepted scheduled bookings when you need to add the appointment to your calendar.",
+      "Use refund review instead of promising instant deposit refunds while launch policy is still being finalized.",
     ],
     title: "How to create appointment types, time slots, and booking deposits",
   },
