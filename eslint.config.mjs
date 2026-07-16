@@ -11,6 +11,7 @@ const eslintConfig = defineConfig([
     ".next/**",
     ".open-next/**",
     ".wrangler/**",
+    "native/thetattoocore-mobile/android/app/build/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
