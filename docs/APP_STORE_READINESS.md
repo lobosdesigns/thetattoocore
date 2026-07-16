@@ -293,6 +293,7 @@
 - Public route smoke on July 16, 2026 passed after public Merch, Support, and Terms copy moved away from internal launch/store-review wording toward member-facing checkout, app support, and community-rule guidance. Live deploy version `d7cc3895-1fc8-474f-89f6-66d58c198dbe` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after Admin Merch activation gained a payout-readiness guard so non-official seller products cannot open checkout until the seller payout path is complete. Live deploy version `60563bab-8d9c-4e00-8b37-ab0e6e66e3ff` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after Admin Merch product cards showed the payout-readiness activation gate directly in the review UI and disabled Activate when non-official seller payout setup is incomplete. Live deploy version `081cbe75-e6c8-4689-b406-f0e39d956caf` passed public route smoke.
+- Public route smoke on July 16, 2026 passed after Merch checkout added a checkout-time payout readiness guard for already-active non-official seller products, with private logging and generic buyer-facing retry copy. Live deploy version `066a969a-71a2-4d39-9424-091502ee2598` passed public route smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
