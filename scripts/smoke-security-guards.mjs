@@ -491,6 +491,15 @@ const checks = [
       privateContactSnippets.every((snippet) => !publicSource.includes(snippet)),
   },
   {
+    label: "account merch order cards keep support handoffs",
+    ok:
+      accountPage.includes("function merchSupportMailto") &&
+      accountPage.includes('merchSupportMailto(order.id, "buyer")') &&
+      accountPage.includes('merchSupportMailto(order?.id ?? item.order_id, "seller")') &&
+      accountPage.includes("Issue type: missing / damaged / wrong / delayed / returned / refund / seller help") &&
+      accountPage.includes('href="/help/merch-products-orders"'),
+  },
+  {
     label: "public copy does not disclose infrastructure providers or secret setup",
     ok: forbiddenPublicInfraSnippets.every(
       (snippet) => !publicCopySource.includes(snippet),
