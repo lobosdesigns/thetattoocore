@@ -335,16 +335,17 @@ export const helpArticles = [
       },
       {
         answer:
-          "Refund requests go to review during launch. Support checks the order, seller fulfillment, buyer reason, and payment status before any money movement is approved.",
+          "Refund requests go to review during launch. Support checks the order, seller fulfillment, buyer reason, and payment status before any money movement is approved. Sellers should write clear return/refund notes before submitting products so buyers know what to expect.",
         question: "How do Merch refunds work during launch?",
       },
     ],
-    lastReviewed: "July 15, 2026",
+    lastReviewed: "July 16, 2026",
     relatedSlugs: ["verification-documents", "ads-and-credits"],
     slug: "merch-products-orders",
     steps: [
       "Open Account and choose Merch tools.",
-      "Add a title, description, price, fulfillment notes, and clear product media.",
+      "Add a title, description, price, clear product media, and a return/refund note buyers can understand.",
+      "If the product ships, add the ship-from city and state/region plus fulfillment notes with timing, pickup, made-to-order, or handoff details.",
       "Submit the product for review before it appears publicly.",
       "Finish seller payout setup from the hosted account flow before real order payouts are expected.",
       "Watch orders, fulfillment status, refund requests, and support questions from Account.",
