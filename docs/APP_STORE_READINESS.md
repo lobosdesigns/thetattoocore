@@ -267,6 +267,7 @@
 - Public route smoke on July 16, 2026 passed after Account booking calendar labels moved from later/planned wording to current prep wording. Live deploy version `476bea73-ddd5-4b22-9c84-e3f9142ee8b5` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after Help Center booking and tutorial copy moved away from roadmap/planned wording toward current guidance. Live deploy version `5a88a0e0-98fc-4bdd-855b-0d5b4a5fb87b` passed public route smoke after updating the smoke expectation to the new guide copy.
 - Public route smoke on July 16, 2026 passed after public video-upload copy moved away from later/roadmap wording while keeping the current launch cap clear. Live deploy version `3dce7078-eef7-4783-a8d3-3c2186e700ae` passed public route smoke.
+- Public route smoke on July 16, 2026 passed after DM compose search began ranking exact username, prefix username, display-name, location, and account-type matches before showing picker results. Live deploy version `063e1349-da03-4475-8e11-c6fa903237ce` passed public route smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
