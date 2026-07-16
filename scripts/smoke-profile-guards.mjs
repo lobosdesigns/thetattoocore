@@ -59,6 +59,31 @@ const checks = [
       ),
   },
   {
+    label: "profile and verification failures keep raw storage errors out of member redirects",
+    ok:
+      accountActions.includes('console.error("Profile photo upload failed.", error)') &&
+      accountActions.includes("Could not upload profile photo. Please try again.") &&
+      !accountActions.includes('accountPath(error.message || "Could not upload profile photo.")') &&
+      accountActions.includes('console.error("Profile banner upload failed.", error)') &&
+      accountActions.includes("Could not upload banner photo. Please try again.") &&
+      !accountActions.includes('accountPath(error.message || "Could not upload banner photo.")') &&
+      accountActions.includes('console.error("Shop profile lookup failed.", shopProfileError)') &&
+      accountActions.includes('redirect(accountPath("Shop profile was not found."))') &&
+      !accountActions.includes("shopProfileError?.message || \"Shop profile was not found.\"") &&
+      accountActions.includes('console.error("Profile save failed.", error)') &&
+      accountActions.includes("Could not save profile. Please try again.") &&
+      !accountActions.includes('accountPath(error.message || "Could not save profile.")') &&
+      accountActions.includes('console.error("Verification status check failed.", pendingError)') &&
+      accountActions.includes("Could not check verification status. Please try again.") &&
+      !accountActions.includes("pendingError.message || \"Could not check verification status.\"") &&
+      accountActions.includes('console.error("Verification document upload failed.", uploadError)') &&
+      accountActions.includes("Could not upload license file. Please try again.") &&
+      !accountActions.includes("uploadError.message || \"Could not upload license file.\"") &&
+      accountActions.includes('console.error("Verification request submit failed.", error)') &&
+      accountActions.includes("Could not submit verification. Please try again.") &&
+      !accountActions.includes('verificationPath(error.message || "Could not submit verification.")'),
+  },
+  {
     label: "artist shop links resolve only to studio profile rows",
     ok:
       accountActions.includes("const shopProfileUsername = cleanProfileUsername(") &&

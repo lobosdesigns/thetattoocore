@@ -390,10 +390,11 @@ async function uploadAvatar({
       cacheControl: "31536000",
       contentType: file.type,
       upsert: false,
-    });
+  });
 
   if (error) {
-    redirect(accountPath(error.message || "Could not upload profile photo."));
+    console.error("Profile photo upload failed.", error);
+    redirect(accountPath("Could not upload profile photo. Please try again."));
   }
 
   return supabase.storage.from(AVATAR_BUCKET).getPublicUrl(storagePath).data
@@ -424,10 +425,11 @@ async function uploadBanner({
       cacheControl: "31536000",
       contentType: file.type,
       upsert: false,
-    });
+  });
 
   if (error) {
-    redirect(accountPath(error.message || "Could not upload banner photo."));
+    console.error("Profile banner upload failed.", error);
+    redirect(accountPath("Could not upload banner photo. Please try again."));
   }
 
   return supabase.storage.from(AVATAR_BUCKET).getPublicUrl(storagePath).data
@@ -513,7 +515,10 @@ export async function updateProfile(formData: FormData) {
       }>();
 
     if (shopProfileError || !shopProfile) {
-      redirect(accountPath(shopProfileError?.message || "Shop profile was not found."));
+      if (shopProfileError) {
+        console.error("Shop profile lookup failed.", shopProfileError);
+      }
+      redirect(accountPath("Shop profile was not found."));
     }
 
     if (shopProfile.account_type !== "studio") {
@@ -574,7 +579,8 @@ export async function updateProfile(formData: FormData) {
   const { error } = await supabase.from("profiles").upsert(profileUpdate);
 
   if (error) {
-    redirect(accountPath(error.message || "Could not save profile."));
+    console.error("Profile save failed.", error);
+    redirect(accountPath("Could not save profile. Please try again."));
   }
 
   revalidatePath("/");
@@ -641,9 +647,8 @@ export async function submitLicenseVerification(formData: FormData) {
     .maybeSingle<{ id: string }>();
 
   if (pendingError) {
-    redirect(
-      verificationPath(pendingError.message || "Could not check verification status."),
-    );
+    console.error("Verification status check failed.", pendingError);
+    redirect(verificationPath("Could not check verification status. Please try again."));
   }
 
   if (pendingRequest) {
@@ -673,7 +678,8 @@ export async function submitLicenseVerification(formData: FormData) {
     });
 
   if (uploadError) {
-    redirect(verificationPath(uploadError.message || "Could not upload license file."));
+    console.error("Verification document upload failed.", uploadError);
+    redirect(verificationPath("Could not upload license file. Please try again."));
   }
 
   const { error } = await supabase.from("license_verification_requests").insert({
@@ -688,8 +694,9 @@ export async function submitLicenseVerification(formData: FormData) {
   });
 
   if (error) {
+    console.error("Verification request submit failed.", error);
     await storageClient.storage.from(LICENSE_BUCKET).remove([storagePath]);
-    redirect(verificationPath(error.message || "Could not submit verification."));
+    redirect(verificationPath("Could not submit verification. Please try again."));
   }
 
   revalidatePath("/account");
