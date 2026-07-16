@@ -74,7 +74,7 @@ export default function TermsPage() {
           </p>
           <h1 className="mt-2 text-3xl font-bold">Terms and Content Policy</h1>
           <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
-            These launch rules set the baseline for an adult tattoo community:
+            These rules set the baseline for an adult tattoo community:
             public enough for artists and studios to be discovered, private
             enough to protect messages, account data, and sensitive non-nude
             body-art content.

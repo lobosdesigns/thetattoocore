@@ -128,7 +128,7 @@ const buildSteps = [
   ],
   [
     "Checkout",
-    "Checkout, paid/failed/refunded status updates, inventory decrement, and buyer printable receipts are wired for launch testing. Remaining review areas: taxes, fulfillment, payouts, and production rules.",
+    "Checkout, paid/failed/refunded status updates, inventory decrement, and buyer printable receipts are wired for testing. Remaining review areas: taxes, fulfillment, payouts, and production rules.",
   ],
   [
     "Admin operations",

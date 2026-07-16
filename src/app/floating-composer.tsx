@@ -167,7 +167,7 @@ export function FloatingComposer({
               <p className="mt-1">
                 Stories are temporary photo, GIF, or short-video posts for
                 fresh work, shop moments, events, and quick community updates.
-                No visible nudity for launch.
+                No visible nudity.
               </p>
             </div>
             <WordLimitedField

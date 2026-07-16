@@ -164,10 +164,10 @@ const checks = [
       sensitiveGate.includes("acceptAdultTerms"),
   },
   {
-    label: "public policy copy keeps no-visible-nudity launch stance",
+    label: "public policy copy keeps no-visible-nudity stance",
     ok:
       policyCopySource.includes("No visible nudity") &&
-      policyCopySource.includes("No visible nudity for launch") &&
+      policyCopySource.includes("No visible nudity.") &&
       policyCopySource.includes("visible nudity is not allowed") &&
       policyCopySource.includes("crop or cover") &&
       policyCopySource.includes("Pornography") &&

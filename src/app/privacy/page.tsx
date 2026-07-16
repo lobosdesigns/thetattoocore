@@ -22,7 +22,7 @@ const sections = [
   },
   {
     body:
-      "Sensitive non-nude body-art content should not be exposed to logged-out visitors or social previews. For launch, visible nudity is not allowed. When shared content is marked sensitive, public previews should use brand-safe text or logo imagery until the viewer signs in and accepts the 18+ body-art terms.",
+      "Sensitive non-nude body-art content should not be exposed to logged-out visitors or social previews. Visible nudity is not allowed. When shared content is marked sensitive, public previews should use brand-safe text or logo imagery until the viewer signs in and accepts the 18+ body-art terms.",
     title: "Sensitive Previews",
   },
   {

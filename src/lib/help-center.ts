@@ -51,7 +51,7 @@ export const helpCategories = [
   },
   {
     description:
-      "Posting to 4U, Gossip, Gigs, Stories, and DMs, including media uploads, comments, reports, blocking, and no-visible-nudity launch rules.",
+      "Posting to 4U, Gossip, Gigs, Stories, and DMs, including media uploads, comments, reports, blocking, and no-visible-nudity rules.",
     title: "Posting And Safety",
     topics: ["4U and Gossip", "Stories and DMs", "Reports", "Privacy controls"],
   },

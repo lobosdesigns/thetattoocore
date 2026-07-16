@@ -233,7 +233,7 @@ export function ProfileForm({
               <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
                 Add a wide cover image for your profile. Shop fronts, flash
                 sheets, healed work, or brand textures work well. No visible
-                nudity for launch.
+                nudity.
               </p>
             </div>
             <div className="sm:min-w-80">
@@ -285,7 +285,7 @@ export function ProfileForm({
               <h2 className="text-sm font-bold">Profile photo</h2>
               <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
                 Upload a square logo, portrait, shop mark, or brand image. Images
-                are optimized before upload. No visible nudity for launch.
+                are optimized before upload. No visible nudity.
               </p>
               <div className="mt-3">
                 <MediaInput
@@ -621,7 +621,7 @@ export function ProfileForm({
               TheTattooCore is for adults. Tattoo, piercing, and body-art
               content may include sensitive non-nude healing, placement, scar,
               piercing, or body modification context. Visible nudity and
-              pornographic content are not allowed for launch. Review the{" "}
+              pornographic content are not allowed. Review the{" "}
               <Link className="font-semibold underline" href="/terms">
                 Terms and Content Policy
               </Link>

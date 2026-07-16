@@ -17,7 +17,7 @@ const sections = [
   },
   {
     body:
-      "TheTattooCore is 18+ and does not allow visible nudity for launch. Pornography, sexual solicitation, sexualized minor content, scratcher promotion, scams, harassment, and unsafe equipment access are not allowed.",
+      "TheTattooCore is 18+ and does not allow visible nudity. Pornography, sexual solicitation, sexualized minor content, scratcher promotion, scams, harassment, and unsafe equipment access are not allowed.",
     title: "Content Rules",
   },
   {

@@ -55,7 +55,7 @@ export default async function LoginPage({
               and DM other members. The community is 18+ because tattoo,
               piercing, and body-art documentation can include sensitive
               placement, healing, or modification context. Visible nudity is
-              not allowed for launch.
+              not allowed.
             </p>
 
             <div className="mt-5 grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
