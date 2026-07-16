@@ -10,6 +10,10 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 - Confirm support, privacy, and terms links open from logged-out and logged-in surfaces.
 - Open Help Center on mobile, search for "saved", and confirm the Search/Saved guide explains usernames, broader terms, privacy-safe results, and saved search shortcuts.
 - Open the Help Center privacy/safety/support guide on mobile and confirm it explains reports, blocks, account deletion requests, support boundaries, and private account issues.
+- Open the Booking guide and confirm it explains deposit confirmation, TTC fee visibility, private calendar-note limits, and refund-review expectations.
+- Open the Ads guide and confirm it explains 4U/Gossip placements, Merch-only ads, ad credits, review rules, keyword safety, and payment status.
+- Open the Merch guide and confirm it explains private buyer shipping details, tracking, seller fulfillment timing, and refund-review expectations.
+- Open the Verification guide and confirm it explains document privacy, why approval matters, unlocked tools, and resubmission after rejection.
 - Confirm public app copy uses `support@thetattoocore.com` or final company contact details, not personal owner contact data.
 - Confirm the browser/install prompt does not block vertical scrolling after the user ignores it.
 - Confirm light mode and dark mode text is readable on every tested route.

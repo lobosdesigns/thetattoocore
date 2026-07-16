@@ -203,6 +203,14 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("support/help/legal") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Search/Saved guide") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("privacy/safety/support guide") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Booking guide") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("deposit confirmation") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Ads guide") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Merch-only ads") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Merch guide") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("private buyer shipping details") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Verification guide") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("unlocked tools") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("missing-detail fallback") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("No reload-loop screens"),
   },
