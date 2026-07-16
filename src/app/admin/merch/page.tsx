@@ -928,6 +928,11 @@ export default async function AdminMerchPage({
   const moderationCount = products.filter(
     (product) => product.moderationStatus !== "active",
   ).length;
+  const { count: needsFulfillmentItemCount } = await supabase
+    .from("merch_order_items")
+    .select("id, merch_orders!inner(status)", { count: "exact", head: true })
+    .is("seller_fulfilled_at", null)
+    .eq("merch_orders.status", "paid");
   const matchingOrderItemIds = activeSearch
     ? (
         await supabase
@@ -1141,6 +1146,19 @@ export default async function AdminMerchPage({
             <p className="mt-1 text-3xl font-bold">
               {Intl.NumberFormat("en-US").format(orderCount ?? 0)}
             </p>
+            <Link
+              className="mt-2 inline-flex text-xs font-bold uppercase tracking-wide text-[var(--gold)]"
+              href={pageHref({
+                orderFulfillmentStatus: "needs_fulfillment",
+                page: currentPage,
+                productStatus: activeProductStatus,
+                sellerPayoutStatus: activeSellerPayoutStatus,
+                search: activeSearch,
+              })}
+            >
+              Needs fulfillment:{" "}
+              {Intl.NumberFormat("en-US").format(needsFulfillmentItemCount ?? 0)}
+            </Link>
           </div>
         </div>
 
@@ -1159,6 +1177,7 @@ export default async function AdminMerchPage({
 
         {activeProductStatus ||
         activeOrderStatus ||
+        activeOrderFulfillmentStatus ||
         activeSellerPayoutStatus ||
         activeSearch ? (
           <div className="mb-4 flex flex-col gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
@@ -1184,7 +1203,10 @@ export default async function AdminMerchPage({
                   <span>{payoutStatusLabel(activeSellerPayoutStatus)}</span>
                 </>
               ) : null}
-              {(activeProductStatus || activeSellerPayoutStatus) && activeOrderStatus
+              {(activeProductStatus ||
+                activeSellerPayoutStatus ||
+                activeOrderFulfillmentStatus) &&
+              activeOrderStatus
                 ? " and"
                 : null}
               {activeOrderStatus ? (
@@ -1193,6 +1215,17 @@ export default async function AdminMerchPage({
                   <span className="capitalize">
                     {statusLabel(activeOrderStatus)}
                   </span>
+                </>
+              ) : null}
+              {activeOrderFulfillmentStatus ? (
+                <>
+                  {activeSearch ||
+                  activeProductStatus ||
+                  activeSellerPayoutStatus ||
+                  activeOrderStatus
+                    ? " and"
+                    : " "} fulfillment by{" "}
+                  <span>{fulfillmentFilterLabel(activeOrderFulfillmentStatus)}</span>
                 </>
               ) : null}
             </p>

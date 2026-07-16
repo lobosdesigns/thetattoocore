@@ -463,6 +463,9 @@ checks.push({
     adminMerchPage.includes(".is(\"seller_fulfilled_at\", null)") &&
     adminMerchPage.includes(".not(\"seller_fulfilled_at\", \"is\", null)") &&
     adminMerchPage.includes('orderQuery = orderQuery.eq("status", "paid")') &&
+    adminMerchPage.includes("needsFulfillmentItemCount") &&
+    adminMerchPage.includes("Needs fulfillment:") &&
+    adminMerchPage.includes("fulfillment by") &&
     publicSmoke.includes('path: "/admin/merch?fulfillment=needs_fulfillment"') &&
     productPlan.includes("fulfillment filters for paid orders needing seller fulfillment"),
 });
