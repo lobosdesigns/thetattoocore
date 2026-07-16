@@ -222,9 +222,10 @@ export default async function HelpArticlePage({
           <section className="ttc-surface mt-7 rounded-lg border border-[var(--card-rim)] p-4">
             <h2 className="text-lg font-bold">Screenshots And Tutorials</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-              Screenshots and short clips will be added as each workflow is
-              finalized. Guides will avoid private messages, license documents,
-              real payment data, and personal contact details.
+              Visual walkthroughs avoid private messages, license documents,
+              real payment data, and personal contact details. Use the written
+              steps and FAQ first, then ask a guide question if a workflow still
+              needs a clearer example.
             </p>
           </section>
 

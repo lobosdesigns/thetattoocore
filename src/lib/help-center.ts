@@ -23,7 +23,7 @@ export const helpCategories = [
     description:
       "Profile setup, profile photo, banner image, bio, website links, social links, shop links, light or dark mode, and account data controls.",
     title: "Account And Profile",
-    topics: ["Edit profile", "Profile links", "Search and saved"],
+    topics: ["Getting started", "Edit profile", "Profile links", "Search and saved"],
   },
   {
     description:
@@ -61,6 +61,51 @@ export const helpArticles = [
   {
     category: "Account And Profile",
     description:
+      "Use this first-run checklist to set up a member, artist, studio, or vendor account without getting lost.",
+    faqs: [
+      {
+        answer:
+          "Start as a member if you are browsing, following, commenting, saving, sending DMs, or buying public Merch. Choose artist, studio, or vendor when you need professional verification, booking tools, seller tools, or professional marketplace access.",
+        question: "Which account type should I choose?",
+      },
+      {
+        answer:
+          "Save your profile first. Then confirm email, add profile details, review 18+ terms, set privacy and notification preferences, and submit verification if you need professional tools.",
+        question: "What should I do first after signup?",
+      },
+      {
+        answer:
+          "Public, non-sensitive pages can be discovered by visitors. Private account details, DMs, verification documents, payment details, and support issues stay behind account or admin access.",
+        question: "What is public and what is private?",
+      },
+      {
+        answer:
+          "Visible nudity is not allowed during launch. Keep tattoo, piercing, healing, and body-art documentation safe for review by cropping, covering, or choosing a different photo.",
+        question: "What content rule matters most at launch?",
+      },
+    ],
+    lastReviewed: "July 16, 2026",
+    relatedSlugs: [
+      "artist-profile-shop-links",
+      "verification-documents",
+      "posting-stories-dms",
+      "privacy-safety-support",
+    ],
+    slug: "getting-started",
+    steps: [
+      "Create an account from Signup, confirm the email, then sign in.",
+      "Open Account and save a username, display name, profile photo, banner, bio, location, language, and 18+ confirmation.",
+      "Choose light or dark mode, then set privacy and notification preferences before posting.",
+      "Use Search to find artists, studios, vendors, friends, public posts, Stuff, Gigs, and Merch.",
+      "Use 4U for image/reel posts, Gossip for longer discussion posts, Stuff for verified professional marketplace items, Gigs for work/events/opportunities, Merch for fan-safe public products, and DM for private messages.",
+      "Submit artist, studio, or vendor verification before expecting professional tools such as Stuff seller contact, booking setup, seller review, or professional ad review.",
+      "Use Help or Support when something is unclear, private, payment-related, or safety-related.",
+    ],
+    title: "Getting started on TheTattooCore",
+  },
+  {
+    category: "Account And Profile",
+    description:
       "Set up your public profile, bio, profile photo, banner, website links, social links, and shop connection.",
     faqs: [
       {
@@ -75,7 +120,7 @@ export const helpArticles = [
       },
     ],
     lastReviewed: "July 15, 2026",
-    relatedSlugs: ["search-saved-people", "verification-documents"],
+    relatedSlugs: ["getting-started", "search-saved-people", "verification-documents"],
     slug: "artist-profile-shop-links",
     steps: [
       "Open Account and choose the Profile tab.",
@@ -102,7 +147,12 @@ export const helpArticles = [
       },
     ],
     lastReviewed: "July 15, 2026",
-    relatedSlugs: ["artist-profile-shop-links", "posting-stories-dms", "privacy-safety-support"],
+    relatedSlugs: [
+      "getting-started",
+      "artist-profile-shop-links",
+      "posting-stories-dms",
+      "privacy-safety-support",
+    ],
     slug: "search-saved-people",
     steps: [
       "Open Search from the bottom navigation or header.",

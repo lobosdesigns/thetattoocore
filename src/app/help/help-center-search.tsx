@@ -63,7 +63,7 @@ export function HelpCenterSearch() {
           className="min-h-11 flex-1 border-0 bg-transparent text-base font-semibold outline-none placeholder:text-[var(--muted)]"
           id="help-search"
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search bookings, ads, Merch, verification..."
+          placeholder="Search getting started, bookings, ads, Merch..."
           type="search"
           value={query}
         />
@@ -96,9 +96,9 @@ export function HelpCenterSearch() {
       <section className="mt-7 rounded-lg border border-[var(--card-rim)] p-4">
         <h2 className="text-lg font-bold">Tutorial Library</h2>
         <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-          These guides cover the first launch support workflows.
-          Articles stay public when safe, and account-specific questions will
-          stay in private support.
+          These guides cover the first launch support workflows. Articles stay
+          public when safe, and account-specific questions stay in private
+          support.
         </p>
         <ul className="mt-4 grid gap-2 text-sm leading-6 text-[var(--muted)] md:grid-cols-2">
           {filteredArticles.map((article) => (

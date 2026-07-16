@@ -251,6 +251,7 @@ const checks = [
       docs["docs/PRODUCT_PLAN.md"].includes("## Help Center And Education") &&
       docs["docs/PRODUCT_PLAN.md"].includes("FAQ, how-to articles, and step-by-step tutorials") &&
       docs["docs/PRODUCT_PLAN.md"].includes("Started for launch with public `/help`, `/help/[slug]` guide pages") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("getting-started guide") &&
       docs["docs/PRODUCT_PLAN.md"].includes("screenshots, short clips where useful") &&
       docs["docs/PRODUCT_PLAN.md"].includes("setting appointments") &&
       docs["docs/PRODUCT_PLAN.md"].includes("creating ads") &&
@@ -261,6 +262,25 @@ const checks = [
       docs["docs/PRODUCT_PLAN.md"].includes("pin official answers") &&
       docs["docs/PRODUCT_PLAN.md"].includes("turn repeated questions into new FAQ entries") &&
       docs["docs/PRODUCT_PLAN.md"].includes("Admin > Content Help review"),
+  },
+  {
+    label: "help center has a first-run guide and avoids roadmap-style support copy",
+    ok:
+      helpArticlePage.includes("Visual walkthroughs avoid private messages") &&
+      helpArticlePage.includes("ask a guide question") &&
+      helpActions.includes("Question submitted for moderation.") &&
+      readFileSync("src/lib/help-center.ts", "utf8").includes(
+        'slug: "getting-started"',
+      ) &&
+      readFileSync("src/lib/help-center.ts", "utf8").includes(
+        "Getting started on TheTattooCore",
+      ) &&
+      readFileSync("src/app/help/page.tsx", "utf8").includes("getting-started guide") &&
+      readFileSync("src/app/help/page.tsx", "utf8").includes(
+        "Signed-in members can ask deeper questions",
+      ) &&
+      !readFileSync("src/app/help/page.tsx", "utf8").includes("will grow into") &&
+      !readFileSync("src/app/help/page.tsx", "utf8").includes("will support"),
   },
   {
     label: "help center is discoverable from signed-in app surfaces",

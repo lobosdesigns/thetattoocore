@@ -32,9 +32,10 @@ export default function HelpCenterPage() {
           </p>
           <h1 className="mt-2 text-3xl font-bold">Help Center</h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-[var(--muted)]">
-            Tutorials, FAQ, and member support for using TheTattooCore. This
-            library is starting with the main launch areas first, then will grow
-            into screenshot walkthroughs, short clips, and searchable answers.
+            Tutorials, FAQ, and member support for using TheTattooCore. Start
+            with the getting-started guide, then use search for profiles,
+            verification, bookings, ads, Merch, Stuff, Gigs, Stories, DMs, and
+            safety.
           </p>
 
           <HelpCenterSearch />
@@ -42,10 +43,9 @@ export default function HelpCenterPage() {
           <section className="ttc-surface mt-7 rounded-lg border border-[var(--card-rim)] p-4">
             <h2 className="text-lg font-bold">Article Comments</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-              Help articles will support signed-in member comments for deeper
-              questions. Moderators will be able to answer, pin official
-              replies, hide unsafe comments, close sensitive policy discussions,
-              and turn repeated questions into new FAQ entries.
+              Signed-in members can ask deeper questions on guide pages.
+              Moderators can answer, pin official replies, hide unsafe
+              comments, and turn repeated questions into better FAQ entries.
             </p>
           </section>
 
