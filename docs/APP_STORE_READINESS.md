@@ -302,6 +302,7 @@
 - Public route smoke on July 16, 2026 passed after Account booking calendar status labels moved from internal prep wording to member-facing calendar names. Live deploy version `f8a1bf09-5cb3-4133-8d2a-227426a0f329` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after Account Merch buyer orders and seller sales gained compact Support and Merch Help links for package, refund, fulfillment, and seller questions. Live deploy version `924ce3d1-3beb-497c-90b3-7c5aee86072b` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after the Merch storefront header surfaced a direct Merch Help link beside seller tools for buyer/seller self-service. Live deploy version `ed6b83f8-b5a3-4fba-99d9-792e7164a6b4` passed public route smoke.
+- Full verification on July 16, 2026 passed after the Merch support/help handoff updates and booking calendar label polish: lint, production build, hydration/media/content/share/profile/admin/story/DM/booking/payment/PWA/native/store/security/theme/docs guards, and live public route smoke all passed.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
