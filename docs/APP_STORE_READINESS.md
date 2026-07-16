@@ -286,6 +286,7 @@
 - Public route smoke on July 16, 2026 passed after the Support page surfaced the getting-started guide in Popular Help Guides and removed future-tense Help Center copy. Live deploy version `3077c5ed-7e5a-4867-8605-ca41f17f93d9` passed public route smoke after a propagation retry.
 - Headless mobile browser QA on July 16, 2026 at 390px passed after the Help Center and Support guide discoverability updates, including auth, support/help/legal, search/profile, missing-detail fallback, public sample detail, and checkout-status routes.
 - Full verification on July 16, 2026 passed after the Help Center getting-started, Support guide handoff, and mobile Help QA passes: lint, production build, hydration/media/content/share/profile/admin/story/DM/booking/payment/PWA/native/store/security/theme/docs guards, and live public route smoke all passed.
+- Public route smoke on July 16, 2026 passed after Support Merch copy moved from internal readiness wording to member-facing order, fulfillment, refund, seller, and product-safety support guidance. Live deploy version `29a9a76c-b0e8-4bf4-b182-b6eee3c53ca6` passed public route smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
