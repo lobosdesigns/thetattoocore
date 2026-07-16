@@ -248,8 +248,9 @@ export async function POST(request: Request) {
     .maybeSingle<{ id: string }>();
 
   if (reserveError) {
+    console.error("Booking deposit reservation failed.", reserveError);
     return redirectWithMessage(
-      reserveError.message || "The booking deposit could not be reserved before checkout.",
+      "The booking deposit could not be reserved before checkout. Please try again.",
       returnTo,
     );
   }
@@ -315,8 +316,9 @@ export async function POST(request: Request) {
     .maybeSingle<{ id: string }>();
 
   if (updateError) {
+    console.error("Booking checkout session save failed.", updateError);
     return redirectWithMessage(
-      updateError.message || "Checkout started, but the checkout could not be saved.",
+      "Checkout started, but the checkout could not be saved. Please contact support if this repeats.",
       returnTo,
     );
   }

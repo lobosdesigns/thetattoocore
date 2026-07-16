@@ -305,9 +305,10 @@ export async function POST(request: Request) {
   });
 
   if (orderError) {
+    console.error("Merch order save failed before checkout.", orderError);
     return redirectWithMessage(
       returnTo,
-      orderError.message || "The order could not be saved before checkout.",
+      "The order could not be saved before checkout. Please try again.",
     );
   }
 
@@ -324,11 +325,12 @@ export async function POST(request: Request) {
   });
 
   if (itemError) {
+    console.error("Merch order item save failed before checkout.", itemError);
     await cancelUnreservedPendingOrder("Order item could not be saved before checkout.");
 
     return redirectWithMessage(
       returnTo,
-      itemError.message || "The order item could not be saved before checkout.",
+      "The order item could not be saved before checkout. Please try again.",
     );
   }
 
@@ -359,11 +361,12 @@ export async function POST(request: Request) {
   );
 
   if (reserveError) {
+    console.error("Merch inventory reservation failed before checkout.", reserveError);
     await cancelPendingOrder("Inventory could not be reserved for checkout.");
 
     return redirectWithMessage(
       returnTo,
-      reserveError.message || "Inventory could not be reserved for checkout.",
+      "Inventory could not be reserved for checkout. Please try again.",
     );
   }
 
@@ -404,11 +407,12 @@ export async function POST(request: Request) {
     .maybeSingle<{ id: string }>();
 
   if (sessionError) {
+    console.error("Merch checkout session save failed.", sessionError);
     await cancelPendingOrder("Checkout started, but the order session could not be saved.");
 
     return redirectWithMessage(
       returnTo,
-      sessionError.message || "Checkout started, but the order session could not be saved.",
+      "Checkout started, but the order session could not be saved. Please contact support if this repeats.",
     );
   }
 

@@ -213,6 +213,31 @@ checks.push({
     !merchCheckout.includes('error instanceof Error ? error.message : "Checkout could not open."'),
 });
 checks.push({
+  label: "checkout persistence failures do not redirect raw database errors",
+  ok:
+    !adCheckout.includes(".message ||") &&
+    adCheckout.includes('console.error("Ad credit check failed before checkout.", creditError)') &&
+    adCheckout.includes('"Ad credit could not be checked for this campaign. Please try again."') &&
+    adCheckout.includes('console.error("Ad checkout reservation failed.", reserveError)') &&
+    adCheckout.includes('"The ad payment could not be reserved before checkout. Please try again."') &&
+    adCheckout.includes('console.error("Ad checkout session save failed.", updateError)') &&
+    adCheckout.includes('"Checkout started, but the checkout could not be saved. Please contact support if this repeats."') &&
+    !bookingCheckout.includes(".message ||") &&
+    bookingCheckout.includes('console.error("Booking deposit reservation failed.", reserveError)') &&
+    bookingCheckout.includes('"The booking deposit could not be reserved before checkout. Please try again."') &&
+    bookingCheckout.includes('console.error("Booking checkout session save failed.", updateError)') &&
+    bookingCheckout.includes('"Checkout started, but the checkout could not be saved. Please contact support if this repeats."') &&
+    !merchCheckout.includes(".message ||") &&
+    merchCheckout.includes('console.error("Merch order save failed before checkout.", orderError)') &&
+    merchCheckout.includes('"The order could not be saved before checkout. Please try again."') &&
+    merchCheckout.includes('console.error("Merch order item save failed before checkout.", itemError)') &&
+    merchCheckout.includes('"The order item could not be saved before checkout. Please try again."') &&
+    merchCheckout.includes('console.error("Merch inventory reservation failed before checkout.", reserveError)') &&
+    merchCheckout.includes('"Inventory could not be reserved for checkout. Please try again."') &&
+    merchCheckout.includes('console.error("Merch checkout session save failed.", sessionError)') &&
+    merchCheckout.includes('"Checkout started, but the order session could not be saved. Please contact support if this repeats."'),
+});
+checks.push({
   label: "payment webhook rejects unsigned events before processing",
   ok:
     stripeWebhook.includes("const signature = request.headers.get(\"stripe-signature\")") &&

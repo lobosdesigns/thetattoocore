@@ -234,8 +234,9 @@ export async function POST(request: Request) {
   );
 
   if (creditError) {
+    console.error("Ad credit check failed before checkout.", creditError);
     return redirectWithMessage(
-      creditError.message || "Ad credit could not be checked for this campaign.",
+      "Ad credit could not be checked for this campaign. Please try again.",
       returnTo,
     );
   }
@@ -267,8 +268,9 @@ export async function POST(request: Request) {
     .maybeSingle<{ id: string }>();
 
   if (reserveError) {
+    console.error("Ad checkout reservation failed.", reserveError);
     return redirectWithMessage(
-      reserveError.message || "The ad payment could not be reserved before checkout.",
+      "The ad payment could not be reserved before checkout. Please try again.",
       returnTo,
     );
   }
@@ -338,8 +340,9 @@ export async function POST(request: Request) {
     .maybeSingle<{ id: string }>();
 
   if (updateError) {
+    console.error("Ad checkout session save failed.", updateError);
     return redirectWithMessage(
-      updateError.message || "Checkout started, but the checkout could not be saved.",
+      "Checkout started, but the checkout could not be saved. Please contact support if this repeats.",
       returnTo,
     );
   }
