@@ -282,6 +282,7 @@
 - Full verification on July 16, 2026 passed after the auth recovery, Gigs, DM, and comment error-hardening deploys: lint, production build, hydration/media/content/share/profile/admin/story/DM/booking/payment/PWA/native/store/security/theme/docs guards, and live public route smoke all passed.
 - Public route smoke on July 16, 2026 passed after seller Merch fulfillment failures began logging internal details privately while showing generic member-facing retry copy. Live deploy version `f89779ad-fab9-4463-959a-e76dbe0207a2` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after Help Center links were surfaced in signed-in Account/settings, profile headers, and Admin navigation/overview so members can self-serve setup, safety, booking, ads, Merch, and verification questions. Live deploy version `84532fe1-b07f-47b7-9f63-44826a343a24` passed public route smoke.
+- Public route smoke on July 16, 2026 passed after the Help Center added a first-run getting-started guide and removed roadmap-style support copy from the Help landing/article pages. Live deploy version `40afd78a-ccf5-48eb-ada8-dac2a45365b0` passed public route smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
