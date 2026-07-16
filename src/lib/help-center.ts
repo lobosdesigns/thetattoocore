@@ -216,6 +216,11 @@ export const helpArticles = [
           "Approved public products can be browsed by fans. Seller tools and fulfillment controls require the right account access.",
         question: "Can fans buy Merch?",
       },
+      {
+        answer:
+          "Sellers should finish account approval, product review, payout setup, fulfillment notes, and return/refund expectations before treating Merch as ready for public orders.",
+        question: "What should sellers finish before launch orders?",
+      },
     ],
     lastReviewed: "July 15, 2026",
     relatedSlugs: ["verification-documents", "ads-and-credits"],
@@ -224,7 +229,9 @@ export const helpArticles = [
       "Open Account and choose Merch tools.",
       "Add a title, description, price, fulfillment notes, and clear product media.",
       "Submit the product for review before it appears publicly.",
+      "Finish seller payout setup from the hosted account flow before real order payouts are expected.",
       "Watch orders, fulfillment status, refund requests, and support questions from Account.",
+      "Use Admin or Support for order questions that need payment-reference lookup or refund review.",
     ],
     title: "How to set up Merch products and handle orders",
   },
