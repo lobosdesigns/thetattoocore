@@ -114,7 +114,7 @@ const checks = [
     label: "member upload copy reinforces optimization and launch video limits",
     ok:
       mediaInput.includes("Phone photos are resized before upload.") &&
-      mediaInput.includes("Video upload is capped for now. More video options will be added later.") &&
+      mediaInput.includes("Video upload is capped for now. More video options will open as upload tools mature.") &&
       mediaInput.includes("Use short MP4/MOV clips for now.") &&
       mediaInput.includes("Videos keep their original quality for now") &&
       mediaInput.includes("Video will keep its original quality for now") &&
