@@ -1758,6 +1758,8 @@ export async function createMerchProduct(formData: FormData) {
   const shippingRequired = formData.get("shipping_required") === "on";
   const shipsFromCity = cleanText(formData.get("ships_from_city"), 80);
   const shipsFromRegion = cleanText(formData.get("ships_from_region"), 80);
+  const fulfillmentNotes = cleanText(formData.get("fulfillment_notes"), 1000);
+  const returnPolicy = cleanText(formData.get("return_policy"), 1000);
 
   if (title.length < 3) {
     redirect(homeMessage("Merch title needs at least 3 characters.", "merch"));
@@ -1792,6 +1794,7 @@ export async function createMerchProduct(formData: FormData) {
       category,
       currency: "USD",
       description,
+      fulfillment_notes: fulfillmentNotes || null,
       inventory_quantity: inventoryQuantity,
       is_indexable: false,
       is_official: false,
@@ -1800,6 +1803,7 @@ export async function createMerchProduct(formData: FormData) {
       shipping_required: shippingRequired,
       ships_from_city: shipsFromCity || null,
       ships_from_region: shipsFromRegion || null,
+      return_policy: returnPolicy || null,
       status: "pending_review",
       title,
     })
@@ -2262,6 +2266,8 @@ export async function editMerchProduct(formData: FormData) {
   const shippingRequired = formData.get("shipping_required") === "on";
   const shipsFromCity = cleanText(formData.get("ships_from_city"), 80);
   const shipsFromRegion = cleanText(formData.get("ships_from_region"), 80);
+  const fulfillmentNotes = cleanText(formData.get("fulfillment_notes"), 1000);
+  const returnPolicy = cleanText(formData.get("return_policy"), 1000);
 
   if (!productId) {
     redirect(homeMessage("Choose a Merch product first.", "merch"));
@@ -2374,12 +2380,14 @@ export async function editMerchProduct(formData: FormData) {
     .update({
       category,
       description: description || null,
+      fulfillment_notes: fulfillmentNotes || null,
       inventory_quantity: inventoryQuantity,
       is_indexable: nextStatus === "active",
       price_cents: priceCents,
       shipping_required: shippingRequired,
       ships_from_city: shipsFromCity || null,
       ships_from_region: shipsFromRegion || null,
+      return_policy: returnPolicy || null,
       status: nextStatus,
       title,
       updated_at: new Date().toISOString(),

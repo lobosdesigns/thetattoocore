@@ -6,6 +6,10 @@ const merchCheckout = readFileSync("src/app/api/merch/checkout/route.ts", "utf8"
 const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8");
 const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const merchIndexPage = readFileSync("src/app/merch/page.tsx", "utf8");
+const merchNotesMigration = readFileSync(
+  "supabase/migrations/20260715235500_merch_fulfillment_return_notes.sql",
+  "utf8",
+);
 const merchCheckoutSuccessPage = readFileSync("src/app/merch/checkout/success/page.tsx", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
@@ -324,6 +328,22 @@ checks.push({
     adminPaymentsPage.includes("\"merch_refund_review_requested\"") &&
     adminPaymentsPage.includes("Merch refund reviews need admin review") &&
     paymentReadiness.includes("buyer refund-review requests"),
+});
+checks.push({
+  label: "merch products collect and display fulfillment and return notes",
+  ok:
+    merchNotesMigration.includes("add column if not exists fulfillment_notes") &&
+    merchNotesMigration.includes("add column if not exists return_policy") &&
+    appActions.includes("fulfillment_notes: fulfillmentNotes || null") &&
+    appActions.includes("return_policy: returnPolicy || null") &&
+    floatingComposer.includes('name="fulfillment_notes"') &&
+    floatingComposer.includes('name="return_policy"') &&
+    merchDetailPage.includes("product.fulfillment_notes") &&
+    merchDetailPage.includes("product.return_policy") &&
+    merchIndexPage.includes("Seller notes") &&
+    homePage.includes("Seller notes") &&
+    adminMerchPage.includes("Fulfillment notes") &&
+    adminMerchPage.includes("Return note"),
 });
 checks.push({
   label: "shared platform fee helper stays at launch rate",

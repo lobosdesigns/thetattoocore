@@ -35,6 +35,7 @@ type MerchProduct = {
   category: string;
   createdAt: string;
   currency: string;
+  fulfillmentNotes: string | null;
   id: string;
   inventoryQuantity: number;
   inventoryReserved: number;
@@ -43,6 +44,7 @@ type MerchProduct = {
   sellerAccountType: string | null;
   sellerLicenseVerifiedAt: string | null;
   priceCents: number;
+  returnPolicy: string | null;
   sellerName: string;
   sellerUsername: string;
   status: ProductStatus;
@@ -358,6 +360,26 @@ function ProductCard({
           </dd>
         </div>
       </dl>
+      {product.fulfillmentNotes || product.returnPolicy ? (
+        <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted)] sm:grid-cols-2">
+          {product.fulfillmentNotes ? (
+            <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-2">
+              <p className="font-bold uppercase text-[var(--muted-strong)]">
+                Fulfillment notes
+              </p>
+              <p className="mt-1 whitespace-pre-wrap">{product.fulfillmentNotes}</p>
+            </div>
+          ) : null}
+          {product.returnPolicy ? (
+            <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-2">
+              <p className="font-bold uppercase text-[var(--muted-strong)]">
+                Return note
+              </p>
+              <p className="mt-1 whitespace-pre-wrap">{product.returnPolicy}</p>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       <form action={updateMerchProductStatus} className="mt-4 space-y-2">
         <input name="product_id" type="hidden" value={product.id} />
         <input name="return_to" type="hidden" value={returnTo} />
@@ -622,7 +644,7 @@ export default async function AdminMerchPage({
   let productQuery = supabase
     .from("merch_products")
     .select(
-      "id, title, category, status, moderation_status, price_cents, currency, inventory_quantity, inventory_reserved, is_official, created_at, profiles:profiles!merch_products_seller_id_fkey(account_type, display_name, license_verified_at, username)",
+      "id, title, category, status, moderation_status, price_cents, currency, inventory_quantity, inventory_reserved, fulfillment_notes, return_policy, is_official, created_at, profiles:profiles!merch_products_seller_id_fkey(account_type, display_name, license_verified_at, username)",
       { count: "exact" },
     );
 
@@ -638,6 +660,7 @@ export default async function AdminMerchPage({
         category: string;
         created_at: string;
         currency: string;
+        fulfillment_notes: string | null;
         id: string;
         inventory_quantity: number;
         inventory_reserved: number;
@@ -650,6 +673,7 @@ export default async function AdminMerchPage({
           license_verified_at: string | null;
           username: string;
         } | null;
+        return_policy: string | null;
         status: ProductStatus;
         title: string;
       }[]
@@ -658,12 +682,14 @@ export default async function AdminMerchPage({
     category: product.category,
     createdAt: product.created_at,
     currency: product.currency,
+    fulfillmentNotes: product.fulfillment_notes,
     id: product.id,
     inventoryQuantity: product.inventory_quantity,
     inventoryReserved: product.inventory_reserved,
     isOfficial: product.is_official,
     moderationStatus: product.moderation_status,
     priceCents: product.price_cents,
+    returnPolicy: product.return_policy,
     sellerAccountType: product.profiles?.account_type ?? null,
     sellerLicenseVerifiedAt: product.profiles?.license_verified_at ?? null,
     sellerName: product.profiles?.display_name ?? "Seller",

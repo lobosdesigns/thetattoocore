@@ -132,6 +132,7 @@ type MerchProduct = {
   created_at: string;
   currency: string;
   description: string | null;
+  fulfillment_notes: string | null;
   id: string;
   inventory_quantity: number;
   inventory_reserved: number;
@@ -139,6 +140,7 @@ type MerchProduct = {
   merch_product_media: ListingMedia[];
   price_cents: number;
   profiles: Profile | null;
+  return_policy: string | null;
   shipping_required: boolean;
   title: string;
 };
@@ -1672,7 +1674,7 @@ export default async function Home({
     let query = supabase
       .from("merch_products")
       .select(
-        "id, title, description, category, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, is_official, created_at, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, title, description, fulfillment_notes, return_policy, category, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, is_official, created_at, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("status", "active")
       .eq("moderation_status", "active");
@@ -3036,6 +3038,11 @@ export default async function Home({
                                 ? "Shipping required"
                                 : "No shipping"}
                             </span>
+                            {product.fulfillment_notes || product.return_policy ? (
+                              <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--muted)]">
+                                Seller notes
+                              </span>
+                            ) : null}
                           </div>
                         </div>
                       </div>

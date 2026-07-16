@@ -51,6 +51,7 @@ type MerchProduct = {
   category: string;
   currency: string;
   description: string | null;
+  fulfillment_notes: string | null;
   id: string;
   inventory_quantity: number;
   inventory_reserved: number;
@@ -59,6 +60,7 @@ type MerchProduct = {
   moderation_status: string;
   price_cents: number;
   profiles: Profile | null;
+  return_policy: string | null;
   shipping_required: boolean;
   ships_from_city: string | null;
   ships_from_region: string | null;
@@ -125,7 +127,7 @@ async function getProductForViewer(id: string, viewerId?: string | null) {
   let query = supabase
     .from("merch_products")
     .select(
-      "id, title, description, category, status, moderation_status, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, ships_from_city, ships_from_region, is_official, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, account_type, license_verified_at)",
+      "id, title, description, fulfillment_notes, return_policy, category, status, moderation_status, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, ships_from_city, ships_from_region, is_official, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, account_type, license_verified_at)",
     )
     .eq("id", id)
     .order("sort_order", {
@@ -359,6 +361,31 @@ export default async function MerchProductPage({
                 </p>
               )}
 
+              {product.fulfillment_notes || product.return_policy ? (
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  {product.fulfillment_notes ? (
+                    <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-3">
+                      <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
+                        Fulfillment
+                      </p>
+                      <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">
+                        {product.fulfillment_notes}
+                      </p>
+                    </div>
+                  ) : null}
+                  {product.return_policy ? (
+                    <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-3">
+                      <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
+                        Returns
+                      </p>
+                      <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">
+                        {product.return_policy}
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+
               {isOwnProduct &&
               (product.status !== "active" ||
                 product.moderation_status !== "active") ? (
@@ -500,6 +527,28 @@ export default async function MerchProductPage({
                         />
                       </label>
                     </div>
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Fulfillment notes
+                      <textarea
+                        className="mt-1 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 py-3 text-sm text-[var(--foreground)]"
+                        defaultValue={product.fulfillment_notes ?? ""}
+                        maxLength={1000}
+                        name="fulfillment_notes"
+                        placeholder="Shipping timeline, pickup option, made-to-order timing."
+                        rows={4}
+                      />
+                    </label>
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Return/refund note
+                      <textarea
+                        className="mt-1 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 py-3 text-sm text-[var(--foreground)]"
+                        defaultValue={product.return_policy ?? ""}
+                        maxLength={1000}
+                        name="return_policy"
+                        placeholder="Set buyer expectations for returns or refund review."
+                        rows={4}
+                      />
+                    </label>
                     <button className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
                       Save changes
                     </button>
