@@ -1639,17 +1639,22 @@ export async function updateMerchProductStatus(formData: FormData) {
   const { data: product, error: productError } = await supabase
     .from("merch_products")
     .select(
-      "id, seller_id, status, title, category, price_cents, currency, is_official, profiles:profiles!merch_products_seller_id_fkey(account_type, license_verified_at)",
+      "id, seller_id, status, title, category, price_cents, currency, fulfillment_notes, is_official, return_policy, shipping_required, ships_from_city, ships_from_region, profiles:profiles!merch_products_seller_id_fkey(account_type, license_verified_at)",
     )
     .eq("id", productId)
     .maybeSingle<{
       category: string;
       currency: string;
+      fulfillment_notes: string | null;
       id: string;
       is_official: boolean;
       price_cents: number;
       profiles: { account_type: string; license_verified_at: string | null } | null;
+      return_policy: string | null;
       seller_id: string;
+      shipping_required: boolean;
+      ships_from_city: string | null;
+      ships_from_region: string | null;
       status: string;
       title: string;
     }>();
@@ -1674,6 +1679,23 @@ export async function updateMerchProductStatus(formData: FormData) {
     redirect(
       adminMerchMessage(
         "This seller must be artist, studio, or vendor license verified before Merch can be approved or activated.",
+        returnTo,
+      ),
+    );
+  }
+
+  const missingMerchReviewDetails =
+    status === "active" &&
+    (!product.return_policy ||
+      (product.shipping_required &&
+        (!product.ships_from_city ||
+          !product.ships_from_region ||
+          !product.fulfillment_notes)));
+
+  if (missingMerchReviewDetails) {
+    redirect(
+      adminMerchMessage(
+        "Merch needs ship-from, fulfillment, and return/refund details before checkout can be activated.",
         returnTo,
       ),
     );

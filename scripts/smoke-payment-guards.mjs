@@ -429,6 +429,22 @@ checks.push({
     adminMerchPage.includes("Return note"),
 });
 checks.push({
+  label: "legacy merch cannot activate or checkout without review details",
+  ok:
+    adminActions.includes("Merch needs ship-from, fulfillment, and return/refund details before checkout can be activated.") &&
+    adminActions.includes("const missingMerchReviewDetails") &&
+    adminActions.includes("product.shipping_required") &&
+    adminActions.includes("product.return_policy") &&
+    adminMerchPage.includes("const hasReviewDetails") &&
+    adminMerchPage.includes("Activation waits for ship-from, fulfillment, and return/refund") &&
+    adminMerchPage.includes("Ship-from, fulfillment, and return/refund details are required before checkout can be activated.") &&
+    merchCheckout.includes("Merch checkout blocked by missing fulfillment details.") &&
+    merchCheckout.includes("const missingReviewDetails") &&
+    merchCheckout.includes("product.return_policy") &&
+    merchCheckout.includes("product.shipping_required") &&
+    productPlan.includes("legacy active Merch detail guard"),
+});
+checks.push({
   label: "merch detail shows buyer fee estimate and shipping cue before checkout",
   ok:
     merchDetailPage.includes("calculatePlatformFeeCents(product.price_cents)") &&

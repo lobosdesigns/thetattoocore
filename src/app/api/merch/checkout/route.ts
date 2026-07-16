@@ -22,8 +22,12 @@ type Product = {
   is_official: boolean;
   price_cents: number;
   profiles: { account_type: string; license_verified_at: string | null } | null;
+  fulfillment_notes: string | null;
+  return_policy: string | null;
   seller_id: string;
   shipping_required: boolean;
+  ships_from_city: string | null;
+  ships_from_region: string | null;
   sku: string | null;
   title: string;
 };
@@ -229,7 +233,7 @@ export async function POST(request: Request) {
   const { data: product, error } = await supabase
     .from("merch_products")
     .select(
-      "id, seller_id, title, description, sku, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, is_official, profiles:profiles!merch_products_seller_id_fkey(account_type, license_verified_at)",
+      "id, seller_id, title, description, sku, price_cents, currency, inventory_quantity, inventory_reserved, fulfillment_notes, return_policy, shipping_required, ships_from_city, ships_from_region, is_official, profiles:profiles!merch_products_seller_id_fkey(account_type, license_verified_at)",
     )
     .eq("id", productId)
     .eq("status", "active")
@@ -241,6 +245,24 @@ export async function POST(request: Request) {
   }
 
   const returnTo = formReturnTo ?? `/merch/${product.id}`;
+
+  const missingReviewDetails =
+    !product.return_policy ||
+    (product.shipping_required &&
+      (!product.ships_from_city ||
+        !product.ships_from_region ||
+        !product.fulfillment_notes));
+
+  if (missingReviewDetails) {
+    console.error("Merch checkout blocked by missing fulfillment details.", {
+      productId: product.id,
+      sellerId: product.seller_id,
+    });
+    return redirectWithMessage(
+      returnTo,
+      "Checkout is temporarily unavailable for this product.",
+    );
+  }
 
   if (!product.is_official && !isVerifiedProfessional(product.profiles)) {
     return redirectWithMessage(

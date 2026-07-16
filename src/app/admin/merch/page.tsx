@@ -41,6 +41,9 @@ type MerchProduct = {
   inventoryReserved: number;
   isOfficial: boolean;
   moderationStatus: ModerationStatus;
+  shippingRequired: boolean;
+  shipsFromCity: string | null;
+  shipsFromRegion: string | null;
   sellerAccountType: string | null;
   sellerLicenseVerifiedAt: string | null;
   sellerPayoutDisabledReason: string | null;
@@ -371,6 +374,12 @@ function ProductCard({
         : "Payout not started";
   const canActivateCheckout =
     product.isOfficial || product.sellerPayoutStatus === "ready";
+  const hasReviewDetails =
+    Boolean(product.returnPolicy) &&
+    (!product.shippingRequired ||
+      (Boolean(product.shipsFromCity) &&
+        Boolean(product.shipsFromRegion) &&
+        Boolean(product.fulfillmentNotes)));
 
   return (
     <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
@@ -469,6 +478,12 @@ function ProductCard({
           for review, but checkout stays closed until payouts are ready.
         </p>
       ) : null}
+      {!hasReviewDetails ? (
+        <p className="mt-3 rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))] p-2 text-xs font-semibold text-[color-mix(in_srgb,var(--gold)_82%,var(--foreground))]">
+          Activation waits for ship-from, fulfillment, and return/refund
+          details so buyer support has enough context.
+        </p>
+      ) : null}
       {product.fulfillmentNotes || product.returnPolicy ? (
         <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted)] sm:grid-cols-2">
           {product.fulfillmentNotes ? (
@@ -506,7 +521,8 @@ function ProductCard({
             ["rejected", "Reject"],
             ["archived", "Archive"],
           ].map(([value, label]) => {
-            const activationBlocked = value === "active" && !canActivateCheckout;
+            const activationBlocked =
+              value === "active" && (!canActivateCheckout || !hasReviewDetails);
 
             return (
             <button
@@ -522,7 +538,9 @@ function ProductCard({
               name="status"
               title={
                 activationBlocked
-                  ? "Seller payout setup is required before checkout can be activated."
+                  ? !canActivateCheckout
+                    ? "Seller payout setup is required before checkout can be activated."
+                    : "Ship-from, fulfillment, and return/refund details are required before checkout can be activated."
                   : undefined
               }
               value={value}
@@ -834,7 +852,7 @@ export default async function AdminMerchPage({
   let productQuery = supabase
     .from("merch_products")
     .select(
-      "id, seller_id, title, category, status, moderation_status, price_cents, currency, inventory_quantity, inventory_reserved, fulfillment_notes, return_policy, is_official, created_at, profiles:profiles!merch_products_seller_id_fkey(account_type, display_name, license_verified_at, username)",
+      "id, seller_id, title, category, status, moderation_status, price_cents, currency, inventory_quantity, inventory_reserved, fulfillment_notes, return_policy, shipping_required, ships_from_city, ships_from_region, is_official, created_at, profiles:profiles!merch_products_seller_id_fkey(account_type, display_name, license_verified_at, username)",
       { count: "exact" },
     );
 
@@ -882,6 +900,9 @@ export default async function AdminMerchPage({
         } | null;
         return_policy: string | null;
         seller_id: string;
+        shipping_required: boolean;
+        ships_from_city: string | null;
+        ships_from_region: string | null;
         status: ProductStatus;
         title: string;
       }[]
@@ -922,6 +943,9 @@ export default async function AdminMerchPage({
     moderationStatus: product.moderation_status,
     priceCents: product.price_cents,
     returnPolicy: product.return_policy,
+    shippingRequired: product.shipping_required,
+    shipsFromCity: product.ships_from_city,
+    shipsFromRegion: product.ships_from_region,
     sellerAccountType: product.profiles?.account_type ?? null,
     sellerLicenseVerifiedAt: product.profiles?.license_verified_at ?? null,
     sellerName: product.profiles?.display_name ?? "Seller",
