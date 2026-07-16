@@ -306,6 +306,7 @@
 - Public route smoke on July 16, 2026 passed after Merch product detail checkout cards surfaced a direct Merch Help link for buyer self-service before checkout. Live deploy version `71fc2e69-5333-492d-9888-ada81df9f78a` passed public route smoke after one transient propagation retry.
 - Headless mobile browser QA on July 16, 2026 at 390px passed after the Merch detail Help link deploy, including auth, support/help/legal, search/profile, missing-detail fallback, checkout-success, public sample detail, and live Merch detail routes.
 - Headless mobile browser QA coverage now includes the Merch storefront and Merch Help guide directly, guarding the new buyer/seller self-service links on narrow screens.
+- Production build, DM guard, docs guard, and theme guard passed on July 16, 2026 after DM compose gained clearer selected-profile and exact-username cues plus member-facing booking calendar/app-alert copy polish.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
