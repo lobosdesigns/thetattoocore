@@ -28,6 +28,12 @@ const checks = [
       messageActions.includes('const MESSAGE_MEDIA_BUCKET = "message-media"') &&
       messageActions.includes("metadata.mediaType !== \"image\"") &&
       messageActions.includes("DM attachments support images right now.") &&
+      messageActions.includes('console.error("DM photo upload failed.", uploadError)') &&
+      messageActions.includes('"Message sent, but the photo could not upload."') &&
+      messageActions.includes('console.error("DM photo attach failed.", attachmentError)') &&
+      messageActions.includes('"Message sent, but the photo could not attach."') &&
+      !messageActions.includes('uploadError.message || "Message sent, but photo upload failed."') &&
+      !messageActions.includes('attachmentError.message || "Message sent, but photo could not attach."') &&
       messageActions.includes('.from("message_attachments")') &&
       messageActions.includes('media_type: "image"') &&
       messagePage.includes(".createSignedUrl(attachment.storage_path, 3600)") &&
@@ -62,7 +68,28 @@ const checks = [
       messageThread.includes("deleteUnreadMessage") &&
       messageActions.includes("That DM has already been read, so it cannot be deleted.") &&
       messageActions.includes("adminClient.storage.from(bucket).remove(paths)") &&
+      messageActions.includes('console.error("Unread DM delete failed.", deleteError)') &&
+      messageActions.includes('"Could not delete that unread DM. Please try again."') &&
+      !messageActions.includes('deleteError.message || "Could not delete that unread DM."') &&
       messageActions.includes(".delete()"),
+  },
+  {
+    label: "DM create and send actions hide raw database errors",
+    ok:
+      messageActions.includes('console.error("DM conversation create failed.", conversationError)') &&
+      messageActions.includes('"Could not start conversation. Please try again."') &&
+      messageActions.includes('console.error("DM creator membership create failed.", creatorMemberError)') &&
+      messageActions.includes('console.error("DM target membership create failed.", targetMemberError)') &&
+      messageActions.includes('console.error("DM initial message create failed.", messageError)') &&
+      messageActions.includes('console.error("DM message create failed.", error)') &&
+      messageActions.includes('"Could not send message. Please try again."') &&
+      messageActions.includes('console.error("DM delete lookup failed.", messageError)') &&
+      !messageActions.includes('conversationError?.message || "Could not start conversation."') &&
+      !messageActions.includes("creatorMemberError.message") &&
+      !messageActions.includes("targetMemberError.message") &&
+      !messageActions.includes('messageError?.message || "Could not send message."') &&
+      !messageActions.includes('error?.message || "Could not send message."') &&
+      !messageActions.includes('messageError?.message || "That message was not found."'),
   },
   {
     label: "DM inbox stays paginated and unavailable thread links recover",

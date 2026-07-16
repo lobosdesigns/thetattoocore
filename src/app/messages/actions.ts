@@ -154,9 +154,10 @@ async function attachMessageMedia({
     });
 
   if (uploadError) {
+    console.error("DM photo upload failed.", uploadError);
     redirect(
       messagesPath(
-        uploadError.message || "Message sent, but photo upload failed.",
+        "Message sent, but the photo could not upload.",
         conversationId,
       ),
     );
@@ -179,9 +180,10 @@ async function attachMessageMedia({
 
   if (attachmentError) {
     await supabase.storage.from(MESSAGE_MEDIA_BUCKET).remove([storagePath]);
+    console.error("DM photo attach failed.", attachmentError);
     redirect(
       messagesPath(
-        attachmentError.message || "Message sent, but photo could not attach.",
+        "Message sent, but the photo could not attach.",
         conversationId,
       ),
     );
@@ -301,9 +303,10 @@ export async function startConversation(formData: FormData) {
       .single<{ id: string }>();
 
     if (conversationError || !conversation) {
+      console.error("DM conversation create failed.", conversationError);
       redirect(
         messagesPath(
-          conversationError?.message || "Could not start conversation.",
+          "Could not start conversation. Please try again.",
         ),
       );
     }
@@ -315,7 +318,13 @@ export async function startConversation(formData: FormData) {
       .insert({ conversation_id: conversationId, user_id: userId });
 
     if (creatorMemberError) {
-      redirect(messagesPath(creatorMemberError.message, conversationId));
+      console.error("DM creator membership create failed.", creatorMemberError);
+      redirect(
+        messagesPath(
+          "Could not start conversation. Please try again.",
+          conversationId,
+        ),
+      );
     }
 
     const { error: targetMemberError } = await supabase
@@ -323,7 +332,13 @@ export async function startConversation(formData: FormData) {
       .insert({ conversation_id: conversationId, user_id: targetProfile.id });
 
     if (targetMemberError) {
-      redirect(messagesPath(targetMemberError.message, conversationId));
+      console.error("DM target membership create failed.", targetMemberError);
+      redirect(
+        messagesPath(
+          "Could not start conversation. Please try again.",
+          conversationId,
+        ),
+      );
     }
   }
 
@@ -338,8 +353,9 @@ export async function startConversation(formData: FormData) {
     .single<{ id: string }>();
 
   if (messageError || !message) {
+    console.error("DM initial message create failed.", messageError);
     redirect(
-      messagesPath(messageError?.message || "Could not send message.", conversationId),
+      messagesPath("Could not send message. Please try again.", conversationId),
     );
   }
 
@@ -433,7 +449,8 @@ export async function sendMessage(formData: FormData) {
     .single<{ id: string }>();
 
   if (error || !message) {
-    redirect(messagesPath(error?.message || "Could not send message.", conversationId));
+    console.error("DM message create failed.", error);
+    redirect(messagesPath("Could not send message. Please try again.", conversationId));
   }
 
   await attachMessageMedia({
@@ -516,9 +533,10 @@ export async function deleteUnreadMessage(formData: FormData) {
     }>();
 
   if (messageError || !message) {
+    console.error("DM delete lookup failed.", messageError);
     redirect(
       messagesPath(
-        messageError?.message || "That message was not found.",
+        "That message was not found.",
         conversationId,
       ),
     );
@@ -588,9 +606,10 @@ export async function deleteUnreadMessage(formData: FormData) {
     .eq("sender_id", userId);
 
   if (deleteError) {
+    console.error("Unread DM delete failed.", deleteError);
     redirect(
       messagesPath(
-        deleteError.message || "Could not delete that unread DM.",
+        "Could not delete that unread DM. Please try again.",
         conversationId,
       ),
     );
