@@ -505,6 +505,10 @@ checks.push({
     adminActions.includes("charges_enabled") &&
     adminActions.includes("payouts_enabled") &&
     adminActions.includes("details_submitted") &&
+    adminMerchPage.includes("const canActivateCheckout") &&
+    adminMerchPage.includes("Activation waits for seller payout setup") &&
+    adminMerchPage.includes("disabled={activationBlocked}") &&
+    adminMerchPage.includes("Seller payout setup is required before checkout can be activated.") &&
     productPlan.includes("admin activation guard requiring seller payout readiness"),
 });
 checks.push({

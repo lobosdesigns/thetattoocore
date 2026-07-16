@@ -369,6 +369,8 @@ function ProductCard({
       : product.sellerPayoutStatus === "incomplete"
         ? "Payout setup incomplete"
         : "Payout not started";
+  const canActivateCheckout =
+    product.isOfficial || product.sellerPayoutStatus === "ready";
 
   return (
     <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
@@ -461,6 +463,12 @@ function ProductCard({
           Payout note: {product.sellerPayoutDisabledReason}
         </p>
       ) : null}
+      {!canActivateCheckout ? (
+        <p className="mt-3 rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))] p-2 text-xs font-semibold text-[color-mix(in_srgb,var(--gold)_82%,var(--foreground))]">
+          Activation waits for seller payout setup. Approve can still be used
+          for review, but checkout stays closed until payouts are ready.
+        </p>
+      ) : null}
       {product.fulfillmentNotes || product.returnPolicy ? (
         <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted)] sm:grid-cols-2">
           {product.fulfillmentNotes ? (
@@ -497,20 +505,32 @@ function ProductCard({
             ["paused", "Pause"],
             ["rejected", "Reject"],
             ["archived", "Archive"],
-          ].map(([value, label]) => (
+          ].map(([value, label]) => {
+            const activationBlocked = value === "active" && !canActivateCheckout;
+
+            return (
             <button
               className={
-                value === "active"
-                  ? "h-10 rounded-md bg-[var(--foreground)] px-2 text-sm font-semibold text-[var(--background)]"
+                activationBlocked
+                  ? "h-10 cursor-not-allowed rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] px-2 text-sm font-semibold text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
+                  : value === "active"
+                    ? "h-10 rounded-md bg-[var(--foreground)] px-2 text-sm font-semibold text-[var(--background)]"
                   : "h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-sm font-semibold"
               }
+              disabled={activationBlocked}
               key={value}
               name="status"
+              title={
+                activationBlocked
+                  ? "Seller payout setup is required before checkout can be activated."
+                  : undefined
+              }
               value={value}
             >
               {label}
             </button>
-          ))}
+            );
+          })}
         </div>
       </form>
     </article>
