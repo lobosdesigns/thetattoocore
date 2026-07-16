@@ -403,6 +403,15 @@ checks.push({
     productPlan.includes("Admin Merch payout-readiness chips"),
 });
 checks.push({
+  label: "admin Merch queues include searchable product and order review",
+  ok:
+    adminMerchPage.includes("Search Merch admin") &&
+    adminMerchPage.includes("Product title, category, customer email, or shipping name") &&
+    adminMerchPage.includes("title.ilike") &&
+    adminMerchPage.includes("customer_email.ilike") &&
+    productPlan.includes("product/order filters plus title/category/customer search"),
+});
+checks.push({
   label: "admin Merch and payment queues use friendly status labels",
   ok:
     adminMerchPage.includes("commerceStatusLabel(order.status)") &&

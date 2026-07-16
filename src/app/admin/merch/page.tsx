@@ -153,16 +153,28 @@ function productStatusFilter(value: string | string[] | undefined) {
   return productStatusFilters.find((status) => status === rawValue) ?? null;
 }
 
+function searchTerm(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+  const normalized = (rawValue ?? "")
+    .trim()
+    .replace(/[^a-zA-Z0-9 @._-]/g, " ")
+    .replace(/\s+/g, " ");
+
+  return normalized.slice(0, 80);
+}
+
 function pageHref({
   orderPage = 1,
   orderStatus,
   page = 1,
   productStatus,
+  search,
 }: {
   orderPage?: number;
   orderStatus?: string | null;
   page?: number;
   productStatus?: string | null;
+  search?: string | null;
 }) {
   const params = new URLSearchParams();
 
@@ -170,6 +182,7 @@ function pageHref({
   if (orderPage > 1) params.set("order_page", String(orderPage));
   if (orderStatus) params.set("order_status", orderStatus);
   if (productStatus) params.set("product_status", productStatus);
+  if (search) params.set("q", search);
 
   const query = params.toString();
 
@@ -633,6 +646,7 @@ export default async function AdminMerchPage({
     order_status?: string | string[];
     page?: string | string[];
     product_status?: string | string[];
+    q?: string | string[];
   }>;
 }) {
   const params = await searchParams;
@@ -640,6 +654,7 @@ export default async function AdminMerchPage({
   const currentOrderPage = pageNumber(params.order_page);
   const activeOrderStatus = orderStatusFilter(params.order_status);
   const activeProductStatus = productStatusFilter(params.product_status);
+  const activeSearch = searchTerm(params.q);
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
   const orderFrom = (currentOrderPage - 1) * pageSize;
@@ -649,6 +664,7 @@ export default async function AdminMerchPage({
     orderStatus: activeOrderStatus,
     page: currentPage,
     productStatus: activeProductStatus,
+    search: activeSearch,
   });
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -677,6 +693,11 @@ export default async function AdminMerchPage({
 
   if (activeProductStatus) {
     productQuery = productQuery.eq("status", activeProductStatus);
+  }
+  if (activeSearch) {
+    productQuery = productQuery.or(
+      `title.ilike.%${activeSearch}%,category.ilike.%${activeSearch}%`,
+    );
   }
 
   const { count, data: productRows, error: productError } = await productQuery
@@ -778,6 +799,11 @@ export default async function AdminMerchPage({
   if (activeOrderStatus) {
     orderQuery = orderQuery.eq("status", activeOrderStatus);
   }
+  if (activeSearch) {
+    orderQuery = orderQuery.or(
+      `customer_email.ilike.%${activeSearch}%,shipping_name.ilike.%${activeSearch}%`,
+    );
+  }
 
   const { count: orderCount, data: orderRows } = await orderQuery
     .order("created_at", { ascending: false })
@@ -849,6 +875,7 @@ export default async function AdminMerchPage({
     orderStatus: activeOrderStatus,
     page: currentPage,
     productStatus: activeProductStatus,
+    search: activeSearch,
   });
 
   return (
@@ -928,13 +955,19 @@ export default async function AdminMerchPage({
           </p>
         ) : null}
 
-        {activeProductStatus || activeOrderStatus ? (
+        {activeProductStatus || activeOrderStatus || activeSearch ? (
           <div className="mb-4 flex flex-col gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
             <p className="font-semibold">
               Filtering Merch
+              {activeSearch ? (
+                <>
+                  {" "}by{" "}
+                  <span>&ldquo;{activeSearch}&rdquo;</span>
+                </>
+              ) : null}
               {activeProductStatus ? (
                 <>
-                  {" "}products by{" "}
+                  {activeSearch ? " and" : " "} products by{" "}
                   <span className="capitalize">
                     {statusLabel(activeProductStatus)}
                   </span>
@@ -959,6 +992,33 @@ export default async function AdminMerchPage({
           </div>
         ) : null}
 
+        <form
+          action="/admin/merch"
+          className="mb-4 grid gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm sm:grid-cols-[minmax(0,1fr)_auto]"
+        >
+          {activeProductStatus ? (
+            <input name="product_status" type="hidden" value={activeProductStatus} />
+          ) : null}
+          {activeOrderStatus ? (
+            <input name="order_status" type="hidden" value={activeOrderStatus} />
+          ) : null}
+          <label className="min-w-0">
+            <span className="mb-1 block text-xs font-bold uppercase text-[var(--muted-strong)]">
+              Search Merch admin
+            </span>
+            <input
+              className="h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted-strong)] focus:border-[var(--foreground)]"
+              defaultValue={activeSearch}
+              maxLength={80}
+              name="q"
+              placeholder="Product title, category, customer email, or shipping name"
+            />
+          </label>
+          <button className="h-11 self-end rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
+            Search
+          </button>
+        </form>
+
         <div className="mb-4 grid gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm lg:grid-cols-2">
           <div>
             <p className="mb-2 text-xs font-bold uppercase text-[var(--muted-strong)]">
@@ -976,6 +1036,7 @@ export default async function AdminMerchPage({
                     orderStatus: activeOrderStatus,
                     page: 1,
                     productStatus: status,
+                    search: activeSearch,
                   })}
                   key={status}
                 >
@@ -1000,6 +1061,7 @@ export default async function AdminMerchPage({
                     orderStatus: status,
                     page: currentPage,
                     productStatus: activeProductStatus,
+                    search: activeSearch,
                   })}
                   key={status}
                 >
@@ -1069,6 +1131,7 @@ export default async function AdminMerchPage({
                 orderStatus: activeOrderStatus,
                 page: nextPage,
                 productStatus: activeProductStatus,
+                search: activeSearch,
               })
             }
             totalPages={totalPages}
@@ -1100,6 +1163,7 @@ export default async function AdminMerchPage({
                   orderStatus: activeOrderStatus,
                   page: nextPage,
                   productStatus: activeProductStatus,
+                  search: activeSearch,
                 })
               }
               totalPages={totalPages}
@@ -1132,6 +1196,7 @@ export default async function AdminMerchPage({
                 href={pageHref({
                   page: currentPage,
                   productStatus: activeProductStatus,
+                  search: activeSearch,
                 })}
               >
                 Clear filter
@@ -1147,6 +1212,7 @@ export default async function AdminMerchPage({
                 orderStatus: activeOrderStatus,
                 page: currentPage,
                 productStatus: activeProductStatus,
+                search: activeSearch,
               })
             }
             totalPages={totalOrderPages}
@@ -1176,6 +1242,7 @@ export default async function AdminMerchPage({
                   orderStatus: activeOrderStatus,
                   page: currentPage,
                   productStatus: activeProductStatus,
+                  search: activeSearch,
                 })
               }
               totalPages={totalOrderPages}

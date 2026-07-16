@@ -152,6 +152,7 @@ const checks = [
   { path: "/admin/merch", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/merch?order_status=pending_checkout", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/merch?product_status=pending_review", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  { path: "/admin/merch?q=shirt", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?event_type=refund.failed", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?event_type=charge.dispute.created", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
