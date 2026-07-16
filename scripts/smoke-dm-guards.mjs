@@ -122,6 +122,10 @@ const checks = [
       messagePage.includes("connectedProfilesForPicker") &&
       messageStartForm.includes("Connected people and active DMs") &&
       messageStartForm.includes("Search username, name, city, or account type") &&
+      messageStartForm.includes("function matchScore") &&
+      messageStartForm.includes("if (username === term) score += 100") &&
+      messageStartForm.includes("else if (username.startsWith(term)) score += 70") &&
+      messageStartForm.includes("const scoreDiff = matchScore(b, terms) - matchScore(a, terms)") &&
       messageStartForm.includes("function canSendToTarget") &&
       messageStartForm.includes("disabled={!canSend}") &&
       messageStartForm.includes('name="username"') &&

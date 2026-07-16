@@ -47,6 +47,38 @@ function canSendToTarget(value: string) {
   return /^[a-z0-9_]{3,30}$/.test(value);
 }
 
+function matchScore(profile: ConnectedProfile, terms: string[]) {
+  if (!terms.length) return 0;
+
+  let score = 0;
+
+  for (const term of terms) {
+    const username = profile.username.toLowerCase();
+    const displayName = profile.display_name.toLowerCase();
+    const accountType = profile.account_type.toLowerCase();
+    const city = profile.city?.toLowerCase() ?? "";
+    const region = profile.region?.toLowerCase() ?? "";
+
+    if (username === term) score += 100;
+    else if (username.startsWith(term)) score += 70;
+    else if (username.includes(term)) score += 45;
+
+    if (displayName === term) score += 80;
+    else if (displayName.startsWith(term)) score += 52;
+    else if (displayName.includes(term)) score += 32;
+
+    if (city.startsWith(term)) score += 22;
+    else if (city.includes(term)) score += 12;
+
+    if (region.startsWith(term)) score += 18;
+    else if (region.includes(term)) score += 10;
+
+    if (accountType.includes(term)) score += 10;
+  }
+
+  return score;
+}
+
 export function MessageStartForm({
   connectedProfiles,
   imageAccept,
@@ -78,7 +110,15 @@ export function MessageStartForm({
       );
     });
 
-    return matches.slice(0, 8);
+    return matches
+      .sort((a, b) => {
+        const scoreDiff = matchScore(b, terms) - matchScore(a, terms);
+
+        if (scoreDiff !== 0) return scoreDiff;
+
+        return a.display_name.localeCompare(b.display_name);
+      })
+      .slice(0, 8);
   }, [connectedProfiles, query]);
 
   function updateQuery(value: string) {
