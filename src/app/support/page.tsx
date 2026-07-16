@@ -37,7 +37,7 @@ const sections = [
   },
   {
     body:
-      "The Help Center is starting with FAQ and screenshot tutorial topics for bookings, ads, Merch setup, verification, Stuff, Gigs, Stories, DMs, and account settings. Email support with the feature name and where you got stuck if the guide you need is not live yet.",
+      "The Help Center has FAQ and tutorial topics for getting started, bookings, ads, Merch setup, verification, Stuff, Gigs, Stories, DMs, search, saved items, and account settings. Email support with the feature name and where you got stuck when a private account issue needs review.",
     title: "How-To Library",
   },
 ] as const;
@@ -66,6 +66,11 @@ const quickActions = [
 ] as const;
 
 const guideLinks = [
+  {
+    body: "First-run setup, account types, privacy basics, main sections, verification, and Support.",
+    href: "/help/getting-started",
+    label: "Getting started",
+  },
   {
     body: "Appointment types, slots, deposits, fees, and calendar files.",
     href: "/help/booking-appointments",
