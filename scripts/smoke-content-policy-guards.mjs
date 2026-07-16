@@ -105,6 +105,19 @@ const checks = [
       gigRoute.includes("sensitive_reason: safeSensitiveReason"),
   },
   {
+    label: "gigs API create path hides raw publish and upload errors",
+    ok:
+      gigRoute.includes('console.error("Gig publish failed.", error)') &&
+      gigRoute.includes('"Could not publish gig. Please try again."') &&
+      gigRoute.includes('console.error("Gig image upload failed.", uploadError)') &&
+      gigRoute.includes('"Gig was created, but the image could not upload."') &&
+      gigRoute.includes('console.error("Gig image attach failed.", mediaError)') &&
+      gigRoute.includes('"Gig was created, but the image could not attach."') &&
+      !gigRoute.includes('error?.message || "Could not publish gig."') &&
+      !gigRoute.includes('uploadError.message || "Gig created, but image upload failed."') &&
+      !gigRoute.includes('mediaError.message || "Gig created, but image could not attach."'),
+  },
+  {
     label: "member upload forms do not expose sensitive or nudity bypass fields",
     ok: forbiddenMemberUploadSnippets.every(
       (snippet) => !memberUploadSource.includes(snippet),

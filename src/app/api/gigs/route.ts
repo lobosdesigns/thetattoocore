@@ -124,7 +124,8 @@ export async function POST(request: Request) {
     .single<{ id: string }>();
 
   if (error || !gig) {
-    return redirectHome(request, error?.message || "Could not publish gig.");
+    console.error("Gig publish failed.", error);
+    return redirectHome(request, "Could not publish gig. Please try again.");
   }
 
   if (media) {
@@ -138,7 +139,8 @@ export async function POST(request: Request) {
       });
 
     if (uploadError) {
-      return redirectHome(request, uploadError.message || "Gig created, but image upload failed.");
+      console.error("Gig image upload failed.", uploadError);
+      return redirectHome(request, "Gig was created, but the image could not upload.");
     }
 
     const { error: mediaError } = await supabase.from("gig_media").insert({
@@ -157,7 +159,8 @@ export async function POST(request: Request) {
     });
 
     if (mediaError) {
-      return redirectHome(request, mediaError.message || "Gig created, but image could not attach.");
+      console.error("Gig image attach failed.", mediaError);
+      return redirectHome(request, "Gig was created, but the image could not attach.");
     }
   }
 
