@@ -221,6 +221,21 @@ export const helpArticles = [
           "Sellers should finish account approval, product review, payout setup, fulfillment notes, and return/refund expectations before treating Merch as ready for public orders.",
         question: "What should sellers finish before launch orders?",
       },
+      {
+        answer:
+          "Mark an order fulfilled only after the item is shipped, ready for pickup, or handed off. Add carrier, tracking number, or a clear tracking link when you have one so the buyer and support team can understand the handoff.",
+        question: "When should I mark a Merch order fulfilled?",
+      },
+      {
+        answer:
+          "Buyer shipping details are private order information. They appear only in seller/admin fulfillment areas and should never be copied into public posts, screenshots, comments, or profile details.",
+        question: "Where can I use buyer shipping details?",
+      },
+      {
+        answer:
+          "Refund requests go to review during launch. Support checks the order, seller fulfillment, buyer reason, and payment status before any money movement is approved.",
+        question: "How do Merch refunds work during launch?",
+      },
     ],
     lastReviewed: "July 15, 2026",
     relatedSlugs: ["verification-documents", "ads-and-credits"],
@@ -231,7 +246,9 @@ export const helpArticles = [
       "Submit the product for review before it appears publicly.",
       "Finish seller payout setup from the hosted account flow before real order payouts are expected.",
       "Watch orders, fulfillment status, refund requests, and support questions from Account.",
-      "Use Admin or Support for order questions that need payment-reference lookup or refund review.",
+      "For each paid order, use the seller order card to review the private shipping address, then mark the item fulfilled only after shipping, pickup, or handoff is ready.",
+      "Add tracking carrier, tracking number, or a tracking link when available. If there is no tracking, use a clear fulfillment note before marking the order complete.",
+      "Use Admin or Support for order questions that need payment-reference lookup, refund review, seller non-delivery review, or dispute review.",
     ],
     title: "How to set up Merch products and handle orders",
   },
