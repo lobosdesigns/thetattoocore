@@ -29,11 +29,11 @@ Use this before Google Play, App Store, PWA listing, press, or public launch scr
 - Use staged tattoo/body-art placeholders that are non-nude, non-sexual, and rights-cleared.
 - Use dummy usernames, dummy business names, dummy order IDs, and dummy messages.
 - Use neutral captions and comments that avoid medical claims, hate, illegal goods, dangerous instructions, or professional equipment sales to unverified users.
-- Keep launch limitations worded plainly, such as "limited during launch" or "more coming soon," without naming internal services or future infrastructure.
+- Keep current limitations worded plainly, such as "limited right now" or "not available on this device yet," without naming internal services or future infrastructure.
 
 ## Final Review
 
 - Check light and dark mode before capturing.
 - Check the mobile viewport first; screenshots should not show horizontal overflow, clipped cards, unreadable controls, or sticky install prompts covering content.
 - Run the real-device QA checklist before final screenshots.
-- Compare final screenshot text against the Store Listing Draft, Terms, Privacy, and Support pages so launch policy, 18+ positioning, no-visible-nudity rules, no-AI stance, and support contact are consistent.
+- Compare final screenshot text against the Store Listing Draft, Terms, Privacy, and Support pages so 18+ positioning, no-visible-nudity rules, no-AI stance, and support contact are consistent.

@@ -46,7 +46,7 @@ const checks = [
       source.appleKeywords.length <= 100,
   },
   {
-    label: "store descriptions include launch safety position",
+    label: "store descriptions include current safety position",
     ok:
       source.googleDescription.includes("18+") &&
       source.googleDescription.includes("visible nudity is not allowed") &&
