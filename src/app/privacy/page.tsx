@@ -37,7 +37,7 @@ const sections = [
   },
   {
     body:
-      "Merch, ads, and booking deposits can create checkout, order, receipt, fulfillment, refund, dispute, and support records. Checkout is limited during launch, and payment questions are handled through private account or support review. TheTattooCore uses hosted checkout pages where available and does not collect raw payment or payout credentials in member forms.",
+      "Merch, ads, and booking deposits can create checkout, order, receipt, fulfillment, refund, dispute, and support records. Checkout is limited right now, and payment questions are handled through private account or support review. TheTattooCore uses hosted checkout pages where available and does not collect raw payment or payout credentials in member forms.",
     title: "Commerce And Payments",
   },
   {
@@ -62,7 +62,7 @@ const sections = [
   },
   {
     body:
-      "Members can update profile information from account settings, make profiles private, and request account deletion from Account > Data. During launch, deletion requests are reviewed manually so safety reports, marketplace issues, fraud concerns, disputes, and legal obligations can be handled correctly. The launch target is to review deletion requests within 30 days unless a safety, dispute, or legal hold requires more time.",
+      "Members can update profile information from account settings, make profiles private, and request account deletion from Account > Data. Deletion requests are reviewed manually so safety reports, marketplace issues, fraud concerns, disputes, and legal obligations can be handled correctly. The review target is within 30 days unless a safety, dispute, or legal hold requires more time.",
     title: "Controls",
   },
   {

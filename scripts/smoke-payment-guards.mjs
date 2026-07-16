@@ -472,7 +472,7 @@ checks.push({
     adminPaymentsPage.includes("Choose a documented payout policy") &&
     adminPaymentsPage.includes("booking refund, cancellation, appointment-confirmation") &&
     adminPaymentsPage.includes("do not collect bank or card payout data in TTC forms") &&
-    adminMerchPage.includes("Checkout and refund status are limited during launch") &&
+    adminMerchPage.includes("Checkout and refund status are limited right now") &&
     adminMerchPage.includes("finish tax, shipping, fulfillment, payouts, and payment safety rules") &&
     accountPage.includes("merchSellerReadinessItems") &&
     accountPage.includes("Seller payout path") &&
@@ -481,10 +481,10 @@ checks.push({
     accountPage.includes("raw bank, routing, card, or debit payout numbers") &&
     accountPage.includes('action="/api/stripe/connect/onboarding"') &&
     accountPage.includes("Fulfillment gate") &&
-    accountPage.includes("Refunds, disputes, and unusual order issues stay in admin review") &&
-    accountPage.includes("stay in private support review during launch") &&
-    privacyPage.includes("Checkout is limited during launch") &&
-    supportPage.includes("Merch checkout is limited during launch"),
+    accountPage.includes("Refunds, disputes, and unusual order issues stay in private admin review") &&
+    accountPage.includes("stay in private support review") &&
+    privacyPage.includes("Checkout is limited right now") &&
+    supportPage.includes("Merch checkout is limited right now"),
 });
 checks.push({
   label: "Stripe Connect seller onboarding stays hosted and server-side",

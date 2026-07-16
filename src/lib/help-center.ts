@@ -80,8 +80,8 @@ export const helpArticles = [
       },
       {
         answer:
-          "Visible nudity is not allowed during launch. Keep tattoo, piercing, healing, and body-art documentation safe for review by cropping, covering, or choosing a different photo.",
-        question: "What content rule matters most at launch?",
+          "Visible nudity is not allowed. Keep tattoo, piercing, healing, and body-art documentation safe for review by cropping, covering, or choosing a different photo.",
+        question: "What content rule matters most?",
       },
     ],
     lastReviewed: "July 16, 2026",
@@ -235,7 +235,7 @@ export const helpArticles = [
       },
       {
         answer:
-          "Refund requests for paid deposits stay in review during launch. Support checks the appointment status, cancellation reason, artist/shop policy, and payment state before any refund decision.",
+          "Refund requests for paid deposits stay in review. Support checks the appointment status, cancellation reason, artist/shop policy, and payment state before any refund decision.",
         question: "How do deposit refunds work?",
       },
       {
@@ -306,7 +306,7 @@ export const helpArticles = [
   {
     category: "Merch And Stuff",
     description:
-      "Set up products, prepare order support, and understand review before public purchases expand.",
+      "Set up products, prepare order support, and understand review before taking orders.",
     faqs: [
       {
         answer:
@@ -320,8 +320,8 @@ export const helpArticles = [
       },
       {
         answer:
-          "Sellers should finish account approval, product review, payout setup, fulfillment notes, and return/refund expectations before treating Merch as ready for public orders.",
-        question: "What should sellers finish before launch orders?",
+          "Sellers should finish account approval, product review, payout setup, fulfillment notes, and return/refund expectations before treating Merch as ready for orders.",
+        question: "What should sellers finish before taking orders?",
       },
       {
         answer:
@@ -335,8 +335,8 @@ export const helpArticles = [
       },
       {
         answer:
-          "Refund requests go to review during launch. Support checks the order, seller fulfillment, buyer reason, and payment status before any money movement is approved. Sellers should write clear return/refund notes before submitting products so buyers know what to expect.",
-        question: "How do Merch refunds work during launch?",
+          "Refund requests go to review. Support checks the order, seller fulfillment, buyer reason, and payment status before any money movement is approved. Sellers should write clear return/refund notes before submitting products so buyers know what to expect.",
+        question: "How do Merch refunds work?",
       },
       {
         answer:
@@ -352,7 +352,7 @@ export const helpArticles = [
       "Add a title, description, price, clear product media, and a return/refund note buyers can understand.",
       "If the product ships, add the ship-from city and state/region plus fulfillment notes with timing, pickup, made-to-order, or handoff details.",
       "Submit the product for review before it appears publicly.",
-      "Finish seller payout setup from the hosted account flow before real order payouts are expected.",
+      "Finish seller payout setup from the hosted account flow before order payouts are expected.",
       "Watch orders, fulfillment status, refund requests, and support questions from Account.",
       "For each paid order, use the seller order card to review the private shipping address, then mark the item fulfilled only after shipping, pickup, or handoff is ready.",
       "Add tracking carrier, tracking number, or a tracking link when available. If there is no tracking, use a clear fulfillment note before marking the order complete.",
@@ -372,7 +372,7 @@ export const helpArticles = [
       },
       {
         answer:
-          "Visible nudity is not allowed during launch. Crop or cover private areas before posting, even when the purpose is tattoo or body-art documentation.",
+          "Visible nudity is not allowed. Crop or cover private areas before posting, even when the purpose is tattoo or body-art documentation.",
         question: "Can I post tattoo placement photos with nudity?",
       },
     ],

@@ -1211,7 +1211,7 @@ export default async function AdminPaymentsPage({
                     Production payment gates
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                    Checkout is limited during launch. Keep real commerce
+                    Checkout is limited right now. Keep real commerce
                     gated until these items are handled.
                   </p>
                   <ul className="mt-3 space-y-2 text-sm leading-6 text-[var(--muted)]">

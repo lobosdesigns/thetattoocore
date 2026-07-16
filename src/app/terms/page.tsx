@@ -17,12 +17,12 @@ const sections = [
   },
   {
     body:
-      "For launch and mobile app readiness, visible nudity is not allowed, even when the intent is tattoo, piercing, scar, healing, placement, or body-art documentation. Members should crop or cover private areas before posting. Pornography, sexual solicitation, explicit sexual content, and sexualized content involving minors are not allowed.",
+      "Visible nudity is not allowed, even when the intent is tattoo, piercing, scar, healing, placement, or body-art documentation. Members should crop or cover private areas before posting. Pornography, sexual solicitation, explicit sexual content, and sexualized content involving minors are not allowed.",
     title: "Body Art Content",
   },
   {
     body:
-      "For launch, member upload forms do not include a sensitive-content bypass because visible nudity is not allowed. Members should crop or cover private areas before posting fresh work, healing, scar cover, piercing, body modification, or medical-looking context. Admins may still hide, restrict, or mark edge-case content for login and 18+ review. Public previews should not expose private messages, full comment threads, private account data, or restricted media.",
+      "Member upload forms do not include a sensitive-content bypass because visible nudity is not allowed. Members should crop or cover private areas before posting fresh work, healing, scar cover, piercing, body modification, or medical-looking context. Admins may still hide, restrict, or mark edge-case content for login and 18+ review. Public previews should not expose private messages, full comment threads, private account data, or restricted media.",
     title: "Public And Sensitive Visibility",
   },
   {
@@ -32,7 +32,7 @@ const sections = [
   },
   {
     body:
-      "Stuff listings are for verified artists, studios, and approved vendors. Fans can browse listings, but buy, sell, trade, and seller-contact actions require verified professional or vendor status. Tattoo machines, needles, pigments, tubes, and other professional shop equipment must not be offered to unverified or unqualified buyers where the platform can reasonably enforce it. Merch is a separate fan-facing market for safe artist, studio, vendor, and TheTattooCore brand goods such as shirts, prints, art, and stickers. Merch checkout is limited during launch, sellers still need approval, and Merch must not include professional equipment, regulated services, counterfeit goods, adult sexual products, or unsafe products. Stuff, Merch, and Gig posts must be honest, lawful, and clear about location, pricing or compensation, availability, shipping, and contact details. TheTattooCore is not a party to member-to-member transactions unless a paid platform feature explicitly says otherwise.",
+      "Stuff listings are for verified artists, studios, and approved vendors. Fans can browse listings, but buy, sell, trade, and seller-contact actions require verified professional or vendor status. Tattoo machines, needles, pigments, tubes, and other professional shop equipment must not be offered to unverified or unqualified buyers where the platform can reasonably enforce it. Merch is a separate fan-facing market for safe artist, studio, vendor, and TheTattooCore brand goods such as shirts, prints, art, and stickers. Merch checkout is limited right now, sellers still need approval, and Merch must not include professional equipment, regulated services, counterfeit goods, adult sexual products, or unsafe products. Stuff, Merch, and Gig posts must be honest, lawful, and clear about location, pricing or compensation, availability, shipping, and contact details. TheTattooCore is not a party to member-to-member transactions unless a paid platform feature explicitly says otherwise.",
     title: "Stuff, Merch, And Gigs",
   },
   {

@@ -237,7 +237,7 @@ async function maybeSendAccountDeletionEmail({
       html: [
         `<h1>${siteName} account deletion request received</h1>`,
         `<p>Hi ${escapedDisplayName},</p>`,
-        "<p>We received your account deletion request. During launch, deletion requests are reviewed manually so safety reports, marketplace issues, and legal obligations can be handled correctly.</p>",
+        "<p>We received your account deletion request. Deletion requests are reviewed manually so safety reports, marketplace issues, and legal obligations can be handled correctly.</p>",
         escapedReason ? `<p><strong>Your note:</strong> ${escapedReason}</p>` : "",
         `<p>You can check the request status from <a href="${accountUrl}">Account &gt; Data</a>.</p>`,
         `<p>For urgent help, email <a href="mailto:${supportEmail}">${supportEmail}</a>.</p>`,
@@ -250,7 +250,7 @@ async function maybeSendAccountDeletionEmail({
         "",
         `Hi ${displayName},`,
         "",
-        "We received your account deletion request. During launch, deletion requests are reviewed manually so safety reports, marketplace issues, and legal obligations can be handled correctly.",
+        "We received your account deletion request. Deletion requests are reviewed manually so safety reports, marketplace issues, and legal obligations can be handled correctly.",
         reason ? `Your note: ${reason}` : null,
         "",
         `Check status: ${accountUrl}`,

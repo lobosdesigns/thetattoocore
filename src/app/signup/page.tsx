@@ -10,7 +10,7 @@ const accountSteps = [
 
 const trustItems = [
   ["18+ community", "TheTattooCore is built for adult body-art discussion and media."],
-  ["No visible nudity", "Crop or cover private areas before posting at launch."],
+  ["No visible nudity", "Crop or cover private areas before posting."],
   ["No AI art", "Real artists, studios, vendors, collectors, and enthusiasts."],
   ["No scratchers", "Unsafe or unlicensed tattooing is not welcome."],
 ] as const;

@@ -656,7 +656,7 @@ export default async function MerchProductPage({
               )}
               <p className="mt-3 text-xs leading-5 text-[var(--muted-strong)]">
                 Checkout includes a transparent {platformFeePercentLabel} TTC
-                platform fee during launch. Estimated fee on one item is{" "}
+                platform fee. Estimated fee on one item is{" "}
                 {money(estimatedPlatformFeeCents, product.currency)}, making one
                 item {money(estimatedSingleItemTotalCents, product.currency)}
                 before any shipping, tax, or discount. Orders are confirmed after

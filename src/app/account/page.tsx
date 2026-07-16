@@ -152,7 +152,7 @@ const merchSellerReadinessItems = [
   ],
   [
     "Review trail",
-    "Refunds, disputes, and unusual order issues stay in admin review during launch testing.",
+    "Refunds, disputes, and unusual order issues stay in private admin review.",
   ],
 ] as const;
 
@@ -1059,9 +1059,9 @@ export default async function AccountPage({
             </span>
           </div>
           <p className="text-sm leading-6 text-[var(--muted-strong)]">
-            Booking requests are request-first during launch. Artists and
-            studios accept or decline here; deposit checkout will open
-            only after acceptance and will include the TTC processing fee.
+            Booking requests are request-first. Artists and studios accept or
+            decline here; deposit checkout opens only after acceptance and will
+            include the TTC processing fee.
           </p>
           <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
             <Link
@@ -2324,8 +2324,8 @@ export default async function AccountPage({
             </span>
           </div>
           <p className="text-sm leading-6 text-[var(--muted-strong)]">
-            Merch checkout is limited during launch while seller and order rules
-            are finished. Additional order tools will appear here as they open.
+            Merch checkout is limited right now while seller and order rules are
+            finished. Additional order tools will appear here as they open.
           </p>
           {visibleMerchOrders.length ? (
             <div className="mt-4 grid gap-3">
@@ -2505,7 +2505,7 @@ export default async function AccountPage({
               Sales show paid or pending checkout items that belong to your
               products. Mark paid line items fulfilled only after shipping or
               handoff is complete. Refunds, disputes, and unusual order issues
-              stay in private support review during launch.
+              stay in private support review.
             </p>
             <div className="mt-4 grid gap-3 lg:grid-cols-3">
               {merchSellerReadinessItems.map(([title, body]) => (
@@ -2884,8 +2884,8 @@ export default async function AccountPage({
           </div>
           <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
             You can make your profile private anytime. Account deletion is a
-            manual review request during launch so safety reports, marketplace
-            issues, and legal obligations can be handled correctly.
+            manual review request so safety reports, marketplace issues, and
+            legal obligations can be handled correctly.
           </p>
           {deletionRequests?.length ? (
             <div className="mt-4 grid gap-2">
