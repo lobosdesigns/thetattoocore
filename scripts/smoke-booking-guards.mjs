@@ -204,8 +204,8 @@ const checks = [
       accountPage.includes("see the expected deposit") &&
       accountPage.includes("cancellation_policy") &&
       accountPage.includes('name="calendar_connection_status"') &&
-      accountPage.includes("Google calendar prep") &&
-      accountPage.includes("Apple/iCalendar prep"),
+      accountPage.includes("Google Calendar") &&
+      accountPage.includes("Apple/iCalendar"),
   },
   {
     label: "account page exposes TimeTix-style appointment type controls",
@@ -403,7 +403,7 @@ const checks = [
       !accountPage.includes('calendar_connection_status ?? "manual").replaceAll("_", " ")') &&
       statusLabels.includes("export function calendarConnectionStatusLabel") &&
       statusLabels.includes('if (!status || status === "manual") return "Manual setup"') &&
-      statusLabels.includes('if (status === "apple_ical_planned") return "Apple/iCalendar prep"'),
+      statusLabels.includes('if (status === "apple_ical_planned") return "Apple/iCalendar"'),
   },
   {
     label: "DM threads surface attached booking requests",
