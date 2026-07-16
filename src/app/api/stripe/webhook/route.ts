@@ -126,6 +126,13 @@ function metadataCents(value: string | null | undefined, fallback: number) {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
 }
 
+function isMerchCheckoutSession(session: Stripe.Checkout.Session) {
+  return (
+    session.metadata?.payment_kind === "merch_order" ||
+    Boolean(session.metadata?.merch_order_id)
+  );
+}
+
 function isEmail(value?: string | null): value is string {
   return Boolean(value && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value));
 }
@@ -1155,11 +1162,13 @@ export async function POST(request: Request) {
         await markAdCheckoutSession({ session, status: "paid" });
       } else if (session.metadata?.payment_kind === "booking_deposit") {
         await markBookingCheckoutSession({ session, status: "paid" });
-      } else {
+      } else if (isMerchCheckoutSession(session)) {
         await markCheckoutSession({
           session,
           status: "paid",
         });
+      } else {
+        throw new Error("Unknown checkout session payment type.");
       }
     }
 
@@ -1170,11 +1179,13 @@ export async function POST(request: Request) {
         await markAdCheckoutSession({ session, status: "payment_failed" });
       } else if (session.metadata?.payment_kind === "booking_deposit") {
         await markBookingCheckoutSession({ session, status: "payment_failed" });
-      } else {
+      } else if (isMerchCheckoutSession(session)) {
         await markCheckoutSession({
           session,
           status: "payment_failed",
         });
+      } else {
+        throw new Error("Unknown checkout session payment type.");
       }
     }
 
@@ -1185,11 +1196,13 @@ export async function POST(request: Request) {
         await markAdCheckoutSession({ session, status: "payment_failed" });
       } else if (session.metadata?.payment_kind === "booking_deposit") {
         await markBookingCheckoutSession({ session, status: "cancelled" });
-      } else {
+      } else if (isMerchCheckoutSession(session)) {
         await markCheckoutSession({
           session,
           status: "cancelled",
         });
+      } else {
+        throw new Error("Unknown checkout session payment type.");
       }
     }
 

@@ -278,6 +278,15 @@ checks.push({
     merchCheckout.indexOf("await createCheckoutSession"),
 });
 checks.push({
+  label: "merch checkout identifies its payment kind for shared webhook routing",
+  ok:
+    merchCheckout.includes('metadata[payment_kind]": "merch_order"') &&
+    merchCheckout.includes('payment_intent_data[metadata][payment_kind]": "merch_order"') &&
+    stripeWebhook.includes("function isMerchCheckoutSession") &&
+    stripeWebhook.includes('payment_kind === "merch_order"') &&
+    stripeWebhook.includes("Unknown checkout session payment type."),
+});
+checks.push({
   label: "merch checkout only attaches Stripe session to pending unassigned order",
   ok:
     merchCheckout.includes('stripe_checkout_session_id: session.id') &&
