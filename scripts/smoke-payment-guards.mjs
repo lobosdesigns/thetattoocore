@@ -379,7 +379,10 @@ checks.push({
     accountPage.includes("shipping_address") &&
     accountPage.includes("const addressLines = shippingAddressLines") &&
     accountPage.includes("Shipping address") &&
-    accountPage.includes("<address"),
+    accountPage.includes("<address") &&
+    accountActions.includes('console.error("Merch seller fulfillment failed.", error)') &&
+    accountActions.includes('"Could not mark this Merch sale fulfilled. Please try again."') &&
+    !accountActions.includes('error.message || "Could not mark this Merch sale fulfilled."'),
 });
 checks.push({
   label: "admin Merch orders show shipping address details for review",

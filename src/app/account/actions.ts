@@ -888,9 +888,10 @@ export async function markMerchSaleFulfilled(formData: FormData) {
   });
 
   if (error) {
+    console.error("Merch seller fulfillment failed.", error);
     redirect(
       accountPath(
-        error.message || "Could not mark this Merch sale fulfilled.",
+        "Could not mark this Merch sale fulfilled. Please try again.",
         "order-settings",
       ),
     );
