@@ -461,6 +461,7 @@ checks.push({
     accountPage.includes('action="/api/stripe/connect/onboarding"') &&
     accountPage.includes("Fulfillment gate") &&
     accountPage.includes("Refunds, disputes, and unusual order issues stay in admin review") &&
+    accountPage.includes("stay in private support review during launch") &&
     privacyPage.includes("Checkout is limited during launch") &&
     supportPage.includes("Merch checkout is limited during launch"),
 });

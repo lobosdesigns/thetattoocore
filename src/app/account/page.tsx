@@ -2470,8 +2470,8 @@ export default async function AccountPage({
             <p className="text-sm leading-6 text-[var(--muted-strong)]">
               Sales show paid or pending checkout items that belong to your
               products. Mark paid line items fulfilled only after shipping or
-              handoff is complete; refunds and disputes still need admin/payment
-              review during launch.
+              handoff is complete. Refunds, disputes, and unusual order issues
+              stay in private support review during launch.
             </p>
             <div className="mt-4 grid gap-3 lg:grid-cols-3">
               {merchSellerReadinessItems.map(([title, body]) => (
