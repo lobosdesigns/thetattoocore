@@ -511,14 +511,14 @@ const checks = [
     ],
   },
   {
-    path: "/help/merch-products-orders",
+    path: "/help/merch-products-orders?smoke_cache_bust=merch-guide",
     status: [200],
     includes: [
       "How to set up Merch products and handle orders",
       "What belongs in Merch?",
       "Can fans buy Merch?",
       "When should I mark a Merch order fulfilled?",
-      "buyer shipping details are private order information",
+      "Buyer shipping details are private order information",
       "seller order card",
       "tracking number",
       "refund review",
