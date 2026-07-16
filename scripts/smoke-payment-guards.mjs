@@ -396,7 +396,10 @@ checks.push({
   label: "shared platform fee helper stays at launch rate",
   ok:
     fees.includes("export const platformFeeRate = 0.02") &&
-    fees.includes('export const platformFeePercentLabel = "2%"'),
+    fees.includes('export const platformFeePercentLabel = "2%"') &&
+    fees.includes("current launch") &&
+    !fees.includes("test-mode") &&
+    !fees.includes("test mode"),
 });
 checks.push({
   label: "production commerce gates stay visible before real payments",
