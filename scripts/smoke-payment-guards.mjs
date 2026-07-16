@@ -24,6 +24,7 @@ const merchPrintReceiptButton = readFileSync(
 const adminMerchPage = readFileSync("src/app/admin/merch/page.tsx", "utf8");
 const adminPaymentsPage = readFileSync("src/app/admin/payments/page.tsx", "utf8");
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
+const stripeConnectReturn = readFileSync("src/app/api/stripe/connect/return/route.ts", "utf8");
 const adCreditSpendMigration = readFileSync(
   "supabase/migrations/20260715041500_spend_ad_credit_for_campaign.sql",
   "utf8",
@@ -422,7 +423,9 @@ checks.push({
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("stripe.accounts.create") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("stripe.accountLinks.create") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("type: \"account_onboarding\"") &&
-    readFileSync("src/app/api/stripe/connect/return/route.ts", "utf8").includes("stripe.accounts.retrieve") &&
+    stripeConnectReturn.includes("stripe.accounts.retrieve") &&
+    stripeConnectReturn.includes("More details may still be needed before payouts are active.") &&
+    !stripeConnectReturn.includes("Stripe may still need more details") &&
     readFileSync("src/lib/stripe/connect.ts", "utf8").includes("stripeConnectStatus") &&
     stripeWebhook.includes("stripeConnectStatus") &&
     stripeWebhook.includes('event.type === "account.updated"') &&

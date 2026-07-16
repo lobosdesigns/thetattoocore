@@ -58,6 +58,6 @@ export async function GET() {
   }
 
   return accountRedirect(
-    "Seller payout setup is saved. Stripe may still need more details before payouts are active.",
+    "Seller payout setup is saved. More details may still be needed before payouts are active.",
   );
 }
