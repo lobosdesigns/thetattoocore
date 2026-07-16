@@ -106,6 +106,8 @@ const orderStatusFilters = [
   "refunded",
 ] as const;
 const sellerPayoutFilters = ["ready", "incomplete", "not_started"] as const;
+const orderFulfillmentFilters = ["needs_fulfillment", "seller_fulfilled"] as const;
+const impossibleUuid = "00000000-0000-0000-0000-000000000000";
 const merchRules = [
   "Merch is public-buyable brand goods, separate from verified-only professional Stuff.",
   "Artist, studio, vendor, and official TheTattooCore sellers still need approval before listing products.",
@@ -164,6 +166,12 @@ function sellerPayoutFilter(value: string | string[] | undefined) {
   return sellerPayoutFilters.find((status) => status === rawValue) ?? null;
 }
 
+function orderFulfillmentFilter(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+
+  return orderFulfillmentFilters.find((status) => status === rawValue) ?? null;
+}
+
 function searchTerm(value: string | string[] | undefined) {
   const rawValue = Array.isArray(value) ? value[0] : value;
   const normalized = (rawValue ?? "")
@@ -175,6 +183,7 @@ function searchTerm(value: string | string[] | undefined) {
 }
 
 function pageHref({
+  orderFulfillmentStatus,
   orderPage = 1,
   orderStatus,
   page = 1,
@@ -182,6 +191,7 @@ function pageHref({
   sellerPayoutStatus,
   search,
 }: {
+  orderFulfillmentStatus?: string | null;
   orderPage?: number;
   orderStatus?: string | null;
   page?: number;
@@ -193,6 +203,7 @@ function pageHref({
 
   if (page > 1) params.set("page", String(page));
   if (orderPage > 1) params.set("order_page", String(orderPage));
+  if (orderFulfillmentStatus) params.set("fulfillment", orderFulfillmentStatus);
   if (orderStatus) params.set("order_status", orderStatus);
   if (productStatus) params.set("product_status", productStatus);
   if (sellerPayoutStatus) params.set("seller_payout", sellerPayoutStatus);
@@ -261,6 +272,12 @@ function payoutStatusLabel(value: SellerPayoutFilter) {
   if (value === "incomplete") return "Payout setup incomplete";
 
   return "Payout not started";
+}
+
+function fulfillmentFilterLabel(value: (typeof orderFulfillmentFilters)[number]) {
+  if (value === "needs_fulfillment") return "Needs fulfillment";
+
+  return "Seller fulfilled";
 }
 
 function statusClass(status: ProductStatus) {
@@ -720,6 +737,7 @@ export default async function AdminMerchPage({
   searchParams,
 }: {
   searchParams: Promise<{
+    fulfillment?: string | string[];
     message?: string;
     order_page?: string | string[];
     order_status?: string | string[];
@@ -732,6 +750,7 @@ export default async function AdminMerchPage({
   const params = await searchParams;
   const currentPage = pageNumber(params.page);
   const currentOrderPage = pageNumber(params.order_page);
+  const activeOrderFulfillmentStatus = orderFulfillmentFilter(params.fulfillment);
   const activeOrderStatus = orderStatusFilter(params.order_status);
   const activeProductStatus = productStatusFilter(params.product_status);
   const activeSellerPayoutStatus = sellerPayoutFilter(params.seller_payout);
@@ -741,6 +760,7 @@ export default async function AdminMerchPage({
   const orderFrom = (currentOrderPage - 1) * pageSize;
   const orderTo = orderFrom + pageSize - 1;
   const currentProductHref = pageHref({
+    orderFulfillmentStatus: activeOrderFulfillmentStatus,
     orderPage: currentOrderPage,
     orderStatus: activeOrderStatus,
     page: currentPage,
@@ -919,6 +939,29 @@ export default async function AdminMerchPage({
       ).data?.map((item) => item.order_id) ?? []
     : [];
   const uniqueMatchingOrderItemIds = Array.from(new Set(matchingOrderItemIds));
+  let fulfillmentOrderItemIds: string[] = [];
+
+  if (activeOrderFulfillmentStatus === "needs_fulfillment") {
+    const { data } = await supabase
+      .from("merch_order_items")
+      .select("order_id")
+      .is("seller_fulfilled_at", null)
+      .limit(500)
+      .returns<{ order_id: string }[]>();
+
+    fulfillmentOrderItemIds = data?.map((item) => item.order_id) ?? [];
+  } else if (activeOrderFulfillmentStatus === "seller_fulfilled") {
+    const { data } = await supabase
+      .from("merch_order_items")
+      .select("order_id")
+      .not("seller_fulfilled_at", "is", null)
+      .limit(500)
+      .returns<{ order_id: string }[]>();
+
+    fulfillmentOrderItemIds = data?.map((item) => item.order_id) ?? [];
+  }
+
+  const uniqueFulfillmentOrderItemIds = Array.from(new Set(fulfillmentOrderItemIds));
   let orderQuery = supabase
     .from("merch_orders")
     .select(
@@ -928,6 +971,16 @@ export default async function AdminMerchPage({
 
   if (activeOrderStatus) {
     orderQuery = orderQuery.eq("status", activeOrderStatus);
+  }
+  if (activeOrderFulfillmentStatus) {
+    orderQuery = orderQuery.in(
+      "id",
+      uniqueFulfillmentOrderItemIds.length ? uniqueFulfillmentOrderItemIds : [impossibleUuid],
+    );
+
+    if (activeOrderFulfillmentStatus === "needs_fulfillment") {
+      orderQuery = orderQuery.eq("status", "paid");
+    }
   }
   if (activeSearch) {
     const orderSearchFields = [
@@ -1018,6 +1071,7 @@ export default async function AdminMerchPage({
   const totalOrderPages = Math.max(1, Math.ceil(totalOrders / pageSize));
   const hasNextOrderPage = currentOrderPage < totalOrderPages;
   const currentOrderHref = pageHref({
+    orderFulfillmentStatus: activeOrderFulfillmentStatus,
     orderPage: currentOrderPage,
     orderStatus: activeOrderStatus,
     page: currentPage,
@@ -1181,7 +1235,7 @@ export default async function AdminMerchPage({
           </button>
         </form>
 
-        <div className="mb-4 grid gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm xl:grid-cols-3">
+        <div className="mb-4 grid gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm xl:grid-cols-4">
           <div>
             <p className="mb-2 text-xs font-bold uppercase text-[var(--muted-strong)]">
               Product status
@@ -1195,6 +1249,7 @@ export default async function AdminMerchPage({
                       : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
                   }`}
                   href={pageHref({
+                    orderFulfillmentStatus: activeOrderFulfillmentStatus,
                     orderStatus: activeOrderStatus,
                     page: 1,
                     productStatus: status,
@@ -1221,6 +1276,7 @@ export default async function AdminMerchPage({
                       : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
                   }`}
                   href={pageHref({
+                    orderFulfillmentStatus: activeOrderFulfillmentStatus,
                     orderStatus: activeOrderStatus,
                     page: 1,
                     productStatus: activeProductStatus,
@@ -1256,6 +1312,32 @@ export default async function AdminMerchPage({
                   key={status}
                 >
                   {statusLabel(status)}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase text-[var(--muted-strong)]">
+              Fulfillment
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {orderFulfillmentFilters.map((status) => (
+                <Link
+                  className={`rounded-md border px-2.5 py-1.5 text-xs font-semibold ${
+                    activeOrderFulfillmentStatus === status
+                      ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                      : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
+                  }`}
+                  href={pageHref({
+                    orderFulfillmentStatus: status,
+                    page: currentPage,
+                    productStatus: activeProductStatus,
+                    sellerPayoutStatus: activeSellerPayoutStatus,
+                    search: activeSearch,
+                  })}
+                  key={status}
+                >
+                  {fulfillmentFilterLabel(status)}
                 </Link>
               ))}
             </div>
@@ -1317,6 +1399,7 @@ export default async function AdminMerchPage({
             hasNextPage={hasNextPage}
             hrefForPage={(nextPage) =>
               pageHref({
+                orderFulfillmentStatus: activeOrderFulfillmentStatus,
                 orderPage: currentOrderPage,
                 orderStatus: activeOrderStatus,
                 page: nextPage,
@@ -1350,6 +1433,7 @@ export default async function AdminMerchPage({
               hasNextPage={hasNextPage}
               hrefForPage={(nextPage) =>
                 pageHref({
+                  orderFulfillmentStatus: activeOrderFulfillmentStatus,
                   orderPage: currentOrderPage,
                   orderStatus: activeOrderStatus,
                   page: nextPage,
@@ -1375,12 +1459,16 @@ export default async function AdminMerchPage({
               Page {currentOrderPage} of {totalOrderPages}
             </span>
           </div>
-          {activeOrderStatus ? (
+          {activeOrderStatus || activeOrderFulfillmentStatus ? (
             <div className="mb-4 flex flex-col gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
               <p className="font-semibold">
                 Filtering orders by{" "}
                 <span className="capitalize">
-                  {statusLabel(activeOrderStatus)}
+                  {activeOrderFulfillmentStatus
+                    ? fulfillmentFilterLabel(activeOrderFulfillmentStatus)
+                    : activeOrderStatus
+                      ? statusLabel(activeOrderStatus)
+                      : "All orders"}
                 </span>
               </p>
               <Link
@@ -1401,6 +1489,7 @@ export default async function AdminMerchPage({
             hasNextPage={hasNextOrderPage}
             hrefForPage={(nextOrderPage) =>
               pageHref({
+                orderFulfillmentStatus: activeOrderFulfillmentStatus,
                 orderPage: nextOrderPage,
                 orderStatus: activeOrderStatus,
                 page: currentPage,
@@ -1430,10 +1519,11 @@ export default async function AdminMerchPage({
             <Pagination
               currentPage={currentOrderPage}
               hasNextPage={hasNextOrderPage}
-              hrefForPage={(nextOrderPage) =>
-                pageHref({
-                  orderPage: nextOrderPage,
-                  orderStatus: activeOrderStatus,
+            hrefForPage={(nextOrderPage) =>
+              pageHref({
+                orderFulfillmentStatus: activeOrderFulfillmentStatus,
+                orderPage: nextOrderPage,
+                orderStatus: activeOrderStatus,
                   page: currentPage,
                   productStatus: activeProductStatus,
                   sellerPayoutStatus: activeSellerPayoutStatus,

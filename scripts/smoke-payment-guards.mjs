@@ -453,6 +453,20 @@ checks.push({
     productPlan.includes("payout-readiness filters"),
 });
 checks.push({
+  label: "admin Merch can filter order fulfillment review",
+  ok:
+    adminMerchPage.includes("const orderFulfillmentFilters") &&
+    adminMerchPage.includes("function orderFulfillmentFilter") &&
+    adminMerchPage.includes("Needs fulfillment") &&
+    adminMerchPage.includes("Seller fulfilled") &&
+    adminMerchPage.includes('params.set("fulfillment", orderFulfillmentStatus)') &&
+    adminMerchPage.includes(".is(\"seller_fulfilled_at\", null)") &&
+    adminMerchPage.includes(".not(\"seller_fulfilled_at\", \"is\", null)") &&
+    adminMerchPage.includes('orderQuery = orderQuery.eq("status", "paid")') &&
+    publicSmoke.includes('path: "/admin/merch?fulfillment=needs_fulfillment"') &&
+    productPlan.includes("fulfillment filters for paid orders needing seller fulfillment"),
+});
+checks.push({
   label: "admin Merch queues include searchable product and order review",
   ok:
     adminMerchPage.includes("Search Merch admin") &&
