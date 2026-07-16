@@ -128,6 +128,21 @@ export const helpArticles = [
           "No. Verification documents stay private for account review and are not shown on public profiles or public feeds.",
         question: "Will my license document be public?",
       },
+      {
+        answer:
+          "Artist, studio, and vendor approval protects the body-art community from unlicensed work, unsafe equipment access, counterfeit goods, and seller claims that cannot be backed up.",
+        question: "Why does approval matter?",
+      },
+      {
+        answer:
+          "Approved accounts can unlock the professional tools that match their account type, such as verified profile trust, booking tools, Stuff access, Merch seller review, and safer advertising review.",
+        question: "What can approval unlock?",
+      },
+      {
+        answer:
+          "If review needs more proof, update the account information, upload clearer documentation, and submit again. Do not upload private personal details that are not needed for professional eligibility.",
+        question: "What if my review is rejected?",
+      },
     ],
     lastReviewed: "July 15, 2026",
     relatedSlugs: ["artist-profile-shop-links", "merch-products-orders"],
@@ -136,7 +151,10 @@ export const helpArticles = [
       "Open Account and choose the Verification area.",
       "Select artist, studio, or vendor review.",
       "Enter the license or business name, issuing location, expiration date when available, and supporting document.",
+      "Use documentation that matches the account type: artist license or certification, studio/shop license, vendor business proof, or other professional eligibility documents.",
+      "Keep private personal details off public profile fields. Verification documents are for admin review only.",
       "Submit for review and watch Account alerts for approval, rejection, or resubmission notes.",
+      "After approval, check which tools are unlocked for your account type before creating Stuff, Merch, booking, or ad activity.",
     ],
     title: "How to submit artist, studio, or vendor verification",
   },
