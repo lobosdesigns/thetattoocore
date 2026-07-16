@@ -158,6 +158,8 @@ const checks = [
       messageStartForm.includes('name="username"') &&
       messageStartForm.includes("type=\"hidden\"") &&
       messageStartForm.includes("setSelectedUsername") &&
+      messageStartForm.includes("Ready to message @") &&
+      messageStartForm.includes("Ready to try exact username @") &&
       messageStartForm.includes("profile.display_name") &&
       messageStartForm.includes("profile.city") &&
       messageStartForm.includes("profile.region") &&

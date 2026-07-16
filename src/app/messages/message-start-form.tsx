@@ -93,6 +93,9 @@ export function MessageStartForm({
   const cleanQuery = cleanUsername(query);
   const targetUsername = selectedUsername || cleanQuery;
   const canSend = canSendToTarget(targetUsername);
+  const selectedProfile = connectedProfiles.find(
+    (profile) => profile.username === selectedUsername,
+  );
   const filteredProfiles = useMemo(() => {
     const terms = query
       .toLowerCase()
@@ -159,6 +162,20 @@ export function MessageStartForm({
           Tap someone from your follows or existing DMs, or type an exact
           username if the member is not listed.
         </p>
+        {selectedProfile ? (
+          <p className="ttc-surface rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] px-3 py-2 text-xs font-semibold text-[var(--foreground)]">
+            Ready to message @{selectedProfile.username}.
+          </p>
+        ) : query && canSend ? (
+          <p className="ttc-surface rounded-md border px-3 py-2 text-xs text-[var(--muted-strong)]">
+            Ready to try exact username @{targetUsername}. Tap a listed profile
+            when one appears.
+          </p>
+        ) : query ? (
+          <p className="ttc-surface rounded-md border px-3 py-2 text-xs text-[var(--muted-strong)]">
+            Keep typing, or tap a matching profile below.
+          </p>
+        ) : null}
         {connectedProfiles.length ? (
           <div className="grid max-h-52 gap-2 overflow-y-auto pr-1">
             {filteredProfiles.length ? (
