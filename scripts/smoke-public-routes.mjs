@@ -167,6 +167,7 @@ const checks = [
   { path: "/admin/reports", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/stuff", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/users", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  { path: "/admin/users?q=ceocore", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/verification", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/api/ad-click", status: [303, 307, 308], redirectIncludes: "/", redirect: "manual" },
   { path: "/api/ad-click?campaign_id=bad&placement=4u", status: [303, 307, 308], redirectIncludes: "/", redirect: "manual" },

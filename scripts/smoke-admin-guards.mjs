@@ -143,6 +143,18 @@ const checks = [
       adminUsers.includes("disabled={!canCreateTestAccounts}"),
   },
   {
+    label: "admin users page supports search while preserving paginated actions",
+    ok:
+      adminUsers.includes("function searchTerm") &&
+      adminUsers.includes("Search users") &&
+      adminUsers.includes("Username, display name, type, city, region, or role") &&
+      adminUsers.includes("usersQuery = usersQuery.or") &&
+      adminUsers.includes("city.ilike") &&
+      adminUsers.includes("query={activeSearch}") &&
+      adminUsers.includes("pageHref(currentPage, activeSearch)") &&
+      publicSmoke.includes('path: "/admin/users?q=ceocore"'),
+  },
+  {
     label: "admin users can grant account-level ad credits with audit logging",
     ok:
       adCreditMigration.includes("create table if not exists public.ad_credit_ledger") &&

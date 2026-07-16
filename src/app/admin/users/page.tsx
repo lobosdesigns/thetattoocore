@@ -54,8 +54,24 @@ function userStatus(user: Pick<AdminUser, "bannedAt" | "suspendedAt">) {
   return "active";
 }
 
-function pageHref(page: number) {
-  return `/admin/users?page=${page}`;
+function searchTerm(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+
+  return (rawValue ?? "")
+    .replace(/[^a-zA-Z0-9 @._-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80);
+}
+
+function pageHref(page: number, query = "") {
+  const params = new URLSearchParams({ page: String(page) });
+
+  if (query) {
+    params.set("q", query);
+  }
+
+  return `/admin/users?${params.toString()}`;
 }
 
 function money(cents: number) {
@@ -77,10 +93,12 @@ function statusClass(user: AdminUser) {
 function Pagination({
   currentPage,
   hasNextPage,
+  query,
   totalPages,
 }: {
   currentPage: number;
   hasNextPage: boolean;
+  query?: string;
   totalPages: number;
 }) {
   return (
@@ -96,7 +114,7 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
           }`}
-          href={pageHref(Math.max(1, currentPage - 1))}
+          href={pageHref(Math.max(1, currentPage - 1), query)}
         >
           <ChevronLeft className="size-4" />
           Previous 50
@@ -108,7 +126,7 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
           }`}
-          href={pageHref(currentPage + 1)}
+          href={pageHref(currentPage + 1, query)}
         >
           Next 50
           <ChevronRight className="size-4" />
@@ -121,10 +139,11 @@ function Pagination({
 export default async function AdminUsersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string; page?: string | string[] }>;
+  searchParams: Promise<{ message?: string; page?: string | string[]; q?: string | string[] }>;
 }) {
   const params = await searchParams;
   const currentPage = pageNumber(params.page);
+  const activeSearch = searchTerm(params.q);
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
   const supabase = await createClient();
@@ -145,12 +164,27 @@ export default async function AdminUsersPage({
     redirect("/admin");
   }
 
-  const { count, data: userRows } = await supabase
+  let usersQuery = supabase
     .from("profiles")
     .select(
       "id, username, display_name, account_type, role, banned_at, suspended_at, moderation_note, created_at",
       { count: "exact" },
-    )
+    );
+
+  if (activeSearch) {
+    usersQuery = usersQuery.or(
+      [
+        `username.ilike.%${activeSearch}%`,
+        `display_name.ilike.%${activeSearch}%`,
+        `account_type.ilike.%${activeSearch}%`,
+        `city.ilike.%${activeSearch}%`,
+        `region.ilike.%${activeSearch}%`,
+        `role.ilike.%${activeSearch}%`,
+      ].join(","),
+    );
+  }
+
+  const { count, data: userRows } = await usersQuery
     .order("created_at", { ascending: false })
     .range(from, to)
     .returns<
@@ -259,6 +293,34 @@ export default async function AdminUsersPage({
           </p>
         ) : null}
 
+        <form
+          action="/admin/users"
+          className="ttc-card mb-4 grid gap-3 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 md:grid-cols-[1fr_auto_auto]"
+        >
+          <input name="page" type="hidden" value="1" />
+          <label className="grid gap-1 text-sm font-semibold">
+            Search users
+            <input
+              className="h-11 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+              defaultValue={activeSearch}
+              maxLength={80}
+              name="q"
+              placeholder="Username, display name, type, city, region, or role"
+            />
+          </label>
+          <button className="h-11 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)] md:self-end">
+            Search
+          </button>
+          {activeSearch ? (
+            <Link
+              className="flex h-11 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold md:self-end"
+              href="/admin/users"
+            >
+              Clear
+            </Link>
+          ) : null}
+        </form>
+
         <div className="mb-4 grid gap-3 sm:grid-cols-4">
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
             <p className="text-sm text-[var(--muted-strong)]">Total accounts</p>
@@ -271,6 +333,11 @@ export default async function AdminUsersPage({
             <p className="mt-2 text-3xl font-bold">
               {users.length ? `${from + 1}-${from + users.length}` : "0"}
             </p>
+            {activeSearch ? (
+              <p className="mt-1 text-xs font-semibold text-[var(--muted-strong)]">
+                Search: {activeSearch}
+              </p>
+            ) : null}
           </div>
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
             <p className="text-sm text-[var(--muted-strong)]">Role tools</p>
@@ -290,6 +357,7 @@ export default async function AdminUsersPage({
         <Pagination
           currentPage={currentPage}
           hasNextPage={hasNextPage}
+          query={activeSearch}
           totalPages={totalPages}
         />
 
@@ -327,7 +395,7 @@ export default async function AdminUsersPage({
               action={createTestAccount}
               className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]"
             >
-              <input name="return_to" type="hidden" value={pageHref(currentPage)} />
+              <input name="return_to" type="hidden" value={pageHref(currentPage, activeSearch)} />
               <label className="grid gap-1 text-sm font-semibold">
                 Email
                 <input
@@ -451,7 +519,7 @@ export default async function AdminUsersPage({
                     className="grid gap-2 sm:grid-cols-[1fr_auto] lg:grid-cols-1"
                   >
                     <input name="profile_id" type="hidden" value={user.id} />
-                    <input name="return_to" type="hidden" value={pageHref(currentPage)} />
+                    <input name="return_to" type="hidden" value={pageHref(currentPage, activeSearch)} />
                     <select
                       className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                       defaultValue={user.role}
@@ -472,7 +540,7 @@ export default async function AdminUsersPage({
                 )}
                 <form action={changeUserStatus} className="grid gap-2">
                   <input name="profile_id" type="hidden" value={user.id} />
-                  <input name="return_to" type="hidden" value={pageHref(currentPage)} />
+                  <input name="return_to" type="hidden" value={pageHref(currentPage, activeSearch)} />
                   <input
                     className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                     maxLength={500}
@@ -507,7 +575,7 @@ export default async function AdminUsersPage({
                     className="mt-3 grid gap-2 lg:grid-cols-[130px_150px_1fr_150px_auto]"
                   >
                     <input name="profile_id" type="hidden" value={user.id} />
-                    <input name="return_to" type="hidden" value={pageHref(currentPage)} />
+                    <input name="return_to" type="hidden" value={pageHref(currentPage, activeSearch)} />
                     <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-strong)]">
                       Amount
                       <input
@@ -565,6 +633,7 @@ export default async function AdminUsersPage({
           <Pagination
             currentPage={currentPage}
             hasNextPage={hasNextPage}
+            query={activeSearch}
             totalPages={totalPages}
           />
         </div>
