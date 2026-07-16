@@ -111,6 +111,7 @@ const checks = [
       docs["docs/STORE_LISTING_DRAFT.md"].includes("visible nudity is not allowed") &&
       docs["docs/STORE_LISTING_DRAFT.md"].includes("Temporary Stories") &&
       docs["docs/STORE_LISTING_DRAFT.md"].includes("banner photo") &&
+      docs["docs/STORE_LISTING_DRAFT.md"].includes("Help Center") &&
       docs["docs/STORE_LISTING_DRAFT.md"].includes("No AI art") &&
       docs["docs/STORE_LISTING_DRAFT.md"].includes("no scratcher promotion"),
   },
@@ -170,6 +171,7 @@ const checks = [
       docs["docs/DATA_SAFETY_PREP.md"].includes("Account data") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("User-generated content") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("direct messages") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("Help Center questions") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("private verification/license documents") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("Raw card, bank, routing, and payout credentials must not be collected") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("coarse location") &&

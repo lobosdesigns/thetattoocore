@@ -18,6 +18,8 @@ Launch safety rules are intentionally strict: visible nudity is not allowed, por
 
 TheTattooCore supports public discovery for safe profiles and shareable work while keeping DMs, account settings, admin tools, private profile data, and restricted content behind login.
 
+Members and reviewers can use the Help Center for plain-language guides on Search and Saved, verification, booking requests and deposits, Merch products and orders, ads and credits, privacy, safety, reports, blocks, and support boundaries.
+
 ## Key Features
 
 - 4U feed for tattoo images and short reels
@@ -29,6 +31,7 @@ TheTattooCore supports public discovery for safe profiles and shareable work whi
 - DMs for booking questions, collaboration, and marketplace conversations
 - Profile pages with banner photo, bio, avatar, social links, website links, and studio links
 - Reporting, blocking, moderation, and 18+ account gates
+- Public Help Center guides for using core safety, commerce, discovery, and verification tools
 - No AI art, no AI creator replacement, and no scratcher promotion
 
 ## Audience And Age Position

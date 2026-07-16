@@ -6,7 +6,7 @@ Use this as an internal checklist before answering Google Play Data Safety, App 
 
 - Account data: email address, username, display name, 18+ confirmation, password handled by the auth provider, account status, role, and notification preferences.
 - Profile data: avatar, bio, account type, public profile settings, website/social links, coarse city/region/country settings, language preference, appearance preference, and optional artist-to-studio/shop link.
-- User-generated content: 4U posts, Gossip posts, Stories, Stuff listings, Gigs, Merch products, comments, replies, reports, saves, follows, blocks, and direct messages.
+- User-generated content: 4U posts, Gossip posts, Stories, Stuff listings, Gigs, Merch products, comments, replies, Help Center questions/comments, reports, saves, follows, blocks, and direct messages.
 - Media: profile photos, post/listing/gig/story/comment/DM image or GIF uploads, short launch videos where supported, and private verification/license documents.
 - Commerce and payment records: test-mode checkout/session identifiers, order states, ad payment states, booking-deposit states, platform fee amounts, fulfillment/refund status, and payment event references. Raw card, bank, routing, and payout credentials must not be collected in TTC forms.
 - Verification data: license or certification name, optional license number, issuing location, expiration date, verification status, reviewer notes, and private uploaded proof documents.
@@ -15,7 +15,7 @@ Use this as an internal checklist before answering Google Play Data Safety, App 
 
 ## Use And Purpose
 
-- Run the social app: accounts, profiles, posts, comments, DMs, follows, saves, notifications, stories, search, and public previews.
+- Run the social app: accounts, profiles, posts, comments, DMs, follows, saves, notifications, stories, search, Help Center questions, and public previews.
 - Keep the community safe: age gate, reporting, blocking, moderation queues, verification review, restricted professional marketplace access, account deletion handling, and admin audits.
 - Support commerce while gated: Merch checkout testing, prepaid ads, booking-deposit testing, order/receipt history, seller fulfillment state, advertiser status, and payment troubleshooting.
 - Personalize responsibly: coarse location/language/profile preferences, followed accounts, interactions, and category/style signals may guide ranking and discovery. Do not describe this as AI-driven personalization.
