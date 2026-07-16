@@ -24,7 +24,8 @@ export async function updatePassword(formData: FormData) {
   const { error } = await supabase.auth.updateUser({ password });
 
   if (error) {
-    redirect(resetPasswordMessage(error.message || "Could not update password."));
+    console.error("Password update failed.", error);
+    redirect(resetPasswordMessage("Could not update password. Please try again."));
   }
 
   revalidatePath("/", "layout");

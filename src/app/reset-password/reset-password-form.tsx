@@ -26,7 +26,8 @@ export function ResetPasswordForm({ initialMessage }: { initialMessage?: string 
         });
 
         if (error) {
-          setMessage(error.message);
+          console.error("Recovery session failed.", error);
+          setMessage("Could not open that reset link. Please request a new one.");
           setState("blocked");
           return;
         }
@@ -60,7 +61,8 @@ export function ResetPasswordForm({ initialMessage }: { initialMessage?: string 
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
-      setMessage(error.message);
+      console.error("Password update failed.", error);
+      setMessage("Could not update password. Please try again.");
       setState("ready");
       return;
     }

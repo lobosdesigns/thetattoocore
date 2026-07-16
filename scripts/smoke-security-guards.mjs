@@ -1,10 +1,18 @@
 import { readFileSync } from "node:fs";
 
 const authLogin = readFileSync("src/app/auth/login/route.ts", "utf8");
+const legacyLoginActions = readFileSync("src/app/login/actions.ts", "utf8");
 const authSignup = readFileSync("src/app/auth/signup/route.ts", "utf8");
 const authConfirm = readFileSync("src/app/auth/confirm/route.ts", "utf8");
 const authResendConfirmation = readFileSync(
   "src/app/auth/resend-confirmation/route.ts",
+  "utf8",
+);
+const forgotPasswordActions = readFileSync("src/app/forgot-password/actions.ts", "utf8");
+const forgotPasswordPage = readFileSync("src/app/forgot-password/page.tsx", "utf8");
+const resetPasswordActions = readFileSync("src/app/reset-password/actions.ts", "utf8");
+const resetPasswordForm = readFileSync(
+  "src/app/reset-password/reset-password-form.tsx",
   "utf8",
 );
 const adClickRoute = readFileSync("src/app/api/ad-click/route.ts", "utf8");
@@ -142,7 +150,12 @@ const checks = [
       authLogin.includes(
         '"Could not sign in. Check your email and password, then try again."',
       ) &&
-      !authLogin.includes('error.message || "Could not sign in."'),
+      !authLogin.includes('error.message || "Could not sign in."') &&
+      legacyLoginActions.includes('console.error("Signin request failed.", error)') &&
+      legacyLoginActions.includes(
+        '"Could not sign in. Check your email and password, then try again."',
+      ) &&
+      !legacyLoginActions.includes('error.message || "Could not sign in"'),
   },
   {
     label: "login page does not render protocol-relative return paths",
@@ -210,6 +223,25 @@ const checks = [
       authConfirm.includes('next?.startsWith("/")') &&
       authConfirm.includes("!next.startsWith(\"//\")") &&
       authConfirm.includes(': "/account"'),
+  },
+  {
+    label: "password recovery hides raw provider errors and uses canonical links",
+    ok:
+      forgotPasswordActions.includes("import { siteUrl }") &&
+      forgotPasswordActions.includes("redirectTo: `${siteUrl}/auth/confirm?next=/reset-password`") &&
+      forgotPasswordActions.includes('console.error("Password reset request failed.", error)') &&
+      forgotPasswordActions.includes('"Could not send reset email. Please try again."') &&
+      !forgotPasswordActions.includes('formData.get("origin")') &&
+      !forgotPasswordActions.includes('error.message || "Could not send reset email"') &&
+      !forgotPasswordPage.includes('name="origin"') &&
+      resetPasswordActions.includes('console.error("Password update failed.", error)') &&
+      resetPasswordActions.includes('"Could not update password. Please try again."') &&
+      !resetPasswordActions.includes('error.message || "Could not update password."') &&
+      resetPasswordForm.includes('console.error("Recovery session failed.", error)') &&
+      resetPasswordForm.includes('"Could not open that reset link. Please request a new one."') &&
+      resetPasswordForm.includes('console.error("Password update failed.", error)') &&
+      resetPasswordForm.includes('"Could not update password. Please try again."') &&
+      !resetPasswordForm.includes("setMessage(error.message)"),
   },
   {
     label: "notification open rejects external and protocol-relative hrefs",

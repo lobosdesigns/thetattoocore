@@ -40,12 +40,6 @@ export default async function ForgotPasswordPage({
           ) : null}
 
           <form className="space-y-4">
-            <input
-              name="origin"
-              type="hidden"
-              value={process.env.NEXT_PUBLIC_SITE_URL ?? "https://thetattoocore.com"}
-            />
-
             <label className="block">
               <span className="text-sm font-medium">Email</span>
               <input
