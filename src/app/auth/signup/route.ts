@@ -55,9 +55,10 @@ export async function POST(request: Request) {
   });
 
   if (error) {
+    console.error("Signup request failed.", error);
     return signupRedirect(
       request,
-      error.message || "Could not create account.",
+      "Could not create account. Please try again.",
       returnTo,
     );
   }

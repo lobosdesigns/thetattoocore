@@ -54,9 +54,10 @@ export async function POST(request: Request) {
   });
 
   if (error) {
+    console.error("Confirmation resend failed.", error);
     return messageRedirect(
       request,
-      error.message || "Could not resend confirmation email.",
+      "Could not resend confirmation email. Please try again.",
       messagePath,
       returnTo,
     );

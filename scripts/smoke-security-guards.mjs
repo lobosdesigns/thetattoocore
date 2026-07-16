@@ -3,6 +3,10 @@ import { readFileSync } from "node:fs";
 const authLogin = readFileSync("src/app/auth/login/route.ts", "utf8");
 const authSignup = readFileSync("src/app/auth/signup/route.ts", "utf8");
 const authConfirm = readFileSync("src/app/auth/confirm/route.ts", "utf8");
+const authResendConfirmation = readFileSync(
+  "src/app/auth/resend-confirmation/route.ts",
+  "utf8",
+);
 const adClickRoute = readFileSync("src/app/api/ad-click/route.ts", "utf8");
 const loginPage = readFileSync("src/app/login/page.tsx", "utf8");
 const signupPage = readFileSync("src/app/signup/page.tsx", "utf8");
@@ -133,7 +137,12 @@ const checks = [
     ok:
       authLogin.includes('!text.startsWith("/")') &&
       authLogin.includes('text.startsWith("//")') &&
-      authLogin.includes('return "/account"'),
+      authLogin.includes('return "/account"') &&
+      authLogin.includes('console.error("Signin request failed.", error)') &&
+      authLogin.includes(
+        '"Could not sign in. Check your email and password, then try again."',
+      ) &&
+      !authLogin.includes('error.message || "Could not sign in."'),
   },
   {
     label: "login page does not render protocol-relative return paths",
@@ -163,6 +172,35 @@ const checks = [
       signupPage.includes("loginHref") &&
       authConfirm.includes("next?.startsWith(\"/\")") &&
       authConfirm.includes("!next.startsWith(\"//\")"),
+  },
+  {
+    label: "signup and confirmation resend hide raw auth-provider errors",
+    ok:
+      authSignup.includes('console.error("Signup request failed.", error)') &&
+      authSignup.includes('"Could not create account. Please try again."') &&
+      !authSignup.includes('error.message || "Could not create account."') &&
+      authSignup.includes("function cleanReturnTo") &&
+      authSignup.includes("text.startsWith(\"//\")") &&
+      authSignup.includes("emailRedirectTo") &&
+      authSignup.includes("encodeURIComponent(returnTo)") &&
+      authSignup.includes("Signup request sent. Check inbox and junk for the confirmation email.") &&
+      authSignup.includes("You must confirm you are 18 or older to create an account.") &&
+      authSignup.includes("Enter an email and password to create an account.") &&
+      authSignup.includes("returnTo") &&
+      authLogin.includes("Could not sign in. Check your email and password, then try again.") &&
+      authConfirm.includes("Could not confirm your email") &&
+      authConfirm.includes("next?.startsWith(\"/\")") &&
+      authConfirm.includes("!next.startsWith(\"//\")") &&
+      authSignup.includes("signupRedirect") &&
+      authResendConfirmation.includes(
+        'console.error("Confirmation resend failed.", error)',
+      ) &&
+      authResendConfirmation.includes(
+        '"Could not resend confirmation email. Please try again."',
+      ) &&
+      !authResendConfirmation.includes(
+        'error.message || "Could not resend confirmation email."',
+      ),
   },
   {
     label: "auth confirm rejects protocol-relative next paths",

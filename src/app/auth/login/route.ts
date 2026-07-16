@@ -36,9 +36,10 @@ export async function POST(request: Request) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
+    console.error("Signin request failed.", error);
     return loginRedirect(
       request,
-      error.message || "Could not sign in.",
+      "Could not sign in. Check your email and password, then try again.",
       returnTo,
     );
   }
