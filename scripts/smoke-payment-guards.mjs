@@ -335,6 +335,16 @@ checks.push({
     accountPage.includes("<address"),
 });
 checks.push({
+  label: "admin Merch orders show shipping address details for review",
+  ok:
+    adminMerchPage.includes("function shippingAddressLines") &&
+    adminMerchPage.includes("shipping_address") &&
+    adminMerchPage.includes("shippingAddress: order.shipping_address") &&
+    adminMerchPage.includes("const addressLines = shippingAddressLines(order.shippingAddress)") &&
+    adminMerchPage.includes("Shipping address") &&
+    adminMerchPage.includes("<address"),
+});
+checks.push({
   label: "merch refund reviews are audit-only before production refund rules",
   ok:
     accountActions.includes("export async function requestMerchRefundReview") &&

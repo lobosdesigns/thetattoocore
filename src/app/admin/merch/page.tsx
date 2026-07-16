@@ -74,6 +74,7 @@ type MerchOrder = {
   }[];
   platformFeeCents: number;
   refundedAt: string | null;
+  shippingAddress: Record<string, unknown> | null;
   shippingCents: number;
   shippingName: string | null;
   status: string;
@@ -226,6 +227,29 @@ function money(cents: number, currency: string) {
     currency,
     style: "currency",
   }).format(cents / 100);
+}
+
+function shippingAddressLines(value: unknown) {
+  if (!value || typeof value !== "object") return [];
+
+  const root = value as {
+    address?: Record<string, unknown>;
+    name?: unknown;
+  };
+  const address = root.address && typeof root.address === "object" ? root.address : {};
+  const text = (key: string) =>
+    typeof address[key] === "string" ? String(address[key]).trim() : "";
+  const cityStatePostal = [text("city"), text("state"), text("postal_code")]
+    .filter(Boolean)
+    .join(", ");
+
+  return [
+    typeof root.name === "string" ? root.name.trim() : "",
+    text("line1"),
+    text("line2"),
+    cityStatePostal,
+    text("country"),
+  ].filter(Boolean);
 }
 
 function statusLabel(value: string) {
@@ -487,6 +511,7 @@ function OrderCard({
   const canCancel = ["pending_checkout", "payment_failed", "cancelled"].includes(
     order.status,
   );
+  const addressLines = shippingAddressLines(order.shippingAddress);
 
   return (
     <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
@@ -593,6 +618,20 @@ function OrderCard({
               </li>
             ))}
           </ul>
+        </div>
+      ) : null}
+      {addressLines.length ? (
+        <div className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-3 text-xs leading-5 text-[var(--muted)]">
+          <p className="font-semibold uppercase text-[var(--muted-strong)]">
+            Shipping address
+          </p>
+          <address className="mt-2 not-italic">
+            {addressLines.map((line) => (
+              <span className="block" key={line}>
+                {line}
+              </span>
+            ))}
+          </address>
         </div>
       ) : null}
       {order.customerEmail || order.adminNote ? (
@@ -872,7 +911,7 @@ export default async function AdminMerchPage({
   let orderQuery = supabase
     .from("merch_orders")
     .select(
-      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, admin_note, stripe_checkout_session_id, stripe_payment_intent_id, created_at, fulfilled_at, cancelled_at, refunded_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id, title_snapshot, quantity, seller_fulfilled_at, tracking_carrier, tracking_number, tracking_url)",
+      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, shipping_address, admin_note, stripe_checkout_session_id, stripe_payment_intent_id, created_at, fulfilled_at, cancelled_at, refunded_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id, title_snapshot, quantity, seller_fulfilled_at, tracking_carrier, tracking_number, tracking_url)",
       { count: "exact" },
     );
 
@@ -910,6 +949,7 @@ export default async function AdminMerchPage({
         platform_fee_cents: number;
         profiles: { display_name: string; username: string } | null;
         refunded_at: string | null;
+        shipping_address: Record<string, unknown> | null;
         shipping_cents: number;
         shipping_name: string | null;
         status: string;
@@ -942,6 +982,7 @@ export default async function AdminMerchPage({
     })),
     platformFeeCents: order.platform_fee_cents,
     refundedAt: order.refunded_at,
+    shippingAddress: order.shipping_address,
     shippingCents: order.shipping_cents,
     shippingName: order.shipping_name,
     status: order.status,
