@@ -265,6 +265,7 @@
 - Public route smoke on July 16, 2026 passed after admin booking-refund request copy stopped naming the payment processor in redirect messages. Live deploy version `490373ca-3cc7-4716-816e-0b934029b530` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after checkout platform-fee line-item copy moved from test-mode wording to current-launch wording. Live deploy version `79a7af83-8270-4a9f-9740-8ebc9ef8c3e6` passed public route smoke after a transient deploy fetch retry.
 - Public route smoke on July 16, 2026 passed after Account booking calendar labels moved from later/planned wording to current prep wording. Live deploy version `476bea73-ddd5-4b22-9c84-e3f9142ee8b5` passed public route smoke.
+- Public route smoke on July 16, 2026 passed after Help Center booking and tutorial copy moved away from roadmap/planned wording toward current guidance. Live deploy version `5a88a0e0-98fc-4bdd-855b-0d5b4a5fb87b` passed public route smoke after updating the smoke expectation to the new guide copy.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
