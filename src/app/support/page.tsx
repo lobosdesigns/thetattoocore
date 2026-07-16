@@ -27,7 +27,7 @@ const sections = [
   },
   {
     body:
-      "Merch checkout is limited during launch while seller approval, product safety review, shipping, fulfillment, refunds, tax, and payment review are finished. Public production purchases should stay limited until those rules are ready.",
+      "Merch checkout is limited during launch. For order, fulfillment, refund, seller, or product-safety questions, use Support with the product or order link so the issue can be reviewed privately.",
     title: "Merch Support",
   },
   {
