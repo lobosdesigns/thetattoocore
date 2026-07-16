@@ -504,7 +504,7 @@ const checks = [
     ],
   },
   {
-    path: "/help/ads-and-credits",
+    path: "/help/ads-and-credits?smoke_cache_bust=ads-guide",
     status: [200],
     includes: [
       "How to create an ad and use ad credits",

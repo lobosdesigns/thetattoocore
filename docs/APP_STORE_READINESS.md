@@ -258,6 +258,7 @@
 - Public route smoke on July 15, 2026 passed after Admin Merch order summary cards gained a needs-fulfillment count/link and filter-summary copy for fulfillment review. Live deploy version `bb432940-1968-4f93-840a-f822ce43d39d` passed public route smoke after one transient deploy retry.
 - Public route smoke on July 15, 2026 passed after the Merch Help Center guide gained seller fulfillment, private shipping-detail, tracking, and refund-review guidance. Live deploy version `ec18bf42-bf1a-4b59-aac1-91baf021e15c` passed public route smoke after refreshing the smoke route cache-bust.
 - Public route smoke on July 15, 2026 passed after the Booking Help Center guide gained deposit confirmation, calendar-note privacy, and refund-review guidance. Live deploy version `75b65069-4a20-4109-9d63-46fd0e669ad8` passed public route smoke.
+- Public route smoke on July 15, 2026 passed after the Ads Help Center guide gained placement, Merch-only ad, ad-credit, review-rule, keyword, and payment-status guidance. Live deploy version `257df667-e42d-4b58-956f-1e767683699d` passed public route smoke after refreshing the smoke route cache-bust.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
