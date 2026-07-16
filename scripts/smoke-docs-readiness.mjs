@@ -288,7 +288,13 @@ const checks = [
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("tax handling") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("refund") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("dispute") &&
-      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("app-store rules"),
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("app-store rules") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Draft Seller Payout Release Policy") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Draft Shipping And Tax Procedure") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Draft Refund And Dispute Procedure") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Draft Booking Deposit Procedure") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("buyer shipping addresses private") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Only verified artists and studios should request deposits"),
   },
   {
     label: "real-device QA covers admin payment and Merch search",
