@@ -83,6 +83,7 @@ type MerchOrder = {
   taxCents: number;
   totalCents: number;
 };
+type SellerPayoutFilter = "ready" | "incomplete" | "not_started";
 
 const viewRoles: UserRole[] = ["moderator", "admin", "owner"];
 const pageSize = 50;
@@ -103,6 +104,7 @@ const orderStatusFilters = [
   "partially_refunded",
   "refunded",
 ] as const;
+const sellerPayoutFilters = ["ready", "incomplete", "not_started"] as const;
 const merchRules = [
   "Merch is public-buyable brand goods, separate from verified-only professional Stuff.",
   "Artist, studio, vendor, and official TheTattooCore sellers still need approval before listing products.",
@@ -155,6 +157,12 @@ function productStatusFilter(value: string | string[] | undefined) {
   return productStatusFilters.find((status) => status === rawValue) ?? null;
 }
 
+function sellerPayoutFilter(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+
+  return sellerPayoutFilters.find((status) => status === rawValue) ?? null;
+}
+
 function searchTerm(value: string | string[] | undefined) {
   const rawValue = Array.isArray(value) ? value[0] : value;
   const normalized = (rawValue ?? "")
@@ -170,12 +178,14 @@ function pageHref({
   orderStatus,
   page = 1,
   productStatus,
+  sellerPayoutStatus,
   search,
 }: {
   orderPage?: number;
   orderStatus?: string | null;
   page?: number;
   productStatus?: string | null;
+  sellerPayoutStatus?: string | null;
   search?: string | null;
 }) {
   const params = new URLSearchParams();
@@ -184,6 +194,7 @@ function pageHref({
   if (orderPage > 1) params.set("order_page", String(orderPage));
   if (orderStatus) params.set("order_status", orderStatus);
   if (productStatus) params.set("product_status", productStatus);
+  if (sellerPayoutStatus) params.set("seller_payout", sellerPayoutStatus);
   if (search) params.set("q", search);
 
   const query = params.toString();
@@ -219,6 +230,13 @@ function money(cents: number, currency: string) {
 
 function statusLabel(value: string) {
   return titleCaseStatus(value);
+}
+
+function payoutStatusLabel(value: SellerPayoutFilter) {
+  if (value === "ready") return "Payout ready";
+  if (value === "incomplete") return "Payout setup incomplete";
+
+  return "Payout not started";
 }
 
 function statusClass(status: ProductStatus) {
@@ -669,6 +687,7 @@ export default async function AdminMerchPage({
     page?: string | string[];
     product_status?: string | string[];
     q?: string | string[];
+    seller_payout?: string | string[];
   }>;
 }) {
   const params = await searchParams;
@@ -676,6 +695,7 @@ export default async function AdminMerchPage({
   const currentOrderPage = pageNumber(params.order_page);
   const activeOrderStatus = orderStatusFilter(params.order_status);
   const activeProductStatus = productStatusFilter(params.product_status);
+  const activeSellerPayoutStatus = sellerPayoutFilter(params.seller_payout);
   const activeSearch = searchTerm(params.q);
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
@@ -686,6 +706,7 @@ export default async function AdminMerchPage({
     orderStatus: activeOrderStatus,
     page: currentPage,
     productStatus: activeProductStatus,
+    sellerPayoutStatus: activeSellerPayoutStatus,
     search: activeSearch,
   });
   const supabase = await createClient();
@@ -706,6 +727,31 @@ export default async function AdminMerchPage({
     redirect("/admin");
   }
 
+  const { data: allSellerPayoutRows } = activeSellerPayoutStatus
+    ? await supabase
+        .from("stripe_connect_accounts")
+        .select("profile_id, charges_enabled, payouts_enabled, details_submitted")
+        .returns<
+          {
+            charges_enabled: boolean;
+            details_submitted: boolean;
+            payouts_enabled: boolean;
+            profile_id: string;
+          }[]
+        >()
+    : { data: [] };
+  const matchingSellerPayoutIds = (allSellerPayoutRows ?? [])
+    .filter((account) => {
+      const isReady =
+        account.charges_enabled && account.payouts_enabled && account.details_submitted;
+
+      if (activeSellerPayoutStatus === "ready") return isReady;
+      if (activeSellerPayoutStatus === "incomplete") return !isReady;
+
+      return true;
+    })
+    .map((account) => account.profile_id);
+
   let productQuery = supabase
     .from("merch_products")
     .select(
@@ -715,6 +761,18 @@ export default async function AdminMerchPage({
 
   if (activeProductStatus) {
     productQuery = productQuery.eq("status", activeProductStatus);
+  }
+  if (activeSellerPayoutStatus === "ready" || activeSellerPayoutStatus === "incomplete") {
+    productQuery = matchingSellerPayoutIds.length
+      ? productQuery.in("seller_id", matchingSellerPayoutIds)
+      : productQuery.eq("id", "00000000-0000-0000-0000-000000000000");
+  }
+  if (activeSellerPayoutStatus === "not_started" && matchingSellerPayoutIds.length) {
+    productQuery = productQuery.not(
+      "seller_id",
+      "in",
+      `(${matchingSellerPayoutIds.join(",")})`,
+    );
   }
   if (activeSearch) {
     productQuery = productQuery.or(
@@ -901,6 +959,7 @@ export default async function AdminMerchPage({
     orderStatus: activeOrderStatus,
     page: currentPage,
     productStatus: activeProductStatus,
+    sellerPayoutStatus: activeSellerPayoutStatus,
     search: activeSearch,
   });
 
@@ -981,7 +1040,10 @@ export default async function AdminMerchPage({
           </p>
         ) : null}
 
-        {activeProductStatus || activeOrderStatus || activeSearch ? (
+        {activeProductStatus ||
+        activeOrderStatus ||
+        activeSellerPayoutStatus ||
+        activeSearch ? (
           <div className="mb-4 flex flex-col gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
             <p className="font-semibold">
               Filtering Merch
@@ -999,7 +1061,15 @@ export default async function AdminMerchPage({
                   </span>
                 </>
               ) : null}
-              {activeProductStatus && activeOrderStatus ? " and" : null}
+              {activeSellerPayoutStatus ? (
+                <>
+                  {activeSearch || activeProductStatus ? " and" : " "} seller payout by{" "}
+                  <span>{payoutStatusLabel(activeSellerPayoutStatus)}</span>
+                </>
+              ) : null}
+              {(activeProductStatus || activeSellerPayoutStatus) && activeOrderStatus
+                ? " and"
+                : null}
               {activeOrderStatus ? (
                 <>
                   {" "}orders by{" "}
@@ -1028,6 +1098,9 @@ export default async function AdminMerchPage({
           {activeOrderStatus ? (
             <input name="order_status" type="hidden" value={activeOrderStatus} />
           ) : null}
+          {activeSellerPayoutStatus ? (
+            <input name="seller_payout" type="hidden" value={activeSellerPayoutStatus} />
+          ) : null}
           <label className="min-w-0">
             <span className="mb-1 block text-xs font-bold uppercase text-[var(--muted-strong)]">
               Search Merch admin
@@ -1045,7 +1118,7 @@ export default async function AdminMerchPage({
           </button>
         </form>
 
-        <div className="mb-4 grid gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm lg:grid-cols-2">
+        <div className="mb-4 grid gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm xl:grid-cols-3">
           <div>
             <p className="mb-2 text-xs font-bold uppercase text-[var(--muted-strong)]">
               Product status
@@ -1062,11 +1135,38 @@ export default async function AdminMerchPage({
                     orderStatus: activeOrderStatus,
                     page: 1,
                     productStatus: status,
+                    sellerPayoutStatus: activeSellerPayoutStatus,
                     search: activeSearch,
                   })}
                   key={status}
                 >
                   {statusLabel(status)}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase text-[var(--muted-strong)]">
+              Seller payout
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {sellerPayoutFilters.map((status) => (
+                <Link
+                  className={`rounded-md border px-2.5 py-1.5 text-xs font-semibold ${
+                    activeSellerPayoutStatus === status
+                      ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                      : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
+                  }`}
+                  href={pageHref({
+                    orderStatus: activeOrderStatus,
+                    page: 1,
+                    productStatus: activeProductStatus,
+                    sellerPayoutStatus: status,
+                    search: activeSearch,
+                  })}
+                  key={status}
+                >
+                  {payoutStatusLabel(status)}
                 </Link>
               ))}
             </div>
@@ -1087,6 +1187,7 @@ export default async function AdminMerchPage({
                     orderStatus: status,
                     page: currentPage,
                     productStatus: activeProductStatus,
+                    sellerPayoutStatus: activeSellerPayoutStatus,
                     search: activeSearch,
                   })}
                   key={status}
@@ -1157,6 +1258,7 @@ export default async function AdminMerchPage({
                 orderStatus: activeOrderStatus,
                 page: nextPage,
                 productStatus: activeProductStatus,
+                sellerPayoutStatus: activeSellerPayoutStatus,
                 search: activeSearch,
               })
             }
@@ -1189,6 +1291,7 @@ export default async function AdminMerchPage({
                   orderStatus: activeOrderStatus,
                   page: nextPage,
                   productStatus: activeProductStatus,
+                  sellerPayoutStatus: activeSellerPayoutStatus,
                   search: activeSearch,
                 })
               }
@@ -1222,6 +1325,7 @@ export default async function AdminMerchPage({
                 href={pageHref({
                   page: currentPage,
                   productStatus: activeProductStatus,
+                  sellerPayoutStatus: activeSellerPayoutStatus,
                   search: activeSearch,
                 })}
               >
@@ -1238,6 +1342,7 @@ export default async function AdminMerchPage({
                 orderStatus: activeOrderStatus,
                 page: currentPage,
                 productStatus: activeProductStatus,
+                sellerPayoutStatus: activeSellerPayoutStatus,
                 search: activeSearch,
               })
             }
@@ -1268,6 +1373,7 @@ export default async function AdminMerchPage({
                   orderStatus: activeOrderStatus,
                   page: currentPage,
                   productStatus: activeProductStatus,
+                  sellerPayoutStatus: activeSellerPayoutStatus,
                   search: activeSearch,
                 })
               }

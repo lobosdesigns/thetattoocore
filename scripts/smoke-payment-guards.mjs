@@ -30,6 +30,7 @@ const adCreditSpendMigration = readFileSync(
 );
 const globalsCss = readFileSync("src/app/globals.css", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
+const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
 const fees = readFileSync("src/lib/payments/fees.ts", "utf8");
 const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
@@ -401,6 +402,18 @@ checks.push({
     adminMerchPage.includes("Payout not started") &&
     adminMerchPage.includes("Payout note:") &&
     productPlan.includes("Admin Merch payout-readiness chips"),
+});
+checks.push({
+  label: "admin Merch can filter seller payout readiness",
+  ok:
+    adminMerchPage.includes("function sellerPayoutFilter") &&
+    adminMerchPage.includes('params.set("seller_payout", sellerPayoutStatus)') &&
+    adminMerchPage.includes("Seller payout") &&
+    adminMerchPage.includes("sellerPayoutFilters.map") &&
+    adminMerchPage.includes('activeSellerPayoutStatus === "not_started"') &&
+    adminMerchPage.includes("productQuery.not") &&
+    publicSmoke.includes('path: "/admin/merch?seller_payout=incomplete"') &&
+    productPlan.includes("payout-readiness filters"),
 });
 checks.push({
   label: "admin Merch queues include searchable product and order review",
