@@ -667,6 +667,12 @@ export default async function MerchProductPage({
                   Shipping address is collected during checkout for this product.
                 </p>
               ) : null}
+              <Link
+                className="mt-3 flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-4 text-sm font-semibold"
+                href="/help/merch-products-orders"
+              >
+                Merch help
+              </Link>
             </section>
 
             {claims?.sub ? (

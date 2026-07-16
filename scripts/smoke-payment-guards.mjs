@@ -451,7 +451,8 @@ checks.push({
     merchDetailPage.includes("estimatedSingleItemTotalCents") &&
     merchDetailPage.includes("Estimated fee on one item") &&
     merchDetailPage.includes("before any shipping, tax, or discount") &&
-    merchDetailPage.includes("Shipping address is collected during checkout"),
+    merchDetailPage.includes("Shipping address is collected during checkout") &&
+    merchDetailPage.includes('href="/help/merch-products-orders"'),
 });
 checks.push({
   label: "shared platform fee helper stays at launch rate",
