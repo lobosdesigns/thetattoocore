@@ -1679,6 +1679,32 @@ export async function updateMerchProductStatus(formData: FormData) {
     );
   }
 
+  if (status === "active" && !product.is_official) {
+    const { data: payoutAccount, error: payoutError } = await supabase
+      .from("stripe_connect_accounts")
+      .select("charges_enabled, payouts_enabled, details_submitted")
+      .eq("profile_id", product.seller_id)
+      .maybeSingle<{
+        charges_enabled: boolean;
+        details_submitted: boolean;
+        payouts_enabled: boolean;
+      }>();
+
+    const payoutReady =
+      Boolean(payoutAccount?.charges_enabled) &&
+      Boolean(payoutAccount?.payouts_enabled) &&
+      Boolean(payoutAccount?.details_submitted);
+
+    if (payoutError || !payoutReady) {
+      redirect(
+        adminMerchMessage(
+          "This seller must finish payout setup before Merch checkout can be activated.",
+          returnTo,
+        ),
+      );
+    }
+  }
+
   const now = new Date().toISOString();
   const { error: updateError } = await supabase
     .from("merch_products")

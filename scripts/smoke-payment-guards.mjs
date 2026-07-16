@@ -497,6 +497,17 @@ checks.push({
     productPlan.includes("Admin Merch payout-readiness chips"),
 });
 checks.push({
+  label: "admin Merch activation requires seller payout readiness",
+  ok:
+    adminActions.includes("This seller must finish payout setup before Merch checkout can be activated.") &&
+    adminActions.includes('status === "active" && !product.is_official') &&
+    adminActions.includes(".from(\"stripe_connect_accounts\")") &&
+    adminActions.includes("charges_enabled") &&
+    adminActions.includes("payouts_enabled") &&
+    adminActions.includes("details_submitted") &&
+    productPlan.includes("admin activation guard requiring seller payout readiness"),
+});
+checks.push({
   label: "admin Merch can filter seller payout readiness",
   ok:
     adminMerchPage.includes("function sellerPayoutFilter") &&
