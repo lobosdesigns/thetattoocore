@@ -262,6 +262,7 @@
 - Public route smoke on July 15, 2026 passed after the Verification Help Center guide gained approval, tool-unlock, document-privacy, and resubmission guidance for artists, studios, and vendors. Live deploy version `f04c0387-0e49-47d4-b3b4-02ddc7cbf401` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after DM compose search began including active DM participants as well as accepted follower/following profiles. Live deploy version `57d0bfac-a4c5-43fc-bb47-76f11bd6643c` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after payout-return copy stopped naming the payment processor in member-facing Account redirects. Live deploy version `ee434fce-c19e-4721-a235-d1cb11fa9f50` passed public route smoke.
+- Public route smoke on July 16, 2026 passed after admin booking-refund request copy stopped naming the payment processor in redirect messages. Live deploy version `490373ca-3cc7-4716-816e-0b934029b530` passed public route smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
