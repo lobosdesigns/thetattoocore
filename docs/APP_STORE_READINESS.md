@@ -289,6 +289,7 @@
 - Public route smoke on July 16, 2026 passed after Support Merch copy moved from internal readiness wording to member-facing order, fulfillment, refund, seller, and product-safety support guidance. Live deploy version `29a9a76c-b0e8-4bf4-b182-b6eee3c53ca6` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after Search Merch copy moved from internal readiness wording to member-facing active-product discovery and private support guidance, with a security guard blocking the old planning phrase. Live deploy version `eec2b7e1-2e1f-4b60-b135-fde7a05ed7e0` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after Account seller Merch sales copy moved from admin/payment wording to private support review wording, with payment guards preserving the commerce safety expectations. Live deploy version `ced36850-da56-404f-bd40-810cbda0a5e7` passed public route smoke.
+- Public route smoke on July 16, 2026 passed after Privacy copy moved from internal launch-review wording to member-facing privacy, commerce, support, and public-example guidance, with security guards blocking the old roadmap-style phrases. Live deploy version `db1f8d1d-30f7-44d3-9671-e566fcac3669` passed public route smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
