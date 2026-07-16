@@ -27,7 +27,7 @@ const sections = [
   },
   {
     body:
-      "Merch checkout is limited during launch. For order, fulfillment, refund, seller, or product-safety questions, use Support with the product or order link so the issue can be reviewed privately.",
+      "Merch checkout is limited during launch. For missing, damaged, wrong, delayed, returned, fulfillment, refund, seller, or product-safety questions, use Support with the product or order link so the issue can be reviewed privately.",
     title: "Merch Support",
   },
   {

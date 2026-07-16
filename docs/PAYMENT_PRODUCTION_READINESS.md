@@ -55,7 +55,7 @@ Before live Merch checkout, decide whether shipping and tax are platform-calcula
 - Do not let products that require regulated, unsafe, adult sexual, counterfeit, or professional-equipment handling enter Merch.
 - Keep buyer shipping addresses private to the seller/admin fulfillment surfaces only; do not expose them on public pages, feeds, screenshots, or notifications.
 - Tax handling must be reviewed before production: decide nexus, marketplace facilitator responsibility, taxable categories, exemptions, and receipt language.
-- Add a written support path for missing, damaged, wrong, delayed, or returned packages before live checkout is promoted.
+- Written Support and Help Center paths cover missing, damaged, wrong, delayed, or returned packages; keep them current before live checkout is promoted.
 
 ## Draft Refund And Dispute Procedure
 

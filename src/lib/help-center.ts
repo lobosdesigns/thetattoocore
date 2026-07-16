@@ -338,6 +338,11 @@ export const helpArticles = [
           "Refund requests go to review during launch. Support checks the order, seller fulfillment, buyer reason, and payment status before any money movement is approved. Sellers should write clear return/refund notes before submitting products so buyers know what to expect.",
         question: "How do Merch refunds work during launch?",
       },
+      {
+        answer:
+          "Use Support for missing, damaged, wrong, delayed, or returned packages. Include your username, the order or product link, what happened, and any private photos or tracking details that help support review the issue.",
+        question: "What if a package has a problem?",
+      },
     ],
     lastReviewed: "July 16, 2026",
     relatedSlugs: ["verification-documents", "ads-and-credits"],
@@ -351,7 +356,7 @@ export const helpArticles = [
       "Watch orders, fulfillment status, refund requests, and support questions from Account.",
       "For each paid order, use the seller order card to review the private shipping address, then mark the item fulfilled only after shipping, pickup, or handoff is ready.",
       "Add tracking carrier, tracking number, or a tracking link when available. If there is no tracking, use a clear fulfillment note before marking the order complete.",
-      "Use Admin or Support for order questions that need payment-reference lookup, refund review, seller non-delivery review, or dispute review.",
+      "Use Admin or Support for missing, damaged, wrong, delayed, or returned packages, payment-reference lookup, refund review, seller non-delivery review, or dispute review.",
     ],
     title: "How to set up Merch products and handle orders",
   },
