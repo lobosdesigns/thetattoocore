@@ -255,6 +255,7 @@
 - Public route smoke on July 15, 2026 passed after Admin Merch order cards gained formatted buyer shipping-address details for private fulfillment, refund, and dispute review. Live deploy version `8b864663-126b-4a1d-b2dc-d6960fb73dac` passed public route smoke.
 - Public route smoke on July 15, 2026 passed after Admin Merch order search gained order-item title matching alongside buyer, shipping, and payment-reference search. Live deploy version `ed33774d-81de-4657-ad95-611cb2f28e8a` passed public route smoke.
 - Public route smoke on July 15, 2026 passed after Admin Merch gained fulfillment filters for paid orders needing seller fulfillment and orders with seller-fulfilled line items. Live deploy version `e0fb247d-8958-47ac-85f5-f0dddec425ad` passed public route smoke.
+- Public route smoke on July 15, 2026 passed after Admin Merch order summary cards gained a needs-fulfillment count/link and filter-summary copy for fulfillment review. Live deploy version `bb432940-1968-4f93-840a-f822ce43d39d` passed public route smoke after one transient deploy retry.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
