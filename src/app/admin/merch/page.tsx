@@ -77,6 +77,8 @@ type MerchOrder = {
   shippingCents: number;
   shippingName: string | null;
   status: string;
+  stripeCheckoutSessionId: string | null;
+  stripePaymentIntentId: string | null;
   subtotalCents: number;
   taxCents: number;
   totalCents: number;
@@ -581,6 +583,26 @@ function OrderCard({
           {order.adminNote ? <p>Admin note: {order.adminNote}</p> : null}
         </div>
       ) : null}
+      {order.stripeCheckoutSessionId || order.stripePaymentIntentId ? (
+        <div className="mt-3 grid gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-3 text-xs leading-5 text-[var(--muted)] sm:grid-cols-2">
+          {order.stripeCheckoutSessionId ? (
+            <p className="break-all">
+              Checkout session:{" "}
+              <span className="font-semibold text-[var(--foreground)]">
+                {order.stripeCheckoutSessionId}
+              </span>
+            </p>
+          ) : null}
+          {order.stripePaymentIntentId ? (
+            <p className="break-all">
+              Payment intent:{" "}
+              <span className="font-semibold text-[var(--foreground)]">
+                {order.stripePaymentIntentId}
+              </span>
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       {order.fulfilledAt || order.cancelledAt || order.refundedAt ? (
         <div className="mt-3 grid gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-3 text-xs leading-5 text-[var(--muted)] sm:grid-cols-3">
           {order.fulfilledAt ? (
@@ -792,7 +814,7 @@ export default async function AdminMerchPage({
   let orderQuery = supabase
     .from("merch_orders")
     .select(
-      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, admin_note, created_at, fulfilled_at, cancelled_at, refunded_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id, title_snapshot, quantity, seller_fulfilled_at, tracking_carrier, tracking_number, tracking_url)",
+      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, admin_note, stripe_checkout_session_id, stripe_payment_intent_id, created_at, fulfilled_at, cancelled_at, refunded_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id, title_snapshot, quantity, seller_fulfilled_at, tracking_carrier, tracking_number, tracking_url)",
       { count: "exact" },
     );
 
@@ -801,7 +823,7 @@ export default async function AdminMerchPage({
   }
   if (activeSearch) {
     orderQuery = orderQuery.or(
-      `customer_email.ilike.%${activeSearch}%,shipping_name.ilike.%${activeSearch}%`,
+      `customer_email.ilike.%${activeSearch}%,shipping_name.ilike.%${activeSearch}%,stripe_checkout_session_id.ilike.%${activeSearch}%,stripe_payment_intent_id.ilike.%${activeSearch}%`,
     );
   }
 
@@ -833,6 +855,8 @@ export default async function AdminMerchPage({
         shipping_cents: number;
         shipping_name: string | null;
         status: string;
+        stripe_checkout_session_id: string | null;
+        stripe_payment_intent_id: string | null;
         subtotal_cents: number;
         tax_cents: number;
         total_cents: number;
@@ -863,6 +887,8 @@ export default async function AdminMerchPage({
     shippingCents: order.shipping_cents,
     shippingName: order.shipping_name,
     status: order.status,
+    stripeCheckoutSessionId: order.stripe_checkout_session_id,
+    stripePaymentIntentId: order.stripe_payment_intent_id,
     subtotalCents: order.subtotal_cents,
     taxCents: order.tax_cents,
     totalCents: order.total_cents,
@@ -1011,7 +1037,7 @@ export default async function AdminMerchPage({
               defaultValue={activeSearch}
               maxLength={80}
               name="q"
-              placeholder="Product title, category, customer email, or shipping name"
+              placeholder="Product title, category, customer email, shipping name, or payment ID"
             />
           </label>
           <button className="h-11 self-end rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
