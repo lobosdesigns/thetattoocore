@@ -456,12 +456,15 @@ checks.push({
   label: "admin Merch queues include searchable product and order review",
   ok:
     adminMerchPage.includes("Search Merch admin") &&
-    adminMerchPage.includes("Product title, category, customer email, shipping name, or payment ID") &&
+    adminMerchPage.includes("Product title, order item, customer email, shipping name, or payment ID") &&
     adminMerchPage.includes("title.ilike") &&
+    adminMerchPage.includes('from("merch_order_items")') &&
+    adminMerchPage.includes("title_snapshot") &&
+    adminMerchPage.includes("uniqueMatchingOrderItemIds") &&
     adminMerchPage.includes("customer_email.ilike") &&
     adminMerchPage.includes("stripe_payment_intent_id.ilike") &&
     adminMerchPage.includes("Payment intent:") &&
-    productPlan.includes("product/order filters plus title/category/customer/payment-reference search"),
+    productPlan.includes("order item title, customer, shipping, and payment-reference search"),
 });
 checks.push({
   label: "admin Merch and payment queues use friendly status labels",

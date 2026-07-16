@@ -908,6 +908,17 @@ export default async function AdminMerchPage({
   const moderationCount = products.filter(
     (product) => product.moderationStatus !== "active",
   ).length;
+  const matchingOrderItemIds = activeSearch
+    ? (
+        await supabase
+          .from("merch_order_items")
+          .select("order_id")
+          .ilike("title_snapshot", `%${activeSearch}%`)
+          .limit(100)
+          .returns<{ order_id: string }[]>()
+      ).data?.map((item) => item.order_id) ?? []
+    : [];
+  const uniqueMatchingOrderItemIds = Array.from(new Set(matchingOrderItemIds));
   let orderQuery = supabase
     .from("merch_orders")
     .select(
@@ -919,8 +930,19 @@ export default async function AdminMerchPage({
     orderQuery = orderQuery.eq("status", activeOrderStatus);
   }
   if (activeSearch) {
+    const orderSearchFields = [
+      `customer_email.ilike.%${activeSearch}%`,
+      `shipping_name.ilike.%${activeSearch}%`,
+      `stripe_checkout_session_id.ilike.%${activeSearch}%`,
+      `stripe_payment_intent_id.ilike.%${activeSearch}%`,
+    ];
+
+    if (uniqueMatchingOrderItemIds.length > 0) {
+      orderSearchFields.push(`id.in.(${uniqueMatchingOrderItemIds.join(",")})`);
+    }
+
     orderQuery = orderQuery.or(
-      `customer_email.ilike.%${activeSearch}%,shipping_name.ilike.%${activeSearch}%,stripe_checkout_session_id.ilike.%${activeSearch}%,stripe_payment_intent_id.ilike.%${activeSearch}%`,
+      orderSearchFields.join(","),
     );
   }
 
@@ -1151,7 +1173,7 @@ export default async function AdminMerchPage({
               defaultValue={activeSearch}
               maxLength={80}
               name="q"
-              placeholder="Product title, category, customer email, shipping name, or payment ID"
+              placeholder="Product title, order item, customer email, shipping name, or payment ID"
             />
           </label>
           <button className="h-11 self-end rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
