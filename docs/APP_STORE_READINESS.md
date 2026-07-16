@@ -253,6 +253,7 @@
 - Public route smoke on July 15, 2026 passed after Merch product detail pages gained a buyer-facing one-item TTC fee estimate plus a shipping-address cue before checkout. Live deploy version `5e6eb6c1-bd6a-4aa8-b562-3244572e4eaf` passed public route smoke.
 - Public route smoke on July 15, 2026 passed after Account > Merch sales began showing formatted buyer shipping-address details to the seller for fulfillment, scoped to the seller's own sold line items. Live deploy version `de118d4e-b2ac-404e-bbf9-a526d72429f5` passed public route smoke.
 - Public route smoke on July 15, 2026 passed after Admin Merch order cards gained formatted buyer shipping-address details for private fulfillment, refund, and dispute review. Live deploy version `8b864663-126b-4a1d-b2dc-d6960fb73dac` passed public route smoke.
+- Public route smoke on July 15, 2026 passed after Admin Merch order search gained order-item title matching alongside buyer, shipping, and payment-reference search. Live deploy version `ed33774d-81de-4657-ad95-611cb2f28e8a` passed public route smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
