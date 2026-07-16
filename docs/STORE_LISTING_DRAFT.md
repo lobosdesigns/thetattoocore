@@ -36,7 +36,7 @@ Members and reviewers can use the Help Center for plain-language guides on Searc
 
 ## Audience And Age Position
 
-TheTattooCore is for adults 18+ because tattoo, piercing, healing, scar cover, and body-art documentation can involve mature body context even when the content is not sexual. Visible nudity is not allowed for launch.
+TheTattooCore is for adults 18+ because tattoo, piercing, healing, scar cover, and body-art documentation can involve mature body context even when the content is not sexual. Visible nudity is not allowed.
 
 ## Support And Legal URLs
 

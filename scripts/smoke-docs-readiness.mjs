@@ -169,7 +169,7 @@ const checks = [
       docs["docs/AGE_RATING_PREP.md"].includes("AI"),
   },
   {
-    label: "data safety prep covers launch data and privacy review areas",
+    label: "data safety prep covers current data and privacy review areas",
     ok:
       docs["docs/DATA_SAFETY_PREP.md"].includes("Account data") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("User-generated content") &&
@@ -182,7 +182,7 @@ const checks = [
       docs["docs/DATA_SAFETY_PREP.md"].includes("support@thetattoocore.com"),
   },
   {
-    label: "real-device QA checklist covers launch-critical flows",
+    label: "real-device QA checklist covers app-critical flows",
     ok:
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Create a new account") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("forgot-password") &&

@@ -12,7 +12,7 @@
 - Data-safety/privacy prep lives in `docs/DATA_SAFETY_PREP.md`; compare it to the live feature set and final Privacy policy before answering store data-safety questions.
 - Real-device QA gates live in `docs/REAL_DEVICE_QA_CHECKLIST.md` and should pass before wrapper packaging.
 - Production payment gates live in `docs/PAYMENT_PRODUCTION_READINESS.md` and should pass before real commerce appears in native builds.
-- Visible nudity is not allowed for launch to reduce review and moderation risk.
+- Visible nudity is not allowed to reduce review and moderation risk.
 - Merch and ads use hosted checkout in test mode; production payments, seller payouts, taxes, refunds, disputes, and app-store policy review from `docs/PAYMENT_PRODUCTION_READINESS.md` must be finished before real commerce is promoted in native builds.
 
 ## Wrapper Decision
@@ -32,7 +32,7 @@ Start with a thin native wrapper now that core web smoke/390px mobile checks are
 - Confirm screenshots do not expose private DMs, license documents, admin queues, real payment data, personal owner contact data, or visible infrastructure/provider names.
 - Confirm support email and public legal/contact surfaces use `support@thetattoocore.com` or final company/legal contact details, not personal owner information.
 - Have counsel review Terms, Privacy, account deletion language, moderation policy, marketplace rules, and payment/refund language.
-- Decide whether native builds expose Merch checkout at launch or keep it web-only/test-mode until production payment policy is approved.
+- Decide whether native builds expose Merch checkout or keep it web-only/test-mode until production payment policy is approved.
 - Prepare store age rating answers around 18+, user-generated content, moderation/reporting, no visible nudity policy, social interaction, DMs, marketplace-like browsing, and hosted checkout.
 - Prepare store data-safety/privacy answers around account/profile data, user-generated content, DMs, verification documents, moderation records, payment references, coarse location, notifications, deletion requests, and public-search visibility.
 

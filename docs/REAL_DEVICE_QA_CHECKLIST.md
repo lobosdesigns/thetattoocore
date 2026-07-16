@@ -8,7 +8,7 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 - Run `npm run smoke:mobile` against production and confirm the 390px mobile browser checks pass for auth, support/help/legal, search/profile, missing-detail fallback, and checkout-status routes before manual device testing.
 - Confirm the build points at `https://thetattoocore.com/login`.
 - Confirm support, privacy, and terms links open from logged-out and logged-in surfaces.
-- Open Help Center on mobile, search for "getting started", and confirm the first-run guide explains account type, profile setup, privacy, launch content rules, main sections, verification, and Support.
+- Open Help Center on mobile, search for "getting started", and confirm the first-run guide explains account type, profile setup, privacy, content rules, main sections, verification, and Support.
 - Open Help Center on mobile, search for "saved", and confirm the Search/Saved guide explains usernames, broader terms, privacy-safe results, and saved search shortcuts.
 - Open the Help Center privacy/safety/support guide on mobile and confirm it explains reports, blocks, account deletion requests, support boundaries, and private account issues.
 - Open the Booking guide and confirm it explains deposit confirmation, TTC fee visibility, private calendar-note limits, and refund-review expectations.
@@ -33,7 +33,7 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 
 - Create a 4U image post and a short video post.
 - Use the image crop tools before posting in at least one upload area; confirm original, square, portrait, landscape, or banner framing previews update and the final upload uses the selected crop.
-- Create a Story photo/GIF/short video and confirm it appears in the Stories rail, opens in the media viewer, plays videos without a visible download button, and expires from the rail after the expiry window in later QA.
+- Create a Story photo/GIF/short video and confirm it appears in the Stories rail, opens in the media viewer, plays videos without a visible download button, and expires from the rail after the expiry window.
 - With no active Stories, confirm the rail shows a clear "No active stories yet" prompt instead of disabled or coming-soon placeholders.
 - Open a Story from a public profile and confirm signed-in viewers can react, send a DM reply, and report from the viewer without opening the wrong composer.
 - Confirm 4U captions respect the 40-word limit.
@@ -97,7 +97,7 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 - Confirm public-safe links show limited previews and correct Open Graph metadata.
 - Confirm private routes redirect to `/login` with the right return path.
 - Confirm sensitive or admin-restricted legacy content stays locked or blurred for logged-out users and does not expose the full media URL.
-- Confirm visible nudity upload copy is removed from launch upload forms and the no-visible-nudity policy is clear.
+- Confirm visible nudity upload copy is removed from upload forms and the no-visible-nudity policy is clear.
 - Confirm report/block tools are reachable and understandable on mobile.
 
 ## PWA And Store Readiness

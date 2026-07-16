@@ -2,12 +2,12 @@
 
 Use this as an internal checklist before answering Google Play Data Safety, App Store privacy nutrition labels, payment-provider reviews, or privacy-policy updates. Final answers should be checked against the exact live build and current store questionnaires.
 
-## Current Launch Data Types
+## Current Data Types
 
 - Account data: email address, username, display name, 18+ confirmation, password handled by the auth provider, account status, role, and notification preferences.
 - Profile data: avatar, bio, account type, public profile settings, website/social links, coarse city/region/country settings, language preference, appearance preference, and optional artist-to-studio/shop link.
 - User-generated content: 4U posts, Gossip posts, Stories, Stuff listings, Gigs, Merch products, comments, replies, Help Center questions/comments, reports, saves, follows, blocks, and direct messages.
-- Media: profile photos, post/listing/gig/story/comment/DM image or GIF uploads, short launch videos where supported, and private verification/license documents.
+- Media: profile photos, post/listing/gig/story/comment/DM image or GIF uploads, short videos where supported, and private verification/license documents.
 - Commerce and payment records: test-mode checkout/session identifiers, order states, ad payment states, booking-deposit states, platform fee amounts, fulfillment/refund status, and payment event references. Raw card, bank, routing, and payout credentials must not be collected in TTC forms.
 - Verification data: license or certification name, optional license number, issuing location, expiration date, verification status, reviewer notes, and private uploaded proof documents.
 - Safety and moderation data: reports, moderation status, warnings/escalations, blocks, admin audit records, account deletion requests, and related support context.
@@ -31,9 +31,9 @@ Use this as an internal checklist before answering Google Play Data Safety, App 
 
 ## Retention And Deletion
 
-- Account deletion requests are manually reviewed during launch, with a target review window documented in public support/privacy copy.
+- Account deletion requests are manually reviewed, with a target review window documented in public support/privacy copy.
 - Preserve records where needed for safety, fraud, chargebacks, dispute handling, legal hold, moderation audits, payment/order history, or professional verification review.
-- Future irreversible deletion automation needs a reviewed retention map before launch.
+- Future irreversible deletion automation needs a reviewed retention map before it is enabled.
 - Store screenshots and public marketing materials must avoid private DMs, license documents, personal emails, real payment data, sensitive content, and copyrighted tattoo art.
 
 ## Before Submission
