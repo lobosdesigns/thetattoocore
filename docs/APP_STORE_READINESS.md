@@ -269,6 +269,7 @@
 - Public route smoke on July 16, 2026 passed after public video-upload copy moved away from later/roadmap wording while keeping the current launch cap clear. Live deploy version `3dce7078-eef7-4783-a8d3-3c2186e700ae` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after DM compose search began ranking exact username, prefix username, display-name, location, and account-type matches before showing picker results. Live deploy version `063e1349-da03-4475-8e11-c6fa903237ce` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after Merch, ad, and booking checkout-session failures began logging private provider details internally while showing generic retry copy to members. Live deploy version `fb672dc7-0978-4e12-a97e-5ed2503e9fed` passed public route smoke.
+- Public route smoke on July 16, 2026 passed after Merch, ad, and booking checkout persistence failures stopped redirecting raw database error text to members. Live deploy version `0dd24e99-aaa4-413b-a897-2bdb688eb7dd` passed public route smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
