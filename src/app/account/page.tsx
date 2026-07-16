@@ -335,6 +335,29 @@ function money(cents: number, currency: string) {
   }).format(cents / 100);
 }
 
+function shippingAddressLines(value: unknown) {
+  if (!value || typeof value !== "object") return [];
+
+  const root = value as {
+    address?: Record<string, unknown>;
+    name?: unknown;
+  };
+  const address = root.address && typeof root.address === "object" ? root.address : {};
+  const text = (key: string) =>
+    typeof address[key] === "string" ? String(address[key]).trim() : "";
+  const cityStatePostal = [text("city"), text("state"), text("postal_code")]
+    .filter(Boolean)
+    .join(", ");
+
+  return [
+    typeof root.name === "string" ? root.name.trim() : "",
+    text("line1"),
+    text("line2"),
+    cityStatePostal,
+    text("country"),
+  ].filter(Boolean);
+}
+
 function adClickRate({
   clicks,
   impressions,
@@ -660,7 +683,7 @@ export default async function AccountPage({
   const { data: merchSales } = await supabase
     .from("merch_order_items")
     .select(
-      "id, order_id, title_snapshot, quantity, unit_price_cents, line_total_cents, currency, fulfillment_status, seller_fulfilled_at, tracking_carrier, tracking_number, tracking_url, created_at, merch_orders(id, status, customer_email, shipping_name, created_at, fulfilled_at, cancelled_at, refunded_at)",
+      "id, order_id, title_snapshot, quantity, unit_price_cents, line_total_cents, currency, fulfillment_status, seller_fulfilled_at, tracking_carrier, tracking_number, tracking_url, created_at, merch_orders(id, status, customer_email, shipping_name, shipping_address, created_at, fulfilled_at, cancelled_at, refunded_at)",
     )
     .eq("seller_id", claims.sub)
     .order("created_at", { ascending: false })
@@ -679,6 +702,7 @@ export default async function AccountPage({
           fulfilled_at: string | null;
           id: string;
           refunded_at: string | null;
+          shipping_address: Record<string, unknown> | null;
           shipping_name: string | null;
           status: string;
         } | null;
@@ -2611,6 +2635,7 @@ export default async function AccountPage({
                   const canMarkFulfilled =
                     order?.status === "paid" &&
                     item.fulfillment_status === "unfulfilled";
+                  const addressLines = shippingAddressLines(order?.shipping_address);
 
                   return (
                     <article
@@ -2680,6 +2705,20 @@ export default async function AccountPage({
                           </p>
                         ) : null}
                       </div>
+                      {addressLines.length ? (
+                        <div className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-3 text-xs leading-5 text-[var(--muted)]">
+                          <p className="font-bold uppercase text-[var(--muted-strong)]">
+                            Shipping address
+                          </p>
+                          <address className="mt-2 not-italic">
+                            {addressLines.map((line) => (
+                              <span className="block" key={line}>
+                                {line}
+                              </span>
+                            ))}
+                          </address>
+                        </div>
+                      ) : null}
                       <form action={markMerchSaleFulfilled} className="mt-4">
                         <input
                           name="order_item_id"

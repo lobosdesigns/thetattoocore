@@ -326,6 +326,15 @@ checks.push({
     statusLabels.includes('if (status === "unfulfilled") return "Not fulfilled"'),
 });
 checks.push({
+  label: "seller Merch sales show shipping address details for fulfillment",
+  ok:
+    accountPage.includes("function shippingAddressLines") &&
+    accountPage.includes("shipping_address") &&
+    accountPage.includes("const addressLines = shippingAddressLines") &&
+    accountPage.includes("Shipping address") &&
+    accountPage.includes("<address"),
+});
+checks.push({
   label: "merch refund reviews are audit-only before production refund rules",
   ok:
     accountActions.includes("export async function requestMerchRefundReview") &&
