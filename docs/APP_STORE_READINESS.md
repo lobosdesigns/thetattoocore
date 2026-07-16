@@ -297,6 +297,7 @@
 - Full verification on July 16, 2026 passed after the public-copy cleanup and Merch payout-readiness hardening: lint, production build, hydration/media/content/share/profile/admin/story/DM/booking/payment/PWA/native/store/security/theme/docs guards, mobile smoke, and live public route smoke all passed.
 - Public route smoke on July 16, 2026 passed after Merch submit/edit began requiring ship-from details for shipped products plus fulfillment and return/refund notes before review, giving admins and buyers clearer product-support context. Live deploy version `f62117b5-39cc-4159-b6a6-6e186f64b353` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after the Merch Help Center guide was updated to explain required ship-from, fulfillment, and return/refund notes for seller submissions and order handling. Live deploy version `9d9dc2e4-16ff-48bf-b692-6cc4f11d318d` passed public route smoke.
+- Public route smoke on July 16, 2026 passed after legacy active Merch products gained activation and checkout guards requiring buyer-support-ready ship-from, fulfillment, and return/refund details before checkout can open. Live deploy version `62907280-7e3b-4819-8508-a2e5641434d3` passed public route smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
