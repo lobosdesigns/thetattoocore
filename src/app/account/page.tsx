@@ -135,8 +135,8 @@ const bookingCalendarPrepItems = [
     "Accepted bookings with a scheduled time give both people a private Add to calendar download.",
   ],
   [
-    "Calendar sync later",
-    "Google, Apple, or iCalendar account sync can be added after launch payment and policy review.",
+    "Calendar prep",
+    "Use Google, Apple, or iCalendar prep notes to keep booking expectations clear while TTC handles requests, deposits, and private calendar downloads.",
   ],
 ] as const;
 const merchSellerReadinessItems = [
@@ -1131,9 +1131,9 @@ export default async function AccountPage({
                     name="calendar_connection_status"
                   >
                     <option value="manual">Manual setup</option>
-                    <option value="google_planned">Google calendar later</option>
+                    <option value="google_planned">Google calendar prep</option>
                     <option value="apple_ical_planned">
-                      Apple or iCalendar later
+                      Apple/iCalendar prep
                     </option>
                   </select>
                   <span className="text-xs font-normal leading-5 text-[var(--muted-strong)]">

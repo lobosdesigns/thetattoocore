@@ -204,8 +204,8 @@ const checks = [
       accountPage.includes("see the expected deposit") &&
       accountPage.includes("cancellation_policy") &&
       accountPage.includes('name="calendar_connection_status"') &&
-      accountPage.includes("Google calendar later") &&
-      accountPage.includes("Apple or iCalendar later"),
+      accountPage.includes("Google calendar prep") &&
+      accountPage.includes("Apple/iCalendar prep"),
   },
   {
     label: "account page exposes TimeTix-style appointment type controls",
@@ -403,7 +403,7 @@ const checks = [
       !accountPage.includes('calendar_connection_status ?? "manual").replaceAll("_", " ")') &&
       statusLabels.includes("export function calendarConnectionStatusLabel") &&
       statusLabels.includes('if (!status || status === "manual") return "Manual setup"') &&
-      statusLabels.includes('if (status === "apple_ical_planned") return "Apple or iCalendar later"'),
+      statusLabels.includes('if (status === "apple_ical_planned") return "Apple/iCalendar prep"'),
   },
   {
     label: "DM threads surface attached booking requests",
@@ -476,8 +476,8 @@ const checks = [
       accountPage.includes("bookingCalendarPrepItems") &&
       accountPage.includes("Manual calendar plan") &&
       accountPage.includes("private Add to calendar download") &&
-      accountPage.includes("Calendar sync later") &&
-      accountPage.includes("Google, Apple, or iCalendar account sync can be added"),
+      accountPage.includes("Calendar prep") &&
+      accountPage.includes("Use Google, Apple, or iCalendar prep notes"),
   },
   {
     label: "booking slot foundation models appointment types, slots, blackouts, and calendar connections",
