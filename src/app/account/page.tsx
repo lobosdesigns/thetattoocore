@@ -1162,9 +1162,9 @@ export default async function AccountPage({
                     name="calendar_connection_status"
                   >
                     <option value="manual">Manual setup</option>
-                    <option value="google_planned">Google calendar prep</option>
+                    <option value="google_planned">Google Calendar</option>
                     <option value="apple_ical_planned">
-                      Apple/iCalendar prep
+                      Apple/iCalendar
                     </option>
                   </select>
                   <span className="text-xs font-normal leading-5 text-[var(--muted-strong)]">
