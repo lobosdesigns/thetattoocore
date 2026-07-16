@@ -131,6 +131,7 @@ const publicRoadmapSnippets = [
   "future calendar connection guidance",
   "planned for launch support",
   "planned for the booking tools",
+  "Public discovery should stay limited",
   "production purchases still need",
   "If translation is added",
   "should use hosted checkout",
