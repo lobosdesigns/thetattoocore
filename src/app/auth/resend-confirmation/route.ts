@@ -34,7 +34,6 @@ export async function POST(request: Request) {
   const redirectTo = String(formData.get("redirect_to") ?? "");
   const returnTo = cleanReturnTo(formData.get("return_to"));
   const messagePath = redirectTo === "/signup" ? "/signup" : "/login";
-  const origin = request.headers.get("origin") ?? siteUrl;
 
   if (!email) {
     return messageRedirect(
@@ -48,7 +47,7 @@ export async function POST(request: Request) {
   const { error } = await supabase.auth.resend({
     email,
     options: {
-      emailRedirectTo: `${origin}/auth/confirm?next=${encodeURIComponent(returnTo)}`,
+      emailRedirectTo: `${siteUrl}/auth/confirm?next=${encodeURIComponent(returnTo)}`,
     },
     type: "signup",
   });

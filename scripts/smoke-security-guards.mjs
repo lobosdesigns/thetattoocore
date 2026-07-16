@@ -198,6 +198,8 @@ const checks = [
       authResendConfirmation.includes(
         '"Could not resend confirmation email. Please try again."',
       ) &&
+      authResendConfirmation.includes("emailRedirectTo: `${siteUrl}/auth/confirm?next=${encodeURIComponent(returnTo)}`") &&
+      !authResendConfirmation.includes('request.headers.get("origin")') &&
       !authResendConfirmation.includes(
         'error.message || "Could not resend confirmation email."',
       ),
