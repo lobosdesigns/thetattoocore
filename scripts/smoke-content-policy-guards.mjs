@@ -228,6 +228,40 @@ const checks = [
       actions.includes('supabase.rpc("delete_thread_comment_for_current_user"'),
   },
   {
+    label: "comment actions hide raw create, media, like, edit, delete, and hide errors",
+    ok:
+      actions.includes('console.error("4U comment media upload failed.", upload?.error)') &&
+      actions.includes('"Could not upload comment media. Please try again."') &&
+      actions.includes('console.error("4U comment create failed.", error)') &&
+      actions.includes('"Could not add comment. Please try again."') &&
+      actions.includes('console.error("4U comment media attach failed.", mediaError)') &&
+      actions.includes('"Could not attach comment media. Please try again."') &&
+      actions.includes('console.error("4U comment like failed.", result.error)') &&
+      actions.includes('"Could not update comment like. Please try again."') &&
+      actions.includes('console.error("4U comment edit failed.", error)') &&
+      actions.includes('"Could not edit comment. Please try again."') &&
+      actions.includes('console.error("4U comment delete failed.", error)') &&
+      actions.includes('"Could not delete comment. Please try again."') &&
+      actions.includes('console.error("4U comment hide failed.", error)') &&
+      actions.includes('"Could not hide comment. Please try again."') &&
+      actions.includes('console.error("Gossip comment media upload failed.", upload?.error)') &&
+      actions.includes('console.error("Gossip comment create failed.", error)') &&
+      actions.includes('"Could not add thread comment. Please try again."') &&
+      actions.includes('console.error("Gossip comment media attach failed.", mediaError)') &&
+      actions.includes('console.error("Gossip comment like failed.", result.error)') &&
+      actions.includes('console.error("Gossip comment edit failed.", error)') &&
+      actions.includes('console.error("Gossip comment delete failed.", error)') &&
+      actions.includes('console.error("Gossip comment hide failed.", error)') &&
+      !actions.includes('upload?.error || "Could not upload comment media."') &&
+      !actions.includes('error.message || "Could not add comment."') &&
+      !actions.includes('mediaError.message || "Could not attach comment media."') &&
+      !actions.includes('result.error.message || "Could not update comment like."') &&
+      !actions.includes('error.message || "Could not edit comment."') &&
+      !actions.includes('error.message || "Could not delete comment."') &&
+      !actions.includes('error.message || "Could not hide comment."') &&
+      !actions.includes('error.message || "Could not add thread comment."'),
+  },
+  {
     label: "comment actions sanitize return paths before redirect and revalidation",
     ok:
       actions.includes("function cleanReturnPath") &&

@@ -2646,7 +2646,8 @@ export async function createPostComment(formData: FormData) {
       : null;
 
   if (upload?.error || (media && !upload?.path)) {
-    redirect(homeMessage(upload?.error || "Could not upload comment media."));
+    console.error("4U comment media upload failed.", upload?.error);
+    redirect(homeMessage("Could not upload comment media. Please try again."));
   }
 
   const { error } = await supabase.from("post_comments").insert({
@@ -2659,7 +2660,8 @@ export async function createPostComment(formData: FormData) {
 
   if (error) {
     if (upload?.path) await supabase.storage.from(MEDIA_BUCKET).remove([upload.path]);
-    redirect(homeMessage(error.message || "Could not add comment."));
+    console.error("4U comment create failed.", error);
+    redirect(homeMessage("Could not add comment. Please try again."));
   }
 
   if (upload?.path && metadata) {
@@ -2676,7 +2678,8 @@ export async function createPostComment(formData: FormData) {
       await supabase.rpc("delete_post_comment_for_current_user", {
         target_comment_id: commentId,
       });
-      redirect(homeMessage(mediaError.message || "Could not attach comment media."));
+      console.error("4U comment media attach failed.", mediaError);
+      redirect(homeMessage("Could not attach comment media. Please try again."));
     }
   }
 
@@ -2749,7 +2752,8 @@ export async function togglePostCommentLike(formData: FormData) {
       });
 
   if (result.error) {
-    redirect(homeMessage(result.error.message || "Could not update comment like."));
+    console.error("4U comment like failed.", result.error);
+    redirect(homeMessage("Could not update comment like. Please try again."));
   }
 
   if (!liked) {
@@ -2802,7 +2806,8 @@ export async function editPostComment(formData: FormData) {
     .eq("author_id", userId);
 
   if (error) {
-    redirect(homeMessage(error.message || "Could not edit comment.", "feed"));
+    console.error("4U comment edit failed.", error);
+    redirect(homeMessage("Could not edit comment. Please try again.", "feed"));
   }
 
   revalidatePath("/");
@@ -2844,7 +2849,8 @@ export async function deletePostComment(formData: FormData) {
   );
 
   if (error) {
-    redirect(homeMessage(error.message || "Could not delete comment.", "feed"));
+    console.error("4U comment delete failed.", error);
+    redirect(homeMessage("Could not delete comment. Please try again.", "feed"));
   }
 
   revalidatePath("/");
@@ -2869,7 +2875,8 @@ export async function hidePostComment(formData: FormData) {
   });
 
   if (error) {
-    redirect(homeMessage(error.message || "Could not hide comment.", "feed"));
+    console.error("4U comment hide failed.", error);
+    redirect(homeMessage("Could not hide comment. Please try again.", "feed"));
   }
 
   revalidatePath("/");
@@ -3024,7 +3031,8 @@ export async function createThreadComment(formData: FormData) {
       : null;
 
   if (upload?.error || (media && !upload?.path)) {
-    redirect(homeMessage(upload?.error || "Could not upload comment media."));
+    console.error("Gossip comment media upload failed.", upload?.error);
+    redirect(homeMessage("Could not upload comment media. Please try again."));
   }
 
   const { error } = await supabase.from("thread_comments").insert({
@@ -3037,7 +3045,8 @@ export async function createThreadComment(formData: FormData) {
 
   if (error) {
     if (upload?.path) await supabase.storage.from(MEDIA_BUCKET).remove([upload.path]);
-    redirect(homeMessage(error.message || "Could not add thread comment."));
+    console.error("Gossip comment create failed.", error);
+    redirect(homeMessage("Could not add thread comment. Please try again."));
   }
 
   if (upload?.path && metadata) {
@@ -3054,7 +3063,8 @@ export async function createThreadComment(formData: FormData) {
       await supabase.rpc("delete_thread_comment_for_current_user", {
         target_comment_id: commentId,
       });
-      redirect(homeMessage(mediaError.message || "Could not attach comment media."));
+      console.error("Gossip comment media attach failed.", mediaError);
+      redirect(homeMessage("Could not attach comment media. Please try again."));
     }
   }
 
@@ -3127,7 +3137,8 @@ export async function toggleThreadCommentLike(formData: FormData) {
       });
 
   if (result.error) {
-    redirect(homeMessage(result.error.message || "Could not update comment like."));
+    console.error("Gossip comment like failed.", result.error);
+    redirect(homeMessage("Could not update comment like. Please try again."));
   }
 
   if (!liked) {
@@ -3180,7 +3191,8 @@ export async function editThreadComment(formData: FormData) {
     .eq("author_id", userId);
 
   if (error) {
-    redirect(homeMessage(error.message || "Could not edit comment.", "threads"));
+    console.error("Gossip comment edit failed.", error);
+    redirect(homeMessage("Could not edit comment. Please try again.", "threads"));
   }
 
   revalidatePath("/");
@@ -3224,7 +3236,8 @@ export async function deleteThreadComment(formData: FormData) {
   );
 
   if (error) {
-    redirect(homeMessage(error.message || "Could not delete comment.", "threads"));
+    console.error("Gossip comment delete failed.", error);
+    redirect(homeMessage("Could not delete comment. Please try again.", "threads"));
   }
 
   revalidatePath("/");
@@ -3249,7 +3262,8 @@ export async function hideThreadComment(formData: FormData) {
   });
 
   if (error) {
-    redirect(homeMessage(error.message || "Could not hide comment.", "threads"));
+    console.error("Gossip comment hide failed.", error);
+    redirect(homeMessage("Could not hide comment. Please try again.", "threads"));
   }
 
   revalidatePath("/");
