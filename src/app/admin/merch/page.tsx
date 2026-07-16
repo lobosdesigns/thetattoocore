@@ -43,6 +43,8 @@ type MerchProduct = {
   moderationStatus: ModerationStatus;
   sellerAccountType: string | null;
   sellerLicenseVerifiedAt: string | null;
+  sellerPayoutDisabledReason: string | null;
+  sellerPayoutStatus: "ready" | "incomplete" | "not_started";
   priceCents: number;
   returnPolicy: string | null;
   sellerName: string;
@@ -287,6 +289,13 @@ function ProductCard({
   product: MerchProduct;
   returnTo: string;
 }) {
+  const payoutLabel =
+    product.sellerPayoutStatus === "ready"
+      ? "Payout ready"
+      : product.sellerPayoutStatus === "incomplete"
+        ? "Payout setup incomplete"
+        : "Payout not started";
+
   return (
     <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -329,6 +338,19 @@ function ProductCard({
                 : "Seller not verified"}
             </span>
           ) : null}
+          {!product.isOfficial ? (
+            <span
+              className={`rounded-md border px-2 py-1 text-xs font-semibold ${
+                product.sellerPayoutStatus === "ready"
+                  ? "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]"
+                  : product.sellerPayoutStatus === "incomplete"
+                    ? "border-[color-mix(in_srgb,var(--gold)_55%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_14%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_76%,var(--foreground))]"
+                    : "border-[color-mix(in_srgb,var(--danger)_34%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_9%,var(--paper-warm))] text-[var(--danger)]"
+              }`}
+            >
+              {payoutLabel}
+            </span>
+          ) : null}
         </div>
       </div>
       <dl className="mt-4 grid gap-3 text-sm text-[var(--muted)] sm:grid-cols-3">
@@ -360,6 +382,11 @@ function ProductCard({
           </dd>
         </div>
       </dl>
+      {product.sellerPayoutDisabledReason ? (
+        <p className="mt-3 rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))] p-2 text-xs font-semibold text-[color-mix(in_srgb,var(--gold)_82%,var(--foreground))]">
+          Payout note: {product.sellerPayoutDisabledReason}
+        </p>
+      ) : null}
       {product.fulfillmentNotes || product.returnPolicy ? (
         <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted)] sm:grid-cols-2">
           {product.fulfillmentNotes ? (
@@ -644,7 +671,7 @@ export default async function AdminMerchPage({
   let productQuery = supabase
     .from("merch_products")
     .select(
-      "id, title, category, status, moderation_status, price_cents, currency, inventory_quantity, inventory_reserved, fulfillment_notes, return_policy, is_official, created_at, profiles:profiles!merch_products_seller_id_fkey(account_type, display_name, license_verified_at, username)",
+      "id, seller_id, title, category, status, moderation_status, price_cents, currency, inventory_quantity, inventory_reserved, fulfillment_notes, return_policy, is_official, created_at, profiles:profiles!merch_products_seller_id_fkey(account_type, display_name, license_verified_at, username)",
       { count: "exact" },
     );
 
@@ -674,10 +701,35 @@ export default async function AdminMerchPage({
           username: string;
         } | null;
         return_policy: string | null;
+        seller_id: string;
         status: ProductStatus;
         title: string;
       }[]
     >();
+  const sellerIds = Array.from(
+    new Set((productRows ?? []).map((product) => product.seller_id).filter(Boolean)),
+  );
+  const { data: sellerPayoutRows } =
+    sellerIds.length > 0
+      ? await supabase
+          .from("stripe_connect_accounts")
+          .select(
+            "profile_id, charges_enabled, payouts_enabled, details_submitted, disabled_reason",
+          )
+          .in("profile_id", sellerIds)
+          .returns<
+            {
+              charges_enabled: boolean;
+              details_submitted: boolean;
+              disabled_reason: string | null;
+              payouts_enabled: boolean;
+              profile_id: string;
+            }[]
+          >()
+      : { data: [] };
+  const sellerPayoutByProfile = new Map(
+    (sellerPayoutRows ?? []).map((account) => [account.profile_id, account]),
+  );
   const products: MerchProduct[] = (productRows ?? []).map((product) => ({
     category: product.category,
     createdAt: product.created_at,
@@ -693,6 +745,15 @@ export default async function AdminMerchPage({
     sellerAccountType: product.profiles?.account_type ?? null,
     sellerLicenseVerifiedAt: product.profiles?.license_verified_at ?? null,
     sellerName: product.profiles?.display_name ?? "Seller",
+    sellerPayoutDisabledReason:
+      sellerPayoutByProfile.get(product.seller_id)?.disabled_reason ?? null,
+    sellerPayoutStatus: !sellerPayoutByProfile.has(product.seller_id)
+      ? "not_started"
+      : sellerPayoutByProfile.get(product.seller_id)?.charges_enabled &&
+          sellerPayoutByProfile.get(product.seller_id)?.payouts_enabled &&
+          sellerPayoutByProfile.get(product.seller_id)?.details_submitted
+        ? "ready"
+        : "incomplete",
     sellerUsername: product.profiles?.username ?? "seller",
     status: product.status,
     title: product.title,

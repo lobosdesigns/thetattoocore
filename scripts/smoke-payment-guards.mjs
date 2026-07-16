@@ -393,6 +393,16 @@ checks.push({
     readFileSync("supabase/migrations/20260715101500_stripe_connect_seller_accounts.sql", "utf8").includes("grant select, insert, update, delete on public.stripe_connect_accounts to service_role"),
 });
 checks.push({
+  label: "admin Merch review shows seller payout readiness",
+  ok:
+    adminMerchPage.includes(".from(\"stripe_connect_accounts\")") &&
+    adminMerchPage.includes("Payout ready") &&
+    adminMerchPage.includes("Payout setup incomplete") &&
+    adminMerchPage.includes("Payout not started") &&
+    adminMerchPage.includes("Payout note:") &&
+    productPlan.includes("Admin Merch payout-readiness chips"),
+});
+checks.push({
   label: "admin Merch and payment queues use friendly status labels",
   ok:
     adminMerchPage.includes("commerceStatusLabel(order.status)") &&
