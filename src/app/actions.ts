@@ -1777,6 +1777,27 @@ export async function createMerchProduct(formData: FormData) {
     redirect(homeMessage("Add at least 1 Merch item in inventory.", "merch"));
   }
 
+  if (shippingRequired && (!shipsFromCity || !shipsFromRegion)) {
+    redirect(
+      homeMessage("Add the city and state/region this Merch ships from.", "merch"),
+    );
+  }
+
+  if (shippingRequired && fulfillmentNotes.length < 10) {
+    redirect(
+      homeMessage(
+        "Add fulfillment notes for shipped Merch, including timing or pickup details.",
+        "merch",
+      ),
+    );
+  }
+
+  if (returnPolicy.length < 10) {
+    redirect(
+      homeMessage("Add a short return or refund note for Merch buyers.", "merch"),
+    );
+  }
+
   if (!media) {
     redirect(homeMessage("Merch needs a product photo, GIF, or short video.", "merch"));
   }
@@ -2355,6 +2376,34 @@ export async function editMerchProduct(formData: FormData) {
     redirect(
       redirectWithMessage({
         message: "Inventory cannot be lower than reserved checkout quantity.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  if (shippingRequired && (!shipsFromCity || !shipsFromRegion)) {
+    redirect(
+      redirectWithMessage({
+        message: "Add the city and state/region this Merch ships from.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  if (shippingRequired && fulfillmentNotes.length < 10) {
+    redirect(
+      redirectWithMessage({
+        message:
+          "Add fulfillment notes for shipped Merch, including timing or pickup details.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  if (returnPolicy.length < 10) {
+    redirect(
+      redirectWithMessage({
+        message: "Add a short return or refund note for Merch buyers.",
         path: returnPath,
       }),
     );

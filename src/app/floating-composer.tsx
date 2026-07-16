@@ -498,7 +498,7 @@ export function FloatingComposer({
                   maxCharacters={1000}
                   maxLength={1000}
                   name="fulfillment_notes"
-                  placeholder="Fulfillment notes: shipping timeline, pickup option, made-to-order timing"
+                  placeholder="Fulfillment notes: shipping timeline, pickup option, or made-to-order timing"
                 />
                 <WordLimitedField
                   as="textarea"
@@ -506,7 +506,7 @@ export function FloatingComposer({
                   maxCharacters={1000}
                   maxLength={1000}
                   name="return_policy"
-                  placeholder="Return/refund note for buyers during launch review"
+                  placeholder="Return/refund note buyers can understand before checkout"
                 />
               </ComposerDetails>
               <MediaInput

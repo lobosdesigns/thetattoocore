@@ -415,8 +415,12 @@ checks.push({
     merchNotesMigration.includes("add column if not exists return_policy") &&
     appActions.includes("fulfillment_notes: fulfillmentNotes || null") &&
     appActions.includes("return_policy: returnPolicy || null") &&
+    appActions.includes("Add the city and state/region this Merch ships from.") &&
+    appActions.includes("Add fulfillment notes for shipped Merch, including timing or pickup details.") &&
+    appActions.includes("Add a short return or refund note for Merch buyers.") &&
     floatingComposer.includes('name="fulfillment_notes"') &&
     floatingComposer.includes('name="return_policy"') &&
+    floatingComposer.includes("Return/refund note buyers can understand before checkout") &&
     merchDetailPage.includes("product.fulfillment_notes") &&
     merchDetailPage.includes("product.return_policy") &&
     merchIndexPage.includes("Seller notes") &&
