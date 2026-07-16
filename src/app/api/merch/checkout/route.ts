@@ -249,6 +249,43 @@ export async function POST(request: Request) {
     );
   }
 
+  const adminSupabase = createAdminClient();
+  if (!adminSupabase) {
+    return redirectWithMessage(
+      returnTo,
+      "Checkout is temporarily unavailable. Please try again later.",
+    );
+  }
+
+  if (!product.is_official) {
+    const { data: payoutAccount, error: payoutError } = await adminSupabase
+      .from("stripe_connect_accounts")
+      .select("charges_enabled, payouts_enabled, details_submitted")
+      .eq("profile_id", product.seller_id)
+      .maybeSingle<{
+        charges_enabled: boolean;
+        details_submitted: boolean;
+        payouts_enabled: boolean;
+      }>();
+
+    const payoutReady =
+      Boolean(payoutAccount?.charges_enabled) &&
+      Boolean(payoutAccount?.payouts_enabled) &&
+      Boolean(payoutAccount?.details_submitted);
+
+    if (payoutError || !payoutReady) {
+      console.error("Merch checkout blocked by seller payout readiness.", {
+        payoutError,
+        productId: product.id,
+        sellerId: product.seller_id,
+      });
+      return redirectWithMessage(
+        returnTo,
+        "Checkout is temporarily unavailable for this product.",
+      );
+    }
+  }
+
   if (product.seller_id === claims.sub) {
     return redirectWithMessage(returnTo, "You cannot buy your own merch.");
   }
@@ -268,13 +305,6 @@ export async function POST(request: Request) {
   const totalCents = subtotalCents + platformFeeCents;
   const successUrl = `${siteUrl}/merch/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl = `${siteUrl}${pathWithMessage(returnTo, "Checkout canceled.")}`;
-  const adminSupabase = createAdminClient();
-  if (!adminSupabase) {
-    return redirectWithMessage(
-      returnTo,
-      "Checkout is temporarily unavailable. Please try again later.",
-    );
-  }
 
   const cancelUnreservedPendingOrder = async (message: string) => {
     await adminSupabase

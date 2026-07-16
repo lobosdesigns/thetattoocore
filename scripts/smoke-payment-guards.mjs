@@ -512,6 +512,17 @@ checks.push({
     productPlan.includes("admin activation guard requiring seller payout readiness"),
 });
 checks.push({
+  label: "merch checkout requires seller payout readiness",
+  ok:
+    merchCheckout.includes("Merch checkout blocked by seller payout readiness.") &&
+    merchCheckout.includes(".from(\"stripe_connect_accounts\")") &&
+    merchCheckout.includes("charges_enabled") &&
+    merchCheckout.includes("payouts_enabled") &&
+    merchCheckout.includes("details_submitted") &&
+    merchCheckout.includes("Checkout is temporarily unavailable for this product.") &&
+    !merchCheckout.includes("seller payout setup is incomplete"),
+});
+checks.push({
   label: "admin Merch can filter seller payout readiness",
   ok:
     adminMerchPage.includes("function sellerPayoutFilter") &&
