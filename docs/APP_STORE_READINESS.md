@@ -277,6 +277,7 @@
 - Public route smoke on July 16, 2026 passed after confirmation-resend emails stopped trusting browser-supplied origin headers and now use the canonical site URL for confirmation links. Live deploy version `c38227b3-95c9-47d3-a3be-e1ecbddd06e0` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after password-reset requests and reset-save failures began using canonical reset links, private auth-provider logging, and generic member-facing retry copy. Live deploy version `9d006527-b9dd-458d-b6d0-7b1aab99d153` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after Gigs create/upload/attach failures began logging internal details privately while showing generic member-facing retry copy. Live deploy version `6a5cbac4-38f9-4775-b8fb-b52b6efb1061` passed public route smoke.
+- Public route smoke on July 16, 2026 passed after DM conversation, send, attachment, lookup, and unread-delete failures began logging internal details privately while showing generic member-facing retry copy. Live deploy version `dc41e0e3-dbf5-416c-8d5a-5af57f1018af` passed public route smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
