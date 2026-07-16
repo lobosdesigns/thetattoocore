@@ -250,6 +250,7 @@
 - Public route smoke on July 15, 2026 passed after Admin Users gained safe account search by username, display name, account type, city, region, and role while preserving paginated role, moderation, tester-account, and ad-credit actions. Live deploy version `ba15abd1-936b-487e-9a60-799844365e43` passed public route smoke.
 - Public route smoke on July 15, 2026 passed after Admin Merch gained seller payout-readiness filters for ready, incomplete, and not-started payout setup review while preserving product/order filters, search, and pagination. Live deploy version `29195a6e-fec5-4845-a521-ce7ec0a9a47e` passed public route smoke.
 - Public route smoke on July 15, 2026 passed after Merch checkout began tagging sessions and payment intents with explicit Merch payment-kind metadata for shared checkout webhook routing, while keeping legacy Merch session fallback by order id. Live deploy version `bf85bd16-7216-437d-9bf7-78445c33bc7a` passed public route smoke.
+- Public route smoke on July 15, 2026 passed after Merch product detail pages gained a buyer-facing one-item TTC fee estimate plus a shipping-address cue before checkout. Live deploy version `5e6eb6c1-bd6a-4aa8-b562-3244572e4eaf` passed public route smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
