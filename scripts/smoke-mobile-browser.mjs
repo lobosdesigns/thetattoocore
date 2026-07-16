@@ -45,6 +45,11 @@ const routes = [
     textIncludes: "How to use reports, blocks, privacy, and support",
     titleIncludes: "Help Center",
   },
+  {
+    path: "/help/merch-products-orders",
+    textIncludes: ["How to set up Merch products and handle orders", "What if a package has a problem?"],
+    titleIncludes: "Help Center",
+  },
   { path: "/privacy", textIncludes: "support@thetattoocore.com", titleIncludes: "Privacy" },
   { path: "/terms", textIncludes: "visible nudity is not allowed", titleIncludes: "Terms" },
   { path: "/search?q=ceocore", textIncludes: "@ceocore", titleIncludes: "Search" },
@@ -60,6 +65,7 @@ const routes = [
   { allowMainDocument404: true, path: "/t/not-a-real-thread", titleIncludes: "404" },
   { allowMainDocument404: true, path: "/stuff/not-a-real-listing", titleIncludes: "404" },
   { allowMainDocument404: true, path: "/gigs/not-a-real-gig", titleIncludes: "404" },
+  { path: "/merch", textIncludes: ["Merch help", "Seller tools"], titleIncludes: "Merch" },
   { allowMainDocument404: true, path: "/merch/not-a-real-product", titleIncludes: "404" },
   { path: "/merch/checkout/success", titleIncludes: "Merch checkout status" },
 ];
