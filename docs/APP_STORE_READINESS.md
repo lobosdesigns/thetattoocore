@@ -284,6 +284,7 @@
 - Public route smoke on July 16, 2026 passed after Help Center links were surfaced in signed-in Account/settings, profile headers, and Admin navigation/overview so members can self-serve setup, safety, booking, ads, Merch, and verification questions. Live deploy version `84532fe1-b07f-47b7-9f63-44826a343a24` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after the Help Center added a first-run getting-started guide and removed roadmap-style support copy from the Help landing/article pages. Live deploy version `40afd78a-ccf5-48eb-ada8-dac2a45365b0` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after the Support page surfaced the getting-started guide in Popular Help Guides and removed future-tense Help Center copy. Live deploy version `3077c5ed-7e5a-4867-8605-ca41f17f93d9` passed public route smoke after a propagation retry.
+- Headless mobile browser QA on July 16, 2026 at 390px passed after the Help Center and Support guide discoverability updates, including auth, support/help/legal, search/profile, missing-detail fallback, public sample detail, and checkout-status routes.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
