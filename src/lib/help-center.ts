@@ -33,7 +33,7 @@ export const helpCategories = [
   },
   {
     description:
-      "Appointment request basics, time-slot setup, deposit expectations, cancellation rules, calendar files, and future calendar connection guidance.",
+      "Appointment request basics, time-slot setup, deposit expectations, cancellation rules, calendar files, and calendar prep guidance.",
     title: "Bookings",
     topics: ["Set availability", "Request appointments", "Deposits"],
   },
@@ -170,7 +170,7 @@ export const helpArticles = [
       },
       {
         answer:
-          "Calendar export files are available for scheduled bookings now. Deeper Google Calendar, Apple/iCloud Calendar, and standard iCalendar connection is planned for the booking tools as they mature.",
+          "Calendar export files are available for scheduled bookings. Use Google, Apple/iCloud, or standard iCalendar prep notes to keep appointment details clear while booking tools mature.",
         question: "Can bookings connect to my calendar?",
       },
       {
@@ -201,11 +201,11 @@ export const helpArticles = [
       "Open Account and choose the Booking tools.",
       "Create appointment types with duration, notes, buffer time, and deposit rules.",
       "Add weekly time slots and blackout dates so clients only request workable times.",
-      "Use public booking notes or links for existing calendar/request pages during launch if your shop already has one.",
+      "Use public booking notes or links for existing calendar/request pages if your shop already has one.",
       "Review incoming booking requests, accept the right slot, and let the client pay the deposit when required.",
       "Confirm the appointment type, scheduled time, deposit amount, TTC fee, cancellation expectation, and artist note before asking a client to check out.",
       "Download the private calendar file from accepted scheduled bookings when you need to add the appointment to your calendar.",
-      "Use refund review instead of promising instant deposit refunds while launch policy is still being finalized.",
+      "Use refund review instead of promising instant deposit refunds before support reviews the request.",
     ],
     title: "How to create appointment types, time slots, and booking deposits",
   },

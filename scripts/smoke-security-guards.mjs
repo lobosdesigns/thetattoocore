@@ -36,6 +36,8 @@ const merchCheckoutSuccessPage = readFileSync(
   "src/app/merch/checkout/success/page.tsx",
   "utf8",
 );
+const helpCenter = readFileSync("src/lib/help-center.ts", "utf8");
+const helpCenterSearch = readFileSync("src/app/help/help-center-search.tsx", "utf8");
 const nextConfig = readFileSync("next.config.ts", "utf8");
 const siteConfig = readFileSync("src/lib/site.ts", "utf8");
 const publicSource = [
@@ -80,6 +82,8 @@ const publicCopySource = [
   searchPage,
   merchDetailPage,
   merchCheckoutSuccessPage,
+  helpCenter,
+  helpCenterSearch,
 ].join("\n");
 const privateContactSnippets = [
   "lobo3319@gmail.com",
@@ -112,6 +116,9 @@ const publicRoadmapSnippets = [
   "planned ad system",
   "planned Merch",
   "Translation planned",
+  "future calendar connection guidance",
+  "planned for launch support",
+  "planned for the booking tools",
   "production purchases still need",
   "If translation is added",
   "should use hosted checkout",
@@ -309,7 +316,7 @@ const checks = [
       publicSmoke.includes('method: "POST"') &&
       publicSmoke.includes("Sign%20in%20to%20pay%20for%20ads") &&
       publicSmoke.includes('locationIncludes: ["Sign", "booking", "deposit"]') &&
-      publicSmoke.includes("Sign%20in%20to%20buy%20merch"),
+      publicSmoke.includes("Sign+in+to+buy+merch"),
   },
   {
     label: "public smoke covers unauthenticated push and invalid ad event APIs",
