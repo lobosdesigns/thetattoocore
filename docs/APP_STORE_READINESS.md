@@ -299,6 +299,7 @@
 - Public route smoke on July 16, 2026 passed after the Merch Help Center guide was updated to explain required ship-from, fulfillment, and return/refund notes for seller submissions and order handling. Live deploy version `9d9dc2e4-16ff-48bf-b692-6cc4f11d318d` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after legacy active Merch products gained activation and checkout guards requiring buyer-support-ready ship-from, fulfillment, and return/refund details before checkout can open. Live deploy version `62907280-7e3b-4819-8508-a2e5641434d3` passed public route smoke.
 - Public route smoke on July 16, 2026 passed after Support and the Merch Help Center guide added a written path for missing, damaged, wrong, delayed, or returned package issues with private order/product context. Live deploy version `1cde7ecb-0ab4-41f5-bcd4-136645f70762` passed public route smoke.
+- Public route smoke on July 16, 2026 passed after Account booking calendar status labels moved from internal prep wording to member-facing calendar names. Live deploy version `f8a1bf09-5cb3-4133-8d2a-227426a0f329` passed public route smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
