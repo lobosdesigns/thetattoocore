@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import {
   Activity,
   BriefcaseBusiness,
+  CircleHelp,
   CreditCard,
   Flag,
   ImageIcon,
@@ -165,6 +166,7 @@ const adminTabs = [
   [Megaphone, "Ads", "/admin/ads"],
   [CreditCard, "Payments", "/admin/payments"],
   [Mail, "Mail Settings", "/admin/mail-settings"],
+  [CircleHelp, "Help", "/help"],
 ] as const;
 
 const mediaOpsStages = [
@@ -1256,6 +1258,14 @@ export default async function AdminPage({
       label: "Media ops",
       meta: `${mediaCostRules.length} cost rules tracked`,
     },
+    {
+      action: "Open Help",
+      body: "Self-serve tutorials and guide questions reduce repeated support requests for setup, ads, Merch, bookings, verification, and safety.",
+      count: 0,
+      href: "/help",
+      label: "Help Center",
+      meta: "Guides, FAQs, and moderated article questions",
+    },
   ];
 
   return (
@@ -1302,6 +1312,12 @@ export default async function AdminPage({
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
+              <Link
+                className="flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
+                href="/help"
+              >
+                Help
+              </Link>
               <Link
                 className="flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
                 href="/"

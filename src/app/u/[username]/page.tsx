@@ -10,6 +10,7 @@ import {
   CalendarDays,
   CalendarPlus,
   Camera,
+  CircleHelp,
   LinkIcon,
   LogIn,
   LockKeyhole,
@@ -1716,7 +1717,16 @@ export default async function ProfilePage({
                 <p className="text-xs text-[var(--muted-strong)]">@{profile.username}</p>
               </div>
             </div>
-            <NotificationBellLink className="shrink-0" userId={claims?.sub} />
+            <div className="flex shrink-0 items-center gap-2">
+              <Link
+                aria-label="Open profile help"
+                className="flex size-10 items-center justify-center rounded-md border ttc-surface"
+                href="/help/artist-profile-shop-links"
+              >
+                <CircleHelp className="size-5" />
+              </Link>
+              <NotificationBellLink className="shrink-0" userId={claims?.sub} />
+            </div>
           </div>
         </header>
 

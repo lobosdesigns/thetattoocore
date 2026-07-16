@@ -122,6 +122,7 @@ const accountNavItems = [
   ["#advertising-settings", "Ads"],
   ["#order-settings", "Orders"],
   ["#data-settings", "Data"],
+  ["/help", "Help"],
 ] as const;
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 const slotIntervals = [15, 20, 30, 45, 60, 90, 120] as const;
@@ -943,6 +944,12 @@ export default async function AccountPage({
             TheTattooCore
           </Link>
           <div className="flex items-center gap-3">
+            <Link
+              className="ttc-surface flex h-10 items-center rounded-md border px-4 text-sm font-semibold"
+              href="/help"
+            >
+              Help
+            </Link>
             {role && adminRoles.includes(role) ? (
               <Link
                 className="ttc-surface flex h-10 items-center rounded-md border px-4 text-sm font-semibold"
@@ -966,6 +973,30 @@ export default async function AccountPage({
         ) : null}
 
         <AccountSetupGuide isFirstProfile={isFirstProfile} />
+
+        <section className="ttc-card mb-4 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-strong)]">
+                Help Center
+              </p>
+              <h2 className="mt-1 text-lg font-bold">
+                Set things up without waiting on support
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
+                Find guides for profiles, verification, booking requests, ads,
+                Merch, posting, Stories, DMs, search, saved items, privacy, and
+                support.
+              </p>
+            </div>
+            <Link
+              className="flex h-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
+              href="/help"
+            >
+              Open Help Center
+            </Link>
+          </div>
+        </section>
 
         <AccountReadinessPanel
           canSubmitLicense={canSubmitLicense}
