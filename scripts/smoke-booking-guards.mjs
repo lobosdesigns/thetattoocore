@@ -182,7 +182,7 @@ const checks = [
       accountPage.includes("appointment_type_label") &&
       accountPage.includes("preferred_slot_label") &&
       accountPage.includes("respondBookingRequest") &&
-      accountPage.includes("deposit checkout will open") &&
+      accountPage.includes("deposit checkout opens only after acceptance") &&
       accountPage.includes("Total checkout") &&
       messagesPage.includes("Total checkout"),
   },
@@ -471,13 +471,13 @@ const checks = [
       profilePage.includes("bookingSettings.calendar_notes"),
   },
   {
-    label: "account booking settings explain manual calendar prep before future sync",
+    label: "account booking settings explain manual calendar notes",
     ok:
       accountPage.includes("bookingCalendarPrepItems") &&
       accountPage.includes("Manual calendar plan") &&
       accountPage.includes("private Add to calendar download") &&
-      accountPage.includes("Calendar prep") &&
-      accountPage.includes("Use Google, Apple, or iCalendar prep notes"),
+      accountPage.includes("Calendar notes") &&
+      accountPage.includes("Use Google, Apple, or iCalendar notes"),
   },
   {
     label: "booking slot foundation models appointment types, slots, blackouts, and calendar connections",
