@@ -305,9 +305,10 @@ export async function POST(request: Request) {
       returnTo,
     });
   } catch (error) {
+    console.error("Ad checkout session creation failed.", error);
     await rollBackReservation();
     return redirectWithMessage(
-      error instanceof Error ? error.message : "Checkout could not open for this ad.",
+      "Checkout could not open for this ad. Please try again.",
       returnTo,
     );
   }

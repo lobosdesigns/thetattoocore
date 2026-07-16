@@ -200,6 +200,19 @@ checks.push({
     merchCheckout.includes("Checkout is temporarily unavailable. Please try again later."),
 });
 checks.push({
+  label: "checkout creation failures log privately and show generic member copy",
+  ok:
+    adCheckout.includes('console.error("Ad checkout session creation failed.", error)') &&
+    adCheckout.includes('"Checkout could not open for this ad. Please try again."') &&
+    !adCheckout.includes('error instanceof Error ? error.message : "Checkout could not open for this ad."') &&
+    bookingCheckout.includes('console.error("Booking checkout session creation failed.", error)') &&
+    bookingCheckout.includes('"Booking checkout could not open. Please try again."') &&
+    !bookingCheckout.includes('error instanceof Error ? error.message : "Booking checkout could not open."') &&
+    merchCheckout.includes('console.error("Merch checkout session creation failed.", error)') &&
+    merchCheckout.includes('"Checkout could not open. Please try again."') &&
+    !merchCheckout.includes('error instanceof Error ? error.message : "Checkout could not open."'),
+});
+checks.push({
   label: "payment webhook rejects unsigned events before processing",
   ok:
     stripeWebhook.includes("const signature = request.headers.get(\"stripe-signature\")") &&

@@ -381,11 +381,12 @@ export async function POST(request: Request) {
       successUrl,
     });
   } catch (error) {
+    console.error("Merch checkout session creation failed.", error);
     await cancelPendingOrder("Checkout could not open.");
 
     return redirectWithMessage(
       returnTo,
-      error instanceof Error ? error.message : "Checkout could not open.",
+      "Checkout could not open. Please try again.",
     );
   }
 

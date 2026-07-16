@@ -282,9 +282,10 @@ export async function POST(request: Request) {
   try {
     session = await createBookingCheckoutSession(booking, returnTo);
   } catch (error) {
+    console.error("Booking checkout session creation failed.", error);
     await rollBackReservation();
     return redirectWithMessage(
-      error instanceof Error ? error.message : "Booking checkout could not open.",
+      "Booking checkout could not open. Please try again.",
       returnTo,
     );
   }
