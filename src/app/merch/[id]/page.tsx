@@ -17,7 +17,10 @@ import { NotificationBellLink } from "@/app/notification-bell-link";
 import { ProtectedVideo } from "@/app/protected-video";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { ShareActions } from "@/app/share-actions";
-import { platformFeePercentLabel } from "@/lib/payments/fees";
+import {
+  calculatePlatformFeeCents,
+  platformFeePercentLabel,
+} from "@/lib/payments/fees";
 import { createClient } from "@/lib/supabase/server";
 import {
   brandShareImage,
@@ -259,6 +262,9 @@ export default async function MerchProductPage({
   const media = product.merch_product_media[0];
   const mediaSrc = media ? mediaUrl(media.storage_bucket, media.storage_path) : null;
   const available = product.inventory_quantity - product.inventory_reserved;
+  const estimatedPlatformFeeCents = calculatePlatformFeeCents(product.price_cents);
+  const estimatedSingleItemTotalCents =
+    product.price_cents + estimatedPlatformFeeCents;
   const isOwnProduct = claims?.sub === product.profiles?.id;
   if (
     !product.is_official &&
@@ -650,9 +656,17 @@ export default async function MerchProductPage({
               )}
               <p className="mt-3 text-xs leading-5 text-[var(--muted-strong)]">
                 Checkout includes a transparent {platformFeePercentLabel} TTC
-                platform fee during launch. Orders are confirmed after payment
-                status updates.
+                platform fee during launch. Estimated fee on one item is{" "}
+                {money(estimatedPlatformFeeCents, product.currency)}, making one
+                item {money(estimatedSingleItemTotalCents, product.currency)}
+                before any shipping, tax, or discount. Orders are confirmed after
+                payment status updates.
               </p>
+              {product.shipping_required ? (
+                <p className="mt-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-2 text-xs leading-5 text-[var(--muted)]">
+                  Shipping address is collected during checkout for this product.
+                </p>
+              ) : null}
             </section>
 
             {claims?.sub ? (

@@ -356,6 +356,15 @@ checks.push({
     adminMerchPage.includes("Return note"),
 });
 checks.push({
+  label: "merch detail shows buyer fee estimate and shipping cue before checkout",
+  ok:
+    merchDetailPage.includes("calculatePlatformFeeCents(product.price_cents)") &&
+    merchDetailPage.includes("estimatedSingleItemTotalCents") &&
+    merchDetailPage.includes("Estimated fee on one item") &&
+    merchDetailPage.includes("before any shipping, tax, or discount") &&
+    merchDetailPage.includes("Shipping address is collected during checkout"),
+});
+checks.push({
   label: "shared platform fee helper stays at launch rate",
   ok:
     fees.includes("export const platformFeeRate = 0.02") &&
