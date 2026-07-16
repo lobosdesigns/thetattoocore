@@ -272,6 +272,7 @@
 - Public route smoke on July 16, 2026 passed after Merch, ad, and booking checkout persistence failures stopped redirecting raw database error text to members. Live deploy version `0dd24e99-aaa4-413b-a897-2bdb688eb7dd` passed public route smoke.
 - Headless mobile browser QA on July 16, 2026 at 390px width passed after the checkout hardening passes for public/auth/help/profile/detail/Merch routes, including known live public sample detail pages: no reload-loop text, no application-error text, no console/page errors, and no document-level horizontal overflow.
 - Full verification on July 16, 2026 passed after the DM search-ranking and checkout error-hardening deploys: lint, production build, hydration/media/content/share/profile/admin/story/DM/booking/payment/PWA/native/store/security/theme/docs guards, and live public route smoke all passed. Lint reported existing warnings only in generated native Android build assets.
+- Public route smoke on July 16, 2026 passed after profile photo, banner, profile save, shop-link lookup, and verification document failures began logging internal details privately while showing generic retry copy to members. Live deploy version `e8081862-b944-4877-ac11-878ba55d9481` passed public route smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
