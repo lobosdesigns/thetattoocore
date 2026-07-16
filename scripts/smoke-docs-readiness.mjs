@@ -291,6 +291,14 @@ const checks = [
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("app-store rules"),
   },
   {
+    label: "real-device QA covers admin payment and Merch search",
+    ok:
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("In Admin > Payments, search by a safe test payment/event reference") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("webhook receipts, payment audit rows, and booking deposits remain paginated and filterable") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("In Admin > Merch, search by a product/order/customer/payment reference") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("product and order queues remain paginated and filterable"),
+  },
+  {
     label: "readiness docs mention PWA asset and scaffold guards",
     ok:
       docs["docs/APP_STORE_READINESS.md"].includes("PWA smoke guards verify") &&

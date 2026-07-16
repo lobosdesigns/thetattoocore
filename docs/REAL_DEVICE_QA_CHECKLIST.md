@@ -78,6 +78,8 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 - Approve and reject verification from Admin > Verification.
 - Confirm member notifications and important email behavior for verification decisions.
 - Review Admin > Users, Verification, Reports, Content, Stuff, Gigs, Merch, Ads, Payments, Data Requests, Media Ops, and Mail Settings on mobile.
+- In Admin > Payments, search by a safe test payment/event reference or booking title and confirm webhook receipts, payment audit rows, and booking deposits remain paginated and filterable.
+- In Admin > Merch, search by a product/order/customer/payment reference and confirm product and order queues remain paginated and filterable.
 - In Admin > Content > Stories, confirm temporary story rows show whether they expire soon or already expired.
 - Confirm each admin page uses pagination or focused queues and the overview remains short.
 - Confirm dark/light admin contrast is readable.
