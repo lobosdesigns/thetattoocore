@@ -206,6 +206,21 @@ export const helpArticles = [
           "Ads are reviewed before delivery so unsafe claims, unlicensed promotion, restricted goods, and policy-breaking creative can be blocked.",
         question: "Why does my ad need review?",
       },
+      {
+        answer:
+          "Artist/client ads can appear in 4U and Gossip when they fit the placement rules. Merch ads stay in Merch and should focus on product views or safe brand goods.",
+        question: "Where can my ad appear?",
+      },
+      {
+        answer:
+          "Credits may be granted for promos, sponsorships, trades, make-goods, or company-approved support reasons. When enough active credit is available, it can cover eligible campaign checkout before a paid checkout is needed.",
+        question: "Why do I have ad credits?",
+      },
+      {
+        answer:
+          "Use clear tattoo, studio, location, style, and product terms. Do not use unsafe medical claims, unlicensed-service claims, adult sexual wording, misleading discounts, or equipment sales to unverified users.",
+        question: "What keywords should I use?",
+      },
     ],
     lastReviewed: "July 15, 2026",
     relatedSlugs: ["merch-products-orders", "posting-stories-dms"],
@@ -213,7 +228,9 @@ export const helpArticles = [
     steps: [
       "Open the advertising tools from Account.",
       "Choose the goal, placement, location, keywords, budget, and destination.",
+      "Use 4U/Gossip placements for artist-client lead, message, and engagement goals. Use Merch placement for product views and safe brand goods.",
       "Apply available ad credits before checkout when credits are available.",
+      "Review the payment status before submitting. Campaigns only deliver after review and after payment is paid, waived by credit, or otherwise approved by admin rules.",
       "Submit for review and watch campaign status before the ad starts running.",
     ],
     title: "How to create an ad and use ad credits",
