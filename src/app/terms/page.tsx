@@ -92,10 +92,9 @@ export default function TermsPage() {
           </div>
 
           <p className="ttc-surface mt-7 rounded-md border p-4 text-sm leading-6 text-[var(--muted)]">
-            This is a working launch policy, not final legal advice. It should
-            be reviewed by counsel before major public launch, payments, paid
-            ads, or mobile app store submission. Policy and safety questions
-            can be sent to{" "}
+            These Terms describe the current community rules and member
+            responsibilities. Policy, safety, and account questions can be sent
+            to{" "}
             <a className="font-semibold underline" href={`mailto:${supportEmail}`}>
               {supportEmail}
             </a>

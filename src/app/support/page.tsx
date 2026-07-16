@@ -116,7 +116,7 @@ export default function SupportPage() {
           <h1 className="mt-2 text-3xl font-bold">Support</h1>
           <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
             Help for account access, safety reports, privacy requests,
-            verification, and app-store support.
+            verification, commerce questions, and app support.
           </p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-3">

@@ -3146,8 +3146,8 @@ export default async function Home({
               <p className="mt-1">
                 Stuff is for professional body-art goods, trade, and seller
                 contact that need verification. Merch is for safe fan-facing
-                brand products the public can buy after production seller
-                approval, shipping, taxes, refunds, and fulfillment rules are ready.
+                brand products the public can browse and buy when checkout is
+                available for the product.
               </p>
             </div>
           </section>
