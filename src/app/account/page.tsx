@@ -39,6 +39,7 @@ import {
   titleCaseStatus,
 } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
+import { supportEmail } from "@/lib/site";
 import { verificationEligibleAccountTypes } from "@/lib/verification";
 
 type Claims = {
@@ -178,6 +179,25 @@ function adLimitHref({ adLimit, orderLimit }: { adLimit: number; orderLimit: num
 
 function orderLimitHref({ adLimit, orderLimit }: { adLimit: number; orderLimit: number }) {
   return `/account?ads=${adLimit}&orders=${orderLimit}#order-settings`;
+}
+
+function merchSupportMailto(orderId: string, role: "buyer" | "seller") {
+  const shortId = orderId.slice(0, 8);
+  const subject = encodeURIComponent(`Merch ${role} support for order ${shortId}`);
+  const body = encodeURIComponent(
+    [
+      `Order: ${shortId}`,
+      `Role: ${role}`,
+      "",
+      "Issue type: missing / damaged / wrong / delayed / returned / refund / seller help",
+      "",
+      "What happened:",
+      "",
+      "Helpful private details, photos, or tracking notes:",
+    ].join("\n"),
+  );
+
+  return `mailto:${supportEmail}?subject=${subject}&body=${body}`;
 }
 
 function bookingLimitHref({
@@ -2402,6 +2422,20 @@ export default async function AccountPage({
                       <p>Cancelled: {formatDate(order.cancelled_at)}</p>
                     ) : null}
                   </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <a
+                      className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 text-xs font-bold"
+                      href={merchSupportMailto(order.id, "buyer")}
+                    >
+                      Contact support
+                    </a>
+                    <Link
+                      className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 text-xs font-bold"
+                      href="/help/merch-products-orders"
+                    >
+                      Merch help
+                    </Link>
+                  </div>
                   {["paid", "fulfilled"].includes(order.status) &&
                   !order.refunded_at &&
                   !order.cancelled_at &&
@@ -2796,6 +2830,20 @@ export default async function AccountPage({
                               : "Awaiting paid order"}
                         </PendingSubmitButton>
                       </form>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <a
+                          className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 text-xs font-bold"
+                          href={merchSupportMailto(order?.id ?? item.order_id, "seller")}
+                        >
+                          Contact support
+                        </a>
+                        <Link
+                          className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 text-xs font-bold"
+                          href="/help/merch-products-orders"
+                        >
+                          Merch help
+                        </Link>
+                      </div>
                     </article>
                   );
                 })}
