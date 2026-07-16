@@ -13,7 +13,7 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 - Open the Help Center privacy/safety/support guide on mobile and confirm it explains reports, blocks, account deletion requests, support boundaries, and private account issues.
 - Open the Booking guide and confirm it explains deposit confirmation, TTC fee visibility, private calendar-note limits, and refund-review expectations.
 - Open the Ads guide and confirm it explains 4U/Gossip placements, Merch-only ads, ad credits, review rules, keyword safety, and payment status.
-- Open the Merch guide and confirm it explains private buyer shipping details, tracking, seller fulfillment timing, and refund-review expectations.
+- Open the Merch guide and confirm it explains private buyer shipping details, tracking, seller fulfillment timing, missing/damaged/wrong/delayed/returned package support, and refund-review expectations.
 - Open the Verification guide and confirm it explains document privacy, why approval matters, unlocked tools, and resubmission after rejection.
 - Confirm public app copy uses `support@thetattoocore.com` or final company contact details, not personal owner contact data.
 - Confirm the browser/install prompt does not block vertical scrolling after the user ignores it.
@@ -52,7 +52,9 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 - Confirm non-verified users can browse Stuff but cannot transact or contact sellers.
 - Create, edit, archive, and view a Gig.
 - Create, edit, archive, and view a Merch product.
+- Open the Merch storefront on mobile and confirm the Merch Help and Seller Tools links are visible without horizontal overflow.
 - Run Stripe test checkout for Merch and verify success, receipt, buyer history, seller history, admin payments, and webhook status.
+- Open a Merch product detail page before checkout and confirm the Merch Help link is visible near checkout guidance.
 - Confirm checkout remains test-mode until production payment, tax, refund, dispute, shipping, and payout policy is approved.
 
 ## Messaging
