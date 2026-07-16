@@ -527,12 +527,20 @@ export default async function MerchIndexPage({ searchParams }: MerchIndexProps) 
               </p>
             </div>
           </div>
-          <Link
-            className="inline-flex h-11 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-            href="/account#order-settings"
-          >
-            Seller tools
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              className="inline-flex h-11 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-4 text-sm font-semibold"
+              href="/help/merch-products-orders"
+            >
+              Merch help
+            </Link>
+            <Link
+              className="inline-flex h-11 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
+              href="/account#order-settings"
+            >
+              Seller tools
+            </Link>
+          </div>
         </header>
 
         <section className="mb-5 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
