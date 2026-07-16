@@ -248,6 +248,7 @@
 - Public and mobile route smoke on July 15, 2026 passed after Admin Merch order cards gained Stripe checkout-session/payment-intent references for payment reconciliation. Live deploy version `606eb669-b910-46ec-b95c-3c4187fe10df` passed public route smoke and optional 390px mobile browser smoke.
 - Public route smoke on July 15, 2026 passed after Admin Payments gained search across webhook receipts, payment audit rows, and booking deposits while preserving payment filters and pagination. Live deploy version `203557cd-7a16-40b9-9741-906973c2ffc9` passed public route smoke.
 - Public route smoke on July 15, 2026 passed after Admin Users gained safe account search by username, display name, account type, city, region, and role while preserving paginated role, moderation, tester-account, and ad-credit actions. Live deploy version `ba15abd1-936b-487e-9a60-799844365e43` passed public route smoke.
+- Public route smoke on July 15, 2026 passed after Admin Merch gained seller payout-readiness filters for ready, incomplete, and not-started payout setup review while preserving product/order filters, search, and pagination. Live deploy version `29195a6e-fec5-4845-a521-ce7ec0a9a47e` passed public route smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
