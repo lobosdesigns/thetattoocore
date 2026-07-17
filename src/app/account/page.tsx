@@ -90,6 +90,16 @@ type BookingBlackout = {
   reason: string | null;
   starts_at: string;
 };
+type BookingCalendarConnection = {
+  display_name: string | null;
+  error_message: string | null;
+  external_calendar_id: string | null;
+  last_synced_at: string | null;
+  provider: string;
+  status: string;
+  sync_direction: string;
+  updated_at: string;
+};
 type SellerPayoutAccount = {
   charges_enabled: boolean;
   details_submitted: boolean;
@@ -836,6 +846,17 @@ export default async function AccountPage({
         .limit(25)
         .returns<BookingAppointmentType[]>()
     : { data: null };
+  const { data: bookingCalendarConnections } = canManageBookingSettings
+    ? await supabase
+        .from("booking_calendar_connections")
+        .select(
+          "provider, status, display_name, external_calendar_id, sync_direction, last_synced_at, updated_at, error_message",
+        )
+        .eq("profile_id", claims.sub)
+        .order("updated_at", { ascending: false })
+        .limit(5)
+        .returns<BookingCalendarConnection[]>()
+    : { data: null };
   const { data: bookingSlots } = canManageBookingSettings
     ? await supabase
         .from("booking_availability_slots")
@@ -1132,6 +1153,43 @@ export default async function AccountPage({
                     </p>
                   </div>
                 ))}
+              </div>
+              <div className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3">
+                <p className="text-sm font-bold">Calendar prep records</p>
+                <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
+                  Choosing Google Calendar or Apple/iCalendar creates a private
+                  read-only prep record for future connection work. TTC does
+                  not store calendar passwords or raw connection secrets here.
+                </p>
+                {bookingCalendarConnections?.length ? (
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    {bookingCalendarConnections.map((connection) => (
+                      <div
+                        className="rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] p-3 text-xs leading-5"
+                        key={`${connection.provider}-${connection.updated_at}`}
+                      >
+                        <p className="font-bold">
+                          {connection.display_name ?? titleCaseStatus(connection.provider)}
+                        </p>
+                        <p className="text-[var(--muted-strong)]">
+                          {titleCaseStatus(connection.status)} ·{" "}
+                          {titleCaseStatus(connection.sync_direction)}
+                        </p>
+                        {connection.external_calendar_id ? (
+                          <p className="mt-1 truncate text-[var(--muted)]">
+                            {connection.external_calendar_id}
+                          </p>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] p-3 text-xs leading-5 text-[var(--muted)]">
+                    No calendar prep record yet. Save Google Calendar or
+                    Apple/iCalendar as the connection type when you are ready to
+                    prepare a future calendar connection.
+                  </p>
+                )}
               </div>
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 <label className="grid gap-1 text-sm font-semibold">

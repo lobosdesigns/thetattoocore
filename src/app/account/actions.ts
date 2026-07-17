@@ -61,6 +61,16 @@ const calendarConnectionStatuses = new Set([
   "google_planned",
   "apple_ical_planned",
 ]);
+const calendarConnectionPrep = {
+  apple_ical_planned: {
+    displayName: "Apple/iCalendar prep",
+    provider: "apple_ical",
+  },
+  google_planned: {
+    displayName: "Google Calendar prep",
+    provider: "google",
+  },
+} as const;
 
 function accountPath(message: string, hash?: string) {
   const suffix = hash ? `#${hash}` : "";
@@ -2061,6 +2071,66 @@ export async function updateBookingSettings(formData: FormData) {
 
   if (error) {
     redirect(bookingPath(error.message || "Could not save booking settings."));
+  }
+
+  const selectedCalendarPrep =
+    calendarConnectionPrep[
+      calendarConnectionStatus as keyof typeof calendarConnectionPrep
+    ];
+
+  if (selectedCalendarPrep) {
+    const { data: existingConnection, error: existingConnectionError } = await supabase
+      .from("booking_calendar_connections")
+      .select("id")
+      .eq("profile_id", claims.sub)
+      .eq("provider", selectedCalendarPrep.provider)
+      .maybeSingle<{ id: string }>();
+
+    if (existingConnectionError) {
+      redirect(bookingPath("Could not save calendar connection prep."));
+    }
+
+    const connectionPayload = {
+      connected_at: null,
+      disconnected_at: null,
+      display_name: selectedCalendarPrep.displayName,
+      error_message: null,
+      external_calendar_id: bookingUrl || null,
+      profile_id: claims.sub,
+      status: "setup_needed",
+      sync_direction: "read_only",
+      updated_at: new Date().toISOString(),
+    };
+
+    const connectionResult = existingConnection
+      ? await supabase
+          .from("booking_calendar_connections")
+          .update(connectionPayload)
+          .eq("id", existingConnection.id)
+          .eq("profile_id", claims.sub)
+      : await supabase.from("booking_calendar_connections").insert({
+          ...connectionPayload,
+          provider: selectedCalendarPrep.provider,
+        });
+
+    if (connectionResult.error) {
+      redirect(bookingPath("Could not save calendar connection prep."));
+    }
+  } else {
+    const { error: pauseConnectionError } = await supabase
+      .from("booking_calendar_connections")
+      .update({
+        disconnected_at: new Date().toISOString(),
+        status: "paused",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("profile_id", claims.sub)
+      .in("provider", ["google", "apple_ical"])
+      .in("status", ["setup_needed", "connected", "sync_error"]);
+
+    if (pauseConnectionError) {
+      redirect(bookingPath("Could not update calendar connection prep."));
+    }
   }
 
   revalidatePath("/account");

@@ -471,6 +471,20 @@ const checks = [
       profilePage.includes("bookingSettings.calendar_notes"),
   },
   {
+    label: "account booking settings maintain private calendar prep records",
+    ok:
+      accountPage.includes("Calendar prep records") &&
+      accountPage.includes("raw connection secrets") &&
+      accountPage.includes('.from("booking_calendar_connections")') &&
+      accountPage.includes("external_calendar_id") &&
+      accountActions.includes("calendarConnectionPrep") &&
+      accountActions.includes('.from("booking_calendar_connections")') &&
+      accountActions.includes('status: "setup_needed"') &&
+      accountActions.includes('sync_direction: "read_only"') &&
+      accountActions.includes('status: "paused"') &&
+      productPlan.includes("private owner-scoped calendar prep records"),
+  },
+  {
     label: "account booking settings explain manual calendar notes",
     ok:
       accountPage.includes("bookingCalendarPrepItems") &&
