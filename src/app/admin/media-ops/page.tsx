@@ -55,6 +55,14 @@ const thumbnailContract = [
   "Keep private or sensitive posters behind the same visibility checks as their source media.",
   "Record processing status so admins can retry failed thumbnails without re-uploading member media.",
 ] as const;
+const betaQaLaunchChecks = [
+  "Run login, signup, email confirmation, forgot-password, and reset-password inside the browser/PWA/native wrapper without leaving the app.",
+  "Run the two-user DM pass: search a connected profile, send text, send a photo/GIF, open the notification, reply, and confirm read/delivered markers.",
+  "Create 4U, Gossip, Story, Stuff, Gig, and Merch test content on mobile; confirm crop tools, media viewer, comments, edit/delete, reports, and Load more behavior.",
+  "Submit artist, studio, and vendor verification with safe dummy documents; approve and reject from Admin > Verification.",
+  "Run Merch, ad, and booking-deposit test checkout flows only in test mode; confirm Admin > Payments reconciliation before any closeout decision.",
+  "Prepare store screenshots from safe sample accounts only: no private DMs, license documents, nudity, real payment data, or personal owner contact details.",
+] as const;
 
 export const metadata: Metadata = {
   robots: {
@@ -132,6 +140,30 @@ export default async function AdminMediaOpsPage() {
             <p className="mt-1 text-xl font-bold">Ready when needed</p>
           </div>
         </div>
+
+        <section className="ttc-card mb-4 rounded-lg border border-[color-mix(in_srgb,var(--gold)_42%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-soft)_90%,var(--gold)_8%)] p-5">
+          <h2 className="text-lg font-bold">Beta QA launch checklist</h2>
+          <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+            Use this before TestFlight, Google Play internal testing, public
+            screenshots, or inviting a wider tester group.
+          </p>
+          <ol className="mt-4 grid gap-3 md:grid-cols-2">
+            {betaQaLaunchChecks.map((check) => (
+              <li
+                className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3 text-sm leading-6 text-[var(--muted)]"
+                key={check}
+              >
+                {check}
+              </li>
+            ))}
+          </ol>
+          <Link
+            className="mt-4 inline-flex text-sm font-semibold underline"
+            href="/help/getting-started"
+          >
+            Getting started guide
+          </Link>
+        </section>
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
           <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
