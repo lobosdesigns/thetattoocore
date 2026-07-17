@@ -331,6 +331,7 @@
 - Mobile browser smoke now covers `/messages?to=tattedhotlegs` at 390px, matching the profile-to-DM recipient route that members use from profile buttons. The route redirects safely to login while preserving the intended DM target.
 - Public and mobile route smoke passed on July 17, 2026 after Search gained broader tattoo-community aliases for artists/tattooers, guest spots, conventions, jobs, shirts, prints, stickers, and common typo-style terms. Live deploy version `6df96e1e-453a-4c10-8b29-72146918a162` passed public route smoke after a transient deploy retry and 390px mobile browser smoke.
 - Public and mobile route smoke passed on July 17, 2026 after the Search/Saved Help guide was updated to explain the same community search wording members can use for tattooers, guest spots, conventions, jobs, shirts, Merch, bookings, DMs, and sellers. Live deploy version `65f169e5-b0c9-4e7f-b978-92cf65679290` passed public route smoke and 390px mobile browser smoke.
+- Public and mobile route smoke passed on July 17, 2026 after Help Center search gained the same community aliases for guest spots, conventions, jobs, shirts, prints, stickers, Merch products, bookings, DMs, artists, shops, and vendors. Live deploy version `88b202c3-7919-427f-b899-2959cda2444c` passed public route smoke and 390px mobile browser smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
