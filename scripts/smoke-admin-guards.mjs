@@ -197,6 +197,21 @@ const checks = [
       publicSmoke.includes('path: "/admin/reports?subject_type=help_article_comment"'),
   },
   {
+    label: "admin content can filter status while preserving pagination and actions",
+    ok:
+      adminContent.includes("type ContentStatusFilter") &&
+      adminContent.includes("const contentStatusOptions") &&
+      adminContent.includes("function contentStatusFilter") &&
+      adminContent.includes("Filter content") &&
+      adminContent.includes("Clear filter") &&
+      adminContent.includes("query = query.eq(\"status\", \"pending_review\")") &&
+      adminContent.includes("query = query.eq(\"moderation_status\", activeStatus)") &&
+      adminContent.includes("pageHref(item.subjectType, currentPage, status)") &&
+      publicSmoke.includes('path: "/admin/content?status=hidden"') &&
+      publicSmoke.includes('path: "/admin/content?type=help_article_comment&status=pending_review"') &&
+      productPlan.includes("Admin Content supports 50-item pagination plus status filters"),
+  },
+  {
     label: "admin moderation queues use shared friendly status labels",
     ok:
       statusLabels.includes("export function titleCaseStatus") &&

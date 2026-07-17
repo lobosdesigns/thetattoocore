@@ -21,6 +21,15 @@ type ContentType =
   | "merch_product"
   | "story_post"
   | "thread_post";
+type ContentStatusFilter =
+  | "active"
+  | "all"
+  | "hidden"
+  | "needs_review"
+  | "pending_review"
+  | "removed"
+  | "under_review"
+  | "visible";
 type ReviewItem = {
   authorName: string;
   authorUsername: string;
@@ -50,6 +59,16 @@ const contentTabs = [
   ["story_post", "Stories"],
   ["help_article_comment", "Help"],
 ] as const;
+const contentStatusOptions: { label: string; value: ContentStatusFilter }[] = [
+  { label: "Needs review", value: "needs_review" },
+  { label: "All statuses", value: "all" },
+  { label: "Active", value: "active" },
+  { label: "Under review", value: "under_review" },
+  { label: "Hidden", value: "hidden" },
+  { label: "Removed", value: "removed" },
+  { label: "Pending Help", value: "pending_review" },
+  { label: "Visible Help", value: "visible" },
+];
 
 export const metadata: Metadata = {
   robots: {
@@ -84,8 +103,39 @@ function contentType(value: string | string[] | undefined): ContentType {
   return "feed_post";
 }
 
-function pageHref(type: ContentType, page: number) {
-  return `/admin/content?type=${type}&page=${page}`;
+function contentStatusFilter(
+  value: string | string[] | undefined,
+): ContentStatusFilter {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+
+  if (
+    rawValue === "active" ||
+    rawValue === "all" ||
+    rawValue === "hidden" ||
+    rawValue === "needs_review" ||
+    rawValue === "pending_review" ||
+    rawValue === "removed" ||
+    rawValue === "under_review" ||
+    rawValue === "visible"
+  ) {
+    return rawValue;
+  }
+
+  return "needs_review";
+}
+
+function pageHref(
+  type: ContentType,
+  page: number,
+  status: ContentStatusFilter = "needs_review",
+) {
+  const params = new URLSearchParams({ page: String(page), type });
+
+  if (status !== "needs_review") {
+    params.set("status", status);
+  }
+
+  return `/admin/content?${params.toString()}`;
 }
 
 function timeAgo(value: string) {
@@ -134,11 +184,13 @@ function contentTypeLabel(type: ContentType) {
 function Pagination({
   currentPage,
   hasNextPage,
+  status,
   totalPages,
   type,
 }: {
   currentPage: number;
   hasNextPage: boolean;
+  status: ContentStatusFilter;
   totalPages: number;
   type: ContentType;
 }) {
@@ -155,7 +207,7 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
           }`}
-          href={pageHref(type, Math.max(1, currentPage - 1))}
+          href={pageHref(type, Math.max(1, currentPage - 1), status)}
         >
           <ChevronLeft className="size-4" />
           Previous 50
@@ -167,7 +219,7 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
           }`}
-          href={pageHref(type, currentPage + 1)}
+          href={pageHref(type, currentPage + 1, status)}
         >
           Next 50
           <ChevronRight className="size-4" />
@@ -180,9 +232,11 @@ function Pagination({
 function ReviewCard({
   currentPage,
   item,
+  status,
 }: {
   currentPage: number;
   item: ReviewItem;
+  status: ContentStatusFilter;
 }) {
   return (
     <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
@@ -227,7 +281,7 @@ function ReviewCard({
         ) : null}
       </div>
       <form action={moderateContent} className="mt-4 space-y-2">
-        <input name="return_to" type="hidden" value={pageHref(item.subjectType, currentPage)} />
+        <input name="return_to" type="hidden" value={pageHref(item.subjectType, currentPage, status)} />
         <input name="subject_id" type="hidden" value={item.id} />
         <input name="subject_type" type="hidden" value={item.subjectType} />
         <input
@@ -261,11 +315,13 @@ function ReviewCard({
 function HelpQuestionCard({
   currentPage,
   item,
+  status,
 }: {
   currentPage: number;
   item: ReviewItem;
+  status: ContentStatusFilter;
 }) {
-  const returnTo = pageHref("help_article_comment", currentPage);
+  const returnTo = pageHref("help_article_comment", currentPage, status);
 
   return (
     <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
@@ -350,10 +406,16 @@ function HelpQuestionCard({
 export default async function AdminContentPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string; page?: string | string[]; type?: string | string[] }>;
+  searchParams: Promise<{
+    message?: string;
+    page?: string | string[];
+    status?: string | string[];
+    type?: string | string[];
+  }>;
 }) {
   const params = await searchParams;
   const activeType = contentType(params.type);
+  const activeStatus = contentStatusFilter(params.status);
   const currentPage = pageNumber(params.page);
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
@@ -379,13 +441,20 @@ export default async function AdminContentPage({
   let items: ReviewItem[] = [];
 
   if (activeType === "feed_post") {
-    const { count, data } = await supabase
+    let query = supabase
       .from("feed_posts")
       .select(
         "id, caption, created_at, is_sensitive, sensitive_reason, moderation_status, visibility, profiles:profiles!feed_posts_author_id_fkey(display_name, username)",
         { count: "exact" },
-      )
-      .or("is_sensitive.eq.true,moderation_status.neq.active")
+      );
+
+    if (activeStatus === "needs_review") {
+      query = query.or("is_sensitive.eq.true,moderation_status.neq.active");
+    } else if (["active", "under_review", "hidden", "removed"].includes(activeStatus)) {
+      query = query.eq("moderation_status", activeStatus);
+    }
+
+    const { count, data } = await query
       .order("created_at", { ascending: false })
       .range(from, to)
       .returns<
@@ -415,13 +484,20 @@ export default async function AdminContentPage({
       visibility: post.visibility,
     }));
   } else if (activeType === "thread_post") {
-    const { count, data } = await supabase
+    let query = supabase
       .from("thread_posts")
       .select(
         "id, body, created_at, is_sensitive, sensitive_reason, moderation_status, visibility, profiles:profiles!thread_posts_author_id_fkey(display_name, username)",
         { count: "exact" },
-      )
-      .or("is_sensitive.eq.true,moderation_status.neq.active")
+      );
+
+    if (activeStatus === "needs_review") {
+      query = query.or("is_sensitive.eq.true,moderation_status.neq.active");
+    } else if (["active", "under_review", "hidden", "removed"].includes(activeStatus)) {
+      query = query.eq("moderation_status", activeStatus);
+    }
+
+    const { count, data } = await query
       .order("created_at", { ascending: false })
       .range(from, to)
       .returns<
@@ -451,13 +527,20 @@ export default async function AdminContentPage({
       visibility: thread.visibility,
     }));
   } else if (activeType === "marketplace_listing") {
-    const { count, data } = await supabase
+    let query = supabase
       .from("marketplace_listings")
       .select(
         "id, title, description, created_at, is_sensitive, sensitive_reason, moderation_status, visibility, profiles:profiles!marketplace_listings_seller_id_fkey(display_name, username)",
         { count: "exact" },
-      )
-      .or("is_sensitive.eq.true,moderation_status.neq.active")
+      );
+
+    if (activeStatus === "needs_review") {
+      query = query.or("is_sensitive.eq.true,moderation_status.neq.active");
+    } else if (["active", "under_review", "hidden", "removed"].includes(activeStatus)) {
+      query = query.eq("moderation_status", activeStatus);
+    }
+
+    const { count, data } = await query
       .order("created_at", { ascending: false })
       .range(from, to)
       .returns<
@@ -488,13 +571,20 @@ export default async function AdminContentPage({
       visibility: listing.visibility,
     }));
   } else if (activeType === "gig") {
-    const { count, data } = await supabase
+    let query = supabase
       .from("gigs")
       .select(
         "id, title, description, created_at, is_sensitive, sensitive_reason, moderation_status, visibility, profiles:profiles!gigs_poster_id_fkey(display_name, username)",
         { count: "exact" },
-      )
-      .or("is_sensitive.eq.true,moderation_status.neq.active")
+      );
+
+    if (activeStatus === "needs_review") {
+      query = query.or("is_sensitive.eq.true,moderation_status.neq.active");
+    } else if (["active", "under_review", "hidden", "removed"].includes(activeStatus)) {
+      query = query.eq("moderation_status", activeStatus);
+    }
+
+    const { count, data } = await query
       .order("created_at", { ascending: false })
       .range(from, to)
       .returns<
@@ -525,13 +615,20 @@ export default async function AdminContentPage({
       visibility: gig.visibility,
     }));
   } else if (activeType === "merch_product") {
-    const { count, data } = await supabase
+    let query = supabase
       .from("merch_products")
       .select(
         "id, title, description, created_at, moderation_status, profiles:profiles!merch_products_seller_id_fkey(display_name, username)",
         { count: "exact" },
-      )
-      .neq("moderation_status", "active")
+      );
+
+    if (activeStatus === "needs_review") {
+      query = query.neq("moderation_status", "active");
+    } else if (["active", "under_review", "hidden", "removed"].includes(activeStatus)) {
+      query = query.eq("moderation_status", activeStatus);
+    }
+
+    const { count, data } = await query
       .order("created_at", { ascending: false })
       .range(from, to)
       .returns<
@@ -559,12 +656,20 @@ export default async function AdminContentPage({
       visibility: "public_preview",
     }));
   } else if (activeType === "help_article_comment") {
-    const { count, data } = await supabase
+    let query = supabase
       .from("help_article_comments")
       .select(
         "id, article_slug, body, created_at, status, is_official_answer, is_pinned, profiles:profiles!help_article_comments_author_id_fkey(display_name, username)",
         { count: "exact" },
-      )
+      );
+
+    if (activeStatus === "needs_review") {
+      query = query.eq("status", "pending_review");
+    } else if (["pending_review", "visible", "hidden", "removed"].includes(activeStatus)) {
+      query = query.eq("status", activeStatus);
+    }
+
+    const { count, data } = await query
       .order("created_at", { ascending: false })
       .range(from, to)
       .returns<
@@ -596,13 +701,20 @@ export default async function AdminContentPage({
       visibility: "public_preview",
     }));
   } else {
-    const { count, data } = await supabase
+    let query = supabase
       .from("story_posts")
       .select(
         "id, caption, created_at, expires_at, is_sensitive, sensitive_reason, moderation_status, visibility, profiles:profiles!story_posts_author_id_fkey(display_name, username)",
         { count: "exact" },
-      )
-      .or("is_sensitive.eq.true,moderation_status.neq.active")
+      );
+
+    if (activeStatus === "needs_review") {
+      query = query.or("is_sensitive.eq.true,moderation_status.neq.active");
+    } else if (["active", "under_review", "hidden", "removed"].includes(activeStatus)) {
+      query = query.eq("moderation_status", activeStatus);
+    }
+
+    const { count, data } = await query
       .order("created_at", { ascending: false })
       .range(from, to)
       .returns<
@@ -673,7 +785,8 @@ export default async function AdminContentPage({
               </p>
               <h1 className="text-2xl font-bold sm:text-3xl">Content</h1>
               <p className="mt-1 text-sm text-[var(--muted-strong)]">
-                50 {contentTypeLabel(activeType)} review items per page.
+                50 {contentTypeLabel(activeType)} review items per page with
+                status filters for long queues.
               </p>
             </div>
           </div>
@@ -701,13 +814,46 @@ export default async function AdminContentPage({
                   ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
                   : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--muted)]"
               }`}
-              href={pageHref(type, 1)}
+              href={pageHref(type, 1, activeStatus)}
               key={type}
             >
               {label}
             </Link>
           ))}
         </div>
+
+        <form
+          action="/admin/content"
+          className="ttc-card mb-4 grid gap-3 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 sm:grid-cols-[1fr_auto_auto]"
+        >
+          <input name="page" type="hidden" value="1" />
+          <input name="type" type="hidden" value={activeType} />
+          <label className="grid gap-1 text-sm font-semibold">
+            Status filter
+            <select
+              className="h-11 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--foreground)]"
+              defaultValue={activeStatus}
+              name="status"
+            >
+              {contentStatusOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className="h-11 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)] sm:self-end">
+            Filter content
+          </button>
+          {activeStatus !== "needs_review" ? (
+            <Link
+              className="flex h-11 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold sm:self-end"
+              href={pageHref(activeType, 1)}
+            >
+              Clear filter
+            </Link>
+          ) : null}
+        </form>
 
         <div className="mb-4 grid gap-3 sm:grid-cols-4">
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
@@ -742,6 +888,7 @@ export default async function AdminContentPage({
         <Pagination
           currentPage={currentPage}
           hasNextPage={hasNextPage}
+          status={activeStatus}
           totalPages={totalPages}
           type={activeType}
         />
@@ -754,9 +901,15 @@ export default async function AdminContentPage({
                   currentPage={currentPage}
                   item={item}
                   key={item.id}
+                  status={activeStatus}
                 />
               ) : (
-                <ReviewCard currentPage={currentPage} item={item} key={item.id} />
+                <ReviewCard
+                  currentPage={currentPage}
+                  item={item}
+                  key={item.id}
+                  status={activeStatus}
+                />
               )
             ))}
           </section>
@@ -771,6 +924,7 @@ export default async function AdminContentPage({
           <Pagination
             currentPage={currentPage}
             hasNextPage={hasNextPage}
+            status={activeStatus}
             totalPages={totalPages}
             type={activeType}
           />
