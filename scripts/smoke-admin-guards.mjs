@@ -9,6 +9,7 @@ const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const adminDataRequests = readFileSync("src/app/admin/data-requests/page.tsx", "utf8");
 const adminContent = readFileSync("src/app/admin/content/page.tsx", "utf8");
 const adminReports = readFileSync("src/app/admin/reports/page.tsx", "utf8");
+const adminVerification = readFileSync("src/app/admin/verification/page.tsx", "utf8");
 const adminGigs = readFileSync("src/app/admin/gigs/page.tsx", "utf8");
 const adminStuff = readFileSync("src/app/admin/stuff/page.tsx", "utf8");
 const adCreditMigration = readFileSync(
@@ -210,6 +211,20 @@ const checks = [
       publicSmoke.includes('path: "/admin/content?status=hidden"') &&
       publicSmoke.includes('path: "/admin/content?type=help_article_comment&status=pending_review"') &&
       productPlan.includes("Admin Content supports 50-item pagination plus status filters"),
+  },
+  {
+    label: "admin verification can filter status and account type while preserving pagination and actions",
+    ok:
+      adminVerification.includes("function verificationFilters") &&
+      adminVerification.includes("Filter verification") &&
+      adminVerification.includes("Clear") &&
+      adminVerification.includes("requestsQuery = requestsQuery.eq(\"status\", filters.status)") &&
+      adminVerification.includes("requestsQuery = requestsQuery.eq(\"account_type\", filters.accountType)") &&
+      adminVerification.includes("pageHref(currentPage, filters)") &&
+      adminVerification.includes("return_to") &&
+      publicSmoke.includes('path: "/admin/verification?status=pending"') &&
+      publicSmoke.includes('path: "/admin/verification?account_type=vendor"') &&
+      productPlan.includes("Admin Verification supports 50-item pagination plus status and account-type filters"),
   },
   {
     label: "admin moderation queues use shared friendly status labels",

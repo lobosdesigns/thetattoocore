@@ -27,9 +27,13 @@ type LicenseRequest = {
   status: "pending" | "approved" | "rejected";
   storageBucket: string;
 };
+type VerificationStatus = LicenseRequest["status"] | "all";
+type VerificationAccountType = "all" | "artist" | "studio" | "vendor";
 
 const moderateRoles: UserRole[] = ["moderator", "admin", "owner"];
 const pageSize = 50;
+const verificationStatuses = ["all", "pending", "approved", "rejected"] as const;
+const verificationAccountTypes = ["all", "artist", "studio", "vendor"] as const;
 const licenseReviewChecklist = [
   "Confirm the account is an artist, studio, or vendor before approval.",
   "Match the document to the profile name, shop, or vendor business.",
@@ -52,8 +56,45 @@ function pageNumber(value: string | string[] | undefined) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 }
 
-function pageHref(page: number) {
-  return `/admin/verification?page=${page}`;
+function singleParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function filterValue<const T extends readonly string[]>(
+  value: string | string[] | undefined,
+  allowed: T,
+): T[number] {
+  const rawValue = singleParam(value);
+
+  return allowed.includes(rawValue ?? "") ? (rawValue as T[number]) : allowed[0];
+}
+
+function verificationFilters({
+  accountType,
+  status,
+}: {
+  accountType?: string | string[];
+  status?: string | string[];
+}) {
+  return {
+    accountType: filterValue(accountType, verificationAccountTypes) as VerificationAccountType,
+    status: filterValue(status, verificationStatuses) as VerificationStatus,
+  };
+}
+
+function pageHref(
+  page: number,
+  filters: ReturnType<typeof verificationFilters> = {
+    accountType: "all",
+    status: "all",
+  },
+) {
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  if (filters.status !== "all") params.set("status", filters.status);
+  if (filters.accountType !== "all") params.set("account_type", filters.accountType);
+
+  return `/admin/verification?${params.toString()}`;
 }
 
 function timeAgo(value: string) {
@@ -94,10 +135,12 @@ function licenseStatusClass(status: LicenseRequest["status"]) {
 
 function Pagination({
   currentPage,
+  filters,
   hasNextPage,
   totalPages,
 }: {
   currentPage: number;
+  filters: ReturnType<typeof verificationFilters>;
   hasNextPage: boolean;
   totalPages: number;
 }) {
@@ -114,7 +157,7 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
           }`}
-          href={pageHref(Math.max(1, currentPage - 1))}
+          href={pageHref(Math.max(1, currentPage - 1), filters)}
         >
           <ChevronLeft className="size-4" />
           Previous 50
@@ -126,7 +169,7 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
           }`}
-          href={pageHref(currentPage + 1)}
+          href={pageHref(currentPage + 1, filters)}
         >
           Next 50
           <ChevronRight className="size-4" />
@@ -138,9 +181,11 @@ function Pagination({
 
 function LicenseRequestCard({
   currentPage,
+  filters,
   request,
 }: {
   currentPage: number;
+  filters: ReturnType<typeof verificationFilters>;
   request: LicenseRequest;
 }) {
   const isPending = request.status === "pending";
@@ -239,7 +284,7 @@ function LicenseRequestCard({
       {isPending ? (
         <form action={updateLicenseVerification} className="mt-4 space-y-2">
           <input name="request_id" type="hidden" value={request.id} />
-          <input name="return_to" type="hidden" value={pageHref(currentPage)} />
+          <input name="return_to" type="hidden" value={pageHref(currentPage, filters)} />
           <input
             className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
             maxLength={500}
@@ -287,9 +332,18 @@ function LicenseRequestCard({
 export default async function AdminVerificationPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string; page?: string | string[] }>;
+  searchParams: Promise<{
+    account_type?: string | string[];
+    message?: string;
+    page?: string | string[];
+    status?: string | string[];
+  }>;
 }) {
   const params = await searchParams;
+  const filters = verificationFilters({
+    accountType: params.account_type,
+    status: params.status,
+  });
   const currentPage = pageNumber(params.page);
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
@@ -311,13 +365,23 @@ export default async function AdminVerificationPage({
     redirect("/admin");
   }
 
-  const { count, data: requestRows } = await supabase
+  let requestsQuery = supabase
     .from("license_verification_requests")
     .select(
       "id, account_type, license_name, license_number, issuing_region, expires_on, storage_bucket, storage_path, status, reviewer_note, reviewed_at, created_at, profiles:profiles!license_verification_requests_profile_id_fkey(display_name, username)",
       { count: "exact" },
     )
-    .in("status", ["pending", "approved", "rejected"])
+    .in("status", ["pending", "approved", "rejected"]);
+
+  if (filters.status !== "all") {
+    requestsQuery = requestsQuery.eq("status", filters.status);
+  }
+
+  if (filters.accountType !== "all") {
+    requestsQuery = requestsQuery.eq("account_type", filters.accountType);
+  }
+
+  const { count, data: requestRows } = await requestsQuery
     .order("created_at", { ascending: false })
     .range(from, to)
     .returns<
@@ -409,6 +473,56 @@ export default async function AdminVerificationPage({
           </p>
         ) : null}
 
+        <form
+          action="/admin/verification"
+          className="mb-4 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4"
+        >
+          <p className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
+            Filter verification
+          </p>
+          <div className="mt-3 grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
+            <label className="grid gap-1 text-sm font-semibold">
+              Status
+              <select
+                className="min-h-11 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)]"
+                defaultValue={filters.status}
+                name="status"
+              >
+                {verificationStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {status === "all" ? "All statuses" : status}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm font-semibold">
+              Account type
+              <select
+                className="min-h-11 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)]"
+                defaultValue={filters.accountType}
+                name="account_type"
+              >
+                {verificationAccountTypes.map((accountType) => (
+                  <option key={accountType} value={accountType}>
+                    {accountType === "all" ? "All account types" : accountType}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="flex gap-2">
+              <button className="h-11 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
+                Apply
+              </button>
+              <Link
+                className="flex h-11 items-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
+                href="/admin/verification"
+              >
+                Clear
+              </Link>
+            </div>
+          </div>
+        </form>
+
         <div className="mb-4 grid gap-3 sm:grid-cols-4">
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
             <p className="text-sm text-[var(--muted-strong)]">Requests</p>
@@ -441,6 +555,7 @@ export default async function AdminVerificationPage({
 
         <Pagination
           currentPage={currentPage}
+          filters={filters}
           hasNextPage={hasNextPage}
           totalPages={totalPages}
         />
@@ -450,6 +565,7 @@ export default async function AdminVerificationPage({
             {requests.map((request) => (
               <LicenseRequestCard
                 currentPage={currentPage}
+                filters={filters}
                 key={request.id}
                 request={request}
               />
@@ -465,6 +581,7 @@ export default async function AdminVerificationPage({
         <div className="mt-4">
           <Pagination
             currentPage={currentPage}
+            filters={filters}
             hasNextPage={hasNextPage}
             totalPages={totalPages}
           />
