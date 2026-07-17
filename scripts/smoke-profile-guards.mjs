@@ -252,6 +252,11 @@ const checks = [
       searchPage.includes("function expandSearchTerm") &&
       searchPage.includes('shops: ["shop", "studio"]') &&
       searchPage.includes('dms: ["dm", "message"]') &&
+      searchPage.includes('artists: ["artist", "tattooer", "tattooist"]') &&
+      searchPage.includes('guestspots: ["guest", "spot", "gig"]') &&
+      searchPage.includes('conventions: ["convention", "event", "gig"]') &&
+      searchPage.includes('shirts: ["shirt", "apparel", "merch"]') &&
+      searchPage.includes('tattoers: ["tattooer", "artist"]') &&
       searchPage.includes("function searchOr") &&
       searchPage.includes("function usernameQuery") &&
       searchPage.includes("const exactUsername = usernameQuery(query)") &&
