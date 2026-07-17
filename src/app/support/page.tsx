@@ -91,6 +91,11 @@ const guideLinks = [
     href: "/help/verification-documents",
     label: "Verification guide",
   },
+  {
+    body: "Product review, seller readiness, fulfillment, tracking, package issues, and refunds.",
+    href: "/help/merch-products-orders",
+    label: "Merch guide",
+  },
 ] as const;
 
 export default function SupportPage() {

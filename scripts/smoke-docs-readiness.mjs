@@ -28,6 +28,7 @@ const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
 const adminContentPage = readFileSync("src/app/admin/content/page.tsx", "utf8");
 const adminReportsPage = readFileSync("src/app/admin/reports/page.tsx", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
+const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
 const helpCommentsMigration = readFileSync(
   "supabase/migrations/20260715232157_help_article_comments.sql",
   "utf8",
@@ -305,6 +306,8 @@ const checks = [
       adminPage.includes('[CircleHelp, "Help", "/help"]') &&
       adminPage.includes('action: "Open Help"') &&
       adminPage.includes("Self-serve tutorials and guide questions") &&
+      supportPage.includes('href: "/help/merch-products-orders"') &&
+      supportPage.includes("Product review, seller readiness") &&
       profilePage.includes('href="/help/artist-profile-shop-links"') &&
       profilePage.includes('aria-label="Open profile help"') &&
       docs["docs/PRODUCT_PLAN.md"].includes("Help must be easy to find while logged in") &&
