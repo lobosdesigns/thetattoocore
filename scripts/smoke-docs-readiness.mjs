@@ -316,6 +316,7 @@ const checks = [
       helpArticlePage.includes("Submit question") &&
       helpArticlePage.includes("help_article_comments") &&
       helpActions.includes("getHelpArticle(slug)") &&
+      helpActions.includes("Please wait a moment before submitting another guide question.") &&
       helpActions.includes("status: \"pending_review\"") &&
       helpActions.includes("Question submitted for moderation."),
   },

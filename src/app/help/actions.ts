@@ -27,6 +27,10 @@ function helpMessage(returnPath: string, message: string) {
   return `${returnPath}${separator}message=${encodeURIComponent(message)}#guide-comments`;
 }
 
+function secondsSince(value: string) {
+  return Math.floor((Date.now() - new Date(value).getTime()) / 1000);
+}
+
 export async function createHelpArticleComment(formData: FormData) {
   const slug = cleanText(formData.get("article_slug"), 120).toLowerCase();
   const article = /^[a-z0-9-]{3,120}$/.test(slug) ? getHelpArticle(slug) : null;
@@ -47,6 +51,23 @@ export async function createHelpArticleComment(formData: FormData) {
 
   if (!userId) {
     redirect(`/login?return_to=${encodeURIComponent(returnPath)}`);
+  }
+
+  const { data: recentComment } = await supabase
+    .from("help_article_comments")
+    .select("created_at")
+    .eq("author_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<{ created_at: string }>();
+
+  if (recentComment && secondsSince(recentComment.created_at) < 60) {
+    redirect(
+      helpMessage(
+        returnPath,
+        "Please wait a moment before submitting another guide question.",
+      ),
+    );
   }
 
   const { error } = await supabase.from("help_article_comments").insert({
