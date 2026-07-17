@@ -97,7 +97,17 @@ const checks = [
       adminOverview.includes("Full queues belong on") &&
       adminOverview.includes("const launchReadinessItems = [") &&
       adminOverview.includes("const betaFinishBoard = [") &&
+      adminOverview.includes("const betaGoNoGoItems = [") &&
+      adminOverview.includes("const betaGoNoGoReady = betaGoNoGoItems.every") &&
       adminOverview.includes("One-week beta push") &&
+      adminOverview.includes("Beta go/no-go") &&
+      adminOverview.includes("Tester wave looks clear") &&
+      adminOverview.includes("Ready for testers") &&
+      adminOverview.includes("Needs cleanup") &&
+      adminOverview.includes("Open reports") &&
+      adminOverview.includes("Pending verification") &&
+      adminOverview.includes("Pending ads") &&
+      adminOverview.includes("Mail sender") &&
       adminOverview.includes("Seven-day maturity sprint") &&
       adminOverview.includes("Stabilize") &&
       adminOverview.includes("Commerce") &&

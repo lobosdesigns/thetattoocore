@@ -1331,6 +1331,57 @@ export default async function AdminPage({
       window: "Days 5-7",
     },
   ];
+  const betaGoNoGoItems = [
+    {
+      count: openReports ?? 0,
+      good: (openReports ?? 0) === 0,
+      href: "/admin/reports?status=open",
+      label: "Open reports",
+      readyText: "Clear",
+      reviewText: "Review",
+    },
+    {
+      count: pendingVerifications ?? 0,
+      good: (pendingVerifications ?? 0) === 0,
+      href: "/admin/verification?status=pending",
+      label: "Pending verification",
+      readyText: "Clear",
+      reviewText: "Review",
+    },
+    {
+      count: pendingAds ?? 0,
+      good: (pendingAds ?? 0) === 0,
+      href: "/admin/ads?status=pending_review",
+      label: "Pending ads",
+      readyText: "Clear",
+      reviewText: "Review",
+    },
+    {
+      count: pendingDataRequests ?? 0,
+      good: (pendingDataRequests ?? 0) === 0,
+      href: "/admin/data-requests?status=pending",
+      label: "Data requests",
+      readyText: "Clear",
+      reviewText: "Review",
+    },
+    {
+      count: reviewItems.length,
+      good: reviewItems.length === 0,
+      href: "/admin/content?status=needs_review",
+      label: "Content review",
+      readyText: "Clear",
+      reviewText: "Review",
+    },
+    {
+      count: mailSettings?.is_enabled ? 0 : 1,
+      good: Boolean(mailSettings?.is_enabled),
+      href: "/admin/mail-settings",
+      label: "Mail sender",
+      readyText: "Ready",
+      reviewText: "Check",
+    },
+  ];
+  const betaGoNoGoReady = betaGoNoGoItems.every((item) => item.good);
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -1488,6 +1539,60 @@ export default async function AdminPage({
                   <p className="font-black">{item.label}</p>
                   <p className="mt-2 leading-5 text-[var(--muted)]">
                     {item.body}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          <section className="mb-6 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] p-5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--muted-strong)]">
+                  Beta go/no-go
+                </p>
+                <h2 className="mt-2 text-xl font-black">
+                  {betaGoNoGoReady ? "Tester wave looks clear" : "Tester wave needs review"}
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted)]">
+                  Before inviting a larger group, clear the live queues that can
+                  create safety, support, or payment confusion.
+                </p>
+              </div>
+              <span
+                className={`w-fit rounded-md border px-3 py-2 text-xs font-black uppercase tracking-[0.18em] ${
+                  betaGoNoGoReady
+                    ? "border-[color-mix(in_srgb,#34a853_40%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_14%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_80%,var(--foreground))]"
+                    : "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_15%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_72%,var(--foreground))]"
+                }`}
+              >
+                {betaGoNoGoReady ? "Ready for testers" : "Needs cleanup"}
+              </span>
+            </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+              {betaGoNoGoItems.map((item) => (
+                <Link
+                  className="rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-4 hover:border-[var(--gold)]"
+                  href={item.href}
+                  key={item.label}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-black">{item.label}</p>
+                    <span
+                      className={`rounded-md px-2 py-1 text-xs font-black ${
+                        item.good
+                          ? "bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_80%,var(--foreground))]"
+                          : "bg-[color-mix(in_srgb,var(--gold)_14%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_72%,var(--foreground))]"
+                      }`}
+                    >
+                      {item.good ? item.readyText : item.reviewText}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-3xl font-black">
+                    {formatCount(item.count)}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
+                    {item.good ? "No launch blocker showing here." : "Open this queue before the next tester wave."}
                   </p>
                 </Link>
               ))}
