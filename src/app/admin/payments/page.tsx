@@ -118,6 +118,32 @@ const productionPaymentGates = [
   "Keep seller payout details inside a secure hosted onboarding flow; do not collect bank or card payout data in TTC forms.",
   "Review platform fees, app-store rules, and payment policy before turning on production purchases.",
 ] as const;
+const paymentOpsRunbooks = [
+  {
+    steps: [
+      "Confirm seller is verified, active, and not marketplace-suspended.",
+      "Confirm payout setup is ready and product/order has no refund, dispute, safety, or non-delivery flag.",
+      "Confirm fulfillment proof exists: tracking, pickup note, or clear handoff note.",
+    ],
+    title: "Seller payout release",
+  },
+  {
+    steps: [
+      "Freeze payout release and fulfillment closeout while refund or dispute review is open.",
+      "Check order status, buyer reason, seller notes, tracking, support messages, and payment audit entries.",
+      "Record whether any approved refund is full, partial, seller-funded, platform-funded, shipping-only, or goodwill.",
+    ],
+    title: "Refund and dispute review",
+  },
+  {
+    steps: [
+      "Confirm request was accepted with appointment time, deposit amount, TTC fee, and cancellation expectation visible.",
+      "Review client cancellation, artist cancellation, no-show, reschedule, shop emergency, and calendar conflict context.",
+      "Keep paid deposit refunds admin-reviewed until the final cancellation policy is legally reviewed.",
+    ],
+    title: "Booking deposit review",
+  },
+] as const;
 
 export const metadata: Metadata = {
   robots: {
@@ -1224,6 +1250,35 @@ export default async function AdminPaymentsPage({
                       </li>
                     ))}
                   </ul>
+                </section>
+
+                <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
+                  <h2 className="text-lg font-bold">Payment ops runbook</h2>
+                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                    Use these checks before release decisions, refund reviews,
+                    disputes, or booking deposit closeout.
+                  </p>
+                  <div className="mt-3 space-y-3">
+                    {paymentOpsRunbooks.map((runbook) => (
+                      <article
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3"
+                        key={runbook.title}
+                      >
+                        <h3 className="text-sm font-bold">{runbook.title}</h3>
+                        <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs leading-5 text-[var(--muted)]">
+                          {runbook.steps.map((step) => (
+                            <li key={step}>{step}</li>
+                          ))}
+                        </ol>
+                      </article>
+                    ))}
+                  </div>
+                  <Link
+                    className="mt-3 inline-flex text-sm font-semibold underline"
+                    href="/help/seller-payouts-payment-safety"
+                  >
+                    Seller payout guide
+                  </Link>
                 </section>
 
                 <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">

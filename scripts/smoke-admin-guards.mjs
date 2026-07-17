@@ -12,6 +12,7 @@ const adminReports = readFileSync("src/app/admin/reports/page.tsx", "utf8");
 const adminVerification = readFileSync("src/app/admin/verification/page.tsx", "utf8");
 const adminGigs = readFileSync("src/app/admin/gigs/page.tsx", "utf8");
 const adminStuff = readFileSync("src/app/admin/stuff/page.tsx", "utf8");
+const adminPayments = readFileSync("src/app/admin/payments/page.tsx", "utf8");
 const adCreditMigration = readFileSync(
   "supabase/migrations/20260715033000_ad_credit_ledger.sql",
   "utf8",
@@ -269,6 +270,18 @@ const checks = [
       !adminContent.includes('status.replace("_", " ")') &&
       !adminGigs.includes('moderationStatus.replace("_", " ")') &&
       !adminStuff.includes('moderationStatus.replace("_", " ")'),
+  },
+  {
+    label: "admin payments keeps operator payout and dispute runbooks visible",
+    ok:
+      adminPayments.includes("const paymentOpsRunbooks = [") &&
+      adminPayments.includes("Seller payout release") &&
+      adminPayments.includes("Refund and dispute review") &&
+      adminPayments.includes("Booking deposit review") &&
+      adminPayments.includes("Freeze payout release and fulfillment closeout") &&
+      adminPayments.includes("Keep paid deposit refunds admin-reviewed") &&
+      adminPayments.includes("/help/seller-payouts-payment-safety") &&
+      productPlan.includes("public Help guide for hosted payout setup"),
   },
   {
     label: "plan records dedicated admin pages and tester account tooling",
