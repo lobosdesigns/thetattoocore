@@ -1293,6 +1293,11 @@ export default async function AdminPage({
       href: "/admin/media-ops",
       label: "Beta QA",
     },
+    {
+      body: "Confirm support/legal copy, privacy answers, safe screenshots, native auth, payment review, and QA evidence before external app review.",
+      href: "/admin/media-ops",
+      label: "App handoff",
+    },
   ];
 
   return (

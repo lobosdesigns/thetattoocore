@@ -100,6 +100,8 @@ const checks = [
       adminOverview.includes("Payment gates") &&
       adminOverview.includes("Merch readiness") &&
       adminOverview.includes("Help coverage") &&
+      adminOverview.includes("App handoff") &&
+      adminOverview.includes("before external app review") &&
       adminOverview.includes("count: merchReview?.length ?? 0") &&
       adminOverview.includes("latest product review signals") &&
       adminSections
