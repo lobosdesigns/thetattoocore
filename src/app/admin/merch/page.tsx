@@ -1295,6 +1295,9 @@ export default async function AdminMerchPage({
           {activeSellerPayoutStatus ? (
             <input name="seller_payout" type="hidden" value={activeSellerPayoutStatus} />
           ) : null}
+          {activeOrderFulfillmentStatus ? (
+            <input name="fulfillment" type="hidden" value={activeOrderFulfillmentStatus} />
+          ) : null}
           <label className="min-w-0">
             <span className="mb-1 block text-xs font-bold uppercase text-[var(--muted-strong)]">
               Search Merch admin
@@ -1380,6 +1383,7 @@ export default async function AdminMerchPage({
                       : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
                   }`}
                   href={pageHref({
+                    orderFulfillmentStatus: activeOrderFulfillmentStatus,
                     orderStatus: status,
                     page: currentPage,
                     productStatus: activeProductStatus,
@@ -1407,6 +1411,7 @@ export default async function AdminMerchPage({
                   }`}
                   href={pageHref({
                     orderFulfillmentStatus: status,
+                    orderStatus: activeOrderStatus,
                     page: currentPage,
                     productStatus: activeProductStatus,
                     sellerPayoutStatus: activeSellerPayoutStatus,

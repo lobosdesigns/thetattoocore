@@ -518,6 +518,14 @@ checks.push({
     productPlan.includes("Admin Merch payout-readiness chips"),
 });
 checks.push({
+  label: "admin Merch filters preserve fulfillment review context",
+  ok:
+    adminMerchPage.includes('name="fulfillment"') &&
+    adminMerchPage.includes("value={activeOrderFulfillmentStatus}") &&
+    adminMerchPage.includes("orderFulfillmentStatus: activeOrderFulfillmentStatus") &&
+    adminMerchPage.includes("orderStatus: activeOrderStatus"),
+});
+checks.push({
   label: "admin Merch activation requires seller payout readiness",
   ok:
     adminActions.includes("This seller must finish payout setup before Merch checkout can be activated.") &&
