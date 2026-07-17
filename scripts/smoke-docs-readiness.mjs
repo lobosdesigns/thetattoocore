@@ -294,6 +294,9 @@ const checks = [
       helpCenterData.includes("Should I send payout details to support?") &&
       helpCenterData.includes("Stories, DMs, and safety controls") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("getting-started guide") &&
+      readFileSync("src/app/help/page.tsx", "utf8").includes("Launch setup checklist") &&
+      readFileSync("src/app/help/page.tsx", "utf8").includes("launchGuideSlugs") &&
+      readFileSync("src/app/help/page.tsx", "utf8").includes("screenshot/video tutorial slots") &&
       helpSearch.includes("helpSearchAliases") &&
       helpSearch.includes("matchesSearch") &&
       helpSearch.includes("tattooer") &&

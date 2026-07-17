@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { HelpCenterSearch } from "./help-center-search";
 import { LogoLockup } from "../logo-mark";
+import { getHelpArticle } from "@/lib/help-center";
 import { siteName, supportEmail } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -9,6 +10,24 @@ export const metadata: Metadata = {
     "TheTattooCore Help Center for account setup, verification, bookings, ads, Merch, Stuff, Gigs, Stories, DMs, and safety basics.",
   title: "Help Center",
 };
+
+const launchGuideSlugs = [
+  "getting-started",
+  "artist-profile-shop-links",
+  "verification-documents",
+  "posting-stories-dms",
+  "booking-appointments",
+  "merch-products-orders",
+  "seller-payouts-payment-safety",
+  "ads-and-credits",
+  "privacy-safety-support",
+] as const;
+
+const launchGuides = launchGuideSlugs.flatMap((slug) => {
+  const article = getHelpArticle(slug);
+
+  return article ? [article] : [];
+});
 
 export default function HelpCenterPage() {
   return (
@@ -37,6 +56,44 @@ export default function HelpCenterPage() {
             verification, bookings, ads, Merch, Stuff, Gigs, Stories, DMs, and
             safety.
           </p>
+
+          <section className="mt-7 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_90%,var(--gold)_7%)] p-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--gold)]">
+                  Launch setup checklist
+                </p>
+                <h2 className="mt-2 text-xl font-black">
+                  Start with these guides first
+                </h2>
+              </div>
+              <span className="w-fit rounded-md border border-[var(--card-rim)] px-3 py-1 text-xs font-bold text-[var(--muted-strong)]">
+                {launchGuides.length} priority guides
+              </span>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {launchGuides.map((guide) => (
+                <Link
+                  className="ttc-surface rounded-lg border border-[var(--card-rim)] p-4 hover:border-[var(--gold)]"
+                  href={`/help/${guide.slug}`}
+                  key={guide.slug}
+                >
+                  <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
+                    {guide.category}
+                  </p>
+                  <h3 className="mt-2 text-base font-black">{guide.title}</h3>
+                  <p className="mt-2 line-clamp-3 text-sm leading-6 text-[var(--muted)]">
+                    {guide.description}
+                  </p>
+                  {guide.tutorialMedia?.length ? (
+                    <p className="mt-3 text-xs font-bold text-[var(--muted-strong)]">
+                      {guide.tutorialMedia.length} screenshot/video tutorial slots
+                    </p>
+                  ) : null}
+                </Link>
+              ))}
+            </div>
+          </section>
 
           <HelpCenterSearch />
 

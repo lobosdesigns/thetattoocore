@@ -421,9 +421,13 @@ const checks = [
     includes: [
       "Help Center",
       "Search Help Center",
+      "Launch setup checklist",
+      "Start with these guides first",
+      "9 priority guides",
       "Search getting started, bookings, ads, Merch",
       "Tutorial Library",
       "Article Comments",
+      "screenshot/video tutorial slots",
       "/help/getting-started",
       "/help/booking-appointments",
       "/help/search-saved-people",
