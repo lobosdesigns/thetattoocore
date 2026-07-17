@@ -293,6 +293,13 @@ const checks = [
       helpSearch.includes("guestspots") &&
       helpSearch.includes("shirts") &&
       helpSearch.includes("appointments") &&
+      helpSearch.includes("article.slug") &&
+      helpSearch.includes("article.keywords") &&
+      helpSearch.includes("article.relatedSlugs") &&
+      readFileSync("src/lib/help-center.ts", "utf8").includes("payout setup") &&
+      readFileSync("src/lib/help-center.ts", "utf8").includes("google calendar") &&
+      readFileSync("src/lib/help-center.ts", "utf8").includes("shop link") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("structured article keywords") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes(
         "Signed-in members can ask deeper questions",
       ) &&

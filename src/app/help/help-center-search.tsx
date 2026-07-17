@@ -83,8 +83,11 @@ export function HelpCenterSearch() {
         article.category,
         article.description,
         article.lastReviewed,
+        article.slug,
         article.title,
+        ...(article.keywords ?? []),
         ...article.faqs.flatMap((faq) => [faq.question, faq.answer]),
+        ...article.relatedSlugs,
         ...article.steps,
       ].join(" ");
 
