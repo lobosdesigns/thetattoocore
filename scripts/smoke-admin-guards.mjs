@@ -8,6 +8,7 @@ const adminUsers = readFileSync("src/app/admin/users/page.tsx", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const adminDataRequests = readFileSync("src/app/admin/data-requests/page.tsx", "utf8");
 const adminContent = readFileSync("src/app/admin/content/page.tsx", "utf8");
+const adminReports = readFileSync("src/app/admin/reports/page.tsx", "utf8");
 const adminGigs = readFileSync("src/app/admin/gigs/page.tsx", "utf8");
 const adminStuff = readFileSync("src/app/admin/stuff/page.tsx", "utf8");
 const adCreditMigration = readFileSync(
@@ -180,6 +181,20 @@ const checks = [
       !accountPage.includes("{request.status} deletion request") &&
       adminDataRequests.includes("accountDeletionStatusLabel(request.status)") &&
       !adminDataRequests.includes(">{request.status}</span>"),
+  },
+  {
+    label: "admin reports can filter long queues while preserving pagination",
+    ok:
+      adminReports.includes("function reportFilters") &&
+      adminReports.includes("Filter reports") &&
+      adminReports.includes("Clear filters") &&
+      adminReports.includes("filters.status !== \"all\"") &&
+      adminReports.includes("reportsQuery.eq(\"reason\"") &&
+      adminReports.includes("reportsQuery.eq(\"subject_type\"") &&
+      adminReports.includes("pageHref(currentPage, filters)") &&
+      publicSmoke.includes('path: "/admin/reports?status=open"') &&
+      publicSmoke.includes('path: "/admin/reports?reason=unsafe%20practice"') &&
+      publicSmoke.includes('path: "/admin/reports?subject_type=help_article_comment"'),
   },
   {
     label: "admin moderation queues use shared friendly status labels",

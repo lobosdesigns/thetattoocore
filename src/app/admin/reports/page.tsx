@@ -32,9 +32,35 @@ type ReportSubjectPreview = {
   preview: string | null;
   title: string | null;
 };
+type ReportStatus = ReportItem["status"] | "all";
 
 const moderateRoles: UserRole[] = ["moderator", "admin", "owner"];
 const pageSize = 50;
+const reportStatuses = ["all", "open", "reviewing", "resolved", "dismissed"] as const;
+const reportReasons = [
+  "all",
+  "sensitive non-nude body-art",
+  "body-art nudity context",
+  "sexual content",
+  "minor safety concern",
+  "harassment or hate",
+  "scam or spam",
+  "unsafe practice",
+  "illegal goods or services",
+  "other",
+] as const;
+const reportSubjectTypes = [
+  "all",
+  "comment",
+  "feed_post",
+  "gig",
+  "help_article_comment",
+  "marketplace_listing",
+  "merch_product",
+  "profile",
+  "story_post",
+  "thread_post",
+] as const;
 const reportModerationSubjectTypes = new Set<string>([
   "feed_post",
   "gig",
@@ -59,8 +85,50 @@ function pageNumber(value: string | string[] | undefined) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 }
 
-function pageHref(page: number) {
-  return `/admin/reports?page=${page}`;
+function singleParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function filterValue<const T extends readonly string[]>(
+  value: string | string[] | undefined,
+  allowed: T,
+): T[number] {
+  const rawValue = singleParam(value);
+
+  return allowed.includes(rawValue ?? "") ? (rawValue as T[number]) : allowed[0];
+}
+
+function reportFilters({
+  reason,
+  status,
+  subjectType,
+}: {
+  reason?: string | string[];
+  status?: string | string[];
+  subjectType?: string | string[];
+}) {
+  return {
+    reason: filterValue(reason, reportReasons),
+    status: filterValue(status, reportStatuses) as ReportStatus,
+    subjectType: filterValue(subjectType, reportSubjectTypes),
+  };
+}
+
+function pageHref(
+  page: number,
+  filters: ReturnType<typeof reportFilters> = {
+    reason: "all",
+    status: "all",
+    subjectType: "all",
+  },
+) {
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  if (filters.status !== "all") params.set("status", filters.status);
+  if (filters.reason !== "all") params.set("reason", filters.reason);
+  if (filters.subjectType !== "all") params.set("subject_type", filters.subjectType);
+
+  return `/admin/reports?${params.toString()}`;
 }
 
 function timeAgo(value: string) {
@@ -139,10 +207,12 @@ function isPriorityReport(reason: string) {
 
 function Pagination({
   currentPage,
+  filters,
   hasNextPage,
   totalPages,
 }: {
   currentPage: number;
+  filters: ReturnType<typeof reportFilters>;
   hasNextPage: boolean;
   totalPages: number;
 }) {
@@ -159,7 +229,7 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
           }`}
-          href={pageHref(Math.max(1, currentPage - 1))}
+          href={pageHref(Math.max(1, currentPage - 1), filters)}
         >
           <ChevronLeft className="size-4" />
           Previous 50
@@ -171,7 +241,7 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
           }`}
-          href={pageHref(currentPage + 1)}
+          href={pageHref(currentPage + 1, filters)}
         >
           Next 50
           <ChevronRight className="size-4" />
@@ -183,11 +253,15 @@ function Pagination({
 
 function ReportCard({
   currentPage,
+  filters,
   report,
 }: {
   currentPage: number;
+  filters: ReturnType<typeof reportFilters>;
   report: ReportItem;
 }) {
+  const returnTo = pageHref(currentPage, filters);
+
   return (
     <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
       <div className="mb-3 flex min-w-0 flex-col gap-3 min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between">
@@ -257,7 +331,7 @@ function ReportCard({
       {canModerateReportedSubject(report.subjectType) ? (
         <form action={moderateContent} className="mt-4 space-y-2">
           <input name="report_id" type="hidden" value={report.id} />
-          <input name="return_to" type="hidden" value={pageHref(currentPage)} />
+          <input name="return_to" type="hidden" value={returnTo} />
           <input name="subject_id" type="hidden" value={report.subjectId} />
           <input name="subject_type" type="hidden" value={report.subjectType} />
           <input
@@ -287,7 +361,7 @@ function ReportCard({
       ) : null}
       <form action={updateReportStatus} className="mt-4 space-y-2">
         <input name="report_id" type="hidden" value={report.id} />
-        <input name="return_to" type="hidden" value={pageHref(currentPage)} />
+        <input name="return_to" type="hidden" value={returnTo} />
         <input
           className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
           maxLength={500}
@@ -313,7 +387,7 @@ function ReportCard({
       </form>
       <form action={recordReportFollowup} className="mt-4 space-y-2">
         <input name="report_id" type="hidden" value={report.id} />
-        <input name="return_to" type="hidden" value={pageHref(currentPage)} />
+        <input name="return_to" type="hidden" value={returnTo} />
         <input
           className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
           maxLength={500}
@@ -343,10 +417,21 @@ function ReportCard({
 export default async function AdminReportsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string; page?: string | string[] }>;
+  searchParams: Promise<{
+    message?: string;
+    page?: string | string[];
+    reason?: string | string[];
+    status?: string | string[];
+    subject_type?: string | string[];
+  }>;
 }) {
   const params = await searchParams;
   const currentPage = pageNumber(params.page);
+  const filters = reportFilters({
+    reason: params.reason,
+    status: params.status,
+    subjectType: params.subject_type,
+  });
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
   const supabase = await createClient();
@@ -367,14 +452,32 @@ export default async function AdminReportsPage({
     redirect("/admin");
   }
 
-  const { count, data: reportRows } = await supabase
+  let reportsQuery = supabase
     .from("content_reports")
     .select(
       "id, subject_type, subject_id, reason, details, status, created_at, profiles:profiles!content_reports_reporter_id_fkey(display_name, username)",
       { count: "exact" },
     )
-    .in("status", ["open", "reviewing", "resolved", "dismissed"])
-    .order("created_at", { ascending: false })
+    .order("created_at", { ascending: false });
+
+  if (filters.status === "all") {
+    reportsQuery = reportsQuery.in("status", [
+      "open",
+      "reviewing",
+      "resolved",
+      "dismissed",
+    ]);
+  } else {
+    reportsQuery = reportsQuery.eq("status", filters.status);
+  }
+  if (filters.reason !== "all") {
+    reportsQuery = reportsQuery.eq("reason", filters.reason);
+  }
+  if (filters.subjectType !== "all") {
+    reportsQuery = reportsQuery.eq("subject_type", filters.subjectType);
+  }
+
+  const { count, data: reportRows } = await reportsQuery
     .range(from, to)
     .returns<
       {
@@ -613,7 +716,7 @@ export default async function AdminReportsPage({
               </p>
               <h1 className="text-2xl font-bold sm:text-3xl">Reports</h1>
               <p className="mt-1 text-sm text-[var(--muted-strong)]">
-                50 reports per page with subject previews, status controls, and content moderation actions.
+                50 reports per page with filters, subject previews, status controls, and content moderation actions.
               </p>
             </div>
           </div>
@@ -632,6 +735,65 @@ export default async function AdminReportsPage({
             {params.message}
           </p>
         ) : null}
+
+        <form
+          action="/admin/reports"
+          className="mb-4 grid gap-3 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 sm:grid-cols-3"
+        >
+          <label className="grid gap-1 text-sm font-semibold">
+            Status
+            <select
+              className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+              defaultValue={filters.status}
+              name="status"
+            >
+              {reportStatuses.map((status) => (
+                <option key={status} value={status}>
+                  {status === "all" ? "All statuses" : status}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-1 text-sm font-semibold">
+            Reason
+            <select
+              className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+              defaultValue={filters.reason}
+              name="reason"
+            >
+              {reportReasons.map((reason) => (
+                <option key={reason} value={reason}>
+                  {reason === "all" ? "All reasons" : reportReasonLabel(reason)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-1 text-sm font-semibold">
+            Type
+            <select
+              className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+              defaultValue={filters.subjectType}
+              name="subject_type"
+            >
+              {reportSubjectTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type === "all" ? "All content types" : type.replaceAll("_", " ")}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="flex flex-col gap-2 sm:col-span-3 sm:flex-row">
+            <button className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)]">
+              Filter reports
+            </button>
+            <Link
+              className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-bold"
+              href="/admin/reports"
+            >
+              Clear filters
+            </Link>
+          </div>
+        </form>
 
         <div className="mb-4 grid gap-3 sm:grid-cols-4">
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
@@ -666,6 +828,7 @@ export default async function AdminReportsPage({
 
         <Pagination
           currentPage={currentPage}
+          filters={filters}
           hasNextPage={hasNextPage}
           totalPages={totalPages}
         />
@@ -675,6 +838,7 @@ export default async function AdminReportsPage({
             {reports.map((report) => (
               <ReportCard
                 currentPage={currentPage}
+                filters={filters}
                 key={report.id}
                 report={report}
               />
@@ -689,6 +853,7 @@ export default async function AdminReportsPage({
         <div className="mt-4">
           <Pagination
             currentPage={currentPage}
+            filters={filters}
             hasNextPage={hasNextPage}
             totalPages={totalPages}
           />
