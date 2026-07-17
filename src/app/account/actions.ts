@@ -890,6 +890,15 @@ export async function markMerchSaleFulfilled(formData: FormData) {
     redirect(accountPath("Use a valid http or https tracking link.", "order-settings"));
   }
 
+  if (!trackingNumber && !trackingUrl) {
+    redirect(
+      accountPath(
+        "Add tracking, a tracking link, or a pickup/handoff note before marking Merch fulfilled.",
+        "order-settings",
+      ),
+    );
+  }
+
   const { error } = await supabase.rpc("mark_own_merch_order_item_fulfilled", {
     p_order_item_id: orderItemId,
     p_tracking_carrier: trackingCarrier || null,

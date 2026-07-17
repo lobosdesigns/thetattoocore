@@ -380,6 +380,9 @@ checks.push({
     accountPage.includes("const addressLines = shippingAddressLines") &&
     accountPage.includes("Shipping address") &&
     accountPage.includes("<address") &&
+    accountPage.includes("Add fulfillment proof") &&
+    accountPage.includes("Tracking number or handoff note") &&
+    accountActions.includes("Add tracking, a tracking link, or a pickup/handoff note before marking Merch fulfilled.") &&
     accountActions.includes('console.error("Merch seller fulfillment failed.", error)') &&
     accountActions.includes('"Could not mark this Merch sale fulfilled. Please try again."') &&
     !accountActions.includes('error.message || "Could not mark this Merch sale fulfilled."'),

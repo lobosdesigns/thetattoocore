@@ -47,6 +47,7 @@ Do not release production seller payouts until this policy is finalized, reviewe
 - Seller payout setup must be completed through hosted onboarding and marked ready in Admin Merch before the first live order can be paid out.
 - Initial launch hold: keep seller payouts in manual review until at least fulfillment proof, buyer delivery window, refund window, and dispute exposure are understood.
 - Suggested first production rule: release seller funds only after the order is paid, item is marked fulfilled with tracking or clear fulfillment note, buyer has had a short review window, and no refund/dispute flag is open.
+- Sellers must add tracking, a tracking link, or a clear pickup/handoff note before closing a paid Merch line item as fulfilled.
 - Keep a reserve/holdback option for new sellers, high-risk categories, unusually large orders, repeated refund requests, or open moderation/payment investigations.
 - Official TTC merch can use a separate internal fulfillment process, but it still needs order, refund, and dispute logging.
 

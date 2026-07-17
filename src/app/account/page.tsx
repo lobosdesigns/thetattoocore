@@ -2929,20 +2929,20 @@ export default async function AccountPage({
                         {canMarkFulfilled ? (
                           <details className="mb-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-3">
                             <summary className="cursor-pointer text-sm font-bold">
-                              Add optional shipping details
+                              Add fulfillment proof
                             </summary>
                             <div className="mt-3 grid gap-2 sm:grid-cols-3">
                               <input
                                 className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                                 maxLength={80}
                                 name="tracking_carrier"
-                                placeholder="Carrier"
+                                placeholder="Carrier or handoff method"
                               />
                               <input
                                 className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                                 maxLength={120}
                                 name="tracking_number"
-                                placeholder="Tracking number"
+                                placeholder="Tracking number or handoff note"
                               />
                               <input
                                 className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)] sm:col-span-3"
@@ -2952,6 +2952,10 @@ export default async function AccountPage({
                                 type="url"
                               />
                             </div>
+                            <p className="mt-2 text-xs leading-5 text-[var(--muted-strong)]">
+                              Add a tracking number/link or a brief pickup/handoff
+                              note before closing fulfillment.
+                            </p>
                           </details>
                         ) : null}
                         <PendingSubmitButton
