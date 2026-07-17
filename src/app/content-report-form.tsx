@@ -5,6 +5,7 @@ type ReportSubjectType =
   | "comment"
   | "feed_post"
   | "gig"
+  | "help_article_comment"
   | "marketplace_listing"
   | "merch_product"
   | "profile"
@@ -12,11 +13,16 @@ type ReportSubjectType =
   | "thread_post";
 
 function reportTitle(subjectType: ReportSubjectType) {
+  if (subjectType === "help_article_comment") return "Report guide question";
   if (subjectType === "comment") return "Report comment";
   return subjectType === "profile" ? "Report profile" : "Report content";
 }
 
 function reportDescription(subjectType: ReportSubjectType) {
+  if (subjectType === "help_article_comment") {
+    return "Report guide questions for spam, harassment, scams, unsafe advice, sexual content, minor safety concerns, or illegal activity.";
+  }
+
   if (subjectType === "comment") {
     return "Report comments or replies for harassment, scams, unsafe practice, sexual content, minor safety concerns, or illegal activity.";
   }
@@ -42,6 +48,7 @@ function reportButtonLabel(subjectType: ReportSubjectType) {
 }
 
 function reportMenuLabel(subjectType: ReportSubjectType) {
+  if (subjectType === "help_article_comment") return "Open guide question report form";
   if (subjectType === "comment") return "Open comment report form";
   return subjectType === "profile" ? "Open profile report form" : "Open report form";
 }

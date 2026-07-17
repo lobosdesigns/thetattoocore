@@ -26,11 +26,18 @@ const helpSearch = readFileSync("src/app/help/help-center-search.tsx", "utf8");
 const helpActions = readFileSync("src/app/help/actions.ts", "utf8");
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
 const adminContentPage = readFileSync("src/app/admin/content/page.tsx", "utf8");
+const adminReportsPage = readFileSync("src/app/admin/reports/page.tsx", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
 const helpCommentsMigration = readFileSync(
   "supabase/migrations/20260715232157_help_article_comments.sql",
   "utf8",
 );
+const helpCommentReportsMigration = readFileSync(
+  "supabase/migrations/20260717004733_add_help_comment_report_subject.sql",
+  "utf8",
+);
+const contentReportForm = readFileSync("src/app/content-report-form.tsx", "utf8");
+const mainActions = readFileSync("src/app/actions.ts", "utf8");
 const allDocs = Object.values(docs).join("\n");
 const forbiddenContactSnippets = [
   "lobo3319@gmail.com",
@@ -320,6 +327,8 @@ const checks = [
       helpArticlePage.includes("Load more questions") &&
       helpArticlePage.includes("Submit question") &&
       helpArticlePage.includes("help_article_comments") &&
+      helpArticlePage.includes("ContentReportForm") &&
+      helpArticlePage.includes('subjectType="help_article_comment"') &&
       helpActions.includes("getHelpArticle(slug)") &&
       helpActions.includes("Please wait a moment before submitting another guide question.") &&
       helpActions.includes("status: \"pending_review\"") &&
@@ -337,6 +346,20 @@ const checks = [
       adminActions.includes("help_comment_${status}") &&
       adminActions.includes("target_type: \"help_article_comment\"") &&
       adminActions.includes("revalidatePath(helpArticlePath(comment.article_slug))"),
+  },
+  {
+    label: "help guide questions can be reported for moderation",
+    ok:
+      helpCommentReportsMigration.includes(
+        "alter type public.report_subject_type add value if not exists 'help_article_comment'",
+      ) &&
+      contentReportForm.includes("Report guide question") &&
+      contentReportForm.includes("help_article_comment") &&
+      mainActions.includes('"help_article_comment"') &&
+      mainActions.includes('table: "help_article_comments"') &&
+      adminContentPage.includes("HelpQuestionCard") &&
+      adminReportsPage.includes('reportSubjectIds("help_article_comment")') &&
+      adminReportsPage.includes('reportSubjectKey("help_article_comment"'),
   },
   {
     label: "payment readiness doc keeps real-money gates explicit",

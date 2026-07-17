@@ -22,6 +22,7 @@ const REPORT_SUBJECT_TYPES = new Set([
   "profile",
   "feed_post",
   "gig",
+  "help_article_comment",
   "thread_post",
   "marketplace_listing",
   "merch_product",
@@ -75,6 +76,10 @@ const REPORT_REASONS = new Set([
 const REPORT_SUBJECT_CONFIG = {
   feed_post: { ownerColumn: "author_id", table: "feed_posts" },
   gig: { ownerColumn: "poster_id", table: "gigs" },
+  help_article_comment: {
+    ownerColumn: "author_id",
+    table: "help_article_comments",
+  },
   marketplace_listing: { ownerColumn: "seller_id", table: "marketplace_listings" },
   merch_product: { ownerColumn: "seller_id", table: "merch_products" },
   profile: { ownerColumn: "id", table: "profiles" },

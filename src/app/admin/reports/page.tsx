@@ -504,6 +504,32 @@ export default async function AdminReportsPage({
       }
     })(),
     (async () => {
+      const ids = reportSubjectIds("help_article_comment");
+      if (!ids.length) return;
+      const { data } = await supabase
+        .from("help_article_comments")
+        .select("id, article_slug, body, profiles:profiles!help_article_comments_author_id_fkey(username)")
+        .in("id", ids)
+        .returns<
+          {
+            article_slug: string;
+            body: string;
+            id: string;
+            profiles: { username: string } | null;
+          }[]
+        >();
+      for (const comment of data ?? []) {
+        reportSubjectPreviews.set(
+          reportSubjectKey("help_article_comment", comment.id),
+          {
+            ownerUsername: comment.profiles?.username ?? null,
+            preview: comment.body,
+            title: `Help: ${comment.article_slug.replaceAll("-", " ")}`,
+          },
+        );
+      }
+    })(),
+    (async () => {
       const ids = reportSubjectIds("story_post");
       if (!ids.length) return;
       const { data } = await supabase

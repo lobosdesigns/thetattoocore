@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createHelpArticleComment } from "../actions";
+import { ContentReportForm } from "@/app/content-report-form";
 import { LogoLockup } from "../../logo-mark";
 import { getHelpArticle, helpArticles } from "@/lib/help-center";
 import { siteName, supportEmail } from "@/lib/site";
@@ -307,6 +308,16 @@ export default async function HelpArticlePage({
                     <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">
                       {comment.body}
                     </p>
+                    {comment.status === "visible" ? (
+                      <div className="mt-3">
+                        <ContentReportForm
+                          returnHash="guide-comments"
+                          returnPath={`/help/${article.slug}`}
+                          subjectId={comment.id}
+                          subjectType="help_article_comment"
+                        />
+                      </div>
+                    ) : null}
                   </article>
                 ))
               ) : (
