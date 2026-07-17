@@ -15,6 +15,7 @@ Stripe checkout is wired for test-mode Merch, ads, and accepted booking deposits
 
 - Stripe Connect Express onboarding is started for artists, studios, and vendors, with payout readiness stored in `stripe_connect_accounts` and webhook sync support for Stripe account status updates.
 - Use Stripe-hosted onboarding for seller payout details; do not collect bank, routing, card, or debit payout credentials in TTC forms.
+- Express seller readiness must be tested by completing the hosted onboarding flow as the seller. Direct API edits or browser-automation shortcuts are not a valid completion test for identity, terms acceptance, or payout details.
 - Decide the final seller payout release policy, payout timing, holdback/reserve rules, refund windows, and dispute handling before enabling production seller payouts.
 - Decide whether the TTC platform fee is buyer-paid, seller-deducted, or split by flow.
 - Finish calendar availability, booking refund/cancellation handling, artist/studio payout policy, and appointment-confirmation rules before taking real booking deposits.

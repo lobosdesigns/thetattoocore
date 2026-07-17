@@ -469,6 +469,7 @@ checks.push({
     adminPaymentsPage.includes("Production payment gates") &&
     adminPaymentsPage.includes("const paymentReconciliationChecks = [") &&
     adminPaymentsPage.includes("const hostedPayoutQaChecks = [") &&
+    adminPaymentsPage.includes("API or browser-automation shortcuts do not count as a completed Express seller test") &&
     adminPaymentsPage.includes("Reconciliation checklist") &&
     adminPaymentsPage.includes("Hosted payout QA pass") &&
     adminPaymentsPage.includes("verification-required payout notice") &&
@@ -484,6 +485,7 @@ checks.push({
     adminPaymentsPage.includes("do not collect bank or card payout data in TTC forms") &&
     adminMerchPage.includes("Checkout and refund status are limited right now") &&
     adminMerchPage.includes("finish tax, shipping, fulfillment, payouts, and payment safety rules") &&
+    paymentReadiness.includes("Direct API edits or browser-automation shortcuts are not a valid completion test") &&
     accountPage.includes("merchSellerReadinessItems") &&
     accountPage.includes("Seller payout path") &&
     accountPage.includes("Seller payout setup") &&
