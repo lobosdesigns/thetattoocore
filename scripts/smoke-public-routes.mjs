@@ -406,6 +406,8 @@ const checks = [
       "/help/booking-appointments",
       "/help/privacy-safety-support",
       "/help/verification-documents",
+      "/help/merch-products-orders",
+      "Product review, seller readiness",
       "support@thetattoocore.com",
       'href="/terms"',
       'href="/privacy"',
