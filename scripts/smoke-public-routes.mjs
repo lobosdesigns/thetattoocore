@@ -311,6 +311,7 @@ const checks = [
   },
   { path: "/messages", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fmessages"], redirect: "manual" },
   { path: "/messages?q=tattedhotlegs", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fmessages%3Fq%3Dtattedhotlegs"], redirect: "manual" },
+  { path: "/messages?to=tattedhotlegs", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fmessages%3Fto%3Dtattedhotlegs"], redirect: "manual" },
   { path: "/notifications", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fnotifications"], redirect: "manual" },
   { path: "/saved", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Fsaved"], redirect: "manual" },
   {
