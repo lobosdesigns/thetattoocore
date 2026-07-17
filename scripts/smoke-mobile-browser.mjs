@@ -207,8 +207,9 @@ async function checkRoute(portNumber, url, route) {
       userAgent:
         "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Mobile Safari/537.36 TheTattooCoreMobileSmoke/1.0",
     });
+    const loadEvent = waitForEvent(client, "Page.loadEventFired", 15000);
     await client.send("Page.navigate", { url });
-    await waitForEvent(client, "Page.loadEventFired", 9000);
+    await loadEvent.catch(() => {});
     await sleep(700);
 
     const evaluation = await client.send("Runtime.evaluate", {

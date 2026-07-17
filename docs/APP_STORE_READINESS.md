@@ -19,9 +19,9 @@
 - Age-rating prep notes live in `docs/AGE_RATING_PREP.md` and should be checked against the current store questionnaires before submission.
 - Data-safety/privacy questionnaire prep lives in `docs/DATA_SAFETY_PREP.md` and should be checked against the live build before submission.
 - TheTattooCore is 18+ only.
-- Visible nudity is not allowed for launch.
+- Visible nudity is not allowed.
 - Sensitive non-nude body-art media stays behind login and 18+ confirmation.
-- Content-policy smoke guards verify new member uploads default to non-sensitive, member upload forms do not expose a sensitive/nudity bypass, legacy sensitive gates require login or 18+ confirmation, and public policy copy keeps the no-visible-nudity launch stance.
+- Content-policy smoke guards verify new member uploads default to non-sensitive, member upload forms do not expose a sensitive/nudity bypass, legacy sensitive gates require login or 18+ confirmation, and public policy copy keeps the no-visible-nudity stance.
 - Public support and account deletion request paths exist.
 - Public support, privacy, and terms pages expose the current support contact email for account, privacy, policy, and safety questions.
 - HostGator transactional mail is configured around `support@thetattoocore.com`; public support/reply-to mail should stay on company addresses instead of personal owner contact details.
@@ -118,6 +118,7 @@
 - Public route smoke and payment guards on July 14, 2026 now also cover unsigned payment webhook POSTs, confirming payment updates fail before processing when verification is missing.
 - Full verification on July 14, 2026 passed after adding cooldown-protected route refresh on active home-column changes so swipes/tabs can land at the top with fresher server-ranked data. Live deploy version `1e5b5f7c-f840-4d8f-bcc7-17e689a0d995` passed public route smoke and optional mobile browser smoke.
 - Full verification on July 14, 2026 passed after moving Admin Merch and Admin Payments status chips to shared friendly status labels. Live deploy version `2c99a221-74ba-4dca-b39c-bb43f64bf3ea` passed public route smoke and optional mobile browser smoke.
+- Live deploy version `40257a32-cc74-4d1e-a459-7736890a5d85` on July 16, 2026 includes Help guide question pagination; live public route smoke passed, and optional 390px mobile browser smoke passed after hardening the smoke harness against fast page-load timing.
 - Full verification on July 14, 2026 passed after polishing Account booking calendar-prep copy and public profile booking calendar status labels. Live deploy version `4cd33627-ae87-4062-8407-f3fb876cdbdb` passed public route smoke and optional 390px mobile browser smoke.
 - Full verification on July 14, 2026 passed after hardening member action return paths so redirects stay internal and revalidation strips query/hash fragments before refreshing, including 4U/Gossip comment, reply, like, edit, delete, hide, and block actions. Live deploy version `b0c25c7a-ed70-47cb-b3d3-f9fa7e351d96` passed public route smoke and optional 390px mobile browser smoke.
 - Full verification on July 14, 2026 passed after filtering blocked profiles out of the main home columns before ranking/personalization, including 4U, Gossip, Stuff, Gigs, Merch, and Stories. Live deploy version `abae2355-d066-4d32-b6a1-5b2785315ad8` passed public route smoke and optional 390px mobile browser smoke.
