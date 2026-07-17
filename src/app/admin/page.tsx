@@ -1299,6 +1299,38 @@ export default async function AdminPage({
       label: "App handoff",
     },
   ];
+  const betaFinishBoard = [
+    {
+      lane: "Stabilize",
+      body: "Run daily smoke checks, mobile overflow passes, and two-user DM/post/comment checks before inviting more testers.",
+      href: "/admin/media-ops",
+      window: "Days 1-2",
+    },
+    {
+      lane: "Commerce",
+      body: "Keep Merch, payout setup, booking deposits, ad credits, refunds, and fulfillment proof in test review until support rules are clear.",
+      href: "/admin/payments",
+      window: "Days 2-4",
+    },
+    {
+      lane: "Trust",
+      body: "Clear verification, reports, Help questions, account requests, and content review queues so moderators are not starting behind.",
+      href: "/admin/reports",
+      window: "Days 3-5",
+    },
+    {
+      lane: "Education",
+      body: "Fill the Help Center with safe screenshot and short-video tutorial slots for signup, profile, DMs, Merch, bookings, ads, and verification.",
+      href: "/help",
+      window: "Days 4-6",
+    },
+    {
+      lane: "App handoff",
+      body: "Use safe sample accounts for store screenshots, legal/support copy, native login, checkout returns, and real-device QA evidence.",
+      href: "/admin/media-ops",
+      window: "Days 5-7",
+    },
+  ];
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -1455,6 +1487,44 @@ export default async function AdminPage({
                 >
                   <p className="font-black">{item.label}</p>
                   <p className="mt-2 leading-5 text-[var(--muted)]">
+                    {item.body}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          <section className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--gold)_42%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--gold)]">
+                  Beta finish board
+                </p>
+                <h2 className="mt-2 text-2xl font-black">Seven-day maturity sprint</h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted)]">
+                  Use this as the daily focus map: stabilize first, then tighten
+                  commerce, trust queues, education, and app handoff evidence.
+                </p>
+              </div>
+              <Link
+                className="inline-flex h-10 w-fit items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-black text-[var(--background)]"
+                href="/admin/media-ops"
+              >
+                QA checklist
+              </Link>
+            </div>
+            <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+              {betaFinishBoard.map((item) => (
+                <Link
+                  className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-4 hover:border-[var(--gold)]"
+                  href={item.href}
+                  key={item.lane}
+                >
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--muted-strong)]">
+                    {item.window}
+                  </p>
+                  <h3 className="mt-2 text-lg font-black">{item.lane}</h3>
+                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
                     {item.body}
                   </p>
                 </Link>

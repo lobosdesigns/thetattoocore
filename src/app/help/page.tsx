@@ -28,6 +28,14 @@ const launchGuides = launchGuideSlugs.flatMap((slug) => {
 
   return article ? [article] : [];
 });
+const tutorialCaptureQueue = [
+  ["First account setup", "Signup, email confirmation, first Account save, profile photo, banner, bio, links, and 18+ confirmation."],
+  ["Posting and Stories", "Create 4U, Gossip, Stuff, Gigs, Merch, and Story posts with crop tools, safe media, comments, reports, and Load more."],
+  ["DMs and Search", "Find connected users, start a DM, send a photo/GIF, open alerts, reply, and confirm delivered/read markers."],
+  ["Verification", "Submit safe dummy artist, studio, and vendor proof, then show approval, rejection, and resubmission notes without real documents."],
+  ["Merch and payouts", "Create a product, review seller readiness, open checkout safely, fulfill a paid order with tracking or handoff proof, and find payout help."],
+  ["Bookings and ads", "Set appointment types, slots, blackout dates, deposit review, ad campaign setup, ad credits, and campaign status."],
+] as const;
 
 export default function HelpCenterPage() {
   return (
@@ -96,6 +104,40 @@ export default function HelpCenterPage() {
           </section>
 
           <HelpCenterSearch />
+
+          <section className="mt-7 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_90%,var(--gold)_7%)] p-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--gold)]">
+                  Tutorial capture queue
+                </p>
+                <h2 className="mt-2 text-xl font-black">
+                  Screenshot and short-video priorities
+                </h2>
+              </div>
+              <span className="w-fit rounded-md border border-[var(--card-rim)] px-3 py-1 text-xs font-bold text-[var(--muted-strong)]">
+                Safe sample accounts only
+              </span>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {tutorialCaptureQueue.map(([title, body]) => (
+                <article
+                  className="ttc-surface rounded-lg border border-[var(--card-rim)] p-4"
+                  key={title}
+                >
+                  <h3 className="text-sm font-black">{title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                    {body}
+                  </p>
+                </article>
+              ))}
+            </div>
+            <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] p-3 text-xs leading-5 text-[var(--muted-strong)]">
+              Do not capture private DMs, license documents, real payment data,
+              real addresses, nudity, personal owner contact details, or unsafe
+              marketplace examples.
+            </p>
+          </section>
 
           <section className="ttc-surface mt-7 rounded-lg border border-[var(--card-rim)] p-4">
             <h2 className="text-lg font-bold">Article Comments</h2>

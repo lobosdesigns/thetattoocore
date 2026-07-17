@@ -7,6 +7,7 @@ import {
   Bookmark,
   BriefcaseBusiness,
   CalendarDays,
+  CircleHelp,
   Heart,
   Home as HomeIcon,
   ImageIcon,
@@ -1987,6 +1988,7 @@ export default async function Home({
                   [Package, "Merch", "#merch"],
                   [Send, "DM", "/messages"],
                   [Bookmark, "Saved", "/saved"],
+                  [CircleHelp, "Help", "/help"],
                   [UserRound, "Profile", profileHref],
                 ].map(([Icon, label, href]) => (
                   <Link
@@ -2017,6 +2019,7 @@ export default async function Home({
             </div>
 
             <div className="mt-auto flex gap-3 pt-8 text-xs font-semibold text-[var(--muted-strong)]">
+              <Link href="/help">Help</Link>
               <Link href="/terms">Terms</Link>
               <Link href="/privacy">Privacy</Link>
             </div>

@@ -297,6 +297,10 @@ const checks = [
       helpCenterData.includes("Stories, DMs, and safety controls") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("getting-started guide") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("Launch setup checklist") &&
+      readFileSync("src/app/help/page.tsx", "utf8").includes("Tutorial capture queue") &&
+      readFileSync("src/app/help/page.tsx", "utf8").includes("Screenshot and short-video priorities") &&
+      readFileSync("src/app/help/page.tsx", "utf8").includes("Safe sample accounts only") &&
+      readFileSync("src/app/help/page.tsx", "utf8").includes("Merch and payouts") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("launchGuideSlugs") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("screenshot/video tutorial slots") &&
       helpSearch.includes("helpSearchAliases") &&
@@ -326,6 +330,7 @@ const checks = [
     ok:
       accountPage.includes('["/help", "Help"]') &&
       accountPage.includes("Open Help Center") &&
+      readFileSync("src/app/page.tsx", "utf8").includes('[CircleHelp, "Help", "/help"]') &&
       accountPage.includes("/help/seller-payouts-payment-safety") &&
       accountPage.includes("Set things up without waiting on support") &&
       adminPage.includes('[CircleHelp, "Help", "/help"]') &&

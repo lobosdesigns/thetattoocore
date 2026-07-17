@@ -96,7 +96,15 @@ const checks = [
       adminOverview.includes("This overview intentionally stays short.") &&
       adminOverview.includes("Full queues belong on") &&
       adminOverview.includes("const launchReadinessItems = [") &&
+      adminOverview.includes("const betaFinishBoard = [") &&
       adminOverview.includes("One-week beta push") &&
+      adminOverview.includes("Seven-day maturity sprint") &&
+      adminOverview.includes("Stabilize") &&
+      adminOverview.includes("Commerce") &&
+      adminOverview.includes("Trust") &&
+      adminOverview.includes("Education") &&
+      adminOverview.includes("App handoff") &&
+      adminOverview.includes("stabilize first") &&
       adminOverview.includes("Payment gates") &&
       adminOverview.includes("Merch readiness") &&
       adminOverview.includes("Help coverage") &&
