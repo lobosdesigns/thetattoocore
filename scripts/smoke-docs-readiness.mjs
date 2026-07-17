@@ -22,6 +22,7 @@ const packageJson = readFileSync("package.json", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const adminPage = readFileSync("src/app/admin/page.tsx", "utf8");
 const helpArticlePage = readFileSync("src/app/help/[slug]/page.tsx", "utf8");
+const helpSearch = readFileSync("src/app/help/help-center-search.tsx", "utf8");
 const helpActions = readFileSync("src/app/help/actions.ts", "utf8");
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
 const adminContentPage = readFileSync("src/app/admin/content/page.tsx", "utf8");
@@ -276,6 +277,10 @@ const checks = [
         "Getting started on TheTattooCore",
       ) &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("getting-started guide") &&
+      helpSearch.includes("helpSearchAliases") &&
+      helpSearch.includes("matchesSearch") &&
+      helpSearch.includes("tattooer") &&
+      helpSearch.includes("appointments") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes(
         "Signed-in members can ask deeper questions",
       ) &&

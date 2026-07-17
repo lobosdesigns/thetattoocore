@@ -5,8 +5,43 @@ import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { helpArticles, helpCategories } from "@/lib/help-center";
 
+const helpSearchAliases: Record<string, string[]> = {
+  appointment: ["appointment", "appointments", "booking", "bookings"],
+  appointments: ["appointment", "appointments", "booking", "bookings"],
+  booking: ["booking", "bookings", "appointment", "appointments"],
+  bookings: ["booking", "bookings", "appointment", "appointments"],
+  dm: ["dm", "dms", "message", "messages", "messenger"],
+  dms: ["dm", "dms", "message", "messages", "messenger"],
+  message: ["message", "messages", "dm", "dms", "messenger"],
+  messages: ["message", "messages", "dm", "dms", "messenger"],
+  shop: ["shop", "shops", "studio", "studios"],
+  shops: ["shop", "shops", "studio", "studios"],
+  studio: ["studio", "studios", "shop", "shops"],
+  studios: ["studio", "studios", "shop", "shops"],
+  tattooer: ["tattooer", "tattooers", "artist", "artists"],
+  tattooers: ["tattooer", "tattooers", "artist", "artists"],
+  vendor: ["vendor", "vendors", "seller", "sellers"],
+  vendors: ["vendor", "vendors", "seller", "sellers"],
+};
+
+function searchTerms(value: string) {
+  return value
+    .toLowerCase()
+    .split(/[^a-z0-9@]+/)
+    .map((term) => term.trim())
+    .filter(Boolean);
+}
+
 function includesTerm(value: string, term: string) {
-  return value.toLowerCase().includes(term);
+  const aliases = helpSearchAliases[term] ?? [term];
+
+  return aliases.some((alias) => value.includes(alias));
+}
+
+function matchesSearch(value: string, terms: string[]) {
+  const normalizedValue = value.toLowerCase();
+
+  return terms.every((term) => includesTerm(normalizedValue, term));
 }
 
 function reviewLabel(lastReviewed: string) {
@@ -16,9 +51,10 @@ function reviewLabel(lastReviewed: string) {
 export function HelpCenterSearch() {
   const [query, setQuery] = useState("");
   const normalizedQuery = query.trim().toLowerCase();
+  const normalizedTerms = useMemo(() => searchTerms(normalizedQuery), [normalizedQuery]);
 
   const filteredArticles = useMemo(() => {
-    if (!normalizedQuery) {
+    if (!normalizedTerms.length) {
       return helpArticles;
     }
 
@@ -32,12 +68,12 @@ export function HelpCenterSearch() {
         ...article.steps,
       ].join(" ");
 
-      return includesTerm(haystack, normalizedQuery);
+      return matchesSearch(haystack, normalizedTerms);
     });
-  }, [normalizedQuery]);
+  }, [normalizedTerms]);
 
   const filteredCategories = useMemo(() => {
-    if (!normalizedQuery) {
+    if (!normalizedTerms.length) {
       return helpCategories;
     }
 
@@ -48,9 +84,9 @@ export function HelpCenterSearch() {
         ...category.topics,
       ].join(" ");
 
-      return includesTerm(haystack, normalizedQuery);
+      return matchesSearch(haystack, normalizedTerms);
     });
-  }, [normalizedQuery]);
+  }, [normalizedTerms]);
 
   return (
     <>
