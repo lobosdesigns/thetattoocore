@@ -21,9 +21,11 @@ type Profile = {
   banned_at: string | null;
 };
 
-function accountRedirect(message: string) {
+function accountRedirect(message: string, payoutStatus = "retry") {
   return NextResponse.redirect(
-    `${siteUrl}/account?message=${encodeURIComponent(message)}#order-settings`,
+    `${siteUrl}/account?message=${encodeURIComponent(message)}&payout_status=${encodeURIComponent(
+      payoutStatus,
+    )}#order-settings`,
     { status: 303 },
   );
 }
@@ -33,7 +35,7 @@ export async function POST() {
   const admin = createAdminClient();
 
   if (!stripe || !admin) {
-    return accountRedirect("Seller payout setup is temporarily unavailable.");
+    return accountRedirect("Seller payout setup is temporarily unavailable.", "unavailable");
   }
 
   const supabase = await createClient();
@@ -61,6 +63,7 @@ export async function POST() {
   ) {
     return accountRedirect(
       "Verified artist, studio, or vendor status is required before payout setup.",
+      "needs_verification",
     );
   }
 
@@ -73,7 +76,7 @@ export async function POST() {
 
     if (existingAccountError) {
       console.error("Seller payout account lookup failed.", existingAccountError);
-      return accountRedirect("Seller payout setup is temporarily unavailable.");
+      return accountRedirect("Seller payout setup is temporarily unavailable.", "unavailable");
     }
 
     let stripeAccountId = existingAccount?.stripe_account_id ?? null;
@@ -109,7 +112,7 @@ export async function POST() {
 
       if (upsertError) {
         console.error("Seller payout account create sync failed.", upsertError);
-        return accountRedirect("Seller payout setup is temporarily unavailable.");
+        return accountRedirect("Seller payout setup is temporarily unavailable.", "unavailable");
       }
     } else {
       const account = await stripe.accounts.retrieve(stripeAccountId);
@@ -122,7 +125,7 @@ export async function POST() {
 
       if (upsertError) {
         console.error("Seller payout account status sync failed.", upsertError);
-        return accountRedirect("Seller payout setup is temporarily unavailable.");
+        return accountRedirect("Seller payout setup is temporarily unavailable.", "unavailable");
       }
     }
 
@@ -130,7 +133,7 @@ export async function POST() {
       account: stripeAccountId,
       refresh_url: `${siteUrl}/account?message=${encodeURIComponent(
         "Seller payout setup expired. Start it again when you are ready.",
-      )}#order-settings`,
+      )}&payout_status=expired#order-settings`,
       return_url: `${siteUrl}/api/stripe/connect/return`,
       type: "account_onboarding",
     });
@@ -138,6 +141,9 @@ export async function POST() {
     return NextResponse.redirect(accountLink.url, { status: 303 });
   } catch (error) {
     console.error("Seller payout onboarding failed.", error);
-    return accountRedirect("Seller payout setup is temporarily unavailable. Please try again.");
+    return accountRedirect(
+      "Seller payout setup is temporarily unavailable. Please try again.",
+      "retry",
+    );
   }
 }

@@ -558,6 +558,7 @@ export default async function AccountPage({
     bookings?: string | string[];
     message?: string;
     orders?: string | string[];
+    payout_status?: string | string[];
   }>;
 }) {
   const params = await searchParams;
@@ -970,6 +971,36 @@ export default async function AccountPage({
       sellerPayoutAccount.payouts_enabled &&
       sellerPayoutAccount.details_submitted,
   );
+  const payoutStatusParam = Array.isArray(params.payout_status)
+    ? params.payout_status[0]
+    : params.payout_status;
+  const payoutSetupNotice = payoutStatusParam
+    ? {
+        tone:
+          payoutStatusParam === "complete"
+            ? "success"
+            : payoutStatusParam === "needs_more"
+              ? "warning"
+              : "error",
+        title:
+          payoutStatusParam === "complete"
+            ? "Payout setup complete"
+            : payoutStatusParam === "needs_more"
+              ? "Payout setup saved"
+              : payoutStatusParam === "needs_verification"
+                ? "Verification required"
+                : payoutStatusParam === "expired"
+                  ? "Setup link expired"
+                  : "Payout setup needs attention",
+        body:
+          params.message ??
+          (payoutStatusParam === "complete"
+            ? "Seller payout setup is ready."
+            : payoutStatusParam === "needs_more"
+              ? "More details may still be needed before payouts are active."
+              : "Payout setup could not continue. Try again or use the payout safety guide."),
+      }
+    : null;
   const isFirstProfile = !profile;
   const normalizedProfile = profile
     ? {
@@ -2580,6 +2611,20 @@ export default async function AccountPage({
               ))}
             </div>
             <div className="mt-4 rounded-lg border border-[color-mix(in_srgb,var(--gold)_28%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-warm)_92%,var(--gold)_8%)] p-4">
+              {payoutSetupNotice ? (
+                <div
+                  className={`mb-4 rounded-md border px-3 py-2 text-sm leading-6 ${
+                    payoutSetupNotice.tone === "success"
+                      ? "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))]"
+                      : payoutSetupNotice.tone === "warning"
+                        ? "border-[color-mix(in_srgb,var(--gold)_48%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))]"
+                        : "border-[color-mix(in_srgb,var(--danger)_34%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))]"
+                  }`}
+                >
+                  <p className="font-bold">{payoutSetupNotice.title}</p>
+                  <p className="mt-1 text-[var(--muted)]">{payoutSetupNotice.body}</p>
+                </div>
+              ) : null}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">

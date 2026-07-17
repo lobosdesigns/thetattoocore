@@ -9,9 +9,11 @@ type Claims = {
   sub: string;
 };
 
-function accountRedirect(message: string) {
+function accountRedirect(message: string, payoutStatus = "retry") {
   return NextResponse.redirect(
-    `${siteUrl}/account?message=${encodeURIComponent(message)}#order-settings`,
+    `${siteUrl}/account?message=${encodeURIComponent(message)}&payout_status=${encodeURIComponent(
+      payoutStatus,
+    )}#order-settings`,
     { status: 303 },
   );
 }
@@ -21,7 +23,7 @@ export async function GET() {
   const admin = createAdminClient();
 
   if (!stripe || !admin) {
-    return accountRedirect("Seller payout setup could not be checked.");
+    return accountRedirect("Seller payout setup could not be checked.", "check_failed");
   }
 
   const supabase = await createClient();
@@ -43,11 +45,14 @@ export async function GET() {
 
   if (connectAccountError) {
     console.error("Seller payout return lookup failed.", connectAccountError);
-    return accountRedirect("Seller payout setup could not be checked. Please try again.");
+    return accountRedirect(
+      "Seller payout setup could not be checked. Please try again.",
+      "check_failed",
+    );
   }
 
   if (!connectAccount?.stripe_account_id) {
-    return accountRedirect("Seller payout setup was not found. Start setup again.");
+    return accountRedirect("Seller payout setup was not found. Start setup again.", "not_found");
   }
 
   try {
@@ -61,18 +66,25 @@ export async function GET() {
 
     if (updateError) {
       console.error("Seller payout return sync failed.", updateError);
-      return accountRedirect("Seller payout setup could not be checked. Please try again.");
+      return accountRedirect(
+        "Seller payout setup could not be checked. Please try again.",
+        "check_failed",
+      );
     }
 
     if (status.charges_enabled && status.payouts_enabled && status.details_submitted) {
-      return accountRedirect("Seller payout setup is complete.");
+      return accountRedirect("Seller payout setup is complete.", "complete");
     }
 
     return accountRedirect(
       "Seller payout setup is saved. More details may still be needed before payouts are active.",
+      "needs_more",
     );
   } catch (error) {
     console.error("Seller payout return check failed.", error);
-    return accountRedirect("Seller payout setup could not be checked. Please try again.");
+    return accountRedirect(
+      "Seller payout setup could not be checked. Please try again.",
+      "check_failed",
+    );
   }
 }

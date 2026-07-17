@@ -497,8 +497,13 @@ checks.push({
     accountPage.includes(".from(\"stripe_connect_accounts\")") &&
     accountPage.includes("sellerPayoutReady") &&
     accountPage.includes("sellerPayoutAccount") &&
+    accountPage.includes("payoutSetupNotice") &&
     accountPage.includes("Continue payout setup") &&
     accountPage.includes("Start payout setup") &&
+    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("payout_status") &&
+    stripeConnectReturn.includes("payout_status") &&
+    stripeConnectReturn.includes('"complete"') &&
+    stripeConnectReturn.includes('"needs_more"') &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("stripe.accounts.create") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("stripe.accountLinks.create") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("type: \"account_onboarding\"") &&
