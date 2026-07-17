@@ -42,6 +42,7 @@ Use this before creating Android or iOS wrapper projects. The goal is a thin, po
 - Run `npm.cmd run verify` against the web app.
 - Run the full `docs/REAL_DEVICE_QA_CHECKLIST.md` on mobile web before packaging.
 - Confirm `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/support`, `/privacy`, `/terms`, `/messages`, `/notifications`, `/account`, public profiles, public posts, Stories, Stuff, Gigs, Merch, and booking/deposit routes do not reload-loop or overflow horizontally.
+- Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView and do not push members out to Safari.
 - Confirm install prompts or browser banners do not block scrolling in the wrapper.
 - Confirm videos do not show a visible download control in the wrapper media player.
 - Confirm file uploads work through normal mobile file pickers.

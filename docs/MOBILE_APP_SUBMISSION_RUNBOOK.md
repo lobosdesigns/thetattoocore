@@ -30,6 +30,7 @@ Start with a thin native wrapper now that core web smoke/390px mobile checks are
 - Confirm `npm run smoke:mobile` covers support/help/legal routes plus the Search/Saved, Booking, Ads, Merch, Verification, and privacy/safety Help Center guides, including the Merch storefront and Merch Help guide, before store screenshots or wrapper QA.
 - Confirm app-store-safe screenshots use brand assets and safe sample content only.
 - Confirm screenshots do not expose private DMs, license documents, admin queues, real payment data, personal owner contact data, or visible infrastructure/provider names.
+- Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView and do not push members out to Safari.
 - Confirm support email and public legal/contact surfaces use `support@thetattoocore.com` or final company/legal contact details, not personal owner information.
 - Have counsel review Terms, Privacy, account deletion language, moderation policy, marketplace rules, and payment/refund language.
 - Decide whether native builds expose Merch checkout or keep it web-only/test-mode until production payment policy is approved.

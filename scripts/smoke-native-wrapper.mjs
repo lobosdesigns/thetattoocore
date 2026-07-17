@@ -11,6 +11,8 @@ const files = {
   iosPrivacy: `${wrapperRoot}/ios/App/App/PrivacyInfo.xcprivacy`,
   iosProject: `${wrapperRoot}/ios/App/App.xcodeproj/project.pbxproj`,
   iosUploadChecklist: `${wrapperRoot}/ios/APPLE_UPLOAD_CHECKLIST.md`,
+  mobileRunbook: "docs/MOBILE_APP_SUBMISSION_RUNBOOK.md",
+  nativePrep: "docs/NATIVE_WRAPPER_PREP.md",
   packageJson: `${wrapperRoot}/package.json`,
   readme: `${wrapperRoot}/README.md`,
   webFallback: `${wrapperRoot}/www/index.html`,
@@ -42,6 +44,14 @@ const checks = [
       source.capacitorConfig.includes('allowNavigation: ["thetattoocore.com", "www.thetattoocore.com"]') &&
       !source.capacitorConfig.includes("bundledWebRuntime") &&
       source.webFallback.includes("https://thetattoocore.com/login"),
+  },
+  {
+    label: "native wrapper keeps TestFlight auth navigation inside the app",
+    ok:
+      source.capacitorConfig.includes('allowNavigation: ["thetattoocore.com", "www.thetattoocore.com"]') &&
+      source.nativePrep.includes("Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView") &&
+      source.mobileRunbook.includes("Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView") &&
+      source.iosUploadChecklist.includes("Confirm login, signup, forgot password, reset password, and email confirmation stay inside the app WebView"),
   },
   {
     label: "native wrapper keeps launch permissions minimal",

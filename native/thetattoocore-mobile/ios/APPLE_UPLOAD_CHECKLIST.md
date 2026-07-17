@@ -43,6 +43,7 @@ In Xcode:
 - Confirm display name: `TheTattooCore`.
 - Confirm version: `1.0`.
 - Confirm build: `1`.
+- Confirm login, signup, forgot password, reset password, and email confirmation stay inside the app WebView during the device smoke pass.
 
 ## 4. Archive
 
