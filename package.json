@@ -21,6 +21,7 @@
     "smoke:stories": "node scripts/smoke-stories-guards.mjs",
     "smoke:dm": "node scripts/smoke-dm-guards.mjs",
     "smoke:booking": "node scripts/smoke-booking-guards.mjs",
+    "smoke:payment": "npm run smoke:payments",
     "smoke:payments": "node scripts/smoke-payment-guards.mjs",
     "smoke:pwa": "node scripts/smoke-pwa-guards.mjs",
     "smoke:native": "node scripts/smoke-native-wrapper.mjs",
