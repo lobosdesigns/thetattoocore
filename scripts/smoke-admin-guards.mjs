@@ -227,6 +227,23 @@ const checks = [
       productPlan.includes("Admin Content supports 50-item pagination plus status filters"),
   },
   {
+    label: "admin Stuff and Gigs can filter status and moderation state",
+    ok:
+      adminStuff.includes("function stuffFilters") &&
+      adminStuff.includes("Filter Stuff") &&
+      adminStuff.includes("listingsQuery = listingsQuery.eq(\"status\", filters.status)") &&
+      adminStuff.includes("listingsQuery = listingsQuery.eq(\"moderation_status\", filters.moderationStatus)") &&
+      adminStuff.includes("pageHref(currentPage + 1, filters)") &&
+      adminGigs.includes("function gigFilters") &&
+      adminGigs.includes("Filter Gigs") &&
+      adminGigs.includes("gigsQuery = gigsQuery.eq(\"status\", filters.status)") &&
+      adminGigs.includes("gigsQuery = gigsQuery.eq(\"moderation_status\", filters.moderationStatus)") &&
+      adminGigs.includes("pageHref(currentPage + 1, filters)") &&
+      publicSmoke.includes('path: "/admin/stuff?status=active"') &&
+      publicSmoke.includes('path: "/admin/gigs?moderation_status=under_review"') &&
+      productPlan.includes("Admin Stuff and Admin Gigs support status and moderation filters"),
+  },
+  {
     label: "admin verification can filter status and account type while preserving pagination and actions",
     ok:
       adminVerification.includes("function verificationFilters") &&

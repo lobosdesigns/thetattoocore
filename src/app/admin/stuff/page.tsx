@@ -27,9 +27,13 @@ type Listing = {
   title: string;
   visibility: "public_preview" | "members" | "private";
 };
+type StuffStatus = Listing["status"] | "all";
+type ModerationStatus = Listing["moderationStatus"] | "all";
 
 const moderateRoles: UserRole[] = ["moderator", "admin", "owner"];
 const pageSize = 50;
+const stuffStatuses = ["all", "draft", "active", "sold", "archived"] as const;
+const moderationStatuses = ["all", "active", "under_review", "hidden", "removed"] as const;
 
 export const metadata: Metadata = {
   robots: {
@@ -46,8 +50,47 @@ function pageNumber(value: string | string[] | undefined) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 }
 
-function pageHref(page: number) {
-  return `/admin/stuff?page=${page}`;
+function singleParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function filterValue<const T extends readonly string[]>(
+  value: string | string[] | undefined,
+  allowed: T,
+): T[number] {
+  const rawValue = singleParam(value);
+
+  return allowed.includes(rawValue ?? "") ? (rawValue as T[number]) : allowed[0];
+}
+
+function stuffFilters({
+  moderationStatus,
+  status,
+}: {
+  moderationStatus?: string | string[];
+  status?: string | string[];
+}) {
+  return {
+    moderationStatus: filterValue(moderationStatus, moderationStatuses) as ModerationStatus,
+    status: filterValue(status, stuffStatuses) as StuffStatus,
+  };
+}
+
+function pageHref(
+  page: number,
+  filters: ReturnType<typeof stuffFilters> = {
+    moderationStatus: "all",
+    status: "all",
+  },
+) {
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  if (filters.status !== "all") params.set("status", filters.status);
+  if (filters.moderationStatus !== "all") {
+    params.set("moderation_status", filters.moderationStatus);
+  }
+
+  return `/admin/stuff?${params.toString()}`;
 }
 
 function timeAgo(value: string) {
@@ -81,10 +124,12 @@ function statusClass(status: Listing["moderationStatus"]) {
 
 function Pagination({
   currentPage,
+  filters,
   hasNextPage,
   totalPages,
 }: {
   currentPage: number;
+  filters: ReturnType<typeof stuffFilters>;
   hasNextPage: boolean;
   totalPages: number;
 }) {
@@ -101,7 +146,7 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
           }`}
-          href={pageHref(Math.max(1, currentPage - 1))}
+          href={pageHref(Math.max(1, currentPage - 1), filters)}
         >
           <ChevronLeft className="size-4" />
           Previous 50
@@ -113,7 +158,7 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
           }`}
-          href={pageHref(currentPage + 1)}
+          href={pageHref(currentPage + 1, filters)}
         >
           Next 50
           <ChevronRight className="size-4" />
@@ -196,9 +241,18 @@ function ListingCard({ listing }: { listing: Listing }) {
 export default async function AdminStuffPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string; page?: string | string[] }>;
+  searchParams: Promise<{
+    message?: string;
+    moderation_status?: string | string[];
+    page?: string | string[];
+    status?: string | string[];
+  }>;
 }) {
   const params = await searchParams;
+  const filters = stuffFilters({
+    moderationStatus: params.moderation_status,
+    status: params.status,
+  });
   const currentPage = pageNumber(params.page);
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
@@ -220,12 +274,24 @@ export default async function AdminStuffPage({
     redirect("/admin");
   }
 
-  const { count, data: listingRows } = await supabase
+  let listingsQuery = supabase
     .from("marketplace_listings")
     .select(
       "id, title, description, price_cents, currency, category, city, region, status, moderation_status, visibility, is_sensitive, created_at, profiles:profiles!marketplace_listings_seller_id_fkey(display_name, username)",
       { count: "exact" },
     )
+    .in("status", ["draft", "active", "sold", "archived"])
+    .in("moderation_status", ["active", "under_review", "hidden", "removed"]);
+
+  if (filters.status !== "all") {
+    listingsQuery = listingsQuery.eq("status", filters.status);
+  }
+
+  if (filters.moderationStatus !== "all") {
+    listingsQuery = listingsQuery.eq("moderation_status", filters.moderationStatus);
+  }
+
+  const { count, data: listingRows } = await listingsQuery
     .order("created_at", { ascending: false })
     .range(from, to)
     .returns<
@@ -310,6 +376,56 @@ export default async function AdminStuffPage({
           </p>
         ) : null}
 
+        <form
+          action="/admin/stuff"
+          className="mb-4 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4"
+        >
+          <p className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
+            Filter Stuff
+          </p>
+          <div className="mt-3 grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
+            <label className="grid gap-1 text-sm font-semibold">
+              Listing status
+              <select
+                className="min-h-11 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)]"
+                defaultValue={filters.status}
+                name="status"
+              >
+                {stuffStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {status === "all" ? "All listing statuses" : titleCaseStatus(status)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm font-semibold">
+              Moderation
+              <select
+                className="min-h-11 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)]"
+                defaultValue={filters.moderationStatus}
+                name="moderation_status"
+              >
+                {moderationStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {status === "all" ? "All moderation states" : titleCaseStatus(status)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="flex gap-2">
+              <button className="h-11 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
+                Apply
+              </button>
+              <Link
+                className="flex h-11 items-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
+                href="/admin/stuff"
+              >
+                Clear
+              </Link>
+            </div>
+          </div>
+        </form>
+
         <div className="mb-4 grid gap-3 sm:grid-cols-3">
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
             <p className="text-sm text-[var(--muted-strong)]">Listings</p>
@@ -338,6 +454,7 @@ export default async function AdminStuffPage({
 
         <Pagination
           currentPage={currentPage}
+          filters={filters}
           hasNextPage={hasNextPage}
           totalPages={totalPages}
         />
@@ -357,6 +474,7 @@ export default async function AdminStuffPage({
         <div className="mt-4">
           <Pagination
             currentPage={currentPage}
+            filters={filters}
             hasNextPage={hasNextPage}
             totalPages={totalPages}
           />
