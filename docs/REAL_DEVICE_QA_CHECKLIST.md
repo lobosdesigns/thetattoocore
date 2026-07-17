@@ -9,7 +9,7 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 - Confirm the build points at `https://thetattoocore.com/login`.
 - Confirm support, privacy, and terms links open from logged-out and logged-in surfaces.
 - Open Help Center on mobile, search for "getting started", and confirm the first-run guide explains account type, profile setup, privacy, content rules, main sections, verification, and Support.
-- Open Help Center on mobile, search for "saved", and confirm the Search/Saved guide explains usernames, broader terms, privacy-safe results, and saved search shortcuts.
+- Open Help Center on mobile, search for "saved", and confirm the Search/Saved guide explains usernames, broader terms like tattooers, guest spots, and shirts, privacy-safe results, and saved search shortcuts.
 - Open the Help Center privacy/safety/support guide on mobile and confirm it explains reports, blocks, account deletion requests, support boundaries, and private account issues.
 - Open the Booking guide and confirm it explains deposit confirmation, TTC fee visibility, private calendar-note limits, and refund-review expectations.
 - Open the Ads guide and confirm it explains 4U/Gossip placements, Merch-only ads, ad credits, review rules, keyword safety, and payment status.

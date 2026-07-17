@@ -137,7 +137,7 @@ export const helpArticles = [
     faqs: [
       {
         answer:
-          "Use exact usernames with or without @ when you know them. You can also search display names, cities, regions, account types, styles, categories, shop names, Gigs, Stuff, Merch, and common TTC terms like shops/studios, bookings/appointments, DMs/messages, and vendors/sellers.",
+          "Use exact usernames with or without @ when you know them. You can also search display names, cities, regions, account types, styles, categories, shop names, Gigs, Stuff, Merch, and common TTC terms like artists/tattooers, shops/studios, guest spots/conventions/jobs, shirts/prints/stickers, bookings/appointments, DMs/messages, and vendors/sellers.",
         question: "What should I type in Search?",
       },
       {
@@ -157,7 +157,7 @@ export const helpArticles = [
     steps: [
       "Open Search from the bottom navigation or header.",
       "Try an exact username first when you know it, then broaden to display name, city, shop name, style, category, or keyword.",
-      "Use common TTC wording such as shops or studios, bookings or appointments, DMs or messages, and vendors or sellers.",
+      "Use common TTC wording such as artists or tattooers, shops or studios, guest spots or conventions, jobs or Gigs, shirts or Merch, bookings or appointments, DMs or messages, and vendors or sellers.",
       "Use the Profiles, 4U, Gossip, Stuff, Gigs, and Merch tabs to narrow the result type.",
       "Use recent searches or saved search shortcuts for searches you run often, and save posts or products from their cards when you want to find them again later.",
     ],
