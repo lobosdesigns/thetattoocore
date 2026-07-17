@@ -325,6 +325,7 @@
 - Public and mobile route smoke passed on July 16, 2026 after Admin Data Requests gained status filters and username/reason search with filter-aware pagination and preserved review return paths. Live deploy version `b5dfd67d-13c5-4f64-8f0a-881d2d0ba1ff` passed public route smoke on retry after transient edge challenge skips and 390px mobile browser smoke.
 - Public and mobile route smoke passed on July 16, 2026 after Admin Stuff and Admin Gigs gained status and moderation filters with filter-aware pagination. Live deploy version `4137ac85-268f-401c-8b52-3c8646bbaeb5` passed public route smoke and 390px mobile browser smoke.
 - Native wrapper guard coverage now explicitly checks that TestFlight login, signup, forgot-password, reset-password, and email-confirmation QA stays inside the app WebView instead of falling out to Safari. The TestFlight checklist, native prep, and mobile submission runbook all carry that check before the next iOS upload.
+- Public and mobile route smoke passed on July 17, 2026 after DM compose search copy was clarified to say followers, following, active DMs, and exact-username fallback directly. Live deploy version `04fc94cb-9a10-4175-9a6f-42d4eca8ac8f` passed public route smoke and 390px mobile browser smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
