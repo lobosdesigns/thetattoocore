@@ -96,12 +96,13 @@ const checks = [
     ok:
       messagePage.includes("const inboxPageSize = 25") &&
       messagePage.includes("const conversationLimit = inboxPage * inboxPageSize") &&
-      messagePage.includes("const conversationFetchLimit = conversationLimit + inboxPageSize") &&
+      messagePage.includes("const defaultConversationFetchLimit = conversationLimit + inboxPageSize") &&
+      messagePage.includes("const conversationFetchLimit = activeInboxSearch ? 500 : defaultConversationFetchLimit") &&
       messagePage.includes(".limit(conversationFetchLimit)") &&
       messagePage.includes("const inbox = filteredInbox.slice(0, conversationLimit)") &&
       messagePage.includes("const hasMoreInbox =") &&
       messagePage.includes("Conversation was not found or is no longer available.") &&
-      messagePage.includes('href={`/messages?inboxPage=${inboxPage + 1}`'),
+      messagePage.includes("href={inboxHref({"),
   },
   {
     label: "DM launch plan and real-device QA keep the remaining manual pass visible",
@@ -164,6 +165,20 @@ const checks = [
       messageStartForm.includes("profile.city") &&
       messageStartForm.includes("profile.region") &&
       productPlan.includes("DM compose now uses a connected-people picker"),
+  },
+  {
+    label: "DM inbox search filters threads and preserves load-more state",
+    ok:
+      messagePage.includes("function inboxSearchTerm") &&
+      messagePage.includes("function conversationSearchText") &&
+      messagePage.includes("const activeInboxSearch = inboxSearchTerm(params.q)") &&
+      messagePage.includes("const conversationFetchLimit = activeInboxSearch ? 500") &&
+      messagePage.includes("Search DM threads") &&
+      messagePage.includes("Find a thread by user, city, or message") &&
+      messagePage.includes("Search DMs") &&
+      messagePage.includes("query: activeInboxSearch") &&
+      messagePage.includes("No DM threads matched that search") &&
+      productPlan.includes("DM inbox thread search now filters existing conversations"),
   },
 ];
 

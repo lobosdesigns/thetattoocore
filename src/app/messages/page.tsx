@@ -9,6 +9,7 @@ import {
   Inbox,
   LoaderCircle,
   MessageCircle,
+  Search,
   Send,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -122,12 +123,15 @@ function loginPathForMessages(params: {
   c?: string;
   inboxPage?: string;
   to?: string;
+  q?: string | string[];
 }) {
   const returnParams = new URLSearchParams();
+  const searchQuery = inboxSearchTerm(params.q);
 
   if (params.c) returnParams.set("c", params.c);
   if (params.inboxPage) returnParams.set("inboxPage", params.inboxPage);
   if (params.to) returnParams.set("to", params.to);
+  if (searchQuery) returnParams.set("q", searchQuery);
 
   const query = returnParams.toString();
   const returnTo = `/messages${query ? `?${query}` : ""}`;
@@ -137,6 +141,33 @@ function loginPathForMessages(params: {
 
 function messagesInboxPath(message: string) {
   return `/messages?message=${encodeURIComponent(message)}`;
+}
+
+function inboxHref({
+  inboxPage,
+  query,
+}: {
+  inboxPage?: number;
+  query?: string;
+}) {
+  const params = new URLSearchParams();
+
+  if (inboxPage && inboxPage > 1) params.set("inboxPage", String(inboxPage));
+  if (query) params.set("q", query);
+
+  const search = params.toString();
+
+  return `/messages${search ? `?${search}` : ""}`;
+}
+
+function inboxSearchTerm(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+
+  return (rawValue ?? "")
+    .replace(/[^a-zA-Z0-9 @._-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80);
 }
 
 function timeAgo(value: string) {
@@ -153,6 +184,26 @@ function timeAgo(value: string) {
 
 function profileLocation(profile?: Profile) {
   return [profile?.city, profile?.region].filter(Boolean).join(", ");
+}
+
+function conversationSearchText({
+  latestMessage,
+  otherProfile,
+}: {
+  latestMessage: Message | null;
+  otherProfile?: Profile;
+}) {
+  return [
+    otherProfile?.username,
+    otherProfile?.display_name,
+    otherProfile?.account_type,
+    otherProfile?.city,
+    otherProfile?.region,
+    latestMessage?.body,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
 }
 
 async function getBlockedProfileIds({
@@ -487,14 +538,17 @@ export default async function MessagesPage({
     c?: string;
     inboxPage?: string;
     message?: string;
+    q?: string | string[];
     to?: string;
   }>;
 }) {
   const params = await searchParams;
+  const activeInboxSearch = inboxSearchTerm(params.q);
   const inboxPageSize = 25;
   const inboxPage = Math.max(1, Math.min(20, Number(params.inboxPage ?? "1") || 1));
   const conversationLimit = inboxPage * inboxPageSize;
-  const conversationFetchLimit = conversationLimit + inboxPageSize;
+  const defaultConversationFetchLimit = conversationLimit + inboxPageSize;
+  const conversationFetchLimit = activeInboxSearch ? 500 : defaultConversationFetchLimit;
   const messageWindowLimit = Math.min(conversationFetchLimit * 25, 500);
   const requestedConversationId = String(params.c ?? "")
     .replace(/[^a-zA-Z0-9_-]/g, "")
@@ -664,7 +718,7 @@ export default async function MessagesPage({
     }
   }
 
-  const filteredInbox = memberships
+  const inboxBeforeSearch = memberships
     .map((membership) => {
       const conversationMembers =
         members?.filter(
@@ -702,10 +756,21 @@ export default async function MessagesPage({
 
       return bTime - aTime;
     });
+  const inboxSearchTerms = activeInboxSearch
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+  const filteredInbox = inboxSearchTerms.length
+    ? inboxBeforeSearch.filter((conversation) => {
+        const haystack = conversationSearchText(conversation);
+
+        return inboxSearchTerms.every((term) => haystack.includes(term));
+      })
+    : inboxBeforeSearch;
   const inbox = filteredInbox.slice(0, conversationLimit);
   const hasMoreInbox =
     filteredInbox.length > conversationLimit ||
-    (membershipRows?.length ?? 0) === conversationFetchLimit;
+    (!activeInboxSearch && (membershipRows?.length ?? 0) === conversationFetchLimit);
 
   const hasSelectedConversationParam = Boolean(requestedConversationId);
   const selectedConversation =
@@ -835,6 +900,40 @@ export default async function MessagesPage({
               imageAccept={imageAccept}
               prefillUsername={prefillUsername}
             />
+
+            <form action="/messages" className="mt-4 space-y-2">
+              <label
+                className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted-strong)]"
+                htmlFor="dm-inbox-search"
+              >
+                Search DM threads
+              </label>
+              <div className="ttc-surface flex items-center gap-2 rounded-md border px-3">
+                <Search className="size-4 text-[var(--muted-strong)]" />
+                <input
+                  className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--muted)]"
+                  defaultValue={activeInboxSearch}
+                  id="dm-inbox-search"
+                  maxLength={80}
+                  name="q"
+                  placeholder="Find a thread by user, city, or message"
+                  type="search"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button className="h-9 rounded-md bg-[var(--foreground)] px-3 text-xs font-bold text-[var(--background)]">
+                  Search DMs
+                </button>
+                {activeInboxSearch ? (
+                  <Link
+                    className="ttc-surface flex h-9 items-center justify-center rounded-md border px-3 text-xs font-bold"
+                    href="/messages"
+                  >
+                    Clear
+                  </Link>
+                ) : null}
+              </div>
+            </form>
           </header>
 
           {params.message ? (
@@ -911,7 +1010,9 @@ export default async function MessagesPage({
                 <Inbox className="mx-auto mb-3 size-8 text-[var(--muted-strong)]" />
                 <p className="text-sm font-semibold">No conversations yet</p>
                 <p className="mt-1 text-sm text-[var(--muted-strong)]">
-                  Search a username above to send the first DM.
+                  {activeInboxSearch
+                    ? "No DM threads matched that search. Try a username, display name, city, region, account type, or recent message."
+                    : "Search a username above to send the first DM."}
                 </p>
               </div>
             )}
@@ -920,7 +1021,10 @@ export default async function MessagesPage({
             <div className="border-t border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_96%,transparent)] px-4 py-4">
               <Link
                 className="ttc-surface flex h-10 items-center justify-center rounded-md border px-4 text-sm font-bold shadow-sm"
-                href={`/messages?inboxPage=${inboxPage + 1}`}
+                href={inboxHref({
+                  inboxPage: inboxPage + 1,
+                  query: activeInboxSearch,
+                })}
               >
                 Load 25 more conversations
               </Link>
