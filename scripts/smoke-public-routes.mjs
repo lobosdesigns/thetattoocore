@@ -402,6 +402,8 @@ const checks = [
       "How-To Library",
       "FAQ and tutorial topics for getting started",
       "Popular Help Guides",
+      "Launch setup checklist",
+      "Priority setup guides for profile",
       "/help/getting-started",
       "/help/booking-appointments",
       "/help/privacy-safety-support",

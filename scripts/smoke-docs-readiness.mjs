@@ -329,6 +329,8 @@ const checks = [
       adminPage.includes('[CircleHelp, "Help", "/help"]') &&
       adminPage.includes('action: "Open Help"') &&
       adminPage.includes("Self-serve tutorials and guide questions") &&
+      supportPage.includes("Launch setup checklist") &&
+      supportPage.includes("Priority setup guides for profile") &&
       supportPage.includes('href: "/help/merch-products-orders"') &&
       supportPage.includes('href: "/help/seller-payouts-payment-safety"') &&
       supportPage.includes("Product review, seller readiness") &&

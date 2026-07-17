@@ -67,6 +67,11 @@ const quickActions = [
 
 const guideLinks = [
   {
+    body: "Priority setup guides for profile, verification, posting, bookings, Merch, payouts, ads, and safety.",
+    href: "/help",
+    label: "Launch setup checklist",
+  },
+  {
     body: "First-run setup, account types, privacy basics, main sections, verification, and Support.",
     href: "/help/getting-started",
     label: "Getting started",
