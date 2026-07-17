@@ -66,7 +66,9 @@ const checks = [
       source.screenshotInventory.includes("private DMs") &&
       source.screenshotInventory.includes("license documents") &&
       source.screenshotInventory.includes("visible nudity") &&
-      source.screenshotInventory.includes("infrastructure/provider names"),
+      source.screenshotInventory.includes("infrastructure/provider names") &&
+      source.screenshotInventory.includes("Merch guide shortcut") &&
+      source.screenshotInventory.includes("seller payout setup details"),
   },
 ];
 

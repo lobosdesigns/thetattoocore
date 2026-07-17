@@ -13,6 +13,7 @@ Use this before Google Play, App Store, PWA listing, press, or public launch scr
 - DM inbox or thread only with staged dummy messages. Do not show real member messages.
 - Notifications page with staged non-sensitive alerts.
 - Account/Profile settings only if the screenshot proves theme/readability, language, notification, or verification setup.
+- Support or Help Center screen showing safe self-service guides for Merch, verification, booking deposits, privacy, and safety without exposing private account issues.
 
 ## Do Not Capture
 
@@ -37,3 +38,4 @@ Use this before Google Play, App Store, PWA listing, press, or public launch scr
 - Check the mobile viewport first; screenshots should not show horizontal overflow, clipped cards, unreadable controls, or sticky install prompts covering content.
 - Run the real-device QA checklist before final screenshots.
 - Compare final screenshot text against the Store Listing Draft, Terms, Privacy, and Support pages so 18+ positioning, no-visible-nudity rules, no-AI stance, and support contact are consistent.
+- Confirm Help/Support screenshots show only public guide content and do not reveal private order details, seller payout setup details, support tickets, or moderation queues.
