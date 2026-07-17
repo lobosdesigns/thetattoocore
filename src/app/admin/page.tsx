@@ -1267,6 +1267,33 @@ export default async function AdminPage({
       meta: "Guides, FAQs, and moderated article questions",
     },
   ];
+  const launchReadinessItems = [
+    {
+      body: "Confirm payout setup, refund/dispute handling, and booking-deposit review before real money opens wider.",
+      href: "/admin/payments",
+      label: "Payment gates",
+    },
+    {
+      body: "Review seller readiness, fulfillment notes, return/refund notes, and paid-order handling before promoting products.",
+      href: "/admin/merch",
+      label: "Merch readiness",
+    },
+    {
+      body: "Keep verification, content, reports, and data requests clear enough for the first member wave.",
+      href: "/admin/verification",
+      label: "Trust queues",
+    },
+    {
+      body: "Fill priority guides with screenshot or short-video tutorial slots so members can self-serve setup questions.",
+      href: "/help",
+      label: "Help coverage",
+    },
+    {
+      body: "Run real-device checks for login, signup, DMs, posting, booking, payouts, and mobile layout before store pushes.",
+      href: "/admin/media-ops",
+      label: "Beta QA",
+    },
+  ];
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -1396,6 +1423,38 @@ export default async function AdminPage({
                 </span>
               </Link>
             ))}
+          </section>
+
+          <section className="mb-6 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,var(--gold)_8%)] p-5 shadow-[0_16px_55px_rgba(0,0,0,0.16)]">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-[var(--gold)]">
+                  Launch readiness
+                </p>
+                <h2 className="mt-2 text-2xl font-black">One-week beta push</h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted)]">
+                  Keep the overview focused on the highest-risk gates, then jump
+                  into the dedicated pages for the actual work.
+                </p>
+              </div>
+              <span className="w-fit rounded-md border border-[var(--card-rim)] bg-[var(--foreground)] px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-[var(--background)]">
+                Command center
+              </span>
+            </div>
+            <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+              {launchReadinessItems.map((item) => (
+                <Link
+                  className="rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4 text-sm hover:border-[var(--gold)]"
+                  href={item.href}
+                  key={item.label}
+                >
+                  <p className="font-black">{item.label}</p>
+                  <p className="mt-2 leading-5 text-[var(--muted)]">
+                    {item.body}
+                  </p>
+                </Link>
+              ))}
+            </div>
           </section>
 
           <section className="mb-6 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">

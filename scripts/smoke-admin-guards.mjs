@@ -95,6 +95,11 @@ const checks = [
       adminOverview.includes("const overviewCards = [") &&
       adminOverview.includes("This overview intentionally stays short.") &&
       adminOverview.includes("Full queues belong on") &&
+      adminOverview.includes("const launchReadinessItems = [") &&
+      adminOverview.includes("One-week beta push") &&
+      adminOverview.includes("Payment gates") &&
+      adminOverview.includes("Merch readiness") &&
+      adminOverview.includes("Help coverage") &&
       adminOverview.includes("count: merchReview?.length ?? 0") &&
       adminOverview.includes("latest product review signals") &&
       adminSections
@@ -288,6 +293,7 @@ const checks = [
     ok:
       productPlan.includes("Admin sections must become dedicated pages") &&
       productPlan.includes("Admin `/admin` must stay an overview-only command center") &&
+      productPlan.includes("compact one-week launch readiness snapshot") &&
       productPlan.includes("Owner/admin support tooling should include a controlled way to create tester/member accounts") &&
       productPlan.includes("owner-only access, server-only Supabase admin auth, confirmed tester creation, and audit logging"),
   },
