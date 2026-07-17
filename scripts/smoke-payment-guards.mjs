@@ -503,6 +503,10 @@ checks.push({
     accountPage.includes("sellerPayoutReady") &&
     accountPage.includes("sellerPayoutAccount") &&
     accountPage.includes("payoutSetupNotice") &&
+    accountPage.includes("Operator code:") &&
+    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("function payoutIssueCode") &&
+    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("payout_issue") &&
+    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("setupStep = \"account_create\"") &&
     accountPage.includes("Continue payout setup") &&
     accountPage.includes("Start payout setup") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("payout_status") &&

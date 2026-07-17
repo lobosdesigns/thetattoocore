@@ -558,6 +558,7 @@ export default async function AccountPage({
     bookings?: string | string[];
     message?: string;
     orders?: string | string[];
+    payout_issue?: string | string[];
     payout_status?: string | string[];
   }>;
 }) {
@@ -974,8 +975,12 @@ export default async function AccountPage({
   const payoutStatusParam = Array.isArray(params.payout_status)
     ? params.payout_status[0]
     : params.payout_status;
+  const payoutIssueParam = Array.isArray(params.payout_issue)
+    ? params.payout_issue[0]
+    : params.payout_issue;
   const payoutSetupNotice = payoutStatusParam
     ? {
+        issue: payoutIssueParam?.replace(/[^a-zA-Z0-9:_-]/g, "_").slice(0, 120) ?? null,
         tone:
           payoutStatusParam === "complete"
             ? "success"
@@ -2623,6 +2628,11 @@ export default async function AccountPage({
                 >
                   <p className="font-bold">{payoutSetupNotice.title}</p>
                   <p className="mt-1 text-[var(--muted)]">{payoutSetupNotice.body}</p>
+                  {role && adminRoles.includes(role) && payoutSetupNotice.issue ? (
+                    <p className="mt-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_90%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--muted-strong)]">
+                      Operator code: {payoutSetupNotice.issue}
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

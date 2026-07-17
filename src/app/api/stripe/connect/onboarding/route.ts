@@ -21,11 +21,37 @@ type Profile = {
   banned_at: string | null;
 };
 
-function accountRedirect(message: string, payoutStatus = "retry") {
+function payoutIssueCode(error: unknown) {
+  if (!error || typeof error !== "object") return "unknown";
+
+  const details = error as {
+    code?: string;
+    message?: string;
+    param?: string;
+    raw?: { code?: string; message?: string; param?: string; type?: string };
+    type?: string;
+  };
+  const code = details.code ?? details.raw?.code ?? "unknown";
+  const message = details.message ?? details.raw?.message ?? "no_message";
+  const param = details.param ?? details.raw?.param ?? "none";
+  const type = details.type ?? details.raw?.type ?? "error";
+
+  return `${type}:${code}:${param}:${message}`
+    .replace(/[^a-zA-Z0-9:_-]/g, "_")
+    .replace(/_+/g, "_")
+    .slice(0, 180);
+}
+
+function accountRedirect(message: string, payoutStatus = "retry", issue?: string) {
+  const params = new URLSearchParams({
+    message,
+    payout_status: payoutStatus,
+  });
+
+  if (issue) params.set("payout_issue", issue);
+
   return NextResponse.redirect(
-    `${siteUrl}/account?message=${encodeURIComponent(message)}&payout_status=${encodeURIComponent(
-      payoutStatus,
-    )}#order-settings`,
+    `${siteUrl}/account?${params.toString()}#order-settings`,
     { status: 303 },
   );
 }
@@ -67,6 +93,8 @@ export async function POST() {
     );
   }
 
+  let setupStep = "lookup";
+
   try {
     const { data: existingAccount, error: existingAccountError } = await admin
       .from("stripe_connect_accounts")
@@ -82,6 +110,7 @@ export async function POST() {
     let stripeAccountId = existingAccount?.stripe_account_id ?? null;
 
     if (!stripeAccountId) {
+      setupStep = "account_create";
       const account = await stripe.accounts.create({
         business_profile: {
           name: profile.display_name || "TheTattooCore seller",
@@ -104,6 +133,7 @@ export async function POST() {
 
       stripeAccountId = account.id;
 
+      setupStep = "account_create_sync";
       const { error: upsertError } = await admin.from("stripe_connect_accounts").upsert({
         ...stripeConnectStatus(account),
         onboarding_started_at: new Date().toISOString(),
@@ -115,8 +145,10 @@ export async function POST() {
         return accountRedirect("Seller payout setup is temporarily unavailable.", "unavailable");
       }
     } else {
+      setupStep = "account_retrieve";
       const account = await stripe.accounts.retrieve(stripeAccountId);
 
+      setupStep = "account_status_sync";
       const { error: upsertError } = await admin.from("stripe_connect_accounts").upsert({
         ...stripeConnectStatus(account),
         onboarding_started_at: new Date().toISOString(),
@@ -129,6 +161,7 @@ export async function POST() {
       }
     }
 
+    setupStep = "account_link";
     const accountLink = await stripe.accountLinks.create({
       account: stripeAccountId,
       refresh_url: `${siteUrl}/account?message=${encodeURIComponent(
@@ -144,6 +177,7 @@ export async function POST() {
     return accountRedirect(
       "Seller payout setup is temporarily unavailable. Please try again.",
       "retry",
+      `${typeof setupStep === "string" ? setupStep : "unknown"}:${payoutIssueCode(error)}`,
     );
   }
 }
