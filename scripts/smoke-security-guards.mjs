@@ -363,12 +363,15 @@ const checks = [
       messagePage.includes("async function getBlockedProfileIds") &&
       messagePage.includes("const blockedProfileIds = await getBlockedProfileIds") &&
       messagePage.includes('from("user_blocks")') &&
-      messagePage.includes("const conversationFetchLimit = conversationLimit + inboxPageSize") &&
+      messagePage.includes("const defaultConversationFetchLimit = conversationLimit + inboxPageSize") &&
+      messagePage.includes("const conversationFetchLimit = activeInboxSearch ? 500 : defaultConversationFetchLimit") &&
       messagePage.includes(".limit(conversationFetchLimit)") &&
-      messagePage.includes("const filteredInbox = memberships") &&
+      messagePage.includes("const inboxBeforeSearch = memberships") &&
+      messagePage.includes("const filteredInbox = inboxSearchTerms.length") &&
       messagePage.includes("const inbox = filteredInbox.slice(0, conversationLimit)") &&
       messagePage.includes("const hasMoreInbox =") &&
       messagePage.includes("filteredInbox.length > conversationLimit") &&
+      messagePage.includes("!activeInboxSearch && (membershipRows?.length ?? 0) === conversationFetchLimit") &&
       messagePage.includes("blockedProfileIds.has(otherMember.user_id)") &&
       messagePage.includes("isBlockedConversation") &&
       messagePage.includes("!conversation.isBlockedConversation") &&
