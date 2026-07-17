@@ -211,6 +211,15 @@ function merchSupportMailto(orderId: string, role: "buyer" | "seller") {
   return `mailto:${supportEmail}?subject=${subject}&body=${body}`;
 }
 
+function sellerProfileKind(accountType?: string | null, role?: string | null) {
+  return accountType === "studio" ||
+    accountType === "vendor" ||
+    role === "owner" ||
+    role === "admin"
+    ? "Company or organization seller profile"
+    : "Individual seller profile";
+}
+
 function bookingLimitHref({
   adLimit,
   bookingLimit,
@@ -605,6 +614,10 @@ export default async function AccountPage({
       !profile.banned_at,
   );
   const role = profile?.role as string | undefined;
+  const sellerProfileKindLabel = sellerProfileKind(
+    profile?.account_type as string | undefined,
+    role,
+  );
   const { data: verificationRequests } = await supabase
     .from("license_verification_requests")
     .select(
@@ -2665,6 +2678,9 @@ export default async function AccountPage({
               </div>
               {sellerPayoutAccount ? (
                 <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted-strong)] sm:grid-cols-3">
+                  <p className="sm:col-span-3">
+                    Seller profile: {sellerProfileKindLabel}
+                  </p>
                   <p>Charges: {sellerPayoutAccount.charges_enabled ? "Ready" : "Not ready"}</p>
                   <p>Payouts: {sellerPayoutAccount.payouts_enabled ? "Ready" : "Not ready"}</p>
                   <p>

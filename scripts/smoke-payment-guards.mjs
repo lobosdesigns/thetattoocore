@@ -487,6 +487,9 @@ checks.push({
     adminMerchPage.includes("finish tax, shipping, fulfillment, payouts, and payment safety rules") &&
     paymentReadiness.includes("Direct API edits or browser-automation shortcuts are not a valid completion test") &&
     accountPage.includes("merchSellerReadinessItems") &&
+    accountPage.includes("sellerProfileKind") &&
+    accountPage.includes("Seller profile:") &&
+    accountPage.includes("Company or organization seller profile") &&
     accountPage.includes("Seller payout path") &&
     accountPage.includes("Seller payout setup") &&
     accountPage.includes("secure hosted setup flow") &&
