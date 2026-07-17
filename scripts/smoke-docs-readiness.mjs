@@ -287,6 +287,8 @@ const checks = [
       helpSearch.includes("helpSearchAliases") &&
       helpSearch.includes("matchesSearch") &&
       helpSearch.includes("tattooer") &&
+      helpSearch.includes("guestspots") &&
+      helpSearch.includes("shirts") &&
       helpSearch.includes("appointments") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes(
         "Signed-in members can ask deeper questions",
