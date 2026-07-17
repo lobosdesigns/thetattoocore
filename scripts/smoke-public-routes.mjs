@@ -648,6 +648,21 @@ const checks = [
     includes: ['name="robots" content="noindex, nofollow"', "CEOCore", "@ceocore"],
   },
   {
+    path: "/search?q=guestspots",
+    status: [200],
+    includes: ['name="robots" content="noindex, nofollow"', "Search"],
+  },
+  {
+    path: "/search?q=tattoers&type=profiles",
+    status: [200],
+    includes: ['name="robots" content="noindex, nofollow"', "Search"],
+  },
+  {
+    path: "/search?q=shirts&type=merch",
+    status: [200],
+    includes: ['name="robots" content="noindex, nofollow"', "Merch"],
+  },
+  {
     path: "/merch",
     status: [200],
     includes: ["Merch", "Search shirts, prints, art, stickers", "Filters"],
