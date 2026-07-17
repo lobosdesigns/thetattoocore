@@ -17,6 +17,7 @@ type Profile = {
   display_name: string | null;
   id: string;
   license_verified_at: string | null;
+  role: string;
   suspended_at: string | null;
   banned_at: string | null;
 };
@@ -56,6 +57,15 @@ function accountRedirect(message: string, payoutStatus = "retry", issue?: string
   );
 }
 
+function sellerBusinessType(profile: Pick<Profile, "account_type" | "role">) {
+  return profile.account_type === "studio" ||
+    profile.account_type === "vendor" ||
+    profile.role === "owner" ||
+    profile.role === "admin"
+    ? "company"
+    : "individual";
+}
+
 export async function POST() {
   const stripe = createStripeClient();
   const admin = createAdminClient();
@@ -77,7 +87,9 @@ export async function POST() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, display_name, account_type, country_code, license_verified_at, suspended_at, banned_at")
+    .select(
+      "id, display_name, account_type, country_code, license_verified_at, role, suspended_at, banned_at",
+    )
     .eq("id", claims.sub)
     .maybeSingle<Profile>();
 
@@ -117,7 +129,7 @@ export async function POST() {
           product_description: "Body-art community merch, art, prints, apparel, and brand goods.",
           url: siteUrl,
         },
-        business_type: profile.account_type === "studio" ? "company" : "individual",
+        business_type: sellerBusinessType(profile),
         capabilities: {
           card_payments: { requested: true },
           transfers: { requested: true },

@@ -507,6 +507,9 @@ checks.push({
     accountPage.includes("payoutSetupNotice") &&
     accountPage.includes("Operator code:") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("function payoutIssueCode") &&
+    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("function sellerBusinessType") &&
+    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes('profile.role === "owner"') &&
+    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes('profile.account_type === "vendor"') &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("payout_issue") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("setupStep = \"account_create\"") &&
     accountPage.includes("Continue payout setup") &&
