@@ -18,6 +18,7 @@
 - Screenshot prep lives in `docs/SCREENSHOT_PREP.md` and should be followed before public, PWA, Google Play, App Store, or press screenshots.
 - Age-rating prep notes live in `docs/AGE_RATING_PREP.md` and should be checked against the current store questionnaires before submission.
 - Data-safety/privacy questionnaire prep lives in `docs/DATA_SAFETY_PREP.md` and should be checked against the live build before submission.
+- Admin > Media Ops now has an app handoff checklist for final legal/support copy, data-safety/privacy answers, safe screenshots, native wrapper auth/return-route checks, production payment review, and archived real-device QA evidence before external app review.
 - TheTattooCore is 18+ only.
 - Visible nudity is not allowed.
 - Sensitive non-nude body-art media stays behind login and 18+ confirmation.
@@ -218,6 +219,7 @@
 - Public and mobile route smoke on July 15, 2026 passed after making the DM connected-people picker accept display-name/location searches without username-only browser validation blocking selection. Live deploy version `f8ef48de-cec8-4712-b2f3-c3d7c2bda7b4` passed public route smoke and 390px mobile browser smoke.
 - Public and mobile route smoke on July 15, 2026 passed after adding actionable zero-results guidance to Search so failed searches suggest exact usernames, locations, broader terms, tab changes, and filter cleanup. Live deploy version `cb6216a7-6c7a-41ae-9769-90651667721f` passed public route smoke and 390px mobile browser smoke.
 - Public and mobile route smoke on July 15, 2026 passed after normalizing `@username` searches and boosting exact username matches in Search. Live deploy version `df0ffc9a-2907-4ee6-b3eb-f48d80562c12` passed public route smoke and 390px mobile browser smoke.
+- Public and mobile route smoke on July 17, 2026 passed after Admin > Media Ops gained the app handoff checklist for final legal/support copy, data-safety/privacy answers, safe screenshots, native-wrapper auth/return-route checks, production payment review, and archived real-device QA evidence. Live deploy version `7487b174-f971-4c8e-aa92-e20316de5d3e` passed public route smoke and 390px mobile browser smoke.
 - Public and mobile route smoke on July 15, 2026 passed after adding a Help Center Search/Saved guide with FAQ coverage and public smoke protection. Live deploy version `3714821d-bf4c-4559-926e-f04fff33898a` passed public route smoke and 390px mobile browser smoke.
 - Public and mobile route smoke on July 15, 2026 passed after adding a global disabled-button contrast fallback for light/dark mode. Live deploy version `b5a98b24-0641-43cb-991d-8caccdd0c06b` passed public route smoke and 390px mobile browser smoke.
 - Full verification on July 15, 2026 passed after extending mobile Help Center smoke coverage and guarding the real-device Search/Saved QA note: lint, production build, all smoke guard suites, and live public route smoke passed.

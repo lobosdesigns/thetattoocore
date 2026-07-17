@@ -110,10 +110,15 @@ const checks = [
     label: "admin media ops copy stays launch-safe and avoids raw provider/process wording",
     ok:
       adminMediaOps.includes("const betaQaLaunchChecks = [") &&
+      adminMediaOps.includes("const storeSubmissionChecks = [") &&
       adminMediaOps.includes("Beta QA launch checklist") &&
+      adminMediaOps.includes("App handoff checklist") &&
       adminMediaOps.includes("two-user DM pass") &&
       adminMediaOps.includes("Admin > Payments reconciliation") &&
       adminMediaOps.includes("store screenshots from safe sample accounts") &&
+      adminMediaOps.includes("production payment policy review") &&
+      adminMediaOps.includes("store data-safety/privacy answers") &&
+      adminMediaOps.includes("Archive the real-device QA evidence") &&
       mediaOpsSource.includes("Capped reels") &&
       mediaOpsSource.includes("higher-volume video tools") &&
       mediaOpsSource.includes("video upgrades") &&

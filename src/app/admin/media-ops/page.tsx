@@ -63,6 +63,14 @@ const betaQaLaunchChecks = [
   "Run Merch, ad, and booking-deposit test checkout flows only in test mode; confirm Admin > Payments reconciliation before any closeout decision.",
   "Prepare store screenshots from safe sample accounts only: no private DMs, license documents, nudity, real payment data, or personal owner contact details.",
 ] as const;
+const storeSubmissionChecks = [
+  "Confirm Terms, Privacy, Support, account deletion, 18+ signup, no-visible-nudity policy, and company support contact copy match the live build.",
+  "Complete store data-safety/privacy answers from current app behavior only, including public profiles, DMs, notifications, verification documents, payments, and Merch orders.",
+  "Capture screenshots from clean sample accounts with safe tattoo/media examples, visible Help access, and no private messages, license evidence, bank details, real addresses, or owner personal contact info.",
+  "Run a native-wrapper auth pass so login, signup, email confirmation, reset links, Help, Support, Terms, Privacy, and checkout-return routes stay inside the app experience.",
+  "Finish production payment policy review for Merch, ads, booking deposits, refunds, disputes, seller payouts, platform fees, taxes, and app-store payment rules before public sales.",
+  "Archive the real-device QA evidence: mobile overflow pass, Story composer pass, DM two-user pass, verification submission pass, Merch checkout test pass, and admin queue review pass.",
+] as const;
 
 export const metadata: Metadata = {
   robots: {
@@ -163,6 +171,37 @@ export default async function AdminMediaOpsPage() {
           >
             Getting started guide
           </Link>
+        </section>
+
+        <section className="ttc-card mb-4 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-strong)]">
+                Store submission
+              </p>
+              <h2 className="mt-1 text-lg font-bold">App handoff checklist</h2>
+              <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                Use this after beta QA passes and before uploading a build for
+                external review or public app-store release.
+              </p>
+            </div>
+            <Link
+              className="inline-flex rounded-md border border-[var(--card-rim)] px-3 py-2 text-sm font-semibold"
+              href="/support"
+            >
+              Support page
+            </Link>
+          </div>
+          <ol className="mt-4 grid gap-3 md:grid-cols-2">
+            {storeSubmissionChecks.map((check) => (
+              <li
+                className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-3 text-sm leading-6 text-[var(--muted)]"
+                key={check}
+              >
+                {check}
+              </li>
+            ))}
+          </ol>
         </section>
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
