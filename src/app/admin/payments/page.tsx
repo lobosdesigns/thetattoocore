@@ -151,6 +151,13 @@ const paymentReconciliationChecks = [
   "For refunded, partially refunded, or disputed payments, confirm payout release and fulfillment closeout remain frozen until admin review is complete.",
   "Record private support context in audit/admin notes instead of public comments, profiles, product descriptions, or DMs.",
 ] as const;
+const hostedPayoutQaChecks = [
+  "Use a verified artist, studio, or vendor test account; unverified users should see the verification-required payout notice.",
+  "Start setup from Account > Orders/Payouts and confirm the member leaves TTC only for the secure hosted payout setup flow.",
+  "Return from setup and confirm the payout setup card shows complete, saved-needs-more, expired, or retry guidance beside the button.",
+  "Open Admin > Merch with the seller payout filter and confirm the seller is ready, incomplete, or not started before approving checkout.",
+  "Confirm no TTC form, DM, comment, support note, screenshot, or admin note asks for raw bank, routing, card, debit, tax, or identity credential details.",
+] as const;
 
 export const metadata: Metadata = {
   robots: {
@@ -1286,6 +1293,19 @@ export default async function AdminPaymentsPage({
                   >
                     Seller payout guide
                   </Link>
+                </section>
+
+                <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
+                  <h2 className="text-lg font-bold">Hosted payout QA pass</h2>
+                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                    Run this before wider Merch seller onboarding, payout
+                    release decisions, or app-review commerce screenshots.
+                  </p>
+                  <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-[var(--muted)]">
+                    {hostedPayoutQaChecks.map((check) => (
+                      <li key={check}>{check}</li>
+                    ))}
+                  </ol>
                 </section>
 
                 <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_90%,var(--gold)_8%)] p-5">
