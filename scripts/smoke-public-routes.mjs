@@ -470,6 +470,16 @@ const checks = [
     ],
   },
   {
+    path: "/help/booking-appointments?comments=50",
+    status: [200],
+    includes: [
+      "How to create appointment types, time slots, and booking deposits",
+      "Guide Questions",
+      "Ask deeper workflow questions here",
+      "Sign in",
+    ],
+  },
+  {
     path: "/help/search-saved-people",
     status: [200],
     includes: [

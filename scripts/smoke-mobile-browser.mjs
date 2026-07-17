@@ -36,6 +36,11 @@ const routes = [
     titleIncludes: "Help Center",
   },
   {
+    path: "/help/booking-appointments?comments=50",
+    textIncludes: ["Guide Questions", "Ask deeper workflow questions here"],
+    titleIncludes: "Help Center",
+  },
+  {
     path: "/help/search-saved-people",
     textIncludes: "How to search, find people, and use Saved",
     titleIncludes: "Help Center",
