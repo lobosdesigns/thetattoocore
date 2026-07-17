@@ -9,8 +9,10 @@ import { createClient } from "@/lib/supabase/server";
 
 type HelpArticlePageProps = {
   params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ message?: string }>;
+  searchParams?: Promise<{ comments?: string; message?: string }>;
 };
+
+const commentPageSize = 25;
 
 function reviewLabel(lastReviewed: string) {
   return `Last reviewed ${lastReviewed}`;
@@ -59,6 +61,17 @@ function commentDate(value: string) {
   }).format(new Date(value));
 }
 
+function commentLimit(value?: string) {
+  const parsed = Number.parseInt(value ?? "25", 10);
+  const safeLimit = Number.isFinite(parsed) && parsed > 0 ? parsed : commentPageSize;
+
+  return Math.min(Math.max(commentPageSize, safeLimit), 250);
+}
+
+function commentsHref(slug: string, limit: number) {
+  return `/help/${slug}?comments=${limit}#guide-comments`;
+}
+
 export function generateStaticParams() {
   return helpArticles.map((article) => ({ slug: article.slug }));
 }
@@ -86,7 +99,7 @@ export default async function HelpArticlePage({
   searchParams,
 }: HelpArticlePageProps) {
   const { slug } = await params;
-  const { message } = (await searchParams) ?? {};
+  const { comments: commentsParam, message } = (await searchParams) ?? {};
   const article = getHelpArticle(slug);
 
   if (!article) {
@@ -96,6 +109,8 @@ export default async function HelpArticlePage({
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const isSignedIn = Boolean(claimsData?.claims?.sub);
+  const visibleCommentLimit = commentLimit(commentsParam);
+  const commentFetchLimit = visibleCommentLimit + commentPageSize;
   const { data: commentRows, error: commentError } = await supabase
     .from("help_article_comments")
     .select(
@@ -104,12 +119,14 @@ export default async function HelpArticlePage({
     .eq("article_slug", article.slug)
     .order("is_pinned", { ascending: false })
     .order("created_at", { ascending: false })
-    .limit(25);
-  const comments = commentError
+    .limit(commentFetchLimit);
+  const allComments = commentError
     ? []
     : ((commentRows ?? []) as unknown as HelpArticleCommentRow[]).map(
         normalizeComment,
       );
+  const comments = allComments.slice(0, visibleCommentLimit);
+  const hasMoreComments = allComments.length > visibleCommentLimit;
 
   const relatedArticles = article.relatedSlugs
     .map((relatedSlug) => getHelpArticle(relatedSlug))
@@ -299,6 +316,15 @@ export default async function HelpArticlePage({
                 </p>
               )}
             </div>
+
+            {hasMoreComments ? (
+              <Link
+                className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] px-4 text-sm font-bold text-[var(--text)] sm:w-auto"
+                href={commentsHref(article.slug, visibleCommentLimit + commentPageSize)}
+              >
+                Load more questions
+              </Link>
+            ) : null}
 
             {isSignedIn ? (
               <form action={createHelpArticleComment} className="mt-4 space-y-3">

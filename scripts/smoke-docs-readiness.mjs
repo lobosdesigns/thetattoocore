@@ -307,8 +307,12 @@ const checks = [
       helpCommentsMigration.includes("Members can submit help comments") &&
       helpCommentsMigration.includes("Moderators can update help comments") &&
       helpCommentsMigration.includes("status = 'pending_review'") &&
+      helpArticlePage.includes("const commentPageSize = 25") &&
+      helpArticlePage.includes("commentFetchLimit") &&
+      helpArticlePage.includes("hasMoreComments") &&
       helpArticlePage.includes("createHelpArticleComment") &&
       helpArticlePage.includes("Guide Questions") &&
+      helpArticlePage.includes("Load more questions") &&
       helpArticlePage.includes("Submit question") &&
       helpArticlePage.includes("help_article_comments") &&
       helpActions.includes("getHelpArticle(slug)") &&
