@@ -142,7 +142,7 @@ export function MessageStartForm({
           className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--muted-strong)]"
           htmlFor="dm-username-search"
         >
-          Connected people and active DMs
+          Followers, following, and active DMs
         </label>
         <div className="ttc-surface flex items-center gap-2 rounded-md border px-3">
           <Search className="size-4 text-[var(--muted-strong)]" />
@@ -152,15 +152,15 @@ export function MessageStartForm({
             id="dm-username-search"
             maxLength={80}
             onChange={(event) => updateQuery(event.target.value)}
-            placeholder="Search username, name, city, or account type"
-            title="Search connected members, tap a profile, or type an exact username."
+            placeholder="Search followers, following, or username"
+            title="Search followers, following, active DMs, or type an exact username."
             type="search"
             value={query}
           />
         </div>
         <p className="text-xs leading-5 text-[var(--muted)]">
-          Tap someone from your follows or existing DMs, or type an exact
-          username if the member is not listed.
+          Tap someone from your followers, following, or existing DMs. You can
+          also type an exact username and send if the member is not listed yet.
         </p>
         {selectedProfile ? (
           <p className="ttc-surface rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] px-3 py-2 text-xs font-semibold text-[var(--foreground)]">
@@ -169,7 +169,7 @@ export function MessageStartForm({
         ) : query && canSend ? (
           <p className="ttc-surface rounded-md border px-3 py-2 text-xs text-[var(--muted-strong)]">
             Ready to try exact username @{targetUsername}. Tap a listed profile
-            when one appears.
+            when one appears, or send to try this username.
           </p>
         ) : query ? (
           <p className="ttc-surface rounded-md border px-3 py-2 text-xs text-[var(--muted-strong)]">
@@ -212,13 +212,13 @@ export function MessageStartForm({
             ) : (
               <p className="ttc-surface rounded-md border px-3 py-2 text-xs text-[var(--muted-strong)]">
                 No connected profiles or active DMs matched that search. Type
-                the exact username if you know it.
+                the exact username if you know it, then send to try it.
               </p>
             )}
           </div>
         ) : (
           <p className="ttc-surface rounded-md border px-3 py-2 text-xs text-[var(--muted-strong)]">
-            No connected profiles or active DMs found yet. Type an exact
+            No followers, following, or active DMs found yet. Type an exact
             username to start a DM.
           </p>
         )}

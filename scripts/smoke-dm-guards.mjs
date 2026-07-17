@@ -148,8 +148,10 @@ const checks = [
       messagePage.includes("profileFetchIds") &&
       messagePage.includes("[...connectedProfileIds, ...profileIds]") &&
       messagePage.includes("connectedProfilesForPicker") &&
-      messageStartForm.includes("Connected people and active DMs") &&
-      messageStartForm.includes("Search username, name, city, or account type") &&
+      messageStartForm.includes("Followers, following, and active DMs") &&
+      messageStartForm.includes("Search followers, following, or username") &&
+      messageStartForm.includes("Search followers, following, active DMs, or type an exact username.") &&
+      messageStartForm.includes("send if the member is not listed yet") &&
       messageStartForm.includes("function matchScore") &&
       messageStartForm.includes("if (username === term) score += 100") &&
       messageStartForm.includes("else if (username.startsWith(term)) score += 70") &&
