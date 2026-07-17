@@ -6,7 +6,7 @@ Stripe checkout is wired for test-mode Merch, ads, and accepted booking deposits
 
 - Stripe Checkout is the shared gateway path for Merch, prepaid ad campaigns, and accepted booking deposits.
 - Webhook event dedupe, retry-safe status transitions, failed/expired checkout handling, buyer/seller/advertiser alerts, dispute audit logging, and Admin > Payments visibility are wired.
-- Admin > Payments now includes short operator runbooks for seller payout release checks, refund/dispute review, and booking deposit review so early launch decisions follow the same checklist.
+- Admin > Payments now includes short operator runbooks for seller payout release checks, refund/dispute review, and booking deposit review, plus a reconciliation checklist for webhook receipts, payment audit rows, user-facing status, admin queue status, fulfillment, ad delivery, booking deposits, and payout release.
 - A transparent 2% TTC platform fee is recorded in test-mode flows and booking deposit requests.
 - Merch order receipts, seller fulfillment updates, buyer refund-review requests, and basic admin order controls are present.
 - Production purchases, seller payout releases, and real ad spending should stay gated until policy, tax, payout, refund, dispute, and provider review is complete.
@@ -31,6 +31,7 @@ Stripe checkout is wired for test-mode Merch, ads, and accepted booking deposits
 - Confirm `SUPABASE_SERVICE_ROLE_KEY` remains server-only and is never exposed to client bundles.
 - Run a small live-payment penny test only after legal/provider review.
 - Confirm Admin > Payments shows live webhook events, order states, ad payment states, booking deposit states, and ops warnings.
+- Confirm Admin > Payments reconciliation checks are followed before manual closeout, refund decisions, ad credits, fulfillment changes, booking deposit updates, or payout release.
 - Confirm buyer receipts, seller sale alerts, advertiser alerts, and support emails send from company addresses.
 - Confirm refunds are initiated and tracked through the approved process.
 - Confirm payment disputes and chargebacks create admin audit entries before any production payout, fulfillment, booking, or advertiser-credit decisions are made.

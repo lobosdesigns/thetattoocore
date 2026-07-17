@@ -144,6 +144,13 @@ const paymentOpsRunbooks = [
     title: "Booking deposit review",
   },
 ] as const;
+const paymentReconciliationChecks = [
+  "Search the payment reference in Admin > Payments before changing an order, ad, or booking state.",
+  "Confirm the webhook receipt, payment audit row, user-facing status, and admin queue status all describe the same outcome.",
+  "For failed or expired checkout, confirm fulfillment, ad delivery, booking deposit state, and seller payout release all stay closed.",
+  "For refunded, partially refunded, or disputed payments, confirm payout release and fulfillment closeout remain frozen until admin review is complete.",
+  "Record private support context in audit/admin notes instead of public comments, profiles, product descriptions, or DMs.",
+] as const;
 
 export const metadata: Metadata = {
   robots: {
@@ -1279,6 +1286,22 @@ export default async function AdminPaymentsPage({
                   >
                     Seller payout guide
                   </Link>
+                </section>
+
+                <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_90%,var(--gold)_8%)] p-5">
+                  <h2 className="text-lg font-bold">
+                    Reconciliation checklist
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                    Use this before manual closeout, refund decisions, ad
+                    credits, fulfillment changes, booking deposit updates, or
+                    payout release.
+                  </p>
+                  <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-[var(--muted)]">
+                    {paymentReconciliationChecks.map((check) => (
+                      <li key={check}>{check}</li>
+                    ))}
+                  </ol>
                 </section>
 
                 <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">

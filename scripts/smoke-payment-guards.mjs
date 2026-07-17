@@ -467,6 +467,11 @@ checks.push({
   label: "production commerce gates stay visible before real payments",
   ok:
     adminPaymentsPage.includes("Production payment gates") &&
+    adminPaymentsPage.includes("const paymentReconciliationChecks = [") &&
+    adminPaymentsPage.includes("Reconciliation checklist") &&
+    adminPaymentsPage.includes("Search the payment reference in Admin > Payments") &&
+    adminPaymentsPage.includes("webhook receipt, payment audit row, user-facing status") &&
+    adminPaymentsPage.includes("fulfillment, ad delivery, booking deposit state") &&
     adminPaymentsPage.includes("bookingPaymentStatusLabel(status)") &&
     adminPaymentsPage.includes("titleCaseStatus(value)") &&
     adminPaymentsPage.includes("Choose a documented payout policy") &&
