@@ -508,6 +508,26 @@ checks.push({
     readFileSync("supabase/migrations/20260715101500_stripe_connect_seller_accounts.sql", "utf8").includes("grant select, insert, update, delete on public.stripe_connect_accounts to service_role"),
 });
 checks.push({
+  label: "Stripe Connect onboarding and return recover from provider errors",
+  ok:
+    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes(
+      'console.error("Seller payout onboarding failed.", error)',
+    ) &&
+    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes(
+      'console.error("Seller payout account lookup failed.", existingAccountError)',
+    ) &&
+    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes(
+      "Seller payout setup is temporarily unavailable. Please try again.",
+    ) &&
+    stripeConnectReturn.includes('console.error("Seller payout return check failed.", error)') &&
+    stripeConnectReturn.includes(
+      'console.error("Seller payout return lookup failed.", connectAccountError)',
+    ) &&
+    stripeConnectReturn.includes(
+      "Seller payout setup could not be checked. Please try again.",
+    ),
+});
+checks.push({
   label: "admin Merch review shows seller payout readiness",
   ok:
     adminMerchPage.includes(".from(\"stripe_connect_accounts\")") &&

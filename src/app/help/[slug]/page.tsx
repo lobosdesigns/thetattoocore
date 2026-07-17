@@ -132,6 +132,7 @@ export default async function HelpArticlePage({
   const relatedArticles = article.relatedSlugs
     .map((relatedSlug) => getHelpArticle(relatedSlug))
     .filter((relatedArticle) => relatedArticle !== null);
+  const tutorialMedia = article.tutorialMedia ?? [];
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -245,6 +246,26 @@ export default async function HelpArticlePage({
               steps and FAQ first, then ask a guide question if a workflow still
               needs a clearer example.
             </p>
+            {tutorialMedia.length ? (
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {tutorialMedia.map((item) => (
+                  <article
+                    className="rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] p-3"
+                    key={`${item.kind}-${item.title}`}
+                  >
+                    <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      {item.kind === "short_clip" ? "Short video" : "Screenshot"}
+                    </p>
+                    <h3 className="mt-1 text-sm font-bold text-[var(--text)]">
+                      {item.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                      {item.description}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            ) : null}
           </section>
 
           <section

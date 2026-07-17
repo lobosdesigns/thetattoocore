@@ -64,60 +64,80 @@ export async function POST() {
     );
   }
 
-  const { data: existingAccount } = await admin
-    .from("stripe_connect_accounts")
-    .select("stripe_account_id")
-    .eq("profile_id", claims.sub)
-    .maybeSingle<{ stripe_account_id: string }>();
+  try {
+    const { data: existingAccount, error: existingAccountError } = await admin
+      .from("stripe_connect_accounts")
+      .select("stripe_account_id")
+      .eq("profile_id", claims.sub)
+      .maybeSingle<{ stripe_account_id: string }>();
 
-  let stripeAccountId = existingAccount?.stripe_account_id ?? null;
+    if (existingAccountError) {
+      console.error("Seller payout account lookup failed.", existingAccountError);
+      return accountRedirect("Seller payout setup is temporarily unavailable.");
+    }
 
-  if (!stripeAccountId) {
-    const account = await stripe.accounts.create({
-      business_profile: {
-        name: profile.display_name || "TheTattooCore seller",
-        product_description: "Body-art community merch, art, prints, apparel, and brand goods.",
-        url: siteUrl,
-      },
-      business_type: profile.account_type === "studio" ? "company" : "individual",
-      capabilities: {
-        card_payments: { requested: true },
-        transfers: { requested: true },
-      },
-      country: profile.country_code || "US",
-      email: claims.email,
-      metadata: {
+    let stripeAccountId = existingAccount?.stripe_account_id ?? null;
+
+    if (!stripeAccountId) {
+      const account = await stripe.accounts.create({
+        business_profile: {
+          name: profile.display_name || "TheTattooCore seller",
+          product_description: "Body-art community merch, art, prints, apparel, and brand goods.",
+          url: siteUrl,
+        },
+        business_type: profile.account_type === "studio" ? "company" : "individual",
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
+        country: profile.country_code || "US",
+        email: claims.email,
+        metadata: {
+          profile_id: claims.sub,
+          source: "thetattoocore",
+        },
+        type: "express",
+      });
+
+      stripeAccountId = account.id;
+
+      const { error: upsertError } = await admin.from("stripe_connect_accounts").upsert({
+        ...stripeConnectStatus(account),
+        onboarding_started_at: new Date().toISOString(),
         profile_id: claims.sub,
-        source: "thetattoocore",
-      },
-      type: "express",
+      });
+
+      if (upsertError) {
+        console.error("Seller payout account create sync failed.", upsertError);
+        return accountRedirect("Seller payout setup is temporarily unavailable.");
+      }
+    } else {
+      const account = await stripe.accounts.retrieve(stripeAccountId);
+
+      const { error: upsertError } = await admin.from("stripe_connect_accounts").upsert({
+        ...stripeConnectStatus(account),
+        onboarding_started_at: new Date().toISOString(),
+        profile_id: claims.sub,
+      });
+
+      if (upsertError) {
+        console.error("Seller payout account status sync failed.", upsertError);
+        return accountRedirect("Seller payout setup is temporarily unavailable.");
+      }
+    }
+
+    const accountLink = await stripe.accountLinks.create({
+      account: stripeAccountId,
+      refresh_url: `${siteUrl}/account?message=${encodeURIComponent(
+        "Seller payout setup expired. Start it again when you are ready.",
+      )}#order-settings`,
+      return_url: `${siteUrl}/api/stripe/connect/return`,
+      type: "account_onboarding",
     });
 
-    stripeAccountId = account.id;
-
-    await admin.from("stripe_connect_accounts").upsert({
-      ...stripeConnectStatus(account),
-      onboarding_started_at: new Date().toISOString(),
-      profile_id: claims.sub,
-    });
-  } else {
-    const account = await stripe.accounts.retrieve(stripeAccountId);
-
-    await admin.from("stripe_connect_accounts").upsert({
-      ...stripeConnectStatus(account),
-      onboarding_started_at: new Date().toISOString(),
-      profile_id: claims.sub,
-    });
+    return NextResponse.redirect(accountLink.url, { status: 303 });
+  } catch (error) {
+    console.error("Seller payout onboarding failed.", error);
+    return accountRedirect("Seller payout setup is temporarily unavailable. Please try again.");
   }
-
-  const accountLink = await stripe.accountLinks.create({
-    account: stripeAccountId,
-    refresh_url: `${siteUrl}/account?message=${encodeURIComponent(
-      "Seller payout setup expired. Start it again when you are ready.",
-    )}#order-settings`,
-    return_url: `${siteUrl}/api/stripe/connect/return`,
-    type: "account_onboarding",
-  });
-
-  return NextResponse.redirect(accountLink.url, { status: 303 });
 }

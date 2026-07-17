@@ -39,10 +39,16 @@ const checks = [
     ok:
       profileForm.includes("const profileTabs = [") &&
       profileForm.includes('["profile", "Profile"]') &&
+      profileForm.includes('["about", "About"]') &&
+      profileForm.includes('["location", "Location"]') &&
       profileForm.includes('["appearance", "Appearance"]') &&
-      profileForm.includes('["language", "Language"]') &&
       profileForm.includes('["privacy", "Privacy"]') &&
       profileForm.includes('["notifications", "Notifications"]') &&
+      profileForm.includes('if (hash === "#profile-about-settings") return "about"') &&
+      profileForm.includes('if (hash === "#location-settings") return "location"') &&
+      profileForm.includes('if (hash === "#language-settings") return "location"') &&
+      profileForm.includes('id="profile-about-settings"') &&
+      profileForm.includes('id="location-settings"') &&
       profileForm.includes("profileTabFromHash"),
   },
   {

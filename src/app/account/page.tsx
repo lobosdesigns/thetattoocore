@@ -124,10 +124,11 @@ const bookingStatusFilters = [
 ] as const;
 const accountNavItems = [
   ["#profile-settings", "Profile"],
+  ["#profile-about-settings", "About"],
+  ["#location-settings", "Location"],
   ["#appearance-settings", "Appearance"],
-  ["#language-settings", "Language"],
   ["#privacy-settings", "Privacy"],
-  ["#notification-settings", "Notifications"],
+  ["#notification-settings", "Alerts"],
   ["#verification-settings", "Verify"],
   ["#booking-settings", "Bookings"],
   ["#advertising-settings", "Ads"],

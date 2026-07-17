@@ -35,29 +35,44 @@ export async function GET() {
     );
   }
 
-  const { data: connectAccount } = await admin
+  const { data: connectAccount, error: connectAccountError } = await admin
     .from("stripe_connect_accounts")
     .select("stripe_account_id")
     .eq("profile_id", claims.sub)
     .maybeSingle<{ stripe_account_id: string }>();
 
+  if (connectAccountError) {
+    console.error("Seller payout return lookup failed.", connectAccountError);
+    return accountRedirect("Seller payout setup could not be checked. Please try again.");
+  }
+
   if (!connectAccount?.stripe_account_id) {
     return accountRedirect("Seller payout setup was not found. Start setup again.");
   }
 
-  const account = await stripe.accounts.retrieve(connectAccount.stripe_account_id);
-  const status = stripeConnectStatus(account);
+  try {
+    const account = await stripe.accounts.retrieve(connectAccount.stripe_account_id);
+    const status = stripeConnectStatus(account);
 
-  await admin
-    .from("stripe_connect_accounts")
-    .update(status)
-    .eq("profile_id", claims.sub);
+    const { error: updateError } = await admin
+      .from("stripe_connect_accounts")
+      .update(status)
+      .eq("profile_id", claims.sub);
 
-  if (status.charges_enabled && status.payouts_enabled && status.details_submitted) {
-    return accountRedirect("Seller payout setup is complete.");
+    if (updateError) {
+      console.error("Seller payout return sync failed.", updateError);
+      return accountRedirect("Seller payout setup could not be checked. Please try again.");
+    }
+
+    if (status.charges_enabled && status.payouts_enabled && status.details_submitted) {
+      return accountRedirect("Seller payout setup is complete.");
+    }
+
+    return accountRedirect(
+      "Seller payout setup is saved. More details may still be needed before payouts are active.",
+    );
+  } catch (error) {
+    console.error("Seller payout return check failed.", error);
+    return accountRedirect("Seller payout setup could not be checked. Please try again.");
   }
-
-  return accountRedirect(
-    "Seller payout setup is saved. More details may still be needed before payouts are active.",
-  );
 }

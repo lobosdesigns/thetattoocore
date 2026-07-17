@@ -22,6 +22,7 @@ const packageJson = readFileSync("package.json", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const adminPage = readFileSync("src/app/admin/page.tsx", "utf8");
 const helpArticlePage = readFileSync("src/app/help/[slug]/page.tsx", "utf8");
+const helpCenterData = readFileSync("src/lib/help-center.ts", "utf8");
 const helpSearch = readFileSync("src/app/help/help-center-search.tsx", "utf8");
 const helpActions = readFileSync("src/app/help/actions.ts", "utf8");
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
@@ -264,6 +265,7 @@ const checks = [
       docs["docs/PRODUCT_PLAN.md"].includes("Started for launch with public `/help`, `/help/[slug]` guide pages") &&
       docs["docs/PRODUCT_PLAN.md"].includes("getting-started guide") &&
       docs["docs/PRODUCT_PLAN.md"].includes("screenshots, short clips where useful") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("Help Center needs a media pass before broader beta") &&
       docs["docs/PRODUCT_PLAN.md"].includes("setting appointments") &&
       docs["docs/PRODUCT_PLAN.md"].includes("creating ads") &&
       docs["docs/PRODUCT_PLAN.md"].includes("setting up Merch products") &&
@@ -278,14 +280,17 @@ const checks = [
     label: "help center has a first-run guide and avoids roadmap-style support copy",
     ok:
       helpArticlePage.includes("Visual walkthroughs avoid private messages") &&
+      helpArticlePage.includes("const tutorialMedia = article.tutorialMedia ?? []") &&
+      helpArticlePage.includes('item.kind === "short_clip" ? "Short video" : "Screenshot"') &&
       helpArticlePage.includes("ask a guide question") &&
       helpActions.includes("Question submitted for moderation.") &&
-      readFileSync("src/lib/help-center.ts", "utf8").includes(
-        'slug: "getting-started"',
-      ) &&
-      readFileSync("src/lib/help-center.ts", "utf8").includes(
-        "Getting started on TheTattooCore",
-      ) &&
+      helpCenterData.includes('slug: "getting-started"') &&
+      helpCenterData.includes("Getting started on TheTattooCore") &&
+      helpCenterData.includes("tutorialMedia") &&
+      helpCenterData.includes("Signup to first Account save") &&
+      helpCenterData.includes("Booking request to calendar") &&
+      helpCenterData.includes("Merch product setup") &&
+      helpCenterData.includes("Stories, DMs, and safety controls") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("getting-started guide") &&
       helpSearch.includes("helpSearchAliases") &&
       helpSearch.includes("matchesSearch") &&
@@ -296,9 +301,9 @@ const checks = [
       helpSearch.includes("article.slug") &&
       helpSearch.includes("article.keywords") &&
       helpSearch.includes("article.relatedSlugs") &&
-      readFileSync("src/lib/help-center.ts", "utf8").includes("payout setup") &&
-      readFileSync("src/lib/help-center.ts", "utf8").includes("google calendar") &&
-      readFileSync("src/lib/help-center.ts", "utf8").includes("shop link") &&
+      helpCenterData.includes("payout setup") &&
+      helpCenterData.includes("google calendar") &&
+      helpCenterData.includes("shop link") &&
       docs["docs/PRODUCT_PLAN.md"].includes("structured article keywords") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes(
         "Signed-in members can ask deeper questions",

@@ -117,8 +117,9 @@ const notificationSummary = [
 
 const profileTabs = [
   ["profile", "Profile"],
+  ["about", "About"],
+  ["location", "Location"],
   ["appearance", "Appearance"],
-  ["language", "Language"],
   ["privacy", "Privacy"],
   ["notifications", "Notifications"],
 ] as const;
@@ -126,8 +127,10 @@ const profileTabs = [
 type ProfileTab = (typeof profileTabs)[number][0];
 
 function profileTabFromHash(hash: string): ProfileTab {
+  if (hash === "#profile-about-settings") return "about";
+  if (hash === "#location-settings") return "location";
   if (hash === "#appearance-settings") return "appearance";
-  if (hash === "#language-settings") return "language";
+  if (hash === "#language-settings") return "location";
   if (hash === "#privacy-settings") return "privacy";
   if (hash === "#notification-settings") return "notifications";
 
@@ -392,12 +395,13 @@ export function ProfileForm({
         </div>
       </div>
 
-      <div className={panelClass("language")}>
+      <div className={panelClass("location")}>
         <div
           className="sm:col-span-2"
-          id="language-settings"
+          id="location-settings"
         >
-          <h2 className="text-sm font-bold">Language and region</h2>
+          <span className="sr-only" id="language-settings" />
+          <h2 className="text-sm font-bold">Location and language</h2>
           <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
             These settings power the page language signal, local discovery,
             and clearly labeled regional discovery. We use the location you type
@@ -473,6 +477,31 @@ export function ProfileForm({
             ))}
           </select>
         </label>
+      </div>
+
+      <div className={panelClass("about")}>
+        <div className="sm:col-span-2" id="profile-about-settings">
+          <h2 className="text-sm font-bold">Bio and links</h2>
+          <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
+            Keep your public profile details here: a short bio plus official
+            website and social links. This keeps account setup, location, and
+            alerts from becoming one long scroll.
+          </p>
+          <div className="mt-3 grid gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3 text-xs leading-5 text-[var(--muted)] sm:grid-cols-3">
+            <p>
+              <span className="block font-semibold">Bio</span>
+              Style, shop notes, booking direction, and what clients should know.
+            </p>
+            <p>
+              <span className="block font-semibold">Links</span>
+              Public website and social profile links only.
+            </p>
+            <p>
+              <span className="block font-semibold">Profile preview</span>
+              These details appear on your profile and discovery surfaces.
+            </p>
+          </div>
+        </div>
 
         <label className="block">
           <span className="text-sm font-medium">Website</span>

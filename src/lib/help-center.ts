@@ -15,6 +15,11 @@ export type HelpArticle = {
   lastReviewed: string;
   relatedSlugs: readonly string[];
   steps: readonly string[];
+  tutorialMedia?: readonly {
+    description: string;
+    kind: "screenshot" | "short_clip";
+    title: string;
+  }[];
   title: string;
   slug: string;
 };
@@ -111,6 +116,20 @@ export const helpArticles = [
       "Submit artist, studio, or vendor verification before expecting professional tools such as Stuff seller contact, booking setup, seller review, or professional ad review.",
       "Use Help or Support when something is unclear, private, payment-related, or safety-related.",
     ],
+    tutorialMedia: [
+      {
+        description:
+          "Show Login, the Signup button, and the first Account save without private email details visible.",
+        kind: "screenshot",
+        title: "Signup to first Account save",
+      },
+      {
+        description:
+          "Short mobile walkthrough of switching between 4U, Gossip, Stuff, Gigs, Merch, DM, Search, Saved, Alerts, and Me.",
+        kind: "short_clip",
+        title: "Main navigation tour",
+      },
+    ],
     title: "Getting started on TheTattooCore",
   },
   {
@@ -148,6 +167,20 @@ export const helpArticles = [
       "Add a profile photo, banner, short bio, website, and social links.",
       "If you work with a verified studio, choose the shop profile link once that studio profile is ready.",
       "Save changes, then review your public profile to make sure the public details look right.",
+    ],
+    tutorialMedia: [
+      {
+        description:
+          "Show the Profile, About, and Location tabs so users can see where bio, banner, links, and city settings live.",
+        kind: "screenshot",
+        title: "Profile settings sections",
+      },
+      {
+        description:
+          "Short clip of uploading a banner/profile photo, cropping it, saving, and opening the public profile preview.",
+        kind: "short_clip",
+        title: "Photo and banner setup",
+      },
     ],
     title: "How to set up an artist profile and link a studio",
   },
@@ -191,6 +224,14 @@ export const helpArticles = [
       "Use common TTC wording such as artists or tattooers, shops or studios, guest spots or conventions, jobs or Gigs, shirts or Merch, bookings or appointments, DMs or messages, and vendors or sellers.",
       "Use the Profiles, 4U, Gossip, Stuff, Gigs, and Merch tabs to narrow the result type.",
       "Use recent searches or saved search shortcuts for searches you run often, and save posts or products from their cards when you want to find them again later.",
+    ],
+    tutorialMedia: [
+      {
+        description:
+          "Show a safe example search for a username, a city, and a Merch term with private results hidden.",
+        kind: "screenshot",
+        title: "Search examples",
+      },
     ],
     title: "How to search, find people, and use Saved",
   },
@@ -246,6 +287,20 @@ export const helpArticles = [
       "Keep private personal details off public profile fields. Verification documents are for admin review only.",
       "Submit for review and watch Account alerts for approval, rejection, or resubmission notes.",
       "After approval, check which tools are unlocked for your account type before creating Stuff, Merch, booking, or ad activity.",
+    ],
+    tutorialMedia: [
+      {
+        description:
+          "Show the verification form with sample placeholder data only; never show real license numbers or uploaded documents.",
+        kind: "screenshot",
+        title: "Verification form basics",
+      },
+      {
+        description:
+          "Short clip of selecting account type, choosing review type, and submitting a safe dummy document.",
+        kind: "short_clip",
+        title: "Submit for review walkthrough",
+      },
     ],
     title: "How to submit artist, studio, or vendor verification",
   },
@@ -309,6 +364,20 @@ export const helpArticles = [
       "Download the private calendar file from accepted scheduled bookings when you need to add the appointment to your calendar.",
       "Use refund review instead of promising instant deposit refunds before support reviews the request.",
     ],
+    tutorialMedia: [
+      {
+        description:
+          "Show appointment types, weekly slots, blackout dates, and deposit fields with safe sample values.",
+        kind: "screenshot",
+        title: "Booking setup sections",
+      },
+      {
+        description:
+          "Short clip of a client request, artist review, deposit confirmation, and private calendar download.",
+        kind: "short_clip",
+        title: "Booking request to calendar",
+      },
+    ],
     title: "How to create appointment types, time slots, and booking deposits",
   },
   {
@@ -362,6 +431,20 @@ export const helpArticles = [
       "Apply available ad credits before checkout when credits are available.",
       "Review the payment status before submitting. Campaigns only deliver after review and after payment is paid, waived by credit, or otherwise approved by admin rules.",
       "Submit for review and watch campaign status before the ad starts running.",
+    ],
+    tutorialMedia: [
+      {
+        description:
+          "Show goal, placement, budget, and ad-credit fields with test campaign copy only.",
+        kind: "screenshot",
+        title: "Create an ad campaign",
+      },
+      {
+        description:
+          "Short clip of applying available ad credit and checking campaign review/payment status.",
+        kind: "short_clip",
+        title: "Use ad credits",
+      },
     ],
     title: "How to create an ad and use ad credits",
   },
@@ -431,6 +514,20 @@ export const helpArticles = [
       "Add tracking carrier, tracking number, or a tracking link when available. If there is no tracking, use a clear fulfillment note before marking the order complete.",
       "Use Admin or Support for missing, damaged, wrong, delayed, or returned packages, payment-reference lookup, refund review, seller non-delivery review, or dispute review.",
     ],
+    tutorialMedia: [
+      {
+        description:
+          "Show product title, media, price, return note, fulfillment note, and review status without real buyer data.",
+        kind: "screenshot",
+        title: "Merch product setup",
+      },
+      {
+        description:
+          "Short clip of reviewing a paid order, adding tracking, and marking fulfillment with safe sample shipping data.",
+        kind: "short_clip",
+        title: "Fulfill a Merch order",
+      },
+    ],
     title: "How to set up Merch products and handle orders",
   },
   {
@@ -468,6 +565,20 @@ export const helpArticles = [
       "Use comments, replies, likes, saves, and DMs without harassment or spam.",
       "Report unsafe content, block users when needed, and contact support for urgent safety issues.",
     ],
+    tutorialMedia: [
+      {
+        description:
+          "Show the floating create button opening the right form for 4U, Gossip, Stuff, Gigs, Merch, Stories, and DM.",
+        kind: "screenshot",
+        title: "Create button by section",
+      },
+      {
+        description:
+          "Short clip of creating a Story, sending a DM reply, and using report/block controls with safe sample content.",
+        kind: "short_clip",
+        title: "Stories, DMs, and safety controls",
+      },
+    ],
     title: "How to create Stuff listings, Gigs, Stories, and DMs safely",
   },
   {
@@ -504,6 +615,14 @@ export const helpArticles = [
       "Block a member when you need to stop unwanted profile access, comments, or DMs.",
       "Keep private contact details, license documents, payment issues, disputes, and account-specific questions inside Support or Account tools.",
       "Use Account data controls or Support for account deletion requests, then watch for follow-up if review is needed.",
+    ],
+    tutorialMedia: [
+      {
+        description:
+          "Show report, block, privacy, and data-request controls with dummy profiles and safe sample content only.",
+        kind: "screenshot",
+        title: "Privacy and support controls",
+      },
     ],
     title: "How to use reports, blocks, privacy, and support",
   },
