@@ -321,6 +321,7 @@
 - Public and mobile route smoke passed on July 16, 2026 after DM gained a dedicated inbox thread search for username, display name, account type, city, region, or recent message text, with search-aware Load more links and preserved logged-out return paths. Live deploy version `b89272bc-1a82-4ed4-8e31-34eff18ba358` passed public route smoke and 390px mobile browser smoke.
 - Public and mobile route smoke passed on July 16, 2026 after Admin Content gained status filters for needs-review, all, active, hidden, removed, under-review, and Help pending/visible queues with filter-aware pagination and moderation return paths. Live deploy version `aa65c1c4-842e-47eb-8e7b-71577f147cbd` passed public route smoke and 390px mobile browser smoke.
 - Full verification on July 16, 2026 passed after crash recovery and DM/Admin Content guard alignment: lint, production build, hydration/media/content/share/profile/admin/story/DM/booking/payment/PWA/native/store/security/theme/docs guards, and live public route smoke all passed.
+- Public and mobile route smoke passed on July 16, 2026 after Admin Verification gained status and account-type filters with filter-aware pagination and preserved approve/reject return paths. Live deploy version `02757f64-260e-4ec9-9814-c684bd4f4f95` passed public route smoke and 390px mobile browser smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
