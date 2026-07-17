@@ -2641,6 +2641,12 @@ export default async function AccountPage({
                   </PendingSubmitButton>
                 </form>
               ) : null}
+              <Link
+                className="mt-3 inline-flex text-sm font-semibold underline"
+                href="/help/seller-payouts-payment-safety"
+              >
+                Seller payout and payment safety guide
+              </Link>
             </div>
             <div className="mt-6 border-t border-[var(--card-rim)] pt-5">
               <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">

@@ -290,6 +290,8 @@ const checks = [
       helpCenterData.includes("Signup to first Account save") &&
       helpCenterData.includes("Booking request to calendar") &&
       helpCenterData.includes("Merch product setup") &&
+      helpCenterData.includes("Seller payouts and payment safety") &&
+      helpCenterData.includes("Should I send payout details to support?") &&
       helpCenterData.includes("Stories, DMs, and safety controls") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("getting-started guide") &&
       helpSearch.includes("helpSearchAliases") &&
@@ -304,6 +306,9 @@ const checks = [
       helpCenterData.includes("payout setup") &&
       helpCenterData.includes("google calendar") &&
       helpCenterData.includes("shop link") &&
+      helpSearch.includes("payout") &&
+      helpSearch.includes("chargeback") &&
+      helpSearch.includes("merchant") &&
       docs["docs/PRODUCT_PLAN.md"].includes("structured article keywords") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes(
         "Signed-in members can ask deeper questions",
@@ -316,12 +321,15 @@ const checks = [
     ok:
       accountPage.includes('["/help", "Help"]') &&
       accountPage.includes("Open Help Center") &&
+      accountPage.includes("/help/seller-payouts-payment-safety") &&
       accountPage.includes("Set things up without waiting on support") &&
       adminPage.includes('[CircleHelp, "Help", "/help"]') &&
       adminPage.includes('action: "Open Help"') &&
       adminPage.includes("Self-serve tutorials and guide questions") &&
       supportPage.includes('href: "/help/merch-products-orders"') &&
+      supportPage.includes('href: "/help/seller-payouts-payment-safety"') &&
       supportPage.includes("Product review, seller readiness") &&
+      supportPage.includes("Hosted payout setup") &&
       profilePage.includes('href="/help/artist-profile-shop-links"') &&
       profilePage.includes('aria-label="Open profile help"') &&
       docs["docs/PRODUCT_PLAN.md"].includes("Help must be easy to find while logged in") &&

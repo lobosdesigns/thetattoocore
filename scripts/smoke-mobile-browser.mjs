@@ -55,6 +55,11 @@ const routes = [
     textIncludes: ["How to set up Merch products and handle orders", "What if a package has a problem?"],
     titleIncludes: "Help Center",
   },
+  {
+    path: "/help/seller-payouts-payment-safety",
+    textIncludes: ["Seller payouts and payment safety", "Should I send payout details to support?"],
+    titleIncludes: "Help Center",
+  },
   { path: "/privacy", textIncludes: "support@thetattoocore.com", titleIncludes: "Privacy" },
   { path: "/terms", textIncludes: "visible nudity is not allowed", titleIncludes: "Terms" },
   { path: "/search?q=ceocore", textIncludes: "@ceocore", titleIncludes: "Search" },

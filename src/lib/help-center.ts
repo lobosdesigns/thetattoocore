@@ -53,7 +53,7 @@ export const helpCategories = [
     description:
       "Merch product setup, seller review, Stuff listings, public browsing, approved buyer interactions, fulfillment, refunds, and dispute basics.",
     title: "Merch And Stuff",
-    topics: ["Merch setup", "Stuff listings", "Order support"],
+    topics: ["Merch setup", "Seller payouts", "Stuff listings", "Order support"],
   },
   {
     description:
@@ -501,7 +501,7 @@ export const helpArticles = [
       "wrong item",
     ],
     lastReviewed: "July 16, 2026",
-    relatedSlugs: ["verification-documents", "ads-and-credits"],
+    relatedSlugs: ["verification-documents", "seller-payouts-payment-safety", "ads-and-credits"],
     slug: "merch-products-orders",
     steps: [
       "Open Account and choose Merch tools.",
@@ -529,6 +529,77 @@ export const helpArticles = [
       },
     ],
     title: "How to set up Merch products and handle orders",
+  },
+  {
+    category: "Merch And Stuff",
+    description:
+      "Understand seller payout setup, checkout readiness, TTC fees, fulfillment review, refunds, and why production money stays gated until policy review is complete.",
+    faqs: [
+      {
+        answer:
+          "Verified artists, studios, vendors, and official TTC sellers can use the hosted payout setup when seller tools are available for their account. TTC forms should never ask for raw bank, routing, card, or debit payout credentials.",
+        question: "Who can set up seller payouts?",
+      },
+      {
+        answer:
+          "Checkout can stay closed when the seller is not verified, payout setup is incomplete, the product still needs review, buyer-support details are missing, inventory is unavailable, or payment/refund/dispute rules still require review.",
+        question: "Why is checkout not open on my product?",
+      },
+      {
+        answer:
+          "TTC records a small platform fee where checkout is available. The buyer should see fee-related checkout guidance before paying, and the seller/admin views should keep payment status and order status clear.",
+        question: "How are TTC fees handled?",
+      },
+      {
+        answer:
+          "Refunds and disputes stay in private support review during launch. Support checks the order, fulfillment proof, buyer reason, payment status, and safety/moderation issues before any decision.",
+        question: "How do refunds and disputes affect payouts?",
+      },
+      {
+        answer:
+          "No. Use the hosted payout setup flow only. Never send bank, routing, card, debit, tax, or identity documents through public comments, DMs, profile fields, or screenshots.",
+        question: "Should I send payout details to support?",
+      },
+    ],
+    keywords: [
+      "bank",
+      "checkout closed",
+      "dispute",
+      "fees",
+      "merchant",
+      "payment safety",
+      "payout",
+      "payouts",
+      "refund",
+      "seller payout",
+      "seller readiness",
+    ],
+    lastReviewed: "July 17, 2026",
+    relatedSlugs: ["merch-products-orders", "ads-and-credits", "booking-appointments", "privacy-safety-support"],
+    slug: "seller-payouts-payment-safety",
+    steps: [
+      "Finish profile setup, email confirmation, 18+ confirmation, and artist/studio/vendor verification before expecting seller payout tools.",
+      "Create or update Merch products with clear product media, inventory, ship-from region, fulfillment notes, and return/refund expectations.",
+      "Use the hosted seller payout setup flow from Account when eligible. TTC stores readiness status only, not raw payout credentials.",
+      "Watch the payout status chip in Account and seller/admin review areas. A product can remain closed until seller payout readiness and product review both pass.",
+      "Fulfill paid orders only after payment is marked paid and the item is shipped, ready for pickup, or otherwise handed off according to the product notes.",
+      "Use Support for refund, dispute, package, seller non-delivery, or payout-readiness questions. Include the product or order link, but keep private payment credentials out of messages and screenshots.",
+    ],
+    tutorialMedia: [
+      {
+        description:
+          "Show the Account seller payout card, readiness chips, and hosted setup button without exposing private payout details.",
+        kind: "screenshot",
+        title: "Seller payout readiness",
+      },
+      {
+        description:
+          "Short clip of checking product review, payout readiness, order status, and the Help guide before contacting support.",
+        kind: "short_clip",
+        title: "Payment safety walkthrough",
+      },
+    ],
+    title: "Seller payouts and payment safety",
   },
   {
     category: "Posting And Safety",

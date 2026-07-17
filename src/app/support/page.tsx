@@ -96,6 +96,11 @@ const guideLinks = [
     href: "/help/merch-products-orders",
     label: "Merch guide",
   },
+  {
+    body: "Hosted payout setup, checkout readiness, fees, refunds, disputes, and payment safety.",
+    href: "/help/seller-payouts-payment-safety",
+    label: "Seller payouts",
+  },
 ] as const;
 
 export default function SupportPage() {
