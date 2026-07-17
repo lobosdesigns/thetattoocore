@@ -58,6 +58,7 @@ const routes = [
   { path: "/privacy", textIncludes: "support@thetattoocore.com", titleIncludes: "Privacy" },
   { path: "/terms", textIncludes: "visible nudity is not allowed", titleIncludes: "Terms" },
   { path: "/search?q=ceocore", textIncludes: "@ceocore", titleIncludes: "Search" },
+  { path: "/messages?to=tattedhotlegs", textIncludes: "Sign in", titleIncludes: "Sign in" },
   { path: "/u/ceocore", textIncludes: "@ceocore", titleIncludes: "CEOCore" },
   {
     path: "/u/ceocore?profile_4u=50&profile_gossip=50&profile_stuff=50&profile_gigs=50&profile_merch=50#profile-4u",
