@@ -148,6 +148,8 @@ const checks = [
   { path: "/admin/content?status=hidden", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/content?type=help_article_comment&status=pending_review", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/data-requests", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  { path: "/admin/data-requests?status=pending", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  { path: "/admin/data-requests?q=ceocore", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/gigs", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/mail-settings", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/media-ops", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },

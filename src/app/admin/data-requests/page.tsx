@@ -21,9 +21,18 @@ type AccountDeletionRequest = {
   reviewerNote: string | null;
   status: "pending" | "reviewing" | "completed" | "rejected" | "cancelled";
 };
+type DataRequestStatus = AccountDeletionRequest["status"] | "all";
 
 const moderateRoles: UserRole[] = ["moderator", "admin", "owner"];
 const pageSize = 50;
+const dataRequestStatuses = [
+  "all",
+  "pending",
+  "reviewing",
+  "completed",
+  "rejected",
+  "cancelled",
+] as const;
 
 export const metadata: Metadata = {
   robots: {
@@ -40,8 +49,49 @@ function pageNumber(value: string | string[] | undefined) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 }
 
-function pageHref(page: number) {
-  return `/admin/data-requests?page=${page}`;
+function singleParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function cleanQuery(value: string | string[] | undefined) {
+  return (singleParam(value) ?? "").trim().slice(0, 80);
+}
+
+function filterValue<const T extends readonly string[]>(
+  value: string | string[] | undefined,
+  allowed: T,
+): T[number] {
+  const rawValue = singleParam(value);
+
+  return allowed.includes(rawValue ?? "") ? (rawValue as T[number]) : allowed[0];
+}
+
+function dataRequestFilters({
+  query,
+  status,
+}: {
+  query?: string | string[];
+  status?: string | string[];
+}) {
+  return {
+    query: cleanQuery(query),
+    status: filterValue(status, dataRequestStatuses) as DataRequestStatus,
+  };
+}
+
+function pageHref(
+  page: number,
+  filters: ReturnType<typeof dataRequestFilters> = {
+    query: "",
+    status: "all",
+  },
+) {
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  if (filters.status !== "all") params.set("status", filters.status);
+  if (filters.query) params.set("q", filters.query);
+
+  return `/admin/data-requests?${params.toString()}`;
 }
 
 function timeAgo(value: string) {
@@ -76,10 +126,12 @@ function accountDeletionStatusClass(status: AccountDeletionRequest["status"]) {
 
 function Pagination({
   currentPage,
+  filters,
   hasNextPage,
   totalPages,
 }: {
   currentPage: number;
+  filters: ReturnType<typeof dataRequestFilters>;
   hasNextPage: boolean;
   totalPages: number;
 }) {
@@ -96,7 +148,7 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
           }`}
-          href={pageHref(Math.max(1, currentPage - 1))}
+          href={pageHref(Math.max(1, currentPage - 1), filters)}
         >
           <ChevronLeft className="size-4" />
           Previous 50
@@ -108,7 +160,7 @@ function Pagination({
               ? "pointer-events-none border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] text-[color-mix(in_srgb,var(--muted-strong)_70%,transparent)]"
               : "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
           }`}
-          href={pageHref(currentPage + 1)}
+          href={pageHref(currentPage + 1, filters)}
         >
           Next 50
           <ChevronRight className="size-4" />
@@ -120,9 +172,11 @@ function Pagination({
 
 function AccountDeletionRequestCard({
   currentPage,
+  filters,
   request,
 }: {
   currentPage: number;
+  filters: ReturnType<typeof dataRequestFilters>;
   request: AccountDeletionRequest;
 }) {
   const isOpen = request.status === "pending" || request.status === "reviewing";
@@ -162,7 +216,7 @@ function AccountDeletionRequestCard({
       {isOpen ? (
         <form action={updateAccountDeletionRequest} className="mt-4 space-y-2">
           <input name="request_id" type="hidden" value={request.id} />
-          <input name="return_to" type="hidden" value={pageHref(currentPage)} />
+          <input name="return_to" type="hidden" value={pageHref(currentPage, filters)} />
           <input
             className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
             maxLength={500}
@@ -210,9 +264,18 @@ function AccountDeletionRequestCard({
 export default async function AdminDataRequestsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string; page?: string | string[] }>;
+  searchParams: Promise<{
+    message?: string;
+    page?: string | string[];
+    q?: string | string[];
+    status?: string | string[];
+  }>;
 }) {
   const params = await searchParams;
+  const filters = dataRequestFilters({
+    query: params.q,
+    status: params.status,
+  });
   const currentPage = pageNumber(params.page);
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
@@ -234,13 +297,39 @@ export default async function AdminDataRequestsPage({
     redirect("/admin");
   }
 
-  const { count, data: requestRows } = await supabase
+  let requestsQuery = supabase
     .from("account_deletion_requests")
     .select(
       "id, reason, status, reviewer_note, requested_at, reviewed_at, profiles:profiles!account_deletion_requests_profile_id_fkey(display_name, username)",
       { count: "exact" },
     )
-    .in("status", ["pending", "reviewing", "completed", "rejected", "cancelled"])
+    .in("status", ["pending", "reviewing", "completed", "rejected", "cancelled"]);
+
+  if (filters.status !== "all") {
+    requestsQuery = requestsQuery.eq("status", filters.status);
+  }
+
+  if (filters.query) {
+    const searchTerm = filters.query.replace(/[(),%]/g, " ").trim();
+    if (searchTerm) {
+      const { data: matchingProfiles } = await supabase
+        .from("profiles")
+        .select("id")
+        .or(`username.ilike.%${searchTerm}%,display_name.ilike.%${searchTerm}%`)
+        .limit(50)
+        .returns<{ id: string }[]>();
+      const profileIds = (matchingProfiles ?? []).map((profileRow) => profileRow.id);
+      const searchClauses = [`reason.ilike.%${searchTerm}%`];
+
+      if (profileIds.length) {
+        searchClauses.push(`profile_id.in.(${profileIds.join(",")})`);
+      }
+
+      requestsQuery = requestsQuery.or(searchClauses.join(","));
+    }
+  }
+
+  const { count, data: requestRows } = await requestsQuery
     .order("requested_at", { ascending: false })
     .range(from, to)
     .returns<
@@ -312,6 +401,52 @@ export default async function AdminDataRequestsPage({
           </p>
         ) : null}
 
+        <form
+          action="/admin/data-requests"
+          className="mb-4 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4"
+        >
+          <p className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
+            Filter data requests
+          </p>
+          <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
+            <label className="grid gap-1 text-sm font-semibold">
+              Search
+              <input
+                className="min-h-11 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)]"
+                defaultValue={filters.query}
+                maxLength={80}
+                name="q"
+                placeholder="Username, display name, or reason"
+              />
+            </label>
+            <label className="grid gap-1 text-sm font-semibold">
+              Status
+              <select
+                className="min-h-11 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)]"
+                defaultValue={filters.status}
+                name="status"
+              >
+                {dataRequestStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {status === "all" ? "All statuses" : accountDeletionStatusLabel(status)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="flex gap-2">
+              <button className="h-11 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
+                Apply
+              </button>
+              <Link
+                className="flex h-11 items-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold"
+                href="/admin/data-requests"
+              >
+                Clear
+              </Link>
+            </div>
+          </div>
+        </form>
+
         <div className="mb-4 grid gap-3 sm:grid-cols-4">
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
             <p className="text-sm text-[var(--muted-strong)]">Requests</p>
@@ -347,6 +482,7 @@ export default async function AdminDataRequestsPage({
 
         <Pagination
           currentPage={currentPage}
+          filters={filters}
           hasNextPage={hasNextPage}
           totalPages={totalPages}
         />
@@ -356,6 +492,7 @@ export default async function AdminDataRequestsPage({
             {requests.map((request) => (
               <AccountDeletionRequestCard
                 currentPage={currentPage}
+                filters={filters}
                 key={request.id}
                 request={request}
               />
@@ -370,6 +507,7 @@ export default async function AdminDataRequestsPage({
         <div className="mt-4">
           <Pagination
             currentPage={currentPage}
+            filters={filters}
             hasNextPage={hasNextPage}
             totalPages={totalPages}
           />

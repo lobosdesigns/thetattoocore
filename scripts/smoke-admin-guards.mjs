@@ -184,6 +184,20 @@ const checks = [
       !adminDataRequests.includes(">{request.status}</span>"),
   },
   {
+    label: "admin data requests can filter status and search while preserving actions",
+    ok:
+      adminDataRequests.includes("function dataRequestFilters") &&
+      adminDataRequests.includes("Filter data requests") &&
+      adminDataRequests.includes("Username, display name, or reason") &&
+      adminDataRequests.includes("requestsQuery = requestsQuery.eq(\"status\", filters.status)") &&
+      adminDataRequests.includes(".from(\"profiles\")") &&
+      adminDataRequests.includes("profile_id.in.") &&
+      adminDataRequests.includes("pageHref(currentPage, filters)") &&
+      publicSmoke.includes('path: "/admin/data-requests?status=pending"') &&
+      publicSmoke.includes('path: "/admin/data-requests?q=ceocore"') &&
+      productPlan.includes("Admin Data Requests supports 50-item pagination plus status filters and username/reason search"),
+  },
+  {
     label: "admin reports can filter long queues while preserving pagination",
     ok:
       adminReports.includes("function reportFilters") &&
