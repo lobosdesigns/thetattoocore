@@ -318,6 +318,7 @@
 - Headless mobile browser QA on July 16, 2026 at 390px passed after the public-copy cleanup deploy, including auth, support/help/legal, search/profile, missing-detail fallback, Merch storefront, checkout-success, and live public sample detail routes.
 - Public and mobile route smoke passed on July 16, 2026 after no-visible-nudity policy copy moved from launch-phase phrasing to current standing policy wording across login, signup/profile setup, Help, Support, Privacy, Terms, Stories, and admin review surfaces. Live deploy version `5735761f-cdaf-4c4c-a974-89dcd947aa86` passed public route smoke and 390px mobile browser smoke.
 - Full verification on July 16, 2026 passed after the no-visible-nudity policy copy deploy and store/screenshot prep wording cleanup: lint, production build, hydration/media/content/share/profile/admin/story/DM/booking/payment/PWA/native/store/security/theme/docs guards, and live public route smoke all passed.
+- Public and mobile route smoke passed on July 16, 2026 after DM gained a dedicated inbox thread search for username, display name, account type, city, region, or recent message text, with search-aware Load more links and preserved logged-out return paths. Live deploy version `b89272bc-1a82-4ed4-8e31-34eff18ba358` passed public route smoke and 390px mobile browser smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
