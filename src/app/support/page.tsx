@@ -102,6 +102,11 @@ const guideLinks = [
     label: "Privacy and safety",
   },
   {
+    body: "4U, Gossip, Stuff, Gigs, Stories, DMs, comments, reports, blocks, and safe media rules.",
+    href: "/help/posting-stories-dms",
+    label: "Posting and Stories",
+  },
+  {
     body: "Artist, studio, and vendor document review basics.",
     href: "/help/verification-documents",
     label: "Verification guide",

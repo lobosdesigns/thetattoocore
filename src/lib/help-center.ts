@@ -939,8 +939,9 @@ export const helpArticles = [
     ],
     tutorialMedia: [
       {
+        assetSrc: "/screenshots/mobile-help-support.png",
         description:
-          "Show report, block, privacy, and data-request controls with dummy profiles and safe sample content only.",
+          "Show the Help and Support path with dummy profiles and safe sample content only before capturing report, block, privacy, and data-request controls.",
         kind: "screenshot",
         title: "Privacy and support controls",
       },

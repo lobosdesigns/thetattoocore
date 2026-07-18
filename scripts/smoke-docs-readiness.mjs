@@ -313,6 +313,7 @@ const checks = [
       helpCenterData.includes('assetSrc: "/screenshots/mobile-4u-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-stories-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-gossip-safe.png"') &&
+      helpCenterData.includes("Privacy and support controls") &&
       helpCenterData.includes("Signup to first Account save") &&
       helpCenterData.includes("Admin beta go/no-go") &&
       helpCenterData.includes("Two-user DM and notification pass") &&
