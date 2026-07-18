@@ -294,8 +294,12 @@ const checks = [
       helpArticlePage.includes("Capture with safe sample content only.") &&
       helpArticlePage.includes("No visual walkthrough is queued") &&
       helpArticlePage.includes("const tutorialMedia = article.tutorialMedia ?? []") &&
+      helpArticlePage.includes('"assetSrc" in item && typeof item.assetSrc === "string"') &&
       helpArticlePage.includes('item.kind === "short_clip" ? "Short video" : "Screenshot"') &&
-      helpArticlePage.includes('item.kind === "screenshot" && "assetSrc" in item && item.assetSrc') &&
+      helpArticlePage.includes('item.kind === "screenshot" && assetSrc') &&
+      helpArticlePage.includes('item.kind === "short_clip" && assetSrc') &&
+      helpArticlePage.includes('controlsList="nodownload"') &&
+      helpArticlePage.includes('preload="metadata"') &&
       helpArticlePage.includes("safe tutorial screenshot") &&
       helpArticlePage.includes("ask a guide question") &&
       helpActions.includes("Question submitted for moderation.") &&

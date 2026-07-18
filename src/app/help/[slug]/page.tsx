@@ -260,38 +260,58 @@ export default async function HelpArticlePage({
             </p>
             {tutorialMedia.length ? (
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {tutorialMedia.map((item) => (
-                  <article
-                    className="overflow-hidden rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)]"
-                    key={`${item.kind}-${item.title}`}
-                  >
-                    {item.kind === "screenshot" && "assetSrc" in item && item.assetSrc ? (
-                      <div className="border-b border-[var(--card-rim)] bg-[var(--paper)] p-3">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          alt={`${item.title} safe tutorial screenshot`}
-                          className="mx-auto aspect-[9/16] max-h-72 w-auto rounded-md border border-[var(--card-rim)] object-cover shadow-sm"
-                          loading="lazy"
-                          src={item.assetSrc}
-                        />
+                {tutorialMedia.map((item) => {
+                  const assetSrc =
+                    "assetSrc" in item && typeof item.assetSrc === "string"
+                      ? item.assetSrc
+                      : null;
+
+                  return (
+                    <article
+                      className="overflow-hidden rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)]"
+                      key={`${item.kind}-${item.title}`}
+                    >
+                      {item.kind === "screenshot" && assetSrc ? (
+                        <div className="border-b border-[var(--card-rim)] bg-[var(--paper)] p-3">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            alt={`${item.title} safe tutorial screenshot`}
+                            className="mx-auto aspect-[9/16] max-h-72 w-auto rounded-md border border-[var(--card-rim)] object-cover shadow-sm"
+                            loading="lazy"
+                            src={assetSrc}
+                          />
+                        </div>
+                      ) : null}
+                      {item.kind === "short_clip" && assetSrc ? (
+                        <div className="border-b border-[var(--card-rim)] bg-black p-3">
+                          <video
+                            aria-label={`${item.title} safe tutorial short video`}
+                            className="mx-auto aspect-[9/16] max-h-72 w-auto rounded-md border border-[var(--card-rim)] bg-black object-cover shadow-sm"
+                            controls
+                            controlsList="nodownload"
+                            playsInline
+                            preload="metadata"
+                            src={assetSrc}
+                          />
+                        </div>
+                      ) : null}
+                      <div className="p-3">
+                        <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
+                          {item.kind === "short_clip" ? "Short video" : "Screenshot"}
+                        </p>
+                        <h3 className="mt-1 text-sm font-bold text-[var(--text)]">
+                          {item.title}
+                        </h3>
+                        <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                          {item.description}
+                        </p>
+                        <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[var(--background)] px-3 py-2 text-xs font-semibold leading-5 text-[var(--muted-strong)]">
+                          Capture with safe sample content only.
+                        </p>
                       </div>
-                    ) : null}
-                    <div className="p-3">
-                      <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
-                        {item.kind === "short_clip" ? "Short video" : "Screenshot"}
-                      </p>
-                      <h3 className="mt-1 text-sm font-bold text-[var(--text)]">
-                        {item.title}
-                      </h3>
-                      <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                        {item.description}
-                      </p>
-                      <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[var(--background)] px-3 py-2 text-xs font-semibold leading-5 text-[var(--muted-strong)]">
-                        Capture with safe sample content only.
-                      </p>
-                    </div>
-                  </article>
-                ))}
+                    </article>
+                  );
+                })}
               </div>
             ) : (
               <p className="mt-4 rounded-md border border-dashed border-[var(--card-rim)] bg-[var(--surface-subtle)] p-3 text-sm leading-6 text-[var(--muted)]">
