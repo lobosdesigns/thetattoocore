@@ -137,6 +137,16 @@ function profileTabFromHash(hash: string): ProfileTab {
   return "profile";
 }
 
+function profileHashForTab(tab: ProfileTab) {
+  if (tab === "about") return "#profile-about-settings";
+  if (tab === "location") return "#location-settings";
+  if (tab === "appearance") return "#appearance-settings";
+  if (tab === "privacy") return "#privacy-settings";
+  if (tab === "notifications") return "#notification-settings";
+
+  return "#profile-settings";
+}
+
 const alertSettingNotes = [
   "Current switches control in-app notifications and unread badges.",
   "The same choices can guide important email and installed-app alerts as those features open up.",
@@ -201,7 +211,10 @@ export function ProfileForm({
                 : "ttc-surface"
             }`}
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => {
+              setActiveTab(tab);
+              window.history.replaceState(null, "", profileHashForTab(tab));
+            }}
             type="button"
           >
             {label}

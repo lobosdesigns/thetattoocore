@@ -136,6 +136,44 @@ const accountNavItems = [
   ["#data-settings", "Data"],
   ["/help", "Help"],
 ] as const;
+const accountSectionCards = [
+  {
+    body: "Name, profile photo, banner, bio, social links, shop link, city, language, theme, privacy, and alerts.",
+    href: "#profile-settings",
+    label: "Profile and settings",
+    status: "Tabbed",
+  },
+  {
+    body: "Artist, studio, or vendor proof, private document history, review notes, and resubmission guidance.",
+    href: "#verification-settings",
+    label: "Verification",
+    status: "Private review",
+  },
+  {
+    body: "Requests, appointment types, slot templates, blackout dates, deposits, calendar files, and refund review.",
+    href: "#booking-settings",
+    label: "Bookings",
+    status: "25 at a time",
+  },
+  {
+    body: "Buyer orders, seller sales, payout readiness, fulfillment, support handoffs, and product review status.",
+    href: "#order-settings",
+    label: "Merch and payouts",
+    status: "Seller tools",
+  },
+  {
+    body: "Campaigns, placements, review rules, ad credit balance, payment status, and performance counts.",
+    href: "#advertising-settings",
+    label: "Advertising",
+    status: "Credit-ready",
+  },
+  {
+    body: "Account deletion requests, private data controls, safety links, and self-serve tutorials.",
+    href: "#data-settings",
+    label: "Data and help",
+    status: "Support",
+  },
+] as const;
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 const slotIntervals = [15, 20, 30, 45, 60, 90, 120] as const;
 const bookingCalendarPrepItems = [
@@ -1082,12 +1120,20 @@ export default async function AccountPage({
                   {payoutSetupNotice.body}
                 </p>
               </div>
-              <a
-                className="inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] px-4 font-bold text-[var(--background)]"
-                href="#order-settings"
-              >
-                Open Orders and payouts
-              </a>
+              <div className="flex flex-wrap gap-2">
+                <a
+                  className="inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] px-4 font-bold text-[var(--background)]"
+                  href="#order-settings"
+                >
+                  Open payouts
+                </a>
+                <Link
+                  className="inline-flex h-10 shrink-0 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-4 font-bold text-[var(--foreground)]"
+                  href="/help/seller-payouts-payment-safety"
+                >
+                  Payout help
+                </Link>
+              </div>
             </div>
           </section>
         ) : null}
@@ -1126,9 +1172,43 @@ export default async function AccountPage({
           profile={profile}
         />
 
+        <section className="ttc-card mb-4 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-4 backdrop-blur">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-strong)]">
+                Settings directory
+              </p>
+              <h2 className="mt-1 text-xl font-bold">Choose the area you need</h2>
+            </div>
+            <p className="max-w-sm text-sm leading-6 text-[var(--muted-strong)]">
+              Each card jumps to the right section so Account stays usable as
+              bookings, seller tools, ads, and privacy controls grow.
+            </p>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {accountSectionCards.map((item) => (
+              <a
+                className="group rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] p-4 transition hover:border-[color-mix(in_srgb,var(--gold)_72%,var(--card-rim))] hover:bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))]"
+                href={item.href}
+                key={item.label}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-base font-bold">{item.label}</h3>
+                  <span className="shrink-0 rounded-md border border-[color-mix(in_srgb,var(--gold)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] px-2 py-1 text-xs font-bold text-[color-mix(in_srgb,var(--gold)_72%,var(--foreground))]">
+                    {item.status}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
+                  {item.body}
+                </p>
+              </a>
+            ))}
+          </div>
+        </section>
+
         <nav
           aria-label="Account settings"
-          className="no-scrollbar sticky top-0 z-20 mb-4 flex gap-2 overflow-x-auto rounded-md border border-[color-mix(in_srgb,var(--gold)_24%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-2 shadow-[0_18px_42px_rgba(0,0,0,0.14)] backdrop-blur"
+          className="no-scrollbar sticky top-0 z-20 mb-4 flex gap-2 overflow-x-auto rounded-md border border-[color-mix(in_srgb,var(--gold)_24%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] p-2 shadow-[0_18px_42px_rgba(0,0,0,0.14)] backdrop-blur"
         >
           {accountNavItems.map(([href, label]) => (
             <a
@@ -2670,6 +2750,24 @@ export default async function AccountPage({
                 >
                   <p className="font-bold">{payoutSetupNotice.title}</p>
                   <p className="mt-1 text-[var(--muted)]">{payoutSetupNotice.body}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {canSetupSellerPayouts && !sellerPayoutReady ? (
+                      <form action="/api/stripe/connect/onboarding" method="post">
+                        <PendingSubmitButton
+                          className="h-9 rounded-md bg-[var(--foreground)] px-3 text-xs font-bold text-[var(--background)]"
+                          pendingLabel="Opening setup"
+                        >
+                          Retry payout setup
+                        </PendingSubmitButton>
+                      </form>
+                    ) : null}
+                    <Link
+                      className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 text-xs font-bold"
+                      href="/help/seller-payouts-payment-safety"
+                    >
+                      Read payout guide
+                    </Link>
+                  </div>
                   {role && adminRoles.includes(role) && payoutSetupNotice.issue ? (
                     <p className="mt-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_90%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--muted-strong)]">
                       Operator code: {payoutSetupNotice.issue}
