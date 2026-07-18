@@ -210,7 +210,7 @@ export default async function SignupPage({
               >
                 Help Center
               </Link>
-              <AuthLegalLinks />
+              <AuthLegalLinks includeHelp={false} />
             </div>
           </div>
         </div>

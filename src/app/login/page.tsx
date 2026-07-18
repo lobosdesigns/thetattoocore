@@ -167,7 +167,7 @@ export default async function LoginPage({
               >
                 Help Center
               </Link>
-              <AuthLegalLinks />
+              <AuthLegalLinks includeHelp={false} />
             </div>
           </div>
         </div>

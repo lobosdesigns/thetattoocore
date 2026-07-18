@@ -1,6 +1,22 @@
 import Link from "next/link";
 
-export function AuthLegalLinks() {
+export function AuthLegalLinks({ includeHelp = true }: { includeHelp?: boolean }) {
+  if (!includeHelp) {
+    return (
+      <p className="text-center text-xs leading-5 text-[var(--muted-strong)]">
+        Policy details:{" "}
+        <Link className="font-semibold underline" href="/terms">
+          Terms
+        </Link>
+        {" "}and{" "}
+        <Link className="font-semibold underline" href="/privacy">
+          Privacy
+        </Link>
+        .
+      </p>
+    );
+  }
+
   return (
     <p className="text-center text-xs leading-5 text-[var(--muted-strong)]">
       Need help or policy details? Visit{" "}
