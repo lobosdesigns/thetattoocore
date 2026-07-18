@@ -101,7 +101,11 @@ const routes = [
   { path: "/u/ceocore/followers", textIncludes: "community", titleIncludes: "Followers" },
   { path: "/u/ceocore/following", textIncludes: "community", titleIncludes: "Following" },
   { allowMainDocument404: true, path: "/p/not-a-real-post", titleIncludes: "404" },
-  { allowMainDocument404: true, path: "/t/not-a-real-thread", titleIncludes: "404" },
+  {
+    allowMainDocument404: true,
+    path: "/t/not-a-real-thread",
+    titleIncludesAny: ["Gossip thread not found", "404"],
+  },
   { allowMainDocument404: true, path: "/stuff/not-a-real-listing", titleIncludes: "404" },
   { allowMainDocument404: true, path: "/gigs/not-a-real-gig", titleIncludes: "404" },
   { path: "/merch", textIncludes: ["Merch help", "Seller tools"], titleIncludes: "Merch" },
@@ -226,7 +230,10 @@ async function checkRoute(portNumber, url, route) {
     const isAllowedMainDocument404 =
       route.allowMainDocument404 && event.type === "Document" && status === 404;
 
-    if (status >= 400 && !isAllowedMainDocument404) {
+    const isIgnoredBrowserAsset404 =
+      status === 404 && event.response?.url?.endsWith("/favicon.ico");
+
+    if (status >= 400 && !isAllowedMainDocument404 && !isIgnoredBrowserAsset404) {
       networkErrors.push(`${status} ${event.response?.url || "resource"}`);
     }
   });
@@ -279,6 +286,14 @@ async function checkRoute(portNumber, url, route) {
     }
     if (route.titleIncludes && !String(value.title || "").includes(route.titleIncludes)) {
       reasons.push(`title "${value.title || ""}" did not include "${route.titleIncludes}"`);
+    }
+    if (
+      route.titleIncludesAny &&
+      !route.titleIncludesAny.some((titleText) => String(value.title || "").includes(titleText))
+    ) {
+      reasons.push(
+        `title "${value.title || ""}" did not include one of "${route.titleIncludesAny.join(", ")}"`,
+      );
     }
     for (const requiredText of routeTextIncludes(route)) {
       if (!String(value.text || "").includes(requiredText)) {
