@@ -13,6 +13,7 @@ const helpSearchAliases: Record<string, string[]> = {
   bank: ["bank", "payout", "payouts", "seller", "payment"],
   chargeback: ["chargeback", "chargebacks", "dispute", "disputes", "refund", "refunds"],
   chargebacks: ["chargeback", "chargebacks", "dispute", "disputes", "refund", "refunds"],
+  damaged: ["damaged", "damage", "package", "shipping", "refund", "order"],
   dispute: ["dispute", "disputes", "chargeback", "chargebacks", "refund", "refunds"],
   disputes: ["dispute", "disputes", "chargeback", "chargebacks", "refund", "refunds"],
   dm: ["dm", "dms", "message", "messages", "messenger"],
@@ -35,6 +36,8 @@ const helpSearchAliases: Record<string, string[]> = {
   messages: ["message", "messages", "dm", "dms", "messenger"],
   payment: ["payment", "payments", "checkout", "payout", "payouts", "fee", "fees"],
   payments: ["payment", "payments", "checkout", "payout", "payouts", "fee", "fees"],
+  package: ["package", "packages", "shipping", "tracking", "order", "orders", "refund"],
+  packages: ["package", "packages", "shipping", "tracking", "order", "orders", "refund"],
   payout: ["payout", "payouts", "seller", "sellers", "merchant", "payment", "payments"],
   payouts: ["payout", "payouts", "seller", "sellers", "merchant", "payment", "payments"],
   print: ["print", "prints", "art", "merch", "product", "products"],
@@ -45,6 +48,7 @@ const helpSearchAliases: Record<string, string[]> = {
   refunds: ["refund", "refunds", "dispute", "disputes", "chargeback", "chargebacks"],
   seller: ["seller", "sellers", "vendor", "vendors", "merchant", "payout", "payouts"],
   sellers: ["seller", "sellers", "vendor", "vendors", "merchant", "payout", "payouts"],
+  shipping: ["shipping", "ship", "tracking", "package", "packages", "order", "orders"],
   shop: ["shop", "shops", "studio", "studios"],
   shops: ["shop", "shops", "studio", "studios"],
   shirt: ["shirt", "shirts", "tshirt", "tshirts", "apparel", "merch"],
@@ -59,6 +63,7 @@ const helpSearchAliases: Record<string, string[]> = {
   tshirts: ["shirt", "shirts", "tshirt", "tshirts", "apparel", "merch"],
   vendor: ["vendor", "vendors", "seller", "sellers"],
   vendors: ["vendor", "vendors", "seller", "sellers"],
+  wrong: ["wrong", "item", "package", "order", "refund"],
 };
 
 function searchTerms(value: string) {

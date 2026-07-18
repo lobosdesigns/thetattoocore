@@ -330,6 +330,9 @@ const checks = [
       helpSearch.includes("payout") &&
       helpSearch.includes("chargeback") &&
       helpSearch.includes("merchant") &&
+      helpSearch.includes("package") &&
+      helpSearch.includes("shipping") &&
+      helpSearch.includes("wrong") &&
       docs["docs/PRODUCT_PLAN.md"].includes("structured article keywords") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes(
         "Signed-in members can ask deeper questions",
