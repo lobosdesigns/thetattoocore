@@ -311,6 +311,8 @@ const checks = [
       helpCenterData.includes('assetSrc: "/screenshots/mobile-help-support.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-profile-search.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-4u-safe.png"') &&
+      helpCenterData.includes('assetSrc: "/screenshots/mobile-stories-safe.png"') &&
+      helpCenterData.includes('assetSrc: "/screenshots/mobile-gossip-safe.png"') &&
       helpCenterData.includes("Signup to first Account save") &&
       helpCenterData.includes("Admin beta go/no-go") &&
       helpCenterData.includes("Two-user DM and notification pass") &&
@@ -322,6 +324,8 @@ const checks = [
       helpCenterData.includes("Buyer order support path") &&
       helpCenterData.includes("Seller payouts and payment safety") &&
       helpCenterData.includes("Should I send payout details to support?") &&
+      helpCenterData.includes("Stories rail preview") &&
+      helpCenterData.includes("Gossip discussion preview") &&
       helpCenterData.includes("Stories, DMs, and safety controls") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("getting-started guide") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("Launch setup checklist") &&

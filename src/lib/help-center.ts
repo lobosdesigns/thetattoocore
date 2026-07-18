@@ -880,6 +880,20 @@ export const helpArticles = [
         title: "Create button by section",
       },
       {
+        assetSrc: "/screenshots/mobile-stories-safe.png",
+        description:
+          "Show the 24h Stories rail with safe sample content, visible story controls, and no private user data.",
+        kind: "screenshot",
+        title: "Stories rail preview",
+      },
+      {
+        assetSrc: "/screenshots/mobile-gossip-safe.png",
+        description:
+          "Show a safe Gossip discussion preview so testers know where long-form tattoo community posts belong.",
+        kind: "screenshot",
+        title: "Gossip discussion preview",
+      },
+      {
         description:
           "Short clip of creating a Story, sending a DM reply, and using report/block controls with safe sample content.",
         kind: "short_clip",

@@ -1021,7 +1021,16 @@ async function checkPwaManifest() {
     .filter(([field, expected]) => manifest[field] !== expected)
     .map(([field, expected]) => `${field}=${expected}`);
   const requiredIcons = ["/icons/icon-192.png", "/icons/icon-512.png", "/icons/maskable-512.png"];
-  const requiredScreenshots = ["/screenshots/mobile-home.png", "/screenshots/desktop-home.png"];
+  const requiredScreenshots = [
+    "/screenshots/mobile-home.png",
+    "/screenshots/mobile-login-signup.png",
+    "/screenshots/mobile-4u-safe.png",
+    "/screenshots/mobile-stories-safe.png",
+    "/screenshots/mobile-gossip-safe.png",
+    "/screenshots/mobile-profile-search.png",
+    "/screenshots/mobile-help-support.png",
+    "/screenshots/desktop-home.png",
+  ];
   const requiredShortcuts = [
     "/#feed",
     "/#threads",
