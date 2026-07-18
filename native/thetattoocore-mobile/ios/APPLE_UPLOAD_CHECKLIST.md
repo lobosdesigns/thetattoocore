@@ -68,4 +68,4 @@ After upload processing:
 
 This Windows machine cannot run Xcode, CocoaPods, or Apple upload tooling. The upload must happen on the Mac after Apple/MacinCloud sign-in and any 2FA prompts are complete.
 
-On July 18, 2026, Xcode Organizer uploaded iOS version `1.0`, build `3`, to App Store Connect. App Store Connect shows the upload as Processing before it can be attached to the internal TestFlight group.
+On July 18, 2026, Xcode Organizer uploaded iOS version `1.0`, build `3`, to App Store Connect. App Store Connect shows build `1.0 (3)` as attached to the TTC Internal Testers group and available for internal TestFlight testing.

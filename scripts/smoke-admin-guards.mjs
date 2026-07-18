@@ -130,7 +130,7 @@ const checks = [
     label: "admin media ops copy stays launch-safe and avoids raw provider/process wording",
     ok:
       adminMediaOps.includes("const betaQaLaunchChecks = [") &&
-      adminMediaOps.includes("const betaReleaseStatus = [") &&
+      adminMediaOps.includes("const betaReleaseStatus:") &&
       adminMediaOps.includes("const betaNextActions = [") &&
       adminMediaOps.includes("const storeSubmissionChecks = [") &&
       adminMediaOps.includes("const betaEvidencePack = [") &&
@@ -141,6 +141,7 @@ const checks = [
       adminMediaOps.includes("Active internal test") &&
       adminMediaOps.includes("Apple TestFlight") &&
       adminMediaOps.includes("Build 1.0 (3)") &&
+      adminMediaOps.includes("Internal testing") &&
       adminMediaOps.includes("Next beta actions") &&
       adminMediaOps.includes("Beta QA launch checklist") &&
       adminMediaOps.includes("App handoff checklist") &&

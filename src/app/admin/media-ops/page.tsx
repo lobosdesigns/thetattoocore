@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Clock3, Film, ImageIcon, Settings2, ShieldCheck } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Film, ImageIcon, Settings2, ShieldCheck } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { AdminSectionNav } from "../admin-section-nav";
 import { createClient } from "@/lib/supabase/server";
 
@@ -84,7 +85,15 @@ const helpTutorialReadiness = [
   ["Capture rules", "Do not capture private DMs, license documents, real payment data, addresses, visible nudity, owner personal contact details, or unsafe marketplace examples."],
   ["Publishing pass", "After each new tutorial asset is added, run docs, public-route, and 390px mobile smoke before widening beta."],
 ] as const;
-const betaReleaseStatus = [
+type BetaReleaseTone = "blocked" | "ready" | "watch";
+const betaReleaseStatus: {
+  body: string;
+  href: string;
+  icon: LucideIcon;
+  label: string;
+  status: string;
+  tone: BetaReleaseTone;
+}[] = [
   {
     body: "Internal testing release 1 (1.0) is active for the current tester list. Next: install on a real device and run the beta tester checklist.",
     href: "/help/beta-app-testing",
@@ -94,12 +103,12 @@ const betaReleaseStatus = [
     tone: "ready",
   },
   {
-    body: "Build 1.0 (3) uploaded July 18, 2026 at 8:44 AM and is waiting for processing to finish before tester assignment.",
+    body: "Build 1.0 (3) is attached to the TTC Internal Testers group and ready for real-device auth, posting, DM, and checkout-return smoke.",
     href: "/help/beta-app-testing",
-    icon: Clock3,
+    icon: CheckCircle2,
     label: "Apple TestFlight",
-    status: "Processing",
-    tone: "watch",
+    status: "Internal testing",
+    tone: "ready",
   },
   {
     body: "Keep real purchases gated until seller payouts, refunds, disputes, tax/shipping rules, hosted checkout returns, and app-store policy review pass.",
@@ -111,7 +120,7 @@ const betaReleaseStatus = [
   },
 ] as const;
 const betaNextActions = [
-  "Attach iOS build 1.0 (3) to TTC Internal Testers after Apple processing completes.",
+  "Install iOS build 1.0 (3) from TestFlight and Android release 1 (1.0) from internal testing on real devices.",
   "Run real-device auth checks: login, signup, email confirmation, reset password, and support/legal links stay inside the app.",
   "Run two-user DM, notifications, posting, Stories, comments, profile edit, verification upload, Merch browsing, booking request, and test checkout passes.",
   "Save safe screenshots or short clips for any failed flow before changing code so the fix can be retested against the exact issue.",
