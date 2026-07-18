@@ -4,6 +4,7 @@
 
 - TheTattooCore is web/PWA-first at `https://thetattoocore.com/login`.
 - Native Android and iOS beta-wrapper work is starting from `native/thetattoocore-mobile`.
+- Android v1 internal-test upload bundle is signed and staged on the Desktop as `TheTattooCore-app-release-v1-signed.aab`; Google Play internal testing release `1 (1.0)` is active for the existing internal tester list.
 - PWA manifest, icons, splash assets, service worker, support URL, privacy URL, and terms URL are ready for the beta wrapper path.
 - Native wrapper prep lives in `docs/NATIVE_WRAPPER_PREP.md`; follow it before adding native permissions, deep links, checkout handling, push, or store-review changes.
 - Draft store listing copy lives in `docs/STORE_LISTING_DRAFT.md`; review it against current store policies before submission.
