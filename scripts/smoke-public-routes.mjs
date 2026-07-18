@@ -602,7 +602,7 @@ const checks = [
       "When should I report something?",
       "How do account deletion requests work?",
       "Support",
-      "Account data controls",
+      "Settings data controls",
       "Related Guides",
       "FAQPage",
       "Last reviewed July 15, 2026",
