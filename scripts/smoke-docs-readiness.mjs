@@ -19,6 +19,7 @@ const docs = {
   "docs/DATA_SAFETY_PREP.md": readFileSync("docs/DATA_SAFETY_PREP.md", "utf8"),
 };
 const packageJson = readFileSync("package.json", "utf8");
+const screenshotGenerator = readFileSync("scripts/generate-safe-store-screenshots.mjs", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const adminPage = readFileSync("src/app/admin/page.tsx", "utf8");
 const helpArticlePage = readFileSync("src/app/help/[slug]/page.tsx", "utf8");
@@ -160,7 +161,10 @@ const checks = [
       docs["docs/SCREENSHOT_PREP.md"].includes("real payment data") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("infrastructure names") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("no-visible-nudity rules") &&
-      docs["docs/SCREENSHOT_PREP.md"].includes("no-AI stance"),
+      docs["docs/SCREENSHOT_PREP.md"].includes("no-AI stance") &&
+      screenshotGenerator.includes("mobile-login-signup.png") &&
+      screenshotGenerator.includes("mobile-help-support.png") &&
+      screenshotGenerator.includes("Visible nudity is not allowed"),
   },
   {
     label: "age rating prep avoids visible provider names",

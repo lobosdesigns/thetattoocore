@@ -3,6 +3,12 @@
 Current generated safe screenshots:
 
 - `public/screenshots/mobile-home.png`
+- `public/screenshots/mobile-login-signup.png`
+- `public/screenshots/mobile-4u-safe.png`
+- `public/screenshots/mobile-stories-safe.png`
+- `public/screenshots/mobile-gossip-safe.png`
+- `public/screenshots/mobile-profile-search.png`
+- `public/screenshots/mobile-help-support.png`
 - `public/screenshots/desktop-home.png`
 
 These generated placeholders are TTC-branded, rights-safe, and show the current
@@ -11,13 +17,11 @@ direct messenger shortcut, not as a main swipe/feed column.
 
 Still needed before public store review:
 
-- Phone login/signup screenshot with no personal data.
-- Phone 4U screenshot with safe sample media only.
-- Phone Stories screenshot with safe sample media only.
-- Phone Gossip screenshot with safe sample content only.
-- Phone profile/search screenshot using safe test profiles.
-- Phone Help/Support screenshot showing the Merch guide shortcut and self-service safety/support topics.
+- Replace generated placeholders with final real-device screenshots after
+  mobile QA, using safe sample accounts and rights-cleared non-sensitive media.
 - Optional tablet screenshots if the store console requests them.
+- Merch guide shortcut screenshot showing where sellers can find setup help,
+  without showing seller payout setup details.
 
 Rules:
 

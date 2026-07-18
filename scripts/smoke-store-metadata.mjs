@@ -63,6 +63,10 @@ const checks = [
     label: "store screenshot inventory blocks unsafe review images",
     ok:
       source.screenshotInventory.includes("public/screenshots/mobile-home.png") &&
+      source.screenshotInventory.includes("public/screenshots/mobile-login-signup.png") &&
+      source.screenshotInventory.includes("public/screenshots/mobile-stories-safe.png") &&
+      source.screenshotInventory.includes("public/screenshots/mobile-help-support.png") &&
+      source.screenshotInventory.includes("Replace generated placeholders with final real-device screenshots") &&
       source.screenshotInventory.includes("4U, Gossip, Stuff, Gigs, and Merch") &&
       source.screenshotInventory.includes("DM should appear as a") &&
       source.screenshotInventory.includes("not as a main swipe/feed column") &&

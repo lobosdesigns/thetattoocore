@@ -37,6 +37,48 @@
       "type": "image/png"
     },
     {
+      "form_factor": "narrow",
+      "label": "TheTattooCore mobile sign-in and signup path",
+      "sizes": "540x960",
+      "src": "/screenshots/mobile-login-signup.png",
+      "type": "image/png"
+    },
+    {
+      "form_factor": "narrow",
+      "label": "TheTattooCore safe 4U post preview",
+      "sizes": "540x960",
+      "src": "/screenshots/mobile-4u-safe.png",
+      "type": "image/png"
+    },
+    {
+      "form_factor": "narrow",
+      "label": "TheTattooCore Stories preview",
+      "sizes": "540x960",
+      "src": "/screenshots/mobile-stories-safe.png",
+      "type": "image/png"
+    },
+    {
+      "form_factor": "narrow",
+      "label": "TheTattooCore Gossip discussion preview",
+      "sizes": "540x960",
+      "src": "/screenshots/mobile-gossip-safe.png",
+      "type": "image/png"
+    },
+    {
+      "form_factor": "narrow",
+      "label": "TheTattooCore profile and search preview",
+      "sizes": "540x960",
+      "src": "/screenshots/mobile-profile-search.png",
+      "type": "image/png"
+    },
+    {
+      "form_factor": "narrow",
+      "label": "TheTattooCore Help Center preview",
+      "sizes": "540x960",
+      "src": "/screenshots/mobile-help-support.png",
+      "type": "image/png"
+    },
+    {
       "form_factor": "wide",
       "label": "TheTattooCore desktop community preview",
       "sizes": "1280x720",
