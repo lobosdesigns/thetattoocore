@@ -31,6 +31,11 @@ const routes = [
   { path: "/support", textIncludes: "support@thetattoocore.com", titleIncludes: "Support" },
   { path: "/help", textIncludes: "Search Help Center", titleIncludes: "Help Center" },
   {
+    path: "/help/beta-tester-checklist",
+    textIncludes: ["Beta tester checklist", "What counts as a beta blocker?"],
+    titleIncludes: "Help Center",
+  },
+  {
     path: "/help/booking-appointments",
     textIncludes: "How to create appointment types, time slots, and booking deposits",
     titleIncludes: "Help Center",
