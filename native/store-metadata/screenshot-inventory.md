@@ -5,6 +5,10 @@ Current generated safe screenshots:
 - `public/screenshots/mobile-home.png`
 - `public/screenshots/desktop-home.png`
 
+These generated placeholders are TTC-branded, rights-safe, and show the current
+main content columns: 4U, Gossip, Stuff, Gigs, and Merch. DM should appear as a
+direct messenger shortcut, not as a main swipe/feed column.
+
 Still needed before public store review:
 
 - Phone login/signup screenshot with no personal data.
