@@ -37,7 +37,7 @@ const sections = [
   },
   {
     body:
-      "The Help Center has FAQ and tutorial topics for getting started, bookings, ads, Merch setup, verification, Stuff, Gigs, Stories, DMs, search, saved items, and account settings. Email support with the feature name and where you got stuck when a private account issue needs review.",
+      "The Help Center has FAQ and tutorial topics for getting started, beta app testing, bookings, ads, Merch setup, verification, Stuff, Gigs, Stories, DMs, search, saved items, and account settings. Email support with the feature name and where you got stuck when a private account issue needs review.",
     title: "How-To Library",
   },
 ] as const;

@@ -316,6 +316,7 @@ const checks = [
       readFileSync("src/app/help/page.tsx", "utf8").includes("Screenshot and short-video priorities") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("Safe sample accounts only") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("Merch and payouts") &&
+      helpSearch.includes("Search getting started, beta app, bookings") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("launchGuideSlugs") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes('"beta-tester-checklist"') &&
       readFileSync("src/app/help/page.tsx", "utf8").includes('"beta-app-testing"') &&
@@ -359,6 +360,7 @@ const checks = [
       adminPage.includes('action: "Open Help"') &&
       adminPage.includes("Self-serve tutorials and guide questions") &&
       supportPage.includes("Launch setup checklist") &&
+      supportPage.includes("beta app testing") &&
       supportPage.includes("Priority setup guides for profile") &&
       supportPage.includes('href: "/help/beta-app-testing"') &&
       supportPage.includes('href: "/help/merch-products-orders"') &&
