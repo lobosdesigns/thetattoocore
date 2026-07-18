@@ -308,7 +308,7 @@ export default async function NotificationsPage({
             <div className="grid min-w-0 grid-cols-1 gap-2 min-[380px]:grid-cols-2 sm:flex sm:flex-none sm:items-center sm:justify-end">
               <Link
                 className="ttc-surface flex h-10 min-w-0 items-center justify-center gap-2 rounded-md border px-3 text-sm font-semibold shadow-sm"
-                href="/account#notification-settings"
+                href="/settings/notifications"
               >
                 <Settings className="size-4" />
                 <span>Settings</span>
