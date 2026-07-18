@@ -62,6 +62,8 @@ Deep-link wiring is started in the wrapper. Before public release, add the final
 domain association files using the signed Android certificate fingerprint and
 the Apple team/app identifier, then confirm profile, post, Story, Gossip, Stuff,
 Gigs, Merch, booking, support, privacy, and terms links open inside the app.
+iOS universal links are deferred for the first TestFlight build until the Apple
+provisioning profile includes the Associated Domains capability.
 
 ## Local Build Commands
 

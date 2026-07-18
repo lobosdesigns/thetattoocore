@@ -55,17 +55,14 @@ const checks = [
       source.iosUploadChecklist.includes("Confirm login, signup, forgot password, reset password, and email confirmation stay inside the app WebView"),
   },
   {
-    label: "native wrapper declares TTC shared-link routing",
+    label: "native wrapper declares TTC shared-link routing with iOS links deferred until profile support",
     ok:
       source.androidManifest.includes('android.intent.action.VIEW') &&
       source.androidManifest.includes('android.intent.category.BROWSABLE') &&
       source.androidManifest.includes('android:host="thetattoocore.com"') &&
       source.androidManifest.includes('android:host="www.thetattoocore.com"') &&
-      source.iosEntitlements.includes("com.apple.developer.associated-domains") &&
-      source.iosEntitlements.includes("applinks:thetattoocore.com") &&
-      source.iosEntitlements.includes("applinks:www.thetattoocore.com") &&
-      source.iosProject.includes("CODE_SIGN_ENTITLEMENTS = App/App.entitlements") &&
       source.nativePrep.includes("Deep-link wiring is started in the wrapper") &&
+      source.nativePrep.includes("iOS universal links are deferred for the first TestFlight build") &&
       source.mobileRunbook.includes("Confirm public shared links open in the wrapper"),
   },
   {
