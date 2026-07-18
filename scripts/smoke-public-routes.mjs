@@ -443,6 +443,7 @@ const checks = [
     includes: [
       "Help Center",
       "Search Help Center",
+      'href="/settings/help"',
       "I need help with",
       "Pick the closest path",
       "6 quick paths",

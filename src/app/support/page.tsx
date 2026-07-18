@@ -154,7 +154,7 @@ export default function SupportPage() {
             verification, commerce questions, and app support.
           </p>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {quickActions.map((action) => (
               <Link
                 className="ttc-surface rounded-md border p-3 text-sm font-semibold hover:border-[var(--gold)]"

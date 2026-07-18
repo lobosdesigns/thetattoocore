@@ -98,12 +98,20 @@ export default function HelpCenterPage() {
           <Link href="/" aria-label={`${siteName} home`}>
             <LogoLockup />
           </Link>
-          <Link
-            className="ttc-surface rounded-md border px-4 py-2 text-sm font-semibold"
-            href="/support"
-          >
-            Support
-          </Link>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Link
+              className="ttc-surface rounded-md border px-4 py-2 text-sm font-semibold"
+              href="/settings/help"
+            >
+              Settings
+            </Link>
+            <Link
+              className="ttc-surface rounded-md border px-4 py-2 text-sm font-semibold"
+              href="/support"
+            >
+              Support
+            </Link>
+          </div>
         </div>
 
         <section className="ttc-card ttc-page-panel rounded-lg border border-[var(--card-rim)] p-5 sm:p-7">
