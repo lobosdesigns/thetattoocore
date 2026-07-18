@@ -276,7 +276,8 @@ const checks = [
       docs["docs/PRODUCT_PLAN.md"].includes("Started for launch with RLS-protected `help_article_comments`") &&
       docs["docs/PRODUCT_PLAN.md"].includes("pin official answers") &&
       docs["docs/PRODUCT_PLAN.md"].includes("turn repeated questions into new FAQ entries") &&
-      docs["docs/PRODUCT_PLAN.md"].includes("Admin > Content Help review"),
+      docs["docs/PRODUCT_PLAN.md"].includes("Admin > Content Help review") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("beta tester checklist guide"),
   },
   {
     label: "help center has a first-run guide and avoids roadmap-style support copy",
@@ -287,9 +288,13 @@ const checks = [
       helpArticlePage.includes("ask a guide question") &&
       helpActions.includes("Question submitted for moderation.") &&
       helpCenterData.includes('slug: "getting-started"') &&
+      helpCenterData.includes('slug: "beta-tester-checklist"') &&
       helpCenterData.includes("Getting started on TheTattooCore") &&
+      helpCenterData.includes("Beta tester checklist") &&
       helpCenterData.includes("tutorialMedia") &&
       helpCenterData.includes("Signup to first Account save") &&
+      helpCenterData.includes("Admin beta go/no-go") &&
+      helpCenterData.includes("Two-user DM and notification pass") &&
       helpCenterData.includes("Booking request to calendar") &&
       helpCenterData.includes("Merch product setup") &&
       helpCenterData.includes("Seller payouts and payment safety") &&
@@ -302,7 +307,9 @@ const checks = [
       readFileSync("src/app/help/page.tsx", "utf8").includes("Safe sample accounts only") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("Merch and payouts") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("launchGuideSlugs") &&
+      readFileSync("src/app/help/page.tsx", "utf8").includes('"beta-tester-checklist"') &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("screenshot/video tutorial slots") &&
+      readFileSync("src/app/admin/media-ops/page.tsx", "utf8").includes("/help/beta-tester-checklist") &&
       helpSearch.includes("helpSearchAliases") &&
       helpSearch.includes("matchesSearch") &&
       helpSearch.includes("tattooer") &&

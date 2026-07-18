@@ -135,6 +135,80 @@ export const helpArticles = [
   {
     category: "Account And Profile",
     description:
+      "Use this checklist before inviting or helping early testers so the main mobile, posting, messaging, seller, booking, and admin flows are checked in a consistent order.",
+    faqs: [
+      {
+        answer:
+          "Use safe sample accounts, dummy verification files, test products, test bookings, and test checkout paths only. Do not use real license documents, real payout credentials, real addresses, nudity, private DMs, or personal owner contact information in screenshots or clips.",
+        question: "What should testers avoid using?",
+      },
+      {
+        answer:
+          "Treat reload loops, failed signup or email confirmation, broken login/reset links, mobile horizontal overflow, broken posting, broken DMs, unsafe public exposure, and confusing checkout or payout steps as launch blockers.",
+        question: "What counts as a beta blocker?",
+      },
+      {
+        answer:
+          "Check Help first for common setup questions. Use Support for private account, safety, payment, order, refund, dispute, verification, or deletion issues.",
+        question: "Where should testers ask for help?",
+      },
+    ],
+    keywords: [
+      "beta",
+      "blocker",
+      "checklist",
+      "launch",
+      "mobile qa",
+      "qa",
+      "real device",
+      "reload loop",
+      "test account",
+      "tester",
+    ],
+    lastReviewed: "July 17, 2026",
+    relatedSlugs: [
+      "getting-started",
+      "posting-stories-dms",
+      "merch-products-orders",
+      "booking-appointments",
+      "privacy-safety-support",
+    ],
+    slug: "beta-tester-checklist",
+    steps: [
+      "Sign up or sign in with a safe sample account, confirm email, save profile details, add avatar or banner media, add bio and links, and confirm the 18+ requirement.",
+      "Check mobile layout in light and dark mode with no horizontal overflow. Open Help, Support, Terms, Privacy, Account, Profile, Search, Saved, Alerts, DM, and Admin if your role allows it.",
+      "Create safe 4U, Gossip, Story, Stuff, Gig, and Merch test posts. Check crop tools, media viewer zoom, comments, replies, likes, saves, reports, edit/delete controls, and Load more behavior.",
+      "Search for known profiles and connected users. Start a two-user DM, send text plus safe media, open the notification, reply, and confirm delivered/read markers and profile links.",
+      "For verified sample accounts, test artist, studio, and vendor verification with dummy documents; then check Stuff, Gigs, Merch drafts, seller readiness, fulfillment proof, and Help links.",
+      "Test appointment request, accepted booking, deposit copy, visible TTC fee guidance, calendar download, cancellation language, and refund-review language with safe sample data only.",
+      "Review Admin go/no-go, reports, verification, content, payments, merch, data requests, and media ops before inviting more testers.",
+      "Record every issue with account type, device, page, exact action, expected result, actual result, screenshot or short clip, and whether it blocks launch.",
+    ],
+    tutorialMedia: [
+      {
+        description:
+          "Show the Admin beta go/no-go strip and queue links using safe sample counts only.",
+        kind: "screenshot",
+        title: "Admin beta go/no-go",
+      },
+      {
+        description:
+          "Short clip of a two-user DM pass: search, send, open alert, reply, and confirm read or delivered status.",
+        kind: "short_clip",
+        title: "Two-user DM and notification pass",
+      },
+      {
+        description:
+          "Show where Help and Support are found from main navigation, Account, Profile, Admin, login, and legal pages.",
+        kind: "screenshot",
+        title: "Help and Support discovery",
+      },
+    ],
+    title: "Beta tester checklist",
+  },
+  {
+    category: "Account And Profile",
+    description:
       "Set up your public profile, bio, profile photo, banner, website links, social links, and shop connection.",
     faqs: [
       {

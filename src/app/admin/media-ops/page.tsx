@@ -165,12 +165,20 @@ export default async function AdminMediaOpsPage() {
               </li>
             ))}
           </ol>
-          <Link
-            className="mt-4 inline-flex text-sm font-semibold underline"
-            href="/help/getting-started"
-          >
-            Getting started guide
-          </Link>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              className="inline-flex text-sm font-semibold underline"
+              href="/help/getting-started"
+            >
+              Getting started guide
+            </Link>
+            <Link
+              className="inline-flex text-sm font-semibold underline"
+              href="/help/beta-tester-checklist"
+            >
+              Beta tester checklist
+            </Link>
+          </div>
         </section>
 
         <section className="ttc-card mb-4 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
