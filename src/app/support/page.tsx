@@ -107,6 +107,11 @@ const guideLinks = [
     label: "Merch guide",
   },
   {
+    body: "Missing packages, wrong items, refund review, disputes, seller non-delivery, and private evidence handling.",
+    href: "/help/order-refunds-disputes",
+    label: "Order support",
+  },
+  {
     body: "Hosted payout setup, checkout readiness, fees, refunds, disputes, and payment safety.",
     href: "/help/seller-payouts-payment-safety",
     label: "Seller payouts",

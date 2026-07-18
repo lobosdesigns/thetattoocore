@@ -297,6 +297,10 @@ const checks = [
       helpCenterData.includes("Two-user DM and notification pass") &&
       helpCenterData.includes("Booking request to calendar") &&
       helpCenterData.includes("Merch product setup") &&
+      helpCenterData.includes('slug: "order-refunds-disputes"') &&
+      helpCenterData.includes("Order support, refunds, and disputes") &&
+      helpCenterData.includes("What happens if there is a dispute?") &&
+      helpCenterData.includes("Buyer order support path") &&
       helpCenterData.includes("Seller payouts and payment safety") &&
       helpCenterData.includes("Should I send payout details to support?") &&
       helpCenterData.includes("Stories, DMs, and safety controls") &&
@@ -308,6 +312,7 @@ const checks = [
       readFileSync("src/app/help/page.tsx", "utf8").includes("Merch and payouts") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("launchGuideSlugs") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes('"beta-tester-checklist"') &&
+      readFileSync("src/app/help/page.tsx", "utf8").includes('"order-refunds-disputes"') &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("screenshot/video tutorial slots") &&
       readFileSync("src/app/admin/media-ops/page.tsx", "utf8").includes("/help/beta-tester-checklist") &&
       helpSearch.includes("helpSearchAliases") &&

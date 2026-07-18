@@ -19,6 +19,7 @@ const launchGuideSlugs = [
   "posting-stories-dms",
   "booking-appointments",
   "merch-products-orders",
+  "order-refunds-disputes",
   "seller-payouts-payment-safety",
   "ads-and-credits",
   "privacy-safety-support",

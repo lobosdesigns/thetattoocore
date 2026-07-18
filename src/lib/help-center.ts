@@ -575,7 +575,12 @@ export const helpArticles = [
       "wrong item",
     ],
     lastReviewed: "July 16, 2026",
-    relatedSlugs: ["verification-documents", "seller-payouts-payment-safety", "ads-and-credits"],
+    relatedSlugs: [
+      "verification-documents",
+      "order-refunds-disputes",
+      "seller-payouts-payment-safety",
+      "ads-and-credits",
+    ],
     slug: "merch-products-orders",
     steps: [
       "Open Account and choose Merch tools.",
@@ -603,6 +608,77 @@ export const helpArticles = [
       },
     ],
     title: "How to set up Merch products and handle orders",
+  },
+  {
+    category: "Merch And Stuff",
+    description:
+      "Know what buyers and sellers should do when an order, package, refund request, dispute, or seller non-delivery issue needs private review.",
+    faqs: [
+      {
+        answer:
+          "Use Support or the order tools from Account. Include the order or product link, what happened, and safe evidence such as tracking, package photos, or seller messages. Do not post private shipping, payment, or identity details in public comments.",
+        question: "How do I ask for order help?",
+      },
+      {
+        answer:
+          "Refunds stay in manual review during launch. Support checks payment status, fulfillment proof, tracking or handoff notes, buyer reason, seller response, content safety, and dispute risk before any refund decision.",
+        question: "How are refunds reviewed?",
+      },
+      {
+        answer:
+          "If an order becomes a payment dispute or chargeback, admin review should pause seller payout release, fulfillment closeout, and any manual account credit decisions until the issue is resolved.",
+        question: "What happens if there is a dispute?",
+      },
+      {
+        answer:
+          "Report seller non-delivery through Support with the order link and any safe evidence. Repeat non-delivery, unsafe goods, counterfeit goods, or payment abuse can trigger seller review or suspension.",
+        question: "What if the seller does not deliver?",
+      },
+    ],
+    keywords: [
+      "chargeback",
+      "damaged package",
+      "dispute",
+      "missing package",
+      "non delivery",
+      "order help",
+      "package problem",
+      "refund",
+      "returned package",
+      "seller non delivery",
+      "tracking",
+      "wrong item",
+    ],
+    lastReviewed: "July 17, 2026",
+    relatedSlugs: [
+      "merch-products-orders",
+      "seller-payouts-payment-safety",
+      "privacy-safety-support",
+    ],
+    slug: "order-refunds-disputes",
+    steps: [
+      "Open Account and find the order when available, then check payment, fulfillment, tracking, pickup, handoff, or refund-review status.",
+      "For missing, damaged, wrong, delayed, returned, or seller non-delivery issues, contact Support with the order or product link and a short explanation.",
+      "Keep private shipping addresses, payment references, buyer contact details, identity documents, and bank or card details out of public comments, posts, and DMs.",
+      "Sellers should add tracking, a tracking link, or a clear pickup/handoff note before marking a paid item fulfilled.",
+      "Buyers should request refund review from Account when the order is eligible, then watch for support follow-up instead of sending repeated public messages.",
+      "Admins should compare payment status, fulfillment proof, buyer reason, seller response, safety reports, and dispute records before closing a refund, dispute, or payout decision.",
+    ],
+    tutorialMedia: [
+      {
+        description:
+          "Show the buyer order card with safe sample order status, fulfillment status, and refund-review action without real shipping details.",
+        kind: "screenshot",
+        title: "Buyer order support path",
+      },
+      {
+        description:
+          "Short clip of a seller adding tracking or handoff proof and an admin reviewing the order support path with safe sample data.",
+        kind: "short_clip",
+        title: "Fulfillment and refund review",
+      },
+    ],
+    title: "Order support, refunds, and disputes",
   },
   {
     category: "Merch And Stuff",
@@ -649,7 +725,13 @@ export const helpArticles = [
       "seller readiness",
     ],
     lastReviewed: "July 17, 2026",
-    relatedSlugs: ["merch-products-orders", "ads-and-credits", "booking-appointments", "privacy-safety-support"],
+    relatedSlugs: [
+      "merch-products-orders",
+      "order-refunds-disputes",
+      "ads-and-credits",
+      "booking-appointments",
+      "privacy-safety-support",
+    ],
     slug: "seller-payouts-payment-safety",
     steps: [
       "Finish profile setup, email confirmation, 18+ confirmation, and artist/studio/vendor verification before expecting seller payout tools.",

@@ -61,6 +61,11 @@ const routes = [
     titleIncludes: "Help Center",
   },
   {
+    path: "/help/order-refunds-disputes",
+    textIncludes: ["Order support, refunds, and disputes", "What happens if there is a dispute?"],
+    titleIncludes: "Help Center",
+  },
+  {
     path: "/help/seller-payouts-payment-safety",
     textIncludes: ["Seller payouts and payment safety", "Should I send payout details to support?"],
     titleIncludes: "Help Center",
