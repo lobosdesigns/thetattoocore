@@ -65,6 +65,15 @@ const routes = [
     titleIncludes: "Help Center",
   },
   {
+    path: "/help/posting-stories-dms",
+    textIncludes: [
+      "How to create Stuff listings, Gigs, Stories, and DMs safely",
+      "Stories rail preview",
+      "Gossip discussion preview",
+    ],
+    titleIncludes: "Help Center",
+  },
+  {
     path: "/help/merch-products-orders",
     textIncludes: ["How to set up Merch products and handle orders", "What if a package has a problem?"],
     titleIncludes: "Help Center",
