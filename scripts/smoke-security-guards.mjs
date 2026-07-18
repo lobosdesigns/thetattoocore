@@ -39,6 +39,10 @@ const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
+const accountSettingsWorkspace = readFileSync(
+  "src/app/account/account-settings-workspace.tsx",
+  "utf8",
+);
 const profileForm = readFileSync("src/app/account/profile-form.tsx", "utf8");
 const mediaInput = readFileSync("src/app/media-input.tsx", "utf8");
 const floatingComposer = readFileSync("src/app/floating-composer.tsx", "utf8");
@@ -504,14 +508,23 @@ const checks = [
       accountPage.includes('href="/help/merch-products-orders"'),
   },
   {
-    label: "account page keeps settings directory and payout recovery actions",
+    label: "account page keeps tabbed settings workspace and role-aware pro tools",
     ok:
-      accountPage.includes("const accountSectionCards = [") &&
-      accountPage.includes("Settings directory") &&
-      accountPage.includes("Profile and settings") &&
+      accountPage.includes("const accountWorkspaceTabs: AccountSettingsTab[] = [") &&
+      accountPage.includes("<AccountSettingsWorkspace tabs={accountWorkspaceTabs}>") &&
+      accountPage.includes("showVerificationSettings") &&
+      accountPage.includes("showAdvertisingSettings") &&
+      accountPage.includes("showSellerTools") &&
+      accountPage.includes("isProfessionalAccount") &&
+      accountPage.includes("{showSellerTools ? (") &&
+      accountPage.includes("{showAdvertisingSettings ? (") &&
+      accountPage.includes("Profile") &&
       accountPage.includes("Merch and payouts") &&
       accountPage.includes("Retry payout setup") &&
       accountPage.includes('href="/help/seller-payouts-payment-safety"') &&
+      accountSettingsWorkspace.includes("Choose the area you need") &&
+      accountSettingsWorkspace.includes("their own areas so Account does not become one long scroll") &&
+      accountSettingsWorkspace.includes('className={activeTab === tab.id ? "block" : "hidden"}') &&
       profileForm.includes("function profileHashForTab") &&
       profileForm.includes('return "#profile-about-settings"') &&
       productPlan.includes("top-level Settings directory") &&

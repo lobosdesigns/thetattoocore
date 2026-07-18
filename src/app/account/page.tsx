@@ -25,6 +25,7 @@ import {
   updateBookingSlot,
 } from "./actions";
 import { AdCampaignForm } from "./ad-campaign-form";
+import { AccountSettingsWorkspace, type AccountSettingsTab } from "./account-settings-workspace";
 import { LicenseDocumentInput } from "./license-document-input";
 import { ProfileForm } from "./profile-form";
 import { PendingSubmitButton } from "../pending-submit-button";
@@ -121,58 +122,6 @@ const bookingStatusFilters = [
   "declined",
   "cancelled",
   "completed",
-] as const;
-const accountNavItems = [
-  ["#profile-settings", "Profile"],
-  ["#profile-about-settings", "About"],
-  ["#location-settings", "Location"],
-  ["#appearance-settings", "Appearance"],
-  ["#privacy-settings", "Privacy"],
-  ["#notification-settings", "Alerts"],
-  ["#verification-settings", "Verify"],
-  ["#booking-settings", "Bookings"],
-  ["#advertising-settings", "Ads"],
-  ["#order-settings", "Orders"],
-  ["#data-settings", "Data"],
-  ["/help", "Help"],
-] as const;
-const accountSectionCards = [
-  {
-    body: "Name, profile photo, banner, bio, social links, shop link, city, language, theme, privacy, and alerts.",
-    href: "#profile-settings",
-    label: "Profile and settings",
-    status: "Tabbed",
-  },
-  {
-    body: "Artist, studio, or vendor proof, private document history, review notes, and resubmission guidance.",
-    href: "#verification-settings",
-    label: "Verification",
-    status: "Private review",
-  },
-  {
-    body: "Requests, appointment types, slot templates, blackout dates, deposits, calendar files, and refund review.",
-    href: "#booking-settings",
-    label: "Bookings",
-    status: "25 at a time",
-  },
-  {
-    body: "Buyer orders, seller sales, payout readiness, fulfillment, support handoffs, and product review status.",
-    href: "#order-settings",
-    label: "Merch and payouts",
-    status: "Seller tools",
-  },
-  {
-    body: "Campaigns, placements, review rules, ad credit balance, payment status, and performance counts.",
-    href: "#advertising-settings",
-    label: "Advertising",
-    status: "Credit-ready",
-  },
-  {
-    body: "Account deletion requests, private data controls, safety links, and self-serve tutorials.",
-    href: "#data-settings",
-    label: "Data and help",
-    status: "Support",
-  },
 ] as const;
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 const slotIntervals = [15, 20, 30, 45, 60, 90, 120] as const;
@@ -1023,6 +972,72 @@ export default async function AccountPage({
       sellerPayoutAccount.payouts_enabled &&
       sellerPayoutAccount.details_submitted,
   );
+  const isProfessionalAccount = Boolean(
+    profile?.account_type &&
+      ["artist", "studio", "vendor"].includes(profile.account_type as string),
+  );
+  const showVerificationSettings = Boolean(
+    canSubmitLicense || verificationRequests?.length,
+  );
+  const showAdvertisingSettings = Boolean(
+    canSubmitAds || visibleAdCampaigns.length || adCreditBalanceCents > 0,
+  );
+  const showSellerTools = Boolean(
+    canSetupSellerPayouts ||
+      sellerPayoutAccount ||
+      visibleMerchSales.length ||
+      visibleMerchProducts.length,
+  );
+  const accountWorkspaceTabs: AccountSettingsTab[] = [
+    {
+      body: "Name, profile photo, banner, bio, social links, shop link, city, language, theme, privacy, and alerts.",
+      id: "profile-settings",
+      label: "Profile",
+      status: "Personal",
+    },
+    {
+      body: isProfessionalAccount
+        ? "Booking requests, appointment types, slot templates, blackout dates, deposits, and calendar files."
+        : "Booking requests you send to artists and studios.",
+      id: "booking-settings",
+      label: "Bookings",
+      status: isProfessionalAccount ? "Artist tools" : "Requests",
+    },
+    {
+      body: showSellerTools
+        ? "Buyer orders, seller sales, payout readiness, fulfillment, support handoffs, and product review status."
+        : "Buyer orders, receipts, support handoffs, refunds, and delivery status.",
+      id: "order-settings",
+      label: showSellerTools ? "Merch and payouts" : "Orders",
+      status: showSellerTools ? "Seller tools" : "Buyer",
+    },
+    {
+      body: "Account deletion requests, private data controls, safety links, and self-serve tutorials.",
+      id: "data-settings",
+      label: "Data and help",
+      status: "Support",
+    },
+    ...(showVerificationSettings
+      ? [
+          {
+            body: "Artist, studio, or vendor proof, private document history, review notes, and resubmission guidance.",
+            id: "verification-settings",
+            label: "Verification",
+            status: "Professional",
+          },
+        ]
+      : []),
+    ...(showAdvertisingSettings
+      ? [
+          {
+            body: "Campaigns, placements, review rules, ad credit balance, payment status, and performance counts.",
+            id: "advertising-settings",
+            label: "Ads",
+            status: "Professional",
+          },
+        ]
+      : []),
+  ];
   const payoutStatusParam = Array.isArray(params.payout_status)
     ? params.payout_status[0]
     : params.payout_status;
@@ -1172,56 +1187,8 @@ export default async function AccountPage({
           profile={profile}
         />
 
-        <section className="ttc-card mb-4 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-4 backdrop-blur">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-strong)]">
-                Settings directory
-              </p>
-              <h2 className="mt-1 text-xl font-bold">Choose the area you need</h2>
-            </div>
-            <p className="max-w-sm text-sm leading-6 text-[var(--muted-strong)]">
-              Each card jumps to the right section so Account stays usable as
-              bookings, seller tools, ads, and privacy controls grow.
-            </p>
-          </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {accountSectionCards.map((item) => (
-              <a
-                className="group rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] p-4 transition hover:border-[color-mix(in_srgb,var(--gold)_72%,var(--card-rim))] hover:bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))]"
-                href={item.href}
-                key={item.label}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-base font-bold">{item.label}</h3>
-                  <span className="shrink-0 rounded-md border border-[color-mix(in_srgb,var(--gold)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] px-2 py-1 text-xs font-bold text-[color-mix(in_srgb,var(--gold)_72%,var(--foreground))]">
-                    {item.status}
-                  </span>
-                </div>
-                <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
-                  {item.body}
-                </p>
-              </a>
-            ))}
-          </div>
-        </section>
-
-        <nav
-          aria-label="Account settings"
-          className="no-scrollbar sticky top-0 z-20 mb-4 flex gap-2 overflow-x-auto rounded-md border border-[color-mix(in_srgb,var(--gold)_24%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] p-2 shadow-[0_18px_42px_rgba(0,0,0,0.14)] backdrop-blur"
-        >
-          {accountNavItems.map(([href, label]) => (
-            <a
-              className="flex h-10 shrink-0 items-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm font-semibold text-[var(--foreground)] hover:border-[color-mix(in_srgb,var(--gold)_70%,var(--card-rim))] hover:bg-[color-mix(in_srgb,var(--gold)_15%,var(--paper-warm))]"
-              href={href}
-              key={href}
-            >
-              {label}
-            </a>
-          ))}
-        </nav>
-
-        <ProfileForm claims={claims} initialProfile={normalizedProfile} />
+        <AccountSettingsWorkspace tabs={accountWorkspaceTabs}>
+          <ProfileForm claims={claims} initialProfile={normalizedProfile} />
 
         <section
           className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-5 backdrop-blur"
@@ -2706,6 +2673,7 @@ export default async function AccountPage({
             </Link>
           ) : null}
 
+          {showSellerTools ? (
           <div className="mt-8 border-t border-[var(--card-rim)] pt-5">
             <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -3132,6 +3100,7 @@ export default async function AccountPage({
               </Link>
             ) : null}
           </div>
+          ) : null}
         </section>
 
         <section
@@ -3210,7 +3179,8 @@ export default async function AccountPage({
           </p>
         </section>
 
-        {canSubmitLicense ? (
+        {showVerificationSettings ? (
+        canSubmitLicense ? (
           <section
             className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-5 backdrop-blur"
             id="verification-settings"
@@ -3425,8 +3395,9 @@ export default async function AccountPage({
               ))}
             </div>
           </section>
-        )}
+        )) : null}
 
+        {showAdvertisingSettings ? (
         <section
           className="ttc-card mt-6 scroll-mt-20 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-5 backdrop-blur"
           id="advertising-settings"
@@ -3603,6 +3574,8 @@ export default async function AccountPage({
             />
           )}
         </section>
+        ) : null}
+        </AccountSettingsWorkspace>
       </section>
     </main>
   );
