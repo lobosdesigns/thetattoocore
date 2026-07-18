@@ -58,6 +58,11 @@ Use this before creating Android or iOS wrapper projects. The goal is a thin, po
 6. Run Android internal testing and TestFlight before public submission.
 7. Re-run real-device QA after every wrapper permission, deep-link, checkout, push, or upload change.
 
+Deep-link wiring is started in the wrapper. Before public release, add the final
+domain association files using the signed Android certificate fingerprint and
+the Apple team/app identifier, then confirm profile, post, Story, Gossip, Stuff,
+Gigs, Merch, booking, support, privacy, and terms links open inside the app.
+
 ## Local Build Commands
 
 From `native/thetattoocore-mobile`:

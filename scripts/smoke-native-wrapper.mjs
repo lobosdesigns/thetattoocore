@@ -9,6 +9,7 @@ const files = {
   iosExportOptions: `${wrapperRoot}/ios/ExportOptions-AppStore.template.plist`,
   iosInfo: `${wrapperRoot}/ios/App/App/Info.plist`,
   iosPrivacy: `${wrapperRoot}/ios/App/App/PrivacyInfo.xcprivacy`,
+  iosEntitlements: `${wrapperRoot}/ios/App/App/App.entitlements`,
   iosProject: `${wrapperRoot}/ios/App/App.xcodeproj/project.pbxproj`,
   iosUploadChecklist: `${wrapperRoot}/ios/APPLE_UPLOAD_CHECKLIST.md`,
   mobileRunbook: "docs/MOBILE_APP_SUBMISSION_RUNBOOK.md",
@@ -52,6 +53,20 @@ const checks = [
       source.nativePrep.includes("Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView") &&
       source.mobileRunbook.includes("Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView") &&
       source.iosUploadChecklist.includes("Confirm login, signup, forgot password, reset password, and email confirmation stay inside the app WebView"),
+  },
+  {
+    label: "native wrapper declares TTC shared-link routing",
+    ok:
+      source.androidManifest.includes('android.intent.action.VIEW') &&
+      source.androidManifest.includes('android.intent.category.BROWSABLE') &&
+      source.androidManifest.includes('android:host="thetattoocore.com"') &&
+      source.androidManifest.includes('android:host="www.thetattoocore.com"') &&
+      source.iosEntitlements.includes("com.apple.developer.associated-domains") &&
+      source.iosEntitlements.includes("applinks:thetattoocore.com") &&
+      source.iosEntitlements.includes("applinks:www.thetattoocore.com") &&
+      source.iosProject.includes("CODE_SIGN_ENTITLEMENTS = App/App.entitlements") &&
+      source.nativePrep.includes("Deep-link wiring is started in the wrapper") &&
+      source.mobileRunbook.includes("Confirm public shared links open in the wrapper"),
   },
   {
     label: "native wrapper keeps launch permissions minimal",

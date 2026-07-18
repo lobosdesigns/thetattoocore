@@ -10,6 +10,7 @@ This folder is the starting point for Apple TestFlight and Google Play internal 
 - Public support: `support@thetattoocore.com`
 - Native permissions at first beta: none beyond the WebView defaults.
 - Push prompts: off until native device-token delivery is built and tested.
+- TTC web links are declared for the wrapper; final verified app links still require the signed Android fingerprint and Apple site-association file before public release.
 
 ## Build Notes
 
@@ -37,3 +38,4 @@ Android packaging is configured on this Windows machine. A signed Google Play up
 - Google Play: internal testing first.
 - Apple: TestFlight internal testing first.
 - Public release waits for final legal review, store screenshots, data-safety/privacy answers, and production payment policy review.
+- Verified app links/universal links wait on final signing details and domain association files.
