@@ -239,7 +239,19 @@ export default async function HelpArticlePage({
           </section>
 
           <section className="ttc-surface mt-7 rounded-lg border border-[var(--card-rim)] p-4">
-            <h2 className="text-lg font-bold">Screenshots And Tutorials</h2>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--gold)]">
+                  Safe capture plan
+                </p>
+                <h2 className="mt-1 text-lg font-bold">Screenshots And Tutorials</h2>
+              </div>
+              {tutorialMedia.length ? (
+                <span className="w-fit rounded-full border border-[var(--card-rim)] bg-[var(--surface-subtle)] px-3 py-1 text-xs font-bold text-[var(--muted-strong)]">
+                  {tutorialMedia.length} planned
+                </span>
+              ) : null}
+            </div>
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
               Visual walkthroughs avoid private messages, license documents,
               real payment data, and personal contact details. Use the written
@@ -262,10 +274,18 @@ export default async function HelpArticlePage({
                     <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
                       {item.description}
                     </p>
+                    <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[var(--background)] px-3 py-2 text-xs font-semibold leading-5 text-[var(--muted-strong)]">
+                      Capture with safe sample content only.
+                    </p>
                   </article>
                 ))}
               </div>
-            ) : null}
+            ) : (
+              <p className="mt-4 rounded-md border border-dashed border-[var(--card-rim)] bg-[var(--surface-subtle)] p-3 text-sm leading-6 text-[var(--muted)]">
+                No visual walkthrough is queued for this guide yet. Use the
+                written steps and guide questions for now.
+              </p>
+            )}
           </section>
 
           <section

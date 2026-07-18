@@ -286,6 +286,9 @@ const checks = [
     label: "help center has a first-run guide and avoids roadmap-style support copy",
     ok:
       helpArticlePage.includes("Visual walkthroughs avoid private messages") &&
+      helpArticlePage.includes("Safe capture plan") &&
+      helpArticlePage.includes("Capture with safe sample content only.") &&
+      helpArticlePage.includes("No visual walkthrough is queued") &&
       helpArticlePage.includes("const tutorialMedia = article.tutorialMedia ?? []") &&
       helpArticlePage.includes('item.kind === "short_clip" ? "Short video" : "Screenshot"') &&
       helpArticlePage.includes("ask a guide question") &&
