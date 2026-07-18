@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 const launchGuideSlugs = [
   "getting-started",
   "beta-tester-checklist",
+  "beta-app-testing",
   "artist-profile-shop-links",
   "verification-documents",
   "posting-stories-dms",

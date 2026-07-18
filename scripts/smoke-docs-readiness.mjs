@@ -289,8 +289,11 @@ const checks = [
       helpActions.includes("Question submitted for moderation.") &&
       helpCenterData.includes('slug: "getting-started"') &&
       helpCenterData.includes('slug: "beta-tester-checklist"') &&
+      helpCenterData.includes('slug: "beta-app-testing"') &&
       helpCenterData.includes("Getting started on TheTattooCore") &&
       helpCenterData.includes("Beta tester checklist") &&
+      helpCenterData.includes("How to test the beta app") &&
+      helpCenterData.includes("App wrapper navigation pass") &&
       helpCenterData.includes("tutorialMedia") &&
       helpCenterData.includes("Signup to first Account save") &&
       helpCenterData.includes("Admin beta go/no-go") &&
@@ -312,6 +315,7 @@ const checks = [
       readFileSync("src/app/help/page.tsx", "utf8").includes("Merch and payouts") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("launchGuideSlugs") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes('"beta-tester-checklist"') &&
+      readFileSync("src/app/help/page.tsx", "utf8").includes('"beta-app-testing"') &&
       readFileSync("src/app/help/page.tsx", "utf8").includes('"order-refunds-disputes"') &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("screenshot/video tutorial slots") &&
       readFileSync("src/app/admin/media-ops/page.tsx", "utf8").includes("/help/beta-tester-checklist") &&
@@ -353,6 +357,7 @@ const checks = [
       adminPage.includes("Self-serve tutorials and guide questions") &&
       supportPage.includes("Launch setup checklist") &&
       supportPage.includes("Priority setup guides for profile") &&
+      supportPage.includes('href: "/help/beta-app-testing"') &&
       supportPage.includes('href: "/help/merch-products-orders"') &&
       supportPage.includes('href: "/help/seller-payouts-payment-safety"') &&
       supportPage.includes("Product review, seller readiness") &&

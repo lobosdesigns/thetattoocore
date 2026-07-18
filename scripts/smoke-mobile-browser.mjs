@@ -36,6 +36,11 @@ const routes = [
     titleIncludes: "Help Center",
   },
   {
+    path: "/help/beta-app-testing",
+    textIncludes: ["How to test the beta app", "What should I test first?"],
+    titleIncludes: "Help Center",
+  },
+  {
     path: "/help/booking-appointments",
     textIncludes: "How to create appointment types, time slots, and booking deposits",
     titleIncludes: "Help Center",

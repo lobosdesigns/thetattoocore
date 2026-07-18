@@ -82,6 +82,11 @@ const guideLinks = [
     label: "Beta tester checklist",
   },
   {
+    body: "Beta app install, login, in-app navigation, media upload, notifications, checkout return, and safe bug-report checks.",
+    href: "/help/beta-app-testing",
+    label: "Beta app testing",
+  },
+  {
     body: "Appointment types, slots, deposits, fees, and calendar files.",
     href: "/help/booking-appointments",
     label: "Booking guide",

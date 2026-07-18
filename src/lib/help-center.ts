@@ -209,6 +209,78 @@ export const helpArticles = [
   {
     category: "Account And Profile",
     description:
+      "Use this guide when testing the beta app wrapper so login, signup, links, media upload, notifications, Help, and checkout return paths stay inside the app experience.",
+    faqs: [
+      {
+        answer:
+          "Use the invite link from the app testing program, install the beta app, then start from the Login screen. If the app opens a browser unexpectedly during login, signup, reset password, Help, Support, or checkout return, record it as a blocker.",
+        question: "How should I start beta app testing?",
+      },
+      {
+        answer:
+          "Check signup, login, email confirmation, reset password, profile save, posting, Stories, comments, DMs, Search, notifications, Help, Support, verification upload, Merch browsing, booking requests, and test checkout return paths.",
+        question: "What should I test first?",
+      },
+      {
+        answer:
+          "No. Use safe sample accounts and safe tattoo/media examples only. Do not capture private DMs, license documents, real payment data, real addresses, owner personal contact details, visible nudity, or admin-only queues.",
+        question: "Can I send screenshots from my real account?",
+      },
+      {
+        answer:
+          "Report the device, app version if visible, account type, exact page, exact action, expected result, actual result, and a safe screenshot or short clip. Reload loops, app exits, broken login, broken posting, broken DMs, and mobile overflow should be marked urgent.",
+        question: "What should a beta bug report include?",
+      },
+    ],
+    keywords: [
+      "android beta",
+      "app beta",
+      "app testing",
+      "beta app",
+      "email confirmation",
+      "internal testing",
+      "ios beta",
+      "mobile app",
+      "testflight",
+      "wrapper",
+    ],
+    lastReviewed: "July 18, 2026",
+    relatedSlugs: [
+      "beta-tester-checklist",
+      "getting-started",
+      "posting-stories-dms",
+      "order-refunds-disputes",
+      "privacy-safety-support",
+    ],
+    slug: "beta-app-testing",
+    steps: [
+      "Install the beta app from the testing invite, open it, and confirm the first screen is the TTC login experience.",
+      "Run signup, login, forgot password, reset password, email confirmation, Help, Support, Terms, and Privacy without the app pushing you into an outside browser.",
+      "Save a profile with avatar, banner, bio, links, location, language, and light or dark mode, then review the public profile on mobile.",
+      "Create safe sample 4U, Gossip, Story, Stuff, Gig, and Merch content where your role allows it. Test crop tools, media viewer, comments, reports, edit/delete, and Load more behavior.",
+      "Run the two-user DM pass: search a connected profile, send text, send safe media, open the notification, reply, and confirm delivered/read markers.",
+      "Test booking request, accepted booking, deposit copy, calendar download, Merch browsing, order-support guide access, and test checkout return paths without using real money or private credentials.",
+      "Report issues with safe screenshots or short clips only. Keep private messages, license documents, payment details, addresses, and admin-only views out of public bug reports.",
+    ],
+    tutorialMedia: [
+      {
+        description:
+          "Show the beta app opening to Login, then Help, Support, Terms, and Privacy staying inside the app wrapper.",
+        kind: "short_clip",
+        title: "App wrapper navigation pass",
+      },
+      {
+        description:
+          "Show a safe bug report example with device, page, action, expected result, actual result, and no private data.",
+        kind: "screenshot",
+        title: "Safe beta bug report",
+      },
+    ],
+    title: "How to test the beta app",
+  },
+  {
+    category: "Account And Profile",
+    description:
       "Set up your public profile, bio, profile photo, banner, website links, social links, and shop connection.",
     faqs: [
       {
