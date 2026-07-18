@@ -131,8 +131,13 @@ const checks = [
     ok:
       adminMediaOps.includes("const betaQaLaunchChecks = [") &&
       adminMediaOps.includes("const storeSubmissionChecks = [") &&
+      adminMediaOps.includes("const betaEvidencePack = [") &&
       adminMediaOps.includes("Beta QA launch checklist") &&
       adminMediaOps.includes("App handoff checklist") &&
+      adminMediaOps.includes("Beta evidence pack") &&
+      adminMediaOps.includes("What to save before widening beta") &&
+      adminMediaOps.includes("latest lint, build, public-route smoke, mobile smoke, and payment guard results") &&
+      adminMediaOps.includes("native auth/checkout return checks") &&
       adminMediaOps.includes("two-user DM pass") &&
       adminMediaOps.includes("Admin > Payments reconciliation") &&
       adminMediaOps.includes("store screenshots from safe sample accounts") &&

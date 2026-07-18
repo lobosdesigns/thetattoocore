@@ -71,6 +71,13 @@ const storeSubmissionChecks = [
   "Finish production payment policy review for Merch, ads, booking deposits, refunds, disputes, seller payouts, platform fees, taxes, and app-store payment rules before public sales.",
   "Archive the real-device QA evidence: mobile overflow pass, Story composer pass, DM two-user pass, verification submission pass, Merch checkout test pass, and admin queue review pass.",
 ] as const;
+const betaEvidencePack = [
+  ["Smoke results", "Save the latest lint, build, public-route smoke, mobile smoke, and payment guard results with the deployed version."],
+  ["Real-device clips", "Capture mobile clips for signup, profile save, 4U/Gossip posting, Story creation, DMs, Search, notifications, comments, and Help."],
+  ["Commerce proof", "Capture test-mode Merch checkout, seller payout guidance, fulfillment, refund-review request, ad funding, ad credits, and booking deposit return flows."],
+  ["Trust proof", "Capture report handling, block/delete controls, verification approval/rejection, Help question moderation, data request review, and no-visible-nudity policy copy."],
+  ["Store handoff", "Keep app screenshots, support/legal links, age-rating notes, data-safety notes, and native auth/checkout return checks together before review upload."],
+] as const;
 
 export const metadata: Metadata = {
   robots: {
@@ -210,6 +217,38 @@ export default async function AdminMediaOpsPage() {
               </li>
             ))}
           </ol>
+        </section>
+
+        <section className="ttc-card mb-4 rounded-lg border border-[color-mix(in_srgb,var(--gold)_42%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-soft)_90%,var(--gold)_8%)] p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-strong)]">
+                Beta evidence pack
+              </p>
+              <h2 className="mt-1 text-lg font-bold">What to save before widening beta</h2>
+              <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                Keep proof in one place so app review, tester support, and launch
+                decisions are based on checked flows instead of memory.
+              </p>
+            </div>
+            <Link
+              className="inline-flex rounded-md border border-[var(--card-rim)] px-3 py-2 text-sm font-semibold"
+              href="/help/beta-tester-checklist"
+            >
+              Tester guide
+            </Link>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {betaEvidencePack.map(([label, body]) => (
+              <article
+                className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3"
+                key={label}
+              >
+                <p className="text-sm font-bold">{label}</p>
+                <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{body}</p>
+              </article>
+            ))}
+          </div>
         </section>
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
