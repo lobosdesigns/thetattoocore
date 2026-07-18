@@ -51,6 +51,44 @@ const tutorialCaptureQueue = [
   ["Merch and payouts", "Create a product, review seller readiness, open checkout safely, fulfill a paid order with tracking or handoff proof, and find payout help."],
   ["Bookings and ads", "Set appointment types, slots, blackout dates, deposit review, ad campaign setup, ad credits, and campaign status."],
 ] as const;
+const helpPathCards = [
+  {
+    body: "Signup, profile photo, banner, bio, links, privacy, alerts, light or dark mode, and first posts.",
+    href: "/help/getting-started",
+    label: "New member setup",
+    status: "Start here",
+  },
+  {
+    body: "Artist/studio profiles, shop links, verification documents, booking requests, slots, deposits, and calendar files.",
+    href: "/help/artist-profile-shop-links",
+    label: "Artist and studio tools",
+    status: "Professional",
+  },
+  {
+    body: "Create Merch, understand seller review, checkout readiness, fulfillment, refunds, disputes, and payout safety.",
+    href: "/help/merch-products-orders",
+    label: "Merch and seller help",
+    status: "Commerce",
+  },
+  {
+    body: "Install the beta app, test login/signup/reset, DMs, posting, media, notifications, Help, and checkout returns.",
+    href: "/help/beta-app-testing",
+    label: "Beta app testing",
+    status: "QA",
+  },
+  {
+    body: "Reports, blocks, privacy, deletion requests, no-visible-nudity rules, and private support boundaries.",
+    href: "/help/privacy-safety-support",
+    label: "Safety and privacy",
+    status: "Support",
+  },
+  {
+    body: "Find people, posts, Stuff, Gigs, Merch, saved items, connected users, and DM/search workflows.",
+    href: "/help/search-saved-people",
+    label: "Search, Saved, and DMs",
+    status: "Find things",
+  },
+] as const;
 
 export default function HelpCenterPage() {
   return (
@@ -79,6 +117,41 @@ export default function HelpCenterPage() {
             verification, bookings, ads, Merch, Stuff, Gigs, Stories, DMs, and
             safety.
           </p>
+
+          <section className="mt-7 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,var(--gold)_6%)] p-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--gold)]">
+                  I need help with
+                </p>
+                <h2 className="mt-2 text-xl font-black">
+                  Pick the closest path
+                </h2>
+              </div>
+              <span className="w-fit rounded-md border border-[var(--card-rim)] px-3 py-1 text-xs font-bold text-[var(--muted-strong)]">
+                {helpPathCards.length} quick paths
+              </span>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {helpPathCards.map((card) => (
+                <Link
+                  className="ttc-surface rounded-lg border border-[var(--card-rim)] p-4 transition hover:border-[var(--gold)] hover:bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))]"
+                  href={card.href}
+                  key={card.label}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="text-base font-black">{card.label}</h3>
+                    <span className="shrink-0 rounded-md border border-[color-mix(in_srgb,var(--gold)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] px-2 py-1 text-xs font-bold text-[color-mix(in_srgb,var(--gold)_72%,var(--foreground))]">
+                      {card.status}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                    {card.body}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </section>
 
           <section className="mt-7 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_90%,var(--gold)_7%)] p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">

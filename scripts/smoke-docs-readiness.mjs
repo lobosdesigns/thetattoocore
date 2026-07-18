@@ -377,7 +377,8 @@ const checks = [
   {
     label: "help center is discoverable from signed-in app surfaces",
     ok:
-      accountPage.includes('["/help", "Help"]') &&
+      accountPage.includes("<AccountSettingsWorkspace tabs={accountWorkspaceTabs}>") &&
+      accountPage.includes("Data and help") &&
       accountPage.includes("Open Help Center") &&
       readFileSync("src/app/page.tsx", "utf8").includes('[CircleHelp, "Help", "/help"]') &&
       accountPage.includes("/help/seller-payouts-payment-safety") &&
