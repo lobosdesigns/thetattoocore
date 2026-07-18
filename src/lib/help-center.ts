@@ -16,6 +16,7 @@ export type HelpArticle = {
   relatedSlugs: readonly string[];
   steps: readonly string[];
   tutorialMedia?: readonly {
+    assetSrc?: string;
     description: string;
     kind: "screenshot" | "short_clip";
     title: string;
@@ -118,6 +119,7 @@ export const helpArticles = [
     ],
     tutorialMedia: [
       {
+        assetSrc: "/screenshots/mobile-login-signup.png",
         description:
           "Show Login, the Signup button, and the first Account save without private email details visible.",
         kind: "screenshot",
@@ -186,6 +188,7 @@ export const helpArticles = [
     ],
     tutorialMedia: [
       {
+        assetSrc: "/screenshots/mobile-help-support.png",
         description:
           "Show the Admin beta go/no-go strip and queue links using safe sample counts only.",
         kind: "screenshot",
@@ -198,6 +201,7 @@ export const helpArticles = [
         title: "Two-user DM and notification pass",
       },
       {
+        assetSrc: "/screenshots/mobile-help-support.png",
         description:
           "Show where Help and Support are found from main navigation, Account, Profile, Admin, login, and legal pages.",
         kind: "screenshot",
@@ -270,6 +274,7 @@ export const helpArticles = [
         title: "App wrapper navigation pass",
       },
       {
+        assetSrc: "/screenshots/mobile-help-support.png",
         description:
           "Show a safe bug report example with device, page, action, expected result, actual result, and no private data.",
         kind: "screenshot",
@@ -316,6 +321,7 @@ export const helpArticles = [
     ],
     tutorialMedia: [
       {
+        assetSrc: "/screenshots/mobile-profile-search.png",
         description:
           "Show the Profile, About, and Location tabs so users can see where bio, banner, links, and city settings live.",
         kind: "screenshot",
@@ -373,6 +379,7 @@ export const helpArticles = [
     ],
     tutorialMedia: [
       {
+        assetSrc: "/screenshots/mobile-profile-search.png",
         description:
           "Show a safe example search for a username, a city, and a Merch term with private results hidden.",
         kind: "screenshot",
@@ -866,6 +873,7 @@ export const helpArticles = [
     ],
     tutorialMedia: [
       {
+        assetSrc: "/screenshots/mobile-4u-safe.png",
         description:
           "Show the floating create button opening the right form for 4U, Gossip, Stuff, Gigs, Merch, Stories, and DM.",
         kind: "screenshot",

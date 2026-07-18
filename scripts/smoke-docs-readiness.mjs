@@ -295,6 +295,8 @@ const checks = [
       helpArticlePage.includes("No visual walkthrough is queued") &&
       helpArticlePage.includes("const tutorialMedia = article.tutorialMedia ?? []") &&
       helpArticlePage.includes('item.kind === "short_clip" ? "Short video" : "Screenshot"') &&
+      helpArticlePage.includes('item.kind === "screenshot" && "assetSrc" in item && item.assetSrc') &&
+      helpArticlePage.includes("safe tutorial screenshot") &&
       helpArticlePage.includes("ask a guide question") &&
       helpActions.includes("Question submitted for moderation.") &&
       helpCenterData.includes('slug: "getting-started"') &&
@@ -305,6 +307,10 @@ const checks = [
       helpCenterData.includes("How to test the beta app") &&
       helpCenterData.includes("App wrapper navigation pass") &&
       helpCenterData.includes("tutorialMedia") &&
+      helpCenterData.includes('assetSrc: "/screenshots/mobile-login-signup.png"') &&
+      helpCenterData.includes('assetSrc: "/screenshots/mobile-help-support.png"') &&
+      helpCenterData.includes('assetSrc: "/screenshots/mobile-profile-search.png"') &&
+      helpCenterData.includes('assetSrc: "/screenshots/mobile-4u-safe.png"') &&
       helpCenterData.includes("Signup to first Account save") &&
       helpCenterData.includes("Admin beta go/no-go") &&
       helpCenterData.includes("Two-user DM and notification pass") &&
