@@ -359,6 +359,7 @@
 - Native wrapper health check on July 17, 2026: Capacitor sync completed for Android and iOS assets, Windows skipped CocoaPods/Xcode cleanup as expected, and `android/gradlew.bat assembleDebug` passed. No tracked wrapper files changed in this pass.
 - Public route and PWA smoke passed on July 17, 2026 after refreshing the clean PWA screenshot assets so the current main columns show 4U, Gossip, Stuff, Gigs, and Merch while DM remains a direct messenger shortcut. Live deploy version `dfddfd38-7414-4388-a8d5-91db6352d969` passed public route smoke and PWA asset guards.
 - Public and mobile route smoke passed on July 17, 2026 after Account gained a payout-specific return banner with a direct Orders/Payouts jump so hosted seller setup returns are clearer on mobile. Live deploy version `e4abfff2-10a1-4b29-aea4-9f68eb63f4c7` passed public route smoke and 390px mobile browser smoke.
+- Public, PWA, and mobile route smoke passed on July 17, 2026 after adding a rights-safe generated mobile screenshot set for sign-in/signup, 4U, Stories, Gossip, profile/search, and Help Center review prep. Live deploy version `62cbada4-ddf5-47a8-8211-ef7f69ec1608` passed public route smoke, PWA guards, and 390px mobile browser smoke.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
