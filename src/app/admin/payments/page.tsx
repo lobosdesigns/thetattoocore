@@ -1288,12 +1288,20 @@ export default async function AdminPaymentsPage({
                       </article>
                     ))}
                   </div>
-                  <Link
-                    className="mt-3 inline-flex text-sm font-semibold underline"
-                    href="/help/seller-payouts-payment-safety"
-                  >
-                    Seller payout guide
-                  </Link>
+                  <div className="mt-3 flex flex-wrap gap-3">
+                    <Link
+                      className="inline-flex text-sm font-semibold underline"
+                      href="/help/seller-payouts-payment-safety"
+                    >
+                      Seller payout guide
+                    </Link>
+                    <Link
+                      className="inline-flex text-sm font-semibold underline"
+                      href="/help/order-refunds-disputes"
+                    >
+                      Order support guide
+                    </Link>
+                  </div>
                 </section>
 
                 <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">

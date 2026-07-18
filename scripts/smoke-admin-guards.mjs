@@ -321,6 +321,8 @@ const checks = [
       adminPayments.includes("Freeze payout release and fulfillment closeout") &&
       adminPayments.includes("Keep paid deposit refunds admin-reviewed") &&
       adminPayments.includes("/help/seller-payouts-payment-safety") &&
+      adminPayments.includes("/help/order-refunds-disputes") &&
+      adminPayments.includes("Order support guide") &&
       productPlan.includes("public Help guide for hosted payout setup"),
   },
   {
