@@ -339,7 +339,8 @@ const checks = [
       readFileSync("src/app/help/page.tsx", "utf8").includes('"beta-tester-checklist"') &&
       readFileSync("src/app/help/page.tsx", "utf8").includes('"beta-app-testing"') &&
       readFileSync("src/app/help/page.tsx", "utf8").includes('"order-refunds-disputes"') &&
-      readFileSync("src/app/help/page.tsx", "utf8").includes("screenshot/video tutorial slots") &&
+      readFileSync("src/app/help/page.tsx", "utf8").includes("screenshots /") &&
+      readFileSync("src/app/help/page.tsx", "utf8").includes("short clips") &&
       readFileSync("src/app/admin/media-ops/page.tsx", "utf8").includes("/help/beta-tester-checklist") &&
       helpSearch.includes("helpSearchAliases") &&
       helpSearch.includes("matchesSearch") &&

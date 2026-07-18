@@ -83,26 +83,33 @@ export default function HelpCenterPage() {
               </span>
             </div>
             <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {launchGuides.map((guide) => (
-                <Link
-                  className="ttc-surface rounded-lg border border-[var(--card-rim)] p-4 hover:border-[var(--gold)]"
-                  href={`/help/${guide.slug}`}
-                  key={guide.slug}
-                >
-                  <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
-                    {guide.category}
-                  </p>
-                  <h3 className="mt-2 text-base font-black">{guide.title}</h3>
-                  <p className="mt-2 line-clamp-3 text-sm leading-6 text-[var(--muted)]">
-                    {guide.description}
-                  </p>
-                  {guide.tutorialMedia?.length ? (
-                    <p className="mt-3 text-xs font-bold text-[var(--muted-strong)]">
-                      {guide.tutorialMedia.length} screenshot/video tutorial slots
+              {launchGuides.map((guide) => {
+                const screenshotSlots =
+                  guide.tutorialMedia?.filter((item) => item.kind === "screenshot").length ?? 0;
+                const clipSlots =
+                  guide.tutorialMedia?.filter((item) => item.kind === "short_clip").length ?? 0;
+
+                return (
+                  <Link
+                    className="ttc-surface rounded-lg border border-[var(--card-rim)] p-4 hover:border-[var(--gold)]"
+                    href={`/help/${guide.slug}`}
+                    key={guide.slug}
+                  >
+                    <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      {guide.category}
                     </p>
-                  ) : null}
-                </Link>
-              ))}
+                    <h3 className="mt-2 text-base font-black">{guide.title}</h3>
+                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-[var(--muted)]">
+                      {guide.description}
+                    </p>
+                    {screenshotSlots || clipSlots ? (
+                      <p className="mt-3 text-xs font-bold text-[var(--muted-strong)]">
+                        {screenshotSlots} screenshots / {clipSlots} short clips
+                      </p>
+                    ) : null}
+                  </Link>
+                );
+              })}
             </div>
           </section>
 
