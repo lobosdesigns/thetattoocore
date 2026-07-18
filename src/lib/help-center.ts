@@ -123,7 +123,7 @@ export const helpArticles = [
         description:
       "Show Login, the Signup button, and the first Settings save without private email details visible.",
         kind: "screenshot",
-        title: "Signup to first Account save",
+        title: "Signup to first Settings save",
       },
       {
         description:
@@ -667,7 +667,7 @@ export const helpArticles = [
       "If the product ships, add the ship-from city and state/region plus fulfillment notes with timing, pickup, made-to-order, or handoff details.",
       "Submit the product for review before it appears publicly.",
       "Finish seller payout setup from the hosted account flow before order payouts are expected; checkout can remain closed until seller readiness is complete.",
-      "Watch orders, fulfillment status, refund requests, and support questions from Account.",
+      "Watch orders, fulfillment status, refund requests, and support questions from Settings.",
       "For each paid order, use the seller order card to review the private shipping address, then mark the item fulfilled only after shipping, pickup, or handoff is ready.",
       "Add tracking carrier, tracking number, or a tracking link when available. If there is no tracking, use a clear fulfillment note before marking the order complete.",
       "Use Admin or Support for missing, damaged, wrong, delayed, or returned packages, payment-reference lookup, refund review, seller non-delivery review, or dispute review.",
@@ -934,7 +934,7 @@ export const helpArticles = [
     steps: [
       "Use report controls on posts, comments, profiles, Stuff, Gigs, Merch, or Stories when something breaks community rules.",
       "Block a member when you need to stop unwanted profile access, comments, or DMs.",
-      "Keep private contact details, license documents, payment issues, disputes, and account-specific questions inside Support or Account tools.",
+      "Keep private contact details, license documents, payment issues, disputes, and account-specific questions inside Support or Settings tools.",
       "Use Settings data controls or Support for account deletion requests, then watch for follow-up if review is needed.",
     ],
     tutorialMedia: [

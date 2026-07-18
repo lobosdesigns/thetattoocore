@@ -205,7 +205,7 @@ async function maybeSendPaymentEmail({
         `<h1>${escapeHtml(subject)}</h1>`,
         `<p>Hi ${escapeHtml(displayName)},</p>`,
         `<p>${escapeHtml(htmlBody)}</p>`,
-        `<p>Open <a href="${siteUrl}/account">${siteName} Account</a> to review the latest order or payment status.</p>`,
+        `<p>Open <a href="${siteUrl}/settings/orders">${siteName} Settings</a> to review the latest order or payment status.</p>`,
         `<p>For help, email <a href="mailto:${supportEmail}">${supportEmail}</a>.</p>`,
       ].join(""),
       recipientEmail,
@@ -218,7 +218,7 @@ async function maybeSendPaymentEmail({
         "",
         textBody,
         "",
-        `Open Account: ${siteUrl}/account`,
+        `Open Settings: ${siteUrl}/settings/orders`,
         `Help: ${supportEmail}`,
       ].join("\n"),
     });

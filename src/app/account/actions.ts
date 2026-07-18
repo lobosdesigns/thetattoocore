@@ -249,7 +249,7 @@ async function maybeSendAccountDeletionEmail({
         `<p>Hi ${escapedDisplayName},</p>`,
         "<p>We received your account deletion request. Deletion requests are reviewed manually so safety reports, marketplace issues, and legal obligations can be handled correctly.</p>",
         escapedReason ? `<p><strong>Your note:</strong> ${escapedReason}</p>` : "",
-        `<p>You can check the request status from <a href="${accountUrl}">Account &gt; Data</a>.</p>`,
+        `<p>You can check the request status from <a href="${accountUrl}">Settings &gt; Data and Help</a>.</p>`,
         `<p>For urgent help, email <a href="mailto:${supportEmail}">${supportEmail}</a>.</p>`,
       ].join(""),
       recipientEmail,
@@ -350,7 +350,7 @@ async function maybeSendMerchFulfillmentEmail({
         trackingUrl
           ? `<p>Tracking link: <a href="${trackingUrl}">${trackingUrl}</a></p>`
           : "",
-        `<p>You can review the latest order status from <a href="${accountUrl}">Account &gt; Orders</a>.</p>`,
+        `<p>You can review the latest order status from <a href="${accountUrl}">Settings &gt; Orders</a>.</p>`,
         `<p>For help, email <a href="mailto:${supportEmail}">${supportEmail}</a>.</p>`,
       ].join(""),
       recipientEmail,

@@ -398,7 +398,7 @@ async function maybeSendVerificationDecisionEmail({
   const body = approved
     ? `Your ${accountType} verification was approved. Stuff seller contact, professional access, and ad submission are now unlocked.`
     : note ||
-      "Your verification was rejected. Open Account to review the note and submit updated proof.";
+      "Your verification was rejected. Open Settings to review the note and submit updated proof.";
 
   try {
     await sendHostgatorEmail({
@@ -409,7 +409,7 @@ async function maybeSendVerificationDecisionEmail({
         `<h1>${escapeHtml(subject)}</h1>`,
         `<p>Hi ${escapeHtml(displayName)},</p>`,
         `<p>${escapeHtml(body)}</p>`,
-        `<p>You can review verification status from <a href="${accountUrl}">Account &gt; Verification</a>.</p>`,
+        `<p>You can review verification status from <a href="${accountUrl}">Settings &gt; Verification</a>.</p>`,
         `<p>For help, email <a href="mailto:${supportEmail}">${supportEmail}</a>.</p>`,
       ].join(""),
       recipientEmail,
@@ -1409,7 +1409,7 @@ export async function updateLicenseVerification(formData: FormData) {
     status === "approved"
       ? `Your ${request.account_type} verification was approved. Stuff seller contact, professional access, and ad submission are now unlocked.`
       : note ||
-        "Your verification was rejected. Open Account to review the note and submit updated proof.";
+        "Your verification was rejected. Open Settings to review the note and submit updated proof.";
   const { error: notificationError } = await supabase.from("notifications").insert({
     actor_id: userId,
     body: notificationBody.slice(0, 240),

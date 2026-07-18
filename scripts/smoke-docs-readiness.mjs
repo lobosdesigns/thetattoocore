@@ -318,7 +318,7 @@ const checks = [
       helpCenterData.includes('assetSrc: "/screenshots/mobile-stories-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-gossip-safe.png"') &&
       helpCenterData.includes("Privacy and support controls") &&
-      helpCenterData.includes("Signup to first Account save") &&
+      helpCenterData.includes("Signup to first Settings save") &&
       helpCenterData.includes("Admin beta go/no-go") &&
       helpCenterData.includes("Two-user DM and notification pass") &&
       helpCenterData.includes("Booking request to calendar") &&
@@ -398,7 +398,7 @@ const checks = [
       profilePage.includes('aria-label="Open profile help"') &&
       docs["docs/PRODUCT_PLAN.md"].includes("Help must be easy to find while logged in") &&
       docs["docs/PRODUCT_PLAN.md"].includes(
-        "direct Help links from Account settings, profile headers, and Admin",
+        "direct Help links from Settings, profile headers, and Admin",
       ),
   },
   {

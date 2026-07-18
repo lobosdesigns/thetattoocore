@@ -22,7 +22,7 @@ const sections = [
   },
   {
     body:
-      "Signed-in members can request account deletion from Account > Data. Deletion requests are reviewed manually so safety reports, marketplace issues, fraud concerns, and legal obligations can be handled correctly. The review target is within 30 days unless a safety, dispute, or legal hold requires more time.",
+      "Signed-in members can request account deletion from Settings > Data and Help. Deletion requests are reviewed manually so safety reports, marketplace issues, fraud concerns, and legal obligations can be handled correctly. The review target is within 30 days unless a safety, dispute, or legal hold requires more time.",
     title: "Account Deletion",
   },
   {
@@ -37,15 +37,15 @@ const sections = [
   },
   {
     body:
-      "The Help Center has FAQ and tutorial topics for getting started, beta app testing, bookings, ads, Merch setup, verification, Stuff, Gigs, Stories, DMs, search, saved items, and account settings. Email support with the feature name and where you got stuck when a private account issue needs review.",
+      "The Help Center has FAQ and tutorial topics for getting started, beta app testing, bookings, ads, Merch setup, verification, Stuff, Gigs, Stories, DMs, search, saved items, and Settings. Email support with the feature name and where you got stuck when a private account issue needs review.",
     title: "How-To Library",
   },
 ] as const;
 
 const quickActions = [
   {
-    body: "Sign in and go straight to the Account data controls.",
-    href: "/login?return_to=%2Faccount%23data-settings",
+    body: "Sign in and go straight to Settings data controls.",
+    href: "/login?return_to=%2Fsettings%2Fhelp",
     label: "Request deletion",
   },
   {

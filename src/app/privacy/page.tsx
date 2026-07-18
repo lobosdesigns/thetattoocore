@@ -62,7 +62,7 @@ const sections = [
   },
   {
     body:
-      "Members can update profile information from account settings, make profiles private, and request account deletion from Account > Data. Deletion requests are reviewed manually so safety reports, marketplace issues, fraud concerns, disputes, and legal obligations can be handled correctly. The review target is within 30 days unless a safety, dispute, or legal hold requires more time.",
+      "Members can update profile information from Settings, make profiles private, and request account deletion from Settings > Data and Help. Deletion requests are reviewed manually so safety reports, marketplace issues, fraud concerns, disputes, and legal obligations can be handled correctly. The review target is within 30 days unless a safety, dispute, or legal hold requires more time.",
     title: "Controls",
   },
   {
@@ -118,9 +118,9 @@ export default function PrivacyPage() {
             . Signed-in members can also{" "}
             <Link
               className="font-semibold underline"
-              href="/login?return_to=%2Faccount%23data-settings"
+              href="/login?return_to=%2Fsettings%2Fhelp"
             >
-              request account deletion from Account Data
+              request account deletion from Settings
             </Link>
             .
           </p>

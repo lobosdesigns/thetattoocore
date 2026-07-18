@@ -339,7 +339,7 @@ function AdCampaignCard({
         </div>
       ) : null}
       <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-xs text-[var(--muted)]">
-        Ad checkout is wired through Account &gt; Advertising. Prepaid ad
+        Ad checkout is wired through Settings &gt; Ads. Prepaid ad
         budget: {dollars(campaign.prepaidAmountCents)}. TTC fee tracked:{" "}
         {dollars(campaign.platformFeeCents)}.
       </p>

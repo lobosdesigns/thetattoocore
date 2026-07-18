@@ -44,7 +44,7 @@ const launchGuideClipSlots = launchGuides.reduce(
   0,
 );
 const tutorialCaptureQueue = [
-  ["First account setup", "Signup, email confirmation, first Account save, profile photo, banner, bio, links, and 18+ confirmation."],
+  ["First account setup", "Signup, email confirmation, first Settings save, profile photo, banner, bio, links, and 18+ confirmation."],
   ["Posting and Stories", "Create 4U, Gossip, Stuff, Gigs, Merch, and Story posts with crop tools, safe media, comments, reports, and Load more."],
   ["DMs and Search", "Find connected users, start a DM, send a photo/GIF, open alerts, reply, and confirm delivered/read markers."],
   ["Verification", "Submit safe dummy artist, studio, and vendor proof, then show approval, rejection, and resubmission notes without real documents."],

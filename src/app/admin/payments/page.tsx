@@ -153,7 +153,7 @@ const paymentReconciliationChecks = [
 ] as const;
 const hostedPayoutQaChecks = [
   "Use a verified artist, studio, or vendor test account; unverified users should see the verification-required payout notice.",
-  "Start setup from Account > Orders/Payouts and confirm the member leaves TTC only for the secure hosted payout setup flow.",
+  "Start setup from Settings > Orders/Payouts and confirm the member leaves TTC only for the secure hosted payout setup flow.",
   "Complete seller identity and payout test details inside the hosted flow; API or browser-automation shortcuts do not count as a completed Express seller test.",
   "Return from setup and confirm the payout setup card shows complete, saved-needs-more, expired, or retry guidance beside the button.",
   "Open Admin > Merch with the seller payout filter and confirm the seller is ready, incomplete, or not started before approving checkout.",
