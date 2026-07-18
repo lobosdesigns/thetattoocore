@@ -31,6 +31,18 @@ const launchGuides = launchGuideSlugs.flatMap((slug) => {
 
   return article ? [article] : [];
 });
+const launchGuideScreenshotSlots = launchGuides.reduce(
+  (total, guide) =>
+    total +
+    (guide.tutorialMedia?.filter((item) => item.kind === "screenshot").length ?? 0),
+  0,
+);
+const launchGuideClipSlots = launchGuides.reduce(
+  (total, guide) =>
+    total +
+    (guide.tutorialMedia?.filter((item) => item.kind === "short_clip").length ?? 0),
+  0,
+);
 const tutorialCaptureQueue = [
   ["First account setup", "Signup, email confirmation, first Account save, profile photo, banner, bio, links, and 18+ confirmation."],
   ["Posting and Stories", "Create 4U, Gossip, Stuff, Gigs, Merch, and Story posts with crop tools, safe media, comments, reports, and Load more."],
@@ -78,9 +90,17 @@ export default function HelpCenterPage() {
                   Start with these guides first
                 </h2>
               </div>
-              <span className="w-fit rounded-md border border-[var(--card-rim)] px-3 py-1 text-xs font-bold text-[var(--muted-strong)]">
-                {launchGuides.length} priority guides
-              </span>
+              <div className="flex flex-wrap gap-2">
+                <span className="w-fit rounded-md border border-[var(--card-rim)] px-3 py-1 text-xs font-bold text-[var(--muted-strong)]">
+                  {launchGuides.length} priority guides
+                </span>
+                <span className="w-fit rounded-md border border-[var(--card-rim)] px-3 py-1 text-xs font-bold text-[var(--muted-strong)]">
+                  {launchGuideScreenshotSlots} screenshot slots
+                </span>
+                <span className="w-fit rounded-md border border-[var(--card-rim)] px-3 py-1 text-xs font-bold text-[var(--muted-strong)]">
+                  {launchGuideClipSlots} short-clip slots
+                </span>
+              </div>
             </div>
             <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {launchGuides.map((guide) => {

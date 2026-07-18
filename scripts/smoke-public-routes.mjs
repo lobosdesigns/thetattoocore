@@ -431,6 +431,8 @@ const checks = [
       "Launch setup checklist",
       "Start with these guides first",
       "12 priority guides",
+      "screenshot slots",
+      "short-clip slots",
       "Search getting started, beta app, bookings, ads, Merch",
       "Tutorial Library",
       "Article Comments",

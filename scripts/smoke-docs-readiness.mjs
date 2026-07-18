@@ -334,6 +334,9 @@ const checks = [
       helpCenterData.includes("Stories, DMs, and safety controls") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("getting-started guide") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("Launch setup checklist") &&
+      readFileSync("src/app/help/page.tsx", "utf8").includes("launchGuideScreenshotSlots") &&
+      readFileSync("src/app/help/page.tsx", "utf8").includes("launchGuideClipSlots") &&
+      readFileSync("src/app/help/page.tsx", "utf8").includes("short-clip slots") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("Tutorial capture queue") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("Screenshot and short-video priorities") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("Safe sample accounts only") &&
