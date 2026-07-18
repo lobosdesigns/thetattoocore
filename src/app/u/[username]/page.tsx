@@ -2080,7 +2080,7 @@ export default async function ProfilePage({
                 {isOwnProfile ? (
                   <Link
                     className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-                    href="/account"
+                    href="/settings/profile"
                   >
                     Edit profile
                   </Link>
