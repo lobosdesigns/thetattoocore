@@ -51,6 +51,7 @@ const merchCheckoutSuccessPage = readFileSync(
 const helpCenter = readFileSync("src/lib/help-center.ts", "utf8");
 const helpCenterSearch = readFileSync("src/app/help/help-center-search.tsx", "utf8");
 const nextConfig = readFileSync("next.config.ts", "utf8");
+const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const siteConfig = readFileSync("src/lib/site.ts", "utf8");
 const publicSource = [
   authLogin,
@@ -501,6 +502,20 @@ const checks = [
       accountPage.includes('merchSupportMailto(order?.id ?? item.order_id, "seller")') &&
       accountPage.includes("Issue type: missing / damaged / wrong / delayed / returned / refund / seller help") &&
       accountPage.includes('href="/help/merch-products-orders"'),
+  },
+  {
+    label: "account page keeps settings directory and payout recovery actions",
+    ok:
+      accountPage.includes("const accountSectionCards = [") &&
+      accountPage.includes("Settings directory") &&
+      accountPage.includes("Profile and settings") &&
+      accountPage.includes("Merch and payouts") &&
+      accountPage.includes("Retry payout setup") &&
+      accountPage.includes('href="/help/seller-payouts-payment-safety"') &&
+      profileForm.includes("function profileHashForTab") &&
+      profileForm.includes('return "#profile-about-settings"') &&
+      productPlan.includes("top-level Settings directory") &&
+      productPlan.includes("dedicated `/account/...` pages"),
   },
   {
     label: "public copy does not disclose infrastructure providers or secret setup",
