@@ -28,9 +28,9 @@ export type HelpArticle = {
 export const helpCategories = [
   {
     description:
-      "Profile setup, profile photo, banner image, bio, website links, social links, shop links, light or dark mode, and account data controls.",
+      "Settings, profile setup, profile photo, banner image, bio, website links, social links, shop links, light or dark mode, and account data controls.",
     title: "Account And Profile",
-    topics: ["Getting started", "Edit profile", "Profile links", "Search and saved"],
+    topics: ["Settings", "Getting started", "Edit profile", "Profile links", "Search and saved"],
   },
   {
     description:
@@ -110,8 +110,8 @@ export const helpArticles = [
     slug: "getting-started",
     steps: [
       "Create an account from Signup, confirm the email, then sign in.",
-      "Open Account and save a username, display name, profile photo, banner, bio, location, language, and 18+ confirmation.",
-      "Choose light or dark mode, then set privacy and notification preferences before posting.",
+      "Open Settings and save a username, display name, profile photo, banner, bio, location, language, and 18+ confirmation.",
+      "Choose light or dark mode in Settings, then set privacy and notification preferences before posting.",
       "Use Search to find artists, studios, vendors, friends, public posts, Stuff, Gigs, and Merch.",
       "Use 4U for image/reel posts, Gossip for longer discussion posts, Stuff for verified professional marketplace items, Gigs for work/events/opportunities, Merch for fan-safe public products, and DM for private messages.",
       "Submit artist, studio, or vendor verification before expecting professional tools such as Stuff seller contact, booking setup, seller review, or professional ad review.",
@@ -121,7 +121,7 @@ export const helpArticles = [
       {
         assetSrc: "/screenshots/mobile-login-signup.png",
         description:
-          "Show Login, the Signup button, and the first Account save without private email details visible.",
+      "Show Login, the Signup button, and the first Settings save without private email details visible.",
         kind: "screenshot",
         title: "Signup to first Account save",
       },
@@ -178,7 +178,7 @@ export const helpArticles = [
     slug: "beta-tester-checklist",
     steps: [
       "Sign up or sign in with a safe sample account, confirm email, save profile details, add avatar or banner media, add bio and links, and confirm the 18+ requirement.",
-      "Check mobile layout in light and dark mode with no horizontal overflow. Open Help, Support, Terms, Privacy, Account, Profile, Search, Saved, Alerts, DM, and Admin if your role allows it.",
+      "Check mobile layout in light and dark mode with no horizontal overflow. Open Help, Support, Terms, Privacy, Settings, Profile, Search, Saved, Alerts, DM, and Admin if your role allows it.",
       "Create safe 4U, Gossip, Story, Stuff, Gig, and Merch test posts. Check crop tools, media viewer zoom, comments, replies, likes, saves, reports, edit/delete controls, and Load more behavior.",
       "Search for known profiles and connected users. Start a two-user DM, send text plus safe media, open the notification, reply, and confirm delivered/read markers and profile links.",
       "For verified sample accounts, test artist, studio, and vendor verification with dummy documents; then check Stuff, Gigs, Merch drafts, seller readiness, fulfillment proof, and Help links.",
@@ -203,7 +203,7 @@ export const helpArticles = [
       {
         assetSrc: "/screenshots/mobile-help-support.png",
         description:
-          "Show where Help and Support are found from main navigation, Account, Profile, Admin, login, and legal pages.",
+          "Show where Help and Support are found from main navigation, Settings, Profile, Admin, login, and legal pages.",
         kind: "screenshot",
         title: "Help and Support discovery",
       },
@@ -314,7 +314,7 @@ export const helpArticles = [
     relatedSlugs: ["getting-started", "search-saved-people", "verification-documents"],
     slug: "artist-profile-shop-links",
     steps: [
-      "Open Account and choose the Profile tab.",
+      "Open Settings and choose the Profile area.",
       "Add a profile photo, banner, short bio, website, and social links.",
       "If you work with a verified studio, choose the shop profile link once that studio profile is ready.",
       "Save changes, then review your public profile to make sure the public details look right.",
@@ -433,7 +433,7 @@ export const helpArticles = [
     relatedSlugs: ["artist-profile-shop-links", "merch-products-orders"],
     slug: "verification-documents",
     steps: [
-      "Open Account and choose the Verification area.",
+      "Open Settings and choose the Verification area.",
       "Select artist, studio, or vendor review.",
       "Enter the license or business name, issuing location, expiration date when available, and supporting document.",
       "Use documentation that matches the account type: artist license or certification, studio/shop license, vendor business proof, or other professional eligibility documents.",
@@ -508,7 +508,7 @@ export const helpArticles = [
     relatedSlugs: ["artist-profile-shop-links", "ads-and-credits"],
     slug: "booking-appointments",
     steps: [
-      "Open Account and choose the Booking tools.",
+      "Open Settings and choose the Booking tools.",
       "Create appointment types with duration, notes, buffer time, and deposit rules.",
       "Add weekly time slots and blackout dates so clients only request workable times.",
       "Use public booking notes or links for existing calendar/request pages if your shop already has one.",
@@ -578,7 +578,7 @@ export const helpArticles = [
     relatedSlugs: ["merch-products-orders", "posting-stories-dms"],
     slug: "ads-and-credits",
     steps: [
-      "Open the advertising tools from Account.",
+      "Open the advertising tools from Settings.",
       "Choose the goal, placement, location, keywords, budget, and destination.",
       "Use 4U/Gossip placements for artist-client lead, message, and engagement goals. Use Merch placement for product views and safe brand goods.",
       "Apply available ad credits before checkout when credits are available.",
@@ -662,7 +662,7 @@ export const helpArticles = [
     ],
     slug: "merch-products-orders",
     steps: [
-      "Open Account and choose Merch tools.",
+      "Open Settings and choose Merch and payout tools.",
       "Add a title, description, price, clear product media, and a return/refund note buyers can understand.",
       "If the product ships, add the ship-from city and state/region plus fulfillment notes with timing, pickup, made-to-order, or handoff details.",
       "Submit the product for review before it appears publicly.",
@@ -695,7 +695,7 @@ export const helpArticles = [
     faqs: [
       {
         answer:
-          "Use Support or the order tools from Account. Include the order or product link, what happened, and safe evidence such as tracking, package photos, or seller messages. Do not post private shipping, payment, or identity details in public comments.",
+      "Use Support or the order tools from Settings. Include the order or product link, what happened, and safe evidence such as tracking, package photos, or seller messages. Do not post private shipping, payment, or identity details in public comments.",
         question: "How do I ask for order help?",
       },
       {
@@ -736,11 +736,11 @@ export const helpArticles = [
     ],
     slug: "order-refunds-disputes",
     steps: [
-      "Open Account and find the order when available, then check payment, fulfillment, tracking, pickup, handoff, or refund-review status.",
+      "Open Settings and find the order when available, then check payment, fulfillment, tracking, pickup, handoff, or refund-review status.",
       "For missing, damaged, wrong, delayed, returned, or seller non-delivery issues, contact Support with the order or product link and a short explanation.",
       "Keep private shipping addresses, payment references, buyer contact details, identity documents, and bank or card details out of public comments, posts, and DMs.",
       "Sellers should add tracking, a tracking link, or a clear pickup/handoff note before marking a paid item fulfilled.",
-      "Buyers should request refund review from Account when the order is eligible, then watch for support follow-up instead of sending repeated public messages.",
+      "Buyers should request refund review from Settings when the order is eligible, then watch for support follow-up instead of sending repeated public messages.",
       "Admins should compare payment status, fulfillment proof, buyer reason, seller response, safety reports, and dispute records before closing a refund, dispute, or payout decision.",
     ],
     tutorialMedia: [
@@ -815,15 +815,15 @@ export const helpArticles = [
     steps: [
       "Finish profile setup, email confirmation, 18+ confirmation, and artist/studio/vendor verification before expecting seller payout tools.",
       "Create or update Merch products with clear product media, inventory, ship-from region, fulfillment notes, and return/refund expectations.",
-      "Use the hosted seller payout setup flow from Account when eligible. TTC stores readiness status only, not raw payout credentials.",
-      "Watch the payout status chip in Account and seller/admin review areas. A product can remain closed until seller payout readiness and product review both pass.",
+      "Use the hosted seller payout setup flow from Settings when eligible. TTC stores readiness status only, not raw payout credentials.",
+      "Watch the payout status chip in Settings and seller/admin review areas. A product can remain closed until seller payout readiness and product review both pass.",
       "Fulfill paid orders only after payment is marked paid and the item is shipped, ready for pickup, or otherwise handed off according to the product notes.",
       "Use Support for refund, dispute, package, seller non-delivery, or payout-readiness questions. Include the product or order link, but keep private payment credentials out of messages and screenshots.",
     ],
     tutorialMedia: [
       {
         description:
-          "Show the Account seller payout card, readiness chips, and hosted setup button without exposing private payout details.",
+          "Show the Settings seller payout card, readiness chips, and hosted setup button without exposing private payout details.",
         kind: "screenshot",
         title: "Seller payout readiness",
       },
@@ -914,7 +914,7 @@ export const helpArticles = [
       },
       {
         answer:
-          "Use Account data controls or Support for deletion requests. Some safety, dispute, fraud, legal, or payment records may need review before final handling.",
+          "Use Settings data controls or Support for deletion requests. Some safety, dispute, fraud, legal, or payment records may need review before final handling.",
         question: "How do account deletion requests work?",
       },
     ],
@@ -935,7 +935,7 @@ export const helpArticles = [
       "Use report controls on posts, comments, profiles, Stuff, Gigs, Merch, or Stories when something breaks community rules.",
       "Block a member when you need to stop unwanted profile access, comments, or DMs.",
       "Keep private contact details, license documents, payment issues, disputes, and account-specific questions inside Support or Account tools.",
-      "Use Account data controls or Support for account deletion requests, then watch for follow-up if review is needed.",
+      "Use Settings data controls or Support for account deletion requests, then watch for follow-up if review is needed.",
     ],
     tutorialMedia: [
       {

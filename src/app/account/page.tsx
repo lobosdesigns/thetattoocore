@@ -1165,9 +1165,9 @@ export default async function AccountPage({
                 Set things up without waiting on support
               </h2>
               <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
-                Find guides for profiles, verification, booking requests, ads,
-                Merch, posting, Stories, DMs, search, saved items, privacy, and
-                support.
+                Find guides for Settings, profiles, verification, booking
+                requests, ads, Merch, posting, Stories, DMs, search, saved
+                items, privacy, and support.
               </p>
             </div>
             <Link
