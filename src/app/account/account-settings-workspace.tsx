@@ -74,10 +74,10 @@ export function AccountSettingsWorkspace({
         ))}
       </div>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">
         {tabs.map((tab) => (
           <button
-            className={`rounded-lg border p-4 text-left transition ${
+            className={`rounded-md border p-3 text-left transition sm:p-4 ${
               activeTab === tab.id
                 ? "border-[color-mix(in_srgb,var(--gold)_72%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))]"
                 : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)]"
@@ -90,12 +90,12 @@ export function AccountSettingsWorkspace({
             type="button"
           >
             <div className="flex items-start justify-between gap-3">
-              <h3 className="text-base font-bold">{tab.label}</h3>
-              <span className="shrink-0 rounded-md border border-[color-mix(in_srgb,var(--gold)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] px-2 py-1 text-xs font-bold text-[color-mix(in_srgb,var(--gold)_72%,var(--foreground))]">
+              <h3 className="text-sm font-bold sm:text-base">{tab.label}</h3>
+              <span className="shrink-0 rounded-md border border-[color-mix(in_srgb,var(--gold)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] px-2 py-1 text-[11px] font-bold text-[color-mix(in_srgb,var(--gold)_72%,var(--foreground))] sm:text-xs">
                 {tab.status}
               </span>
             </div>
-            <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
+            <p className="mt-1 line-clamp-2 text-xs leading-5 text-[var(--muted-strong)] sm:mt-2 sm:text-sm sm:leading-6">
               {tab.body}
             </p>
           </button>
