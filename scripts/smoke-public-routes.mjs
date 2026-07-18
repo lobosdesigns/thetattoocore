@@ -837,6 +837,8 @@ const checks = [
     includes: [
       "CEOCore",
       "@ceocore",
+      'href="/#feed"',
+      "Back to 4U home",
       'property="og:title"',
       'property="og:image"',
       'name="twitter:card"',

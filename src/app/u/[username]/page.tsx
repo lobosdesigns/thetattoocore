@@ -1704,11 +1704,12 @@ export default async function ProfilePage({
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <Link
-                aria-label="Back to feed"
-                className="flex size-10 shrink-0 items-center justify-center rounded-md border ttc-surface"
-                href="/"
+                aria-label="Back to 4U home"
+                className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border px-3 text-sm font-bold ttc-surface"
+                href="/#feed"
               >
                 <ArrowLeft className="size-5" />
+                <span>4U</span>
               </Link>
               <div className="min-w-0">
                 <h1 className="truncate text-xl font-bold">
