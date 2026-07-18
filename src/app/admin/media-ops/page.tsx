@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { ArrowLeft, Film, ImageIcon, Settings2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock3, Film, ImageIcon, Settings2, ShieldCheck } from "lucide-react";
 import { AdminSectionNav } from "../admin-section-nav";
 import { createClient } from "@/lib/supabase/server";
 
@@ -84,6 +84,38 @@ const helpTutorialReadiness = [
   ["Capture rules", "Do not capture private DMs, license documents, real payment data, addresses, visible nudity, owner personal contact details, or unsafe marketplace examples."],
   ["Publishing pass", "After each new tutorial asset is added, run docs, public-route, and 390px mobile smoke before widening beta."],
 ] as const;
+const betaReleaseStatus = [
+  {
+    body: "Internal testing release 1 (1.0) is active for the current tester list. Next: install on a real device and run the beta tester checklist.",
+    href: "/help/beta-app-testing",
+    icon: CheckCircle2,
+    label: "Google Play",
+    status: "Active internal test",
+    tone: "ready",
+  },
+  {
+    body: "Build 1.0 (3) uploaded July 18, 2026 at 8:44 AM and is waiting for processing to finish before tester assignment.",
+    href: "/help/beta-app-testing",
+    icon: Clock3,
+    label: "Apple TestFlight",
+    status: "Processing",
+    tone: "watch",
+  },
+  {
+    body: "Keep real purchases gated until seller payouts, refunds, disputes, tax/shipping rules, hosted checkout returns, and app-store policy review pass.",
+    href: "/help/seller-payouts-payment-safety",
+    icon: ShieldCheck,
+    label: "Payments",
+    status: "Test mode gates",
+    tone: "blocked",
+  },
+] as const;
+const betaNextActions = [
+  "Attach iOS build 1.0 (3) to TTC Internal Testers after Apple processing completes.",
+  "Run real-device auth checks: login, signup, email confirmation, reset password, and support/legal links stay inside the app.",
+  "Run two-user DM, notifications, posting, Stories, comments, profile edit, verification upload, Merch browsing, booking request, and test checkout passes.",
+  "Save safe screenshots or short clips for any failed flow before changing code so the fix can be retested against the exact issue.",
+] as const;
 
 export const metadata: Metadata = {
   robots: {
@@ -161,6 +193,76 @@ export default async function AdminMediaOpsPage() {
             <p className="mt-1 text-xl font-bold">Ready when needed</p>
           </div>
         </div>
+
+        <section className="ttc-card mb-4 rounded-lg border border-[color-mix(in_srgb,var(--gold)_44%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper)_88%,var(--gold)_10%)] p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-strong)]">
+                Beta release status
+              </p>
+              <h2 className="mt-1 text-xl font-bold">Where the apps stand now</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--muted)]">
+                Use this as the short admin view before inviting more testers:
+                active Android test, Apple build processing, and launch gates
+                that still need real-device proof.
+              </p>
+            </div>
+            <Link
+              className="inline-flex rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 text-sm font-semibold"
+              href="/help/beta-app-testing"
+            >
+              App tester guide
+            </Link>
+          </div>
+          <div className="mt-4 grid gap-3 lg:grid-cols-3">
+            {betaReleaseStatus.map((item) => {
+              const Icon = item.icon;
+              const badgeClass =
+                item.tone === "ready"
+                  ? "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]"
+                  : item.tone === "watch"
+                    ? "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]"
+                    : "border-[color-mix(in_srgb,var(--danger)_35%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_8%,var(--paper-warm))] text-[var(--danger)]";
+
+              return (
+                <article
+                  className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-4"
+                  key={item.label}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <Icon className="mt-1 size-5 text-[var(--gold)]" />
+                    <span className={`rounded-md border px-2 py-1 text-xs font-bold ${badgeClass}`}>
+                      {item.status}
+                    </span>
+                  </div>
+                  <h3 className="mt-4 text-base font-bold">{item.label}</h3>
+                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                    {item.body}
+                  </p>
+                  <Link
+                    className="mt-3 inline-flex text-sm font-semibold underline"
+                    href={item.href}
+                  >
+                    Open guide
+                  </Link>
+                </article>
+              );
+            })}
+          </div>
+          <div className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-4">
+            <h3 className="text-sm font-bold">Next beta actions</h3>
+            <ol className="mt-3 grid gap-2 text-sm leading-6 text-[var(--muted)] md:grid-cols-2">
+              {betaNextActions.map((action) => (
+                <li
+                  className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2"
+                  key={action}
+                >
+                  {action}
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
 
         <section className="ttc-card mb-4 rounded-lg border border-[color-mix(in_srgb,var(--gold)_42%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-soft)_90%,var(--gold)_8%)] p-5">
           <h2 className="text-lg font-bold">Beta QA launch checklist</h2>
