@@ -78,6 +78,12 @@ const betaEvidencePack = [
   ["Trust proof", "Capture report handling, block/delete controls, verification approval/rejection, Help question moderation, data request review, and no-visible-nudity policy copy."],
   ["Store handoff", "Keep app screenshots, support/legal links, age-rating notes, data-safety notes, and native auth/checkout return checks together before review upload."],
 ] as const;
+const helpTutorialReadiness = [
+  ["Screenshot coverage", "Use the Help launch checklist totals to see which priority guides still need safe sample-account screenshots."],
+  ["Short clips", "Record short clips for signup, profile save, posting, Stories, DMs, Search, verification, Merch, booking deposits, ads, and support discovery."],
+  ["Capture rules", "Do not capture private DMs, license documents, real payment data, addresses, visible nudity, owner personal contact details, or unsafe marketplace examples."],
+  ["Publishing pass", "After each new tutorial asset is added, run docs, public-route, and 390px mobile smoke before widening beta."],
+] as const;
 
 export const metadata: Metadata = {
   robots: {
@@ -248,6 +254,52 @@ export default async function AdminMediaOpsPage() {
                 <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{body}</p>
               </article>
             ))}
+          </div>
+        </section>
+
+        <section className="ttc-card mb-4 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-strong)]">
+                Help tutorial readiness
+              </p>
+              <h2 className="mt-1 text-lg font-bold">Capture gaps to close before beta</h2>
+              <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                Keep the Help Center useful enough that testers and early
+                members can solve setup questions without waiting on support.
+              </p>
+            </div>
+            <Link
+              className="inline-flex rounded-md border border-[var(--card-rim)] px-3 py-2 text-sm font-semibold"
+              href="/help"
+            >
+              Help checklist
+            </Link>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {helpTutorialReadiness.map(([label, body]) => (
+              <article
+                className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-3"
+                key={label}
+              >
+                <p className="text-sm font-bold">{label}</p>
+                <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{body}</p>
+              </article>
+            ))}
+          </div>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              className="inline-flex text-sm font-semibold underline"
+              href="/help/beta-tester-checklist"
+            >
+              Tester checklist
+            </Link>
+            <Link
+              className="inline-flex text-sm font-semibold underline"
+              href="/help/posting-stories-dms"
+            >
+              Posting and Stories guide
+            </Link>
           </div>
         </section>
 
