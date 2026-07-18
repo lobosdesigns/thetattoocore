@@ -64,6 +64,8 @@ After upload processing:
 - Use privacy URL `https://thetattoocore.com/privacy`.
 - Do not submit for public App Review until the real-device QA checklist and final legal/payment review are complete.
 
-## Current Blocker
+## Current Status
 
 This Windows machine cannot run Xcode, CocoaPods, or Apple upload tooling. The upload must happen on the Mac after Apple/MacinCloud sign-in and any 2FA prompts are complete.
+
+On July 18, 2026, Xcode Organizer uploaded iOS version `1.0`, build `3`, to App Store Connect. App Store Connect shows the upload as Processing before it can be attached to the internal TestFlight group.

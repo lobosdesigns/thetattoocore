@@ -370,12 +370,13 @@
 - Native Android beta packaging passed on July 18, 2026: Capacitor sync completed, `npm.cmd run smoke:native` passed, the Google Play upload bundle verified as signed, and the signed artifact was copied to the Desktop as `TheTattooCore-app-release-v1-signed.aab` with SHA-256 `18E16D3CB5AEED158C33BF9882AC6920D6A7CB744697568E71C32631BC893B65`. Keep private signing material out of git and upload this build to Google Play internal testing before widening testers.
 - Google Play internal testing started on July 18, 2026 for app `com.thetattoocore.app`: release `1 (1.0)` was uploaded from the signed v1 AAB, assigned to the existing internal tester list, and published as Active/available to internal testers. Google still shows the temporary unreviewed app name until app setup/review is completed.
 - First iOS TestFlight archive attempt on July 18, 2026 reached Xcode on the Mac and failed because the active Apple provisioning profile does not include Associated Domains. For the first TestFlight build, iOS universal-link entitlements are deferred so the profile can sign the thin wrapper; add Associated Domains back after the Apple app/profile capability is enabled.
+- First fresh iOS TestFlight upload on July 18, 2026 reached App Store Connect from Xcode Organizer. App Store Connect shows iOS version `1.0`, build `3`, uploaded at July 18, 2026 8:44 AM and currently Processing. After Apple processing completes, attach build `3` to the TTC internal TestFlight group and run the beta-app auth/navigation smoke, especially login/signup/reset staying inside the app WebView.
 - Core social flows are web-first; native beta-wrapper work is starting for Apple TestFlight and Google Play internal testing. Public store release is still gated on the checklist below.
 
 ## Before Google Play / App Store Submission
 
 - Create and validate the beta wrapper in `native/thetattoocore-mobile`, then build signed Android upload bundles on local Android tooling and iOS archives on the Mac/remote Mac with Xcode. Android internal-test bundle `TheTattooCore-app-release-v1-signed.aab` is ready for Play Console upload.
-- Upload first builds to Google Play internal testing and Apple TestFlight before requesting public review. Google Play internal testing release `1 (1.0)` is active; Apple TestFlight remains the next native upload target.
+- Upload first builds to Google Play internal testing and Apple TestFlight before requesting public review. Google Play internal testing release `1 (1.0)` is active; iOS build `1.0 (3)` is uploaded to App Store Connect and processing before TestFlight group assignment.
 - Map the generated splash/screenshot assets into the native wrapper once Android/iOS packaging starts.
 - Follow `docs/NATIVE_WRAPPER_PREP.md` before creating native wrapper projects or requesting native permissions.
 - Package native builds through the chosen wrapper path.

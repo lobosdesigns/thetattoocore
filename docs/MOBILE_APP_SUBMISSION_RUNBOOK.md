@@ -5,6 +5,7 @@
 - TheTattooCore is web/PWA-first at `https://thetattoocore.com/login`.
 - Native Android and iOS beta-wrapper work is starting from `native/thetattoocore-mobile`.
 - Android v1 internal-test upload bundle is signed and staged on the Desktop as `TheTattooCore-app-release-v1-signed.aab`; Google Play internal testing release `1 (1.0)` is active for the existing internal tester list.
+- iOS build `1.0 (3)` was uploaded from Xcode Organizer on July 18, 2026 and is processing in App Store Connect before internal TestFlight assignment.
 - PWA manifest, icons, splash assets, service worker, support URL, privacy URL, and terms URL are ready for the beta wrapper path.
 - Native wrapper prep lives in `docs/NATIVE_WRAPPER_PREP.md`; follow it before adding native permissions, deep links, checkout handling, push, or store-review changes.
 - Draft store listing copy lives in `docs/STORE_LISTING_DRAFT.md`; review it against current store policies before submission.
@@ -62,7 +63,7 @@ Start with a thin native wrapper now that core web smoke/390px mobile checks are
 3. Add app icons and splash assets from the approved TTC shield assets.
 4. Configure allowed domains for `thetattoocore.com`, auth redirects, hosted checkout, support, privacy, and terms.
 5. Build Android first on this Windows machine if Android tooling is installed; build iOS on the Mac/remote Mac because Xcode is required.
-6. Upload to Google Play internal testing and Apple TestFlight before any public review submission.
+6. Upload to Google Play internal testing and Apple TestFlight before any public review submission. Google Play internal testing is active; iOS build `1.0 (3)` is processing before TestFlight group assignment.
 7. Test camera/photo-picker behavior only through normal browser file inputs unless a native upload bridge is added deliberately.
 
 Use `docs/NATIVE_WRAPPER_PREP.md` as the detailed wrapper checklist for navigation, permissions, app links, hosted checkout handling, screenshots, and QA.
