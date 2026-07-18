@@ -511,6 +511,8 @@ checks.push({
     accountPage.includes("sellerPayoutReady") &&
     accountPage.includes("sellerPayoutAccount") &&
     accountPage.includes("payoutSetupNotice") &&
+    accountPage.includes("Open Orders and payouts") &&
+    accountPage.includes("params.message && !payoutSetupNotice") &&
     accountPage.includes("Operator code:") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("function payoutIssueCode") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("function sellerBusinessType") &&

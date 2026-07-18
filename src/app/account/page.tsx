@@ -1057,10 +1057,39 @@ export default async function AccountPage({
           </div>
         </div>
 
-        {params.message ? (
+        {params.message && !payoutSetupNotice ? (
           <p className="ttc-surface mb-4 rounded-md border px-4 py-3 text-sm font-medium">
             {params.message}
           </p>
+        ) : null}
+
+        {payoutSetupNotice ? (
+          <section
+            className={`mb-4 rounded-lg border p-4 text-sm ${
+              payoutSetupNotice.tone === "success"
+                ? "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))]"
+                : payoutSetupNotice.tone === "warning"
+                  ? "border-[color-mix(in_srgb,var(--gold)_48%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))]"
+                  : "border-[color-mix(in_srgb,var(--danger)_34%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))]"
+            }`}
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-bold text-[var(--foreground)]">
+                  {payoutSetupNotice.title}
+                </p>
+                <p className="mt-1 leading-6 text-[var(--muted)]">
+                  {payoutSetupNotice.body}
+                </p>
+              </div>
+              <a
+                className="inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] px-4 font-bold text-[var(--background)]"
+                href="#order-settings"
+              >
+                Open Orders and payouts
+              </a>
+            </div>
+          </section>
         ) : null}
 
         <AccountSetupGuide isFirstProfile={isFirstProfile} />
