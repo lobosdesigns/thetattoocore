@@ -28,7 +28,11 @@ const routes = [
     textIncludes: ["Create new password", "Help Center"],
     titleIncludes: "Reset password",
   },
-  { path: "/support", textIncludes: "support@thetattoocore.com", titleIncludes: "Support" },
+  {
+    path: "/support",
+    textIncludes: ["support@thetattoocore.com", "Beta app testing"],
+    titleIncludes: "Support",
+  },
   { path: "/help", textIncludes: "Search Help Center", titleIncludes: "Help Center" },
   {
     path: "/help/beta-tester-checklist",
