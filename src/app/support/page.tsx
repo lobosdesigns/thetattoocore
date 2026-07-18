@@ -77,6 +77,11 @@ const guideLinks = [
     label: "Getting started",
   },
   {
+    body: "Real-device beta checks for signup, mobile layout, posting, DMs, verification, bookings, seller tools, and admin go/no-go.",
+    href: "/help/beta-tester-checklist",
+    label: "Beta tester checklist",
+  },
+  {
     body: "Appointment types, slots, deposits, fees, and calendar files.",
     href: "/help/booking-appointments",
     label: "Booking guide",
