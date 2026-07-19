@@ -875,18 +875,27 @@ export const helpArticles = [
           "Visible nudity is not allowed. Crop or cover private areas before posting, even when the purpose is tattoo or body-art documentation.",
         question: "Can I post tattoo placement photos with nudity?",
       },
+      {
+        answer:
+          "Keep captions, comments, replies, and DMs clear, respectful, and relevant. Use Story replies for direct reactions, avoid spam, and move urgent safety or private account issues to Support.",
+        question: "How should I use replies and DMs?",
+      },
     ],
     keywords: [
+      "caption",
       "comments",
       "create post",
       "dm",
       "gigs",
       "gossip",
       "media upload",
+      "reply",
+      "spam",
       "stories",
+      "story reply",
       "stuff",
     ],
-    lastReviewed: "July 15, 2026",
+    lastReviewed: "July 19, 2026",
     relatedSlugs: ["artist-profile-shop-links", "verification-documents", "privacy-safety-support"],
     slug: "posting-stories-dms",
     steps: [

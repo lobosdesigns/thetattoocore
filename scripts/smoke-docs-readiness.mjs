@@ -359,6 +359,8 @@ const checks = [
       helpSearch.includes("appointments") &&
       helpSearch.includes("harassment") &&
       helpSearch.includes("unblock") &&
+      helpSearch.includes("caption") &&
+      helpSearch.includes("spam") &&
       helpSearch.includes("article.slug") &&
       helpSearch.includes("article.keywords") &&
       helpSearch.includes("article.relatedSlugs") &&
@@ -369,6 +371,8 @@ const checks = [
       helpCenterData.includes("saved items") &&
       helpCenterData.includes("What does blocking do?") &&
       helpCenterData.includes("blocked profiles") &&
+      helpCenterData.includes("How should I use replies and DMs?") &&
+      helpCenterData.includes("Story replies") &&
       helpSearch.includes("payout") &&
       helpSearch.includes("chargeback") &&
       helpSearch.includes("merchant") &&
