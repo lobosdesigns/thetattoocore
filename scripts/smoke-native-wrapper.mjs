@@ -12,6 +12,7 @@ const files = {
   iosEntitlements: `${wrapperRoot}/ios/App/App/App.entitlements`,
   iosProject: `${wrapperRoot}/ios/App/App.xcodeproj/project.pbxproj`,
   iosUploadChecklist: `${wrapperRoot}/ios/APPLE_UPLOAD_CHECKLIST.md`,
+  dataSafetyPrep: "docs/DATA_SAFETY_PREP.md",
   mobileRunbook: "docs/MOBILE_APP_SUBMISSION_RUNBOOK.md",
   nativePrep: "docs/NATIVE_WRAPPER_PREP.md",
   packageJson: `${wrapperRoot}/package.json`,
@@ -138,6 +139,14 @@ const checks = [
       source.iosPrivacy.includes("<false/>") &&
       source.iosPrivacy.includes("NSPrivacyCollectedDataTypes") &&
       source.iosProject.includes("PrivacyInfo.xcprivacy in Resources"),
+  },
+  {
+    label: "native privacy manifest is not used as store App Privacy source",
+    ok:
+      source.nativePrep.includes("covers only the thin native wrapper") &&
+      source.nativePrep.includes("Do not use its empty data arrays as the App Store App Privacy answer source") &&
+      source.nativePrep.includes("docs/DATA_SAFETY_PREP.md") &&
+      source.dataSafetyPrep?.includes("App Store privacy nutrition labels"),
   },
   {
     label: "native iOS wrapper has App Store archive/export script",

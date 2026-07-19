@@ -34,6 +34,7 @@ Use this before creating Android or iOS wrapper projects. The goal is a thin, po
 - User-generated content, reporting, blocking, moderation, DMs, public previews, marketplace/commerce limits, and account deletion must match the public Terms, Privacy, and Support pages.
 - Store screenshots must follow `docs/SCREENSHOT_PREP.md`.
 - Data Safety and App Privacy answers must be checked against `docs/DATA_SAFETY_PREP.md`.
+- The iOS `PrivacyInfo.xcprivacy` file covers only the thin native wrapper and bundled native SDK behavior. Do not use its empty data arrays as the App Store App Privacy answer source; complete App Privacy from the live TTC web/app data flows in `docs/DATA_SAFETY_PREP.md`.
 - Age-rating answers must be checked against `docs/AGE_RATING_PREP.md`.
 - Real payments, seller payouts, taxes, shipping, refunds, disputes, and app-store commerce rules must pass `docs/PAYMENT_PRODUCTION_READINESS.md` before production commerce is promoted in native builds.
 
