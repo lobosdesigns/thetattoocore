@@ -37,7 +37,7 @@ const sections = [
   },
   {
     body:
-      "Merch, ads, and booking deposits can create checkout, order, receipt, fulfillment, refund, dispute, and support records. Checkout is limited right now, and payment questions are handled through private account or support review. TheTattooCore uses hosted checkout pages where available and does not collect raw payment or payout credentials in member forms.",
+      "Merch, ads, and booking deposits can create checkout, order, receipt, fulfillment, refund, dispute, and support records. Checkout is controlled during launch, and payment questions are handled through private account or support review. TheTattooCore uses hosted checkout pages where available and does not collect raw payment or payout credentials in member forms.",
     title: "Commerce And Payments",
   },
   {

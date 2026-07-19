@@ -2508,8 +2508,9 @@ export default async function AccountPage({
             </span>
           </div>
           <p className="text-sm leading-6 text-[var(--muted-strong)]">
-            Merch checkout is limited right now while seller and order rules are
-            finished. Additional order tools will appear here as they open.
+            Merch checkout is controlled during launch while seller and order
+            rules are finished. Additional order tools will appear here as
+            they open.
           </p>
           {visibleMerchOrders.length ? (
             <div className="mt-4 grid gap-3">

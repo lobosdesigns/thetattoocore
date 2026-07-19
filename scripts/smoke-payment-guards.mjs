@@ -486,7 +486,7 @@ checks.push({
     adminPaymentsPage.includes("Choose a documented payout policy") &&
     adminPaymentsPage.includes("booking refund, cancellation, appointment-confirmation") &&
     adminPaymentsPage.includes("do not collect bank or card payout data in TTC forms") &&
-    adminMerchPage.includes("Checkout and refund status are limited right now") &&
+    adminMerchPage.includes("Checkout and refund status are controlled during launch") &&
     adminMerchPage.includes("finish tax, shipping, fulfillment, payouts, and payment safety rules") &&
     paymentReadiness.includes("Direct API edits or browser-automation shortcuts are not a valid completion test") &&
     accountPage.includes("merchSellerReadinessItems") &&
@@ -501,8 +501,8 @@ checks.push({
     accountPage.includes("Fulfillment gate") &&
     accountPage.includes("Refunds, disputes, and unusual order issues stay in private admin review") &&
     accountPage.includes("stay in private support review") &&
-    privacyPage.includes("Checkout is limited right now") &&
-    supportPage.includes("Merch checkout is limited right now"),
+    privacyPage.includes("Checkout is controlled during launch") &&
+    supportPage.includes("Merch checkout is controlled during launch"),
 });
 checks.push({
   label: "Stripe Connect seller onboarding stays hosted and server-side",
@@ -511,7 +511,7 @@ checks.push({
     accountPage.includes("sellerPayoutReady") &&
     accountPage.includes("sellerPayoutAccount") &&
     accountPage.includes("payoutSetupNotice") &&
-    accountPage.includes("Open Orders and payouts") &&
+    accountPage.includes("Merch and payouts") &&
     accountPage.includes("params.message && !payoutSetupNotice") &&
     accountPage.includes("Operator code:") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("function payoutIssueCode") &&
