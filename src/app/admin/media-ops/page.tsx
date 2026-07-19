@@ -61,7 +61,7 @@ const betaQaLaunchChecks = [
   "Run the two-user DM pass: search a connected profile, send text, send a photo/GIF, open the notification, reply, and confirm read/delivered markers.",
   "Create 4U, Gossip, Story, Stuff, Gig, and Merch test content on mobile; confirm crop tools, media viewer, comments, edit/delete, reports, and Load more behavior.",
   "Submit artist, studio, and vendor verification with safe dummy documents; approve and reject from Admin > Verification.",
-  "Run Merch, ad, and booking-deposit test checkout flows only in test mode; confirm Admin > Payments reconciliation before any closeout decision.",
+  "Run Merch, ad, and booking-deposit controlled checkout flows; confirm Admin > Payments reconciliation before any closeout decision.",
   "Prepare store screenshots from safe sample accounts only: no private DMs, license documents, nudity, real payment data, or personal owner contact details.",
 ] as const;
 const storeSubmissionChecks = [
@@ -75,7 +75,7 @@ const storeSubmissionChecks = [
 const betaEvidencePack = [
   ["Smoke results", "Save the latest lint, build, public-route smoke, mobile smoke, and payment guard results with the deployed version."],
   ["Real-device clips", "Capture mobile clips for signup, profile save, 4U/Gossip posting, Story creation, DMs, Search, notifications, comments, and Help."],
-  ["Commerce proof", "Capture test-mode Merch checkout, seller payout guidance, fulfillment, refund-review request, ad funding, ad credits, and booking deposit return flows."],
+  ["Commerce proof", "Capture controlled Merch checkout, seller payout guidance, fulfillment, refund-review request, ad funding, ad credits, and booking deposit return flows."],
   ["Trust proof", "Capture report handling, block/delete controls, verification approval/rejection, Help question moderation, data request review, and no-visible-nudity policy copy."],
   ["Store handoff", "Keep app screenshots, support/legal links, age-rating notes, data-safety notes, and native auth/checkout return checks together before review upload."],
 ] as const;
@@ -115,7 +115,7 @@ const betaReleaseStatus: {
     href: "/help/seller-payouts-payment-safety",
     icon: ShieldCheck,
     label: "Payments",
-    status: "Test mode gates",
+    status: "Launch-controlled",
     tone: "blocked",
   },
 ] as const;

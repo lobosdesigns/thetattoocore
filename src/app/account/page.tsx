@@ -2509,8 +2509,8 @@ export default async function AccountPage({
           </div>
           <p className="text-sm leading-6 text-[var(--muted-strong)]">
             Merch checkout is controlled during launch while seller and order
-            rules are finished. Additional order tools will appear here as
-            they open.
+            rules are finished. Use this page for buyer orders, seller
+            products, fulfillment, refund review, and payout readiness.
           </p>
           {visibleMerchOrders.length ? (
             <div className="mt-4 grid gap-3">

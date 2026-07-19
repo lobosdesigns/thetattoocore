@@ -45,7 +45,7 @@ const compressionPasses = [
 ] as const;
 const imageOptimizerLabel = "Phone photos are resized before upload.";
 const videoUploadLabel =
-  "Video upload is capped for now. More video options will open as upload tools mature.";
+  "Video upload is capped for now. Keep clips short, clear, and ready for review.";
 const defaultCropSettings: CropSettings = {
   aspect: "original",
   focusX: 50,
