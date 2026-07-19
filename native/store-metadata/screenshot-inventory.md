@@ -22,6 +22,9 @@ Upload-ready derivatives generated from the safe mobile set:
 - App Store iPhone 6.5-inch screenshots:
   `native/store-metadata/generated/apple-app-store/iphone-6-5/*-1242x2688.png`
   are 1242 x 2688 PNG files with no alpha channel.
+- App Store 13-inch iPad screenshots:
+  `native/store-metadata/generated/apple-app-store/ipad-13/*-2048x2732.png`
+  are 2048 x 2732 PNG files with no alpha channel.
 
 These generated placeholders are TTC-branded, rights-safe, and show the current
 main content columns: 4U, Gossip, Stuff, Gigs, and Merch. DM should appear as a
@@ -31,7 +34,8 @@ Still needed before public store review:
 
 - Replace generated placeholders with final real-device screenshots after
   mobile QA, using safe sample accounts and rights-cleared non-sensitive media.
-- Optional tablet screenshots if the store console requests them.
+- Replace generated tablet placeholders with final real-device iPad captures if
+  the native iPad layout changes before public review.
 - Merch guide shortcut screenshot showing where sellers can find setup help,
   without showing seller payout setup details.
 
