@@ -214,7 +214,12 @@ const checks = [
       docs["docs/DATA_SAFETY_PREP.md"].includes("account deletion requests") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("Google Play Data Safety must be completed for apps on testing tracks") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("internal testing, closed/open testing if used, and production") &&
-      docs["docs/DATA_SAFETY_PREP.md"].includes("support@thetattoocore.com"),
+      docs["docs/DATA_SAFETY_PREP.md"].includes("support@thetattoocore.com") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("## App Store Privacy Evidence") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("reviewed against the submitted iOS build") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("Privacy URL `https://thetattoocore.com/privacy`") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("do not infer tracking from the iOS native privacy manifest alone") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("final App Privacy console summary"),
   },
   {
     label: "real-device QA checklist covers app-critical flows",

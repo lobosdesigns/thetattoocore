@@ -45,3 +45,13 @@ Use this as an internal checklist before answering Google Play Data Safety, App 
 - Confirm no app-store or public copy exposes private infrastructure, service secrets, personal owner contact information, or internal admin procedures.
 - Confirm production payment, payout, tax, refund, and dispute policies are complete before answering real-money commerce questions as live.
 - Confirm real-device QA passes for signup, login, profile editing, posting, DMs, reports, blocking, verification upload, account deletion request, notifications, public sharing, and payment test flows.
+
+## App Store Privacy Evidence
+
+Keep this evidence private with the release handoff. Do not place reviewer passwords, private contact phone numbers, account owner details, payment-account screenshots, raw admin exports, or private member content in repo docs or public copy.
+
+- App Store App Privacy answers reviewed against the submitted iOS build, Privacy URL `https://thetattoocore.com/privacy`, and the live web/app data flows above.
+- Data linked to account checked for account/profile fields, user-generated content, DMs, media uploads, verification documents, commerce/order records, reports, blocks, follows, saves, notifications, and support/account deletion requests.
+- Tracking answer checked separately from ad delivery, saved searches, follows, coarse discovery preferences, and basic event counts; do not infer tracking from the iOS native privacy manifest alone.
+- Payment and payout answers checked against the current production-payment decision, refund/dispute process, seller payout process, and the rule that TTC forms do not collect raw card, bank, routing, or payout credentials.
+- Screenshot or note captured for the final App Privacy console summary, review date, reviewed build/version, reviewer initials, and any questionnaire areas that must be revisited before public release.
