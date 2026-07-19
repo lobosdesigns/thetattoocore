@@ -487,7 +487,7 @@ checks.push({
     adminPaymentsPage.includes("Choose a documented payout policy") &&
     adminPaymentsPage.includes("booking refund, cancellation, appointment-confirmation") &&
     adminPaymentsPage.includes("do not collect bank or card payout data in TTC forms") &&
-    adminMerchPage.includes("Checkout and refund status are controlled during launch") &&
+    adminMerchPage.includes("Checkout and refund status stay review-controlled") &&
     adminMerchPage.includes("finish tax, shipping, fulfillment, payouts, and payment safety rules") &&
     paymentReadiness.includes("Direct API edits or browser-automation shortcuts are not a valid completion test") &&
     accountPage.includes("merchSellerReadinessItems") &&

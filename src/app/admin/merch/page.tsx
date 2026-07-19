@@ -115,7 +115,7 @@ const merchRules = [
   "Merch is public-buyable brand goods, separate from verified-only professional Stuff.",
   "Artist, studio, vendor, and official TheTattooCore sellers still need approval before listing products.",
   "Do not allow professional equipment, regulated services, unsafe products, counterfeits, adult sexual products, or scratcher-facing supplies.",
-  "Checkout and refund status are controlled during launch; finish tax, shipping, fulfillment, payouts, and payment safety rules before public production orders.",
+  "Checkout and refund status stay review-controlled; finish tax, shipping, fulfillment, payouts, and payment safety rules before public production orders.",
 ] as const;
 const buildSteps = [
   [
