@@ -357,6 +357,8 @@ const checks = [
       helpSearch.includes("bookmarks") &&
       helpSearch.includes("favorites") &&
       helpSearch.includes("appointments") &&
+      helpSearch.includes("harassment") &&
+      helpSearch.includes("unblock") &&
       helpSearch.includes("article.slug") &&
       helpSearch.includes("article.keywords") &&
       helpSearch.includes("article.relatedSlugs") &&
@@ -365,6 +367,8 @@ const checks = [
       helpCenterData.includes("shop link") &&
       helpCenterData.includes("How do I find saved things again?") &&
       helpCenterData.includes("saved items") &&
+      helpCenterData.includes("What does blocking do?") &&
+      helpCenterData.includes("blocked profiles") &&
       helpSearch.includes("payout") &&
       helpSearch.includes("chargeback") &&
       helpSearch.includes("merchant") &&

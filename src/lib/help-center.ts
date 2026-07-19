@@ -941,18 +941,26 @@ export const helpArticles = [
           "Use Settings data controls or Support for deletion requests. Some safety, dispute, fraud, legal, or payment records may need review before final handling.",
         question: "How do account deletion requests work?",
       },
+      {
+        answer:
+          "Block when you need distance from a member. Blocking helps stop follow attempts and DMs, and you can review or change blocked profiles later from account privacy controls.",
+        question: "What does blocking do?",
+      },
     ],
     keywords: [
       "account deletion",
       "block",
+      "blocked profiles",
       "delete account",
+      "harassment",
       "privacy",
       "report",
       "safety",
       "support",
+      "unblock",
       "unsafe content",
     ],
-    lastReviewed: "July 15, 2026",
+    lastReviewed: "July 19, 2026",
     relatedSlugs: ["posting-stories-dms", "search-saved-people", "verification-documents"],
     slug: "privacy-safety-support",
     steps: [
