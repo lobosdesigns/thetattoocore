@@ -74,7 +74,7 @@ function statusCopy(status?: string) {
     return {
       heading: "Checkout was not completed",
       message:
-        "Payment was not confirmed. No fulfillment should start for this order.",
+        "Payment was not confirmed. This order will not move forward unless checkout is completed.",
     };
   }
 
@@ -209,9 +209,9 @@ export default async function MerchCheckoutSuccessPage({
                 </div>
               </dl>
               <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_90%,transparent)] p-3 text-xs leading-5 text-[var(--muted-strong)]">
-                Fulfillment starts only after payment is confirmed and seller/admin
-                review rules are satisfied. Refunds and disputes are handled
-                through payment records.
+                Fulfillment starts after payment is confirmed and the order is
+                ready for review. For refunds, delivery questions, or item
+                issues, use Account orders or Support with this order number.
               </p>
             </div>
           ) : sessionId && !claims?.sub ? (

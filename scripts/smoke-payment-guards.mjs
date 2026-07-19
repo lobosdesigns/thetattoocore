@@ -371,6 +371,10 @@ checks.push({
     merchCheckoutSuccessPage.includes('href="/merch"') &&
     merchCheckoutSuccessPage.includes("ttc-print-receipt") &&
     merchCheckoutSuccessPage.includes("ttc-print-hidden") &&
+    merchCheckoutSuccessPage.includes("This order will not move forward unless checkout is completed.") &&
+    merchCheckoutSuccessPage.includes("use Account orders or Support with this order number") &&
+    !merchCheckoutSuccessPage.includes("No fulfillment should start") &&
+    !merchCheckoutSuccessPage.includes("payment records") &&
     merchPrintReceiptButton.includes('"use client"') &&
     merchPrintReceiptButton.includes("window.print()") &&
     merchPrintReceiptButton.includes("Print receipt") &&
