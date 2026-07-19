@@ -69,6 +69,9 @@ const helpSearchAliases: Record<string, string[]> = {
   refunds: ["refund", "refunds", "dispute", "disputes", "chargeback", "chargebacks"],
   reply: ["reply", "replies", "comment", "comments", "dm", "dms", "story"],
   replies: ["reply", "replies", "comment", "comments", "dm", "dms", "story"],
+  badge: ["badge", "verified", "verification", "approval", "proof"],
+  denied: ["denied", "rejected", "verification", "approval", "resubmit", "proof"],
+  proof: ["proof", "document", "documents", "license", "verification", "business docs"],
   save: ["save", "saved", "favorite", "favorites", "bookmark", "bookmarks"],
   saved: ["saved", "save", "favorite", "favorites", "bookmark", "bookmarks"],
   seller: ["seller", "sellers", "vendor", "vendors", "merchant", "payout", "payouts"],
@@ -90,6 +93,8 @@ const helpSearchAliases: Record<string, string[]> = {
   unblock: ["unblock", "block", "blocked", "blocking", "privacy", "safety"],
   vendor: ["vendor", "vendors", "seller", "sellers"],
   vendors: ["vendor", "vendors", "seller", "sellers"],
+  verified: ["verified", "verification", "approval", "badge", "proof"],
+  verification: ["verification", "verified", "approval", "badge", "proof", "license"],
   webview: ["webview", "app", "wrapper", "browser", "outside browser", "beta"],
   wrong: ["wrong", "item", "package", "order", "refund"],
 };

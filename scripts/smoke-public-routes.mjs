@@ -652,7 +652,7 @@ const checks = [
       "Stuff access",
       "Merch seller review",
       "FAQPage",
-      "Last reviewed July 15, 2026",
+      "Last reviewed July 19, 2026",
       "support@thetattoocore.com",
     ],
   },
