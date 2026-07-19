@@ -127,7 +127,7 @@ const checks = [
     label: "user-facing push copy avoids technical install-channel wording",
     ok:
       userFacingPushSource.includes("App alerts") &&
-      userFacingPushSource.includes("Phone app alerts are off for now") &&
+      userFacingPushSource.includes("Phone app alerts are off") &&
       userFacingPushSource.includes("Alert settings") &&
       userFacingPushSource.includes("App alert setup could not be completed.") &&
       !userFacingPushSource.includes("Push setup could not be completed.") &&

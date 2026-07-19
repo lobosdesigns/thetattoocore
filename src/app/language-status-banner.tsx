@@ -51,7 +51,7 @@ export function LanguageStatusBanner({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm leading-5">
           Language preference: <span className="font-semibold">{label}</span>.
-          Posts stay in original text for now.
+          Posts stay in original text.
         </p>
         <Link
           className="ttc-surface w-fit rounded-md border px-3 py-2 text-xs font-semibold hover:border-[var(--accent)]"

@@ -430,7 +430,7 @@ export function MediaInput({
 
   const isVideo = selected?.mediaType === "video";
   const guidance = videoAllowed
-    ? `${imageOptimizerLabel} Videos keep their original quality for now: ${formatSeconds(
+    ? `${imageOptimizerLabel} Videos keep their original quality: ${formatSeconds(
         maxVideoSeconds,
       )} max, ${formatBytes(maxVideoBytes)} max, MP4/MOV preferred.`
     : `${imageOptimizerLabel} Max image size after optimization is ${formatBytes(
@@ -463,7 +463,7 @@ export function MediaInput({
       </p>
       {videoAllowed && !compact ? (
         <p className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
-          {videoUploadLabel} Use short MP4/MOV clips for now.
+          {videoUploadLabel} Use short MP4/MOV clips.
         </p>
       ) : null}
       {isOptimizing && !selected ? (
@@ -514,7 +514,7 @@ export function MediaInput({
               ) : null}
               {isVideo && !selected.error ? (
                 <p className="mt-1 text-xs text-[var(--muted-strong)]">
-                  Video will keep its original quality for now. Keep it short,
+                  Video will keep its original quality. Keep it short,
                   clear, and under the cap.
                 </p>
               ) : null}

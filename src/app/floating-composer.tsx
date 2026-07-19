@@ -19,7 +19,7 @@ const imageVideoAccept = `${imageAccept},video/mp4,video/quicktime`;
 const visibilityOptions = [
   ["Public preview", "Searchable preview for logged-out visitors."],
   ["Members only", "Visible after login. Good for shop talk, community posts, and member context."],
-  ["Private", "Only you can see it for now. Useful for drafts or content you are not ready to share."],
+  ["Private", "Only you can see it. Useful for drafts or content you are not ready to share."],
 ] as const;
 
 function ComposerDetails({

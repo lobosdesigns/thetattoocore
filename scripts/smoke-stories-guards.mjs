@@ -136,8 +136,8 @@ const checks = [
       actions.includes("export async function createStoryPost") &&
       actions.includes("await requireProfile()") &&
       actions.includes("Stories need a photo, GIF, or short video.") &&
-      actions.includes("Story videos can be up to 25 MB for now.") &&
-      actions.includes("Story videos can be up to 15 seconds for now.") &&
+      actions.includes("Story videos can be up to 25 MB.") &&
+      actions.includes("Story videos can be up to 15 seconds.") &&
       actions.includes("24 * 60 * 60 * 1000") &&
       actions.includes("const storyId = crypto.randomUUID()") &&
       actions.includes("await supabase.storage.from(MEDIA_BUCKET).remove([storagePath])") &&

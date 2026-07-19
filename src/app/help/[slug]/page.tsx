@@ -316,7 +316,7 @@ export default async function HelpArticlePage({
             ) : (
               <p className="mt-4 rounded-md border border-dashed border-[var(--card-rim)] bg-[var(--surface-subtle)] p-3 text-sm leading-6 text-[var(--muted)]">
                 No visual walkthrough is queued for this guide yet. Use the
-                written steps and guide questions for now.
+                written steps and guide questions.
               </p>
             )}
           </section>

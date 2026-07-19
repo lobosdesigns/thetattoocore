@@ -738,7 +738,7 @@ export async function createStoryPost(formData: FormData) {
   }
 
   if (metadata.mediaType === "video" && metadata.fileSizeBytes > 25 * 1024 * 1024) {
-    redirect(homeMessage("Story videos can be up to 25 MB for now.", "stories"));
+    redirect(homeMessage("Story videos can be up to 25 MB.", "stories"));
   }
 
   if (
@@ -746,7 +746,7 @@ export async function createStoryPost(formData: FormData) {
     metadata.durationSeconds != null &&
     metadata.durationSeconds > 15
   ) {
-    redirect(homeMessage("Story videos can be up to 15 seconds for now.", "stories"));
+    redirect(homeMessage("Story videos can be up to 15 seconds.", "stories"));
   }
 
   const storyId = crypto.randomUUID();

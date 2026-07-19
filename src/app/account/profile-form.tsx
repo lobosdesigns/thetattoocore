@@ -112,7 +112,7 @@ const notificationSummary = [
   ["Live now", "In-app alerts and badges"],
   ["Next", "Email for important account events"],
   ["App alerts", "Available after opt-in"],
-  ["Mobile", "Phone app alerts are off for now"],
+  ["Mobile", "Phone app alerts are off"],
 ] as const;
 
 const profileTabs = [
@@ -151,7 +151,7 @@ const alertSettingNotes = [
   "Current switches control in-app notifications and unread badges.",
   "The same choices can guide important email and installed-app alerts as those features open up.",
   "Quiet hours help reduce noisy alerts while keeping safety and account alerts available.",
-  "Phone app alerts are off for now.",
+  "Phone app alerts are off.",
 ] as const;
 
 function RequiredMark() {

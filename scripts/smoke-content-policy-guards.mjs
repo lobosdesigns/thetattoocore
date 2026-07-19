@@ -128,9 +128,9 @@ const checks = [
     ok:
       mediaInput.includes("Phone photos are resized before upload.") &&
       mediaInput.includes("Video upload is capped for now. Keep clips short, clear, and ready for review.") &&
-      mediaInput.includes("Use short MP4/MOV clips for now.") &&
-      mediaInput.includes("Videos keep their original quality for now") &&
-      mediaInput.includes("Video will keep its original quality for now") &&
+      mediaInput.includes("Use short MP4/MOV clips.") &&
+      mediaInput.includes("Videos keep their original quality") &&
+      mediaInput.includes("Video will keep its original quality. Keep it short") &&
       !mediaInput.includes("Videos stay raw for now") &&
       !mediaInput.includes("Video will upload as-is for now") &&
       mediaInput.includes("MP4/MOV preferred") &&
