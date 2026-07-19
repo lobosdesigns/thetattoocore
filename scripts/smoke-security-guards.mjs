@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 
 const authLogin = readFileSync("src/app/auth/login/route.ts", "utf8");
 const legacyLoginActions = readFileSync("src/app/login/actions.ts", "utf8");
@@ -15,7 +16,6 @@ const resetPasswordForm = readFileSync(
   "src/app/reset-password/reset-password-form.tsx",
   "utf8",
 );
-const clientComponentSource = [resetPasswordForm].join("\n");
 const adClickRoute = readFileSync("src/app/api/ad-click/route.ts", "utf8");
 const loginPage = readFileSync("src/app/login/page.tsx", "utf8");
 const signupPage = readFileSync("src/app/signup/page.tsx", "utf8");
@@ -165,6 +165,31 @@ const clientConsoleSnippets = [
   "console.error(",
 ];
 
+function collectFiles(dir, predicate, files = []) {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      collectFiles(path, predicate, files);
+      continue;
+    }
+
+    if (predicate(path)) files.push(path);
+  }
+
+  return files;
+}
+
+const clientConsoleFiles = collectFiles("src/app", (path) => path.endsWith(".tsx")).filter(
+  (path) => {
+    const source = readFileSync(path, "utf8");
+    return (
+      source.startsWith('"use client";') &&
+      clientConsoleSnippets.some((snippet) => source.includes(snippet))
+    );
+  },
+);
+
 const checks = [
   {
     label: "auth login rejects protocol-relative return paths",
@@ -263,13 +288,14 @@ const checks = [
       resetPasswordActions.includes('console.error("Password update failed.", error)') &&
       resetPasswordActions.includes('"Could not update password. Please try again."') &&
       !resetPasswordActions.includes('error.message || "Could not update password."') &&
+      forgotPasswordPage.includes('autoComplete="email"') &&
       resetPasswordForm.includes('"Could not open that reset link. Please request a new one."') &&
       resetPasswordForm.includes('"Could not update password. Please try again."') &&
       !resetPasswordForm.includes("setMessage(error.message)"),
   },
   {
-    label: "client auth recovery UI avoids browser console error details",
-    ok: clientConsoleSnippets.every((snippet) => !clientComponentSource.includes(snippet)),
+    label: "client components avoid browser console error details",
+    ok: clientConsoleFiles.length === 0,
   },
   {
     label: "notification open rejects external and protocol-relative hrefs",

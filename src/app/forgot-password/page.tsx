@@ -44,6 +44,7 @@ export default async function ForgotPasswordPage({
               <span className="text-sm font-medium">Email</span>
               <input
                 className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                autoComplete="email"
                 name="email"
                 required
                 type="email"
