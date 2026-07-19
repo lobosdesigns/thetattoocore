@@ -370,7 +370,11 @@ const checks = [
       helpSearch.includes("overflow") &&
       helpSearch.includes("password") &&
       helpSearch.includes("screenshot") &&
+      helpSearch.includes("webview") &&
+      helpSearch.includes("outside browser") &&
       helpCenterData.includes("bug report") &&
+      helpCenterData.includes("What if a beta link opens outside the app?") &&
+      helpCenterData.includes("confirmation link") &&
       helpCenterData.includes("safe screenshot") &&
       docs["docs/PRODUCT_PLAN.md"].includes("structured article keywords") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes(

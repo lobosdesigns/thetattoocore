@@ -13,8 +13,10 @@ const helpSearchAliases: Record<string, string[]> = {
   bank: ["bank", "payout", "payouts", "seller", "payment"],
   bug: ["bug", "bugs", "issue", "issues", "report", "reports", "beta"],
   bugs: ["bug", "bugs", "issue", "issues", "report", "reports", "beta"],
+  browser: ["browser", "outside browser", "webview", "app", "wrapper", "beta"],
   chargeback: ["chargeback", "chargebacks", "dispute", "disputes", "refund", "refunds"],
   chargebacks: ["chargeback", "chargebacks", "dispute", "disputes", "refund", "refunds"],
+  confirmation: ["confirmation", "confirm", "email", "signup", "login", "beta"],
   damaged: ["damaged", "damage", "package", "shipping", "refund", "order"],
   dispute: ["dispute", "disputes", "chargeback", "chargebacks", "refund", "refunds"],
   disputes: ["dispute", "disputes", "chargeback", "chargebacks", "refund", "refunds"],
@@ -28,6 +30,8 @@ const helpSearchAliases: Record<string, string[]> = {
   gigs: ["gig", "gigs", "job", "jobs", "convention", "conventions"],
   guestspot: ["guest", "guestspot", "guestspots", "spot", "spots", "gig", "gigs"],
   guestspots: ["guest", "guestspot", "guestspots", "spot", "spots", "gig", "gigs"],
+  invite: ["invite", "invites", "install", "beta", "testing", "app"],
+  invites: ["invite", "invites", "install", "beta", "testing", "app"],
   job: ["job", "jobs", "gig", "gigs"],
   jobs: ["job", "jobs", "gig", "gigs"],
   fee: ["fee", "fees", "payment", "payout", "checkout"],
@@ -70,6 +74,7 @@ const helpSearchAliases: Record<string, string[]> = {
   tshirts: ["shirt", "shirts", "tshirt", "tshirts", "apparel", "merch"],
   vendor: ["vendor", "vendors", "seller", "sellers"],
   vendors: ["vendor", "vendors", "seller", "sellers"],
+  webview: ["webview", "app", "wrapper", "browser", "outside browser", "beta"],
   wrong: ["wrong", "item", "package", "order", "refund"],
 };
 
