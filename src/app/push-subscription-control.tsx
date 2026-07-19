@@ -62,12 +62,12 @@ export function PushSubscriptionControl() {
       setSupported(hasSupport);
 
       if (!readyForSetup) {
-        setMessage("App alerts are not available on this device yet.");
+        setMessage("Device alerts are being prepared. Keep checking Notifications for now.");
         return;
       }
 
       if (!hasSupport) {
-        setMessage("This device does not support app alerts yet.");
+        setMessage("Device alerts are being prepared. Keep checking Notifications for now.");
         return;
       }
 
@@ -94,7 +94,7 @@ export function PushSubscriptionControl() {
       const permission = await Notification.requestPermission();
 
       if (permission !== "granted") {
-      setMessage("App alert permission was not enabled.");
+        setMessage("Device alerts are still off. Keep checking Notifications for now.");
         return;
       }
 
@@ -108,7 +108,7 @@ export function PushSubscriptionControl() {
 
       await postSubscription(subscription);
       setEnabled(true);
-      setMessage("App alerts are enabled on this device.");
+      setMessage("Device alert preference saved. Keep checking Notifications for now.");
     } catch {
       setMessage("App alert setup could not be completed.");
     } finally {
@@ -134,7 +134,7 @@ export function PushSubscriptionControl() {
       }
 
       setEnabled(false);
-      setMessage("App alerts are off on this device.");
+      setMessage("Device alert preference is off. Keep checking Notifications for now.");
     } catch {
       setMessage("App alerts could not be turned off.");
     } finally {
@@ -150,7 +150,10 @@ export function PushSubscriptionControl() {
             App alerts
           </p>
           <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
-            {message || (enabled ? "Enabled on this device." : "Ready when you turn it on.")}
+            {message ||
+              (enabled
+                ? "Device alert preference saved. Keep checking Notifications for now."
+                : "Device alerts are being prepared. Keep checking Notifications for now.")}
           </p>
         </div>
         {supported ? (

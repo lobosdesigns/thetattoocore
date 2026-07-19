@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 const adCheckout = readFileSync("src/app/api/ads/checkout/route.ts", "utf8");
 const bookingCheckout = readFileSync("src/app/api/bookings/checkout/route.ts", "utf8");
 const merchCheckout = readFileSync("src/app/api/merch/checkout/route.ts", "utf8");
+const envExample = readFileSync(".env.example", "utf8");
 const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8");
 const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const merchIndexPage = readFileSync("src/app/merch/page.tsx", "utf8");
@@ -471,6 +472,19 @@ checks.push({
   label: "production commerce gates stay visible before real payments",
   ok:
     adminPaymentsPage.includes("Production payment gates") &&
+    envExample.includes("STRIPE_EXPECTED_LIVEMODE=false") &&
+    stripeWebhook.includes("process.env.STRIPE_EXPECTED_LIVEMODE") &&
+    stripeWebhook.includes("function stripeLivemodeMatches") &&
+    stripeWebhook.includes("event.livemode === expected") &&
+    stripeWebhook.includes("Payment update ignored because livemode did not match.") &&
+    stripeWebhook.includes("function checkoutSessionIsSettled") &&
+    stripeWebhook.includes('event.type === "checkout.session.async_payment_succeeded"') &&
+    stripeWebhook.includes('session.payment_status === "paid"') &&
+    stripeWebhook.includes("Checkout session completed before payment settled.") &&
+    paymentReadiness.includes("STRIPE_EXPECTED_LIVEMODE=true") &&
+    paymentReadiness.includes("checkout.session.async_payment_succeeded") &&
+    paymentReadiness.includes("charge.dispute.funds_reinstated") &&
+    paymentReadiness.includes("account.updated") &&
     adminPaymentsPage.includes("const paymentReconciliationChecks = [") &&
     adminPaymentsPage.includes("const hostedPayoutQaChecks = [") &&
     adminPaymentsPage.includes("API or browser-automation shortcuts do not count as a completed Express seller test") &&

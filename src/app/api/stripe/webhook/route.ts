@@ -13,6 +13,31 @@ function stripeResponse(message: string, status = 200) {
   return NextResponse.json({ message }, { status });
 }
 
+function expectedStripeLivemode() {
+  const value = process.env.STRIPE_EXPECTED_LIVEMODE?.trim().toLowerCase();
+
+  if (value === "true") return true;
+  if (value === "false") return false;
+
+  return null;
+}
+
+function stripeLivemodeMatches(event: Stripe.Event) {
+  const expected = expectedStripeLivemode();
+
+  return expected === null || event.livemode === expected;
+}
+
+function checkoutSessionIsSettled(
+  event: Stripe.Event,
+  session: Stripe.Checkout.Session,
+) {
+  return (
+    event.type === "checkout.session.async_payment_succeeded" ||
+    session.payment_status === "paid"
+  );
+}
+
 function isUniqueViolation(error: { code?: string } | null) {
   return error?.code === "23505";
 }
@@ -1129,6 +1154,15 @@ export async function POST(request: Request) {
     return stripeResponse("Invalid payment update.", 400);
   }
 
+  if (!stripeLivemodeMatches(event)) {
+    console.warn("Payment update ignored because livemode did not match.", {
+      eventId: event.id,
+      eventType: event.type,
+      livemode: event.livemode,
+    });
+    return stripeResponse("Payment update mode ignored.");
+  }
+
   try {
     const supabase = createAdminClient();
 
@@ -1158,17 +1192,24 @@ export async function POST(request: Request) {
     ) {
       const session = event.data.object as Stripe.Checkout.Session;
 
-      if (session.metadata?.payment_kind === "ad_campaign") {
-        await markAdCheckoutSession({ session, status: "paid" });
-      } else if (session.metadata?.payment_kind === "booking_deposit") {
-        await markBookingCheckoutSession({ session, status: "paid" });
-      } else if (isMerchCheckoutSession(session)) {
-        await markCheckoutSession({
-          session,
-          status: "paid",
-        });
+      if (checkoutSessionIsSettled(event, session)) {
+        if (session.metadata?.payment_kind === "ad_campaign") {
+          await markAdCheckoutSession({ session, status: "paid" });
+        } else if (session.metadata?.payment_kind === "booking_deposit") {
+          await markBookingCheckoutSession({ session, status: "paid" });
+        } else if (isMerchCheckoutSession(session)) {
+          await markCheckoutSession({
+            session,
+            status: "paid",
+          });
+        } else {
+          throw new Error("Unknown checkout session payment type.");
+        }
       } else {
-        throw new Error("Unknown checkout session payment type.");
+        console.warn("Checkout session completed before payment settled.", {
+          paymentStatus: session.payment_status,
+          sessionId: session.id,
+        });
       }
     }
 

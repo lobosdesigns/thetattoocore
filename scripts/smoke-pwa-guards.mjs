@@ -129,7 +129,11 @@ const checks = [
       userFacingPushSource.includes("App alerts") &&
       userFacingPushSource.includes("Phone app alerts are off") &&
       userFacingPushSource.includes("Alert settings") &&
+      userFacingPushSource.includes("Device alerts are being prepared. Keep checking Notifications for now.") &&
+      userFacingPushSource.includes("Device alert preference saved. Keep checking Notifications for now.") &&
       userFacingPushSource.includes("App alert setup could not be completed.") &&
+      !userFacingPushSource.includes("Enabled on this device.") &&
+      !userFacingPushSource.includes("Ready when you turn it on.") &&
       !userFacingPushSource.includes("Push setup could not be completed.") &&
       !userFacingPushSource.includes("Push permission was not enabled.") &&
       !userFacingPushSource.includes("Push could not be turned off.") &&
