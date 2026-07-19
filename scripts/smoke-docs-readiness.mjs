@@ -354,6 +354,8 @@ const checks = [
       helpSearch.includes("tattooer") &&
       helpSearch.includes("guestspots") &&
       helpSearch.includes("shirts") &&
+      helpSearch.includes("bookmarks") &&
+      helpSearch.includes("favorites") &&
       helpSearch.includes("appointments") &&
       helpSearch.includes("article.slug") &&
       helpSearch.includes("article.keywords") &&
@@ -361,6 +363,8 @@ const checks = [
       helpCenterData.includes("payout setup") &&
       helpCenterData.includes("google calendar") &&
       helpCenterData.includes("shop link") &&
+      helpCenterData.includes("How do I find saved things again?") &&
+      helpCenterData.includes("saved items") &&
       helpSearch.includes("payout") &&
       helpSearch.includes("chargeback") &&
       helpSearch.includes("merchant") &&

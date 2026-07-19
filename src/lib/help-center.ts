@@ -367,18 +367,26 @@ export const helpArticles = [
           "A result may be private, blocked, hidden, removed, not public, not approved, or only visible after sign-in and required account checks.",
         question: "Why can I not find someone or something?",
       },
+      {
+        answer:
+          "Open Saved from the main navigation after signing in. Use recent searches or saved search shortcuts for repeated searches, and save posts or products from their cards when you want to find them again later.",
+        question: "How do I find saved things again?",
+      },
     ],
     keywords: [
+      "bookmarks",
+      "favorites",
       "find people",
       "followers",
       "following",
       "private profile",
       "recent searches",
+      "saved items",
       "saved searches",
       "search aliases",
       "username",
     ],
-    lastReviewed: "July 15, 2026",
+    lastReviewed: "July 19, 2026",
     relatedSlugs: [
       "getting-started",
       "artist-profile-shop-links",
