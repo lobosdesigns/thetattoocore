@@ -185,6 +185,11 @@ const checks = [
       docs["docs/AGE_RATING_PREP.md"].includes("Ads") &&
       docs["docs/AGE_RATING_PREP.md"].includes("Marketplace/commerce") &&
       docs["docs/AGE_RATING_PREP.md"].includes("AI") &&
+      docs["docs/AGE_RATING_PREP.md"].includes("Social media capability questions") &&
+      docs["docs/AGE_RATING_PREP.md"].includes("not a dating app") &&
+      docs["docs/AGE_RATING_PREP.md"].includes("not invite-only") &&
+      docs["docs/AGE_RATING_PREP.md"].includes("Apple's current age-rating social media capability questions") &&
+      docs["docs/AGE_RATING_PREP.md"].includes("Google Play App content answers") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Social, no dating/sexual-relationship purpose") &&
       docs["docs/APP_STORE_READINESS.md"].includes("no precise location sharing") &&
       docs["docs/APP_STORE_READINESS.md"].includes("yes blocking, yes reporting, yes chat moderation") &&

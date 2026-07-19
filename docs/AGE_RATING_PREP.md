@@ -23,10 +23,13 @@ Use this as an internal checklist before answering Google Play, App Store, payme
 - Ads: yes, internal sponsored placements are planned/started. Targeting must remain coarse, transparent, non-AI, and never minor/adult-sensitive.
 - Location: coarse user-entered location is used. Precise GPS is not required for basic use.
 - AI: platform stance is no AI-generated tattoo art, no AI replacement positioning, and no opaque AI ad expansion.
+- Social media capability questions: answer from the shipped feature set. The app has public profiles, public posts, temporary Stories, comments/replies, follows, saves, direct messages, reporting, blocking, and moderation. It is not a dating app, not invite-only, and does not allow visible nudity or sexual solicitation.
 
 ## Before Submission
 
 - Recheck Play Console and App Store Connect age-rating questions against the live feature set that will actually ship.
+- Recheck Apple's current age-rating social media capability questions before submission and keep the answers consistent with the shipped 18+ social/community features.
+- Recheck Google Play App content answers, Data Safety, Target Audience, and IARC content-rating answers whenever app features or payment/commerce status changes.
 - Verify support, terms, privacy, account deletion, reporting, and blocking are reachable from the submitted app build.
 - Use store screenshots with brand-safe sample content only.
 - Avoid screenshots containing nudity, private DMs, real payment data, copyrighted tattoo art, personal contact data, or unreviewed marketplace items.
