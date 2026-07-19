@@ -1285,7 +1285,7 @@ export default async function AccountPage({
                 <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
                   Choosing Google Calendar or Apple/iCalendar saves a private
                   read-only setup note for booking coordination. TTC does not
-                  store calendar passwords or raw connection secrets here.
+                  store calendar passwords here.
                 </p>
                 {bookingCalendarConnections?.length ? (
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -1298,7 +1298,7 @@ export default async function AccountPage({
                           {connection.display_name ?? titleCaseStatus(connection.provider)}
                         </p>
                         <p className="text-[var(--muted-strong)]">
-                          {titleCaseStatus(connection.status)} ·{" "}
+                          {titleCaseStatus(connection.status)} -{" "}
                           {titleCaseStatus(connection.sync_direction)}
                         </p>
                         {connection.external_calendar_id ? (

@@ -475,7 +475,8 @@ const checks = [
     label: "account booking settings maintain private calendar setup records",
     ok:
       accountPage.includes("Calendar setup records") &&
-      accountPage.includes("raw connection secrets") &&
+      accountPage.includes("store calendar passwords here") &&
+      !accountPage.includes("raw connection secrets") &&
       accountPage.includes('.from("booking_calendar_connections")') &&
       accountPage.includes("external_calendar_id") &&
       accountActions.includes("calendarConnectionPrep") &&
