@@ -12,6 +12,7 @@ const expectedKeys = [
   "NEXT_PUBLIC_SITE_URL",
   "NEXT_PUBLIC_SUPABASE_URL",
   "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+  "NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY",
   "SUPABASE_SERVICE_ROLE_KEY",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
@@ -22,6 +23,7 @@ const publicKeys = [
   "NEXT_PUBLIC_SITE_URL",
   "NEXT_PUBLIC_SUPABASE_URL",
   "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+  "NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY",
 ];
 const secretKeys = expectedKeys.filter((key) => !publicKeys.includes(key));
 const pairs = lines.map((line) => {
@@ -51,7 +53,7 @@ function valueLooksLikePlaceholder(key, value) {
     return value === "false";
   }
 
-  return /replace_|_key|_secret|server_only|sk_test_or_live|whsec_from/.test(value);
+  return /replace_|_key|_secret|server_only|sk_test_or_live|whsec_from|when_ready/.test(value);
 }
 
 const secretValuePatterns = [
@@ -84,6 +86,12 @@ const checks = [
   {
     label: ".env.example keeps secret values as placeholders",
     ok: secretKeys.every((key) => valueLooksLikePlaceholder(key, valueByKey.get(key) ?? "")),
+  },
+  {
+    label: ".env.example keeps browser push gated behind a placeholder public key",
+    ok:
+      valueByKey.get("NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY") ===
+      "replace_with_web_push_public_key_when_ready",
   },
   {
     label: ".env.example does not contain live-looking secret material",
