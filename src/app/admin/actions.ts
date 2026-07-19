@@ -718,7 +718,7 @@ export async function createTestAccount(formData: FormData) {
     );
   }
 
-  const { error: updateError } = await adminClient
+  const { error: updateError } = await supabase
     .from("profiles")
     .update({
       account_type: accountType,
@@ -738,7 +738,7 @@ export async function createTestAccount(formData: FormData) {
     );
   }
 
-  await supabase.from("admin_audit_logs").insert({
+  const { error: auditError } = await supabase.from("admin_audit_logs").insert({
     actor_id: userId,
     event_type: "tester_account_created",
     metadata: {
@@ -749,6 +749,16 @@ export async function createTestAccount(formData: FormData) {
     target_id: profileId,
     target_type: "profile",
   });
+
+  if (auditError) {
+    await adminClient.auth.admin.deleteUser(profileId);
+    redirect(
+      adminUsersMessage(
+        auditError.message || "Created tester account, but audit logging failed.",
+        returnTo,
+      ),
+    );
+  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/users");
