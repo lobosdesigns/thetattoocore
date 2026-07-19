@@ -292,6 +292,8 @@ const checks = [
       accountActions.includes("overlaps another scheduled booking") &&
       accountActions.includes('.in("status", ["accepted", "deposit_pending", "deposit_paid", "completed"])') &&
       accountActions.includes('type: decision === "accept" ? "booking_accepted" : "booking_declined"') &&
+      accountActions.includes('artistNote || "Declined."') &&
+      !accountActions.includes("Declined for now.") &&
       accountActions.includes("Deposit checkout is the next booking step.") &&
       accountPage.includes('name="final_deposit_amount"') &&
       messagesPage.includes('name="final_deposit_amount"'),

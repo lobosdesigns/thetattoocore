@@ -1293,7 +1293,7 @@ export async function respondBookingRequest(formData: FormData) {
           ? finalDepositAmountCents > 0
             ? `Accepted. Deposit checkout is the next step: ${dollars(finalDepositAmountCents)} plus TTC fee ${dollars(finalPlatformFeeCents)}.${scheduledStartAt ? " Appointment time was added." : ""}`
             : `Accepted.${scheduledStartAt ? " Appointment time was added." : " Deposit checkout can be added next if needed."}`
-          : artistNote || "Declined for now.",
+          : artistNote || "Declined.",
       href: `/u/${artist?.username ?? ""}#booking-request`,
       recipient_id: booking.client_id,
       subject_id: booking.id,
