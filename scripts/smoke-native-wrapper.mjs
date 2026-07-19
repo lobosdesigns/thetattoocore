@@ -97,6 +97,9 @@ const checks = [
       source.readme.includes("Apple TestFlight") &&
       source.readme.includes("Google Play internal testing") &&
       source.readme.includes("Public release waits for final legal review") &&
+      source.nativePrep.includes("August 31, 2026") &&
+      source.nativePrep.includes("Android 16 / API 36") &&
+      source.mobileRunbook.includes("current internal-test Android build targets API 35") &&
       source.readme.includes("support@thetattoocore.com") &&
       source.readme.includes("Native permissions at first beta: none"),
   },

@@ -142,6 +142,10 @@ const checks = [
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Do not place private API keys") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Allowed Navigation") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Native Permissions") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("August 31, 2026") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Android 16 / API 36") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("target Android 16 / API 36") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("targetSdkVersion` set to 36") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not request precise device location") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not prompt on first open") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Store Review Safety") &&

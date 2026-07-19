@@ -474,6 +474,9 @@ checks.push({
     adminPaymentsPage.includes("Production payment gates") &&
     envExample.includes("STRIPE_EXPECTED_LIVEMODE=false") &&
     stripeWebhook.includes("process.env.STRIPE_EXPECTED_LIVEMODE") &&
+    stripeWebhook.includes("process.env.STRIPE_SECRET_KEY") &&
+    stripeWebhook.includes('secretKey?.startsWith("sk_live_")') &&
+    stripeWebhook.includes('secretKey?.startsWith("sk_test_")') &&
     stripeWebhook.includes("function stripeLivemodeMatches") &&
     stripeWebhook.includes("event.livemode === expected") &&
     stripeWebhook.includes("Payment update ignored because livemode did not match.") &&

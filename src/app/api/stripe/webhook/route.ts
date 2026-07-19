@@ -19,6 +19,11 @@ function expectedStripeLivemode() {
   if (value === "true") return true;
   if (value === "false") return false;
 
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+
+  if (secretKey?.startsWith("sk_live_")) return true;
+  if (secretKey?.startsWith("sk_test_")) return false;
+
   return null;
 }
 

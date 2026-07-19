@@ -400,6 +400,7 @@
 
 - Create and validate the beta wrapper in `native/thetattoocore-mobile`, then build signed Android upload bundles on local Android tooling and iOS archives on the Mac/remote Mac with Xcode. Android internal-test bundle `TheTattooCore-app-release-v1-signed.aab` has been uploaded to Google Play internal testing.
 - Upload first builds to Google Play internal testing and Apple TestFlight before requesting public review. Google Play internal testing release `1 (1.0)` is active; iOS build `1.0 (3)` is attached to TTC Internal Testers and available for internal TestFlight testing.
+- Before any Google Play submission or update on or after August 31, 2026, install Android 16 / API 36 tooling and rebuild the Android wrapper with `compileSdkVersion` and `targetSdkVersion` set to 36. The current internal-test build targets API 35 because this Windows machine only has Android 35 installed.
 - Map the generated splash/screenshot assets into the native wrapper once Android/iOS packaging starts.
 - Follow `docs/NATIVE_WRAPPER_PREP.md` before creating native wrapper projects or requesting native permissions.
 - Package native builds through the chosen wrapper path.
