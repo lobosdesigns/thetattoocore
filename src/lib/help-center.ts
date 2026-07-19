@@ -852,7 +852,7 @@ export const helpArticles = [
     tutorialMedia: [
       {
         description:
-          "Show the Settings seller payout card, readiness chips, and hosted setup button without exposing private payout details.",
+          "Show the Settings seller payout card, readiness chips, and secure setup button without exposing private payout details.",
         kind: "screenshot",
         title: "Seller payout readiness",
       },

@@ -12,6 +12,8 @@ const forbiddenBodyText = [
   "Stripe",
   "service key",
   "service role",
+  "hosted checkout",
+  "hosted setup",
   "hosted payout",
   "lobo3319@gmail.com",
   "lobosden@hotmail.com",

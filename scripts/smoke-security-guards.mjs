@@ -120,6 +120,9 @@ const forbiddenPublicInfraSnippets = [
   "service role",
   "server webhook",
   "payment-provider",
+  "hosted checkout",
+  "hosted setup",
+  "hosted payout",
   "Cloudflare Stream",
   "test mode",
   "test-mode",
@@ -561,7 +564,7 @@ const checks = [
       privacyPage.includes("Account And Profile Data") &&
       privacyPage.includes("Commerce And Payments") &&
       privacyPage.includes("payment questions are handled through private account or support review") &&
-      privacyPage.includes("hosted checkout pages") &&
+      privacyPage.includes("secure checkout flow") &&
       privacyPage.includes("does not collect raw payment or payout credentials") &&
       privacyPage.includes("Retention And Review") &&
       privacyPage.includes("Public examples, help screenshots, and support images") &&

@@ -1087,7 +1087,14 @@ export default async function AccountPage({
           <Link className="text-sm font-semibold text-[var(--foreground)]" href="/">
             TheTattooCore
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+            <Link
+              aria-label="Back to 4U home"
+              className="ttc-surface flex h-10 items-center rounded-md border px-4 text-sm font-semibold"
+              href="/#feed"
+            >
+              Back to 4U
+            </Link>
             <Link
               className="ttc-surface flex h-10 items-center rounded-md border px-4 text-sm font-semibold"
               href="/help"

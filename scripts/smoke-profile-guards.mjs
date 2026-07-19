@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
+const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const profileForm = readFileSync("src/app/account/profile-form.tsx", "utf8");
 const followListPage = readFileSync("src/app/u/[username]/follow-list-page.tsx", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
@@ -20,6 +21,14 @@ const socialFields = [
 ];
 
 const checks = [
+  {
+    label: "account header keeps a clear return path to 4U home",
+    ok:
+      accountPage.includes("Back to 4U") &&
+      accountPage.includes('href="/#feed"') &&
+      accountPage.includes('aria-label="Back to 4U home"') &&
+      accountPage.includes("flex flex-wrap items-center justify-end"),
+  },
   {
     label: "profile form keeps bio, avatar, banner, social links, and shop link editable",
     ok:

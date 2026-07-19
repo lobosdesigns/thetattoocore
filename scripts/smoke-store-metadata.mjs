@@ -4,8 +4,11 @@ const files = {
   appleDescription: "native/store-metadata/apple-app-store/en-US/description.txt",
   appleKeywords: "native/store-metadata/apple-app-store/en-US/keywords.txt",
   appleName: "native/store-metadata/apple-app-store/en-US/name.txt",
+  applePromotionalText: "native/store-metadata/apple-app-store/en-US/promotional-text.txt",
   appleSubtitle: "native/store-metadata/apple-app-store/en-US/subtitle.txt",
+  appleWhatsNewInternal: "native/store-metadata/apple-app-store/en-US/whats-new-internal.txt",
   googleDescription: "native/store-metadata/google-play/en-US/full-description.txt",
+  googleReleaseNotesInternal: "native/store-metadata/google-play/en-US/release-notes-internal.txt",
   googleShort: "native/store-metadata/google-play/en-US/short-description.txt",
   googleTitle: "native/store-metadata/google-play/en-US/title.txt",
   readme: "native/store-metadata/README.md",
@@ -43,7 +46,13 @@ const checks = [
       source.appleName.length <= 30 &&
       source.appleSubtitle.length > 0 &&
       source.appleSubtitle.length <= 30 &&
-      source.appleKeywords.length <= 100,
+      source.appleKeywords.length <= 100 &&
+      source.applePromotionalText.length > 0 &&
+      source.applePromotionalText.length <= 170 &&
+      source.appleWhatsNewInternal.length > 0 &&
+      source.appleWhatsNewInternal.length <= 4000 &&
+      source.googleReleaseNotesInternal.length > 0 &&
+      source.googleReleaseNotesInternal.length <= 500,
   },
   {
     label: "store descriptions include current safety position",
