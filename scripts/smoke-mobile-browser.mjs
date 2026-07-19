@@ -67,7 +67,7 @@ const routes = [
   {
     path: "/help/posting-stories-dms",
     textIncludes: [
-      "How to create Stuff listings, Gigs, Stories, and DMs safely",
+      "How to post, use Stories, and DM safely",
       "Stories rail preview",
       "Gossip discussion preview",
     ],

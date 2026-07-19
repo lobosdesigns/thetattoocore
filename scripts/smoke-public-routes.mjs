@@ -733,7 +733,7 @@ const checks = [
     path: "/help/posting-stories-dms",
     status: [200],
     includes: [
-      "How to create Stuff listings, Gigs, Stories, and DMs safely",
+      "How to post, use Stories, and DM safely",
       "Why does the create form change?",
       "Can I post tattoo placement photos with nudity?",
       "FAQPage",

@@ -58,9 +58,9 @@ export const helpCategories = [
   },
   {
     description:
-      "Posting to 4U, Gossip, Gigs, Stories, and DMs, including media uploads, comments, reports, blocking, and no-visible-nudity rules.",
+      "Posting to 4U, Gossip, Stuff, Gigs, Merch, and Stories, plus using DMs safely for private conversations.",
     title: "Posting And Safety",
-    topics: ["4U and Gossip", "Stories and DMs", "Reports", "Privacy controls"],
+    topics: ["4U and Gossip", "Stuff and Gigs", "Stories", "DM safety", "Reports"],
   },
 ] as const satisfies readonly HelpCategory[];
 
@@ -113,7 +113,7 @@ export const helpArticles = [
       "Open Settings and save a username, display name, profile photo, banner, bio, location, language, and 18+ confirmation.",
       "Choose light or dark mode in Settings, then set privacy and notification preferences before posting.",
       "Use Search to find artists, studios, vendors, friends, public posts, Stuff, Gigs, and Merch.",
-      "Use 4U for image/reel posts, Gossip for longer discussion posts, Stuff for verified professional marketplace items, Gigs for work/events/opportunities, Merch for fan-safe public products, and DM for private messages.",
+      "Use 4U for image/reel posts, Gossip for longer discussion posts, Stuff for verified professional marketplace items, Gigs for work/events/opportunities, and Merch for fan-safe public products. Use the DM shortcut, profile DM buttons, or alerts for private messages.",
       "Submit artist, studio, or vendor verification before expecting professional tools such as Stuff seller contact, booking setup, seller review, or professional ad review.",
       "Use Help or Support when something is unclear, private, payment-related, or safety-related.",
     ],
@@ -127,7 +127,7 @@ export const helpArticles = [
       },
       {
         description:
-          "Short mobile walkthrough of switching between 4U, Gossip, Stuff, Gigs, Merch, DM, Search, Saved, Alerts, and Me.",
+          "Short mobile walkthrough of switching between 4U, Gossip, Stuff, Gigs, Merch, Search, Saved, Alerts, DM, and Me.",
         kind: "short_clip",
         title: "Main navigation tour",
       },
@@ -839,11 +839,11 @@ export const helpArticles = [
   {
     category: "Posting And Safety",
     description:
-      "Post safely across 4U, Gossip, Stuff, Gigs, Stories, and DMs while using reports, blocks, and comments correctly.",
+      "Post safely across 4U, Gossip, Stuff, Gigs, Merch, and Stories while using DMs, reports, blocks, and comments correctly.",
     faqs: [
       {
         answer:
-          "Use the create button from the section you are in. The form changes based on whether you are posting to 4U, Gossip, Stuff, Gigs, Merch, Stories, or DMs.",
+          "Use the create button from the section you are in. The form changes based on whether you are posting to 4U, Gossip, Stuff, Gigs, Merch, or Stories. Use the dedicated DM screen for private messages.",
         question: "Why does the create form change?",
       },
       {
@@ -875,7 +875,7 @@ export const helpArticles = [
       {
         assetSrc: "/screenshots/mobile-4u-safe.png",
         description:
-          "Show the floating create button opening the right form for 4U, Gossip, Stuff, Gigs, Merch, Stories, and DM.",
+          "Show the floating create button opening the right form for 4U, Gossip, Stuff, Gigs, Merch, and Stories, then show DM from the bottom shortcut.",
         kind: "screenshot",
         title: "Create button by section",
       },
@@ -900,7 +900,7 @@ export const helpArticles = [
         title: "Stories, DMs, and safety controls",
       },
     ],
-    title: "How to create Stuff listings, Gigs, Stories, and DMs safely",
+    title: "How to post, use Stories, and DM safely",
   },
   {
     category: "Posting And Safety",
