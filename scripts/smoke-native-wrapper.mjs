@@ -28,6 +28,22 @@ const source = Object.fromEntries(
 
 const fileSize = (path) => (existsSync(path) ? statSync(path).size : 0);
 
+const nativeSourceForLeakChecks = Object.entries(source)
+  .filter(([key]) => key !== "nativePrep" && key !== "mobileRunbook")
+  .map(([key, content]) => `${key}\n${content}`)
+  .join("\n");
+
+const forbiddenNativeTokens = [
+  "NEXT_PUBLIC_",
+  "SUPABASE",
+  "STRIPE",
+  "HOSTGATOR",
+  "SERVICE_ROLE",
+  "SECRET",
+  "WEBHOOK",
+  "API_KEY",
+];
+
 const checks = [
   {
     label: "native wrapper scaffold exists for Android and iOS beta builds",
@@ -45,6 +61,10 @@ const checks = [
       source.capacitorConfig.includes('allowNavigation: ["thetattoocore.com", "www.thetattoocore.com"]') &&
       !source.capacitorConfig.includes("bundledWebRuntime") &&
       source.webFallback.includes("https://thetattoocore.com/login"),
+  },
+  {
+    label: "native wrapper avoids provider, secret, and environment-token leakage",
+    ok: forbiddenNativeTokens.every((token) => !nativeSourceForLeakChecks.includes(token)),
   },
   {
     label: "native wrapper keeps TestFlight auth navigation inside the app",
