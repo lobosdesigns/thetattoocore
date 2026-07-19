@@ -42,6 +42,20 @@ Stripe checkout is wired for controlled launch testing across Merch, ads, and ac
 - Confirm payment disputes and chargebacks create admin audit entries before any production payout, fulfillment, booking, or advertiser-credit decisions are made.
 - Confirm failed, expired, refunded, partially refunded, and disputed orders cannot accidentally activate fulfillment or ads.
 
+## Production Evidence Pack
+
+Keep this evidence private and attach it to the release handoff before any live-money launch. Do not include raw secret values, bank details, card details, private buyer addresses, full admin exports, or provider dashboard screenshots that expose sensitive account data.
+
+- Live webhook event list captured and matched to the app-required event set above.
+- Live/test mode setting, server payment key mode, and webhook mode reviewed together with no mismatch.
+- Penny test receipt captured for one approved flow after policy review.
+- Admin > Payments screenshot or note showing the matching webhook receipt, payment audit row, user-facing status, and queue status.
+- Refund and dispute procedure approval recorded with who approved it and the approval date.
+- Seller payout policy approval recorded with payout timing, holdback, refund-window, and dispute-freeze rules.
+- Tax, shipping, fulfillment, and support-copy review recorded before Merch checkout is promoted.
+- Native app policy review recorded before exposing checkout in native wrappers.
+- Support, Terms, Privacy, and Help copy checked against the live build and current payment status.
+
 ## Draft Seller Payout Release Policy
 
 Do not release production seller payouts until this policy is finalized, reviewed, and reflected in Terms, seller onboarding, and support articles.

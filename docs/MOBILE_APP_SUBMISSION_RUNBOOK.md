@@ -30,7 +30,7 @@ Start with a thin native wrapper now that core web smoke/390px mobile checks are
 ## Required Before Store Submission
 
 - Run the real-device checklist in `docs/REAL_DEVICE_QA_CHECKLIST.md` for signup, login, reset password, profile setup, 4U, Stories, Gossip, Stuff, Gigs, Merch browsing, DMs, booking/deposit paths, notifications, reports, blocking, verification upload, payment test paths, and account deletion request.
-- Confirm `npm run smoke:mobile` covers support/help/legal routes plus the Search/Saved, Booking, Ads, Merch, Verification, and privacy/safety Help Center guides, including the Merch storefront and Merch Help guide, before store screenshots or wrapper QA.
+- Confirm `npm.cmd run smoke:mobile` covers support/help/legal routes plus the Search/Saved, Booking, Ads, Merch, Verification, and privacy/safety Help Center guides, including the Merch storefront and Merch Help guide, before store screenshots or wrapper QA.
 - Confirm app-store-safe screenshots use brand assets and safe sample content only.
 - Confirm screenshots do not expose private DMs, license documents, admin queues, real payment data, personal owner contact data, or visible infrastructure/provider names.
 - Capture at least one Help/Support proof screen that shows the Merch guide shortcut plus public self-service topics for verification, booking deposits, privacy, safety, and support boundaries.

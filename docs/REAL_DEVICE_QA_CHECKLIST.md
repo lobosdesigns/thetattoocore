@@ -4,8 +4,8 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 
 ## Setup
 
-- Run `npm run smoke:public` against production and confirm public routes, private redirects, public fallback detail pages, metadata, and safety-copy checks pass.
-- Run `npm run smoke:mobile` against production and confirm the 390px mobile browser checks pass for auth, support/help/legal, search/profile, missing-detail fallback, and checkout-status routes before manual device testing.
+- Run `npm.cmd run smoke:public` against production and confirm public routes, private redirects, public fallback detail pages, metadata, and safety-copy checks pass.
+- Run `npm.cmd run smoke:mobile` against production and confirm the 390px mobile browser checks pass for auth, support/help/legal, search/profile, missing-detail fallback, and checkout-status routes before manual device testing.
 - Confirm the build points at `https://thetattoocore.com/login`.
 - Open Admin > Media Ops and confirm the Beta QA launch checklist is visible for auth, two-user DMs, mobile posting/media, verification review, controlled launch payments, and safe store screenshots.
 - Confirm support, privacy, and terms links open from logged-out and logged-in surfaces.
@@ -120,3 +120,31 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 - No console errors during the tested happy paths.
 - No personal owner contact data on public support/legal/store surfaces.
 - No private, sensitive, admin-only, or full-resolution restricted media visible to logged-out users.
+
+## Evidence Pack Template
+
+Create one dated evidence pack for each release candidate before store review. Keep the pack private, use safe sample content only, and avoid screenshots or clips that show private DMs, license documents, admin-only queues, real payment data, personal contact details, or visible infrastructure/provider names.
+
+For each device pass, record:
+
+- Tester name or initials.
+- Test date.
+- Platform and device model.
+- OS version.
+- App build or web deploy version.
+- Network used, such as Wi-Fi or cellular.
+- Test accounts used, including the second known account for two-user DM read/reply checks.
+- Routes or native screens tested.
+- Pass/fail result for each checklist area.
+- Screenshot or clip filename for each store-critical proof screen.
+- Notes for any retry, bug, moderation action, checkout return, report/block action, or support handoff.
+
+Store-critical proof should include at least:
+
+- Android and iOS login/signup/reset staying inside the app or installed-app flow.
+- Public Help, Support, Privacy, and Terms links opening correctly.
+- Posting, Story viewing, reporting, blocking, and account deletion request.
+- Full two-user DM send, receive, read indicator, reply, photo attachment, and notification route.
+- Verification upload success and admin approval/rejection evidence without exposing private documents.
+- Merch browsing, controlled checkout return, order history, and Admin Payments review evidence using safe test references.
+- Screenshot upload candidates that match `docs/SCREENSHOT_PREP.md`.

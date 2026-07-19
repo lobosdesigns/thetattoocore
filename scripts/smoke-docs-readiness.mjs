@@ -225,8 +225,8 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("private Add to calendar download") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("verification") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("controlled launch checkout") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm run smoke:public") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm run smoke:mobile") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run smoke:public") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run smoke:mobile") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Open Admin > Media Ops") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Beta QA launch checklist") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("support/help/legal") &&
@@ -243,13 +243,20 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Verification guide") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("unlocked tools") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("missing-detail fallback") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("No reload-loop screens"),
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("No reload-loop screens") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("## Evidence Pack Template") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("App build or web deploy version") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("second known account for two-user DM read/reply checks") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Screenshot or clip filename") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android and iOS login/signup/reset staying inside the app") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Admin Payments review evidence using safe test references"),
   },
   {
     label: "mobile submission runbook includes Stories, help, and booking deposit QA",
     ok:
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("4U, Stories, Gossip") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("booking/deposit paths") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run smoke:mobile") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("support/help/legal routes") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Search/Saved, Booking, Ads, Merch, Verification") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("privacy/safety Help Center guides") &&
@@ -500,6 +507,13 @@ const checks = [
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Draft Shipping And Tax Procedure") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Draft Refund And Dispute Procedure") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Draft Booking Deposit Procedure") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("## Production Evidence Pack") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Live webhook event list captured and matched to the app-required event set") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Live/test mode setting, server payment key mode, and webhook mode reviewed together") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Penny test receipt captured for one approved flow after policy review") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Seller payout policy approval recorded with payout timing") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Native app policy review recorded before exposing checkout in native wrappers") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Support, Terms, Privacy, and Help copy checked against the live build") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("buyer shipping addresses private") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Only verified artists and studios should request deposits"),
   },
