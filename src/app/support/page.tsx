@@ -122,7 +122,7 @@ const guideLinks = [
     label: "Order support",
   },
   {
-    body: "Hosted payout setup, checkout readiness, fees, refunds, disputes, and payment safety.",
+    body: "Seller payout setup, checkout readiness, fees, refunds, disputes, and payment safety.",
     href: "/help/seller-payouts-payment-safety",
     label: "Seller payouts",
   },

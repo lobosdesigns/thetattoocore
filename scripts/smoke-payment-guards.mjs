@@ -496,7 +496,11 @@ checks.push({
     accountPage.includes("Company or organization seller profile") &&
     accountPage.includes("Seller payout path") &&
     accountPage.includes("Seller payout setup") &&
-    accountPage.includes("secure hosted setup flow") &&
+    accountPage.includes("secure setup flow") &&
+    accountPage.includes("Payout status:") &&
+    !accountPage.includes("Status note:") &&
+    !accountPage.includes("sellerPayoutAccount.disabled_reason") &&
+    !accountPage.includes("secure hosted setup flow") &&
     accountPage.includes("raw bank, routing, card, or debit payout numbers") &&
     accountPage.includes('action="/api/stripe/connect/onboarding"') &&
     accountPage.includes("Fulfillment gate") &&

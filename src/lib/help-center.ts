@@ -795,7 +795,7 @@ export const helpArticles = [
     faqs: [
       {
         answer:
-          "Verified artists, studios, vendors, and official TTC sellers can use the hosted payout setup when seller tools are available for their account. TTC forms should never ask for raw bank, routing, card, or debit payout credentials.",
+          "Verified artists, studios, vendors, and official TTC sellers can use seller payout setup when those tools are available for their account. TTC forms should never ask for raw bank, routing, card, or debit payout credentials.",
         question: "Who can set up seller payouts?",
       },
       {
@@ -815,7 +815,7 @@ export const helpArticles = [
       },
       {
         answer:
-          "No. Use the hosted payout setup flow only. Never send bank, routing, card, debit, tax, or identity documents through public comments, DMs, profile fields, or screenshots.",
+          "No. Use the secure payout setup flow only. Never send bank, routing, card, debit, tax, or identity documents through public comments, DMs, profile fields, or screenshots.",
         question: "Should I send payout details to support?",
       },
     ],
@@ -844,7 +844,7 @@ export const helpArticles = [
     steps: [
       "Finish profile setup, email confirmation, 18+ confirmation, and artist/studio/vendor verification before expecting seller payout tools.",
       "Create or update Merch products with clear product media, inventory, ship-from region, fulfillment notes, and return/refund expectations.",
-      "Use the hosted seller payout setup flow from Settings when eligible. TTC stores readiness status only, not raw payout credentials.",
+      "Use seller payout setup from Settings when eligible. TTC stores readiness status only, not raw payout credentials.",
       "Watch the payout status chip in Settings and seller/admin review areas. A product can remain closed until seller payout readiness and product review both pass.",
       "Fulfill paid orders only after payment is marked paid and the item is shipped, ready for pickup, or otherwise handed off according to the product notes.",
       "Use Support for refund, dispute, package, seller non-delivery, or payout-readiness questions. Include the product or order link, but keep private payment credentials out of messages and screenshots.",

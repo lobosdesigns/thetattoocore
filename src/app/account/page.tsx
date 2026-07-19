@@ -142,7 +142,7 @@ const bookingCalendarPrepItems = [
 const merchSellerReadinessItems = [
   [
     "Seller payout path",
-    "Seller payout setup uses a secure hosted flow. TTC forms never ask for raw bank, routing, card, or debit payout numbers.",
+    "Seller payout setup uses a secure flow. TTC forms never ask for raw bank, routing, card, or debit payout numbers.",
   ],
   [
     "Fulfillment gate",
@@ -2757,7 +2757,7 @@ export default async function AccountPage({
                   </h4>
                   <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
                     {canSetupSellerPayouts
-                      ? "Use the secure hosted setup flow for seller payout details. TTC stores payout readiness status only, not bank or card credentials."
+                      ? "Use the secure setup flow for seller payout details. TTC stores payout readiness status only, not bank or card credentials."
                       : "Verified artist, studio, or vendor status is required before seller payout setup opens."}
                   </p>
                 </div>
@@ -2776,19 +2776,17 @@ export default async function AccountPage({
                   <p className="sm:col-span-3">
                     Seller profile: {sellerProfileKindLabel}
                   </p>
-                  <p>Charges: {sellerPayoutAccount.charges_enabled ? "Ready" : "Not ready"}</p>
-                  <p>Payouts: {sellerPayoutAccount.payouts_enabled ? "Ready" : "Not ready"}</p>
                   <p>
-                    Details: {sellerPayoutAccount.details_submitted ? "Submitted" : "Needed"}
+                    Payout status:{" "}
+                    {sellerPayoutReady
+                      ? "Ready"
+                      : sellerPayoutAccount.details_submitted
+                        ? "Needs review"
+                        : "Needs more details"}
                   </p>
-                  {sellerPayoutAccount.disabled_reason ? (
-                    <p className="sm:col-span-3">
-                      Status note: {sellerPayoutAccount.disabled_reason}
-                    </p>
-                  ) : null}
                   {sellerPayoutAccount.requirements_currently_due.length ? (
                     <p className="sm:col-span-3">
-                      More details may be required in the hosted setup flow.
+                      More details may be required before payouts are ready.
                     </p>
                   ) : null}
                 </div>

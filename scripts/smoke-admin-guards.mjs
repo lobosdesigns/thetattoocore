@@ -358,7 +358,7 @@ const checks = [
       adminPayments.includes("/help/seller-payouts-payment-safety") &&
       adminPayments.includes("/help/order-refunds-disputes") &&
       adminPayments.includes("Order support guide") &&
-      productPlan.includes("public Help guide for hosted payout setup"),
+      productPlan.includes("public Help guide for seller payout setup"),
   },
   {
     label: "plan records dedicated admin pages and tester account tooling",

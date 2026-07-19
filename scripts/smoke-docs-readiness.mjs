@@ -418,7 +418,7 @@ const checks = [
       supportPage.includes('href: "/help/merch-products-orders"') &&
       supportPage.includes('href: "/help/seller-payouts-payment-safety"') &&
       supportPage.includes("Product review, seller readiness") &&
-      supportPage.includes("Hosted payout setup") &&
+      supportPage.includes("Seller payout setup") &&
       profilePage.includes('href="/help/artist-profile-shop-links"') &&
       profilePage.includes('aria-label="Open profile help"') &&
       docs["docs/PRODUCT_PLAN.md"].includes("Help must be easy to find while logged in") &&

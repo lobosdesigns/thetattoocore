@@ -174,7 +174,7 @@ export function HelpCenterSearch() {
           Search Help Center
         </label>
         <input
-          className="min-h-11 flex-1 border-0 bg-transparent text-base font-semibold outline-none placeholder:text-[var(--muted)]"
+          className="min-h-11 min-w-0 flex-1 border-0 bg-transparent text-base font-semibold outline-none placeholder:text-[var(--muted)]"
           id="help-search"
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search getting started, beta app, bookings, ads, Merch..."
