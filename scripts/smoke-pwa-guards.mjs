@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 
 const layout = readFileSync("src/app/layout.tsx", "utf8");
 const manifest = readFileSync("public/manifest.webmanifest", "utf8");
+const manifestJson = JSON.parse(manifest);
 const suppressor = readFileSync("src/app/pwa-install-suppressor.tsx", "utf8");
 const installButton = readFileSync("src/app/pwa-install-button.tsx", "utf8");
 const registrar = readFileSync("src/app/service-worker-registrar.tsx", "utf8");
@@ -18,6 +19,36 @@ const pushMigration = readFileSync(
 );
 const allClientPwaSource = [suppressor, installButton, registrar].join("\n");
 const userFacingPushSource = [accountProfileForm, notificationsPage, pushControl].join("\n");
+const manifestMemberFacingText = [
+  manifestJson.name,
+  manifestJson.short_name,
+  manifestJson.description,
+  ...(manifestJson.categories ?? []),
+  ...(manifestJson.screenshots ?? []).flatMap((screenshot) => [screenshot.label, screenshot.src]),
+  ...(manifestJson.shortcuts ?? []).flatMap((shortcut) => [
+    shortcut.name,
+    shortcut.description,
+    shortcut.url,
+  ]),
+]
+  .filter(Boolean)
+  .join("\n")
+  .toLowerCase();
+const manifestBlockedTerms = [
+  "api key",
+  "cloudflare",
+  "database",
+  "hostgator",
+  "instant payout",
+  "live payment",
+  "payment provider",
+  "public launch",
+  "real-money checkout",
+  "sandbox",
+  "stripe",
+  "supabase",
+  "unrestricted marketplace",
+];
 
 function pngDimensions(path) {
   const bytes = readFileSync(path);
@@ -91,6 +122,16 @@ const checks = [
       manifest.includes('"name": "Merch"') &&
       manifest.includes('"url": "/#merch"') &&
       (manifest.match(/"icons": \[/g) || []).length >= 8,
+  },
+  {
+    label: "installed app manifest copy avoids provider details and launch over-promises",
+    ok:
+      manifestJson.id === "https://thetattoocore.com" &&
+      manifestJson.name === "TheTattooCore" &&
+      manifestJson.short_name === "TTC" &&
+      manifestJson.start_url === "/login" &&
+      manifestJson.description.includes("no AI art or scratcher promotion") &&
+      manifestBlockedTerms.every((term) => !manifestMemberFacingText.includes(term)),
   },
   {
     label: "automatic install prompt is intercepted instead of shown during browsing",
