@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 
 const files = {
   appleDescription: "native/store-metadata/apple-app-store/en-US/description.txt",
@@ -18,6 +18,45 @@ const files = {
 const read = (path) => (existsSync(path) ? readFileSync(path, "utf8").trim() : "");
 const source = Object.fromEntries(Object.entries(files).map(([key, path]) => [key, read(path)]));
 const allText = Object.values(source).join("\n").toLowerCase();
+
+function pngInfo(path) {
+  if (!existsSync(path)) return null;
+  const bytes = readFileSync(path);
+  const signature = bytes.subarray(0, 8).toString("hex");
+  if (signature !== "89504e470d0a1a0a" || bytes.subarray(12, 16).toString("ascii") !== "IHDR") {
+    return null;
+  }
+  return {
+    width: bytes.readUInt32BE(16),
+    height: bytes.readUInt32BE(20),
+    colorType: bytes[25],
+  };
+}
+
+function generatedPngs(dir) {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((name) => name.endsWith(".png"))
+    .map((name) => `${dir}/${name}`)
+    .sort();
+}
+
+function hasExpectedPngs(paths, expectedCount, width, height) {
+  return (
+    paths.length === expectedCount &&
+    paths.every((path) => {
+      const info = pngInfo(path);
+      return info?.width === width && info.height === height && info.colorType !== 4 && info.colorType !== 6;
+    })
+  );
+}
+
+const generatedScreenshots = {
+  playPhone: generatedPngs("native/store-metadata/generated/google-play/phone-screenshots"),
+  playFeature: ["native/store-metadata/generated/google-play/feature-graphic-1024x500.png"],
+  appStorePhone: generatedPngs("native/store-metadata/generated/apple-app-store/iphone-6-5"),
+  appStoreIpad: generatedPngs("native/store-metadata/generated/apple-app-store/ipad-13"),
+};
 
 const blockedTerms = [
   "cloudflare",
@@ -85,6 +124,18 @@ const checks = [
       source.screenshotInventory.includes("infrastructure/provider names") &&
       source.screenshotInventory.includes("Merch guide shortcut") &&
       source.screenshotInventory.includes("seller payout setup details"),
+  },
+  {
+    label: "generated Google Play screenshots match upload dimensions",
+    ok:
+      hasExpectedPngs(generatedScreenshots.playPhone, 7, 1080, 1920) &&
+      hasExpectedPngs(generatedScreenshots.playFeature, 1, 1024, 500),
+  },
+  {
+    label: "generated App Store screenshots match upload dimensions",
+    ok:
+      hasExpectedPngs(generatedScreenshots.appStorePhone, 7, 1242, 2688) &&
+      hasExpectedPngs(generatedScreenshots.appStoreIpad, 3, 2048, 2732),
   },
 ];
 

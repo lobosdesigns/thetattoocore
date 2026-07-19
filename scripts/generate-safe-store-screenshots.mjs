@@ -1,7 +1,9 @@
 import path from "node:path";
+import { mkdirSync } from "node:fs";
 import sharp from "sharp";
 
 const outDir = path.join(process.cwd(), "public", "screenshots");
+const generatedDir = path.join(process.cwd(), "native", "store-metadata", "generated");
 const shieldPath = path.join(process.cwd(), "public", "icons", "icon-512.png");
 
 function esc(value) {
@@ -220,6 +222,51 @@ ${bottomNav()}
 for (const [name, svg] of Object.entries(pages)) {
   await sharp(Buffer.from(svg))
     .composite([{ input: await shield(42), left: 24, top: 20 }])
+    .flatten({ background: "#f6f2eb" })
     .png({ compressionLevel: 9 })
     .toFile(path.join(outDir, name));
+}
+
+async function exportDerivative({ destDir, height, sourceName, suffix, width }) {
+  mkdirSync(destDir, { recursive: true });
+  const baseName = sourceName.replace(/\.png$/, "");
+  await sharp(path.join(outDir, sourceName))
+    .resize(width, height, {
+      background: "#f6f2eb",
+      fit: "contain",
+      withoutEnlargement: false,
+    })
+    .flatten({ background: "#f6f2eb" })
+    .png({ compressionLevel: 9 })
+    .toFile(path.join(destDir, `${baseName}-${suffix}.png`));
+}
+
+const mobileSources = ["mobile-home.png", ...Object.keys(pages)].sort();
+const ipadSources = ["mobile-4u-safe.png", "mobile-home.png", "mobile-login-signup.png"];
+
+for (const sourceName of mobileSources) {
+  await exportDerivative({
+    destDir: path.join(generatedDir, "google-play", "phone-screenshots"),
+    height: 1920,
+    sourceName,
+    suffix: "1080x1920",
+    width: 1080,
+  });
+  await exportDerivative({
+    destDir: path.join(generatedDir, "apple-app-store", "iphone-6-5"),
+    height: 2688,
+    sourceName,
+    suffix: "1242x2688",
+    width: 1242,
+  });
+}
+
+for (const sourceName of ipadSources) {
+  await exportDerivative({
+    destDir: path.join(generatedDir, "apple-app-store", "ipad-13"),
+    height: 2732,
+    sourceName,
+    suffix: "2048x2732",
+    width: 2048,
+  });
 }

@@ -24,7 +24,12 @@ Upload-ready derivatives generated from the safe mobile set:
   are 1242 x 2688 PNG files with no alpha channel.
 - App Store 13-inch iPad screenshots:
   `native/store-metadata/generated/apple-app-store/ipad-13/*-2048x2732.png`
-  are 2048 x 2732 PNG files with no alpha channel.
+  are 3 upload-ready 2048 x 2732 PNG files with no alpha channel.
+
+The store metadata smoke guard validates the generated Play phone screenshots,
+Play feature graphic, App Store iPhone 6.5-inch screenshots, and App Store
+13-inch iPad screenshots by reading each PNG header and confirming count,
+dimensions, and no-alpha output.
 
 These generated placeholders are TTC-branded, rights-safe, and show the current
 main content columns: 4U, Gossip, Stuff, Gigs, and Merch. DM should appear as a
