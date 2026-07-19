@@ -177,7 +177,7 @@ export function HelpCenterSearch() {
       <section className="mt-7 rounded-lg border border-[var(--card-rim)] p-4">
         <h2 className="text-lg font-bold">Tutorial Library</h2>
         <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-          These guides cover the first launch support workflows. Articles stay
+          These guides cover the core support workflows. Articles stay
           public when safe, and account-specific questions stay in private
           support.
         </p>

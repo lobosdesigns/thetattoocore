@@ -700,7 +700,7 @@ export const helpArticles = [
       },
       {
         answer:
-          "Refunds stay in manual review during launch. Support checks payment status, fulfillment proof, tracking or handoff notes, buyer reason, seller response, content safety, and dispute risk before any refund decision.",
+          "Refunds stay in manual review. Support checks payment status, fulfillment proof, tracking or handoff notes, buyer reason, seller response, content safety, and dispute risk before any refund decision.",
         question: "How are refunds reviewed?",
       },
       {
@@ -762,7 +762,7 @@ export const helpArticles = [
   {
     category: "Merch And Stuff",
     description:
-      "Understand seller payout setup, checkout readiness, TTC fees, fulfillment review, refunds, and why production money stays gated until policy review is complete.",
+      "Understand seller payout setup, checkout readiness, TTC fees, fulfillment review, refunds, and why real-money flows stay gated until policy review is complete.",
     faqs: [
       {
         answer:
@@ -781,7 +781,7 @@ export const helpArticles = [
       },
       {
         answer:
-          "Refunds and disputes stay in private support review during launch. Support checks the order, fulfillment proof, buyer reason, payment status, and safety/moderation issues before any decision.",
+          "Refunds and disputes stay in private support review. Support checks the order, fulfillment proof, buyer reason, payment status, and safety/moderation issues before any decision.",
         question: "How do refunds and disputes affect payouts?",
       },
       {

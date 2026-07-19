@@ -418,7 +418,7 @@ const checks = [
       "/login?return_to=%2Fsettings%2Fhelp",
       "Settings data controls",
       "visible nudity",
-      "Merch checkout is controlled during launch",
+      "Merch checkout stays review-controlled",
       "missing, damaged, wrong, delayed, returned",
       "How-To Library",
       "FAQ and tutorial topics for getting started, beta app testing",

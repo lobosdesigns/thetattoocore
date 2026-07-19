@@ -462,7 +462,8 @@ checks.push({
   ok:
     fees.includes("export const platformFeeRate = 0.02") &&
     fees.includes('export const platformFeePercentLabel = "2%"') &&
-    fees.includes("current launch") &&
+    fees.includes("Transparent") &&
+    fees.includes("TTC platform fee for") &&
     !fees.includes("test-mode") &&
     !fees.includes("test mode"),
 });
@@ -501,8 +502,8 @@ checks.push({
     accountPage.includes("Fulfillment gate") &&
     accountPage.includes("Refunds, disputes, and unusual order issues stay in private admin review") &&
     accountPage.includes("stay in private support review") &&
-    privacyPage.includes("Checkout is controlled during launch") &&
-    supportPage.includes("Merch checkout is controlled during launch"),
+    privacyPage.includes("Checkout stays review-controlled") &&
+    supportPage.includes("Merch checkout stays review-controlled"),
 });
 checks.push({
   label: "Stripe Connect seller onboarding stays hosted and server-side",

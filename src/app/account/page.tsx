@@ -2507,8 +2507,8 @@ export default async function AccountPage({
             </span>
           </div>
           <p className="text-sm leading-6 text-[var(--muted-strong)]">
-            Merch checkout is controlled during launch while seller and order
-            rules are finished. Use this page for buyer orders, seller
+            Merch checkout stays review-controlled while seller and order
+            safety checks are active. Use this page for buyer orders, seller
             products, fulfillment, refund review, and payout readiness.
           </p>
           {visibleMerchOrders.length ? (

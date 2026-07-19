@@ -17,5 +17,5 @@ export function platformFeeDescription(kind: PlatformFeeKind) {
         ? "booking deposit processing"
         : "Merch checkout";
 
-  return `Transparent ${platformFeePercentLabel} TTC platform fee for current launch ${label}.`;
+  return `Transparent ${platformFeePercentLabel} TTC platform fee for ${label}.`;
 }
