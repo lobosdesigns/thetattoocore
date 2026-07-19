@@ -192,7 +192,7 @@ const mediaCostRules = [
   "Use the current delivery path first for safety and image-delivery polish before adding new paid media products.",
   "Keep original media on the current private path while early traffic is small.",
   "Keep company email and static backups separate from active user media or video delivery.",
-  "Use client-side image compression first because it is free and reduces storage before upload.",
+  "Use client-side image compression first because it keeps uploads lighter before posting.",
   "Keep current reel caps strict: 60 seconds and 50 MB for now.",
   "Do not enable paid video upgrades until reels are getting enough real usage to justify it.",
   "Consider managed image and video upgrades only after upload volume grows.",
