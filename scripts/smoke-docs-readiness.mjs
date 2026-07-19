@@ -17,6 +17,7 @@ const docs = {
   "docs/SCREENSHOT_PREP.md": readFileSync("docs/SCREENSHOT_PREP.md", "utf8"),
   "docs/AGE_RATING_PREP.md": readFileSync("docs/AGE_RATING_PREP.md", "utf8"),
   "docs/DATA_SAFETY_PREP.md": readFileSync("docs/DATA_SAFETY_PREP.md", "utf8"),
+  "docs/LEGAL_REVIEW_PREP.md": readFileSync("docs/LEGAL_REVIEW_PREP.md", "utf8"),
 };
 const packageJson = readFileSync("package.json", "utf8");
 const screenshotGenerator = readFileSync("scripts/generate-safe-store-screenshots.mjs", "utf8");
@@ -105,6 +106,12 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes(
         "docs/PAYMENT_PRODUCTION_READINESS.md",
       ),
+  },
+  {
+    label: "readiness docs link final legal review prep",
+    ok:
+      docs["docs/APP_STORE_READINESS.md"].includes("docs/LEGAL_REVIEW_PREP.md") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("docs/LEGAL_REVIEW_PREP.md"),
   },
   {
     label: "public readiness docs use company support contact",
@@ -220,6 +227,22 @@ const checks = [
       docs["docs/DATA_SAFETY_PREP.md"].includes("Privacy URL `https://thetattoocore.com/privacy`") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("do not infer tracking from the iOS native privacy manifest alone") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("final App Privacy console summary"),
+  },
+  {
+    label: "legal review prep covers final policy and release signoff evidence",
+    ok:
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Terms and Content Policy") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("no visible nudity") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("no AI art/search claims") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Account deletion") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("seller payout timing") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("refund/dispute handling") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Native app review") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Store submissions") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Do not store reviewer passwords") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Public URLs reviewed") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("block release, allow internal testing only, allow public release") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Production commerce remains gated"),
   },
   {
     label: "real-device QA checklist covers app-critical flows",
