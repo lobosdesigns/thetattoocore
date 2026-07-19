@@ -525,6 +525,8 @@ const checks = [
       accountPage.includes("Retry payout setup") &&
       accountPage.includes('href="/help/seller-payouts-payment-safety"') &&
       accountSettingsWorkspace.includes("Choose the area you need") &&
+      accountSettingsWorkspace.includes('href="/settings"') &&
+      accountSettingsWorkspace.includes("Settings home") &&
       accountSettingsWorkspace.includes("their own areas so Account does not become one long scroll") &&
       accountSettingsWorkspace.includes('className={activeTab === tab.id ? "block" : "hidden"}') &&
       profileForm.includes("function profileHashForTab") &&

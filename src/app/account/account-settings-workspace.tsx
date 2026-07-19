@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Children, type ReactNode, useEffect, useMemo, useState } from "react";
 
 export type AccountSettingsTab = {
@@ -40,17 +41,25 @@ export function AccountSettingsWorkspace({
 
   return (
     <section className="ttc-card mb-4 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] p-4 backdrop-blur">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-strong)]">
             Settings
           </p>
           <h2 className="mt-1 text-xl font-bold">Choose the area you need</h2>
         </div>
-        <p className="max-w-sm text-sm leading-6 text-[var(--muted-strong)]">
-          Profile, orders, bookings, safety, and professional tools stay in
-          their own areas so Account does not become one long scroll.
-        </p>
+        <div className="flex flex-col gap-2 sm:items-end">
+          <p className="max-w-sm text-sm leading-6 text-[var(--muted-strong)] sm:text-right">
+            Profile, orders, bookings, safety, and professional tools stay in
+            their own areas so Account does not become one long scroll.
+          </p>
+          <Link
+            className="ttc-surface inline-flex h-9 w-fit items-center justify-center rounded-md border px-3 text-xs font-bold"
+            href="/settings"
+          >
+            Settings home
+          </Link>
+        </div>
       </div>
 
       <div className="no-scrollbar mt-4 flex gap-2 overflow-x-auto rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-2">
