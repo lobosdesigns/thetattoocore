@@ -25,7 +25,6 @@ type LicenseRequest = {
   reviewerNote: string | null;
   signedDocumentUrl: string | null;
   status: "pending" | "approved" | "rejected";
-  storageBucket: string;
 };
 type VerificationStatus = LicenseRequest["status"] | "all";
 type VerificationAccountType = "all" | "artist" | "studio" | "vendor";
@@ -263,7 +262,7 @@ function LicenseRequestCard({
       <div className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3">
         <p className="truncate text-sm font-semibold">{request.documentName}</p>
         <p className="mt-1 text-xs text-[var(--muted-strong)]">
-          Private file - {request.storageBucket}
+          Private review document
         </p>
       </div>
       {request.signedDocumentUrl ? (
@@ -277,8 +276,8 @@ function LicenseRequestCard({
         </a>
       ) : (
         <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 py-2 text-xs text-[var(--muted-strong)]">
-          Document link is unavailable. Refresh the queue or check storage
-          permissions.
+          Document link is unavailable. Refresh the queue or review document
+          access before deciding.
         </p>
       )}
       {isPending ? (
@@ -426,7 +425,6 @@ export default async function AdminVerificationPage({
     reviewerNote: request.reviewer_note,
     signedDocumentUrl: signedDocumentUrlByRequest.get(request.id) ?? null,
     status: request.status,
-    storageBucket: request.storage_bucket,
   }));
   const totalRequests = count ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalRequests / pageSize));

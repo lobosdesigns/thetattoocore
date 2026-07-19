@@ -313,6 +313,15 @@ const checks = [
       productPlan.includes("Admin Verification supports 50-item pagination plus status and account-type filters"),
   },
   {
+    label: "admin verification document cards avoid raw storage wording",
+    ok:
+      adminVerification.includes("Private review document") &&
+      adminVerification.includes("review document") &&
+      adminVerification.includes("access before deciding") &&
+      !adminVerification.includes("Private file -") &&
+      !adminVerification.includes("check storage"),
+  },
+  {
     label: "admin moderation queues use shared friendly status labels",
     ok:
       statusLabels.includes("export function titleCaseStatus") &&
