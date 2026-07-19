@@ -505,7 +505,7 @@ const checks = [
       "App wrapper navigation pass",
       "Safe beta bug report",
       "FAQPage",
-      "Last reviewed July 18, 2026",
+      "Last reviewed July 19, 2026",
       "/help/beta-tester-checklist",
       "support@thetattoocore.com",
     ],
