@@ -3,6 +3,10 @@ import { readFileSync } from "node:fs";
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const profileForm = readFileSync("src/app/account/profile-form.tsx", "utf8");
+const profileContentTabs = readFileSync(
+  "src/app/u/[username]/profile-content-tabs.tsx",
+  "utf8",
+);
 const followListPage = readFileSync("src/app/u/[username]/follow-list-page.tsx", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
 const savedPage = readFileSync("src/app/saved/page.tsx", "utf8");
@@ -195,9 +199,25 @@ const checks = [
       productPlan.includes("public profile 4U, Gossip, Stuff, Gigs, and Merch sections"),
   },
   {
+    label: "public profile content uses real tabs instead of one long stacked page",
+    ok:
+      profilePage.includes("ProfileContentTabs") &&
+      profilePage.includes('{ count: visiblePosts.length, id: "profile-4u", label: "4U" }') &&
+      profilePage.includes('{ count: visibleThreads.length, id: "profile-gossip", label: "Gossip" }') &&
+      profilePage.includes('{ count: visibleListings.length, id: "profile-stuff", label: "Stuff" }') &&
+      profilePage.includes('{ count: visibleGigs.length, id: "profile-gigs", label: "Gigs" }') &&
+      profilePage.includes('{ count: visibleMerchProducts.length, id: "profile-merch", label: "Merch" }') &&
+      profileContentTabs.includes('role="tablist"') &&
+      profileContentTabs.includes('role="tab"') &&
+      profileContentTabs.includes('role="tabpanel"') &&
+      profileContentTabs.includes('className={activeTab === tab.id ? "block" : "hidden"}') &&
+      profileContentTabs.includes("window.history.replaceState(null, \"\", `#${tab.id}`)") &&
+      !profilePage.includes("function ProfileContentNav"),
+  },
+  {
     label: "public profiles render approved Merch previews",
     ok:
-      profilePage.includes('id="profile-merch"') &&
+      profilePage.includes('id: "profile-merch"') &&
       profilePage.includes(".from(\"merch_products\")") &&
       profilePage.includes(".eq(\"seller_id\", profile.id)") &&
       profilePage.includes(".eq(\"status\", \"active\")") &&

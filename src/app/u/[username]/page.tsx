@@ -63,6 +63,7 @@ import {
   unblockProfile,
   unfollowProfile,
 } from "./actions";
+import { ProfileContentTabs } from "./profile-content-tabs";
 
 type Claims = {
   sub: string;
@@ -824,32 +825,6 @@ function ProfileLinkChip({
       <LinkIcon className="size-3.5" />
       {label}
     </Link>
-  );
-}
-
-function ProfileContentNav({
-  items,
-}: {
-  items: [href: string, label: string, count: number][];
-}) {
-  return (
-    <nav
-      aria-label="Profile content"
-      className="sticky top-[65px] z-10 flex gap-2 overflow-x-auto border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] px-4 py-3 backdrop-blur"
-    >
-      {items.map(([href, label, count]) => (
-        <a
-          className="ttc-surface flex h-10 shrink-0 items-center gap-2 rounded-md border px-3 text-sm font-bold hover:border-[var(--brand-gold)]"
-          href={href}
-          key={href}
-        >
-          <span>{label}</span>
-          <span className="rounded-md bg-[color-mix(in_srgb,var(--brand-gold)_16%,var(--paper-warm))] px-1.5 py-0.5 text-xs text-[var(--muted)]">
-            {count}
-          </span>
-        </a>
-      ))}
-    </nav>
   );
 }
 
@@ -2429,19 +2404,16 @@ export default async function ProfilePage({
           </section>
         ) : (
           <>
-        <ProfileContentNav
-          items={[
-            ["#profile-4u", "4U", visiblePosts.length],
-            ["#profile-gossip", "Gossip", visibleThreads.length],
-            ["#profile-stuff", "Stuff", visibleListings.length],
-            ["#profile-gigs", "Gigs", visibleGigs.length],
-            ["#profile-merch", "Merch", visibleMerchProducts.length],
+        <ProfileContentTabs
+          tabs={[
+            { count: visiblePosts.length, id: "profile-4u", label: "4U" },
+            { count: visibleThreads.length, id: "profile-gossip", label: "Gossip" },
+            { count: visibleListings.length, id: "profile-stuff", label: "Stuff" },
+            { count: visibleGigs.length, id: "profile-gigs", label: "Gigs" },
+            { count: visibleMerchProducts.length, id: "profile-merch", label: "Merch" },
           ]}
-        />
-        <section
-          className="scroll-mt-28 border-b border-[var(--card-rim)] px-4 py-6"
-          id="profile-4u"
         >
+        <section className="scroll-mt-28">
           <ProfileSectionHeading
             count={visiblePosts.length}
             description="Photos and short reels from this profile."
@@ -2484,8 +2456,7 @@ export default async function ProfilePage({
           )}
         </section>
 
-        <section className="grid gap-6 px-4 py-6 lg:grid-cols-2">
-          <div className="scroll-mt-28" id="profile-gossip">
+        <section className="scroll-mt-28">
             <ProfileSectionHeading
               count={visibleThreads.length}
               description="Longer posts, questions, and shop talk."
@@ -2539,9 +2510,9 @@ export default async function ProfilePage({
                 label="Load more Gossip"
               />
             ) : null}
-          </div>
+        </section>
 
-          <div className="scroll-mt-28" id="profile-stuff">
+        <section className="scroll-mt-28">
             <ProfileSectionHeading
               count={visibleListings.length}
               description="Flash, supplies, studio gear, and services."
@@ -2621,9 +2592,9 @@ export default async function ProfilePage({
                 label="Load more Stuff"
               />
             ) : null}
-          </div>
+        </section>
 
-          <div className="scroll-mt-28" id="profile-gigs">
+        <section className="scroll-mt-28">
             <ProfileSectionHeading
               count={visibleGigs.length}
               description="Jobs, conventions, guest spots, and events."
@@ -2733,9 +2704,9 @@ export default async function ProfilePage({
                 label="Load more Gigs"
               />
             ) : null}
-          </div>
+        </section>
 
-          <div className="scroll-mt-28" id="profile-merch">
+        <section className="scroll-mt-28">
             <ProfileSectionHeading
               count={visibleMerchProducts.length}
               description="Fan-facing shirts, prints, art, stickers, and brand goods."
@@ -2858,8 +2829,8 @@ export default async function ProfilePage({
                 label="Load more Merch"
               />
             ) : null}
-          </div>
         </section>
+        </ProfileContentTabs>
           </>
         )}
       </div>
