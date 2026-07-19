@@ -166,6 +166,12 @@ const checks = [
       docs["docs/SCREENSHOT_PREP.md"].includes("infrastructure names") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("no-visible-nudity rules") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("no-AI stance") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("## Upload Validation Evidence") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("Apple App Store Connect: record the uploaded iPhone 6.5-inch set") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("13-inch iPad set") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("Google Play Console: record the uploaded phone screenshot set") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("feature graphic") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("matches the submitted build after final metadata") &&
       screenshotGenerator.includes("mobile-login-signup.png") &&
       screenshotGenerator.includes("mobile-help-support.png") &&
       screenshotGenerator.includes("Visible nudity is not allowed"),

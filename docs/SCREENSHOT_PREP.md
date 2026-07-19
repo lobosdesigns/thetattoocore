@@ -39,3 +39,12 @@ Use this before Google Play, App Store, PWA listing, press, or public launch scr
 - Run the real-device QA checklist before final screenshots.
 - Compare final screenshot text against the Store Listing Draft, Terms, Privacy, and Support pages so 18+ positioning, no-visible-nudity rules, no-AI stance, and support contact are consistent.
 - Confirm Help/Support screenshots show only public guide content and do not reveal private order details, seller payout setup details, support tickets, or moderation queues.
+
+## Upload Validation Evidence
+
+Keep screenshot upload evidence private with the release handoff. Do not add console screenshots that show reviewer passwords, private contact phone numbers, account owner details, payment-account data, or store-dashboard identifiers to public docs or member-facing copy.
+
+- Apple App Store Connect: record the uploaded iPhone 6.5-inch set, 13-inch iPad set, upload validation result, build/version, capture date, and reviewer-safe notes.
+- Google Play Console: record the uploaded phone screenshot set, feature graphic, upload validation result, release track, capture date, and reviewer-safe notes.
+- Confirm every uploaded image still matches the submitted build after final metadata, privacy, age-rating, and payment-status edits.
+- Confirm no uploaded image shows private DMs, license documents, admin queues, real payment data, personal owner contact details, visible infrastructure/provider names, visible nudity, copyrighted tattoo art, or unsafe marketplace examples.
