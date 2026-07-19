@@ -2344,7 +2344,7 @@ export default async function ProfilePage({
                       {request.profiles?.display_name ?? "Unknown member"}
                     </p>
                     <p className="text-sm text-[var(--muted-strong)]">
-                      @{request.profiles?.username ?? "unknown"} ·{" "}
+                      @{request.profiles?.username ?? "unknown"} -{" "}
                       {request.profiles?.account_type ?? "member"}
                     </p>
                   </div>
