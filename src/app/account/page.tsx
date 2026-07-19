@@ -1372,12 +1372,11 @@ export default async function AccountPage({
                     </option>
                   </select>
                   <span className="text-xs font-normal leading-5 text-[var(--muted-strong)]">
-                    Current:{" "}
+                    Current setup is{" "}
                     {calendarConnectionStatusLabel(
                       bookingSettings?.calendar_connection_status,
                     )}
-                    . Add your public booking page or calendar request link
-                    below.
+                    . Add a public booking page or calendar request link below.
                   </span>
                 </label>
                 <label className="grid gap-1 text-sm font-semibold md:col-span-2">
