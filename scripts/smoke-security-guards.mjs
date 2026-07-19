@@ -37,6 +37,7 @@ const homePage = readFileSync("src/app/page.tsx", "utf8");
 const termsPage = readFileSync("src/app/terms/page.tsx", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
+const settingsPage = readFileSync("src/app/settings/page.tsx", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const accountSettingsWorkspace = readFileSync(
@@ -76,6 +77,7 @@ const publicSource = [
   termsPage,
   privacyPage,
   supportPage,
+  settingsPage,
   accountActions,
   accountPage,
   siteConfig,
@@ -427,10 +429,10 @@ const checks = [
   {
     label: "support deletion action routes through safe sign-in return",
     ok:
-      supportPage.includes('href: "/login?return_to=%2Faccount%23data-settings"') &&
+      supportPage.includes('href: "/login?return_to=%2Fsettings%2Fhelp"') &&
       !supportPage.includes('href: "/account#data-settings"') &&
-      privacyPage.includes('href="/login?return_to=%2Faccount%23data-settings"') &&
-      publicSmoke.includes("/login?return_to=%2Faccount%23data-settings"),
+      privacyPage.includes('href="/login?return_to=%2Fsettings%2Fhelp"') &&
+      publicSmoke.includes("/login?return_to=%2Fsettings%2Fhelp"),
   },
   {
     label: "public detail sign-in links preserve safe return paths",
@@ -529,6 +531,17 @@ const checks = [
       profileForm.includes('return "#profile-about-settings"') &&
       productPlan.includes("top-level Settings directory") &&
       productPlan.includes("dedicated `/account/...` pages"),
+  },
+  {
+    label: "settings directory keeps professional tools role-aware",
+    ok:
+      settingsPage.includes("memberSettingsGroups") &&
+      settingsPage.includes("professionalSettingsGroups") &&
+      settingsPage.includes("isProfessionalAccount") &&
+      settingsPage.includes("canOpenAds") &&
+      settingsPage.includes('group.href !== "/settings/ads" || canOpenAds') &&
+      settingsPage.includes("Professional tools appear when your account is") &&
+      productPlan.includes("role-aware panels and Settings cards"),
   },
   {
     label: "public copy does not disclose infrastructure providers or secret setup",

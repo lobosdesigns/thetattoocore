@@ -24,7 +24,14 @@ export const metadata: Metadata = {
   title: "Settings",
 };
 
-const settingsGroups = [
+type SettingsGroup = {
+  description: string;
+  href: string;
+  icon: typeof UserRound;
+  label: string;
+};
+
+const memberSettingsGroups: SettingsGroup[] = [
   {
     description: "Identity, profile photo, banner, bio, social links, and shop links.",
     href: "/settings/profile",
@@ -62,13 +69,22 @@ const settingsGroups = [
     label: "Bookings",
   },
   {
-    description: "Orders, seller tools, payout readiness, and support handoffs.",
+    description: "Orders, receipts, refunds, and support handoffs.",
     href: "/settings/orders",
     icon: CreditCard,
-    label: "Orders and payouts",
+    label: "Orders",
   },
   {
-    description: "Professional verification documents and review status.",
+    description: "Guides, support, data controls, and account deletion requests.",
+    href: "/settings/help",
+    icon: CircleHelp,
+    label: "Help and data",
+  },
+];
+
+const professionalSettingsGroups: SettingsGroup[] = [
+  {
+    description: "Professional license or business proof and review status.",
     href: "/settings/verification",
     icon: ShieldCheck,
     label: "Verification",
@@ -79,12 +95,6 @@ const settingsGroups = [
     icon: Megaphone,
     label: "Advertising",
   },
-  {
-    description: "Guides, support, data controls, and account deletion requests.",
-    href: "/settings/help",
-    icon: CircleHelp,
-    label: "Help and data",
-  },
 ];
 
 export default async function SettingsPage() {
@@ -94,6 +104,43 @@ export default async function SettingsPage() {
   if (!data?.claims?.sub) {
     redirect("/login?return_to=%2Fsettings");
   }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("account_type, banned_at, license_verified_at, suspended_at")
+    .eq("id", data.claims.sub)
+    .maybeSingle<{
+      account_type: string | null;
+      banned_at: string | null;
+      license_verified_at: string | null;
+      suspended_at: string | null;
+    }>();
+  const isProfessionalAccount = Boolean(
+    profile?.account_type &&
+      ["artist", "studio", "vendor"].includes(profile.account_type),
+  );
+  const canOpenAds =
+    isProfessionalAccount &&
+    Boolean(profile?.license_verified_at) &&
+    !profile?.suspended_at &&
+    !profile?.banned_at;
+  const settingsGroups = [
+    ...memberSettingsGroups.map((group) =>
+      group.href === "/settings/orders" && isProfessionalAccount
+        ? {
+            ...group,
+            description:
+              "Orders, seller tools, payout readiness, fulfillment, and support handoffs.",
+            label: "Orders and payouts",
+          }
+        : group,
+    ),
+    ...(isProfessionalAccount
+      ? professionalSettingsGroups.filter(
+          (group) => group.href !== "/settings/ads" || canOpenAds,
+        )
+      : []),
+  ];
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden px-4 py-6">
@@ -120,9 +167,9 @@ export default async function SettingsPage() {
           </p>
           <h1 className="mt-1 text-3xl font-black">Choose what to manage</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
-            Profile, privacy, notifications, bookings, payments, verification,
-            advertising, and Help each have their own door so mobile settings do
-            not turn into one long scroll.
+            Profile, privacy, notifications, bookings, orders, and Help each
+            have their own door. Professional tools appear when your account is
+            eligible, so mobile settings do not turn into one long scroll.
           </p>
         </header>
 
