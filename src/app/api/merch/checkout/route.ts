@@ -5,6 +5,7 @@ import {
   platformFeeDescription,
 } from "@/lib/payments/fees";
 import { siteName, siteUrl } from "@/lib/site";
+import { stripeCheckoutModeMismatch } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
@@ -204,6 +205,15 @@ export async function POST(request: Request) {
   }
 
   if (!canProcessStripeWebhooks) {
+    return redirectWithMessage(
+      "/merch",
+      "Checkout is temporarily unavailable. Please try again later.",
+    );
+  }
+
+  const modeMismatch = stripeCheckoutModeMismatch();
+  if (modeMismatch) {
+    console.error("Merch checkout mode preflight failed.", modeMismatch);
     return redirectWithMessage(
       "/merch",
       "Checkout is temporarily unavailable. Please try again later.",

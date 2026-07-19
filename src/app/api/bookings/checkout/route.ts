@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { platformFeeDescription } from "@/lib/payments/fees";
 import { siteName, siteUrl } from "@/lib/site";
+import { stripeCheckoutModeMismatch } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -161,6 +162,14 @@ export async function POST(request: Request) {
   }
 
   if (!canProcessStripeWebhooks) {
+    return redirectWithMessage(
+      "Booking checkout is temporarily unavailable. Please try again later.",
+    );
+  }
+
+  const modeMismatch = stripeCheckoutModeMismatch();
+  if (modeMismatch) {
+    console.error("Booking checkout mode preflight failed.", modeMismatch);
     return redirectWithMessage(
       "Booking checkout is temporarily unavailable. Please try again later.",
     );

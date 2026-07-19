@@ -3,7 +3,12 @@ import { revalidatePath } from "next/cache";
 import Stripe from "stripe";
 import { sendHostgatorEmail } from "@/lib/mail/hostgator";
 import { siteName, siteUrl, supportEmail } from "@/lib/site";
-import { createStripeClient, stripeCryptoProvider } from "@/lib/stripe/server";
+import {
+  createStripeClient,
+  expectedStripeLivemode,
+  stripeSecretKeyLivemode,
+  stripeCryptoProvider,
+} from "@/lib/stripe/server";
 import { stripeConnectStatus } from "@/lib/stripe/connect";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -13,22 +18,8 @@ function stripeResponse(message: string, status = 200) {
   return NextResponse.json({ message }, { status });
 }
 
-function expectedStripeLivemode() {
-  const value = process.env.STRIPE_EXPECTED_LIVEMODE?.trim().toLowerCase();
-
-  if (value === "true") return true;
-  if (value === "false") return false;
-
-  const secretKey = process.env.STRIPE_SECRET_KEY;
-
-  if (secretKey?.startsWith("sk_live_")) return true;
-  if (secretKey?.startsWith("sk_test_")) return false;
-
-  return null;
-}
-
 function stripeLivemodeMatches(event: Stripe.Event) {
-  const expected = expectedStripeLivemode();
+  const expected = expectedStripeLivemode() ?? stripeSecretKeyLivemode();
 
   return expected === null || event.livemode === expected;
 }

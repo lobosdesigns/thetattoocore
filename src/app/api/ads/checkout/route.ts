@@ -5,6 +5,7 @@ import {
   platformFeeDescription,
 } from "@/lib/payments/fees";
 import { siteName, siteUrl } from "@/lib/site";
+import { stripeCheckoutModeMismatch } from "@/lib/stripe/server";
 import { createClient } from "@/lib/supabase/server";
 
 type Claims = {
@@ -157,6 +158,14 @@ export async function POST(request: Request) {
   }
 
   if (!canProcessStripeWebhooks) {
+    return redirectWithMessage(
+      "Ad checkout is temporarily unavailable. Please try again later.",
+    );
+  }
+
+  const modeMismatch = stripeCheckoutModeMismatch();
+  if (modeMismatch) {
+    console.error("Ad checkout mode preflight failed.", modeMismatch);
     return redirectWithMessage(
       "Ad checkout is temporarily unavailable. Please try again later.",
     );

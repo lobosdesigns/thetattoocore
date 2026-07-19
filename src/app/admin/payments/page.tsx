@@ -84,10 +84,12 @@ const bookingPaymentStatuses = [
 ] as const;
 const paymentEventTypes = [
   "checkout.session.completed",
+  "checkout.session.async_payment_succeeded",
   "checkout.session.async_payment_failed",
   "checkout.session.expired",
   "charge.refunded",
   "charge.dispute.created",
+  "charge.dispute.updated",
   "charge.dispute.closed",
   "charge.dispute.funds_withdrawn",
   "charge.dispute.funds_reinstated",
@@ -331,10 +333,12 @@ function auditTypeFilter(value: string | string[] | undefined) {
 
 function eventTypeLabel(value: string) {
   if (value === "checkout.session.completed") return "Checkout paid";
+  if (value === "checkout.session.async_payment_succeeded") return "Delayed payment paid";
   if (value === "checkout.session.async_payment_failed") return "Payment failed";
   if (value === "checkout.session.expired") return "Checkout expired";
   if (value === "charge.refunded") return "Charge refunded";
   if (value === "charge.dispute.created") return "Dispute opened";
+  if (value === "charge.dispute.updated") return "Dispute updated";
   if (value === "charge.dispute.closed") return "Dispute closed";
   if (value === "charge.dispute.funds_withdrawn") return "Funds withdrawn";
   if (value === "charge.dispute.funds_reinstated") return "Funds reinstated";

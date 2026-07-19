@@ -5,6 +5,7 @@ const bookingCheckout = readFileSync("src/app/api/bookings/checkout/route.ts", "
 const merchCheckout = readFileSync("src/app/api/merch/checkout/route.ts", "utf8");
 const envExample = readFileSync(".env.example", "utf8");
 const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8");
+const stripeServer = readFileSync("src/lib/stripe/server.ts", "utf8");
 const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const merchIndexPage = readFileSync("src/app/merch/page.tsx", "utf8");
 const merchNotesMigration = readFileSync(
@@ -201,6 +202,25 @@ checks.push({
     merchCheckout.includes("Checkout is temporarily unavailable. Please try again later."),
 });
 checks.push({
+  label: "checkout routes fail closed on payment mode mismatch before reservations",
+  ok:
+    stripeServer.includes("export function stripeCheckoutModeMismatch") &&
+    stripeServer.includes("expectedStripeLivemode()") &&
+    stripeServer.includes("stripeSecretKeyLivemode()") &&
+    adCheckout.includes("stripeCheckoutModeMismatch") &&
+    bookingCheckout.includes("stripeCheckoutModeMismatch") &&
+    merchCheckout.includes("stripeCheckoutModeMismatch") &&
+    adCheckout.includes('console.error("Ad checkout mode preflight failed.", modeMismatch)') &&
+    bookingCheckout.includes('console.error("Booking checkout mode preflight failed.", modeMismatch)') &&
+    merchCheckout.includes('console.error("Merch checkout mode preflight failed.", modeMismatch)') &&
+    adCheckout.indexOf("stripeCheckoutModeMismatch") <
+      adCheckout.indexOf("const formData = await request.formData()") &&
+    bookingCheckout.indexOf("stripeCheckoutModeMismatch") <
+      bookingCheckout.indexOf("const formData = await request.formData()") &&
+    merchCheckout.indexOf("stripeCheckoutModeMismatch") <
+      merchCheckout.indexOf("const formData = await request.formData()"),
+});
+checks.push({
   label: "checkout creation failures log privately and show generic member copy",
   ok:
     adCheckout.includes('console.error("Ad checkout session creation failed.", error)') &&
@@ -249,6 +269,7 @@ checks.push({
     stripeWebhook.includes('event_type: "booking_refund_problem"') &&
     stripeWebhook.includes("const disputeWebhookEvents") &&
     stripeWebhook.includes('"charge.dispute.created"') &&
+    stripeWebhook.includes('"charge.dispute.updated"') &&
     stripeWebhook.includes('"charge.dispute.closed"') &&
     stripeWebhook.includes('"charge.dispute.funds_withdrawn"') &&
     stripeWebhook.includes('"charge.dispute.funds_reinstated"') &&
@@ -473,10 +494,11 @@ checks.push({
   ok:
     adminPaymentsPage.includes("Production payment gates") &&
     envExample.includes("STRIPE_EXPECTED_LIVEMODE=false") &&
-    stripeWebhook.includes("process.env.STRIPE_EXPECTED_LIVEMODE") &&
-    stripeWebhook.includes("process.env.STRIPE_SECRET_KEY") &&
-    stripeWebhook.includes('secretKey?.startsWith("sk_live_")') &&
-    stripeWebhook.includes('secretKey?.startsWith("sk_test_")') &&
+    stripeServer.includes("process.env.STRIPE_EXPECTED_LIVEMODE") &&
+    stripeServer.includes("process.env.STRIPE_SECRET_KEY") &&
+    stripeServer.includes('secretKey?.startsWith("sk_live_")') &&
+    stripeServer.includes('secretKey?.startsWith("sk_test_")') &&
+    stripeWebhook.includes("expectedStripeLivemode() ?? stripeSecretKeyLivemode()") &&
     stripeWebhook.includes("function stripeLivemodeMatches") &&
     stripeWebhook.includes("event.livemode === expected") &&
     stripeWebhook.includes("Payment update ignored because livemode did not match.") &&
@@ -486,6 +508,7 @@ checks.push({
     stripeWebhook.includes("Checkout session completed before payment settled.") &&
     paymentReadiness.includes("STRIPE_EXPECTED_LIVEMODE=true") &&
     paymentReadiness.includes("checkout.session.async_payment_succeeded") &&
+    paymentReadiness.includes("charge.dispute.updated") &&
     paymentReadiness.includes("charge.dispute.funds_reinstated") &&
     paymentReadiness.includes("account.updated") &&
     adminPaymentsPage.includes("const paymentReconciliationChecks = [") &&
@@ -749,9 +772,11 @@ checks.push({
     adminPaymentsPage.includes("ad_payment_dispute") &&
     adminPaymentsPage.includes("booking_payment_dispute") &&
     adminPaymentsPage.includes("charge.dispute.created") &&
+    adminPaymentsPage.includes("charge.dispute.updated") &&
     adminPaymentsPage.includes("charge.dispute.closed") &&
     adminPaymentsPage.includes("charge.dispute.funds_withdrawn") &&
     adminPaymentsPage.includes("charge.dispute.funds_reinstated") &&
+    adminPaymentsPage.includes("checkout.session.async_payment_succeeded") &&
     adminPaymentsPage.includes("refund_booking_deposit_requested") &&
     adminPaymentsPage.includes("reset_stale_booking_deposit_checkouts") &&
     adminPaymentsPage.includes(".range(auditFrom, auditTo)") &&
