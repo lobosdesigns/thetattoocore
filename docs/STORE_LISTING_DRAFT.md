@@ -12,7 +12,7 @@ The heart of the tattoo community for real artists, studios, vendors, collectors
 
 TheTattooCore is an 18+ body-art community built around real tattoo culture: artists, studios, vendors, collectors, and enthusiasts.
 
-Discover fresh work in 4U, share temporary Stories, talk shop in Gossip, browse verified professional Stuff, find Gigs, explore safe fan-facing Merch, and connect through DMs. The platform is designed for independent body-art people who want community without AI-generated tattoo art, scratcher promotion, or corporate takeover pressure.
+Discover fresh work in 4U, share temporary Stories, talk shop in Gossip, browse verified professional Stuff, find Gigs, explore safe fan-facing Merch, and connect through DMs. The platform is designed for independent body-art people who want a focused place for community, discovery, shop life, and body-art culture.
 
 Launch safety rules are intentionally strict: visible nudity is not allowed, pornography and sexual solicitation are not allowed, and professional tattoo equipment activity is limited to verified artists, studios, and approved vendors where the platform can reasonably enforce it.
 
@@ -32,7 +32,7 @@ Members and reviewers can use the Help Center for plain-language guides on Searc
 - Profile pages with banner photo, bio, avatar, social links, website links, and studio links
 - Reporting, blocking, moderation, and 18+ account gates
 - Public Help Center guides for using core safety, commerce, discovery, and verification tools
-- No AI art, no AI creator replacement, and no scratcher promotion
+- No AI art, no AI creator replacement, no scratcher promotion, and no unsafe professional equipment access
 
 ## Audience And Age Position
 
