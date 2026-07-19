@@ -15,6 +15,7 @@ const resetPasswordForm = readFileSync(
   "src/app/reset-password/reset-password-form.tsx",
   "utf8",
 );
+const clientComponentSource = [resetPasswordForm].join("\n");
 const adClickRoute = readFileSync("src/app/api/ad-click/route.ts", "utf8");
 const loginPage = readFileSync("src/app/login/page.tsx", "utf8");
 const signupPage = readFileSync("src/app/signup/page.tsx", "utf8");
@@ -156,6 +157,13 @@ const publicRoadmapSnippets = [
   "APNs",
   "FCM",
 ];
+const clientConsoleSnippets = [
+  "console.log(",
+  "console.debug(",
+  "console.info(",
+  "console.warn(",
+  "console.error(",
+];
 
 const checks = [
   {
@@ -255,11 +263,13 @@ const checks = [
       resetPasswordActions.includes('console.error("Password update failed.", error)') &&
       resetPasswordActions.includes('"Could not update password. Please try again."') &&
       !resetPasswordActions.includes('error.message || "Could not update password."') &&
-      resetPasswordForm.includes('console.error("Recovery session failed.", error)') &&
       resetPasswordForm.includes('"Could not open that reset link. Please request a new one."') &&
-      resetPasswordForm.includes('console.error("Password update failed.", error)') &&
       resetPasswordForm.includes('"Could not update password. Please try again."') &&
       !resetPasswordForm.includes("setMessage(error.message)"),
+  },
+  {
+    label: "client auth recovery UI avoids browser console error details",
+    ok: clientConsoleSnippets.every((snippet) => !clientComponentSource.includes(snippet)),
   },
   {
     label: "notification open rejects external and protocol-relative hrefs",
