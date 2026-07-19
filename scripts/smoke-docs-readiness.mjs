@@ -184,7 +184,11 @@ const checks = [
       docs["docs/AGE_RATING_PREP.md"].includes("Stories") &&
       docs["docs/AGE_RATING_PREP.md"].includes("Ads") &&
       docs["docs/AGE_RATING_PREP.md"].includes("Marketplace/commerce") &&
-      docs["docs/AGE_RATING_PREP.md"].includes("AI"),
+      docs["docs/AGE_RATING_PREP.md"].includes("AI") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Social, no dating/sexual-relationship purpose") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("no precise location sharing") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("yes blocking, yes reporting, yes chat moderation") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("no invited-friends-only limitation"),
   },
   {
     label: "data safety prep covers current data and privacy review areas",
