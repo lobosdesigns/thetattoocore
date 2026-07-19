@@ -122,6 +122,20 @@ const checks = [
     ok: blockedOverpromiseTerms.every((term) => !allText.includes(term)),
   },
   {
+    label: "store metadata README keeps console handoff fields private and complete",
+    ok:
+      source.readme.includes("## Console Field Handoff") &&
+      source.readme.includes("Support URL: `https://thetattoocore.com/support`") &&
+      source.readme.includes("Privacy URL: `https://thetattoocore.com/privacy`") &&
+      source.readme.includes("Terms URL: `https://thetattoocore.com/terms`") &&
+      source.readme.includes("App start URL: `https://thetattoocore.com/login`") &&
+      source.readme.includes("Support email: `support@thetattoocore.com`") &&
+      source.readme.includes("Reviewer credential status: created, validated, and stored only in the store-review console fields") &&
+      source.readme.includes("Screenshot upload status: use upload-ready no-alpha PNG derivatives") &&
+      source.readme.includes("Contact phone: keep console-only/private") &&
+      !source.readme.includes("936-730-7104"),
+  },
+  {
     label: "store screenshot inventory blocks unsafe review images",
     ok:
       source.screenshotInventory.includes("public/screenshots/mobile-home.png") &&
