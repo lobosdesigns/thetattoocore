@@ -4,6 +4,7 @@ const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
 const adminNav = readFileSync("src/app/admin/admin-section-nav.tsx", "utf8");
 const adminOverview = readFileSync("src/app/admin/page.tsx", "utf8");
 const adminMediaOps = readFileSync("src/app/admin/media-ops/page.tsx", "utf8");
+const adminMailSettings = readFileSync("src/app/admin/mail-settings/page.tsx", "utf8");
 const adminUsers = readFileSync("src/app/admin/users/page.tsx", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const adminDataRequests = readFileSync("src/app/admin/data-requests/page.tsx", "utf8");
@@ -167,6 +168,17 @@ const checks = [
       !mediaOpsSource.includes("video transcoding") &&
       !mediaOpsSource.includes("managed video processing") &&
       !mediaOpsSource.includes("current storage path"),
+  },
+  {
+    label: "admin mail settings avoids raw provider and secret labels",
+    ok:
+      adminMailSettings.includes("Company SMTP") &&
+      adminMailSettings.includes("Private lookup") &&
+      adminMailSettings.includes("Private password") &&
+      adminMailSettings.includes("Configured") &&
+      !adminMailSettings.includes("{mailSettings?.provider ?? \"hostgator\"}") &&
+      !adminMailSettings.includes("HOSTGATOR_SMTP_PASSWORD") &&
+      !adminMailSettings.includes("Secret binding"),
   },
   {
     label: "owner-only role changes cannot demote the current owner",

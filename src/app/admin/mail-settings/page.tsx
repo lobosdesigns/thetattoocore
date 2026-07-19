@@ -52,6 +52,12 @@ function updatedDate(value: string | null | undefined) {
   }).format(new Date(value));
 }
 
+function providerLabel(value: string | null | undefined) {
+  if (!value) return "Company SMTP";
+
+  return value.toLowerCase().includes("hostgator") ? "Company SMTP" : value;
+}
+
 export default async function AdminMailSettingsPage() {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -114,9 +120,9 @@ export default async function AdminMailSettingsPage() {
 
         <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
-            <p className="text-sm text-[var(--muted-strong)]">Provider</p>
+            <p className="text-sm text-[var(--muted-strong)]">Mail route</p>
             <p className="mt-2 text-2xl font-bold capitalize">
-              {mailSettings?.provider ?? "hostgator"}
+              {providerLabel(mailSettings?.provider)}
             </p>
           </div>
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
@@ -132,7 +138,7 @@ export default async function AdminMailSettingsPage() {
             </p>
           </div>
           <div className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
-            <p className="text-sm text-[var(--muted-strong)]">Auth email lookup</p>
+            <p className="text-sm text-[var(--muted-strong)]">Private lookup</p>
             <p className="mt-2 text-2xl font-bold">
               {hasAuthEmailLookup ? "Ready" : "Missing"}
             </p>
@@ -196,11 +202,10 @@ export default async function AdminMailSettingsPage() {
               </div>
               <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3">
                 <dt className="text-xs font-semibold uppercase text-[var(--muted-strong)]">
-                  Secret binding
+                  Private password
                 </dt>
                 <dd className="mt-1 font-semibold">
-                  {mailSettings?.smtp_password_secret_name ??
-                    "HOSTGATOR_SMTP_PASSWORD"}
+                  {mailSettings?.smtp_password_secret_name ? "Configured" : "Not set"}
                 </dd>
               </div>
               <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3">
