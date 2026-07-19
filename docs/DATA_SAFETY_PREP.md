@@ -8,7 +8,7 @@ Use this as an internal checklist before answering Google Play Data Safety, App 
 - Profile data: avatar, bio, account type, public profile settings, website/social links, coarse city/region/country settings, language preference, appearance preference, and optional artist-to-studio/shop link.
 - User-generated content: 4U posts, Gossip posts, Stories, Stuff listings, Gigs, Merch products, comments, replies, Help Center questions/comments, reports, saves, follows, blocks, and direct messages.
 - Media: profile photos, post/listing/gig/story/comment/DM image or GIF uploads, short videos where supported, and private verification/license documents.
-- Commerce and payment records: test-mode checkout/session identifiers, order states, ad payment states, booking-deposit states, platform fee amounts, fulfillment/refund status, and payment event references. Raw card, bank, routing, and payout credentials must not be collected in TTC forms.
+- Commerce and payment records: controlled launch checkout/session identifiers, order states, ad payment states, booking-deposit states, platform fee amounts, fulfillment/refund status, and payment event references. Raw card, bank, routing, and payout credentials must not be collected in TTC forms.
 - Verification data: license or certification name, optional license number, issuing location, expiration date, verification status, reviewer notes, and private uploaded proof documents.
 - Safety and moderation data: reports, moderation status, warnings/escalations, blocks, admin audit records, account deletion requests, and related support context.
 - Usage and preference data: notifications, unread counts, story views/reactions, ad click/impression events, saved items, likes, follows, and coarse discovery preferences.

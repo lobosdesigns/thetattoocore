@@ -15,7 +15,7 @@
 - Real-device QA gates live in `docs/REAL_DEVICE_QA_CHECKLIST.md` and should pass before wrapper packaging.
 - Production payment gates live in `docs/PAYMENT_PRODUCTION_READINESS.md` and should pass before real commerce appears in native builds.
 - Visible nudity is not allowed to reduce review and moderation risk.
-- Merch and ads use hosted checkout in test mode; production payments, seller payouts, taxes, refunds, disputes, and app-store policy review from `docs/PAYMENT_PRODUCTION_READINESS.md` must be finished before real commerce is promoted in native builds.
+- Merch and ads use controlled launch checkout; production payments, seller payouts, taxes, refunds, disputes, and app-store policy review from `docs/PAYMENT_PRODUCTION_READINESS.md` must be finished before real commerce is promoted in native builds.
 
 ## Wrapper Decision
 
@@ -39,7 +39,7 @@ Start with a thin native wrapper now that core web smoke/390px mobile checks are
 - Confirm public shared links open in the wrapper after final app-link/universal-link association files are published for the signed builds.
 - Confirm support email and public legal/contact surfaces use `support@thetattoocore.com` or final company/legal contact details, not personal owner information.
 - Have counsel review Terms, Privacy, account deletion language, moderation policy, marketplace rules, and payment/refund language.
-- Decide whether native builds expose Merch checkout or keep it web-only/test-mode until production payment policy is approved.
+- Decide whether native builds expose Merch checkout or keep it web-only and launch-controlled until production payment policy is approved.
 - Prepare store age rating answers around 18+, user-generated content, moderation/reporting, no visible nudity policy, social interaction, DMs, marketplace-like browsing, and hosted checkout.
 - Prepare store data-safety/privacy answers around account/profile data, user-generated content, DMs, verification documents, moderation records, payment references, coarse location, notifications, deletion requests, and public-search visibility.
 

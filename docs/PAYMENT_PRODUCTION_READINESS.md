@@ -1,13 +1,13 @@
 # Payment Production Readiness
 
-Stripe checkout is wired for test-mode Merch, ads, and accepted booking deposits. Keep production commerce gated until the items below are finished and reviewed.
+Stripe checkout is wired for controlled launch testing across Merch, ads, and accepted booking deposits. Keep production commerce gated until the items below are finished and reviewed.
 
 ## Current Position
 
 - Stripe Checkout is the shared gateway path for Merch, prepaid ad campaigns, and accepted booking deposits.
 - Webhook event dedupe, retry-safe status transitions, failed/expired checkout handling, buyer/seller/advertiser alerts, dispute audit logging, and Admin > Payments visibility are wired.
 - Admin > Payments now includes short operator runbooks for seller payout release checks, refund/dispute review, and booking deposit review, plus a reconciliation checklist for webhook receipts, payment audit rows, user-facing status, admin queue status, fulfillment, ad delivery, booking deposits, and payout release.
-- A transparent 2% TTC platform fee is recorded in test-mode flows and booking deposit requests.
+- A transparent 2% TTC platform fee is recorded in controlled launch checkout flows and booking deposit requests.
 - Merch order receipts, seller fulfillment updates, buyer refund-review requests, and basic admin order controls are present.
 - Production purchases, seller payout releases, and real ad spending should stay gated until policy, tax, payout, refund, dispute, and provider review is complete.
 
@@ -24,11 +24,11 @@ Stripe checkout is wired for test-mode Merch, ads, and accepted booking deposits
 - Review app-store rules before exposing checkout inside native wrappers.
 - Review Stripe/provider policies for user-generated marketplaces, body-art products, ads, restricted goods, and adult-adjacent 18+ community positioning.
 - Create admin procedures for refunds, partial refunds, failed payments, expired checkouts, fulfilled orders, seller non-delivery, and advertiser campaign credits.
-- Confirm public support, terms, privacy, and checkout copy explain test-mode or production status accurately.
+- Confirm public support, terms, privacy, and checkout copy explain launch-controlled or production status accurately.
 
 ## Production Switch Checklist
 
-- Replace test Stripe keys with live keys only after the full policy review is complete.
+- Replace test payment keys with live keys only after the full policy review is complete.
 - Configure live webhook endpoint and verify `STRIPE_WEBHOOK_SECRET` in Cloudflare. The production destination is `https://thetattoocore.com/api/stripe/webhook` and should listen for checkout, refund, dispute, and seller account status events.
 - Confirm `SUPABASE_SERVICE_ROLE_KEY` remains server-only and is never exposed to client bundles.
 - Run a small live-payment penny test only after legal/provider review.

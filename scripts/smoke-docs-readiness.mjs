@@ -216,7 +216,7 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("private profile connected by an accepted follow relationship") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("private Add to calendar download") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("verification") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Stripe test checkout") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("controlled launch checkout") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm run smoke:public") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm run smoke:mobile") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Open Admin > Media Ops") &&
