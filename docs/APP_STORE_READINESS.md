@@ -402,6 +402,16 @@
 - Public and mobile route smoke passed on July 19, 2026 after Merch checkout status copy moved from operational fulfillment/payment-record wording to member-facing order, Support, and Account orders guidance. Live deploy version `d0d039c6-bf05-471f-8a41-84a519b0d84e` passed payment/public guards, lint, production build, public route smoke, and 390px mobile browser smoke after one transient post-deploy static asset retry.
 - Core social flows are web-first; native beta-wrapper internal testing is active for Google Play and TestFlight. Public store release is still gated on the checklist below.
 
+## Submission Blocker Matrix
+
+| Area | Current blocker | Evidence needed to clear |
+| --- | --- | --- |
+| Store consoles | Apple still needs 13-inch iPad screenshot upload, primary category, Content Rights, App Privacy/Privacy Policy URL, pricing, age-rating answers, and final submission validation. Google Play still needs the final content-rating summary/save handoff plus current Data Safety review. | Saved console screenshots or notes showing each required console section complete for the submitted build. |
+| Legal and policy | Final counsel-reviewed Terms/Privacy, account deletion handling, commerce rules, refund/dispute policy, seller payout policy, and app-store checkout policy review are still required. | Dated legal review note and updated public Terms/Privacy/Support copy matching the submitted build. |
+| Real-device QA | The full real-device checklist still needs archived Android and iOS evidence, including auth, posting, reporting/blocking, verification, checkout return paths, and the full two-user DM read/reply pass with a second known test login. | Completed `docs/REAL_DEVICE_QA_CHECKLIST.md` evidence pack with device names, dates, tester accounts, screenshots/clips, and pass/fail notes. |
+| Payments and payouts | Production marketplace purchases and seller payout releases remain gated on live webhook setup, live-mode key review, tax/shipping rules, refund/dispute procedure, seller payout readiness, and a small live-payment test after review. | `docs/PAYMENT_PRODUCTION_READINESS.md` checklist signed off plus Admin > Payments evidence for live webhook events, order states, refunds/disputes, and payout readiness. |
+| Native wrapper | Android API 36 tooling is required for submissions or updates on or after August 31, 2026, and final app-link association files still need signed Android and Apple identifiers. | Signed release build evidence, API-target proof for the release date, verified app-link files, and app WebView auth/return-route QA. |
+
 ## Before Google Play / App Store Submission
 
 - Create and validate the beta wrapper in `native/thetattoocore-mobile`, then build signed Android upload bundles on local Android tooling and iOS archives on the Mac/remote Mac with Xcode. Android internal-test bundle `TheTattooCore-app-release-v1-signed.aab` has been uploaded to Google Play internal testing.

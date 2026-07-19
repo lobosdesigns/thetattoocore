@@ -520,6 +520,24 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("participant-only `.ics` calendar downloads"),
   },
   {
+    label: "readiness docs keep final submission blockers explicit",
+    ok:
+      docs["docs/APP_STORE_READINESS.md"].includes("## Submission Blocker Matrix") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Store consoles") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("13-inch iPad screenshot upload") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Content Rights") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Data Safety review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Legal and policy") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Final counsel-reviewed Terms/Privacy") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Real-device QA") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("full two-user DM read/reply pass") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Payments and payouts") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("small live-payment test after review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Native wrapper") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Android API 36") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("app-link association files"),
+  },
+  {
     label: "full verification keeps focused DM guards in the chain",
     ok:
       packageJson.includes('"smoke:dm": "node scripts/smoke-dm-guards.mjs"') &&
