@@ -170,7 +170,8 @@ const checks = [
   {
     label: "account page exposes booking inbox and artist responses",
     ok:
-      accountPage.includes('["#booking-settings", "Bookings"]') &&
+      accountPage.includes('id: "booking-settings"') &&
+      accountPage.includes('label: "Bookings"') &&
       accountPage.includes('.from("booking_requests")') &&
       accountPage.includes("visibleIncomingBookings") &&
       accountPage.includes("visibleOutgoingBookings") &&
@@ -471,9 +472,9 @@ const checks = [
       profilePage.includes("bookingSettings.calendar_notes"),
   },
   {
-    label: "account booking settings maintain private calendar prep records",
+    label: "account booking settings maintain private calendar setup records",
     ok:
-      accountPage.includes("Calendar prep records") &&
+      accountPage.includes("Calendar setup records") &&
       accountPage.includes("raw connection secrets") &&
       accountPage.includes('.from("booking_calendar_connections")') &&
       accountPage.includes("external_calendar_id") &&
@@ -482,7 +483,7 @@ const checks = [
       accountActions.includes('status: "setup_needed"') &&
       accountActions.includes('sync_direction: "read_only"') &&
       accountActions.includes('status: "paused"') &&
-      productPlan.includes("private owner-scoped calendar prep records"),
+      productPlan.includes("private owner-scoped calendar setup records"),
   },
   {
     label: "account booking settings explain manual calendar notes",

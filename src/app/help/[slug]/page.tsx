@@ -248,7 +248,7 @@ export default async function HelpArticlePage({
               </div>
               {tutorialMedia.length ? (
                 <span className="w-fit rounded-full border border-[var(--card-rim)] bg-[var(--surface-subtle)] px-3 py-1 text-xs font-bold text-[var(--muted-strong)]">
-                  {tutorialMedia.length} planned
+                  {tutorialMedia.length} queued
                 </span>
               ) : null}
             </div>

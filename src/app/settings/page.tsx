@@ -63,7 +63,7 @@ const memberSettingsGroups: SettingsGroup[] = [
     label: "Notifications",
   },
   {
-    description: "Booking requests, availability, deposits, and calendar prep.",
+    description: "Booking requests, availability, deposits, and calendar setup.",
     href: "/settings/bookings",
     icon: BriefcaseBusiness,
     label: "Bookings",

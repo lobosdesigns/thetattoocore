@@ -1281,11 +1281,11 @@ export default async function AccountPage({
                 ))}
               </div>
               <div className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3">
-                <p className="text-sm font-bold">Calendar prep records</p>
+                <p className="text-sm font-bold">Calendar setup records</p>
                 <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
-                  Choosing Google Calendar or Apple/iCalendar creates a private
-                  read-only prep record for future connection work. TTC does
-                  not store calendar passwords or raw connection secrets here.
+                  Choosing Google Calendar or Apple/iCalendar saves a private
+                  read-only setup note for booking coordination. TTC does not
+                  store calendar passwords or raw connection secrets here.
                 </p>
                 {bookingCalendarConnections?.length ? (
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -1311,9 +1311,9 @@ export default async function AccountPage({
                   </div>
                 ) : (
                   <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] p-3 text-xs leading-5 text-[var(--muted)]">
-                    No calendar prep record yet. Save Google Calendar or
-                    Apple/iCalendar as the connection type when you are ready to
-                    prepare a future calendar connection.
+                    No calendar setup record yet. Save Google Calendar or
+                    Apple/iCalendar as the connection type when you want booking
+                    coordination notes on file.
                   </p>
                 )}
               </div>
