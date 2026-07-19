@@ -206,6 +206,8 @@ const checks = [
       docs["docs/DATA_SAFETY_PREP.md"].includes("Raw card, bank, routing, and payout credentials must not be collected") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("coarse location") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("account deletion requests") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("Google Play Data Safety must be completed for apps on testing tracks") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("internal testing, closed/open testing if used, and production") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("support@thetattoocore.com"),
   },
   {

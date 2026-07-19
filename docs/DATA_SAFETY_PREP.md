@@ -38,7 +38,9 @@ Use this as an internal checklist before answering Google Play Data Safety, App 
 
 ## Before Submission
 
+- Google Play Data Safety must be completed for apps on testing tracks as well as production. Recheck it before internal, closed, open, or production release changes.
 - Recheck the live build against the current Google Play Data Safety and App Store privacy questions.
+- Record whether the Data Safety answers were reviewed for each active track: internal testing, closed/open testing if used, and production.
 - Confirm the public Privacy page describes profile data, messages, location settings, marketplace/payment records, deletion requests, and future ads accurately.
 - Confirm no app-store or public copy exposes private infrastructure, service secrets, personal owner contact information, or internal admin procedures.
 - Confirm production payment, payout, tax, refund, and dispute policies are complete before answering real-money commerce questions as live.
