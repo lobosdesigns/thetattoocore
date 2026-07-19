@@ -2,7 +2,7 @@
 
 ## Current Repo
 
-- Local app path: `C:\Users\lobos\Documents\Codex\2026-07-07\ok-i-got-the-domain-thetattoocore\work\thetattoocore-web`
+- Local app path: `C:\Users\lobos\Documents\Codex\Projects\thetattoocore-web`
 - GitHub repo: `lobosdesigns/thetattoocore`
 - Main production domain: `https://thetattoocore.com`
 - Sites project is registered in `.openai/hosting.json`.
