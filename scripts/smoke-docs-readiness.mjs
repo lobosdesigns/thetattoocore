@@ -367,6 +367,11 @@ const checks = [
       helpSearch.includes("package") &&
       helpSearch.includes("shipping") &&
       helpSearch.includes("wrong") &&
+      helpSearch.includes("overflow") &&
+      helpSearch.includes("password") &&
+      helpSearch.includes("screenshot") &&
+      helpCenterData.includes("bug report") &&
+      helpCenterData.includes("safe screenshot") &&
       docs["docs/PRODUCT_PLAN.md"].includes("structured article keywords") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes(
         "Signed-in members can ask deeper questions",
