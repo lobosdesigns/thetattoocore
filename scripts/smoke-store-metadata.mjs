@@ -69,6 +69,16 @@ const blockedTerms = [
   "server",
 ];
 
+const blockedOverpromiseTerms = [
+  "live payments",
+  "instant payouts",
+  "guaranteed refunds",
+  "public launch",
+  "unrestricted marketplace",
+  "real-money checkout",
+  "same-day payout",
+];
+
 const checks = [
   {
     label: "store metadata files exist",
@@ -106,6 +116,10 @@ const checks = [
   {
     label: "store metadata avoids public infrastructure details",
     ok: blockedTerms.every((term) => !allText.includes(term)),
+  },
+  {
+    label: "store metadata avoids over-promising launch commerce status",
+    ok: blockedOverpromiseTerms.every((term) => !allText.includes(term)),
   },
   {
     label: "store screenshot inventory blocks unsafe review images",
