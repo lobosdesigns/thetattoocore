@@ -467,6 +467,20 @@ const checks = [
       productPlan.includes("public Help guide for seller payout setup"),
   },
   {
+    label: "admin ad actions hide raw backend errors from redirects",
+    ok:
+      adminActions.includes('console.error("Admin ad campaign lookup failed.", campaignError)') &&
+      adminActions.includes('console.error("Admin ad campaign status update failed.", updateError)') &&
+      adminActions.includes('console.error("Admin ad credit campaign lookup failed.", campaignError)') &&
+      adminActions.includes('console.error("Admin ad campaign credit update failed.", updateError)') &&
+      adminActions.includes('"Ad campaign was not found."') &&
+      adminActions.includes('"Could not update ad campaign. Please try again."') &&
+      adminActions.includes('"Could not apply ad credit. Please try again."') &&
+      !adminActions.includes('campaignError?.message || "Ad campaign was not found."') &&
+      !adminActions.includes('updateError.message || "Could not update ad campaign."') &&
+      !adminActions.includes('updateError.message || "Could not apply ad credit."'),
+  },
+  {
     label: "plan records dedicated admin pages and tester account tooling",
     ok:
       productPlan.includes("Admin sections must become dedicated pages") &&

@@ -1529,9 +1529,12 @@ export async function updateAdCampaignStatus(formData: FormData) {
     }>();
 
   if (campaignError || !campaign) {
+    if (campaignError) {
+      console.error("Admin ad campaign lookup failed.", campaignError);
+    }
     redirect(
       adminAdsMessage(
-        campaignError?.message || "Ad campaign was not found.",
+        "Ad campaign was not found.",
         returnTo,
       ),
     );
@@ -1563,9 +1566,10 @@ export async function updateAdCampaignStatus(formData: FormData) {
     .eq("id", campaignId);
 
   if (updateError) {
+    console.error("Admin ad campaign status update failed.", updateError);
     redirect(
       adminAdsMessage(
-        updateError.message || "Could not update ad campaign.",
+        "Could not update ad campaign. Please try again.",
         returnTo,
       ),
     );
@@ -1623,9 +1627,12 @@ export async function grantAdCampaignCredit(formData: FormData) {
     }>();
 
   if (campaignError || !campaign) {
+    if (campaignError) {
+      console.error("Admin ad credit campaign lookup failed.", campaignError);
+    }
     redirect(
       adminAdsMessage(
-        campaignError?.message || "Ad campaign was not found.",
+        "Ad campaign was not found.",
         returnTo,
       ),
     );
@@ -1653,7 +1660,8 @@ export async function grantAdCampaignCredit(formData: FormData) {
     .eq("id", campaign.id);
 
   if (updateError) {
-    redirect(adminAdsMessage(updateError.message || "Could not apply ad credit.", returnTo));
+    console.error("Admin ad campaign credit update failed.", updateError);
+    redirect(adminAdsMessage("Could not apply ad credit. Please try again.", returnTo));
   }
 
   await supabase.from("admin_audit_logs").insert({
