@@ -94,6 +94,23 @@ function describeNameMismatch(paths, expectedNames) {
   return parts.join("; ");
 }
 
+function draftFieldValue(fieldName) {
+  const line = source.storeListingDraft
+    .split(/\r?\n/)
+    .find((row) => row.startsWith(`| ${fieldName} |`));
+  if (!line) return "";
+
+  const [, , , value = ""] = line.split("|").map((part) => part.trim());
+
+  return value;
+}
+
+function draftFieldUnderLimit(fieldName, limit) {
+  const value = draftFieldValue(fieldName);
+
+  return value.length > 0 && value.length <= limit;
+}
+
 const generatedScreenshots = {
   playPhone: generatedPngs("native/store-metadata/generated/google-play/phone-screenshots"),
   playFeature: ["native/store-metadata/generated/google-play/feature-graphic-1024x500.png"],
@@ -270,9 +287,23 @@ const checks = [
       source.readiness.includes("Google Play closed-test tester opt-in/duration evidence if required") &&
       source.readiness.includes("build selection, reviewer test access, developer/legal entity, reviewer contact phone") &&
       source.readiness.includes("Do not store reviewer passwords, private phone numbers, account-owner data, or console identifiers in repo docs") &&
-      source.dataSafetyPrep.includes("Google Play Data Safety must be completed before closed testing, open testing, or production release") &&
+      source.dataSafetyPrep.includes("Google Play Data Safety must be current before closed testing, open testing, or production release") &&
       source.dataSafetyPrep.includes("Apps active only on Google Play internal testing are currently exempt") &&
       source.screenshotPrep.includes("Track each store asset set separately") &&
+      source.storeListingDraft.includes("## Console-Ready Fields") &&
+      source.storeListingDraft.includes("| Google Play short description | 80 characters | Tattoo community for artists, studios, vendors, collectors, and fans. |") &&
+      source.storeListingDraft.includes("| App Store subtitle | 30 characters | Tattoo community hub |") &&
+      source.storeListingDraft.includes("| App Store promotional text | 170 characters |") &&
+      source.storeListingDraft.includes("| App Store keywords | 100 characters | tattoo,artists,studios,body art,merch,gigs,community,stories,DMs |") &&
+      source.storeListingDraft.includes("| Google Play release notes | 500 characters |") &&
+      source.storeListingDraft.includes("| App Store primary category | Console choice | Social Networking |") &&
+      source.storeListingDraft.includes("| Google Play app category | Console choice | Social |") &&
+      draftFieldUnderLimit("Google Play short description", 80) &&
+      draftFieldUnderLimit("App Store subtitle", 30) &&
+      draftFieldUnderLimit("App Store promotional text", 170) &&
+      draftFieldUnderLimit("App Store keywords", 100) &&
+      draftFieldUnderLimit("App Store release notes", 4000) &&
+      draftFieldUnderLimit("Google Play release notes", 500) &&
       source.storeListingDraft.includes("visible nudity is not allowed") &&
       source.storeListingDraft.includes("No AI art") &&
       source.storeListingDraft.includes("no scratcher promotion") &&
