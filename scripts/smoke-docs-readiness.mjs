@@ -174,6 +174,11 @@ const checks = [
       docs["docs/SCREENSHOT_PREP.md"].includes("no-visible-nudity rules") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("no-AI stance") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("## Upload Validation Evidence") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("Track each store asset set separately") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("| Google Play phone screenshots | Release track, version") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("| Google Play feature graphic | Uploaded feature graphic") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("| App Store iPhone 6.5-inch screenshots | iOS build/version") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("| App Store 13-inch iPad screenshots | iOS build/version") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("Apple App Store Connect: record the uploaded iPhone 6.5-inch set") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("13-inch iPad set") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("Google Play Console: record the uploaded phone screenshot set") &&

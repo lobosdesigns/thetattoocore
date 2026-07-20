@@ -44,6 +44,15 @@ Use this before Google Play, App Store, PWA listing, press, or public launch scr
 
 Keep screenshot upload evidence private with the release handoff. Do not add console screenshots that show reviewer passwords, private contact phone numbers, account owner details, payment-account data, or store-dashboard identifiers to public docs or member-facing copy.
 
+Track each store asset set separately so one valid upload does not hide another missing set:
+
+| Store asset set | Private evidence to capture | Repo-safe status |
+| --- | --- | --- |
+| Google Play phone screenshots | Release track, version, capture device, uploaded file set, and upload validation result. | `pending`, `uploaded`, `needs replacement`, or `validated`. |
+| Google Play feature graphic | Uploaded feature graphic, validation result, capture/build date, and rights-safe source note. | `pending`, `uploaded`, `needs replacement`, or `validated`. |
+| App Store iPhone 6.5-inch screenshots | iOS build/version, capture device, uploaded file set, and upload validation result. | `pending`, `uploaded`, `needs replacement`, or `validated`. |
+| App Store 13-inch iPad screenshots | iOS build/version, iPad capture source, uploaded file set, and upload validation result. | `pending`, `uploaded`, `needs replacement`, or `validated`. |
+
 - Apple App Store Connect: record the uploaded iPhone 6.5-inch set, 13-inch iPad set, upload validation result, build/version, capture date, and reviewer-safe notes.
 - Google Play Console: record the uploaded phone screenshot set, feature graphic, upload validation result, release track, capture date, and reviewer-safe notes.
 - Confirm every uploaded image still matches the submitted build after final metadata, privacy, age-rating, and payment-status edits.

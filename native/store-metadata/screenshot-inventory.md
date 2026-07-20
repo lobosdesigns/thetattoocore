@@ -33,6 +33,15 @@ Play feature graphic, App Store iPhone 6.5-inch screenshots, and App Store
 13-inch iPad screenshots by reading each PNG header and confirming count,
 dimensions, and no-alpha output.
 
+## Screenshot Replacement Status
+
+| Store asset set | Current repo asset | Final public-review requirement | Status |
+| --- | --- | --- | --- |
+| Google Play phone screenshots | Generated safe phone derivatives, 9 PNGs, 1080 x 1920, no alpha. | Replace or confirm with real Android internal-test captures for the selected release track and version. | Generated placeholder ready; final real-device upload validation still needed. |
+| Google Play feature graphic | Generated TTC-branded 1024 x 500 PNG, no alpha. | Confirm final rights-safe feature graphic uploads without private member, payment, or console details. | Generated placeholder ready; final console validation still needed. |
+| App Store iPhone 6.5-inch screenshots | Generated safe iPhone derivatives, 9 PNGs, 1242 x 2688, no alpha. | Replace or confirm with TestFlight build screenshots for the selected iOS build/version. | Generated placeholder ready; final real-device upload validation still needed. |
+| App Store 13-inch iPad screenshots | Generated safe iPad derivatives, 3 PNGs, 2048 x 2732, no alpha. | Upload and validate the required 13-inch iPad set for the selected iOS build/version. | Generated placeholder ready; App Store iPad upload evidence remains a blocker. |
+
 These generated placeholders are TTC-branded, rights-safe, and show the current
 main content columns and tutorial surfaces: 4U, Gossip, Stuff, Gigs, Merch,
 verification, booking, Help, and Support. DM should appear as a direct messenger

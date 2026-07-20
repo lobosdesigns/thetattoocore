@@ -170,6 +170,12 @@ const checks = [
       source.screenshotInventory.includes("public/screenshots/mobile-verification-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-booking-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-help-support.png") &&
+      source.screenshotInventory.includes("## Screenshot Replacement Status") &&
+      source.screenshotInventory.includes("| Google Play phone screenshots | Generated safe phone derivatives") &&
+      source.screenshotInventory.includes("| Google Play feature graphic | Generated TTC-branded 1024 x 500 PNG") &&
+      source.screenshotInventory.includes("| App Store iPhone 6.5-inch screenshots | Generated safe iPhone derivatives") &&
+      source.screenshotInventory.includes("| App Store 13-inch iPad screenshots | Generated safe iPad derivatives") &&
+      source.screenshotInventory.includes("Generated placeholder ready; App Store iPad upload evidence remains a blocker.") &&
       source.screenshotInventory.includes("Replace generated placeholders with final real-device screenshots") &&
       source.screenshotInventory.includes("4U, Gossip, Stuff, Gigs, Merch") &&
       source.screenshotInventory.includes("verification, booking, Help, and Support") &&
