@@ -1,4 +1,5 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { basename } from "node:path";
 
 const files = {
   appleDescription: "native/store-metadata/apple-app-store/en-US/description.txt",
@@ -68,11 +69,79 @@ function hasExpectedPngs(paths, expectedCount, width, height) {
   );
 }
 
+function namesFor(paths) {
+  return paths.map((path) => basename(path)).sort();
+}
+
+function hasExpectedNames(paths, expectedNames) {
+  const actualNames = namesFor(paths);
+
+  return (
+    actualNames.length === expectedNames.length &&
+    expectedNames.every((name, index) => actualNames[index] === name)
+  );
+}
+
+function describeNameMismatch(paths, expectedNames) {
+  const actualNames = namesFor(paths);
+  const missing = expectedNames.filter((name) => !actualNames.includes(name));
+  const unexpected = actualNames.filter((name) => !expectedNames.includes(name));
+  const parts = [];
+
+  if (missing.length > 0) parts.push(`missing: ${missing.join(", ")}`);
+  if (unexpected.length > 0) parts.push(`unexpected: ${unexpected.join(", ")}`);
+
+  return parts.join("; ");
+}
+
 const generatedScreenshots = {
   playPhone: generatedPngs("native/store-metadata/generated/google-play/phone-screenshots"),
   playFeature: ["native/store-metadata/generated/google-play/feature-graphic-1024x500.png"],
   appStorePhone: generatedPngs("native/store-metadata/generated/apple-app-store/iphone-6-5"),
   appStoreIpad: generatedPngs("native/store-metadata/generated/apple-app-store/ipad-13"),
+};
+
+const expectedScreenshotNames = {
+  playPhone: [
+    "mobile-4u-safe-1080x1920.png",
+    "mobile-ads-safe-1080x1920.png",
+    "mobile-booking-safe-1080x1920.png",
+    "mobile-gossip-safe-1080x1920.png",
+    "mobile-help-support-1080x1920.png",
+    "mobile-home-1080x1920.png",
+    "mobile-login-signup-1080x1920.png",
+    "mobile-merch-help-shortcut-safe-1080x1920.png",
+    "mobile-merch-safe-1080x1920.png",
+    "mobile-order-support-safe-1080x1920.png",
+    "mobile-payout-safe-1080x1920.png",
+    "mobile-privacy-safety-safe-1080x1920.png",
+    "mobile-profile-search-1080x1920.png",
+    "mobile-stories-safe-1080x1920.png",
+    "mobile-verification-safe-1080x1920.png",
+  ],
+  playFeature: ["feature-graphic-1024x500.png"],
+  appStorePhone: [
+    "mobile-4u-safe-1242x2688.png",
+    "mobile-ads-safe-1242x2688.png",
+    "mobile-booking-safe-1242x2688.png",
+    "mobile-gossip-safe-1242x2688.png",
+    "mobile-help-support-1242x2688.png",
+    "mobile-home-1242x2688.png",
+    "mobile-login-signup-1242x2688.png",
+    "mobile-merch-help-shortcut-safe-1242x2688.png",
+    "mobile-merch-safe-1242x2688.png",
+    "mobile-order-support-safe-1242x2688.png",
+    "mobile-payout-safe-1242x2688.png",
+    "mobile-privacy-safety-safe-1242x2688.png",
+    "mobile-profile-search-1242x2688.png",
+    "mobile-stories-safe-1242x2688.png",
+    "mobile-verification-safe-1242x2688.png",
+  ],
+  appStoreIpad: [
+    "mobile-4u-safe-2048x2732.png",
+    "mobile-home-2048x2732.png",
+    "mobile-login-signup-2048x2732.png",
+  ],
 };
 
 const blockedTerms = [
@@ -254,10 +323,34 @@ const checks = [
       hasExpectedPngs(generatedScreenshots.playFeature, 1, 1024, 500),
   },
   {
+    label: "generated Google Play screenshots cover expected safe scenes",
+    ok:
+      hasExpectedNames(generatedScreenshots.playPhone, expectedScreenshotNames.playPhone) &&
+      hasExpectedNames(generatedScreenshots.playFeature, expectedScreenshotNames.playFeature),
+    message: [
+      describeNameMismatch(generatedScreenshots.playPhone, expectedScreenshotNames.playPhone),
+      describeNameMismatch(generatedScreenshots.playFeature, expectedScreenshotNames.playFeature),
+    ]
+      .filter(Boolean)
+      .join("; "),
+  },
+  {
     label: "generated App Store screenshots match upload dimensions",
     ok:
       hasExpectedPngs(generatedScreenshots.appStorePhone, 15, 1242, 2688) &&
       hasExpectedPngs(generatedScreenshots.appStoreIpad, 3, 2048, 2732),
+  },
+  {
+    label: "generated App Store screenshots cover expected safe scenes",
+    ok:
+      hasExpectedNames(generatedScreenshots.appStorePhone, expectedScreenshotNames.appStorePhone) &&
+      hasExpectedNames(generatedScreenshots.appStoreIpad, expectedScreenshotNames.appStoreIpad),
+    message: [
+      describeNameMismatch(generatedScreenshots.appStorePhone, expectedScreenshotNames.appStorePhone),
+      describeNameMismatch(generatedScreenshots.appStoreIpad, expectedScreenshotNames.appStoreIpad),
+    ]
+      .filter(Boolean)
+      .join("; "),
   },
 ];
 
@@ -268,6 +361,11 @@ for (const check of checks) {
 }
 
 if (failures.length) {
+  for (const check of failures) {
+    if (check.message) {
+      console.error(`  ${check.message}`);
+    }
+  }
   console.error(`${failures.length} store metadata smoke check(s) failed.`);
   process.exit(1);
 }

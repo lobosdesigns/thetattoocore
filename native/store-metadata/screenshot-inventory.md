@@ -37,7 +37,7 @@ Upload-ready derivatives generated from the safe mobile set:
 The store metadata smoke guard validates the generated Play phone screenshots,
 Play feature graphic, App Store iPhone 6.5-inch screenshots, and App Store
 13-inch iPad screenshots by reading each PNG header and confirming count,
-dimensions, and no-alpha output.
+expected safe-scene filenames, dimensions, and no-alpha output.
 
 ## Screenshot Replacement Status
 
