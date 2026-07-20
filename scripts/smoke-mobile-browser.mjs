@@ -103,6 +103,7 @@ const routes = [
   },
   { path: "/messages?to=tattedhotlegs", textIncludes: "Sign in", titleIncludes: "Sign in" },
   { path: "/notifications", textIncludes: "Sign in", titleIncludes: "Sign in" },
+  { path: "/api/bookings/bad/calendar", textIncludes: "Sign in", titleIncludes: "Sign in" },
   { path: "/saved", textIncludes: "Sign in", titleIncludes: "Sign in" },
   { path: "/account?booking_status=requested", textIncludes: "Sign in", titleIncludes: "Sign in" },
   { path: "/settings", textIncludes: "Sign in", titleIncludes: "Sign in" },

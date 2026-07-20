@@ -151,6 +151,7 @@ const checks = [
       source.mobileSmoke.includes('path: "/auth/confirm?next=%2Fmessages&code=bad"') &&
       source.nativePrep.includes("Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView") &&
       source.mobileRunbook.includes("Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView") &&
+      source.mobileSmoke.includes('path: "/api/bookings/bad/calendar"') &&
       source.iosUploadChecklist.includes("Confirm login, signup, forgot password, reset password, and email confirmation stay inside the app WebView"),
   },
   {
