@@ -56,47 +56,12 @@ import { StoryCreateButton } from "./story-create-button";
 import { countryLabel, languageLabel, normalizedLanguage } from "@/lib/localization";
 import { siteName, siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
+import { safeStatusMessage } from "@/lib/status-message";
 import { userGeneratedLinkRel } from "@/lib/urls";
 import { isVerifiedProfessional } from "@/lib/verification";
 
 const loginReturnHref = (returnTo: string) =>
   `/login?return_to=${encodeURIComponent(returnTo)}`;
-
-const unsafeHomeMessageTerms = [
-  "api key",
-  "cloudflare",
-  "database",
-  "firebase",
-  "hostgator",
-  "payment provider",
-  "provider",
-  "secret",
-  "stripe",
-  "supabase",
-  "webhook",
-  "worker",
-];
-
-function safeHomeStatusMessage(value: string | string[] | undefined) {
-  const rawValue = Array.isArray(value) ? value[0] : value;
-  const text = String(rawValue ?? "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 220);
-
-  if (!text) return null;
-
-  const lowerText = text.toLowerCase();
-  const hasUnsafeTerm = unsafeHomeMessageTerms.some((term) =>
-    lowerText.includes(term),
-  );
-
-  if (hasUnsafeTerm) {
-    return "Update could not be shown. Please try again or contact Support.";
-  }
-
-  return text;
-}
 
 type Claims = {
   sub: string;
@@ -1615,7 +1580,7 @@ export default async function Home({
   }>;
 }) {
   const params = await searchParams;
-  const homeMessage = safeHomeStatusMessage(params.message);
+  const homeMessage = safeStatusMessage(params.message);
   const merchCategory = merchCategoryFilters.some(
     ([value]) => value === params.merchCategory,
   )

@@ -680,10 +680,11 @@ const checks = [
   {
     label: "account status messages hide raw query provider details",
     ok:
-      accountPage.includes("function safeAccountStatusMessage") &&
-      accountPage.includes("unsafeAccountMessageTerms") &&
+      accountPage.includes("safeStatusMessage(") &&
+      !accountPage.includes("function safeAccountStatusMessage") &&
+      !accountPage.includes("unsafeAccountMessageTerms") &&
       accountPage.includes('"Account update could not be shown. Please try again or contact Support."') &&
-      accountPage.includes("const accountMessage = safeAccountStatusMessage(params.message)") &&
+      accountPage.includes("const accountMessage = safeStatusMessage(") &&
       accountPage.includes("accountMessage && !payoutSetupNotice") &&
       accountPage.includes("accountMessage ??") &&
       !accountPage.includes("{params.message}") &&
@@ -692,10 +693,9 @@ const checks = [
   {
     label: "home status messages hide raw query provider details",
     ok:
-      homePage.includes("function safeHomeStatusMessage") &&
-      homePage.includes("unsafeHomeMessageTerms") &&
-      homePage.includes('"Update could not be shown. Please try again or contact Support."') &&
-      homePage.includes("const homeMessage = safeHomeStatusMessage(params.message)") &&
+      homePage.includes("const homeMessage = safeStatusMessage(params.message)") &&
+      !homePage.includes("function safeHomeStatusMessage") &&
+      !homePage.includes("unsafeHomeMessageTerms") &&
       homePage.includes('nextParams.set("message", homeMessage)') &&
       homePage.includes("homeMessage ? (") &&
       !homePage.includes("{params.message}") &&

@@ -42,6 +42,7 @@ import {
 } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
 import { supportEmail } from "@/lib/site";
+import { safeStatusMessage } from "@/lib/status-message";
 import { verificationEligibleAccountTypes } from "@/lib/verification";
 
 type Claims = {
@@ -162,42 +163,6 @@ function limitParam(value: string | string[] | undefined) {
   if (!Number.isFinite(parsed)) return orderPageSize;
 
   return Math.max(orderPageSize, Math.min(250, parsed));
-}
-
-const unsafeAccountMessageTerms = [
-  "api key",
-  "cloudflare",
-  "database",
-  "firebase",
-  "hostgator",
-  "payment provider",
-  "provider",
-  "secret",
-  "stripe",
-  "supabase",
-  "webhook",
-  "worker",
-];
-
-function safeAccountStatusMessage(value: string | string[] | undefined) {
-  const rawValue = Array.isArray(value) ? value[0] : value;
-  const text = String(rawValue ?? "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 220);
-
-  if (!text) return null;
-
-  const lowerText = text.toLowerCase();
-  const hasUnsafeTerm = unsafeAccountMessageTerms.some((term) =>
-    lowerText.includes(term),
-  );
-
-  if (hasUnsafeTerm) {
-    return "Account update could not be shown. Please try again or contact Support.";
-  }
-
-  return text;
 }
 
 function bookingStatusParam(value: string | string[] | undefined) {
@@ -596,7 +561,10 @@ export default async function AccountPage({
   }>;
 }) {
   const params = await searchParams;
-  const accountMessage = safeAccountStatusMessage(params.message);
+  const accountMessage = safeStatusMessage(
+    params.message,
+    "Account update could not be shown. Please try again or contact Support.",
+  );
   const adLimit = limitParam(params.ads);
   const bookingLimit = limitParam(params.bookings);
   const bookingStatusFilter = bookingStatusParam(params.booking_status);
