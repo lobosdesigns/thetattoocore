@@ -71,7 +71,8 @@ Keep completed console evidence in the private release handoff, not in this repo
 ## Push Notifications
 
 - Web push is prepared at the service-worker display/click level, with signed-in browser subscription storage started. Production push keys and delivery jobs still need to be enabled before relying on web push.
-- Mobile app push comes later after separate iOS and Android delivery setup.
+- Mobile app push should use Firebase Cloud Messaging for Android and iOS delivery after the Firebase project, native app config files, signing/capability setup, and real-device token delivery are verified.
+- Do not request native notification permission or claim native push support in store copy until Android and iOS device-token registration, alert delivery, notification tap routing, opt-out, quiet hours, and category preferences have evidence.
 - Store device tokens separately from profile preferences.
 - Respect quiet hours, category preferences, and per-device opt-out before sending native push.
 

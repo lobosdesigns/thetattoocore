@@ -38,7 +38,7 @@ Use this as an internal checklist before answering Google Play Data Safety, App 
 
 ## Before Submission
 
-- Google Play Data Safety must be completed before closed testing, open testing, or production release. Apps active only on Google Play internal testing are currently exempt from Data Safety section inclusion, but still keep this prep current before widening beyond internal testers.
+- Google Play Data Safety must be current before closed testing, open testing, or production release. Apps active only on Google Play internal testing are currently exempt from public Data Safety section inclusion, but still keep this prep current before widening beyond internal testers.
 - Recheck the live build against the current Google Play Data Safety and App Store privacy questions.
 - Record whether the Data Safety answers were reviewed for each active release stage: internal-only exemption note, closed/open testing if used, and production.
 - Confirm the public Privacy page describes profile data, messages, location settings, marketplace/payment records, deletion requests, and future ads accurately.

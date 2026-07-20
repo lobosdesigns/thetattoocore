@@ -59,6 +59,7 @@ production behavior:
 - `SUPABASE_SERVICE_ROLE_KEY`: required for server-only Supabase Auth email lookup, used by verification approval/rejection emails. Never expose this as a `NEXT_PUBLIC_` variable.
 - `STRIPE_SECRET_KEY`: server-only Stripe key for test/live checkout sessions.
 - `STRIPE_WEBHOOK_SECRET`: server-only webhook signing secret for Stripe payment status updates.
+- `STRIPE_EXPECTED_LIVEMODE`: keep `false` until live keys, live webhook events, policy review, and penny-test evidence are complete.
 
 Keep public support and reply-to email on company mail such as
 `support@thetattoocore.com`. Do not put personal owner contact details in public

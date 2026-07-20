@@ -179,7 +179,23 @@ const checks = [
       source.readme.includes("support@thetattoocore.com") &&
       source.readme.includes("Native permissions at first beta: none") &&
       source.readme.includes("Push prompts: off") &&
-      source.mobileRunbook.includes("Mobile app push comes later"),
+      source.mobileRunbook.includes("Firebase Cloud Messaging") &&
+      source.mobileRunbook.includes("Do not request native notification permission"),
+  },
+  {
+    label: "native push plan keeps Firebase gated behind app config and device evidence",
+    ok:
+      source.nativePrep.includes("## Native Push Plan") &&
+      source.nativePrep.includes("Firebase Cloud Messaging") &&
+      source.nativePrep.includes("package name `com.thetattoocore.app`") &&
+      source.nativePrep.includes("Apple bundle identifier, team, signing profile, and notification capability") &&
+      source.nativePrep.includes("Keep push prompts off") &&
+      source.nativePrep.includes("per-device opt-out, quiet hours, and notification-category preferences") &&
+      source.nativePrep.includes("notification tap routing") &&
+      source.nativePrep.includes("Enable Firebase/FCM notification delivery only after") &&
+      source.mobileRunbook.includes("Firebase project, native app config files") &&
+      source.mobileRunbook.includes("Android and iOS device-token registration") &&
+      source.mobileRunbook.includes("alert delivery, notification tap routing, opt-out"),
   },
   {
     label: "native Android target API stays explicit for internal testing or submission",

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { Home } from "lucide-react";
 import {
   cancelAcceptedBookingAsArtist,
   cancelBookingRequest,
@@ -1090,10 +1091,11 @@ export default async function AccountPage({
           <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
             <Link
               aria-label="Back to 4U home"
-              className="ttc-surface flex h-10 items-center rounded-md border px-4 text-sm font-semibold"
+              className="ttc-surface flex h-10 items-center gap-2 rounded-md border px-4 text-sm font-semibold"
               href="/#feed"
             >
-              Back to 4U
+              <Home aria-hidden="true" className="size-4" />
+              4U Home
             </Link>
             <Link
               className="ttc-surface flex h-10 items-center rounded-md border px-4 text-sm font-semibold"

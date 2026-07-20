@@ -103,6 +103,12 @@ const checks = [
       gitignore.includes("!.env.example"),
   },
   {
+    label: "native app provider config files stay out of git",
+    ok:
+      gitignore.includes("**/google-services.json") &&
+      gitignore.includes("**/GoogleService-Info.plist"),
+  },
+  {
     label: ".env.example has the required production keys in stable order",
     ok: hasOnlyExpectedKeys(),
     message: describeKeyOrderIssue(),
@@ -132,6 +138,12 @@ const checks = [
   {
     label: ".env.example documents checkout mode fail-closed default",
     ok: valueByKey.get("STRIPE_EXPECTED_LIVEMODE") === "false",
+  },
+  {
+    label: "README documents checkout mode fail-closed default",
+    ok:
+      readFileSync("README.md", "utf8").includes("STRIPE_EXPECTED_LIVEMODE") &&
+      readFileSync("README.md", "utf8").includes("penny-test evidence"),
   },
 ];
 

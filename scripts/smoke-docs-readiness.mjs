@@ -288,8 +288,8 @@ const checks = [
       !docs["docs/DATA_SAFETY_PREP.md"].includes("payment-provider reviews") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("coarse location") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("account deletion requests") &&
-      docs["docs/DATA_SAFETY_PREP.md"].includes("Google Play Data Safety must be completed before closed testing, open testing, or production release") &&
-      docs["docs/DATA_SAFETY_PREP.md"].includes("internal testing are currently exempt from Data Safety section inclusion") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("Google Play Data Safety must be current before closed testing, open testing, or production release") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("internal testing are currently exempt from public Data Safety section inclusion") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("internal-only exemption note, closed/open testing if used, and production") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("support@thetattoocore.com") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("## App Store Privacy Evidence") &&

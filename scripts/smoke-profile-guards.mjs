@@ -34,6 +34,8 @@ const checks = [
     label: "account header keeps a clear return path to 4U home",
     ok:
       accountPage.includes("Back to 4U") &&
+      accountPage.includes("4U Home") &&
+      accountPage.includes('import { Home } from "lucide-react"') &&
       accountPage.includes('href="/#feed"') &&
       accountPage.includes('aria-label="Back to 4U home"') &&
       accountPage.includes("flex flex-wrap items-center justify-end"),
@@ -91,6 +93,8 @@ const checks = [
       accountSettingsWorkspace.includes('aria-label="Account areas"') &&
       accountSettingsWorkspace.includes('aria-label="Back to 4U home"') &&
       accountSettingsWorkspace.includes('href="/#feed"') &&
+      accountSettingsWorkspace.includes("4U Home") &&
+      accountSettingsWorkspace.includes('import { Home } from "lucide-react"') &&
       accountSettingsWorkspace.includes("Settings home") &&
       accountSettingsWorkspace.includes('role="tablist"') &&
       accountSettingsWorkspace.includes('role="tab"') &&

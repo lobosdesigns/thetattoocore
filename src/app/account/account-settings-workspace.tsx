@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Home } from "lucide-react";
 import {
   Children,
   type KeyboardEvent,
@@ -95,10 +96,11 @@ export function AccountSettingsWorkspace({
           <div className="flex flex-wrap justify-start gap-2 sm:justify-end">
             <Link
               aria-label="Back to 4U home"
-              className="ttc-surface inline-flex h-9 w-fit items-center justify-center rounded-md border px-3 text-xs font-bold"
+              className="ttc-surface inline-flex h-9 w-fit items-center justify-center gap-2 rounded-md border px-3 text-xs font-bold"
               href="/#feed"
             >
-              Home
+              <Home aria-hidden="true" className="size-4" />
+              4U Home
             </Link>
             <Link
               className="ttc-surface inline-flex h-9 w-fit items-center justify-center rounded-md border px-3 text-xs font-bold"
