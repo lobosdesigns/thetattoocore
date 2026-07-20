@@ -75,13 +75,24 @@ function valueLooksLikePlaceholder(key, value) {
 }
 
 const secretValuePatterns = [
-  /sb_secret_/i,
-  /sb_publishable_[A-Za-z0-9_-]{20,}/,
-  /eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}/,
-  /sk_live_[A-Za-z0-9]{12,}/,
-  /sk_test_[A-Za-z0-9]{12,}/,
-  /whsec_[A-Za-z0-9]{12,}/,
+  { label: "backend secret key", pattern: /sb_secret_/i },
+  { label: "public backend key", pattern: /sb_publishable_[A-Za-z0-9_-]{20,}/ },
+  {
+    label: "JWT-like token",
+    pattern: /eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}/,
+  },
+  { label: "live payment secret key", pattern: /sk_live_[A-Za-z0-9]{12,}/ },
+  { label: "test payment secret key", pattern: /sk_test_[A-Za-z0-9]{12,}/ },
+  { label: "webhook signing secret", pattern: /whsec_[A-Za-z0-9]{12,}/ },
 ];
+
+function liveLookingSecretPatternLabels() {
+  return secretValuePatterns
+    .filter(({ pattern }) => pattern.test(envExample))
+    .map(({ label }) => label);
+}
+
+const liveLookingSecretLabels = liveLookingSecretPatternLabels();
 
 const checks = [
   {
@@ -115,7 +126,8 @@ const checks = [
   },
   {
     label: ".env.example does not contain live-looking secret material",
-    ok: secretValuePatterns.every((pattern) => !pattern.test(envExample)),
+    ok: liveLookingSecretLabels.length === 0,
+    message: `live-looking secret pattern categories: ${liveLookingSecretLabels.join(", ")}`,
   },
   {
     label: ".env.example documents checkout mode fail-closed default",
