@@ -567,7 +567,8 @@ async function uploadMerchMedia({
   });
 
   if (error) {
-    throw new Error(error.message || "Could not upload Merch media.");
+    console.error("Merch media storage upload failed.", error);
+    throw new Error("Could not upload Merch media.");
   }
 
   return {
