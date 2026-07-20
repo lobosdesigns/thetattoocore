@@ -41,6 +41,38 @@ Play feature graphic, App Store iPhone 6.5-inch screenshots, and App Store
 13-inch iPad screenshots by reading each PNG header and confirming count,
 expected safe-scene filenames, dimensions, and no-alpha output.
 
+## Upload-Selected Screenshot Sets
+
+Current Google Play phone cap: 4 to 8 screenshots. Use this 8-file selected
+set from the generated safe pool for the first Play Console upload attempt:
+
+- `mobile-home-1080x1920.png`
+- `mobile-login-signup-1080x1920.png`
+- `mobile-4u-safe-1080x1920.png`
+- `mobile-gossip-safe-1080x1920.png`
+- `mobile-stories-safe-1080x1920.png`
+- `mobile-profile-search-1080x1920.png`
+- `mobile-privacy-safety-safe-1080x1920.png`
+- `mobile-help-support-1080x1920.png`
+
+Current App Store screenshot cap: 1 to 10 screenshots per display/localization.
+Use this 10-file selected iPhone 6.5-inch set from the generated safe pool for
+the first App Store Connect upload validation attempt:
+
+- `mobile-home-1242x2688.png`
+- `mobile-login-signup-1242x2688.png`
+- `mobile-4u-safe-1242x2688.png`
+- `mobile-gossip-safe-1242x2688.png`
+- `mobile-stories-safe-1242x2688.png`
+- `mobile-profile-search-1242x2688.png`
+- `mobile-verification-safe-1242x2688.png`
+- `mobile-booking-safe-1242x2688.png`
+- `mobile-privacy-safety-safe-1242x2688.png`
+- `mobile-help-support-1242x2688.png`
+
+Keep rejected-upload screenshots, console validation errors, and final
+replacement decisions in the private release handoff only.
+
 ## Screenshot Replacement Status
 
 | Store asset set | Current repo asset | Final public-review requirement | Status |

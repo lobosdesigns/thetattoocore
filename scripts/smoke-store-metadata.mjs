@@ -112,6 +112,10 @@ function describeNameMismatch(paths, expectedNames) {
   return parts.join("; ");
 }
 
+function selectedNamesAreAvailable(selectedNames, generatedNames) {
+  return selectedNames.every((name) => generatedNames.includes(name));
+}
+
 function draftFieldValue(fieldName) {
   const line = source.storeListingDraft
     .split(/\r?\n/)
@@ -186,6 +190,31 @@ const expectedScreenshotNames = {
     "mobile-4u-safe-2048x2732.png",
     "mobile-home-2048x2732.png",
     "mobile-login-signup-2048x2732.png",
+  ],
+};
+
+const uploadSelectedScreenshotNames = {
+  playPhone: [
+    "mobile-home-1080x1920.png",
+    "mobile-login-signup-1080x1920.png",
+    "mobile-4u-safe-1080x1920.png",
+    "mobile-gossip-safe-1080x1920.png",
+    "mobile-stories-safe-1080x1920.png",
+    "mobile-profile-search-1080x1920.png",
+    "mobile-privacy-safety-safe-1080x1920.png",
+    "mobile-help-support-1080x1920.png",
+  ],
+  appStorePhone: [
+    "mobile-home-1242x2688.png",
+    "mobile-login-signup-1242x2688.png",
+    "mobile-4u-safe-1242x2688.png",
+    "mobile-gossip-safe-1242x2688.png",
+    "mobile-stories-safe-1242x2688.png",
+    "mobile-profile-search-1242x2688.png",
+    "mobile-verification-safe-1242x2688.png",
+    "mobile-booking-safe-1242x2688.png",
+    "mobile-privacy-safety-safe-1242x2688.png",
+    "mobile-help-support-1242x2688.png",
   ],
 };
 
@@ -416,6 +445,31 @@ const checks = [
       source.screenshotInventory.includes("infrastructure/provider names") &&
       source.screenshotInventory.includes("Merch guide shortcut") &&
       source.screenshotInventory.includes("seller payout setup details"),
+  },
+  {
+    label: "store screenshot selected upload sets fit current console count caps",
+    ok:
+      uploadSelectedScreenshotNames.playPhone.length >= 4 &&
+      uploadSelectedScreenshotNames.playPhone.length <= 8 &&
+      uploadSelectedScreenshotNames.appStorePhone.length >= 1 &&
+      uploadSelectedScreenshotNames.appStorePhone.length <= 10 &&
+      selectedNamesAreAvailable(
+        uploadSelectedScreenshotNames.playPhone,
+        expectedScreenshotNames.playPhone,
+      ) &&
+      selectedNamesAreAvailable(
+        uploadSelectedScreenshotNames.appStorePhone,
+        expectedScreenshotNames.appStorePhone,
+      ) &&
+      source.screenshotInventory.includes("## Upload-Selected Screenshot Sets") &&
+      source.screenshotInventory.includes("Current Google Play phone cap: 4 to 8 screenshots") &&
+      source.screenshotInventory.includes("Current App Store screenshot cap: 1 to 10 screenshots") &&
+      uploadSelectedScreenshotNames.playPhone.every((name) =>
+        source.screenshotInventory.includes(name),
+      ) &&
+      uploadSelectedScreenshotNames.appStorePhone.every((name) =>
+        source.screenshotInventory.includes(name),
+      ),
   },
   {
     label: "generated Google Play screenshots match upload dimensions",
