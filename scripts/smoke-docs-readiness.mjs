@@ -268,6 +268,8 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("controlled launch checkout") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run smoke:public") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run smoke:mobile") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Google Play internal testing track") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("TestFlight group") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Open Admin > Media Ops") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Beta QA launch checklist") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("support/help/legal") &&
@@ -287,8 +289,12 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("No reload-loop screens") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("## Evidence Pack Template") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("App build or web deploy version") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Native install source") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("release track, version, and build number") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("second known account for two-user DM read/reply checks") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Screenshot or clip filename") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android internal-testing install proof") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("iOS TestFlight install proof") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android and iOS login/signup/reset staying inside the app") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Admin Payments review evidence using safe test references"),
   },

@@ -7,6 +7,8 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 - Run `npm.cmd run smoke:public` against production and confirm public routes, private redirects, public fallback detail pages, metadata, and safety-copy checks pass.
 - Run `npm.cmd run smoke:mobile` against production and confirm the 390px mobile browser checks pass for auth, support/help/legal, search/profile, missing-detail fallback, and checkout-status routes before manual device testing.
 - Confirm the build points at `https://thetattoocore.com/login`.
+- Confirm the installed Android app came from the intended Google Play internal testing track and record the release/build number shown to testers.
+- Confirm the installed iOS app came from the intended TestFlight group and record the version/build number shown to testers.
 - Open Admin > Media Ops and confirm the Beta QA launch checklist is visible for auth, two-user DMs, mobile posting/media, verification review, controlled launch payments, and safe store screenshots.
 - Confirm support, privacy, and terms links open from logged-out and logged-in surfaces.
 - Open Help Center on mobile, search for "getting started", and confirm the first-run guide explains account type, profile setup, privacy, content rules, main sections, verification, and Support.
@@ -132,6 +134,7 @@ For each device pass, record:
 - Platform and device model.
 - OS version.
 - App build or web deploy version.
+- Native install source, such as Google Play internal testing or TestFlight, plus release track, version, and build number.
 - Network used, such as Wi-Fi or cellular.
 - Test accounts used, including the second known account for two-user DM read/reply checks.
 - Routes or native screens tested.
@@ -141,6 +144,7 @@ For each device pass, record:
 
 Store-critical proof should include at least:
 
+- Android internal-testing install proof and iOS TestFlight install proof for the exact build under review.
 - Android and iOS login/signup/reset staying inside the app or installed-app flow.
 - Public Help, Support, Privacy, and Terms links opening correctly.
 - Posting, Story viewing, reporting, blocking, and account deletion request.
