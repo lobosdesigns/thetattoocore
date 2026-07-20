@@ -79,6 +79,17 @@ const blockedOverpromiseTerms = [
   "same-day payout",
 ];
 
+const blockedPrivateEvidenceTerms = [
+  "936-730-7104",
+  "reviewer password:",
+  "password=",
+  "one-time code",
+  "private phone:",
+  "bank account number",
+  "card number",
+  "dashboard id",
+];
+
 const checks = [
   {
     label: "store metadata files exist",
@@ -138,7 +149,17 @@ const checks = [
       source.readme.includes("Reviewer credential status: created, validated, and stored only in the store-review console fields") &&
       source.readme.includes("Screenshot upload status: use upload-ready no-alpha PNG derivatives") &&
       source.readme.includes("Contact phone: keep console-only/private") &&
-      !source.readme.includes("936-730-7104"),
+      source.readme.includes("## Private Console Evidence Template") &&
+      source.readme.includes("| Build selection | Apple build number, Google release track") &&
+      source.readme.includes("| Reviewer access | Reviewer test account email") &&
+      source.readme.includes("| Contact details | Support email, support URL, privacy URL") &&
+      source.readme.includes("| Screenshot upload | App Store iPhone/iPad validation") &&
+      source.readme.includes("| Category and pricing | App Store categories, Google Play category") &&
+      source.readme.includes("| Content rights | Confirmation that icons, generated screenshots") &&
+      source.readme.includes("| Privacy and data safety | App Privacy, Google Data Safety") &&
+      source.readme.includes("| Age/content rating | App Store age rating, Google Play/IARC summary") &&
+      source.readme.includes("| Final validation | Console errors cleared") &&
+      blockedPrivateEvidenceTerms.every((term) => !source.readme.toLowerCase().includes(term)),
   },
   {
     label: "store screenshot inventory blocks unsafe review images",
