@@ -36,12 +36,32 @@ const helpTutorialAssetPaths = [
   ),
 ];
 const isNonEmptyHelpTutorialAsset = (assetPath) => {
+  return describeHelpTutorialAssetIssue(assetPath) === "";
+};
+
+const describeHelpTutorialAssetIssue = (assetPath) => {
   if (!existsSync(assetPath)) {
-    return false;
+    return `${assetPath} is missing`;
   }
 
   const minimumSize = assetPath.endsWith(".mp4") ? 50_000 : 10_000;
-  return statSync(assetPath).size > minimumSize;
+  const size = statSync(assetPath).size;
+
+  if (size <= minimumSize) {
+    return `${assetPath} is ${size} bytes; expected more than ${minimumSize}`;
+  }
+
+  return "";
+};
+
+const describeHelpTutorialAssetIssues = () => {
+  const shortClipBlocksWithoutAssets = helpShortClipBlocks
+    .map((block, index) => ({ block, index: index + 1 }))
+    .filter(({ block }) => !block.includes("assetSrc:"))
+    .map(({ index }) => `short_clip block ${index} is missing assetSrc`);
+  const assetIssues = helpTutorialAssetPaths.map(describeHelpTutorialAssetIssue).filter(Boolean);
+
+  return [...shortClipBlocksWithoutAssets, ...assetIssues].join("; ");
 };
 const helpSearch = readFileSync("src/app/help/help-center-search.tsx", "utf8");
 const helpActions = readFileSync("src/app/help/actions.ts", "utf8");
@@ -440,6 +460,7 @@ const checks = [
   },
   {
     label: "help center has a first-run guide and avoids roadmap-style support copy",
+    message: describeHelpTutorialAssetIssues(),
     ok:
       helpArticlePage.includes("Visual walkthroughs avoid private messages") &&
       helpArticlePage.includes("Safe capture plan") &&
@@ -795,5 +816,10 @@ for (const check of checks) {
 
 if (failures.length) {
   console.error(`${failures.length} docs readiness smoke check(s) failed.`);
+  for (const check of failures) {
+    if (check.message) {
+      console.error(`  ${check.message}`);
+    }
+  }
   process.exit(1);
 }
