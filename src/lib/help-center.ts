@@ -559,6 +559,7 @@ export const helpArticles = [
         title: "Booking setup sections",
       },
       {
+        assetSrc: "/tutorial-clips/mobile-booking-calendar-safe.mp4",
         description:
           "Short clip of a client request, artist review, deposit confirmation, and private calendar download.",
         kind: "short_clip",
