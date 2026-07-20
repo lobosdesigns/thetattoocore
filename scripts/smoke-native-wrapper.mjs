@@ -117,6 +117,22 @@ const checks = [
       source.mobileRunbook.includes("Confirm public shared links open in the wrapper"),
   },
   {
+    label: "native wrapper keeps verified app-link evidence private and route-complete",
+    ok:
+      source.nativePrep.includes("## Verified Link Evidence Matrix") &&
+      source.nativePrep.includes("| Platform | Association file | Native entitlement or manifest proof | Device proof | Repo-safe result |") &&
+      source.nativePrep.includes("`/.well-known/assetlinks.json`") &&
+      source.nativePrep.includes("Google Play app-signing certificate fingerprint") &&
+      source.nativePrep.includes("`/.well-known/apple-app-site-association`") &&
+      source.nativePrep.includes("Associated Domains capability") &&
+      source.nativePrep.includes("profile, post, Gossip, Stuff, Gigs, Merch, booking, Support, Privacy, and Terms links") &&
+      source.nativePrep.includes("Do not treat URL scheme handling, simulator-only checks, browser-sized mobile QA") &&
+      source.nativePrep.includes("Do not commit signing") &&
+      source.mobileRunbook.includes("Verified app-link and universal-link proof should use the matrix") &&
+      source.readme.includes("Verified app-link evidence should follow") &&
+      source.readme.includes("without committing fingerprints, team identifiers, provisioning details, console screenshots, tester accounts, or raw device logs"),
+  },
+  {
     label: "native wrapper keeps launch permissions minimal",
     ok:
       source.androidManifest.includes("android.permission.INTERNET") &&

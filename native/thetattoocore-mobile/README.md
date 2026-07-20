@@ -40,3 +40,4 @@ The current Android wrapper uses API 35 because this Windows machine only has An
 - Apple: TestFlight internal testing first.
 - Public release waits for final legal review, store screenshots, data-safety/privacy answers, and production payment policy review.
 - Verified app links/universal links wait on final signing details and domain association files.
+- Verified app-link evidence should follow `../../docs/NATIVE_WRAPPER_PREP.md` and stay private: publish the Android and Apple association files only after final signing/team details are confirmed, then record real-device route proof without committing fingerprints, team identifiers, provisioning details, console screenshots, tester accounts, or raw device logs.
