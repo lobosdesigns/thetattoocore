@@ -643,8 +643,12 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("full two-user DM read/reply pass") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Payments and payouts") &&
       docs["docs/APP_STORE_READINESS.md"].includes("small live-payment test after review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes(
+        "secure seller payout or manual payout process",
+      ) &&
       docs["docs/APP_STORE_READINESS.md"].includes("Secure seller payout setup foundation") &&
       docs["docs/APP_STORE_READINESS.md"].includes("payment-policy review") &&
+      !docs["docs/APP_STORE_READINESS.md"].includes("Stripe Connect or manual payout process") &&
       !docs["docs/APP_STORE_READINESS.md"].includes("hosted onboarding links") &&
       !docs["docs/APP_STORE_READINESS.md"].includes("provider review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Native wrapper") &&
