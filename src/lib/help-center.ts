@@ -939,6 +939,7 @@ export const helpArticles = [
         title: "Gossip discussion preview",
       },
       {
+        assetSrc: "/tutorial-clips/mobile-stories-dms-safety-safe.mp4",
         description:
           "Short clip of creating a Story, sending a DM reply, and using report/block controls with safe sample content.",
         kind: "short_clip",
