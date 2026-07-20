@@ -778,6 +778,7 @@ export const helpArticles = [
     ],
     tutorialMedia: [
       {
+        assetSrc: "/screenshots/mobile-order-support-safe.png",
         description:
           "Show the buyer order card with safe sample order status, fulfillment status, and refund-review action without real shipping details.",
         kind: "screenshot",

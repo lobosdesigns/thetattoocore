@@ -1113,6 +1113,7 @@ async function checkPwaManifest() {
     "/screenshots/mobile-ads-safe.png",
     "/screenshots/mobile-merch-safe.png",
     "/screenshots/mobile-payout-safe.png",
+    "/screenshots/mobile-order-support-safe.png",
     "/screenshots/mobile-help-support.png",
     "/screenshots/desktop-home.png",
   ];

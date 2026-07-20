@@ -279,6 +279,25 @@ ${pill({ label: "Setup status", w: 126, x: 70, y: 668 })}
 ${pill({ label: "Help guide", w: 112, x: 212, y: 668 })}
 ${bottomNav()}
 `),
+  "mobile-order-support-safe.png": header(`
+${columns("Merch")}
+${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}
+${text({ body: "Order Support", size: 31, weight: 900, x: 52, y: 170 })}
+${text({ body: "Private order help stays in Settings.", color: "#6f5e4c", size: 15, weight: 600, x: 52, y: 202 })}
+${rounded({ fill: "#f6f2eb", h: 86, r: 10, w: 436, x: 52, y: 244 })}
+${text({ body: "Order status", size: 16, weight: 900, x: 76, y: 282 })}
+${text({ body: "Paid - fulfillment pending", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 306 })}
+${rounded({ fill: "#f6f2eb", h: 86, r: 10, w: 436, x: 52, y: 356 })}
+${text({ body: "Tracking or pickup note", size: 16, weight: 900, x: 76, y: 394 })}
+${text({ body: "Use safe sample handoff details.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 418 })}
+${rounded({ fill: "#f4ead8", h: 118, r: 10, stroke: "#e0c27a", w: 436, x: 52, y: 486 })}
+${text({ body: "Refund review", color: "#7b5a15", size: 18, weight: 900, x: 76, y: 526 })}
+${text({ body: "Keep addresses and payment details", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 554 })}
+${text({ body: "out of public posts and DMs.", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 576 })}
+${pill({ label: "Request review", w: 136, x: 70, y: 668 })}
+${pill({ label: "Support", w: 90, x: 222, y: 668 })}
+${bottomNav()}
+`),
   "mobile-merch-safe.png": header(`
 ${columns("Merch")}
 ${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}

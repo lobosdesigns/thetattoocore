@@ -192,6 +192,7 @@ const checks = [
       screenshotGenerator.includes("mobile-ads-safe.png") &&
       screenshotGenerator.includes("mobile-merch-safe.png") &&
       screenshotGenerator.includes("mobile-payout-safe.png") &&
+      screenshotGenerator.includes("mobile-order-support-safe.png") &&
       screenshotGenerator.includes("mobile-help-support.png") &&
       screenshotGenerator.includes("Visible nudity is not allowed"),
   },
@@ -387,6 +388,7 @@ const checks = [
       docs["docs/PRODUCT_PLAN.md"].includes("ads/ad credits") &&
       docs["docs/PRODUCT_PLAN.md"].includes("Merch setup") &&
       docs["docs/PRODUCT_PLAN.md"].includes("seller payout readiness") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("order support") &&
       docs["docs/PRODUCT_PLAN.md"].includes("setting appointments") &&
       docs["docs/PRODUCT_PLAN.md"].includes("creating ads") &&
       docs["docs/PRODUCT_PLAN.md"].includes("setting up Merch products") &&
@@ -431,6 +433,7 @@ const checks = [
       helpCenterData.includes('assetSrc: "/screenshots/mobile-ads-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-merch-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-payout-safe.png"') &&
+      helpCenterData.includes('assetSrc: "/screenshots/mobile-order-support-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-4u-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-stories-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-gossip-safe.png"') &&

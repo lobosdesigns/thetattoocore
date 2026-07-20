@@ -108,6 +108,13 @@
     },
     {
       "form_factor": "narrow",
+      "label": "TheTattooCore order support preview",
+      "sizes": "540x960",
+      "src": "/screenshots/mobile-order-support-safe.png",
+      "type": "image/png"
+    },
+    {
+      "form_factor": "narrow",
       "label": "TheTattooCore Help Center preview",
       "sizes": "540x960",
       "src": "/screenshots/mobile-help-support.png",
