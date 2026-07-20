@@ -148,6 +148,9 @@ const checks = [
       adminMediaOps.includes("App handoff checklist") &&
       adminMediaOps.includes("Beta evidence pack") &&
       adminMediaOps.includes("What to save before widening beta") &&
+      adminMediaOps.includes("Native install proof") &&
+      adminMediaOps.includes("Android internal-test and iOS TestFlight install screenshots") &&
+      adminMediaOps.includes("release track, version, and build number") &&
       adminMediaOps.includes("Help tutorial readiness") &&
       adminMediaOps.includes("Capture gaps to close before beta") &&
       adminMediaOps.includes("Help checklist") &&

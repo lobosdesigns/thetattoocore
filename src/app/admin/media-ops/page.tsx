@@ -74,6 +74,7 @@ const storeSubmissionChecks = [
 ] as const;
 const betaEvidencePack = [
   ["Smoke results", "Save the latest lint, build, public-route smoke, mobile smoke, and payment guard results with the deployed version."],
+  ["Native install proof", "Save Android internal-test and iOS TestFlight install screenshots showing release track, version, and build number for the exact build under review."],
   ["Real-device clips", "Capture mobile clips for signup, profile save, 4U/Gossip posting, Story creation, DMs, Search, notifications, comments, and Help."],
   ["Commerce proof", "Capture controlled Merch checkout, seller payout guidance, fulfillment, refund-review request, ad funding, ad credits, and booking deposit return flows."],
   ["Trust proof", "Capture report handling, block/delete controls, verification approval/rejection, Help question moderation, data request review, and no-visible-nudity policy copy."],
