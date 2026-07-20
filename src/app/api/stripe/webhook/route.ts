@@ -940,7 +940,8 @@ async function recordRefundProblem({
     .returns<RefundProblemBooking[]>();
 
   if (error) {
-    throw new Error(error.message || "Could not inspect booking refund status.");
+    console.error("Webhook booking refund problem lookup failed.", error);
+    throw new Error("Could not inspect booking refund status.");
   }
 
   const auditLogs = (bookings ?? []).map((booking) => ({
