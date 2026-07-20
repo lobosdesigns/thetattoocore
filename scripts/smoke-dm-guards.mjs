@@ -110,7 +110,11 @@ const checks = [
       productPlan.includes("DMs need a focused test pass") &&
       productPlan.includes("Real send/receive testing still needs logged-in test sessions") &&
       qaChecklist.includes("Send and receive a text message between two known test accounts") &&
-      qaChecklist.includes("Open a DM notification and confirm it routes to the correct thread without reload loops"),
+      qaChecklist.includes("Open a DM notification and confirm it routes to the correct thread without reload loops") &&
+      qaChecklist.includes("Repo-safe two-user DM evidence should record only tester aliases") &&
+      qaChecklist.includes("message direction, read/reply result, attachment result, notification-route result") &&
+      qaChecklist.includes("Keep email addresses, passwords, one-time codes, private message bodies") &&
+      qaChecklist.includes("private release handoff only"),
   },
   {
     label: "DM is dedicated to messenger routes instead of a main swipe column",

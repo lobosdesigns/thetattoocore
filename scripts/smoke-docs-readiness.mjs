@@ -298,6 +298,8 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Native install source") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("release track, version, and build number") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("second known account for two-user DM read/reply checks") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Repo-safe two-user DM evidence should record only tester aliases") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Keep email addresses, passwords, one-time codes, private message bodies") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Screenshot or clip filename") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android internal-testing install proof") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("iOS TestFlight install proof") &&

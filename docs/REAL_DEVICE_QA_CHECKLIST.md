@@ -76,6 +76,8 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 - Open a DM notification and confirm it routes to the correct thread without reload loops.
 - Create a booking request, accept it with an appointment time, and confirm both Account and DM cards show the scheduled time plus a private Add to calendar download.
 
+Repo-safe two-user DM evidence should record only tester aliases, device models, release channel/build, message direction, read/reply result, attachment result, notification-route result, and pass/fail status. Keep email addresses, passwords, one-time codes, private message bodies, screenshots with real DM text, and account-owner details in the private release handoff only.
+
 ## Notifications
 
 - Trigger notifications for likes, comments, replies, follows, follow requests, DMs, verification decisions, ad payments, and Merch order events where available.
