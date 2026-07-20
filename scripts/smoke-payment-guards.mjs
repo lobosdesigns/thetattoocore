@@ -464,6 +464,13 @@ checks.push({
     !stripeWebhook.includes('error.message || "Could not inspect booking refund status."'),
 });
 checks.push({
+  label: "payment webhook hides raw dispute backend errors",
+  ok:
+    stripeWebhook.includes('console.error("Webhook disputed payment lookup failed.", firstError)') &&
+    stripeWebhook.includes('throw new Error("Could not inspect disputed payment.")') &&
+    !stripeWebhook.includes('firstError.message || "Could not inspect disputed payment."'),
+});
+checks.push({
   label: "admin refund requests keep processor names out of redirect copy",
   ok:
     adminActions.includes(

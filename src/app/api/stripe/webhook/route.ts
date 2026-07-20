@@ -1065,7 +1065,8 @@ async function recordPaymentDispute({
   const firstError = merchResult.error ?? adResult.error ?? bookingResult.error;
 
   if (firstError) {
-    throw new Error(firstError.message || "Could not inspect disputed payment.");
+    console.error("Webhook disputed payment lookup failed.", firstError);
+    throw new Error("Could not inspect disputed payment.");
   }
 
   const sharedMetadata = {
