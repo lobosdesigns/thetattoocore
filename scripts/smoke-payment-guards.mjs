@@ -981,6 +981,18 @@ checks.push({
     paymentReadiness.includes("Admin > Payments reconciliation result") &&
     paymentReadiness.includes("native checkout policy status") &&
     paymentReadiness.includes("pass/fail/blocker status") &&
+    paymentReadiness.includes("Native checkout policy review must be dated") &&
+    paymentReadiness.includes("July 20, 2026 review source set") &&
+    paymentReadiness.includes("Apple App Review Guidelines and Google Play Payments policy") &&
+    paymentReadiness.includes("Classify every paid native flow separately before promotion") &&
+    paymentReadiness.includes("Merch physical goods") &&
+    paymentReadiness.includes("accepted booking deposits or services") &&
+    paymentReadiness.includes("prepaid ad campaigns") &&
+    paymentReadiness.includes("any digital goods or digital services") &&
+    paymentReadiness.includes("external payment-link or web-return behavior") &&
+    paymentReadiness.includes("platform, build or track, flow name, source checked date") &&
+    paymentReadiness.includes("Do not claim native checkout availability") &&
+    paymentReadiness.includes("final legal review, and live-money payment evidence pack") &&
     paymentReadiness.includes("Keep payment intent IDs, checkout session IDs") &&
     paymentReadiness.includes("webhook event IDs, refund IDs, dispute IDs, seller account IDs") &&
     paymentReadiness.includes("buyer names, shipping addresses") &&

@@ -810,6 +810,18 @@ const checks = [
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Admin > Payments reconciliation result") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Keep payment intent IDs, checkout session IDs") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("raw console exports in the private release handoff only") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Native checkout policy review must be dated") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("July 20, 2026 review source set") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Apple App Review Guidelines and Google Play Payments policy") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Classify every paid native flow separately before promotion") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Merch physical goods") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("accepted booking deposits or services") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("prepaid ad campaigns") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("any digital goods or digital services") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("external payment-link or web-return behavior") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("platform, build or track, flow name, source checked date") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Do not claim native checkout availability") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("final legal review, and live-money payment evidence pack") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("buyer shipping addresses private") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Only verified artists and studios should request deposits"),
   },
