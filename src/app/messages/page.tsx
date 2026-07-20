@@ -13,6 +13,7 @@ import {
   Send,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { safeStatusMessage } from "@/lib/status-message";
 import { MediaInput } from "@/app/media-input";
 import { PendingSubmitButton } from "@/app/pending-submit-button";
 import { ProfileAvatar } from "@/app/profile-avatar";
@@ -537,12 +538,13 @@ export default async function MessagesPage({
   searchParams: Promise<{
     c?: string;
     inboxPage?: string;
-    message?: string;
+    message?: string | string[];
     q?: string | string[];
     to?: string;
   }>;
 }) {
   const params = await searchParams;
+  const statusMessage = safeStatusMessage(params.message);
   const activeInboxSearch = inboxSearchTerm(params.q);
   const inboxPageSize = 25;
   const inboxPage = Math.max(1, Math.min(20, Number(params.inboxPage ?? "1") || 1));
@@ -936,9 +938,9 @@ export default async function MessagesPage({
             </form>
           </header>
 
-          {params.message ? (
+          {statusMessage ? (
             <p className="ttc-surface border-b border-[var(--card-rim)] px-4 py-3 text-sm font-medium">
-              {params.message}
+              {statusMessage}
             </p>
           ) : null}
 

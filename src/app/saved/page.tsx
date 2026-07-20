@@ -17,6 +17,7 @@ import { toggleSavedItem } from "@/app/actions";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { createClient } from "@/lib/supabase/server";
+import { safeStatusMessage } from "@/lib/status-message";
 import { isVerifiedProfessional } from "@/lib/verification";
 
 type Claims = {
@@ -204,9 +205,10 @@ function UnsaveButton({
 export default async function SavedPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string; page?: string }>;
+  searchParams: Promise<{ message?: string | string[]; page?: string }>;
 }) {
   const params = await searchParams;
+  const statusMessage = safeStatusMessage(params.message);
   const page = Math.max(1, Math.min(20, Number(params.page ?? "1") || 1));
   const savedLimit = page * 25;
   const savedFetchLimit = savedLimit + 25;
@@ -551,9 +553,9 @@ export default async function SavedPage({
           </div>
         </header>
 
-        {params.message ? (
+        {statusMessage ? (
           <p className="border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_88%,var(--brand-gold)_12%)] px-4 py-3 text-sm font-semibold">
-            {params.message}
+            {statusMessage}
           </p>
         ) : null}
 

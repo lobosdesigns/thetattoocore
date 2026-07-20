@@ -26,6 +26,7 @@ const mainActions = readFileSync("src/app/actions.ts", "utf8");
 const messageActions = readFileSync("src/app/messages/actions.ts", "utf8");
 const messagePage = readFileSync("src/app/messages/page.tsx", "utf8");
 const messageThread = readFileSync("src/app/messages/message-thread.tsx", "utf8");
+const savedPage = readFileSync("src/app/saved/page.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const urls = readFileSync("src/lib/urls.ts", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
@@ -354,6 +355,16 @@ const checks = [
       !readFileSync("src/app/reset-password/page.tsx", "utf8").includes(
         "initialMessage={params.message}",
       ),
+  },
+  {
+    label: "member utility status banners sanitize query messages",
+    ok:
+      messagePage.includes("const statusMessage = safeStatusMessage(params.message)") &&
+      savedPage.includes("const statusMessage = safeStatusMessage(params.message)") &&
+      messagePage.includes("statusMessage ? (") &&
+      savedPage.includes("statusMessage ? (") &&
+      !messagePage.includes("{params.message}") &&
+      !savedPage.includes("{params.message}"),
   },
   {
     label: "client components avoid browser console error details",
