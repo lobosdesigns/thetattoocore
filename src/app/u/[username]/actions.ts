@@ -110,7 +110,8 @@ export async function followProfile(formData: FormData) {
     .maybeSingle<{ id: string; is_private: boolean; username: string }>();
 
   if (targetError || !targetProfile) {
-    redirect(profilePath(username, targetError?.message || "Profile not found."));
+    if (targetError) console.error("Follow target lookup failed.", targetError);
+    redirect(profilePath(username, "Profile not found."));
   }
 
   if (await blockRelationshipExists({ supabase, targetId, userId })) {
@@ -146,7 +147,8 @@ export async function followProfile(formData: FormData) {
   );
 
   if (error) {
-    redirect(profilePath(username, error.message || "Could not follow profile."));
+    console.error("Follow profile failed.", error);
+    redirect(profilePath(username, "Could not follow profile. Please try again."));
   }
 
   const { data: targetPreferences } = await supabase
@@ -206,7 +208,8 @@ export async function unfollowProfile(formData: FormData) {
     .eq("following_id", targetId);
 
   if (error) {
-    redirect(profilePath(username, error.message || "Could not unfollow profile."));
+    console.error("Unfollow profile failed.", error);
+    redirect(profilePath(username, "Could not unfollow profile. Please try again."));
   }
 
   revalidatePath(`/u/${username}`);
@@ -237,7 +240,8 @@ export async function acceptFollowRequest(formData: FormData) {
     .eq("status", "pending");
 
   if (error) {
-    redirect(profilePath(username, error.message || "Could not approve request."));
+    console.error("Follow request approval failed.", error);
+    redirect(profilePath(username, "Could not approve request. Please try again."));
   }
 
   const { data: ownerProfile } = await supabase
@@ -286,7 +290,8 @@ export async function declineFollowRequest(formData: FormData) {
     .eq("status", "pending");
 
   if (error) {
-    redirect(profilePath(username, error.message || "Could not decline request."));
+    console.error("Follow request decline failed.", error);
+    redirect(profilePath(username, "Could not decline request. Please try again."));
   }
 
   revalidatePath(`/u/${username}`);
@@ -322,7 +327,8 @@ export async function blockProfile(formData: FormData) {
   );
 
   if (error) {
-    redirect(profilePath(username, error.message || "Could not block profile."));
+    console.error("Block profile failed.", error);
+    redirect(profilePath(username, "Could not block profile. Please try again."));
   }
 
   await supabase
@@ -352,7 +358,8 @@ export async function unblockProfile(formData: FormData) {
     .eq("blocked_id", targetId);
 
   if (error) {
-    redirect(profilePath(username, error.message || "Could not unblock profile."));
+    console.error("Unblock profile failed.", error);
+    redirect(profilePath(username, "Could not unblock profile. Please try again."));
   }
 
   revalidatePath(`/u/${username}`);

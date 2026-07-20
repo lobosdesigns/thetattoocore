@@ -13,6 +13,7 @@ const profileContentTabs = readFileSync(
 );
 const followListPage = readFileSync("src/app/u/[username]/follow-list-page.tsx", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
+const profileActions = readFileSync("src/app/u/[username]/actions.ts", "utf8");
 const savedPage = readFileSync("src/app/saved/page.tsx", "utf8");
 const searchPage = readFileSync("src/app/search/page.tsx", "utf8");
 const recentSearches = readFileSync("src/app/search/recent-searches.tsx", "utf8");
@@ -156,6 +157,31 @@ const checks = [
       profilePage.includes('profile.account_type === "studio"') &&
       profilePage.includes('.eq("shop_profile_id", profile.id)') &&
       profilePage.includes("<LinkedArtistsSection"),
+  },
+  {
+    label: "public profile social actions hide raw backend errors from redirects",
+    ok:
+      profileActions.includes('console.error("Follow target lookup failed.", targetError)') &&
+      profileActions.includes('redirect(profilePath(username, "Profile not found."))') &&
+      profileActions.includes('console.error("Follow profile failed.", error)') &&
+      profileActions.includes('redirect(profilePath(username, "Could not follow profile. Please try again."))') &&
+      profileActions.includes('console.error("Unfollow profile failed.", error)') &&
+      profileActions.includes('redirect(profilePath(username, "Could not unfollow profile. Please try again."))') &&
+      profileActions.includes('console.error("Follow request approval failed.", error)') &&
+      profileActions.includes('redirect(profilePath(username, "Could not approve request. Please try again."))') &&
+      profileActions.includes('console.error("Follow request decline failed.", error)') &&
+      profileActions.includes('redirect(profilePath(username, "Could not decline request. Please try again."))') &&
+      profileActions.includes('console.error("Block profile failed.", error)') &&
+      profileActions.includes('redirect(profilePath(username, "Could not block profile. Please try again."))') &&
+      profileActions.includes('console.error("Unblock profile failed.", error)') &&
+      profileActions.includes('redirect(profilePath(username, "Could not unblock profile. Please try again."))') &&
+      !profileActions.includes("targetError?.message") &&
+      !profileActions.includes("error.message || \"Could not follow profile.\"") &&
+      !profileActions.includes("error.message || \"Could not unfollow profile.\"") &&
+      !profileActions.includes("error.message || \"Could not approve request.\"") &&
+      !profileActions.includes("error.message || \"Could not decline request.\"") &&
+      !profileActions.includes("error.message || \"Could not block profile.\"") &&
+      !profileActions.includes("error.message || \"Could not unblock profile.\""),
   },
   {
     label: "search previews include bio and shop profile context",
