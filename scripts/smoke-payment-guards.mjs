@@ -431,6 +431,9 @@ checks.push({
     accountActions.includes('event_type: "merch_refund_review_requested"') &&
     accountActions.includes("Only paid Merch orders can request refund review.") &&
     accountActions.includes("Merch refund review is already waiting for admin review.") &&
+    accountActions.includes('console.error("Merch refund review request failed.", error)') &&
+    accountActions.includes('"Could not request refund review. Please try again."') &&
+    !accountActions.includes('accountPath(error.message || "Could not request refund review."') &&
     accountPage.includes("requestMerchRefundReview") &&
     accountPage.includes("Request refund review") &&
     accountPage.includes("This does not send money automatically") &&

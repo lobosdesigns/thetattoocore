@@ -1061,7 +1061,8 @@ export async function requestMerchRefundReview(formData: FormData) {
   });
 
   if (error) {
-    redirect(accountPath(error.message || "Could not request refund review.", "order-settings"));
+    console.error("Merch refund review request failed.", error);
+    redirect(accountPath("Could not request refund review. Please try again.", "order-settings"));
   }
 
   revalidatePath("/account");
@@ -1271,7 +1272,8 @@ export async function respondBookingRequest(formData: FormData) {
     .eq("payment_status", "not_ready");
 
   if (error) {
-    redirect(bookingPath(error.message || "Could not update booking request."));
+    console.error("Booking request response failed.", error);
+    redirect(bookingPath("Could not update booking request. Please try again."));
   }
 
   const { data: artist } = await supabase
@@ -1378,7 +1380,8 @@ export async function cancelBookingRequest(formData: FormData) {
     .in("payment_status", ["not_ready", "payment_failed"]);
 
   if (error) {
-    redirect(bookingPath(error.message || "Could not cancel booking request."));
+    console.error("Booking request cancellation failed.", error);
+    redirect(bookingPath("Could not cancel booking request. Please try again."));
   }
 
   const [{ data: client }, { data: artistPreferences }] = await Promise.all([
@@ -1473,7 +1476,8 @@ export async function cancelAcceptedBookingAsArtist(formData: FormData) {
     .in("payment_status", ["not_ready", "payment_failed"]);
 
   if (error) {
-    redirect(bookingPath(error.message || "Could not cancel accepted booking."));
+    console.error("Accepted booking cancellation failed.", error);
+    redirect(bookingPath("Could not cancel accepted booking. Please try again."));
   }
 
   const [{ data: artist }, { data: clientPreferences }] = await Promise.all([
@@ -1588,7 +1592,8 @@ export async function requestBookingRefundReview(formData: FormData) {
   });
 
   if (error) {
-    redirect(bookingPath(error.message || "Could not request refund review."));
+    console.error("Booking refund review request failed.", error);
+    redirect(bookingPath("Could not request refund review. Please try again."));
   }
 
   revalidatePath("/account");
@@ -1648,7 +1653,8 @@ export async function createBookingAppointmentType(formData: FormData) {
   });
 
   if (error) {
-    redirect(bookingPath(error.message || "Could not add appointment type."));
+    console.error("Booking appointment type create failed.", error);
+    redirect(bookingPath("Could not add appointment type. Please try again."));
   }
 
   revalidatePath("/account");
@@ -1711,7 +1717,8 @@ export async function updateBookingAppointmentType(formData: FormData) {
     .eq("profile_id", profile.id);
 
   if (error) {
-    redirect(bookingPath(error.message || "Could not update appointment type."));
+    console.error("Booking appointment type update failed.", error);
+    redirect(bookingPath("Could not update appointment type. Please try again."));
   }
 
   revalidatePath("/account");
@@ -1737,7 +1744,8 @@ export async function toggleBookingAppointmentType(formData: FormData) {
     .eq("profile_id", profile.id);
 
   if (error) {
-    redirect(bookingPath(error.message || "Could not update appointment type."));
+    console.error("Booking appointment type toggle failed.", error);
+    redirect(bookingPath("Could not update appointment type. Please try again."));
   }
 
   revalidatePath("/account");
@@ -1759,7 +1767,8 @@ export async function deleteBookingAppointmentType(formData: FormData) {
     .eq("profile_id", profile.id);
 
   if (error) {
-    redirect(bookingPath(error.message || "Could not delete appointment type."));
+    console.error("Booking appointment type delete failed.", error);
+    redirect(bookingPath("Could not delete appointment type. Please try again."));
   }
 
   revalidatePath("/account");
@@ -1801,7 +1810,8 @@ export async function createBookingSlot(formData: FormData) {
   });
 
   if (error) {
-    redirect(bookingPath(error.message || "Could not add booking slot."));
+    console.error("Booking slot create failed.", error);
+    redirect(bookingPath("Could not add booking slot. Please try again."));
   }
 
   revalidatePath("/account");
@@ -1852,7 +1862,8 @@ export async function updateBookingSlot(formData: FormData) {
     .eq("profile_id", profile.id);
 
   if (error) {
-    redirect(bookingPath(error.message || "Could not update booking slot."));
+    console.error("Booking slot update failed.", error);
+    redirect(bookingPath("Could not update booking slot. Please try again."));
   }
 
   revalidatePath("/account");
@@ -1878,7 +1889,8 @@ export async function toggleBookingSlot(formData: FormData) {
     .eq("profile_id", profile.id);
 
   if (error) {
-    redirect(bookingPath(error.message || "Could not update booking slot."));
+    console.error("Booking slot toggle failed.", error);
+    redirect(bookingPath("Could not update booking slot. Please try again."));
   }
 
   revalidatePath("/account");
@@ -1900,7 +1912,8 @@ export async function deleteBookingSlot(formData: FormData) {
     .eq("profile_id", profile.id);
 
   if (error) {
-    redirect(bookingPath(error.message || "Could not remove booking slot."));
+    console.error("Booking slot delete failed.", error);
+    redirect(bookingPath("Could not remove booking slot. Please try again."));
   }
 
   revalidatePath("/account");
@@ -1930,7 +1943,8 @@ export async function createBookingBlackoutDate(formData: FormData) {
   });
 
   if (error) {
-    redirect(bookingPath(error.message || "Could not add blackout window."));
+    console.error("Booking blackout window create failed.", error);
+    redirect(bookingPath("Could not add blackout window. Please try again."));
   }
 
   revalidatePath("/account");
@@ -1969,7 +1983,8 @@ export async function updateBookingBlackoutDate(formData: FormData) {
     .eq("profile_id", profile.id);
 
   if (error) {
-    redirect(bookingPath(error.message || "Could not update blackout window."));
+    console.error("Booking blackout window update failed.", error);
+    redirect(bookingPath("Could not update blackout window. Please try again."));
   }
 
   revalidatePath("/account");
@@ -1991,7 +2006,8 @@ export async function deleteBookingBlackoutDate(formData: FormData) {
     .eq("profile_id", profile.id);
 
   if (error) {
-    redirect(bookingPath(error.message || "Could not remove blackout window."));
+    console.error("Booking blackout window delete failed.", error);
+    redirect(bookingPath("Could not remove blackout window. Please try again."));
   }
 
   revalidatePath("/account");
@@ -2079,7 +2095,8 @@ export async function updateBookingSettings(formData: FormData) {
   });
 
   if (error) {
-    redirect(bookingPath(error.message || "Could not save booking settings."));
+    console.error("Booking settings save failed.", error);
+    redirect(bookingPath("Could not save booking settings. Please try again."));
   }
 
   const selectedCalendarPrep =

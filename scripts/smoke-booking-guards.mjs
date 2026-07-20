@@ -435,6 +435,54 @@ const checks = [
       messagesPage.includes('returnPath={`/messages?c=${selectedConversation.id}`}'),
   },
   {
+    label: "booking account actions hide raw backend errors from member redirects",
+    ok:
+      accountActions.includes('console.error("Booking request response failed.", error)') &&
+      accountActions.includes('redirect(bookingPath("Could not update booking request. Please try again."))') &&
+      accountActions.includes('console.error("Booking request cancellation failed.", error)') &&
+      accountActions.includes('redirect(bookingPath("Could not cancel booking request. Please try again."))') &&
+      accountActions.includes('console.error("Accepted booking cancellation failed.", error)') &&
+      accountActions.includes('redirect(bookingPath("Could not cancel accepted booking. Please try again."))') &&
+      accountActions.includes('console.error("Booking refund review request failed.", error)') &&
+      accountActions.includes('redirect(bookingPath("Could not request refund review. Please try again."))') &&
+      accountActions.includes('console.error("Booking appointment type create failed.", error)') &&
+      accountActions.includes('redirect(bookingPath("Could not add appointment type. Please try again."))') &&
+      accountActions.includes('console.error("Booking appointment type update failed.", error)') &&
+      accountActions.includes('console.error("Booking appointment type toggle failed.", error)') &&
+      accountActions.includes('redirect(bookingPath("Could not update appointment type. Please try again."))') &&
+      accountActions.includes('console.error("Booking appointment type delete failed.", error)') &&
+      accountActions.includes('redirect(bookingPath("Could not delete appointment type. Please try again."))') &&
+      accountActions.includes('console.error("Booking slot create failed.", error)') &&
+      accountActions.includes('redirect(bookingPath("Could not add booking slot. Please try again."))') &&
+      accountActions.includes('console.error("Booking slot update failed.", error)') &&
+      accountActions.includes('console.error("Booking slot toggle failed.", error)') &&
+      accountActions.includes('redirect(bookingPath("Could not update booking slot. Please try again."))') &&
+      accountActions.includes('console.error("Booking slot delete failed.", error)') &&
+      accountActions.includes('redirect(bookingPath("Could not remove booking slot. Please try again."))') &&
+      accountActions.includes('console.error("Booking blackout window create failed.", error)') &&
+      accountActions.includes('redirect(bookingPath("Could not add blackout window. Please try again."))') &&
+      accountActions.includes('console.error("Booking blackout window update failed.", error)') &&
+      accountActions.includes('redirect(bookingPath("Could not update blackout window. Please try again."))') &&
+      accountActions.includes('console.error("Booking blackout window delete failed.", error)') &&
+      accountActions.includes('redirect(bookingPath("Could not remove blackout window. Please try again."))') &&
+      accountActions.includes('console.error("Booking settings save failed.", error)') &&
+      accountActions.includes('redirect(bookingPath("Could not save booking settings. Please try again."))') &&
+      !accountActions.includes('bookingPath(error.message || "Could not update booking request.")') &&
+      !accountActions.includes('bookingPath(error.message || "Could not cancel booking request.")') &&
+      !accountActions.includes('bookingPath(error.message || "Could not cancel accepted booking.")') &&
+      !accountActions.includes('bookingPath(error.message || "Could not request refund review.")') &&
+      !accountActions.includes('bookingPath(error.message || "Could not add appointment type.")') &&
+      !accountActions.includes('bookingPath(error.message || "Could not update appointment type.")') &&
+      !accountActions.includes('bookingPath(error.message || "Could not delete appointment type.")') &&
+      !accountActions.includes('bookingPath(error.message || "Could not add booking slot.")') &&
+      !accountActions.includes('bookingPath(error.message || "Could not update booking slot.")') &&
+      !accountActions.includes('bookingPath(error.message || "Could not remove booking slot.")') &&
+      !accountActions.includes('bookingPath(error.message || "Could not add blackout window.")') &&
+      !accountActions.includes('bookingPath(error.message || "Could not update blackout window.")') &&
+      !accountActions.includes('bookingPath(error.message || "Could not remove blackout window.")') &&
+      !accountActions.includes('bookingPath(error.message || "Could not save booking settings.")'),
+  },
+  {
     label: "public profiles show enabled booking availability",
     ok:
       profilePage.includes("type BookingSettings") &&
