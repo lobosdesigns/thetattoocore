@@ -656,6 +656,18 @@ const checks = [
       !accountPage.includes("params.message ??"),
   },
   {
+    label: "home status messages hide raw query provider details",
+    ok:
+      homePage.includes("function safeHomeStatusMessage") &&
+      homePage.includes("unsafeHomeMessageTerms") &&
+      homePage.includes('"Update could not be shown. Please try again or contact Support."') &&
+      homePage.includes("const homeMessage = safeHomeStatusMessage(params.message)") &&
+      homePage.includes('nextParams.set("message", homeMessage)') &&
+      homePage.includes("homeMessage ? (") &&
+      !homePage.includes("{params.message}") &&
+      !homePage.includes('nextParams.set("message", params.message)'),
+  },
+  {
     label: "account page keeps tabbed settings workspace and role-aware pro tools",
     ok:
       accountPage.includes("const accountWorkspaceTabs: AccountSettingsTab[] = [") &&

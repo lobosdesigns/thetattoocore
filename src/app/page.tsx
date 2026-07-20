@@ -62,6 +62,42 @@ import { isVerifiedProfessional } from "@/lib/verification";
 const loginReturnHref = (returnTo: string) =>
   `/login?return_to=${encodeURIComponent(returnTo)}`;
 
+const unsafeHomeMessageTerms = [
+  "api key",
+  "cloudflare",
+  "database",
+  "firebase",
+  "hostgator",
+  "payment provider",
+  "provider",
+  "secret",
+  "stripe",
+  "supabase",
+  "webhook",
+  "worker",
+];
+
+function safeHomeStatusMessage(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+  const text = String(rawValue ?? "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 220);
+
+  if (!text) return null;
+
+  const lowerText = text.toLowerCase();
+  const hasUnsafeTerm = unsafeHomeMessageTerms.some((term) =>
+    lowerText.includes(term),
+  );
+
+  if (hasUnsafeTerm) {
+    return "Update could not be shown. Please try again or contact Support.";
+  }
+
+  return text;
+}
+
 type Claims = {
   sub: string;
   email?: string;
@@ -1574,11 +1610,12 @@ export default async function Home({
     gossipPage?: string;
     merchPage?: string;
     merchSort?: string;
-    message?: string;
+    message?: string | string[];
     stuffPage?: string;
   }>;
 }) {
   const params = await searchParams;
+  const homeMessage = safeHomeStatusMessage(params.message);
   const merchCategory = merchCategoryFilters.some(
     ([value]) => value === params.merchCategory,
   )
@@ -1608,7 +1645,7 @@ export default async function Home({
     const nextPage = Math.floor(currentLimit / pageSize) + 1;
     const nextParams = new URLSearchParams();
 
-    if (params.message) nextParams.set("message", params.message);
+    if (homeMessage) nextParams.set("message", homeMessage);
     if (params.feedPage && key !== "feedPage") {
       nextParams.set("feedPage", params.feedPage);
     }
@@ -1643,7 +1680,7 @@ export default async function Home({
   }) => {
     const nextParams = new URLSearchParams();
 
-    if (params.message) nextParams.set("message", params.message);
+    if (homeMessage) nextParams.set("message", homeMessage);
     if (params.feedPage) nextParams.set("feedPage", params.feedPage);
     if (params.gossipPage) nextParams.set("gossipPage", params.gossipPage);
     if (params.stuffPage) nextParams.set("stuffPage", params.stuffPage);
@@ -2048,12 +2085,12 @@ export default async function Home({
 
           <ColumnTabs />
 
-          {params.message ? (
+          {homeMessage ? (
             <p
               className="sticky top-0 z-20 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] px-4 py-3 text-sm font-semibold shadow-sm"
               role="status"
             >
-              {params.message}
+              {homeMessage}
             </p>
           ) : null}
 
