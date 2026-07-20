@@ -39,7 +39,9 @@ const checks = [
       accountPage.includes('import { Home } from "lucide-react"') &&
       accountPage.includes('href="/#feed"') &&
       accountPage.includes('aria-label="Back to 4U home"') &&
-      accountPage.includes("flex flex-wrap items-center justify-end"),
+      accountPage.includes("flex flex-wrap items-center justify-end") &&
+      mobileSmoke.includes('path: "/account?booking_status=requested"') &&
+      mobileSmoke.includes('path: "/settings"'),
   },
   {
     label: "profile form keeps bio, avatar, banner, social links, and shop link editable",
