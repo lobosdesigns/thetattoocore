@@ -630,6 +630,7 @@ export const helpArticles = [
         title: "Create an ad campaign",
       },
       {
+        assetSrc: "/tutorial-clips/mobile-ads-credits-safe.mp4",
         description:
           "Short clip of applying available ad credit and checking campaign review/payment status.",
         kind: "short_clip",
