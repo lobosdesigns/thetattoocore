@@ -184,6 +184,25 @@ const checks = [
       staleCreateLabels.every((label) => !currentCreateCopySource.includes(label)),
   },
   {
+    label: "4U post and saved actions hide raw backend errors from member redirects",
+    ok:
+      actions.includes("console.error(`${kind} media upload failed.`, error)") &&
+      actions.includes('"Could not upload media. Please try again."') &&
+      actions.includes('console.error("4U post publish failed.", error)') &&
+      actions.includes('"Could not publish 4U post. Please try again."') &&
+      actions.includes('console.error("4U post media attach failed.", mediaError)') &&
+      actions.includes('"Media uploaded but could not attach to the post. Please try again."') &&
+      actions.includes('console.error("4U post like failed.", result.error)') &&
+      actions.includes('"Could not update like. Please try again."') &&
+      actions.includes('console.error("Saved item update failed.", result.error)') &&
+      actions.includes('"Could not update saved item. Please try again."') &&
+      !actions.includes('error.message || "Could not upload media."') &&
+      !actions.includes('error.message || "Could not publish 4U post."') &&
+      !actions.includes('mediaError.message || "Media uploaded but could not attach to the post."') &&
+      !actions.includes('result.error.message || "Could not update like."') &&
+      !actions.includes('result.error.message || "Could not update saved item."'),
+  },
+  {
     label: "comment media schema is authenticated, image-only, and size-limited",
     ok:
       commentMediaMigration.includes("create table if not exists public.post_comment_media") &&

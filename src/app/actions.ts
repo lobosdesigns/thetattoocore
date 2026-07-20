@@ -531,12 +531,8 @@ async function uploadPostMedia({
   });
 
   if (error) {
-    redirect(
-      homeMessage(
-        error.message || "Could not upload media.",
-        hashForMediaKind(kind),
-      ),
-    );
+    console.error(`${kind} media upload failed.`, error);
+    redirect(homeMessage("Could not upload media. Please try again.", hashForMediaKind(kind)));
   }
 
   return {
@@ -682,9 +678,8 @@ export async function createFeedPost(formData: FormData) {
     .single<{ id: string }>();
 
   if (error) {
-    redirect(
-      homeMessage(error.message || "Could not publish 4U post.", "feed"),
-    );
+    console.error("4U post publish failed.", error);
+    redirect(homeMessage("Could not publish 4U post. Please try again.", "feed"));
   }
 
   if (media && post) {
@@ -707,12 +702,8 @@ export async function createFeedPost(formData: FormData) {
     });
 
     if (mediaError) {
-      redirect(
-        homeMessage(
-          mediaError.message || "Media uploaded but could not attach to the post.",
-          "feed",
-        ),
-      );
+      console.error("4U post media attach failed.", mediaError);
+      redirect(homeMessage("Media uploaded but could not attach to the post. Please try again.", "feed"));
     }
   }
 
@@ -2570,7 +2561,8 @@ export async function togglePostLike(formData: FormData) {
       });
 
   if (result.error) {
-    redirect(homeMessage(result.error.message || "Could not update like."));
+    console.error("4U post like failed.", result.error);
+    redirect(homeMessage("Could not update like. Please try again."));
   }
 
   if (!liked) {
@@ -2636,10 +2628,11 @@ export async function toggleSavedItem(formData: FormData) {
       });
 
   if (result.error) {
+    console.error("Saved item update failed.", result.error);
     redirect(
       redirectWithMessage({
         hash: returnHash,
-        message: result.error.message || "Could not update saved item.",
+        message: "Could not update saved item. Please try again.",
         path: returnPath,
       }),
     );
