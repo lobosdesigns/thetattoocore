@@ -98,6 +98,11 @@ const routes = [
     textIncludes: "@ceocore",
     titleIncludes: "CEOCore",
   },
+  {
+    path: "/u/ceocore?profile_4u=50&profile_gossip=50&profile_stuff=50&profile_gigs=50&profile_merch=50#profile-merch",
+    textIncludes: ["@ceocore", "Fan-facing shirts, prints, art, stickers, and brand goods."],
+    titleIncludes: "CEOCore",
+  },
   { path: "/u/ceocore/followers", textIncludes: "community", titleIncludes: "Followers" },
   { path: "/u/ceocore/following", textIncludes: "community", titleIncludes: "Following" },
   { allowMainDocument404: true, path: "/p/not-a-real-post", titleIncludes: "404" },

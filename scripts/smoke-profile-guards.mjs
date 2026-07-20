@@ -19,6 +19,7 @@ const searchPage = readFileSync("src/app/search/page.tsx", "utf8");
 const recentSearches = readFileSync("src/app/search/recent-searches.tsx", "utf8");
 const urls = readFileSync("src/lib/urls.ts", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
+const mobileSmoke = readFileSync("scripts/smoke-mobile-browser.mjs", "utf8");
 
 const socialFields = [
   "website_url",
@@ -291,6 +292,8 @@ const checks = [
       profileContentTabs.includes('event.key === "End"') &&
       profileContentTabs.includes("window.requestAnimationFrame") &&
       profileContentTabs.includes("window.history.replaceState(null, \"\", `#${tabId}`)") &&
+      mobileSmoke.includes("#profile-merch") &&
+      mobileSmoke.includes("Fan-facing shirts, prints, art, stickers, and brand goods.") &&
       !profilePage.includes("function ProfileContentNav"),
   },
   {
