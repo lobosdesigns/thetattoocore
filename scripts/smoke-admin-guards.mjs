@@ -481,6 +481,28 @@ const checks = [
       !adminActions.includes('updateError.message || "Could not apply ad credit."'),
   },
   {
+    label: "admin Merch actions hide raw backend errors from redirects",
+    ok:
+      adminActions.includes('console.error("Admin Merch product lookup failed.", productError)') &&
+      adminActions.includes('console.error("Admin Merch product update failed.", updateError)') &&
+      adminActions.includes('console.error("Admin Merch order lookup failed.", orderError)') &&
+      adminActions.includes('console.error("Admin Merch order update failed.", updateError)') &&
+      adminActions.includes('console.error("Admin Merch order item fulfillment update failed.", itemError)') &&
+      adminActions.includes('console.error("Admin Merch inventory release failed.", releaseError)') &&
+      adminActions.includes('"Merch product was not found."') &&
+      adminActions.includes('"Could not update Merch product. Please try again."') &&
+      adminActions.includes('"Merch order was not found."') &&
+      adminActions.includes('"Could not update Merch order. Please try again."') &&
+      adminActions.includes('"Order changed, but line-item fulfillment status failed. Please try again."') &&
+      adminActions.includes('"Order changed, but inventory reservation release failed. Please try again."') &&
+      !adminActions.includes('productError?.message || "Merch product was not found."') &&
+      !adminActions.includes('updateError.message || "Could not update merch product."') &&
+      !adminActions.includes('orderError?.message || "Merch order was not found."') &&
+      !adminActions.includes('updateError.message || "Could not update merch order."') &&
+      !adminActions.includes('itemError.message ||') &&
+      !adminActions.includes('releaseError.message ||'),
+  },
+  {
     label: "plan records dedicated admin pages and tester account tooling",
     ok:
       productPlan.includes("Admin sections must become dedicated pages") &&

@@ -1721,9 +1721,12 @@ export async function updateMerchProductStatus(formData: FormData) {
     }>();
 
   if (productError || !product) {
+    if (productError) {
+      console.error("Admin Merch product lookup failed.", productError);
+    }
     redirect(
       adminMerchMessage(
-        productError?.message || "Merch product was not found.",
+        "Merch product was not found.",
         returnTo,
       ),
     );
@@ -1801,9 +1804,10 @@ export async function updateMerchProductStatus(formData: FormData) {
     .eq("id", productId);
 
   if (updateError) {
+    console.error("Admin Merch product update failed.", updateError);
     redirect(
       adminMerchMessage(
-        updateError.message || "Could not update merch product.",
+        "Could not update Merch product. Please try again.",
         returnTo,
       ),
     );
@@ -1856,9 +1860,12 @@ export async function updateMerchOrderStatus(formData: FormData) {
     }>();
 
   if (orderError || !order) {
+    if (orderError) {
+      console.error("Admin Merch order lookup failed.", orderError);
+    }
     redirect(
       adminMerchMessage(
-        orderError?.message || "Merch order was not found.",
+        "Merch order was not found.",
         returnTo,
       ),
     );
@@ -1901,9 +1908,10 @@ export async function updateMerchOrderStatus(formData: FormData) {
     .eq("id", orderId);
 
   if (updateError) {
+    console.error("Admin Merch order update failed.", updateError);
     redirect(
       adminMerchMessage(
-        updateError.message || "Could not update merch order.",
+        "Could not update Merch order. Please try again.",
         returnTo,
       ),
     );
@@ -1919,10 +1927,10 @@ export async function updateMerchOrderStatus(formData: FormData) {
       .eq("order_id", orderId);
 
     if (itemError) {
+      console.error("Admin Merch order item fulfillment update failed.", itemError);
       redirect(
         adminMerchMessage(
-          itemError.message ||
-            "Order changed, but line-item fulfillment status failed.",
+          "Order changed, but line-item fulfillment status failed. Please try again.",
           returnTo,
         ),
       );
@@ -1936,10 +1944,10 @@ export async function updateMerchOrderStatus(formData: FormData) {
     );
 
     if (releaseError) {
+      console.error("Admin Merch inventory release failed.", releaseError);
       redirect(
         adminMerchMessage(
-          releaseError.message ||
-            "Order changed, but inventory reservation release failed.",
+          "Order changed, but inventory reservation release failed. Please try again.",
           returnTo,
         ),
       );
