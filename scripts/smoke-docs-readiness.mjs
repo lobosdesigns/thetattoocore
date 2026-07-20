@@ -323,11 +323,13 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Accessibility Nutrition Labels proof") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("VoiceOver, Voice Control, Larger Text") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("## Native Build And Install Evidence Matrix") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("| Android | Google Play internal testing | Version name, version code") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("| Android | Google Play internal testing or closed testing if production access requires it.") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("12-tester participation, 14-day duration, feedback summary") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("| iOS | TestFlight internal testing | iOS version/build number") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("release channel, version/build, date, device model, and pass/fail status") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Native build/install evidence should use the matrix") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("release channel, version/build, install source, tester account pair") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("at least 12 testers opted in for 14 continuous days") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Record a safe console/log review summary for mobile web, Android wrapper WebView, and iOS TestFlight"),
   },
   {
@@ -643,6 +645,8 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("Content Rights") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Accessibility Nutrition Labels") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Data Safety review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("required closed-test production-access evidence") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("closed-test tester opt-in/duration evidence if required") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Legal and policy") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Final counsel-reviewed Terms/Privacy") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Real-device QA") &&

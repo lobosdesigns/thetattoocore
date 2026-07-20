@@ -36,6 +36,7 @@ Keep completed evidence in the private release handoff, not in this repo. Store 
 | Console area | Evidence to capture privately | Repo-safe status note |
 | --- | --- | --- |
 | Build selection | Apple build number, Google release track, version code/name, and selected build screenshot. | `pending`, `passed`, or `needs retry`; no certificates, account IDs, or console identifiers. |
+| Google Play closed testing | Tester list or Google Group selection, opted-in tester count, 14-day continuous opt-in window if production access requires it, closed-test feedback summary, and production-access application answers. | Record only closed-test status, date range, and pass/fail summary; keep tester emails, group membership, console screenshots, and application answers private. |
 | Reviewer access | Reviewer test account email, sign-in secret, access notes if any, and validation screenshot. | `validated in console`; never commit secrets, access codes, or private phone details. |
 | Contact details | Support email, support URL, privacy URL, terms URL, and console-only contact phone. | Confirm company support surfaces only; do not store private phone numbers or owner personal contact data. |
 | Screenshot upload | App Store iPhone/iPad validation, Google Play phone screenshots, feature graphic, and rejection/error screenshots if any. | Note asset set and result only; do not commit store-console screenshots with private account data. |

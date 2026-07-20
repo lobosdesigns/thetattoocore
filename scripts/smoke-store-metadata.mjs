@@ -179,6 +179,8 @@ const checks = [
       source.readme.includes("Contact phone: keep console-only/private") &&
       source.readme.includes("## Private Console Evidence Template") &&
       source.readme.includes("| Build selection | Apple build number, Google release track") &&
+      source.readme.includes("| Google Play closed testing | Tester list or Google Group selection") &&
+      source.readme.includes("14-day continuous opt-in window if production access requires it") &&
       source.readme.includes("| Reviewer access | Reviewer test account email") &&
       source.readme.includes("| Contact details | Support email, support URL, privacy URL") &&
       source.readme.includes("| Screenshot upload | App Store iPhone/iPad validation") &&
@@ -194,8 +196,9 @@ const checks = [
     label: "store readiness docs keep current console blockers guarded",
     ok:
       source.readiness.includes("Apple still needs 13-inch iPad screenshot upload, primary category, Content Rights, App Privacy/Privacy Policy URL, pricing, age-rating answers, Accessibility Nutrition Labels, and final submission validation") &&
-      source.readiness.includes("age/content rating, Accessibility Nutrition Labels, and final console validation") &&
-      source.readiness.includes("Google Play still needs the final content-rating summary/save handoff plus current Data Safety review") &&
+      source.readiness.includes("age/content rating, Accessibility Nutrition Labels, Google Play closed-test tester opt-in/duration evidence if required, and final console validation") &&
+      source.readiness.includes("Google Play still needs the final content-rating summary/save handoff, current Data Safety review, and any required closed-test production-access evidence") &&
+      source.readiness.includes("Google Play closed-test tester opt-in/duration evidence if required") &&
       source.readiness.includes("build selection, reviewer test access, developer/legal entity, reviewer contact phone") &&
       source.readiness.includes("Do not store reviewer passwords, private phone numbers, account-owner data, or console identifiers in repo docs") &&
       source.dataSafetyPrep.includes("Google Play Data Safety must be completed before closed testing, open testing, or production release") &&
