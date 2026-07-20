@@ -318,6 +318,24 @@ const checks = [
       ),
   },
   {
+    label: "account ad submission hides raw backend errors from member redirects",
+    ok:
+      accountActions.includes('console.error("Ad campaign submit failed.", campaignError)') &&
+      accountActions.includes('"Could not submit ad campaign. Please try again."') &&
+      !accountActions.includes('campaignError?.message || "Could not submit ad campaign."') &&
+      accountActions.includes('console.error("Ad campaign placement submit failed.", placementError)') &&
+      accountActions.includes('"Ad campaign saved, but placement setup needs review."') &&
+      !accountActions.includes('placementError.message || "Ad saved, but placement failed."'),
+  },
+  {
+    label: "account deletion requests hide raw backend errors from member redirects",
+    ok:
+      accountActions.includes('console.error("Account deletion request failed.", error)') &&
+      accountActions.includes('"Could not request account deletion. Please try again."') &&
+      !accountActions.includes('error.message || "Could not request account deletion."') &&
+      accountActions.includes('"You already have a pending account deletion request."'),
+  },
+  {
     label: "notification open rejects external, protocol-relative, and backslash hrefs",
     ok:
       notificationActions.includes('!href.startsWith("/")') &&

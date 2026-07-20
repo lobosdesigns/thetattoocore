@@ -846,7 +846,8 @@ export async function submitAdCampaign(formData: FormData) {
     .single<{ id: string }>();
 
   if (campaignError || !campaign) {
-    redirect(accountPath(campaignError?.message || "Could not submit ad campaign."));
+    console.error("Ad campaign submit failed.", campaignError);
+    redirect(accountPath("Could not submit ad campaign. Please try again."));
   }
 
   const { error: placementError } = await supabase
@@ -859,7 +860,8 @@ export async function submitAdCampaign(formData: FormData) {
     );
 
   if (placementError) {
-    redirect(accountPath(placementError.message || "Ad saved, but placement failed."));
+    console.error("Ad campaign placement submit failed.", placementError);
+    redirect(accountPath("Ad campaign saved, but placement setup needs review."));
   }
 
   revalidatePath("/account");
@@ -2185,11 +2187,15 @@ export async function requestAccountDeletion(formData: FormData) {
   });
 
   if (error) {
+    if (error.code !== "23505") {
+      console.error("Account deletion request failed.", error);
+    }
+
     redirect(
       accountPath(
         error.code === "23505"
           ? "You already have a pending account deletion request."
-          : error.message || "Could not request account deletion.",
+          : "Could not request account deletion. Please try again.",
       ),
     );
   }
