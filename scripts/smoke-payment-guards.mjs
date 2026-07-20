@@ -37,12 +37,14 @@ const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
 const helpCenter = readFileSync("src/lib/help-center.ts", "utf8");
+const helpCenterSearch = readFileSync("src/app/help/help-center-search.tsx", "utf8");
 const fees = readFileSync("src/lib/payments/fees.ts", "utf8");
 const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const paymentReadiness = readFileSync("docs/PAYMENT_PRODUCTION_READINESS.md", "utf8");
 const memberPaymentSafetySource = [
   helpCenter,
+  helpCenterSearch,
   privacyPage,
   supportPage,
 ].join("\n");

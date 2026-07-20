@@ -57,7 +57,8 @@ Keep completed console evidence in the private release handoff, not in this repo
 | Console area | Evidence to capture privately | Repo-safe status note |
 | --- | --- | --- |
 | Build selection | Apple build number, Google release track, version code/name, and selected build screenshot. | `pending`, `passed`, or `needs retry`; no certificates, account IDs, or console identifiers. |
-| Reviewer access | Reviewer test account email, sign-in secret, access notes if any, and validation screenshot. | `validated in console`; never commit passwords, access codes, private phone details, or one-time codes. |
+| Reviewer account | Reviewer test account email, sign-in secret, email-confirmed account state, role/access scope, and validation screenshot. | `created`, `validated`, or `needs retry`; never commit passwords, access codes, private phone details, or one-time codes. |
+| Final reviewer access | Selected Apple build and Google release track reviewer sign-in details, access notes, and final validation screenshot. | `pending`, `validated for selected build/track`, or `needs retry`; never commit passwords, access codes, private phone details, or one-time codes. |
 | Contact details | Support email, support URL, privacy URL, terms URL, and console-only contact phone. | Confirm company support surfaces only; do not store private phone numbers or owner personal contact data. |
 | Screenshot upload | App Store iPhone/iPad validation, Google Play phone screenshots, feature graphic, and rejection/error screenshots if any. | Note asset set and result only; do not commit store-console screenshots with private account data. |
 | Category and pricing | App Store categories, Google Play category, v1 free pricing, and availability selections. | Record category/pricing choices only after final console save. |

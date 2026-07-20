@@ -291,6 +291,8 @@ const checks = [
       docs["docs/DATA_SAFETY_PREP.md"].includes("User-generated content") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("direct messages") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("Help Center questions") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("password handled by the account sign-in system") &&
+      !docs["docs/DATA_SAFETY_PREP.md"].includes("auth provider") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("private verification/license documents") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("Raw card, bank, routing, and payout credentials must not be collected") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("approved review-controlled checkout flows") &&
@@ -423,7 +425,9 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checkout-return handling") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("## Final Store-Console Evidence") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Build selection | Apple build number, Google release track") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Reviewer access | Reviewer test account email") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Reviewer account | Reviewer test account email") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Final reviewer access | Selected Apple build and Google release track") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("`validated for selected build/track`") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Contact details | Support email, support URL, privacy URL") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Screenshot upload | App Store iPhone/iPad validation") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Category and pricing | App Store categories, Google Play category") &&

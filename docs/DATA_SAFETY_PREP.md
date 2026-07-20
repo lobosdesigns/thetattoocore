@@ -4,7 +4,7 @@ Use this as an internal checklist before answering Google Play Data Safety, App 
 
 ## Current Data Types
 
-- Account data: email address, username, display name, 18+ confirmation, password handled by the auth provider, account status, role, and notification preferences.
+- Account data: email address, username, display name, 18+ confirmation, password handled by the account sign-in system, account status, role, and notification preferences.
 - Profile data: avatar, bio, account type, public profile settings, website/social links, coarse city/region/country settings, language preference, appearance preference, and optional artist-to-studio/shop link.
 - User-generated content: 4U posts, Gossip posts, Stories, Stuff listings, Gigs, Merch products, comments, replies, Help Center questions/comments, reports, saves, follows, blocks, and direct messages.
 - Media: profile photos, post/listing/gig/story/comment/DM image or GIF uploads, short videos where supported, and private verification/license documents.
