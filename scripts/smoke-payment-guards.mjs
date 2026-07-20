@@ -45,6 +45,27 @@ const paymentSafetySource = [
   privacyPage,
   supportPage,
 ].join("\n");
+const requiredPaymentWebhookEvents = [
+  "checkout.session.completed",
+  "checkout.session.async_payment_succeeded",
+  "checkout.session.async_payment_failed",
+  "checkout.session.expired",
+  "charge.refunded",
+  "refund.failed",
+  "charge.dispute.created",
+  "charge.dispute.updated",
+  "charge.dispute.closed",
+  "charge.dispute.funds_withdrawn",
+  "charge.dispute.funds_reinstated",
+  "account.updated",
+];
+
+function missingWebhookEventsIn(sourceText) {
+  return requiredPaymentWebhookEvents.filter((eventType) => !sourceText.includes(eventType));
+}
+
+const webhookSourceMissingEvents = missingWebhookEventsIn(stripeWebhook);
+const paymentReadinessMissingEvents = missingWebhookEventsIn(paymentReadiness);
 
 function indexOfOrFail(body, snippet) {
   const index = body.indexOf(snippet);
@@ -320,6 +341,20 @@ checks.push({
     stripeWebhook.includes("stripeConnectStatus(account)") &&
     stripeWebhook.indexOf("Missing payment verification.") <
       stripeWebhook.indexOf("constructEventAsync"),
+});
+checks.push({
+  label: "payment webhook required event coverage stays aligned with readiness docs",
+  ok: webhookSourceMissingEvents.length === 0 && paymentReadinessMissingEvents.length === 0,
+  message: [
+    webhookSourceMissingEvents.length > 0
+      ? `webhook source missing: ${webhookSourceMissingEvents.join(", ")}`
+      : "",
+    paymentReadinessMissingEvents.length > 0
+      ? `payment readiness doc missing: ${paymentReadinessMissingEvents.join(", ")}`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("; "),
 });
 checks.push({
   label: "admin refund requests keep processor names out of redirect copy",
