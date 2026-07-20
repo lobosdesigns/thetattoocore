@@ -555,6 +555,7 @@ checks.push({
     adminPaymentsPage.includes("seller payout filter") &&
     adminPaymentsPage.includes("Search the payment reference in Admin > Payments") &&
     adminPaymentsPage.includes("webhook receipt, payment audit row, user-facing status") &&
+    adminPaymentsPage.includes("For delayed or async payment success, reconcile the success event before fulfillment, ad delivery, booking closeout, or payout release.") &&
     adminPaymentsPage.includes("fulfillment, ad delivery, booking deposit state") &&
     adminPaymentsPage.includes("bookingPaymentStatusLabel(status)") &&
     adminPaymentsPage.includes("titleCaseStatus(value)") &&
@@ -564,6 +565,7 @@ checks.push({
     adminMerchPage.includes("Checkout and refund status stay review-controlled") &&
     adminMerchPage.includes("finish tax, shipping, fulfillment, payouts, and payment safety rules") &&
     paymentReadiness.includes("Direct API edits or browser-automation shortcuts are not a valid completion test") &&
+    paymentReadiness.includes("Delayed or async payment success reconciliation captured before fulfillment, ad delivery, booking closeout, or seller payout release.") &&
     accountPage.includes("merchSellerReadinessItems") &&
     accountPage.includes("sellerProfileKind") &&
     accountPage.includes("Seller profile:") &&

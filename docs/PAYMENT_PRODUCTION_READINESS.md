@@ -50,6 +50,7 @@ Keep this evidence private and attach it to the release handoff before any live-
 - Live/test mode setting, server payment key mode, and webhook mode reviewed together with no mismatch.
 - Penny test receipt captured for one approved flow after policy review.
 - Admin > Payments screenshot or note showing the matching webhook receipt, payment audit row, user-facing status, and queue status.
+- Delayed or async payment success reconciliation captured before fulfillment, ad delivery, booking closeout, or seller payout release.
 - Refund and dispute procedure approval recorded with who approved it and the approval date.
 - Seller payout policy approval recorded with payout timing, holdback, refund-window, and dispute-freeze rules.
 - Tax, shipping, fulfillment, and support-copy review recorded before Merch checkout is promoted.
