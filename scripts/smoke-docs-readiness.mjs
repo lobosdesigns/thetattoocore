@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 
 const docs = {
   "docs/APP_STORE_READINESS.md": readFileSync("docs/APP_STORE_READINESS.md", "utf8"),
@@ -43,6 +43,7 @@ const helpCommentReportsMigration = readFileSync(
 const contentReportForm = readFileSync("src/app/content-report-form.tsx", "utf8");
 const mainActions = readFileSync("src/app/actions.ts", "utf8");
 const allDocs = Object.values(docs).join("\n");
+const safeTutorialClipPath = "public/tutorial-clips/mobile-main-navigation-safe.mp4";
 const forbiddenContactSnippets = [
   "lobo3319@gmail.com",
   "lobosden@hotmail.com",
@@ -389,6 +390,7 @@ const checks = [
       docs["docs/PRODUCT_PLAN.md"].includes("Merch setup") &&
       docs["docs/PRODUCT_PLAN.md"].includes("seller payout readiness") &&
       docs["docs/PRODUCT_PLAN.md"].includes("order support") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("first safe tutorial short clip") &&
       docs["docs/PRODUCT_PLAN.md"].includes("setting appointments") &&
       docs["docs/PRODUCT_PLAN.md"].includes("creating ads") &&
       docs["docs/PRODUCT_PLAN.md"].includes("setting up Merch products") &&
@@ -439,6 +441,9 @@ const checks = [
       helpCenterData.includes('assetSrc: "/screenshots/mobile-gossip-safe.png"') &&
       helpCenterData.includes("Privacy and support controls") &&
       helpCenterData.includes("Signup to first Settings save") &&
+      helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-main-navigation-safe.mp4"') &&
+      existsSync(safeTutorialClipPath) &&
+      statSync(safeTutorialClipPath).size > 50_000 &&
       helpCenterData.includes("Admin beta go/no-go") &&
       helpCenterData.includes("Two-user DM and notification pass") &&
       helpCenterData.includes("Booking request to calendar") &&

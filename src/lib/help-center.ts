@@ -126,6 +126,7 @@ export const helpArticles = [
         title: "Signup to first Settings save",
       },
       {
+        assetSrc: "/tutorial-clips/mobile-main-navigation-safe.mp4",
         description:
           "Short mobile walkthrough of switching between 4U, Gossip, Stuff, Gigs, Merch, Search, Saved, Alerts, DM, and Me.",
         kind: "short_clip",
