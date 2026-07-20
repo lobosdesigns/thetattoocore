@@ -151,6 +151,8 @@ const checks = [
       adminMediaOps.includes("Native install proof") &&
       adminMediaOps.includes("Android internal-test and iOS TestFlight install screenshots") &&
       adminMediaOps.includes("release track, version, and build number") &&
+      adminMediaOps.includes("checkout returns") &&
+      !adminMediaOps.includes("hosted checkout") &&
       adminMediaOps.includes("Help tutorial readiness") &&
       adminMediaOps.includes("Capture gaps to close before beta") &&
       adminMediaOps.includes("Help checklist") &&

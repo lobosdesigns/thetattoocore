@@ -112,7 +112,7 @@ const betaReleaseStatus: {
     tone: "ready",
   },
   {
-    body: "Keep real purchases gated until seller payouts, refunds, disputes, tax/shipping rules, hosted checkout returns, and app-store policy review pass.",
+    body: "Keep real purchases gated until seller payouts, refunds, disputes, tax/shipping rules, checkout returns, and app-store policy review pass.",
     href: "/help/seller-payouts-payment-safety",
     icon: ShieldCheck,
     label: "Payments",
