@@ -223,6 +223,8 @@ const checks = [
       source.readme.includes("Native permissions at first beta: none") &&
       source.readme.includes("Push prompts: off") &&
       source.mobileSmoke.includes('path: "/settings/notifications"') &&
+      source.mobileSmoke.includes("SMOKE_MOBILE_PROFILE") &&
+      source.mobileSmoke.includes("iPhone Safari") &&
       source.readme.includes("If the probe reports `devices_total=0`") &&
       source.readme.includes("set USB mode") &&
       source.readme.includes("accept the computer authorization prompt") &&

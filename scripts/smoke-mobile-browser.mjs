@@ -4,8 +4,33 @@ import { join } from "node:path";
 import { spawn } from "node:child_process";
 
 const baseUrl = (process.env.SMOKE_BASE_URL || "https://thetattoocore.com").replace(/\/$/, "");
-const width = Number(process.env.SMOKE_MOBILE_WIDTH || 390);
-const height = Number(process.env.SMOKE_MOBILE_HEIGHT || 844);
+const mobileProfiles = {
+  android: {
+    height: 844,
+    label: "Android Chrome",
+    userAgent:
+      "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Mobile Safari/537.36 TheTattooCoreMobileSmoke/1.0",
+    width: 390,
+  },
+  ios: {
+    height: 844,
+    label: "iPhone Safari",
+    userAgent:
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1 TheTattooCoreMobileSmoke/1.0",
+    width: 390,
+  },
+};
+const mobileProfileName = (process.env.SMOKE_MOBILE_PROFILE || "android").toLowerCase();
+const mobileProfile = mobileProfiles[mobileProfileName];
+if (!mobileProfile) {
+  console.error(
+    `FAIL unknown SMOKE_MOBILE_PROFILE "${mobileProfileName}". Use android or ios.`,
+  );
+  process.exit(1);
+}
+const width = Number(process.env.SMOKE_MOBILE_WIDTH || mobileProfile.width);
+const height = Number(process.env.SMOKE_MOBILE_HEIGHT || mobileProfile.height);
+const userAgent = process.env.SMOKE_MOBILE_USER_AGENT || mobileProfile.userAgent;
 const routeAttempts = Math.max(
   1,
   Number.parseInt(process.env.SMOKE_MOBILE_ROUTE_ATTEMPTS || "2", 10),
@@ -191,7 +216,9 @@ try {
     console.error(`${failures} mobile browser smoke check(s) failed for ${baseUrl}`);
     process.exitCode = 1;
   } else {
-    console.log(`All mobile browser smoke checks passed for ${baseUrl} at ${width}px.`);
+    console.log(
+      `All mobile browser smoke checks passed for ${baseUrl} at ${width}px using ${mobileProfile.label}.`,
+    );
   }
 } finally {
   await stopBrowser();
@@ -280,8 +307,7 @@ async function checkRoute(portNumber, url, route) {
       width,
     });
     await client.send("Emulation.setUserAgentOverride", {
-      userAgent:
-        "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Mobile Safari/537.36 TheTattooCoreMobileSmoke/1.0",
+      userAgent,
     });
     const loadEvent = waitForEvent(client, "Page.loadEventFired", 15000);
     await client.send("Page.navigate", { url });
