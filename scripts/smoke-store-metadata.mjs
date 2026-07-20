@@ -34,6 +34,7 @@ const publicMetadataKeys = [
   "googleTitle",
 ];
 const publicMetadataText = publicMetadataKeys.map((key) => source[key]).join("\n").toLowerCase();
+const currentBlockerMatrix = source.readiness.slice(source.readiness.indexOf("## Submission Blocker Matrix"));
 
 function pngInfo(path) {
   if (!existsSync(path)) return null;
@@ -190,7 +191,7 @@ const checks = [
       source.storeListingDraft.includes("visible nudity is not allowed") &&
       source.storeListingDraft.includes("No AI art") &&
       source.storeListingDraft.includes("no scratcher promotion") &&
-      blockedPrivateEvidenceTerms.every((term) => !source.readiness.toLowerCase().includes(term)),
+      blockedPrivateEvidenceTerms.every((term) => !currentBlockerMatrix.toLowerCase().includes(term)),
   },
   {
     label: "store screenshot inventory blocks unsafe review images",

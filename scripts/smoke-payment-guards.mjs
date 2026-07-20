@@ -870,6 +870,20 @@ checks.push({
     adminPaymentsPage.includes("secure hosted onboarding flow") &&
     accountPage.includes("TTC stores payout readiness status only"),
 });
+checks.push({
+  label: "payment readiness keeps private evidence repo-safe",
+  ok:
+    paymentReadiness.includes("Repo-safe summary fields are limited to release candidate") &&
+    paymentReadiness.includes("webhook event coverage result") &&
+    paymentReadiness.includes("Admin > Payments reconciliation result") &&
+    paymentReadiness.includes("native checkout policy status") &&
+    paymentReadiness.includes("pass/fail/blocker status") &&
+    paymentReadiness.includes("Keep payment intent IDs, checkout session IDs") &&
+    paymentReadiness.includes("buyer names, shipping addresses") &&
+    paymentReadiness.includes("dashboard screenshots") &&
+    paymentReadiness.includes("webhook secrets") &&
+    paymentReadiness.includes("raw console exports in the private release handoff only"),
+});
 
 const failures = checks.filter((check) => !check.ok);
 

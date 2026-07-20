@@ -580,6 +580,10 @@ const checks = [
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Seller payout policy approval recorded with payout timing") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Native app policy review recorded before exposing checkout in native wrappers") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Support, Terms, Privacy, and Help copy checked against the live build") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Repo-safe summary fields are limited to release candidate") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Admin > Payments reconciliation result") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Keep payment intent IDs, checkout session IDs") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("raw console exports in the private release handoff only") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("buyer shipping addresses private") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Only verified artists and studios should request deposits"),
   },

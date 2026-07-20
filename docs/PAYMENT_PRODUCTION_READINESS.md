@@ -57,6 +57,8 @@ Keep this evidence private and attach it to the release handoff before any live-
 - Native app policy review recorded before exposing checkout in native wrappers.
 - Support, Terms, Privacy, and Help copy checked against the live build and current payment status.
 
+Repo-safe summary fields are limited to release candidate, test flow, live/test mode result, webhook event coverage result, Admin > Payments reconciliation result, refund/dispute review status, seller payout review status, native checkout policy status, reviewer initials or role, review date, and pass/fail/blocker status. Keep payment intent IDs, checkout session IDs, customer emails, buyer names, shipping addresses, seller onboarding account details, dashboard screenshots, bank/card details, webhook secrets, and raw console exports in the private release handoff only.
+
 ## Draft Seller Payout Release Policy
 
 Do not release production seller payouts until this policy is finalized, reviewed, and reflected in Terms, seller onboarding, and support articles.
