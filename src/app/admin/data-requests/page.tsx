@@ -6,6 +6,7 @@ import { AdminSectionNav } from "../admin-section-nav";
 import { updateAccountDeletionRequest } from "../actions";
 import { accountDeletionStatusLabel } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
+import { safeStatusMessage } from "@/lib/status-message";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
 type Claims = {
@@ -265,13 +266,14 @@ export default async function AdminDataRequestsPage({
   searchParams,
 }: {
   searchParams: Promise<{
-    message?: string;
+    message?: string | string[];
     page?: string | string[];
     q?: string | string[];
     status?: string | string[];
   }>;
 }) {
   const params = await searchParams;
+  const statusMessage = safeStatusMessage(params.message);
   const filters = dataRequestFilters({
     query: params.q,
     status: params.status,
@@ -395,9 +397,9 @@ export default async function AdminDataRequestsPage({
 
         <AdminSectionNav activeHref="/admin/data-requests" />
 
-        {params.message ? (
+        {statusMessage ? (
           <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">
-            {params.message}
+            {statusMessage}
           </p>
         ) : null}
 

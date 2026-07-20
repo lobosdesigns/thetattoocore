@@ -7,6 +7,7 @@ import { grantAdCampaignCredit, updateAdCampaignStatus } from "../actions";
 import { countryLabel, languageLabel } from "@/lib/localization";
 import { titleCaseStatus } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
+import { safeStatusMessage } from "@/lib/status-message";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
 type Claims = {
@@ -456,13 +457,14 @@ export default async function AdminAdsPage({
   searchParams,
 }: {
   searchParams: Promise<{
-    message?: string;
+    message?: string | string[];
     page?: string | string[];
     payment_status?: string | string[];
     status?: string | string[];
   }>;
 }) {
   const params = await searchParams;
+  const statusMessage = safeStatusMessage(params.message);
   const currentPage = pageNumber(params.page);
   const activeCampaignStatus = campaignStatusFilter(params.status);
   const activePaymentStatus = paymentStatusFilter(params.payment_status);
@@ -639,9 +641,9 @@ export default async function AdminAdsPage({
 
         <AdminSectionNav activeHref="/admin/ads" />
 
-        {params.message ? (
+        {statusMessage ? (
           <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">
-            {params.message}
+            {statusMessage}
           </p>
         ) : null}
 

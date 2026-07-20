@@ -776,7 +776,8 @@ checks.push({
     accountPage.includes("sellerPayoutAccount") &&
     accountPage.includes("payoutSetupNotice") &&
     accountPage.includes("Merch and payouts") &&
-    accountPage.includes("const accountMessage = safeAccountStatusMessage(params.message)") &&
+    accountPage.includes("const accountMessage = safeStatusMessage(") &&
+    accountPage.includes("Account update could not be shown. Please try again or contact Support.") &&
     accountPage.includes("accountMessage && !payoutSetupNotice") &&
     accountPage.includes("Operator code:") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("function payoutIssueCode") &&

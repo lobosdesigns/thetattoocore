@@ -5,6 +5,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react"
 import { AdminSectionNav } from "../admin-section-nav";
 import { updateLicenseVerification } from "../actions";
 import { createClient } from "@/lib/supabase/server";
+import { safeStatusMessage } from "@/lib/status-message";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
 type Claims = {
@@ -333,12 +334,13 @@ export default async function AdminVerificationPage({
 }: {
   searchParams: Promise<{
     account_type?: string | string[];
-    message?: string;
+    message?: string | string[];
     page?: string | string[];
     status?: string | string[];
   }>;
 }) {
   const params = await searchParams;
+  const statusMessage = safeStatusMessage(params.message);
   const filters = verificationFilters({
     accountType: params.account_type,
     status: params.status,
@@ -465,9 +467,9 @@ export default async function AdminVerificationPage({
 
         <AdminSectionNav activeHref="/admin/verification" />
 
-        {params.message ? (
+        {statusMessage ? (
           <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">
-            {params.message}
+            {statusMessage}
           </p>
         ) : null}
 

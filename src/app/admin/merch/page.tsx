@@ -17,6 +17,7 @@ import {
   titleCaseStatus,
 } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
+import { safeStatusMessage } from "@/lib/status-message";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
 type Claims = {
@@ -776,7 +777,7 @@ export default async function AdminMerchPage({
 }: {
   searchParams: Promise<{
     fulfillment?: string | string[];
-    message?: string;
+    message?: string | string[];
     order_page?: string | string[];
     order_status?: string | string[];
     page?: string | string[];
@@ -786,6 +787,7 @@ export default async function AdminMerchPage({
   }>;
 }) {
   const params = await searchParams;
+  const statusMessage = safeStatusMessage(params.message);
   const currentPage = pageNumber(params.page);
   const currentOrderPage = pageNumber(params.order_page);
   const activeOrderFulfillmentStatus = orderFulfillmentFilter(params.fulfillment);
@@ -1213,9 +1215,9 @@ export default async function AdminMerchPage({
           </p>
         ) : null}
 
-        {params.message ? (
+        {statusMessage ? (
           <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">
-            {params.message}
+            {statusMessage}
           </p>
         ) : null}
 

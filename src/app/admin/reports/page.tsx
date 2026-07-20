@@ -9,6 +9,7 @@ import {
   updateReportStatus,
 } from "../actions";
 import { createClient } from "@/lib/supabase/server";
+import { safeStatusMessage } from "@/lib/status-message";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
 type Claims = {
@@ -418,7 +419,7 @@ export default async function AdminReportsPage({
   searchParams,
 }: {
   searchParams: Promise<{
-    message?: string;
+    message?: string | string[];
     page?: string | string[];
     reason?: string | string[];
     status?: string | string[];
@@ -426,6 +427,7 @@ export default async function AdminReportsPage({
   }>;
 }) {
   const params = await searchParams;
+  const statusMessage = safeStatusMessage(params.message);
   const currentPage = pageNumber(params.page);
   const filters = reportFilters({
     reason: params.reason,
@@ -730,9 +732,9 @@ export default async function AdminReportsPage({
 
         <AdminSectionNav activeHref="/admin/reports" />
 
-        {params.message ? (
+        {statusMessage ? (
           <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">
-            {params.message}
+            {statusMessage}
           </p>
         ) : null}
 

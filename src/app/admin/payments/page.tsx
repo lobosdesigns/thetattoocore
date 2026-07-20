@@ -21,6 +21,7 @@ import {
 } from "../actions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { safeStatusMessage } from "@/lib/status-message";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
 type Claims = {
@@ -427,7 +428,7 @@ export default async function AdminPaymentsPage({
     params.booking_payment_status,
   );
   const paymentEventTypeFilter = eventTypeFilter(params.event_type);
-  const message = Array.isArray(params.message) ? params.message[0] : params.message;
+  const statusMessage = safeStatusMessage(params.message);
   const activeSearch = searchTerm(params.q);
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
@@ -688,9 +689,9 @@ export default async function AdminPaymentsPage({
 
         <AdminSectionNav activeHref="/admin/payments" />
 
-        {message ? (
+        {statusMessage ? (
           <p className="ttc-surface mb-4 rounded-md border px-4 py-3 text-sm font-medium">
-            {message}
+            {statusMessage}
           </p>
         ) : null}
 

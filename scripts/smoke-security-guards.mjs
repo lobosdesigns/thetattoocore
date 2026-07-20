@@ -27,6 +27,17 @@ const messageActions = readFileSync("src/app/messages/actions.ts", "utf8");
 const messagePage = readFileSync("src/app/messages/page.tsx", "utf8");
 const messageThread = readFileSync("src/app/messages/message-thread.tsx", "utf8");
 const savedPage = readFileSync("src/app/saved/page.tsx", "utf8");
+const adminDashboardPage = readFileSync("src/app/admin/page.tsx", "utf8");
+const adminAdsPage = readFileSync("src/app/admin/ads/page.tsx", "utf8");
+const adminContentPage = readFileSync("src/app/admin/content/page.tsx", "utf8");
+const adminDataRequestsPage = readFileSync("src/app/admin/data-requests/page.tsx", "utf8");
+const adminGigsPage = readFileSync("src/app/admin/gigs/page.tsx", "utf8");
+const adminMerchPage = readFileSync("src/app/admin/merch/page.tsx", "utf8");
+const adminPaymentsPage = readFileSync("src/app/admin/payments/page.tsx", "utf8");
+const adminReportsPage = readFileSync("src/app/admin/reports/page.tsx", "utf8");
+const adminStuffPage = readFileSync("src/app/admin/stuff/page.tsx", "utf8");
+const adminUsersPage = readFileSync("src/app/admin/users/page.tsx", "utf8");
+const adminVerificationPage = readFileSync("src/app/admin/verification/page.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const urls = readFileSync("src/lib/urls.ts", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
@@ -109,6 +120,19 @@ const publicCopySource = [
   helpCenter,
   helpCenterSearch,
 ].join("\n");
+const adminStatusPages = [
+  adminDashboardPage,
+  adminAdsPage,
+  adminContentPage,
+  adminDataRequestsPage,
+  adminGigsPage,
+  adminMerchPage,
+  adminPaymentsPage,
+  adminReportsPage,
+  adminStuffPage,
+  adminUsersPage,
+  adminVerificationPage,
+];
 const privateContactSnippets = [
   "lobo3319@gmail.com",
   "lobosden@hotmail.com",
@@ -365,6 +389,16 @@ const checks = [
       savedPage.includes("statusMessage ? (") &&
       !messagePage.includes("{params.message}") &&
       !savedPage.includes("{params.message}"),
+  },
+  {
+    label: "admin status banners sanitize query messages",
+    ok:
+      adminStatusPages.every((page) =>
+        page.includes("safeStatusMessage(params.message)"),
+      ) &&
+      adminStatusPages.every((page) => !page.includes("{params.message}")) &&
+      adminPaymentsPage.includes("const statusMessage = safeStatusMessage(params.message)") &&
+      !adminPaymentsPage.includes("const message = Array.isArray(params.message)"),
   },
   {
     label: "client components avoid browser console error details",

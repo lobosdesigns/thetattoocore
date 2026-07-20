@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { titleCaseStatus } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
+import { safeStatusMessage } from "@/lib/status-message";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
 type ModerationStatus = "active" | "under_review" | "hidden" | "removed";
@@ -350,9 +351,10 @@ function adminLoginPath() {
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string }>;
+  searchParams: Promise<{ message?: string | string[] }>;
 }) {
   const params = await searchParams;
+  const statusMessage = safeStatusMessage(params.message);
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -1461,9 +1463,9 @@ export default async function AdminPage({
             ))}
           </nav>
 
-          {params.message ? (
+          {statusMessage ? (
             <p className="mb-6 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">
-              {params.message}
+              {statusMessage}
             </p>
           ) : null}
 

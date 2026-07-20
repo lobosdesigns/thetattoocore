@@ -5,6 +5,7 @@ import { ArrowLeft, BriefcaseBusiness, ChevronLeft, ChevronRight } from "lucide-
 import { AdminSectionNav } from "../admin-section-nav";
 import { titleCaseStatus } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
+import { safeStatusMessage } from "@/lib/status-message";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
 type Claims = {
@@ -244,13 +245,14 @@ export default async function AdminGigsPage({
   searchParams,
 }: {
   searchParams: Promise<{
-    message?: string;
+    message?: string | string[];
     moderation_status?: string | string[];
     page?: string | string[];
     status?: string | string[];
   }>;
 }) {
   const params = await searchParams;
+  const statusMessage = safeStatusMessage(params.message);
   const filters = gigFilters({
     moderationStatus: params.moderation_status,
     status: params.status,
@@ -378,9 +380,9 @@ export default async function AdminGigsPage({
 
         <AdminSectionNav activeHref="/admin/gigs" />
 
-        {params.message ? (
+        {statusMessage ? (
           <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">
-            {params.message}
+            {statusMessage}
           </p>
         ) : null}
 
