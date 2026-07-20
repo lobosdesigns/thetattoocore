@@ -760,7 +760,8 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
     .returns<RefundedOrderTransition[]>();
 
   if (error) {
-    throw new Error(error.message || "Could not update merch refund status.");
+    console.error("Webhook Merch refund status update failed.", error);
+    throw new Error("Could not update merch refund status.");
   }
 
   await revalidateMerchOrderProducts(
@@ -823,7 +824,8 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
     .returns<RefundedAdTransition[]>();
 
   if (adError) {
-    throw new Error(adError.message || "Could not update ad refund status.");
+    console.error("Webhook ad refund status update failed.", adError);
+    throw new Error("Could not update ad refund status.");
   }
 
   const adRefundNotifications = (refundedAds ?? []).map((campaign) => ({
@@ -865,7 +867,8 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
     .returns<RefundedBookingTransition[]>();
 
   if (bookingError) {
-    throw new Error(bookingError.message || "Could not update booking refund status.");
+    console.error("Webhook booking refund status update failed.", bookingError);
+    throw new Error("Could not update booking refund status.");
   }
 
   const bookingRefundNotifications = (refundedBookings ?? []).flatMap((booking) => [

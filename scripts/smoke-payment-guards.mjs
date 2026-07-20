@@ -448,6 +448,19 @@ checks.push({
     !stripeWebhook.includes('error.message || "Could not update booking deposit status."'),
 });
 checks.push({
+  label: "payment webhook hides raw refund backend errors",
+  ok:
+    stripeWebhook.includes('console.error("Webhook Merch refund status update failed.", error)') &&
+    stripeWebhook.includes('throw new Error("Could not update merch refund status.")') &&
+    stripeWebhook.includes('console.error("Webhook ad refund status update failed.", adError)') &&
+    stripeWebhook.includes('throw new Error("Could not update ad refund status.")') &&
+    stripeWebhook.includes('console.error("Webhook booking refund status update failed.", bookingError)') &&
+    stripeWebhook.includes('throw new Error("Could not update booking refund status.")') &&
+    !stripeWebhook.includes('error.message || "Could not update merch refund status."') &&
+    !stripeWebhook.includes('adError.message || "Could not update ad refund status."') &&
+    !stripeWebhook.includes('bookingError.message || "Could not update booking refund status."'),
+});
+checks.push({
   label: "admin refund requests keep processor names out of redirect copy",
   ok:
     adminActions.includes(
