@@ -45,6 +45,7 @@ expected safe-scene filenames, dimensions, and no-alpha output.
 
 Current Google Play phone cap: 4 to 8 screenshots. Use this 8-file selected
 set from the generated safe pool for the first Play Console upload attempt:
+Current Google Play phone upload size cap: 8 MB per screenshot.
 
 - `mobile-home-1080x1920.png`
 - `mobile-login-signup-1080x1920.png`

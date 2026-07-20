@@ -58,6 +58,8 @@ Track each store asset set separately so one valid upload does not hide another 
   2752 or 2048 x 2732 portrait PNG/JPEG files when the app runs on iPad; record
   which accepted size was uploaded for the submitted build.
 - Google Play Console: record the uploaded phone screenshot set, feature graphic, upload validation result, release track, capture date, and reviewer-safe notes.
+- Google Play phone screenshots should be 8 MB or smaller per file in the
+  selected upload set.
 - Confirm every uploaded image still matches the submitted build after final metadata, privacy, age-rating, and payment-status edits.
 - Confirm no uploaded image shows private DMs, license documents, admin queues, real payment data, personal owner contact details, visible infrastructure/provider names, visible nudity, copyrighted tattoo art, or unsafe marketplace examples.
 

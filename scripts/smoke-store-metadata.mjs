@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { basename } from "node:path";
 
 const files = {
@@ -114,6 +114,16 @@ function describeNameMismatch(paths, expectedNames) {
 
 function selectedNamesAreAvailable(selectedNames, generatedNames) {
   return selectedNames.every((name) => generatedNames.includes(name));
+}
+
+function selectedGooglePlayScreenshotPaths() {
+  return uploadSelectedScreenshotNames.playPhone.map(
+    (name) => `native/store-metadata/generated/google-play/phone-screenshots/${name}`,
+  );
+}
+
+function filesAreAtMost(paths, maxBytes) {
+  return paths.every((path) => existsSync(path) && statSync(path).size <= maxBytes);
 }
 
 function draftFieldValue(fieldName) {
@@ -252,6 +262,8 @@ const blockedPrivateEvidenceTerms = [
   "card number",
   "dashboard id",
 ];
+
+const googlePlayScreenshotMaxBytes = 8 * 1024 * 1024;
 
 const checks = [
   {
@@ -470,6 +482,13 @@ const checks = [
       uploadSelectedScreenshotNames.appStorePhone.every((name) =>
         source.screenshotInventory.includes(name),
       ),
+  },
+  {
+    label: "selected Google Play phone screenshots fit current 8 MB upload limit",
+    ok:
+      filesAreAtMost(selectedGooglePlayScreenshotPaths(), googlePlayScreenshotMaxBytes) &&
+      source.screenshotInventory.includes("Current Google Play phone upload size cap: 8 MB per screenshot") &&
+      source.screenshotPrep.includes("Google Play phone screenshots should be 8 MB or smaller per file"),
   },
   {
     label: "generated Google Play screenshots match upload dimensions",
