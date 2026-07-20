@@ -146,9 +146,12 @@ const checks = [
       source.screenshotInventory.includes("public/screenshots/mobile-home.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-login-signup.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-stories-safe.png") &&
+      source.screenshotInventory.includes("public/screenshots/mobile-verification-safe.png") &&
+      source.screenshotInventory.includes("public/screenshots/mobile-booking-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-help-support.png") &&
       source.screenshotInventory.includes("Replace generated placeholders with final real-device screenshots") &&
-      source.screenshotInventory.includes("4U, Gossip, Stuff, Gigs, and Merch") &&
+      source.screenshotInventory.includes("4U, Gossip, Stuff, Gigs, Merch") &&
+      source.screenshotInventory.includes("verification, booking, Help, and Support") &&
       source.screenshotInventory.includes("DM should appear as a") &&
       source.screenshotInventory.includes("not as a main swipe/feed column") &&
       source.screenshotInventory.includes("private DMs") &&
@@ -161,13 +164,13 @@ const checks = [
   {
     label: "generated Google Play screenshots match upload dimensions",
     ok:
-      hasExpectedPngs(generatedScreenshots.playPhone, 7, 1080, 1920) &&
+      hasExpectedPngs(generatedScreenshots.playPhone, 9, 1080, 1920) &&
       hasExpectedPngs(generatedScreenshots.playFeature, 1, 1024, 500),
   },
   {
     label: "generated App Store screenshots match upload dimensions",
     ok:
-      hasExpectedPngs(generatedScreenshots.appStorePhone, 7, 1242, 2688) &&
+      hasExpectedPngs(generatedScreenshots.appStorePhone, 9, 1242, 2688) &&
       hasExpectedPngs(generatedScreenshots.appStoreIpad, 3, 2048, 2732),
   },
 ];

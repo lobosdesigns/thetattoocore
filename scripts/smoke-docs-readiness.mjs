@@ -377,6 +377,8 @@ const checks = [
       helpCenterData.includes('assetSrc: "/screenshots/mobile-login-signup.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-help-support.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-profile-search.png"') &&
+      helpCenterData.includes('assetSrc: "/screenshots/mobile-verification-safe.png"') &&
+      helpCenterData.includes('assetSrc: "/screenshots/mobile-booking-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-4u-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-stories-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-gossip-safe.png"') &&
@@ -385,6 +387,8 @@ const checks = [
       helpCenterData.includes("Admin beta go/no-go") &&
       helpCenterData.includes("Two-user DM and notification pass") &&
       helpCenterData.includes("Booking request to calendar") &&
+      helpCenterData.includes("Booking setup sections") &&
+      helpCenterData.includes("Verification form basics") &&
       helpCenterData.includes("Merch product setup") &&
       helpCenterData.includes('slug: "order-refunds-disputes"') &&
       helpCenterData.includes("Order support, refunds, and disputes") &&

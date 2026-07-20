@@ -205,6 +205,40 @@ ${text({ body: "Profiles rank by username, bio, location,", size: 15, weight: 80
 ${text({ body: "and safe community connections.", color: "#6f5e4c", size: 15, weight: 600, x: 54, y: 530 })}
 ${bottomNav()}
 `),
+  "mobile-verification-safe.png": header(`
+${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}
+${text({ body: "Verification", size: 31, weight: 900, x: 52, y: 170 })}
+${text({ body: "Professional review stays private.", color: "#6f5e4c", size: 15, weight: 600, x: 52, y: 202 })}
+${rounded({ fill: "#f6f2eb", h: 56, r: 8, w: 436, x: 52, y: 244 })}
+${text({ body: "Account type: Artist", size: 16, weight: 900, x: 76, y: 280 })}
+${rounded({ fill: "#f6f2eb", h: 56, r: 8, w: 436, x: 52, y: 320 })}
+${text({ body: "License or business name", color: "#7b6a58", size: 15, weight: 700, x: 76, y: 356 })}
+${rounded({ fill: "#f6f2eb", h: 56, r: 8, w: 436, x: 52, y: 396 })}
+${text({ body: "Issuing city / state / country", color: "#7b6a58", size: 15, weight: 700, x: 76, y: 432 })}
+${rounded({ fill: "#f4ead8", h: 112, r: 10, stroke: "#e0c27a", w: 436, x: 52, y: 486 })}
+${text({ body: "Dummy document only", color: "#7b5a15", size: 18, weight: 900, x: 76, y: 528 })}
+${text({ body: "Never show real licenses in tutorials.", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 556 })}
+${rounded({ fill: "#14100d", h: 50, r: 8, stroke: "#14100d", w: 436, x: 52, y: 626 })}
+${text({ body: "Submit for review", color: "#fffaf0", extra: 'text-anchor="middle"', size: 17, weight: 900, x: 270, y: 658 })}
+${bottomNav()}
+`),
+  "mobile-booking-safe.png": header(`
+${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}
+${text({ body: "Booking Tools", size: 31, weight: 900, x: 52, y: 170 })}
+${text({ body: "Set availability before requests open.", color: "#6f5e4c", size: 15, weight: 600, x: 52, y: 202 })}
+${rounded({ fill: "#f6f2eb", h: 96, r: 10, w: 436, x: 52, y: 244 })}
+${text({ body: "Appointment type", size: 17, weight: 900, x: 76, y: 282 })}
+${text({ body: "Consultation - 60 minutes", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 310 })}
+${rounded({ fill: "#f6f2eb", h: 96, r: 10, w: 436, x: 52, y: 366 })}
+${text({ body: "Weekly slots", size: 17, weight: 900, x: 76, y: 404 })}
+${text({ body: "Tue / Thu with buffers", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 432 })}
+${rounded({ fill: "#f4ead8", h: 112, r: 10, stroke: "#e0c27a", w: 436, x: 52, y: 488 })}
+${text({ body: "Deposit review", color: "#7b5a15", size: 18, weight: 900, x: 76, y: 530 })}
+${text({ body: "Confirm time, notes, and fees first.", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 558 })}
+${pill({ label: "Calendar file", w: 124, x: 70, y: 632 })}
+${pill({ label: "Refund review", w: 136, x: 210, y: 632 })}
+${bottomNav()}
+`),
   "mobile-help-support.png": header(`
 ${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}
 ${text({ body: "Help Center", size: 32, weight: 900, x: 52, y: 170 })}

@@ -472,6 +472,7 @@ export const helpArticles = [
     ],
     tutorialMedia: [
       {
+        assetSrc: "/screenshots/mobile-verification-safe.png",
         description:
           "Show the verification form with sample placeholder data only; never show real license numbers or uploaded documents.",
         kind: "screenshot",
@@ -548,6 +549,7 @@ export const helpArticles = [
     ],
     tutorialMedia: [
       {
+        assetSrc: "/screenshots/mobile-booking-safe.png",
         description:
           "Show appointment types, weekly slots, blackout dates, and deposit fields with safe sample values.",
         kind: "screenshot",

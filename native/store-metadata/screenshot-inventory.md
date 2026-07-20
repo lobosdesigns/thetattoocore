@@ -8,6 +8,8 @@ Current generated safe screenshots:
 - `public/screenshots/mobile-stories-safe.png`
 - `public/screenshots/mobile-gossip-safe.png`
 - `public/screenshots/mobile-profile-search.png`
+- `public/screenshots/mobile-verification-safe.png`
+- `public/screenshots/mobile-booking-safe.png`
 - `public/screenshots/mobile-help-support.png`
 - `public/screenshots/desktop-home.png`
 
@@ -32,8 +34,9 @@ Play feature graphic, App Store iPhone 6.5-inch screenshots, and App Store
 dimensions, and no-alpha output.
 
 These generated placeholders are TTC-branded, rights-safe, and show the current
-main content columns: 4U, Gossip, Stuff, Gigs, and Merch. DM should appear as a
-direct messenger shortcut, not as a main swipe/feed column.
+main content columns and tutorial surfaces: 4U, Gossip, Stuff, Gigs, Merch,
+verification, booking, Help, and Support. DM should appear as a direct messenger
+shortcut, not as a main swipe/feed column.
 
 Still needed before public store review:
 
