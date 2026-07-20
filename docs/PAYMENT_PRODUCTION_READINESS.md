@@ -10,12 +10,12 @@ Stripe checkout is wired for controlled launch testing across Merch, ads, and ac
 - Admin > Payments now includes short operator runbooks for seller payout release checks, refund/dispute review, and booking deposit review, plus a reconciliation checklist for webhook receipts, payment audit rows, user-facing status, admin queue status, fulfillment, ad delivery, booking deposits, and payout release.
 - A transparent 2% TTC platform fee is recorded in controlled launch checkout flows and booking deposit requests.
 - Merch order receipts, seller fulfillment updates, buyer refund-review requests, and basic admin order controls are present.
-- Production purchases, seller payout releases, and real ad spending should stay gated until policy, tax, payout, refund, dispute, and provider review is complete.
+- Production purchases, seller payout releases, and real ad spending should stay gated until policy, tax, payout, refund, dispute, and payment review is complete.
 
 ## Must Finish Before Real Money
 
 - Stripe Connect Express onboarding is started for artists, studios, and vendors, with payout readiness stored in `stripe_connect_accounts` and webhook sync support for Stripe account status updates.
-- Use Stripe-hosted onboarding for seller payout details; do not collect bank, routing, card, or debit payout credentials in TTC forms.
+- Use secure seller payout onboarding for seller payout details; do not collect bank, routing, card, or debit payout credentials in TTC forms.
 - Express seller readiness must be tested by completing the hosted onboarding flow as the seller. Direct API edits or browser-automation shortcuts are not a valid completion test for identity, terms acceptance, or payout details.
 - New owner/admin official TTC sellers, studios, and vendors should start as company-style seller accounts; individual seller onboarding is for individual artist sellers.
 - Decide the final seller payout release policy, payout timing, holdback/reserve rules, refund windows, and dispute handling before enabling production seller payouts.
@@ -34,7 +34,7 @@ Stripe checkout is wired for controlled launch testing across Merch, ads, and ac
 - Configure live webhook endpoint and verify `STRIPE_WEBHOOK_SECRET` in Cloudflare. The production destination is `https://thetattoocore.com/api/stripe/webhook` and should listen for checkout, refund, dispute, and seller account status events.
 - Enable the live webhook events needed by the app: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `charge.refunded`, `refund.failed`, `charge.dispute.created`, `charge.dispute.updated`, `charge.dispute.closed`, `charge.dispute.funds_withdrawn`, `charge.dispute.funds_reinstated`, and `account.updated`.
 - Confirm `SUPABASE_SERVICE_ROLE_KEY` remains server-only and is never exposed to client bundles.
-- Run a small live-payment penny test only after legal/provider review.
+- Run a small live-payment penny test only after legal and payment-policy review.
 - Confirm Admin > Payments shows live webhook events, order states, ad payment states, booking deposit states, and ops warnings.
 - Confirm Admin > Payments reconciliation checks are followed before manual closeout, refund decisions, ad credits, fulfillment changes, booking deposit updates, or payout release.
 - Confirm buyer receipts, seller sale alerts, advertiser alerts, and support emails send from company addresses.

@@ -346,6 +346,8 @@ const checks = [
       docs["docs/PRODUCT_PLAN.md"].includes("installed app push third") &&
       docs["docs/PRODUCT_PLAN.md"].includes("mobile app push for iOS and Android apps") &&
       docs["docs/PRODUCT_PLAN.md"].includes("vetted translation service") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("review-controlled checkout/webhooks") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("seller payout QA checklist") &&
       !docs["docs/PRODUCT_PLAN.md"].includes("PWA browser push") &&
       !docs["docs/PRODUCT_PLAN.md"].includes("installed-PWA") &&
       !docs["docs/PRODUCT_PLAN.md"].includes("PWA web push") &&
@@ -355,6 +357,9 @@ const checks = [
       !docs["docs/PRODUCT_PLAN.md"].includes("provider-backed") &&
       !docs["docs/PRODUCT_PLAN.md"].includes("payment-provider review") &&
       !docs["docs/PRODUCT_PLAN.md"].includes("payment-provider rules") &&
+      !docs["docs/PRODUCT_PLAN.md"].includes("hosted checkout") &&
+      !docs["docs/PRODUCT_PLAN.md"].includes("hosted payout") &&
+      !docs["docs/PRODUCT_PLAN.md"].includes("Stripe-hosted") &&
       !docs["docs/APP_STORE_READINESS.md"].includes("payment-provider review"),
   },
   {
@@ -577,7 +582,10 @@ const checks = [
     ok:
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Stripe Checkout") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Stripe Connect") &&
-      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Stripe-hosted onboarding") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("secure seller payout onboarding") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("legal and payment-policy review") &&
+      !docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("provider review") &&
+      !docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("legal/provider review") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("do not collect bank") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("tax handling") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("refund") &&

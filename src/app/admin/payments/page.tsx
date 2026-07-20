@@ -117,7 +117,7 @@ const productionPaymentGates = [
   "Choose a documented payout policy before real seller payouts.",
   "Finish tax, shipping-rate, refund, dispute, and chargeback procedures before public Merch orders.",
   "Finish booking refund, cancellation, appointment-confirmation, and deposit payout procedures before taking real appointment deposits.",
-  "Keep seller payout details inside a secure hosted onboarding flow; do not collect bank or card payout data in TTC forms.",
+  "Keep seller payout details inside a secure onboarding flow; do not collect bank or card payout data in TTC forms.",
   "Review platform fees, app-store rules, and payment policy before turning on production purchases.",
 ] as const;
 const paymentOpsRunbooks = [
@@ -154,10 +154,10 @@ const paymentReconciliationChecks = [
   "For refunded, partially refunded, or disputed payments, confirm payout release and fulfillment closeout remain frozen until admin review is complete.",
   "Record private support context in audit/admin notes instead of public comments, profiles, product descriptions, or DMs.",
 ] as const;
-const hostedPayoutQaChecks = [
+const sellerPayoutQaChecks = [
   "Use a verified artist, studio, or vendor test account; unverified users should see the verification-required payout notice.",
-  "Start setup from Settings > Orders/Payouts and confirm the member leaves TTC only for the secure hosted payout setup flow.",
-  "Complete seller identity and payout test details inside the hosted flow; API or browser-automation shortcuts do not count as a completed Express seller test.",
+  "Start setup from Settings > Orders/Payouts and confirm the member leaves TTC only for the secure payout setup flow.",
+  "Complete seller identity and payout test details inside the secure setup flow; API or browser-automation shortcuts do not count as a completed seller test.",
   "Return from setup and confirm the payout setup card shows complete, saved-needs-more, expired, or retry guidance beside the button.",
   "Open Admin > Merch with the seller payout filter and confirm the seller is ready, incomplete, or not started before approving checkout.",
   "Confirm no TTC form, DM, comment, support note, screenshot, or admin note asks for raw bank, routing, card, debit, tax, or identity credential details.",
@@ -1310,13 +1310,13 @@ export default async function AdminPaymentsPage({
                 </section>
 
                 <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
-                  <h2 className="text-lg font-bold">Hosted payout QA pass</h2>
+                  <h2 className="text-lg font-bold">Seller payout QA pass</h2>
                   <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
                     Run this before wider Merch seller onboarding, payout
                     release decisions, or app-review commerce screenshots.
                   </p>
                   <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-[var(--muted)]">
-                    {hostedPayoutQaChecks.map((check) => (
+                    {sellerPayoutQaChecks.map((check) => (
                       <li key={check}>{check}</li>
                     ))}
                   </ol>

@@ -551,10 +551,10 @@ checks.push({
     paymentReadiness.includes("charge.dispute.funds_reinstated") &&
     paymentReadiness.includes("account.updated") &&
     adminPaymentsPage.includes("const paymentReconciliationChecks = [") &&
-    adminPaymentsPage.includes("const hostedPayoutQaChecks = [") &&
-    adminPaymentsPage.includes("API or browser-automation shortcuts do not count as a completed Express seller test") &&
+    adminPaymentsPage.includes("const sellerPayoutQaChecks = [") &&
+    adminPaymentsPage.includes("API or browser-automation shortcuts do not count as a completed seller test") &&
     adminPaymentsPage.includes("Reconciliation checklist") &&
-    adminPaymentsPage.includes("Hosted payout QA pass") &&
+    adminPaymentsPage.includes("Seller payout QA pass") &&
     adminPaymentsPage.includes("verification-required payout notice") &&
     adminPaymentsPage.includes("the payout setup card shows complete") &&
     adminPaymentsPage.includes("seller payout filter") &&
@@ -867,7 +867,7 @@ checks.push({
     !paymentSafetySource.includes("routing number") &&
     !paymentSafetySource.includes("debit card number") &&
     !paymentSafetySource.includes("card payout form") &&
-    adminPaymentsPage.includes("secure hosted onboarding flow") &&
+    adminPaymentsPage.includes("secure onboarding flow") &&
     accountPage.includes("secure setup flow") &&
     accountPage.includes("TTC stores payout readiness status only") &&
     !accountPage.includes("Stripe Connect") &&
