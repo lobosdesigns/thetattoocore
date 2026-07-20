@@ -1,6 +1,13 @@
 "use client";
 
-import { Children, type ReactNode, useEffect, useMemo, useState } from "react";
+import {
+  Children,
+  type KeyboardEvent,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 export type ProfileContentTab = {
   count: number;
@@ -23,6 +30,38 @@ export function ProfileContentTabs({
 }) {
   const childList = useMemo(() => Children.toArray(children), [children]);
   const [activeTab, setActiveTab] = useState(tabs[0]?.id ?? "");
+  const activateTab = (tabId: string) => {
+    setActiveTab(tabId);
+    window.history.replaceState(null, "", `#${tabId}`);
+  };
+  const handleTabKeyDown = (
+    event: KeyboardEvent<HTMLButtonElement>,
+    currentIndex: number,
+  ) => {
+    const lastIndex = tabs.length - 1;
+    let nextIndex = currentIndex;
+
+    if (event.key === "ArrowRight") {
+      nextIndex = currentIndex === lastIndex ? 0 : currentIndex + 1;
+    } else if (event.key === "ArrowLeft") {
+      nextIndex = currentIndex === 0 ? lastIndex : currentIndex - 1;
+    } else if (event.key === "Home") {
+      nextIndex = 0;
+    } else if (event.key === "End") {
+      nextIndex = lastIndex;
+    } else {
+      return;
+    }
+
+    const nextTab = tabs[nextIndex];
+    if (!nextTab) return;
+
+    event.preventDefault();
+    activateTab(nextTab.id);
+    window.requestAnimationFrame(() => {
+      document.getElementById(`${nextTab.id}-tab`)?.focus();
+    });
+  };
 
   useEffect(() => {
     const syncTab = () => {
@@ -44,7 +83,7 @@ export function ProfileContentTabs({
         className="sticky top-[65px] z-10 -mx-4 mb-4 flex gap-2 overflow-x-auto border-y border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-4 py-3 backdrop-blur"
         role="tablist"
       >
-        {tabs.map((tab) => {
+        {tabs.map((tab, index) => {
           const isActive = activeTab === tab.id;
 
           return (
@@ -59,10 +98,11 @@ export function ProfileContentTabs({
               id={`${tab.id}-tab`}
               key={tab.id}
               onClick={() => {
-                setActiveTab(tab.id);
-                window.history.replaceState(null, "", `#${tab.id}`);
+                activateTab(tab.id);
               }}
+              onKeyDown={(event) => handleTabKeyDown(event, index)}
               role="tab"
+              tabIndex={isActive ? 0 : -1}
               type="button"
             >
               <span>{tab.label}</span>

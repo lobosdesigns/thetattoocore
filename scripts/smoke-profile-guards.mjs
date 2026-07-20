@@ -263,7 +263,13 @@ const checks = [
       profileContentTabs.includes('role="tab"') &&
       profileContentTabs.includes('role="tabpanel"') &&
       profileContentTabs.includes('className={activeTab === tab.id ? "block" : "hidden"}') &&
-      profileContentTabs.includes("window.history.replaceState(null, \"\", `#${tab.id}`)") &&
+      profileContentTabs.includes('tabIndex={isActive ? 0 : -1}') &&
+      profileContentTabs.includes('event.key === "ArrowRight"') &&
+      profileContentTabs.includes('event.key === "ArrowLeft"') &&
+      profileContentTabs.includes('event.key === "Home"') &&
+      profileContentTabs.includes('event.key === "End"') &&
+      profileContentTabs.includes("window.requestAnimationFrame") &&
+      profileContentTabs.includes("window.history.replaceState(null, \"\", `#${tabId}`)") &&
       !profilePage.includes("function ProfileContentNav"),
   },
   {

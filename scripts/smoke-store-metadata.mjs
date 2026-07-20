@@ -94,6 +94,9 @@ const blockedOverpromiseTerms = [
   "unrestricted marketplace",
   "real-money checkout",
   "same-day payout",
+  "push notifications",
+  "native push",
+  "real-time push",
 ];
 
 const blockedPrivateEvidenceTerms = [
@@ -148,6 +151,14 @@ const checks = [
   {
     label: "store metadata avoids over-promising launch commerce status",
     ok: blockedOverpromiseTerms.every((term) => !publicMetadataText.includes(term)),
+  },
+  {
+    label: "store internal notes avoid native push overclaims",
+    ok:
+      source.appleWhatsNewInternal.includes("in-app alerts") &&
+      source.googleReleaseNotesInternal.includes("in-app alerts") &&
+      !source.appleWhatsNewInternal.includes("search, notifications, reporting") &&
+      !source.googleReleaseNotesInternal.includes("search, notifications, reporting"),
   },
   {
     label: "store metadata README keeps console handoff fields private and complete",
