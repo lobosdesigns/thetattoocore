@@ -91,6 +91,12 @@ const checks = [
       accountSettingsWorkspace.includes('role="tabpanel"') &&
       accountSettingsWorkspace.includes("aria-controls={tab.id}") &&
       accountSettingsWorkspace.includes("aria-selected={isActive}") &&
+      accountSettingsWorkspace.includes('tabIndex={isActive ? 0 : -1}') &&
+      accountSettingsWorkspace.includes('event.key === "ArrowRight"') &&
+      accountSettingsWorkspace.includes('event.key === "ArrowLeft"') &&
+      accountSettingsWorkspace.includes('event.key === "Home"') &&
+      accountSettingsWorkspace.includes('event.key === "End"') &&
+      accountSettingsWorkspace.includes("window.requestAnimationFrame") &&
       accountSettingsWorkspace.includes('aria-labelledby={`${tab.id}-tab`}') &&
       accountSettingsWorkspace.includes('className={activeTab === tab.id ? "block" : "hidden"}'),
   },

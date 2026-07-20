@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Children, type ReactNode, useEffect, useMemo, useState } from "react";
+import {
+  Children,
+  type KeyboardEvent,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 export type AccountSettingsTab = {
   body: string;
@@ -25,6 +32,38 @@ export function AccountSettingsWorkspace({
 }) {
   const childList = useMemo(() => Children.toArray(children), [children]);
   const [activeTab, setActiveTab] = useState(tabs[0]?.id ?? "");
+  const activateTab = (tabId: string) => {
+    setActiveTab(tabId);
+    window.history.replaceState(null, "", `#${tabId}`);
+  };
+  const handleTabKeyDown = (
+    event: KeyboardEvent<HTMLButtonElement>,
+    currentIndex: number,
+  ) => {
+    const lastIndex = tabs.length - 1;
+    let nextIndex = currentIndex;
+
+    if (event.key === "ArrowRight") {
+      nextIndex = currentIndex === lastIndex ? 0 : currentIndex + 1;
+    } else if (event.key === "ArrowLeft") {
+      nextIndex = currentIndex === 0 ? lastIndex : currentIndex - 1;
+    } else if (event.key === "Home") {
+      nextIndex = 0;
+    } else if (event.key === "End") {
+      nextIndex = lastIndex;
+    } else {
+      return;
+    }
+
+    const nextTab = tabs[nextIndex];
+    if (!nextTab) return;
+
+    event.preventDefault();
+    activateTab(nextTab.id);
+    window.requestAnimationFrame(() => {
+      document.getElementById(`${nextTab.id}-tab`)?.focus();
+    });
+  };
 
   useEffect(() => {
     const syncTab = () => {
@@ -76,29 +115,30 @@ export function AccountSettingsWorkspace({
         className="no-scrollbar mt-4 flex gap-2 overflow-x-auto rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-2"
         role="tablist"
       >
-        {tabs.map((tab) => {
+        {tabs.map((tab, index) => {
           const isActive = activeTab === tab.id;
 
           return (
-          <button
-            aria-controls={tab.id}
-            aria-selected={isActive}
-            className={`h-10 shrink-0 rounded-md border px-3 text-sm font-bold ${
-              isActive
-                ? "bg-[var(--foreground)] text-[var(--background)]"
-                : "bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] text-[var(--foreground)]"
-            }`}
-            id={`${tab.id}-tab`}
-            key={tab.id}
-            onClick={() => {
-              setActiveTab(tab.id);
-              window.history.replaceState(null, "", `#${tab.id}`);
-            }}
-            role="tab"
-            type="button"
-          >
-            {tab.label}
-          </button>
+            <button
+              aria-controls={tab.id}
+              aria-selected={isActive}
+              className={`h-10 shrink-0 rounded-md border px-3 text-sm font-bold ${
+                isActive
+                  ? "bg-[var(--foreground)] text-[var(--background)]"
+                  : "bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] text-[var(--foreground)]"
+              }`}
+              id={`${tab.id}-tab`}
+              key={tab.id}
+              onClick={() => {
+                activateTab(tab.id);
+              }}
+              onKeyDown={(event) => handleTabKeyDown(event, index)}
+              role="tab"
+              tabIndex={isActive ? 0 : -1}
+              type="button"
+            >
+              {tab.label}
+            </button>
           );
         })}
       </div>
@@ -113,8 +153,7 @@ export function AccountSettingsWorkspace({
             }`}
             key={tab.id}
             onClick={() => {
-              setActiveTab(tab.id);
-              window.history.replaceState(null, "", `#${tab.id}`);
+              activateTab(tab.id);
             }}
             type="button"
           >
