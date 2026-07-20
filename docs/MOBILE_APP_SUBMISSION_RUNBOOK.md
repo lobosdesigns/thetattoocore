@@ -68,6 +68,36 @@ Keep completed console evidence in the private release handoff, not in this repo
 | Google Play closed testing | Tester list or Google Group selection, opted-in tester count, 14-day continuous opt-in window if production access requires it, closed-test feedback summary, and production-access application answers. | Record only closed-test status, date range, and pass/fail summary; keep tester emails, group membership, console screenshots, and application answers private. |
 | Final validation | Console errors cleared, reviewer notes saved, export/compliance prompts complete, and submit button available or submitted. | Record final state and date; no private reviewer credentials or console identifiers. |
 
+## Reviewer Notes Template
+
+Use this as the private console reviewer note starting point, then replace bracketed
+placeholders inside the store console only. Do not commit reviewer passwords,
+one-time codes, private phone details, account identifiers, or console screenshots.
+
+```text
+TheTattooCore is an 18+ body-art community app for artists, studios, vendors, and fans. Visible nudity is not allowed.
+
+Reviewer account:
+- Email: [enter reviewer account email in console only]
+- Password: [enter reviewer password in console only]
+- Notes: Start at https://thetattoocore.com/login. The account should already be email-confirmed and able to view 4U, Gossip, Stuff, Gigs, Merch, DMs, Alerts, Account, Help, Support, Terms, and Privacy.
+
+User-generated content:
+- Members can post community content, message connected users, and view public profiles/content.
+- Reporting, blocking, private-account controls, content moderation queues, and account deletion requests are available.
+- The launch policy disallows visible nudity and unsafe/restricted professional-equipment promotion.
+
+Commerce:
+- Merch, ads, and booking/deposit flows are controlled during launch review.
+- Checkout and seller payout release remain gated until production payment, refund, dispute, tax/shipping, and policy review are complete.
+
+Support:
+- Support URL: https://thetattoocore.com/support
+- Privacy URL: https://thetattoocore.com/privacy
+- Terms URL: https://thetattoocore.com/terms
+- Support email: support@thetattoocore.com
+```
+
 ## Push Notifications
 
 - Web push is prepared at the service-worker display/click level, with signed-in browser subscription storage started. Production push keys and delivery jobs still need to be enabled before relying on web push.
