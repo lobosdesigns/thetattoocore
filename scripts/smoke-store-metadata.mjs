@@ -17,6 +17,7 @@ const files = {
   screenshotPrep: "docs/SCREENSHOT_PREP.md",
   storeListingDraft: "docs/STORE_LISTING_DRAFT.md",
   readme: "native/store-metadata/README.md",
+  screenshotGenerator: "scripts/generate-safe-store-screenshots.mjs",
   screenshotInventory: "native/store-metadata/screenshot-inventory.md",
 };
 
@@ -35,6 +36,7 @@ const publicMetadataKeys = [
   "googleTitle",
 ];
 const publicMetadataText = publicMetadataKeys.map((key) => source[key]).join("\n").toLowerCase();
+const storeScreenshotText = source.screenshotGenerator.toLowerCase();
 const currentBlockerMatrix = source.readiness.slice(source.readiness.indexOf("## Submission Blocker Matrix"));
 
 function pngInfo(path) {
@@ -251,8 +253,20 @@ const checks = [
     ok: blockedTerms.every((term) => !publicMetadataText.includes(term)),
   },
   {
+    label: "store screenshot text avoids public infrastructure details",
+    ok: blockedTerms.every((term) => !storeScreenshotText.includes(term)),
+  },
+  {
     label: "store metadata avoids over-promising launch commerce status",
     ok: blockedOverpromiseTerms.every((term) => !publicMetadataText.includes(term)),
+  },
+  {
+    label: "store screenshot text avoids over-promising launch commerce status",
+    ok: blockedOverpromiseTerms.every((term) => !storeScreenshotText.includes(term)),
+  },
+  {
+    label: "store screenshot text avoids private console evidence",
+    ok: blockedPrivateEvidenceTerms.every((term) => !storeScreenshotText.includes(term)),
   },
   {
     label: "store internal notes avoid native push overclaims",
