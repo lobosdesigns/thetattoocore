@@ -219,6 +219,19 @@ const checks = [
       !actions.includes('mediaError.message ||\n            "Media uploaded but could not attach to the Stuff listing."'),
   },
   {
+    label: "Gossip edit delete and like actions hide raw backend errors from member redirects",
+    ok:
+      actions.includes('console.error("Gossip post edit failed.", error)') &&
+      actions.includes('"Could not edit Gossip post. It may be gone or owned by another account."') &&
+      actions.includes('console.error("Gossip post delete failed.", error)') &&
+      actions.includes('"Could not delete Gossip post. It may be gone or owned by another account."') &&
+      actions.includes('console.error("Gossip post like failed.", result.error)') &&
+      actions.includes('"Could not update Gossip like. Please try again."') &&
+      !actions.includes('error?.message ||\n          "Could not edit Gossip post. It may be gone or owned by another account."') &&
+      !actions.includes('error?.message ||\n          "Could not delete Gossip post. It may be gone or owned by another account."') &&
+      !actions.includes('result.error.message || "Could not update thread like."'),
+  },
+  {
     label: "comment media schema is authenticated, image-only, and size-limited",
     ok:
       commentMediaMigration.includes("create table if not exists public.post_comment_media") &&

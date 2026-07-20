@@ -1555,11 +1555,10 @@ export async function editThreadPost(formData: FormData) {
     .maybeSingle<{ id: string }>();
 
   if (error || !updatedThread) {
+    console.error("Gossip post edit failed.", error);
     redirect(
       redirectWithMessage({
-        message:
-          error?.message ||
-          "Could not edit Gossip post. It may be gone or owned by another account.",
+        message: "Could not edit Gossip post. It may be gone or owned by another account.",
         path: returnPath,
       }),
     );
@@ -1597,11 +1596,10 @@ export async function deleteThreadPost(formData: FormData) {
     .maybeSingle<{ id: string }>();
 
   if (error || !deletedThread) {
+    console.error("Gossip post delete failed.", error);
     redirect(
       redirectWithMessage({
-        message:
-          error?.message ||
-          "Could not delete Gossip post. It may be gone or owned by another account.",
+        message: "Could not delete Gossip post. It may be gone or owned by another account.",
         path: returnPath,
       }),
     );
@@ -3008,7 +3006,8 @@ export async function toggleThreadLike(formData: FormData) {
       });
 
   if (result.error) {
-    redirect(homeMessage(result.error.message || "Could not update thread like."));
+    console.error("Gossip post like failed.", result.error);
+    redirect(homeMessage("Could not update Gossip like. Please try again."));
   }
 
   if (!liked) {
