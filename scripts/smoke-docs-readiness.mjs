@@ -53,6 +53,7 @@ const safeAdsCreditsClipPath = "public/tutorial-clips/mobile-ads-credits-safe.mp
 const safeOrderRefundClipPath = "public/tutorial-clips/mobile-order-refund-review-safe.mp4";
 const safePaymentSafetyClipPath = "public/tutorial-clips/mobile-payment-safety-safe.mp4";
 const safeAppWrapperClipPath = "public/tutorial-clips/mobile-app-wrapper-navigation-safe.mp4";
+const safeProfilePhotoClipPath = "public/tutorial-clips/mobile-profile-photo-banner-safe.mp4";
 const safePrivacyScreenshotPath = "public/screenshots/mobile-privacy-safety-safe.png";
 const safeMerchShortcutScreenshotPath = "public/screenshots/mobile-merch-help-shortcut-safe.png";
 const forbiddenContactSnippets = [
@@ -466,6 +467,7 @@ const checks = [
       helpCenterData.includes('assetSrc: "/screenshots/mobile-gossip-safe.png"') &&
       helpCenterData.includes("Privacy and support controls") &&
       helpCenterData.includes("Signup to first Settings save") &&
+      helpCenterData.includes("Photo and banner setup") &&
       helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-main-navigation-safe.mp4"') &&
       existsSync(safeTutorialClipPath) &&
       statSync(safeTutorialClipPath).size > 50_000 &&
@@ -496,6 +498,9 @@ const checks = [
       helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-app-wrapper-navigation-safe.mp4"') &&
       existsSync(safeAppWrapperClipPath) &&
       statSync(safeAppWrapperClipPath).size > 50_000 &&
+      helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-profile-photo-banner-safe.mp4"') &&
+      existsSync(safeProfilePhotoClipPath) &&
+      statSync(safeProfilePhotoClipPath).size > 50_000 &&
       helpCenterData.includes("Admin beta go/no-go") &&
       helpCenterData.includes("Two-user DM and notification pass") &&
       helpCenterData.includes("Booking request to calendar") &&

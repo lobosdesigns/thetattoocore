@@ -347,6 +347,7 @@ export const helpArticles = [
         title: "Profile settings sections",
       },
       {
+        assetSrc: "/tutorial-clips/mobile-profile-photo-banner-safe.mp4",
         description:
           "Short clip of uploading a banner/profile photo, cropping it, saving, and opening the public profile preview.",
         kind: "short_clip",
