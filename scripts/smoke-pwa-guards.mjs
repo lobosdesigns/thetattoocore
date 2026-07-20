@@ -70,6 +70,13 @@ function hasPngDimensions(path, width, height) {
   return dimensions?.width === width && dimensions?.height === height;
 }
 
+const manifestScreenshotsMatchDimensions = (manifestJson.screenshots ?? []).every((screenshot) => {
+  const [width, height] = screenshot.sizes.split("x").map((size) => Number.parseInt(size, 10));
+  const path = `public${screenshot.src}`;
+
+  return Number.isInteger(width) && Number.isInteger(height) && hasPngDimensions(path, width, height);
+});
+
 const checks = [
   {
     label: "public assets do not include default scaffold SVGs",
@@ -93,14 +100,7 @@ const checks = [
       hasPngDimensions("public/icons/icon-192.png", 192, 192) &&
       hasPngDimensions("public/icons/icon-512.png", 512, 512) &&
       hasPngDimensions("public/icons/maskable-512.png", 512, 512) &&
-      hasPngDimensions("public/screenshots/mobile-home.png", 540, 960) &&
-      hasPngDimensions("public/screenshots/mobile-login-signup.png", 540, 960) &&
-      hasPngDimensions("public/screenshots/mobile-4u-safe.png", 540, 960) &&
-      hasPngDimensions("public/screenshots/mobile-stories-safe.png", 540, 960) &&
-      hasPngDimensions("public/screenshots/mobile-gossip-safe.png", 540, 960) &&
-      hasPngDimensions("public/screenshots/mobile-profile-search.png", 540, 960) &&
-      hasPngDimensions("public/screenshots/mobile-help-support.png", 540, 960) &&
-      hasPngDimensions("public/screenshots/desktop-home.png", 1280, 720) &&
+      manifestScreenshotsMatchDimensions &&
       hasPngDimensions("public/splash/splash-2048.png", 2048, 2048),
   },
   {
