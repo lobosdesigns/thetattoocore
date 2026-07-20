@@ -878,6 +878,15 @@ checks.push({
     adminActions.includes('status: "accepted"') &&
     adminActions.includes('stripe_checkout_session_id: null') &&
     adminActions.includes('profile?.role !== "admin" && profile?.role !== "owner"') &&
+    adminActions.includes('console.error("Admin stale booking checkout reset failed.", error)') &&
+    adminActions.includes('"Could not reset stale booking checkouts. Please try again."') &&
+    adminActions.includes('console.error("Admin booking deposit lookup failed.", error)') &&
+    adminActions.includes('"Booking deposit not found."') &&
+    adminActions.includes('console.error("Admin booking deposit refund request failed.", error)') &&
+    adminActions.includes('"Could not request booking refund. Please try again."') &&
+    !adminActions.includes('error.message || "Could not reset stale booking checkouts."') &&
+    !adminActions.includes('error?.message || "Booking deposit not found."') &&
+    !adminActions.includes('error instanceof Error ? error.message : "Could not request booking refund."') &&
     adminPaymentsPage.includes("const bookingPaymentStatuses") &&
     adminPaymentsPage.includes("refundBookingDeposit") &&
     adminPaymentsPage.includes("resetStaleBookingDepositCheckouts") &&

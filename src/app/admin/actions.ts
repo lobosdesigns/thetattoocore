@@ -2126,9 +2126,10 @@ export async function resetStaleBookingDepositCheckouts(formData: FormData) {
     .select("id");
 
   if (error) {
+    console.error("Admin stale booking checkout reset failed.", error);
     redirect(
       adminPaymentsMessage(
-        error.message || "Could not reset stale booking checkouts.",
+        "Could not reset stale booking checkouts. Please try again.",
         returnTo,
       ),
     );
@@ -2211,9 +2212,11 @@ export async function refundBookingDeposit(formData: FormData) {
     }>();
 
   if (error || !booking) {
-    redirect(
-      adminPaymentsMessage(error?.message || "Booking deposit not found.", returnTo),
-    );
+    if (error) {
+      console.error("Admin booking deposit lookup failed.", error);
+    }
+
+    redirect(adminPaymentsMessage("Booking deposit not found.", returnTo));
   }
 
   if (
@@ -2255,10 +2258,13 @@ export async function refundBookingDeposit(formData: FormData) {
       target_type: "booking_request",
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Could not request booking refund.";
-
-    redirect(adminPaymentsMessage(message, returnTo));
+    console.error("Admin booking deposit refund request failed.", error);
+    redirect(
+      adminPaymentsMessage(
+        "Could not request booking refund. Please try again.",
+        returnTo,
+      ),
+    );
   }
 
   revalidatePath("/admin/payments");
