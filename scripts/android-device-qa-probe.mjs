@@ -95,6 +95,7 @@ const shell = (args) => runAdb(adb, ["-s", primary.serial, "shell", ...args]);
 let model = "unknown";
 let osVersion = "unknown";
 let packageSummary = "not installed";
+let packageInstalled = false;
 
 try {
   model = shell(["getprop", "ro.product.model"]);
@@ -110,6 +111,7 @@ try {
     .map((line) => line.trim())
     .filter((line) => line.startsWith("versionName=") || line.startsWith("versionCode="));
   packageSummary = versionLines.join("; ") || "installed, version not found";
+  packageInstalled = true;
 } catch {
   packageSummary = "not installed";
 }
@@ -117,4 +119,11 @@ try {
 console.log(`ANDROID_QA device_model=${model || "unknown"}`);
 console.log(`ANDROID_QA android_version=${osVersion || "unknown"}`);
 console.log(`ANDROID_QA package=${packageSummary}`);
+
+if (!packageInstalled) {
+  console.log("ANDROID_QA result=authorized device missing TTC package");
+  if (requireDevice) process.exit(1);
+  process.exit(0);
+}
+
 console.log("ANDROID_QA result=authorized device ready for private route QA");

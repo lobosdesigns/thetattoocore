@@ -201,7 +201,8 @@ For a repo-safe status summary from this machine, run:
 npm.cmd run qa:android-device
 ```
 
-To make the command fail until an authorized device is visible, run:
+To make the command fail until an authorized device is visible and the TTC
+package is installed for the build under review, run:
 
 ```powershell
 npm.cmd run qa:android-device -- --require-device
@@ -217,11 +218,12 @@ $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
 & $adb shell am start -W -a android.intent.action.VIEW -d "https://thetattoocore.com/login"
 ```
 
-If `adb devices -l` is empty, says `unauthorized`, or shows a different device
-state, record `Android automation not yet available` in the private handoff and
-do not count it as a passing Android console/log review. Enable USB debugging,
-accept the device authorization prompt, confirm the Play-installed build, then
-rerun the probe before capturing route, login, DM, notification, checkout-return,
-and store-screenshot evidence.
+If `adb devices -l` is empty, says `unauthorized`, shows a different device
+state, or the probe reports `authorized device missing TTC package`, record
+`Android automation not yet available` in the private handoff and do not count it
+as a passing Android console/log review. Enable USB debugging, accept the device
+authorization prompt, install or confirm the Play-installed build, then rerun the
+probe before capturing route, login, DM, notification, checkout-return, and
+store-screenshot evidence.
 
 Repo-safe summary fields are limited to platform, release channel, version/build, date, device model, and pass/fail status. Keep tester secrets, private contact details, account identifiers, and raw console screenshots private.

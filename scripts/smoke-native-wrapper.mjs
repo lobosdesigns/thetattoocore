@@ -20,7 +20,9 @@ const files = {
   gitignore: ".gitignore",
   mobileRunbook: "docs/MOBILE_APP_SUBMISSION_RUNBOOK.md",
   nativePrep: "docs/NATIVE_WRAPPER_PREP.md",
+  realDeviceQa: "docs/REAL_DEVICE_QA_CHECKLIST.md",
   readiness: "docs/APP_STORE_READINESS.md",
+  androidDeviceProbe: "scripts/android-device-qa-probe.mjs",
   packageJson: `${wrapperRoot}/package.json`,
   readme: `${wrapperRoot}/README.md`,
   webFallback: `${wrapperRoot}/www/index.html`,
@@ -219,6 +221,18 @@ const checks = [
       source.readme.includes("Push prompts: off") &&
       source.mobileRunbook.includes("Firebase Cloud Messaging") &&
       source.mobileRunbook.includes("Do not request native notification permission"),
+  },
+  {
+    label: "Android connected-device probe requires installed TTC package for route QA",
+    ok:
+      source.androidDeviceProbe.includes("let packageInstalled = false") &&
+      source.androidDeviceProbe.includes("packageInstalled = true") &&
+      source.androidDeviceProbe.includes("ANDROID_QA result=authorized device missing TTC package") &&
+      source.androidDeviceProbe.includes("if (requireDevice) process.exit(1)") &&
+      source.realDeviceQa.includes("authorized device is visible and the TTC") &&
+      source.realDeviceQa.includes("package is installed for the build under review") &&
+      source.realDeviceQa.includes("authorized device missing TTC package") &&
+      source.realDeviceQa.includes("install or confirm the Play-installed build"),
   },
   {
     label: "native push plan keeps Firebase gated behind app config and device evidence",
