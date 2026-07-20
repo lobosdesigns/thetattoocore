@@ -813,8 +813,10 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("## Submission Blocker Matrix") &&
       docs["docs/APP_STORE_READINESS.md"].includes("## Current Store Console Snapshot") &&
       docs["docs/APP_STORE_READINESS.md"].includes("| Surface | Repo-safe status | Next action | Private evidence location |") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("| Apple App Store Connect | TestFlight internal build exists; public submission not ready.") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("| Google Play Console | Internal testing release exists; production review not ready.") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("| Apple App Store Connect | TestFlight internal build and reviewer account exist; public submission not ready.") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("| Google Play Console | Internal testing release and reviewer account exist; production review not ready.") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("final reviewer access validation for the selected build") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("final reviewer access validation for the selected release track") &&
       docs["docs/APP_STORE_READINESS.md"].includes("| Payments | Checkout and webhook code is guarded; live-money release is not cleared.") &&
       docs["docs/APP_STORE_READINESS.md"].includes("| Native push | Web push display/storage is prepared; native Firebase/FCM delivery is planned but not enabled.") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private release handoff only") &&
