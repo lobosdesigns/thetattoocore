@@ -101,6 +101,13 @@
     },
     {
       "form_factor": "narrow",
+      "label": "TheTattooCore payout readiness preview",
+      "sizes": "540x960",
+      "src": "/screenshots/mobile-payout-safe.png",
+      "type": "image/png"
+    },
+    {
+      "form_factor": "narrow",
       "label": "TheTattooCore Help Center preview",
       "sizes": "540x960",
       "src": "/screenshots/mobile-help-support.png",

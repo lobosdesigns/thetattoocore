@@ -855,6 +855,7 @@ export const helpArticles = [
     ],
     tutorialMedia: [
       {
+        assetSrc: "/screenshots/mobile-payout-safe.png",
         description:
           "Show the Settings seller payout card, readiness chips, and secure setup button without exposing private payout details.",
         kind: "screenshot",

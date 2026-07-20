@@ -260,6 +260,25 @@ ${pill({ label: "Submit for review", w: 152, x: 70, y: 668 })}
 ${pill({ label: "Credit applied", w: 128, x: 238, y: 668 })}
 ${bottomNav()}
 `),
+  "mobile-payout-safe.png": header(`
+${columns("Merch")}
+${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}
+${text({ body: "Payout Readiness", size: 30, weight: 900, x: 52, y: 170 })}
+${text({ body: "Seller setup stays private and guided.", color: "#6f5e4c", size: 15, weight: 600, x: 52, y: 202 })}
+${rounded({ fill: "#f6f2eb", h: 86, r: 10, w: 436, x: 52, y: 244 })}
+${text({ body: "Profile and 18+ status", size: 16, weight: 900, x: 76, y: 282 })}
+${text({ body: "Complete before seller tools open.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 306 })}
+${rounded({ fill: "#f6f2eb", h: 86, r: 10, w: 436, x: 52, y: 356 })}
+${text({ body: "Verification and product review", size: 16, weight: 900, x: 76, y: 394 })}
+${text({ body: "Products stay closed until ready.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 418 })}
+${rounded({ fill: "#f4ead8", h: 118, r: 10, stroke: "#e0c27a", w: 436, x: 52, y: 486 })}
+${text({ body: "Secure payout setup", color: "#7b5a15", size: 18, weight: 900, x: 76, y: 526 })}
+${text({ body: "Do not share payout credentials in", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 554 })}
+${text({ body: "messages, comments, or screenshots.", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 576 })}
+${pill({ label: "Setup status", w: 126, x: 70, y: 668 })}
+${pill({ label: "Help guide", w: 112, x: 212, y: 668 })}
+${bottomNav()}
+`),
   "mobile-merch-safe.png": header(`
 ${columns("Merch")}
 ${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}
