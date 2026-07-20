@@ -167,7 +167,7 @@ const checks = [
       source.nativePrep.includes("Google Play app-signing certificate fingerprint") &&
       source.nativePrep.includes("`/.well-known/apple-app-site-association`") &&
       source.nativePrep.includes("Associated Domains capability") &&
-      source.nativePrep.includes("profile, post, Gossip, Stuff, Gigs, Merch, booking, Support, Privacy, and Terms links") &&
+      source.nativePrep.includes("profile, post, Story, Gossip, Stuff, Gigs, Merch, booking, Support, Privacy, and Terms links") &&
       source.nativePrep.includes("Do not treat URL scheme handling, simulator-only checks, browser-sized mobile QA") &&
       source.nativePrep.includes("Do not commit signing") &&
       source.mobileRunbook.includes("Verified app-link and universal-link proof should use the matrix") &&
@@ -229,9 +229,20 @@ const checks = [
       source.nativePrep.includes("per-device opt-out, quiet hours, and notification-category preferences") &&
       source.nativePrep.includes("notification tap routing") &&
       source.nativePrep.includes("Enable Firebase/FCM notification delivery only after") &&
+      source.nativePrep.includes("## Native Push Private Evidence Matrix") &&
+      source.nativePrep.includes("| Firebase project | Project exists for TheTattooCore") &&
+      source.nativePrep.includes("| Android app config | Android app config file added only to the private build environment") &&
+      source.nativePrep.includes("| iOS app config | iOS app config file added only on the Mac/Xcode build path") &&
+      source.nativePrep.includes("| Device token registration | Signed-in Android and iOS devices register and refresh tokens") &&
+      source.nativePrep.includes("| Delivery and tap routing | Alerts deliver for the tested categories") &&
+      source.nativePrep.includes("| Preference controls | Per-device opt-out, quiet hours, and category preferences stop delivery") &&
+      source.nativePrep.includes("no project IDs, sender IDs, API keys, or console screenshots") &&
+      source.nativePrep.includes("Do not claim native push support in store metadata") &&
       source.mobileRunbook.includes("Firebase project, native app config files") &&
       source.mobileRunbook.includes("Android and iOS device-token registration") &&
-      source.mobileRunbook.includes("alert delivery, notification tap routing, opt-out"),
+      source.mobileRunbook.includes("alert delivery, notification tap routing, opt-out") &&
+      source.mobileRunbook.includes("Use the Native Push Private Evidence Matrix") &&
+      source.mobileRunbook.includes("Keep project IDs, sender IDs, API keys, app config files, device tokens, notification payloads, signing details, and console screenshots in the private release handoff only"),
   },
   {
     label: "native push config and dependencies stay gated before device evidence",

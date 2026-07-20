@@ -819,6 +819,7 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("final reviewer access validation for the selected release track") &&
       docs["docs/APP_STORE_READINESS.md"].includes("| Payments | Checkout and webhook code is guarded; live-money release is not cleared.") &&
       docs["docs/APP_STORE_READINESS.md"].includes("| Native push | Web push display/storage is prepared; native Firebase/FCM delivery is planned but not enabled.") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Complete the Native Push Private Evidence Matrix") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private release handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private payment handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private native QA handoff only") &&
@@ -846,6 +847,21 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("Native wrapper") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Android API 36") &&
       docs["docs/APP_STORE_READINESS.md"].includes("app-link association files"),
+  },
+  {
+    label: "native push setup evidence stays private and route-testable",
+    ok:
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("## Native Push Private Evidence Matrix") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Firebase project | Project exists for TheTattooCore") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Android app config | Android app config file added only to the private build environment") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| iOS app config | iOS app config file added only on the Mac/Xcode build path") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Device token registration | Signed-in Android and iOS devices register and refresh tokens") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Delivery and tap routing | Alerts deliver for the tested categories") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Preference controls | Per-device opt-out, quiet hours, and category preferences stop delivery") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("no project IDs, sender IDs, API keys, or console screenshots") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Do not claim native push support in store metadata") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Use the Native Push Private Evidence Matrix") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Keep project IDs, sender IDs, API keys, app config files, device tokens, notification payloads, signing details, and console screenshots in the private release handoff only"),
   },
   {
     label: "full verification keeps focused DM guards in the chain",

@@ -105,6 +105,7 @@ Support:
 - Do not request native notification permission or claim native push support in store copy until Android and iOS device-token registration, alert delivery, notification tap routing, opt-out, quiet hours, and category preferences have evidence.
 - Store device tokens separately from profile preferences.
 - Respect quiet hours, category preferences, and per-device opt-out before sending native push.
+- Use the Native Push Private Evidence Matrix in `docs/NATIVE_WRAPPER_PREP.md` while setting up Firebase/FCM. Keep project IDs, sender IDs, API keys, app config files, device tokens, notification payloads, signing details, and console screenshots in the private release handoff only.
 
 ## Store Assets
 

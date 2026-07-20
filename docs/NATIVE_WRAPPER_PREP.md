@@ -35,6 +35,24 @@ Use this before creating Android or iOS wrapper projects. The goal is a thin, po
 - Keep push prompts off until device-token registration, per-device opt-out, quiet hours, and notification-category preferences are connected to the signed-in account.
 - Archive real-device evidence for Android and iOS notification permission prompts, token registration, alert delivery, notification tap routing, and opt-out before claiming native push support in store copy.
 
+## Native Push Private Evidence Matrix
+
+Use this matrix while setting up Firebase/FCM so native alerts can move from
+planned to tested without committing app config files, sender identifiers,
+console screenshots, device tokens, signing details, or tester account data.
+
+| Step | Private evidence to capture | Repo-safe result |
+| --- | --- | --- |
+| Firebase project | Project exists for TheTattooCore with Android and iOS apps registered for `com.thetattoocore.app`. | `pending`, `created`, or `needs retry`; no project IDs, sender IDs, API keys, or console screenshots. |
+| Android app config | Android app config file added only to the private build environment and excluded from git. | Record package name, release track, build version, and pass/fail only. |
+| iOS app config | iOS app config file added only on the Mac/Xcode build path after bundle ID, team, signing, and notification capability are confirmed. | Record bundle ID, TestFlight build, device date, and pass/fail only; no team IDs or provisioning details. |
+| Device token registration | Signed-in Android and iOS devices register and refresh tokens without storing tokens in repo notes. | Record platform, build, tester alias, preference state, and pass/fail only. |
+| Delivery and tap routing | Alerts deliver for the tested categories and open the matching in-app route. | Record category, route family, device, date, and pass/fail only; keep raw notification payloads private. |
+| Preference controls | Per-device opt-out, quiet hours, and category preferences stop delivery as expected. | Record tested preference, platform, build, and pass/fail only. |
+
+Do not claim native push support in store metadata until every row has a private
+pass for both Android and iOS on the submitted builds.
+
 ## Store Review Safety
 
 - The app remains 18+.
@@ -84,8 +102,8 @@ console screenshots, tester account details, or raw device logs.
 
 | Platform | Association file | Native entitlement or manifest proof | Device proof | Repo-safe result |
 | --- | --- | --- | --- | --- |
-| Android | `/.well-known/assetlinks.json` published on `thetattoocore.com` and `www.thetattoocore.com`, using the Google Play app-signing certificate fingerprint for `com.thetattoocore.app`. | Release manifest declares HTTPS app links for the public TTC routes and the signed bundle installed from the intended Play testing track. | A real Android device opens profile, post, Gossip, Stuff, Gigs, Merch, booking, Support, Privacy, and Terms links inside the app without a chooser or browser bounce. | Record platform, build/version, release track, test date, device model, route set, and pass/fail only. |
-| iOS | `/.well-known/apple-app-site-association` published on `thetattoocore.com` and `www.thetattoocore.com`, using the final Apple team/app identifier for `com.thetattoocore.app`. | Associated Domains capability is present in the provisioning profile and app entitlements for the submitted TestFlight/App Store build. | A real iPhone/TestFlight device opens profile, post, Gossip, Stuff, Gigs, Merch, booking, Support, Privacy, and Terms links inside the app without Safari bounce. | Record platform, build/version, TestFlight group, test date, device model, route set, and pass/fail only. |
+| Android | `/.well-known/assetlinks.json` published on `thetattoocore.com` and `www.thetattoocore.com`, using the Google Play app-signing certificate fingerprint for `com.thetattoocore.app`. | Release manifest declares HTTPS app links for the public TTC routes and the signed bundle installed from the intended Play testing track. | A real Android device opens profile, post, Story, Gossip, Stuff, Gigs, Merch, booking, Support, Privacy, and Terms links inside the app without a chooser or browser bounce. | Record platform, build/version, release track, test date, device model, route set, and pass/fail only. |
+| iOS | `/.well-known/apple-app-site-association` published on `thetattoocore.com` and `www.thetattoocore.com`, using the final Apple team/app identifier for `com.thetattoocore.app`. | Associated Domains capability is present in the provisioning profile and app entitlements for the submitted TestFlight/App Store build. | A real iPhone/TestFlight device opens profile, post, Story, Gossip, Stuff, Gigs, Merch, booking, Support, Privacy, and Terms links inside the app without Safari bounce. | Record platform, build/version, TestFlight group, test date, device model, route set, and pass/fail only. |
 
 Do not treat URL scheme handling, simulator-only checks, browser-sized mobile QA,
 or unverified association files as public-release proof for app links.
