@@ -139,12 +139,7 @@ async function createBookingCheckoutSession(
     | { error?: { message?: string } };
 
   if (!response.ok || !("id" in session)) {
-    const message =
-      "error" in session && session.error?.message
-        ? session.error.message
-        : "Booking checkout could not open.";
-
-    throw new Error(message);
+    throw new Error("Booking checkout could not open.");
   }
 
   return session;

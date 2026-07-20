@@ -135,12 +135,7 @@ async function createAdCheckoutSession({
     | { error?: { message?: string } };
 
   if (!response.ok || !("id" in session)) {
-    const message =
-      "error" in session && session.error?.message
-        ? session.error.message
-        : "Checkout could not open for this ad.";
-
-    throw new Error(message);
+    throw new Error("Checkout could not open for this ad.");
   }
 
   return session;

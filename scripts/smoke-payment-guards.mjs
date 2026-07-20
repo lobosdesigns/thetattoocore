@@ -336,12 +336,21 @@ checks.push({
   ok:
     adCheckout.includes('console.error("Ad checkout session creation failed.", error)') &&
     adCheckout.includes('"Checkout could not open for this ad. Please try again."') &&
+    adCheckout.includes('throw new Error("Checkout could not open for this ad.")') &&
+    !adCheckout.includes("session.error?.message") &&
+    !adCheckout.includes("throw new Error(message)") &&
     !adCheckout.includes('error instanceof Error ? error.message : "Checkout could not open for this ad."') &&
     bookingCheckout.includes('console.error("Booking checkout session creation failed.", error)') &&
     bookingCheckout.includes('"Booking checkout could not open. Please try again."') &&
+    bookingCheckout.includes('throw new Error("Booking checkout could not open.")') &&
+    !bookingCheckout.includes("session.error?.message") &&
+    !bookingCheckout.includes("throw new Error(message)") &&
     !bookingCheckout.includes('error instanceof Error ? error.message : "Booking checkout could not open."') &&
     merchCheckout.includes('console.error("Merch checkout session creation failed.", error)') &&
     merchCheckout.includes('"Checkout could not open. Please try again."') &&
+    merchCheckout.includes('throw new Error("Checkout could not open.")') &&
+    !merchCheckout.includes("session.error?.message") &&
+    !merchCheckout.includes("throw new Error(message)") &&
     !merchCheckout.includes('error instanceof Error ? error.message : "Checkout could not open."'),
 });
 checks.push({
