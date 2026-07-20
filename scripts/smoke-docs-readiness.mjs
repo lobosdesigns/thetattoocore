@@ -28,6 +28,21 @@ const helpCenterData = readFileSync("src/lib/help-center.ts", "utf8");
 const helpShortClipBlocks = [...helpCenterData.matchAll(/\{[^{}]*kind: "short_clip"[^{}]*\}/gs)].map(
   ([block]) => block,
 );
+const helpTutorialAssetPaths = [
+  ...new Set(
+    [...helpCenterData.matchAll(/assetSrc: "(\/(?:screenshots|tutorial-clips)\/[^"]+)"/g)].map(
+      ([, assetSrc]) => `public${assetSrc}`,
+    ),
+  ),
+];
+const isNonEmptyHelpTutorialAsset = (assetPath) => {
+  if (!existsSync(assetPath)) {
+    return false;
+  }
+
+  const minimumSize = assetPath.endsWith(".mp4") ? 50_000 : 10_000;
+  return statSync(assetPath).size > minimumSize;
+};
 const helpSearch = readFileSync("src/app/help/help-center-search.tsx", "utf8");
 const helpActions = readFileSync("src/app/help/actions.ts", "utf8");
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
@@ -506,6 +521,8 @@ const checks = [
       statSync(safeProfilePhotoClipPath).size > 50_000 &&
       helpShortClipBlocks.length >= 11 &&
       helpShortClipBlocks.every((block) => block.includes("assetSrc:")) &&
+      helpTutorialAssetPaths.length >= 25 &&
+      helpTutorialAssetPaths.every(isNonEmptyHelpTutorialAsset) &&
       helpCenterData.includes("Admin beta go/no-go") &&
       helpCenterData.includes("Two-user DM and notification pass") &&
       helpCenterData.includes("Booking request to calendar") &&
