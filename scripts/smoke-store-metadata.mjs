@@ -276,14 +276,17 @@ const checks = [
       source.readme.includes("do not use third-party tattoo art, music, logos, private user content, or payment/account screenshots") &&
       source.readme.includes("App Store pricing handoff: set the v1 app price to free") &&
       source.readme.includes("Google Play category handoff: app category is `Social`") &&
-      source.readme.includes("Reviewer credential status: created, validated, and stored only in the store-review console fields") &&
+      source.readme.includes("Reviewer account status: test account created and sign-in validated") &&
+      source.readme.includes("Final reviewer access status: confirm the selected Apple build and Google release track") &&
       source.readme.includes("Screenshot upload status: use upload-ready no-alpha PNG derivatives") &&
       source.readme.includes("Contact phone: keep console-only/private") &&
       source.readme.includes("## Private Console Evidence Template") &&
       source.readme.includes("| Build selection | Apple build number, Google release track") &&
       source.readme.includes("| Google Play closed testing | Tester list or Google Group selection") &&
       source.readme.includes("14-day continuous opt-in window if production access requires it") &&
-      source.readme.includes("| Reviewer access | Reviewer test account email") &&
+      source.readme.includes("| Reviewer account | Test account creation, email-confirmed sign-in") &&
+      source.readme.includes("| Final reviewer access | Selected Apple build and Google release track reviewer sign-in details") &&
+      source.readme.includes("`pending`, `validated for selected build/track`, or `needs retry`") &&
       source.readme.includes("| Contact details | Support email, support URL, privacy URL") &&
       source.readme.includes("| Screenshot upload | App Store iPhone/iPad validation") &&
       source.readme.includes("| Category and pricing | App Store categories, Google Play category") &&
@@ -300,6 +303,10 @@ const checks = [
       source.readiness.includes("Apple still needs 13-inch iPad screenshot upload, primary category, Content Rights, App Privacy/Privacy Policy URL, pricing, age-rating answers, Accessibility Nutrition Labels, and final submission validation") &&
       source.readiness.includes("age/content rating, Accessibility Nutrition Labels, Google Play closed-test tester opt-in/duration evidence if required, and final console validation") &&
       source.readiness.includes("Google Play still needs the final content-rating summary/save handoff, current Data Safety review, and any required closed-test production-access evidence") &&
+      source.readiness.includes("TestFlight internal build and reviewer account exist; public submission not ready") &&
+      source.readiness.includes("Internal testing release and reviewer account exist; production review not ready") &&
+      source.readiness.includes("final reviewer access validation for the selected build") &&
+      source.readiness.includes("final reviewer access validation for the selected release track") &&
       source.readiness.includes("Google Play closed-test tester opt-in/duration evidence if required") &&
       source.readiness.includes("build selection, reviewer test access, developer/legal entity, reviewer contact phone") &&
       source.readiness.includes("Do not store reviewer passwords, private phone numbers, account-owner data, or console identifiers in repo docs") &&

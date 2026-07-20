@@ -25,7 +25,8 @@ Keep private reviewer credentials and phone details in Apple/Google console fiel
 - App Store Content Rights handoff: confirm TTC has rights or permission for app metadata, icons, generated screenshots, and any sample content shown in review assets; do not use third-party tattoo art, music, logos, private user content, or payment/account screenshots.
 - App Store pricing handoff: set the v1 app price to free unless final legal/payment review explicitly approves a different app-price or in-app purchase plan.
 - Google Play category handoff: app category is `Social`.
-- Reviewer credential status: created, validated, and stored only in the store-review console fields.
+- Reviewer account status: test account created and sign-in validated; keep the email and secret in private handoff or console-only fields.
+- Final reviewer access status: confirm the selected Apple build and Google release track each have current reviewer sign-in details, access notes, and validation result before public submission.
 - Screenshot upload status: use upload-ready no-alpha PNG derivatives from `native/store-metadata/generated/`, then confirm upload validation in each console.
 - Contact phone: keep console-only/private; do not add it to public screenshots, store description text, or support/legal pages.
 
@@ -37,7 +38,8 @@ Keep completed evidence in the private release handoff, not in this repo. Store 
 | --- | --- | --- |
 | Build selection | Apple build number, Google release track, version code/name, and selected build screenshot. | `pending`, `passed`, or `needs retry`; no certificates, account IDs, or console identifiers. |
 | Google Play closed testing | Tester list or Google Group selection, opted-in tester count, 14-day continuous opt-in window if production access requires it, closed-test feedback summary, and production-access application answers. | Record only closed-test status, date range, and pass/fail summary; keep tester emails, group membership, console screenshots, and application answers private. |
-| Reviewer access | Reviewer test account email, sign-in secret, access notes if any, and validation screenshot. | `validated in console`; never commit secrets, access codes, or private phone details. |
+| Reviewer account | Test account creation, email-confirmed sign-in, role/access scope, and validation screenshot. | `created`, `validated`, or `needs retry`; never commit secrets, access codes, or private phone details. |
+| Final reviewer access | Selected Apple build and Google release track reviewer sign-in details, access notes, and store-review validation result. | `pending`, `validated for selected build/track`, or `needs retry`; no passwords, login codes, private phone details, or console identifiers. |
 | Contact details | Support email, support URL, privacy URL, terms URL, and console-only contact phone. | Confirm company support surfaces only; do not store private phone numbers or owner personal contact data. |
 | Screenshot upload | App Store iPhone/iPad validation, Google Play phone screenshots, feature graphic, and rejection/error screenshots if any. | Note asset set and result only; do not commit store-console screenshots with private account data. |
 | Category and pricing | App Store categories, Google Play category, v1 free pricing, and availability selections. | Record category/pricing choices only after final console save. |
