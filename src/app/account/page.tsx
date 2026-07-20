@@ -164,6 +164,42 @@ function limitParam(value: string | string[] | undefined) {
   return Math.max(orderPageSize, Math.min(250, parsed));
 }
 
+const unsafeAccountMessageTerms = [
+  "api key",
+  "cloudflare",
+  "database",
+  "firebase",
+  "hostgator",
+  "payment provider",
+  "provider",
+  "secret",
+  "stripe",
+  "supabase",
+  "webhook",
+  "worker",
+];
+
+function safeAccountStatusMessage(value: string | string[] | undefined) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+  const text = String(rawValue ?? "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 220);
+
+  if (!text) return null;
+
+  const lowerText = text.toLowerCase();
+  const hasUnsafeTerm = unsafeAccountMessageTerms.some((term) =>
+    lowerText.includes(term),
+  );
+
+  if (hasUnsafeTerm) {
+    return "Account update could not be shown. Please try again or contact Support.";
+  }
+
+  return text;
+}
+
 function bookingStatusParam(value: string | string[] | undefined) {
   const rawValue = Array.isArray(value) ? value[0] : value;
 
@@ -553,13 +589,14 @@ export default async function AccountPage({
     ads?: string | string[];
     booking_status?: string | string[];
     bookings?: string | string[];
-    message?: string;
+    message?: string | string[];
     orders?: string | string[];
     payout_issue?: string | string[];
     payout_status?: string | string[];
   }>;
 }) {
   const params = await searchParams;
+  const accountMessage = safeAccountStatusMessage(params.message);
   const adLimit = limitParam(params.ads);
   const bookingLimit = limitParam(params.bookings);
   const bookingStatusFilter = bookingStatusParam(params.booking_status);
@@ -1065,7 +1102,7 @@ export default async function AccountPage({
                   ? "Setup link expired"
                   : "Payout setup needs attention",
         body:
-          params.message ??
+          accountMessage ??
           (payoutStatusParam === "complete"
             ? "Seller payout setup is ready."
             : payoutStatusParam === "needs_more"
@@ -1119,9 +1156,9 @@ export default async function AccountPage({
           </div>
         </div>
 
-        {params.message && !payoutSetupNotice ? (
+        {accountMessage && !payoutSetupNotice ? (
           <p className="ttc-surface mb-4 rounded-md border px-4 py-3 text-sm font-medium">
-            {params.message}
+            {accountMessage}
           </p>
         ) : null}
 

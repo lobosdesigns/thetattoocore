@@ -644,6 +644,18 @@ const checks = [
       accountPage.includes('href="/help/merch-products-orders"'),
   },
   {
+    label: "account status messages hide raw query provider details",
+    ok:
+      accountPage.includes("function safeAccountStatusMessage") &&
+      accountPage.includes("unsafeAccountMessageTerms") &&
+      accountPage.includes('"Account update could not be shown. Please try again or contact Support."') &&
+      accountPage.includes("const accountMessage = safeAccountStatusMessage(params.message)") &&
+      accountPage.includes("accountMessage && !payoutSetupNotice") &&
+      accountPage.includes("accountMessage ??") &&
+      !accountPage.includes("{params.message}") &&
+      !accountPage.includes("params.message ??"),
+  },
+  {
     label: "account page keeps tabbed settings workspace and role-aware pro tools",
     ok:
       accountPage.includes("const accountWorkspaceTabs: AccountSettingsTab[] = [") &&
