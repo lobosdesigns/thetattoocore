@@ -189,6 +189,7 @@ const checks = [
       docs["docs/SCREENSHOT_PREP.md"].includes("feature graphic") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("matches the submitted build after final metadata") &&
       screenshotGenerator.includes("mobile-login-signup.png") &&
+      screenshotGenerator.includes("mobile-merch-safe.png") &&
       screenshotGenerator.includes("mobile-help-support.png") &&
       screenshotGenerator.includes("Visible nudity is not allowed"),
   },
@@ -381,6 +382,7 @@ const checks = [
       docs["docs/PRODUCT_PLAN.md"].includes("getting-started guide") &&
       docs["docs/PRODUCT_PLAN.md"].includes("screenshots, short clips where useful") &&
       docs["docs/PRODUCT_PLAN.md"].includes("Help Center needs a media pass before broader beta") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("Merch setup") &&
       docs["docs/PRODUCT_PLAN.md"].includes("setting appointments") &&
       docs["docs/PRODUCT_PLAN.md"].includes("creating ads") &&
       docs["docs/PRODUCT_PLAN.md"].includes("setting up Merch products") &&
@@ -422,6 +424,7 @@ const checks = [
       helpCenterData.includes('assetSrc: "/screenshots/mobile-profile-search.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-verification-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-booking-safe.png"') &&
+      helpCenterData.includes('assetSrc: "/screenshots/mobile-merch-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-4u-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-stories-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-gossip-safe.png"') &&
@@ -439,6 +442,7 @@ const checks = [
       helpCenterData.includes("Buyer order support path") &&
       helpCenterData.includes("Seller payouts and payment safety") &&
       helpCenterData.includes("Should I send payout details to support?") &&
+      !helpCenterData.includes("hosted account flow") &&
       helpCenterData.includes("Stories rail preview") &&
       helpCenterData.includes("Gossip discussion preview") &&
       helpCenterData.includes("Stories, DMs, and safety controls") &&

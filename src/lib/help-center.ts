@@ -697,7 +697,7 @@ export const helpArticles = [
       "Add a title, description, price, clear product media, and a return/refund note buyers can understand.",
       "If the product ships, add the ship-from city and state/region plus fulfillment notes with timing, pickup, made-to-order, or handoff details.",
       "Submit the product for review before it appears publicly.",
-      "Finish seller payout setup from the hosted account flow before order payouts are expected; checkout can remain closed until seller readiness is complete.",
+      "Finish seller payout setup through the secure payout setup flow before order payouts are expected; checkout can remain closed until seller readiness is complete.",
       "Watch orders, fulfillment status, refund requests, and support questions from Settings.",
       "For each paid order, use the seller order card to review the private shipping address, then mark the item fulfilled only after shipping, pickup, or handoff is ready.",
       "Add tracking carrier, tracking number, or a tracking link when available. If there is no tracking, use a clear fulfillment note before marking the order complete.",
@@ -705,6 +705,7 @@ export const helpArticles = [
     ],
     tutorialMedia: [
       {
+        assetSrc: "/screenshots/mobile-merch-safe.png",
         description:
           "Show product title, media, price, return note, fulfillment note, and review status without real buyer data.",
         kind: "screenshot",

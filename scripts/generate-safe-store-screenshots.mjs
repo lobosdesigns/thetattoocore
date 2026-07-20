@@ -239,6 +239,25 @@ ${pill({ label: "Calendar file", w: 124, x: 70, y: 632 })}
 ${pill({ label: "Refund review", w: 136, x: 210, y: 632 })}
 ${bottomNav()}
 `),
+  "mobile-merch-safe.png": header(`
+${columns("Merch")}
+${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}
+${text({ body: "Merch Setup", size: 31, weight: 900, x: 52, y: 170 })}
+${text({ body: "Safe fan-facing products stay review-controlled.", color: "#6f5e4c", size: 15, weight: 600, x: 52, y: 202 })}
+${rounded({ fill: "#f6f2eb", h: 64, r: 8, w: 436, x: 52, y: 242 })}
+${text({ body: "Product title and clear sample media", size: 16, weight: 900, x: 76, y: 282 })}
+${rounded({ fill: "#f6f2eb", h: 64, r: 8, w: 436, x: 52, y: 326 })}
+${text({ body: "Price, inventory, and category", color: "#7b6a58", size: 15, weight: 800, x: 76, y: 366 })}
+${rounded({ fill: "#f6f2eb", h: 84, r: 8, w: 436, x: 52, y: 410 })}
+${text({ body: "Fulfillment note", size: 16, weight: 900, x: 76, y: 448 })}
+${text({ body: "Shipping, pickup, or handoff timing.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 472 })}
+${rounded({ fill: "#f4ead8", h: 112, r: 10, stroke: "#e0c27a", w: 436, x: 52, y: 526 })}
+${text({ body: "Review-controlled checkout", color: "#7b5a15", size: 18, weight: 900, x: 76, y: 568 })}
+${text({ body: "No buyer addresses or real payment data.", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 596 })}
+${pill({ label: "Submit for review", w: 152, x: 70, y: 668 })}
+${pill({ label: "Help guide", w: 112, x: 238, y: 668 })}
+${bottomNav()}
+`),
   "mobile-help-support.png": header(`
 ${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}
 ${text({ body: "Help Center", size: 32, weight: 900, x: 52, y: 170 })}

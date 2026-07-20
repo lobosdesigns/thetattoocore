@@ -87,6 +87,13 @@
     },
     {
       "form_factor": "narrow",
+      "label": "TheTattooCore Merch setup preview",
+      "sizes": "540x960",
+      "src": "/screenshots/mobile-merch-safe.png",
+      "type": "image/png"
+    },
+    {
+      "form_factor": "narrow",
       "label": "TheTattooCore Help Center preview",
       "sizes": "540x960",
       "src": "/screenshots/mobile-help-support.png",
