@@ -219,6 +219,10 @@ const checks = [
       source.readme.includes("support@thetattoocore.com") &&
       source.readme.includes("Native permissions at first beta: none") &&
       source.readme.includes("Push prompts: off") &&
+      source.readme.includes("If the probe reports `devices_total=0`") &&
+      source.readme.includes("set USB mode") &&
+      source.readme.includes("accept the computer authorization prompt") &&
+      source.readme.includes("authorized device missing TTC package") &&
       source.mobileRunbook.includes("Firebase Cloud Messaging") &&
       source.mobileRunbook.includes("Do not request native notification permission"),
   },
