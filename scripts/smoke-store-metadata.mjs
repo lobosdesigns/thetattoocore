@@ -11,13 +11,29 @@ const files = {
   googleReleaseNotesInternal: "native/store-metadata/google-play/en-US/release-notes-internal.txt",
   googleShort: "native/store-metadata/google-play/en-US/short-description.txt",
   googleTitle: "native/store-metadata/google-play/en-US/title.txt",
+  readiness: "docs/APP_STORE_READINESS.md",
+  dataSafetyPrep: "docs/DATA_SAFETY_PREP.md",
+  screenshotPrep: "docs/SCREENSHOT_PREP.md",
+  storeListingDraft: "docs/STORE_LISTING_DRAFT.md",
   readme: "native/store-metadata/README.md",
   screenshotInventory: "native/store-metadata/screenshot-inventory.md",
 };
 
 const read = (path) => (existsSync(path) ? readFileSync(path, "utf8").trim() : "");
 const source = Object.fromEntries(Object.entries(files).map(([key, path]) => [key, read(path)]));
-const allText = Object.values(source).join("\n").toLowerCase();
+const publicMetadataKeys = [
+  "appleDescription",
+  "appleKeywords",
+  "appleName",
+  "applePromotionalText",
+  "appleSubtitle",
+  "appleWhatsNewInternal",
+  "googleDescription",
+  "googleReleaseNotesInternal",
+  "googleShort",
+  "googleTitle",
+];
+const publicMetadataText = publicMetadataKeys.map((key) => source[key]).join("\n").toLowerCase();
 
 function pngInfo(path) {
   if (!existsSync(path)) return null;
@@ -126,11 +142,11 @@ const checks = [
   },
   {
     label: "store metadata avoids public infrastructure details",
-    ok: blockedTerms.every((term) => !allText.includes(term)),
+    ok: blockedTerms.every((term) => !publicMetadataText.includes(term)),
   },
   {
     label: "store metadata avoids over-promising launch commerce status",
-    ok: blockedOverpromiseTerms.every((term) => !allText.includes(term)),
+    ok: blockedOverpromiseTerms.every((term) => !publicMetadataText.includes(term)),
   },
   {
     label: "store metadata README keeps console handoff fields private and complete",
@@ -160,6 +176,21 @@ const checks = [
       source.readme.includes("| Age/content rating | App Store age rating, Google Play/IARC summary") &&
       source.readme.includes("| Final validation | Console errors cleared") &&
       blockedPrivateEvidenceTerms.every((term) => !source.readme.toLowerCase().includes(term)),
+  },
+  {
+    label: "store readiness docs keep current console blockers guarded",
+    ok:
+      source.readiness.includes("Apple still needs 13-inch iPad screenshot upload, primary category, Content Rights, App Privacy/Privacy Policy URL, pricing, age-rating answers, and final submission validation") &&
+      source.readiness.includes("Google Play still needs the final content-rating summary/save handoff plus current Data Safety review") &&
+      source.readiness.includes("build selection, reviewer test access, developer/legal entity, reviewer contact phone") &&
+      source.readiness.includes("Do not store reviewer passwords, private phone numbers, account-owner data, or console identifiers in repo docs") &&
+      source.dataSafetyPrep.includes("Google Play Data Safety must be completed before closed testing, open testing, or production release") &&
+      source.dataSafetyPrep.includes("Apps active only on Google Play internal testing are currently exempt") &&
+      source.screenshotPrep.includes("Track each store asset set separately") &&
+      source.storeListingDraft.includes("visible nudity is not allowed") &&
+      source.storeListingDraft.includes("No AI art") &&
+      source.storeListingDraft.includes("no scratcher promotion") &&
+      blockedPrivateEvidenceTerms.every((term) => !source.readiness.toLowerCase().includes(term)),
   },
   {
     label: "store screenshot inventory blocks unsafe review images",
