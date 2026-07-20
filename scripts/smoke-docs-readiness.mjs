@@ -48,6 +48,7 @@ const safeStoriesDmsClipPath = "public/tutorial-clips/mobile-stories-dms-safety-
 const safeDmNotificationClipPath = "public/tutorial-clips/mobile-dm-notification-pass-safe.mp4";
 const safeMerchFulfillmentClipPath = "public/tutorial-clips/mobile-merch-fulfillment-safe.mp4";
 const safeBookingCalendarClipPath = "public/tutorial-clips/mobile-booking-calendar-safe.mp4";
+const safeVerificationReviewClipPath = "public/tutorial-clips/mobile-verification-review-safe.mp4";
 const safePrivacyScreenshotPath = "public/screenshots/mobile-privacy-safety-safe.png";
 const safeMerchShortcutScreenshotPath = "public/screenshots/mobile-merch-help-shortcut-safe.png";
 const forbiddenContactSnippets = [
@@ -476,11 +477,15 @@ const checks = [
       helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-booking-calendar-safe.mp4"') &&
       existsSync(safeBookingCalendarClipPath) &&
       statSync(safeBookingCalendarClipPath).size > 50_000 &&
+      helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-verification-review-safe.mp4"') &&
+      existsSync(safeVerificationReviewClipPath) &&
+      statSync(safeVerificationReviewClipPath).size > 50_000 &&
       helpCenterData.includes("Admin beta go/no-go") &&
       helpCenterData.includes("Two-user DM and notification pass") &&
       helpCenterData.includes("Booking request to calendar") &&
       helpCenterData.includes("Booking setup sections") &&
       helpCenterData.includes("Verification form basics") &&
+      helpCenterData.includes("Submit for review walkthrough") &&
       helpCenterData.includes("Merch product setup") &&
       helpCenterData.includes("Merch guide shortcut") &&
       helpCenterData.includes("Fulfill a Merch order") &&

@@ -481,6 +481,7 @@ export const helpArticles = [
         title: "Verification form basics",
       },
       {
+        assetSrc: "/tutorial-clips/mobile-verification-review-safe.mp4",
         description:
           "Short clip of selecting account type, choosing review type, and submitting a safe dummy document.",
         kind: "short_clip",
