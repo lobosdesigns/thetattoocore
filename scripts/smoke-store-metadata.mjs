@@ -71,6 +71,22 @@ function hasExpectedPngs(paths, expectedCount, width, height) {
   );
 }
 
+function hasExpectedPngsAnySize(paths, expectedCount, sizes) {
+  return (
+    paths.length === expectedCount &&
+    paths.every((path) => {
+      const info = pngInfo(path);
+      return sizes.some(
+        ([width, height]) =>
+          info?.width === width &&
+          info.height === height &&
+          info.colorType !== 4 &&
+          info.colorType !== 6,
+      );
+    })
+  );
+}
+
 function namesFor(paths) {
   return paths.map((path) => basename(path)).sort();
 }
@@ -366,6 +382,9 @@ const checks = [
       source.screenshotInventory.includes("| Google Play feature graphic | Generated TTC-branded 1024 x 500 PNG") &&
       source.screenshotInventory.includes("| App Store iPhone 6.5-inch screenshots | Generated safe iPhone derivatives") &&
       source.screenshotInventory.includes("| App Store 13-inch iPad screenshots | Generated safe iPad derivatives") &&
+      source.screenshotInventory.includes("2064 x 2752 is also accepted by the current 13-inch iPad class") &&
+      source.screenshotPrep.includes("Current Apple 13-inch iPad screenshot validation should accept either 2064 x") &&
+      source.screenshotPrep.includes("2752 or 2048 x 2732 portrait PNG/JPEG files") &&
       source.screenshotInventory.includes("Safe draft only; not submission-ready until real-device capture and Play Console upload validation are recorded privately.") &&
       source.screenshotInventory.includes("Safe draft only; not submission-ready until Play Console feature-graphic validation is recorded privately.") &&
       source.screenshotInventory.includes("Safe draft only; not submission-ready until real-device capture and App Store Connect upload validation are recorded privately.") &&
@@ -406,7 +425,10 @@ const checks = [
     label: "generated App Store screenshots match upload dimensions",
     ok:
       hasExpectedPngs(generatedScreenshots.appStorePhone, 15, 1242, 2688) &&
-      hasExpectedPngs(generatedScreenshots.appStoreIpad, 3, 2048, 2732),
+      hasExpectedPngsAnySize(generatedScreenshots.appStoreIpad, 3, [
+        [2048, 2732],
+        [2064, 2752],
+      ]),
   },
   {
     label: "generated App Store screenshots cover expected safe scenes",

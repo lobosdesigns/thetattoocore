@@ -54,6 +54,9 @@ Track each store asset set separately so one valid upload does not hide another 
 | App Store 13-inch iPad screenshots | iOS build/version, iPad capture source, uploaded file set, and upload validation result. | `pending`, `uploaded`, `needs replacement`, or `validated`. |
 
 - Apple App Store Connect: record the uploaded iPhone 6.5-inch set, 13-inch iPad set, upload validation result, build/version, capture date, and reviewer-safe notes.
+- Current Apple 13-inch iPad screenshot validation should accept either 2064 x
+  2752 or 2048 x 2732 portrait PNG/JPEG files when the app runs on iPad; record
+  which accepted size was uploaded for the submitted build.
 - Google Play Console: record the uploaded phone screenshot set, feature graphic, upload validation result, release track, capture date, and reviewer-safe notes.
 - Confirm every uploaded image still matches the submitted build after final metadata, privacy, age-rating, and payment-status edits.
 - Confirm no uploaded image shows private DMs, license documents, admin queues, real payment data, personal owner contact details, visible infrastructure/provider names, visible nudity, copyrighted tattoo art, or unsafe marketplace examples.

@@ -32,7 +32,9 @@ Upload-ready derivatives generated from the safe mobile set:
   are 1242 x 2688 PNG files with no alpha channel.
 - App Store 13-inch iPad screenshots:
   `native/store-metadata/generated/apple-app-store/ipad-13/*-2048x2732.png`
-  are 3 upload-ready 2048 x 2732 PNG files with no alpha channel.
+  are 3 upload-ready 2048 x 2732 PNG files with no alpha channel. Apple also
+  accepts 2064 x 2752 portrait files for the current 13-inch iPad class; record
+  the accepted size used in the private upload validation packet.
 
 The store metadata smoke guard validates the generated Play phone screenshots,
 Play feature graphic, App Store iPhone 6.5-inch screenshots, and App Store
@@ -46,7 +48,7 @@ expected safe-scene filenames, dimensions, and no-alpha output.
 | Google Play phone screenshots | Generated safe phone derivatives, 15 PNGs, 1080 x 1920, no alpha. | Replace or confirm with real Android internal-test captures for the selected release track and version. | Safe draft only; not submission-ready until real-device capture and Play Console upload validation are recorded privately. |
 | Google Play feature graphic | Generated TTC-branded 1024 x 500 PNG, no alpha. | Confirm final rights-safe feature graphic uploads without private member, payment, or console details. | Safe draft only; not submission-ready until Play Console feature-graphic validation is recorded privately. |
 | App Store iPhone 6.5-inch screenshots | Generated safe iPhone derivatives, 15 PNGs, 1242 x 2688, no alpha. | Replace or confirm with TestFlight build screenshots for the selected iOS build/version. | Safe draft only; not submission-ready until real-device capture and App Store Connect upload validation are recorded privately. |
-| App Store 13-inch iPad screenshots | Generated safe iPad derivatives, 3 PNGs, 2048 x 2732, no alpha. | Upload and validate the required 13-inch iPad set for the selected iOS build/version. | Safe draft only; not submission-ready until App Store Connect iPad upload validation is recorded privately. |
+| App Store 13-inch iPad screenshots | Generated safe iPad derivatives, 3 PNGs, 2048 x 2732, no alpha; 2064 x 2752 is also accepted by the current 13-inch iPad class. | Upload and validate the required 13-inch iPad set for the selected iOS build/version. | Safe draft only; not submission-ready until App Store Connect iPad upload validation is recorded privately. |
 
 These generated draft assets are TTC-branded, rights-safe, and show the current
 main content columns and tutorial surfaces: 4U, Gossip, Stuff, Gigs, Merch,
