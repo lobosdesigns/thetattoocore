@@ -203,6 +203,22 @@ const checks = [
       !actions.includes('result.error.message || "Could not update saved item."'),
   },
   {
+    label: "Gossip and Stuff create actions hide raw backend errors from member redirects",
+    ok:
+      actions.includes('console.error("Gossip post publish failed.", error)') &&
+      actions.includes('"Could not publish Gossip post. Please try again."') &&
+      actions.includes('console.error("Gossip post media attach failed.", mediaError)') &&
+      actions.includes('"Image uploaded but could not attach to the Gossip post. Please try again."') &&
+      actions.includes('console.error("Stuff listing publish failed.", error)') &&
+      actions.includes('"Could not publish Stuff listing. Please try again."') &&
+      actions.includes('console.error("Stuff listing media attach failed.", mediaError)') &&
+      actions.includes('"Media uploaded but could not attach to the Stuff listing. Please try again."') &&
+      !actions.includes('error.message || "Could not publish Gossip post."') &&
+      !actions.includes('mediaError.message ||\n            "Image uploaded but could not attach to the Gossip post."') &&
+      !actions.includes('error.message || "Could not publish Stuff listing."') &&
+      !actions.includes('mediaError.message ||\n            "Media uploaded but could not attach to the Stuff listing."'),
+  },
+  {
     label: "comment media schema is authenticated, image-only, and size-limited",
     ok:
       commentMediaMigration.includes("create table if not exists public.post_comment_media") &&

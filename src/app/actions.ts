@@ -1484,8 +1484,9 @@ export async function createThreadPost(formData: FormData) {
     .single<{ id: string }>();
 
   if (error) {
+    console.error("Gossip post publish failed.", error);
     redirect(
-      homeMessage(error.message || "Could not publish Gossip post.", "threads"),
+      homeMessage("Could not publish Gossip post. Please try again.", "threads"),
     );
   }
 
@@ -1509,10 +1510,10 @@ export async function createThreadPost(formData: FormData) {
     });
 
     if (mediaError) {
+      console.error("Gossip post media attach failed.", mediaError);
       redirect(
         homeMessage(
-          mediaError.message ||
-            "Image uploaded but could not attach to the Gossip post.",
+          "Image uploaded but could not attach to the Gossip post. Please try again.",
           "threads",
         ),
       );
@@ -1681,8 +1682,9 @@ export async function createMarketplaceListing(formData: FormData) {
     .single<{ id: string }>();
 
   if (error) {
+    console.error("Stuff listing publish failed.", error);
     redirect(
-      homeMessage(error.message || "Could not publish Stuff listing.", "marketplace"),
+      homeMessage("Could not publish Stuff listing. Please try again.", "marketplace"),
     );
   }
 
@@ -1706,10 +1708,10 @@ export async function createMarketplaceListing(formData: FormData) {
     });
 
     if (mediaError) {
+      console.error("Stuff listing media attach failed.", mediaError);
       redirect(
         homeMessage(
-          mediaError.message ||
-            "Media uploaded but could not attach to the Stuff listing.",
+          "Media uploaded but could not attach to the Stuff listing. Please try again.",
           "marketplace",
         ),
       );
