@@ -51,6 +51,7 @@ const safeBookingCalendarClipPath = "public/tutorial-clips/mobile-booking-calend
 const safeVerificationReviewClipPath = "public/tutorial-clips/mobile-verification-review-safe.mp4";
 const safeAdsCreditsClipPath = "public/tutorial-clips/mobile-ads-credits-safe.mp4";
 const safeOrderRefundClipPath = "public/tutorial-clips/mobile-order-refund-review-safe.mp4";
+const safePaymentSafetyClipPath = "public/tutorial-clips/mobile-payment-safety-safe.mp4";
 const safePrivacyScreenshotPath = "public/screenshots/mobile-privacy-safety-safe.png";
 const safeMerchShortcutScreenshotPath = "public/screenshots/mobile-merch-help-shortcut-safe.png";
 const forbiddenContactSnippets = [
@@ -488,6 +489,9 @@ const checks = [
       helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-order-refund-review-safe.mp4"') &&
       existsSync(safeOrderRefundClipPath) &&
       statSync(safeOrderRefundClipPath).size > 50_000 &&
+      helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-payment-safety-safe.mp4"') &&
+      existsSync(safePaymentSafetyClipPath) &&
+      statSync(safePaymentSafetyClipPath).size > 50_000 &&
       helpCenterData.includes("Admin beta go/no-go") &&
       helpCenterData.includes("Two-user DM and notification pass") &&
       helpCenterData.includes("Booking request to calendar") &&
@@ -505,6 +509,7 @@ const checks = [
       helpCenterData.includes("Fulfillment and refund review") &&
       helpCenterData.includes("Seller payouts and payment safety") &&
       helpCenterData.includes("Should I send payout details to support?") &&
+      helpCenterData.includes("Payment safety walkthrough") &&
       !helpCenterData.includes("hosted account flow") &&
       helpCenterData.includes("Stories rail preview") &&
       helpCenterData.includes("Gossip discussion preview") &&

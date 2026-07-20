@@ -878,6 +878,7 @@ export const helpArticles = [
         title: "Seller payout readiness",
       },
       {
+        assetSrc: "/tutorial-clips/mobile-payment-safety-safe.mp4",
         description:
           "Short clip of checking product review, payout readiness, order status, and the Help guide before contacting support.",
         kind: "short_clip",
