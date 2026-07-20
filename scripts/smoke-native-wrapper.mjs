@@ -71,8 +71,14 @@ const iosCurrentBuildVersion = iosProjectBuildVersions[0] ?? "";
 const iosBuildVersionsMatch =
   iosProjectBuildVersions.length > 0 &&
   iosProjectBuildVersions.every((version) => version === iosCurrentBuildVersion);
+const iosProjectMarketingVersions = [
+  ...source.iosProject.matchAll(/MARKETING_VERSION = ([^;]+);/g),
+].map((match) => match[1]);
 const iosCurrentMarketingVersion =
-  source.iosProject.match(/MARKETING_VERSION = ([^;]+);/)?.[1] ?? "";
+  iosProjectMarketingVersions[0] ?? "";
+const iosMarketingVersionsMatch =
+  iosProjectMarketingVersions.length > 0 &&
+  iosProjectMarketingVersions.every((version) => version === iosCurrentMarketingVersion);
 const iosCurrentStoreBuild = `${iosCurrentMarketingVersion} (${iosCurrentBuildVersion})`;
 
 const checks = [
@@ -247,11 +253,12 @@ const checks = [
     label: "native iOS build handoff matches checked-in TestFlight version",
     ok:
       iosBuildVersionsMatch &&
-      iosCurrentStoreBuild === "1.0 (3)" &&
+      iosMarketingVersionsMatch &&
+      source.iosUploadChecklist.includes(`Confirm version: \`${iosCurrentMarketingVersion}\``) &&
       source.iosUploadChecklist.includes("Confirm build matches the checked-in Xcode `CURRENT_PROJECT_VERSION`") &&
       source.iosUploadChecklist.includes("App Store Connect/TestFlight build selected for review") &&
-      source.iosUploadChecklist.includes("build `3`") &&
-      source.iosUploadChecklist.includes("build `1.0 (3)`") &&
+      source.iosUploadChecklist.includes(`build \`${iosCurrentBuildVersion}\``) &&
+      source.iosUploadChecklist.includes(`build \`${iosCurrentStoreBuild}\``) &&
       !source.iosUploadChecklist.includes("Confirm build: `1`"),
   },
   {

@@ -43,6 +43,7 @@ In Xcode:
 - Confirm display name: `TheTattooCore`.
 - Confirm version: `1.0`.
 - Confirm build matches the checked-in Xcode `CURRENT_PROJECT_VERSION` and the App Store Connect/TestFlight build selected for review.
+- The native smoke guard derives the checked-in Xcode version/build and verifies this handoff stays aligned with the current TestFlight status line.
 - Confirm login, signup, forgot password, reset password, and email confirmation stay inside the app WebView during the device smoke pass.
 
 ## 4. Archive
