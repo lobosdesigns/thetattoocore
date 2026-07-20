@@ -130,7 +130,7 @@
 - Add SEO-friendly public profile pages and public listing pages, while respecting profile privacy controls.
 - Add `robots.txt`, metadata, and per-route noindex rules before launch. Done for launch with private route disallows/noindex metadata and sitemap entries limited to public-safe profiles, posts, Gossip, Stuff, Gigs, Merch, and support/legal pages. Public smoke tests sample sitemap URLs to catch broken public entries or private-path leaks.
 - Do not expose private messages, private account data, unpublished content, or sensitive/adult content to crawlers. Done for launch with private route noindex and sitemap filtering for public, active, non-sensitive content.
-- Account workspace tabs stay keyboard reachable with arrow, Home, and End navigation so settings do not become a mobile or accessibility dead end.
+- Account workspace and Profile setup tabs stay keyboard reachable with arrow, Home, and End navigation so settings do not become a mobile or accessibility dead end.
 - Security smoke now reports the exact client component files if browser console calls return, so app-review cleanup can be fixed without hunting through the whole app tree.
 - Environment smoke now reports missing, unexpected, or out-of-order production env keys by name, non-placeholder secret-key names only, and live-looking secret pattern categories without values, so release setup drift can be fixed without printing secret material.
 - Provide a public support URL for app-store review, safety reports, privacy help, and account deletion instructions. Done for launch at `/support`.

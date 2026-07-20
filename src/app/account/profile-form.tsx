@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { type KeyboardEvent, useEffect, useState } from "react";
 import { updateProfile } from "./actions";
 import { MediaInput } from "../media-input";
 import { PendingSubmitButton } from "../pending-submit-button";
@@ -174,6 +174,38 @@ export function ProfileForm({
   initialProfile: Partial<Profile> | null;
 }) {
   const [activeTab, setActiveTab] = useState<ProfileTab>("profile");
+  const activateTab = (tab: ProfileTab) => {
+    setActiveTab(tab);
+    window.history.replaceState(null, "", profileHashForTab(tab));
+  };
+  const handleTabKeyDown = (
+    event: KeyboardEvent<HTMLButtonElement>,
+    currentIndex: number,
+  ) => {
+    const lastIndex = profileTabs.length - 1;
+    let nextIndex = currentIndex;
+
+    if (event.key === "ArrowRight") {
+      nextIndex = currentIndex === lastIndex ? 0 : currentIndex + 1;
+    } else if (event.key === "ArrowLeft") {
+      nextIndex = currentIndex === 0 ? lastIndex : currentIndex - 1;
+    } else if (event.key === "Home") {
+      nextIndex = 0;
+    } else if (event.key === "End") {
+      nextIndex = lastIndex;
+    } else {
+      return;
+    }
+
+    const nextTab = profileTabs[nextIndex]?.[0];
+    if (!nextTab) return;
+
+    event.preventDefault();
+    activateTab(nextTab);
+    window.requestAnimationFrame(() => {
+      document.getElementById(`${profilePanelId(nextTab)}-tab`)?.focus();
+    });
+  };
   const enabledNotificationCount = notificationOptions.filter(
     ([name]) => initialProfile?.[name] ?? true,
   ).length;
@@ -210,29 +242,30 @@ export function ProfileForm({
         className="ttc-surface no-scrollbar mb-5 flex gap-2 overflow-x-auto rounded-md border p-2"
         role="tablist"
       >
-        {profileTabs.map(([tab, label]) => {
+        {profileTabs.map(([tab, label], index) => {
           const isActive = activeTab === tab;
 
           return (
-          <button
-            aria-controls={profilePanelId(tab)}
-            aria-selected={isActive}
-            className={`h-10 shrink-0 rounded-md border px-3 text-sm font-bold ${
-              isActive
-                ? "ttc-control-active shadow-[0_8px_18px_rgba(23,20,18,0.16)]"
-                : "ttc-surface"
-            }`}
-            id={`${profilePanelId(tab)}-tab`}
-            key={tab}
-            onClick={() => {
-              setActiveTab(tab);
-              window.history.replaceState(null, "", profileHashForTab(tab));
-            }}
-            role="tab"
-            type="button"
-          >
-            {label}
-          </button>
+            <button
+              aria-controls={profilePanelId(tab)}
+              aria-selected={isActive}
+              className={`h-10 shrink-0 rounded-md border px-3 text-sm font-bold ${
+                isActive
+                  ? "ttc-control-active shadow-[0_8px_18px_rgba(23,20,18,0.16)]"
+                  : "ttc-surface"
+              }`}
+              id={`${profilePanelId(tab)}-tab`}
+              key={tab}
+              onClick={() => {
+                activateTab(tab);
+              }}
+              onKeyDown={(event) => handleTabKeyDown(event, index)}
+              role="tab"
+              tabIndex={isActive ? 0 : -1}
+              type="button"
+            >
+              {label}
+            </button>
           );
         })}
       </div>

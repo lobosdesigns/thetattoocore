@@ -76,6 +76,12 @@ const checks = [
       profileForm.includes('role="tabpanel"') &&
       profileForm.includes("aria-controls={profilePanelId(tab)}") &&
       profileForm.includes("aria-selected={isActive}") &&
+      profileForm.includes('tabIndex={isActive ? 0 : -1}') &&
+      profileForm.includes('event.key === "ArrowRight"') &&
+      profileForm.includes('event.key === "ArrowLeft"') &&
+      profileForm.includes('event.key === "Home"') &&
+      profileForm.includes('event.key === "End"') &&
+      profileForm.includes("window.requestAnimationFrame") &&
       profileForm.includes('aria-labelledby={`${profilePanelId("profile")}-tab`}') &&
       !profileForm.includes("aria-pressed={activeTab === tab}"),
   },
