@@ -152,3 +152,14 @@ Store-critical proof should include at least:
 - Verification upload success and admin approval/rejection evidence without exposing private documents.
 - Merch browsing, controlled checkout return, order history, and Admin Payments review evidence using safe test references.
 - Screenshot upload candidates that match `docs/SCREENSHOT_PREP.md`.
+
+## Native Build And Install Evidence Matrix
+
+Keep completed rows in the private release handoff. Do not commit screenshots or clips that show reviewer secrets, private contact numbers, account owner details, payment-account data, console identifiers, private DMs, license documents, or admin-only queues.
+
+| Platform | Release channel | Version/build proof | Install-source proof | Tester account pair | Device/date | Result summary |
+| --- | --- | --- | --- | --- | --- | --- |
+| Android | Google Play internal testing | Version name, version code, and release track for the exact build under review. | Screenshot or clip proving the app was installed from the intended internal-testing track. | Primary tester and second known DM tester, recorded privately. | Android device model, OS version, test date, and network. | Pass/fail for auth, posting, DMs, verification, checkout return paths, report/block, and screenshots. |
+| iOS | TestFlight internal testing | iOS version/build number and tester group for the exact build under review. | Screenshot or clip proving the app was installed from the intended TestFlight group. | Primary tester and second known DM tester, recorded privately. | iPhone model, iOS version, test date, and network. | Pass/fail for auth, posting, DMs, verification, checkout return paths, report/block, and screenshots. |
+
+Repo-safe summary fields are limited to platform, release channel, version/build, date, device model, and pass/fail status. Keep tester secrets, private contact details, account identifiers, and raw console screenshots private.
