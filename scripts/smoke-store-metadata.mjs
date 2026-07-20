@@ -130,6 +130,8 @@ const checks = [
       source.readme.includes("Terms URL: `https://thetattoocore.com/terms`") &&
       source.readme.includes("App start URL: `https://thetattoocore.com/login`") &&
       source.readme.includes("Support email: `support@thetattoocore.com`") &&
+      source.readme.includes("App Store category handoff: set Primary Category to `Social Networking`") &&
+      source.readme.includes("Google Play category handoff: app category is `Social`") &&
       source.readme.includes("Reviewer credential status: created, validated, and stored only in the store-review console fields") &&
       source.readme.includes("Screenshot upload status: use upload-ready no-alpha PNG derivatives") &&
       source.readme.includes("Contact phone: keep console-only/private") &&
