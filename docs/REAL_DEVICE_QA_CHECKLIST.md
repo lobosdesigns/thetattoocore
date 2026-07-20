@@ -181,4 +181,11 @@ Keep completed rows in the private release handoff. Do not commit screenshots or
 | Android | Google Play internal testing or closed testing if production access requires it. | Version name, version code, release track, and closed-test date range for the exact build under review. | Screenshot or clip proving the app was installed from the intended internal-testing or closed-testing track; keep tester-list/community handoff, 12-tester participation, 14-day duration, feedback summary, and production-access request result in the private handoff if required. | Primary tester and second known DM tester, recorded privately. | Android device model, OS version, test date, and network. | Pass/fail for auth, posting, DMs, verification, checkout return paths, report/block, screenshots, and Play testing evidence. |
 | iOS | TestFlight internal testing | iOS version/build number and tester group for the exact build under review. | Screenshot or clip proving the app was installed from the intended TestFlight group. | Primary tester and second known DM tester, recorded privately. | iPhone model, iOS version, test date, and network. | Pass/fail for auth, posting, DMs, verification, checkout return paths, report/block, and screenshots. |
 
+If a device is physically connected but automation is unavailable, such as Android
+platform tools or `adb` missing from Windows PATH, record `manual evidence only:
+automation unavailable` in the private handoff. Capture install-source, build,
+device, date, and checklist pass/fail proof manually, then rerun automated device
+capture after platform tools are installed. Do not treat missing automation as a
+passing console/log review.
+
 Repo-safe summary fields are limited to platform, release channel, version/build, date, device model, and pass/fail status. Keep tester secrets, private contact details, account identifiers, and raw console screenshots private.

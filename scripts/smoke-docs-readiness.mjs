@@ -386,6 +386,10 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("12-tester participation, 14-day duration, feedback summary") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("| iOS | TestFlight internal testing | iOS version/build number") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("release channel, version/build, date, device model, and pass/fail status") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("manual evidence only:") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("automation unavailable") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("platform tools or `adb` missing from Windows PATH") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Do not treat missing automation as a") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Native build/install evidence should use the matrix") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("release channel, version/build, install source, tester account pair") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("at least 12 testers opted in for 14 continuous days") &&
