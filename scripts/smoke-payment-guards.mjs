@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 
 const adCheckout = readFileSync("src/app/api/ads/checkout/route.ts", "utf8");
 const bookingCheckout = readFileSync("src/app/api/bookings/checkout/route.ts", "utf8");
@@ -67,6 +68,50 @@ function missingWebhookEventsIn(sourceText) {
 const webhookSourceMissingEvents = missingWebhookEventsIn(stripeWebhook);
 const paymentReadinessMissingEvents = missingWebhookEventsIn(paymentReadiness);
 
+const codeSearchRoots = ["src/app", "src/lib"];
+const codeSearchExtensions = new Set([".js", ".jsx", ".ts", ".tsx"]);
+const payoutReleaseForbiddenSnippets = [
+  "stripe.transfers.create",
+  "stripe.payouts.create",
+  ".transfers.create(",
+  ".payouts.create(",
+  "transfer_data",
+  "application_fee_amount",
+  "transfer_group",
+  "on_behalf_of",
+];
+
+function codeFilesUnder(root) {
+  const entries = readdirSync(root);
+  const files = [];
+
+  for (const entry of entries) {
+    const entryPath = join(root, entry);
+    const stats = statSync(entryPath);
+
+    if (stats.isDirectory()) {
+      files.push(...codeFilesUnder(entryPath));
+      continue;
+    }
+
+    if ([...codeSearchExtensions].some((extension) => entryPath.endsWith(extension))) {
+      files.push(entryPath);
+    }
+  }
+
+  return files;
+}
+
+const payoutReleaseFindings = codeSearchRoots
+  .flatMap((root) => codeFilesUnder(root))
+  .flatMap((filePath) => {
+    const source = readFileSync(filePath, "utf8");
+
+    return payoutReleaseForbiddenSnippets
+      .filter((snippet) => source.includes(snippet))
+      .map((snippet) => `${filePath}: ${snippet}`);
+  });
+
 function indexOfOrFail(body, snippet) {
   const index = body.indexOf(snippet);
 
@@ -131,6 +176,18 @@ checks.push({
     accountPage.includes("Use ${dollars(campaign.daily_budget_cents)} ad credit") &&
     productPlan.includes("member-visible Account > Advertising balance summaries") &&
     productPlan.includes("atomic spend path that lets campaign checkout consume enough active account credit"),
+});
+checks.push({
+  label: "payout readiness does not execute seller payout release",
+  ok:
+    payoutReleaseFindings.length === 0 &&
+    paymentReadiness.includes("Production purchases, seller payout releases, and real ad spending should stay gated") &&
+    paymentReadiness.includes("Do not release production seller payouts until this policy is finalized") &&
+    productPlan.includes("payout release before manual closeout") &&
+    productPlan.includes("Next payment-maturity work is refund/fulfillment edge cases and production payment-policy review"),
+  message: payoutReleaseFindings.length
+    ? `Found payout release primitives before policy gate: ${payoutReleaseFindings.join("; ")}`
+    : undefined,
 });
 checks.push({
   label: "verified sellers can submit Merch products for review",
