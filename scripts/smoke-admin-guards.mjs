@@ -207,6 +207,32 @@ const checks = [
       adminActions.includes('event_type: "tester_account_created"'),
   },
   {
+    label: "admin user management actions hide raw backend errors from redirects",
+    ok:
+      adminActions.includes('console.error("Admin role profile lookup failed.", targetError)') &&
+      adminActions.includes('console.error("Admin role update failed.", updateError)') &&
+      adminActions.includes('console.error("Admin user status profile lookup failed.", targetError)') &&
+      adminActions.includes('console.error("Admin user status update failed.", updateError)') &&
+      adminActions.includes('console.error("Tester account auth create failed.", createError)') &&
+      adminActions.includes('console.error("Tester account profile setup failed.", updateError)') &&
+      adminActions.includes('console.error("Tester account audit logging failed.", auditError)') &&
+      adminActions.includes('console.error("Admin ad credit profile lookup failed.", targetError)') &&
+      adminActions.includes('console.error("Admin ad credit grant failed.", insertError)') &&
+      adminActions.includes('"Could not update role. Please try again."') &&
+      adminActions.includes('"Could not update user status. Please try again."') &&
+      adminActions.includes('"Could not create tester account. Please try again."') &&
+      adminActions.includes('"Created tester login, but profile setup failed. Please try again."') &&
+      adminActions.includes('"Created tester account, but audit logging failed. Please try again."') &&
+      adminActions.includes('"Could not grant ad credit. Please try again."') &&
+      !adminActions.includes('targetError?.message || "Profile was not found."') &&
+      !adminActions.includes('updateError.message || "Could not update role."') &&
+      !adminActions.includes('updateError.message || "Could not update user status."') &&
+      !adminActions.includes('createError?.message || "Could not create tester account."') &&
+      !adminActions.includes('updateError.message || "Created auth user, but profile setup failed."') &&
+      !adminActions.includes('auditError.message || "Created tester account, but audit logging failed."') &&
+      !adminActions.includes('insertError.message || "Could not grant ad credit."'),
+  },
+  {
     label: "admin users page shows tester creation only to owners with private tool readiness",
     ok:
       adminUsers.includes("const canManageRoles = profile.role === \"owner\"") &&

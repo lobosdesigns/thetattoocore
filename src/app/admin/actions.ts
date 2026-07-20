@@ -512,9 +512,12 @@ export async function changeUserRole(formData: FormData) {
     .maybeSingle<{ id: string; role: UserRole }>();
 
   if (targetError || !target) {
+    if (targetError) {
+      console.error("Admin role profile lookup failed.", targetError);
+    }
     redirect(
       adminUsersMessage(
-        targetError?.message || "Profile was not found.",
+        "Profile was not found.",
         returnTo,
       ),
     );
@@ -529,8 +532,9 @@ export async function changeUserRole(formData: FormData) {
     .eq("id", profileId);
 
   if (updateError) {
+    console.error("Admin role update failed.", updateError);
     redirect(
-      adminUsersMessage(updateError.message || "Could not update role.", returnTo),
+      adminUsersMessage("Could not update role. Please try again.", returnTo),
     );
   }
 
@@ -577,9 +581,12 @@ export async function changeUserStatus(formData: FormData) {
     }>();
 
   if (targetError || !target) {
+    if (targetError) {
+      console.error("Admin user status profile lookup failed.", targetError);
+    }
     redirect(
       adminUsersMessage(
-        targetError?.message || "Profile was not found.",
+        "Profile was not found.",
         returnTo,
       ),
     );
@@ -614,9 +621,10 @@ export async function changeUserStatus(formData: FormData) {
     .eq("id", profileId);
 
   if (updateError) {
+    console.error("Admin user status update failed.", updateError);
     redirect(
       adminUsersMessage(
-        updateError.message || "Could not update user status.",
+        "Could not update user status. Please try again.",
         returnTo,
       ),
     );
@@ -710,9 +718,12 @@ export async function createTestAccount(formData: FormData) {
   const profileId = createdUser.user?.id;
 
   if (createError || !profileId) {
+    if (createError) {
+      console.error("Tester account auth create failed.", createError);
+    }
     redirect(
       adminUsersMessage(
-        createError?.message || "Could not create tester account.",
+        "Could not create tester account. Please try again.",
         returnTo,
       ),
     );
@@ -729,10 +740,11 @@ export async function createTestAccount(formData: FormData) {
     .eq("id", profileId);
 
   if (updateError) {
+    console.error("Tester account profile setup failed.", updateError);
     await adminClient.auth.admin.deleteUser(profileId);
     redirect(
       adminUsersMessage(
-        updateError.message || "Created auth user, but profile setup failed.",
+        "Created tester login, but profile setup failed. Please try again.",
         returnTo,
       ),
     );
@@ -751,10 +763,11 @@ export async function createTestAccount(formData: FormData) {
   });
 
   if (auditError) {
+    console.error("Tester account audit logging failed.", auditError);
     await adminClient.auth.admin.deleteUser(profileId);
     redirect(
       adminUsersMessage(
-        auditError.message || "Created tester account, but audit logging failed.",
+        "Created tester account, but audit logging failed. Please try again.",
         returnTo,
       ),
     );
@@ -793,8 +806,11 @@ export async function grantUserAdCredit(formData: FormData) {
     .maybeSingle<{ id: string; username: string }>();
 
   if (targetError || !target) {
+    if (targetError) {
+      console.error("Admin ad credit profile lookup failed.", targetError);
+    }
     redirect(
-      adminUsersMessage(targetError?.message || "Profile was not found.", returnTo),
+      adminUsersMessage("Profile was not found.", returnTo),
     );
   }
 
@@ -808,8 +824,9 @@ export async function grantUserAdCredit(formData: FormData) {
   });
 
   if (insertError) {
+    console.error("Admin ad credit grant failed.", insertError);
     redirect(
-      adminUsersMessage(insertError.message || "Could not grant ad credit.", returnTo),
+      adminUsersMessage("Could not grant ad credit. Please try again.", returnTo),
     );
   }
 
