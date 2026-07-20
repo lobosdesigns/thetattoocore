@@ -1141,9 +1141,12 @@ export async function updateReportStatus(formData: FormData) {
     }>();
 
   if (reportError || !report) {
+    if (reportError) {
+      console.error("Admin report status lookup failed.", reportError);
+    }
     redirect(
       adminReportsMessage(
-        reportError?.message || "Report was not found.",
+        "Report was not found.",
         returnTo,
       ),
     );
@@ -1170,9 +1173,10 @@ export async function updateReportStatus(formData: FormData) {
     .eq("id", reportId);
 
   if (updateError) {
+    console.error("Admin report status update failed.", updateError);
     redirect(
       adminReportsMessage(
-        updateError.message || "Could not update report.",
+        "Could not update report. Please try again.",
         returnTo,
       ),
     );
@@ -1191,10 +1195,11 @@ export async function updateReportStatus(formData: FormData) {
         subject_type: report.subject_type,
       });
 
-      if (actionError) {
+    if (actionError) {
+      console.error("Admin report status log failed.", actionError);
       redirect(
         adminReportsMessage(
-          actionError.message || "Report changed, but log failed.",
+          "Report changed, but log failed. Please try again.",
           returnTo,
         ),
       );
@@ -1233,9 +1238,12 @@ export async function recordReportFollowup(formData: FormData) {
     }>();
 
   if (reportError || !report) {
+    if (reportError) {
+      console.error("Admin report follow-up lookup failed.", reportError);
+    }
     redirect(
       adminReportsMessage(
-        reportError?.message || "Report was not found.",
+        "Report was not found.",
         returnTo,
       ),
     );
@@ -1274,9 +1282,10 @@ export async function recordReportFollowup(formData: FormData) {
     });
 
   if (actionError) {
+    console.error("Admin report follow-up log failed.", actionError);
     redirect(
       adminReportsMessage(
-        actionError.message || "Could not record report follow-up.",
+        "Could not record report follow-up. Please try again.",
         returnTo,
       ),
     );
@@ -1293,10 +1302,10 @@ export async function recordReportFollowup(formData: FormData) {
       .eq("id", report.id);
 
     if (updateError) {
+      console.error("Admin report follow-up status update failed.", updateError);
       redirect(
         adminReportsMessage(
-          updateError.message ||
-            "Follow-up was logged, but report status did not update.",
+          "Follow-up was logged, but report status did not update. Please try again.",
           returnTo,
         ),
       );

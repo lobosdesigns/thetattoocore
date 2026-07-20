@@ -365,6 +365,25 @@ const checks = [
       !adminActions.includes('updateError.message || "Could not update Help question."'),
   },
   {
+    label: "admin report actions hide raw backend errors from redirects",
+    ok:
+      adminActions.includes('console.error("Admin report status lookup failed.", reportError)') &&
+      adminActions.includes('console.error("Admin report status update failed.", updateError)') &&
+      adminActions.includes('console.error("Admin report status log failed.", actionError)') &&
+      adminActions.includes('console.error("Admin report follow-up lookup failed.", reportError)') &&
+      adminActions.includes('console.error("Admin report follow-up log failed.", actionError)') &&
+      adminActions.includes('console.error("Admin report follow-up status update failed.", updateError)') &&
+      adminActions.includes('"Could not update report. Please try again."') &&
+      adminActions.includes('"Report changed, but log failed. Please try again."') &&
+      adminActions.includes('"Could not record report follow-up. Please try again."') &&
+      adminActions.includes('"Follow-up was logged, but report status did not update. Please try again."') &&
+      !adminActions.includes('reportError?.message || "Report was not found."') &&
+      !adminActions.includes('updateError.message || "Could not update report."') &&
+      !adminActions.includes('actionError.message || "Report changed, but log failed."') &&
+      !adminActions.includes('actionError.message || "Could not record report follow-up."') &&
+      !adminActions.includes('updateError.message ||\n            "Follow-up was logged, but report status did not update."'),
+  },
+  {
     label: "admin Stuff and Gigs can filter status and moderation state",
     ok:
       adminStuff.includes("function stuffFilters") &&
