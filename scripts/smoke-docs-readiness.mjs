@@ -189,6 +189,7 @@ const checks = [
       docs["docs/SCREENSHOT_PREP.md"].includes("feature graphic") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("matches the submitted build after final metadata") &&
       screenshotGenerator.includes("mobile-login-signup.png") &&
+      screenshotGenerator.includes("mobile-ads-safe.png") &&
       screenshotGenerator.includes("mobile-merch-safe.png") &&
       screenshotGenerator.includes("mobile-help-support.png") &&
       screenshotGenerator.includes("Visible nudity is not allowed"),
@@ -382,6 +383,7 @@ const checks = [
       docs["docs/PRODUCT_PLAN.md"].includes("getting-started guide") &&
       docs["docs/PRODUCT_PLAN.md"].includes("screenshots, short clips where useful") &&
       docs["docs/PRODUCT_PLAN.md"].includes("Help Center needs a media pass before broader beta") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("ads/ad credits") &&
       docs["docs/PRODUCT_PLAN.md"].includes("Merch setup") &&
       docs["docs/PRODUCT_PLAN.md"].includes("setting appointments") &&
       docs["docs/PRODUCT_PLAN.md"].includes("creating ads") &&
@@ -424,6 +426,7 @@ const checks = [
       helpCenterData.includes('assetSrc: "/screenshots/mobile-profile-search.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-verification-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-booking-safe.png"') &&
+      helpCenterData.includes('assetSrc: "/screenshots/mobile-ads-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-merch-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-4u-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-stories-safe.png"') &&

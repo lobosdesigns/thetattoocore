@@ -217,6 +217,7 @@ const checks = [
       source.screenshotInventory.includes("public/screenshots/mobile-stories-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-verification-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-booking-safe.png") &&
+      source.screenshotInventory.includes("public/screenshots/mobile-ads-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-merch-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-help-support.png") &&
       source.screenshotInventory.includes("## Screenshot Replacement Status") &&
@@ -240,13 +241,13 @@ const checks = [
   {
     label: "generated Google Play screenshots match upload dimensions",
     ok:
-      hasExpectedPngs(generatedScreenshots.playPhone, 10, 1080, 1920) &&
+      hasExpectedPngs(generatedScreenshots.playPhone, 11, 1080, 1920) &&
       hasExpectedPngs(generatedScreenshots.playFeature, 1, 1024, 500),
   },
   {
     label: "generated App Store screenshots match upload dimensions",
     ok:
-      hasExpectedPngs(generatedScreenshots.appStorePhone, 10, 1242, 2688) &&
+      hasExpectedPngs(generatedScreenshots.appStorePhone, 11, 1242, 2688) &&
       hasExpectedPngs(generatedScreenshots.appStoreIpad, 3, 2048, 2732),
   },
 ];

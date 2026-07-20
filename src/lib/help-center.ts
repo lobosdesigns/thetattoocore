@@ -618,6 +618,7 @@ export const helpArticles = [
     ],
     tutorialMedia: [
       {
+        assetSrc: "/screenshots/mobile-ads-safe.png",
         description:
           "Show goal, placement, budget, and ad-credit fields with test campaign copy only.",
         kind: "screenshot",

@@ -239,6 +239,27 @@ ${pill({ label: "Calendar file", w: 124, x: 70, y: 632 })}
 ${pill({ label: "Refund review", w: 136, x: 210, y: 632 })}
 ${bottomNav()}
 `),
+  "mobile-ads-safe.png": header(`
+${columns("Gigs")}
+${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}
+${text({ body: "Ad Campaign", size: 31, weight: 900, x: 52, y: 170 })}
+${text({ body: "Safe placements stay review-controlled.", color: "#6f5e4c", size: 15, weight: 600, x: 52, y: 202 })}
+${rounded({ fill: "#f6f2eb", h: 72, r: 8, w: 436, x: 52, y: 244 })}
+${text({ body: "Goal", size: 15, weight: 900, x: 76, y: 278 })}
+${text({ body: "Book consults or product views", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 300 })}
+${rounded({ fill: "#f6f2eb", h: 72, r: 8, w: 436, x: 52, y: 340 })}
+${text({ body: "Placement", size: 15, weight: 900, x: 76, y: 374 })}
+${text({ body: "4U, Gossip, or Merch", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 396 })}
+${rounded({ fill: "#f6f2eb", h: 72, r: 8, w: 436, x: 52, y: 436 })}
+${text({ body: "Budget and ad credits", size: 15, weight: 900, x: 76, y: 470 })}
+${text({ body: "Review amount before submitting.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 492 })}
+${rounded({ fill: "#f4ead8", h: 102, r: 10, stroke: "#e0c27a", w: 436, x: 52, y: 536 })}
+${text({ body: "Creative review", color: "#7b5a15", size: 18, weight: 900, x: 76, y: 576 })}
+${text({ body: "No unsafe claims or restricted goods.", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 604 })}
+${pill({ label: "Submit for review", w: 152, x: 70, y: 668 })}
+${pill({ label: "Credit applied", w: 128, x: 238, y: 668 })}
+${bottomNav()}
+`),
   "mobile-merch-safe.png": header(`
 ${columns("Merch")}
 ${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}

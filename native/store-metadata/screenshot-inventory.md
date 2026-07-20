@@ -10,6 +10,7 @@ Current generated safe screenshots:
 - `public/screenshots/mobile-profile-search.png`
 - `public/screenshots/mobile-verification-safe.png`
 - `public/screenshots/mobile-booking-safe.png`
+- `public/screenshots/mobile-ads-safe.png`
 - `public/screenshots/mobile-merch-safe.png`
 - `public/screenshots/mobile-help-support.png`
 - `public/screenshots/desktop-home.png`
@@ -38,9 +39,9 @@ dimensions, and no-alpha output.
 
 | Store asset set | Current repo asset | Final public-review requirement | Status |
 | --- | --- | --- | --- |
-| Google Play phone screenshots | Generated safe phone derivatives, 10 PNGs, 1080 x 1920, no alpha. | Replace or confirm with real Android internal-test captures for the selected release track and version. | Generated placeholder ready; final real-device upload validation still needed. |
+| Google Play phone screenshots | Generated safe phone derivatives, 11 PNGs, 1080 x 1920, no alpha. | Replace or confirm with real Android internal-test captures for the selected release track and version. | Generated placeholder ready; final real-device upload validation still needed. |
 | Google Play feature graphic | Generated TTC-branded 1024 x 500 PNG, no alpha. | Confirm final rights-safe feature graphic uploads without private member, payment, or console details. | Generated placeholder ready; final console validation still needed. |
-| App Store iPhone 6.5-inch screenshots | Generated safe iPhone derivatives, 10 PNGs, 1242 x 2688, no alpha. | Replace or confirm with TestFlight build screenshots for the selected iOS build/version. | Generated placeholder ready; final real-device upload validation still needed. |
+| App Store iPhone 6.5-inch screenshots | Generated safe iPhone derivatives, 11 PNGs, 1242 x 2688, no alpha. | Replace or confirm with TestFlight build screenshots for the selected iOS build/version. | Generated placeholder ready; final real-device upload validation still needed. |
 | App Store 13-inch iPad screenshots | Generated safe iPad derivatives, 3 PNGs, 2048 x 2732, no alpha. | Upload and validate the required 13-inch iPad set for the selected iOS build/version. | Generated placeholder ready; App Store iPad upload evidence remains a blocker. |
 
 These generated placeholders are TTC-branded, rights-safe, and show the current
