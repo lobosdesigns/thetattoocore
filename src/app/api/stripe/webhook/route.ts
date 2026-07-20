@@ -418,7 +418,8 @@ async function markCheckoutSession({
       .returns<PaidOrderTransition[]>();
 
     if (error) {
-      throw new Error(error.message || "Could not mark merch order paid.");
+      console.error("Webhook Merch paid order transition failed.", error);
+      throw new Error("Could not mark merch order paid.");
     }
 
     const paidOrderRows = Array.isArray(transitionedPaidOrders)
@@ -470,7 +471,8 @@ async function markCheckoutSession({
     .returns<MerchOrderPaymentProblemTransition[]>();
 
   if (error) {
-    throw new Error(error.message || "Could not update merch order.");
+    console.error("Webhook Merch order payment update failed.", error);
+    throw new Error("Could not update merch order.");
   }
 
   if (status === "cancelled" || status === "payment_failed") {
@@ -481,9 +483,8 @@ async function markCheckoutSession({
       );
 
       if (releaseError) {
-        throw new Error(
-          releaseError.message || "Could not release merch inventory hold.",
-        );
+        console.error("Webhook Merch inventory release failed.", releaseError);
+        throw new Error("Could not release merch inventory hold.");
       }
     }
   }

@@ -421,6 +421,19 @@ checks.push({
     .join("; "),
 });
 checks.push({
+  label: "payment webhook hides raw Merch order backend errors",
+  ok:
+    stripeWebhook.includes('console.error("Webhook Merch paid order transition failed.", error)') &&
+    stripeWebhook.includes('throw new Error("Could not mark merch order paid.")') &&
+    stripeWebhook.includes('console.error("Webhook Merch order payment update failed.", error)') &&
+    stripeWebhook.includes('throw new Error("Could not update merch order.")') &&
+    stripeWebhook.includes('console.error("Webhook Merch inventory release failed.", releaseError)') &&
+    stripeWebhook.includes('throw new Error("Could not release merch inventory hold.")') &&
+    !stripeWebhook.includes('error.message || "Could not mark merch order paid."') &&
+    !stripeWebhook.includes('error.message || "Could not update merch order."') &&
+    !stripeWebhook.includes('releaseError.message || "Could not release merch inventory hold."'),
+});
+checks.push({
   label: "admin refund requests keep processor names out of redirect copy",
   ok:
     adminActions.includes(
