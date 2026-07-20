@@ -228,6 +228,7 @@
 - A ninth safe tutorial short clip covers seller payout readiness, product review, order status, and payment-safety Help guidance with generated sample screens only.
 - A tenth safe tutorial short clip covers beta app wrapper login, Help, Support, Terms, and Privacy navigation with generated sample screens only.
 - An eleventh safe tutorial short clip covers profile photo/banner setup, save, and public profile preview guidance with generated sample screens only.
+- The docs readiness smoke now fails if any Help Center `short_clip` tutorial block is added without an `assetSrc`, so media placeholders cannot silently return before wider beta.
 - Admin Media Ops now includes Help tutorial readiness cards so admins can track screenshot coverage, short-clip capture, safe capture rules, and smoke checks before widening beta.
 - Added a beta tester checklist guide for the one-week maturity sprint so testers and admins can run the same mobile, posting, DM, verification, booking, seller, payment, Help, and admin go/no-go checks before inviting a wider tester group.
 - Added a beta app testing guide for TestFlight/internal-app testers so they check login/signup/reset/email confirmation, in-app navigation, media upload, DMs, notifications, Help/Support/legal links, booking, Merch browsing, checkout return paths, and safe bug-report evidence without exposing private data.

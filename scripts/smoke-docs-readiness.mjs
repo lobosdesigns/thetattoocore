@@ -25,6 +25,9 @@ const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const adminPage = readFileSync("src/app/admin/page.tsx", "utf8");
 const helpArticlePage = readFileSync("src/app/help/[slug]/page.tsx", "utf8");
 const helpCenterData = readFileSync("src/lib/help-center.ts", "utf8");
+const helpShortClipBlocks = [...helpCenterData.matchAll(/\{[^{}]*kind: "short_clip"[^{}]*\}/gs)].map(
+  ([block]) => block,
+);
 const helpSearch = readFileSync("src/app/help/help-center-search.tsx", "utf8");
 const helpActions = readFileSync("src/app/help/actions.ts", "utf8");
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
@@ -501,6 +504,8 @@ const checks = [
       helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-profile-photo-banner-safe.mp4"') &&
       existsSync(safeProfilePhotoClipPath) &&
       statSync(safeProfilePhotoClipPath).size > 50_000 &&
+      helpShortClipBlocks.length >= 11 &&
+      helpShortClipBlocks.every((block) => block.includes("assetSrc:")) &&
       helpCenterData.includes("Admin beta go/no-go") &&
       helpCenterData.includes("Two-user DM and notification pass") &&
       helpCenterData.includes("Booking request to calendar") &&
