@@ -227,8 +227,12 @@ const checks = [
       source.screenshotInventory.includes("| Google Play feature graphic | Generated TTC-branded 1024 x 500 PNG") &&
       source.screenshotInventory.includes("| App Store iPhone 6.5-inch screenshots | Generated safe iPhone derivatives") &&
       source.screenshotInventory.includes("| App Store 13-inch iPad screenshots | Generated safe iPad derivatives") &&
-      source.screenshotInventory.includes("Generated placeholder ready; App Store iPad upload evidence remains a blocker.") &&
-      source.screenshotInventory.includes("Replace generated placeholders with final real-device screenshots") &&
+      source.screenshotInventory.includes("Safe draft only; not submission-ready until real-device capture and Play Console upload validation are recorded privately.") &&
+      source.screenshotInventory.includes("Safe draft only; not submission-ready until Play Console feature-graphic validation is recorded privately.") &&
+      source.screenshotInventory.includes("Safe draft only; not submission-ready until real-device capture and App Store Connect upload validation are recorded privately.") &&
+      source.screenshotInventory.includes("Safe draft only; not submission-ready until App Store Connect iPad upload validation is recorded privately.") &&
+      source.screenshotInventory.includes("Replace generated draft assets with final real-device screenshots") &&
+      !source.screenshotInventory.includes("Generated placeholder ready") &&
       source.screenshotInventory.includes("4U, Gossip, Stuff, Gigs, Merch") &&
       source.screenshotInventory.includes("verification, booking, Help, and Support") &&
       source.screenshotInventory.includes("DM should appear as a") &&
