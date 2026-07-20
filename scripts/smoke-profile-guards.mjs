@@ -83,6 +83,9 @@ const checks = [
     label: "account workspace uses accessible tabs instead of generic pressed buttons",
     ok:
       accountSettingsWorkspace.includes('aria-label="Account areas"') &&
+      accountSettingsWorkspace.includes('aria-label="Back to 4U home"') &&
+      accountSettingsWorkspace.includes('href="/#feed"') &&
+      accountSettingsWorkspace.includes("Settings home") &&
       accountSettingsWorkspace.includes('role="tablist"') &&
       accountSettingsWorkspace.includes('role="tab"') &&
       accountSettingsWorkspace.includes('role="tabpanel"') &&

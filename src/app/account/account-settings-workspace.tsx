@@ -53,12 +53,21 @@ export function AccountSettingsWorkspace({
             Profile, orders, bookings, safety, and professional tools stay in
             their own areas so Account does not become one long scroll.
           </p>
-          <Link
-            className="ttc-surface inline-flex h-9 w-fit items-center justify-center rounded-md border px-3 text-xs font-bold"
-            href="/settings"
-          >
-            Settings home
-          </Link>
+          <div className="flex flex-wrap justify-start gap-2 sm:justify-end">
+            <Link
+              aria-label="Back to 4U home"
+              className="ttc-surface inline-flex h-9 w-fit items-center justify-center rounded-md border px-3 text-xs font-bold"
+              href="/#feed"
+            >
+              Home
+            </Link>
+            <Link
+              className="ttc-surface inline-flex h-9 w-fit items-center justify-center rounded-md border px-3 text-xs font-bold"
+              href="/settings"
+            >
+              Settings home
+            </Link>
+          </div>
         </div>
       </div>
 
