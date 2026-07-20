@@ -191,6 +191,22 @@ const clientConsoleFiles = collectFiles("src/app", (path) => path.endsWith(".tsx
     );
   },
 );
+const productionDebugSnippets = [
+  "console.log(",
+  "console.debug(",
+  "console.info(",
+  "console.trace(",
+  "debugger;",
+];
+const productionDebugFiles = [
+  ...collectFiles("src", (path) => /\.(ts|tsx)$/.test(path)),
+  ...collectFiles("native/thetattoocore-mobile", (path) =>
+    /\.(ts|tsx|js|jsx|swift|kt|java)$/.test(path) && !path.includes("node_modules"),
+  ),
+].filter((path) => {
+  const source = readFileSync(path, "utf8");
+  return productionDebugSnippets.some((snippet) => source.includes(snippet));
+});
 
 const checks = [
   {
@@ -313,6 +329,16 @@ const checks = [
       clientConsoleFiles.length === 0
         ? ""
         : `client console calls found in: ${clientConsoleFiles
+            .map((path) => relative(process.cwd(), path))
+            .join(", ")}`,
+  },
+  {
+    label: "production app and native wrapper avoid debug console traces",
+    ok: productionDebugFiles.length === 0,
+    message:
+      productionDebugFiles.length === 0
+        ? ""
+        : `debug trace calls found in: ${productionDebugFiles
             .map((path) => relative(process.cwd(), path))
             .join(", ")}`,
   },
