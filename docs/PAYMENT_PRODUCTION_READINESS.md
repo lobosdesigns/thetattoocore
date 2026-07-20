@@ -23,7 +23,7 @@ Stripe checkout is wired for controlled launch testing across Merch, ads, and ac
 - Finish calendar availability, booking refund/cancellation handling, artist/studio payout policy, and appointment-confirmation rules before taking real booking deposits.
 - Finalize tax handling, shipping-rate rules, fulfillment timelines, refund windows, dispute procedures, chargeback handling, and seller suspension rules.
 - Review app-store rules before exposing checkout inside native wrappers.
-- Review Stripe/provider policies for user-generated marketplaces, body-art products, ads, restricted goods, and adult-adjacent 18+ community positioning.
+- Review payment policies for user-generated marketplaces, body-art products, ads, restricted goods, and adult-adjacent 18+ community positioning.
 - Create admin procedures for refunds, partial refunds, failed payments, expired checkouts, fulfilled orders, seller non-delivery, and advertiser campaign credits.
 - Confirm public support, terms, privacy, and checkout copy explain launch-controlled or production status accurately.
 

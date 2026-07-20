@@ -760,6 +760,8 @@ const checks = [
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("legal and payment-policy review") &&
       !docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("provider review") &&
       !docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("legal/provider review") &&
+      !docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Stripe/provider") &&
+      !docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("/provider") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("do not collect bank") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("tax handling") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("refund") &&

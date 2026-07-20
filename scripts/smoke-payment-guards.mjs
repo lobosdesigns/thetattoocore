@@ -36,13 +36,13 @@ const globalsCss = readFileSync("src/app/globals.css", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
+const helpCenter = readFileSync("src/lib/help-center.ts", "utf8");
 const fees = readFileSync("src/lib/payments/fees.ts", "utf8");
 const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const paymentReadiness = readFileSync("docs/PAYMENT_PRODUCTION_READINESS.md", "utf8");
-const paymentSafetySource = [
-  adminMerchPage,
-  adminPaymentsPage,
+const memberPaymentSafetySource = [
+  helpCenter,
   privacyPage,
   supportPage,
 ].join("\n");
@@ -955,10 +955,14 @@ checks.push({
 checks.push({
   label: "public payment copy avoids collecting raw payout credentials",
   ok:
-    !paymentSafetySource.includes("bank account number") &&
-    !paymentSafetySource.includes("routing number") &&
-    !paymentSafetySource.includes("debit card number") &&
-    !paymentSafetySource.includes("card payout form") &&
+    !memberPaymentSafetySource.includes("bank account number") &&
+    !memberPaymentSafetySource.includes("routing number") &&
+    !memberPaymentSafetySource.includes("debit card number") &&
+    !memberPaymentSafetySource.includes("card payout form") &&
+    !memberPaymentSafetySource.includes("Stripe Connect") &&
+    !memberPaymentSafetySource.includes("Connect Express") &&
+    !memberPaymentSafetySource.includes("hosted onboarding") &&
+    !memberPaymentSafetySource.includes("payment provider") &&
     adminPaymentsPage.includes("secure onboarding flow") &&
     accountPage.includes("secure setup flow") &&
     accountPage.includes("TTC stores payout readiness status only") &&
