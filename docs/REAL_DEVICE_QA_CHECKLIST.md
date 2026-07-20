@@ -195,6 +195,18 @@ USB cable is not enough: the device must appear in `adb devices -l` as an
 authorized `device`, and the installed package must match the Google Play
 internal-testing or closed-testing build under review.
 
+For a repo-safe status summary from this machine, run:
+
+```powershell
+npm.cmd run qa:android-device
+```
+
+To make the command fail until an authorized device is visible, run:
+
+```powershell
+npm.cmd run qa:android-device -- --require-device
+```
+
 ```powershell
 $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
 & $adb devices -l

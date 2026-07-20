@@ -31,7 +31,8 @@
     "smoke:env": "node scripts/smoke-env-guards.mjs",
     "smoke:docs": "node scripts/smoke-docs-readiness.mjs",
     "smoke:mobile": "node scripts/smoke-mobile-browser.mjs",
-    "smoke:theme": "node scripts/smoke-theme-tokens.mjs"
+    "smoke:theme": "node scripts/smoke-theme-tokens.mjs",
+    "qa:android-device": "node scripts/android-device-qa-probe.mjs"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.20.1",
