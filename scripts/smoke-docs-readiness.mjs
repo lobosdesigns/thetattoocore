@@ -134,7 +134,9 @@ const checks = [
       docs["docs/STORE_LISTING_DRAFT.md"].includes("banner photo") &&
       docs["docs/STORE_LISTING_DRAFT.md"].includes("Help Center") &&
       docs["docs/STORE_LISTING_DRAFT.md"].includes("No AI art") &&
-      docs["docs/STORE_LISTING_DRAFT.md"].includes("no scratcher promotion"),
+      docs["docs/STORE_LISTING_DRAFT.md"].includes("no scratcher promotion") &&
+      docs["docs/STORE_LISTING_DRAFT.md"].includes("review-controlled checkout") &&
+      !docs["docs/STORE_LISTING_DRAFT.md"].includes("hosted checkout"),
   },
   {
     label: "store listing draft avoids visible provider names",
