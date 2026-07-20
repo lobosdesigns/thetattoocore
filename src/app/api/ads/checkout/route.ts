@@ -185,7 +185,7 @@ export async function POST(request: Request) {
 
   if (!claims?.sub) {
     return NextResponse.redirect(
-      `${siteUrl}/login?message=${encodeURIComponent("Sign in to pay for ads.")}`,
+      `${siteUrl}/login?message=${encodeURIComponent("Sign in to pay for ads.")}&return_to=${encodeURIComponent(returnTo ?? "/account#advertising-settings")}`,
       { status: 303 },
     );
   }

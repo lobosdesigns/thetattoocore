@@ -319,6 +319,7 @@ checks.push({
     adCheckout.includes("function pathWithMessage") &&
     adCheckout.includes('formData.get("return_to")') &&
     adCheckout.includes("returnTo: string | null") &&
+    adCheckout.includes('return_to=${encodeURIComponent(returnTo ?? "/account#advertising-settings")}') &&
     adCheckout.includes('"success_url": successUrl') &&
       adCheckout.includes('"cancel_url": cancelUrl'),
 });
