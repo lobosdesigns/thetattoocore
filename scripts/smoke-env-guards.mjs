@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 const envExamplePath = ".env.example";
 const gitignore = readFileSync(".gitignore", "utf8");
 const envExample = readFileSync(envExamplePath, "utf8");
+const readme = readFileSync("README.md", "utf8");
 const lines = envExample
   .split(/\r?\n/)
   .map((line) => line.trim())
@@ -93,6 +94,12 @@ function liveLookingSecretPatternLabels() {
 }
 
 const liveLookingSecretLabels = liveLookingSecretPatternLabels();
+const nativeSigningKeys = [
+  "TTC_ANDROID_UPLOAD_STORE_FILE",
+  "TTC_ANDROID_UPLOAD_STORE_PASSWORD",
+  "TTC_ANDROID_UPLOAD_KEY_ALIAS",
+  "TTC_ANDROID_UPLOAD_KEY_PASSWORD",
+];
 
 const checks = [
   {
@@ -107,6 +114,16 @@ const checks = [
     ok:
       gitignore.includes("**/google-services.json") &&
       gitignore.includes("**/GoogleService-Info.plist"),
+  },
+  {
+    label: "native signing inputs stay private and out of .env.example",
+    ok:
+      nativeSigningKeys.every((key) => !envExample.includes(key)) &&
+      nativeSigningKeys.every((key) => readme.includes(key)) &&
+      readme.includes("Android upload signing values are private native-build inputs") &&
+      readme.includes("They do not belong in `.env.example`") &&
+      readme.includes("Keep `google-services.json`") &&
+      readme.includes("`GoogleService-Info.plist` out of git"),
   },
   {
     label: ".env.example has the required production keys in stable order",
@@ -142,8 +159,8 @@ const checks = [
   {
     label: "README documents checkout mode fail-closed default",
     ok:
-      readFileSync("README.md", "utf8").includes("STRIPE_EXPECTED_LIVEMODE") &&
-      readFileSync("README.md", "utf8").includes("penny-test evidence"),
+      readme.includes("STRIPE_EXPECTED_LIVEMODE") &&
+      readme.includes("penny-test evidence"),
   },
 ];
 

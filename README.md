@@ -65,6 +65,20 @@ Keep public support and reply-to email on company mail such as
 `support@thetattoocore.com`. Do not put personal owner contact details in public
 app copy or store metadata.
 
+## Native Signing And App Config
+
+Android upload signing values are private native-build inputs, not web
+production environment variables. Keep `TTC_ANDROID_UPLOAD_STORE_FILE`,
+`TTC_ANDROID_UPLOAD_STORE_PASSWORD`, `TTC_ANDROID_UPLOAD_KEY_ALIAS`, and
+`TTC_ANDROID_UPLOAD_KEY_PASSWORD` in the private release handoff or local build
+environment only. They do not belong in `.env.example`, public docs, store
+metadata, or member-facing copy.
+
+Native app config files also stay private-build-only. Keep `google-services.json`
+and `GoogleService-Info.plist` out of git; add them only in the private Android
+or iOS build environment after app-store, signing, and device-evidence gates are
+ready.
+
 After adding or rotating secrets, redeploy with:
 
 ```bash
