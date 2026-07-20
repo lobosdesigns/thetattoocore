@@ -415,6 +415,22 @@ const checks = [
       productPlan.includes("Admin Verification supports 50-item pagination plus status and account-type filters"),
   },
   {
+    label: "admin verification actions hide raw backend errors from redirects",
+    ok:
+      adminActions.includes('console.error("Admin verification request lookup failed.", requestError)') &&
+      adminActions.includes('console.error("Admin verification request update failed.", updateError)') &&
+      adminActions.includes('console.error("Admin verification profile badge update failed.", profileError)') &&
+      adminActions.includes('console.error("Admin verification notification failed.", notificationError)') &&
+      adminActions.includes('"License request was not found."') &&
+      adminActions.includes('"Could not update license request. Please try again."') &&
+      adminActions.includes('"License approved, but profile badge failed. Please try again."') &&
+      adminActions.includes('"License updated, but member notification failed. Please try again."') &&
+      !adminActions.includes('requestError?.message || "License request was not found."') &&
+      !adminActions.includes('updateError.message || "Could not update license request."') &&
+      !adminActions.includes('profileError.message || "License approved, but profile badge failed."') &&
+      !adminActions.includes('notificationError.message ||'),
+  },
+  {
     label: "admin verification document cards avoid raw storage wording",
     ok:
       adminVerification.includes("Private review document") &&

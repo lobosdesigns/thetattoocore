@@ -1360,9 +1360,12 @@ export async function updateLicenseVerification(formData: FormData) {
     }>();
 
   if (requestError || !request) {
+    if (requestError) {
+      console.error("Admin verification request lookup failed.", requestError);
+    }
     redirect(
       adminVerificationMessage(
-        requestError?.message || "License request was not found.",
+        "License request was not found.",
         returnTo,
       ),
     );
@@ -1411,9 +1414,10 @@ export async function updateLicenseVerification(formData: FormData) {
     .eq("status", "pending");
 
   if (updateError) {
+    console.error("Admin verification request update failed.", updateError);
     redirect(
       adminVerificationMessage(
-        updateError.message || "Could not update license request.",
+        "Could not update license request. Please try again.",
         returnTo,
       ),
     );
@@ -1431,9 +1435,10 @@ export async function updateLicenseVerification(formData: FormData) {
       .eq("id", request.profile_id);
 
     if (profileError) {
+      console.error("Admin verification profile badge update failed.", profileError);
       redirect(
         adminVerificationMessage(
-          profileError.message || "License approved, but profile badge failed.",
+          "License approved, but profile badge failed. Please try again.",
           returnTo,
         ),
       );
@@ -1476,10 +1481,10 @@ export async function updateLicenseVerification(formData: FormData) {
   });
 
   if (notificationError) {
+    console.error("Admin verification notification failed.", notificationError);
     redirect(
       adminVerificationMessage(
-        notificationError.message ||
-          "License updated, but member notification failed.",
+        "License updated, but member notification failed. Please try again.",
         returnTo,
       ),
     );
