@@ -332,6 +332,7 @@ const checks = [
       searchPage.includes("product.is_official ||") &&
       searchPage.includes("!blockedProfileIds.has(profile.id)") &&
       searchPage.includes("!blockedProfileIds.has(post.profiles.id)") &&
+      mobileSmoke.includes('path: "/search?q=shirts&type=merch"') &&
       searchPage.includes("feedResults.map"),
   },
   {

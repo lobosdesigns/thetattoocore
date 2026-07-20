@@ -91,6 +91,11 @@ const routes = [
   { path: "/privacy", textIncludes: "support@thetattoocore.com", titleIncludes: "Privacy" },
   { path: "/terms", textIncludes: "visible nudity is not allowed", titleIncludes: "Terms" },
   { path: "/search?q=ceocore", textIncludes: "@ceocore", titleIncludes: "Search" },
+  {
+    path: "/search?q=shirts&type=merch",
+    textIncludes: ["Merch", "Merch checkout stays review-controlled", "Filter"],
+    titleIncludes: "Search",
+  },
   { path: "/messages?to=tattedhotlegs", textIncludes: "Sign in", titleIncludes: "Sign in" },
   { path: "/notifications", textIncludes: "Sign in", titleIncludes: "Sign in" },
   { path: "/saved", textIncludes: "Sign in", titleIncludes: "Sign in" },
