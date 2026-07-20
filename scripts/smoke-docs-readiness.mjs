@@ -226,6 +226,8 @@ const checks = [
       docs["docs/DATA_SAFETY_PREP.md"].includes("Help Center questions") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("private verification/license documents") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("Raw card, bank, routing, and payout credentials must not be collected") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("approved review-controlled checkout flows") &&
+      !docs["docs/DATA_SAFETY_PREP.md"].includes("hosted payment-provider flows") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("coarse location") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("account deletion requests") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("Google Play Data Safety must be completed before closed testing, open testing, or production release") &&

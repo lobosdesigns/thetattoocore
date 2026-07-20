@@ -119,10 +119,13 @@ const checks = [
     label: "native wrapper keeps launch permissions minimal",
     ok:
       source.androidManifest.includes("android.permission.INTERNET") &&
+      !source.androidManifest.includes("android.permission.POST_NOTIFICATIONS") &&
       !source.androidManifest.includes("android.permission.CAMERA") &&
       !source.androidManifest.includes("android.permission.RECORD_AUDIO") &&
       !source.androidManifest.includes("android.permission.ACCESS_FINE_LOCATION") &&
       !source.androidManifest.includes("android.permission.READ_CONTACTS") &&
+      !source.iosEntitlements.includes("aps-environment") &&
+      !source.iosProject.includes("Push Notifications") &&
       !source.iosInfo.includes("NSCameraUsageDescription") &&
       !source.iosInfo.includes("NSMicrophoneUsageDescription") &&
       !source.iosInfo.includes("NSLocationWhenInUseUsageDescription") &&
@@ -151,7 +154,9 @@ const checks = [
       source.nativePrep.includes("Android 16 / API 36") &&
       source.mobileRunbook.includes("current internal-test Android build targets API 35") &&
       source.readme.includes("support@thetattoocore.com") &&
-      source.readme.includes("Native permissions at first beta: none"),
+      source.readme.includes("Native permissions at first beta: none") &&
+      source.readme.includes("Push prompts: off") &&
+      source.mobileRunbook.includes("Mobile app push comes later"),
   },
   {
     label: "native Android target API stays explicit for internal testing or submission",

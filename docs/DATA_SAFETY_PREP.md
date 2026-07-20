@@ -25,7 +25,7 @@ Use this as an internal checklist before answering Google Play Data Safety, App 
 
 - Public-safe profile fields, public-preview posts, approved listings, Gigs, and Merch may be visible to other members and search engines where allowed.
 - DMs, private account settings, admin tools, draft/unpublished content, private verification documents, and sensitive/admin-restricted media must not be publicly indexed or exposed.
-- Payment processing should happen through hosted payment-provider flows; TTC should not store raw payment cards, bank details, routing numbers, or debit-card payout credentials.
+- Payment processing should happen through approved review-controlled checkout flows; TTC should not store raw payment cards, bank details, routing numbers, or debit-card payout credentials.
 - Private license documents are for submitting users and authorized admin/moderation review only.
 - Support and legal contact surfaces should use company contact addresses such as `support@thetattoocore.com`, not personal owner contact data.
 

@@ -868,7 +868,10 @@ checks.push({
     !paymentSafetySource.includes("debit card number") &&
     !paymentSafetySource.includes("card payout form") &&
     adminPaymentsPage.includes("secure hosted onboarding flow") &&
-    accountPage.includes("TTC stores payout readiness status only"),
+    accountPage.includes("secure setup flow") &&
+    accountPage.includes("TTC stores payout readiness status only") &&
+    !accountPage.includes("Stripe Connect") &&
+    !accountPage.includes("Connect Express"),
 });
 checks.push({
   label: "payment readiness keeps private evidence repo-safe",
