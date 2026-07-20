@@ -256,6 +256,19 @@ const checks = [
       !actions.includes('error.message || "Could not send report."'),
   },
   {
+    label: "Gig edit and archive actions hide raw backend errors from member redirects",
+    ok:
+      actions.includes('console.error("Gig archive failed.", error)') &&
+      actions.includes('"Could not archive gig. It may be gone or owned by another account."') &&
+      actions.includes('console.error("Gig update failed.", error)') &&
+      actions.includes('"Could not update Gig. It may be gone or owned by another account."') &&
+      actions.includes('console.error("Gig detail archive failed.", error)') &&
+      actions.includes('"Could not archive Gig. It may be gone or owned by another account."') &&
+      !actions.includes('error?.message ||\n          "Could not archive gig. It may be gone or owned by another account."') &&
+      !actions.includes('error?.message ||\n          "Could not update Gig. It may be gone or owned by another account."') &&
+      !actions.includes('error?.message ||\n          "Could not archive Gig. It may be gone or owned by another account."'),
+  },
+  {
     label: "comment media schema is authenticated, image-only, and size-limited",
     ok:
       commentMediaMigration.includes("create table if not exists public.post_comment_media") &&

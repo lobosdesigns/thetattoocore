@@ -2123,11 +2123,10 @@ export async function archiveGig(formData: FormData) {
     .maybeSingle<{ id: string }>();
 
   if (error || !archivedGig) {
+    console.error("Gig archive failed.", error);
     redirect(
       redirectWithMessage({
-        message:
-          error?.message ||
-          "Could not archive gig. It may be gone or owned by another account.",
+        message: "Could not archive gig. It may be gone or owned by another account.",
         path: returnPath,
       }),
     );
@@ -2202,11 +2201,10 @@ export async function editGig(formData: FormData) {
     .maybeSingle<{ id: string }>();
 
   if (error || !updatedGig) {
+    console.error("Gig update failed.", error);
     redirect(
       redirectWithMessage({
-        message:
-          error?.message ||
-          "Could not update Gig. It may be gone or owned by another account.",
+        message: "Could not update Gig. It may be gone or owned by another account.",
         path: returnPath,
       }),
     );
@@ -2243,11 +2241,10 @@ export async function archiveGigFromDetail(formData: FormData) {
     .maybeSingle<{ id: string }>();
 
   if (error || !archivedGig) {
+    console.error("Gig detail archive failed.", error);
     redirect(
       redirectWithMessage({
-        message:
-          error?.message ||
-          "Could not archive Gig. It may be gone or owned by another account.",
+        message: "Could not archive Gig. It may be gone or owned by another account.",
         path: `/gigs/${gigId}`,
       }),
     );
