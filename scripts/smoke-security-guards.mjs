@@ -309,6 +309,15 @@ const checks = [
     ok: clientConsoleFiles.length === 0,
   },
   {
+    label: "adult terms acceptance hides raw backend errors from member redirects",
+    ok:
+      mainActions.includes('console.error("Adult terms acceptance failed.", error)') &&
+      mainActions.includes('"Finish your profile before accepting 18+ terms."') &&
+      !mainActions.includes(
+        'error?.message || "Finish your profile before accepting 18+ terms."',
+      ),
+  },
+  {
     label: "notification open rejects external, protocol-relative, and backslash hrefs",
     ok:
       notificationActions.includes('!href.startsWith("/")') &&

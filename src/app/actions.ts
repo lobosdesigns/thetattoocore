@@ -290,10 +290,11 @@ export async function acceptAdultTerms(formData: FormData) {
     .maybeSingle<{ id: string }>();
 
   if (error || !profile) {
+    console.error("Adult terms acceptance failed.", error);
     redirect(
       redirectWithMessage({
         hash: returnHash,
-        message: error?.message || "Finish your profile before accepting 18+ terms.",
+        message: "Finish your profile before accepting 18+ terms.",
         path: returnPath,
       }),
     );
