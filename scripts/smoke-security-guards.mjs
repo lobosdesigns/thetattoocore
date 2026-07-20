@@ -363,6 +363,18 @@ const checks = [
     ok:
       statusMessage.includes("export function safeStatusMessage") &&
       statusMessage.includes("unsafeStatusMessageTerms") &&
+      [
+        '"api key"',
+        '"hosted checkout"',
+        '"hosted payout"',
+        '"hosted setup"',
+        '"mail provider"',
+        '"payment-provider"',
+        '"service key"',
+        '"service role"',
+        '"test mode"',
+        '"test-mode"',
+      ].every((snippet) => statusMessage.includes(snippet)) &&
       statusMessage.includes('"Update could not be shown. Please try again or contact Support."') &&
       loginPage.includes("const statusMessage = safeStatusMessage(params.message)") &&
       signupPage.includes("const statusMessage = safeStatusMessage(params.message)") &&
