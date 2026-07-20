@@ -441,6 +441,13 @@ checks.push({
     !stripeWebhook.includes('error.message || "Could not update ad payment status."'),
 });
 checks.push({
+  label: "payment webhook hides raw booking deposit backend errors",
+  ok:
+    stripeWebhook.includes('console.error("Webhook booking deposit status update failed.", error)') &&
+    stripeWebhook.includes('throw new Error("Could not update booking deposit status.")') &&
+    !stripeWebhook.includes('error.message || "Could not update booking deposit status."'),
+});
+checks.push({
   label: "admin refund requests keep processor names out of redirect copy",
   ok:
     adminActions.includes(

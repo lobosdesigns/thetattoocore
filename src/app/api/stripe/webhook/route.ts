@@ -687,7 +687,8 @@ async function markBookingCheckoutSession({
     .returns<BookingPaymentTransition[]>();
 
   if (error) {
-    throw new Error(error.message || "Could not update booking deposit status.");
+    console.error("Webhook booking deposit status update failed.", error);
+    throw new Error("Could not update booking deposit status.");
   }
 
   const notifications: NotificationInsert[] = [];
