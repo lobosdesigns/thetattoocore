@@ -201,7 +201,16 @@ function isTransientRouteFailure(result) {
     (reason) =>
       reason.includes("503 ") ||
       reason.includes("429 ") ||
-      reason.includes("Worker exceeded resource limits"),
+      reason.includes("Worker exceeded resource limits") ||
+      isFreshDeployStaticAssetMiss(reason),
+  );
+}
+
+function isFreshDeployStaticAssetMiss(reason) {
+  return (
+    reason.includes("404 ") &&
+    reason.includes("/_next/static/") &&
+    !reason.includes("Document")
   );
 }
 
