@@ -175,13 +175,20 @@ const checks = [
       actions.includes('"Could not open a DM for that story. Please try again."') &&
       actions.includes('console.error("Story reply send failed.", messageError)') &&
       actions.includes('"Could not send story reply. Please try again."') &&
+      actions.includes('console.error("Shared DM conversation create failed.", conversationError)') &&
+      actions.includes('console.error("Shared DM creator membership create failed.", creatorMemberError)') &&
+      actions.includes('console.error("Shared DM target membership create failed.", targetMemberError)') &&
+      actions.includes('throw new Error("Could not start conversation. Please try again.")') &&
       !actions.includes('uploadError.message || "Could not upload story media."') &&
       !actions.includes('error?.message || "Could not create story."') &&
       !actions.includes('mediaError.message || "Could not attach story media."') &&
       !actions.includes('error.message || "Could not end that story."') &&
       !actions.includes('error.message || "Could not react to that story."') &&
       !actions.includes('error instanceof Error ? error.message : "Could not open a DM for that story."') &&
-      !actions.includes('messageError?.message || "Could not send story reply."'),
+      !actions.includes('messageError?.message || "Could not send story reply."') &&
+      !actions.includes('conversationError?.message || "Could not start DM."') &&
+      !actions.includes('creatorMemberError.message || "Could not add you to DM."') &&
+      !actions.includes('targetMemberError.message || "Could not add member to DM."'),
   },
   {
     label: "story viewers can reply through DMs",

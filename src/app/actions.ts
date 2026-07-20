@@ -227,7 +227,8 @@ async function ensureDirectConversation({
     .single<{ id: string }>();
 
   if (conversationError || !conversation) {
-    throw new Error(conversationError?.message || "Could not start DM.");
+    console.error("Shared DM conversation create failed.", conversationError);
+    throw new Error("Could not start conversation. Please try again.");
   }
 
   const { error: creatorMemberError } = await supabase
@@ -235,7 +236,8 @@ async function ensureDirectConversation({
     .insert({ conversation_id: conversation.id, user_id: userId });
 
   if (creatorMemberError) {
-    throw new Error(creatorMemberError.message || "Could not add you to DM.");
+    console.error("Shared DM creator membership create failed.", creatorMemberError);
+    throw new Error("Could not start conversation. Please try again.");
   }
 
   const { error: targetMemberError } = await supabase
@@ -243,7 +245,8 @@ async function ensureDirectConversation({
     .insert({ conversation_id: conversation.id, user_id: targetId });
 
   if (targetMemberError) {
-    throw new Error(targetMemberError.message || "Could not add member to DM.");
+    console.error("Shared DM target membership create failed.", targetMemberError);
+    throw new Error("Could not start conversation. Please try again.");
   }
 
   return conversation.id;
