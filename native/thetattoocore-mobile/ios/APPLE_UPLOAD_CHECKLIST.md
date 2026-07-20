@@ -64,6 +64,12 @@ After upload processing:
 - Use support URL `https://thetattoocore.com/support`.
 - Use privacy URL `https://thetattoocore.com/privacy`.
 - Do not submit for public App Review until the real-device QA checklist and final legal/payment review are complete.
+- Before public App Review submission, confirm App Privacy/Privacy Policy URL,
+  age rating, Content Rights, Accessibility Nutrition Labels, screenshot upload
+  validation, category/pricing, and final reviewer access for the selected build
+  are complete in App Store Connect. Keep reviewer credentials, phone details,
+  account identifiers, and console screenshots in the private release handoff
+  only.
 
 ## Current Status
 

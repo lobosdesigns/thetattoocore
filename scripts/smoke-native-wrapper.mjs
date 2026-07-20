@@ -330,6 +330,18 @@ const checks = [
       source.iosUploadChecklist.includes("Windows machine cannot run Xcode"),
   },
   {
+    label: "native iOS upload handoff keeps App Store pre-submit gates explicit",
+    ok:
+      source.iosUploadChecklist.includes("App Privacy/Privacy Policy URL") &&
+      source.iosUploadChecklist.includes("age rating") &&
+      source.iosUploadChecklist.includes("Content Rights") &&
+      source.iosUploadChecklist.includes("Accessibility Nutrition Labels") &&
+      source.iosUploadChecklist.includes("screenshot upload") &&
+      source.iosUploadChecklist.includes("category/pricing") &&
+      source.iosUploadChecklist.includes("final reviewer access for the selected build") &&
+      source.iosUploadChecklist.includes("private release handoff"),
+  },
+  {
     label: "native iOS build handoff matches checked-in TestFlight version",
     ok:
       iosBuildVersionsMatch &&
