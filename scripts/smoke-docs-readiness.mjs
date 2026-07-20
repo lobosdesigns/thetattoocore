@@ -407,6 +407,22 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("VoiceOver, Voice Control, Larger Text") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("review-controlled checkout") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checkout-return handling") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("## Final Store-Console Evidence") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Build selection | Apple build number, Google release track") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Reviewer access | Reviewer test account email") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Contact details | Support email, support URL, privacy URL") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Screenshot upload | App Store iPhone/iPad validation") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Category and pricing | App Store categories, Google Play category") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Content rights | Confirmation that icons, generated screenshots") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Privacy and data safety | App Privacy, Google Data Safety") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Age/content rating | App Store age rating, Google Play/IARC summary") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Accessibility Nutrition Labels | VoiceOver, Voice Control, Larger Text") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Google Play closed testing | Tester list or Google Group selection") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Final validation | Console errors cleared") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("never commit passwords, access codes, private phone details, or one-time codes") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("do not store private phone numbers or owner personal contact data") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("do not commit store-console screenshots with private account data") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("keep tester emails, group membership, console screenshots, and application answers private") &&
       !docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("hosted checkout"),
   },
   {
