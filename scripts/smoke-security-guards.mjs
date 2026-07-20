@@ -207,6 +207,16 @@ const productionDebugFiles = [
   const source = readFileSync(path, "utf8");
   return productionDebugSnippets.some((snippet) => source.includes(snippet));
 });
+const releaseCleanupMarkers = ["TODO", "FIXME", "HACK", "XXX"];
+const releaseCleanupMarkerFiles = [
+  ...collectFiles("src", (path) => /\.(ts|tsx)$/.test(path)),
+  ...collectFiles("native/thetattoocore-mobile", (path) =>
+    /\.(ts|tsx|js|jsx|swift|kt|java)$/.test(path) && !path.includes("node_modules"),
+  ),
+].filter((path) => {
+  const source = readFileSync(path, "utf8");
+  return releaseCleanupMarkers.some((marker) => source.includes(marker));
+});
 
 const checks = [
   {
@@ -339,6 +349,16 @@ const checks = [
       productionDebugFiles.length === 0
         ? ""
         : `debug trace calls found in: ${productionDebugFiles
+            .map((path) => relative(process.cwd(), path))
+            .join(", ")}`,
+  },
+  {
+    label: "production app and native wrapper avoid cleanup marker comments",
+    ok: releaseCleanupMarkerFiles.length === 0,
+    message:
+      releaseCleanupMarkerFiles.length === 0
+        ? ""
+        : `cleanup markers found in: ${releaseCleanupMarkerFiles
             .map((path) => relative(process.cwd(), path))
             .join(", ")}`,
   },
