@@ -286,6 +286,7 @@ export const helpArticles = [
     ],
     tutorialMedia: [
       {
+        assetSrc: "/tutorial-clips/mobile-app-wrapper-navigation-safe.mp4",
         description:
           "Show the beta app opening to Login, then Help, Support, Terms, and Privacy staying inside the app wrapper.",
         kind: "short_clip",

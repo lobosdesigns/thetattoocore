@@ -52,6 +52,7 @@ const safeVerificationReviewClipPath = "public/tutorial-clips/mobile-verificatio
 const safeAdsCreditsClipPath = "public/tutorial-clips/mobile-ads-credits-safe.mp4";
 const safeOrderRefundClipPath = "public/tutorial-clips/mobile-order-refund-review-safe.mp4";
 const safePaymentSafetyClipPath = "public/tutorial-clips/mobile-payment-safety-safe.mp4";
+const safeAppWrapperClipPath = "public/tutorial-clips/mobile-app-wrapper-navigation-safe.mp4";
 const safePrivacyScreenshotPath = "public/screenshots/mobile-privacy-safety-safe.png";
 const safeMerchShortcutScreenshotPath = "public/screenshots/mobile-merch-help-shortcut-safe.png";
 const forbiddenContactSnippets = [
@@ -492,6 +493,9 @@ const checks = [
       helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-payment-safety-safe.mp4"') &&
       existsSync(safePaymentSafetyClipPath) &&
       statSync(safePaymentSafetyClipPath).size > 50_000 &&
+      helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-app-wrapper-navigation-safe.mp4"') &&
+      existsSync(safeAppWrapperClipPath) &&
+      statSync(safeAppWrapperClipPath).size > 50_000 &&
       helpCenterData.includes("Admin beta go/no-go") &&
       helpCenterData.includes("Two-user DM and notification pass") &&
       helpCenterData.includes("Booking request to calendar") &&
