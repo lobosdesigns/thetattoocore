@@ -1259,13 +1259,11 @@ export async function createBookingRequest(formData: FormData) {
       userId,
     });
   } catch (error) {
+    console.error("Booking request DM open failed.", error);
     redirect(
       redirectWithMessage({
         hash: "booking-request",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Could not open a DM for this booking request.",
+        message: "Could not open a DM for this booking request. Please try again.",
         path: returnPath,
       }),
     );
@@ -1300,10 +1298,11 @@ export async function createBookingRequest(formData: FormData) {
     .maybeSingle<{ id: string }>();
 
   if (error || !booking) {
+    console.error("Booking request create failed.", error);
     redirect(
       redirectWithMessage({
         hash: "booking-request",
-        message: error?.message || "Could not send booking request.",
+        message: "Could not send booking request. Please try again.",
         path: returnPath,
       }),
     );
