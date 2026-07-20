@@ -42,7 +42,7 @@ Use this before creating Android or iOS wrapper projects. The goal is a thin, po
 
 - Run `npm.cmd run verify` against the web app.
 - Run the full `docs/REAL_DEVICE_QA_CHECKLIST.md` on mobile web before packaging.
-- Before any Google Play submission or update on or after August 31, 2026, install Android 16 / API 36 tooling and update the Android wrapper `compileSdkVersion` and `targetSdkVersion` to 36. This Windows machine currently has Android 35 installed, so keep the v1 internal-test build on the existing target until the API 36 SDK is installed and a fresh wrapper build passes.
+- Before any Google Play submission or update on or after August 31, 2026, install Android 16 / API 36 tooling and update the Android wrapper `compileSdkVersion` and `targetSdkVersion` to 36. This Windows machine currently has Android 35 installed, so API 35 is internal-test-only and not public-submission-ready; keep the v1 internal-test build on the existing target until the API 36 SDK is installed and a fresh wrapper build passes.
 - Confirm `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/support`, `/privacy`, `/terms`, `/messages`, `/notifications`, `/account`, public profiles, public posts, Stories, Stuff, Gigs, Merch, and booking/deposit routes do not reload-loop or overflow horizontally.
 - Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView and do not push members out to Safari.
 - Confirm install prompts or browser banners do not block scrolling in the wrapper.

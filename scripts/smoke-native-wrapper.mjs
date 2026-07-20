@@ -3,6 +3,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 const wrapperRoot = "native/thetattoocore-mobile";
 const files = {
   androidManifest: `${wrapperRoot}/android/app/src/main/AndroidManifest.xml`,
+  androidVariables: `${wrapperRoot}/android/variables.gradle`,
   capacitorConfig: `${wrapperRoot}/capacitor.config.ts`,
   iosBuildScript: `${wrapperRoot}/ios/build-testflight.sh`,
   iosBootstrapScript: `${wrapperRoot}/ios/mac-bootstrap-testflight.sh`,
@@ -44,6 +45,23 @@ const forbiddenNativeTokens = [
   "WEBHOOK",
   "API_KEY",
 ];
+
+function gradleNumber(name) {
+  const match = source.androidVariables.match(new RegExp(`${name}\\s*=\\s*(\\d+)`));
+
+  return match ? Number.parseInt(match[1], 10) : NaN;
+}
+
+const compileSdkVersion = gradleNumber("compileSdkVersion");
+const targetSdkVersion = gradleNumber("targetSdkVersion");
+const androidApi36SubmissionReady = compileSdkVersion >= 36 && targetSdkVersion >= 36;
+const androidApi35InternalOnly =
+  compileSdkVersion === 35 &&
+  targetSdkVersion === 35 &&
+  source.nativePrep.includes("API 35 is internal-test-only") &&
+  source.nativePrep.includes("not public-submission-ready") &&
+  source.mobileRunbook.includes("API 35 is internal-test-only") &&
+  source.readme.includes("API 35 is internal-test-only");
 
 const checks = [
   {
@@ -123,6 +141,15 @@ const checks = [
       source.mobileRunbook.includes("current internal-test Android build targets API 35") &&
       source.readme.includes("support@thetattoocore.com") &&
       source.readme.includes("Native permissions at first beta: none"),
+  },
+  {
+    label: "native Android target API stays explicit for internal testing or submission",
+    ok:
+      source.androidVariables.includes("compileSdkVersion") &&
+      source.androidVariables.includes("targetSdkVersion") &&
+      source.nativePrep.includes("August 31, 2026") &&
+      source.nativePrep.includes("Android 16 / API 36") &&
+      (androidApi36SubmissionReady || androidApi35InternalOnly),
   },
   {
     label: "native wrapper uses TTC app icon and splash assets",

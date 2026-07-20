@@ -15,7 +15,7 @@
 - Real-device QA gates live in `docs/REAL_DEVICE_QA_CHECKLIST.md` and should pass before wrapper packaging.
 - Production payment gates live in `docs/PAYMENT_PRODUCTION_READINESS.md` and should pass before real commerce appears in native builds.
 - Final legal review evidence lives in `docs/LEGAL_REVIEW_PREP.md`; keep reviewer notes private and recheck public Terms, Privacy, Support, Help, store metadata, screenshots, and native wrapper behavior against the submitted build.
-- Google Play submissions or updates on or after August 31, 2026 must target Android 16 / API 36. The current internal-test Android build targets API 35 because this Windows machine only has Android 35 installed; install API 36 and rebuild before any submission/update after that deadline.
+- Google Play submissions or updates on or after August 31, 2026 must target Android 16 / API 36. The current internal-test Android build targets API 35 because this Windows machine only has Android 35 installed; API 35 is internal-test-only and not public-submission-ready, so install API 36 and rebuild before any submission/update after that deadline.
 - Visible nudity is not allowed to reduce review and moderation risk.
 - Merch and ads use controlled launch checkout; production payments, seller payouts, taxes, refunds, disputes, and app-store policy review from `docs/PAYMENT_PRODUCTION_READINESS.md` must be finished before real commerce is promoted in native builds.
 
