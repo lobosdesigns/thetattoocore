@@ -95,6 +95,7 @@ const paymentEventTypes = [
   "charge.dispute.funds_withdrawn",
   "charge.dispute.funds_reinstated",
   "refund.failed",
+  "account.updated",
 ] as const;
 const paymentAuditTypes = [
   "reset_stale_booking_deposit_checkouts",
@@ -345,6 +346,7 @@ function eventTypeLabel(value: string) {
   if (value === "charge.dispute.funds_withdrawn") return "Funds withdrawn";
   if (value === "charge.dispute.funds_reinstated") return "Funds reinstated";
   if (value === "refund.failed") return "Refund failed";
+  if (value === "account.updated") return "Seller payout readiness updated";
 
   return value;
 }

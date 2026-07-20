@@ -1005,6 +1005,8 @@ checks.push({
     adminPaymentsPage.includes("merch_payment_dispute") &&
     adminPaymentsPage.includes("ad_payment_dispute") &&
     adminPaymentsPage.includes("booking_payment_dispute") &&
+    adminPaymentsPage.includes('"account.updated"') &&
+    adminPaymentsPage.includes("Seller payout readiness updated") &&
     adminPaymentsPage.includes("charge.dispute.created") &&
     adminPaymentsPage.includes("charge.dispute.updated") &&
     adminPaymentsPage.includes("charge.dispute.closed") &&

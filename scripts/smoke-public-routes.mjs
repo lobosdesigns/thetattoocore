@@ -203,6 +203,7 @@ const checks = [
   { path: "/admin/payments?event_type=checkout.session.async_payment_succeeded", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?event_type=charge.dispute.created", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?event_type=charge.dispute.updated", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  { path: "/admin/payments?event_type=account.updated", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?audit_type=booking_refund_review_requested", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?audit_type=merch_refund_review_requested", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/payments?audit_type=booking_refund_problem", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
