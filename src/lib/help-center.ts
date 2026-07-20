@@ -799,6 +799,7 @@ export const helpArticles = [
         title: "Buyer order support path",
       },
       {
+        assetSrc: "/tutorial-clips/mobile-order-refund-review-safe.mp4",
         description:
           "Short clip of a seller adding tracking or handoff proof and an admin reviewing the order support path with safe sample data.",
         kind: "short_clip",
