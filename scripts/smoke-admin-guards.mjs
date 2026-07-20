@@ -256,6 +256,16 @@ const checks = [
       !adminDataRequests.includes(">{request.status}</span>"),
   },
   {
+    label: "admin account deletion actions hide raw backend errors from redirects",
+    ok:
+      adminActions.includes('console.error("Account deletion request lookup failed.", requestError)') &&
+      adminActions.includes('console.error("Account deletion request update failed.", updateError)') &&
+      adminActions.includes('"Account deletion request was not found."') &&
+      adminActions.includes('"Could not update account deletion request. Please try again."') &&
+      !adminActions.includes('requestError?.message || "Account deletion request was not found."') &&
+      !adminActions.includes('updateError.message || "Could not update account deletion request."'),
+  },
+  {
     label: "admin data requests can filter status and search while preserving actions",
     ok:
       adminDataRequests.includes("function dataRequestFilters") &&

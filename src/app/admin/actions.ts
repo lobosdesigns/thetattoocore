@@ -1960,12 +1960,15 @@ export async function updateAccountDeletionRequest(formData: FormData) {
       id: string;
       profile_id: string;
       status: string;
-    }>();
+  }>();
 
   if (requestError || !request) {
+    if (requestError) {
+      console.error("Account deletion request lookup failed.", requestError);
+    }
     redirect(
       adminDataRequestsMessage(
-        requestError?.message || "Account deletion request was not found.",
+        "Account deletion request was not found.",
         returnTo,
       ),
     );
@@ -1992,9 +1995,10 @@ export async function updateAccountDeletionRequest(formData: FormData) {
     .eq("id", requestId);
 
   if (updateError) {
+    console.error("Account deletion request update failed.", updateError);
     redirect(
       adminDataRequestsMessage(
-        updateError.message || "Could not update account deletion request.",
+        "Could not update account deletion request. Please try again.",
         returnTo,
       ),
     );
