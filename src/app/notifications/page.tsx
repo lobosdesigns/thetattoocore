@@ -497,8 +497,8 @@ export default async function NotificationsPage({
               <Bell className="mx-auto mb-3 size-9 text-[var(--muted-strong)]" />
               <h2 className="text-lg font-bold">No notifications yet</h2>
               <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[var(--muted-strong)]">
-                Follow requests, messages, likes, and comments will show up
-                here.
+                Follow requests, DMs, booking updates, order updates,
+                verification, and safety notices will show up here.
               </p>
             </div>
           )}

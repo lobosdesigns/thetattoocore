@@ -269,6 +269,10 @@ const checks = [
       userFacingPushSource.includes("App alerts") &&
       userFacingPushSource.includes("Phone app alerts are off") &&
       userFacingPushSource.includes("Alert settings") &&
+      userFacingPushSource.includes(
+        "Follow requests, DMs, booking updates, order updates",
+      ) &&
+      userFacingPushSource.includes("verification, and safety notices") &&
       userFacingPushSource.includes("Device alerts are being prepared. Keep checking Notifications for now.") &&
       userFacingPushSource.includes("Device alert preference saved. Keep checking Notifications for now.") &&
       userFacingPushSource.includes("App alert setup could not be completed.") &&
