@@ -1,4 +1,5 @@
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 
 const wrapperRoot = "native/thetattoocore-mobile";
 const files = {
@@ -14,6 +15,7 @@ const files = {
   iosProject: `${wrapperRoot}/ios/App/App.xcodeproj/project.pbxproj`,
   iosUploadChecklist: `${wrapperRoot}/ios/APPLE_UPLOAD_CHECKLIST.md`,
   dataSafetyPrep: "docs/DATA_SAFETY_PREP.md",
+  gitignore: ".gitignore",
   mobileRunbook: "docs/MOBILE_APP_SUBMISSION_RUNBOOK.md",
   nativePrep: "docs/NATIVE_WRAPPER_PREP.md",
   readiness: "docs/APP_STORE_READINESS.md",
@@ -30,6 +32,33 @@ const source = Object.fromEntries(
 );
 
 const fileSize = (path) => (existsSync(path) ? statSync(path).size : 0);
+
+function filesUnder(root) {
+  if (!existsSync(root)) return [];
+
+  return readdirSync(root).flatMap((entry) => {
+    const entryPath = join(root, entry);
+    const stats = statSync(entryPath);
+
+    if (stats.isDirectory()) return filesUnder(entryPath);
+
+    return [entryPath];
+  });
+}
+
+const forbiddenNativePushConfigFiles = [
+  "google-services.json",
+  "GoogleService-Info.plist",
+];
+const checkedInNativePushConfigFiles = filesUnder(wrapperRoot).filter((path) =>
+  forbiddenNativePushConfigFiles.some((fileName) => path.endsWith(fileName)),
+);
+const forbiddenNativePushDependencies = [
+  "@capacitor/push-notifications",
+  "firebase",
+  "@react-native-firebase/app",
+  "@react-native-firebase/messaging",
+];
 
 const nativeSourceForLeakChecks = Object.entries(source)
   .filter(([key]) => key !== "nativePrep" && key !== "mobileRunbook")
@@ -203,6 +232,22 @@ const checks = [
       source.mobileRunbook.includes("Firebase project, native app config files") &&
       source.mobileRunbook.includes("Android and iOS device-token registration") &&
       source.mobileRunbook.includes("alert delivery, notification tap routing, opt-out"),
+  },
+  {
+    label: "native push config and dependencies stay gated before device evidence",
+    ok:
+      checkedInNativePushConfigFiles.length === 0 &&
+      forbiddenNativePushDependencies.every(
+        (dependency) => !source.packageJson.includes(`"${dependency}"`),
+      ) &&
+      source.gitignore.includes("**/google-services.json") &&
+      source.gitignore.includes("**/GoogleService-Info.plist") &&
+      source.nativePrep.includes("Enable Firebase/FCM notification delivery only after") &&
+      source.mobileRunbook.includes("Firebase project, native app config files") &&
+      source.readiness.includes("native Firebase/FCM delivery is planned but not enabled"),
+    message: checkedInNativePushConfigFiles.length
+      ? `Remove native push config from repo before public review: ${checkedInNativePushConfigFiles.join(", ")}`
+      : undefined,
   },
   {
     label: "native Android target API stays explicit for internal testing or submission",
