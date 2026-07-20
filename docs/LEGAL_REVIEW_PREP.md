@@ -9,7 +9,7 @@ Use this private checklist before public App Store or Google Play review, produc
 - Account deletion: member request path, target review window, manual review steps, retention exceptions for safety, fraud, disputes, payment/order records, moderation, legal holds, and verification history.
 - Commerce: review-controlled checkout status, Merch product rules, buyer support language, seller obligations, fulfillment timing, tax/shipping assumptions, refund-review flow, dispute/chargeback handling, booking deposit terms, ad purchase status, and seller payout timing.
 - Native app review: whether checkout is exposed in native wrappers, whether any external payment or checkout messaging is acceptable for the submitted build, and whether screenshots/store text match the current web/app behavior.
-- Store submissions: privacy/data-safety answers, age-rating answers, content rights answers, support URL, Privacy URL, Terms URL, reviewer notes, and screenshot safety.
+- Store submissions: privacy/data-safety answers, age-rating answers, Accessibility Nutrition Labels, content rights answers, support URL, Privacy URL, Terms URL, reviewer notes, and screenshot safety.
 
 ## Private Evidence To Keep
 
@@ -17,7 +17,7 @@ Do not store reviewer passwords, private phone numbers, owner personal contact d
 
 - Reviewer name or initials, role, review date, and build/web deploy version reviewed.
 - Public URLs reviewed: `https://thetattoocore.com/terms`, `https://thetattoocore.com/privacy`, `https://thetattoocore.com/support`, and `https://thetattoocore.com/help`.
-- Store-console sections reviewed, including App Privacy/Data Safety, age rating/content rating, content rights, app category, review notes, support contact, pricing, and screenshot upload validation.
+- Store-console sections reviewed, including App Privacy/Data Safety, age rating/content rating, Accessibility Nutrition Labels, content rights, app category, review notes, support contact, pricing, and screenshot upload validation.
 - Legal decisions recorded for account deletion SLA, retention exceptions, marketplace restrictions, prohibited goods, moderation escalation, seller payout release, refund/dispute handling, booking deposit handling, and ad purchase handling.
 - Required public copy changes listed with file/page names, owner, date, and whether the live build was rechecked after deployment.
 - Open legal risks listed with a launch decision: block release, allow internal testing only, allow public release, or revisit before production commerce.

@@ -186,13 +186,15 @@ const checks = [
       source.readme.includes("| Content rights | Confirmation that icons, generated screenshots") &&
       source.readme.includes("| Privacy and data safety | App Privacy, Google Data Safety") &&
       source.readme.includes("| Age/content rating | App Store age rating, Google Play/IARC summary") &&
+      source.readme.includes("| Accessibility Nutrition Labels | VoiceOver, Voice Control, Larger Text") &&
       source.readme.includes("| Final validation | Console errors cleared") &&
       blockedPrivateEvidenceTerms.every((term) => !source.readme.toLowerCase().includes(term)),
   },
   {
     label: "store readiness docs keep current console blockers guarded",
     ok:
-      source.readiness.includes("Apple still needs 13-inch iPad screenshot upload, primary category, Content Rights, App Privacy/Privacy Policy URL, pricing, age-rating answers, and final submission validation") &&
+      source.readiness.includes("Apple still needs 13-inch iPad screenshot upload, primary category, Content Rights, App Privacy/Privacy Policy URL, pricing, age-rating answers, Accessibility Nutrition Labels, and final submission validation") &&
+      source.readiness.includes("age/content rating, Accessibility Nutrition Labels, and final console validation") &&
       source.readiness.includes("Google Play still needs the final content-rating summary/save handoff plus current Data Safety review") &&
       source.readiness.includes("build selection, reviewer test access, developer/legal entity, reviewer contact phone") &&
       source.readiness.includes("Do not store reviewer passwords, private phone numbers, account-owner data, or console identifiers in repo docs") &&

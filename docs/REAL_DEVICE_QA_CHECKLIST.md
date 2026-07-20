@@ -155,6 +155,7 @@ Store-critical proof should include at least:
 - Verification upload success and admin approval/rejection evidence without exposing private documents.
 - Merch browsing, controlled checkout return, order history, and Admin Payments review evidence using safe test references.
 - Screenshot upload candidates that match `docs/SCREENSHOT_PREP.md`.
+- Accessibility Nutrition Labels proof for the submitted iPhone/iPad build, including common-task checks for VoiceOver, Voice Control, Larger Text, Differentiate Without Color Alone, Sufficient Contrast, Reduced Motion, Captions, and Audio Descriptions before claiming support in App Store Connect.
 - Browser/device console check showing no uncaught app errors during auth, posting, DMs, checkout return, reporting/blocking, and Help/Support/legal routes.
 
 ## Native Build And Install Evidence Matrix

@@ -46,6 +46,7 @@ Start with a thin native wrapper now that core web smoke/390px mobile checks are
 - Decide whether native builds expose Merch checkout or keep it web-only and launch-controlled until production payment policy is approved.
 - Prepare store age rating answers around 18+, user-generated content, moderation/reporting, no visible nudity policy, social interaction, DMs, marketplace-like browsing, and review-controlled checkout.
 - Prepare store data-safety/privacy answers around account/profile data, user-generated content, DMs, verification documents, moderation records, payment references, coarse location, notifications, deletion requests, and public-search visibility.
+- Prepare App Store Accessibility Nutrition Labels from real-device common-task QA only; do not claim support for VoiceOver, Voice Control, Larger Text, Differentiate Without Color Alone, Sufficient Contrast, Reduced Motion, Captions, or Audio Descriptions until that feature has been tested on the submitted iPhone/iPad build.
 
 ## Push Notifications
 

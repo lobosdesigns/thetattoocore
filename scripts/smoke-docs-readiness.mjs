@@ -254,6 +254,7 @@ const checks = [
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("refund/dispute handling") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Native app review") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Store submissions") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Accessibility Nutrition Labels") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Do not store reviewer passwords") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Public URLs reviewed") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("block release, allow internal testing only, allow public release") &&
@@ -319,6 +320,8 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("iOS TestFlight install proof") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android and iOS login/signup/reset staying inside the app") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Admin Payments review evidence using safe test references") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Accessibility Nutrition Labels proof") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("VoiceOver, Voice Control, Larger Text") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("## Native Build And Install Evidence Matrix") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("| Android | Google Play internal testing | Version name, version code") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("| iOS | TestFlight internal testing | iOS version/build number") &&
@@ -339,6 +342,8 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("/help/beta-app-testing") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Merch guide shortcut") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("seller payout setup details") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Accessibility Nutrition Labels") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("VoiceOver, Voice Control, Larger Text") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("review-controlled checkout") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checkout-return handling") &&
       !docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("hosted checkout"),
@@ -636,6 +641,7 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("Store consoles") &&
       docs["docs/APP_STORE_READINESS.md"].includes("13-inch iPad screenshot upload") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Content Rights") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Accessibility Nutrition Labels") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Data Safety review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Legal and policy") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Final counsel-reviewed Terms/Privacy") &&
