@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { AuthLegalLinks } from "../auth-legal-links";
 import { requestPasswordReset } from "./actions";
+import { safeStatusMessage } from "@/lib/status-message";
 
 export const metadata: Metadata = {
   robots: {
@@ -14,9 +15,10 @@ export const metadata: Metadata = {
 export default async function ForgotPasswordPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string }>;
+  searchParams: Promise<{ message?: string | string[] }>;
 }) {
   const params = await searchParams;
+  const statusMessage = safeStatusMessage(params.message);
 
   return (
     <main className="ttc-page min-h-screen px-4 py-10">
@@ -33,9 +35,9 @@ export default async function ForgotPasswordPage({
             </p>
           </div>
 
-          {params.message ? (
+          {statusMessage ? (
             <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_88%,var(--brand-gold)_12%)] px-3 py-2 text-sm">
-              {params.message}
+              {statusMessage}
             </p>
           ) : null}
 

@@ -49,6 +49,7 @@ const profileForm = readFileSync("src/app/account/profile-form.tsx", "utf8");
 const mediaInput = readFileSync("src/app/media-input.tsx", "utf8");
 const floatingComposer = readFileSync("src/app/floating-composer.tsx", "utf8");
 const searchPage = readFileSync("src/app/search/page.tsx", "utf8");
+const statusMessage = readFileSync("src/lib/status-message.ts", "utf8");
 const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const merchCheckoutSuccessPage = readFileSync(
   "src/app/merch/checkout/success/page.tsx",
@@ -331,6 +332,28 @@ const checks = [
       resetPasswordForm.includes('"Could not open that reset link. Please request a new one."') &&
       resetPasswordForm.includes('"Could not update password. Please try again."') &&
       !resetPasswordForm.includes("setMessage(error.message)"),
+  },
+  {
+    label: "public auth status banners sanitize query messages",
+    ok:
+      statusMessage.includes("export function safeStatusMessage") &&
+      statusMessage.includes("unsafeStatusMessageTerms") &&
+      statusMessage.includes('"Update could not be shown. Please try again or contact Support."') &&
+      loginPage.includes("const statusMessage = safeStatusMessage(params.message)") &&
+      signupPage.includes("const statusMessage = safeStatusMessage(params.message)") &&
+      forgotPasswordPage.includes("const statusMessage = safeStatusMessage(params.message)") &&
+      readFileSync("src/app/reset-password/page.tsx", "utf8").includes(
+        "const statusMessage = safeStatusMessage(params.message)",
+      ) &&
+      readFileSync("src/app/reset-password/page.tsx", "utf8").includes(
+        "initialMessage={statusMessage ?? undefined}",
+      ) &&
+      !loginPage.includes("{params.message}") &&
+      !signupPage.includes("{params.message}") &&
+      !forgotPasswordPage.includes("{params.message}") &&
+      !readFileSync("src/app/reset-password/page.tsx", "utf8").includes(
+        "initialMessage={params.message}",
+      ),
   },
   {
     label: "client components avoid browser console error details",

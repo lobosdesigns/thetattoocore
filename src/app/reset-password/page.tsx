@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ResetPasswordForm } from "./reset-password-form";
+import { safeStatusMessage } from "@/lib/status-message";
 
 export const metadata: Metadata = {
   robots: {
@@ -13,9 +14,10 @@ export const metadata: Metadata = {
 export default async function ResetPasswordPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string }>;
+  searchParams: Promise<{ message?: string | string[] }>;
 }) {
   const params = await searchParams;
+  const statusMessage = safeStatusMessage(params.message);
 
   return (
     <main className="ttc-page min-h-screen px-4 py-10">
@@ -24,7 +26,7 @@ export default async function ResetPasswordPage({
           TheTattooCore
         </Link>
 
-        <ResetPasswordForm initialMessage={params.message} />
+        <ResetPasswordForm initialMessage={statusMessage ?? undefined} />
       </section>
     </main>
   );

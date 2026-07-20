@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { AuthLegalLinks } from "../auth-legal-links";
+import { safeStatusMessage } from "@/lib/status-message";
 
 const accountSteps = [
   ["1", "Create account", "Confirm you are 18+ and use your email/password."],
@@ -26,9 +27,10 @@ export const metadata: Metadata = {
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string; return_to?: string }>;
+  searchParams: Promise<{ message?: string | string[]; return_to?: string }>;
 }) {
   const params = await searchParams;
+  const statusMessage = safeStatusMessage(params.message);
   const returnTo =
     params.return_to?.startsWith("/") &&
     !params.return_to.startsWith("//") &&
@@ -96,9 +98,9 @@ export default async function SignupPage({
               </p>
             </div>
 
-            {params.message ? (
+            {statusMessage ? (
               <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_88%,var(--brand-gold)_12%)] px-3 py-2 text-sm">
-                {params.message}
+                {statusMessage}
               </p>
             ) : null}
 
