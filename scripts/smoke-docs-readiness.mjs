@@ -276,6 +276,8 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run smoke:mobile") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Google Play internal testing track") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("TestFlight group") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("one actual iPhone/TestFlight device for release evidence") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("iPhone-sized browser viewport is useful for layout scouting only") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Open Admin > Media Ops") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Beta QA launch checklist") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("support/help/legal") &&
@@ -301,6 +303,9 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Repo-safe two-user DM evidence should record only tester aliases") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Keep email addresses, passwords, one-time codes, private message bodies") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Screenshot or clip filename") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Console/log review result for web browser, Android wrapper WebView, and iOS TestFlight") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("keep raw logs, stack traces with account data, device identifiers, and console screenshots in the private handoff") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Browser/device console check showing no uncaught app errors") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android internal-testing install proof") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("iOS TestFlight install proof") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android and iOS login/signup/reset staying inside the app") &&
@@ -310,7 +315,8 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("| iOS | TestFlight internal testing | iOS version/build number") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("release channel, version/build, date, device model, and pass/fail status") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Native build/install evidence should use the matrix") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("release channel, version/build, install source, tester account pair"),
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("release channel, version/build, install source, tester account pair") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Record a safe console/log review summary for mobile web, Android wrapper WebView, and iOS TestFlight"),
   },
   {
     label: "mobile submission runbook includes Stories, help, and booking deposit QA",

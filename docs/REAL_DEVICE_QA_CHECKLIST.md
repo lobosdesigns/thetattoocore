@@ -1,6 +1,6 @@
 # Real Device QA Checklist
 
-Use this before native wrapper work, Google Play internal testing, TestFlight, or any production launch push. Run it on at least one Android phone and one iPhone-sized viewport or device. Use safe sample content only.
+Use this before native wrapper work, Google Play internal testing, TestFlight, or any production launch push. Run it on at least one Android phone and one actual iPhone/TestFlight device for release evidence. An iPhone-sized browser viewport is useful for layout scouting only and does not replace native iOS proof. Use safe sample content only.
 
 ## Setup
 
@@ -143,6 +143,7 @@ For each device pass, record:
 - Pass/fail result for each checklist area.
 - Screenshot or clip filename for each store-critical proof screen.
 - Notes for any retry, bug, moderation action, checkout return, report/block action, or support handoff.
+- Console/log review result for web browser, Android wrapper WebView, and iOS TestFlight where available. Record pass/fail and a short safe summary only; keep raw logs, stack traces with account data, device identifiers, and console screenshots in the private handoff.
 
 Store-critical proof should include at least:
 
@@ -154,6 +155,7 @@ Store-critical proof should include at least:
 - Verification upload success and admin approval/rejection evidence without exposing private documents.
 - Merch browsing, controlled checkout return, order history, and Admin Payments review evidence using safe test references.
 - Screenshot upload candidates that match `docs/SCREENSHOT_PREP.md`.
+- Browser/device console check showing no uncaught app errors during auth, posting, DMs, checkout return, reporting/blocking, and Help/Support/legal routes.
 
 ## Native Build And Install Evidence Matrix
 

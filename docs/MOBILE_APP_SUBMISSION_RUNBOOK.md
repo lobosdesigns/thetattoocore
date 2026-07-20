@@ -40,6 +40,7 @@ Start with a thin native wrapper now that core web smoke/390px mobile checks are
 - Use the public `/help/beta-app-testing` guide for beta testers so app-wrapper login, signup, reset, Help, Support, media upload, notifications, DMs, booking, Merch, checkout-return, and safe bug-report expectations stay consistent.
 - Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView and do not push members out to Safari.
 - Confirm public shared links open in the wrapper after final app-link/universal-link association files are published for the signed builds.
+- Record a safe console/log review summary for mobile web, Android wrapper WebView, and iOS TestFlight where available; do not commit raw logs, device identifiers, private account data, or console screenshots.
 - Confirm support email and public legal/contact surfaces use `support@thetattoocore.com` or final company/legal contact details, not personal owner information.
 - Complete `docs/LEGAL_REVIEW_PREP.md` for Terms, Privacy, account deletion language, moderation policy, marketplace rules, payment/refund language, seller payout policy, and native checkout/store submission notes.
 - Decide whether native builds expose Merch checkout or keep it web-only and launch-controlled until production payment policy is approved.
