@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 
 const authLogin = readFileSync("src/app/auth/login/route.ts", "utf8");
 const legacyLoginActions = readFileSync("src/app/login/actions.ts", "utf8");
@@ -307,6 +307,12 @@ const checks = [
   {
     label: "client components avoid browser console error details",
     ok: clientConsoleFiles.length === 0,
+    message:
+      clientConsoleFiles.length === 0
+        ? ""
+        : `client console calls found in: ${clientConsoleFiles
+            .map((path) => relative(process.cwd(), path))
+            .join(", ")}`,
   },
   {
     label: "adult terms acceptance hides raw backend errors from member redirects",
@@ -680,6 +686,11 @@ for (const check of checks) {
 }
 
 if (failures.length) {
+  for (const check of failures) {
+    if (check.message) {
+      console.error(`  ${check.message}`);
+    }
+  }
   console.error(`${failures.length} security guard smoke check(s) failed.`);
   process.exit(1);
 }

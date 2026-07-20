@@ -130,6 +130,7 @@
 - Add SEO-friendly public profile pages and public listing pages, while respecting profile privacy controls.
 - Add `robots.txt`, metadata, and per-route noindex rules before launch. Done for launch with private route disallows/noindex metadata and sitemap entries limited to public-safe profiles, posts, Gossip, Stuff, Gigs, Merch, and support/legal pages. Public smoke tests sample sitemap URLs to catch broken public entries or private-path leaks.
 - Do not expose private messages, private account data, unpublished content, or sensitive/adult content to crawlers. Done for launch with private route noindex and sitemap filtering for public, active, non-sensitive content.
+- Security smoke now reports the exact client component files if browser console calls return, so app-review cleanup can be fixed without hunting through the whole app tree.
 - Provide a public support URL for app-store review, safety reports, privacy help, and account deletion instructions. Done for launch at `/support`.
 - Keep account deletion requests in an admin data-request queue during launch; complete irreversible deletion manually until legal hold and retention rules are final. Done for launch with Account > Data requests, email confirmation when SMTP is enabled, and the admin data-request queue.
 
