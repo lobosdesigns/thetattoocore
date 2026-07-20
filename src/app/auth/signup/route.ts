@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 function cleanReturnTo(value: FormDataEntryValue | null) {
   const text = String(value ?? "").trim();
 
-  if (!text.startsWith("/") || text.startsWith("//")) return "/account";
+  if (!text.startsWith("/") || text.startsWith("//") || text.includes("\\")) return "/account";
 
   return text;
 }

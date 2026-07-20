@@ -212,7 +212,10 @@ const checks = [
     label: "login page does not render protocol-relative return paths",
     ok:
       loginPage.includes('params.return_to?.startsWith("/")') &&
-      loginPage.includes("!params.return_to.startsWith(\"//\")"),
+      loginPage.includes("!params.return_to.startsWith(\"//\")") &&
+      loginPage.includes('!params.return_to.includes("\\\\")') &&
+      authLogin.includes("function cleanReturnTo") &&
+      authLogin.includes('text.includes("\\\\")'),
   },
   {
     label: "signup form is separated from login page",
@@ -228,14 +231,19 @@ const checks = [
     ok:
       signupPage.includes('params.return_to?.startsWith("/")') &&
       signupPage.includes("!params.return_to.startsWith(\"//\")") &&
+      signupPage.includes('!params.return_to.includes("\\\\")') &&
       signupPage.includes('name="return_to"') &&
       authSignup.includes("function cleanReturnTo") &&
       authSignup.includes("text.startsWith(\"//\")") &&
+      authSignup.includes('text.includes("\\\\")') &&
+      authResendConfirmation.includes("function cleanReturnTo") &&
+      authResendConfirmation.includes('text.includes("\\\\")') &&
       authSignup.includes("emailRedirectTo") &&
       authSignup.includes("encodeURIComponent(returnTo)") &&
       signupPage.includes("loginHref") &&
       authConfirm.includes("next?.startsWith(\"/\")") &&
-      authConfirm.includes("!next.startsWith(\"//\")"),
+      authConfirm.includes("!next.startsWith(\"//\")") &&
+      authConfirm.includes('!next.includes("\\\\")'),
   },
   {
     label: "signup and confirmation resend hide raw auth-provider errors",
@@ -245,6 +253,7 @@ const checks = [
       !authSignup.includes('error.message || "Could not create account."') &&
       authSignup.includes("function cleanReturnTo") &&
       authSignup.includes("text.startsWith(\"//\")") &&
+      authSignup.includes('text.includes("\\\\")') &&
       authSignup.includes("emailRedirectTo") &&
       authSignup.includes("encodeURIComponent(returnTo)") &&
       authSignup.includes("Signup request sent. Check inbox and junk for the confirmation email.") &&
@@ -255,6 +264,7 @@ const checks = [
       authConfirm.includes("Could not confirm your email") &&
       authConfirm.includes("next?.startsWith(\"/\")") &&
       authConfirm.includes("!next.startsWith(\"//\")") &&
+      authConfirm.includes('!next.includes("\\\\")') &&
       authSignup.includes("signupRedirect") &&
       authResendConfirmation.includes(
         'console.error("Confirmation resend failed.", error)',
@@ -273,6 +283,7 @@ const checks = [
     ok:
       authConfirm.includes('next?.startsWith("/")') &&
       authConfirm.includes("!next.startsWith(\"//\")") &&
+      authConfirm.includes('!next.includes("\\\\")') &&
       authConfirm.includes(': "/account"'),
   },
   {
@@ -430,10 +441,12 @@ const checks = [
       publicSmoke.includes("/login?return_to=%2Fmessages") &&
       publicSmoke.includes("/signup?return_to=%2Fp%2Fnot-a-real-post") &&
       publicSmoke.includes("/signup?return_to=%2F%2Fevil.example") &&
+      publicSmoke.includes("/signup?return_to=%2F%5Cevil.example") &&
       publicSmoke.includes('path: "/auth/signup"') &&
       publicSmoke.includes('path: "/auth/resend-confirmation"') &&
       publicSmoke.includes("locationExcludes") &&
       publicSmoke.includes("/login?return_to=%2F%2Fevil.example") &&
+      publicSmoke.includes("/login?return_to=%2F%5Cevil.example") &&
       publicSmoke.includes("excludes"),
   },
   {

@@ -10,7 +10,9 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get("next");
   const redirectTo = request.nextUrl.clone();
   redirectTo.pathname =
-    next?.startsWith("/") && !next.startsWith("//") ? next : "/account";
+    next?.startsWith("/") && !next.startsWith("//") && !next.includes("\\")
+      ? next
+      : "/account";
   redirectTo.search = "";
 
   const supabase = await createClient();

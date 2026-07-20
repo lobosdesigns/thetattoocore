@@ -251,6 +251,16 @@ const checks = [
     redirect: "manual",
   },
   {
+    body: "email=smoke%40example.invalid&password=notlongenough&return_to=%2F%5Cevil.example",
+    method: "POST",
+    path: "/auth/signup",
+    requestHeaders: { "content-type": "application/x-www-form-urlencoded" },
+    status: [307, 308],
+    redirectIncludes: "/signup",
+    locationExcludes: ["return_to=%2F%5Cevil.example"],
+    redirect: "manual",
+  },
+  {
     body: "redirect_to=%2Fsignup&return_to=%2Fmessages",
     method: "POST",
     path: "/auth/resend-confirmation",
@@ -258,6 +268,16 @@ const checks = [
     status: [307, 308],
     redirectIncludes: "/signup",
     locationIncludes: ["return_to=%2Fmessages"],
+    redirect: "manual",
+  },
+  {
+    body: "redirect_to=%2Fsignup&return_to=%2F%5Cevil.example",
+    method: "POST",
+    path: "/auth/resend-confirmation",
+    requestHeaders: { "content-type": "application/x-www-form-urlencoded" },
+    status: [307, 308],
+    redirectIncludes: "/signup",
+    locationExcludes: ["return_to=%2F%5Cevil.example"],
     redirect: "manual",
   },
   {
@@ -396,10 +416,22 @@ const checks = [
     excludes: ['name="return_to"', 'value="//evil.example"'],
   },
   {
+    path: "/signup?return_to=%2F%5Cevil.example",
+    status: [200],
+    includes: ['name="robots" content="noindex, nofollow"', "Create account"],
+    excludes: ['name="return_to"', 'value="/\\evil.example"'],
+  },
+  {
     path: "/login?return_to=%2F%2Fevil.example",
     status: [200],
     includes: ['name="robots" content="noindex, nofollow"', "Sign in"],
     excludes: ['name="return_to"', 'value="//evil.example"'],
+  },
+  {
+    path: "/login?return_to=%2F%5Cevil.example",
+    status: [200],
+    includes: ['name="robots" content="noindex, nofollow"', "Sign in"],
+    excludes: ['name="return_to"', 'value="/\\evil.example"'],
   },
   {
     path: "/forgot-password",
@@ -412,6 +444,7 @@ const checks = [
     includes: ['name="robots" content="noindex, nofollow"', "Create new password", "Support", "Help Center", "Terms", "Privacy"],
   },
   { path: "/auth/confirm?next=%2F%2Fevil.example&code=bad", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  { path: "/auth/confirm?next=%2F%5Cevil.example&code=bad", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   {
     path: "/support",
     status: [200],

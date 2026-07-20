@@ -15,7 +15,7 @@ function loginRedirect(request: Request, message: string, returnTo?: string) {
 function cleanReturnTo(value: FormDataEntryValue | null) {
   const text = String(value ?? "").trim();
 
-  if (!text.startsWith("/") || text.startsWith("//")) return "/account";
+  if (!text.startsWith("/") || text.startsWith("//") || text.includes("\\")) return "/account";
 
   return text;
 }

@@ -30,7 +30,9 @@ export default async function LoginPage({
 }) {
   const params = await searchParams;
   const returnTo =
-    params.return_to?.startsWith("/") && !params.return_to.startsWith("//")
+    params.return_to?.startsWith("/") &&
+    !params.return_to.startsWith("//") &&
+    !params.return_to.includes("\\")
       ? params.return_to
       : "";
   const signupHref = returnTo
