@@ -63,6 +63,17 @@ const androidApi35InternalOnly =
   source.mobileRunbook.includes("API 35 is internal-test-only") &&
   source.readme.includes("API 35 is internal-test-only");
 
+const iosProjectBuildVersions = [
+  ...source.iosProject.matchAll(/CURRENT_PROJECT_VERSION = (\d+);/g),
+].map((match) => match[1]);
+const iosCurrentBuildVersion = iosProjectBuildVersions[0] ?? "";
+const iosBuildVersionsMatch =
+  iosProjectBuildVersions.length > 0 &&
+  iosProjectBuildVersions.every((version) => version === iosCurrentBuildVersion);
+const iosCurrentMarketingVersion =
+  source.iosProject.match(/MARKETING_VERSION = ([^;]+);/)?.[1] ?? "";
+const iosCurrentStoreBuild = `${iosCurrentMarketingVersion} (${iosCurrentBuildVersion})`;
+
 const checks = [
   {
     label: "native wrapper scaffold exists for Android and iOS beta builds",
@@ -193,6 +204,17 @@ const checks = [
       source.iosUploadChecklist.includes("TestFlight internal testing") &&
       source.iosUploadChecklist.includes("https://thetattoocore.com/support") &&
       source.iosUploadChecklist.includes("Windows machine cannot run Xcode"),
+  },
+  {
+    label: "native iOS build handoff matches checked-in TestFlight version",
+    ok:
+      iosBuildVersionsMatch &&
+      iosCurrentStoreBuild === "1.0 (3)" &&
+      source.iosUploadChecklist.includes("Confirm build matches the checked-in Xcode `CURRENT_PROJECT_VERSION`") &&
+      source.iosUploadChecklist.includes("App Store Connect/TestFlight build selected for review") &&
+      source.iosUploadChecklist.includes("build `3`") &&
+      source.iosUploadChecklist.includes("build `1.0 (3)`") &&
+      !source.iosUploadChecklist.includes("Confirm build: `1`"),
   },
   {
     label: "native iOS wrapper has one-command Mac bootstrap",
