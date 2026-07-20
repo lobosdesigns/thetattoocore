@@ -4,4 +4,6 @@ Discover fresh work in 4U, share temporary Stories, talk shop in Gossip, browse 
 
 Launch safety rules are intentionally strict: visible nudity is not allowed, pornography and sexual solicitation are not allowed, and professional tattoo equipment activity is limited to verified artists, studios, and approved vendors where the platform can reasonably enforce it.
 
-TheTattooCore supports public discovery for safe profiles and shareable work while keeping DMs, account settings, private profile data, restricted content, and admin tools behind login.
+TheTattooCore supports public discovery for safe profiles and shareable work while keeping DMs, account settings, admin tools, private profile data, and restricted content behind login.
+
+Members and reviewers can use the Help Center for plain-language guides on Search and Saved, verification, booking requests and deposits, Merch products and orders, ads and credits, privacy, safety, reports, blocks, and support boundaries.

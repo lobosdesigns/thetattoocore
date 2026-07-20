@@ -21,7 +21,8 @@ const files = {
   screenshotInventory: "native/store-metadata/screenshot-inventory.md",
 };
 
-const read = (path) => (existsSync(path) ? readFileSync(path, "utf8").trim() : "");
+const read = (path) =>
+  existsSync(path) ? readFileSync(path, "utf8").replace(/\r\n/g, "\n").trim() : "";
 const source = Object.fromEntries(Object.entries(files).map(([key, path]) => [key, read(path)]));
 const publicMetadataKeys = [
   "appleDescription",
@@ -149,9 +150,25 @@ function draftFieldMatchesFile(fieldName, fileKey) {
   return value.length > 0 && source[fileKey] === value;
 }
 
+function markdownSectionBody(markdown, heading) {
+  const lines = markdown.split(/\r?\n/);
+  const startIndex = lines.findIndex((line) => line.trim() === `## ${heading}`);
+  if (startIndex === -1) return "";
+
+  const body = [];
+  for (const line of lines.slice(startIndex + 1)) {
+    if (line.startsWith("## ")) break;
+    body.push(line);
+  }
+
+  return body.join("\n").trim();
+}
+
 function withinCharacterLimit(value, limit) {
   return Array.from(value).length > 0 && Array.from(value).length <= limit;
 }
+
+const draftFullDescription = markdownSectionBody(source.storeListingDraft, "Full Description");
 
 const generatedScreenshots = {
   playPhone: generatedPngs("native/store-metadata/generated/google-play/phone-screenshots"),
@@ -308,6 +325,8 @@ const checks = [
     label: "store upload text matches console-ready draft fields",
     ok:
       draftFieldMatchesFile("Google Play short description", "googleShort") &&
+      source.googleDescription === draftFullDescription &&
+      source.appleDescription === draftFullDescription &&
       draftFieldMatchesFile("App Store subtitle", "appleSubtitle") &&
       draftFieldMatchesFile("App Store promotional text", "applePromotionalText") &&
       draftFieldMatchesFile("App Store keywords", "appleKeywords") &&
