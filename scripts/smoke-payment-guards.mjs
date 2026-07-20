@@ -142,6 +142,19 @@ checks.push({
     !appActions.includes('mediaError.message || "Media uploaded but could not attach to the Merch product."'),
 });
 checks.push({
+  label: "Merch owner edit and archive actions hide raw backend errors from member redirects",
+  ok:
+    appActions.includes('console.error("Merch product edit lookup failed.", productError)') &&
+    appActions.includes('console.error("Merch product update failed.", error)') &&
+    appActions.includes('console.error("Merch product archive lookup failed.", productError)') &&
+    appActions.includes('console.error("Merch product archive failed.", error)') &&
+    appActions.includes('"Could not update Merch product. It may be gone or owned by another account."') &&
+    appActions.includes('"Could not archive Merch product. It may be gone or owned by another account."') &&
+    !appActions.includes('productError?.message || "Merch product was not found."') &&
+    !appActions.includes('error?.message ||\n          "Could not update Merch product. It may be gone or owned by another account."') &&
+    !appActions.includes('error?.message ||\n          "Could not archive Merch product. It may be gone or owned by another account."'),
+});
+checks.push({
   label: "seller account keeps submitted Merch products visible",
   ok:
     accountPage.includes('const { data: merchProducts }') &&

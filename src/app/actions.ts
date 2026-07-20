@@ -2329,9 +2329,10 @@ export async function editMerchProduct(formData: FormData) {
     }>();
 
   if (productError || !product) {
+    console.error("Merch product edit lookup failed.", productError);
     redirect(
       redirectWithMessage({
-        message: productError?.message || "Merch product was not found.",
+        message: "Merch product was not found.",
         path: returnPath,
       }),
     );
@@ -2439,11 +2440,10 @@ export async function editMerchProduct(formData: FormData) {
     .maybeSingle<{ id: string }>();
 
   if (error || !updatedProduct) {
+    console.error("Merch product update failed.", error);
     redirect(
       redirectWithMessage({
-        message:
-          error?.message ||
-          "Could not update Merch product. It may be gone or owned by another account.",
+        message: "Could not update Merch product. It may be gone or owned by another account.",
         path: returnPath,
       }),
     );
@@ -2480,9 +2480,10 @@ export async function archiveMerchProduct(formData: FormData) {
     .maybeSingle<{ id: string; is_official: boolean; seller_id: string }>();
 
   if (productError || !product) {
+    console.error("Merch product archive lookup failed.", productError);
     redirect(
       redirectWithMessage({
-        message: productError?.message || "Merch product was not found.",
+        message: "Merch product was not found.",
         path: `/merch/${productId}`,
       }),
     );
@@ -2519,11 +2520,10 @@ export async function archiveMerchProduct(formData: FormData) {
     .maybeSingle<{ id: string }>();
 
   if (error || !archivedProduct) {
+    console.error("Merch product archive failed.", error);
     redirect(
       redirectWithMessage({
-        message:
-          error?.message ||
-          "Could not archive Merch product. It may be gone or owned by another account.",
+        message: "Could not archive Merch product. It may be gone or owned by another account.",
         path: `/merch/${productId}`,
       }),
     );
