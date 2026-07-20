@@ -23,24 +23,7 @@ type Profile = {
 };
 
 function payoutIssueCode(error: unknown) {
-  if (!error || typeof error !== "object") return "unknown";
-
-  const details = error as {
-    code?: string;
-    message?: string;
-    param?: string;
-    raw?: { code?: string; message?: string; param?: string; type?: string };
-    type?: string;
-  };
-  const code = details.code ?? details.raw?.code ?? "unknown";
-  const message = details.message ?? details.raw?.message ?? "no_message";
-  const param = details.param ?? details.raw?.param ?? "none";
-  const type = details.type ?? details.raw?.type ?? "error";
-
-  return `${type}:${code}:${param}:${message}`
-    .replace(/[^a-zA-Z0-9:_-]/g, "_")
-    .replace(/_+/g, "_")
-    .slice(0, 180);
+  return error && typeof error === "object" ? "provider_error" : "unknown_error";
 }
 
 function accountRedirect(message: string, payoutStatus = "retry", issue?: string) {

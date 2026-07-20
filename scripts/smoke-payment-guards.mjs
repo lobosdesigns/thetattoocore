@@ -594,6 +594,10 @@ checks.push({
     accountPage.includes("params.message && !payoutSetupNotice") &&
     accountPage.includes("Operator code:") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("function payoutIssueCode") &&
+    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes('"provider_error"') &&
+    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes('"unknown_error"') &&
+    !readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("message ?? details.raw?.message") &&
+    !readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("param ?? details.raw?.param") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("function sellerBusinessType") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes('profile.role === "owner"') &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes('profile.account_type === "vendor"') &&
