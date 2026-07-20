@@ -44,6 +44,24 @@ function hasOnlyExpectedKeys() {
   );
 }
 
+function describeKeyOrderIssue() {
+  const actualKeys = pairs.map(({ key }) => key);
+  const missingKeys = expectedKeys.filter((key) => !actualKeys.includes(key));
+  const extraKeys = actualKeys.filter((key) => !expectedKeys.includes(key));
+  const outOfOrderKeys = expectedKeys.filter((key, index) => actualKeys[index] !== key);
+  const issues = [];
+
+  if (missingKeys.length > 0) issues.push(`missing: ${missingKeys.join(", ")}`);
+  if (extraKeys.length > 0) issues.push(`unexpected: ${extraKeys.join(", ")}`);
+  if (outOfOrderKeys.length > 0) issues.push(`order mismatch near: ${outOfOrderKeys[0]}`);
+
+  return issues.join("; ");
+}
+
+function keysWithNonPlaceholderSecretValues() {
+  return secretKeys.filter((key) => !valueLooksLikePlaceholder(key, valueByKey.get(key) ?? ""));
+}
+
 function valueLooksLikePlaceholder(key, value) {
   if (key === "NEXT_PUBLIC_SITE_URL") {
     return value === "https://thetattoocore.com";
@@ -76,6 +94,7 @@ const checks = [
   {
     label: ".env.example has the required production keys in stable order",
     ok: hasOnlyExpectedKeys(),
+    message: describeKeyOrderIssue(),
   },
   {
     label: ".env.example keeps public and server-only keys separated",
@@ -86,6 +105,7 @@ const checks = [
   {
     label: ".env.example keeps secret values as placeholders",
     ok: secretKeys.every((key) => valueLooksLikePlaceholder(key, valueByKey.get(key) ?? "")),
+    message: `non-placeholder secret keys: ${keysWithNonPlaceholderSecretValues().join(", ")}`,
   },
   {
     label: ".env.example keeps browser push gated behind a placeholder public key",
@@ -110,6 +130,11 @@ for (const check of checks) {
 }
 
 if (failures.length) {
+  for (const check of failures) {
+    if (check.message) {
+      console.error(`  ${check.message}`);
+    }
+  }
   console.error(`${failures.length} env guard smoke check(s) failed.`);
   process.exit(1);
 }
