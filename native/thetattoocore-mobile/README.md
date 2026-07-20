@@ -33,6 +33,10 @@ This folder is the starting point for Apple TestFlight and Google Play internal 
    - `npm.cmd run verify`
    - `npm.cmd run smoke:mobile`
 8. Run `../../docs/REAL_DEVICE_QA_CHECKLIST.md` on real devices before wider beta invites.
+9. On Windows, use the checklist's Android connected-device probe with
+   `%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe`; a plugged-in phone only
+   counts after `adb devices -l` shows an authorized device and the installed
+   package build matches the Play testing release under review.
 
 Android packaging is configured on this Windows machine. A signed Google Play upload bundle builds at `android/app/build/outputs/bundle/release/app-release.aab` when the local signing environment variables are set. On July 18, 2026, the signed v1 bundle was verified and copied to the Desktop as `TheTattooCore-app-release-v1-signed.aab` with SHA-256 `18E16D3CB5AEED158C33BF9882AC6920D6A7CB744697568E71C32631BC893B65`. The upload keystore and recovery details are intentionally kept out of git; the local recovery note is saved on the Desktop as `TheTattooCore Android Upload Key.txt`. iOS packaging requires the Mac/Xcode path.
 The current Android wrapper uses API 35 because this Windows machine only has Android 35 installed. API 35 is internal-test-only and not public-submission-ready for Google Play submissions or updates on or after August 31, 2026; install Android 16 / API 36 tooling, set `compileSdkVersion` and `targetSdkVersion` to 36, and rebuild before that submission path.

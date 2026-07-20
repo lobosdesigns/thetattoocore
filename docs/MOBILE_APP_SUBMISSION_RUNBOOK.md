@@ -67,6 +67,7 @@ Start with a thin native wrapper now that core web smoke/390px mobile checks are
 - Confirm public shared links open in the wrapper after final app-link/universal-link association files are published for the signed builds.
 - Verified app-link and universal-link proof should use the matrix in `docs/NATIVE_WRAPPER_PREP.md`, including private Android app-signing fingerprint evidence, Apple Associated Domains evidence, real-device route tests, and repo-safe pass/fail summaries only.
 - Record a safe console/log review summary for mobile web, Android wrapper WebView, and iOS TestFlight where available; do not commit raw logs, device identifiers, private account data, or console screenshots.
+- For Android, run the `Android Connected-Device Probe` in `docs/REAL_DEVICE_QA_CHECKLIST.md` before treating a plugged-in phone as release evidence. Empty or unauthorized `adb devices -l` output is a handoff blocker, not a pass.
 - Confirm support email and public legal/contact surfaces use `support@thetattoocore.com` or final company/legal contact details, not personal owner information.
 - Complete `docs/LEGAL_REVIEW_PREP.md` for Terms, Privacy, account deletion language, moderation policy, marketplace rules, payment/refund language, seller payout policy, and native checkout/store submission notes.
 - Decide whether native builds expose Merch checkout or keep it web-only and launch-controlled until production payment policy is approved.

@@ -18,6 +18,10 @@ const docs = {
   "docs/AGE_RATING_PREP.md": readFileSync("docs/AGE_RATING_PREP.md", "utf8"),
   "docs/DATA_SAFETY_PREP.md": readFileSync("docs/DATA_SAFETY_PREP.md", "utf8"),
   "docs/LEGAL_REVIEW_PREP.md": readFileSync("docs/LEGAL_REVIEW_PREP.md", "utf8"),
+  "native/thetattoocore-mobile/README.md": readFileSync(
+    "native/thetattoocore-mobile/README.md",
+    "utf8",
+  ),
 };
 const packageJson = readFileSync("package.json", "utf8");
 const screenshotGenerator = readFileSync("scripts/generate-safe-store-screenshots.mjs", "utf8");
@@ -402,10 +406,23 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("automation unavailable") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("platform tools or `adb` missing from Windows PATH") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Do not treat missing automation as a") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("## Android Connected-Device Probe") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("platform-tools\\adb.exe") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("adb devices -l") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("authorized") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("dumpsys package com.thetattoocore.app") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("https://thetattoocore.com/login") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android automation not yet available") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("passing Android console/log review") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Native build/install evidence should use the matrix") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("release channel, version/build, install source, tester account pair") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("at least 12 testers opted in for 14 continuous days") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Record a safe console/log review summary for mobile web, Android wrapper WebView, and iOS TestFlight"),
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Record a safe console/log review summary for mobile web, Android wrapper WebView, and iOS TestFlight") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("run the `Android Connected-Device Probe`") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Empty or unauthorized `adb devices -l` output is a handoff blocker") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("%LOCALAPPDATA%\\Android\\Sdk\\platform-tools\\adb.exe") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("authorized device") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("Play testing release under review"),
   },
   {
     label: "mobile submission runbook includes Stories, help, and booking deposit QA",
