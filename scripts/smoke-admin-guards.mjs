@@ -335,6 +335,26 @@ const checks = [
       productPlan.includes("Admin Content supports 50-item pagination plus status filters"),
   },
   {
+    label: "admin content moderation actions hide raw backend errors from redirects",
+    ok:
+      adminActions.includes('console.error("Admin linked content report lookup failed.", reportError)') &&
+      adminActions.includes('console.error("Admin content subject lookup failed.", subjectError)') &&
+      adminActions.includes('console.error("Admin content moderation update failed.", updateError)') &&
+      adminActions.includes('console.error("Admin content moderation log failed.", actionError)') &&
+      adminActions.includes('console.error("Admin linked report status update failed.", reportUpdateError)') &&
+      adminActions.includes('console.error("Admin linked report resolution log failed.", reportActionError)') &&
+      adminActions.includes('"Could not update content. Please try again."') &&
+      adminActions.includes('"Content changed, but moderation log failed. Please try again."') &&
+      adminActions.includes('"Content changed, but the report status did not update. Please try again."') &&
+      adminActions.includes('"Content and report changed, but report log failed. Please try again."') &&
+      !adminActions.includes('reportError?.message || "Linked report was not found."') &&
+      !adminActions.includes('subjectError?.message || "Content was not found."') &&
+      !adminActions.includes('updateError.message || "Could not update content."') &&
+      !adminActions.includes('actionError.message || "Content changed, but moderation log failed."') &&
+      !adminActions.includes('reportUpdateError.message ||') &&
+      !adminActions.includes('reportActionError.message ||'),
+  },
+  {
     label: "admin Stuff and Gigs can filter status and moderation state",
     ok:
       adminStuff.includes("function stuffFilters") &&

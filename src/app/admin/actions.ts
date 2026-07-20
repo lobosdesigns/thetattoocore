@@ -885,9 +885,12 @@ export async function moderateContent(formData: FormData) {
       }>();
 
     if (reportError || !report) {
+      if (reportError) {
+        console.error("Admin linked content report lookup failed.", reportError);
+      }
       redirect(
         adminReportsMessage(
-          reportError?.message || "Linked report was not found.",
+          "Linked report was not found.",
           returnTo,
         ),
       );
@@ -907,9 +910,12 @@ export async function moderateContent(formData: FormData) {
     .maybeSingle<Record<string, string | null>>();
 
   if (subjectError || !subject) {
+    if (subjectError) {
+      console.error("Admin content subject lookup failed.", subjectError);
+    }
     redirect(
       adminContentMessage(
-        subjectError?.message || "Content was not found.",
+        "Content was not found.",
         returnTo,
       ),
     );
@@ -924,9 +930,10 @@ export async function moderateContent(formData: FormData) {
     .eq(config.idColumn, subjectId);
 
   if (updateError) {
+    console.error("Admin content moderation update failed.", updateError);
     redirect(
       adminContentMessage(
-        updateError.message || "Could not update content.",
+        "Could not update content. Please try again.",
         returnTo,
       ),
     );
@@ -947,9 +954,10 @@ export async function moderateContent(formData: FormData) {
     });
 
   if (actionError) {
+    console.error("Admin content moderation log failed.", actionError);
     redirect(
       adminContentMessage(
-        actionError.message || "Content changed, but moderation log failed.",
+        "Content changed, but moderation log failed. Please try again.",
         returnTo,
       ),
     );
@@ -982,10 +990,10 @@ export async function moderateContent(formData: FormData) {
       .eq("id", reportId);
 
     if (reportUpdateError) {
+      console.error("Admin linked report status update failed.", reportUpdateError);
       redirect(
         adminReportsMessage(
-          reportUpdateError.message ||
-            "Content changed, but the report status did not update.",
+          "Content changed, but the report status did not update. Please try again.",
           returnTo,
         ),
       );
@@ -1009,10 +1017,10 @@ export async function moderateContent(formData: FormData) {
         });
 
       if (reportActionError) {
+        console.error("Admin linked report resolution log failed.", reportActionError);
         redirect(
           adminReportsMessage(
-            reportActionError.message ||
-              "Content and report changed, but report log failed.",
+            "Content and report changed, but report log failed. Please try again.",
             returnTo,
           ),
         );
