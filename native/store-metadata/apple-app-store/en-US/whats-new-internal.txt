@@ -1,3 +1,1 @@
-First internal beta wrapper for TheTattooCore.
-
-This build starts at the sign-in page and is intended for internal testing of signup, login, 4U, Stories, Gossip, Stuff, Gigs, Merch browsing, DMs, profiles, search, in-app alerts, reporting, blocking, verification requests, booking requests, and support/legal routes.
+Beta wrapper review build with safer app navigation, Help, reporting, blocking, in-app alerts, and review-controlled commerce flows.

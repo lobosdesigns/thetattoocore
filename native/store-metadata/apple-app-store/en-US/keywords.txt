@@ -1,1 +1,1 @@
-tattoo,body art,artists,studios,vendors,merch,gigs,stories,community
+tattoo,artists,studios,body art,merch,gigs,community,stories,DMs

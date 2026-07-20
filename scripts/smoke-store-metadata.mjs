@@ -111,6 +111,12 @@ function draftFieldUnderLimit(fieldName, limit) {
   return value.length > 0 && value.length <= limit;
 }
 
+function draftFieldMatchesFile(fieldName, fileKey) {
+  const value = draftFieldValue(fieldName);
+
+  return value.length > 0 && source[fileKey] === value;
+}
+
 const generatedScreenshots = {
   playPhone: generatedPngs("native/store-metadata/generated/google-play/phone-screenshots"),
   playFeature: ["native/store-metadata/generated/google-play/feature-graphic-1024x500.png"],
@@ -219,6 +225,16 @@ const checks = [
       source.appleWhatsNewInternal.length <= 4000 &&
       source.googleReleaseNotesInternal.length > 0 &&
       source.googleReleaseNotesInternal.length <= 500,
+  },
+  {
+    label: "store upload text matches console-ready draft fields",
+    ok:
+      draftFieldMatchesFile("Google Play short description", "googleShort") &&
+      draftFieldMatchesFile("App Store subtitle", "appleSubtitle") &&
+      draftFieldMatchesFile("App Store promotional text", "applePromotionalText") &&
+      draftFieldMatchesFile("App Store keywords", "appleKeywords") &&
+      draftFieldMatchesFile("App Store release notes", "appleWhatsNewInternal") &&
+      draftFieldMatchesFile("Google Play release notes", "googleReleaseNotesInternal"),
   },
   {
     label: "store descriptions include current safety position",
