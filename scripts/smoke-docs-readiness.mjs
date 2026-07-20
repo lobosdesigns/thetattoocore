@@ -212,6 +212,8 @@ const checks = [
       docs["docs/AGE_RATING_PREP.md"].includes("not invite-only") &&
       docs["docs/AGE_RATING_PREP.md"].includes("Apple's current age-rating social media capability questions") &&
       docs["docs/AGE_RATING_PREP.md"].includes("Google Play App content answers") &&
+      docs["docs/AGE_RATING_PREP.md"].includes("payment-policy") &&
+      !docs["docs/AGE_RATING_PREP.md"].includes("payment-provider") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Social, no dating/sexual-relationship purpose") &&
       docs["docs/APP_STORE_READINESS.md"].includes("no precise location sharing") &&
       docs["docs/APP_STORE_READINESS.md"].includes("yes blocking, yes reporting, yes chat moderation") &&
@@ -228,6 +230,7 @@ const checks = [
       docs["docs/DATA_SAFETY_PREP.md"].includes("Raw card, bank, routing, and payout credentials must not be collected") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("approved review-controlled checkout flows") &&
       !docs["docs/DATA_SAFETY_PREP.md"].includes("hosted payment-provider flows") &&
+      !docs["docs/DATA_SAFETY_PREP.md"].includes("payment-provider reviews") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("coarse location") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("account deletion requests") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("Google Play Data Safety must be completed before closed testing, open testing, or production release") &&
@@ -640,6 +643,10 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("full two-user DM read/reply pass") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Payments and payouts") &&
       docs["docs/APP_STORE_READINESS.md"].includes("small live-payment test after review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Secure seller payout setup foundation") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("payment-policy review") &&
+      !docs["docs/APP_STORE_READINESS.md"].includes("hosted onboarding links") &&
+      !docs["docs/APP_STORE_READINESS.md"].includes("provider review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Native wrapper") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Android API 36") &&
       docs["docs/APP_STORE_READINESS.md"].includes("app-link association files"),

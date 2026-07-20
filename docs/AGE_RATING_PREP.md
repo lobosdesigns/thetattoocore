@@ -1,6 +1,6 @@
 # Age Rating Prep
 
-Use this as an internal checklist before answering Google Play, App Store, payment-provider, or wrapper-submission questions. Final answers should still be reviewed against the current store questionnaires and current legal/policy copy.
+Use this as an internal checklist before answering Google Play, App Store, payment-policy, or wrapper-submission questions. Final answers should still be reviewed against the current store questionnaires and current legal/policy copy.
 
 ## Current Launch Stance
 

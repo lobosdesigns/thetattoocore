@@ -1,6 +1,6 @@
 # Data Safety Prep
 
-Use this as an internal checklist before answering Google Play Data Safety, App Store privacy nutrition labels, payment-provider reviews, or privacy-policy updates. Final answers should be checked against the exact live build and current store questionnaires.
+Use this as an internal checklist before answering Google Play Data Safety, App Store privacy nutrition labels, payment-policy reviews, or privacy-policy updates. Final answers should be checked against the exact live build and current store questionnaires.
 
 ## Current Data Types
 
