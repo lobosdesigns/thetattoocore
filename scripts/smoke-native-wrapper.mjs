@@ -228,6 +228,9 @@ const checks = [
       source.androidDeviceProbe.includes("let packageInstalled = false") &&
       source.androidDeviceProbe.includes("packageInstalled = true") &&
       source.androidDeviceProbe.includes("ANDROID_QA result=authorized device missing TTC package") &&
+      source.androidDeviceProbe.includes("ANDROID_QA next=check USB cable, set USB mode to file transfer, and reopen the USB debugging prompt") &&
+      source.androidDeviceProbe.includes("ANDROID_QA next=unlock device, enable USB debugging, and accept the computer authorization prompt") &&
+      source.androidDeviceProbe.includes("ANDROID_QA next=install or confirm the Google Play internal-testing build before route QA") &&
       source.androidDeviceProbe.includes("if (requireDevice) process.exit(1)") &&
       source.realDeviceQa.includes("authorized device is visible and the TTC") &&
       source.realDeviceQa.includes("package is installed for the build under review") &&

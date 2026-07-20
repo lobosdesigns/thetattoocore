@@ -81,10 +81,14 @@ console.log(`ANDROID_QA devices_total=${devices.length}`);
 console.log(`ANDROID_QA devices_authorized=${authorizedDevices.length}`);
 if (blockedDevices.length > 0) {
   console.log(`ANDROID_QA devices_blocked_states=${[...new Set(blockedDevices.map((device) => device.state))].join(",")}`);
+  console.log("ANDROID_QA next=unlock device, enable USB debugging, and accept the computer authorization prompt");
 }
 
 if (authorizedDevices.length === 0) {
   console.log("ANDROID_QA result=no authorized device");
+  if (devices.length === 0) {
+    console.log("ANDROID_QA next=check USB cable, set USB mode to file transfer, and reopen the USB debugging prompt");
+  }
   if (requireDevice) process.exit(1);
   process.exit(0);
 }
@@ -122,6 +126,7 @@ console.log(`ANDROID_QA package=${packageSummary}`);
 
 if (!packageInstalled) {
   console.log("ANDROID_QA result=authorized device missing TTC package");
+  console.log("ANDROID_QA next=install or confirm the Google Play internal-testing build before route QA");
   if (requireDevice) process.exit(1);
   process.exit(0);
 }
