@@ -45,6 +45,7 @@ const mainActions = readFileSync("src/app/actions.ts", "utf8");
 const allDocs = Object.values(docs).join("\n");
 const safeTutorialClipPath = "public/tutorial-clips/mobile-main-navigation-safe.mp4";
 const safeStoriesDmsClipPath = "public/tutorial-clips/mobile-stories-dms-safety-safe.mp4";
+const safeDmNotificationClipPath = "public/tutorial-clips/mobile-dm-notification-pass-safe.mp4";
 const forbiddenContactSnippets = [
   "lobo3319@gmail.com",
   "lobosden@hotmail.com",
@@ -393,6 +394,7 @@ const checks = [
       docs["docs/PRODUCT_PLAN.md"].includes("order support") &&
       docs["docs/PRODUCT_PLAN.md"].includes("first safe tutorial short clip") &&
       docs["docs/PRODUCT_PLAN.md"].includes("second safe tutorial short clip") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("third safe tutorial short clip") &&
       docs["docs/PRODUCT_PLAN.md"].includes("setting appointments") &&
       docs["docs/PRODUCT_PLAN.md"].includes("creating ads") &&
       docs["docs/PRODUCT_PLAN.md"].includes("setting up Merch products") &&
@@ -449,6 +451,9 @@ const checks = [
       helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-stories-dms-safety-safe.mp4"') &&
       existsSync(safeStoriesDmsClipPath) &&
       statSync(safeStoriesDmsClipPath).size > 50_000 &&
+      helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-dm-notification-pass-safe.mp4"') &&
+      existsSync(safeDmNotificationClipPath) &&
+      statSync(safeDmNotificationClipPath).size > 50_000 &&
       helpCenterData.includes("Admin beta go/no-go") &&
       helpCenterData.includes("Two-user DM and notification pass") &&
       helpCenterData.includes("Booking request to calendar") &&

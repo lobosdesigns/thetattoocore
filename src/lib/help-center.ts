@@ -196,6 +196,7 @@ export const helpArticles = [
         title: "Admin beta go/no-go",
       },
       {
+        assetSrc: "/tutorial-clips/mobile-dm-notification-pass-safe.mp4",
         description:
           "Short clip of a two-user DM pass: search, send, open alert, reply, and confirm read or delivered status.",
         kind: "short_clip",
