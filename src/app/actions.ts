@@ -2078,12 +2078,13 @@ export async function createContentReport(formData: FormData) {
   });
 
   if (error) {
+    console.error("Content report create failed.", error);
     reportRedirect({
       hash: returnHash,
       message:
         error.code === "23505"
           ? "You already have an open report for that item."
-          : error.message || "Could not send report.",
+          : "Could not send report. Please try again.",
       path: returnPath,
     });
   }

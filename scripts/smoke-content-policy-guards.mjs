@@ -242,6 +242,14 @@ const checks = [
       !actions.includes('error?.message ||\n          "Could not archive Stuff listing. It may be gone or owned by another account."'),
   },
   {
+    label: "content report action hides raw backend errors from member redirects",
+    ok:
+      actions.includes('console.error("Content report create failed.", error)') &&
+      actions.includes('"You already have an open report for that item."') &&
+      actions.includes('"Could not send report. Please try again."') &&
+      !actions.includes('error.message || "Could not send report."'),
+  },
+  {
     label: "comment media schema is authenticated, image-only, and size-limited",
     ok:
       commentMediaMigration.includes("create table if not exists public.post_comment_media") &&
