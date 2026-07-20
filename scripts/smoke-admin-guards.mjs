@@ -355,6 +355,16 @@ const checks = [
       !adminActions.includes('reportActionError.message ||'),
   },
   {
+    label: "admin Help question moderation hides raw backend errors from redirects",
+    ok:
+      adminActions.includes('console.error("Admin Help question lookup failed.", commentError)') &&
+      adminActions.includes('console.error("Admin Help question update failed.", updateError)') &&
+      adminActions.includes('"Help question was not found."') &&
+      adminActions.includes('"Could not update Help question. Please try again."') &&
+      !adminActions.includes('commentError?.message || "Help question was not found."') &&
+      !adminActions.includes('updateError.message || "Could not update Help question."'),
+  },
+  {
     label: "admin Stuff and Gigs can filter status and moderation state",
     ok:
       adminStuff.includes("function stuffFilters") &&

@@ -1064,9 +1064,12 @@ export async function moderateHelpArticleComment(formData: FormData) {
     }>();
 
   if (commentError || !comment) {
+    if (commentError) {
+      console.error("Admin Help question lookup failed.", commentError);
+    }
     redirect(
       adminContentMessage(
-        commentError?.message || "Help question was not found.",
+        "Help question was not found.",
         returnTo,
       ),
     );
@@ -1087,9 +1090,10 @@ export async function moderateHelpArticleComment(formData: FormData) {
     .eq("id", commentId);
 
   if (updateError) {
+    console.error("Admin Help question update failed.", updateError);
     redirect(
       adminContentMessage(
-        updateError.message || "Could not update Help question.",
+        "Could not update Help question. Please try again.",
         returnTo,
       ),
     );
