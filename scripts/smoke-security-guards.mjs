@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const authLogin = readFileSync("src/app/auth/login/route.ts", "utf8");
@@ -54,6 +54,8 @@ const merchCheckoutSuccessPage = readFileSync(
   "src/app/merch/checkout/success/page.tsx",
   "utf8",
 );
+const middlewareSource = readFileSync("src/middleware.ts", "utf8");
+const readinessDoc = readFileSync("docs/APP_STORE_READINESS.md", "utf8");
 const helpCenter = readFileSync("src/lib/help-center.ts", "utf8");
 const helpCenterSearch = readFileSync("src/app/help/help-center-search.tsx", "utf8");
 const nextConfig = readFileSync("next.config.ts", "utf8");
@@ -676,6 +678,24 @@ const checks = [
       accountActions.includes('redirect(verificationPath("License verification submitted for review."))') &&
       accountPage.includes("Accepted files: PDF, JPG, PNG, or WebP up to 10 MB.") &&
       accountPage.includes("Private admin review only."),
+  },
+  {
+    label: "security headers stay on edge middleware until proxy deploy support is verified",
+    ok:
+      existsSync("src/middleware.ts") &&
+      !existsSync("src/proxy.ts") &&
+      middlewareSource.includes("export function middleware()") &&
+      middlewareSource.includes('runtime: "experimental-edge"') &&
+      middlewareSource.includes("X-Content-Type-Options") &&
+      middlewareSource.includes("X-Frame-Options") &&
+      middlewareSource.includes("Referrer-Policy") &&
+      middlewareSource.includes("Strict-Transport-Security") &&
+      middlewareSource.includes("Permissions-Policy") &&
+      readinessDoc.includes(
+        "Keep the security-header route hook on `src/middleware.ts`",
+      ) &&
+      readinessDoc.includes("`proxy.ts` migration builds locally") &&
+      readinessDoc.includes("unsupported Node middleware"),
   },
 ];
 
