@@ -507,6 +507,20 @@
 - Public and mobile route smoke passed on July 20, 2026 after Account return actions were clarified as `4U Home`, Data Safety internal-testing wording was corrected, Firebase/FCM native push gates were added to the release handoff, and native provider config files gained gitignore/env guard coverage. Live deploy version `340bffbc-a3c9-4b1d-b523-e606d445e40f` passed profile/docs/native/env guard smoke, lint, production build, public route smoke, and 390px mobile browser smoke; public smoke noted only the known transient robots edge-challenge skip.
 - Core social flows are web-first; native beta-wrapper internal testing is active for Google Play and TestFlight. Public store release is still gated on the checklist below.
 
+## Current Store Console Snapshot
+
+Keep this table repo-safe. Private handoff evidence may include console screenshots,
+reviewer credentials, phone details, certificates, account identifiers, and tester
+membership records, but those details must not be committed here.
+
+| Surface | Repo-safe status | Next action | Private evidence location |
+| --- | --- | --- | --- |
+| Apple App Store Connect | TestFlight internal build exists; public submission not ready. | Complete screenshot upload validation, category/pricing, Content Rights, App Privacy, age rating, Accessibility Nutrition Labels, reviewer access, and final validation for the selected build. | Private release handoff only. |
+| Google Play Console | Internal testing release exists; production review not ready. | Finish Data Safety review, store-listing validation, production-access closed-test evidence if required, reviewer access, final validation, and any API 36 rebuild required for the submission date. | Private release handoff only. |
+| Payments | Checkout and webhook code is guarded; live-money release is not cleared. | Finish live webhook/key preflight, policy/tax/refund/dispute review, seller payout readiness, Admin reconciliation, and penny-test evidence before enabling live marketplace payments. | Private payment handoff only. |
+| Native push | Web push display/storage is prepared; native Firebase/FCM delivery is planned but not enabled. | Add native app config files privately, implement device-token delivery, verify opt-out/quiet-hours/category preferences, and archive Android/iOS real-device alert/tap-routing evidence before store claims. | Private native QA handoff only. |
+| Real-device QA | Partial evidence exists; full release evidence is not complete. | Run the full Android and iOS checklist for auth, posting, DMs, reporting/blocking, verification, checkout return paths, notifications, accessibility, and account deletion. | Private QA evidence pack only. |
+
 ## Submission Blocker Matrix
 
 | Area | Current blocker | Evidence needed to clear |

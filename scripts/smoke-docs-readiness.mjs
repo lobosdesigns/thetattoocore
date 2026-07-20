@@ -790,6 +790,15 @@ const checks = [
     label: "readiness docs keep final submission blockers explicit",
     ok:
       docs["docs/APP_STORE_READINESS.md"].includes("## Submission Blocker Matrix") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("## Current Store Console Snapshot") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("| Surface | Repo-safe status | Next action | Private evidence location |") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("| Apple App Store Connect | TestFlight internal build exists; public submission not ready.") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("| Google Play Console | Internal testing release exists; production review not ready.") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("| Payments | Checkout and webhook code is guarded; live-money release is not cleared.") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("| Native push | Web push display/storage is prepared; native Firebase/FCM delivery is planned but not enabled.") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Private release handoff only") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Private payment handoff only") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Private native QA handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Store consoles") &&
       docs["docs/APP_STORE_READINESS.md"].includes("13-inch iPad screenshot upload") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Content Rights") &&
