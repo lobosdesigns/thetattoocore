@@ -159,6 +159,31 @@ const checks = [
       homePage.includes('aria-label="End story"'),
   },
   {
+    label: "story actions hide raw backend errors from member redirects",
+    ok:
+      actions.includes('console.error("Story media upload failed.", uploadError)') &&
+      actions.includes('"Could not upload story media. Please try again."') &&
+      actions.includes('console.error("Story create failed.", error)') &&
+      actions.includes('"Could not create story. Please try again."') &&
+      actions.includes('console.error("Story media attach failed.", mediaError)') &&
+      actions.includes('"Could not attach story media. Please try again."') &&
+      actions.includes('console.error("Story end failed.", error)') &&
+      actions.includes('"Could not end that story. Please try again."') &&
+      actions.includes('console.error("Story reaction failed.", error)') &&
+      actions.includes('"Could not react to that story. Please try again."') &&
+      actions.includes('console.error("Story reply DM open failed.", error)') &&
+      actions.includes('"Could not open a DM for that story. Please try again."') &&
+      actions.includes('console.error("Story reply send failed.", messageError)') &&
+      actions.includes('"Could not send story reply. Please try again."') &&
+      !actions.includes('uploadError.message || "Could not upload story media."') &&
+      !actions.includes('error?.message || "Could not create story."') &&
+      !actions.includes('mediaError.message || "Could not attach story media."') &&
+      !actions.includes('error.message || "Could not end that story."') &&
+      !actions.includes('error.message || "Could not react to that story."') &&
+      !actions.includes('error instanceof Error ? error.message : "Could not open a DM for that story."') &&
+      !actions.includes('messageError?.message || "Could not send story reply."'),
+  },
+  {
     label: "story viewers can reply through DMs",
     ok:
       actions.includes("export async function replyToStory") &&
@@ -187,7 +212,8 @@ const checks = [
       composerShell.includes('| "stories"') &&
       composerShell.includes('label: "Story"') &&
       composerShell.includes('if (hash === "#stories") return "stories"') &&
-      composerShell.includes('get(\n      "compose",') &&
+      composerShell.includes('new URLSearchParams(window.location.search).get') &&
+      composerShell.includes('"compose"') &&
       composerShell.includes("explicitOpenModeRef") &&
       composerShell.includes("if (explicitOpenModeRef.current) return") &&
       composerShell.includes("window.history.replaceState") &&
@@ -205,7 +231,8 @@ const checks = [
     label: "story composer is members-first, short-video enabled, and launch-policy clear",
     ok:
       composer.includes("action={createStoryPost}") &&
-      composer.includes('<VisibilityControl\n                defaultValue="members"') &&
+      composer.includes("<VisibilityControl") &&
+      composer.includes('defaultValue="members"') &&
       composer.includes("Stories are temporary photo, GIF, or short-video posts") &&
       composer.includes("No visible nudity") &&
       composer.includes("accept={imageVideoAccept}") &&

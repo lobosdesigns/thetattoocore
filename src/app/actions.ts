@@ -760,7 +760,8 @@ export async function createStoryPost(formData: FormData) {
     });
 
   if (uploadError) {
-    redirect(homeMessage(uploadError.message || "Could not upload story media.", "stories"));
+    console.error("Story media upload failed.", uploadError);
+    redirect(homeMessage("Could not upload story media. Please try again.", "stories"));
   }
 
   const { data: story, error } = await supabase
@@ -780,7 +781,8 @@ export async function createStoryPost(formData: FormData) {
 
   if (error || !story) {
     await supabase.storage.from(MEDIA_BUCKET).remove([storagePath]);
-    redirect(homeMessage(error?.message || "Could not create story.", "stories"));
+    if (error) console.error("Story create failed.", error);
+    redirect(homeMessage("Could not create story. Please try again.", "stories"));
   }
 
   const { error: mediaError } = await supabase.from("story_media").insert({
@@ -795,7 +797,8 @@ export async function createStoryPost(formData: FormData) {
   if (mediaError) {
     await supabase.storage.from(MEDIA_BUCKET).remove([storagePath]);
     await supabase.from("story_posts").delete().eq("id", story.id).eq("author_id", userId);
-    redirect(homeMessage(mediaError.message || "Could not attach story media.", "stories"));
+    console.error("Story media attach failed.", mediaError);
+    redirect(homeMessage("Could not attach story media. Please try again.", "stories"));
   }
 
   revalidatePath("/");
@@ -820,7 +823,8 @@ export async function endStoryPost(formData: FormData) {
     .eq("author_id", userId);
 
   if (error) {
-    redirect(homeMessage(error.message || "Could not end that story.", "stories"));
+    console.error("Story end failed.", error);
+    redirect(homeMessage("Could not end that story. Please try again.", "stories"));
   }
 
   revalidatePath("/");
@@ -933,7 +937,8 @@ export async function toggleStoryReaction(formData: FormData) {
   );
 
   if (error) {
-    redirect(homeMessage(error.message || "Could not react to that story.", "stories"));
+    console.error("Story reaction failed.", error);
+    redirect(homeMessage("Could not react to that story. Please try again.", "stories"));
   }
 
   const [{ data: senderProfile }, { data: authorPreferences }] = await Promise.all([
@@ -1023,12 +1028,8 @@ export async function replyToStory(formData: FormData) {
       userId,
     });
   } catch (error) {
-    redirect(
-      homeMessage(
-        error instanceof Error ? error.message : "Could not open a DM for that story.",
-        "stories",
-      ),
-    );
+    console.error("Story reply DM open failed.", error);
+    redirect(homeMessage("Could not open a DM for that story. Please try again.", "stories"));
   }
 
   const messageBody = `Story reply: ${body}`.slice(0, 4000);
@@ -1043,9 +1044,8 @@ export async function replyToStory(formData: FormData) {
     .single<{ id: string }>();
 
   if (messageError || !message) {
-    redirect(
-      homeMessage(messageError?.message || "Could not send story reply.", "stories"),
-    );
+    if (messageError) console.error("Story reply send failed.", messageError);
+    redirect(homeMessage("Could not send story reply. Please try again.", "stories"));
   }
 
   const [{ data: senderProfile }, { data: authorPreferences }] = await Promise.all([
