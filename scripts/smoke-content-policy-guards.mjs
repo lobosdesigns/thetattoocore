@@ -315,6 +315,8 @@ const checks = [
   {
     label: "comment actions hide raw create, media, like, edit, delete, and hide errors",
     ok:
+      actions.includes('console.error("Comment media upload failed.", error)') &&
+      !actions.includes('error: error.message || "Could not upload comment media."') &&
       actions.includes('console.error("4U comment media upload failed.", upload?.error)') &&
       actions.includes('"Could not upload comment media. Please try again."') &&
       actions.includes('console.error("4U comment create failed.", error)') &&

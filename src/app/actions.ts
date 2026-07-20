@@ -595,9 +595,10 @@ async function uploadCommentMedia({
   });
 
   if (error) {
+    console.error("Comment media upload failed.", error);
     return {
       bucket: MEDIA_BUCKET,
-      error: error.message || "Could not upload comment media.",
+      error: "Could not upload comment media. Please try again.",
       mediaType: metadata.mediaType,
       path: null,
     };
