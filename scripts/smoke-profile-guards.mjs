@@ -281,7 +281,9 @@ const checks = [
       profileContentTabs.includes('role="tablist"') &&
       profileContentTabs.includes('role="tab"') &&
       profileContentTabs.includes('role="tabpanel"') &&
-      profileContentTabs.includes('className={activeTab === tab.id ? "block" : "hidden"}') &&
+      profileContentTabs.includes("const isActive = activeTab === tab.id") &&
+      profileContentTabs.includes('className={isActive ? "block" : "hidden"}') &&
+      profileContentTabs.includes("hidden={!isActive}") &&
       profileContentTabs.includes('tabIndex={isActive ? 0 : -1}') &&
       profileContentTabs.includes('event.key === "ArrowRight"') &&
       profileContentTabs.includes('event.key === "ArrowLeft"') &&

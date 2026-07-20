@@ -123,11 +123,13 @@ export function ProfileContentTabs({
       {childList.map((child, index) => {
         const tab = tabs[index];
         if (!tab) return null;
+        const isActive = activeTab === tab.id;
 
         return (
           <div
             aria-labelledby={`${tab.id}-tab`}
-            className={activeTab === tab.id ? "block" : "hidden"}
+            className={isActive ? "block" : "hidden"}
+            hidden={!isActive}
             id={tab.id}
             key={tab.id}
             role="tabpanel"
