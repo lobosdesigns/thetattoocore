@@ -597,7 +597,7 @@ const checks = [
       "Steps",
       "FAQ",
       "When does a client pay a deposit?",
-      "Use Google, Apple/iCloud, or standard iCalendar notes",
+      "Use external calendar notes",
       "How do I prevent bad appointment times?",
       "What should be confirmed before accepting?",
       "How do deposit refunds work?",
