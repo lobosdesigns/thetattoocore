@@ -917,6 +917,7 @@ checks.push({
     paymentReadiness.includes("native checkout policy status") &&
     paymentReadiness.includes("pass/fail/blocker status") &&
     paymentReadiness.includes("Keep payment intent IDs, checkout session IDs") &&
+    paymentReadiness.includes("webhook event IDs, refund IDs, dispute IDs, seller account IDs") &&
     paymentReadiness.includes("buyer names, shipping addresses") &&
     paymentReadiness.includes("dashboard screenshots") &&
     paymentReadiness.includes("webhook secrets") &&

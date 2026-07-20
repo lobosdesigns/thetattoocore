@@ -45,7 +45,7 @@ Stripe checkout is wired for controlled launch testing across Merch, ads, and ac
 
 ## Production Evidence Pack
 
-Keep this evidence private and attach it to the release handoff before any live-money launch. Do not include raw secret values, bank details, card details, private buyer addresses, full admin exports, or provider dashboard screenshots that expose sensitive account data.
+Keep this evidence private and attach it to the release handoff before any live-money launch. Do not include raw secret values, bank details, card details, private buyer addresses, full admin exports, webhook event IDs, refund IDs, dispute IDs, seller account IDs, checkout session IDs, payment intent IDs, or provider dashboard screenshots that expose sensitive account data.
 
 - Live webhook event list captured and matched to the app-required event set above.
 - Live/test mode setting, server payment key mode, and webhook mode reviewed together with no mismatch.
@@ -58,7 +58,7 @@ Keep this evidence private and attach it to the release handoff before any live-
 - Native app policy review recorded before exposing checkout in native wrappers.
 - Support, Terms, Privacy, and Help copy checked against the live build and current payment status.
 
-Repo-safe summary fields are limited to release candidate, test flow, live/test mode result, webhook event coverage result, Admin > Payments reconciliation result, refund/dispute review status, seller payout review status, native checkout policy status, reviewer initials or role, review date, and pass/fail/blocker status. Keep payment intent IDs, checkout session IDs, customer emails, buyer names, shipping addresses, seller onboarding account details, dashboard screenshots, bank/card details, webhook secrets, and raw console exports in the private release handoff only.
+Repo-safe summary fields are limited to release candidate, test flow, live/test mode result, webhook event coverage result, Admin > Payments reconciliation result, refund/dispute review status, seller payout review status, native checkout policy status, reviewer initials or role, review date, and pass/fail/blocker status. Keep payment intent IDs, checkout session IDs, webhook event IDs, refund IDs, dispute IDs, seller account IDs, customer emails, buyer names, shipping addresses, seller onboarding account details, dashboard screenshots, bank/card details, webhook secrets, and raw console exports in the private release handoff only.
 
 ## Live-Money Cutover Preflight Matrix
 
