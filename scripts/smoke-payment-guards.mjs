@@ -481,6 +481,16 @@ checks.push({
     !stripeWebhook.includes('recordEventError.message || "Could not record Stripe event status."'),
 });
 checks.push({
+  label: "payment webhook hides raw connected-account backend errors",
+  ok:
+    stripeWebhook.includes('console.error("Webhook connected account lookup failed.", existingAccountError)') &&
+    stripeWebhook.includes('throw new Error("Could not read Stripe Connect account.")') &&
+    stripeWebhook.includes('console.error("Webhook connected account sync failed.", updateError)') &&
+    stripeWebhook.includes('throw new Error("Could not sync Stripe Connect account.")') &&
+    !stripeWebhook.includes('existingAccountError.message || "Could not read Stripe Connect account."') &&
+    !stripeWebhook.includes('updateError.message || "Could not sync Stripe Connect account."'),
+});
+checks.push({
   label: "admin refund requests keep processor names out of redirect copy",
   ok:
     adminActions.includes(

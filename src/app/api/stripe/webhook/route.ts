@@ -279,9 +279,8 @@ async function syncStripeConnectAccountFromWebhook(
     .maybeSingle<{ profile_id: string }>();
 
   if (existingAccountError) {
-    throw new Error(
-      existingAccountError.message || "Could not read Stripe Connect account.",
-    );
+    console.error("Webhook connected account lookup failed.", existingAccountError);
+    throw new Error("Could not read Stripe Connect account.");
   }
 
   if (!existingAccount) {
@@ -298,9 +297,8 @@ async function syncStripeConnectAccountFromWebhook(
     .eq("stripe_account_id", account.id);
 
   if (updateError) {
-    throw new Error(
-      updateError.message || "Could not sync Stripe Connect account.",
-    );
+    console.error("Webhook connected account sync failed.", updateError);
+    throw new Error("Could not sync Stripe Connect account.");
   }
 
   revalidatePath("/account");
