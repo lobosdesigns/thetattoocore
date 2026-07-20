@@ -1830,8 +1830,9 @@ export async function createMerchProduct(formData: FormData) {
     .single<{ id: string }>();
 
   if (error || !product) {
+    console.error("Merch product submit failed.", error);
     redirect(
-      homeMessage(error?.message || "Could not submit Merch for review.", "merch"),
+      homeMessage("Could not submit Merch for review. Please try again.", "merch"),
     );
   }
 
@@ -1846,10 +1847,11 @@ export async function createMerchProduct(formData: FormData) {
       userId,
     });
   } catch (error) {
+    console.error("Merch media upload failed.", error);
     await supabase.from("merch_products").delete().eq("id", product.id).eq("seller_id", userId);
     redirect(
       homeMessage(
-        error instanceof Error ? error.message : "Could not upload Merch media.",
+        "Could not upload Merch media. Please try again.",
         "merch",
       ),
     );
@@ -1867,11 +1869,12 @@ export async function createMerchProduct(formData: FormData) {
   });
 
   if (mediaError) {
+    console.error("Merch media attach failed.", mediaError);
     await supabase.storage.from(MERCH_BUCKET).remove([upload.path]);
     await supabase.from("merch_products").delete().eq("id", product.id).eq("seller_id", userId);
     redirect(
       homeMessage(
-        mediaError.message || "Media uploaded but could not attach to the Merch product.",
+        "Media uploaded but could not attach to the Merch product. Please try again.",
         "merch",
       ),
     );

@@ -129,6 +129,19 @@ checks.push({
     appActions.includes("await supabase.from(\"merch_products\").delete()"),
 });
 checks.push({
+  label: "Merch submit actions hide raw backend errors from member redirects",
+  ok:
+    appActions.includes('console.error("Merch product submit failed.", error)') &&
+    appActions.includes('"Could not submit Merch for review. Please try again."') &&
+    appActions.includes('console.error("Merch media upload failed.", error)') &&
+    appActions.includes('"Could not upload Merch media. Please try again."') &&
+    appActions.includes('console.error("Merch media attach failed.", mediaError)') &&
+    appActions.includes('"Media uploaded but could not attach to the Merch product. Please try again."') &&
+    !appActions.includes('error?.message || "Could not submit Merch for review."') &&
+    !appActions.includes('error instanceof Error ? error.message : "Could not upload Merch media."') &&
+    !appActions.includes('mediaError.message || "Media uploaded but could not attach to the Merch product."'),
+});
+checks.push({
   label: "seller account keeps submitted Merch products visible",
   ok:
     accountPage.includes('const { data: merchProducts }') &&
