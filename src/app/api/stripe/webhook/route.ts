@@ -1181,9 +1181,8 @@ export async function POST(request: Request) {
       .maybeSingle<{ event_id: string }>();
 
     if (processedEventError) {
-      throw new Error(
-        processedEventError.message || "Could not check Stripe event status.",
-      );
+      console.error("Webhook processed-event lookup failed.", processedEventError);
+      throw new Error("Could not check Stripe event status.");
     }
 
     if (processedEvent) {
@@ -1297,9 +1296,8 @@ export async function POST(request: Request) {
       });
 
     if (recordEventError && !isUniqueViolation(recordEventError)) {
-      throw new Error(
-        recordEventError.message || "Could not record Stripe event status.",
-      );
+      console.error("Webhook event status record failed.", recordEventError);
+      throw new Error("Could not record Stripe event status.");
     }
   } catch (error) {
     console.error("Payment update processing failed.", error);

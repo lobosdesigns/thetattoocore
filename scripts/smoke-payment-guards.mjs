@@ -471,6 +471,16 @@ checks.push({
     !stripeWebhook.includes('firstError.message || "Could not inspect disputed payment."'),
 });
 checks.push({
+  label: "payment webhook hides raw event status backend errors",
+  ok:
+    stripeWebhook.includes('console.error("Webhook processed-event lookup failed.", processedEventError)') &&
+    stripeWebhook.includes('throw new Error("Could not check Stripe event status.")') &&
+    stripeWebhook.includes('console.error("Webhook event status record failed.", recordEventError)') &&
+    stripeWebhook.includes('throw new Error("Could not record Stripe event status.")') &&
+    !stripeWebhook.includes('processedEventError.message || "Could not check Stripe event status."') &&
+    !stripeWebhook.includes('recordEventError.message || "Could not record Stripe event status."'),
+});
+checks.push({
   label: "admin refund requests keep processor names out of redirect copy",
   ok:
     adminActions.includes(
