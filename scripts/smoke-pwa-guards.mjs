@@ -49,6 +49,35 @@ const manifestBlockedTerms = [
   "supabase",
   "unrestricted marketplace",
 ];
+const expectedNotificationFallbacks = [
+  'return `/p/${notification.subject_id}`',
+  'return `/t/${notification.subject_id}`',
+  'return notification.href || "/#stories"',
+  'return notification.href || `/messages?c=${notification.subject_id}`',
+  'return notification.href || `/u/${notification.profiles.username}`',
+  'return notification.href || `/merch/${notification.subject_id}`',
+  'return notification.href || "/account#order-settings"',
+  'return notification.href || "/account#advertising-settings"',
+  'return notification.href || "/account#booking-settings"',
+  'return notification.href || "/account#verification-settings"',
+  'return notification.href || "/notifications"',
+];
+const expectedNotificationAllowedPaths = [
+  '"/"',
+  '"/account"',
+  '"/messages"',
+  '"/notifications"',
+  '"/saved"',
+  '"/search"',
+];
+const expectedNotificationAllowedPrefixes = [
+  '"/p/"',
+  '"/t/"',
+  '"/u/"',
+  '"/merch/"',
+  '"/stuff/"',
+  '"/gigs/"',
+];
 
 function pngDimensions(path) {
   const bytes = readFileSync(path);
@@ -270,8 +299,21 @@ const checks = [
       serviceWorker.includes("allowedNotificationPath") &&
       serviceWorker.includes("allowedPaths") &&
       serviceWorker.includes("allowedPrefixes") &&
+      expectedNotificationAllowedPaths.every((path) => serviceWorker.includes(path)) &&
+      expectedNotificationAllowedPrefixes.every((prefix) => serviceWorker.includes(prefix)),
+  },
+  {
+    label: "service worker allows notification page fallback destinations",
+    ok:
+      expectedNotificationFallbacks.every((snippet) => notificationsPage.includes(snippet)) &&
+      serviceWorker.includes('"/"') &&
+      serviceWorker.includes('"/account"') &&
       serviceWorker.includes('"/messages"') &&
-      serviceWorker.includes('"/p/"'),
+      serviceWorker.includes('"/notifications"') &&
+      serviceWorker.includes('"/p/"') &&
+      serviceWorker.includes('"/t/"') &&
+      serviceWorker.includes('"/u/"') &&
+      serviceWorker.includes('"/merch/"'),
   },
 ];
 
