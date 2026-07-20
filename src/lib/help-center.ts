@@ -723,6 +723,7 @@ export const helpArticles = [
         title: "Merch guide shortcut",
       },
       {
+        assetSrc: "/tutorial-clips/mobile-merch-fulfillment-safe.mp4",
         description:
           "Short clip of reviewing a paid order, adding tracking, and marking fulfillment with safe sample shipping data.",
         kind: "short_clip",

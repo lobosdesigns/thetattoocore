@@ -46,6 +46,7 @@ const allDocs = Object.values(docs).join("\n");
 const safeTutorialClipPath = "public/tutorial-clips/mobile-main-navigation-safe.mp4";
 const safeStoriesDmsClipPath = "public/tutorial-clips/mobile-stories-dms-safety-safe.mp4";
 const safeDmNotificationClipPath = "public/tutorial-clips/mobile-dm-notification-pass-safe.mp4";
+const safeMerchFulfillmentClipPath = "public/tutorial-clips/mobile-merch-fulfillment-safe.mp4";
 const safePrivacyScreenshotPath = "public/screenshots/mobile-privacy-safety-safe.png";
 const safeMerchShortcutScreenshotPath = "public/screenshots/mobile-merch-help-shortcut-safe.png";
 const forbiddenContactSnippets = [
@@ -468,6 +469,9 @@ const checks = [
       helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-dm-notification-pass-safe.mp4"') &&
       existsSync(safeDmNotificationClipPath) &&
       statSync(safeDmNotificationClipPath).size > 50_000 &&
+      helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-merch-fulfillment-safe.mp4"') &&
+      existsSync(safeMerchFulfillmentClipPath) &&
+      statSync(safeMerchFulfillmentClipPath).size > 50_000 &&
       helpCenterData.includes("Admin beta go/no-go") &&
       helpCenterData.includes("Two-user DM and notification pass") &&
       helpCenterData.includes("Booking request to calendar") &&
@@ -475,6 +479,7 @@ const checks = [
       helpCenterData.includes("Verification form basics") &&
       helpCenterData.includes("Merch product setup") &&
       helpCenterData.includes("Merch guide shortcut") &&
+      helpCenterData.includes("Fulfill a Merch order") &&
       helpCenterData.includes('slug: "order-refunds-disputes"') &&
       helpCenterData.includes("Order support, refunds, and disputes") &&
       helpCenterData.includes("What happens if there is a dispute?") &&
