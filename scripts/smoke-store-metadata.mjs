@@ -135,6 +135,10 @@ function draftFieldMatchesFile(fieldName, fileKey) {
   return value.length > 0 && source[fileKey] === value;
 }
 
+function withinCharacterLimit(value, limit) {
+  return Array.from(value).length > 0 && Array.from(value).length <= limit;
+}
+
 const generatedScreenshots = {
   playPhone: generatedPngs("native/store-metadata/generated/google-play/phone-screenshots"),
   playFeature: ["native/store-metadata/generated/google-play/feature-graphic-1024x500.png"],
@@ -243,6 +247,16 @@ const checks = [
       source.appleWhatsNewInternal.length <= 4000 &&
       source.googleReleaseNotesInternal.length > 0 &&
       source.googleReleaseNotesInternal.length <= 500,
+  },
+  {
+    label: "store full descriptions fit current 4000 character console limit",
+    ok:
+      withinCharacterLimit(source.googleDescription, 4000) &&
+      withinCharacterLimit(source.appleDescription, 4000) &&
+      source.storeListingDraft.includes("| Google Play full description | 4,000 characters |") &&
+      source.storeListingDraft.includes("| App Store description | 4,000 characters |") &&
+      source.storeListingDraft.includes("Current full-description limit check") &&
+      source.storeListingDraft.includes("4,000 characters"),
   },
   {
     label: "store upload text matches console-ready draft fields",

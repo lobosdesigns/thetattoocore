@@ -17,6 +17,7 @@ against the selected build and final legal review before public submission.
 | --- | ---: | --- |
 | Google Play short description | 80 characters | Tattoo community for artists, studios, vendors, collectors, and fans. |
 | Google Play full description | 4,000 characters | Use the Full Description section below. |
+| App Store description | 4,000 characters | Use the Full Description section below. |
 | App Store subtitle | 30 characters | Tattoo community hub |
 | App Store promotional text | 170 characters | An 18+ tattoo community for artists, studios, vendors, collectors, and fans, with 4U, Gossip, Stuff, Gigs, Merch, DMs, Help, reporting, and blocking. |
 | App Store keywords | 100 characters | tattoo,artists,studios,body art,merch,gigs,community,stories,DMs |
@@ -25,6 +26,10 @@ against the selected build and final legal review before public submission.
 | App Store primary category | Console choice | Social Networking |
 | App Store secondary category | Console choice | Lifestyle |
 | Google Play app category | Console choice | Social |
+
+Current full-description limit check: Apple App Store Connect and Google Play
+Console both list 4,000 characters as the app full-description limit as of
+July 20, 2026.
 
 ## Full Description
 
