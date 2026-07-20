@@ -317,6 +317,27 @@ ${pill({ label: "Submit for review", w: 152, x: 70, y: 668 })}
 ${pill({ label: "Help guide", w: 112, x: 238, y: 668 })}
 ${bottomNav()}
 `),
+  "mobile-merch-help-shortcut-safe.png": header(`
+${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}
+${text({ body: "Merch Help", size: 32, weight: 900, x: 52, y: 170 })}
+${text({ body: "Find seller setup guidance before checkout.", color: "#6f5e4c", size: 15, weight: 600, x: 52, y: 202 })}
+${rounded({ fill: "#f4ead8", h: 104, r: 10, stroke: "#e0c27a", w: 436, x: 52, y: 244 })}
+${text({ body: "Merch and seller help", color: "#7b5a15", size: 18, weight: 900, x: 76, y: 286 })}
+${text({ body: "Products, order support, refunds,", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 314 })}
+${text({ body: "fulfillment, and payout safety.", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 336 })}
+${rounded({ fill: "#f6f2eb", h: 76, r: 10, w: 436, x: 52, y: 382 })}
+${text({ body: "Product setup guide", size: 16, weight: 900, x: 76, y: 418 })}
+${text({ body: "Title, media, price, inventory, review.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 440 })}
+${rounded({ fill: "#f6f2eb", h: 76, r: 10, w: 436, x: 52, y: 486 })}
+${text({ body: "Order support guide", size: 16, weight: 900, x: 76, y: 522 })}
+${text({ body: "Missing, damaged, delayed, returned.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 544 })}
+${rounded({ fill: "#f6f2eb", h: 76, r: 10, w: 436, x: 52, y: 590 })}
+${text({ body: "Payout safety guide", size: 16, weight: 900, x: 76, y: 626 })}
+${text({ body: "Keep seller credentials private.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 648 })}
+${pill({ label: "Open Help", w: 112, x: 70, y: 706 })}
+${pill({ label: "Seller tools", w: 126, x: 198, y: 706 })}
+${bottomNav()}
+`),
   "mobile-help-support.png": header(`
 ${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}
 ${text({ body: "Help Center", size: 32, weight: 900, x: 52, y: 170 })}

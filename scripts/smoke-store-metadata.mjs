@@ -219,6 +219,7 @@ const checks = [
       source.screenshotInventory.includes("public/screenshots/mobile-booking-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-ads-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-merch-safe.png") &&
+      source.screenshotInventory.includes("public/screenshots/mobile-merch-help-shortcut-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-payout-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-order-support-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-privacy-safety-safe.png") &&
@@ -233,6 +234,7 @@ const checks = [
       source.screenshotInventory.includes("Safe draft only; not submission-ready until real-device capture and App Store Connect upload validation are recorded privately.") &&
       source.screenshotInventory.includes("Safe draft only; not submission-ready until App Store Connect iPad upload validation is recorded privately.") &&
       source.screenshotInventory.includes("Replace generated draft assets with final real-device screenshots") &&
+      source.screenshotInventory.includes("Merch guide shortcut screenshot is covered by") &&
       !source.screenshotInventory.includes("Generated placeholder ready") &&
       source.screenshotInventory.includes("4U, Gossip, Stuff, Gigs, Merch") &&
       source.screenshotInventory.includes("verification, booking, privacy/safety, Help, and Support") &&
@@ -248,13 +250,13 @@ const checks = [
   {
     label: "generated Google Play screenshots match upload dimensions",
     ok:
-      hasExpectedPngs(generatedScreenshots.playPhone, 14, 1080, 1920) &&
+      hasExpectedPngs(generatedScreenshots.playPhone, 15, 1080, 1920) &&
       hasExpectedPngs(generatedScreenshots.playFeature, 1, 1024, 500),
   },
   {
     label: "generated App Store screenshots match upload dimensions",
     ok:
-      hasExpectedPngs(generatedScreenshots.appStorePhone, 14, 1242, 2688) &&
+      hasExpectedPngs(generatedScreenshots.appStorePhone, 15, 1242, 2688) &&
       hasExpectedPngs(generatedScreenshots.appStoreIpad, 3, 2048, 2732),
   },
 ];

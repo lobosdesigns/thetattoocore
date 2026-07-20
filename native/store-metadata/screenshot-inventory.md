@@ -12,6 +12,7 @@ Current generated safe screenshots:
 - `public/screenshots/mobile-booking-safe.png`
 - `public/screenshots/mobile-ads-safe.png`
 - `public/screenshots/mobile-merch-safe.png`
+- `public/screenshots/mobile-merch-help-shortcut-safe.png`
 - `public/screenshots/mobile-payout-safe.png`
 - `public/screenshots/mobile-order-support-safe.png`
 - `public/screenshots/mobile-privacy-safety-safe.png`
@@ -42,15 +43,18 @@ dimensions, and no-alpha output.
 
 | Store asset set | Current repo asset | Final public-review requirement | Status |
 | --- | --- | --- | --- |
-| Google Play phone screenshots | Generated safe phone derivatives, 14 PNGs, 1080 x 1920, no alpha. | Replace or confirm with real Android internal-test captures for the selected release track and version. | Safe draft only; not submission-ready until real-device capture and Play Console upload validation are recorded privately. |
+| Google Play phone screenshots | Generated safe phone derivatives, 15 PNGs, 1080 x 1920, no alpha. | Replace or confirm with real Android internal-test captures for the selected release track and version. | Safe draft only; not submission-ready until real-device capture and Play Console upload validation are recorded privately. |
 | Google Play feature graphic | Generated TTC-branded 1024 x 500 PNG, no alpha. | Confirm final rights-safe feature graphic uploads without private member, payment, or console details. | Safe draft only; not submission-ready until Play Console feature-graphic validation is recorded privately. |
-| App Store iPhone 6.5-inch screenshots | Generated safe iPhone derivatives, 14 PNGs, 1242 x 2688, no alpha. | Replace or confirm with TestFlight build screenshots for the selected iOS build/version. | Safe draft only; not submission-ready until real-device capture and App Store Connect upload validation are recorded privately. |
+| App Store iPhone 6.5-inch screenshots | Generated safe iPhone derivatives, 15 PNGs, 1242 x 2688, no alpha. | Replace or confirm with TestFlight build screenshots for the selected iOS build/version. | Safe draft only; not submission-ready until real-device capture and App Store Connect upload validation are recorded privately. |
 | App Store 13-inch iPad screenshots | Generated safe iPad derivatives, 3 PNGs, 2048 x 2732, no alpha. | Upload and validate the required 13-inch iPad set for the selected iOS build/version. | Safe draft only; not submission-ready until App Store Connect iPad upload validation is recorded privately. |
 
 These generated draft assets are TTC-branded, rights-safe, and show the current
 main content columns and tutorial surfaces: 4U, Gossip, Stuff, Gigs, Merch,
 verification, booking, privacy/safety, Help, and Support. DM should appear as a
 direct messenger shortcut, not as a main swipe/feed column.
+Merch guide shortcut screenshot is covered by
+`public/screenshots/mobile-merch-help-shortcut-safe.png` without showing private
+seller payout setup details.
 
 Still needed before public store review:
 
@@ -58,8 +62,6 @@ Still needed before public store review:
   mobile QA, using safe sample accounts and rights-cleared non-sensitive media.
 - Replace generated tablet draft assets with final real-device iPad captures if
   the native iPad layout changes before public review.
-- Merch guide shortcut screenshot showing where sellers can find setup help,
-  without showing seller payout setup details.
 
 Rules:
 

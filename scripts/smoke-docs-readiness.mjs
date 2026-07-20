@@ -47,6 +47,7 @@ const safeTutorialClipPath = "public/tutorial-clips/mobile-main-navigation-safe.
 const safeStoriesDmsClipPath = "public/tutorial-clips/mobile-stories-dms-safety-safe.mp4";
 const safeDmNotificationClipPath = "public/tutorial-clips/mobile-dm-notification-pass-safe.mp4";
 const safePrivacyScreenshotPath = "public/screenshots/mobile-privacy-safety-safe.png";
+const safeMerchShortcutScreenshotPath = "public/screenshots/mobile-merch-help-shortcut-safe.png";
 const forbiddenContactSnippets = [
   "lobo3319@gmail.com",
   "lobosden@hotmail.com",
@@ -443,6 +444,10 @@ const checks = [
       helpCenterData.includes('assetSrc: "/screenshots/mobile-booking-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-ads-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-merch-safe.png"') &&
+      helpCenterData.includes('assetSrc: "/screenshots/mobile-merch-help-shortcut-safe.png"') &&
+      screenshotGenerator.includes('"mobile-merch-help-shortcut-safe.png"') &&
+      existsSync(safeMerchShortcutScreenshotPath) &&
+      statSync(safeMerchShortcutScreenshotPath).size > 10_000 &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-payout-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-order-support-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-privacy-safety-safe.png"') &&
@@ -469,6 +474,7 @@ const checks = [
       helpCenterData.includes("Booking setup sections") &&
       helpCenterData.includes("Verification form basics") &&
       helpCenterData.includes("Merch product setup") &&
+      helpCenterData.includes("Merch guide shortcut") &&
       helpCenterData.includes('slug: "order-refunds-disputes"') &&
       helpCenterData.includes("Order support, refunds, and disputes") &&
       helpCenterData.includes("What happens if there is a dispute?") &&

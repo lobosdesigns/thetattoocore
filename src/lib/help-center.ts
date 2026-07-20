@@ -716,6 +716,13 @@ export const helpArticles = [
         title: "Merch product setup",
       },
       {
+        assetSrc: "/screenshots/mobile-merch-help-shortcut-safe.png",
+        description:
+          "Show where sellers can find Merch setup, order support, and payout safety guides without opening private order or payout details.",
+        kind: "screenshot",
+        title: "Merch guide shortcut",
+      },
+      {
         description:
           "Short clip of reviewing a paid order, adding tracking, and marking fulfillment with safe sample shipping data.",
         kind: "short_clip",
