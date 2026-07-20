@@ -131,6 +131,9 @@ const checks = [
       source.readme.includes("App start URL: `https://thetattoocore.com/login`") &&
       source.readme.includes("Support email: `support@thetattoocore.com`") &&
       source.readme.includes("App Store category handoff: set Primary Category to `Social Networking`") &&
+      source.readme.includes("App Store Content Rights handoff: confirm TTC has rights or permission") &&
+      source.readme.includes("do not use third-party tattoo art, music, logos, private user content, or payment/account screenshots") &&
+      source.readme.includes("App Store pricing handoff: set the v1 app price to free") &&
       source.readme.includes("Google Play category handoff: app category is `Social`") &&
       source.readme.includes("Reviewer credential status: created, validated, and stored only in the store-review console fields") &&
       source.readme.includes("Screenshot upload status: use upload-ready no-alpha PNG derivatives") &&

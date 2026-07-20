@@ -22,6 +22,8 @@ Keep private reviewer credentials and phone details in Apple/Google console fiel
 - App start URL: `https://thetattoocore.com/login`
 - Support email: `support@thetattoocore.com`
 - App Store category handoff: set Primary Category to `Social Networking`; use `Lifestyle` as the secondary category only if the console asks for one.
+- App Store Content Rights handoff: confirm TTC has rights or permission for app metadata, icons, generated screenshots, and any sample content shown in review assets; do not use third-party tattoo art, music, logos, private user content, or payment/account screenshots.
+- App Store pricing handoff: set the v1 app price to free unless final legal/payment review explicitly approves a different app-price or in-app purchase plan.
 - Google Play category handoff: app category is `Social`.
 - Reviewer credential status: created, validated, and stored only in the store-review console fields.
 - Screenshot upload status: use upload-ready no-alpha PNG derivatives from `native/store-metadata/generated/`, then confirm upload validation in each console.
