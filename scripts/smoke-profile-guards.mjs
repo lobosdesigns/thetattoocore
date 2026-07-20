@@ -344,6 +344,7 @@ const checks = [
       savedPage.includes("const cards = allCards.slice(0, savedLimit)") &&
       savedPage.includes("const hasMoreSaved =") &&
       savedPage.includes("saved.length === savedFetchLimit") &&
+      mobileSmoke.includes('path: "/saved"') &&
       savedPage.includes("const feedMap = new Map") &&
       savedPage.includes("const threadMap = new Map") &&
       savedPage.includes("const listingMap = new Map") &&
