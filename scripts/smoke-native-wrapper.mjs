@@ -55,6 +55,7 @@ function gradleNumber(name) {
 
 const compileSdkVersion = gradleNumber("compileSdkVersion");
 const targetSdkVersion = gradleNumber("targetSdkVersion");
+const androidSdkPair = `${compileSdkVersion} / ${targetSdkVersion}`;
 const androidApi36SubmissionReady = compileSdkVersion >= 36 && targetSdkVersion >= 36;
 const androidApi35InternalOnly =
   compileSdkVersion === 35 &&
@@ -62,7 +63,13 @@ const androidApi35InternalOnly =
   source.nativePrep.includes("API 35 is internal-test-only") &&
   source.nativePrep.includes("not public-submission-ready") &&
   source.mobileRunbook.includes("API 35 is internal-test-only") &&
-  source.readme.includes("API 35 is internal-test-only");
+  source.readme.includes("API 35 is internal-test-only") &&
+  source.nativePrep.includes("| Google Play internal testing before the API 36 deadline | `35 / 35` |") &&
+  source.nativePrep.includes("| Google Play public submission or update on or after August 31, 2026 | `35 / 35` is blocked |") &&
+  source.nativePrep.includes("Record API `36 / 36` rebuild proof") &&
+  source.readme.includes("| Internal testing before the API 36 deadline | `35 / 35` |") &&
+  source.readme.includes("| Public submission or update on or after August 31, 2026 | `35 / 35` |") &&
+  source.readme.includes("rebuilt at `36 / 36`");
 
 const iosProjectBuildVersions = [
   ...source.iosProject.matchAll(/CURRENT_PROJECT_VERSION = (\d+);/g),
@@ -202,6 +209,7 @@ const checks = [
     ok:
       source.androidVariables.includes("compileSdkVersion") &&
       source.androidVariables.includes("targetSdkVersion") &&
+      (androidSdkPair === "35 / 35" || androidApi36SubmissionReady) &&
       source.nativePrep.includes("August 31, 2026") &&
       source.nativePrep.includes("Android 16 / API 36") &&
       (androidApi36SubmissionReady || androidApi35InternalOnly),

@@ -90,6 +90,16 @@ console screenshots, tester account details, or raw device logs.
 Do not treat URL scheme handling, simulator-only checks, browser-sized mobile QA,
 or unverified association files as public-release proof for app links.
 
+## Android Target Evidence Matrix
+
+Use this matrix before each Google Play release selection so the current
+internal-test wrapper target is not confused with a public-submission build.
+
+| Release path | Checked-in compile/target SDK | Required action | Repo-safe result |
+| --- | ---: | --- | --- |
+| Google Play internal testing before the API 36 deadline | `35 / 35` | Keep the current internal-test build only while store review remains internal and the release date allows it. | Record release track, version code/name, test date, and pass/fail only. |
+| Google Play public submission or update on or after August 31, 2026 | `35 / 35` is blocked | Install Android 16 / API 36 tooling, set `compileSdkVersion` and `targetSdkVersion` to `36`, rebuild, and rerun wrapper plus real-device QA. | Record API `36 / 36` rebuild proof, version code/name, device QA date, and pass/fail only. |
+
 ## Local Build Commands
 
 From `native/thetattoocore-mobile`:
