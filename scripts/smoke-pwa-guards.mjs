@@ -12,6 +12,7 @@ const serviceWorker = readFileSync("public/sw.js", "utf8");
 const pushControl = readFileSync("src/app/push-subscription-control.tsx", "utf8");
 const accountProfileForm = readFileSync("src/app/account/profile-form.tsx", "utf8");
 const notificationsPage = readFileSync("src/app/notifications/page.tsx", "utf8");
+const mobileSmoke = readFileSync("scripts/smoke-mobile-browser.mjs", "utf8");
 const pushRoute = readFileSync("src/app/api/push/subscriptions/route.ts", "utf8");
 const pushMigration = readFileSync(
   "supabase/migrations/20260713183514_push_subscription_foundation.sql",
@@ -288,6 +289,14 @@ const checks = [
       !userFacingPushSource.includes("installed-web-app") &&
       !userFacingPushSource.includes("Native iOS") &&
       !userFacingPushSource.includes("Push roadmap"),
+  },
+  {
+    label: "mobile smoke keeps Alerts fallback route covered before native push",
+    ok:
+      mobileSmoke.includes('path: "/notifications"') &&
+      mobileSmoke.includes('textIncludes: "Sign in"') &&
+      mobileSmoke.includes('titleIncludes: "Sign in"') &&
+      userFacingPushSource.includes("Keep checking Notifications for now."),
   },
   {
     label: "push subscriptions are stored behind authenticated RLS",
