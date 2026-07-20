@@ -78,6 +78,29 @@ const expectedNotificationAllowedPrefixes = [
   '"/stuff/"',
   '"/gigs/"',
 ];
+const expectedNotificationFallbackRoutePairs = [
+  ['`/p/${notification.subject_id}`', '"/p/"'],
+  ['`/t/${notification.subject_id}`', '"/t/"'],
+  ['"/#stories"', '"/"'],
+  ['`/messages?c=${notification.subject_id}`', '"/messages"'],
+  ['`/u/${notification.profiles.username}`', '"/u/"'],
+  ['`/merch/${notification.subject_id}`', '"/merch/"'],
+  ['"/account#order-settings"', '"/account"'],
+  ['"/account#advertising-settings"', '"/account"'],
+  ['"/account#booking-settings"', '"/account"'],
+  ['"/account#verification-settings"', '"/account"'],
+  ['"/notifications"', '"/notifications"'],
+];
+const notificationHrefBody =
+  notificationsPage.match(/function notificationHref\(notification: Notification\) \{([\s\S]*?)\n\}/)?.[1] ?? "";
+const forbiddenNotificationHrefDestinations = [
+  '"/admin',
+  '"/api',
+  '"http:',
+  '"https:',
+  '"//',
+  '"javascript:',
+];
 
 function pngDimensions(path) {
   const bytes = readFileSync(path);
@@ -306,14 +329,13 @@ const checks = [
     label: "service worker allows notification page fallback destinations",
     ok:
       expectedNotificationFallbacks.every((snippet) => notificationsPage.includes(snippet)) &&
-      serviceWorker.includes('"/"') &&
-      serviceWorker.includes('"/account"') &&
-      serviceWorker.includes('"/messages"') &&
-      serviceWorker.includes('"/notifications"') &&
-      serviceWorker.includes('"/p/"') &&
-      serviceWorker.includes('"/t/"') &&
-      serviceWorker.includes('"/u/"') &&
-      serviceWorker.includes('"/merch/"'),
+      expectedNotificationFallbackRoutePairs.every(
+        ([fallbackRoute, allowedRoute]) =>
+          notificationHrefBody.includes(fallbackRoute) && serviceWorker.includes(allowedRoute),
+      ) &&
+      forbiddenNotificationHrefDestinations.every(
+        (destination) => !notificationHrefBody.includes(destination),
+      ),
   },
 ];
 
