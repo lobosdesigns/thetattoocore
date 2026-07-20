@@ -14,9 +14,9 @@ This folder is the starting point for Apple TestFlight and Google Play internal 
 
 ## Build Notes
 
-1. Run `npm install` in this folder.
-2. Run `npm run doctor`.
-3. Run `npm run sync`.
+1. On Windows/Android prep, run `npm.cmd install` in this folder.
+2. Run `npm.cmd run doctor`.
+3. Run `npm.cmd run sync`.
 4. Build Android on a machine with Android SDK and JDK 21:
    - `cd android`
    - `.\gradlew.bat assembleDebug`
@@ -25,7 +25,7 @@ This folder is the starting point for Apple TestFlight and Google Play internal 
    - `cd ios/App`
    - `pod install`
    - `open App.xcworkspace`
-6. Reuse the approved TTC icon/splash assets from `../../public/icons` and `../../public/splash`.
+6. Confirm the mapped TTC icon/splash assets stay current with `../../public/icons` and `../../public/splash`.
 7. Run the web smoke tests from the repo root before native packaging:
    - `npm.cmd run verify`
    - `npm.cmd run smoke:mobile`

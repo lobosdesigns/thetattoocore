@@ -16,6 +16,7 @@ const files = {
   dataSafetyPrep: "docs/DATA_SAFETY_PREP.md",
   mobileRunbook: "docs/MOBILE_APP_SUBMISSION_RUNBOOK.md",
   nativePrep: "docs/NATIVE_WRAPPER_PREP.md",
+  readiness: "docs/APP_STORE_READINESS.md",
   packageJson: `${wrapperRoot}/package.json`,
   readme: `${wrapperRoot}/README.md`,
   webFallback: `${wrapperRoot}/www/index.html`,
@@ -174,6 +175,22 @@ const checks = [
       fileSize(`${wrapperRoot}/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png`) > 20000 &&
       fileSize(`${wrapperRoot}/ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png`) > 100000 &&
       fileSize(`${wrapperRoot}/ios/App/App/Assets.xcassets/Splash.imageset/splash-2732x2732.png`) > 1000000,
+  },
+  {
+    label: "native wrapper handoff uses current Windows commands and asset wording",
+    ok:
+      source.readme.includes("npm.cmd install") &&
+      source.readme.includes("npm.cmd run doctor") &&
+      source.readme.includes("npm.cmd run sync") &&
+      !source.readme.includes("Run `npm install`") &&
+      !source.readme.includes("Run `npm run doctor`") &&
+      !source.readme.includes("Run `npm run sync`") &&
+      source.readme.includes("Confirm the mapped TTC icon/splash assets stay current") &&
+      source.readiness.includes("Validate the existing beta wrapper") &&
+      source.readiness.includes("rebuild signed Android upload bundles") &&
+      source.readiness.includes("Confirm the mapped native icon/splash assets remain current") &&
+      !source.readiness.includes("Create and validate the beta wrapper") &&
+      !source.readiness.includes("once Android/iOS packaging starts"),
   },
   {
     label: "native iOS wrapper includes privacy manifest resource",
