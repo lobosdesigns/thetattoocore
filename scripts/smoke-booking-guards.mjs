@@ -222,8 +222,11 @@ const checks = [
       accountPage.includes("see the expected deposit") &&
       accountPage.includes("cancellation_policy") &&
       accountPage.includes('name="calendar_connection_status"') &&
-      accountPage.includes("Google Calendar") &&
-      accountPage.includes("Apple/iCalendar"),
+      accountPage.includes("External calendar note") &&
+      accountPage.includes("Calendar setup note") &&
+      !accountPage.includes(">Google Calendar<") &&
+      !accountPage.includes(">Apple/iCalendar<") &&
+      !accountPage.includes("Choosing Google Calendar or Apple/iCalendar"),
   },
   {
     label: "account page exposes TimeTix-style appointment type controls",
@@ -423,7 +426,8 @@ const checks = [
       !accountPage.includes('calendar_connection_status ?? "manual").replaceAll("_", " ")') &&
       statusLabels.includes("export function calendarConnectionStatusLabel") &&
       statusLabels.includes('if (!status || status === "manual") return "Manual setup"') &&
-      statusLabels.includes('if (status === "apple_ical_planned") return "Apple/iCalendar"'),
+      statusLabels.includes('if (status === "google_planned") return "External calendar note"') &&
+      statusLabels.includes('if (status === "apple_ical_planned") return "Calendar setup note"'),
   },
   {
     label: "DM threads surface attached booking requests",
@@ -543,7 +547,8 @@ const checks = [
     label: "account booking settings maintain private calendar setup records",
     ok:
       accountPage.includes("Calendar setup records") &&
-      accountPage.includes("store calendar passwords here") &&
+      accountPage.includes("setup note for booking coordination") &&
+      accountPage.includes("calendar passwords here") &&
       !accountPage.includes("raw connection secrets") &&
       accountPage.includes('.from("booking_calendar_connections")') &&
       accountPage.includes("external_calendar_id") &&
@@ -561,7 +566,7 @@ const checks = [
       accountPage.includes("Manual calendar plan") &&
       accountPage.includes("private Add to calendar download") &&
       accountPage.includes("Calendar notes") &&
-      accountPage.includes("Use Google, Apple, or iCalendar notes"),
+      accountPage.includes("Use external calendar notes"),
   },
   {
     label: "booking slot foundation models appointment types, slots, blackouts, and calendar connections",
@@ -637,7 +642,7 @@ const checks = [
   {
     label: "plan records calendars, deposits, fees, and next booking steps",
     ok:
-      productPlan.includes("Google Calendar, Apple/iCloud Calendar, or standard iCalendar") &&
+      productPlan.includes("external calendar feeds where supported") &&
       productPlan.includes("TimeTix-style booking system") &&
       productPlan.includes("appointment types") &&
       productPlan.includes("blackout dates") &&

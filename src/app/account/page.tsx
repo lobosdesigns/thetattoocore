@@ -136,7 +136,7 @@ const bookingCalendarPrepItems = [
   ],
   [
     "Calendar notes",
-    "Use Google, Apple, or iCalendar notes to keep booking expectations clear while TTC handles requests, deposits, and private calendar downloads.",
+    "Use external calendar notes to keep booking expectations clear while TTC handles requests, deposits, and private calendar downloads.",
   ],
 ] as const;
 const merchSellerReadinessItems = [
@@ -1290,9 +1290,9 @@ export default async function AccountPage({
               <div className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3">
                 <p className="text-sm font-bold">Calendar setup records</p>
                 <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
-                  Choosing Google Calendar or Apple/iCalendar saves a private
-                  read-only setup note for booking coordination. TTC does not
-                  store calendar passwords here.
+                  Choosing an external calendar note saves a private read-only
+                  setup note for booking coordination. TTC does not store
+                  calendar passwords here.
                 </p>
                 {bookingCalendarConnections?.length ? (
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -1318,9 +1318,8 @@ export default async function AccountPage({
                   </div>
                 ) : (
                   <p className="mt-3 rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] p-3 text-xs leading-5 text-[var(--muted)]">
-                    No calendar setup record yet. Save Google Calendar or
-                    Apple/iCalendar as the connection type when you want booking
-                    coordination notes on file.
+                    No calendar setup record yet. Save an external calendar
+                    note when you want booking coordination notes on file.
                   </p>
                 )}
               </div>
@@ -1373,9 +1372,9 @@ export default async function AccountPage({
                     name="calendar_connection_status"
                   >
                     <option value="manual">Manual setup</option>
-                    <option value="google_planned">Google Calendar</option>
+                    <option value="google_planned">External calendar note</option>
                     <option value="apple_ical_planned">
-                      Apple/iCalendar
+                      Calendar setup note
                     </option>
                   </select>
                   <span className="text-xs font-normal leading-5 text-[var(--muted-strong)]">

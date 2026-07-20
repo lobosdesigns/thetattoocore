@@ -63,11 +63,11 @@ const calendarConnectionStatuses = new Set([
 ]);
 const calendarConnectionPrep = {
   apple_ical_planned: {
-    displayName: "Apple/iCalendar prep",
+    displayName: "Calendar setup note",
     provider: "apple_ical",
   },
   google_planned: {
-    displayName: "Google Calendar prep",
+    displayName: "External calendar note",
     provider: "google",
   },
 } as const;

@@ -501,7 +501,7 @@ export const helpArticles = [
       },
       {
         answer:
-          "Calendar export files are available for scheduled bookings. Use Google, Apple/iCloud, or standard iCalendar notes to keep appointment details clear with clients.",
+          "Calendar export files are available for scheduled bookings. Use external calendar notes to keep appointment details clear with clients.",
         question: "Can bookings connect to my calendar?",
       },
       {

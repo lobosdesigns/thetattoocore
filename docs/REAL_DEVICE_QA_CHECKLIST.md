@@ -158,6 +158,20 @@ Store-critical proof should include at least:
 - Accessibility Nutrition Labels proof for the submitted iPhone/iPad build, including common-task checks for VoiceOver, Voice Control, Larger Text, Differentiate Without Color Alone, Sufficient Contrast, Reduced Motion, Captions, and Audio Descriptions before claiming support in App Store Connect.
 - Browser/device console check showing no uncaught app errors during auth, posting, DMs, checkout return, reporting/blocking, and Help/Support/legal routes.
 
+## Accessibility Nutrition Labels Evidence Matrix
+
+Use this matrix before answering App Store accessibility labels. Test only the submitted iPhone/iPad build, mark unsupported features honestly, and keep raw device clips, tester notes, and private account details in the private release handoff.
+
+| Common task | VoiceOver | Voice Control | Larger Text | Differentiate Without Color Alone | Sufficient Contrast | Reduced Motion | Captions | Audio Descriptions | Repo-safe note |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Sign up, log in, reset password, and open Help/Support/legal links. | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `not applicable` or tested result | `not applicable` or tested result | Record build, device, date, and pass/fail only. |
+| Navigate 4U, Gossip, Stuff, Gigs, Merch, Search, profile, Settings, and Account. | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `not applicable` or tested result | `not applicable` or tested result | Record only non-sensitive route names and result. |
+| Create a safe post/Story, report/block content, and submit account deletion request. | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `not applicable` or tested result | `not applicable` or tested result | Keep sample content and report IDs private. |
+| Complete the two-user DM pass, including reply, read indicator, attachment, and notification route. | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `not applicable` or tested result | `not applicable` or tested result | Record tester aliases only; no DM text or screenshots with private messages. |
+| Run verification upload, booking request/deposit return, Merch browsing/order history, and controlled checkout return paths. | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `pass`, `partial`, or `not supported` | `not applicable` or tested result | `not applicable` or tested result | Keep payment, license, address, and admin review evidence private. |
+
+Repo-safe accessibility summary fields are limited to release candidate, platform, submitted build, device model, test date, common task, accessibility feature, result, and a short non-sensitive note. Do not commit private messages, payment data, license documents, console screenshots, account identifiers, tester emails, or personal contact details.
+
 ## Native Build And Install Evidence Matrix
 
 Keep completed rows in the private release handoff. Do not commit screenshots or clips that show reviewer secrets, private contact numbers, account owner details, payment-account data, console identifiers, private DMs, license documents, or admin-only queues.

@@ -329,6 +329,10 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Admin Payments review evidence using safe test references") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Accessibility Nutrition Labels proof") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("VoiceOver, Voice Control, Larger Text") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("## Accessibility Nutrition Labels Evidence Matrix") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("| Common task | VoiceOver | Voice Control | Larger Text | Differentiate Without Color Alone | Sufficient Contrast | Reduced Motion | Captions | Audio Descriptions | Repo-safe note |") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Sign up, log in, reset password, and open Help/Support/legal links.") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Repo-safe accessibility summary fields are limited to release candidate") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("## Native Build And Install Evidence Matrix") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("| Android | Google Play internal testing or closed testing if production access requires it.") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("12-tester participation, 14-day duration, feedback summary") &&
