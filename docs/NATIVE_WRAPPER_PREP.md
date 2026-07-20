@@ -31,6 +31,9 @@ Use this before creating Android or iOS wrapper projects. The goal is a thin, po
 
 - Use Firebase Cloud Messaging as the Android and iOS delivery path for native app alerts.
 - Add the Android app config file to the wrapper only after the Firebase project is created for TheTattooCore and the package name `com.thetattoocore.app` is registered.
+- The Android google-services plugin stays conditional: it may be declared in
+  the Gradle classpath, but it should apply only when `google-services.json`
+  exists in the private build environment.
 - Add the iOS app config file only after the Apple bundle identifier, team, signing profile, and notification capability are confirmed on the Mac/Xcode build path.
 - Keep push prompts off until device-token registration, per-device opt-out, quiet hours, and notification-category preferences are connected to the signed-in account.
 - Archive real-device evidence for Android and iOS notification permission prompts, token registration, alert delivery, notification tap routing, and opt-out before claiming native push support in store copy.

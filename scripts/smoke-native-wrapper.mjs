@@ -3,6 +3,8 @@ import { join } from "node:path";
 
 const wrapperRoot = "native/thetattoocore-mobile";
 const files = {
+  androidAppBuild: `${wrapperRoot}/android/app/build.gradle`,
+  androidRootBuild: `${wrapperRoot}/android/build.gradle`,
   androidManifest: `${wrapperRoot}/android/app/src/main/AndroidManifest.xml`,
   androidVariables: `${wrapperRoot}/android/variables.gradle`,
   capacitorConfig: `${wrapperRoot}/capacitor.config.ts`,
@@ -251,8 +253,15 @@ const checks = [
       forbiddenNativePushDependencies.every(
         (dependency) => !source.packageJson.includes(`"${dependency}"`),
       ) &&
+      source.androidRootBuild.includes("com.google.gms:google-services") &&
+      source.androidAppBuild.includes("def servicesJSON = file('google-services.json')") &&
+      source.androidAppBuild.includes("if (servicesJSON.text)") &&
+      source.androidAppBuild.includes("apply plugin: 'com.google.gms.google-services'") &&
+      source.androidAppBuild.includes("google-services.json not found") &&
       source.gitignore.includes("**/google-services.json") &&
       source.gitignore.includes("**/GoogleService-Info.plist") &&
+      source.nativePrep.includes("The Android google-services plugin stays conditional") &&
+      source.readme.includes("Android native alert config stays private-build-only") &&
       source.nativePrep.includes("Enable Firebase/FCM notification delivery only after") &&
       source.mobileRunbook.includes("Firebase project, native app config files") &&
       source.readiness.includes("native Firebase/FCM delivery is planned but not enabled"),

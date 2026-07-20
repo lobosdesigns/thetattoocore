@@ -10,6 +10,9 @@ This folder is the starting point for Apple TestFlight and Google Play internal 
 - Public support: `support@thetattoocore.com`
 - Native permissions at first beta: none beyond the WebView defaults.
 - Push prompts: off until native device-token delivery is built and tested.
+- Android native alert config stays private-build-only: the wrapper may know
+  how to apply the Google services plugin, but the app config file stays out of
+  git and is added only for a private build after device evidence is ready.
 - TTC web links are declared for the wrapper; final verified app links still require the signed Android fingerprint and Apple site-association file before public release.
 
 ## Build Notes
