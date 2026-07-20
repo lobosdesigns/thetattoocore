@@ -107,6 +107,9 @@ const forbiddenContactSnippets = [
 ];
 const forbiddenStoreListingProviderSnippets = [
   "Cloudflare",
+  "Cloud Messaging",
+  "FCM",
+  "Firebase",
   "Supabase",
   "HostGator",
   "Stripe",

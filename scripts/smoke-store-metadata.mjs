@@ -252,6 +252,9 @@ const uploadSelectedScreenshotNames = {
 
 const blockedTerms = [
   "cloudflare",
+  "cloud messaging",
+  "fcm",
+  "firebase",
   "supabase",
   "hostgator",
   "stripe",
