@@ -221,6 +221,7 @@ const checks = [
       source.screenshotInventory.includes("public/screenshots/mobile-merch-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-payout-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-order-support-safe.png") &&
+      source.screenshotInventory.includes("public/screenshots/mobile-privacy-safety-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-help-support.png") &&
       source.screenshotInventory.includes("## Screenshot Replacement Status") &&
       source.screenshotInventory.includes("| Google Play phone screenshots | Generated safe phone derivatives") &&
@@ -234,7 +235,7 @@ const checks = [
       source.screenshotInventory.includes("Replace generated draft assets with final real-device screenshots") &&
       !source.screenshotInventory.includes("Generated placeholder ready") &&
       source.screenshotInventory.includes("4U, Gossip, Stuff, Gigs, Merch") &&
-      source.screenshotInventory.includes("verification, booking, Help, and Support") &&
+      source.screenshotInventory.includes("verification, booking, privacy/safety, Help, and Support") &&
       source.screenshotInventory.includes("DM should appear as a") &&
       source.screenshotInventory.includes("not as a main swipe/feed column") &&
       source.screenshotInventory.includes("private DMs") &&
@@ -247,13 +248,13 @@ const checks = [
   {
     label: "generated Google Play screenshots match upload dimensions",
     ok:
-      hasExpectedPngs(generatedScreenshots.playPhone, 13, 1080, 1920) &&
+      hasExpectedPngs(generatedScreenshots.playPhone, 14, 1080, 1920) &&
       hasExpectedPngs(generatedScreenshots.playFeature, 1, 1024, 500),
   },
   {
     label: "generated App Store screenshots match upload dimensions",
     ok:
-      hasExpectedPngs(generatedScreenshots.appStorePhone, 13, 1242, 2688) &&
+      hasExpectedPngs(generatedScreenshots.appStorePhone, 14, 1242, 2688) &&
       hasExpectedPngs(generatedScreenshots.appStoreIpad, 3, 2048, 2732),
   },
 ];

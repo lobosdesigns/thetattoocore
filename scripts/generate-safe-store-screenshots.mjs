@@ -329,6 +329,28 @@ ${text({ body: "Use support for private account, safety,", color: "#6f5e4c", siz
 ${text({ body: "payment, or verification questions.", color: "#6f5e4c", size: 14, weight: 700, x: 52, y: 722 })}
 ${bottomNav()}
 `),
+  "mobile-privacy-safety-safe.png": header(`
+${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}
+${text({ body: "Privacy & Safety", size: 31, weight: 900, x: 52, y: 170 })}
+${text({ body: "Keep private details in trusted controls.", color: "#6f5e4c", size: 15, weight: 600, x: 52, y: 202 })}
+${rounded({ fill: "#f6f2eb", h: 82, r: 10, w: 436, x: 52, y: 244 })}
+${text({ body: "Report unsafe content", size: 16, weight: 900, x: 76, y: 280 })}
+${text({ body: "Use post, profile, and Story report tools.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 304 })}
+${rounded({ fill: "#f6f2eb", h: 82, r: 10, w: 436, x: 52, y: 350 })}
+${text({ body: "Block unwanted contact", size: 16, weight: 900, x: 76, y: 386 })}
+${text({ body: "Blocks help stop follows and DMs.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 410 })}
+${rounded({ fill: "#f6f2eb", h: 82, r: 10, w: 436, x: 52, y: 456 })}
+${text({ body: "Privacy preferences", size: 16, weight: 900, x: 76, y: 492 })}
+${text({ body: "Review profile visibility in Settings.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 516 })}
+${rounded({ fill: "#f4ead8", h: 112, r: 10, stroke: "#e0c27a", w: 436, x: 52, y: 568 })}
+${text({ body: "Account data requests", color: "#7b5a15", size: 18, weight: 900, x: 76, y: 608 })}
+${text({ body: "Use Support or Settings for private", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 636 })}
+${text({ body: "account-specific help.", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 658 })}
+${pill({ label: "Report", w: 92, x: 70, y: 708 })}
+${pill({ label: "Block", w: 86, x: 176, y: 708 })}
+${pill({ label: "Data help", w: 112, x: 276, y: 708 })}
+${bottomNav()}
+`),
 };
 
 for (const [name, svg] of Object.entries(pages)) {

@@ -46,6 +46,7 @@ const allDocs = Object.values(docs).join("\n");
 const safeTutorialClipPath = "public/tutorial-clips/mobile-main-navigation-safe.mp4";
 const safeStoriesDmsClipPath = "public/tutorial-clips/mobile-stories-dms-safety-safe.mp4";
 const safeDmNotificationClipPath = "public/tutorial-clips/mobile-dm-notification-pass-safe.mp4";
+const safePrivacyScreenshotPath = "public/screenshots/mobile-privacy-safety-safe.png";
 const forbiddenContactSnippets = [
   "lobo3319@gmail.com",
   "lobosden@hotmail.com",
@@ -444,6 +445,10 @@ const checks = [
       helpCenterData.includes('assetSrc: "/screenshots/mobile-merch-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-payout-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-order-support-safe.png"') &&
+      helpCenterData.includes('assetSrc: "/screenshots/mobile-privacy-safety-safe.png"') &&
+      screenshotGenerator.includes('"mobile-privacy-safety-safe.png"') &&
+      existsSync(safePrivacyScreenshotPath) &&
+      statSync(safePrivacyScreenshotPath).size > 10_000 &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-4u-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-stories-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-gossip-safe.png"') &&
@@ -473,6 +478,7 @@ const checks = [
       !helpCenterData.includes("hosted account flow") &&
       helpCenterData.includes("Stories rail preview") &&
       helpCenterData.includes("Gossip discussion preview") &&
+      helpCenterData.includes("account data-request controls") &&
       helpCenterData.includes("Stories, DMs, and safety controls") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("getting-started guide") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("Launch setup checklist") &&
@@ -509,7 +515,9 @@ const checks = [
       helpSearch.includes("article.keywords") &&
       helpSearch.includes("article.relatedSlugs") &&
       helpCenterData.includes("payout setup") &&
-      helpCenterData.includes("google calendar") &&
+      helpCenterData.includes("calendar app") &&
+      helpCenterData.includes("calendar download") &&
+      !helpCenterData.includes("google calendar") &&
       helpCenterData.includes("shop link") &&
       helpCenterData.includes("How do I find saved things again?") &&
       helpCenterData.includes("saved items") &&

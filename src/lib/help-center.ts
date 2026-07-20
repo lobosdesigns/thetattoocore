@@ -530,8 +530,9 @@ export const helpArticles = [
       "apple calendar",
       "blackout dates",
       "calendar",
+      "calendar app",
+      "calendar download",
       "deposit",
-      "google calendar",
       "ical",
       "refunds",
       "time slots",
@@ -994,9 +995,9 @@ export const helpArticles = [
     ],
     tutorialMedia: [
       {
-        assetSrc: "/screenshots/mobile-help-support.png",
+        assetSrc: "/screenshots/mobile-privacy-safety-safe.png",
         description:
-          "Show the Help and Support path with dummy profiles and safe sample content only before capturing report, block, privacy, and data-request controls.",
+          "Show report, block, privacy, and account data-request controls with dummy profiles and safe sample content only.",
         kind: "screenshot",
         title: "Privacy and support controls",
       },
