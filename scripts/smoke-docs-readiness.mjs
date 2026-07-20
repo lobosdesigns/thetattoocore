@@ -451,6 +451,22 @@ const checks = [
       !docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("hosted checkout"),
   },
   {
+    label: "mobile submission runbook records current store rules check",
+    ok:
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("## Current Store Rules Check") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Last checked: July 20, 2026") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple App Privacy: privacy policy URL is required") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple Content Rights") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("current 13-inch iPad portrait proof") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("2064 x 2752 or 2048 x 2732") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple Accessibility Nutrition Labels") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play target API") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Android 16 / API 36") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play production access") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("12 testers opted in for 14 continuous days") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("private release handoff only"),
+  },
+  {
     label: "product plan uses plain push and translation roadmap wording",
     ok:
       docs["docs/PRODUCT_PLAN.md"].includes("installed app push third") &&

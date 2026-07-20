@@ -21,6 +21,30 @@
 - Visible nudity is not allowed to reduce review and moderation risk.
 - Merch and ads use controlled launch checkout; production payments, seller payouts, taxes, refunds, disputes, and app-store policy review from `docs/PAYMENT_PRODUCTION_READINESS.md` must be finished before real commerce is promoted in native builds.
 
+## Current Store Rules Check
+
+Last checked: July 20, 2026. Recheck the official store help pages before each
+new build selection, metadata save, or production-access request because console
+requirements can change between internal testing and public review.
+
+- Apple App Privacy: privacy policy URL is required and must match the final
+  public Privacy page for the submitted iOS build.
+- Apple Content Rights: confirm TTC owns, licenses, or has permission for
+  metadata, icons, generated screenshots, and sample content shown in review.
+- Apple screenshots: confirm the required iPhone set and 13-inch iPad set upload
+  successfully for the selected iOS build; current 13-inch iPad portrait proof
+  should record whether 2064 x 2752 or 2048 x 2732 was accepted.
+- Apple Accessibility Nutrition Labels: evaluate common tasks on the submitted
+  iPhone/iPad build before claiming support for any accessibility feature.
+- Google Play target API: new apps and updates submitted on or after August 31,
+  2026 must target Android 16 / API 36 or higher.
+- Google Play production access: if the account/app is subject to closed-test
+  requirements, keep at least 12 testers opted in for 14 continuous days before
+  applying for production access.
+- Keep source URLs, console screenshots, tester membership, reviewer credentials,
+  private contact details, and account identifiers in the private release handoff
+  only.
+
 ## Wrapper Decision
 
 Start with a thin native wrapper now that core web smoke/390px mobile checks are stable:
