@@ -70,6 +70,52 @@ function hasPngDimensions(path, width, height) {
   return dimensions?.width === width && dimensions?.height === height;
 }
 
+function describePngDimensionIssue(path, width, height) {
+  if (!existsSync(path)) {
+    return `${path} is missing`;
+  }
+
+  const dimensions = pngDimensions(path);
+
+  if (!dimensions) {
+    return `${path} is not a readable PNG`;
+  }
+
+  if (dimensions.width !== width || dimensions.height !== height) {
+    return `${path} is ${dimensions.width}x${dimensions.height}; expected ${width}x${height}`;
+  }
+
+  return "";
+}
+
+function describeManifestScreenshotDimensionIssues() {
+  return (manifestJson.screenshots ?? [])
+    .map((screenshot) => {
+      const [width, height] = screenshot.sizes
+        .split("x")
+        .map((size) => Number.parseInt(size, 10));
+
+      if (!Number.isInteger(width) || !Number.isInteger(height)) {
+        return `${screenshot.src} has invalid sizes value: ${screenshot.sizes}`;
+      }
+
+      return describePngDimensionIssue(`public${screenshot.src}`, width, height);
+    })
+    .filter(Boolean);
+}
+
+function describePwaAssetDimensionIssues() {
+  return [
+    describePngDimensionIssue("public/icons/icon-192.png", 192, 192),
+    describePngDimensionIssue("public/icons/icon-512.png", 512, 512),
+    describePngDimensionIssue("public/icons/maskable-512.png", 512, 512),
+    ...describeManifestScreenshotDimensionIssues(),
+    describePngDimensionIssue("public/splash/splash-2048.png", 2048, 2048),
+  ]
+    .filter(Boolean)
+    .join("; ");
+}
+
 const manifestScreenshotsMatchDimensions = (manifestJson.screenshots ?? []).every((screenshot) => {
   const [width, height] = screenshot.sizes.split("x").map((size) => Number.parseInt(size, 10));
   const path = `public${screenshot.src}`;
@@ -96,6 +142,7 @@ const checks = [
   },
   {
     label: "PWA icon and screenshot files match manifest dimensions",
+    message: describePwaAssetDimensionIssues(),
     ok:
       hasPngDimensions("public/icons/icon-192.png", 192, 192) &&
       hasPngDimensions("public/icons/icon-512.png", 512, 512) &&
@@ -235,6 +282,11 @@ for (const check of checks) {
 }
 
 if (failures.length) {
+  for (const check of failures) {
+    if (check.message) {
+      console.error(`  ${check.message}`);
+    }
+  }
   console.error(`${failures.length} PWA guard smoke check(s) failed.`);
   process.exit(1);
 }
