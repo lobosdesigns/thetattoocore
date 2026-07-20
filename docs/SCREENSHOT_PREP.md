@@ -57,3 +57,17 @@ Track each store asset set separately so one valid upload does not hide another 
 - Google Play Console: record the uploaded phone screenshot set, feature graphic, upload validation result, release track, capture date, and reviewer-safe notes.
 - Confirm every uploaded image still matches the submitted build after final metadata, privacy, age-rating, and payment-status edits.
 - Confirm no uploaded image shows private DMs, license documents, admin queues, real payment data, personal owner contact details, visible infrastructure/provider names, visible nudity, copyrighted tattoo art, or unsafe marketplace examples.
+
+## Private Upload Validation Packet
+
+Use one private packet per release candidate. The repo-safe summary can say only whether each store asset set is `pending`, `uploaded`, `needs replacement`, `blocked`, or `validated`.
+
+Each private packet should include:
+
+- Store surface and asset set: Google Play phone screenshots, Google Play feature graphic, App Store iPhone 6.5-inch screenshots, or App Store 13-inch iPad screenshots.
+- Submitted build or release track, app version/build number, capture device, capture date, and final uploaded filenames.
+- Console validation result, rejection category if any, next action owner, and replacement due date.
+- Confirmation that dimensions, file count, no-alpha output, and safe content rules passed for the exact files uploaded.
+- Confirmation that generated draft screenshots were replaced or explicitly re-captured from the selected build before public review.
+
+Keep raw console screenshots, rejection messages with account identifiers, reviewer credentials, tester emails, personal phone details, device identifiers, and store-dashboard IDs in the private handoff only.

@@ -239,6 +239,16 @@ const checks = [
       docs["docs/SCREENSHOT_PREP.md"].includes("Google Play Console: record the uploaded phone screenshot set") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("feature graphic") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("matches the submitted build after final metadata") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("## Private Upload Validation Packet") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("Use one private packet per release candidate") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("`pending`, `uploaded`, `needs replacement`, `blocked`, or `validated`") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("Store surface and asset set") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("Submitted build or release track") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("Console validation result, rejection category if any") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("dimensions, file count, no-alpha output") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("generated draft screenshots were replaced or explicitly re-captured") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("Keep raw console screenshots") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("store-dashboard IDs in the private handoff only") &&
       screenshotGenerator.includes("mobile-login-signup.png") &&
       screenshotGenerator.includes("mobile-ads-safe.png") &&
       screenshotGenerator.includes("mobile-merch-safe.png") &&
