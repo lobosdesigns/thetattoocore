@@ -44,7 +44,7 @@ Start with a thin native wrapper now that core web smoke/390px mobile checks are
 - Confirm support email and public legal/contact surfaces use `support@thetattoocore.com` or final company/legal contact details, not personal owner information.
 - Complete `docs/LEGAL_REVIEW_PREP.md` for Terms, Privacy, account deletion language, moderation policy, marketplace rules, payment/refund language, seller payout policy, and native checkout/store submission notes.
 - Decide whether native builds expose Merch checkout or keep it web-only and launch-controlled until production payment policy is approved.
-- Prepare store age rating answers around 18+, user-generated content, moderation/reporting, no visible nudity policy, social interaction, DMs, marketplace-like browsing, and hosted checkout.
+- Prepare store age rating answers around 18+, user-generated content, moderation/reporting, no visible nudity policy, social interaction, DMs, marketplace-like browsing, and review-controlled checkout.
 - Prepare store data-safety/privacy answers around account/profile data, user-generated content, DMs, verification documents, moderation records, payment references, coarse location, notifications, deletion requests, and public-search visibility.
 
 ## Push Notifications
@@ -65,9 +65,9 @@ Start with a thin native wrapper now that core web smoke/390px mobile checks are
 1. Keep the wrapper project in `native/thetattoocore-mobile`.
 2. Point the wrapper start URL to `https://thetattoocore.com/login`.
 3. Add app icons and splash assets from the approved TTC shield assets.
-4. Configure allowed domains for `thetattoocore.com`, auth redirects, hosted checkout, support, privacy, and terms.
+4. Configure allowed domains for `thetattoocore.com`, auth redirects, current checkout returns, support, privacy, and terms.
 5. Build Android first on this Windows machine if Android tooling is installed; build iOS on the Mac/remote Mac because Xcode is required.
 6. Upload to Google Play internal testing and Apple TestFlight before any public review submission. Google Play internal testing is active; iOS build `1.0 (3)` is available for internal TestFlight testing.
 7. Test camera/photo-picker behavior only through normal browser file inputs unless a native upload bridge is added deliberately.
 
-Use `docs/NATIVE_WRAPPER_PREP.md` as the detailed wrapper checklist for navigation, permissions, app links, hosted checkout handling, screenshots, and QA.
+Use `docs/NATIVE_WRAPPER_PREP.md` as the detailed wrapper checklist for navigation, permissions, app links, checkout-return handling, screenshots, and QA.

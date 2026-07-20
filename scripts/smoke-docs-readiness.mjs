@@ -162,7 +162,9 @@ const checks = [
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Story, Gossip, Stuff, Gigs, Merch, booking") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("docs/REAL_DEVICE_QA_CHECKLIST.md") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("docs/SCREENSHOT_PREP.md") &&
-      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("raw payment or payout credentials"),
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("raw payment or payout credentials") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("review-controlled checkout flow") &&
+      !docs["docs/NATIVE_WRAPPER_PREP.md"].includes("hosted checkout"),
   },
   {
     label: "screenshot prep blocks private, unsafe, and technical visible content",
@@ -331,7 +333,10 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("privacy/safety Help Center guides") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("/help/beta-app-testing") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Merch guide shortcut") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("seller payout setup details"),
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("seller payout setup details") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("review-controlled checkout") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checkout-return handling") &&
+      !docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("hosted checkout"),
   },
   {
     label: "product plan uses plain push and translation roadmap wording",

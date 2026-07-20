@@ -13,7 +13,7 @@ Use this before creating Android or iOS wrapper projects. The goal is a thin, po
 ## Allowed Navigation
 
 - Allow `https://thetattoocore.com` and same-origin app routes.
-- Allow hosted checkout only through the current checkout flow, then return to safe internal app routes.
+- Allow checkout only through the current review-controlled checkout flow, then return to safe internal app routes.
 - Allow support, privacy, terms, account deletion instructions, and public shared content routes.
 - Block or open externally any unexpected third-party destinations.
 - Keep all login return paths internal and reject protocol-relative or external return paths.
@@ -48,7 +48,7 @@ Use this before creating Android or iOS wrapper projects. The goal is a thin, po
 - Confirm install prompts or browser banners do not block scrolling in the wrapper.
 - Confirm videos do not show a visible download control in the wrapper media player.
 - Confirm file uploads work through normal mobile file pickers.
-- Confirm hosted checkout returns safely to the app and does not expose raw payment or payout credentials in app forms.
+- Confirm checkout returns safely to the app and does not expose raw payment or payout credentials in app forms.
 
 ## First Wrapper Steps
 
