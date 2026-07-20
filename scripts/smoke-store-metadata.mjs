@@ -226,6 +226,11 @@ const uploadSelectedScreenshotNames = {
     "mobile-privacy-safety-safe-1242x2688.png",
     "mobile-help-support-1242x2688.png",
   ],
+  appStoreIpad: [
+    "mobile-home-2048x2732.png",
+    "mobile-login-signup-2048x2732.png",
+    "mobile-4u-safe-2048x2732.png",
+  ],
 };
 
 const blockedTerms = [
@@ -465,6 +470,8 @@ const checks = [
       uploadSelectedScreenshotNames.playPhone.length <= 8 &&
       uploadSelectedScreenshotNames.appStorePhone.length >= 1 &&
       uploadSelectedScreenshotNames.appStorePhone.length <= 10 &&
+      uploadSelectedScreenshotNames.appStoreIpad.length >= 1 &&
+      uploadSelectedScreenshotNames.appStoreIpad.length <= 10 &&
       selectedNamesAreAvailable(
         uploadSelectedScreenshotNames.playPhone,
         expectedScreenshotNames.playPhone,
@@ -473,13 +480,21 @@ const checks = [
         uploadSelectedScreenshotNames.appStorePhone,
         expectedScreenshotNames.appStorePhone,
       ) &&
+      selectedNamesAreAvailable(
+        uploadSelectedScreenshotNames.appStoreIpad,
+        expectedScreenshotNames.appStoreIpad,
+      ) &&
       source.screenshotInventory.includes("## Upload-Selected Screenshot Sets") &&
       source.screenshotInventory.includes("Current Google Play phone cap: 4 to 8 screenshots") &&
       source.screenshotInventory.includes("Current App Store screenshot cap: 1 to 10 screenshots") &&
+      source.screenshotInventory.includes("selected 13-inch iPad set") &&
       uploadSelectedScreenshotNames.playPhone.every((name) =>
         source.screenshotInventory.includes(name),
       ) &&
       uploadSelectedScreenshotNames.appStorePhone.every((name) =>
+        source.screenshotInventory.includes(name),
+      ) &&
+      uploadSelectedScreenshotNames.appStoreIpad.every((name) =>
         source.screenshotInventory.includes(name),
       ),
   },

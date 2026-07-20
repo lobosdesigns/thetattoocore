@@ -71,6 +71,13 @@ the first App Store Connect upload validation attempt:
 - `mobile-privacy-safety-safe-1242x2688.png`
 - `mobile-help-support-1242x2688.png`
 
+Use this 3-file selected 13-inch iPad set from the generated safe pool for the
+first App Store Connect upload validation attempt:
+
+- `mobile-home-2048x2732.png`
+- `mobile-login-signup-2048x2732.png`
+- `mobile-4u-safe-2048x2732.png`
+
 Keep rejected-upload screenshots, console validation errors, and final
 replacement decisions in the private release handoff only.
 
