@@ -49,7 +49,9 @@ async function blockRelationshipExists({
 function safeInternalHref(value: FormDataEntryValue | null) {
   const href = String(value ?? "").trim();
 
-  if (!href.startsWith("/") || href.startsWith("//")) return "/notifications";
+  if (!href.startsWith("/") || href.startsWith("//") || href.includes("\\")) {
+    return "/notifications";
+  }
 
   let url: URL;
   try {

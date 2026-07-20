@@ -309,10 +309,11 @@ const checks = [
     ok: clientConsoleFiles.length === 0,
   },
   {
-    label: "notification open rejects external and protocol-relative hrefs",
+    label: "notification open rejects external, protocol-relative, and backslash hrefs",
     ok:
       notificationActions.includes('!href.startsWith("/")') &&
-      notificationActions.includes('href.startsWith("//")'),
+      notificationActions.includes('href.startsWith("//")') &&
+      notificationActions.includes('href.includes("\\\\")'),
   },
   {
     label: "notification open allowlists user-facing paths",
