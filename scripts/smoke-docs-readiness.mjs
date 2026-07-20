@@ -646,6 +646,13 @@ const checks = [
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Native app policy review recorded before exposing checkout in native wrappers") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Support, Terms, Privacy, and Help copy checked against the live build") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Repo-safe summary fields are limited to release candidate") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("## Live-Money Cutover Preflight Matrix") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("| Flow | Mode and webhook preflight | Required live event proof | Admin reconciliation proof | Fulfillment or delivery gate | Payout/refund/dispute gate | Repo-safe result |") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("| Merch order checkout |") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("| Prepaid ad campaign checkout |") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("| Booking deposit checkout |") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("| Seller payout readiness |") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("a single passed flow does not clear the others") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Admin > Payments reconciliation result") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Keep payment intent IDs, checkout session IDs") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("raw console exports in the private release handoff only") &&
