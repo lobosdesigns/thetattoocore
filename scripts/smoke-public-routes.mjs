@@ -1,4 +1,7 @@
+import { readFileSync } from "node:fs";
+
 const baseUrl = (process.env.SMOKE_BASE_URL || "https://thetattoocore.com").replace(/\/$/, "");
+const settingsPageSource = readFileSync("src/app/settings/page.tsx", "utf8");
 const forbiddenBodyText = [
   "This page couldn't load",
   "Reload to try again",
@@ -65,6 +68,16 @@ function isEdgeChallenge(body) {
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function visibleSettingsShortcutPaths() {
+  return [
+    ...new Set(
+      [...settingsPageSource.matchAll(/href: "(\/settings\/[^"]+)"/g)].map(
+        (match) => match[1],
+      ),
+    ),
+  ].sort();
 }
 
 async function fetchTextWithRetry(url, options = {}, retryOptions = {}) {
@@ -151,6 +164,7 @@ const checks = [
     redirect: "manual",
   },
   { path: "/settings/profile", status: [307, 308], redirectIncludes: "/account#profile-settings", redirect: "manual" },
+  { path: "/settings/location", status: [307, 308], redirectIncludes: "/account#location-settings", redirect: "manual" },
   { path: "/settings/bookings", status: [307, 308], redirectIncludes: "/account#booking-settings", redirect: "manual" },
   { path: "/settings/orders", status: [307, 308], redirectIncludes: "/account#order-settings", redirect: "manual" },
   { path: "/settings/help", status: [307, 308], redirectIncludes: "/account#data-settings", redirect: "manual" },
@@ -961,6 +975,19 @@ const requiredRobotsDisallows = [
 const representativeSitemapPrefixes = ["/p/", "/t/", "/stuff/", "/gigs/", "/merch/", "/u/"];
 
 let failures = 0;
+
+const smokeSettingsShortcutPaths = new Set(checks.map((check) => check.path));
+const missingVisibleSettingsShortcutPaths = visibleSettingsShortcutPaths().filter(
+  (path) => !smokeSettingsShortcutPaths.has(path),
+);
+
+if (missingVisibleSettingsShortcutPaths.length > 0) {
+  failures += 1;
+  console.error("FAIL visible settings shortcuts have public smoke coverage");
+  console.error(`  missing paths: ${missingVisibleSettingsShortcutPaths.join(", ")}`);
+} else {
+  console.log("PASS visible settings shortcuts have public smoke coverage");
+}
 
 for (const check of checks) {
   const url = `${baseUrl}${check.path}`;
