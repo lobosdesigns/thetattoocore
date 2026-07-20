@@ -29,6 +29,11 @@ const routes = [
     titleIncludes: "Reset password",
   },
   {
+    path: "/auth/confirm?next=%2Fmessages&code=bad",
+    textIncludes: "Could not confirm your email",
+    titleIncludes: "Sign in",
+  },
+  {
     path: "/support",
     textIncludes: ["support@thetattoocore.com", "Beta app testing"],
     titleIncludes: "Support",

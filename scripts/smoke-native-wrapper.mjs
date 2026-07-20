@@ -19,6 +19,7 @@ const files = {
   dataSafetyPrep: "docs/DATA_SAFETY_PREP.md",
   gitignore: ".gitignore",
   mobileRunbook: "docs/MOBILE_APP_SUBMISSION_RUNBOOK.md",
+  mobileSmoke: "scripts/smoke-mobile-browser.mjs",
   nativePrep: "docs/NATIVE_WRAPPER_PREP.md",
   realDeviceQa: "docs/REAL_DEVICE_QA_CHECKLIST.md",
   readiness: "docs/APP_STORE_READINESS.md",
@@ -147,6 +148,7 @@ const checks = [
     label: "native wrapper keeps TestFlight auth navigation inside the app",
     ok:
       source.capacitorConfig.includes('allowNavigation: ["thetattoocore.com", "www.thetattoocore.com"]') &&
+      source.mobileSmoke.includes('path: "/auth/confirm?next=%2Fmessages&code=bad"') &&
       source.nativePrep.includes("Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView") &&
       source.mobileRunbook.includes("Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView") &&
       source.iosUploadChecklist.includes("Confirm login, signup, forgot password, reset password, and email confirmation stay inside the app WebView"),
