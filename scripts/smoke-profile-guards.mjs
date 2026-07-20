@@ -2,6 +2,10 @@ import { readFileSync } from "node:fs";
 
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
+const accountSettingsWorkspace = readFileSync(
+  "src/app/account/account-settings-workspace.tsx",
+  "utf8",
+);
 const profileForm = readFileSync("src/app/account/profile-form.tsx", "utf8");
 const profileContentTabs = readFileSync(
   "src/app/u/[username]/profile-content-tabs.tsx",
@@ -62,7 +66,29 @@ const checks = [
       profileForm.includes('if (hash === "#language-settings") return "location"') &&
       profileForm.includes('id="profile-about-settings"') &&
       profileForm.includes('id="location-settings"') &&
-      profileForm.includes("profileTabFromHash"),
+      profileForm.includes('id="notification-settings"') &&
+      profileForm.includes("profileTabFromHash") &&
+      profileForm.includes("function profilePanelId(tab: ProfileTab)") &&
+      profileForm.includes('aria-label="Profile setup sections"') &&
+      profileForm.includes('role="tablist"') &&
+      profileForm.includes('role="tab"') &&
+      profileForm.includes('role="tabpanel"') &&
+      profileForm.includes("aria-controls={profilePanelId(tab)}") &&
+      profileForm.includes("aria-selected={isActive}") &&
+      profileForm.includes('aria-labelledby={`${profilePanelId("profile")}-tab`}') &&
+      !profileForm.includes("aria-pressed={activeTab === tab}"),
+  },
+  {
+    label: "account workspace uses accessible tabs instead of generic pressed buttons",
+    ok:
+      accountSettingsWorkspace.includes('aria-label="Account areas"') &&
+      accountSettingsWorkspace.includes('role="tablist"') &&
+      accountSettingsWorkspace.includes('role="tab"') &&
+      accountSettingsWorkspace.includes('role="tabpanel"') &&
+      accountSettingsWorkspace.includes("aria-controls={tab.id}") &&
+      accountSettingsWorkspace.includes("aria-selected={isActive}") &&
+      accountSettingsWorkspace.includes('aria-labelledby={`${tab.id}-tab`}') &&
+      accountSettingsWorkspace.includes('className={activeTab === tab.id ? "block" : "hidden"}'),
   },
   {
     label: "profile updates sanitize public text and outbound URLs",

@@ -147,6 +147,10 @@ function profileHashForTab(tab: ProfileTab) {
   return "#profile-settings";
 }
 
+function profilePanelId(tab: ProfileTab) {
+  return `profile-${tab}-panel`;
+}
+
 const alertSettingNotes = [
   "Current switches control in-app notifications and unread badges.",
   "The same choices can guide important email and installed-app alerts as those features open up.",
@@ -201,28 +205,45 @@ export function ProfileForm({
         </p>
       </div>
 
-      <div className="ttc-surface no-scrollbar mb-5 flex gap-2 overflow-x-auto rounded-md border p-2">
-        {profileTabs.map(([tab, label]) => (
+      <div
+        aria-label="Profile setup sections"
+        className="ttc-surface no-scrollbar mb-5 flex gap-2 overflow-x-auto rounded-md border p-2"
+        role="tablist"
+      >
+        {profileTabs.map(([tab, label]) => {
+          const isActive = activeTab === tab;
+
+          return (
           <button
-            aria-pressed={activeTab === tab}
+            aria-controls={profilePanelId(tab)}
+            aria-selected={isActive}
             className={`h-10 shrink-0 rounded-md border px-3 text-sm font-bold ${
-              activeTab === tab
+              isActive
                 ? "ttc-control-active shadow-[0_8px_18px_rgba(23,20,18,0.16)]"
                 : "ttc-surface"
             }`}
+            id={`${profilePanelId(tab)}-tab`}
             key={tab}
             onClick={() => {
               setActiveTab(tab);
               window.history.replaceState(null, "", profileHashForTab(tab));
             }}
+            role="tab"
             type="button"
           >
             {label}
           </button>
-        ))}
+          );
+        })}
       </div>
 
-      <div className={panelClass("profile")}>
+      <div
+        aria-labelledby={`${profilePanelId("profile")}-tab`}
+        className={panelClass("profile")}
+        id={profilePanelId("profile")}
+        role="tabpanel"
+        tabIndex={0}
+      >
         <div className="ttc-surface rounded-md border p-3 sm:col-span-2">
           <div
             className="relative overflow-hidden rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--foreground)_88%,var(--brand-gold))]"
@@ -389,7 +410,13 @@ export function ProfileForm({
         </label>
       </div>
 
-      <div className={panelClass("appearance")}>
+      <div
+        aria-labelledby={`${profilePanelId("appearance")}-tab`}
+        className={panelClass("appearance")}
+        id={profilePanelId("appearance")}
+        role="tabpanel"
+        tabIndex={0}
+      >
         <div
           className="sm:col-span-2"
           id="appearance-settings"
@@ -408,7 +435,13 @@ export function ProfileForm({
         </div>
       </div>
 
-      <div className={panelClass("location")}>
+      <div
+        aria-labelledby={`${profilePanelId("location")}-tab`}
+        className={panelClass("location")}
+        id={profilePanelId("location")}
+        role="tabpanel"
+        tabIndex={0}
+      >
         <div
           className="sm:col-span-2"
           id="location-settings"
@@ -492,7 +525,13 @@ export function ProfileForm({
         </label>
       </div>
 
-      <div className={panelClass("about")}>
+      <div
+        aria-labelledby={`${profilePanelId("about")}-tab`}
+        className={panelClass("about")}
+        id={profilePanelId("about")}
+        role="tabpanel"
+        tabIndex={0}
+      >
         <div className="sm:col-span-2" id="profile-about-settings">
           <h2 className="text-sm font-bold">Bio and links</h2>
           <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
@@ -597,7 +636,13 @@ export function ProfileForm({
         </label>
       </div>
 
-      <div className={panelClass("privacy")}>
+      <div
+        aria-labelledby={`${profilePanelId("privacy")}-tab`}
+        className={panelClass("privacy")}
+        id={profilePanelId("privacy")}
+        role="tabpanel"
+        tabIndex={0}
+      >
         <div
           className="sm:col-span-2"
           id="privacy-settings"
@@ -674,9 +719,13 @@ export function ProfileForm({
       </div>
 
       <section
+        aria-labelledby={`${profilePanelId("notifications")}-tab`}
         className={`${activeTab === "notifications" ? "block" : "hidden"} scroll-mt-4`}
-        id="notification-settings"
+        id={profilePanelId("notifications")}
+        role="tabpanel"
+        tabIndex={0}
       >
+        <span className="sr-only" id="notification-settings" />
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="text-sm font-bold">Notification preferences</h2>

@@ -62,25 +62,36 @@ export function AccountSettingsWorkspace({
         </div>
       </div>
 
-      <div className="no-scrollbar mt-4 flex gap-2 overflow-x-auto rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-2">
-        {tabs.map((tab) => (
+      <div
+        aria-label="Account areas"
+        className="no-scrollbar mt-4 flex gap-2 overflow-x-auto rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-2"
+        role="tablist"
+      >
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+
+          return (
           <button
-            aria-pressed={activeTab === tab.id}
+            aria-controls={tab.id}
+            aria-selected={isActive}
             className={`h-10 shrink-0 rounded-md border px-3 text-sm font-bold ${
-              activeTab === tab.id
+              isActive
                 ? "bg-[var(--foreground)] text-[var(--background)]"
                 : "bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] text-[var(--foreground)]"
             }`}
+            id={`${tab.id}-tab`}
             key={tab.id}
             onClick={() => {
               setActiveTab(tab.id);
               window.history.replaceState(null, "", `#${tab.id}`);
             }}
+            role="tab"
             type="button"
           >
             {tab.label}
           </button>
-        ))}
+          );
+        })}
       </div>
 
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -118,9 +129,12 @@ export function AccountSettingsWorkspace({
 
           return (
             <div
+              aria-labelledby={`${tab.id}-tab`}
               className={activeTab === tab.id ? "block" : "hidden"}
               id={tab.id}
               key={tab.id}
+              role="tabpanel"
+              tabIndex={0}
             >
               {child}
             </div>
