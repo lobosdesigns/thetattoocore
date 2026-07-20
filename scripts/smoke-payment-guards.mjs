@@ -276,13 +276,18 @@ checks.push({
     bookingCheckout.includes('"Checkout started, but the checkout could not be saved. Please contact support if this repeats."') &&
     !merchCheckout.includes(".message ||") &&
     merchCheckout.includes('console.error("Merch order save failed before checkout.", orderError)') &&
-    merchCheckout.includes('"The order could not be saved before checkout. Please try again."') &&
+    merchCheckout.includes('"Order setup could not finish. Please try again."') &&
+    !merchCheckout.includes('"The order could not be saved before checkout. Please try again."') &&
     merchCheckout.includes('console.error("Merch order item save failed before checkout.", itemError)') &&
-    merchCheckout.includes('"The order item could not be saved before checkout. Please try again."') &&
+    !merchCheckout.includes('"The order item could not be saved before checkout. Please try again."') &&
     merchCheckout.includes('console.error("Merch inventory reservation failed before checkout.", reserveError)') &&
-    merchCheckout.includes('"Inventory could not be reserved for checkout. Please try again."') &&
+    merchCheckout.includes('"This item could not be held for checkout. Please try again."') &&
+    !merchCheckout.includes('"Inventory could not be reserved for checkout. Please try again."') &&
     merchCheckout.includes('console.error("Merch checkout session save failed.", sessionError)') &&
-    merchCheckout.includes('"Checkout started, but the order session could not be saved. Please contact support if this repeats."'),
+    merchCheckout.includes('"Checkout opened, but order setup could not finish. Please contact Support if this repeats."') &&
+    merchCheckout.includes('"Checkout opened, but order setup could not finish. Please try again."') &&
+    merchCheckout.includes('"Checkout could not open for this product. Please try again."') &&
+    !merchCheckout.includes('"Checkout started, but the order session could not be saved. Please contact support if this repeats."'),
 });
 checks.push({
   label: "payment webhook rejects unsigned events before processing",

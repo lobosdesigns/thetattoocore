@@ -370,7 +370,7 @@ export async function POST(request: Request) {
     console.error("Merch order save failed before checkout.", orderError);
     return redirectWithMessage(
       returnTo,
-      "The order could not be saved before checkout. Please try again.",
+      "Order setup could not finish. Please try again.",
     );
   }
 
@@ -392,7 +392,7 @@ export async function POST(request: Request) {
 
     return redirectWithMessage(
       returnTo,
-      "The order item could not be saved before checkout. Please try again.",
+      "Order setup could not finish. Please try again.",
     );
   }
 
@@ -428,7 +428,7 @@ export async function POST(request: Request) {
 
     return redirectWithMessage(
       returnTo,
-      "Inventory could not be reserved for checkout. Please try again.",
+      "This item could not be held for checkout. Please try again.",
     );
   }
 
@@ -474,7 +474,7 @@ export async function POST(request: Request) {
 
     return redirectWithMessage(
       returnTo,
-      "Checkout started, but the order session could not be saved. Please contact support if this repeats.",
+      "Checkout opened, but order setup could not finish. Please contact Support if this repeats.",
     );
   }
 
@@ -483,7 +483,7 @@ export async function POST(request: Request) {
 
     return redirectWithMessage(
       returnTo,
-      "Checkout started, but the pending order could not be reserved for this checkout.",
+      "Checkout opened, but order setup could not finish. Please try again.",
     );
   }
 
@@ -492,7 +492,7 @@ export async function POST(request: Request) {
 
     return redirectWithMessage(
       returnTo,
-      `${siteName} could not open checkout for this product.`,
+      "Checkout could not open for this product. Please try again.",
     );
   }
 
