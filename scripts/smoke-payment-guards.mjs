@@ -36,6 +36,7 @@ const globalsCss = readFileSync("src/app/globals.css", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
+const helpPage = readFileSync("src/app/help/page.tsx", "utf8");
 const helpCenter = readFileSync("src/lib/help-center.ts", "utf8");
 const helpCenterSearch = readFileSync("src/app/help/help-center-search.tsx", "utf8");
 const fees = readFileSync("src/lib/payments/fees.ts", "utf8");
@@ -45,6 +46,7 @@ const paymentReadiness = readFileSync("docs/PAYMENT_PRODUCTION_READINESS.md", "u
 const memberPaymentSafetySource = [
   helpCenter,
   helpCenterSearch,
+  helpPage,
   privacyPage,
   supportPage,
 ].join("\n");
