@@ -1937,11 +1937,10 @@ export async function editMarketplaceListing(formData: FormData) {
     .maybeSingle<{ id: string }>();
 
   if (error || !updatedListing) {
+    console.error("Stuff listing update failed.", error);
     redirect(
       redirectWithMessage({
-        message:
-          error?.message ||
-          "Could not update Stuff listing. It may be gone or owned by another account.",
+        message: "Could not update Stuff listing. It may be gone or owned by another account.",
         path: returnPath,
       }),
     );
@@ -1978,11 +1977,10 @@ export async function archiveMarketplaceListing(formData: FormData) {
     .maybeSingle<{ id: string }>();
 
   if (error || !archivedListing) {
+    console.error("Stuff listing archive failed.", error);
     redirect(
       redirectWithMessage({
-        message:
-          error?.message ||
-          "Could not archive Stuff listing. It may be gone or owned by another account.",
+        message: "Could not archive Stuff listing. It may be gone or owned by another account.",
         path: `/stuff/${listingId}`,
       }),
     );

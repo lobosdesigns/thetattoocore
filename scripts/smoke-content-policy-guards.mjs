@@ -232,6 +232,16 @@ const checks = [
       !actions.includes('result.error.message || "Could not update thread like."'),
   },
   {
+    label: "Stuff edit and archive actions hide raw backend errors from member redirects",
+    ok:
+      actions.includes('console.error("Stuff listing update failed.", error)') &&
+      actions.includes('"Could not update Stuff listing. It may be gone or owned by another account."') &&
+      actions.includes('console.error("Stuff listing archive failed.", error)') &&
+      actions.includes('"Could not archive Stuff listing. It may be gone or owned by another account."') &&
+      !actions.includes('error?.message ||\n          "Could not update Stuff listing. It may be gone or owned by another account."') &&
+      !actions.includes('error?.message ||\n          "Could not archive Stuff listing. It may be gone or owned by another account."'),
+  },
+  {
     label: "comment media schema is authenticated, image-only, and size-limited",
     ok:
       commentMediaMigration.includes("create table if not exists public.post_comment_media") &&
