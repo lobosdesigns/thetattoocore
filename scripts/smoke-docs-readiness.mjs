@@ -130,6 +130,7 @@ const forbiddenStorePrepProviderSnippets = [
   "HostGator",
   "Stripe",
 ];
+const forbiddenRepoReviewerEmailPattern = /\breviewer@[a-z0-9._%+-]+\.[a-z]{2,}\b/i;
 
 const checks = [
   {
@@ -176,6 +177,10 @@ const checks = [
     ok:
       allDocs.includes("support@thetattoocore.com") &&
       forbiddenContactSnippets.every((snippet) => !allDocs.includes(snippet)),
+  },
+  {
+    label: "repo readiness docs keep reviewer emails private",
+    ok: !forbiddenRepoReviewerEmailPattern.test(docs["docs/APP_STORE_READINESS.md"]),
   },
   {
     label: "mobile submission runbook avoids visible provider names",
@@ -875,7 +880,8 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("final reviewer access validation for the selected build") &&
       docs["docs/APP_STORE_READINESS.md"].includes("final reviewer access validation for the selected release track") &&
       docs["docs/APP_STORE_READINESS.md"].includes("| Payments | Checkout and webhook code is guarded; live-money release is not cleared.") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("| Native push | Web push display/storage is prepared; native Firebase/FCM delivery is planned but not enabled.") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("| Native push | Web push display/storage is prepared; native alert delivery is planned but not enabled.") &&
+      !docs["docs/APP_STORE_READINESS.md"].includes("native Firebase/FCM delivery") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Complete the Native Push Private Evidence Matrix") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private release handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private payment handoff only") &&

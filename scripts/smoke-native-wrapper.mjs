@@ -222,6 +222,7 @@ const checks = [
       source.readme.includes("support@thetattoocore.com") &&
       source.readme.includes("Native permissions at first beta: none") &&
       source.readme.includes("Push prompts: off") &&
+      source.mobileSmoke.includes('path: "/settings/notifications"') &&
       source.readme.includes("If the probe reports `devices_total=0`") &&
       source.readme.includes("set USB mode") &&
       source.readme.includes("accept the computer authorization prompt") &&
@@ -288,7 +289,7 @@ const checks = [
       source.readme.includes("Android native alert config stays private-build-only") &&
       source.nativePrep.includes("Enable Firebase/FCM notification delivery only after") &&
       source.mobileRunbook.includes("Firebase project, native app config files") &&
-      source.readiness.includes("native Firebase/FCM delivery is planned but not enabled"),
+      source.readiness.includes("native alert delivery is planned but not enabled"),
     message: checkedInNativePushConfigFiles.length
       ? `Remove native push config from repo before public review: ${checkedInNativePushConfigFiles.join(", ")}`
       : undefined,
