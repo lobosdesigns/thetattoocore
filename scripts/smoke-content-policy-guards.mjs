@@ -192,6 +192,10 @@ const checks = [
       actions.includes('"Could not publish 4U post. Please try again."') &&
       actions.includes('console.error("4U post media attach failed.", mediaError)') &&
       actions.includes('"Media uploaded but could not attach to the post. Please try again."') &&
+      actions.includes('console.error("4U post edit failed.", error)') &&
+      actions.includes('"Could not edit 4U post. It may be gone or owned by another account."') &&
+      actions.includes('console.error("4U post delete failed.", error)') &&
+      actions.includes('"Could not delete 4U post. It may be gone or owned by another account."') &&
       actions.includes('console.error("4U post like failed.", result.error)') &&
       actions.includes('"Could not update like. Please try again."') &&
       actions.includes('console.error("Saved item update failed.", result.error)') &&
@@ -199,6 +203,8 @@ const checks = [
       !actions.includes('error.message || "Could not upload media."') &&
       !actions.includes('error.message || "Could not publish 4U post."') &&
       !actions.includes('mediaError.message || "Media uploaded but could not attach to the post."') &&
+      !actions.includes('error?.message ||\n          "Could not edit 4U post. It may be gone or owned by another account."') &&
+      !actions.includes('error?.message ||\n          "Could not delete 4U post. It may be gone or owned by another account."') &&
       !actions.includes('result.error.message || "Could not update like."') &&
       !actions.includes('result.error.message || "Could not update saved item."'),
   },

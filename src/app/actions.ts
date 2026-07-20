@@ -1387,11 +1387,10 @@ export async function editFeedPost(formData: FormData) {
     .maybeSingle<{ id: string }>();
 
   if (error || !updatedPost) {
+    console.error("4U post edit failed.", error);
     redirect(
       redirectWithMessage({
-        message:
-          error?.message ||
-          "Could not edit 4U post. It may be gone or owned by another account.",
+        message: "Could not edit 4U post. It may be gone or owned by another account.",
         path: returnPath,
       }),
     );
@@ -1429,11 +1428,10 @@ export async function deleteFeedPost(formData: FormData) {
     .maybeSingle<{ id: string }>();
 
   if (error || !deletedPost) {
+    console.error("4U post delete failed.", error);
     redirect(
       redirectWithMessage({
-        message:
-          error?.message ||
-          "Could not delete 4U post. It may be gone or owned by another account.",
+        message: "Could not delete 4U post. It may be gone or owned by another account.",
         path: returnPath,
       }),
     );
