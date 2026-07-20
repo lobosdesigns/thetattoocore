@@ -590,7 +590,8 @@ async function markAdCheckoutSession({
     .returns<AdPaymentTransition[]>();
 
   if (error) {
-    throw new Error(error.message || "Could not update ad payment status.");
+    console.error("Webhook ad payment status update failed.", error);
+    throw new Error("Could not update ad payment status.");
   }
 
   const adPaymentNotifications = (transitionedCampaigns ?? []).map((campaign) => ({

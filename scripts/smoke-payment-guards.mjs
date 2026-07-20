@@ -434,6 +434,13 @@ checks.push({
     !stripeWebhook.includes('releaseError.message || "Could not release merch inventory hold."'),
 });
 checks.push({
+  label: "payment webhook hides raw ad payment backend errors",
+  ok:
+    stripeWebhook.includes('console.error("Webhook ad payment status update failed.", error)') &&
+    stripeWebhook.includes('throw new Error("Could not update ad payment status.")') &&
+    !stripeWebhook.includes('error.message || "Could not update ad payment status."'),
+});
+checks.push({
   label: "admin refund requests keep processor names out of redirect copy",
   ok:
     adminActions.includes(
