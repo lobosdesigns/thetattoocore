@@ -786,6 +786,8 @@ const checks = [
       settingsPage.includes('href: "/settings/language"') &&
       settingsPage.includes('href: "/settings/socials"') &&
       settingsPage.includes("Language and social links have direct shortcuts") &&
+      settingsPage.includes('href="/#feed"') &&
+      settingsPage.includes("4U Home") &&
       settingsPage.includes("Professional tools appear when your account is") &&
       productPlan.includes("role-aware panels and Settings cards"),
   },

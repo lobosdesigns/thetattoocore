@@ -164,8 +164,8 @@ export default async function SettingsPage() {
             className="ttc-surface inline-flex h-10 items-center justify-center gap-2 rounded-md border px-3 text-sm font-bold"
             href="/#feed"
           >
-            <Home className="size-4" />
-            4U
+            <Home aria-hidden="true" className="size-4" />
+            4U Home
           </Link>
           <Link
             className="ttc-surface inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-bold"
