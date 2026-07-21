@@ -20,6 +20,7 @@ type ComposerVisibility =
   | "public_preview"
   | "members"
   | "followers"
+  | "verified_artists_shops"
   | "verified_professionals"
   | "private";
 
@@ -55,6 +56,12 @@ const baseVisibilityOptions: VisibilityOption[] = [
 const storyVisibilityOptions = baseVisibilityOptions.filter(
   (option) => option.value !== "followers",
 );
+
+const artistShopVisibilityOption = {
+  description: "Visible only to verified artists and shops.",
+  label: "Artists and shops only",
+  value: "verified_artists_shops" as const,
+};
 
 function ComposerDetails({
   children,
@@ -144,26 +151,34 @@ function VisibilityControl({
 }
 
 export function FloatingComposer({
+  canPostVerifiedArtistShopAudience,
   canPostVerifiedGossipAudience,
   canCreate,
   canCreateStuff,
   isSignedIn,
 }: {
+  canPostVerifiedArtistShopAudience: boolean;
   canPostVerifiedGossipAudience: boolean;
   canCreate: boolean;
   canCreateStuff: boolean;
   isSignedIn: boolean;
 }) {
+  const feedVisibilityOptions = canPostVerifiedArtistShopAudience
+    ? [...baseVisibilityOptions, artistShopVisibilityOption]
+    : baseVisibilityOptions;
   const threadVisibilityOptions = canPostVerifiedGossipAudience
     ? [
         ...baseVisibilityOptions,
+        ...(canPostVerifiedArtistShopAudience ? [artistShopVisibilityOption] : []),
         {
           description: "Visible only to verified artists and vendors.",
           label: "Verified artists and vendors",
           value: "verified_professionals" as const,
         },
       ]
-    : baseVisibilityOptions;
+    : canPostVerifiedArtistShopAudience
+      ? [...baseVisibilityOptions, artistShopVisibilityOption]
+      : baseVisibilityOptions;
 
   return (
     <FloatingComposerShell
@@ -204,7 +219,10 @@ export function FloatingComposer({
               />
             </ComposerDetails>
             <ComposerDetails title="Visibility">
-              <VisibilityControl helper="Choose Public for everyone or Followers only when the post is meant for accepted followers." />
+              <VisibilityControl
+                helper="Choose Public for everyone, Followers only for accepted followers, or Artists and shops only for verified artist/shop visibility."
+                options={feedVisibilityOptions}
+              />
             </ComposerDetails>
             <MediaInput accept={imageVideoAccept} name="media" required />
             <ComposerSubmit pendingLabel="Publishing">Publish</ComposerSubmit>
@@ -279,7 +297,7 @@ export function FloatingComposer({
             <ComposerDetails title="Visibility">
               <VisibilityControl
                 defaultValue="members"
-                helper="Choose Public for everyone, Followers only for accepted followers, or the verified artist/vendor audience when you want professional-only Gossip."
+                helper="Choose Public for everyone, Followers only for accepted followers, Artists and shops only, or the verified artist/vendor audience when you want professional-only Gossip."
                 options={threadVisibilityOptions}
               />
             </ComposerDetails>

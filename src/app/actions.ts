@@ -13,13 +13,14 @@ import { calculatePlatformFeeCents } from "@/lib/payments/fees";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { cleanExternalUrl } from "@/lib/urls";
-import { isVerifiedProfessional } from "@/lib/verification";
+import { isVerifiedArtistOrShop, isVerifiedProfessional } from "@/lib/verification";
 
 const MEDIA_BUCKET = "tattoo-media";
 type ContentVisibility =
   | "public_preview"
   | "members"
   | "followers"
+  | "verified_artists_shops"
   | "verified_professionals"
   | "private";
 
@@ -32,12 +33,14 @@ const FEED_VISIBILITY_VALUES = new Set<ContentVisibility>([
   "public_preview",
   "members",
   "followers",
+  "verified_artists_shops",
   "private",
 ]);
 const THREAD_VISIBILITY_VALUES = new Set<ContentVisibility>([
   "public_preview",
   "members",
   "followers",
+  "verified_artists_shops",
   "verified_professionals",
   "private",
 ]);
@@ -705,6 +708,22 @@ async function canPostVerifiedGossipAudience({
   );
 }
 
+async function canPostVerifiedArtistShopAudience({
+  supabase,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId: string;
+}) {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("account_type, license_verified_at")
+    .eq("id", userId)
+    .maybeSingle<{ account_type: string; license_verified_at: string | null }>();
+
+  return isVerifiedArtistOrShop(profile);
+}
+
 function sensitiveFields() {
   // Launch policy: visible nudity is not allowed, so new upload forms do not
   // expose a sensitive-content bypass. Keep legacy columns false by default.
@@ -988,6 +1007,18 @@ export async function createFeedPost(formData: FormData) {
 
   if (!media) {
     redirect(homeMessage("4U posts need a photo or reel.", "feed"));
+  }
+
+  if (
+    visibility === "verified_artists_shops" &&
+    !(await canPostVerifiedArtistShopAudience({ supabase, userId }))
+  ) {
+    redirect(
+      homeMessage(
+        "Artists and shops only posts require a verified artist or shop account.",
+        "feed",
+      ),
+    );
   }
 
   const metadata = await inspectMediaFile(media);
@@ -1833,6 +1864,18 @@ export async function createThreadPost(formData: FormData) {
     redirect(
       homeMessage(
         "Verified artist and vendor Gossip posts require a verified artist or vendor account.",
+        "threads",
+      ),
+    );
+  }
+
+  if (
+    visibility === "verified_artists_shops" &&
+    !(await canPostVerifiedArtistShopAudience({ supabase, userId }))
+  ) {
+    redirect(
+      homeMessage(
+        "Artists and shops only Gossip posts require a verified artist or shop account.",
         "threads",
       ),
     );

@@ -48,6 +48,14 @@ const feedGossipAudienceMigration = readFileSync(
   "supabase/migrations/20260721152100_feed_gossip_audience_policies.sql",
   "utf8",
 );
+const artistShopAudienceEnumMigration = readFileSync(
+  "supabase/migrations/20260721193000_artist_shop_content_audience_enum.sql",
+  "utf8",
+);
+const artistShopAudiencePolicyMigration = readFileSync(
+  "supabase/migrations/20260721193100_artist_shop_post_visibility_policies.sql",
+  "utf8",
+);
 const commentPrivacyInsertPoliciesMigration = readFileSync(
   "supabase/migrations/20260721162000_comment_privacy_insert_policies.sql",
   "utf8",
@@ -465,7 +473,7 @@ const checks = [
     ok:
       composer.includes("Followers only") &&
       composer.includes("Visible to accepted followers and you.") &&
-      composer.includes("Choose Public for everyone or Followers only") &&
+      composer.includes("Choose Public for everyone, Followers only") &&
       composer.includes("Choose Public for everyone, Followers only for accepted followers") &&
       composer.includes('value: "followers"') &&
       actions.includes("FEED_VISIBILITY_VALUES") &&
@@ -491,6 +499,22 @@ const checks = [
       actions.includes("Verified artist and vendor Gossip posts require a verified artist or vendor account."),
   },
   {
+    label: "4U and Gossip support verified artist/shop-only audience with server and RLS guards",
+    ok:
+      artistShopAudienceEnumMigration.includes("'verified_artists_shops'") &&
+      artistShopAudiencePolicyMigration.includes("current_user_is_verified_artist_or_shop") &&
+      artistShopAudiencePolicyMigration.includes("viewer.account_type in ('artist', 'studio')") &&
+      artistShopAudiencePolicyMigration.includes("viewer.license_verified_at is not null") &&
+      artistShopAudiencePolicyMigration.includes("current_user_can_view_feed_post") &&
+      artistShopAudiencePolicyMigration.includes("current_user_can_view_thread_post") &&
+      artistShopAudiencePolicyMigration.includes("visibility <> 'verified_artists_shops'") &&
+      composer.includes("Artists and shops only") &&
+      composer.includes("Visible only to verified artists and shops.") &&
+      actions.includes("canPostVerifiedArtistShopAudience") &&
+      actions.includes('visibility === "verified_artists_shops"') &&
+      homePage.includes('visibility === "verified_artists_shops" ? "Artists and shops only" : null'),
+  },
+  {
     label: "feed and Gossip RLS policies inherit followers and professional audience visibility",
     ok:
       contentAudienceEnumMigration.includes("'followers'") &&
@@ -504,7 +528,8 @@ const checks = [
       feedGossipAudienceMigration.includes("Thread media follows thread visibility") &&
       feedGossipAudienceMigration.includes("Members can read visible thread comment media") &&
       feedGossipAudienceMigration.includes("post_visibility = 'followers'") &&
-      feedGossipAudienceMigration.includes("post_visibility = 'verified_professionals'"),
+      feedGossipAudienceMigration.includes("post_visibility = 'verified_professionals'") &&
+      artistShopAudiencePolicyMigration.includes("post_visibility = 'verified_artists_shops'"),
   },
   {
     label: "4U post tags notify newly tagged members through feed preferences",

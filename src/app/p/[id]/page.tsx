@@ -65,6 +65,7 @@ type ContentVisibility =
   | "public_preview"
   | "members"
   | "followers"
+  | "verified_artists_shops"
   | "verified_professionals"
   | "private";
 

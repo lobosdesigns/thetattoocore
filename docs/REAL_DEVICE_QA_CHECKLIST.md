@@ -244,9 +244,9 @@ npm.cmd run verify:native-release
 ```
 
 This command checks production environment boundaries, private native config
-exclusions, and readiness docs first, then is expected to fail while no authorized Android device
+exclusions, private handoff-template validation, and readiness docs first, then is expected to fail while no authorized Android device
 with the review build installed is visible. A pass means the
-environment guard, native wrapper guard, docs guard, Android connected-device/package
+environment guard, native wrapper guard, private handoff-template guard, docs guard, Android connected-device/package
 probe, store metadata guard, Android-profile mobile smoke, and iOS-profile mobile
 smoke all passed for the same release candidate.
 

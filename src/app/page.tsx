@@ -58,7 +58,7 @@ import { siteName, siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 import { safeStatusMessage } from "@/lib/status-message";
 import { userGeneratedLinkRel } from "@/lib/urls";
-import { isVerifiedProfessional } from "@/lib/verification";
+import { isVerifiedArtistOrShop, isVerifiedProfessional } from "@/lib/verification";
 
 const loginReturnHref = (returnTo: string) =>
   `/login?return_to=${encodeURIComponent(returnTo)}`;
@@ -91,6 +91,7 @@ type ContentVisibility =
   | "public_preview"
   | "members"
   | "followers"
+  | "verified_artists_shops"
   | "verified_professionals"
   | "private";
 
@@ -889,6 +890,7 @@ function ContentLabels({
   const labels = [
     visibility === "members" ? "Members" : null,
     visibility === "followers" ? "Followers" : null,
+    visibility === "verified_artists_shops" ? "Artists and shops only" : null,
     visibility === "verified_professionals" ? "Verified artists and vendors" : null,
     visibility === "private" ? "Private" : null,
     isSensitive ? "Sensitive" : null,
@@ -3344,6 +3346,7 @@ export default async function Home({
         unreadDmBadge={unreadDmBadge}
       />
       <FloatingComposer
+        canPostVerifiedArtistShopAudience={isVerifiedArtistOrShop(currentProfile)}
         canPostVerifiedGossipAudience={Boolean(
           currentProfile?.license_verified_at &&
             ["artist", "vendor"].includes(currentProfile.account_type),
