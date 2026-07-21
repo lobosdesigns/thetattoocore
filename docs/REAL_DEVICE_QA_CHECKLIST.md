@@ -209,6 +209,16 @@ package is installed for the build under review, run:
 npm.cmd run qa:android-device:required
 ```
 
+Before treating an Android/iOS wrapper build as release-ready, run the stricter
+native release gate:
+
+```powershell
+npm.cmd run verify:native-release
+```
+
+This command is expected to fail while no authorized Android device with the
+review build installed is visible.
+
 ```powershell
 $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
 & $adb start-server

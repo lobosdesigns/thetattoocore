@@ -418,11 +418,14 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("platform tools or `adb` missing from Windows PATH") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Do not treat missing automation as a") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("## Android Connected-Device Probe") &&
+      packageJson.includes('"verify:native-release": "npm run smoke:native && npm run qa:android-device:required && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios"') &&
       packageJson.includes('"qa:android-device": "node scripts/android-device-qa-probe.mjs"') &&
       packageJson.includes('"qa:android-device:required": "node scripts/android-device-qa-probe.mjs --require-device"') &&
       packageJson.includes("npm run smoke:native && npm run qa:android-device && npm run smoke:store") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run qa:android-device") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run qa:android-device:required") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run verify:native-release") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("expected to fail while no authorized Android device") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("platform-tools\\adb.exe") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("adb start-server") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("adb devices -l") &&
@@ -437,6 +440,8 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Record a safe console/log review summary for mobile web, Android wrapper WebView, and iOS TestFlight") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("run the `Android Connected-Device Probe`") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Empty or unauthorized `adb devices -l` output is a handoff blocker") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run verify:native-release") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("intentionally fails until the Android probe sees an authorized device") &&
       docs["native/thetattoocore-mobile/README.md"].includes("%LOCALAPPDATA%\\Android\\Sdk\\platform-tools\\adb.exe") &&
       docs["native/thetattoocore-mobile/README.md"].includes("ANDROID_QA adb_server=started") &&
       docs["native/thetattoocore-mobile/README.md"].includes("ANDROID_QA adb_server=start failed") &&
@@ -940,11 +945,14 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Keep project IDs, sender IDs, API keys, app config files, device tokens, notification payloads, signing details, and console screenshots in the private release handoff only"),
   },
   {
-    label: "full verification keeps focused DM and mobile guards in the chain",
+    label: "full verification keeps focused DM, Android probe, and mobile guards in the chain",
     ok:
       packageJson.includes('"smoke:dm": "node scripts/smoke-dm-guards.mjs"') &&
       packageJson.includes("npm run smoke:stories && npm run smoke:dm && npm run smoke:booking") &&
+      packageJson.includes("npm run smoke:native && npm run qa:android-device && npm run smoke:store") &&
+      packageJson.includes("npm run smoke:native && npm run qa:android-device:required && npm run smoke:store") &&
       packageJson.includes("npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Android connected-device probe") &&
       docs["docs/APP_STORE_READINESS.md"].includes("dedicated DM smoke guard suite"),
   },
 ];
