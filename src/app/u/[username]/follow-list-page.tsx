@@ -25,6 +25,8 @@ type Profile = {
   avatar_url: string | null;
   banner_url: string | null;
   display_name: string;
+  followers_visibility: "public" | "followers" | "private";
+  following_visibility: "public" | "followers" | "private";
   id: string;
   is_private: boolean;
   license_verified_at: string | null;
@@ -85,6 +87,27 @@ function pageNumber(value: string | string[] | undefined) {
 
 function pageHref(username: string, kind: FollowListKind, page: number) {
   return `/u/${username}/${kind}?page=${page}`;
+}
+
+function canViewCommunityList({
+  hasBlockRelationship,
+  isFollowing,
+  isOwnProfile,
+  isProfilePrivate,
+  visibility,
+}: {
+  hasBlockRelationship: boolean;
+  isFollowing: boolean;
+  isOwnProfile: boolean;
+  isProfilePrivate: boolean;
+  visibility: Profile["followers_visibility"];
+}) {
+  if (hasBlockRelationship) return false;
+  if (isOwnProfile) return true;
+  if (visibility === "private") return false;
+  if (visibility === "followers") return isFollowing;
+
+  return !isProfilePrivate || isFollowing;
 }
 
 async function getBlockedProfileIds({
@@ -178,7 +201,7 @@ export async function FollowListPage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, username, display_name, avatar_url, banner_url, account_type, is_private, license_verified_at",
+      "id, username, display_name, avatar_url, banner_url, account_type, is_private, followers_visibility, following_visibility, license_verified_at",
     )
     .eq("username", cleanUsername)
     .maybeSingle<Profile>();
@@ -227,10 +250,15 @@ export async function FollowListPage({
 
   const isOwnProfile = claims?.sub === profile.id;
   const hasBlockRelationship = Boolean(blockRecord);
-  const canView =
-    Boolean(claims?.sub) &&
-    !hasBlockRelationship &&
-    (!profile.is_private || isOwnProfile || followRecord?.status === "accepted");
+  const listVisibility =
+    kind === "followers" ? profile.followers_visibility : profile.following_visibility;
+  const canView = canViewCommunityList({
+    hasBlockRelationship,
+    isFollowing: followRecord?.status === "accepted",
+    isOwnProfile,
+    isProfilePrivate: profile.is_private,
+    visibility: listVisibility,
+  });
   const listQuery =
     kind === "followers"
       ? supabase
@@ -357,8 +385,7 @@ export async function FollowListPage({
               <LockKeyhole className="mx-auto mb-3 size-8 text-[var(--muted-strong)]" />
               <h2 className="text-lg font-bold">Private community</h2>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--muted-strong)]">
-                Sign in and follow this profile, if needed, to view their full
-                community list.
+                This member has limited who can view this community list.
               </p>
               <Link
                 className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"

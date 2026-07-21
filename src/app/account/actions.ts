@@ -56,6 +56,8 @@ const stuffListingGoals = new Set([
 const merchListingGoals = new Set(["product_views", "shop_visits", "purchases"]);
 const adPlacements = new Set(["4u", "gossip", "stuff", "merch"]);
 const themePreferences = new Set(["light", "dark", "system"]);
+const followVisibilityValues = new Set(["public", "followers", "private"]);
+const commentPermissionValues = new Set(["everyone", "followers", "none"]);
 const calendarConnectionStatuses = new Set([
   "manual",
   "google_planned",
@@ -113,6 +115,18 @@ function cleanProfileUsername(value: FormDataEntryValue | null) {
     .replace(/^@/, "")
     .toLowerCase()
     .slice(0, 30);
+}
+
+function cleanFollowVisibility(value: FormDataEntryValue | null) {
+  const cleaned = cleanText(value, 20);
+
+  return followVisibilityValues.has(cleaned) ? cleaned : "public";
+}
+
+function cleanCommentPermission(value: FormDataEntryValue | null) {
+  const cleaned = cleanText(value, 20);
+
+  return commentPermissionValues.has(cleaned) ? cleaned : "everyone";
 }
 
 function isPastDate(value: string | null) {
@@ -547,10 +561,19 @@ export async function updateProfile(formData: FormData) {
     country_code: countryCode,
     display_name: displayName,
     facebook_url: cleanExternalUrl(formData.get("facebook_url"), 240),
+    followers_visibility: cleanFollowVisibility(
+      formData.get("followers_visibility"),
+    ),
+    following_visibility: cleanFollowVisibility(
+      formData.get("following_visibility"),
+    ),
     id: claims.sub,
     instagram_url: cleanExternalUrl(formData.get("instagram_url"), 240),
     is_adult_confirmed: true,
     is_private: formData.get("is_private") === "on",
+    comment_permission: cleanCommentPermission(
+      formData.get("comment_permission"),
+    ),
     location_personalization_enabled:
       formData.get("location_personalization_enabled") === "on",
     notify_feed_activity: formData.get("notify_feed_activity") === "on",

@@ -20,6 +20,10 @@ const recentSearches = readFileSync("src/app/search/recent-searches.tsx", "utf8"
 const urls = readFileSync("src/lib/urls.ts", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const mobileSmoke = readFileSync("scripts/smoke-mobile-browser.mjs", "utf8");
+const privacyMigration = readFileSync(
+  "supabase/migrations/20260721133154_profile_privacy_controls.sql",
+  "utf8",
+);
 
 const socialFields = [
   "website_url",
@@ -117,8 +121,13 @@ const checks = [
     label: "profile updates sanitize public text and outbound URLs",
     ok:
       accountActions.includes("export async function updateProfile") &&
+      accountActions.includes("function cleanFollowVisibility") &&
+      accountActions.includes("function cleanCommentPermission") &&
       accountActions.includes("async function uploadBanner") &&
       accountActions.includes("bio: cleanText(formData.get(\"bio\"), 500) || null") &&
+      accountActions.includes('followers_visibility: cleanFollowVisibility') &&
+      accountActions.includes('following_visibility: cleanFollowVisibility') &&
+      accountActions.includes('comment_permission: cleanCommentPermission') &&
       accountActions.includes('const banner = fileFromForm(formData, "banner")') &&
       accountActions.includes('formData.get("remove_banner") === "on"') &&
       accountActions.includes("removeBanner ? { banner_url: null }") &&
@@ -228,9 +237,13 @@ const checks = [
     label: "follow lists hide blocked relationships and blocked row profiles",
     ok:
       followListPage.includes("async function getBlockedProfileIds") &&
+      followListPage.includes("function canViewCommunityList") &&
+      followListPage.includes("followers_visibility") &&
+      followListPage.includes("following_visibility") &&
+      followListPage.includes("This member has limited who can view this community list.") &&
       followListPage.includes('from("user_blocks")') &&
       followListPage.includes("const hasBlockRelationship = Boolean(blockRecord)") &&
-      followListPage.includes("!hasBlockRelationship") &&
+      followListPage.includes("if (hasBlockRelationship) return false") &&
       followListPage.includes("const fetchTo = to + pageSize") &&
       followListPage.includes(".range(from, fetchTo)") &&
       followListPage.includes("const filteredRows = (rows ?? []).filter") &&
@@ -242,6 +255,9 @@ const checks = [
     label: "profile preview widgets filter blocked profiles",
     ok:
       profilePage.includes("async function getBlockedProfileIds") &&
+      profilePage.includes("function canViewCommunityList") &&
+      profilePage.includes("const canViewFollowers = canViewCommunityList") &&
+      profilePage.includes("const canViewFollowing = canViewCommunityList") &&
       profilePage.includes("const visibleFollowerPreview") &&
       profilePage.includes("const visibleFollowingPreview") &&
       profilePage.includes("const visibleLinkedArtists") &&
@@ -249,6 +265,22 @@ const checks = [
       profilePage.includes("!blockedProfileIds.has(artist.id)") &&
       profilePage.includes("followers={visibleFollowerPreview}") &&
       profilePage.includes("artists={visibleLinkedArtists}"),
+  },
+  {
+    label: "privacy settings can limit follow lists and comments",
+    ok:
+      profileForm.includes('name="followers_visibility"') &&
+      profileForm.includes('name="following_visibility"') &&
+      profileForm.includes('name="comment_permission"') &&
+      profileForm.includes("Who can see followers") &&
+      profileForm.includes("Who can see following") &&
+      profileForm.includes("Who can comment") &&
+      accountPage.includes("followers_visibility, following_visibility, comment_permission") &&
+      privacyMigration.includes("add column if not exists followers_visibility") &&
+      privacyMigration.includes("add column if not exists following_visibility") &&
+      privacyMigration.includes("add column if not exists comment_permission") &&
+      privacyMigration.includes("'public', 'followers', 'private'") &&
+      privacyMigration.includes("'everyone', 'followers', 'none'"),
   },
   {
     label: "profile content sections page deeper content 25 at a time",

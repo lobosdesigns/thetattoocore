@@ -473,10 +473,13 @@ export default async function AdminUsersPage({
 
         <section className="mt-4 grid gap-3">
           {users.map((user) => {
+            const isOwnerAccount = user.role === "owner";
             const canDeleteUser =
               canDeleteAccounts &&
+              !isOwnerAccount &&
               user.id !== claims.sub &&
-              (canManageRoles || (user.role !== "admin" && user.role !== "owner"));
+              (canManageRoles || user.role !== "admin");
+            const canModerateStatus = !isOwnerAccount;
 
             return (
             <article
@@ -548,32 +551,38 @@ export default async function AdminUsersPage({
                 ) : (
                   <div className="hidden lg:block" />
                 )}
-                <form action={changeUserStatus} className="grid gap-2">
-                  <input name="profile_id" type="hidden" value={user.id} />
-                  <input name="return_to" type="hidden" value={pageHref(currentPage, activeSearch)} />
-                  <input
-                    className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
-                    maxLength={500}
-                    name="note"
-                    placeholder="Moderation note"
-                  />
-                  <div className="grid grid-cols-1 gap-2 min-[390px]:grid-cols-3">
-                    {[
-                      ["active", "Restore"],
-                      ["suspended", "Suspend"],
-                      ["banned", "Ban"],
-                    ].map(([value, label]) => (
-                      <button
-                        className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)]"
-                        key={value}
-                        name="status"
-                        value={value}
-                      >
-                        {label}
-                      </button>
-                    ))}
+                {canModerateStatus ? (
+                  <form action={changeUserStatus} className="grid gap-2">
+                    <input name="profile_id" type="hidden" value={user.id} />
+                    <input name="return_to" type="hidden" value={pageHref(currentPage, activeSearch)} />
+                    <input
+                      className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                      maxLength={500}
+                      name="note"
+                      placeholder="Moderation note"
+                    />
+                    <div className="grid grid-cols-1 gap-2 min-[390px]:grid-cols-3">
+                      {[
+                        ["active", "Restore"],
+                        ["suspended", "Suspend"],
+                        ["banned", "Ban"],
+                      ].map(([value, label]) => (
+                        <button
+                          className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)]"
+                          key={value}
+                          name="status"
+                          value={value}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </form>
+                ) : (
+                  <div className="rounded-md border border-[color-mix(in_srgb,var(--gold)_32%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_9%,var(--paper-warm))] px-3 py-2 text-xs font-semibold text-[var(--muted-strong)]">
+                    Owner account moderation actions are locked.
                   </div>
-                </form>
+                )}
               </div>
               {canGrantAdCredits ? (
                 <details className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_72%,transparent)] p-3">
@@ -635,7 +644,7 @@ export default async function AdminUsersPage({
                   </form>
                 </details>
               ) : null}
-              {canDeleteAccounts ? (
+              {canDeleteAccounts && !isOwnerAccount ? (
                 <details className="mt-4 rounded-md border border-[color-mix(in_srgb,var(--danger)_28%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_5%,var(--paper-warm))] p-3">
                   <summary className="cursor-pointer text-sm font-bold text-[var(--danger)]">
                     Delete account
@@ -668,7 +677,7 @@ export default async function AdminUsersPage({
                     <p className="mt-2 text-xs font-medium text-[var(--muted-strong)]">
                       {user.id === claims.sub
                         ? "You cannot delete your own account here."
-                        : "Owner role required to delete admin or owner accounts."}
+                        : "Owner role required to delete admin accounts."}
                     </p>
                   ) : (
                     <p className="mt-2 text-xs font-medium text-[var(--muted-strong)]">

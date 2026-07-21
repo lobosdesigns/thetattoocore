@@ -98,6 +98,8 @@ type Profile = {
   shop_profile: ShopProfile | null;
   shop_profile_id: string | null;
   is_private: boolean;
+  followers_visibility: "public" | "followers" | "private";
+  following_visibility: "public" | "followers" | "private";
   license_verified_at: string | null;
   created_at: string;
 };
@@ -453,6 +455,27 @@ function formatGigCategory(category: string) {
 
 function formatAccountType(value: string) {
   return value.replaceAll("_", " ");
+}
+
+function canViewCommunityList({
+  hasBlockRelationship,
+  isFollowing,
+  isOwnProfile,
+  isProfilePrivate,
+  visibility,
+}: {
+  hasBlockRelationship: boolean;
+  isFollowing: boolean;
+  isOwnProfile: boolean;
+  isProfilePrivate: boolean;
+  visibility: Profile["followers_visibility"];
+}) {
+  if (hasBlockRelationship) return false;
+  if (isOwnProfile) return true;
+  if (visibility === "private") return false;
+  if (visibility === "followers") return isFollowing;
+
+  return !isProfilePrivate || isFollowing;
 }
 
 function formatJoinedDate(value: string) {
@@ -1321,7 +1344,7 @@ export default async function ProfilePage({
   const { data: profileRow } = await supabase
     .from("profiles")
     .select(
-      "id, username, display_name, avatar_url, banner_url, account_type, bio, city, region, country, website_url, instagram_url, tiktok_url, facebook_url, youtube_url, x_url, shop_profile_id, is_private, license_verified_at, created_at",
+      "id, username, display_name, avatar_url, banner_url, account_type, bio, city, region, country, website_url, instagram_url, tiktok_url, facebook_url, youtube_url, x_url, shop_profile_id, is_private, followers_visibility, following_visibility, license_verified_at, created_at",
     )
     .eq("username", cleanUsername)
     .maybeSingle<Omit<Profile, "shop_profile">>();
@@ -1584,6 +1607,20 @@ export default async function ProfilePage({
   const hasBlockRelationship = blockedByViewer || viewerBlockedByProfile;
   const isFollowing = followRecord?.status === "accepted";
   const hasPendingRequest = followRecord?.status === "pending";
+  const canViewFollowers = canViewCommunityList({
+    hasBlockRelationship,
+    isFollowing,
+    isOwnProfile,
+    isProfilePrivate: profile.is_private,
+    visibility: profile.followers_visibility,
+  });
+  const canViewFollowing = canViewCommunityList({
+    hasBlockRelationship,
+    isFollowing,
+    isOwnProfile,
+    isProfilePrivate: profile.is_private,
+    visibility: profile.following_visibility,
+  });
   const isPrivateLocked =
     (profile.is_private && !isOwnProfile && !isFollowing) ||
     hasBlockRelationship;
@@ -1642,10 +1679,16 @@ export default async function ProfilePage({
     ).length > merchProfileLimit;
   const visibleStory = (activeStories ?? []).find(canShow);
   const visibleFollowerPreview = (followerPreview ?? []).filter(
-    (follow) => follow.profiles && !blockedProfileIds.has(follow.profiles.id),
+    (follow) =>
+      canViewFollowers &&
+      follow.profiles &&
+      !blockedProfileIds.has(follow.profiles.id),
   );
   const visibleFollowingPreview = (followingPreview ?? []).filter(
-    (follow) => follow.profiles && !blockedProfileIds.has(follow.profiles.id),
+    (follow) =>
+      canViewFollowing &&
+      follow.profiles &&
+      !blockedProfileIds.has(follow.profiles.id),
   );
   const visibleLinkedArtists = (linkedArtists ?? []).filter(
     (artist) => !blockedProfileIds.has(artist.id),
@@ -2033,7 +2076,7 @@ export default async function ProfilePage({
                 <ProfileStat label="Merch" value={visibleMerchProducts.length} />
                 <ProfileStat
                   href={
-                    viewer.isSignedIn
+                    canViewFollowers
                       ? `/u/${profile.username}/followers`
                       : undefined
                   }
@@ -2042,7 +2085,7 @@ export default async function ProfilePage({
                 />
                 <ProfileStat
                   href={
-                    viewer.isSignedIn
+                    canViewFollowing
                       ? `/u/${profile.username}/following`
                       : undefined
                   }

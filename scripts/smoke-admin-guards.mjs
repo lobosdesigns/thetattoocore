@@ -224,6 +224,8 @@ const checks = [
       adminActions.includes('"Could not update role. Please try again."') &&
       adminActions.includes('"Could not update user status. Please try again."') &&
       adminActions.includes('"Could not delete user account. Review account activity and try again."') &&
+      adminActions.includes('"Owner accounts cannot be suspended or banned."') &&
+      adminActions.includes('"Owner accounts cannot be deleted."') &&
       adminActions.includes('"Could not create tester account. Please try again."') &&
       adminActions.includes('"Created tester login, but profile setup failed. Please try again."') &&
       adminActions.includes('"Created tester account, but audit logging failed. Please try again."') &&
@@ -246,12 +248,16 @@ const checks = [
       adminActions.includes("await adminClient.auth.admin.deleteUser(profileId)") &&
       adminActions.includes('event_type: "user_account_deleted"') &&
       adminActions.includes("You cannot delete your own account.") &&
-      adminActions.includes("Owner role required to delete admin or owner accounts.") &&
+      adminActions.includes("Owner accounts cannot be deleted.") &&
+      adminActions.includes("Owner role required to delete admin accounts.") &&
       adminActions.includes("Type delete to confirm account deletion.") &&
       adminUsers.includes("deleteUserAccount") &&
       adminUsers.includes("const canDeleteAccounts = canGrantAdCredits") &&
+      adminUsers.includes("const isOwnerAccount = user.role === \"owner\"") &&
+      adminUsers.includes("const canModerateStatus = !isOwnerAccount") &&
+      adminUsers.includes("Owner account moderation actions are locked.") &&
       adminUsers.includes("const canDeleteUser =") &&
-      adminUsers.includes("Delete account") &&
+      adminUsers.includes("canDeleteAccounts && !isOwnerAccount") &&
       adminUsers.includes('name="confirm_delete"') &&
       adminUsers.includes('placeholder="Type delete"') &&
       adminUsers.includes("disabled={!canDeleteUser}"),

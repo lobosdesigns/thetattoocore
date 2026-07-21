@@ -26,6 +26,9 @@ type Profile = {
   instagram_url: string | null;
   is_adult_confirmed: boolean | null;
   is_private: boolean | null;
+  comment_permission: "everyone" | "followers" | "none" | null;
+  followers_visibility: "public" | "followers" | "private" | null;
+  following_visibility: "public" | "followers" | "private" | null;
   location_personalization_enabled: boolean | null;
   notification_quiet_hours_enabled: boolean | null;
   notification_quiet_hours_end: string | null;
@@ -113,6 +116,18 @@ const notificationSummary = [
   ["Next", "Email for important account events"],
   ["App alerts", "Available after opt-in"],
   ["Mobile", "Phone app alerts are off"],
+] as const;
+
+const followVisibilityOptions = [
+  ["public", "Everyone", "Anyone can open the list."],
+  ["followers", "Followers only", "Only accepted followers can open the list."],
+  ["private", "Only me", "Only you can open the list."],
+] as const;
+
+const commentPermissionOptions = [
+  ["everyone", "Everyone", "Signed-in members can comment."],
+  ["followers", "Followers only", "Only accepted followers can comment."],
+  ["none", "No one", "Only you can add comments."],
 ] as const;
 
 const profileTabs = [
@@ -723,6 +738,60 @@ export function ProfileForm({
               Hides your profile from search engines and limits profile content
               to you and followers.
             </span>
+          </span>
+        </label>
+
+        <label className="block rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
+          <span className="text-sm font-medium">Who can see followers</span>
+          <select
+            className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+            defaultValue={initialProfile?.followers_visibility ?? "public"}
+            name="followers_visibility"
+          >
+            {followVisibilityOptions.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
+            Choose who can open your follower list.
+          </span>
+        </label>
+
+        <label className="block rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
+          <span className="text-sm font-medium">Who can see following</span>
+          <select
+            className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+            defaultValue={initialProfile?.following_visibility ?? "public"}
+            name="following_visibility"
+          >
+            {followVisibilityOptions.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
+            Choose who can open the profiles you follow.
+          </span>
+        </label>
+
+        <label className="block rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3 sm:col-span-2">
+          <span className="text-sm font-medium">Who can comment</span>
+          <select
+            className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+            defaultValue={initialProfile?.comment_permission ?? "everyone"}
+            name="comment_permission"
+          >
+            {commentPermissionOptions.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
+            Applies to new comments on your 4U and Gossip posts.
           </span>
         </label>
 

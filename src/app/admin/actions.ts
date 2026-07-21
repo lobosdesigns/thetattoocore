@@ -572,11 +572,12 @@ export async function changeUserStatus(formData: FormData) {
 
   const { data: target, error: targetError } = await supabase
     .from("profiles")
-    .select("id, banned_at, suspended_at")
+    .select("id, banned_at, role, suspended_at")
     .eq("id", profileId)
     .maybeSingle<{
       banned_at: string | null;
       id: string;
+      role: UserRole;
       suspended_at: string | null;
     }>();
 
@@ -590,6 +591,10 @@ export async function changeUserStatus(formData: FormData) {
         returnTo,
       ),
     );
+  }
+
+  if (target.role === "owner" && status !== "active") {
+    redirect(adminUsersMessage("Owner accounts cannot be suspended or banned.", returnTo));
   }
 
   const now = new Date().toISOString();
@@ -698,8 +703,12 @@ export async function deleteUserAccount(formData: FormData) {
     redirect(adminUsersMessage("Profile was not found.", returnTo));
   }
 
-  if ((target.role === "admin" || target.role === "owner") && actor?.role !== "owner") {
-    redirect(adminUsersMessage("Owner role required to delete admin or owner accounts.", returnTo));
+  if (target.role === "owner") {
+    redirect(adminUsersMessage("Owner accounts cannot be deleted.", returnTo));
+  }
+
+  if (target.role === "admin" && actor?.role !== "owner") {
+    redirect(adminUsersMessage("Owner role required to delete admin accounts.", returnTo));
   }
 
   const adminClient = createAdminClient();

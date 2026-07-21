@@ -62,6 +62,7 @@ const MERCH_CATEGORIES = new Set([
   "sticker",
 ]);
 const MERCH_BUCKET = "merch-media";
+const COMMENT_PERMISSION_VALUES = new Set(["everyone", "followers", "none"]);
 const REPORT_REASONS = new Set([
   "sensitive non-nude body-art",
   "body-art nudity context",
@@ -177,6 +178,68 @@ function cleanMoneyCents(value: FormDataEntryValue | null) {
   if (!Number.isFinite(parsed) || parsed <= 0) return 0;
 
   return Math.min(500000, Math.round(parsed * 100));
+}
+
+function cleanCommentPermissionValue(value: string | null | undefined) {
+  return value && COMMENT_PERMISSION_VALUES.has(value) ? value : "everyone";
+}
+
+async function commentPermissionForOwner({
+  ownerId,
+  supabase,
+  viewerId,
+}: {
+  ownerId: string;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  viewerId: string;
+}) {
+  if (ownerId === viewerId) return { allowed: true, message: null };
+
+  const { data: ownerProfile, error: ownerError } = await supabase
+    .from("profiles")
+    .select("comment_permission")
+    .eq("id", ownerId)
+    .maybeSingle<{ comment_permission: string | null }>();
+
+  if (ownerError || !ownerProfile) {
+    if (ownerError) {
+      console.error("Comment owner privacy lookup failed.", ownerError);
+    }
+
+    return {
+      allowed: false,
+      message: "Could not check comment permissions. Please try again.",
+    };
+  }
+
+  const permission = cleanCommentPermissionValue(ownerProfile.comment_permission);
+
+  if (permission === "everyone") return { allowed: true, message: null };
+  if (permission === "none") {
+    return {
+      allowed: false,
+      message: "This member has turned off comments.",
+    };
+  }
+
+  const { data: followRecord, error: followError } = await supabase
+    .from("follows")
+    .select("status")
+    .eq("follower_id", viewerId)
+    .eq("following_id", ownerId)
+    .eq("status", "accepted")
+    .maybeSingle<{ status: string }>();
+
+  if (followError) {
+    console.error("Comment follower permission lookup failed.", followError);
+  }
+
+  return followRecord?.status === "accepted"
+    ? { allowed: true, message: null }
+    : {
+        allowed: false,
+        message: "Only followers can comment on this member's posts.",
+      };
 }
 
 async function findExistingConversation(
@@ -2668,6 +2731,29 @@ export async function createPostComment(formData: FormData) {
     redirect(homeMessage("Comment needs text, a photo, or a GIF."));
   }
 
+  const { data: postForComment, error: postForCommentError } = await supabase
+    .from("feed_posts")
+    .select("author_id")
+    .eq("id", postId)
+    .maybeSingle<{ author_id: string }>();
+
+  if (postForCommentError || !postForComment) {
+    if (postForCommentError) {
+      console.error("4U comment post lookup failed.", postForCommentError);
+    }
+    redirect(homeMessage("Post was not found."));
+  }
+
+  const postCommentPermission = await commentPermissionForOwner({
+    ownerId: postForComment.author_id,
+    supabase,
+    viewerId: userId,
+  });
+
+  if (!postCommentPermission.allowed) {
+    redirect(homeMessage(postCommentPermission.message ?? "You cannot comment on this post."));
+  }
+
   let metadata: MediaMetadata | null = null;
 
   if (media) {
@@ -3052,6 +3138,29 @@ export async function createThreadComment(formData: FormData) {
 
   if (!body && !media) {
     redirect(homeMessage("Reply needs text, a photo, or a GIF."));
+  }
+
+  const { data: threadForComment, error: threadForCommentError } = await supabase
+    .from("thread_posts")
+    .select("author_id")
+    .eq("id", threadId)
+    .maybeSingle<{ author_id: string }>();
+
+  if (threadForCommentError || !threadForComment) {
+    if (threadForCommentError) {
+      console.error("Gossip comment thread lookup failed.", threadForCommentError);
+    }
+    redirect(homeMessage("Gossip post was not found."));
+  }
+
+  const threadCommentPermission = await commentPermissionForOwner({
+    ownerId: threadForComment.author_id,
+    supabase,
+    viewerId: userId,
+  });
+
+  if (!threadCommentPermission.allowed) {
+    redirect(homeMessage(threadCommentPermission.message ?? "You cannot comment on this post."));
   }
 
   let metadata: MediaMetadata | null = null;

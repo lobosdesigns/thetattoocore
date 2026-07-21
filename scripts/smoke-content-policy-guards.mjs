@@ -310,9 +310,15 @@ const checks = [
     label: "comment create actions accept optional photo and GIF attachments",
     ok:
       actions.includes("async function uploadCommentMedia") &&
+      actions.includes("async function commentPermissionForOwner") &&
+      actions.includes("cleanCommentPermissionValue") &&
       actions.includes('mediaFromForm(formData, "media")') &&
       actions.includes("Comment needs text, a photo, or a GIF.") &&
       actions.includes("Reply needs text, a photo, or a GIF.") &&
+      actions.includes("Only followers can comment on this member's posts.") &&
+      actions.includes("This member has turned off comments.") &&
+      actions.includes("4U comment post lookup failed.") &&
+      actions.includes("Gossip comment thread lookup failed.") &&
       actions.includes("Comments support photos and GIFs only.") &&
       actions.includes("Gossip comments support photos and GIFs only.") &&
       actions.includes("Comment images and GIFs can be up to 5 MB.") &&
