@@ -493,12 +493,16 @@ const checks = [
       source.readiness.includes("Apple still needs refreshed sign-in/2FA for app-record inspection") &&
       source.readiness.includes("then 13-inch iPad screenshot upload, primary category, Content Rights, App Privacy/Privacy Policy URL, pricing, age-rating answers, Accessibility Nutrition Labels, and final submission validation") &&
       source.readiness.includes("age/content rating, Accessibility Nutrition Labels, Google Play closed-test tester opt-in/duration evidence if required, and final console validation") &&
-      source.readiness.includes("Google Play still needs current Data Safety review from the questionnaire start page") &&
-      source.readiness.includes("final content-rating summary/save handoff, and any required closed-test production-access evidence") &&
+      (source.readiness.includes("Google Play still needs current Data Safety review from the questionnaire start page") ||
+        source.readiness.includes("Closed testing changes for the selected alpha track are in Google Play review/quick checks")) &&
+      (source.readiness.includes("final content-rating summary/save handoff, and any required closed-test production-access evidence") ||
+        source.readiness.includes("production access still needs closed-test live status plus opted-in tester duration evidence if required")) &&
       source.readiness.includes("The Tattoo Core iOS `1.0` in Prepare for Submission") &&
-      source.readiness.includes("TheTattooCore Data Safety page is open at the questionnaire start page") &&
+      (source.readiness.includes("TheTattooCore Data Safety page is open at the questionnaire start page") ||
+        source.readiness.includes("Data Safety, Advertising ID, and Child Safety Standards declarations saved")) &&
       source.readiness.includes("final reviewer access validation for the selected build") &&
-      source.readiness.includes("final reviewer access validation for the selected release track") &&
+      (source.readiness.includes("final reviewer access validation for the selected release track") ||
+        source.readiness.includes("Confirm Google accepts/serves the closed test")) &&
       source.readiness.includes("Google Play closed-test tester opt-in/duration evidence if required") &&
       source.readiness.includes("build selection, reviewer test access, developer/legal entity, reviewer contact phone") &&
       source.readiness.includes("Do not store reviewer passwords, private phone numbers, account-owner data, or console identifiers in repo docs") &&

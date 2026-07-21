@@ -38,6 +38,17 @@ const checks = [
       generator.includes("## Native Push Evidence") &&
       generator.includes("## Legal And Policy Review") &&
       generator.includes("Reviewer contact saved in consoles") &&
+      generator.includes("## Current Console Blockers To Clear") &&
+      generator.includes("13-inch iPad screenshot upload validation") &&
+      generator.includes("mobile-home-2048x2732.png") &&
+      generator.includes("mobile-login-signup-2048x2732.png") &&
+      generator.includes("mobile-4u-safe-2048x2732.png") &&
+      generator.includes("Set Primary Category to Social Networking") &&
+      generator.includes("Confirm TTC owns or has rights") &&
+      generator.includes("Use Privacy URL https://thetattoocore.com/privacy") &&
+      generator.includes("submitted-build iPhone/iPad QA evidence only") &&
+      generator.includes("Closed testing - Alpha is served") &&
+      generator.includes("14-day window is counted only after the closed test is live") &&
       generator.includes("Google Play phone screenshots") &&
       generator.includes("Google Play feature graphic") &&
       generator.includes("App Store iPhone 6.5-inch screenshots") &&

@@ -24,6 +24,20 @@ repo docs. Use safe aliases and short pass/fail summaries in repo-visible docs.
 | Reviewer contact saved in consoles | pending |
 | Reviewer account validated for selected build/track | pending |
 
+## Current Console Blockers To Clear
+
+Record private proof when each blocker is cleared. Keep console screenshots and
+account identifiers out of repo docs.
+
+| Platform | Blocker | Current handoff value | Result | Private proof filename or location |
+| --- | --- | --- | --- | --- |
+| Apple | 13-inch iPad screenshot upload validation | Upload selected files: mobile-home-2048x2732.png, mobile-login-signup-2048x2732.png, mobile-4u-safe-2048x2732.png | pending | |
+| Apple | Primary category | Set Primary Category to Social Networking; optional Secondary Category Lifestyle | pending | |
+| Apple | Content Rights | Confirm TTC owns or has rights to icons, generated screenshots, metadata, and sample content | pending | |
+| Apple | App Privacy and Privacy Policy URL | Use Privacy URL https://thetattoocore.com/privacy; answer App Privacy from docs/DATA_SAFETY_PREP.md and selected build behavior | pending | |
+| Apple | Age rating and Accessibility Nutrition Labels | Use submitted-build iPhone/iPad QA evidence only | pending | |
+| Google Play | Closed testing production-access evidence | Confirm Closed testing - Alpha is served, tester opt-ins are sufficient, and the 14-day window is counted only after the closed test is live | pending | |
+
 ## Store Console Evidence
 
 | Area | Apple result | Google Play result | Private proof filename or location | Repo-safe summary |
