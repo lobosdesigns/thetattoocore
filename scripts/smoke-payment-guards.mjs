@@ -916,7 +916,8 @@ checks.push({
     adminMerchPage.includes("customer_email.ilike") &&
     adminMerchPage.includes("stripe_payment_intent_id.ilike") &&
     adminMerchPage.includes("Payment intent:") &&
-    productPlan.includes("order item title, customer, shipping, and payment-reference search"),
+    productPlan.includes("order item title, buyer, shipping, and payment-reference search") &&
+    productPlan.includes("without prompting operators for raw customer email or payment ID wording"),
 });
 checks.push({
   label: "admin Merch and payment queues use friendly status labels",
