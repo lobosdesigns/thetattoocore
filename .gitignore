@@ -45,6 +45,9 @@ yarn-error.log*
 # native app provider config files
 **/google-services.json
 **/GoogleService-Info.plist
+**/keystores/
+**/*.jks
+**/*.keystore
 
 # local server logs
 dev-server*.log

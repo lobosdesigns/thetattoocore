@@ -1,4 +1,5 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 
 const envExamplePath = ".env.example";
 const gitignore = readFileSync(".gitignore", "utf8");
@@ -100,6 +101,31 @@ const nativeSigningKeys = [
   "TTC_ANDROID_UPLOAD_KEY_ALIAS",
   "TTC_ANDROID_UPLOAD_KEY_PASSWORD",
 ];
+const forbiddenNativeArtifactNames = ["google-services.json", "GoogleService-Info.plist"];
+const forbiddenNativeArtifactExtensions = [".jks", ".keystore"];
+
+function filesUnder(root) {
+  if (!existsSync(root)) return [];
+
+  return readdirSync(root).flatMap((entry) => {
+    const entryPath = join(root, entry);
+    const stats = statSync(entryPath);
+
+    if (stats.isDirectory()) return filesUnder(entryPath);
+
+    return [entryPath.replaceAll("\\", "/")];
+  });
+}
+
+const committedNativeArtifactPaths = filesUnder("native").filter((path) => {
+  const fileName = path.split("/").at(-1) ?? "";
+
+  return (
+    forbiddenNativeArtifactNames.includes(fileName) ||
+    forbiddenNativeArtifactExtensions.some((extension) => path.endsWith(extension)) ||
+    path.includes("/keystores/")
+  );
+});
 
 const checks = [
   {
@@ -114,6 +140,15 @@ const checks = [
     ok:
       gitignore.includes("**/google-services.json") &&
       gitignore.includes("**/GoogleService-Info.plist"),
+  },
+  {
+    label: "native signing and app config artifacts are absent from repo",
+    ok:
+      committedNativeArtifactPaths.length === 0 &&
+      gitignore.includes("**/keystores/") &&
+      gitignore.includes("**/*.jks") &&
+      gitignore.includes("**/*.keystore"),
+    message: `private native artifacts found: ${committedNativeArtifactPaths.join(", ")}`,
   },
   {
     label: "native signing inputs stay private and out of .env.example",
