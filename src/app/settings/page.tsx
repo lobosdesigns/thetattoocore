@@ -168,9 +168,10 @@ export default async function SettingsPage() {
             4U Home
           </Link>
           <Link
-            className="ttc-surface inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-bold"
+            className="ttc-surface inline-flex h-10 items-center justify-center gap-2 rounded-md border px-4 text-sm font-bold"
             href="/account"
           >
+            <UserRound aria-hidden="true" className="size-4" />
             Account
           </Link>
         </div>

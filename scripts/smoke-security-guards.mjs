@@ -789,7 +789,10 @@ const checks = [
       settingsPage.includes("Language and social links have direct shortcuts") &&
       settingsPage.includes('href="/#feed"') &&
       settingsPage.includes("4U Home") &&
+      settingsPage.includes('href="/account"') &&
+      settingsPage.includes("<UserRound aria-hidden=\"true\"") &&
       settingsPage.includes("Professional tools appear when your account is") &&
+      mobileSmoke.includes('path: "/account"') &&
       mobileSmoke.includes('path: "/settings/verification"') &&
       mobileSmoke.includes('path: "/settings/ads"') &&
       productPlan.includes("role-aware panels and Settings cards"),
