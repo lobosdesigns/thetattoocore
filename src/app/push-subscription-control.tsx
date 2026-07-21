@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { BellRing, LoaderCircle, BellOff } from "lucide-react";
 
 const publicPushKey = process.env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY ?? "";
+const fallbackMessage =
+  "Device alerts are being prepared. Keep checking Notifications for now.";
 
 function urlBase64ToUint8Array(value: string) {
   const padding = "=".repeat((4 - (value.length % 4)) % 4);
@@ -62,12 +64,12 @@ export function PushSubscriptionControl() {
       setSupported(hasSupport);
 
       if (!readyForSetup) {
-        setMessage("Device alerts are being prepared. Keep checking Notifications for now.");
+        setMessage(fallbackMessage);
         return;
       }
 
       if (!hasSupport) {
-        setMessage("Device alerts are being prepared. Keep checking Notifications for now.");
+        setMessage(fallbackMessage);
         return;
       }
 
@@ -156,7 +158,7 @@ export function PushSubscriptionControl() {
             {message ||
               (enabled
                 ? "Device alert preference saved. Keep checking Notifications for now."
-                : "Device alerts are being prepared. Keep checking Notifications for now.")}
+                : fallbackMessage)}
           </p>
         </div>
         {supported ? (

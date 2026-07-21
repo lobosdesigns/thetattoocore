@@ -336,8 +336,8 @@ export default async function NotificationsPage({
             <div className="min-w-0">
               <h2 className="text-sm font-bold">App alerts</h2>
               <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
-                In-app alerts and badges are live now. These preferences will
-                carry forward as more alert options are added.
+                In-app alerts and badges are live now. For now, this page is
+                your reliable alert inbox while device alerts are prepared.
               </p>
               <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted)] sm:grid-cols-3">
                 <p className="ttc-surface rounded-md border px-2 py-1">
@@ -369,6 +369,20 @@ export default async function NotificationsPage({
               </div>
               <div className="mt-3 max-w-xs">
                 <PwaInstallButton />
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link
+                  className="ttc-surface inline-flex h-9 items-center justify-center rounded-md border px-3 text-xs font-semibold"
+                  href="/settings/notifications"
+                >
+                  Alert settings
+                </Link>
+                <Link
+                  className="ttc-surface inline-flex h-9 items-center justify-center rounded-md border px-3 text-xs font-semibold"
+                  href="/support"
+                >
+                  Alert help
+                </Link>
               </div>
               <PushSubscriptionControl />
             </div>
@@ -501,6 +515,10 @@ export default async function NotificationsPage({
               <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[var(--muted-strong)]">
                 Follow requests, DMs, booking updates, order updates,
                 verification, and safety notices will show up here.
+              </p>
+              <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[var(--muted-strong)]">
+                Keep checking this inbox until device alerts are ready on your
+                phone.
               </p>
             </div>
           )}

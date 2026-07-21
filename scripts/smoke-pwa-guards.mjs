@@ -313,6 +313,10 @@ const checks = [
         "Follow requests, DMs, booking updates, order updates",
       ) &&
       userFacingPushSource.includes("verification, and safety notices") &&
+      userFacingPushSource.includes("For now, this page is") &&
+      userFacingPushSource.includes("your reliable alert inbox") &&
+      userFacingPushSource.includes("Keep checking this inbox until device alerts are ready on your") &&
+      userFacingPushSource.includes("Alert help") &&
       userFacingPushSource.includes("Device alerts are being prepared. Keep checking Notifications for now.") &&
       userFacingPushSource.includes("Device alert preference saved. Keep checking Notifications for now.") &&
       userFacingPushSource.includes("Save device app alert preference") &&
@@ -353,6 +357,11 @@ const checks = [
       pushRoute.includes('.from("push_subscriptions").upsert') &&
       pushRoute.includes('onConflict: "profile_id,endpoint"') &&
       pushRoute.includes("export async function DELETE") &&
+      pushRoute.includes("async function updatePushPreference") &&
+      pushRoute.includes("notify_push_enabled: enabled") &&
+      pushRoute.includes("enabled: true") &&
+      pushRoute.includes("const hasActiveSubscriptions = Boolean(activeSubscriptions?.length)") &&
+      pushRoute.includes("enabled: hasActiveSubscriptions") &&
       pushControl.includes('method: "DELETE"') &&
       pushControl.includes("const response = await fetch(\"/api/push/subscriptions\"") &&
       pushControl.includes("if (!response.ok) throw new Error(\"App alert preference could not be saved.\")") &&

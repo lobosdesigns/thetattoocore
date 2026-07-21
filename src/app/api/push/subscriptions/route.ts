@@ -32,6 +32,24 @@ async function authenticatedUserId() {
   return { supabase, userId };
 }
 
+async function updatePushPreference({
+  enabled,
+  supabase,
+  userId,
+}: {
+  enabled: boolean;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId: string;
+}) {
+  return supabase
+    .from("profiles")
+    .update({
+      notify_push_enabled: enabled,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", userId);
+}
+
 export async function POST(request: Request) {
   let payload: PushPayload;
 
@@ -79,6 +97,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Subscription rejected." }, { status: 400 });
   }
 
+  const { error: preferenceError } = await updatePushPreference({
+    enabled: true,
+    supabase,
+    userId,
+  });
+
+  if (preferenceError) {
+    return NextResponse.json(
+      { error: "Alert preference could not be saved." },
+      { status: 400 },
+    );
+  }
+
   return NextResponse.json({ ok: true });
 }
 
@@ -113,6 +144,32 @@ export async function DELETE(request: Request) {
 
   if (error) {
     return NextResponse.json({ error: "Subscription update failed." }, { status: 400 });
+  }
+
+  const { data: activeSubscriptions, error: activeSubscriptionError } =
+    await supabase
+      .from("push_subscriptions")
+      .select("id")
+      .eq("profile_id", userId)
+      .eq("is_active", true)
+      .limit(1);
+
+  if (activeSubscriptionError) {
+    return NextResponse.json({ error: "Subscription update failed." }, { status: 400 });
+  }
+
+  const hasActiveSubscriptions = Boolean(activeSubscriptions?.length);
+  const { error: preferenceError } = await updatePushPreference({
+    enabled: hasActiveSubscriptions,
+    supabase,
+    userId,
+  });
+
+  if (preferenceError) {
+    return NextResponse.json(
+      { error: "Alert preference could not be saved." },
+      { status: 400 },
+    );
   }
 
   return NextResponse.json({ ok: true });
