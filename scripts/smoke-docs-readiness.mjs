@@ -424,6 +424,7 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run qa:android-device") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run qa:android-device:required") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("platform-tools\\adb.exe") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("adb start-server") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("adb devices -l") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("authorized") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("dumpsys package com.thetattoocore.app") &&
@@ -437,6 +438,8 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("run the `Android Connected-Device Probe`") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Empty or unauthorized `adb devices -l` output is a handoff blocker") &&
       docs["native/thetattoocore-mobile/README.md"].includes("%LOCALAPPDATA%\\Android\\Sdk\\platform-tools\\adb.exe") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("ANDROID_QA adb_server=started") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("ANDROID_QA adb_server=start failed") &&
       docs["native/thetattoocore-mobile/README.md"].includes("authorized device") &&
       docs["native/thetattoocore-mobile/README.md"].includes("Play testing release under review"),
   },

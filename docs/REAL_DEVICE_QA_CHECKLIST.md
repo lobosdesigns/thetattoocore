@@ -211,6 +211,7 @@ npm.cmd run qa:android-device:required
 
 ```powershell
 $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
+& $adb start-server
 & $adb devices -l
 & $adb shell getprop ro.product.model
 & $adb shell getprop ro.build.version.release

@@ -64,6 +64,13 @@ if (!adb) {
 let devices = [];
 
 try {
+  runAdb(adb, ["start-server"]);
+  console.log("ANDROID_QA adb_server=started");
+} catch {
+  console.log("ANDROID_QA adb_server=start failed");
+}
+
+try {
   devices = parseDevices(runAdb(adb, ["devices", "-l"]));
 } catch (error) {
   console.log("ANDROID_QA adb=error");

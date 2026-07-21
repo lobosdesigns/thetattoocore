@@ -37,6 +37,9 @@ This folder is the starting point for Apple TestFlight and Google Play internal 
    `%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe`; a plugged-in phone only
    counts after `adb devices -l` shows an authorized device and the installed
    package build matches the Play testing release under review.
+   - The probe starts the local ADB server before listing devices and prints
+     `ANDROID_QA adb_server=started` or `ANDROID_QA adb_server=start failed` as
+     a repo-safe setup status.
    - If the probe reports `devices_total=0`, check the USB cable, set USB mode
      to file transfer, and reopen the USB debugging prompt.
    - If the probe reports an unauthorized or offline device, unlock the device,
