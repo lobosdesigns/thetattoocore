@@ -49,8 +49,11 @@ import {
 import {
   brandShareImage,
   brandShareImageAlt,
+  metadataKeywords,
+  seoKeywordGroups,
   shareImage,
   siteName,
+  siteKeywords,
   siteUrl,
 } from "@/lib/site";
 import { userGeneratedLinkRel } from "@/lib/urls";
@@ -1356,6 +1359,14 @@ export async function generateMetadata({
       canonical: `${siteUrl}/u/${profile.username}`,
     },
     description,
+    keywords: metadataKeywords(
+      siteKeywords,
+      seoKeywordGroups.profile,
+      profile.account_type,
+      profile.display_name,
+      `@${profile.username}`,
+      location,
+    ),
     openGraph: {
       description,
       images: [shareImage(profileShareImage, profileShareImageAlt)],

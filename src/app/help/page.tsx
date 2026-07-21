@@ -3,11 +3,18 @@ import type { Metadata } from "next";
 import { HelpCenterSearch } from "./help-center-search";
 import { LogoLockup } from "../logo-mark";
 import { getHelpArticle } from "@/lib/help-center";
-import { siteName, supportEmail } from "@/lib/site";
+import {
+  metadataKeywords,
+  seoKeywordGroups,
+  siteKeywords,
+  siteName,
+  supportEmail,
+} from "@/lib/site";
 
 export const metadata: Metadata = {
   description:
     "TheTattooCore Help Center for account setup, verification, bookings, ads, Merch, Stuff, Gigs, Stories, DMs, and safety basics.",
+  keywords: metadataKeywords(siteKeywords, seoKeywordGroups.help),
   title: "Help Center",
 };
 

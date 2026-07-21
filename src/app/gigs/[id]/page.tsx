@@ -27,8 +27,11 @@ import { createClient } from "@/lib/supabase/server";
 import {
   brandShareImage,
   brandShareImageAlt,
+  metadataKeywords,
+  seoKeywordGroups,
   shareImage,
   siteName,
+  siteKeywords,
   siteUrl,
 } from "@/lib/site";
 import { userGeneratedLinkRel } from "@/lib/urls";
@@ -264,6 +267,14 @@ export async function generateMetadata({
       canonical: `${siteUrl}/gigs/${gig.id}`,
     },
     description,
+    keywords: metadataKeywords(
+      siteKeywords,
+      seoKeywordGroups.gigs,
+      gig.title,
+      gig.category,
+      location,
+      gig.profiles?.display_name,
+    ),
     openGraph: {
       description,
       images: [

@@ -6,6 +6,8 @@ const stuffDetail = readFileSync("src/app/stuff/[id]/page.tsx", "utf8");
 const gigsDetail = readFileSync("src/app/gigs/[id]/page.tsx", "utf8");
 const merchDetail = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const profileDetail = readFileSync("src/app/u/[username]/page.tsx", "utf8");
+const siteConstants = readFileSync("src/lib/site.ts", "utf8");
+const rootLayout = readFileSync("src/app/layout.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const robots = readFileSync("src/app/robots.ts", "utf8");
 
@@ -45,6 +47,49 @@ const detailChecks = publicContentDetails.flatMap(([name, source, publicConditio
 
 const checks = [
   ...detailChecks,
+  {
+    label: "Site metadata defines safe shared SEO keyword groups",
+    ok:
+      siteConstants.includes("export const siteKeywords") &&
+      siteConstants.includes('"tattoo community"') &&
+      siteConstants.includes('"tattoo artists"') &&
+      siteConstants.includes('"tattoo studios"') &&
+      siteConstants.includes('"body art"') &&
+      siteConstants.includes('"tattoo merch"') &&
+      siteConstants.includes('"tattoo gigs"') &&
+      siteConstants.includes("export const seoKeywordGroups") &&
+      siteConstants.includes("metadataKeywords(") &&
+      !siteConstants.toLowerCase().includes("supabase") &&
+      !siteConstants.toLowerCase().includes("stripe") &&
+      !siteConstants.toLowerCase().includes("firebase"),
+  },
+  {
+    label: "Root metadata exposes canonical discovery keywords and googlebot previews",
+    ok:
+      rootLayout.includes("keywords: metadataKeywords(siteKeywords)") &&
+      rootLayout.includes('category: "social networking"') &&
+      rootLayout.includes("creator: siteName") &&
+      rootLayout.includes("publisher: siteName") &&
+      rootLayout.includes('"max-image-preview": "large"') &&
+      rootLayout.includes('"max-snippet": -1') &&
+      rootLayout.includes('"max-video-preview": -1'),
+  },
+  {
+    label: "Public detail metadata emits route-specific SEO keywords",
+    ok:
+      feedDetail.includes("keywords: metadataKeywords(") &&
+      feedDetail.includes("seoKeywordGroups.feed") &&
+      threadDetail.includes("keywords: metadataKeywords(") &&
+      threadDetail.includes("seoKeywordGroups.gossip") &&
+      stuffDetail.includes("keywords: metadataKeywords(") &&
+      stuffDetail.includes("seoKeywordGroups.stuff") &&
+      gigsDetail.includes("keywords: metadataKeywords(") &&
+      gigsDetail.includes("seoKeywordGroups.gigs") &&
+      merchDetail.includes("keywords: metadataKeywords(") &&
+      merchDetail.includes("seoKeywordGroups.merch") &&
+      profileDetail.includes("keywords: metadataKeywords(") &&
+      profileDetail.includes("seoKeywordGroups.profile"),
+  },
   {
     label: "Merch detail uses safe product image or brand fallback metadata",
     ok:

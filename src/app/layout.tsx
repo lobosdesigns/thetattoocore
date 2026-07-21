@@ -8,8 +8,10 @@ import { normalizedLanguage } from "@/lib/localization";
 import {
   brandShareImage,
   brandShareImageAlt,
+  metadataKeywords,
   shareImage,
   siteDescription,
+  siteKeywords,
   siteName,
   siteUrl,
 } from "@/lib/site";
@@ -37,6 +39,8 @@ export const metadata: Metadata = {
     title: siteName,
   },
   description: siteDescription,
+  category: "social networking",
+  creator: siteName,
   icons: {
     apple: "/icons/icon-512.png",
     icon: [
@@ -47,6 +51,7 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.webmanifest",
   metadataBase: new URL(siteUrl),
+  keywords: metadataKeywords(siteKeywords),
   openGraph: {
     description: siteDescription,
     images: [shareImage(brandShareImage, brandShareImageAlt)],
@@ -57,8 +62,16 @@ export const metadata: Metadata = {
   },
   robots: {
     follow: true,
+    googleBot: {
+      follow: true,
+      index: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
     index: true,
   },
+  publisher: siteName,
   title: {
     default: siteName,
     template: `%s | ${siteName}`,

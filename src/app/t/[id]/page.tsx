@@ -34,8 +34,11 @@ import { WordLimitedField } from "@/app/word-limited-field";
 import {
   brandShareImage,
   brandShareImageAlt,
+  metadataKeywords,
+  seoKeywordGroups,
   shareImage,
   siteName,
+  siteKeywords,
   siteUrl,
 } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
@@ -443,6 +446,12 @@ export async function generateMetadata({
       canonical: `${siteUrl}/t/${thread.id}`,
     },
     description,
+    keywords: metadataKeywords(
+      siteKeywords,
+      seoKeywordGroups.gossip,
+      thread.profiles?.display_name,
+      thread.profiles?.username ? `@${thread.profiles.username}` : null,
+    ),
     openGraph: {
       description,
       images: [

@@ -18,7 +18,13 @@ import { SavedItemButton } from "@/app/saved-item-button";
 import { CompactShareButton } from "@/app/share-actions";
 import { countryLabel, languageLabel } from "@/lib/localization";
 import { createClient } from "@/lib/supabase/server";
-import { siteName, siteUrl } from "@/lib/site";
+import {
+  metadataKeywords,
+  seoKeywordGroups,
+  siteKeywords,
+  siteName,
+  siteUrl,
+} from "@/lib/site";
 import { isVerifiedProfessional } from "@/lib/verification";
 
 type Claims = {
@@ -121,6 +127,7 @@ export const metadata: Metadata = {
   },
   description:
     "Browse approved TheTattooCore merch from verified artists, studios, vendors, and official TTC drops.",
+  keywords: metadataKeywords(siteKeywords, seoKeywordGroups.merch),
   openGraph: {
     description:
       "Approved artist, studio, vendor, and official TheTattooCore merch.",

@@ -31,8 +31,11 @@ import { createClient } from "@/lib/supabase/server";
 import {
   brandShareImage,
   brandShareImageAlt,
+  metadataKeywords,
+  seoKeywordGroups,
   shareImage,
   siteName,
+  siteKeywords,
   siteUrl,
 } from "@/lib/site";
 import { isVerifiedProfessional } from "@/lib/verification";
@@ -231,6 +234,14 @@ export async function generateMetadata({
       canonical: `${siteUrl}/stuff/${listing.id}`,
     },
     description,
+    keywords: metadataKeywords(
+      siteKeywords,
+      seoKeywordGroups.stuff,
+      listing.title,
+      listing.category,
+      location,
+      listing.profiles?.display_name,
+    ),
     openGraph: {
       description,
       images: [

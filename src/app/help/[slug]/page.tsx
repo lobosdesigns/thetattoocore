@@ -5,7 +5,14 @@ import { createHelpArticleComment } from "../actions";
 import { ContentReportForm } from "@/app/content-report-form";
 import { LogoLockup } from "../../logo-mark";
 import { getHelpArticle, helpArticles } from "@/lib/help-center";
-import { siteName, supportEmail } from "@/lib/site";
+import {
+  metadataKeywords,
+  seoKeywordGroups,
+  siteKeywords,
+  siteName,
+  siteUrl,
+  supportEmail,
+} from "@/lib/site";
 import { safeStatusMessage } from "@/lib/status-message";
 import { createClient } from "@/lib/supabase/server";
 
@@ -105,7 +112,16 @@ export async function generateMetadata({
   }
 
   return {
+    alternates: {
+      canonical: `${siteUrl}/help/${article.slug}`,
+    },
     description: article.description,
+    keywords: metadataKeywords(
+      siteKeywords,
+      seoKeywordGroups.help,
+      article.category,
+      article.keywords,
+    ),
     title: `${article.title} | Help Center`,
   };
 }
