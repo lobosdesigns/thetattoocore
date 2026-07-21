@@ -12,6 +12,7 @@ Stripe checkout is wired for controlled launch testing across Merch, ads, and ac
 - A transparent 2% TTC platform fee is recorded in controlled launch checkout flows and booking deposit requests.
 - Merch order receipts, seller fulfillment updates, buyer refund-review requests, and basic admin order controls are present.
 - Production purchases, seller payout releases, and real ad spending should stay gated until policy, tax, payout, refund, dispute, and payment review is complete.
+- July 21, 2026 dashboard inspection still shows Connect setup and account/go-live verification work in progress. Live-money cutover remains blocked until those setup rows, webhook mode/event proof, Admin reconciliation, penny-test proof, refund/dispute procedure, payout gate, and native checkout policy review are recorded in the private handoff.
 
 ## Must Finish Before Real Money
 

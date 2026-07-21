@@ -95,6 +95,19 @@ identifiers in the private proof folder.
 | Ads checkout | pending | pending | pending | pending | pending | pending | pending | pending |
 | Seller payout readiness | pending | pending | pending | pending | pending | pending | n/a | pending |
 
+## Payment Dashboard Readiness Log
+
+Use this for private payment dashboard evidence before any live-money cutover.
+Do not copy account identifiers, key fragments, event IDs, connected-account IDs,
+bank/card details, or dashboard screenshots into repo docs.
+
+| Attempt date/time | Area | Visible readiness item | Result | Private proof filename or location | Next owner |
+| --- | --- | --- | --- | --- | --- |
+| | Account verification | Verify email, business, profile, verified status, and identity readiness | pending | | |
+| | Connect setup | Business model, connected-account test, and integration-guide choices | pending | | |
+| | API and webhook mode | Expected live/test mode, server key mode, webhook endpoint, and event list match the release candidate | pending | | |
+| | Live-money proof | Penny test, Admin reconciliation, refund/dispute procedure, payout gate, and native checkout policy review | pending | | |
+
 ## Native Push Evidence
 
 | Platform | App config private | Token registration | Alert delivery | Tap routing | Preferences respected | Result |

@@ -195,6 +195,20 @@ checks.push({
     : undefined,
 });
 checks.push({
+  label: "payment readiness keeps dashboard live-money blockers explicit",
+  ok:
+    paymentReadiness.includes("dashboard inspection still shows Connect setup") &&
+    paymentReadiness.includes("account/go-live verification work in progress") &&
+    paymentReadiness.includes("Live-money cutover remains blocked") &&
+    paymentReadiness.includes("webhook mode/event proof") &&
+    paymentReadiness.includes("Admin reconciliation") &&
+    paymentReadiness.includes("penny-test proof") &&
+    paymentReadiness.includes("refund/dispute procedure") &&
+    paymentReadiness.includes("payout gate") &&
+    paymentReadiness.includes("native checkout policy review") &&
+    paymentReadiness.includes("private handoff"),
+});
+checks.push({
   label: "verified sellers can submit Merch products for review",
   ok:
     floatingComposer.includes("action={createMerchProduct}") &&

@@ -35,6 +35,16 @@ const checks = [
       generator.includes("Webhook endpoint/events checked") &&
       generator.includes("Penny/live-test proof") &&
       generator.includes("Seller payout readiness") &&
+      generator.includes("## Payment Dashboard Readiness Log") &&
+      generator.includes("Use this for private payment dashboard evidence before any live-money cutover") &&
+      generator.includes("Account verification") &&
+      generator.includes("Verify email, business, profile, verified status, and identity readiness") &&
+      generator.includes("Connect setup") &&
+      generator.includes("Business model, connected-account test, and integration-guide choices") &&
+      generator.includes("API and webhook mode") &&
+      generator.includes("Expected live/test mode, server key mode, webhook endpoint, and event list match the release candidate") &&
+      generator.includes("Live-money proof") &&
+      generator.includes("Penny test, Admin reconciliation, refund/dispute procedure, payout gate, and native checkout policy review") &&
       generator.includes("## Native Push Evidence") &&
       generator.includes("## Legal And Policy Review") &&
       generator.includes("Reviewer contact saved in consoles") &&
