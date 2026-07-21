@@ -27,6 +27,7 @@ const messageActions = readFileSync("src/app/messages/actions.ts", "utf8");
 const messagePage = readFileSync("src/app/messages/page.tsx", "utf8");
 const messageThread = readFileSync("src/app/messages/message-thread.tsx", "utf8");
 const savedPage = readFileSync("src/app/saved/page.tsx", "utf8");
+const accountAdCampaignForm = readFileSync("src/app/account/ad-campaign-form.tsx", "utf8");
 const adminDashboardPage = readFileSync("src/app/admin/page.tsx", "utf8");
 const adminAdsPage = readFileSync("src/app/admin/ads/page.tsx", "utf8");
 const adminContentPage = readFileSync("src/app/admin/content/page.tsx", "utf8");
@@ -459,7 +460,9 @@ const checks = [
       !accountActions.includes('campaignError?.message || "Could not submit ad campaign."') &&
       accountActions.includes('console.error("Ad campaign placement submit failed.", placementError)') &&
       accountActions.includes('"Ad campaign saved, but placement setup needs review."') &&
-      !accountActions.includes('placementError.message || "Ad saved, but placement failed."'),
+      !accountActions.includes('placementError.message || "Ad saved, but placement failed."') &&
+      accountAdCampaignForm.includes('placeholder="Austin flash booking promo"') &&
+      !accountAdCampaignForm.includes("Austin flash booking push"),
   },
   {
     label: "account deletion requests hide raw backend errors from member redirects",

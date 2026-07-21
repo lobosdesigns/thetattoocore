@@ -180,7 +180,7 @@ export function AdCampaignForm({
             className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
             maxLength={120}
             name="name"
-            placeholder="Austin flash booking push"
+            placeholder="Austin flash booking promo"
             required
           />
         </label>
