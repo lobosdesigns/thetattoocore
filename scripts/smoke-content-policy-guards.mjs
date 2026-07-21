@@ -43,6 +43,10 @@ const feedGossipAudienceMigration = readFileSync(
   "supabase/migrations/20260721152100_feed_gossip_audience_policies.sql",
   "utf8",
 );
+const commentPrivacyInsertPoliciesMigration = readFileSync(
+  "supabase/migrations/20260721162000_comment_privacy_insert_policies.sql",
+  "utf8",
+);
 
 const memberUploadSource = [composer, mediaInput].join("\n");
 const currentCreateCopySource = [actions, composer].join("\n");
@@ -343,6 +347,40 @@ const checks = [
       actions.includes('supabase.from("thread_comment_media").insert') &&
       actions.includes('supabase.rpc("delete_post_comment_for_current_user"') &&
       actions.includes('supabase.rpc("delete_thread_comment_for_current_user"'),
+  },
+  {
+    label: "comment insert policies enforce profile comment privacy",
+    ok:
+      commentPrivacyInsertPoliciesMigration.includes(
+        'drop policy if exists "Users can comment on visible posts" on public.post_comments',
+      ) &&
+      commentPrivacyInsertPoliciesMigration.includes(
+        'drop policy if exists "Users can comment on visible threads" on public.thread_comments',
+      ) &&
+      commentPrivacyInsertPoliciesMigration.includes(
+        "join public.profiles post_owner on post_owner.id = feed_posts.author_id",
+      ) &&
+      commentPrivacyInsertPoliciesMigration.includes(
+        "join public.profiles thread_owner on thread_owner.id = thread_posts.author_id",
+      ) &&
+      commentPrivacyInsertPoliciesMigration.includes(
+        "coalesce(post_owner.comment_permission, 'everyone') = 'everyone'",
+      ) &&
+      commentPrivacyInsertPoliciesMigration.includes(
+        "post_owner.comment_permission = 'followers'",
+      ) &&
+      commentPrivacyInsertPoliciesMigration.includes(
+        "thread_owner.comment_permission = 'followers'",
+      ) &&
+      commentPrivacyInsertPoliciesMigration.includes("follows.status = 'accepted'") &&
+      commentPrivacyInsertPoliciesMigration.includes(
+        "feed_posts.author_id = (select auth.uid())",
+      ) &&
+      commentPrivacyInsertPoliciesMigration.includes(
+        "thread_posts.author_id = (select auth.uid())",
+      ) &&
+      !commentPrivacyInsertPoliciesMigration.includes("security definer") &&
+      !commentPrivacyInsertPoliciesMigration.includes("auth.role()"),
   },
   {
     label: "comment actions hide raw create, media, like, edit, delete, and hide errors",
