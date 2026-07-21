@@ -356,7 +356,21 @@ const checks = [
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Do not store reviewer passwords") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Public URLs reviewed") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("block release, allow internal testing only, allow public release") &&
-      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Production commerce remains gated"),
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Production commerce remains gated") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("## Submission Signoff Matrix") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("exact build, release track, and web deploy") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Public legal URLs") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("account deletion request path match the submitted build") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Account deletion and retention") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Deletion SLA, manual review owner, retention exceptions") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("UGC and safety policy") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("report/block tools, moderation escalation") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Store questionnaires") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("App Privacy/Data Safety, age/content rating, Accessibility Nutrition Labels") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Commerce and payments") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("native payment-policy classification") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Evidence privacy") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Reviewer credentials, phone details, console screenshots, payment identifiers"),
   },
   {
     label: "real-device QA checklist covers app-critical flows",

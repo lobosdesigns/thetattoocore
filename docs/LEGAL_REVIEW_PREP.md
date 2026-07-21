@@ -28,3 +28,16 @@ Do not store reviewer passwords, private phone numbers, owner personal contact d
 - Production commerce remains gated unless the payment, tax, shipping, refund, dispute, seller payout, and native checkout review items are explicitly approved.
 - Any public release exception has a written owner, risk note, and follow-up date.
 - The release handoff includes the legal review note alongside the real-device QA evidence pack, App Privacy/Data Safety evidence, screenshot upload evidence, and production payment evidence.
+
+## Submission Signoff Matrix
+
+Complete this matrix in the private release handoff for the exact build, release track, and web deploy being submitted. Repo-visible docs should keep only a short pass/fail/blocker summary.
+
+| Area | Required private decision | Repo-safe status |
+| --- | --- | --- |
+| Public legal URLs | Terms, Privacy, Support, Help, and account deletion request path match the submitted build and store metadata. | `pending`, `passed`, or `blocked` |
+| Account deletion and retention | Deletion SLA, manual review owner, retention exceptions, legal holds, moderation records, verification history, and payment/order records are approved. | `pending`, `passed`, or `blocked` |
+| UGC and safety policy | 18+ eligibility, no visible nudity, no scratcher promotion, no AI art/search claims, report/block tools, moderation escalation, and restricted-equipment handling are approved. | `pending`, `passed`, or `blocked` |
+| Store questionnaires | App Privacy/Data Safety, age/content rating, Accessibility Nutrition Labels, content rights, pricing, category, reviewer notes, and screenshot validation match the exact build. | `pending`, `passed`, or `blocked` |
+| Commerce and payments | Checkout exposure, native payment-policy classification, tax/shipping assumptions, fulfillment timing, refunds, disputes, booking deposits, ad purchases, and seller payout timing are approved or explicitly gated. | `pending`, `passed`, or `blocked` |
+| Evidence privacy | Reviewer credentials, phone details, console screenshots, payment identifiers, buyer addresses, private DMs, license documents, and owner personal details remain outside repo-visible docs. | `pending`, `passed`, or `blocked` |

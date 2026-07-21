@@ -47,6 +47,20 @@ const checks = [
       generator.includes("Penny test, Admin reconciliation, refund/dispute procedure, payout gate, and native checkout policy review") &&
       generator.includes("## Native Push Evidence") &&
       generator.includes("## Legal And Policy Review") &&
+      generator.includes("## Legal Submission Signoff Matrix") &&
+      generator.includes("exact build, release track, and web deploy") &&
+      generator.includes("Public legal URLs") &&
+      generator.includes("account deletion request path match the submitted build") &&
+      generator.includes("Account deletion and retention") &&
+      generator.includes("Deletion SLA, manual review owner, retention exceptions") &&
+      generator.includes("UGC and safety policy") &&
+      generator.includes("no visible nudity, no scratcher promotion, no AI art/search claims") &&
+      generator.includes("Store questionnaires") &&
+      generator.includes("App Privacy/Data Safety, age/content rating, Accessibility Nutrition Labels") &&
+      generator.includes("Commerce and payments") &&
+      generator.includes("native payment-policy classification") &&
+      generator.includes("Evidence privacy") &&
+      generator.includes("Reviewer credentials, phone details, console screenshots, payment identifiers") &&
       generator.includes("Reviewer contact saved in consoles") &&
       generator.includes("## Current Console Blockers To Clear") &&
       generator.includes("13-inch iPad screenshot upload validation") &&
