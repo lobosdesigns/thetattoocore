@@ -35,10 +35,10 @@ This folder is the starting point for Apple TestFlight and Google Play internal 
 8. Before final native release handoff, run the stricter release gate from the
    repo root:
    - `npm.cmd run verify:native-release`
-   It checks environment boundaries and private native config exclusions first.
+   It checks environment boundaries, private native config exclusions, and readiness docs first.
    It should fail until the Android probe sees an authorized device with the TTC
-   package installed, then continue through native, store, Android-profile
-   mobile, and iOS-profile mobile smoke checks.
+   package installed, then continue through store, Android-profile mobile, and
+   iOS-profile mobile smoke checks.
 9. Run `../../docs/REAL_DEVICE_QA_CHECKLIST.md` on real devices before wider beta invites.
 10. On Windows, use the checklist's Android connected-device probe with
    `%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe`; a plugged-in phone only

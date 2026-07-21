@@ -220,12 +220,12 @@ native release gate:
 npm.cmd run verify:native-release
 ```
 
-This command checks production environment boundaries and private native config
-exclusions first, then is expected to fail while no authorized Android device
-with the review build installed is visible. A pass means the environment guard,
-native wrapper guard, Android connected-device/package probe, store metadata
-guard, Android-profile mobile smoke, and iOS-profile mobile smoke all passed for
-the same release candidate.
+This command checks production environment boundaries, private native config
+exclusions, and readiness docs first, then is expected to fail while no authorized Android device
+with the review build installed is visible. A pass means the
+environment guard, native wrapper guard, docs guard, Android connected-device/package
+probe, store metadata guard, Android-profile mobile smoke, and iOS-profile mobile
+smoke all passed for the same release candidate.
 
 ```powershell
 $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
