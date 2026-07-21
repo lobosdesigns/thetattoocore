@@ -15,6 +15,7 @@ const homePage = readFileSync("src/app/page.tsx", "utf8");
 const notificationsPage = readFileSync("src/app/notifications/page.tsx", "utf8");
 const postDetailPage = readFileSync("src/app/p/[id]/page.tsx", "utf8");
 const threadDetailPage = readFileSync("src/app/t/[id]/page.tsx", "utf8");
+const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
 const stuffDetailPage = readFileSync("src/app/stuff/[id]/page.tsx", "utf8");
 const gigsDetailPage = readFileSync("src/app/gigs/[id]/page.tsx", "utf8");
 const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
@@ -33,6 +34,10 @@ const feedPostTagMigration = readFileSync(
 );
 const feedPostTagNotificationMigration = readFileSync(
   "supabase/migrations/20260721141027_feed_post_tag_notifications.sql",
+  "utf8",
+);
+const threadPostTagMigration = readFileSync(
+  "supabase/migrations/20260721170000_thread_post_user_tags.sql",
   "utf8",
 );
 const contentAudienceEnumMigration = readFileSync(
@@ -516,7 +521,40 @@ const checks = [
       actions.includes('type === "feed_tag"') &&
       actions.includes("notifyContentOwner({") &&
       notificationsPage.includes('| "feed_tag"') &&
-      notificationsPage.includes('if (type === "feed_tag") return UserPlus'),
+      notificationsPage.includes('if (type === "feed_tag" || type === "thread_tag") return UserPlus'),
+  },
+  {
+    label: "Gossip post tags are RLS-backed, visible, editable, and notify tagged members",
+    ok:
+      threadPostTagMigration.includes("create table if not exists public.thread_post_tags") &&
+      threadPostTagMigration.includes("alter table public.thread_post_tags enable row level security") &&
+      threadPostTagMigration.includes('create policy "Visible thread post tags can be read"') &&
+      threadPostTagMigration.includes('create policy "Authors tag own thread posts"') &&
+      threadPostTagMigration.includes('create policy "Authors remove own thread post tags"') &&
+      threadPostTagMigration.includes("public.current_user_can_view_thread_post") &&
+      threadPostTagMigration.includes("grant select on public.thread_post_tags to anon, authenticated") &&
+      threadPostTagMigration.includes("grant insert, delete on public.thread_post_tags to authenticated") &&
+      threadPostTagMigration.includes("prevent_restricted_thread_post_tags") &&
+      threadPostTagMigration.includes("'thread_tag'") &&
+      actions.includes("async function syncThreadPostTags") &&
+      actions.includes('.from("thread_post_tags")') &&
+      actions.includes('title: "Tagged in Gossip"') &&
+      actions.includes('type: "thread_tag"') &&
+      actions.includes('href: `/t/${threadId}`') &&
+      actions.includes('type === "feed_tag"') &&
+      composer.includes("Tag members: @artistname, @shopname") &&
+      composer.includes("canPostVerifiedGossipAudience") &&
+      homePage.includes("thread_post_tags(profiles:profiles!thread_post_tags_tagged_profile_id_fkey") &&
+      homePage.includes("<TaggedMemberLinks tags={thread.thread_post_tags ?? []} />") &&
+      homePage.includes('name="tagged_usernames"') &&
+      threadDetailPage.includes("function TaggedMemberLinks") &&
+      threadDetailPage.includes("thread_post_tags(profiles:profiles!thread_post_tags_tagged_profile_id_fkey") &&
+      threadDetailPage.includes("<TaggedMemberLinks tags={thread.thread_post_tags ?? []} />") &&
+      threadDetailPage.includes('name="tagged_usernames"') &&
+      profilePage.includes("thread_post_tags(profiles:profiles!thread_post_tags_tagged_profile_id_fkey") &&
+      profilePage.includes("<TaggedMemberLinks tags={thread.thread_post_tags ?? []} />") &&
+      notificationsPage.includes('| "thread_tag"') &&
+      notificationsPage.includes('if (type === "feed_tag" || type === "thread_tag") return UserPlus'),
   },
   {
     label: "home ranking filters blocked profiles before personalization",

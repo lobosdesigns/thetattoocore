@@ -181,7 +181,12 @@ type ThreadPost = {
   body: string;
   created_at: string;
   is_sensitive: boolean;
+  thread_post_tags: ThreadPostTag[];
   visibility: ContentVisibility;
+};
+
+type ThreadPostTag = {
+  profiles: Pick<Profile, "display_name" | "id" | "username"> | null;
 };
 
 type ListingMedia = {
@@ -555,7 +560,7 @@ function ContentLabels({
   );
 }
 
-function TaggedMemberLinks({ tags }: { tags: FeedPostTag[] }) {
+function TaggedMemberLinks({ tags }: { tags: (FeedPostTag | ThreadPostTag)[] }) {
   const visibleTags = tags.filter((tag) => tag.profiles);
 
   if (!visibleTags.length) return null;
@@ -1513,7 +1518,7 @@ export default async function ProfilePage({
       .returns<FeedPost[]>(),
     supabase
       .from("thread_posts")
-      .select("id, body, created_at, is_sensitive, visibility")
+      .select("id, body, created_at, is_sensitive, visibility, thread_post_tags(profiles:profiles!thread_post_tags_tagged_profile_id_fkey(id, username, display_name))")
       .eq("author_id", profile.id)
       .eq("moderation_status", "active")
       .order("created_at", { ascending: false })
@@ -2566,6 +2571,9 @@ export default async function ProfilePage({
                       </p>
                     </div>
                     <p className="text-sm leading-6">{thread.body}</p>
+                    <div className="mt-3">
+                      <TaggedMemberLinks tags={thread.thread_post_tags ?? []} />
+                    </div>
                   </Link>
                 ))
               ) : (

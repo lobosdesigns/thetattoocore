@@ -82,7 +82,15 @@ type ThreadPost = {
   thread_comments?: ThreadComment[];
   thread_likes: ThreadLike[];
   thread_media: ThreadMedia[];
+  thread_post_tags: ThreadPostTag[];
   visibility: ContentVisibility;
+};
+
+type ThreadPostTag = {
+  profiles: Pick<
+    Profile,
+    "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"
+  > | null;
 };
 
 type ThreadComment = {
@@ -197,6 +205,34 @@ function VerifiedBadge({ profile }: { profile?: Profile | null }) {
   );
 }
 
+function TaggedMemberLinks({ tags }: { tags: ThreadPostTag[] }) {
+  const visibleTags = tags.filter((tag) => tag.profiles);
+
+  if (!visibleTags.length) return null;
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-[var(--muted)]">
+      <span className="text-[var(--muted-strong)]">With</span>
+      {visibleTags.map((tag) => {
+        const profile = tag.profiles;
+
+        if (!profile) return null;
+
+        return (
+          <Link
+            className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-2 py-1 hover:underline"
+            href={`/u/${profile.username}`}
+            key={profile.id}
+          >
+            @{profile.username}
+            <VerifiedBadge profile={profile} />
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
 function canViewThread({
   isOwnThread,
   thread,
@@ -219,7 +255,7 @@ async function getThread(id: string) {
   const { data } = await supabase
     .from("thread_posts")
     .select(
-      "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
+      "id, body, visibility, is_sensitive, created_at, thread_post_tags(profiles:profiles!thread_post_tags_tagged_profile_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)), thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
     )
     .eq("id", id)
     .eq("moderation_status", "active")
@@ -579,9 +615,12 @@ export default async function ThreadPage({
               </div>
 
               {showThread ? (
-                <p className="mt-5 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">
-                  {thread.body}
-                </p>
+                <div className="mt-5">
+                  <p className="whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">
+                    {thread.body}
+                  </p>
+                  <TaggedMemberLinks tags={thread.thread_post_tags ?? []} />
+                </div>
               ) : (
                 <SensitiveContentGate
                   context="discussion"
@@ -608,6 +647,16 @@ export default async function ThreadPage({
                       name="body"
                       placeholder="Edit your Gossip post"
                       wrapperClassName="space-y-2"
+                    />
+                    <input
+                      className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                      defaultValue={(thread.thread_post_tags ?? [])
+                        .map((tag) => tag.profiles?.username)
+                        .filter(Boolean)
+                        .map((username) => `@${username}`)
+                        .join(", ")}
+                      name="tagged_usernames"
+                      placeholder="@artistname, @shopname"
                     />
                     <button className="h-10 w-full rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
                       Save Gossip edit

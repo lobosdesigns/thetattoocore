@@ -124,8 +124,16 @@ type ThreadPost = {
   thread_comments: ThreadComment[];
   thread_likes: ThreadLike[];
   thread_media: ThreadMedia[];
+  thread_post_tags: ThreadPostTag[];
   visibility: ContentVisibility;
   profiles: Profile | null;
+};
+
+type ThreadPostTag = {
+  profiles: Pick<
+    Profile,
+    "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"
+  > | null;
 };
 
 type MarketplaceListing = {
@@ -902,7 +910,7 @@ function ContentLabels({
   );
 }
 
-function TaggedMemberLinks({ tags }: { tags: FeedPostTag[] }) {
+function TaggedMemberLinks({ tags }: { tags: (FeedPostTag | ThreadPostTag)[] }) {
   const visibleTags = tags.filter((tag) => tag.profiles);
 
   if (!visibleTags.length) return null;
@@ -1783,7 +1791,7 @@ export default async function Home({
     supabase
       .from("thread_posts")
       .select(
-        "id, body, visibility, is_sensitive, created_at, thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, deleted_at, thread_comment_hides(hidden_by)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, body, visibility, is_sensitive, created_at, thread_post_tags(profiles:profiles!thread_post_tags_tagged_profile_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)), thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, deleted_at, thread_comment_hides(hidden_by)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("moderation_status", "active")
       .order("created_at", { ascending: false })
@@ -2417,7 +2425,10 @@ export default async function Home({
                         </div>
                       </div>
                       {!isThreadLocked ? (
-                        <p className="text-sm leading-6">{thread.body}</p>
+                        <div className="space-y-3">
+                          <p className="text-sm leading-6">{thread.body}</p>
+                          <TaggedMemberLinks tags={thread.thread_post_tags ?? []} />
+                        </div>
                       ) : (
                         <p className="rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] px-3 py-2 text-sm leading-6 text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]">
                           Sensitive non-nude body-art discussion is hidden
@@ -2536,6 +2547,19 @@ export default async function Home({
                                 name="body"
                                 placeholder="Edit your Gossip post"
                                 rows={5}
+                              />
+                            </label>
+                            <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                              Tagged members
+                              <input
+                                className="mt-1 h-10 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                                defaultValue={(thread.thread_post_tags ?? [])
+                                  .map((tag) => tag.profiles?.username)
+                                  .filter(Boolean)
+                                  .map((username) => `@${username}`)
+                                  .join(", ")}
+                                name="tagged_usernames"
+                                placeholder="@artistname, @shopname"
                               />
                             </label>
                             <button className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">

@@ -65,6 +65,7 @@ type Notification = {
     | "merch_cancelled"
     | "new_follow"
     | "thread_comment"
+    | "thread_tag"
     | "thread_like"
     | "verification_approved"
     | "verification_rejected";
@@ -119,7 +120,7 @@ function notificationIcon(type: Notification["type"]) {
   if (type === "feed_comment" || type === "thread_comment") {
     return MessageCircle;
   }
-  if (type === "feed_tag") return UserPlus;
+  if (type === "feed_tag" || type === "thread_tag") return UserPlus;
 
   return UserPlus;
 }

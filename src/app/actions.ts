@@ -451,6 +451,103 @@ async function syncFeedPostTags({
   return null;
 }
 
+async function syncThreadPostTags({
+  supabase,
+  taggedUsernames,
+  threadId,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  taggedUsernames: string[];
+  threadId: string;
+  userId: string;
+}) {
+  const { data: existingTags, error: existingTagError } = await supabase
+    .from("thread_post_tags")
+    .select("tagged_profile_id")
+    .eq("thread_id", threadId)
+    .returns<{ tagged_profile_id: string }[]>();
+
+  if (existingTagError) {
+    console.error("Gossip post existing tag lookup failed.", existingTagError);
+    return "Could not update Gossip tags. Please try again.";
+  }
+
+  const existingTaggedIds = new Set(
+    (existingTags ?? []).map((tag) => tag.tagged_profile_id),
+  );
+
+  const { error: deleteError } = await supabase
+    .from("thread_post_tags")
+    .delete()
+    .eq("thread_id", threadId);
+
+  if (deleteError) {
+    console.error("Gossip post tag cleanup failed.", deleteError);
+    return "Could not update Gossip tags. Please try again.";
+  }
+
+  if (!taggedUsernames.length) return null;
+
+  const { data: profiles, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, username")
+    .in("username", taggedUsernames)
+    .is("banned_at", null)
+    .is("suspended_at", null)
+    .returns<{ id: string; username: string }[]>();
+
+  if (profileError) {
+    console.error("Gossip post tag profile lookup failed.", profileError);
+    return "Could not check tagged members. Please try again.";
+  }
+
+  const rows = (profiles ?? [])
+    .filter((profile) => profile.id !== userId)
+    .map((profile) => ({
+      tagged_by: userId,
+      tagged_profile_id: profile.id,
+      thread_id: threadId,
+    }));
+
+  if (!rows.length) return null;
+
+  const { error: insertError } = await supabase
+    .from("thread_post_tags")
+    .insert(rows);
+
+  if (insertError) {
+    console.error("Gossip post tag insert failed.", insertError);
+    return "Could not add tagged members. Please try again.";
+  }
+
+  const newTagRows = rows.filter(
+    (row) => !existingTaggedIds.has(row.tagged_profile_id),
+  );
+
+  if (newTagRows.length) {
+    const actorName = await currentDisplayName({ supabase, userId });
+
+    await Promise.all(
+      newTagRows.map((row) =>
+        notifyContentOwner({
+          actorId: userId,
+          body: `${actorName} tagged you in a Gossip post.`,
+          href: `/t/${threadId}`,
+          ownerId: row.tagged_profile_id,
+          subjectId: threadId,
+          subjectType: "thread_post",
+          supabase,
+          title: "Tagged in Gossip",
+          type: "thread_tag",
+        }),
+      ),
+    );
+  }
+
+  return null;
+}
+
 async function blockRelationshipExists(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
@@ -707,7 +804,8 @@ async function notifyContentOwner({
     | "feed_comment"
     | "feed_tag"
     | "thread_like"
-    | "thread_comment";
+    | "thread_comment"
+    | "thread_tag";
 }) {
   if (!ownerId || ownerId === actorId) return;
   if (await blockRelationshipExists(supabase, actorId, ownerId)) return;
@@ -1717,6 +1815,7 @@ export async function createThreadPost(formData: FormData) {
   const media = mediaFromForm(formData, "media");
   const metadata = media ? await inspectMediaFile(media) : null;
   const sensitive = sensitiveFields();
+  const taggedUsernames = cleanTaggedUsernames(formData.get("tagged_usernames"));
   const visibility = cleanVisibility(
     formData.get("visibility"),
     "members",
@@ -1802,6 +1901,17 @@ export async function createThreadPost(formData: FormData) {
     }
   }
 
+  const tagError = await syncThreadPostTags({
+    supabase,
+    taggedUsernames,
+    threadId: thread.id,
+    userId,
+  });
+
+  if (tagError) {
+    redirect(homeMessage(tagError, "threads"));
+  }
+
   revalidatePath("/");
   redirect(homeMessage("Gossip post published.", "threads"));
 }
@@ -1811,6 +1921,7 @@ export async function editThreadPost(formData: FormData) {
   const threadId = cleanId(formData.get("thread_id"));
   const returnPath = cleanReturnPath(formData.get("return_path"), "/#threads");
   const body = cleanText(formData.get("body"), 8000);
+  const taggedUsernames = cleanTaggedUsernames(formData.get("tagged_usernames"));
 
   if (!threadId) {
     redirect(redirectWithMessage({ message: "Choose a Gossip post first.", path: returnPath }));
@@ -1844,6 +1955,17 @@ export async function editThreadPost(formData: FormData) {
         path: returnPath,
       }),
     );
+  }
+
+  const tagError = await syncThreadPostTags({
+    supabase,
+    taggedUsernames,
+    threadId,
+    userId,
+  });
+
+  if (tagError) {
+    redirect(redirectWithMessage({ message: tagError, path: returnPath }));
   }
 
   revalidatePath("/");

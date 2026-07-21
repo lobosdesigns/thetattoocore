@@ -269,6 +269,13 @@ export function FloatingComposer({
               required
               validationMessage="Gossip post needs at least 3 characters."
             />
+            <ComposerDetails title="Tags">
+              <input
+                className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                name="tagged_usernames"
+                placeholder="Tag members: @artistname, @shopname"
+              />
+            </ComposerDetails>
             <ComposerDetails title="Visibility">
               <VisibilityControl
                 defaultValue="members"
