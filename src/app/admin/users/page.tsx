@@ -672,7 +672,7 @@ export default async function AdminUsersPage({
                       />
                     </label>
                     <button
-                      className="ttc-disabled-state h-10 rounded-md border border-[color-mix(in_srgb,var(--danger)_40%,var(--card-rim))] bg-[var(--danger)] px-4 text-sm font-semibold text-white disabled:bg-[color-mix(in_srgb,var(--danger)_22%,var(--paper-warm))] disabled:text-[var(--muted-strong)] sm:self-end"
+                      className="ttc-disabled-state h-10 rounded-md border border-[color-mix(in_srgb,var(--danger)_40%,var(--card-rim))] bg-[var(--danger)] px-4 text-sm font-semibold text-white disabled:bg-[color-mix(in_srgb,var(--danger)_22%,var(--paper-warm))] sm:self-end"
                       disabled={!canDeleteUser}
                     >
                       Delete
