@@ -130,6 +130,7 @@ Support:
 
 ## Push Notifications
 
+- For the current submission handoff, describe the working member path as in-app alerts and notification settings. Do not describe native push as live, enabled, or ready until the private evidence matrix has a pass for both submitted builds.
 - Web push is prepared at the service-worker display/click level, with signed-in browser subscription storage started. Production push keys and delivery jobs still need to be enabled before relying on web push.
 - Mobile app push should use Firebase Cloud Messaging for Android and iOS delivery after the Firebase project, native app config files, signing/capability setup, and real-device token delivery are verified.
 - Do not request native notification permission or claim native push support in store copy until Android and iOS device-token registration, alert delivery, notification tap routing, opt-out, quiet hours, and category preferences have evidence.

@@ -132,6 +132,13 @@ const forbiddenStorePrepProviderSnippets = [
   "Stripe",
 ];
 const forbiddenRepoReviewerEmailPattern = /\breviewer@[a-z0-9._%+-]+\.[a-z]{2,}\b/i;
+const nativePushReadyClaimPattern =
+  /\bnative push (is )?(live|enabled|ready|supported|available)\b/i;
+const repoSafeSubmissionDocsText = [
+  docs["docs/APP_STORE_READINESS.md"],
+  docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"],
+  docs["docs/NATIVE_WRAPPER_PREP.md"],
+].join("\n");
 
 const checks = [
   {
@@ -967,6 +974,9 @@ const checks = [
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Preference controls | Per-device opt-out, quiet hours, and category preferences stop delivery") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("no project IDs, sender IDs, API keys, or console screenshots") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Do not claim native push support in store metadata") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("repo-safe submission notes should refer to in-app") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("describe the working member path as in-app alerts") &&
+      !nativePushReadyClaimPattern.test(repoSafeSubmissionDocsText) &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Use the Native Push Private Evidence Matrix") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Keep project IDs, sender IDs, API keys, app config files, device tokens, notification payloads, signing details, and console screenshots in the private release handoff only"),
   },

@@ -55,6 +55,9 @@ console screenshots, device tokens, signing details, or tester account data.
 
 Do not claim native push support in store metadata until every row has a private
 pass for both Android and iOS on the submitted builds.
+Until that proof exists, repo-safe submission notes should refer to in-app
+alerts and notification settings as the current fallback, not native push being
+live, enabled, or ready.
 
 ## Store Review Safety
 
