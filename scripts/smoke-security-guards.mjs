@@ -40,6 +40,7 @@ const adminStuffPage = readFileSync("src/app/admin/stuff/page.tsx", "utf8");
 const adminUsersPage = readFileSync("src/app/admin/users/page.tsx", "utf8");
 const adminVerificationPage = readFileSync("src/app/admin/verification/page.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
+const mobileSmoke = readFileSync("scripts/smoke-mobile-browser.mjs", "utf8");
 const urls = readFileSync("src/lib/urls.ts", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
 const profileActions = readFileSync("src/app/u/[username]/actions.ts", "utf8");
@@ -789,6 +790,8 @@ const checks = [
       settingsPage.includes('href="/#feed"') &&
       settingsPage.includes("4U Home") &&
       settingsPage.includes("Professional tools appear when your account is") &&
+      mobileSmoke.includes('path: "/settings/verification"') &&
+      mobileSmoke.includes('path: "/settings/ads"') &&
       productPlan.includes("role-aware panels and Settings cards"),
   },
   {

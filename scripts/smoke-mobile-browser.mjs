@@ -146,6 +146,8 @@ const routes = [
   { path: "/settings/bookings", textIncludes: "Sign in", titleIncludes: "Sign in" },
   { path: "/settings/orders", textIncludes: "Sign in", titleIncludes: "Sign in" },
   { path: "/settings/help", textIncludes: "Sign in", titleIncludes: "Sign in" },
+  { path: "/settings/verification", textIncludes: "Sign in", titleIncludes: "Sign in" },
+  { path: "/settings/ads", textIncludes: "Sign in", titleIncludes: "Sign in" },
   { path: "/u/ceocore", textIncludes: "@ceocore", titleIncludes: "CEOCore" },
   {
     path: "/u/ceocore?profile_4u=50&profile_gossip=50&profile_stuff=50&profile_gigs=50&profile_merch=50#profile-4u",
