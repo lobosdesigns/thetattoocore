@@ -35,6 +35,13 @@ const manifestMemberFacingText = [
   .filter(Boolean)
   .join("\n")
   .toLowerCase();
+const mobileSmokeRoutePaths = new Set(
+  [...mobileSmoke.matchAll(/path: "([^"]+)"/g)].map((match) => match[1]),
+);
+const manifestShortcutUrls = (manifestJson.shortcuts ?? []).map((shortcut) => shortcut.url);
+const missingMobileShortcutRoutes = manifestShortcutUrls.filter(
+  (url) => !mobileSmokeRoutePaths.has(url),
+);
 const manifestBlockedTerms = [
   "api key",
   "cloudflare",
@@ -228,6 +235,13 @@ const checks = [
       manifest.includes('"url": "/#merch"') &&
       mobileSmoke.includes('path: "/#merch"') &&
       (manifest.match(/"icons": \[/g) || []).length >= 8,
+  },
+  {
+    label: "installed app shortcut routes have direct mobile smoke coverage",
+    message: missingMobileShortcutRoutes.length
+      ? `missing mobile shortcut routes: ${missingMobileShortcutRoutes.join(", ")}`
+      : "",
+    ok: missingMobileShortcutRoutes.length === 0,
   },
   {
     label: "installed app manifest copy avoids provider details and launch over-promises",
