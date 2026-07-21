@@ -945,13 +945,14 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("## Submission Blocker Matrix") &&
       docs["docs/APP_STORE_READINESS.md"].includes("## Current Store Console Snapshot") &&
       docs["docs/APP_STORE_READINESS.md"].includes("| Surface | Repo-safe status | Next action | Private evidence location |") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("The Tattoo Core iOS `1.0` in Prepare for Submission") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("refreshed Apple sign-in/2FA") &&
-      (docs["docs/APP_STORE_READINESS.md"].includes("TheTattooCore Data Safety page is open at the questionnaire start page") ||
-        docs["docs/APP_STORE_READINESS.md"].includes("Closed testing changes for the selected alpha track are in Google Play review/quick checks")) &&
-      docs["docs/APP_STORE_READINESS.md"].includes("final reviewer access validation for the selected build") &&
-      (docs["docs/APP_STORE_READINESS.md"].includes("final reviewer access validation for the selected release track") ||
-        docs["docs/APP_STORE_READINESS.md"].includes("Confirm Google accepts/serves the closed test")) &&
+      docs["docs/APP_STORE_READINESS.md"].includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("App Store Connect shows `1 Item Submitted`") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Age 18+ override") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Play Console Dashboard shows app update status `Not yet sent for review`") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("closed testing is `4 of 5` complete") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Publishing overview shows `Changes not yet submitted for review`") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Monitor App Review status and reviewer messages") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("send the release to Google for review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("with account verification and Connect setup still outstanding") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Firebase console is open at the project list/welcome state") &&
       docs["docs/APP_STORE_READINESS.md"].includes("no TTC Firebase project is selected") &&
@@ -963,10 +964,9 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("Private payment handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private native QA handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Store consoles") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Apple still needs refreshed sign-in/2FA") &&
-      (docs["docs/APP_STORE_READINESS.md"].includes("questionnaire start page") ||
-        docs["docs/APP_STORE_READINESS.md"].includes("Data Safety saved")) &&
-      docs["docs/APP_STORE_READINESS.md"].includes("13-inch iPad screenshot upload") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Apple iOS `1.0` build `1.0 (3)` is submitted for App Review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Google Play is not yet downloadable because the closed-testing release still needs to be sent to Google for review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("13-inch iPad screenshots uploaded") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Content Rights") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Accessibility Nutrition Labels") &&
       (docs["docs/APP_STORE_READINESS.md"].includes("Data Safety review") ||
