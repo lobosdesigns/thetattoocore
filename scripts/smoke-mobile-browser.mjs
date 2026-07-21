@@ -181,8 +181,8 @@ const routes = [
     textIncludes: ["@ceocore", "Fan-facing shirts, prints, art, stickers, and brand goods."],
     titleIncludes: "CEOCore",
   },
-  { path: "/u/ceocore/followers", textIncludes: "community", titleIncludes: "Followers" },
-  { path: "/u/ceocore/following", textIncludes: "community", titleIncludes: "Following" },
+  { path: "/u/ceocore/followers", textIncludes: "followers", titleIncludes: "Followers" },
+  { path: "/u/ceocore/following", textIncludes: "following", titleIncludes: "Following" },
   { allowMainDocument404: true, path: "/p/not-a-real-post", titleIncludes: "404" },
   {
     allowMainDocument404: true,

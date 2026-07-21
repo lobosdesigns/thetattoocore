@@ -927,12 +927,24 @@ const checks = [
   {
     path: "/u/ceocore/followers",
     status: [200],
-    includes: ['name="robots" content="noindex, nofollow"', "Private community", "Back to profile"],
+    includes: [
+      'name="robots" content="noindex, nofollow"',
+      "Followers",
+      "@ceocore",
+      "Showing",
+      "Back to profile",
+    ],
   },
   {
     path: "/u/ceocore/following",
     status: [200],
-    includes: ['name="robots" content="noindex, nofollow"', "Private community", "Back to profile"],
+    includes: [
+      'name="robots" content="noindex, nofollow"',
+      "Following",
+      "@ceocore",
+      "Showing",
+      "Back to profile",
+    ],
   },
   {
     path: "/merch/checkout/success",
