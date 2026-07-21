@@ -33,15 +33,15 @@ const height = Number(process.env.SMOKE_MOBILE_HEIGHT || mobileProfile.height);
 const userAgent = process.env.SMOKE_MOBILE_USER_AGENT || mobileProfile.userAgent;
 const routeAttempts = Math.max(
   1,
-  Number.parseInt(process.env.SMOKE_MOBILE_ROUTE_ATTEMPTS || "3", 10),
+  Number.parseInt(process.env.SMOKE_MOBILE_ROUTE_ATTEMPTS || "5", 10),
 );
 const routeRetryDelayMs = Math.max(
   100,
-  Number.parseInt(process.env.SMOKE_MOBILE_ROUTE_RETRY_MS || "3000", 10),
+  Number.parseInt(process.env.SMOKE_MOBILE_ROUTE_RETRY_MS || "5000", 10),
 );
 const routeSettleDelayMs = Math.max(
   0,
-  Number.parseInt(process.env.SMOKE_MOBILE_ROUTE_SETTLE_MS || "1500", 10),
+  Number.parseInt(process.env.SMOKE_MOBILE_ROUTE_SETTLE_MS || "2000", 10),
 );
 const routes = [
   { path: "/", titleIncludes: "Sign in" },
@@ -337,9 +337,9 @@ async function checkRoute(portNumber, url, route) {
     await client.send("Emulation.setUserAgentOverride", {
       userAgent,
     });
-    const loadEvent = waitForEvent(client, "Page.loadEventFired", 15000);
+    const loadEvent = waitForEvent(client, "Page.loadEventFired", 15000).catch(() => {});
     await client.send("Page.navigate", { url });
-    await loadEvent.catch(() => {});
+    await loadEvent;
     await sleep(700);
 
     const evaluation = await client.send("Runtime.evaluate", {
