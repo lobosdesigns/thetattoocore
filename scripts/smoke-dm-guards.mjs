@@ -105,6 +105,18 @@ const checks = [
       messagePage.includes("href={inboxHref({"),
   },
   {
+    label: "DM profile links open existing threads with prior messages",
+    ok:
+      messagePage.includes("async function findSharedConversationMembership") &&
+      messagePage.includes(".eq(\"username\", prefillUsername)") &&
+      messagePage.includes("const prefillConversation =") &&
+      messagePage.includes("conversation.otherProfile?.username === prefillUsername") &&
+      messagePage.includes("prefillConversation ?? inbox[0]") &&
+      messagePage.includes("const hasOpenThreadView =") &&
+      messagePage.includes("hasSelectedConversationParam || prefillConversation") &&
+      messagePage.includes("selectedMessagesWithAttachments"),
+  },
+  {
     label: "DM launch plan and real-device QA keep the remaining manual pass visible",
     ok:
       productPlan.includes("DMs need a focused test pass") &&

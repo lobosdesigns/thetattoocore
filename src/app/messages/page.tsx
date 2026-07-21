@@ -278,6 +278,43 @@ function notificationConversationId(notification: MessageNotification) {
   return notification.subject_id;
 }
 
+async function findSharedConversationMembership({
+  supabase,
+  targetId,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  targetId: string;
+  userId: string;
+}) {
+  const { data: myMemberships } = await supabase
+    .from("conversation_members")
+    .select("conversation_id, created_at, last_read_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1000)
+    .returns<Membership[]>();
+  const conversationIds =
+    myMemberships?.map((membership) => membership.conversation_id) ?? [];
+
+  if (!conversationIds.length) return null;
+
+  const { data: targetMembership } = await supabase
+    .from("conversation_members")
+    .select("conversation_id")
+    .eq("user_id", targetId)
+    .in("conversation_id", conversationIds)
+    .limit(1)
+    .maybeSingle<{ conversation_id: string }>();
+
+  return (
+    myMemberships?.find(
+      (membership) =>
+        membership.conversation_id === targetMembership?.conversation_id,
+    ) ?? null
+  );
+}
+
 function BookingCards({
   bookings,
   currentUserId,
@@ -597,6 +634,15 @@ export default async function MessagesPage({
     supabase,
     userId: claims.sub,
   });
+  const { data: prefillTargetProfile } = prefillUsername
+    ? await supabase
+        .from("profiles")
+        .select("id, username")
+        .eq("username", prefillUsername)
+        .is("banned_at", null)
+        .is("suspended_at", null)
+        .maybeSingle<{ id: string; username: string }>()
+    : { data: null };
   const { data: connectedFollowRows } = await supabase
     .from("follows")
     .select("follower_id, following_id")
@@ -622,6 +668,29 @@ export default async function MessagesPage({
     .limit(conversationFetchLimit)
     .returns<Membership[]>();
   const memberships = [...(membershipRows ?? [])];
+
+  if (
+    !requestedConversationId &&
+    prefillTargetProfile &&
+    prefillTargetProfile.id !== claims.sub &&
+    !blockedProfileIds.has(prefillTargetProfile.id)
+  ) {
+    const prefillMembership = await findSharedConversationMembership({
+      supabase,
+      targetId: prefillTargetProfile.id,
+      userId: claims.sub,
+    });
+
+    if (
+      prefillMembership &&
+      !memberships.some(
+        (membership) =>
+          membership.conversation_id === prefillMembership.conversation_id,
+      )
+    ) {
+      memberships.unshift(prefillMembership);
+    }
+  }
 
   if (
     requestedConversationId &&
@@ -775,10 +844,20 @@ export default async function MessagesPage({
     (!activeInboxSearch && (membershipRows?.length ?? 0) === conversationFetchLimit);
 
   const hasSelectedConversationParam = Boolean(requestedConversationId);
+  const prefillConversation =
+    !hasSelectedConversationParam && prefillUsername
+      ? inboxBeforeSearch.find(
+          (conversation) =>
+            conversation.otherProfile?.username === prefillUsername,
+        ) ?? null
+      : null;
   const selectedConversation =
     (hasSelectedConversationParam
       ? inbox.find((conversation) => conversation.id === requestedConversationId)
-      : inbox[0]) ?? null;
+      : prefillConversation ?? inbox[0]) ?? null;
+  const hasOpenThreadView = Boolean(
+    hasSelectedConversationParam || prefillConversation,
+  );
 
   if (hasSelectedConversationParam && !selectedConversation) {
     redirect(messagesInboxPath("Conversation was not found or is no longer available."));
@@ -876,7 +955,7 @@ export default async function MessagesPage({
       <div className="mx-auto grid h-full w-full max-w-7xl grid-cols-1 overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_24px_80px_rgba(0,0,0,0.35)] lg:grid-cols-[320px_minmax(0,1fr)]">
         <aside
           className={`ttc-page-panel min-h-0 min-w-0 overflow-y-auto border-r border-[var(--card-rim)] ${
-            hasSelectedConversationParam ? "hidden lg:block" : "block"
+            hasOpenThreadView ? "hidden lg:block" : "block"
           }`}
         >
           <header className="sticky top-0 z-10 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper)_95%,transparent)] px-4 py-4 backdrop-blur">
@@ -1036,7 +1115,7 @@ export default async function MessagesPage({
 
         <section
           className={`ttc-page-panel min-h-0 min-w-0 flex-col overflow-hidden ${
-            hasSelectedConversationParam ? "flex h-[100dvh]" : "hidden h-full lg:flex"
+            hasOpenThreadView ? "flex h-[100dvh]" : "hidden h-full lg:flex"
           }`}
         >
           {selectedConversation ? (
