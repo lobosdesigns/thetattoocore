@@ -43,6 +43,7 @@ const fees = readFileSync("src/lib/payments/fees.ts", "utf8");
 const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const paymentReadiness = readFileSync("docs/PAYMENT_PRODUCTION_READINESS.md", "utf8");
+const packageJson = readFileSync("package.json", "utf8");
 const memberPaymentSafetySource = [
   helpCenter,
   helpCenterSearch,
@@ -1094,6 +1095,15 @@ checks.push({
     paymentReadiness.includes("dashboard screenshots") &&
     paymentReadiness.includes("webhook secrets") &&
     paymentReadiness.includes("raw console exports in the private release handoff only"),
+});
+checks.push({
+  label: "payment release verification gate is documented and wired",
+  ok:
+    packageJson.includes(
+      '"verify:payment-release": "npm run smoke:env && npm run smoke:payments && npm run smoke:security && npm run smoke:public"',
+    ) &&
+    paymentReadiness.includes("npm.cmd run verify:payment-release") &&
+    paymentReadiness.includes("environment mode checks, payment flow guards, security headers, and public checkout/status routes"),
 });
 
 const failures = checks.filter((check) => !check.ok);
