@@ -48,6 +48,10 @@ const contentOwnerNotificationCleanupMigration = readFileSync(
   "supabase/migrations/20260721215000_content_owner_notification_cleanup.sql",
   "utf8",
 );
+const commentTagMigration = readFileSync(
+  "supabase/migrations/20260721223000_comment_user_tags.sql",
+  "utf8",
+);
 const contentAudienceEnumMigration = readFileSync(
   "supabase/migrations/20260721152000_content_audience_enum.sql",
   "utf8",
@@ -370,6 +374,46 @@ const checks = [
       actions.includes('supabase.rpc("delete_thread_comment_for_current_user"'),
   },
   {
+    label: "4U and Gossip comments support member tagging with notifications",
+    ok:
+      commentTagMigration.includes("create table if not exists public.post_comment_tags") &&
+      commentTagMigration.includes("create table if not exists public.thread_comment_tags") &&
+      commentTagMigration.includes("alter table public.post_comment_tags enable row level security") &&
+      commentTagMigration.includes("alter table public.thread_comment_tags enable row level security") &&
+      commentTagMigration.includes('create policy "Visible post comment tags can be read"') &&
+      commentTagMigration.includes('create policy "Authors tag own post comments"') &&
+      commentTagMigration.includes('create policy "Visible thread comment tags can be read"') &&
+      commentTagMigration.includes('create policy "Authors tag own thread comments"') &&
+      commentTagMigration.includes('create policy "Comment owners can delete comment tag notifications"') &&
+      commentTagMigration.includes("grant select on public.post_comment_tags to anon, authenticated") &&
+      commentTagMigration.includes("grant insert, delete on public.thread_comment_tags to authenticated") &&
+      commentTagMigration.includes("prevent_restricted_post_comment_tags") &&
+      commentTagMigration.includes("prevent_restricted_thread_comment_tags") &&
+      commentTagMigration.includes("'feed_comment_tag'") &&
+      commentTagMigration.includes("'thread_comment_tag'") &&
+      actions.includes("async function syncCommentTags") &&
+      actions.includes('tagTable: "post_comment_tags"') &&
+      actions.includes('tagTable: "thread_comment_tags"') &&
+      actions.includes('type: "feed_comment_tag"') &&
+      actions.includes('type: "thread_comment_tag"') &&
+      actions.includes('subjectType: "post_comment"') &&
+      actions.includes('subjectType: "thread_comment"') &&
+      actions.includes('formData.get("tagged_usernames")') &&
+      postDetailPage.includes("post_comment_tags(profiles:profiles!post_comment_tags_tagged_profile_id_fkey") &&
+      postDetailPage.includes("function CommentTaggedMemberLinks") &&
+      postDetailPage.includes("<CommentTaggedMemberLinks") &&
+      postDetailPage.includes('name="tagged_usernames"') &&
+      threadDetailPage.includes("thread_comment_tags(profiles:profiles!thread_comment_tags_tagged_profile_id_fkey") &&
+      threadDetailPage.includes("function CommentTaggedMemberLinks") &&
+      threadDetailPage.includes("<CommentTaggedMemberLinks") &&
+      threadDetailPage.includes('name="tagged_usernames"') &&
+      notificationsPage.includes('| "feed_comment_tag"') &&
+      notificationsPage.includes('| "thread_comment_tag"') &&
+      notificationsPage.includes('type === "feed_comment_tag"') &&
+      notificationsPage.includes('if (notification.subject_type === "post_comment")') &&
+      notificationsPage.includes('if (notification.subject_type === "thread_comment")'),
+  },
+  {
     label: "comment insert policies enforce profile comment privacy",
     ok:
       commentPrivacyInsertPoliciesMigration.includes(
@@ -554,7 +598,8 @@ const checks = [
       actions.includes('type === "feed_tag"') &&
       actions.includes("notifyContentOwner({") &&
       notificationsPage.includes('| "feed_tag"') &&
-      notificationsPage.includes('type === "feed_tag" || type === "gig_tag" || type === "thread_tag"'),
+      notificationsPage.includes('type === "feed_comment_tag"') &&
+      notificationsPage.includes('type === "thread_comment_tag"'),
   },
   {
     label: "Gossip post tags are RLS-backed, visible, editable, and notify tagged members",
@@ -587,7 +632,8 @@ const checks = [
       profilePage.includes("thread_post_tags(profiles:profiles!thread_post_tags_tagged_profile_id_fkey") &&
       profilePage.includes("<TaggedMemberLinks tags={thread.thread_post_tags ?? []} />") &&
       notificationsPage.includes('| "thread_tag"') &&
-      notificationsPage.includes('type === "feed_tag" || type === "gig_tag" || type === "thread_tag"'),
+      notificationsPage.includes('type === "feed_comment_tag"') &&
+      notificationsPage.includes('type === "thread_comment_tag"'),
   },
   {
     label: "Gigs support tagged member links with RLS-backed schema and notifications",
@@ -624,7 +670,8 @@ const checks = [
       profilePage.includes("gig_tags(profiles:profiles!gig_tags_tagged_profile_id_fkey") &&
       profilePage.includes("<TaggedMemberLinks tags={gig.gig_tags ?? []} />") &&
       notificationsPage.includes('| "gig_tag"') &&
-      notificationsPage.includes('type === "feed_tag" || type === "gig_tag" || type === "thread_tag"') &&
+      notificationsPage.includes('type === "gig_tag"') &&
+      notificationsPage.includes('type === "thread_comment_tag"') &&
       notificationsPage.includes('return notification.href || `/gigs/${notification.subject_id}`'),
   },
   {

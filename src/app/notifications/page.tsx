@@ -42,6 +42,7 @@ type Notification = {
   title: string;
   type:
     | "feed_comment"
+    | "feed_comment_tag"
     | "feed_like"
     | "feed_tag"
     | "gig_tag"
@@ -66,6 +67,7 @@ type Notification = {
     | "merch_cancelled"
     | "new_follow"
     | "thread_comment"
+    | "thread_comment_tag"
     | "thread_tag"
     | "thread_like"
     | "verification_approved"
@@ -121,7 +123,13 @@ function notificationIcon(type: Notification["type"]) {
   if (type === "feed_comment" || type === "thread_comment") {
     return MessageCircle;
   }
-  if (type === "feed_tag" || type === "gig_tag" || type === "thread_tag") {
+  if (
+    type === "feed_tag" ||
+    type === "feed_comment_tag" ||
+    type === "gig_tag" ||
+    type === "thread_tag" ||
+    type === "thread_comment_tag"
+  ) {
     return UserPlus;
   }
 
@@ -130,7 +138,9 @@ function notificationIcon(type: Notification["type"]) {
 
 function subjectLabel(type: string) {
   if (type === "feed_post") return "4U";
+  if (type === "post_comment") return "4U comment";
   if (type === "thread_post") return "Gossip";
+  if (type === "thread_comment") return "Gossip comment";
   if (type === "marketplace_listing") return "Stuff";
   if (type === "gig") return "Gigs";
   if (type === "profile") return "Profile";
@@ -173,8 +183,16 @@ function notificationHref(notification: Notification) {
     return `/p/${notification.subject_id}`;
   }
 
+  if (notification.subject_type === "post_comment") {
+    return notification.href || "/notifications";
+  }
+
   if (notification.subject_type === "thread_post" && notification.subject_id) {
     return `/t/${notification.subject_id}`;
+  }
+
+  if (notification.subject_type === "thread_comment") {
+    return notification.href || "/notifications";
   }
 
   if (notification.subject_type === "gig" && notification.subject_id) {

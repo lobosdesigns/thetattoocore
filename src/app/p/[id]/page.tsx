@@ -107,7 +107,12 @@ type PostComment = {
   post_comment_hides: { hidden_by: string }[] | { hidden_by: string } | null;
   post_comment_likes: PostLike[];
   post_comment_media: CommentMedia[];
+  post_comment_tags: CommentTag[];
   profiles: Pick<Profile, "avatar_url" | "display_name" | "id" | "username"> | null;
+};
+
+type CommentTag = {
+  profiles: Pick<Profile, "display_name" | "id" | "username"> | null;
 };
 
 type CommentMedia = {
@@ -132,7 +137,7 @@ type PostPageProps = {
 const commentsPageSize = 25;
 const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
 const postCommentSelect =
-  "id, body, parent_id, deleted_at, created_at, post_comment_media(id, storage_bucket, storage_path, media_type, mime_type, width, height), post_comment_hides(hidden_by), post_comment_likes(user_id), profiles:profiles!post_comments_author_id_fkey(id, avatar_url, display_name, username)";
+  "id, body, parent_id, deleted_at, created_at, post_comment_tags(profiles:profiles!post_comment_tags_tagged_profile_id_fkey(id, username, display_name)), post_comment_media(id, storage_bucket, storage_path, media_type, mime_type, width, height), post_comment_hides(hidden_by), post_comment_likes(user_id), profiles:profiles!post_comments_author_id_fkey(id, avatar_url, display_name, username)";
 
 function asArray<T>(value: T[] | null | undefined) {
   return Array.isArray(value) ? value : [];
@@ -159,6 +164,33 @@ function TaggedMemberLinks({ tags }: { tags: FeedPostTag[] }) {
           >
             @{profile.username}
             <VerifiedBadge profile={profile} />
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+function CommentTaggedMemberLinks({ tags }: { tags: CommentTag[] }) {
+  const visibleTags = tags.filter((tag) => tag.profiles);
+
+  if (!visibleTags.length) return null;
+
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs font-semibold text-[var(--muted)]">
+      <span className="text-[var(--muted-strong)]">With</span>
+      {visibleTags.slice(0, 5).map((tag) => {
+        const profile = tag.profiles;
+
+        if (!profile) return null;
+
+        return (
+          <Link
+            className="rounded-md border border-[var(--card-rim)] px-2 py-0.5 hover:underline"
+            href={`/u/${profile.username}`}
+            key={profile.id}
+          >
+            @{profile.username}
           </Link>
         );
       })}
@@ -808,6 +840,12 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                     placeholder="Add a short comment"
                     wrapperClassName="w-full"
                   />
+                  <input
+                    className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                    maxLength={340}
+                    name="tagged_usernames"
+                    placeholder="Tag members: @artistname, @shopname"
+                  />
                   <details className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
                     <summary className="cursor-pointer list-none text-xs font-bold">
                       Attach photo or GIF
@@ -884,6 +922,9 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                 </p>
                               ) : null}
                               <CommentMediaPreview media={commentMedia[0]} />
+                              <CommentTaggedMemberLinks
+                                tags={comment.post_comment_tags ?? []}
+                              />
                             </div>
                           </div>
                           <div className="ttc-comment-controls mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold">
@@ -961,6 +1002,12 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                   name="media"
                                   videoAllowed={false}
                                 />
+                                <input
+                                  className="h-9 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2 text-xs outline-none focus:border-[var(--foreground)]"
+                                  maxLength={340}
+                                  name="tagged_usernames"
+                                  placeholder="Tag members: @artistname, @shopname"
+                                />
                               </form>
                             </details>
                             {isOwnComment ? (
@@ -988,6 +1035,17 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                     maxLength={220}
                                     name="body"
                                     required
+                                  />
+                                  <input
+                                    className="h-9 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2 text-xs outline-none focus:border-[var(--foreground)]"
+                                    defaultValue={(comment.post_comment_tags ?? [])
+                                      .map((tag) => tag.profiles?.username)
+                                      .filter(Boolean)
+                                      .map((username) => `@${username}`)
+                                      .join(", ")}
+                                    maxLength={340}
+                                    name="tagged_usernames"
+                                    placeholder="Tag members: @artistname, @shopname"
                                   />
                                   <button className="h-8 rounded-md bg-[var(--foreground)] px-3 text-xs font-semibold text-[var(--background)]">
                                     Save
@@ -1095,6 +1153,9 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                           {reply.body}
                                         </p>
                                         <CommentMediaPreview media={replyMedia[0]} />
+                                        <CommentTaggedMemberLinks
+                                          tags={reply.post_comment_tags ?? []}
+                                        />
                                         </div>
                                       </div>
                                       <form action={togglePostCommentLike}>
@@ -1151,6 +1212,17 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                                               maxLength={220}
                                               name="body"
                                               required
+                                            />
+                                            <input
+                                              className="h-9 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-2 text-xs outline-none focus:border-[var(--foreground)]"
+                                              defaultValue={(reply.post_comment_tags ?? [])
+                                                .map((tag) => tag.profiles?.username)
+                                                .filter(Boolean)
+                                                .map((username) => `@${username}`)
+                                                .join(", ")}
+                                              maxLength={340}
+                                              name="tagged_usernames"
+                                              placeholder="Tag members: @artistname, @shopname"
                                             />
                                             <button className="h-8 rounded-md bg-[var(--foreground)] px-3 text-xs font-semibold text-[var(--background)]">
                                               Save

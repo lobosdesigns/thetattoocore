@@ -681,9 +681,19 @@ async function cleanupRemovedTagNotifications({
   currentTaggedIds: Set<string>;
   existingTaggedIds: Set<string>;
   subjectId: string;
-  subjectType: "feed_post" | "gig" | "thread_post";
+  subjectType:
+    | "feed_post"
+    | "gig"
+    | "post_comment"
+    | "thread_post"
+    | "thread_comment";
   supabase: Awaited<ReturnType<typeof createClient>>;
-  type: "feed_tag" | "gig_tag" | "thread_tag";
+  type:
+    | "feed_tag"
+    | "feed_comment_tag"
+    | "gig_tag"
+    | "thread_tag"
+    | "thread_comment_tag";
 }) {
   const removedRecipientIds = [...existingTaggedIds].filter(
     (id) => !currentTaggedIds.has(id),
@@ -710,7 +720,12 @@ async function cleanupSubjectNotifications({
   supabase,
 }: {
   subjectId: string;
-  subjectType: "feed_post" | "gig" | "thread_post";
+  subjectType:
+    | "feed_post"
+    | "gig"
+    | "post_comment"
+    | "thread_post"
+    | "thread_comment";
   supabase: Awaited<ReturnType<typeof createClient>>;
 }) {
   const { error } = await supabase
@@ -722,6 +737,119 @@ async function cleanupSubjectNotifications({
   if (error) {
     console.error("Subject notification cleanup failed.", error);
   }
+}
+
+async function syncCommentTags({
+  commentId,
+  href,
+  label,
+  supabase,
+  taggedUsernames,
+  tagTable,
+  subjectType,
+  type,
+  userId,
+}: {
+  commentId: string;
+  href: string;
+  label: "4U comment" | "Gossip comment";
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  taggedUsernames: string[];
+  tagTable: "post_comment_tags" | "thread_comment_tags";
+  subjectType: "post_comment" | "thread_comment";
+  type: "feed_comment_tag" | "thread_comment_tag";
+  userId: string;
+}) {
+  const { data: existingTags, error: existingTagError } = await supabase
+    .from(tagTable)
+    .select("tagged_profile_id")
+    .eq("comment_id", commentId)
+    .returns<{ tagged_profile_id: string }[]>();
+
+  if (existingTagError) {
+    console.error(`${label} existing tag lookup failed.`, existingTagError);
+    return `Could not update ${label} tags. Please try again.`;
+  }
+
+  const existingTaggedIds = new Set(
+    (existingTags ?? []).map((tag) => tag.tagged_profile_id),
+  );
+
+  const { error: deleteError } = await supabase
+    .from(tagTable)
+    .delete()
+    .eq("comment_id", commentId);
+
+  if (deleteError) {
+    console.error(`${label} tag cleanup failed.`, deleteError);
+    return `Could not update ${label} tags. Please try again.`;
+  }
+
+  const { data: profiles, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, username")
+    .in("username", taggedUsernames.length ? taggedUsernames : ["__no_tags__"])
+    .is("banned_at", null)
+    .is("suspended_at", null)
+    .returns<{ id: string; username: string }[]>();
+
+  if (profileError) {
+    console.error(`${label} tag profile lookup failed.`, profileError);
+    return "Could not check tagged members. Please try again.";
+  }
+
+  const rows = (profiles ?? [])
+    .filter((profile) => profile.id !== userId)
+    .map((profile) => ({
+      comment_id: commentId,
+      tagged_by: userId,
+      tagged_profile_id: profile.id,
+    }));
+  const currentTaggedIds = new Set(rows.map((row) => row.tagged_profile_id));
+
+  await cleanupRemovedTagNotifications({
+    currentTaggedIds,
+    existingTaggedIds,
+    subjectId: commentId,
+    subjectType,
+    supabase,
+    type,
+  });
+
+  if (!rows.length) return null;
+
+  const { error: insertError } = await supabase.from(tagTable).insert(rows);
+
+  if (insertError) {
+    console.error(`${label} tag insert failed.`, insertError);
+    return "Could not add tagged members. Please try again.";
+  }
+
+  const newTagRows = rows.filter(
+    (row) => !existingTaggedIds.has(row.tagged_profile_id),
+  );
+
+  if (newTagRows.length) {
+    const actorName = await currentDisplayName({ supabase, userId });
+
+    await Promise.all(
+      newTagRows.map((row) =>
+        notifyContentOwner({
+          actorId: userId,
+          body: `${actorName} tagged you in a ${label}.`,
+          href,
+          ownerId: row.tagged_profile_id,
+          subjectId: commentId,
+          subjectType,
+          supabase,
+          title: `Tagged in a ${label}`,
+          type,
+        }),
+      ),
+    );
+  }
+
+  return null;
 }
 
 async function blockRelationshipExists(
@@ -988,17 +1116,24 @@ async function notifyContentOwner({
   href: string;
   ownerId: string | null | undefined;
   subjectId: string;
-  subjectType: "feed_post" | "gig" | "thread_post";
+  subjectType:
+    | "feed_post"
+    | "gig"
+    | "post_comment"
+    | "thread_post"
+    | "thread_comment";
   supabase: Awaited<ReturnType<typeof createClient>>;
   title: string;
   type:
     | "feed_like"
     | "feed_comment"
     | "feed_tag"
+    | "feed_comment_tag"
     | "gig_tag"
     | "thread_like"
     | "thread_comment"
-    | "thread_tag";
+    | "thread_tag"
+    | "thread_comment_tag";
 }) {
   if (!ownerId || ownerId === actorId) return;
   if (await blockRelationshipExists(supabase, actorId, ownerId)) return;
@@ -1006,7 +1141,10 @@ async function notifyContentOwner({
   const preferenceCategory =
     type === "gig_tag"
       ? "marketplace_gig"
-      : type === "feed_like" || type === "feed_comment" || type === "feed_tag"
+      : type === "feed_like" ||
+          type === "feed_comment" ||
+          type === "feed_tag" ||
+          type === "feed_comment_tag"
         ? "feed"
         : "thread";
   const { data: ownerProfile } = await supabase
@@ -3322,6 +3460,7 @@ export async function createPostComment(formData: FormData) {
   const media = mediaFromForm(formData, "media");
   const postId = cleanId(formData.get("post_id"));
   const parentId = cleanId(formData.get("parent_id"));
+  const taggedUsernames = cleanTaggedUsernames(formData.get("tagged_usernames"));
   const returnPath = cleanReturnPath(formData.get("return_path"), "/#feed");
 
   if (!postId) {
@@ -3418,6 +3557,22 @@ export async function createPostComment(formData: FormData) {
       console.error("4U comment media attach failed.", mediaError);
       redirect(homeMessage("Could not attach comment media. Please try again."));
     }
+  }
+
+  const tagError = await syncCommentTags({
+    commentId,
+    href: `/p/${postId}`,
+    label: "4U comment",
+    subjectType: "post_comment",
+    supabase,
+    taggedUsernames,
+    tagTable: "post_comment_tags",
+    type: "feed_comment_tag",
+    userId,
+  });
+
+  if (tagError) {
+    redirect(homeMessage(tagError, "feed"));
   }
 
   const [{ data: post }, { data: parentComment }, actorName] = await Promise.all([
@@ -3525,6 +3680,7 @@ export async function editPostComment(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const commentId = cleanId(formData.get("comment_id"));
   const body = cleanWords(formData.get("body"), 40);
+  const taggedUsernames = cleanTaggedUsernames(formData.get("tagged_usernames"));
   const returnPath = cleanReturnPath(formData.get("return_path"), "/#feed");
 
   if (!commentId || !body) {
@@ -3545,6 +3701,22 @@ export async function editPostComment(formData: FormData) {
   if (error) {
     console.error("4U comment edit failed.", error);
     redirect(homeMessage("Could not edit comment. Please try again.", "feed"));
+  }
+
+  const tagError = await syncCommentTags({
+    commentId,
+    href: returnPath,
+    label: "4U comment",
+    subjectType: "post_comment",
+    supabase,
+    taggedUsernames,
+    tagTable: "post_comment_tags",
+    type: "feed_comment_tag",
+    userId,
+  });
+
+  if (tagError) {
+    redirect(homeMessage(tagError, "feed"));
   }
 
   revalidatePath("/");
@@ -3590,7 +3762,14 @@ export async function deletePostComment(formData: FormData) {
     redirect(homeMessage("Could not delete comment. Please try again.", "feed"));
   }
 
+  await cleanupSubjectNotifications({
+    subjectId: commentId,
+    subjectType: "post_comment",
+    supabase,
+  });
+
   revalidatePath("/");
+  revalidatePath("/notifications");
   revalidateReturnPath(returnPath);
   redirect(returnPath);
 }
@@ -3731,6 +3910,7 @@ export async function createThreadComment(formData: FormData) {
   const media = mediaFromForm(formData, "media");
   const threadId = cleanId(formData.get("thread_id"));
   const parentId = cleanId(formData.get("parent_id"));
+  const taggedUsernames = cleanTaggedUsernames(formData.get("tagged_usernames"));
   const returnPath = cleanReturnPath(formData.get("return_path"), "/#threads");
 
   if (!threadId) {
@@ -3827,6 +4007,22 @@ export async function createThreadComment(formData: FormData) {
       console.error("Gossip comment media attach failed.", mediaError);
       redirect(homeMessage("Could not attach comment media. Please try again."));
     }
+  }
+
+  const tagError = await syncCommentTags({
+    commentId,
+    href: `/t/${threadId}`,
+    label: "Gossip comment",
+    subjectType: "thread_comment",
+    supabase,
+    taggedUsernames,
+    tagTable: "thread_comment_tags",
+    type: "thread_comment_tag",
+    userId,
+  });
+
+  if (tagError) {
+    redirect(homeMessage(tagError, "threads"));
   }
 
   const [{ data: thread }, { data: parentComment }, actorName] = await Promise.all([
@@ -3934,6 +4130,7 @@ export async function editThreadComment(formData: FormData) {
   const { supabase, userId } = await requireProfile();
   const commentId = cleanId(formData.get("comment_id"));
   const body = cleanText(formData.get("body"), 2000);
+  const taggedUsernames = cleanTaggedUsernames(formData.get("tagged_usernames"));
   const returnPath = cleanReturnPath(formData.get("return_path"), "/#threads");
 
   if (!commentId || !body) {
@@ -3954,6 +4151,22 @@ export async function editThreadComment(formData: FormData) {
   if (error) {
     console.error("Gossip comment edit failed.", error);
     redirect(homeMessage("Could not edit comment. Please try again.", "threads"));
+  }
+
+  const tagError = await syncCommentTags({
+    commentId,
+    href: returnPath,
+    label: "Gossip comment",
+    subjectType: "thread_comment",
+    supabase,
+    taggedUsernames,
+    tagTable: "thread_comment_tags",
+    type: "thread_comment_tag",
+    userId,
+  });
+
+  if (tagError) {
+    redirect(homeMessage(tagError, "threads"));
   }
 
   revalidatePath("/");
@@ -4001,7 +4214,14 @@ export async function deleteThreadComment(formData: FormData) {
     redirect(homeMessage("Could not delete comment. Please try again.", "threads"));
   }
 
+  await cleanupSubjectNotifications({
+    subjectId: commentId,
+    subjectType: "thread_comment",
+    supabase,
+  });
+
   revalidatePath("/");
+  revalidatePath("/notifications");
   revalidateReturnPath(returnPath);
   redirect(returnPath);
 }

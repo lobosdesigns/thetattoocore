@@ -31,6 +31,17 @@ Current full-description limit check: Apple App Store Connect and Google Play
 Console both list 4,000 characters as the app full-description limit as of
 July 20, 2026.
 
+## Search Discovery Review
+
+Before public distribution, run a fresh SEO/ASO pass against the selected build.
+Review the web metadata, public-safe sitemap entries, canonical URLs, social
+preview cards, App Store subtitle/promotional text/keywords, Google Play short
+and full descriptions, and screenshot captions together so discovery copy stays
+consistent. Use safe tattoo community terms such as tattoo artists, studios,
+body art, tattoo community, gigs, merch, stories, DMs, and verification while
+avoiding provider names, price or ranking promises, install calls to action,
+AI tattoo art claims, or unsafe professional-equipment promotion.
+
 ## Full Description
 
 TheTattooCore is an 18+ body-art community built around real tattoo culture: artists, studios, vendors, collectors, and enthusiasts.
