@@ -125,6 +125,18 @@ function selectedGooglePlayScreenshotPaths() {
   );
 }
 
+function selectedAppStorePhoneScreenshotPaths() {
+  return uploadSelectedScreenshotNames.appStorePhone.map(
+    (name) => `native/store-metadata/generated/apple-app-store/iphone-6-5/${name}`,
+  );
+}
+
+function selectedAppStoreIpadScreenshotPaths() {
+  return uploadSelectedScreenshotNames.appStoreIpad.map(
+    (name) => `native/store-metadata/generated/apple-app-store/ipad-13/${name}`,
+  );
+}
+
 function filesAreAtMost(paths, maxBytes) {
   return paths.every((path) => existsSync(path) && statSync(path).size <= maxBytes);
 }
@@ -628,6 +640,27 @@ const checks = [
       filesAreAtMost(selectedGooglePlayScreenshotPaths(), googlePlayScreenshotMaxBytes) &&
       source.screenshotInventory.includes("Current Google Play phone upload size cap: 8 MB per screenshot") &&
       source.screenshotPrep.includes("Google Play phone screenshots should be 8 MB or smaller per file"),
+  },
+  {
+    label: "selected App Store screenshots match upload dimensions and no-alpha output",
+    ok:
+      hasExpectedPngs(
+        selectedAppStorePhoneScreenshotPaths(),
+        uploadSelectedScreenshotNames.appStorePhone.length,
+        1242,
+        2688,
+      ) &&
+      hasExpectedPngsAnySize(
+        selectedAppStoreIpadScreenshotPaths(),
+        uploadSelectedScreenshotNames.appStoreIpad.length,
+        [
+          [2048, 2732],
+          [2064, 2752],
+        ],
+      ) &&
+      source.screenshotInventory.includes("Current App Store screenshot cap: 1 to 10 screenshots") &&
+      source.screenshotInventory.includes("PNG files have no alpha channel") &&
+      source.screenshotInventory.includes("dimensions match the store class"),
   },
   {
     label: "generated Google Play screenshots match upload dimensions",
