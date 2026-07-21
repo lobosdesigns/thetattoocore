@@ -551,6 +551,101 @@ async function syncThreadPostTags({
   return null;
 }
 
+async function syncGigTags({
+  gigId,
+  supabase,
+  taggedUsernames,
+  userId,
+}: {
+  gigId: string;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  taggedUsernames: string[];
+  userId: string;
+}) {
+  const { data: existingTags, error: existingTagError } = await supabase
+    .from("gig_tags")
+    .select("tagged_profile_id")
+    .eq("gig_id", gigId)
+    .returns<{ tagged_profile_id: string }[]>();
+
+  if (existingTagError) {
+    console.error("Gig existing tag lookup failed.", existingTagError);
+    return "Could not update Gig tags. Please try again.";
+  }
+
+  const existingTaggedIds = new Set(
+    (existingTags ?? []).map((tag) => tag.tagged_profile_id),
+  );
+
+  const { error: deleteError } = await supabase
+    .from("gig_tags")
+    .delete()
+    .eq("gig_id", gigId);
+
+  if (deleteError) {
+    console.error("Gig tag cleanup failed.", deleteError);
+    return "Could not update Gig tags. Please try again.";
+  }
+
+  if (!taggedUsernames.length) return null;
+
+  const { data: profiles, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, username")
+    .in("username", taggedUsernames)
+    .is("banned_at", null)
+    .is("suspended_at", null)
+    .returns<{ id: string; username: string }[]>();
+
+  if (profileError) {
+    console.error("Gig tag profile lookup failed.", profileError);
+    return "Could not check tagged members. Please try again.";
+  }
+
+  const rows = (profiles ?? [])
+    .filter((profile) => profile.id !== userId)
+    .map((profile) => ({
+      gig_id: gigId,
+      tagged_by: userId,
+      tagged_profile_id: profile.id,
+    }));
+
+  if (!rows.length) return null;
+
+  const { error: insertError } = await supabase.from("gig_tags").insert(rows);
+
+  if (insertError) {
+    console.error("Gig tag insert failed.", insertError);
+    return "Could not add tagged members. Please try again.";
+  }
+
+  const newTagRows = rows.filter(
+    (row) => !existingTaggedIds.has(row.tagged_profile_id),
+  );
+
+  if (newTagRows.length) {
+    const actorName = await currentDisplayName({ supabase, userId });
+
+    await Promise.all(
+      newTagRows.map((row) =>
+        notifyContentOwner({
+          actorId: userId,
+          body: `${actorName} tagged you in a Gig.`,
+          href: `/gigs/${gigId}`,
+          ownerId: row.tagged_profile_id,
+          subjectId: gigId,
+          subjectType: "gig",
+          supabase,
+          title: "Tagged in a Gig",
+          type: "gig_tag",
+        }),
+      ),
+    );
+  }
+
+  return null;
+}
+
 async function blockRelationshipExists(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
@@ -815,13 +910,14 @@ async function notifyContentOwner({
   href: string;
   ownerId: string | null | undefined;
   subjectId: string;
-  subjectType: "feed_post" | "thread_post";
+  subjectType: "feed_post" | "gig" | "thread_post";
   supabase: Awaited<ReturnType<typeof createClient>>;
   title: string;
   type:
     | "feed_like"
     | "feed_comment"
     | "feed_tag"
+    | "gig_tag"
     | "thread_like"
     | "thread_comment"
     | "thread_tag";
@@ -830,9 +926,11 @@ async function notifyContentOwner({
   if (await blockRelationshipExists(supabase, actorId, ownerId)) return;
 
   const preferenceCategory =
-    type === "feed_like" || type === "feed_comment" || type === "feed_tag"
-      ? "feed"
-      : "thread";
+    type === "gig_tag"
+      ? "marketplace_gig"
+      : type === "feed_like" || type === "feed_comment" || type === "feed_tag"
+        ? "feed"
+        : "thread";
   const { data: ownerProfile } = await supabase
     .from("profiles")
     .select(notificationPreferenceSelect(preferenceCategory))
@@ -2618,6 +2716,7 @@ export async function editGig(formData: FormData) {
   const country = cleanText(formData.get("country"), 80) || "US";
   const compensation = cleanText(formData.get("compensation"), 120);
   const contactUrl = cleanExternalUrl(formData.get("contact_url"), 240);
+  const taggedUsernames = cleanTaggedUsernames(formData.get("tagged_usernames"));
 
   if (!gigId) {
     redirect(homeMessage("Choose a Gig first.", "gigs"));
@@ -2655,6 +2754,22 @@ export async function editGig(formData: FormData) {
     redirect(
       redirectWithMessage({
         message: "Could not update Gig. It may be gone or owned by another account.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  const tagError = await syncGigTags({
+    gigId,
+    supabase,
+    taggedUsernames,
+    userId,
+  });
+
+  if (tagError) {
+    redirect(
+      redirectWithMessage({
+        message: tagError,
         path: returnPath,
       }),
     );

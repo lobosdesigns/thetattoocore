@@ -40,6 +40,10 @@ const threadPostTagMigration = readFileSync(
   "supabase/migrations/20260721170000_thread_post_user_tags.sql",
   "utf8",
 );
+const gigTagMigration = readFileSync(
+  "supabase/migrations/20260721201000_gig_user_tags.sql",
+  "utf8",
+);
 const contentAudienceEnumMigration = readFileSync(
   "supabase/migrations/20260721152000_content_audience_enum.sql",
   "utf8",
@@ -546,7 +550,7 @@ const checks = [
       actions.includes('type === "feed_tag"') &&
       actions.includes("notifyContentOwner({") &&
       notificationsPage.includes('| "feed_tag"') &&
-      notificationsPage.includes('if (type === "feed_tag" || type === "thread_tag") return UserPlus'),
+      notificationsPage.includes('type === "feed_tag" || type === "gig_tag" || type === "thread_tag"'),
   },
   {
     label: "Gossip post tags are RLS-backed, visible, editable, and notify tagged members",
@@ -579,7 +583,45 @@ const checks = [
       profilePage.includes("thread_post_tags(profiles:profiles!thread_post_tags_tagged_profile_id_fkey") &&
       profilePage.includes("<TaggedMemberLinks tags={thread.thread_post_tags ?? []} />") &&
       notificationsPage.includes('| "thread_tag"') &&
-      notificationsPage.includes('if (type === "feed_tag" || type === "thread_tag") return UserPlus'),
+      notificationsPage.includes('type === "feed_tag" || type === "gig_tag" || type === "thread_tag"'),
+  },
+  {
+    label: "Gigs support tagged member links with RLS-backed schema and notifications",
+    ok:
+      gigTagMigration.includes("create table if not exists public.gig_tags") &&
+      gigTagMigration.includes("alter table public.gig_tags enable row level security") &&
+      gigTagMigration.includes('create policy "Visible gig tags can be read"') &&
+      gigTagMigration.includes('create policy "Authors tag own gigs"') &&
+      gigTagMigration.includes('create policy "Authors remove own gig tags"') &&
+      gigTagMigration.includes("grant select on public.gig_tags to anon, authenticated") &&
+      gigTagMigration.includes("grant insert, delete on public.gig_tags to authenticated") &&
+      gigTagMigration.includes("prevent_restricted_gig_tags") &&
+      gigTagMigration.includes("notifications_type_check") &&
+      gigTagMigration.includes("'gig_tag'") &&
+      actions.includes("async function syncGigTags") &&
+      actions.includes('.from("gig_tags")') &&
+      actions.includes('title: "Tagged in a Gig"') &&
+      actions.includes('type: "gig_tag"') &&
+      actions.includes('href: `/gigs/${gigId}`') &&
+      actions.includes('type === "gig_tag"') &&
+      gigRoute.includes('formData.get("tagged_usernames")') &&
+      gigRoute.includes('.from("gig_tags")') &&
+      gigRoute.includes('type: "gig_tag"') &&
+      gigRoute.includes('notificationPreferenceSelect("marketplace_gig")') &&
+      gigRoute.includes("blockRelationshipExists") &&
+      composer.includes('name="tagged_usernames"') &&
+      composer.includes("Tag members: @artistname, @shopname") &&
+      homePage.includes("gig_tags(profiles:profiles!gig_tags_tagged_profile_id_fkey") &&
+      homePage.includes("<TaggedMemberLinks tags={gig.gig_tags ?? []} />") &&
+      gigsDetailPage.includes("function TaggedMemberLinks") &&
+      gigsDetailPage.includes("gig_tags(profiles:profiles!gig_tags_tagged_profile_id_fkey") &&
+      gigsDetailPage.includes("<TaggedMemberLinks tags={gig.gig_tags ?? []} />") &&
+      gigsDetailPage.includes('name="tagged_usernames"') &&
+      profilePage.includes("gig_tags(profiles:profiles!gig_tags_tagged_profile_id_fkey") &&
+      profilePage.includes("<TaggedMemberLinks tags={gig.gig_tags ?? []} />") &&
+      notificationsPage.includes('| "gig_tag"') &&
+      notificationsPage.includes('type === "feed_tag" || type === "gig_tag" || type === "thread_tag"') &&
+      notificationsPage.includes('return notification.href || `/gigs/${notification.subject_id}`'),
   },
   {
     label: "home ranking filters blocked profiles before personalization",

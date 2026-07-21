@@ -58,6 +58,10 @@ type GigMedia = {
   storage_path: string;
 };
 
+type GigTag = {
+  profiles: Profile | null;
+};
+
 type Gig = {
   category: string;
   city: string | null;
@@ -68,6 +72,7 @@ type Gig = {
   description: string | null;
   ends_at: string | null;
   gig_media: GigMedia[];
+  gig_tags: GigTag[];
   id: string;
   is_sensitive: boolean;
   profiles: Profile | null;
@@ -128,6 +133,34 @@ function VerifiedBadge({ profile }: { profile?: Profile | null }) {
   );
 }
 
+function TaggedMemberLinks({ tags }: { tags: GigTag[] }) {
+  const visibleTags = tags.filter((tag) => tag.profiles);
+
+  if (!visibleTags.length) return null;
+
+  return (
+    <div className="mt-4 flex flex-wrap items-center gap-1.5 text-xs font-semibold text-[var(--muted)]">
+      <span className="text-[var(--muted-strong)]">With</span>
+      {visibleTags.slice(0, 5).map((tag) => {
+        const profile = tag.profiles;
+
+        if (!profile) return null;
+
+        return (
+          <Link
+            className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] px-2 py-1 hover:underline"
+            href={`/u/${profile.username}`}
+            key={profile.id}
+          >
+            @{profile.username}
+            <VerifiedBadge profile={profile} />
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
 function gigMessage(gig: Gig) {
   return `Hi, I am interested in your gig: ${gig.title}`;
 }
@@ -158,7 +191,7 @@ async function getGig(id: string) {
   const { data } = await supabase
     .from("gigs")
     .select(
-      "id, title, description, category, city, region, country, starts_at, ends_at, compensation, contact_url, visibility, is_sensitive, created_at, gig_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!gigs_poster_id_fkey(id, username, display_name, account_type, license_verified_at)",
+      "id, title, description, category, city, region, country, starts_at, ends_at, compensation, contact_url, visibility, is_sensitive, created_at, gig_tags(profiles:profiles!gig_tags_tagged_profile_id_fkey(id, username, display_name, account_type, license_verified_at)), gig_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!gigs_poster_id_fkey(id, username, display_name, account_type, license_verified_at)",
     )
     .eq("id", id)
     .eq("status", "active")
@@ -446,6 +479,7 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
                   No details have been added yet.
                 </p>
               )}
+              <TaggedMemberLinks tags={gig.gig_tags ?? []} />
 
               <div className="mt-5 flex flex-wrap gap-3 text-sm text-[var(--muted-strong)]">
                 <span className="inline-flex items-center gap-1">
@@ -551,6 +585,20 @@ export default async function GigPage({ params, searchParams }: GigPageProps) {
                         maxLength={120}
                         name="compensation"
                         placeholder="Paid, trade, booth fee, negotiable"
+                      />
+                    </label>
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Tagged members
+                      <input
+                        className="mt-1 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                        defaultValue={(gig.gig_tags ?? [])
+                          .map((tag) => tag.profiles?.username)
+                          .filter(Boolean)
+                          .map((username) => `@${username}`)
+                          .join(", ")}
+                        maxLength={500}
+                        name="tagged_usernames"
+                        placeholder="Tag members: @artistname, @shopname"
                       />
                     </label>
                     <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">

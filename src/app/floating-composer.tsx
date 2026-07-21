@@ -470,6 +470,11 @@ export function FloatingComposer({
                 placeholder="Paid, booth fee, commission split"
                 wrapperClassName="w-full"
               />
+              <input
+                className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                name="tagged_usernames"
+                placeholder="Tag members: @artistname, @shopname"
+              />
               <WordLimitedField
                 className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
                 maxCharacters={300}

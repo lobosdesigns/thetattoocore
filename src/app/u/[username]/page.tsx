@@ -189,6 +189,10 @@ type ThreadPostTag = {
   profiles: Pick<Profile, "display_name" | "id" | "username"> | null;
 };
 
+type GigTag = {
+  profiles: Pick<Profile, "display_name" | "id" | "username"> | null;
+};
+
 type ListingMedia = {
   id: string;
   media_type: "image" | "video";
@@ -230,6 +234,7 @@ type Gig = {
   created_at: string;
   is_sensitive: boolean;
   visibility: ContentVisibility;
+  gig_tags: GigTag[];
   gig_media: GigMedia[];
 };
 
@@ -560,7 +565,7 @@ function ContentLabels({
   );
 }
 
-function TaggedMemberLinks({ tags }: { tags: (FeedPostTag | ThreadPostTag)[] }) {
+function TaggedMemberLinks({ tags }: { tags: (FeedPostTag | GigTag | ThreadPostTag)[] }) {
   const visibleTags = tags.filter((tag) => tag.profiles);
 
   if (!visibleTags.length) return null;
@@ -1542,7 +1547,7 @@ export default async function ProfilePage({
     supabase
       .from("gigs")
       .select(
-        "id, title, description, category, city, region, country, starts_at, compensation, contact_url, created_at, is_sensitive, visibility, gig_media(id, storage_bucket, storage_path, media_type, sort_order)",
+        "id, title, description, category, city, region, country, starts_at, compensation, contact_url, created_at, is_sensitive, visibility, gig_tags(profiles:profiles!gig_tags_tagged_profile_id_fkey(id, username, display_name)), gig_media(id, storage_bucket, storage_path, media_type, sort_order)",
       )
       .eq("poster_id", profile.id)
       .eq("status", "active")
@@ -2743,6 +2748,9 @@ export default async function ProfilePage({
                         <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--muted-strong)]">
                           {gig.description || gig.compensation || "No details yet."}
                         </p>
+                        <div className="mt-3">
+                          <TaggedMemberLinks tags={gig.gig_tags ?? []} />
+                        </div>
                         {gig.contact_url ? (
                           <a
                             className="mt-3 inline-flex h-9 items-center justify-center rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-[var(--background)]"

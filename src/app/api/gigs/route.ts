@@ -1,11 +1,17 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { inspectMediaFile, validateMediaMetadata } from "@/lib/media/metadata";
+import {
+  allowsInAppNotification,
+  notificationPreferenceSelect,
+  type NotificationPreferenceProfile,
+} from "@/lib/notifications";
 import { createClient } from "@/lib/supabase/server";
 import { cleanExternalUrl } from "@/lib/urls";
 
 const MEDIA_BUCKET = "tattoo-media";
 const VISIBILITY_VALUES = new Set(["public_preview", "members", "private"]);
+const MAX_TAGGED_MEMBERS = 10;
 
 function redirectHome(request: Request, message: string) {
   return NextResponse.redirect(
@@ -46,6 +52,150 @@ function mediaFromForm(formData: FormData) {
   return value;
 }
 
+function cleanTaggedUsernames(value: FormDataEntryValue | null) {
+  const matches = cleanText(value, 500).match(/[a-z0-9_\.]{2,30}/gi) ?? [];
+  const seen = new Set<string>();
+
+  return matches
+    .map((match) => match.replace(/^@/, "").toLowerCase())
+    .filter((username) => {
+      if (seen.has(username)) return false;
+      seen.add(username);
+
+      return true;
+    })
+    .slice(0, MAX_TAGGED_MEMBERS);
+}
+
+async function currentDisplayName({
+  supabase,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId: string;
+}) {
+  const { data } = await supabase
+    .from("profiles")
+    .select("display_name, username")
+    .eq("id", userId)
+    .maybeSingle<{ display_name: string | null; username: string | null }>();
+
+  return data?.display_name || data?.username || "A member";
+}
+
+async function blockRelationshipExists(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  targetId: string,
+) {
+  const { data } = await supabase
+    .from("user_blocks")
+    .select("blocker_id")
+    .or(
+      `and(blocker_id.eq.${userId},blocked_id.eq.${targetId}),and(blocker_id.eq.${targetId},blocked_id.eq.${userId})`,
+    )
+    .limit(1)
+    .maybeSingle<{ blocker_id: string }>();
+
+  return Boolean(data);
+}
+
+async function notifyGigTag({
+  actorId,
+  actorName,
+  gigId,
+  ownerId,
+  supabase,
+}: {
+  actorId: string;
+  actorName: string;
+  gigId: string;
+  ownerId: string;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+}) {
+  if (ownerId === actorId) return;
+  if (await blockRelationshipExists(supabase, actorId, ownerId)) return;
+
+  const { data: ownerProfile } = await supabase
+    .from("profiles")
+    .select(notificationPreferenceSelect("marketplace_gig"))
+    .eq("id", ownerId)
+    .maybeSingle<NotificationPreferenceProfile>();
+
+  if (!allowsInAppNotification(ownerProfile, "marketplace_gig")) return;
+
+  await supabase.from("notifications").insert({
+    actor_id: actorId,
+    body: `${actorName} tagged you in a Gig.`,
+    href: `/gigs/${gigId}`,
+    recipient_id: ownerId,
+    subject_id: gigId,
+    subject_type: "gig",
+    title: "Tagged in a Gig",
+    type: "gig_tag",
+  });
+}
+
+async function syncGigTags({
+  gigId,
+  supabase,
+  taggedUsernames,
+  userId,
+}: {
+  gigId: string;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  taggedUsernames: string[];
+  userId: string;
+}) {
+  if (!taggedUsernames.length) return null;
+
+  const { data: profiles, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, username")
+    .in("username", taggedUsernames)
+    .is("banned_at", null)
+    .is("suspended_at", null)
+    .returns<{ id: string; username: string }[]>();
+
+  if (profileError) {
+    console.error("Gig tag profile lookup failed.", profileError);
+    return "Could not check tagged members. Please try again.";
+  }
+
+  const rows = (profiles ?? [])
+    .filter((profile) => profile.id !== userId)
+    .map((profile) => ({
+      gig_id: gigId,
+      tagged_by: userId,
+      tagged_profile_id: profile.id,
+    }));
+
+  if (!rows.length) return null;
+
+  const { error: insertError } = await supabase.from("gig_tags").insert(rows);
+
+  if (insertError) {
+    console.error("Gig tag insert failed.", insertError);
+    return "Could not add tagged members. Please try again.";
+  }
+
+  const actorName = await currentDisplayName({ supabase, userId });
+
+  await Promise.all(
+    rows.map((row) =>
+      notifyGigTag({
+        actorId: userId,
+        actorName,
+        gigId,
+        ownerId: row.tagged_profile_id,
+        supabase,
+      }),
+    ),
+  );
+
+  return null;
+}
+
 export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -78,6 +228,7 @@ export async function POST(request: Request) {
   const endsAt = cleanText(formData.get("ends_at"), 40);
   const compensation = cleanText(formData.get("compensation"), 120);
   const contactUrl = cleanExternalUrl(formData.get("contact_url"), 300);
+  const taggedUsernames = cleanTaggedUsernames(formData.get("tagged_usernames"));
   const visibility = cleanVisibility(formData.get("visibility"));
   const isSensitive = false;
   const media = mediaFromForm(formData);
@@ -162,6 +313,17 @@ export async function POST(request: Request) {
       console.error("Gig image attach failed.", mediaError);
       return redirectHome(request, "Gig was created, but the image could not attach.");
     }
+  }
+
+  const tagError = await syncGigTags({
+    gigId: gig.id,
+    supabase,
+    taggedUsernames,
+    userId,
+  });
+
+  if (tagError) {
+    return redirectHome(request, tagError);
   }
 
   revalidatePath("/");

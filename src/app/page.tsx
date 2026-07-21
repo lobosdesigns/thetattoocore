@@ -137,6 +137,13 @@ type ThreadPostTag = {
   > | null;
 };
 
+type GigTag = {
+  profiles: Pick<
+    Profile,
+    "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"
+  > | null;
+};
+
 type MarketplaceListing = {
   id: string;
   title: string;
@@ -205,6 +212,7 @@ type Gig = {
   contact_url: string | null;
   created_at: string;
   gig_media: GigMedia[];
+  gig_tags: GigTag[];
   is_sensitive: boolean;
   visibility: ContentVisibility;
   profiles: Profile | null;
@@ -912,7 +920,7 @@ function ContentLabels({
   );
 }
 
-function TaggedMemberLinks({ tags }: { tags: (FeedPostTag | ThreadPostTag)[] }) {
+function TaggedMemberLinks({ tags }: { tags: (FeedPostTag | GigTag | ThreadPostTag)[] }) {
   const visibleTags = tags.filter((tag) => tag.profiles);
 
   if (!visibleTags.length) return null;
@@ -1820,7 +1828,7 @@ export default async function Home({
     supabase
       .from("gigs")
       .select(
-        "id, title, description, category, city, region, country, starts_at, ends_at, compensation, contact_url, visibility, is_sensitive, created_at, gig_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!gigs_poster_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, title, description, category, city, region, country, starts_at, ends_at, compensation, contact_url, visibility, is_sensitive, created_at, gig_tags(profiles:profiles!gig_tags_tagged_profile_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)), gig_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!gigs_poster_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
       )
       .eq("status", "active")
       .eq("moderation_status", "active")
@@ -2897,6 +2905,7 @@ export default async function Home({
                           {gig.compensation}
                         </p>
                       ) : null}
+                      <TaggedMemberLinks tags={gig.gig_tags ?? []} />
                       <p className="mt-3 text-xs text-[var(--muted-strong)]">
                         Posted by{" "}
                         {gig.profiles?.display_name ?? "TheTattooCore member"} -{" "}

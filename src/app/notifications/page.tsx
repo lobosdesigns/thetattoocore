@@ -44,6 +44,7 @@ type Notification = {
     | "feed_comment"
     | "feed_like"
     | "feed_tag"
+    | "gig_tag"
     | "follow_accepted"
     | "follow_request"
     | "ad_paid"
@@ -120,7 +121,9 @@ function notificationIcon(type: Notification["type"]) {
   if (type === "feed_comment" || type === "thread_comment") {
     return MessageCircle;
   }
-  if (type === "feed_tag" || type === "thread_tag") return UserPlus;
+  if (type === "feed_tag" || type === "gig_tag" || type === "thread_tag") {
+    return UserPlus;
+  }
 
   return UserPlus;
 }
@@ -172,6 +175,10 @@ function notificationHref(notification: Notification) {
 
   if (notification.subject_type === "thread_post" && notification.subject_id) {
     return `/t/${notification.subject_id}`;
+  }
+
+  if (notification.subject_type === "gig" && notification.subject_id) {
+    return notification.href || `/gigs/${notification.subject_id}`;
   }
 
   if (notification.subject_type === "story_post") {
