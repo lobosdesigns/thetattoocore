@@ -654,6 +654,100 @@ export async function changeUserStatus(formData: FormData) {
   redirect(adminUsersMessage("User status updated.", returnTo));
 }
 
+export async function deleteUserAccount(formData: FormData) {
+  const profileId = cleanText(formData.get("profile_id"), 80);
+  const returnTo = cleanText(formData.get("return_to"), 120);
+  const confirmation = cleanText(formData.get("confirm_delete"), 40).toLowerCase();
+
+  if (!profileId) {
+    redirect(adminUsersMessage("Choose a valid user account.", returnTo));
+  }
+
+  if (confirmation !== "delete") {
+    redirect(adminUsersMessage("Type delete to confirm account deletion.", returnTo));
+  }
+
+  const { supabase, userId } = await requireAdmin();
+
+  if (profileId === userId) {
+    redirect(adminUsersMessage("You cannot delete your own account.", returnTo));
+  }
+
+  const { data: actor } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle<{ role: UserRole }>();
+
+  const { data: target, error: targetError } = await supabase
+    .from("profiles")
+    .select("id, role, username, banned_at, suspended_at")
+    .eq("id", profileId)
+    .maybeSingle<{
+      banned_at: string | null;
+      id: string;
+      role: UserRole;
+      suspended_at: string | null;
+      username: string;
+    }>();
+
+  if (targetError || !target) {
+    if (targetError) {
+      console.error("Admin user deletion profile lookup failed.", targetError);
+    }
+    redirect(adminUsersMessage("Profile was not found.", returnTo));
+  }
+
+  if ((target.role === "admin" || target.role === "owner") && actor?.role !== "owner") {
+    redirect(adminUsersMessage("Owner role required to delete admin or owner accounts.", returnTo));
+  }
+
+  const adminClient = createAdminClient();
+
+  if (!adminClient) {
+    redirect(
+      adminUsersMessage(
+        "Private account deletion tools are not enabled. Please try again after owner tools are ready.",
+        returnTo,
+      ),
+    );
+  }
+
+  const { error: deleteError } = await adminClient.auth.admin.deleteUser(profileId);
+
+  if (deleteError) {
+    console.error("Admin auth user delete failed.", deleteError);
+    redirect(
+      adminUsersMessage(
+        "Could not delete user account. Review account activity and try again.",
+        returnTo,
+      ),
+    );
+  }
+
+  const { error: auditError } = await supabase.from("admin_audit_logs").insert({
+    actor_id: userId,
+    event_type: "user_account_deleted",
+    metadata: {
+      target_role: target.role,
+      target_username: target.username,
+      was_banned: Boolean(target.banned_at),
+      was_suspended: Boolean(target.suspended_at),
+    },
+    summary: `Deleted user account @${target.username}.`,
+    target_id: profileId,
+    target_type: "profile",
+  });
+
+  if (auditError) {
+    console.error("Admin user deletion audit logging failed.", auditError);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/users");
+  redirect(adminUsersMessage(`User @${target.username} deleted.`, returnTo));
+}
+
 export async function createTestAccount(formData: FormData) {
   const email = cleanText(formData.get("email"), 254).toLowerCase();
   const password = cleanText(formData.get("password"), 128);

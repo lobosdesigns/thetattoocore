@@ -14,6 +14,7 @@ const checks = [
       packageJson.includes('"smoke:handoff": "node scripts/smoke-private-handoff-template.mjs"') &&
       packageJson.includes("npm run smoke:native && npm run smoke:handoff && npm run smoke:docs") &&
       packageJson.includes("npm run smoke:payments && npm run smoke:security && npm run smoke:handoff && npm run smoke:docs") &&
+      packageJson.includes("npm run smoke:store && npm run smoke:pwa && npm run smoke:handoff && npm run smoke:docs") &&
       gitignore.includes("/private-release-handoff/") &&
       generator.includes('const outputDir = "private-release-handoff"') &&
       generator.includes('const outputPath = join(outputDir, "release-handoff-template.md")') &&

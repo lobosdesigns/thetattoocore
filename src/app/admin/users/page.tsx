@@ -7,6 +7,7 @@ import {
   changeUserRole,
   changeUserStatus,
   createTestAccount,
+  deleteUserAccount,
   grantUserAdCredit,
 } from "../actions";
 import { createClient } from "@/lib/supabase/server";
@@ -255,6 +256,7 @@ export default async function AdminUsersPage({
   const hasNextPage = currentPage < totalPages;
   const canManageRoles = profile.role === "owner";
   const canGrantAdCredits = profile.role === "admin" || profile.role === "owner";
+  const canDeleteAccounts = canGrantAdCredits;
   const canCreateTestAccounts = canManageRoles && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
   return (
@@ -470,7 +472,13 @@ export default async function AdminUsersPage({
         ) : null}
 
         <section className="mt-4 grid gap-3">
-          {users.map((user) => (
+          {users.map((user) => {
+            const canDeleteUser =
+              canDeleteAccounts &&
+              user.id !== claims.sub &&
+              (canManageRoles || (user.role !== "admin" && user.role !== "owner"));
+
+            return (
             <article
               className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4"
               key={user.id}
@@ -627,8 +635,51 @@ export default async function AdminUsersPage({
                   </form>
                 </details>
               ) : null}
+              {canDeleteAccounts ? (
+                <details className="mt-4 rounded-md border border-[color-mix(in_srgb,var(--danger)_28%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_5%,var(--paper-warm))] p-3">
+                  <summary className="cursor-pointer text-sm font-bold text-[var(--danger)]">
+                    Delete account
+                  </summary>
+                  <form
+                    action={deleteUserAccount}
+                    className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]"
+                  >
+                    <input name="profile_id" type="hidden" value={user.id} />
+                    <input name="return_to" type="hidden" value={pageHref(currentPage, activeSearch)} />
+                    <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-strong)]">
+                      Confirm
+                      <input
+                        className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm text-[var(--foreground)] outline-none focus:border-[var(--danger)] disabled:opacity-65"
+                        disabled={!canDeleteUser}
+                        maxLength={40}
+                        name="confirm_delete"
+                        placeholder="Type delete"
+                        required
+                      />
+                    </label>
+                    <button
+                      className="ttc-disabled-state h-10 rounded-md border border-[color-mix(in_srgb,var(--danger)_40%,var(--card-rim))] bg-[var(--danger)] px-4 text-sm font-semibold text-white disabled:bg-[color-mix(in_srgb,var(--danger)_22%,var(--paper-warm))] disabled:text-[var(--muted-strong)] sm:self-end"
+                      disabled={!canDeleteUser}
+                    >
+                      Delete
+                    </button>
+                  </form>
+                  {!canDeleteUser ? (
+                    <p className="mt-2 text-xs font-medium text-[var(--muted-strong)]">
+                      {user.id === claims.sub
+                        ? "You cannot delete your own account here."
+                        : "Owner role required to delete admin or owner accounts."}
+                    </p>
+                  ) : (
+                    <p className="mt-2 text-xs font-medium text-[var(--muted-strong)]">
+                      This removes the login and account data connected by account policy.
+                    </p>
+                  )}
+                </details>
+              ) : null}
             </article>
-          ))}
+            );
+          })}
         </section>
 
         <div className="mt-4">

@@ -15,7 +15,7 @@
     "verify:native-predevice": "npm run smoke:env && npm run smoke:native && npm run smoke:docs && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios",
     "verify:native-release": "npm run smoke:env && npm run smoke:native && npm run smoke:docs && npm run qa:android-device:required && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios",
     "verify:payment-release": "npm run lint && npm run build && npm run smoke:env && npm run smoke:payments && npm run smoke:security && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public",
-    "verify:store-release": "npm run lint && npm run build && npm run smoke:env && npm run smoke:store && npm run smoke:pwa && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios",
+    "verify:store-release": "npm run lint && npm run build && npm run smoke:env && npm run smoke:store && npm run smoke:pwa && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios",
     "prepare:private-release-handoff": "node scripts/generate-private-release-handoff.mjs",
     "lint": "eslint",
     "smoke:public": "node scripts/smoke-public-routes.mjs",
