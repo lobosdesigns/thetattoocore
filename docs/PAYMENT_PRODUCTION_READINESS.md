@@ -8,6 +8,7 @@ Stripe checkout is wired for controlled launch testing across Merch, ads, and ac
 - Webhook event dedupe, retry-safe status transitions, failed/expired checkout handling, buyer/seller/advertiser alerts, dispute audit logging, and Admin > Payments visibility are wired.
 - Checkout routes fail closed before reserving ads, booking deposits, Merch orders, or inventory if the configured live/test checkout mode does not match the server payment key.
 - Admin > Payments now includes short operator runbooks for seller payout release checks, refund/dispute review, and booking deposit review, plus a reconciliation checklist for webhook receipts, payment audit rows, user-facing status, admin queue status, fulfillment, ad delivery, booking deposits, and payout release.
+- Admin > Payments now includes a payment mode preflight card showing only readiness statuses for expected mode, server key mode, webhook signing configuration, and live/test mismatch review; it does not show private key or webhook values.
 - A transparent 2% TTC platform fee is recorded in controlled launch checkout flows and booking deposit requests.
 - Merch order receipts, seller fulfillment updates, buyer refund-review requests, and basic admin order controls are present.
 - Production purchases, seller payout releases, and real ad spending should stay gated until policy, tax, payout, refund, dispute, and payment review is complete.

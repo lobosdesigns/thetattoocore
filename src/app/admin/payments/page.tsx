@@ -22,6 +22,11 @@ import {
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { safeStatusMessage } from "@/lib/status-message";
+import {
+  expectedStripeLivemode,
+  stripeCheckoutModeMismatch,
+  stripeSecretKeyLivemode,
+} from "@/lib/stripe/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
 type Claims = {
@@ -382,6 +387,13 @@ function money(cents: number, currency = "USD") {
   }).format(cents / 100);
 }
 
+function paymentModeLabel(value: boolean | null) {
+  if (value === true) return "Live";
+  if (value === false) return "Test";
+
+  return "Not set";
+}
+
 async function statusCounts({
   column,
   statuses,
@@ -651,6 +663,42 @@ export default async function AdminPaymentsPage({
   const bookingHasNextPage = bookingCurrentPage < bookingTotalPages;
   const bookingRangeStart = totalBookingDeposits > 0 ? bookingFrom + 1 : 0;
   const bookingRangeEnd = Math.min(bookingTo + 1, totalBookingDeposits);
+  const expectedLivemode = expectedStripeLivemode();
+  const keyLivemode = stripeSecretKeyLivemode();
+  const modeMismatch = stripeCheckoutModeMismatch();
+  const webhookSecretReady = Boolean(process.env.STRIPE_WEBHOOK_SECRET);
+  const paymentModePreflightChecks = [
+    {
+      detail:
+        expectedLivemode === null
+          ? "Set the explicit mode before any payment cutover."
+          : `Expected mode: ${paymentModeLabel(expectedLivemode)}.`,
+      label: "Mode setting",
+      ready: expectedLivemode !== null,
+    },
+    {
+      detail:
+        keyLivemode === null
+          ? "Payment key mode could not be read safely."
+          : `Server key mode: ${paymentModeLabel(keyLivemode)}.`,
+      label: "Server payment key",
+      ready: keyLivemode !== null,
+    },
+    {
+      detail: webhookSecretReady
+        ? "Webhook signing secret is configured."
+        : "Webhook signing secret is missing.",
+      label: "Webhook signing",
+      ready: webhookSecretReady,
+    },
+    {
+      detail: modeMismatch
+        ? "Expected mode and server key mode do not match."
+        : "Expected mode and server key mode match or need setup.",
+      label: "Mode match",
+      ready: !modeMismatch && expectedLivemode !== null && keyLivemode !== null,
+    },
+  ] as const;
   const hasPaymentWarnings =
     Boolean(stalePendingCheckoutCount) ||
     Boolean(staleBookingCheckoutCount) ||
@@ -1252,6 +1300,41 @@ export default async function AdminPaymentsPage({
                     }
                     totalPages={bookingTotalPages}
                   />
+                </section>
+
+                <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
+                  <CreditCard className="size-5 text-[var(--gold)]" />
+                  <h2 className="mt-3 text-lg font-bold">
+                    Payment mode preflight
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                    Check these before any live-money cutover. This panel shows
+                    readiness only; it never shows private key or webhook values.
+                  </p>
+                  <div className="mt-3 grid gap-2">
+                    {paymentModePreflightChecks.map((check) => (
+                      <div
+                        className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3 text-sm"
+                        key={check.label}
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="font-bold">{check.label}</p>
+                          <span
+                            className={`rounded-md px-2 py-1 text-xs font-bold ${
+                              check.ready
+                                ? "bg-[color-mix(in_srgb,var(--gold)_18%,var(--paper-warm))] text-[var(--foreground)]"
+                                : "bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]"
+                            }`}
+                          >
+                            {check.ready ? "Ready" : "Needs review"}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
+                          {check.detail}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </section>
 
                 <section className="ttc-card rounded-lg border border-[color-mix(in_srgb,var(--gold)_42%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))] p-5">

@@ -711,6 +711,18 @@ checks.push({
   label: "production commerce gates stay visible before real payments",
   ok:
     adminPaymentsPage.includes("Production payment gates") &&
+    adminPaymentsPage.includes("Payment mode preflight") &&
+    adminPaymentsPage.includes("paymentModePreflightChecks") &&
+    adminPaymentsPage.includes("expectedStripeLivemode()") &&
+    adminPaymentsPage.includes("stripeSecretKeyLivemode()") &&
+    adminPaymentsPage.includes("stripeCheckoutModeMismatch()") &&
+    adminPaymentsPage.includes("webhookSecretReady") &&
+    adminPaymentsPage.includes("This panel shows") &&
+    adminPaymentsPage.includes("never shows private key or webhook values") &&
+    adminPaymentsPage.includes("Expected mode:") &&
+    adminPaymentsPage.includes("Server key mode:") &&
+    adminPaymentsPage.includes("Webhook signing secret is configured.") &&
+    adminPaymentsPage.includes("Expected mode and server key mode do not match.") &&
     envExample.includes("STRIPE_EXPECTED_LIVEMODE=false") &&
     stripeServer.includes("process.env.STRIPE_EXPECTED_LIVEMODE") &&
     stripeServer.includes("process.env.STRIPE_SECRET_KEY") &&
