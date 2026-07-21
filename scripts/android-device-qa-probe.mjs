@@ -141,8 +141,10 @@ if (blockedDevices.length > 0) {
 
 if (authorizedDevices.length === 0) {
   console.log("ANDROID_QA result=no authorized device");
+  console.log("ANDROID_QA handoff=manual evidence only until an authorized device appears");
   if (devices.length === 0) {
     console.log("ANDROID_QA next=check USB cable, set USB mode to file transfer, and reopen the USB debugging prompt");
+    console.log("ANDROID_QA next_detail=record Android automation not yet available in the private handoff if manual testing continues first");
   }
   if (requireDevice) process.exit(1);
   process.exit(0);

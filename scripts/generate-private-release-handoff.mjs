@@ -29,7 +29,10 @@ repo docs. Use safe aliases and short pass/fail summaries in repo-visible docs.
 | Area | Apple result | Google Play result | Private proof filename or location | Repo-safe summary |
 | --- | --- | --- | --- | --- |
 | Build selection | pending | pending | | |
-| Screenshot upload validation | pending | pending | | |
+| Google Play phone screenshots | n/a | pending | | |
+| Google Play feature graphic | n/a | pending | | |
+| App Store iPhone 6.5-inch screenshots | pending | n/a | | |
+| App Store 13-inch iPad screenshots | pending | n/a | | |
 | Category and pricing | pending | pending | | |
 | Content rights | pending | n/a | | |
 | App Privacy / Data Safety | pending | pending | | |

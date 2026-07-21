@@ -26,6 +26,7 @@ const docs = {
 };
 const packageJson = readFileSync("package.json", "utf8");
 const screenshotGenerator = readFileSync("scripts/generate-safe-store-screenshots.mjs", "utf8");
+const androidDeviceProbe = readFileSync("scripts/android-device-qa-probe.mjs", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const adminPage = readFileSync("src/app/admin/page.tsx", "utf8");
 const helpArticlePage = readFileSync("src/app/help/[slug]/page.tsx", "utf8");
@@ -1011,7 +1012,9 @@ const checks = [
       packageJson.includes("npm run smoke:env && npm run smoke:native && npm run smoke:docs && npm run qa:android-device:required && npm run smoke:store") &&
       packageJson.includes("npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Android connected-device probe") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("dedicated DM smoke guard suite"),
+      docs["docs/APP_STORE_READINESS.md"].includes("dedicated DM smoke guard suite") &&
+      androidDeviceProbe.includes("ANDROID_QA handoff=manual evidence only until an authorized device appears") &&
+      androidDeviceProbe.includes("record Android automation not yet available in the private handoff"),
   },
 ];
 

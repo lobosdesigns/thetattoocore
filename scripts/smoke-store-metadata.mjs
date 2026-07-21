@@ -490,11 +490,13 @@ const checks = [
   {
     label: "store readiness docs keep current console blockers guarded",
     ok:
-      source.readiness.includes("Apple still needs 13-inch iPad screenshot upload, primary category, Content Rights, App Privacy/Privacy Policy URL, pricing, age-rating answers, Accessibility Nutrition Labels, and final submission validation") &&
+      source.readiness.includes("Apple still needs refreshed sign-in/2FA for app-record inspection") &&
+      source.readiness.includes("then 13-inch iPad screenshot upload, primary category, Content Rights, App Privacy/Privacy Policy URL, pricing, age-rating answers, Accessibility Nutrition Labels, and final submission validation") &&
       source.readiness.includes("age/content rating, Accessibility Nutrition Labels, Google Play closed-test tester opt-in/duration evidence if required, and final console validation") &&
-      source.readiness.includes("Google Play still needs the final content-rating summary/save handoff, current Data Safety review, and any required closed-test production-access evidence") &&
-      source.readiness.includes("TestFlight internal build and reviewer account exist; public submission not ready") &&
-      source.readiness.includes("Internal testing release and reviewer account exist; production review not ready") &&
+      source.readiness.includes("Google Play still needs current Data Safety review from the questionnaire start page") &&
+      source.readiness.includes("final content-rating summary/save handoff, and any required closed-test production-access evidence") &&
+      source.readiness.includes("The Tattoo Core iOS `1.0` in Prepare for Submission") &&
+      source.readiness.includes("TheTattooCore Data Safety page is open at the questionnaire start page") &&
       source.readiness.includes("final reviewer access validation for the selected build") &&
       source.readiness.includes("final reviewer access validation for the selected release track") &&
       source.readiness.includes("Google Play closed-test tester opt-in/duration evidence if required") &&

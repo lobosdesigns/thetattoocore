@@ -32,7 +32,10 @@ const checks = [
       generator.includes("## Native Push Evidence") &&
       generator.includes("## Legal And Policy Review") &&
       generator.includes("Reviewer contact saved in consoles") &&
-      generator.includes("Screenshot upload validation") &&
+      generator.includes("Google Play phone screenshots") &&
+      generator.includes("Google Play feature graphic") &&
+      generator.includes("App Store iPhone 6.5-inch screenshots") &&
+      generator.includes("App Store 13-inch iPad screenshots") &&
       generator.includes("Accessibility Nutrition Labels") &&
       generator.includes("Production-access closed test, if required") &&
       generator.includes("Alert delivery") &&
