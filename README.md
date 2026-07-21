@@ -37,13 +37,13 @@ creative work.
 ## Development
 
 ```bash
-npm run dev
+npm.cmd run dev
 ```
 
 ## Verification
 
 ```bash
-npm run verify
+npm.cmd run verify
 ```
 
 ## Production Secrets
@@ -82,5 +82,5 @@ ready.
 After adding or rotating secrets, redeploy with:
 
 ```bash
-npm run deploy
+npm.cmd run deploy
 ```

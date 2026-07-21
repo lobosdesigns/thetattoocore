@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 
 const docs = {
+  "README.md": readFileSync("README.md", "utf8"),
   "docs/APP_STORE_READINESS.md": readFileSync("docs/APP_STORE_READINESS.md", "utf8"),
   "docs/PRODUCT_PLAN.md": readFileSync("docs/PRODUCT_PLAN.md", "utf8"),
   "docs/NATIVE_WRAPPER_PREP.md": readFileSync("docs/NATIVE_WRAPPER_PREP.md", "utf8"),
@@ -181,6 +182,15 @@ const checks = [
   {
     label: "repo readiness docs keep reviewer emails private",
     ok: !forbiddenRepoReviewerEmailPattern.test(docs["docs/APP_STORE_READINESS.md"]),
+  },
+  {
+    label: "top-level README uses Windows npm commands for local release work",
+    ok:
+      docs["README.md"].includes("npm.cmd run dev") &&
+      docs["README.md"].includes("npm.cmd run verify") &&
+      docs["README.md"].includes("npm.cmd run deploy") &&
+      !docs["README.md"].includes("npm run deploy") &&
+      !docs["README.md"].includes("npm run verify"),
   },
   {
     label: "mobile submission runbook avoids visible provider names",
