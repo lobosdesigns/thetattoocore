@@ -56,6 +56,15 @@ account identifiers out of repo docs.
 | Production-access closed test, if required | n/a | pending | | |
 | Final validation and submit readiness | pending | pending | | |
 
+## Private Console Tab Restore
+
+Use this only when active launch-console tabs need a crash-safe handoff. Keep the
+generated restore file and exact console URLs private.
+
+| Restore file | Covered tabs | Last refreshed | Result |
+| --- | --- | --- | --- |
+| Desktop / TheTattooCore Launch Console Tabs.html | Google Play, App Store Connect, Firebase console, payment dashboard, owner TTC app session | pending | pending |
+
 ## Google Play Closed-Test Retry Log
 
 Use this only for private console evidence. Keep raw screenshots and account

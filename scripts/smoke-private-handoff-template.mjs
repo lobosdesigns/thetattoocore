@@ -5,12 +5,14 @@ const gitignore = readFileSync(".gitignore", "utf8");
 const packageJson = readFileSync("package.json", "utf8");
 const mobileRunbook = readFileSync("docs/MOBILE_APP_SUBMISSION_RUNBOOK.md", "utf8");
 const realDeviceQa = readFileSync("docs/REAL_DEVICE_QA_CHECKLIST.md", "utf8");
+const consoleTabsWriter = readFileSync("scripts/write-private-console-tabs.mjs", "utf8");
 
 const checks = [
   {
     label: "private handoff output is ignored and generated locally",
     ok:
       packageJson.includes('"prepare:private-release-handoff": "node scripts/generate-private-release-handoff.mjs"') &&
+      packageJson.includes('"prepare:private-console-tabs": "node scripts/write-private-console-tabs.mjs"') &&
       packageJson.includes('"smoke:handoff": "node scripts/smoke-private-handoff-template.mjs"') &&
       packageJson.includes("npm run smoke:native && npm run smoke:handoff && npm run smoke:docs") &&
       packageJson.includes("npm run smoke:payments && npm run smoke:security && npm run smoke:handoff && npm run smoke:docs") &&
@@ -85,8 +87,27 @@ const checks = [
       generator.includes("App Store 13-inch iPad screenshots") &&
       generator.includes("Accessibility Nutrition Labels") &&
       generator.includes("Production-access closed test, if required") &&
+      generator.includes("## Private Console Tab Restore") &&
+      generator.includes("active launch-console tabs need a crash-safe handoff") &&
+      generator.includes("exact console URLs private") &&
+      generator.includes("TheTattooCore Launch Console Tabs.html") &&
+      generator.includes("Google Play, App Store Connect, Firebase console, payment dashboard, owner TTC app session") &&
       generator.includes("Alert delivery") &&
       generator.includes("Tap routing"),
+  },
+  {
+    label: "private console tab writer keeps exact URLs local-only",
+    ok:
+      consoleTabsWriter.includes("private-release-handoff/console-tabs.json") &&
+      consoleTabsWriter.includes("TheTattooCore Launch Console Tabs.html") &&
+      consoleTabsWriter.includes("Console tab restore files must be written to Desktop or private-release-handoff") &&
+      consoleTabsWriter.includes("Keep this off git") &&
+      consoleTabsWriter.includes("target=\"_blank\"") &&
+      consoleTabsWriter.includes("window.open(tab.url") &&
+      !consoleTabsWriter.includes("play.google.com/console") &&
+      !consoleTabsWriter.includes("appstoreconnect.apple.com/apps") &&
+      !consoleTabsWriter.includes("dashboard.stripe.com/acct_") &&
+      !consoleTabsWriter.includes("console.firebase.google.com/u/"),
   },
   {
     label: "private handoff template blocks sensitive evidence from repo docs",
@@ -111,7 +132,9 @@ const checks = [
     label: "readiness docs point private evidence collection to the ignored template",
     ok:
       mobileRunbook.includes("npm.cmd run prepare:private-release-handoff") &&
+      mobileRunbook.includes("npm.cmd run prepare:private-console-tabs") &&
       mobileRunbook.includes("Keep the generated `private-release-handoff/` folder out of git") &&
+      mobileRunbook.includes("Keep exact console tab URLs in the ignored private handoff folder or Desktop restore file only") &&
       mobileRunbook.includes("copy only repo-safe pass/fail summaries back into readiness docs") &&
       realDeviceQa.includes("npm.cmd run prepare:private-release-handoff") &&
       realDeviceQa.includes("The generated") &&

@@ -17,6 +17,7 @@
     "verify:payment-release": "npm run lint && npm run build && npm run smoke:env && npm run smoke:payments && npm run smoke:security && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios",
     "verify:store-release": "npm run lint && npm run build && npm run smoke:env && npm run smoke:content && npm run smoke:store && npm run smoke:pwa && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios",
     "prepare:private-release-handoff": "node scripts/generate-private-release-handoff.mjs",
+    "prepare:private-console-tabs": "node scripts/write-private-console-tabs.mjs",
     "lint": "eslint",
     "smoke:public": "node scripts/smoke-public-routes.mjs",
     "smoke:media": "node scripts/smoke-media-guards.mjs",
