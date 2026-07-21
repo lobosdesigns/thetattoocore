@@ -278,6 +278,16 @@ const checks = [
     redirect: "manual",
   },
   {
+    body: "email=tester%40example.com&password=TesterPass123!&age_confirmed=on&return_to=%2Faccount",
+    method: "POST",
+    path: "/auth/signup",
+    requestHeaders: { "content-type": "application/x-www-form-urlencoded" },
+    status: [307, 308],
+    redirectIncludes: "/signup",
+    locationIncludes: ["Use", "real", "email", "tester"],
+    redirect: "manual",
+  },
+  {
     body: "redirect_to=%2Fsignup&return_to=%2Fmessages",
     method: "POST",
     path: "/auth/resend-confirmation",

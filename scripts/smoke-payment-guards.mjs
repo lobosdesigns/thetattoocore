@@ -723,6 +723,7 @@ checks.push({
     adminPaymentsPage.includes("Server key mode:") &&
     adminPaymentsPage.includes("Webhook signing secret is configured.") &&
     adminPaymentsPage.includes("Expected mode and server key mode do not match.") &&
+    !stripeWebhook.includes("eventId: event.id") &&
     envExample.includes("STRIPE_EXPECTED_LIVEMODE=false") &&
     stripeServer.includes("process.env.STRIPE_EXPECTED_LIVEMODE") &&
     stripeServer.includes("process.env.STRIPE_SECRET_KEY") &&

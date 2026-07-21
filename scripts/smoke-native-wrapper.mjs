@@ -58,6 +58,7 @@ const forbiddenNativePushConfigFiles = [
 const checkedInNativePushConfigFiles = filesUnder(wrapperRoot).filter((path) =>
   forbiddenNativePushConfigFiles.some((fileName) => path.endsWith(fileName)),
 );
+const committedIosTeamId = /DEVELOPMENT_TEAM = [A-Z0-9]{10};/.test(source.iosProject);
 const forbiddenNativePushDependencies = [
   "@capacitor/push-notifications",
   "firebase",
@@ -358,6 +359,14 @@ const checks = [
       source.iosPrivacy.includes("<false/>") &&
       source.iosPrivacy.includes("NSPrivacyCollectedDataTypes") &&
       source.iosProject.includes("PrivacyInfo.xcprivacy in Resources"),
+  },
+  {
+    label: "native iOS signing team stays private to Xcode handoff",
+    ok:
+      !committedIosTeamId &&
+      source.iosProject.includes('DEVELOPMENT_TEAM = "";') &&
+      source.nativePrep.includes("no team IDs or provisioning details") &&
+      source.readme.includes("without committing fingerprints, team identifiers"),
   },
   {
     label: "native privacy manifest is not used as store App Privacy source",

@@ -1158,7 +1158,6 @@ export async function POST(request: Request) {
 
   if (!stripeLivemodeMatches(event)) {
     console.warn("Payment update ignored because livemode did not match.", {
-      eventId: event.id,
       eventType: event.type,
       livemode: event.livemode,
     });

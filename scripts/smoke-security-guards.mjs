@@ -312,6 +312,10 @@ const checks = [
       authSignup.includes("function cleanReturnTo") &&
       authSignup.includes("text.startsWith(\"//\")") &&
       authSignup.includes('text.includes("\\\\")') &&
+      authSignup.includes("function hasReservedEmailDomain") &&
+      authSignup.includes('cleanDomain === "example.com"') &&
+      authSignup.includes('cleanDomain.endsWith(".invalid")') &&
+      authSignup.includes("Use a real email inbox you can open for confirmation.") &&
       authSignup.includes("emailRedirectTo") &&
       authSignup.includes("encodeURIComponent(returnTo)") &&
       authSignup.includes("Signup request sent. Check inbox and junk for the confirmation email.") &&

@@ -437,13 +437,13 @@ const checks = [
     ok:
       packageJson.includes('"verify:store-release"') &&
       packageJson.includes('"verify:app-review-preflight"') &&
-      packageJson.includes("npm run lint && npm run build && npm run smoke:env && npm run smoke:store && npm run smoke:pwa && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
-      packageJson.includes("npm run lint && npm run build && npm run smoke:env && npm run smoke:security && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
+      packageJson.includes("npm run lint && npm run build && npm run smoke:env && npm run smoke:content && npm run smoke:store && npm run smoke:pwa && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
+      packageJson.includes("npm run lint && npm run build && npm run smoke:env && npm run smoke:security && npm run smoke:content && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
       source.readme.includes("npm.cmd run verify:app-review-preflight") &&
       source.readme.includes("npm.cmd run verify:store-release") &&
       source.readme.includes("This checks lint, production build, production environment boundaries") &&
       source.readme.includes("production environment boundaries") &&
-      source.readme.includes("security copy and headers, theme") &&
+      source.readme.includes("security copy and headers, content-policy/reporting guardrails, theme") &&
       source.readme.includes("payment guardrails, store metadata") &&
       source.readme.includes("native wrapper") &&
       source.readme.includes("private handoff-template validation") &&
@@ -504,7 +504,7 @@ const checks = [
       source.dataSafetyPrep.includes("Apps active only on Google Play internal testing are currently exempt") &&
       source.screenshotPrep.includes("Track each store asset set separately") &&
       source.screenshotPrep.includes("npm.cmd run verify:store-release") &&
-      source.screenshotPrep.includes("lint, production build, production environment boundaries, store metadata, PWA install assets, private handoff-template validation, readiness docs, public routes, Android-profile mobile routes, and iOS-profile mobile routes") &&
+      source.screenshotPrep.includes("lint, production build, production environment boundaries, content-policy/reporting guardrails, store metadata, PWA install assets, private handoff-template validation, readiness docs, public routes, Android-profile mobile routes, and iOS-profile mobile routes") &&
       source.storeListingDraft.includes("## Console-Ready Fields") &&
       source.storeListingDraft.includes("| Google Play short description | 80 characters | Tattoo community for artists, studios, vendors, collectors, and fans. |") &&
       source.storeListingDraft.includes("| App Store subtitle | 30 characters | Tattoo community hub |") &&

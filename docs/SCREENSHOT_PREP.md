@@ -36,7 +36,7 @@ Use this before Google Play, App Store, PWA listing, press, or public launch scr
 
 - Check light and dark mode before capturing.
 - Check the mobile viewport first; screenshots should not show horizontal overflow, clipped cards, unreadable controls, or sticky install prompts covering content.
-- Run `npm.cmd run verify:store-release` before final screenshot upload validation so lint, production build, production environment boundaries, store metadata, PWA install assets, private handoff-template validation, readiness docs, public routes, Android-profile mobile routes, and iOS-profile mobile routes are checked together.
+- Run `npm.cmd run verify:store-release` before final screenshot upload validation so lint, production build, production environment boundaries, content-policy/reporting guardrails, store metadata, PWA install assets, private handoff-template validation, readiness docs, public routes, Android-profile mobile routes, and iOS-profile mobile routes are checked together.
 - Run the real-device QA checklist before final screenshots.
 - Compare final screenshot text against the Store Listing Draft, Terms, Privacy, and Support pages so 18+ positioning, no-visible-nudity rules, no-AI stance, and support contact are consistent.
 - Confirm Help/Support screenshots show only public guide content and do not reveal private order details, seller payout setup details, support tickets, or moderation queues.

@@ -10,6 +10,21 @@ function cleanReturnTo(value: FormDataEntryValue | null) {
   return text;
 }
 
+function hasReservedEmailDomain(email: string) {
+  const [, domain = ""] = email.split("@");
+  const cleanDomain = domain.trim().toLowerCase();
+
+  return (
+    !cleanDomain ||
+    cleanDomain === "example.com" ||
+    cleanDomain === "example.net" ||
+    cleanDomain === "example.org" ||
+    cleanDomain.endsWith(".example") ||
+    cleanDomain.endsWith(".invalid") ||
+    cleanDomain === "localhost"
+  );
+}
+
 function signupRedirect(request: Request, message: string, returnTo = "/account") {
   const url = new URL("/signup", request.url);
   url.searchParams.set("message", message);
@@ -34,6 +49,14 @@ export async function POST(request: Request) {
     return signupRedirect(
       request,
       "Enter an email and password to create an account.",
+      returnTo,
+    );
+  }
+
+  if (hasReservedEmailDomain(email)) {
+    return signupRedirect(
+      request,
+      "Use a real email inbox you can open for confirmation. Testers can also use an owner-created confirmed tester account.",
       returnTo,
     );
   }
