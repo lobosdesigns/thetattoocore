@@ -339,8 +339,11 @@ const checks = [
       adminReports.includes("reportsQuery.eq(\"reason\"") &&
       adminReports.includes("reportsQuery.eq(\"subject_type\"") &&
       adminReports.includes("pageHref(currentPage, filters)") &&
+      adminReports.includes("suspected ai-generated content") &&
+      adminReports.includes("Suspected AI-generated content") &&
       publicSmoke.includes('path: "/admin/reports?status=open"') &&
       publicSmoke.includes('path: "/admin/reports?reason=unsafe%20practice"') &&
+      publicSmoke.includes('path: "/admin/reports?reason=suspected%20ai-generated%20content"') &&
       publicSmoke.includes('path: "/admin/reports?subject_type=help_article_comment"'),
   },
   {

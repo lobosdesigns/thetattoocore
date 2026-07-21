@@ -17,6 +17,7 @@ const threadDetailPage = readFileSync("src/app/t/[id]/page.tsx", "utf8");
 const stuffDetailPage = readFileSync("src/app/stuff/[id]/page.tsx", "utf8");
 const gigsDetailPage = readFileSync("src/app/gigs/[id]/page.tsx", "utf8");
 const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
+const contentReportForm = readFileSync("src/app/content-report-form.tsx", "utf8");
 const commentMediaMigration = readFileSync(
   "supabase/migrations/20260713185241_comment_media_attachments.sql",
   "utf8",
@@ -254,6 +255,14 @@ const checks = [
       actions.includes('"You already have an open report for that item."') &&
       actions.includes('"Could not send report. Please try again."') &&
       !actions.includes('error.message || "Could not send report."'),
+  },
+  {
+    label: "content reports support suspected AI-generated content reason",
+    ok:
+      actions.includes('"suspected ai-generated content"') &&
+      contentReportForm.includes('value="suspected ai-generated content"') &&
+      contentReportForm.includes("Suspected AI-generated content") &&
+      contentReportForm.includes("suspected AI-generated"),
   },
   {
     label: "Gig edit and archive actions hide raw backend errors from member redirects",

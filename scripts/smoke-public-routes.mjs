@@ -215,6 +215,7 @@ const checks = [
   { path: "/admin/reports", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/reports?status=open", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/reports?reason=unsafe%20practice", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  { path: "/admin/reports?reason=suspected%20ai-generated%20content", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/reports?subject_type=help_article_comment", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/stuff", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
   { path: "/admin/stuff?status=active", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },

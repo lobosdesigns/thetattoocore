@@ -46,6 +46,7 @@ const reportReasons = [
   "minor safety concern",
   "harassment or hate",
   "scam or spam",
+  "suspected ai-generated content",
   "unsafe practice",
   "illegal goods or services",
   "other",
@@ -166,6 +167,7 @@ function reportReasonLabel(reason: string) {
     "scam or spam": "Scam, spam, or impersonation",
     "sensitive non-nude body-art": "Sensitive non-nude body-art context",
     "sexual content": "Sexual or pornographic content",
+    "suspected ai-generated content": "Suspected AI-generated content",
     "unsafe practice": "Unsafe tattoo/body-art practice",
   };
 
@@ -181,7 +183,11 @@ function reportReasonClass(reason: string) {
     return "border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]";
   }
 
-  if (reason === "unsafe practice" || reason === "harassment or hate") {
+  if (
+    reason === "unsafe practice" ||
+    reason === "harassment or hate" ||
+    reason === "suspected ai-generated content"
+  ) {
     return "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]";
   }
 
@@ -202,6 +208,7 @@ function isPriorityReport(reason: string) {
     "illegal goods or services",
     "minor safety concern",
     "sexual content",
+    "suspected ai-generated content",
     "unsafe practice",
   ].includes(reason);
 }

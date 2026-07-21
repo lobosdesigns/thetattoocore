@@ -69,6 +69,7 @@ const REPORT_REASONS = new Set([
   "minor safety concern",
   "harassment or hate",
   "scam or spam",
+  "suspected ai-generated content",
   "unsafe practice",
   "illegal goods or services",
   "other",

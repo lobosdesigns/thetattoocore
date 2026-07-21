@@ -20,26 +20,26 @@ function reportTitle(subjectType: ReportSubjectType) {
 
 function reportDescription(subjectType: ReportSubjectType) {
   if (subjectType === "help_article_comment") {
-    return "Report guide questions for spam, harassment, scams, unsafe advice, sexual content, minor safety concerns, or illegal activity.";
+    return "Report guide questions for spam, harassment, scams, unsafe advice, suspected AI-generated content, sexual content, minor safety concerns, or illegal activity.";
   }
 
   if (subjectType === "comment") {
-    return "Report comments or replies for harassment, scams, unsafe practice, sexual content, minor safety concerns, or illegal activity.";
+    return "Report comments or replies for harassment, scams, unsafe practice, suspected AI-generated content, sexual content, minor safety concerns, or illegal activity.";
   }
 
   if (subjectType === "profile") {
-    return "Report profiles for scams, harassment, illegal services, sexual content, minor safety concerns, or impersonation.";
+    return "Report profiles for scams, harassment, suspected AI-generated content claims, illegal services, sexual content, minor safety concerns, or impersonation.";
   }
 
   if (subjectType === "merch_product") {
-    return "Report unsafe, counterfeit, scammy, sexual, illegal, or miscategorized Merch products.";
+    return "Report unsafe, counterfeit, scammy, suspected AI-generated, sexual, illegal, or miscategorized Merch products.";
   }
 
   if (subjectType === "story_post") {
-    return "Report unsafe, sexual, harassing, scammy, illegal, or policy-breaking Stories.";
+    return "Report unsafe, suspected AI-generated, sexual, harassing, scammy, illegal, or policy-breaking Stories.";
   }
 
-  return "Report unsafe, scammy, sexual, illegal, harassing, or miscategorized body-art content.";
+  return "Report unsafe, scammy, suspected AI-generated, sexual, illegal, harassing, or miscategorized body-art content.";
 }
 
 function reportButtonLabel(subjectType: ReportSubjectType) {
@@ -105,6 +105,7 @@ export function ContentReportForm({
             <option value="minor safety concern">Minor safety concern</option>
             <option value="harassment or hate">Harassment, hate, or threats</option>
             <option value="scam or spam">Scam, spam, or impersonation</option>
+            <option value="suspected ai-generated content">Suspected AI-generated content</option>
             <option value="unsafe practice">Unsafe tattoo/body-art practice</option>
             <option value="illegal goods or services">Illegal goods or services</option>
             <option value="other">Other policy concern</option>
