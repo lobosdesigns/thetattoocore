@@ -42,6 +42,13 @@ const manifestShortcutUrls = (manifestJson.shortcuts ?? []).map((shortcut) => sh
 const missingMobileShortcutRoutes = manifestShortcutUrls.filter(
   (url) => !mobileSmokeRoutePaths.has(url),
 );
+const manifestShortcutIconSources = [
+  ...new Set(
+    (manifestJson.shortcuts ?? []).flatMap((shortcut) =>
+      (shortcut.icons ?? []).map((icon) => icon.src),
+    ),
+  ),
+];
 const manifestBlockedTerms = [
   "api key",
   "cloudflare",
@@ -176,12 +183,19 @@ function describePwaAssetDimensionIssues() {
     .join("; ");
 }
 
+function describeShortcutIconIssues() {
+  return manifestShortcutIconSources
+    .map((src) => describePngDimensionIssue(`public${src}`, 192, 192))
+    .filter(Boolean);
+}
+
 const manifestScreenshotsMatchDimensions = (manifestJson.screenshots ?? []).every((screenshot) => {
   const [width, height] = screenshot.sizes.split("x").map((size) => Number.parseInt(size, 10));
   const path = `public${screenshot.src}`;
 
   return Number.isInteger(width) && Number.isInteger(height) && hasPngDimensions(path, width, height);
 });
+const shortcutIconIssues = describeShortcutIconIssues();
 
 const checks = [
   {
@@ -242,6 +256,11 @@ const checks = [
       ? `missing mobile shortcut routes: ${missingMobileShortcutRoutes.join(", ")}`
       : "",
     ok: missingMobileShortcutRoutes.length === 0,
+  },
+  {
+    label: "installed app shortcut icons are upload-safe PNGs",
+    message: shortcutIconIssues.length ? shortcutIconIssues.join("; ") : "",
+    ok: manifestShortcutIconSources.length > 0 && shortcutIconIssues.length === 0,
   },
   {
     label: "installed app manifest copy avoids provider details and launch over-promises",
