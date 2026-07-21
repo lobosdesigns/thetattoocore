@@ -443,7 +443,7 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("platform tools or `adb` missing from Windows PATH") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Do not treat missing automation as a") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("## Android Connected-Device Probe") &&
-      packageJson.includes('"verify:native-predevice": "npm run smoke:env && npm run smoke:native && npm run smoke:docs && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios"') &&
+      packageJson.includes('"verify:native-predevice": "npm run smoke:env && npm run smoke:native && npm run smoke:handoff && npm run smoke:docs && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios"') &&
       packageJson.includes('"verify:native-release": "npm run smoke:env && npm run smoke:native && npm run smoke:docs && npm run qa:android-device:required && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios"') &&
       packageJson.includes('"qa:android-device": "node scripts/android-device-qa-probe.mjs"') &&
       packageJson.includes('"qa:android-device:required": "node scripts/android-device-qa-probe.mjs --require-device --wait-ms=30000"') &&
@@ -1008,7 +1008,7 @@ const checks = [
       packageJson.includes("npm run smoke:stories && npm run smoke:dm && npm run smoke:booking") &&
       packageJson.includes("npm run smoke:env && npm run smoke:security && npm run smoke:content && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
       packageJson.includes("npm run smoke:native && npm run qa:android-device && npm run smoke:store") &&
-      packageJson.includes("npm run smoke:env && npm run smoke:native && npm run smoke:docs && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios") &&
+      packageJson.includes("npm run smoke:env && npm run smoke:native && npm run smoke:handoff && npm run smoke:docs && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios") &&
       packageJson.includes("npm run smoke:env && npm run smoke:native && npm run smoke:docs && npm run qa:android-device:required && npm run smoke:store") &&
       packageJson.includes("npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Android connected-device probe") &&

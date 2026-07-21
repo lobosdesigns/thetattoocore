@@ -236,7 +236,8 @@ Use this pre-device native readiness scout before screenshot, console-copy, or
 handoff review while the Android review device is not authorized yet. It checks
 environment boundaries, native wrapper safety, readiness docs, store metadata,
 Android-profile mobile routes, and iOS-profile mobile routes, but it is not
-real-device evidence.
+real-device evidence. It also validates the private handoff template before
+console-copy or screenshot evidence collection.
 
 ```powershell
 npm.cmd run verify:native-release
