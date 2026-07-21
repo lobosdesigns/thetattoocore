@@ -217,6 +217,7 @@ const checks = [
       manifest.includes('"url": "/#gigs"') &&
       manifest.includes('"name": "DM"') &&
       manifest.includes('"url": "/messages"') &&
+      mobileSmoke.includes('path: "/messages"') &&
       manifest.includes('"name": "Alerts"') &&
       manifest.includes('"url": "/notifications"') &&
       manifest.includes('"name": "Merch"') &&

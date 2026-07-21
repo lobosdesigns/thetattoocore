@@ -130,6 +130,7 @@ const routes = [
     textIncludes: ["Merch", "Merch checkout stays review-controlled", "Filter"],
     titleIncludes: "Search",
   },
+  { path: "/messages", textIncludes: "Sign in", titleIncludes: "Sign in" },
   { path: "/messages?to=tattedhotlegs", textIncludes: "Sign in", titleIncludes: "Sign in" },
   { path: "/notifications", textIncludes: "Sign in", titleIncludes: "Sign in" },
   { path: "/api/bookings/bad/calendar", textIncludes: "Sign in", titleIncludes: "Sign in" },
