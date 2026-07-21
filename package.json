@@ -12,7 +12,7 @@
     "start": "next start",
     "verify": "npm run lint && npm run build && npm run smoke:hydration && npm run smoke:media && npm run smoke:content && npm run smoke:share && npm run smoke:profiles && npm run smoke:admin && npm run smoke:stories && npm run smoke:dm && npm run smoke:booking && npm run smoke:payments && npm run smoke:pwa && npm run smoke:native && npm run qa:android-device && npm run smoke:store && npm run smoke:security && npm run smoke:env && npm run smoke:theme && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios",
     "verify:native-release": "npm run smoke:env && npm run smoke:native && npm run qa:android-device:required && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios",
-    "verify:payment-release": "npm run smoke:env && npm run smoke:payments && npm run smoke:security && npm run smoke:public",
+    "verify:payment-release": "npm run smoke:env && npm run smoke:payments && npm run smoke:security && npm run smoke:docs && npm run smoke:public",
     "verify:store-release": "npm run smoke:store && npm run smoke:pwa && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios",
     "lint": "eslint",
     "smoke:public": "node scripts/smoke-public-routes.mjs",

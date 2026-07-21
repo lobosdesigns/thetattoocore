@@ -310,7 +310,10 @@ const checks = [
       pushRoute.includes('.from("push_subscriptions").upsert') &&
       pushRoute.includes('onConflict: "profile_id,endpoint"') &&
       pushRoute.includes("export async function DELETE") &&
-      pushControl.includes('method: "DELETE"'),
+      pushControl.includes('method: "DELETE"') &&
+      pushControl.includes("const response = await fetch(\"/api/push/subscriptions\"") &&
+      pushControl.includes("if (!response.ok) throw new Error(\"App alert preference could not be saved.\")") &&
+      pushControl.indexOf("if (!response.ok)") < pushControl.indexOf("await subscription.unsubscribe()"),
   },
   {
     label: "future noisy push/email delivery has preference and quiet-hour helpers",

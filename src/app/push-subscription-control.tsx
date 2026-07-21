@@ -125,11 +125,14 @@ export function PushSubscriptionControl() {
       const subscription = await registration.pushManager.getSubscription();
 
       if (subscription) {
-        await fetch("/api/push/subscriptions", {
+        const response = await fetch("/api/push/subscriptions", {
           body: JSON.stringify({ endpoint: subscription.endpoint }),
           headers: { "content-type": "application/json" },
           method: "DELETE",
         });
+
+        if (!response.ok) throw new Error("App alert preference could not be saved.");
+
         await subscription.unsubscribe();
       }
 

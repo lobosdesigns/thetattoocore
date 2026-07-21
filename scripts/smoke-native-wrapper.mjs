@@ -158,6 +158,7 @@ const checks = [
     label: "native wrapper declares TTC shared-link routing with iOS links deferred until profile support",
     ok:
       source.androidManifest.includes('android.intent.action.VIEW') &&
+      source.androidManifest.includes('android:autoVerify="true"') &&
       source.androidManifest.includes('android.intent.category.BROWSABLE') &&
       source.androidManifest.includes('android:host="thetattoocore.com"') &&
       source.androidManifest.includes('android:host="www.thetattoocore.com"') &&
@@ -172,6 +173,7 @@ const checks = [
       source.nativePrep.includes("| Platform | Association file | Native entitlement or manifest proof | Device proof | Repo-safe result |") &&
       source.nativePrep.includes("`/.well-known/assetlinks.json`") &&
       source.nativePrep.includes("Google Play app-signing certificate fingerprint") &&
+      source.nativePrep.includes('android:autoVerify="true"') &&
       source.nativePrep.includes("`/.well-known/apple-app-site-association`") &&
       source.nativePrep.includes("Associated Domains capability") &&
       source.nativePrep.includes("profile, post, Story, Gossip, Stuff, Gigs, Merch, booking, Support, Privacy, and Terms links") &&
