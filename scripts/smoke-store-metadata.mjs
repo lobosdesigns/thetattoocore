@@ -292,7 +292,7 @@ const blockedOverpromiseTerms = [
   "native push",
   "real-time push",
 ];
-const blockedGooglePlayShortDescriptionPatterns = [
+const blockedStoreTeaserPatterns = [
   /\bbest\b/i,
   /#\s*1/i,
   /\btop\b/i,
@@ -305,6 +305,11 @@ const blockedGooglePlayShortDescriptionPatterns = [
   /\binstall now\b/i,
   /\bplay now\b/i,
   /\btry now\b/i,
+];
+const storeTeaserFields = [
+  source.googleShort,
+  source.appleSubtitle,
+  source.applePromotionalText,
 ];
 
 const blockedPrivateEvidenceTerms = [
@@ -393,9 +398,9 @@ const checks = [
     ok: blockedOverpromiseTerms.every((term) => !publicMetadataText.includes(term)),
   },
   {
-    label: "Google Play short description avoids ranking price and install CTA copy",
-    ok: blockedGooglePlayShortDescriptionPatterns.every(
-      (pattern) => !pattern.test(source.googleShort),
+    label: "store teaser fields avoid ranking price and install CTA copy",
+    ok: blockedStoreTeaserPatterns.every(
+      (pattern) => !storeTeaserFields.some((field) => pattern.test(field)),
     ),
   },
   {
