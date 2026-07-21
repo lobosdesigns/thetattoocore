@@ -1310,7 +1310,7 @@ export default async function AdminMerchPage({
               defaultValue={activeSearch}
               maxLength={80}
               name="q"
-              placeholder="Product title, order item, customer email, shipping name, or payment ID"
+              placeholder="Product title, order item, buyer, shipping name, or payment reference"
             />
           </label>
           <button className="h-11 self-end rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">

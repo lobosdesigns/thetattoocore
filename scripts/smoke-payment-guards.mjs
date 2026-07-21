@@ -907,7 +907,8 @@ checks.push({
   label: "admin Merch queues include searchable product and order review",
   ok:
     adminMerchPage.includes("Search Merch admin") &&
-    adminMerchPage.includes("Product title, order item, customer email, shipping name, or payment ID") &&
+    adminMerchPage.includes("Product title, order item, buyer, shipping name, or payment reference") &&
+    !adminMerchPage.includes("customer email, shipping name, or payment ID") &&
     adminMerchPage.includes("title.ilike") &&
     adminMerchPage.includes('from("merch_order_items")') &&
     adminMerchPage.includes("title_snapshot") &&
