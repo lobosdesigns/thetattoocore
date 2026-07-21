@@ -747,7 +747,7 @@ export default async function AdminPaymentsPage({
                   defaultValue={activeSearch}
                   maxLength={100}
                   name="q"
-                  placeholder="Event ID, payment intent, booking title, target ID, or audit summary"
+                  placeholder="Event, payment reference, booking title, target, or audit summary"
                 />
               </label>
               <button className="h-11 self-end rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">

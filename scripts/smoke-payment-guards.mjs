@@ -1027,7 +1027,8 @@ checks.push({
     adminPaymentsPage.includes('.eq("event_type", paymentAuditTypeFilter)') &&
     adminPaymentsPage.includes('query.eq("payment_status", bookingPaymentStatusFilter)') &&
     adminPaymentsPage.includes("Search payment admin") &&
-    adminPaymentsPage.includes("Event ID, payment intent, booking title, target ID, or audit summary") &&
+    adminPaymentsPage.includes("Event, payment reference, booking title, target, or audit summary") &&
+    !adminPaymentsPage.includes("Event ID, payment intent, booking title, target ID, or audit summary") &&
     adminPaymentsPage.includes("event_id.ilike") &&
     adminPaymentsPage.includes("target_id.ilike") &&
     adminPaymentsPage.includes("stripe_payment_intent_id.ilike") &&
