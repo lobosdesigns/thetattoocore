@@ -487,7 +487,7 @@ const checks = [
     label: "mobile submission runbook records current store rules check",
     ok:
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("## Current Store Rules Check") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Last checked: July 20, 2026") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Last checked: July 21, 2026") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple App Privacy: privacy policy URL is required") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple Content Rights") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("current 13-inch iPad portrait proof") &&
@@ -497,6 +497,8 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Android 16 / API 36") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play production access") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("12 testers opted in for 14 continuous days") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Official source set checked: Apple App Store Connect App Privacy") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play target API, Data Safety, testing-track, production-access testing, and payments help") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("private release handoff only"),
   },
   {
@@ -847,8 +849,8 @@ const checks = [
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("npm.cmd run smoke:payments") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("environment drift, event coverage drift, and secret-boundary regressions") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Native checkout policy review must be dated") &&
-      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("July 20, 2026 review source set") &&
-      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Apple App Review Guidelines and Google Play Payments policy") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("July 21, 2026 review source set") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Apple App Review Guidelines and Google Play Payments policy for physical goods, services, digital goods, ads, and external-payment behavior") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Classify every paid native flow separately before promotion") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Merch physical goods") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("accepted booking deposits or services") &&

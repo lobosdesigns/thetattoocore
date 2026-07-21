@@ -1077,7 +1077,7 @@ checks.push({
     paymentReadiness.includes("native checkout policy status") &&
     paymentReadiness.includes("pass/fail/blocker status") &&
     paymentReadiness.includes("Native checkout policy review must be dated") &&
-    paymentReadiness.includes("July 20, 2026 review source set") &&
+    paymentReadiness.includes("July 21, 2026 review source set") &&
     paymentReadiness.includes("Apple App Review Guidelines and Google Play Payments policy") &&
     paymentReadiness.includes("Classify every paid native flow separately before promotion") &&
     paymentReadiness.includes("Merch physical goods") &&

@@ -23,7 +23,7 @@
 
 ## Current Store Rules Check
 
-Last checked: July 20, 2026. Recheck the official store help pages before each
+Last checked: July 21, 2026. Recheck the official store help pages before each
 new build selection, metadata save, or production-access request because console
 requirements can change between internal testing and public review.
 
@@ -44,6 +44,7 @@ requirements can change between internal testing and public review.
 - Keep source URLs, console screenshots, tester membership, reviewer credentials,
   private contact details, and account identifiers in the private release handoff
   only.
+- Official source set checked: Apple App Store Connect App Privacy, Content Rights, screenshot, and Accessibility Nutrition Labels help; Google Play target API, Data Safety, testing-track, production-access testing, and payments help.
 
 ## Wrapper Decision
 
