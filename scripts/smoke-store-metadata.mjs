@@ -438,7 +438,7 @@ const checks = [
       packageJson.includes('"verify:store-release"') &&
       packageJson.includes('"verify:app-review-preflight"') &&
       packageJson.includes("npm run lint && npm run build && npm run smoke:env && npm run smoke:store && npm run smoke:pwa && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
-      packageJson.includes("npm run lint && npm run build && npm run smoke:env && npm run smoke:security && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
+      packageJson.includes("npm run lint && npm run build && npm run smoke:env && npm run smoke:security && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
       source.readme.includes("npm.cmd run verify:app-review-preflight") &&
       source.readme.includes("npm.cmd run verify:store-release") &&
       source.readme.includes("This checks lint, production build, production environment boundaries") &&
@@ -446,6 +446,7 @@ const checks = [
       source.readme.includes("security copy and headers, theme") &&
       source.readme.includes("payment guardrails, store metadata") &&
       source.readme.includes("native wrapper") &&
+      source.readme.includes("private handoff-template validation") &&
       source.readme.includes("Android-profile mobile routes") &&
       source.readme.includes("iOS-profile mobile routes") &&
       source.readme.includes("without storing") &&
