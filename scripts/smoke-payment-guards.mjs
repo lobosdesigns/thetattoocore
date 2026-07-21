@@ -1111,10 +1111,10 @@ checks.push({
   label: "payment release verification gate is documented and wired",
   ok:
     packageJson.includes(
-      '"verify:payment-release": "npm run smoke:env && npm run smoke:payments && npm run smoke:security && npm run smoke:docs && npm run smoke:public"',
+      '"verify:payment-release": "npm run lint && npm run build && npm run smoke:env && npm run smoke:payments && npm run smoke:security && npm run smoke:docs && npm run smoke:public"',
     ) &&
     paymentReadiness.includes("npm.cmd run verify:payment-release") &&
-    paymentReadiness.includes("environment mode checks, payment flow guards, security headers, readiness docs, and public checkout/status routes"),
+    paymentReadiness.includes("lint, production build, environment mode checks, payment flow guards, security headers, readiness docs, and public checkout/status routes"),
 });
 
 const failures = checks.filter((check) => !check.ok);

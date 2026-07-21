@@ -14,7 +14,7 @@
     "verify:app-review-preflight": "npm run smoke:env && npm run smoke:security && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios",
     "verify:native-predevice": "npm run smoke:env && npm run smoke:native && npm run smoke:docs && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios",
     "verify:native-release": "npm run smoke:env && npm run smoke:native && npm run smoke:docs && npm run qa:android-device:required && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios",
-    "verify:payment-release": "npm run smoke:env && npm run smoke:payments && npm run smoke:security && npm run smoke:docs && npm run smoke:public",
+    "verify:payment-release": "npm run lint && npm run build && npm run smoke:env && npm run smoke:payments && npm run smoke:security && npm run smoke:docs && npm run smoke:public",
     "verify:store-release": "npm run smoke:env && npm run smoke:store && npm run smoke:pwa && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios",
     "lint": "eslint",
     "smoke:public": "node scripts/smoke-public-routes.mjs",
