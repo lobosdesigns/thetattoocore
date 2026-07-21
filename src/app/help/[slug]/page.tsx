@@ -21,6 +21,7 @@ function reviewLabel(lastReviewed: string) {
 }
 
 type HelpArticleComment = {
+  author_id: string;
   body: string;
   created_at: string;
   id: string;
@@ -38,6 +39,11 @@ type HelpArticleCommentRow = Omit<HelpArticleComment, "profiles"> & {
   profiles:
     | HelpArticleComment["profiles"]
     | HelpArticleComment["profiles"][];
+};
+
+type BlockRow = {
+  blocked_id: string;
+  blocker_id: string;
 };
 
 function normalizeComment(row: HelpArticleCommentRow): HelpArticleComment {
@@ -68,6 +74,14 @@ function commentLimit(value?: string) {
   const safeLimit = Number.isFinite(parsed) && parsed > 0 ? parsed : commentPageSize;
 
   return Math.min(Math.max(commentPageSize, safeLimit), 250);
+}
+
+function blockedAuthorIds(rows: BlockRow[], viewerId: string) {
+  return new Set(
+    rows.map((row) =>
+      row.blocker_id === viewerId ? row.blocked_id : row.blocker_id,
+    ),
+  );
 }
 
 function commentsHref(slug: string, limit: number) {
@@ -111,23 +125,37 @@ export default async function HelpArticlePage({
 
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
-  const isSignedIn = Boolean(claimsData?.claims?.sub);
+  const viewerId =
+    typeof claimsData?.claims?.sub === "string" ? claimsData.claims.sub : null;
+  const isSignedIn = Boolean(viewerId);
   const visibleCommentLimit = commentLimit(commentsParam);
   const commentFetchLimit = visibleCommentLimit + commentPageSize;
-  const { data: commentRows, error: commentError } = await supabase
-    .from("help_article_comments")
-    .select(
-      "id, body, status, is_official_answer, is_pinned, created_at, profiles:profiles!help_article_comments_author_id_fkey(username, display_name, avatar_url)",
-    )
-    .eq("article_slug", article.slug)
-    .order("is_pinned", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(commentFetchLimit);
-  const allComments = commentError
+  const [commentResult, blockResult] = await Promise.all([
+    supabase
+      .from("help_article_comments")
+      .select(
+        "id, author_id, body, status, is_official_answer, is_pinned, created_at, profiles:profiles!help_article_comments_author_id_fkey(username, display_name, avatar_url)",
+      )
+      .eq("article_slug", article.slug)
+      .order("is_pinned", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(commentFetchLimit),
+    viewerId
+      ? supabase
+          .from("user_blocks")
+          .select("blocker_id, blocked_id")
+          .or(`blocker_id.eq.${viewerId},blocked_id.eq.${viewerId}`)
+          .returns<BlockRow[]>()
+      : Promise.resolve({ data: [] as BlockRow[], error: null }),
+  ]);
+  const blockedHelpAuthorIds = viewerId
+    ? blockedAuthorIds(blockResult.data ?? [], viewerId)
+    : new Set<string>();
+  const allComments = commentResult.error
     ? []
-    : ((commentRows ?? []) as unknown as HelpArticleCommentRow[]).map(
-        normalizeComment,
-      );
+    : ((commentResult.data ?? []) as unknown as HelpArticleCommentRow[])
+        .map(normalizeComment)
+        .filter((comment) => !blockedHelpAuthorIds.has(comment.author_id));
   const comments = allComments.slice(0, visibleCommentLimit);
   const hasMoreComments = allComments.length > visibleCommentLimit;
 

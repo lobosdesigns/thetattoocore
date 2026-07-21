@@ -529,6 +529,18 @@ const checks = [
       notificationPage.includes("{hasMoreNotifications ?"),
   },
   {
+    label: "help guide questions filter blocked authors for signed-in viewers",
+    ok:
+      helpArticlePage.includes("type BlockRow =") &&
+      helpArticlePage.includes("function blockedAuthorIds") &&
+      helpArticlePage.includes('from("user_blocks")') &&
+      helpArticlePage.includes("blocker_id.eq.") &&
+      helpArticlePage.includes("blocked_id.eq.") &&
+      helpArticlePage.includes("author_id, body, status") &&
+      helpArticlePage.includes("blockedHelpAuthorIds") &&
+      helpArticlePage.includes("!blockedHelpAuthorIds.has(comment.author_id)"),
+  },
+  {
     label: "notification badges filter blocked actor profiles",
     ok:
       notificationBell.includes("async function getBlockedProfileIds") &&
