@@ -31,9 +31,11 @@ requirements can change between internal testing and public review.
   public Privacy page for the submitted iOS build.
 - Apple Content Rights: confirm TTC owns, licenses, or has permission for
   metadata, icons, generated screenshots, and sample content shown in review.
-- Apple screenshots: confirm the required iPhone set and 13-inch iPad set upload
-  successfully for the selected iOS build; current 13-inch iPad portrait proof
-  should record whether 2064 x 2752 or 2048 x 2732 was accepted.
+- Apple screenshots: current App Store Connect help says one iPhone screenshot
+  set at 6.5-inch or 6.9-inch and one 13-inch iPad screenshot set are required
+  when the app runs on those device families. Confirm the selected upload set
+  validates for the selected iOS build, and record privately whether the
+  13-inch iPad portrait proof accepted 2064 x 2752 or 2048 x 2732.
 - Apple Accessibility Nutrition Labels: evaluate common tasks on the submitted
   iPhone/iPad build before claiming support for any accessibility feature.
 - Google Play target API: new apps and updates submitted on or after August 31,
@@ -44,7 +46,8 @@ requirements can change between internal testing and public review.
 - Keep source URLs, console screenshots, tester membership, reviewer credentials,
   private contact details, and account identifiers in the private release handoff
   only.
-- Official source set checked: Apple App Store Connect App Privacy, Content Rights, screenshot, and Accessibility Nutrition Labels help; Google Play target API, Data Safety, testing-track, production-access testing, and payments help.
+- Official source set checked: Apple App Store Connect App Privacy, Content Rights, screenshot specifications, screenshot upload, release notes, and Accessibility Nutrition Labels help; Google Play target API, Data Safety, testing-track, production-access testing, and payments help.
+- Repo-safe current-rule source URLs: Apple screenshot specifications `https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/`; Apple screenshot upload states `https://developer.apple.com/help/app-store-connect/manage-app-information/upload-app-previews-and-screenshots/`; Apple screenshot release note `https://developer.apple.com/help/app-store-connect/reference/release-notes/`; Google Play target API `https://support.google.com/googleplay/android-developer/answer/11926878`; Google Play production access testing `https://support.google.com/googleplay/android-developer/answer/14151465`.
 
 ## Wrapper Decision
 
