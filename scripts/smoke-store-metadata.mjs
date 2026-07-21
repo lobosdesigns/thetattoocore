@@ -277,6 +277,20 @@ const blockedOverpromiseTerms = [
   "native push",
   "real-time push",
 ];
+const blockedGooglePlayShortDescriptionPatterns = [
+  /\bbest\b/i,
+  /#\s*1/i,
+  /\btop\b/i,
+  /\bnew\b/i,
+  /\bfree\b/i,
+  /\bdiscount\b/i,
+  /\bsale\b/i,
+  /\bmillion downloads\b/i,
+  /\bdownload now\b/i,
+  /\binstall now\b/i,
+  /\bplay now\b/i,
+  /\btry now\b/i,
+];
 
 const blockedPrivateEvidenceTerms = [
   "936-730-7104",
@@ -358,6 +372,12 @@ const checks = [
   {
     label: "store metadata avoids over-promising launch commerce status",
     ok: blockedOverpromiseTerms.every((term) => !publicMetadataText.includes(term)),
+  },
+  {
+    label: "Google Play short description avoids ranking price and install CTA copy",
+    ok: blockedGooglePlayShortDescriptionPatterns.every(
+      (pattern) => !pattern.test(source.googleShort),
+    ),
   },
   {
     label: "store screenshot text avoids over-promising launch commerce status",
