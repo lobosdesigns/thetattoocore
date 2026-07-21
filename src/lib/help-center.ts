@@ -909,6 +909,11 @@ export const helpArticles = [
           "Keep captions, comments, replies, and DMs clear, respectful, and relevant. Use Story replies for direct reactions, avoid spam, and move urgent safety or private account issues to Support.",
         question: "How should I use replies and DMs?",
       },
+      {
+        answer:
+          "Use Public when anyone can view the post, Followers only for accepted followers, and Artists and shops only when the post should stay with verified artists or studios. Gossip also has a verified artist/vendor audience for professional-only discussion.",
+        question: "Who can see my 4U or Gossip post?",
+      },
     ],
     keywords: [
       "caption",
@@ -918,17 +923,19 @@ export const helpArticles = [
       "gigs",
       "gossip",
       "media upload",
+      "post visibility",
       "reply",
       "spam",
       "stories",
       "story reply",
       "stuff",
     ],
-    lastReviewed: "July 19, 2026",
+    lastReviewed: "July 21, 2026",
     relatedSlugs: ["artist-profile-shop-links", "verification-documents", "privacy-safety-support"],
     slug: "posting-stories-dms",
     steps: [
       "Use the create button from the section you are viewing so the right post type opens.",
+      "Choose the right visibility before posting: Public, Followers only, Artists and shops only, or the verified artist/vendor audience for eligible Gossip posts.",
       "Add safe media and text that follows the no-visible-nudity launch rule.",
       "Use comments, replies, likes, saves, and DMs without harassment or spam.",
       "Report unsafe content, block users when needed, and contact support for urgent safety issues.",

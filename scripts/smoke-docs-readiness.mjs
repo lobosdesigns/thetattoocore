@@ -713,6 +713,9 @@ const checks = [
       !helpCenterData.includes("hosted account flow") &&
       helpCenterData.includes("Stories rail preview") &&
       helpCenterData.includes("Gossip discussion preview") &&
+      helpCenterData.includes("Who can see my 4U or Gossip post?") &&
+      helpCenterData.includes("Artists and shops only when the post should stay with verified artists or studios") &&
+      helpCenterData.includes("verified artist/vendor audience for professional-only discussion") &&
       helpCenterData.includes("account data-request controls") &&
       helpCenterData.includes("Stories, DMs, and safety controls") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("getting-started guide") &&
