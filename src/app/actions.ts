@@ -341,6 +341,21 @@ async function syncFeedPostTags({
   taggedUsernames: string[];
   userId: string;
 }) {
+  const { data: existingTags, error: existingTagError } = await supabase
+    .from("feed_post_tags")
+    .select("tagged_profile_id")
+    .eq("post_id", postId)
+    .returns<{ tagged_profile_id: string }[]>();
+
+  if (existingTagError) {
+    console.error("4U post existing tag lookup failed.", existingTagError);
+    return "Could not update post tags. Please try again.";
+  }
+
+  const existingTaggedIds = new Set(
+    (existingTags ?? []).map((tag) => tag.tagged_profile_id),
+  );
+
   const { error: deleteError } = await supabase
     .from("feed_post_tags")
     .delete()
@@ -383,6 +398,30 @@ async function syncFeedPostTags({
   if (insertError) {
     console.error("4U post tag insert failed.", insertError);
     return "Could not add tagged members. Please try again.";
+  }
+
+  const newTagRows = rows.filter(
+    (row) => !existingTaggedIds.has(row.tagged_profile_id),
+  );
+
+  if (newTagRows.length) {
+    const actorName = await currentDisplayName({ supabase, userId });
+
+    await Promise.all(
+      newTagRows.map((row) =>
+        notifyContentOwner({
+          actorId: userId,
+          body: `${actorName} tagged you in a 4U post.`,
+          href: `/p/${postId}`,
+          ownerId: row.tagged_profile_id,
+          subjectId: postId,
+          subjectType: "feed_post",
+          supabase,
+          title: "Tagged in a 4U post",
+          type: "feed_tag",
+        }),
+      ),
+    );
   }
 
   return null;
@@ -617,13 +656,20 @@ async function notifyContentOwner({
   subjectType: "feed_post" | "thread_post";
   supabase: Awaited<ReturnType<typeof createClient>>;
   title: string;
-  type: "feed_like" | "feed_comment" | "thread_like" | "thread_comment";
+  type:
+    | "feed_like"
+    | "feed_comment"
+    | "feed_tag"
+    | "thread_like"
+    | "thread_comment";
 }) {
   if (!ownerId || ownerId === actorId) return;
   if (await blockRelationshipExists(supabase, actorId, ownerId)) return;
 
   const preferenceCategory =
-    type === "feed_like" || type === "feed_comment" ? "feed" : "thread";
+    type === "feed_like" || type === "feed_comment" || type === "feed_tag"
+      ? "feed"
+      : "thread";
   const { data: ownerProfile } = await supabase
     .from("profiles")
     .select(notificationPreferenceSelect(preferenceCategory))

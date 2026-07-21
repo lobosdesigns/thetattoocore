@@ -12,6 +12,7 @@ const termsPage = readFileSync("src/app/terms/page.tsx", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
 const homePage = readFileSync("src/app/page.tsx", "utf8");
+const notificationsPage = readFileSync("src/app/notifications/page.tsx", "utf8");
 const postDetailPage = readFileSync("src/app/p/[id]/page.tsx", "utf8");
 const threadDetailPage = readFileSync("src/app/t/[id]/page.tsx", "utf8");
 const stuffDetailPage = readFileSync("src/app/stuff/[id]/page.tsx", "utf8");
@@ -28,6 +29,10 @@ const tightenedCommentMediaMigration = readFileSync(
 );
 const feedPostTagMigration = readFileSync(
   "supabase/migrations/20260721135422_feed_post_user_tags.sql",
+  "utf8",
+);
+const feedPostTagNotificationMigration = readFileSync(
+  "supabase/migrations/20260721141027_feed_post_tag_notifications.sql",
   "utf8",
 );
 
@@ -403,6 +408,23 @@ const checks = [
       postDetailPage.includes("function TaggedMemberLinks") &&
       postDetailPage.includes("feed_post_tags(profiles:profiles!feed_post_tags_tagged_profile_id_fkey") &&
       postDetailPage.includes('name="tagged_usernames"'),
+  },
+  {
+    label: "4U post tags notify newly tagged members through feed preferences",
+    ok:
+      feedPostTagNotificationMigration.includes("notifications_type_check") &&
+      feedPostTagNotificationMigration.includes("'feed_tag'") &&
+      actions.includes("const existingTaggedIds = new Set") &&
+      actions.includes("const newTagRows = rows.filter") &&
+      actions.includes('title: "Tagged in a 4U post"') &&
+      actions.includes('type: "feed_tag"') &&
+      actions.includes('href: `/p/${postId}`') &&
+      actions.includes('type === "feed_like"') &&
+      actions.includes('type === "feed_comment"') &&
+      actions.includes('type === "feed_tag"') &&
+      actions.includes("notifyContentOwner({") &&
+      notificationsPage.includes('| "feed_tag"') &&
+      notificationsPage.includes('if (type === "feed_tag") return UserPlus'),
   },
   {
     label: "home ranking filters blocked profiles before personalization",

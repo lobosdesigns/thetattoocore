@@ -43,6 +43,7 @@ type Notification = {
   type:
     | "feed_comment"
     | "feed_like"
+    | "feed_tag"
     | "follow_accepted"
     | "follow_request"
     | "ad_paid"
@@ -118,6 +119,7 @@ function notificationIcon(type: Notification["type"]) {
   if (type === "feed_comment" || type === "thread_comment") {
     return MessageCircle;
   }
+  if (type === "feed_tag") return UserPlus;
 
   return UserPlus;
 }
