@@ -14,6 +14,7 @@ const files = {
   googleTitle: "native/store-metadata/google-play/en-US/title.txt",
   readiness: "docs/APP_STORE_READINESS.md",
   dataSafetyPrep: "docs/DATA_SAFETY_PREP.md",
+  realDeviceQa: "docs/REAL_DEVICE_QA_CHECKLIST.md",
   screenshotPrep: "docs/SCREENSHOT_PREP.md",
   storeListingDraft: "docs/STORE_LISTING_DRAFT.md",
   readme: "native/store-metadata/README.md",
@@ -506,6 +507,28 @@ const checks = [
       source.storeListingDraft.includes("No AI art") &&
       source.storeListingDraft.includes("no scratcher promotion") &&
       blockedPrivateEvidenceTerms.every((term) => !currentBlockerMatrix.toLowerCase().includes(term)),
+  },
+  {
+    label: "App Store Accessibility Nutrition Labels evidence matrix stays submitted-build gated",
+    ok:
+      source.realDeviceQa.includes("## Accessibility Nutrition Labels Evidence Matrix") &&
+      source.realDeviceQa.includes("Test only the submitted iPhone/iPad build") &&
+      source.realDeviceQa.includes("mark unsupported features honestly") &&
+      source.realDeviceQa.includes("VoiceOver") &&
+      source.realDeviceQa.includes("Voice Control") &&
+      source.realDeviceQa.includes("Larger Text") &&
+      source.realDeviceQa.includes("Differentiate Without Color Alone") &&
+      source.realDeviceQa.includes("Sufficient Contrast") &&
+      source.realDeviceQa.includes("Reduced Motion") &&
+      source.realDeviceQa.includes("Captions") &&
+      source.realDeviceQa.includes("Audio Descriptions") &&
+      source.realDeviceQa.includes("Sign up, log in, reset password, and open Help/Support/legal links.") &&
+      source.realDeviceQa.includes("Navigate 4U, Gossip, Stuff, Gigs, Merch, Search, profile, Settings, and Account.") &&
+      source.realDeviceQa.includes("Create a safe post/Story, report/block content, and submit account deletion request.") &&
+      source.realDeviceQa.includes("Complete the two-user DM pass, including reply, read indicator, attachment, and notification route.") &&
+      source.realDeviceQa.includes("Run verification upload, booking request/deposit return, Merch browsing/order history, and controlled checkout return paths.") &&
+      source.realDeviceQa.includes("Repo-safe accessibility summary fields are limited to release candidate") &&
+      source.realDeviceQa.includes("Do not commit private messages, payment data, license documents, console screenshots, account identifiers, tester emails, or personal contact details"),
   },
   {
     label: "store screenshot inventory blocks unsafe review images",
