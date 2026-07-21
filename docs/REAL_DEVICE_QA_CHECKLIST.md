@@ -6,7 +6,7 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 
 - Run `npm.cmd run smoke:public` against production and confirm public routes, private redirects, public fallback detail pages, metadata, and safety-copy checks pass.
 - Run `npm.cmd run smoke:mobile` against production and confirm the 390px mobile browser checks pass for auth, support/help/legal, search/profile, missing-detail fallback, and checkout-status routes before manual device testing.
-- Run `$env:SMOKE_MOBILE_PROFILE="ios"; npm.cmd run smoke:mobile` against production as an iPhone Safari-shaped scouting pass. This is useful for route, overflow, and error checks, but it does not replace the actual iPhone/TestFlight evidence below.
+- Run `npm.cmd run smoke:mobile:ios` against production as an iPhone Safari-shaped scouting pass. This is useful for route, overflow, and error checks, but it does not replace the actual iPhone/TestFlight evidence below.
 - Confirm the build points at `https://thetattoocore.com/login`.
 - Confirm the installed Android app came from the intended Google Play internal testing track and record the release/build number shown to testers.
 - Confirm the installed iOS app came from the intended TestFlight group and record the version/build number shown to testers.

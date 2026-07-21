@@ -31,6 +31,7 @@
     "smoke:env": "node scripts/smoke-env-guards.mjs",
     "smoke:docs": "node scripts/smoke-docs-readiness.mjs",
     "smoke:mobile": "node scripts/smoke-mobile-browser.mjs",
+    "smoke:mobile:ios": "set SMOKE_MOBILE_PROFILE=ios&& node scripts/smoke-mobile-browser.mjs",
     "smoke:theme": "node scripts/smoke-theme-tokens.mjs",
     "qa:android-device": "node scripts/android-device-qa-probe.mjs"
   },

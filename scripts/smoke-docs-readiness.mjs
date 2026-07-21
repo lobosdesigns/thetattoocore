@@ -363,7 +363,8 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("controlled launch checkout") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run smoke:public") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run smoke:mobile") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes('SMOKE_MOBILE_PROFILE="ios"') &&
+      packageJson.includes('"smoke:mobile:ios": "set SMOKE_MOBILE_PROFILE=ios&& node scripts/smoke-mobile-browser.mjs"') &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run smoke:mobile:ios") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("iPhone Safari-shaped scouting pass") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Google Play internal testing track") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("TestFlight group") &&
