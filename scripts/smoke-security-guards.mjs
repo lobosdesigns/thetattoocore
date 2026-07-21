@@ -783,6 +783,9 @@ const checks = [
       settingsPage.includes("isProfessionalAccount") &&
       settingsPage.includes("canOpenAds") &&
       settingsPage.includes('group.href !== "/settings/ads" || canOpenAds') &&
+      settingsPage.includes('href: "/settings/language"') &&
+      settingsPage.includes('href: "/settings/socials"') &&
+      settingsPage.includes("Language and social links have direct shortcuts") &&
       settingsPage.includes("Professional tools appear when your account is") &&
       productPlan.includes("role-aware panels and Settings cards"),
   },

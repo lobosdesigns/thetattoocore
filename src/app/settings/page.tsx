@@ -9,7 +9,9 @@ import {
   CreditCard,
   Home,
   Languages,
+  LinkIcon,
   Megaphone,
+  MapPin,
   Palette,
   ShieldCheck,
   UserRound,
@@ -33,16 +35,28 @@ type SettingsGroup = {
 
 const memberSettingsGroups: SettingsGroup[] = [
   {
-    description: "Identity, profile photo, banner, bio, social links, and shop links.",
+    description: "Identity, profile photo, banner, bio, and public profile basics.",
     href: "/settings/profile",
     icon: UserRound,
     label: "Profile",
   },
   {
-    description: "City, region, language signal, and local discovery controls.",
+    description: "City, region, and local discovery controls.",
     href: "/settings/location",
+    icon: MapPin,
+    label: "Location",
+  },
+  {
+    description: "Preferred language signal for account and discovery context.",
+    href: "/settings/language",
     icon: Languages,
-    label: "Location and language",
+    label: "Language",
+  },
+  {
+    description: "Website, social profiles, and shop links.",
+    href: "/settings/socials",
+    icon: LinkIcon,
+    label: "Social links",
   },
   {
     description: "Light, dark, or system appearance.",
@@ -168,7 +182,8 @@ export default async function SettingsPage() {
           <h1 className="mt-1 text-3xl font-black">Choose what to manage</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
             Profile, privacy, notifications, bookings, orders, and Help each
-            have their own door. Professional tools appear when your account is
+            have their own door. Language and social links have direct shortcuts
+            for quicker mobile edits. Professional tools appear when your account is
             eligible, so mobile settings do not turn into one long scroll.
           </p>
         </header>
