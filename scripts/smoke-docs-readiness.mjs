@@ -843,6 +843,9 @@ const checks = [
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Admin > Payments reconciliation result") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Keep payment intent IDs, checkout session IDs") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("raw console exports in the private release handoff only") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("npm.cmd run smoke:env") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("npm.cmd run smoke:payments") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("environment drift, event coverage drift, and secret-boundary regressions") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Native checkout policy review must be dated") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("July 20, 2026 review source set") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Apple App Review Guidelines and Google Play Payments policy") &&

@@ -30,6 +30,7 @@ Stripe checkout is wired for controlled launch testing across Merch, ads, and ac
 ## Production Switch Checklist
 
 - Replace test payment keys with live keys only after the full policy review is complete.
+- Run `npm.cmd run smoke:env` and `npm.cmd run smoke:payments` against the release candidate before changing live/test mode so environment drift, event coverage drift, and secret-boundary regressions are caught first.
 - Set `STRIPE_EXPECTED_LIVEMODE=true` only when the production keys and live webhook endpoint are ready; keep it `false` for test checkout so test and live payment updates cannot mix. Checkout routes also compare this setting with the server payment key prefix before creating payment sessions. If the explicit mode setting is missing, webhooks fall back to the server payment key prefix and still reject mismatched payment updates.
 - Configure live webhook endpoint and verify `STRIPE_WEBHOOK_SECRET` in Cloudflare. The production destination is `https://thetattoocore.com/api/stripe/webhook` and should listen for checkout, refund, dispute, and seller account status events.
 - Enable the live webhook events needed by the app: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `charge.refunded`, `refund.failed`, `charge.dispute.created`, `charge.dispute.updated`, `charge.dispute.closed`, `charge.dispute.funds_withdrawn`, `charge.dispute.funds_reinstated`, and `account.updated`.
