@@ -122,6 +122,7 @@ const publicCopySource = [
   helpCenter,
   helpCenterSearch,
 ].join("\n");
+const publicTrustPageSource = [privacyPage, supportPage, termsPage].join("\n");
 const adminStatusPages = [
   adminDashboardPage,
   adminAdsPage,
@@ -804,8 +805,10 @@ const checks = [
     ),
   },
   {
-    label: "public privacy copy avoids roadmap-style future wording",
-    ok: publicRoadmapSnippets.every((snippet) => !privacyPage.includes(snippet)),
+    label: "public trust pages avoid roadmap-style future wording",
+    ok: publicRoadmapSnippets.every(
+      (snippet) => !publicTrustPageSource.includes(snippet),
+    ),
   },
   {
     label: "public privacy copy covers data safety without raw payment credential collection",
