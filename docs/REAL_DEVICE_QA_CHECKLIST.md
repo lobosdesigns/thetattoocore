@@ -217,6 +217,16 @@ Before treating an Android/iOS wrapper build as release-ready, run the stricter
 native release gate:
 
 ```powershell
+npm.cmd run verify:native-predevice
+```
+
+Use this pre-device native readiness scout before screenshot, console-copy, or
+handoff review while the Android review device is not authorized yet. It checks
+environment boundaries, native wrapper safety, readiness docs, store metadata,
+Android-profile mobile routes, and iOS-profile mobile routes, but it is not
+real-device evidence.
+
+```powershell
 npm.cmd run verify:native-release
 ```
 
