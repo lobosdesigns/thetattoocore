@@ -252,6 +252,19 @@ const checks = [
       source.realDeviceQa.includes("install or confirm the Play-installed build"),
   },
   {
+    label: "Google Play closed-test evidence stays private and production-access ready",
+    ok:
+      source.mobileRunbook.includes("If Google Play shows a production-access testing requirement") &&
+      source.mobileRunbook.includes("controlled closed test with the existing tester community or Google Group") &&
+      source.mobileRunbook.includes("at least 12 testers opted in for 14 continuous days") &&
+      source.mobileRunbook.includes("archive the production-access application answers privately") &&
+      source.mobileRunbook.includes("Google Play production access: if the account/app is subject to closed-test") &&
+      source.realDeviceQa.includes("Google Play internal testing or closed testing if production access requires it") &&
+      source.realDeviceQa.includes("closed-test date range for the exact build under review") &&
+      source.realDeviceQa.includes("12-tester participation, 14-day duration, feedback summary, and production-access request result in the private handoff") &&
+      source.realDeviceQa.includes("Repo-safe summary fields are limited to platform, release channel, version/build, date, device model, and pass/fail status"),
+  },
+  {
     label: "native push plan keeps Firebase gated behind app config and device evidence",
     ok:
       source.nativePrep.includes("## Native Push Plan") &&
