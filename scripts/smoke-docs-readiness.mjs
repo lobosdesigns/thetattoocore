@@ -940,18 +940,24 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("## Submission Blocker Matrix") &&
       docs["docs/APP_STORE_READINESS.md"].includes("## Current Store Console Snapshot") &&
       docs["docs/APP_STORE_READINESS.md"].includes("| Surface | Repo-safe status | Next action | Private evidence location |") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("| Apple App Store Connect | TestFlight internal build and reviewer account exist; public submission not ready.") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("| Google Play Console | Internal testing release and reviewer account exist; production review not ready.") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("The Tattoo Core iOS `1.0` in Prepare for Submission") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("refreshed Apple sign-in/2FA") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("TheTattooCore Data Safety page is open at the questionnaire start page") &&
       docs["docs/APP_STORE_READINESS.md"].includes("final reviewer access validation for the selected build") &&
       docs["docs/APP_STORE_READINESS.md"].includes("final reviewer access validation for the selected release track") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("| Payments | Checkout and webhook code is guarded; live-money release is not cleared.") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("| Native push | Web push display/storage is prepared; native alert delivery is planned but not enabled.") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("with account verification and Connect setup still outstanding") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Firebase console is open at the project list/welcome state") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("no TTC Firebase project is selected") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Native pre-device verification passed") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("zero visible devices") &&
       !docs["docs/APP_STORE_READINESS.md"].includes("native Firebase/FCM delivery") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Complete the Native Push Private Evidence Matrix") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private release handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private payment handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private native QA handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Store consoles") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Apple still needs refreshed sign-in/2FA") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("questionnaire start page") &&
       docs["docs/APP_STORE_READINESS.md"].includes("13-inch iPad screenshot upload") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Content Rights") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Accessibility Nutrition Labels") &&
