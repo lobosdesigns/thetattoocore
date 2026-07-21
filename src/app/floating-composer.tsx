@@ -16,11 +16,45 @@ import { WordLimitedField } from "./word-limited-field";
 const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
 const imageVideoAccept = `${imageAccept},video/mp4,video/quicktime`;
 
-const visibilityOptions = [
-  ["Public preview", "Searchable preview for logged-out visitors."],
-  ["Members only", "Visible after login. Good for shop talk, community posts, and member context."],
-  ["Private", "Only you can see it. Useful for drafts or content you are not ready to share."],
-] as const;
+type ComposerVisibility =
+  | "public_preview"
+  | "members"
+  | "followers"
+  | "verified_professionals"
+  | "private";
+
+type VisibilityOption = {
+  description: string;
+  label: string;
+  value: ComposerVisibility;
+};
+
+const baseVisibilityOptions: VisibilityOption[] = [
+  {
+    description: "Visible to everyone when it follows launch rules.",
+    label: "Public",
+    value: "public_preview",
+  },
+  {
+    description: "Visible after login. Good for shop talk, community posts, and member context.",
+    label: "Members only",
+    value: "members",
+  },
+  {
+    description: "Visible to accepted followers and you.",
+    label: "Followers only",
+    value: "followers",
+  },
+  {
+    description: "Only you can see it. Useful for drafts or content you are not ready to share.",
+    label: "Private",
+    value: "private",
+  },
+];
+
+const storyVisibilityOptions = baseVisibilityOptions.filter(
+  (option) => option.value !== "followers",
+);
 
 function ComposerDetails({
   children,
@@ -70,9 +104,11 @@ function ComposerSubmit({
 function VisibilityControl({
   defaultValue = "public_preview",
   helper,
+  options = baseVisibilityOptions,
 }: {
-  defaultValue?: "members" | "private" | "public_preview";
+  defaultValue?: ComposerVisibility;
   helper?: string;
+  options?: VisibilityOption[];
 }) {
   return (
     <section className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
@@ -83,9 +119,11 @@ function VisibilityControl({
           defaultValue={defaultValue}
           name="visibility"
         >
-          <option value="public_preview">Public preview</option>
-          <option value="members">Members only</option>
-          <option value="private">Private</option>
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
         </select>
       </label>
       {helper ? (
@@ -94,10 +132,10 @@ function VisibilityControl({
         </p>
       ) : null}
       <div className="mt-3 grid gap-2">
-        {visibilityOptions.map(([label, description]) => (
-          <p className="text-xs leading-5 text-[var(--muted-strong)]" key={label}>
-            <span className="font-semibold text-[var(--muted)]">{label}:</span>{" "}
-            {description}
+        {options.map((option) => (
+          <p className="text-xs leading-5 text-[var(--muted-strong)]" key={option.value}>
+            <span className="font-semibold text-[var(--muted)]">{option.label}:</span>{" "}
+            {option.description}
           </p>
         ))}
       </div>
@@ -106,14 +144,27 @@ function VisibilityControl({
 }
 
 export function FloatingComposer({
+  canPostVerifiedGossipAudience,
   canCreate,
   canCreateStuff,
   isSignedIn,
 }: {
+  canPostVerifiedGossipAudience: boolean;
   canCreate: boolean;
   canCreateStuff: boolean;
   isSignedIn: boolean;
 }) {
+  const threadVisibilityOptions = canPostVerifiedGossipAudience
+    ? [
+        ...baseVisibilityOptions,
+        {
+          description: "Visible only to verified artists and vendors.",
+          label: "Verified artists and vendors",
+          value: "verified_professionals" as const,
+        },
+      ]
+    : baseVisibilityOptions;
+
   return (
     <FloatingComposerShell
       canCreate={canCreate}
@@ -153,7 +204,7 @@ export function FloatingComposer({
               />
             </ComposerDetails>
             <ComposerDetails title="Visibility">
-              <VisibilityControl />
+              <VisibilityControl helper="Choose Public for everyone or Followers only when the post is meant for accepted followers." />
             </ComposerDetails>
             <MediaInput accept={imageVideoAccept} name="media" required />
             <ComposerSubmit pendingLabel="Publishing">Publish</ComposerSubmit>
@@ -187,6 +238,7 @@ export function FloatingComposer({
               <VisibilityControl
                 defaultValue="members"
                 helper="Members-only is the default for Stories. Public-preview stories must stay non-sensitive and can be visible to logged-out visitors while active."
+                options={storyVisibilityOptions}
               />
             </ComposerDetails>
             <MediaInput
@@ -218,7 +270,11 @@ export function FloatingComposer({
               validationMessage="Gossip post needs at least 3 characters."
             />
             <ComposerDetails title="Visibility">
-              <VisibilityControl />
+              <VisibilityControl
+                defaultValue="members"
+                helper="Choose Public for everyone, Followers only for accepted followers, or the verified artist/vendor audience when you want professional-only Gossip."
+                options={threadVisibilityOptions}
+              />
             </ComposerDetails>
             <MediaInput accept={imageAccept} name="media" videoAllowed={false} />
             <ComposerSubmit pendingLabel="Posting">Post thread</ComposerSubmit>

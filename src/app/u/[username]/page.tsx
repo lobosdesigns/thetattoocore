@@ -110,6 +110,13 @@ type ViewerProfile = {
   is_adult_confirmed: boolean | null;
 };
 
+type ContentVisibility =
+  | "public_preview"
+  | "members"
+  | "followers"
+  | "verified_professionals"
+  | "private";
+
 type BookingSettings = {
   booking_enabled: boolean;
   booking_note: string | null;
@@ -161,7 +168,7 @@ type FeedPost = {
   feed_post_tags: FeedPostTag[];
   is_sensitive: boolean;
   style_tags: string[];
-  visibility: "public_preview" | "members" | "private";
+  visibility: ContentVisibility;
   feed_media: FeedMedia[];
 };
 
@@ -174,7 +181,7 @@ type ThreadPost = {
   body: string;
   created_at: string;
   is_sensitive: boolean;
-  visibility: "public_preview" | "members" | "private";
+  visibility: ContentVisibility;
 };
 
 type ListingMedia = {
@@ -193,7 +200,7 @@ type Listing = {
   category: string;
   created_at: string;
   is_sensitive: boolean;
-  visibility: "public_preview" | "members" | "private";
+  visibility: ContentVisibility;
   marketplace_media: ListingMedia[];
 };
 
@@ -217,7 +224,7 @@ type Gig = {
   contact_url: string | null;
   created_at: string;
   is_sensitive: boolean;
-  visibility: "public_preview" | "members" | "private";
+  visibility: ContentVisibility;
   gig_media: GigMedia[];
 };
 
@@ -522,10 +529,12 @@ function ContentLabels({
   visibility,
 }: {
   isSensitive?: boolean;
-  visibility?: "public_preview" | "members" | "private";
+  visibility?: ContentVisibility;
 }) {
   const labels = [
     visibility === "members" ? "Members" : null,
+    visibility === "followers" ? "Followers" : null,
+    visibility === "verified_professionals" ? "Verified artists and vendors" : null,
     visibility === "private" ? "Private" : null,
     isSensitive ? "Sensitive" : null,
   ].filter(Boolean);
@@ -575,7 +584,7 @@ function TaggedMemberLinks({ tags }: { tags: FeedPostTag[] }) {
 
 type VisibleContent = {
   is_sensitive: boolean;
-  visibility: "public_preview" | "members" | "private";
+  visibility: ContentVisibility;
 };
 
 function canRenderContent({
@@ -589,7 +598,7 @@ function canRenderContent({
 }) {
   if (isOwnProfile) return true;
   if (item.visibility === "private") return false;
-  if (item.visibility === "members" && !viewer.isSignedIn) return false;
+  if (item.visibility !== "public_preview" && !viewer.isSignedIn) return false;
   if (item.is_sensitive && !viewer.isAdultConfirmed) return false;
 
   return true;

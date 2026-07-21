@@ -59,6 +59,13 @@ type ViewerProfile = {
   is_adult_confirmed: boolean | null;
 };
 
+type ContentVisibility =
+  | "public_preview"
+  | "members"
+  | "followers"
+  | "verified_professionals"
+  | "private";
+
 type ThreadMedia = {
   id: string;
   media_type: "image";
@@ -75,7 +82,7 @@ type ThreadPost = {
   thread_comments?: ThreadComment[];
   thread_likes: ThreadLike[];
   thread_media: ThreadMedia[];
-  visibility: "public_preview" | "members" | "private";
+  visibility: ContentVisibility;
 };
 
 type ThreadComment = {
@@ -201,7 +208,7 @@ function canViewThread({
 }) {
   if (isOwnThread) return true;
   if (thread.visibility === "private") return false;
-  if (thread.visibility === "members" && !viewer.isSignedIn) return false;
+  if (thread.visibility !== "public_preview" && !viewer.isSignedIn) return false;
   if (thread.is_sensitive && !viewer.isAdultConfirmed) return false;
 
   return true;

@@ -61,6 +61,13 @@ type ViewerProfile = {
   is_adult_confirmed: boolean | null;
 };
 
+type ContentVisibility =
+  | "public_preview"
+  | "members"
+  | "followers"
+  | "verified_professionals"
+  | "private";
+
 type FeedMedia = {
   id: string;
   media_type: "image" | "video";
@@ -80,7 +87,7 @@ type FeedPost = {
   post_likes: PostLike[];
   profiles: Profile | null;
   style_tags: string[];
-  visibility: "public_preview" | "members" | "private";
+  visibility: ContentVisibility;
 };
 
 type FeedPostTag = {
@@ -241,7 +248,7 @@ function canViewPost({
 }) {
   if (isOwnPost) return true;
   if (post.visibility === "private") return false;
-  if (post.visibility === "members" && !viewer.isSignedIn) return false;
+  if (post.visibility !== "public_preview" && !viewer.isSignedIn) return false;
   if (post.is_sensitive && !viewer.isAdultConfirmed) return false;
 
   return true;

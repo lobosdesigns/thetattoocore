@@ -87,13 +87,20 @@ type Profile = {
   suspended_at?: string | null;
 };
 
+type ContentVisibility =
+  | "public_preview"
+  | "members"
+  | "followers"
+  | "verified_professionals"
+  | "private";
+
 type FeedPost = {
   id: string;
   caption: string | null;
   feed_post_tags: FeedPostTag[];
   feed_media: PostMedia[];
   is_sensitive: boolean;
-  visibility: "public_preview" | "members" | "private";
+  visibility: ContentVisibility;
   post_comments: PostComment[];
   post_likes: PostLike[];
   style_tags: string[];
@@ -117,7 +124,7 @@ type ThreadPost = {
   thread_comments: ThreadComment[];
   thread_likes: ThreadLike[];
   thread_media: ThreadMedia[];
-  visibility: "public_preview" | "members" | "private";
+  visibility: ContentVisibility;
   profiles: Profile | null;
 };
 
@@ -133,7 +140,7 @@ type MarketplaceListing = {
   city: string | null;
   region: string | null;
   created_at: string;
-  visibility: "public_preview" | "members" | "private";
+  visibility: ContentVisibility;
   profiles: Profile | null;
 };
 
@@ -190,7 +197,7 @@ type Gig = {
   created_at: string;
   gig_media: GigMedia[];
   is_sensitive: boolean;
-  visibility: "public_preview" | "members" | "private";
+  visibility: ContentVisibility;
   profiles: Profile | null;
 };
 
@@ -210,7 +217,7 @@ type StoryPost = {
   story_media: StoryMedia[];
   story_reactions?: { count: number }[];
   story_views?: { count: number }[];
-  visibility: "public_preview" | "members" | "private";
+  visibility: ContentVisibility;
   profiles: Profile | null;
 };
 
@@ -869,10 +876,12 @@ function ContentLabels({
   visibility,
 }: {
   isSensitive?: boolean;
-  visibility?: "public_preview" | "members" | "private";
+  visibility?: ContentVisibility;
 }) {
   const labels = [
     visibility === "members" ? "Members" : null,
+    visibility === "followers" ? "Followers" : null,
+    visibility === "verified_professionals" ? "Verified artists and vendors" : null,
     visibility === "private" ? "Private" : null,
     isSensitive ? "Sensitive" : null,
   ].filter(Boolean);
@@ -923,7 +932,7 @@ function TaggedMemberLinks({ tags }: { tags: FeedPostTag[] }) {
 
 type VisibleContent = {
   is_sensitive: boolean;
-  visibility: "public_preview" | "members" | "private";
+  visibility: ContentVisibility;
 };
 
 function canRenderContent(
@@ -931,7 +940,7 @@ function canRenderContent(
   viewer: { isSignedIn: boolean; isAdultConfirmed: boolean },
 ) {
   if (item.visibility === "private") return false;
-  if (item.visibility === "members" && !viewer.isSignedIn) return false;
+  if (item.visibility !== "public_preview" && !viewer.isSignedIn) return false;
 
   return true;
 }
@@ -3311,6 +3320,10 @@ export default async function Home({
         unreadDmBadge={unreadDmBadge}
       />
       <FloatingComposer
+        canPostVerifiedGossipAudience={Boolean(
+          currentProfile?.license_verified_at &&
+            ["artist", "vendor"].includes(currentProfile.account_type),
+        )}
         canCreate={canCreate}
         canCreateStuff={canCreateStuff}
         isSignedIn={isSignedIn}

@@ -35,6 +35,14 @@ const feedPostTagNotificationMigration = readFileSync(
   "supabase/migrations/20260721141027_feed_post_tag_notifications.sql",
   "utf8",
 );
+const contentAudienceEnumMigration = readFileSync(
+  "supabase/migrations/20260721152000_content_audience_enum.sql",
+  "utf8",
+);
+const feedGossipAudienceMigration = readFileSync(
+  "supabase/migrations/20260721152100_feed_gossip_audience_policies.sql",
+  "utf8",
+);
 
 const memberUploadSource = [composer, mediaInput].join("\n");
 const currentCreateCopySource = [actions, composer].join("\n");
@@ -408,6 +416,52 @@ const checks = [
       postDetailPage.includes("function TaggedMemberLinks") &&
       postDetailPage.includes("feed_post_tags(profiles:profiles!feed_post_tags_tagged_profile_id_fkey") &&
       postDetailPage.includes('name="tagged_usernames"'),
+  },
+  {
+    label: "4U and Gossip composer expose public and followers-only audiences",
+    ok:
+      composer.includes("Followers only") &&
+      composer.includes("Visible to accepted followers and you.") &&
+      composer.includes("Choose Public for everyone or Followers only") &&
+      composer.includes("Choose Public for everyone, Followers only for accepted followers") &&
+      composer.includes('value: "followers"') &&
+      actions.includes("FEED_VISIBILITY_VALUES") &&
+      actions.includes("THREAD_VISIBILITY_VALUES") &&
+      actions.includes('"followers"') &&
+      homePage.includes('visibility === "followers" ? "Followers" : null') &&
+      postDetailPage.includes('post.visibility !== "public_preview" && !viewer.isSignedIn') &&
+      threadDetailPage.includes('thread.visibility !== "public_preview" && !viewer.isSignedIn'),
+  },
+  {
+    label: "Gossip supports verified artist and vendor audience with server and RLS guards",
+    ok:
+      contentAudienceEnumMigration.includes("'verified_professionals'") &&
+      feedGossipAudienceMigration.includes("current_user_is_verified_artist_or_vendor") &&
+      feedGossipAudienceMigration.includes("viewer.account_type in ('artist', 'vendor')") &&
+      feedGossipAudienceMigration.includes("viewer.license_verified_at is not null") &&
+      feedGossipAudienceMigration.includes("visibility <> 'verified_professionals'") &&
+      feedGossipAudienceMigration.includes("current_user_can_view_thread_post") &&
+      feedGossipAudienceMigration.includes("current_user_can_interact_with_thread_post") &&
+      composer.includes("Verified artists and vendors") &&
+      actions.includes("canPostVerifiedGossipAudience") &&
+      actions.includes('visibility === "verified_professionals"') &&
+      actions.includes("Verified artist and vendor Gossip posts require a verified artist or vendor account."),
+  },
+  {
+    label: "feed and Gossip RLS policies inherit followers and professional audience visibility",
+    ok:
+      contentAudienceEnumMigration.includes("'followers'") &&
+      feedGossipAudienceMigration.includes("current_user_is_accepted_follower") &&
+      feedGossipAudienceMigration.includes("follows.status = 'accepted'") &&
+      feedGossipAudienceMigration.includes("current_user_can_view_feed_post") &&
+      feedGossipAudienceMigration.includes("current_user_can_interact_with_feed_post") &&
+      feedGossipAudienceMigration.includes("Visible feed media can be read") &&
+      feedGossipAudienceMigration.includes("Visible feed post tags can be read") &&
+      feedGossipAudienceMigration.includes("Members can read visible post comment media") &&
+      feedGossipAudienceMigration.includes("Thread media follows thread visibility") &&
+      feedGossipAudienceMigration.includes("Members can read visible thread comment media") &&
+      feedGossipAudienceMigration.includes("post_visibility = 'followers'") &&
+      feedGossipAudienceMigration.includes("post_visibility = 'verified_professionals'"),
   },
   {
     label: "4U post tags notify newly tagged members through feed preferences",

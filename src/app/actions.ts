@@ -16,7 +16,31 @@ import { cleanExternalUrl } from "@/lib/urls";
 import { isVerifiedProfessional } from "@/lib/verification";
 
 const MEDIA_BUCKET = "tattoo-media";
-const VISIBILITY_VALUES = new Set(["public_preview", "members", "private"]);
+type ContentVisibility =
+  | "public_preview"
+  | "members"
+  | "followers"
+  | "verified_professionals"
+  | "private";
+
+const BASE_VISIBILITY_VALUES = new Set<ContentVisibility>([
+  "public_preview",
+  "members",
+  "private",
+]);
+const FEED_VISIBILITY_VALUES = new Set<ContentVisibility>([
+  "public_preview",
+  "members",
+  "followers",
+  "private",
+]);
+const THREAD_VISIBILITY_VALUES = new Set<ContentVisibility>([
+  "public_preview",
+  "members",
+  "followers",
+  "verified_professionals",
+  "private",
+]);
 const REPORT_SUBJECT_TYPES = new Set([
   "comment",
   "profile",
@@ -555,11 +579,33 @@ async function removeFollowRelationship({
 
 function cleanVisibility(
   value: FormDataEntryValue | null,
-  fallback: "public_preview" | "members" | "private",
+  fallback: ContentVisibility,
+  allowedValues: Set<ContentVisibility> = BASE_VISIBILITY_VALUES,
 ) {
   const text = cleanText(value, 32);
 
-  return VISIBILITY_VALUES.has(text) ? text : fallback;
+  return allowedValues.has(text as ContentVisibility)
+    ? (text as ContentVisibility)
+    : fallback;
+}
+
+async function canPostVerifiedGossipAudience({
+  supabase,
+  userId,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId: string;
+}) {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("account_type, license_verified_at")
+    .eq("id", userId)
+    .maybeSingle<{ account_type: string; license_verified_at: string | null }>();
+
+  return Boolean(
+    profile?.license_verified_at &&
+      ["artist", "vendor"].includes(profile.account_type),
+  );
 }
 
 function sensitiveFields() {
@@ -826,7 +872,11 @@ export async function createFeedPost(formData: FormData) {
   const locationLabel = cleanText(formData.get("location_label"), 80);
   const media = mediaFromForm(formData, "media");
   const sensitive = sensitiveFields();
-  const visibility = cleanVisibility(formData.get("visibility"), "public_preview");
+  const visibility = cleanVisibility(
+    formData.get("visibility"),
+    "public_preview",
+    FEED_VISIBILITY_VALUES,
+  );
   const styleTags = cleanText(formData.get("style_tags"), 160)
     .split(",")
     .map((tag) => tag.trim().toLowerCase())
@@ -1667,10 +1717,26 @@ export async function createThreadPost(formData: FormData) {
   const media = mediaFromForm(formData, "media");
   const metadata = media ? await inspectMediaFile(media) : null;
   const sensitive = sensitiveFields();
-  const visibility = cleanVisibility(formData.get("visibility"), "members");
+  const visibility = cleanVisibility(
+    formData.get("visibility"),
+    "members",
+    THREAD_VISIBILITY_VALUES,
+  );
 
   if (body.length < 3) {
     redirect(homeMessage("Gossip post needs at least 3 characters.", "threads"));
+  }
+
+  if (
+    visibility === "verified_professionals" &&
+    !(await canPostVerifiedGossipAudience({ supabase, userId }))
+  ) {
+    redirect(
+      homeMessage(
+        "Verified artist and vendor Gossip posts require a verified artist or vendor account.",
+        "threads",
+      ),
+    );
   }
 
   if (metadata) {
