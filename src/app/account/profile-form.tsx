@@ -891,11 +891,11 @@ export function ProfileForm({
               />
               <span>
                 <span className="block text-sm font-medium">
-                  Prepare push notifications
+                  Save device app alert preference
                 </span>
                 <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
-                  Saves your preference only. Push alerts stay off until device
-                  setup and delivery settings are ready.
+                  Saves your preference only. Device alerts stay off until
+                  device setup and delivery settings are ready.
                 </span>
               </span>
             </label>

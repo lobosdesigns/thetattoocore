@@ -529,6 +529,22 @@ const checks = [
       source.screenshotInventory.includes("Current Google Play phone cap: 4 to 8 screenshots") &&
       source.screenshotInventory.includes("Current App Store screenshot cap: 1 to 10 screenshots") &&
       source.screenshotInventory.includes("selected 13-inch iPad set") &&
+      source.screenshotInventory.includes("## Console Upload Validation Packet") &&
+      source.screenshotInventory.includes("Create one private packet for each store asset set before public review") &&
+      source.screenshotInventory.includes("selected build or release track") &&
+      source.screenshotInventory.includes("uploaded filenames") &&
+      source.screenshotInventory.includes("upload validation result") &&
+      source.screenshotInventory.includes("final action owner") &&
+      source.screenshotInventory.includes("raw console screenshots") &&
+      source.screenshotInventory.includes("private reviewer credentials") &&
+      source.screenshotInventory.includes("contact phone details") &&
+      source.screenshotInventory.includes("dashboard IDs") &&
+      source.screenshotInventory.includes("Before marking a set `validated`") &&
+      source.screenshotInventory.includes("PNG files have no alpha channel") &&
+      source.screenshotInventory.includes("file sizes are within the store limit") &&
+      source.screenshotInventory.includes("infrastructure/provider names") &&
+      source.screenshotInventory.includes("still match the selected") &&
+      source.screenshotInventory.includes("metadata, privacy, age-rating, and payment-status edits") &&
       uploadSelectedScreenshotNames.playPhone.every((name) =>
         source.screenshotInventory.includes(name),
       ) &&

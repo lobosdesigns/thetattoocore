@@ -276,9 +276,13 @@ const checks = [
       userFacingPushSource.includes("verification, and safety notices") &&
       userFacingPushSource.includes("Device alerts are being prepared. Keep checking Notifications for now.") &&
       userFacingPushSource.includes("Device alert preference saved. Keep checking Notifications for now.") &&
+      userFacingPushSource.includes("Save device app alert preference") &&
+      userFacingPushSource.includes("Device alerts stay off until") &&
       userFacingPushSource.includes("App alert setup could not be completed.") &&
       !userFacingPushSource.includes("Enabled on this device.") &&
       !userFacingPushSource.includes("Ready when you turn it on.") &&
+      !userFacingPushSource.includes("Prepare push notifications") &&
+      !userFacingPushSource.includes("Push alerts stay off") &&
       !userFacingPushSource.includes("Push setup could not be completed.") &&
       !userFacingPushSource.includes("Push permission was not enabled.") &&
       !userFacingPushSource.includes("Push could not be turned off.") &&

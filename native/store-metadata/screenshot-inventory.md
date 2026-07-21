@@ -81,6 +81,29 @@ first App Store Connect upload validation attempt:
 Keep rejected-upload screenshots, console validation errors, and final
 replacement decisions in the private release handoff only.
 
+## Console Upload Validation Packet
+
+Create one private packet for each store asset set before public review:
+
+- Google Play phone screenshots
+- Google Play feature graphic
+- App Store iPhone 6.5-inch screenshots
+- App Store 13-inch iPad screenshots
+
+Each packet should record only repo-safe summary values in this file or
+`docs/APP_STORE_READINESS.md`: asset set, selected build or release track,
+uploaded filenames, upload validation result, final action owner, and pass/fail
+status. Keep raw console screenshots, rejection text that contains account
+details, private reviewer credentials, contact phone details, device identifiers,
+and dashboard IDs in the private release handoff only.
+
+Before marking a set `validated`, confirm the exact uploaded files match the
+selected generated or real-device capture set, dimensions match the store class,
+PNG files have no alpha channel, file sizes are within the store limit, visible
+copy has no private DMs, license documents, real payment data, visible nudity,
+or infrastructure/provider names, and the screenshots still match the selected
+build after metadata, privacy, age-rating, and payment-status edits.
+
 ## Screenshot Replacement Status
 
 | Store asset set | Current repo asset | Final public-review requirement | Status |
