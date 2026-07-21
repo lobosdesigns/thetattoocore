@@ -294,6 +294,12 @@ const checks = [
       profileContentTabs.includes('event.key === "End"') &&
       profileContentTabs.includes("window.requestAnimationFrame") &&
       profileContentTabs.includes("window.history.replaceState(null, \"\", `#${tabId}`)") &&
+      mobileSmoke.includes("#profile-gossip") &&
+      mobileSmoke.includes("Longer posts, questions, and shop talk.") &&
+      mobileSmoke.includes("#profile-stuff") &&
+      mobileSmoke.includes("Flash, supplies, studio gear, and services.") &&
+      mobileSmoke.includes("#profile-gigs") &&
+      mobileSmoke.includes("Jobs, conventions, guest spots, and events.") &&
       mobileSmoke.includes("#profile-merch") &&
       mobileSmoke.includes("Fan-facing shirts, prints, art, stickers, and brand goods.") &&
       !profilePage.includes("function ProfileContentNav"),

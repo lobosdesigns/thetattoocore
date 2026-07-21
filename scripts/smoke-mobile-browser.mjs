@@ -140,6 +140,21 @@ const routes = [
     titleIncludes: "CEOCore",
   },
   {
+    path: "/u/ceocore?profile_4u=50&profile_gossip=50&profile_stuff=50&profile_gigs=50&profile_merch=50#profile-gossip",
+    textIncludes: ["@ceocore", "Longer posts, questions, and shop talk."],
+    titleIncludes: "CEOCore",
+  },
+  {
+    path: "/u/ceocore?profile_4u=50&profile_gossip=50&profile_stuff=50&profile_gigs=50&profile_merch=50#profile-stuff",
+    textIncludes: ["@ceocore", "Flash, supplies, studio gear, and services."],
+    titleIncludes: "CEOCore",
+  },
+  {
+    path: "/u/ceocore?profile_4u=50&profile_gossip=50&profile_stuff=50&profile_gigs=50&profile_merch=50#profile-gigs",
+    textIncludes: ["@ceocore", "Jobs, conventions, guest spots, and events."],
+    titleIncludes: "CEOCore",
+  },
+  {
     path: "/u/ceocore?profile_4u=50&profile_gossip=50&profile_stuff=50&profile_gigs=50&profile_merch=50#profile-merch",
     textIncludes: ["@ceocore", "Fan-facing shirts, prints, art, stickers, and brand goods."],
     titleIncludes: "CEOCore",
