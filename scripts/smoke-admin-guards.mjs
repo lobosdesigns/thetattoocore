@@ -248,13 +248,16 @@ const checks = [
       adminActions.includes("await adminClient.auth.admin.deleteUser(profileId)") &&
       adminActions.includes('event_type: "user_account_deleted"') &&
       adminActions.includes("You cannot delete your own account.") &&
+      adminActions.includes("Owner accounts cannot be demoted.") &&
       adminActions.includes("Owner accounts cannot be deleted.") &&
       adminActions.includes("Owner role required to delete admin accounts.") &&
       adminActions.includes("Type delete to confirm account deletion.") &&
       adminUsers.includes("deleteUserAccount") &&
       adminUsers.includes("const canDeleteAccounts = canGrantAdCredits") &&
       adminUsers.includes("const isOwnerAccount = user.role === \"owner\"") &&
+      adminUsers.includes("const canManageUserRole = canManageRoles && !isOwnerAccount") &&
       adminUsers.includes("const canModerateStatus = !isOwnerAccount") &&
+      adminUsers.includes("Owner account role is locked.") &&
       adminUsers.includes("Owner account moderation actions are locked.") &&
       adminUsers.includes("const canDeleteUser =") &&
       adminUsers.includes("canDeleteAccounts && !isOwnerAccount") &&

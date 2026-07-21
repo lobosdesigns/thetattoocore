@@ -523,6 +523,10 @@ export async function changeUserRole(formData: FormData) {
     );
   }
 
+  if (target.role === "owner" && role !== "owner") {
+    redirect(adminUsersMessage("Owner accounts cannot be demoted.", returnTo));
+  }
+
   const { error: updateError } = await supabase
     .from("profiles")
     .update({

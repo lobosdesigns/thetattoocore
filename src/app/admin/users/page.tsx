@@ -479,6 +479,7 @@ export default async function AdminUsersPage({
               !isOwnerAccount &&
               user.id !== claims.sub &&
               (canManageRoles || user.role !== "admin");
+            const canManageUserRole = canManageRoles && !isOwnerAccount;
             const canModerateStatus = !isOwnerAccount;
 
             return (
@@ -526,7 +527,7 @@ export default async function AdminUsersPage({
               </div>
 
               <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
-                {canManageRoles ? (
+                {canManageUserRole ? (
                   <form
                     action={changeUserRole}
                     className="grid gap-2 sm:grid-cols-[1fr_auto] lg:grid-cols-1"
@@ -548,6 +549,10 @@ export default async function AdminUsersPage({
                       Update role
                     </button>
                   </form>
+                ) : isOwnerAccount ? (
+                  <div className="rounded-md border border-[color-mix(in_srgb,var(--gold)_32%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_9%,var(--paper-warm))] px-3 py-2 text-xs font-semibold text-[var(--muted-strong)]">
+                    Owner account role is locked.
+                  </div>
                 ) : (
                   <div className="hidden lg:block" />
                 )}
