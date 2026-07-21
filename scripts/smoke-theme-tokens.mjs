@@ -34,6 +34,46 @@ const requiredSnippets = [
     ],
   },
   {
+    file: "src/app/sensitive-content-gate.tsx",
+    snippets: [
+      "bg-[color-mix(in_srgb,var(--foreground)_92%,transparent)] p-4 text-center text-[var(--background)]",
+      "text-[color-mix(in_srgb,var(--background)_72%,transparent)]",
+      "bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm font-semibold text-[var(--foreground)]",
+    ],
+  },
+  {
+    file: "src/app/media-input.tsx",
+    snippets: [
+      "border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]",
+      "bg-[var(--foreground)] text-[var(--background)]",
+      "text-xs font-semibold",
+    ],
+  },
+  {
+    file: "src/app/account/license-document-input.tsx",
+    snippets: [
+      "border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]",
+      "bg-[var(--foreground)] text-[var(--background)]",
+      "text-[var(--muted-strong)]",
+    ],
+  },
+  {
+    file: "src/app/account/profile-form.tsx",
+    snippets: [
+      "ttc-control-active shadow-[0_8px_18px_rgba(23,20,18,0.16)]",
+      "flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[var(--foreground)] text-xl font-bold text-[var(--brand-gold)]",
+      "h-11 rounded-md bg-[var(--foreground)] px-5 text-sm font-semibold text-[var(--background)]",
+    ],
+  },
+  {
+    file: "src/app/account/page.tsx",
+    snippets: [
+      "inline-flex h-9 items-center justify-center rounded-md bg-[var(--foreground)] px-3 text-sm font-semibold text-[var(--background)]",
+      "border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]",
+      "h-10 w-full rounded-md border border-[var(--card-rim)] bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)] sm:w-fit",
+    ],
+  },
+  {
     file: "src/app/admin/page.tsx",
     snippets: [
       "bg-[#090806] px-5 py-5 text-white",
