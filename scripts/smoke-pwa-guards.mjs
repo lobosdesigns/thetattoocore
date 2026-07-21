@@ -209,12 +209,16 @@ const checks = [
       manifest.includes('"start_url": "/login"') &&
       manifest.includes('"name": "4U"') &&
       manifest.includes('"url": "/#feed"') &&
+      mobileSmoke.includes('path: "/#feed"') &&
       manifest.includes('"name": "Gossip"') &&
       manifest.includes('"url": "/#threads"') &&
+      mobileSmoke.includes('path: "/#threads"') &&
       manifest.includes('"name": "Stuff"') &&
       manifest.includes('"url": "/#marketplace"') &&
+      mobileSmoke.includes('path: "/#marketplace"') &&
       manifest.includes('"name": "Gigs"') &&
       manifest.includes('"url": "/#gigs"') &&
+      mobileSmoke.includes('path: "/#gigs"') &&
       manifest.includes('"name": "DM"') &&
       manifest.includes('"url": "/messages"') &&
       mobileSmoke.includes('path: "/messages"') &&
@@ -222,6 +226,7 @@ const checks = [
       manifest.includes('"url": "/notifications"') &&
       manifest.includes('"name": "Merch"') &&
       manifest.includes('"url": "/#merch"') &&
+      mobileSmoke.includes('path: "/#merch"') &&
       (manifest.match(/"icons": \[/g) || []).length >= 8,
   },
   {

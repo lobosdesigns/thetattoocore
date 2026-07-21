@@ -45,6 +45,11 @@ const routeSettleDelayMs = Math.max(
 );
 const routes = [
   { path: "/", titleIncludes: "Sign in" },
+  { path: "/#feed", titleIncludes: "Sign in" },
+  { path: "/#threads", titleIncludes: "Sign in" },
+  { path: "/#marketplace", titleIncludes: "Sign in" },
+  { path: "/#gigs", titleIncludes: "Sign in" },
+  { path: "/#merch", titleIncludes: "Sign in" },
   { path: "/login", titleIncludes: "Sign in" },
   { path: "/signup", titleIncludes: "Create account" },
   {
