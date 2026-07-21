@@ -29,6 +29,12 @@ const checks = [
       generator.includes("## Real-Device QA") &&
       generator.includes("## Two-User DM Evidence") &&
       generator.includes("## Payment And Commerce Evidence") &&
+      generator.includes("Release candidate") &&
+      generator.includes("Expected mode checked") &&
+      generator.includes("Server key mode checked") &&
+      generator.includes("Webhook endpoint/events checked") &&
+      generator.includes("Penny/live-test proof") &&
+      generator.includes("Seller payout readiness") &&
       generator.includes("## Native Push Evidence") &&
       generator.includes("## Legal And Policy Review") &&
       generator.includes("Reviewer contact saved in consoles") &&

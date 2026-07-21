@@ -64,11 +64,12 @@ repo docs. Use safe aliases and short pass/fail summaries in repo-visible docs.
 
 ## Payment And Commerce Evidence
 
-| Flow | Mode checked | Webhook coverage | Admin reconciliation | Refund/dispute path | Seller payout readiness | Result |
-| --- | --- | --- | --- | --- | --- | --- |
-| Merch checkout | pending | pending | pending | pending | pending | pending |
-| Booking deposit | pending | pending | pending | pending | n/a | pending |
-| Ads checkout | pending | pending | pending | pending | n/a | pending |
+| Flow | Release candidate | Expected mode checked | Server key mode checked | Webhook endpoint/events checked | Admin reconciliation | Refund/dispute/payout gate | Penny/live-test proof | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Merch checkout | pending | pending | pending | pending | pending | pending | pending | pending |
+| Booking deposit | pending | pending | pending | pending | pending | pending | pending | pending |
+| Ads checkout | pending | pending | pending | pending | pending | pending | pending | pending |
+| Seller payout readiness | pending | pending | pending | pending | pending | pending | n/a | pending |
 
 ## Native Push Evidence
 
