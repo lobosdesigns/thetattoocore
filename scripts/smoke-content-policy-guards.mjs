@@ -26,6 +26,10 @@ const tightenedCommentMediaMigration = readFileSync(
   "supabase/migrations/20260713191332_tighten_comment_media_policies.sql",
   "utf8",
 );
+const feedPostTagMigration = readFileSync(
+  "supabase/migrations/20260721135422_feed_post_user_tags.sql",
+  "utf8",
+);
 
 const memberUploadSource = [composer, mediaInput].join("\n");
 const currentCreateCopySource = [actions, composer].join("\n");
@@ -377,6 +381,28 @@ const checks = [
           !body.includes("revalidatePath(returnPath)")
         );
       }),
+  },
+  {
+    label: "4U posts support tagged member links with RLS-backed schema",
+    ok:
+      feedPostTagMigration.includes("create table if not exists public.feed_post_tags") &&
+      feedPostTagMigration.includes("alter table public.feed_post_tags enable row level security") &&
+      feedPostTagMigration.includes('create policy "Visible feed post tags can be read"') &&
+      feedPostTagMigration.includes('create policy "Authors tag own feed posts"') &&
+      feedPostTagMigration.includes("grant select on public.feed_post_tags to anon, authenticated") &&
+      feedPostTagMigration.includes("grant insert, delete on public.feed_post_tags to authenticated") &&
+      feedPostTagMigration.includes("prevent_restricted_feed_post_tags") &&
+      actions.includes("function cleanTaggedUsernames") &&
+      actions.includes("async function syncFeedPostTags") &&
+      actions.includes('formData.get("tagged_usernames")') &&
+      actions.includes('.from("feed_post_tags")') &&
+      composer.includes('name="tagged_usernames"') &&
+      composer.includes("Tag members: @artistname, @shopname") &&
+      homePage.includes("function TaggedMemberLinks") &&
+      homePage.includes("feed_post_tags(profiles:profiles!feed_post_tags_tagged_profile_id_fkey") &&
+      postDetailPage.includes("function TaggedMemberLinks") &&
+      postDetailPage.includes("feed_post_tags(profiles:profiles!feed_post_tags_tagged_profile_id_fkey") &&
+      postDetailPage.includes('name="tagged_usernames"'),
   },
   {
     label: "home ranking filters blocked profiles before personalization",

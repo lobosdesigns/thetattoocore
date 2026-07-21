@@ -158,10 +158,15 @@ type FeedPost = {
   id: string;
   caption: string | null;
   created_at: string;
+  feed_post_tags: FeedPostTag[];
   is_sensitive: boolean;
   style_tags: string[];
   visibility: "public_preview" | "members" | "private";
   feed_media: FeedMedia[];
+};
+
+type FeedPostTag = {
+  profiles: Pick<Profile, "display_name" | "id" | "username"> | null;
 };
 
 type ThreadPost = {
@@ -537,6 +542,33 @@ function ContentLabels({
           {label}
         </span>
       ))}
+    </div>
+  );
+}
+
+function TaggedMemberLinks({ tags }: { tags: FeedPostTag[] }) {
+  const visibleTags = tags.filter((tag) => tag.profiles);
+
+  if (!visibleTags.length) return null;
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold text-[var(--muted)]">
+      <span className="text-[var(--muted-strong)]">With</span>
+      {visibleTags.slice(0, 3).map((tag) => {
+        const profile = tag.profiles;
+
+        if (!profile) return null;
+
+        return (
+          <Link
+            className="rounded-md border border-[var(--card-rim)] px-2 py-1 hover:underline"
+            href={`/u/${profile.username}`}
+            key={profile.id}
+          >
+            @{profile.username}
+          </Link>
+        );
+      })}
     </div>
   );
 }
@@ -993,6 +1025,7 @@ function PostPreview({ post }: { post: FeedPost }) {
         <p className="line-clamp-3 text-sm leading-6">
           {post.caption || "Untitled post"}
         </p>
+        <TaggedMemberLinks tags={post.feed_post_tags ?? []} />
         <div className="flex items-center justify-between gap-3">
           <p className="text-xs text-[var(--muted-strong)]">{timeAgo(post.created_at)}</p>
           <Link
@@ -1457,7 +1490,7 @@ export default async function ProfilePage({
     supabase
       .from("feed_posts")
       .select(
-        "id, caption, created_at, is_sensitive, style_tags, visibility, feed_media(id, storage_bucket, storage_path, media_type, sort_order)",
+        "id, caption, created_at, is_sensitive, style_tags, visibility, feed_post_tags(profiles:profiles!feed_post_tags_tagged_profile_id_fkey(id, username, display_name)), feed_media(id, storage_bucket, storage_path, media_type, sort_order)",
       )
       .eq("author_id", profile.id)
       .eq("is_published", true)

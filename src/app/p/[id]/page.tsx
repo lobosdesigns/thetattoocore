@@ -71,6 +71,7 @@ type FeedMedia = {
 type FeedPost = {
   caption: string | null;
   created_at: string;
+  feed_post_tags: FeedPostTag[];
   feed_media: FeedMedia[];
   id: string;
   is_sensitive: boolean;
@@ -80,6 +81,13 @@ type FeedPost = {
   profiles: Profile | null;
   style_tags: string[];
   visibility: "public_preview" | "members" | "private";
+};
+
+type FeedPostTag = {
+  profiles: Pick<
+    Profile,
+    "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"
+  > | null;
 };
 
 type PostComment = {
@@ -120,6 +128,34 @@ const postCommentSelect =
 
 function asArray<T>(value: T[] | null | undefined) {
   return Array.isArray(value) ? value : [];
+}
+
+function TaggedMemberLinks({ tags }: { tags: FeedPostTag[] }) {
+  const visibleTags = tags.filter((tag) => tag.profiles);
+
+  if (!visibleTags.length) return null;
+
+  return (
+    <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold text-[var(--muted)]">
+      <span className="text-[var(--muted-strong)]">With</span>
+      {visibleTags.map((tag) => {
+        const profile = tag.profiles;
+
+        if (!profile) return null;
+
+        return (
+          <Link
+            className="inline-flex items-center gap-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-2 py-1 hover:underline"
+            href={`/u/${profile.username}`}
+            key={profile.id}
+          >
+            @{profile.username}
+            <VerifiedBadge profile={profile} />
+          </Link>
+        );
+      })}
+    </div>
+  );
 }
 
 function pageNumber(value: string | string[] | undefined) {
@@ -216,7 +252,7 @@ async function getPost(id: string) {
   const { data } = await supabase
     .from("feed_posts")
     .select(
-      "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
+      "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_post_tags(profiles:profiles!feed_post_tags_tagged_profile_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)), feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -601,6 +637,8 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                 </p>
               )}
 
+              {showPost ? <TaggedMemberLinks tags={post.feed_post_tags ?? []} /> : null}
+
               <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-[var(--muted)]">
                 {styleTags.map((tag) => (
                   <span className="rounded-md bg-[color-mix(in_srgb,var(--brand-gold)_16%,var(--paper-warm))] px-2 py-1" key={tag}>
@@ -647,6 +685,20 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
                         maxLength={160}
                         name="style_tags"
                         placeholder="blackwork, fine line"
+                      />
+                    </label>
+                    <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">
+                      Tagged members
+                      <input
+                        className="mt-1 h-10 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 text-sm text-[var(--foreground)]"
+                        defaultValue={(post.feed_post_tags ?? [])
+                          .map((tag) => tag.profiles?.username)
+                          .filter(Boolean)
+                          .map((username) => `@${username}`)
+                          .join(", ")}
+                        maxLength={340}
+                        name="tagged_usernames"
+                        placeholder="@artistname, @shopname"
                       />
                     </label>
                     <label className="block text-xs font-bold uppercase text-[var(--muted-strong)]">

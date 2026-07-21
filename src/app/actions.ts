@@ -171,6 +171,20 @@ function cleanId(value: FormDataEntryValue | null) {
   return String(value ?? "").trim();
 }
 
+function cleanTaggedUsernames(value: FormDataEntryValue | null) {
+  const usernames = String(value ?? "")
+    .split(/[,\s]+/)
+    .map((username) =>
+      username
+        .trim()
+        .replace(/^@/, "")
+        .toLowerCase(),
+    )
+    .filter((username) => /^[a-z0-9_]{3,30}$/.test(username));
+
+  return Array.from(new Set(usernames)).slice(0, 10);
+}
+
 function cleanMoneyCents(value: FormDataEntryValue | null) {
   const normalized = cleanText(value, 20).replace(/[$,]/g, "");
   const parsed = normalized ? Number(normalized) : 0;
@@ -314,6 +328,64 @@ async function ensureDirectConversation({
   }
 
   return conversation.id;
+}
+
+async function syncFeedPostTags({
+  postId,
+  supabase,
+  taggedUsernames,
+  userId,
+}: {
+  postId: string;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  taggedUsernames: string[];
+  userId: string;
+}) {
+  const { error: deleteError } = await supabase
+    .from("feed_post_tags")
+    .delete()
+    .eq("post_id", postId);
+
+  if (deleteError) {
+    console.error("4U post tag cleanup failed.", deleteError);
+    return "Could not update post tags. Please try again.";
+  }
+
+  if (!taggedUsernames.length) return null;
+
+  const { data: profiles, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, username")
+    .in("username", taggedUsernames)
+    .is("banned_at", null)
+    .is("suspended_at", null)
+    .returns<{ id: string; username: string }[]>();
+
+  if (profileError) {
+    console.error("4U post tag profile lookup failed.", profileError);
+    return "Could not check tagged members. Please try again.";
+  }
+
+  const rows = (profiles ?? [])
+    .filter((profile) => profile.id !== userId)
+    .map((profile) => ({
+      post_id: postId,
+      tagged_by: userId,
+      tagged_profile_id: profile.id,
+    }));
+
+  if (!rows.length) return null;
+
+  const { error: insertError } = await supabase
+    .from("feed_post_tags")
+    .insert(rows);
+
+  if (insertError) {
+    console.error("4U post tag insert failed.", insertError);
+    return "Could not add tagged members. Please try again.";
+  }
+
+  return null;
 }
 
 async function blockRelationshipExists(
@@ -714,6 +786,7 @@ export async function createFeedPost(formData: FormData) {
     .map((tag) => tag.trim().toLowerCase())
     .filter(Boolean)
     .slice(0, 6);
+  const taggedUsernames = cleanTaggedUsernames(formData.get("tagged_usernames"));
 
   if (caption.length < 3) {
     redirect(homeMessage("4U caption needs at least 3 characters.", "feed"));
@@ -774,6 +847,19 @@ export async function createFeedPost(formData: FormData) {
     if (mediaError) {
       console.error("4U post media attach failed.", mediaError);
       redirect(homeMessage("Media uploaded but could not attach to the post. Please try again.", "feed"));
+    }
+  }
+
+  if (post) {
+    const tagError = await syncFeedPostTags({
+      postId: post.id,
+      supabase,
+      taggedUsernames,
+      userId,
+    });
+
+    if (tagError) {
+      redirect(homeMessage(tagError, "feed"));
     }
   }
 
@@ -1429,6 +1515,7 @@ export async function editFeedPost(formData: FormData) {
     .map((tag) => tag.trim().toLowerCase())
     .filter(Boolean)
     .slice(0, 6);
+  const taggedUsernames = cleanTaggedUsernames(formData.get("tagged_usernames"));
 
   if (!postId) {
     redirect(redirectWithMessage({ message: "Choose a 4U post first.", path: returnPath }));
@@ -1461,6 +1548,22 @@ export async function editFeedPost(formData: FormData) {
     redirect(
       redirectWithMessage({
         message: "Could not edit 4U post. It may be gone or owned by another account.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  const tagError = await syncFeedPostTags({
+    postId,
+    supabase,
+    taggedUsernames,
+    userId,
+  });
+
+  if (tagError) {
+    redirect(
+      redirectWithMessage({
+        message: tagError,
         path: returnPath,
       }),
     );
