@@ -930,10 +930,11 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Keep project IDs, sender IDs, API keys, app config files, device tokens, notification payloads, signing details, and console screenshots in the private release handoff only"),
   },
   {
-    label: "full verification keeps focused DM guards in the chain",
+    label: "full verification keeps focused DM and mobile guards in the chain",
     ok:
       packageJson.includes('"smoke:dm": "node scripts/smoke-dm-guards.mjs"') &&
       packageJson.includes("npm run smoke:stories && npm run smoke:dm && npm run smoke:booking") &&
+      packageJson.includes("npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
       docs["docs/APP_STORE_READINESS.md"].includes("dedicated DM smoke guard suite"),
   },
 ];
