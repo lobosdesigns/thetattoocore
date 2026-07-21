@@ -19,6 +19,7 @@
 - Age-rating prep notes live in `docs/AGE_RATING_PREP.md` and should be checked against the current store questionnaires before submission.
 - Data-safety/privacy questionnaire prep lives in `docs/DATA_SAFETY_PREP.md` and should be checked against the live build before submission.
 - Admin > Media Ops now has an app handoff checklist for final legal/support copy, data-safety/privacy answers, safe screenshots, native wrapper auth/return-route checks, production payment review, and archived real-device QA evidence before external app review.
+- Production deploy `e47a953f-31c1-4794-a96c-106fba6a5d06` went live on July 21, 2026 from commit `9a6c47d` after adding 4U/Gossip audience controls: Public, Followers only, and verified artist/vendor-only Gossip. Verification passed `smoke:content`, `smoke:profiles`, `smoke:security`, `lint`, production build, live `smoke:public`, and live `smoke:mobile`; the database enum and RLS migrations were applied and checked live.
 - TheTattooCore is 18+ only.
 - Visible nudity is not allowed.
 - Sensitive non-nude body-art media stays behind login and 18+ confirmation.
