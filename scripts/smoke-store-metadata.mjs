@@ -169,6 +169,21 @@ function withinCharacterLimit(value, limit) {
   return Array.from(value).length > 0 && Array.from(value).length <= limit;
 }
 
+function appleKeywordTokens() {
+  return source.appleKeywords.split(",");
+}
+
+function appleKeywordsAreConsoleReady() {
+  const tokens = appleKeywordTokens();
+  const normalizedTokens = tokens.map((token) => token.toLowerCase());
+
+  return (
+    tokens.length > 1 &&
+    tokens.every((token) => token.length > 0 && token === token.trim()) &&
+    new Set(normalizedTokens).size === normalizedTokens.length
+  );
+}
+
 const draftFullDescription = markdownSectionBody(source.storeListingDraft, "Full Description");
 
 const generatedScreenshots = {
@@ -350,6 +365,10 @@ const checks = [
       draftFieldMatchesFile("App Store keywords", "appleKeywords") &&
       draftFieldMatchesFile("App Store release notes", "appleWhatsNewInternal") &&
       draftFieldMatchesFile("Google Play release notes", "googleReleaseNotesInternal"),
+  },
+  {
+    label: "App Store keywords are comma separated unique tokens",
+    ok: appleKeywordsAreConsoleReady(),
   },
   {
     label: "store descriptions include current safety position",
