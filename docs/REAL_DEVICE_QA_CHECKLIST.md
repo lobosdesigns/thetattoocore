@@ -130,6 +130,11 @@ Repo-safe two-user DM evidence should record only tester aliases, device models,
 
 Create one dated evidence pack for each release candidate before store review. Keep the pack private, use safe sample content only, and avoid screenshots or clips that show private DMs, license documents, admin-only queues, real payment data, personal contact details, or visible infrastructure/provider names.
 
+Run `npm.cmd run prepare:private-release-handoff` from the repo root when you
+need a blank local template for release-candidate evidence. The generated
+`private-release-handoff/` folder is ignored by git and is intended for private
+console, device, payment, legal, and push-delivery evidence only.
+
 For each device pass, record:
 
 - Tester name or initials.

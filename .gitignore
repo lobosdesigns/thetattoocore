@@ -49,6 +49,9 @@ yarn-error.log*
 **/*.jks
 **/*.keystore
 
+# private release evidence and console handoff notes
+/private-release-handoff/
+
 # local server logs
 dev-server*.log
 
