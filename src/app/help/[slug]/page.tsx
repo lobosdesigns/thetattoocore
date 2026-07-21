@@ -6,6 +6,7 @@ import { ContentReportForm } from "@/app/content-report-form";
 import { LogoLockup } from "../../logo-mark";
 import { getHelpArticle, helpArticles } from "@/lib/help-center";
 import { siteName, supportEmail } from "@/lib/site";
+import { safeStatusMessage } from "@/lib/status-message";
 import { createClient } from "@/lib/supabase/server";
 
 type HelpArticlePageProps = {
@@ -102,6 +103,7 @@ export default async function HelpArticlePage({
   const { slug } = await params;
   const { comments: commentsParam, message } = (await searchParams) ?? {};
   const article = getHelpArticle(slug);
+  const statusMessage = safeStatusMessage(message);
 
   if (!article) {
     notFound();
@@ -339,9 +341,9 @@ export default async function HelpArticlePage({
               </span>
             </div>
 
-            {message ? (
+            {statusMessage ? (
               <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[var(--surface-subtle)] px-3 py-2 text-sm font-semibold text-[var(--text)]">
-                {message}
+                {statusMessage}
               </p>
             ) : null}
 

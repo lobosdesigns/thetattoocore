@@ -53,6 +53,7 @@ const termsPage = readFileSync("src/app/terms/page.tsx", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
 const settingsPage = readFileSync("src/app/settings/page.tsx", "utf8");
+const helpArticlePage = readFileSync("src/app/help/[slug]/page.tsx", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const accountSettingsWorkspace = readFileSync(
@@ -388,9 +389,12 @@ const checks = [
       readFileSync("src/app/reset-password/page.tsx", "utf8").includes(
         "initialMessage={statusMessage ?? undefined}",
       ) &&
+      helpArticlePage.includes("const statusMessage = safeStatusMessage(message)") &&
+      helpArticlePage.includes("statusMessage ? (") &&
       !loginPage.includes("{params.message}") &&
       !signupPage.includes("{params.message}") &&
       !forgotPasswordPage.includes("{params.message}") &&
+      !helpArticlePage.includes("{message}") &&
       !readFileSync("src/app/reset-password/page.tsx", "utf8").includes(
         "initialMessage={params.message}",
       ),
