@@ -19,9 +19,10 @@ repo-safe store release preflight from the repo root:
 npm.cmd run verify:store-release
 ```
 
-This checks store metadata, readiness docs, public routes, Android-profile
-mobile routes, and iOS-profile mobile routes without storing private console
-screenshots, reviewer secrets, tester membership, or account identifiers.
+This checks store metadata, PWA install assets, readiness docs, public routes,
+Android-profile mobile routes, and iOS-profile mobile routes without storing
+private console screenshots, reviewer secrets, tester membership, or account
+identifiers.
 
 ## Console Field Handoff
 

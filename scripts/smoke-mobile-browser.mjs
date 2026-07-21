@@ -33,11 +33,15 @@ const height = Number(process.env.SMOKE_MOBILE_HEIGHT || mobileProfile.height);
 const userAgent = process.env.SMOKE_MOBILE_USER_AGENT || mobileProfile.userAgent;
 const routeAttempts = Math.max(
   1,
-  Number.parseInt(process.env.SMOKE_MOBILE_ROUTE_ATTEMPTS || "2", 10),
+  Number.parseInt(process.env.SMOKE_MOBILE_ROUTE_ATTEMPTS || "3", 10),
 );
 const routeRetryDelayMs = Math.max(
   100,
-  Number.parseInt(process.env.SMOKE_MOBILE_ROUTE_RETRY_MS || "1500", 10),
+  Number.parseInt(process.env.SMOKE_MOBILE_ROUTE_RETRY_MS || "3000", 10),
+);
+const routeSettleDelayMs = Math.max(
+  0,
+  Number.parseInt(process.env.SMOKE_MOBILE_ROUTE_SETTLE_MS || "1500", 10),
 );
 const routes = [
   { path: "/", titleIncludes: "Sign in" },
@@ -225,6 +229,10 @@ try {
         console.error(`  ${reason}`);
       }
     }
+
+    if (routeSettleDelayMs) {
+      await sleep(routeSettleDelayMs);
+    }
   }
 
   if (failures) {
@@ -264,6 +272,8 @@ function isTransientRouteFailure(result) {
     (reason) =>
       reason.includes("503 ") ||
       reason.includes("429 ") ||
+      reason.includes("Timed out waiting for Page.navigate") ||
+      reason.includes("browser check error") ||
       reason.includes("Worker exceeded resource limits") ||
       isFreshDeployStaticAssetMiss(reason),
   );
@@ -283,34 +293,37 @@ function routeTextIncludes(route) {
 }
 
 async function checkRoute(portNumber, url, route) {
-  const tab = await newTab(portNumber, url);
-  const client = await connectCdp(tab.webSocketDebuggerUrl);
+  let tab;
+  let client;
   const errors = [];
   const networkErrors = [];
 
-  client.on("Runtime.exceptionThrown", (event) => {
-    const text = event.exceptionDetails?.text || event.exceptionDetails?.exception?.description || "page exception";
-    errors.push(text);
-  });
-  client.on("Log.entryAdded", (event) => {
-    if (event.entry?.level === "error") {
-      errors.push(event.entry.text);
-    }
-  });
-  client.on("Network.responseReceived", (event) => {
-    const status = event.response?.status || 0;
-    const isAllowedMainDocument404 =
-      route.allowMainDocument404 && event.type === "Document" && status === 404;
-
-    const isIgnoredBrowserAsset404 =
-      status === 404 && event.response?.url?.endsWith("/favicon.ico");
-
-    if (status >= 400 && !isAllowedMainDocument404 && !isIgnoredBrowserAsset404) {
-      networkErrors.push(`${status} ${event.response?.url || "resource"}`);
-    }
-  });
-
   try {
+    tab = await newTab(portNumber, url);
+    client = await connectCdp(tab.webSocketDebuggerUrl);
+
+    client.on("Runtime.exceptionThrown", (event) => {
+      const text = event.exceptionDetails?.text || event.exceptionDetails?.exception?.description || "page exception";
+      errors.push(text);
+    });
+    client.on("Log.entryAdded", (event) => {
+      if (event.entry?.level === "error") {
+        errors.push(event.entry.text);
+      }
+    });
+    client.on("Network.responseReceived", (event) => {
+      const status = event.response?.status || 0;
+      const isAllowedMainDocument404 =
+        route.allowMainDocument404 && event.type === "Document" && status === 404;
+
+      const isIgnoredBrowserAsset404 =
+        status === 404 && event.response?.url?.endsWith("/favicon.ico");
+
+      if (status >= 400 && !isAllowedMainDocument404 && !isIgnoredBrowserAsset404) {
+        networkErrors.push(`${status} ${event.response?.url || "resource"}`);
+      }
+    });
+
     await client.send("Page.enable");
     await client.send("Runtime.enable");
     await client.send("Log.enable");
@@ -386,9 +399,20 @@ async function checkRoute(portNumber, url, route) {
     }
 
     return { ok: reasons.length === 0, reasons };
+  } catch (error) {
+    const reasons = [`browser check error: ${error.message}`];
+    if (networkErrors.length) {
+      reasons.push(`network errors: ${dedupe(networkErrors).slice(0, 3).join(" | ")}`);
+    }
+    if (errors.length) {
+      reasons.push(`console/page errors: ${dedupe(errors).slice(0, 3).join(" | ")}`);
+    }
+    return { ok: false, reasons };
   } finally {
-    client.close();
-    await fetch(`http://127.0.0.1:${portNumber}/json/close/${tab.id}`).catch(() => {});
+    client?.close();
+    if (tab?.id) {
+      await fetch(`http://127.0.0.1:${portNumber}/json/close/${tab.id}`).catch(() => {});
+    }
   }
 }
 

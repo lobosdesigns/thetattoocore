@@ -40,10 +40,10 @@ const smokeFetchHeaders = {
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36 TheTattooCorePublicSmoke/1.0",
 };
 const transientStatuses = new Set([429, 502, 503, 504, 599]);
-const requestDelayMs = Number.parseInt(process.env.SMOKE_REQUEST_DELAY_MS || "200", 10);
+const requestDelayMs = Number.parseInt(process.env.SMOKE_REQUEST_DELAY_MS || "1000", 10);
 const fetchAttempts = Math.max(
   1,
-  Number.parseInt(process.env.SMOKE_FETCH_ATTEMPTS || "3", 10),
+  Number.parseInt(process.env.SMOKE_FETCH_ATTEMPTS || "4", 10),
 );
 const fetchTimeoutMs = Math.max(
   1000,
@@ -51,7 +51,7 @@ const fetchTimeoutMs = Math.max(
 );
 const fetchBackoffMs = Math.max(
   100,
-  Number.parseInt(process.env.SMOKE_FETCH_BACKOFF_MS || "400", 10),
+  Number.parseInt(process.env.SMOKE_FETCH_BACKOFF_MS || "1500", 10),
 );
 
 function isEdgeChallenge(body) {
@@ -59,6 +59,7 @@ function isEdgeChallenge(body) {
 
   return (
     text.includes("cloudflare") ||
+    text.includes("worker exceeded resource limits") ||
     text.includes("just a moment") ||
     text.includes("challenge-platform") ||
     text.includes("cf-browser-verification") ||
