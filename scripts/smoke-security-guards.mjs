@@ -888,13 +888,18 @@ const checks = [
     ok:
       existsSync("src/middleware.ts") &&
       !existsSync("src/proxy.ts") &&
-      middlewareSource.includes("export function middleware()") &&
+      middlewareSource.includes("export async function middleware(request") &&
       middlewareSource.includes('runtime: "experimental-edge"') &&
       middlewareSource.includes("X-Content-Type-Options") &&
       middlewareSource.includes("X-Frame-Options") &&
       middlewareSource.includes("Referrer-Policy") &&
       middlewareSource.includes("Strict-Transport-Security") &&
       middlewareSource.includes("Permissions-Policy") &&
+      middlewareSource.includes('import { createServerClient } from "@supabase/ssr"') &&
+      middlewareSource.includes("request.cookies.getAll()") &&
+      middlewareSource.includes("request.cookies.set(name, value)") &&
+      middlewareSource.includes("response.cookies.set(name, value, options)") &&
+      middlewareSource.includes("await supabase.auth.getSession()") &&
       readinessDoc.includes(
         "Keep the security-header route hook on `src/middleware.ts`",
       ) &&

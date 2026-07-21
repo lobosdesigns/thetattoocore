@@ -946,9 +946,11 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("| Surface | Repo-safe status | Next action | Private evidence location |") &&
       docs["docs/APP_STORE_READINESS.md"].includes("The Tattoo Core iOS `1.0` in Prepare for Submission") &&
       docs["docs/APP_STORE_READINESS.md"].includes("refreshed Apple sign-in/2FA") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("TheTattooCore Data Safety page is open at the questionnaire start page") &&
+      (docs["docs/APP_STORE_READINESS.md"].includes("TheTattooCore Data Safety page is open at the questionnaire start page") ||
+        docs["docs/APP_STORE_READINESS.md"].includes("Closed testing changes for the selected alpha track are in Google Play review/quick checks")) &&
       docs["docs/APP_STORE_READINESS.md"].includes("final reviewer access validation for the selected build") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("final reviewer access validation for the selected release track") &&
+      (docs["docs/APP_STORE_READINESS.md"].includes("final reviewer access validation for the selected release track") ||
+        docs["docs/APP_STORE_READINESS.md"].includes("Confirm Google accepts/serves the closed test")) &&
       docs["docs/APP_STORE_READINESS.md"].includes("with account verification and Connect setup still outstanding") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Firebase console is open at the project list/welcome state") &&
       docs["docs/APP_STORE_READINESS.md"].includes("no TTC Firebase project is selected") &&
@@ -961,12 +963,15 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("Private native QA handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Store consoles") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Apple still needs refreshed sign-in/2FA") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("questionnaire start page") &&
+      (docs["docs/APP_STORE_READINESS.md"].includes("questionnaire start page") ||
+        docs["docs/APP_STORE_READINESS.md"].includes("Data Safety saved")) &&
       docs["docs/APP_STORE_READINESS.md"].includes("13-inch iPad screenshot upload") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Content Rights") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Accessibility Nutrition Labels") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Data Safety review") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("required closed-test production-access evidence") &&
+      (docs["docs/APP_STORE_READINESS.md"].includes("Data Safety review") ||
+        docs["docs/APP_STORE_READINESS.md"].includes("Data Safety saved")) &&
+      (docs["docs/APP_STORE_READINESS.md"].includes("required closed-test production-access evidence") ||
+        docs["docs/APP_STORE_READINESS.md"].includes("production access still needs closed-test live status")) &&
       docs["docs/APP_STORE_READINESS.md"].includes("closed-test tester opt-in/duration evidence if required") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Legal and policy") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Final counsel-reviewed Terms/Privacy") &&

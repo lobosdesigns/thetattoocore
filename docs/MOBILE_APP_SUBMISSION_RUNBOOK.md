@@ -156,6 +156,7 @@ Support:
 4. Configure allowed domains for `thetattoocore.com`, auth redirects, current checkout returns, support, privacy, and terms.
 5. Build Android first on this Windows machine if Android tooling is installed; build iOS on the Mac/remote Mac because Xcode is required.
 6. Upload to Google Play internal testing and Apple TestFlight before any public review submission. Google Play internal testing is active; iOS build `1.0 (3)` is available for internal TestFlight testing.
+   - July 21, 2026 Google Play status: Closed testing - Alpha changes were submitted to review/quick checks with release `1 (1.0)`, United States availability, the existing tester email list, feedback via support email, Advertising ID set to no, Data Safety saved, and the public Child Safety Standards URL saved. Count the 14-day production-access window only after Google accepts/serves the closed test and enough testers opt in; keep tester membership and console screenshots in private handoff only.
 7. Test camera/photo-picker behavior only through normal browser file inputs unless a native upload bridge is added deliberately.
 
 Use `docs/NATIVE_WRAPPER_PREP.md` as the detailed wrapper checklist for navigation, permissions, app links, checkout-return handling, screenshots, and QA.

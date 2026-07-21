@@ -11,6 +11,10 @@ const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const termsPage = readFileSync("src/app/terms/page.tsx", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
+const childSafetyStandardsPage = readFileSync(
+  "src/app/child-safety-standards/page.tsx",
+  "utf8",
+);
 const homePage = readFileSync("src/app/page.tsx", "utf8");
 const notificationsPage = readFileSync("src/app/notifications/page.tsx", "utf8");
 const postDetailPage = readFileSync("src/app/p/[id]/page.tsx", "utf8");
@@ -93,6 +97,7 @@ const policyCopySource = [
   termsPage,
   privacyPage,
   supportPage,
+  childSafetyStandardsPage,
 ].join("\n");
 const forbiddenMemberUploadSnippets = [
   'name="is_sensitive"',
@@ -219,6 +224,20 @@ const checks = [
       policyCopySource.includes("crop or cover") &&
       policyCopySource.includes("Pornography") &&
       policyCopySource.includes("sexual solicitation"),
+  },
+  {
+    label: "public child safety standards satisfy social app review",
+    ok:
+      supportPage.includes("/child-safety-standards") &&
+      childSafetyStandardsPage.includes("Child Safety Standards") &&
+      childSafetyStandardsPage.includes("child sexual abuse and exploitation") &&
+      childSafetyStandardsPage.includes("sexualized minors") &&
+      childSafetyStandardsPage.includes("minor safety concerns") &&
+      childSafetyStandardsPage.includes("appropriate regional or national authorities") &&
+      childSafetyStandardsPage.includes("supportEmail") &&
+      !childSafetyStandardsPage.includes("Supabase") &&
+      !childSafetyStandardsPage.includes("Cloudflare") &&
+      !childSafetyStandardsPage.includes("Stripe"),
   },
   {
     label: "create-flow copy uses 4U, Gossip, and Stuff launch labels",

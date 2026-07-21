@@ -102,6 +102,11 @@ const guideLinks = [
     label: "Privacy and safety",
   },
   {
+    body: "CSAE standards, minor safety reports, escalation, and safety contact details.",
+    href: "/child-safety-standards",
+    label: "Child safety standards",
+  },
+  {
     body: "4U, Gossip, Stuff, Gigs, Stories, DMs, comments, reports, blocks, and safe media rules.",
     href: "/help/posting-stories-dms",
     label: "Posting and Stories",

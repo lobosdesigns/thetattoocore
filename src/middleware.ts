@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { type NextRequest, NextResponse } from "next/server";
 
 const securityHeaders = [
   ["X-Content-Type-Options", "nosniff"],
@@ -11,12 +12,45 @@ const securityHeaders = [
   ],
 ] as const;
 
-export function middleware() {
-  const response = NextResponse.next();
-
+function applySecurityHeaders(response: NextResponse) {
   for (const [key, value] of securityHeaders) {
     response.headers.set(key, value);
   }
+
+  return response;
+}
+
+export async function middleware(request: NextRequest) {
+  let response = applySecurityHeaders(NextResponse.next({ request }));
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet, headers) {
+          cookiesToSet.forEach(({ name, value }) => {
+            request.cookies.set(name, value);
+          });
+
+          response = applySecurityHeaders(NextResponse.next({ request }));
+
+          for (const [key, value] of Object.entries(headers)) {
+            response.headers.set(key, value);
+          }
+
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
+    },
+  );
+
+  await supabase.auth.getSession();
 
   return response;
 }
