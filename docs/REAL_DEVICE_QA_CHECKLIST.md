@@ -209,6 +209,10 @@ package is installed for the build under review, run:
 npm.cmd run qa:android-device:required
 ```
 
+The required gate waits briefly for the USB/debug authorization state to settle
+before failing, so leave the phone unlocked and accept the computer prompt if it
+appears.
+
 Before treating an Android/iOS wrapper build as release-ready, run the stricter
 native release gate:
 

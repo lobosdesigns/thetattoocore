@@ -37,7 +37,7 @@
     "smoke:mobile:ios": "set SMOKE_MOBILE_PROFILE=ios&& node scripts/smoke-mobile-browser.mjs",
     "smoke:theme": "node scripts/smoke-theme-tokens.mjs",
     "qa:android-device": "node scripts/android-device-qa-probe.mjs",
-    "qa:android-device:required": "node scripts/android-device-qa-probe.mjs --require-device"
+    "qa:android-device:required": "node scripts/android-device-qa-probe.mjs --require-device --wait-ms=30000"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.20.1",

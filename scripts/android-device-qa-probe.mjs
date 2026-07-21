@@ -3,6 +3,12 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 const requireDevice = process.argv.includes("--require-device");
+const waitMsArg = process.argv.find((arg) => arg.startsWith("--wait-ms="));
+const waitMs = Math.max(
+  0,
+  Math.min(120_000, Number.parseInt(waitMsArg?.split("=")[1] ?? "0", 10) || 0),
+);
+const pollIntervalMs = 1000;
 
 function candidateAdbPaths() {
   const paths = [];
@@ -40,6 +46,10 @@ function runAdb(adb, args) {
   }).trim();
 }
 
+function sleep(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
 function parseDevices(output) {
   return output
     .split(/\r?\n/)
@@ -71,7 +81,21 @@ try {
 }
 
 try {
-  devices = parseDevices(runAdb(adb, ["devices", "-l"]));
+  const deadline = Date.now() + waitMs;
+
+  if (waitMs > 0) {
+    console.log(`ANDROID_QA wait_ms=${waitMs}`);
+  }
+
+  do {
+    devices = parseDevices(runAdb(adb, ["devices", "-l"]));
+
+    if (devices.some((device) => device.state === "device") || Date.now() >= deadline) {
+      break;
+    }
+
+    sleep(pollIntervalMs);
+  } while (true);
 } catch (error) {
   console.log("ANDROID_QA adb=error");
   console.log("ANDROID_QA result=automation unavailable");

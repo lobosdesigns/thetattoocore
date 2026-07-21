@@ -420,10 +420,11 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("## Android Connected-Device Probe") &&
       packageJson.includes('"verify:native-release": "npm run smoke:env && npm run smoke:native && npm run qa:android-device:required && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios"') &&
       packageJson.includes('"qa:android-device": "node scripts/android-device-qa-probe.mjs"') &&
-      packageJson.includes('"qa:android-device:required": "node scripts/android-device-qa-probe.mjs --require-device"') &&
+      packageJson.includes('"qa:android-device:required": "node scripts/android-device-qa-probe.mjs --require-device --wait-ms=30000"') &&
       packageJson.includes("npm run smoke:native && npm run qa:android-device && npm run smoke:store") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run qa:android-device") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run qa:android-device:required") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("waits briefly for the USB/debug authorization state to settle") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run verify:native-release") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("environment guard") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("native wrapper guard") &&
@@ -449,6 +450,7 @@ const checks = [
       docs["native/thetattoocore-mobile/README.md"].includes("%LOCALAPPDATA%\\Android\\Sdk\\platform-tools\\adb.exe") &&
       docs["native/thetattoocore-mobile/README.md"].includes("ANDROID_QA adb_server=started") &&
       docs["native/thetattoocore-mobile/README.md"].includes("ANDROID_QA adb_server=start failed") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("waits briefly for USB/debug authorization") &&
       docs["native/thetattoocore-mobile/README.md"].includes("authorized device") &&
       docs["native/thetattoocore-mobile/README.md"].includes("Play testing release under review"),
   },
