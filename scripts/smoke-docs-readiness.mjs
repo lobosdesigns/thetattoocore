@@ -463,8 +463,9 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Record a safe console/log review summary for mobile web, Android wrapper WebView, and iOS TestFlight") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("run the `Android Connected-Device Probe`") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Empty or unauthorized `adb devices -l` output is a handoff blocker") &&
-      packageJson.includes('"verify:app-review-preflight": "npm run smoke:env && npm run smoke:security && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios"') &&
+      packageJson.includes('"verify:app-review-preflight": "npm run lint && npm run build && npm run smoke:env && npm run smoke:security && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios"') &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run verify:app-review-preflight") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("It checks lint, production build, production environment boundaries") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("without counting as real-device or private console evidence") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run verify:native-predevice") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run verify:native-release") &&

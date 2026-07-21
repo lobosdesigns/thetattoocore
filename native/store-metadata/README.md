@@ -19,11 +19,7 @@ repo-safe app review preflight from the repo root:
 npm.cmd run verify:app-review-preflight
 ```
 
-This checks production environment boundaries, security copy and headers, theme
-contrast, payment guardrails, store metadata, PWA install assets, native wrapper
-safety, readiness docs, public routes, Android-profile mobile routes, and
-iOS-profile mobile routes without storing private console screenshots, reviewer
-secrets, tester membership, real-device evidence, or account identifiers.
+This checks lint, production build, production environment boundaries, security copy and headers, theme contrast, payment guardrails, store metadata, PWA install assets, native wrapper safety, readiness docs, public routes, Android-profile mobile routes, and iOS-profile mobile routes without storing private console screenshots, reviewer secrets, tester membership, real-device evidence, or account identifiers.
 
 For store metadata and screenshot-only validation, `npm.cmd run verify:store-release`
 remains available as the narrower guard.
