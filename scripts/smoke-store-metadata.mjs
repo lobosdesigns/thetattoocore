@@ -24,6 +24,7 @@ const files = {
 const read = (path) =>
   existsSync(path) ? readFileSync(path, "utf8").replace(/\r\n/g, "\n").trim() : "";
 const source = Object.fromEntries(Object.entries(files).map(([key, path]) => [key, read(path)]));
+const packageJson = readFileSync("package.json", "utf8");
 const publicMetadataKeys = [
   "appleDescription",
   "appleKeywords",
@@ -377,6 +378,10 @@ const checks = [
   {
     label: "store metadata README keeps console handoff fields private and complete",
     ok:
+      packageJson.includes('"verify:store-release": "npm run smoke:store && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios"') &&
+      source.readme.includes("npm.cmd run verify:store-release") &&
+      source.readme.includes("This checks store metadata, readiness docs, public routes, Android-profile") &&
+      source.readme.includes("without storing private console") &&
       source.readme.includes("## Console Field Handoff") &&
       source.readme.includes("Support URL: `https://thetattoocore.com/support`") &&
       source.readme.includes("Privacy URL: `https://thetattoocore.com/privacy`") &&
@@ -425,6 +430,8 @@ const checks = [
       source.dataSafetyPrep.includes("Google Play Data Safety must be current before closed testing, open testing, or production release") &&
       source.dataSafetyPrep.includes("Apps active only on Google Play internal testing are currently exempt") &&
       source.screenshotPrep.includes("Track each store asset set separately") &&
+      source.screenshotPrep.includes("npm.cmd run verify:store-release") &&
+      source.screenshotPrep.includes("store metadata, readiness docs, public routes, Android-profile mobile routes, and iOS-profile mobile routes") &&
       source.storeListingDraft.includes("## Console-Ready Fields") &&
       source.storeListingDraft.includes("| Google Play short description | 80 characters | Tattoo community for artists, studios, vendors, collectors, and fans. |") &&
       source.storeListingDraft.includes("| App Store subtitle | 30 characters | Tattoo community hub |") &&

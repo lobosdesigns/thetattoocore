@@ -12,6 +12,17 @@ Use this alongside:
 
 Before public review, verify every field against the current live app, final legal copy, current store questionnaires, and final payment/commerce launch decisions.
 
+Before final screenshot upload validation or store-console submission, run the
+repo-safe store release preflight from the repo root:
+
+```powershell
+npm.cmd run verify:store-release
+```
+
+This checks store metadata, readiness docs, public routes, Android-profile
+mobile routes, and iOS-profile mobile routes without storing private console
+screenshots, reviewer secrets, tester membership, or account identifiers.
+
 ## Console Field Handoff
 
 Keep private reviewer credentials and phone details in Apple/Google console fields only. Do not place private phone numbers, reviewer passwords, owner personal contact data, or payment-account screenshots in this repo or member-facing copy.
