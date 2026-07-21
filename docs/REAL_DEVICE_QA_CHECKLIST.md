@@ -206,7 +206,7 @@ To make the command fail until an authorized device is visible and the TTC
 package is installed for the build under review, run:
 
 ```powershell
-npm.cmd run qa:android-device -- --require-device
+npm.cmd run qa:android-device:required
 ```
 
 ```powershell

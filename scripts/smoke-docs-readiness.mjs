@@ -419,8 +419,10 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Do not treat missing automation as a") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("## Android Connected-Device Probe") &&
       packageJson.includes('"qa:android-device": "node scripts/android-device-qa-probe.mjs"') &&
+      packageJson.includes('"qa:android-device:required": "node scripts/android-device-qa-probe.mjs --require-device"') &&
+      packageJson.includes("npm run smoke:native && npm run qa:android-device && npm run smoke:store") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run qa:android-device") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run qa:android-device -- --require-device") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run qa:android-device:required") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("platform-tools\\adb.exe") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("adb devices -l") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("authorized") &&

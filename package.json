@@ -10,7 +10,7 @@
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "start": "next start",
-    "verify": "npm run lint && npm run build && npm run smoke:hydration && npm run smoke:media && npm run smoke:content && npm run smoke:share && npm run smoke:profiles && npm run smoke:admin && npm run smoke:stories && npm run smoke:dm && npm run smoke:booking && npm run smoke:payments && npm run smoke:pwa && npm run smoke:native && npm run smoke:store && npm run smoke:security && npm run smoke:env && npm run smoke:theme && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios",
+    "verify": "npm run lint && npm run build && npm run smoke:hydration && npm run smoke:media && npm run smoke:content && npm run smoke:share && npm run smoke:profiles && npm run smoke:admin && npm run smoke:stories && npm run smoke:dm && npm run smoke:booking && npm run smoke:payments && npm run smoke:pwa && npm run smoke:native && npm run qa:android-device && npm run smoke:store && npm run smoke:security && npm run smoke:env && npm run smoke:theme && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios",
     "lint": "eslint",
     "smoke:public": "node scripts/smoke-public-routes.mjs",
     "smoke:media": "node scripts/smoke-media-guards.mjs",
@@ -33,7 +33,8 @@
     "smoke:mobile": "node scripts/smoke-mobile-browser.mjs",
     "smoke:mobile:ios": "set SMOKE_MOBILE_PROFILE=ios&& node scripts/smoke-mobile-browser.mjs",
     "smoke:theme": "node scripts/smoke-theme-tokens.mjs",
-    "qa:android-device": "node scripts/android-device-qa-probe.mjs"
+    "qa:android-device": "node scripts/android-device-qa-probe.mjs",
+    "qa:android-device:required": "node scripts/android-device-qa-probe.mjs --require-device"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.20.1",
