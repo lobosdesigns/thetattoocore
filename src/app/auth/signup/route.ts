@@ -35,6 +35,37 @@ function signupRedirect(request: Request, message: string, returnTo = "/account"
   return NextResponse.redirect(url);
 }
 
+function signupErrorMessage(error: { code?: string; message?: string; status?: number }) {
+  const code = String(error.code ?? "").toLowerCase();
+  const message = String(error.message ?? "").toLowerCase();
+
+  if (code.includes("weak_password") || message.includes("password")) {
+    return "Use a stronger password with at least 8 characters, then try again.";
+  }
+
+  if (code.includes("rate") || error.status === 429 || message.includes("rate")) {
+    return "Too many signup attempts right now. Wait a few minutes, then try again.";
+  }
+
+  if (
+    code.includes("signup_disabled") ||
+    message.includes("signup disabled") ||
+    message.includes("disabled")
+  ) {
+    return "New account signup is temporarily unavailable. Use Support or an owner-created tester account.";
+  }
+
+  if (
+    message.includes("already registered") ||
+    message.includes("already exists") ||
+    message.includes("confirm")
+  ) {
+    return "Check inbox and junk for the confirmation email, or sign in if this account already exists.";
+  }
+
+  return "Could not create account. Please try again.";
+}
+
 export async function POST(request: Request) {
   const formData = await request.formData();
   const supabase = await createClient();
@@ -81,7 +112,7 @@ export async function POST(request: Request) {
     console.error("Signup request failed.", error);
     return signupRedirect(
       request,
-      "Could not create account. Please try again.",
+      signupErrorMessage(error),
       returnTo,
     );
   }

@@ -181,7 +181,9 @@ export default async function SignupPage({
                 Check inbox and junk after creating an account. After
                 confirming your email, save your profile before posting,
                 commenting, listing Stuff, adding Gigs, previewing Merch, or
-                sending DMs.
+                sending DMs. Placeholder domains such as example.com are
+                blocked for signup; use a real inbox or an owner-created tester
+                account.
               </div>
 
               <p className="text-xs leading-5 text-[var(--muted-strong)]">

@@ -196,12 +196,23 @@ const clientConsoleSnippets = [
   "console.warn(",
   "console.error(",
 ];
+const generatedDirectoryNames = new Set([
+  ".git",
+  ".gradle",
+  ".next",
+  ".open-next",
+  "build",
+  "dist",
+  "node_modules",
+]);
 
 function collectFiles(dir, predicate, files = []) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name);
 
     if (entry.isDirectory()) {
+      if (generatedDirectoryNames.has(entry.name)) continue;
+
       collectFiles(path, predicate, files);
       continue;
     }
@@ -231,7 +242,7 @@ const productionDebugSnippets = [
 const productionDebugFiles = [
   ...collectFiles("src", (path) => /\.(ts|tsx)$/.test(path)),
   ...collectFiles("native/thetattoocore-mobile", (path) =>
-    /\.(ts|tsx|js|jsx|swift|kt|java)$/.test(path) && !path.includes("node_modules"),
+    /\.(ts|tsx|js|jsx|swift|kt|java)$/.test(path),
   ),
 ].filter((path) => {
   const source = readFileSync(path, "utf8");
@@ -307,8 +318,12 @@ const checks = [
     label: "signup and confirmation resend hide raw auth-provider errors",
     ok:
       authSignup.includes('console.error("Signup request failed.", error)') &&
+      authSignup.includes("function signupErrorMessage") &&
       authSignup.includes('"Could not create account. Please try again."') &&
       !authSignup.includes('error.message || "Could not create account."') &&
+      authSignup.includes('"Use a stronger password with at least 8 characters, then try again."') &&
+      authSignup.includes('"Too many signup attempts right now. Wait a few minutes, then try again."') &&
+      authSignup.includes('"Check inbox and junk for the confirmation email, or sign in if this account already exists."') &&
       authSignup.includes("function cleanReturnTo") &&
       authSignup.includes("text.startsWith(\"//\")") &&
       authSignup.includes('text.includes("\\\\")') &&
@@ -316,6 +331,8 @@ const checks = [
       authSignup.includes('cleanDomain === "example.com"') &&
       authSignup.includes('cleanDomain.endsWith(".invalid")') &&
       authSignup.includes("Use a real email inbox you can open for confirmation.") &&
+      signupPage.includes("Placeholder domains such as example.com are") &&
+      signupPage.includes("blocked for signup") &&
       authSignup.includes("emailRedirectTo") &&
       authSignup.includes("encodeURIComponent(returnTo)") &&
       authSignup.includes("Signup request sent. Check inbox and junk for the confirmation email.") &&
