@@ -201,6 +201,13 @@ USB cable is not enough: the device must appear in `adb devices -l` as an
 authorized `device`, and the installed package must match the Google Play
 internal-testing or closed-testing build under review.
 
+By default, the probe compares the installed package against the Android
+`versionName` and `versionCode` checked into
+`native/thetattoocore-mobile/android/app/build.gradle`. If the selected Play
+track intentionally uses a different build, set
+`TTC_ANDROID_EXPECTED_VERSION_NAME` and `TTC_ANDROID_EXPECTED_VERSION_CODE` in
+the private release shell before rerunning the probe.
+
 For a repo-safe status summary from this machine, run:
 
 ```powershell
@@ -260,5 +267,10 @@ as a passing Android console/log review. Enable USB debugging, accept the device
 authorization prompt, install or confirm the Play-installed build, then rerun the
 probe before capturing route, login, DM, notification, checkout-return, and
 store-screenshot evidence.
+
+If the probe reports `authorized device has wrong TTC build`, record the
+installed and expected version/build values in the private handoff, install the
+Google Play build selected for review, and rerun the probe before counting the
+device as ready.
 
 Repo-safe summary fields are limited to platform, release channel, version/build, date, device model, and pass/fail status. Keep tester secrets, private contact details, account identifiers, and raw console screenshots private.

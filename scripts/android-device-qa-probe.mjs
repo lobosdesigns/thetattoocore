@@ -1,8 +1,9 @@
 import { execFileSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const requireDevice = process.argv.includes("--require-device");
+const androidBuildGradlePath = "native/thetattoocore-mobile/android/app/build.gradle";
 const waitMsArg = process.argv.find((arg) => arg.startsWith("--wait-ms="));
 const waitMs = Math.max(
   0,
@@ -44,6 +45,29 @@ function runAdb(adb, args) {
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
   }).trim();
+}
+
+function expectedAndroidBuild() {
+  const buildGradle = existsSync(androidBuildGradlePath)
+    ? readFileSync(androidBuildGradlePath, "utf8")
+    : "";
+  const versionName =
+    process.env.TTC_ANDROID_EXPECTED_VERSION_NAME ||
+    buildGradle.match(/versionName\s+"([^"]+)"/)?.[1] ||
+    "";
+  const versionCode =
+    process.env.TTC_ANDROID_EXPECTED_VERSION_CODE ||
+    buildGradle.match(/versionCode\s+(\d+)/)?.[1] ||
+    "";
+
+  return { versionCode, versionName };
+}
+
+function installedAndroidBuild(packageDump) {
+  return {
+    versionCode: packageDump.match(/versionCode=(\d+)/)?.[1] || "",
+    versionName: packageDump.match(/versionName=([^\s]+)/)?.[1] || "",
+  };
 }
 
 function sleep(ms) {
@@ -126,11 +150,13 @@ if (authorizedDevices.length === 0) {
 
 const primary = authorizedDevices[0];
 const shell = (args) => runAdb(adb, ["-s", primary.serial, "shell", ...args]);
+const expectedBuild = expectedAndroidBuild();
 
 let model = "unknown";
 let osVersion = "unknown";
 let packageSummary = "not installed";
 let packageInstalled = false;
+let installedBuild = { versionCode: "", versionName: "" };
 
 try {
   model = shell(["getprop", "ro.product.model"]);
@@ -141,6 +167,7 @@ try {
 
 try {
   const packageDump = shell(["dumpsys", "package", "com.thetattoocore.app"]);
+  installedBuild = installedAndroidBuild(packageDump);
   const versionLines = packageDump
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -153,11 +180,37 @@ try {
 
 console.log(`ANDROID_QA device_model=${model || "unknown"}`);
 console.log(`ANDROID_QA android_version=${osVersion || "unknown"}`);
+console.log(
+  `ANDROID_QA expected_versionName=${expectedBuild.versionName || "unknown"}`,
+);
+console.log(
+  `ANDROID_QA expected_versionCode=${expectedBuild.versionCode || "unknown"}`,
+);
 console.log(`ANDROID_QA package=${packageSummary}`);
 
 if (!packageInstalled) {
   console.log("ANDROID_QA result=authorized device missing TTC package");
   console.log("ANDROID_QA next=install or confirm the Google Play internal-testing build before route QA");
+  if (requireDevice) process.exit(1);
+  process.exit(0);
+}
+
+const versionNameMatches =
+  !expectedBuild.versionName ||
+  installedBuild.versionName === expectedBuild.versionName;
+const versionCodeMatches =
+  !expectedBuild.versionCode ||
+  installedBuild.versionCode === expectedBuild.versionCode;
+
+if (!versionNameMatches || !versionCodeMatches) {
+  console.log("ANDROID_QA result=authorized device has wrong TTC build");
+  console.log(
+    `ANDROID_QA installed_versionName=${installedBuild.versionName || "unknown"}`,
+  );
+  console.log(
+    `ANDROID_QA installed_versionCode=${installedBuild.versionCode || "unknown"}`,
+  );
+  console.log("ANDROID_QA next=install the Google Play build selected for review, or set TTC_ANDROID_EXPECTED_VERSION_NAME and TTC_ANDROID_EXPECTED_VERSION_CODE for the selected track");
   if (requireDevice) process.exit(1);
   process.exit(0);
 }

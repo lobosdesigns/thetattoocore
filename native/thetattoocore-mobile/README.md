@@ -59,6 +59,11 @@ This folder is the starting point for Apple TestFlight and Google Play internal 
      enable USB debugging, and accept the computer authorization prompt.
    - If the probe reports `authorized device missing TTC package`, install or
      confirm the Google Play internal-testing build before route QA.
+   - If the probe reports `authorized device has wrong TTC build`, install the
+     Google Play build selected for review, or set
+     `TTC_ANDROID_EXPECTED_VERSION_NAME` and
+     `TTC_ANDROID_EXPECTED_VERSION_CODE` for the selected track before rerunning
+     the probe.
 
 Android packaging is configured on this Windows machine. A signed Google Play upload bundle builds at `android/app/build/outputs/bundle/release/app-release.aab` when the local signing environment variables are set. On July 18, 2026, the signed v1 bundle was verified and copied to the Desktop as `TheTattooCore-app-release-v1-signed.aab` with SHA-256 `18E16D3CB5AEED158C33BF9882AC6920D6A7CB744697568E71C32631BC893B65`. The upload keystore and recovery details are intentionally kept out of git; the local recovery note is saved on the Desktop as `TheTattooCore Android Upload Key.txt`. iOS packaging requires the Mac/Xcode path.
 The current Android wrapper uses API 35 because this Windows machine only has Android 35 installed. API 35 is internal-test-only and not public-submission-ready for Google Play submissions or updates on or after August 31, 2026; install Android 16 / API 36 tooling, set `compileSdkVersion` and `targetSdkVersion` to 36, and rebuild before that submission path.

@@ -240,6 +240,12 @@ const checks = [
     ok:
       source.androidDeviceProbe.includes("let packageInstalled = false") &&
       source.androidDeviceProbe.includes("packageInstalled = true") &&
+      source.androidDeviceProbe.includes("function expectedAndroidBuild") &&
+      source.androidDeviceProbe.includes("TTC_ANDROID_EXPECTED_VERSION_NAME") &&
+      source.androidDeviceProbe.includes("TTC_ANDROID_EXPECTED_VERSION_CODE") &&
+      source.androidDeviceProbe.includes("ANDROID_QA expected_versionName=") &&
+      source.androidDeviceProbe.includes("ANDROID_QA expected_versionCode=") &&
+      source.androidDeviceProbe.includes("ANDROID_QA result=authorized device has wrong TTC build") &&
       source.androidDeviceProbe.includes("ANDROID_QA result=authorized device missing TTC package") &&
       source.androidDeviceProbe.includes("ANDROID_QA wait_ms=") &&
       source.androidDeviceProbe.includes("ANDROID_QA next=check USB cable, set USB mode to file transfer, and reopen the USB debugging prompt") &&
@@ -248,6 +254,8 @@ const checks = [
       source.androidDeviceProbe.includes("if (requireDevice) process.exit(1)") &&
       source.realDeviceQa.includes("authorized device is visible and the TTC") &&
       source.realDeviceQa.includes("package is installed for the build under review") &&
+      source.realDeviceQa.includes("authorized device has wrong TTC build") &&
+      source.realDeviceQa.includes("TTC_ANDROID_EXPECTED_VERSION_NAME") &&
       source.realDeviceQa.includes("authorized device missing TTC package") &&
       source.realDeviceQa.includes("waits briefly for the USB/debug authorization state to settle") &&
       source.realDeviceQa.includes("install or confirm the Play-installed build"),
