@@ -44,6 +44,10 @@ const gigTagMigration = readFileSync(
   "supabase/migrations/20260721201000_gig_user_tags.sql",
   "utf8",
 );
+const contentOwnerNotificationCleanupMigration = readFileSync(
+  "supabase/migrations/20260721215000_content_owner_notification_cleanup.sql",
+  "utf8",
+);
 const contentAudienceEnumMigration = readFileSync(
   "supabase/migrations/20260721152000_content_audience_enum.sql",
   "utf8",
@@ -622,6 +626,28 @@ const checks = [
       notificationsPage.includes('| "gig_tag"') &&
       notificationsPage.includes('type === "feed_tag" || type === "gig_tag" || type === "thread_tag"') &&
       notificationsPage.includes('return notification.href || `/gigs/${notification.subject_id}`'),
+  },
+  {
+    label: "deleted or untagged 4U, Gossip, and Gig content cleans stale notifications",
+    ok:
+      contentOwnerNotificationCleanupMigration.includes(
+        'create policy "Content owners can delete subject notifications"',
+      ) &&
+      contentOwnerNotificationCleanupMigration.includes("subject_type = 'feed_post'") &&
+      contentOwnerNotificationCleanupMigration.includes("feed_posts.author_id = (select auth.uid())") &&
+      contentOwnerNotificationCleanupMigration.includes("subject_type = 'thread_post'") &&
+      contentOwnerNotificationCleanupMigration.includes("thread_posts.author_id = (select auth.uid())") &&
+      contentOwnerNotificationCleanupMigration.includes("subject_type = 'gig'") &&
+      contentOwnerNotificationCleanupMigration.includes("gigs.poster_id = (select auth.uid())") &&
+      actions.includes("async function cleanupRemovedTagNotifications") &&
+      actions.includes("async function cleanupSubjectNotifications") &&
+      actions.includes('type: "feed_tag"') &&
+      actions.includes('type: "thread_tag"') &&
+      actions.includes('type: "gig_tag"') &&
+      actions.includes('subjectType: "feed_post"') &&
+      actions.includes('subjectType: "thread_post"') &&
+      actions.includes('subjectType: "gig"') &&
+      actions.includes('revalidatePath("/notifications")'),
   },
   {
     label: "home ranking filters blocked profiles before personalization",

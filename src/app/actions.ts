@@ -393,12 +393,10 @@ async function syncFeedPostTags({
     return "Could not update post tags. Please try again.";
   }
 
-  if (!taggedUsernames.length) return null;
-
   const { data: profiles, error: profileError } = await supabase
     .from("profiles")
     .select("id, username")
-    .in("username", taggedUsernames)
+    .in("username", taggedUsernames.length ? taggedUsernames : ["__no_tags__"])
     .is("banned_at", null)
     .is("suspended_at", null)
     .returns<{ id: string; username: string }[]>();
@@ -415,6 +413,16 @@ async function syncFeedPostTags({
       tagged_by: userId,
       tagged_profile_id: profile.id,
     }));
+
+  const currentTaggedIds = new Set(rows.map((row) => row.tagged_profile_id));
+  await cleanupRemovedTagNotifications({
+    currentTaggedIds,
+    existingTaggedIds,
+    subjectId: postId,
+    subjectType: "feed_post",
+    supabase,
+    type: "feed_tag",
+  });
 
   if (!rows.length) return null;
 
@@ -490,12 +498,10 @@ async function syncThreadPostTags({
     return "Could not update Gossip tags. Please try again.";
   }
 
-  if (!taggedUsernames.length) return null;
-
   const { data: profiles, error: profileError } = await supabase
     .from("profiles")
     .select("id, username")
-    .in("username", taggedUsernames)
+    .in("username", taggedUsernames.length ? taggedUsernames : ["__no_tags__"])
     .is("banned_at", null)
     .is("suspended_at", null)
     .returns<{ id: string; username: string }[]>();
@@ -512,6 +518,16 @@ async function syncThreadPostTags({
       tagged_profile_id: profile.id,
       thread_id: threadId,
     }));
+
+  const currentTaggedIds = new Set(rows.map((row) => row.tagged_profile_id));
+  await cleanupRemovedTagNotifications({
+    currentTaggedIds,
+    existingTaggedIds,
+    subjectId: threadId,
+    subjectType: "thread_post",
+    supabase,
+    type: "thread_tag",
+  });
 
   if (!rows.length) return null;
 
@@ -587,12 +603,10 @@ async function syncGigTags({
     return "Could not update Gig tags. Please try again.";
   }
 
-  if (!taggedUsernames.length) return null;
-
   const { data: profiles, error: profileError } = await supabase
     .from("profiles")
     .select("id, username")
-    .in("username", taggedUsernames)
+    .in("username", taggedUsernames.length ? taggedUsernames : ["__no_tags__"])
     .is("banned_at", null)
     .is("suspended_at", null)
     .returns<{ id: string; username: string }[]>();
@@ -609,6 +623,16 @@ async function syncGigTags({
       tagged_by: userId,
       tagged_profile_id: profile.id,
     }));
+
+  const currentTaggedIds = new Set(rows.map((row) => row.tagged_profile_id));
+  await cleanupRemovedTagNotifications({
+    currentTaggedIds,
+    existingTaggedIds,
+    subjectId: gigId,
+    subjectType: "gig",
+    supabase,
+    type: "gig_tag",
+  });
 
   if (!rows.length) return null;
 
@@ -644,6 +668,60 @@ async function syncGigTags({
   }
 
   return null;
+}
+
+async function cleanupRemovedTagNotifications({
+  currentTaggedIds,
+  existingTaggedIds,
+  subjectId,
+  subjectType,
+  supabase,
+  type,
+}: {
+  currentTaggedIds: Set<string>;
+  existingTaggedIds: Set<string>;
+  subjectId: string;
+  subjectType: "feed_post" | "gig" | "thread_post";
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  type: "feed_tag" | "gig_tag" | "thread_tag";
+}) {
+  const removedRecipientIds = [...existingTaggedIds].filter(
+    (id) => !currentTaggedIds.has(id),
+  );
+
+  if (!removedRecipientIds.length) return;
+
+  const { error } = await supabase
+    .from("notifications")
+    .delete()
+    .eq("subject_id", subjectId)
+    .eq("subject_type", subjectType)
+    .eq("type", type)
+    .in("recipient_id", removedRecipientIds);
+
+  if (error) {
+    console.error("Removed tag notification cleanup failed.", error);
+  }
+}
+
+async function cleanupSubjectNotifications({
+  subjectId,
+  subjectType,
+  supabase,
+}: {
+  subjectId: string;
+  subjectType: "feed_post" | "gig" | "thread_post";
+  supabase: Awaited<ReturnType<typeof createClient>>;
+}) {
+  const { error } = await supabase
+    .from("notifications")
+    .delete()
+    .eq("subject_id", subjectId)
+    .eq("subject_type", subjectType);
+
+  if (error) {
+    console.error("Subject notification cleanup failed.", error);
+  }
 }
 
 async function blockRelationshipExists(
@@ -1933,7 +2011,14 @@ export async function deleteFeedPost(formData: FormData) {
     );
   }
 
+  await cleanupSubjectNotifications({
+    subjectId: postId,
+    subjectType: "feed_post",
+    supabase,
+  });
+
   revalidatePath("/");
+  revalidatePath("/notifications");
   revalidatePath(`/p/${postId}`);
   redirect(homeMessage("4U post deleted.", "feed"));
 }
@@ -2150,7 +2235,14 @@ export async function deleteThreadPost(formData: FormData) {
     );
   }
 
+  await cleanupSubjectNotifications({
+    subjectId: threadId,
+    subjectType: "thread_post",
+    supabase,
+  });
+
   revalidatePath("/");
+  revalidatePath("/notifications");
   revalidatePath(`/t/${threadId}`);
   redirect(homeMessage("Gossip post deleted.", "threads"));
 }
@@ -2680,7 +2772,14 @@ export async function archiveGig(formData: FormData) {
     );
   }
 
+  await cleanupSubjectNotifications({
+    subjectId: gigId,
+    subjectType: "gig",
+    supabase,
+  });
+
   revalidatePath("/");
+  revalidatePath("/notifications");
   if (username) revalidatePath(`/u/${username}`);
 
   redirect(
@@ -2815,7 +2914,14 @@ export async function archiveGigFromDetail(formData: FormData) {
     );
   }
 
+  await cleanupSubjectNotifications({
+    subjectId: gigId,
+    subjectType: "gig",
+    supabase,
+  });
+
   revalidatePath("/");
+  revalidatePath("/notifications");
   revalidatePath(`/gigs/${gigId}`);
   redirect(homeMessage("Gig archived.", "gigs"));
 }
