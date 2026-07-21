@@ -74,7 +74,7 @@ live, enabled, or ready.
 
 - Run `npm.cmd run verify` against the web app.
 - Run the full `docs/REAL_DEVICE_QA_CHECKLIST.md` on mobile web before packaging.
-- Before any Google Play submission or update on or after August 31, 2026, install Android 16 / API 36 tooling and update the Android wrapper `compileSdkVersion` and `targetSdkVersion` to 36. This Windows machine currently has Android 35 installed, so API 35 is internal-test-only and not public-submission-ready; keep the v1 internal-test build on the existing target until the API 36 SDK is installed and a fresh wrapper build passes.
+- Before any Google Play submission or update on or after August 31, 2026, use the Android 16 / API 36 tooling now installed on this Windows machine and keep the Android wrapper `compileSdkVersion` and `targetSdkVersion` at 36. Rebuild and sign a fresh upload bundle, then rerun wrapper and real-device QA before selecting a Google Play submission/update track.
 - Confirm `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/support`, `/privacy`, `/terms`, `/messages`, `/notifications`, `/account`, public profiles, public posts, Stories, Stuff, Gigs, Merch, and booking/deposit routes do not reload-loop or overflow horizontally.
 - Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView and do not push members out to Safari.
 - Confirm install prompts or browser banners do not block scrolling in the wrapper.
@@ -116,13 +116,14 @@ or unverified association files as public-release proof for app links.
 
 ## Android Target Evidence Matrix
 
-Use this matrix before each Google Play release selection so the current
-internal-test wrapper target is not confused with a public-submission build.
+Use this matrix before each Google Play release selection so the previously
+uploaded internal-test bundle is not confused with a freshly rebuilt
+public-submission build.
 
 | Release path | Checked-in compile/target SDK | Required action | Repo-safe result |
 | --- | ---: | --- | --- |
-| Google Play internal testing before the API 36 deadline | `35 / 35` | Keep the current internal-test build only while store review remains internal and the release date allows it. | Record release track, version code/name, test date, and pass/fail only. |
-| Google Play public submission or update on or after August 31, 2026 | `35 / 35` is blocked | Install Android 16 / API 36 tooling, set `compileSdkVersion` and `targetSdkVersion` to `36`, rebuild, and rerun wrapper plus real-device QA. | Record API `36 / 36` rebuild proof, version code/name, device QA date, and pass/fail only. |
+| Google Play internal testing before the API 36 deadline | Previous v1 upload may still be `35 / 35`; checked-in wrapper is now `36 / 36` | Keep the existing internal-test build only while store review remains internal and the release date allows it. Rebuild before widening review. | Record release track, version code/name, test date, and pass/fail only. |
+| Google Play public submission or update on or after August 31, 2026 | `36 / 36` required | Build from the checked-in API 36 wrapper, sign a fresh upload bundle, and rerun wrapper plus real-device QA. | Record API `36 / 36` rebuild proof, version code/name, device QA date, and pass/fail only. |
 
 ## Local Build Commands
 

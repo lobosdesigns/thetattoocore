@@ -92,6 +92,13 @@ const compileSdkVersion = gradleNumber("compileSdkVersion");
 const targetSdkVersion = gradleNumber("targetSdkVersion");
 const androidSdkPair = `${compileSdkVersion} / ${targetSdkVersion}`;
 const androidApi36SubmissionReady = compileSdkVersion >= 36 && targetSdkVersion >= 36;
+const androidApi36DocsReady =
+  androidApi36SubmissionReady &&
+  source.nativePrep.includes("checked-in wrapper is now `36 / 36`") &&
+  source.nativePrep.includes("Record API `36 / 36` rebuild proof") &&
+  source.mobileRunbook.includes("checked-in Android wrapper now targets API 36") &&
+  source.readme.includes("checked-in wrapper targets `36 / 36`") &&
+  source.readme.includes("| Public submission or update on or after August 31, 2026 | `36 / 36` |");
 const androidApi35InternalOnly =
   compileSdkVersion === 35 &&
   targetSdkVersion === 35 &&
@@ -221,7 +228,7 @@ const checks = [
       source.readme.includes("Public release waits for final legal review") &&
       source.nativePrep.includes("August 31, 2026") &&
       source.nativePrep.includes("Android 16 / API 36") &&
-      source.mobileRunbook.includes("current internal-test Android build targets API 35") &&
+      source.mobileRunbook.includes("checked-in Android wrapper now targets API 36") &&
       source.readme.includes("support@thetattoocore.com") &&
       source.readme.includes("Native permissions at first beta: none") &&
       source.readme.includes("Push prompts: off") &&
@@ -330,7 +337,7 @@ const checks = [
       (androidSdkPair === "35 / 35" || androidApi36SubmissionReady) &&
       source.nativePrep.includes("August 31, 2026") &&
       source.nativePrep.includes("Android 16 / API 36") &&
-      (androidApi36SubmissionReady || androidApi35InternalOnly),
+      (androidApi36DocsReady || androidApi35InternalOnly),
   },
   {
     label: "native wrapper uses TTC app icon and splash assets",
