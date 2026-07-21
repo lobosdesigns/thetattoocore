@@ -379,15 +379,21 @@ const checks = [
     label: "store metadata README keeps console handoff fields private and complete",
     ok:
       packageJson.includes('"verify:store-release"') &&
+      packageJson.includes('"verify:app-review-preflight"') &&
       packageJson.includes("npm run smoke:env && npm run smoke:store && npm run smoke:pwa && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
+      packageJson.includes("npm run smoke:env && npm run smoke:security && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
+      source.readme.includes("npm.cmd run verify:app-review-preflight") &&
       source.readme.includes("npm.cmd run verify:store-release") &&
       source.readme.includes("production environment boundaries") &&
-      source.readme.includes("store metadata, PWA install") &&
-      source.readme.includes("assets, readiness docs, public routes") &&
+      source.readme.includes("security copy and headers, theme") &&
+      source.readme.includes("payment guardrails, store metadata") &&
+      source.readme.includes("native wrapper") &&
       source.readme.includes("Android-profile mobile routes") &&
       source.readme.includes("iOS-profile mobile routes") &&
       source.readme.includes("without storing") &&
       source.readme.includes("private console screenshots") &&
+      source.readme.includes("real-device evidence") &&
+      source.readme.includes("narrower guard") &&
       source.readme.includes("## Console Field Handoff") &&
       source.readme.includes("Support URL: `https://thetattoocore.com/support`") &&
       source.readme.includes("Privacy URL: `https://thetattoocore.com/privacy`") &&

@@ -13,16 +13,20 @@ Use this alongside:
 Before public review, verify every field against the current live app, final legal copy, current store questionnaires, and final payment/commerce launch decisions.
 
 Before final screenshot upload validation or store-console submission, run the
-repo-safe store release preflight from the repo root:
+repo-safe app review preflight from the repo root:
 
 ```powershell
-npm.cmd run verify:store-release
+npm.cmd run verify:app-review-preflight
 ```
 
-This checks production environment boundaries, store metadata, PWA install
-assets, readiness docs, public routes, Android-profile mobile routes, and
+This checks production environment boundaries, security copy and headers, theme
+contrast, payment guardrails, store metadata, PWA install assets, native wrapper
+safety, readiness docs, public routes, Android-profile mobile routes, and
 iOS-profile mobile routes without storing private console screenshots, reviewer
-secrets, tester membership, or account identifiers.
+secrets, tester membership, real-device evidence, or account identifiers.
+
+For store metadata and screenshot-only validation, `npm.cmd run verify:store-release`
+remains available as the narrower guard.
 
 ## Console Field Handoff
 

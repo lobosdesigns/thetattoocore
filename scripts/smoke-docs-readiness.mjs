@@ -446,6 +446,9 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Record a safe console/log review summary for mobile web, Android wrapper WebView, and iOS TestFlight") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("run the `Android Connected-Device Probe`") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Empty or unauthorized `adb devices -l` output is a handoff blocker") &&
+      packageJson.includes('"verify:app-review-preflight": "npm run smoke:env && npm run smoke:security && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios"') &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run verify:app-review-preflight") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("without counting as real-device or private console evidence") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run verify:native-predevice") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run verify:native-release") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("without counting as real-device evidence") &&
@@ -962,6 +965,7 @@ const checks = [
     ok:
       packageJson.includes('"smoke:dm": "node scripts/smoke-dm-guards.mjs"') &&
       packageJson.includes("npm run smoke:stories && npm run smoke:dm && npm run smoke:booking") &&
+      packageJson.includes("npm run smoke:env && npm run smoke:security && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
       packageJson.includes("npm run smoke:native && npm run qa:android-device && npm run smoke:store") &&
       packageJson.includes("npm run smoke:env && npm run smoke:native && npm run smoke:docs && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios") &&
       packageJson.includes("npm run smoke:env && npm run smoke:native && npm run smoke:docs && npm run qa:android-device:required && npm run smoke:store") &&
