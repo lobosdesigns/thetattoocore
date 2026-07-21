@@ -320,6 +320,10 @@ const checks = [
       source.readme.includes("npm.cmd install") &&
       source.readme.includes("npm.cmd run doctor") &&
       source.readme.includes("npm.cmd run sync") &&
+      source.readme.includes("npm.cmd run verify:native-release") &&
+      source.readme.includes("It should fail until the Android probe sees an authorized device") &&
+      source.readme.includes("Android-profile") &&
+      source.readme.includes("iOS-profile") &&
       !source.readme.includes("Run `npm install`") &&
       !source.readme.includes("Run `npm run doctor`") &&
       !source.readme.includes("Run `npm run sync`") &&
