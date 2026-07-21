@@ -35,6 +35,7 @@ This folder is the starting point for Apple TestFlight and Google Play internal 
 8. Before final native release handoff, run the stricter release gate from the
    repo root:
    - `npm.cmd run verify:native-release`
+   It checks environment boundaries and private native config exclusions first.
    It should fail until the Android probe sees an authorized device with the TTC
    package installed, then continue through native, store, Android-profile
    mobile, and iOS-profile mobile smoke checks.
