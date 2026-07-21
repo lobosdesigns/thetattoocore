@@ -1053,6 +1053,14 @@ checks.push({
     productPlan.includes("supports event/audit/booking payment search"),
 });
 checks.push({
+  label: "admin payment copy uses neutral review-tool wording",
+  ok:
+    adminActions.includes("payment review tools first") &&
+    adminMerchPage.includes("payment review tools first") &&
+    !adminActions.includes("payment dashboard") &&
+    !adminMerchPage.includes("payment dashboard"),
+});
+checks.push({
   label: "public payment copy avoids collecting raw payout credentials",
   ok:
     !memberPaymentSafetySource.includes("bank account number") &&

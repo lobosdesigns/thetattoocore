@@ -765,7 +765,8 @@ function OrderCard({
           </button>
         </div>
         <p className="text-xs leading-5 text-[var(--muted-strong)]">
-          Refund paid orders in the payment dashboard first; payment updates will sync status here.
+          Refund paid orders in the payment review tools first; payment updates
+          will sync status here.
         </p>
       </form>
     </article>

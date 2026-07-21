@@ -1881,7 +1881,7 @@ export async function updateMerchOrderStatus(formData: FormData) {
   ) {
     redirect(
       adminMerchMessage(
-        "Only pending, failed, or already-cancelled orders can be cancelled here. Refund paid orders in the payment dashboard first.",
+        "Only pending, failed, or already-cancelled orders can be cancelled here. Refund paid orders in the payment review tools first.",
         returnTo,
       ),
     );
