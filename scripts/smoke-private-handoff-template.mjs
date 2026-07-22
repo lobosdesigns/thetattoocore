@@ -92,8 +92,15 @@ const checks = [
       generator.includes("14-day window is counted only after the closed test is live") &&
       generator.includes("Closed-test tester links and opt-in evidence") &&
       generator.includes("Save Android/web join links privately") &&
-      generator.includes("tester community access") &&
-      generator.includes("group-member opt-in/install proof") &&
+      generator.includes("device Play account matches the tester-community member") &&
+      generator.includes("confirm web opt-in with that account") &&
+      generator.includes("listing/install proof") &&
+      generator.includes("## Google Play Tester Install Evidence") &&
+      generator.includes("Device Play account matches tester member") &&
+      generator.includes("Web opt-in accepted") &&
+      generator.includes("Android listing offers Install/Update") &&
+      generator.includes("Installed release/version/build") &&
+      generator.includes("A missing listing, account mismatch, or unconfirmed web opt-in is a blocker") &&
       generator.includes("API 36 signed upload bundle") &&
       generator.includes("Fresh version code 2 / version name 1.0.1 API 36 upload bundle is staged") &&
       generator.includes("before any post-deadline submission/update") &&

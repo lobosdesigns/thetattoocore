@@ -35,7 +35,7 @@ account identifiers out of repo docs.
 | Apple | Submitted-build console field evidence | Confirm selected build, 13-inch iPad screenshot upload, primary category, free pricing, Content Rights, App Privacy, Privacy Policy URL, and Age 18+ override remain saved for the submitted build | pending | |
 | Apple | Accessibility Nutrition Labels evidence | Use submitted-build iPhone/iPad QA evidence only before changing or confirming labels | pending | |
 | Google Play | Closed testing production-access evidence | Confirm Closed testing - Alpha release 1 (1.0) is served to the tester community, tester opt-ins are sufficient, and the 14-day window is counted only after the closed test is live | pending | |
-| Google Play | Closed-test tester links and opt-in evidence | Save Android/web join links privately, confirm tester community access, and record group-member opt-in/install proof | pending | |
+| Google Play | Closed-test tester links and opt-in evidence | Save Android/web join links privately, confirm the device Play account matches the tester-community member, confirm web opt-in with that account, and record listing/install proof | pending | |
 | Google Play | API 36 signed upload bundle | Fresh version code 2 / version name 1.0.1 API 36 upload bundle is staged; upload it when required or before any post-deadline submission/update, then rerun Android wrapper plus real-device QA | pending | |
 | Google Play | Console submit/retry evidence | If Play Console errors before submit, record the visible error code, page URL, retry path, whether reload/new-tab retry was attempted, and whether Publishing overview still shows changes not sent for review | pending | |
 
@@ -75,6 +75,16 @@ identifiers in the private proof folder.
 | Attempt date/time | Console page | Visible status or error code | Action tried | Result | Next retry owner |
 | --- | --- | --- | --- | --- | --- |
 | | Closed testing / Publishing overview | active or pending status to capture | reload and saved-tab retry if status changes or install link fails | pending | |
+
+## Google Play Tester Install Evidence
+
+Keep account emails, group-membership screenshots, and exact tester links private.
+A missing listing, account mismatch, or unconfirmed web opt-in is a blocker, not a
+passing install.
+
+| Tester alias | Device Play account matches tester member | Web opt-in accepted | Android listing offers Install/Update | Installed release/version/build | Device and date | Result |
+| --- | --- | --- | --- | --- | --- | --- |
+| | pending | pending | pending | | | pending |
 
 ## Reviewer Access
 

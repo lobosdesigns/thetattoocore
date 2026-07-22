@@ -4,7 +4,7 @@
 
 - TheTattooCore is web/PWA-first at `https://thetattoocore.com/login`.
 - Native Android and iOS beta-wrapper work is starting from `native/thetattoocore-mobile`.
-- Google Play Closed testing - Alpha release `1 (1.0)` is available to selected testers through the current tester community, and the Android/web tester join links are saved privately. Android v1 remains the served closed-test artifact, while the fresh signed API 36 upload bundle for version code `2` / version name `1.0.1` is staged on the Desktop for the next upload attempt or any post-deadline submission/update.
+- Google Play Closed testing - Alpha release `1 (1.0)` is active and available to selected testers through the current tester community, and the Android/web tester join links are saved privately. Android v1 remains the served closed-test artifact, while the fresh signed API 36 upload bundle for version code `2` / version name `1.0.1` is staged on the Desktop for the next upload attempt or any post-deadline submission/update.
 - iOS build `1.0 (3)` was uploaded from Xcode Organizer on July 18, 2026, attached to TTC Internal Testers, and is available for internal TestFlight testing.
 - PWA manifest, icons, splash assets, service worker, support URL, privacy URL, and terms URL are ready for the beta wrapper path.
 - Native wrapper prep lives in `docs/NATIVE_WRAPPER_PREP.md`; follow it before adding native permissions, deep links, checkout handling, push, or store-review changes.
@@ -59,6 +59,17 @@ Start with a thin native wrapper now that core web smoke/390px mobile checks are
 - Do not store payment, mail, privileged server, checkout, admin, or database secrets in native code.
 - Keep app links pointed at `thetattoocore.com` so shared content, login, support, privacy, and terms remain consistent.
 - The website includes fail-closed `.well-known` association routes; configure final Android app-signing fingerprints and Apple app IDs only in the private deployment environment before treating app links as release evidence.
+
+## Google Play Tester Install Handoff
+
+Use this sequence for the currently served Closed testing - Alpha release before
+treating a tester download as failed or counting it as release evidence:
+
+1. Confirm the Google Play account selected on the Android device is the same account that belongs to the configured tester community. Keep the email address and group-membership proof in the private handoff only.
+2. While signed into that same account in a browser, open the saved web tester join link and confirm the account has opted in before opening the Android join link.
+3. Open the saved Android join link on the device and confirm the store listing offers Install or Update for the closed-test release.
+4. After installation, record the tester alias, release track, installed version/build, device model, OS version, test date, and pass/fail result in the private handoff.
+5. If the listing remains unavailable, recheck that the track is Active and Available to selected testers, the release country matches the tester, the selected Play account matches the opted-in account, and tester-community membership has propagated. Do not count a missing listing or account mismatch as an install pass.
 
 ## Required Before Store Submission
 

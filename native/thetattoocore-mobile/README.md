@@ -59,7 +59,7 @@ This folder is the starting point for Apple TestFlight and Google Play closed/in
    - If the probe reports an unauthorized or offline device, unlock the device,
      enable USB debugging, and accept the computer authorization prompt.
    - If the probe reports `authorized device missing TTC package`, install or
-     confirm the Google Play internal-testing build before route QA.
+     confirm the Google Play closed-testing build before route QA.
    - If the probe reports `authorized device has wrong TTC build`, install the
      Google Play build selected for review, or set
      `TTC_ANDROID_EXPECTED_VERSION_NAME` and

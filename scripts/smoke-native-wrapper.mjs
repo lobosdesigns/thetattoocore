@@ -321,7 +321,8 @@ const checks = [
       source.androidDeviceProbe.includes("ANDROID_QA wait_ms=") &&
       source.androidDeviceProbe.includes("ANDROID_QA next=check USB cable, set USB mode to file transfer, and reopen the USB debugging prompt") &&
       source.androidDeviceProbe.includes("ANDROID_QA next=unlock device, enable USB debugging, and accept the computer authorization prompt") &&
-      source.androidDeviceProbe.includes("ANDROID_QA next=install or confirm the Google Play internal-testing build before route QA") &&
+      source.androidDeviceProbe.includes("ANDROID_QA next=install or confirm the Google Play closed-testing build before route QA") &&
+      source.readme.includes("confirm the Google Play closed-testing build before route QA") &&
       source.androidDeviceProbe.includes("if (requireDevice) process.exit(1)") &&
       source.realDeviceQa.includes("authorized device is visible and the TTC") &&
       source.realDeviceQa.includes("package is installed for the build under review") &&
@@ -339,9 +340,9 @@ const checks = [
       source.mobileRunbook.includes("at least 12 testers opted in for 14 continuous days") &&
       source.mobileRunbook.includes("archive the production-access application answers privately") &&
       source.mobileRunbook.includes("Google Play production access: if the account/app is subject to closed-test") &&
-      source.realDeviceQa.includes("Google Play internal testing or closed testing if production access requires it") &&
+      source.realDeviceQa.includes("Google Play closed testing") &&
       source.realDeviceQa.includes("closed-test date range for the exact build under review") &&
-      source.realDeviceQa.includes("12-tester participation, 14-day duration, feedback summary, and production-access request result in the private handoff") &&
+      source.realDeviceQa.includes("same-account web opt-in, 12-tester participation, 14-day duration, feedback summary, and production-access request result in the private handoff") &&
       source.realDeviceQa.includes("Repo-safe summary fields are limited to platform, release channel, version/build, date, device model, and pass/fail status"),
   },
   {

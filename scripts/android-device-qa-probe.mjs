@@ -192,7 +192,7 @@ console.log(`ANDROID_QA package=${packageSummary}`);
 
 if (!packageInstalled) {
   console.log("ANDROID_QA result=authorized device missing TTC package");
-  console.log("ANDROID_QA next=install or confirm the Google Play internal-testing build before route QA");
+  console.log("ANDROID_QA next=install or confirm the Google Play closed-testing build before route QA");
   if (requireDevice) process.exit(1);
   process.exit(0);
 }
