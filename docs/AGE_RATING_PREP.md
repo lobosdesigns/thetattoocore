@@ -30,8 +30,8 @@ Use this as an internal checklist before answering Google Play, App Store, payme
 - Recheck Play Console and App Store Connect age-rating questions against the live feature set that will actually ship.
 - Recheck Apple's current age-rating social media capability questions before submission and keep the answers consistent with the shipped 18+ social/community features.
 - Recheck Google Play App content answers, Data Safety, Target Audience, and IARC content-rating answers whenever app features or payment/commerce status changes.
-- Verify support, terms, privacy, account deletion, reporting, and blocking are reachable from the submitted app build.
+- Verify Support, Help, Child Safety Standards, Terms, Privacy, account deletion, reporting, and blocking are reachable from the submitted app build.
 - Use store screenshots with brand-safe sample content only.
 - Avoid screenshots containing nudity, private DMs, real payment data, copyrighted tattoo art, personal contact data, or unreviewed marketplace items.
 - Decide whether Merch checkout appears in native builds or stays web-only and launch-controlled until production commerce is approved.
-- Run real-device QA for auth, profile setup, posting, Stories, reports, blocking, DMs, notifications, verification upload, account deletion request, and public/shared content previews.
+- Run real-device QA for auth, profile setup, posting, Stories, reports, blocking, DMs, notifications, verification upload, account deletion request, Child Safety Standards, and public/shared content previews.

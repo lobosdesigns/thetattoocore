@@ -11,7 +11,7 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 - Confirm the installed Android app came from the intended Google Play internal testing track and record the release/build number shown to testers.
 - Confirm the installed iOS app came from the intended TestFlight group and record the version/build number shown to testers.
 - Open Admin > Media Ops and confirm the Beta QA launch checklist is visible for auth, two-user DMs, mobile posting/media, verification review, controlled launch payments, and safe store screenshots.
-- Confirm support, privacy, and terms links open from logged-out and logged-in surfaces.
+- Confirm Support, Help, Child Safety Standards, Privacy, and Terms links open from logged-out and logged-in surfaces.
 - Open Help Center on mobile, search for "getting started", and confirm the first-run guide explains account type, profile setup, privacy, content rules, main sections, verification, and Support.
 - Open Help Center on mobile, search for "beta app", and confirm the beta app testing guide explains in-app login/signup/reset, media upload, notifications, DMs, booking, Merch, checkout return paths, and safe bug reporting.
 - Open Help Center on mobile, search for "saved", and confirm the Search/Saved guide explains usernames, broader terms like tattooers, guest spots, and shirts, privacy-safe results, and saved search shortcuts.
@@ -157,7 +157,7 @@ Store-critical proof should include at least:
 
 - Android internal-testing install proof and iOS TestFlight install proof for the exact build under review.
 - Android and iOS login/signup/reset staying inside the app or installed-app flow.
-- Public Help, Support, Privacy, and Terms links opening correctly.
+- Public Help, Support, Child Safety Standards, Privacy, and Terms links opening correctly.
 - Posting, Story viewing, reporting, blocking, and account deletion request.
 - Full two-user DM send, receive, read indicator, reply, photo attachment, and notification route.
 - 4U, Gossip, Gigs, and comment tagging proof, including stale notification cleanup after delete or untag.

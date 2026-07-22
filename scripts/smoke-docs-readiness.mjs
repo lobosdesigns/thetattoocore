@@ -310,6 +310,8 @@ const checks = [
       docs["docs/AGE_RATING_PREP.md"].includes("not invite-only") &&
       docs["docs/AGE_RATING_PREP.md"].includes("Apple's current age-rating social media capability questions") &&
       docs["docs/AGE_RATING_PREP.md"].includes("Google Play App content answers") &&
+      docs["docs/AGE_RATING_PREP.md"].includes("Support, Help, Child Safety Standards, Terms, Privacy") &&
+      docs["docs/AGE_RATING_PREP.md"].includes("account deletion request, Child Safety Standards") &&
       docs["docs/AGE_RATING_PREP.md"].includes("payment-policy") &&
       !docs["docs/AGE_RATING_PREP.md"].includes("payment-provider") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Social, no dating/sexual-relationship purpose") &&
@@ -413,6 +415,7 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Open Admin > Media Ops") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Beta QA launch checklist") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("support/help/legal") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Support, Help, Child Safety Standards, Privacy, and Terms links") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("beta app testing guide") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Search/Saved guide") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("privacy/safety/support guide") &&
@@ -447,6 +450,7 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android internal-testing install proof") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("iOS TestFlight install proof") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android and iOS login/signup/reset staying inside the app") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Public Help, Support, Child Safety Standards, Privacy, and Terms links opening correctly") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Admin Payments review evidence using safe test references") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Accessibility Nutrition Labels proof") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("VoiceOver, Voice Control, Larger Text") &&
