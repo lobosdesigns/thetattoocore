@@ -65,17 +65,25 @@ live, enabled, or ready.
 
 Run `npm.cmd run qa:native-push` from the repository root before changing a
 native notification build. The probe reports only `ready` or `pending` states
-for bridge wiring, private configuration, the inactive staging guard, and static
-activation readiness;
+for bridge wiring, private configuration, the inactive staging guard, the
+service-only delivery outbox/sender, runtime activation, and evidence readiness;
 it never prints app configuration values, device tokens, signing identifiers,
 or notification payloads. The normal probe exits successfully so it can record
 an honest staged state. `npm.cmd run qa:native-push:required` is the fail-closed
 release gate and must remain failing until both platforms have their private
-configuration, native capability wiring, and client/server registration path.
+configuration, native capability wiring, client/server registration path,
+server delivery credentials, and archived real-device alert/tap evidence.
 The iOS checks also require an iOS FCM token bridge; APNs registration callbacks
 alone do not produce the FCM token required by the planned delivery path. The
 staging guard is intentionally not part of activation readiness because its
 disabled permission/capability state is mutually exclusive with activation.
+
+The scheduled sender queues only message notifications linked to an exact DM
+row. It uses generic lock-screen copy, rechecks account state, the alert master
+switch, message preferences, quiet hours, device activity, and the safe route
+allowlist immediately before delivery. Its outbox, leases, retry state, and
+device-token cleanup are service-only. All three UI, registration, and delivery
+gates remain off until controlled Android and iOS QA.
 
 The cross-platform bridge is staged with its staging guard active: automatic
 token creation is disabled on both platforms, Android analytics collection is

@@ -20,7 +20,11 @@ const source = {
     "native/thetattoocore-mobile/capacitor.config.ts",
   ),
   control: read("src/app/push-subscription-control.tsx"),
+  customWorker: read("custom-worker.ts"),
   deviceApi: read("src/app/api/push/devices/route.ts"),
+  deliveryMigration: read(
+    "supabase/migrations/20260722225151_native_push_delivery_outbox.sql",
+  ),
   env: read(".env.example"),
   iosAppDelegate: read(
     "native/thetattoocore-mobile/ios/App/App/AppDelegate.swift",
@@ -54,8 +58,11 @@ const source = {
   provider: read("src/app/native-notification-provider.tsx"),
   rootPackage: read("package.json"),
   routeGuard: read("src/lib/notification-route.ts"),
+  sender: read("src/lib/native-push/sender.ts"),
+  senderCore: read("src/lib/native-push/sender-core.ts"),
   signout: read("src/app/auth/signout/route.ts"),
   signoutForm: read("src/app/native-aware-signout-form.tsx"),
+  wrangler: read("wrangler.jsonc"),
 };
 
 const permissionRequestPosition = source.provider.indexOf(
@@ -64,6 +71,8 @@ const permissionRequestPosition = source.provider.indexOf(
 const explicitEnablePosition = source.provider.indexOf(
   "const enable = useCallback",
 );
+const deliveryTableSql =
+  source.deliveryMigration.split("create or replace function")[0] ?? "";
 
 const checks = [
   {
@@ -78,9 +87,12 @@ const checks = [
         source.nativeProbe.includes("NATIVE_PUSH_QA bridge_result=") &&
         source.nativeProbe.includes("NATIVE_PUSH_QA private_config_result=") &&
         source.nativeProbe.includes("NATIVE_PUSH_QA staging_guard=") &&
+        source.nativeProbe.includes("NATIVE_PUSH_QA server_delivery_result=") &&
         source.nativeProbe.includes("NATIVE_PUSH_QA activation_result=") &&
         activationKeys.includes('"android_permission_enabled"') &&
         activationKeys.includes('"ios_push_capability"') &&
+        activationKeys.includes('"delivery_runtime_activation"') &&
+        activationKeys.includes('"delivery_evidence"') &&
         !activationKeys.includes("activation_lock") &&
         !activationKeys.includes("staging_guard") &&
         !source.nativeProbe.includes("const activationReady = checks.every")
@@ -181,6 +193,8 @@ const checks = [
       source.deviceApi.includes("createAdminClient()") &&
       source.deviceApi.includes("crypto.subtle.digest") &&
       source.deviceApi.includes("maxActiveDevices = 10") &&
+      source.deviceApi.includes('priorOwnerError') &&
+      source.deviceApi.includes('.neq("profile_id", userId)') &&
       source.deviceApi.includes("nativePushDeviceCookie") &&
       !source.deviceApi.includes("console."),
   },
@@ -224,7 +238,8 @@ const checks = [
     ok:
       source.notificationWriter.includes('import "server-only"') &&
       source.notificationWriter.includes("createAdminClient()") &&
-      source.notificationWriter.includes('.from("notifications").insert(rows)') &&
+      source.notificationWriter.includes('"insert_notifications_with_native_delivery"') &&
+      source.notificationWriter.includes("TTC_NATIVE_PUSH_DELIVERY_ENABLED") &&
       source.notificationProducers.every(
         (producer) =>
           !/\.from\("notifications"\)\s*\.insert\(/s.test(producer),
@@ -250,6 +265,60 @@ const checks = [
       source.notificationAnonAccessMigration.includes(
         "grant select, insert, update, delete on table public.notifications to service_role",
       ),
+  },
+  {
+    label: "native delivery outbox is atomic, leased, and service-only",
+    ok:
+      source.deliveryMigration.includes("create table if not exists public.native_push_delivery_jobs") &&
+      source.deliveryMigration.includes("unique (notification_id, device_id)") &&
+      source.deliveryMigration.includes("references public.notifications(id) on delete cascade") &&
+      source.deliveryMigration.includes("references public.native_push_devices(id) on delete cascade") &&
+      source.deliveryMigration.includes("enable row level security") &&
+      source.deliveryMigration.includes("from public, anon, authenticated") &&
+      source.deliveryMigration.includes("to service_role") &&
+      source.deliveryMigration.includes("insert_notifications_with_native_delivery") &&
+      source.deliveryMigration.includes("insert into public.notifications") &&
+      source.deliveryMigration.includes("insert into public.native_push_delivery_jobs") &&
+      source.deliveryMigration.includes("inserted.type = 'message'") &&
+      source.deliveryMigration.includes("inserted.message_id is not null") &&
+      source.deliveryMigration.includes("for update skip locked") &&
+      source.deliveryMigration.includes("lease_expires_at") &&
+      source.deliveryMigration.includes("lease_token = gen_random_uuid()") &&
+      source.deliveryMigration.includes("and lease_token = p_lease_token") &&
+      source.deliveryMigration.includes("devices.profile_id = notifications.recipient_id") &&
+      source.deliveryMigration.includes("last_error_code = 'account_mismatch'") &&
+      source.deliveryMigration.includes("and token_hash = p_device_token_hash") &&
+      source.deliveryMigration.includes("attempt_count between 0 and 8") &&
+      source.deliveryMigration.includes("revoke execute on function public.claim_native_push_delivery_batch") &&
+      source.deliveryMigration.includes("grant execute on function public.claim_native_push_delivery_batch") &&
+      source.deliveryMigration.includes("Device tokens remain in native_push_devices and are never copied here"),
+  },
+  {
+    label: "scheduled native sender is gated, private, and retry aware",
+    ok:
+      source.wrangler.includes('"main": "custom-worker.ts"') &&
+      source.wrangler.includes('"crons": ["* * * * *"]') &&
+      source.customWorker.includes("fetch: handler.fetch") &&
+      source.customWorker.includes("controller.waitUntil(drainNativePushBatch(env))") &&
+      source.senderCore.includes("TTC_DEVICE_ALERT_SETUP_ENABLED === \"true\"") &&
+      source.senderCore.includes("TTC_NATIVE_PUSH_REGISTRATION_ENABLED === \"true\"") &&
+      source.senderCore.includes("TTC_NATIVE_PUSH_DELIVERY_ENABLED === \"true\"") &&
+      source.sender.includes('"claim_native_push_delivery_batch"') &&
+      source.sender.includes('"complete_native_push_delivery"') &&
+      source.sender.includes('"retry_native_push_delivery"') &&
+      source.sender.includes('"suppress_native_push_delivery"') &&
+      source.sender.includes("notificationPathOrFallback(job.notification_href)") &&
+      source.sender.includes("allowsNoisyDeliveryNow") &&
+      source.sender.includes('await suppress("invalid_token", true)') &&
+      source.sender.includes("p_lease_token: job.lease_token") &&
+      source.sender.includes("p_device_token_hash: deactivateDevice") &&
+      source.sender.includes("retryDelaySeconds(") &&
+      source.sender.includes("job.attempt_count") &&
+      source.senderCore.includes('body: "You have a new message."') &&
+      source.senderCore.includes('title: "New message"') &&
+      !source.sender.includes("console.") &&
+      !deliveryTableSql.includes("device_token") &&
+      !deliveryTableSql.includes(" token "),
   },
   {
     label: "per-device opt-out does not overwrite the account alert master switch",
@@ -284,6 +353,7 @@ const checks = [
     ok:
       source.env.includes("TTC_DEVICE_ALERT_SETUP_ENABLED=false") &&
       source.env.includes("TTC_NATIVE_PUSH_REGISTRATION_ENABLED=false") &&
+      source.env.includes("TTC_NATIVE_PUSH_DELIVERY_ENABLED=false") &&
       source.env.includes("TTC_WEB_PUSH_REGISTRATION_ENABLED=false") &&
       source.layout.includes(
         'process.env.TTC_DEVICE_ALERT_SETUP_ENABLED === "true"',

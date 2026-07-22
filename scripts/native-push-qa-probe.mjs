@@ -21,8 +21,15 @@ const files = {
   iosProject: `${wrapperRoot}/ios/App/App.xcodeproj/project.pbxproj`,
   iosPodfile: `${wrapperRoot}/ios/App/Podfile`,
   nativeDevicesMigration: "supabase/migrations/20260722114857_native_push_devices.sql",
+  nativeDeliveryMigration:
+    "supabase/migrations/20260722225151_native_push_delivery_outbox.sql",
+  nativeDeliverySender: "src/lib/native-push/sender.ts",
+  nativeDeliverySenderCore: "src/lib/native-push/sender-core.ts",
+  notificationWriter: "src/lib/notification-write.ts",
   packageJson: `${wrapperRoot}/package.json`,
   rootPackageJson: "package.json",
+  worker: "custom-worker.ts",
+  wrangler: "wrangler.jsonc",
 };
 
 const source = Object.fromEntries(
@@ -130,6 +137,49 @@ const checks = [
       clientSource.includes("nativePushDeviceCookie"),
   },
   {
+    key: "server_delivery_queue",
+    ready:
+      source.nativeDeliveryMigration.includes("native_push_delivery_jobs") &&
+      source.nativeDeliveryMigration.includes("insert_notifications_with_native_delivery") &&
+      source.nativeDeliveryMigration.includes("for update skip locked") &&
+      source.nativeDeliveryMigration.includes("revoke execute on function") &&
+      source.notificationWriter.includes("insert_notifications_with_native_delivery"),
+  },
+  {
+    key: "server_delivery_sender",
+    ready:
+      source.nativeDeliverySender.includes("drainNativePushBatch") &&
+      source.nativeDeliverySender.includes("notificationPathOrFallback") &&
+      source.nativeDeliverySender.includes("allowsNoisyDeliveryNow") &&
+      source.nativeDeliverySender.includes("suppress_native_push_delivery") &&
+      source.nativeDeliverySenderCore.includes("classifyFcmResponse") &&
+      source.nativeDeliverySenderCore.includes('title: "New message"') &&
+      source.nativeDeliverySenderCore.includes('body: "You have a new message."'),
+  },
+  {
+    key: "server_delivery_schedule",
+    ready:
+      source.worker.includes("fetch: handler.fetch") &&
+      source.worker.includes("drainNativePushBatch(env)") &&
+      source.wrangler.includes('"main": "custom-worker.ts"') &&
+      source.wrangler.includes('"crons": ["* * * * *"]'),
+  },
+  {
+    key: "delivery_runtime_activation",
+    ready:
+      process.env.TTC_DEVICE_ALERT_SETUP_ENABLED === "true" &&
+      process.env.TTC_NATIVE_PUSH_REGISTRATION_ENABLED === "true" &&
+      process.env.TTC_NATIVE_PUSH_DELIVERY_ENABLED === "true" &&
+      Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY) &&
+      Boolean(process.env.FIREBASE_PROJECT_ID) &&
+      Boolean(process.env.FIREBASE_CLIENT_EMAIL) &&
+      Boolean(process.env.FIREBASE_PRIVATE_KEY),
+  },
+  {
+    key: "delivery_evidence",
+    ready: process.env.NATIVE_PUSH_QA_DELIVERY_EVIDENCE === "passed",
+  },
+  {
     key: "installed_build_registration",
     ready:
       source.rootPackageJson.includes('"@capacitor/app": "7.1.2"') &&
@@ -173,15 +223,24 @@ const privateConfigCheckKeys = [
   "ios_private_config",
   "ios_config_target",
 ];
+const serverDeliveryCheckKeys = [
+  "server_delivery_queue",
+  "server_delivery_sender",
+  "server_delivery_schedule",
+];
 const activationCheckKeys = [
   ...bridgeCheckKeys,
   ...privateConfigCheckKeys,
+  ...serverDeliveryCheckKeys,
   "android_permission_enabled",
+  "delivery_evidence",
+  "delivery_runtime_activation",
   "ios_push_capability",
 ];
 const checksReady = (keys) => keys.every((key) => checkByKey.get(key) === true);
 const bridgeReady = checksReady(bridgeCheckKeys);
 const privateConfigReady = checksReady(privateConfigCheckKeys);
+const serverDeliveryReady = checksReady(serverDeliveryCheckKeys);
 const stagingGuardReady = androidActivationLocked && iosActivationLocked;
 const activationReady = checksReady(activationCheckKeys);
 
@@ -189,12 +248,17 @@ console.log(`NATIVE_PUSH_QA bridge_result=${bridgeReady ? "ready" : "pending"}`)
 console.log(
   `NATIVE_PUSH_QA private_config_result=${privateConfigReady ? "ready" : "pending"}`,
 );
+console.log(
+  `NATIVE_PUSH_QA server_delivery_result=${serverDeliveryReady ? "ready" : "pending"}`,
+);
 console.log(`NATIVE_PUSH_QA staging_guard=${stagingGuardReady ? "ready" : "pending"}`);
 console.log(`NATIVE_PUSH_QA activation_result=${activationReady ? "ready" : "pending"}`);
-console.log("NATIVE_PUSH_QA delivery_evidence=required");
+console.log(
+  `NATIVE_PUSH_QA delivery_evidence=${checkByKey.get("delivery_evidence") ? "ready" : "required"}`,
+);
 
 if (!activationReady) {
-  console.log("NATIVE_PUSH_QA next=complete private platform configuration and tested opt-in registration before activation");
+  console.log("NATIVE_PUSH_QA next=complete private platform configuration, runtime activation, and Android/iOS delivery evidence");
 }
 
 if (requireReady && !activationReady) process.exit(1);

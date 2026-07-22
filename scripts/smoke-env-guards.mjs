@@ -1,5 +1,5 @@
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { execFileSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
 
 const envExamplePath = ".env.example";
 const gitignore = readFileSync(".gitignore", "utf8");
@@ -18,11 +18,15 @@ const expectedKeys = [
   "NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED",
   "TTC_DEVICE_ALERT_SETUP_ENABLED",
   "TTC_NATIVE_PUSH_REGISTRATION_ENABLED",
+  "TTC_NATIVE_PUSH_DELIVERY_ENABLED",
   "TTC_WEB_PUSH_REGISTRATION_ENABLED",
   "TTC_ANDROID_APP_LINK_PACKAGE_NAME",
   "TTC_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS",
   "TTC_IOS_APP_LINK_APP_IDS",
   "SUPABASE_SERVICE_ROLE_KEY",
+  "FIREBASE_PROJECT_ID",
+  "FIREBASE_CLIENT_EMAIL",
+  "FIREBASE_PRIVATE_KEY",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
   "STRIPE_EXPECTED_LIVEMODE",
@@ -85,6 +89,7 @@ function valueLooksLikePlaceholder(key, value) {
     key === "NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED" ||
     key === "TTC_DEVICE_ALERT_SETUP_ENABLED" ||
     key === "TTC_NATIVE_PUSH_REGISTRATION_ENABLED" ||
+    key === "TTC_NATIVE_PUSH_DELIVERY_ENABLED" ||
     key === "TTC_WEB_PUSH_REGISTRATION_ENABLED"
   ) {
     return value === "false";
@@ -132,20 +137,13 @@ const nativeSigningKeys = [
 const forbiddenNativeArtifactNames = ["google-services.json", "GoogleService-Info.plist"];
 const forbiddenNativeArtifactExtensions = [".jks", ".keystore"];
 
-function filesUnder(root) {
-  if (!existsSync(root)) return [];
-
-  return readdirSync(root).flatMap((entry) => {
-    const entryPath = join(root, entry);
-    const stats = statSync(entryPath);
-
-    if (stats.isDirectory()) return filesUnder(entryPath);
-
-    return [entryPath.replaceAll("\\", "/")];
-  });
-}
-
-const committedNativeArtifactPaths = filesUnder("native").filter((path) => {
+const trackedNativePaths = execFileSync("git", ["ls-files", "native"], {
+  encoding: "utf8",
+})
+  .split(/\r?\n/)
+  .map((path) => path.trim())
+  .filter(Boolean);
+const committedNativeArtifactPaths = trackedNativePaths.filter((path) => {
   const fileName = path.split("/").at(-1) ?? "";
 
   return (
@@ -216,6 +214,7 @@ const checks = [
       valueByKey.get("NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED") === "false" &&
       valueByKey.get("TTC_DEVICE_ALERT_SETUP_ENABLED") === "false" &&
       valueByKey.get("TTC_NATIVE_PUSH_REGISTRATION_ENABLED") === "false" &&
+      valueByKey.get("TTC_NATIVE_PUSH_DELIVERY_ENABLED") === "false" &&
       valueByKey.get("TTC_WEB_PUSH_REGISTRATION_ENABLED") === "false",
   },
   {
@@ -256,6 +255,7 @@ const checks = [
       readme.includes("NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED") &&
       readme.includes("TTC_DEVICE_ALERT_SETUP_ENABLED") &&
       readme.includes("TTC_NATIVE_PUSH_REGISTRATION_ENABLED") &&
+      readme.includes("TTC_NATIVE_PUSH_DELIVERY_ENABLED") &&
       readme.includes("TTC_WEB_PUSH_REGISTRATION_ENABLED") &&
       readme.includes("keep `false` until device-alert delivery") &&
       readme.includes("tap routing, opt-out, quiet hours, and category preference evidence"),

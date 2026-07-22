@@ -167,6 +167,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Device registration failed." }, { status: 400 });
   }
 
+  const { error: priorOwnerError } = await admin
+    .from("native_push_devices")
+    .delete()
+    .eq("platform", platform)
+    .eq("installation_id", installationId)
+    .neq("profile_id", userId);
+
+  if (priorOwnerError) {
+    return NextResponse.json({ error: "Device registration failed." }, { status: 400 });
+  }
+
   const { error: registrationError } = await admin
     .from("native_push_devices")
     .upsert(

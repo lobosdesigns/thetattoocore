@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "thetattoocore",
-  "main": ".open-next/worker.js",
+  "main": "custom-worker.ts",
   "compatibility_date": "2026-07-07",
   "compatibility_flags": ["nodejs_compat"],
   "routes": [
@@ -17,6 +17,9 @@
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
+  },
+  "triggers": {
+    "crons": ["* * * * *"]
   },
   "vars": {
     "NEXT_PUBLIC_SUPABASE_URL": "https://ytznkgcslezijkehwjsj.supabase.co",

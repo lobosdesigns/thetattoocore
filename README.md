@@ -58,12 +58,14 @@ production behavior:
 - `NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED`: keep `false` until device-alert delivery, tap routing, opt-out, quiet hours, and category preference evidence is complete.
 - `TTC_DEVICE_ALERT_SETUP_ENABLED`: server-side native app alert UI gate; keep `false` until private app configuration and device evidence are complete.
 - `TTC_NATIVE_PUSH_REGISTRATION_ENABLED`: server-only native device-registration write gate; enable only with the native UI gate during controlled device QA.
+- `TTC_NATIVE_PUSH_DELIVERY_ENABLED`: server-only native delivery/outbox gate; keep `false` until the trusted sender, private credentials, platform capabilities, and Android/iOS delivery evidence pass.
 - `TTC_WEB_PUSH_REGISTRATION_ENABLED`: server-only browser subscription write gate; enable only when browser delivery is independently ready.
 - `TTC_ANDROID_APP_LINK_PACKAGE_NAME`: Android package name used by the public app-link association route.
 - `TTC_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS`: private deploy-time Google Play app-signing SHA-256 fingerprint list for `/.well-known/assetlinks.json`; keep the placeholder until final signing proof is ready.
 - `TTC_IOS_APP_LINK_APP_IDS`: private deploy-time Apple team/app identifier list for `/.well-known/apple-app-site-association`; keep the placeholder until Associated Domains proof is ready.
 - `HOSTGATOR_SMTP_PASSWORD`: required for HostGator transactional email.
 - `SUPABASE_SERVICE_ROLE_KEY`: required for server-only Supabase Auth email lookup, used by verification approval/rejection emails. Never expose this as a `NEXT_PUBLIC_` variable.
+- `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY`: server-only native alert sender credentials. Keep them in private deployment bindings and never expose or commit their values.
 - `STRIPE_SECRET_KEY`: server-only Stripe key for test/live checkout sessions.
 - `STRIPE_WEBHOOK_SECRET`: server-only webhook signing secret for Stripe payment status updates.
 - `STRIPE_EXPECTED_LIVEMODE`: keep `false` until live keys, live webhook events, policy review, and penny-test evidence are complete.
