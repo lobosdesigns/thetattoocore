@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { BellRing, LoaderCircle, BellOff } from "lucide-react";
 
 const publicPushKey = process.env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY ?? "";
+const deviceAlertSetupEnabled =
+  process.env.NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED === "true";
 const fallbackMessage =
   "Device alerts are being prepared. Keep checking Notifications for now.";
 
@@ -47,7 +49,10 @@ export function PushSubscriptionControl() {
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
   const [supported, setSupported] = useState(false);
-  const readyForSetup = useMemo(() => Boolean(publicPushKey), []);
+  const readyForSetup = useMemo(
+    () => deviceAlertSetupEnabled && Boolean(publicPushKey),
+    [],
+  );
 
   useEffect(() => {
     let cancelled = false;

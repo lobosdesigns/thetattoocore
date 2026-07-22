@@ -15,6 +15,7 @@ const expectedKeys = [
   "NEXT_PUBLIC_SUPABASE_URL",
   "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
   "NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY",
+  "NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED",
   "SUPABASE_SERVICE_ROLE_KEY",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
@@ -26,6 +27,7 @@ const publicKeys = [
   "NEXT_PUBLIC_SUPABASE_URL",
   "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
   "NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY",
+  "NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED",
 ];
 const secretKeys = expectedKeys.filter((key) => !publicKeys.includes(key));
 const pairs = lines.map((line) => {
@@ -70,6 +72,10 @@ function valueLooksLikePlaceholder(key, value) {
   }
 
   if (key === "STRIPE_EXPECTED_LIVEMODE") {
+    return value === "false";
+  }
+
+  if (key === "NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED") {
     return value === "false";
   }
 
@@ -183,6 +189,10 @@ const checks = [
       "replace_with_web_push_public_key_when_ready",
   },
   {
+    label: ".env.example keeps device alert setup behind an explicit off switch",
+    ok: valueByKey.get("NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED") === "false",
+  },
+  {
     label: ".env.example does not contain live-looking secret material",
     ok: liveLookingSecretLabels.length === 0,
     message: `live-looking secret pattern categories: ${liveLookingSecretLabels.join(", ")}`,
@@ -196,6 +206,13 @@ const checks = [
     ok:
       readme.includes("STRIPE_EXPECTED_LIVEMODE") &&
       readme.includes("penny-test evidence"),
+  },
+  {
+    label: "README documents device alert setup fail-closed default",
+    ok:
+      readme.includes("NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED") &&
+      readme.includes("keep `false` until device-alert delivery") &&
+      readme.includes("tap routing, opt-out, quiet hours, and category preference evidence"),
   },
 ];
 

@@ -14,6 +14,7 @@ const accountProfileForm = readFileSync("src/app/account/profile-form.tsx", "utf
 const notificationsPage = readFileSync("src/app/notifications/page.tsx", "utf8");
 const mobileSmoke = readFileSync("scripts/smoke-mobile-browser.mjs", "utf8");
 const pushRoute = readFileSync("src/app/api/push/subscriptions/route.ts", "utf8");
+const envExample = readFileSync(".env.example", "utf8");
 const pushMigration = readFileSync(
   "supabase/migrations/20260713183514_push_subscription_foundation.sql",
   "utf8",
@@ -318,9 +319,13 @@ const checks = [
       serviceWorker.includes("showNotification") &&
       !allClientPwaSource.includes("Notification.requestPermission") &&
       pushControl.includes("NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY") &&
+      pushControl.includes("NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED") &&
+      pushControl.includes('process.env.NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED === "true"') &&
+      pushControl.includes("deviceAlertSetupEnabled && Boolean(publicPushKey)") &&
       pushControl.includes("Notification.requestPermission") &&
       pushControl.includes(".pushManager.subscribe") &&
-      pushControl.includes("/api/push/subscriptions"),
+      pushControl.includes("/api/push/subscriptions") &&
+      envExample.includes("NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED=false"),
   },
   {
     label: "user-facing push copy avoids technical install-channel wording",

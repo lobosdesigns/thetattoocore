@@ -55,6 +55,7 @@ production behavior:
 - `NEXT_PUBLIC_SUPABASE_URL`: browser-safe Supabase project URL.
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: browser-safe Supabase publishable key.
 - `NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY`: browser-safe public key for future device alert setup; keep the placeholder until production delivery is enabled.
+- `NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED`: keep `false` until device-alert delivery, tap routing, opt-out, quiet hours, and category preference evidence is complete.
 - `HOSTGATOR_SMTP_PASSWORD`: required for HostGator transactional email.
 - `SUPABASE_SERVICE_ROLE_KEY`: required for server-only Supabase Auth email lookup, used by verification approval/rejection emails. Never expose this as a `NEXT_PUBLIC_` variable.
 - `STRIPE_SECRET_KEY`: server-only Stripe key for test/live checkout sessions.
