@@ -48,6 +48,20 @@ const checks = [
       generator.includes("Live-money proof") &&
       generator.includes("Penny test, Admin reconciliation, refund/dispute procedure, payout gate, and native checkout policy review") &&
       generator.includes("## Native Push Evidence") &&
+      generator.includes("Use this for private Android/iOS alert evidence only") &&
+      generator.includes("project IDs, sender") &&
+      generator.includes("app config files, device tokens") &&
+      generator.includes("Evidence area | Platform | Required private proof | Repo-safe result") &&
+      generator.includes("Project exists") &&
+      generator.includes("TTC push project exists with Android and iOS apps registered for com.thetattoocore.app") &&
+      generator.includes("Android app config is present only in the private build environment and excluded from git") &&
+      generator.includes("iOS app config is present only in the private build environment and excluded from git") &&
+      generator.includes("Device token registration") &&
+      generator.includes("registers a device token") &&
+      generator.includes("Test alert reaches the Android device for the selected release track and build") &&
+      generator.includes("Test alert reaches the iOS device for the selected TestFlight build") &&
+      generator.includes("Tapping the alert opens the expected safe in-app destination") &&
+      generator.includes("Opt-out, quiet hours, and category preferences suppress delivery where expected") &&
       generator.includes("## Legal And Policy Review") &&
       generator.includes("## Legal Submission Signoff Matrix") &&
       generator.includes("exact build, release track, and web deploy") &&

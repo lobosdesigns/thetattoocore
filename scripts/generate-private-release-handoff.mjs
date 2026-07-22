@@ -119,10 +119,22 @@ bank/card details, or dashboard screenshots into repo docs.
 
 ## Native Push Evidence
 
-| Platform | App config private | Token registration | Alert delivery | Tap routing | Preferences respected | Result |
-| --- | --- | --- | --- | --- | --- | --- |
-| Android | pending | pending | pending | pending | pending | pending |
-| iOS | pending | pending | pending | pending | pending | pending |
+Use this for private Android/iOS alert evidence only. Keep project IDs, sender
+IDs, app config files, device tokens, notification payloads, signing details,
+and console screenshots out of repo docs.
+
+| Evidence area | Platform | Required private proof | Repo-safe result | Private proof filename or location |
+| --- | --- | --- | --- | --- |
+| Project exists | Android and iOS | TTC push project exists with Android and iOS apps registered for com.thetattoocore.app | pending | |
+| Android app config | Android | Android app config is present only in the private build environment and excluded from git | pending | |
+| iOS app config | iOS | iOS app config is present only in the private build environment and excluded from git | pending | |
+| Device token registration | Android | Signed Android build requests permission only after opt-in, registers a device token, and stores it for the signed-in tester | pending | |
+| Device token registration | iOS | TestFlight build requests permission only after opt-in, registers a device token, and stores it for the signed-in tester | pending | |
+| Alert delivery | Android | Test alert reaches the Android device for the selected release track and build | pending | |
+| Alert delivery | iOS | Test alert reaches the iOS device for the selected TestFlight build | pending | |
+| Tap routing | Android | Tapping the alert opens the expected safe in-app destination | pending | |
+| Tap routing | iOS | Tapping the alert opens the expected safe in-app destination | pending | |
+| Preferences respected | Android and iOS | Opt-out, quiet hours, and category preferences suppress delivery where expected | pending | |
 
 ## Legal And Policy Review
 
