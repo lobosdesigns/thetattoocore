@@ -141,8 +141,12 @@ const checks = [
       clientSource.includes("App.getInfo()") &&
       clientSource.includes("appBuild: appInfo.build") &&
       clientSource.includes("appVersion: appInfo.version") &&
-      clientSource.includes("app_build: cleanOptionalString(payload?.appBuild, 40)") &&
-      clientSource.includes("app_version: cleanOptionalString(payload?.appVersion, 40)") &&
+      clientSource.includes("const appBuild = cleanRequiredString(payload?.appBuild, 40)") &&
+      clientSource.includes("const appVersion = cleanRequiredString(payload?.appVersion, 40)") &&
+      clientSource.includes("!appBuild ||") &&
+      clientSource.includes("!appVersion ||") &&
+      clientSource.includes("app_build: appBuild") &&
+      clientSource.includes("app_version: appVersion") &&
       source.nativeDevicesMigration.includes("app_version text") &&
       source.nativeDevicesMigration.includes("app_build text") &&
       source.nativeDevicesMigration.includes("char_length(app_version) between 1 and 40") &&

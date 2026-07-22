@@ -23,8 +23,12 @@ function cleanString(value: unknown, maxLength: number) {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
 }
 
-function cleanOptionalString(value: unknown, maxLength: number) {
-  return cleanString(value, maxLength) || null;
+function cleanRequiredString(value: unknown, maxLength: number) {
+  if (typeof value !== "string") return null;
+
+  const cleaned = value.trim();
+
+  return cleaned.length > 0 && cleaned.length <= maxLength ? cleaned : null;
 }
 
 function validToken(token: string) {
@@ -125,11 +129,15 @@ export async function POST(request: Request) {
   }
 
   const payload = await readPayload(request);
+  const appBuild = cleanRequiredString(payload?.appBuild, 40);
+  const appVersion = cleanRequiredString(payload?.appVersion, 40);
   const platform = cleanPlatform(payload?.platform);
   const installationId = cleanString(payload?.installationId, 36);
   const token = cleanString(payload?.token, 4096);
 
   if (
+    !appBuild ||
+    !appVersion ||
     !platform ||
     !validDeviceAlertUuid(installationId) ||
     !validToken(token)
@@ -163,8 +171,8 @@ export async function POST(request: Request) {
     .from("native_push_devices")
     .upsert(
       {
-        app_build: cleanOptionalString(payload?.appBuild, 40),
-        app_version: cleanOptionalString(payload?.appVersion, 40),
+        app_build: appBuild,
+        app_version: appVersion,
         installation_id: installationId,
         is_active: true,
         last_seen_at: now,

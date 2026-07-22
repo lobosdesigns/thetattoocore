@@ -146,8 +146,16 @@ const checks = [
       source.provider.includes(
         "saveDeviceToken(runtime.platform, token, runtime.appInfo)",
       ) &&
-      source.deviceApi.includes("app_build: cleanOptionalString(payload?.appBuild, 40)") &&
-      source.deviceApi.includes("app_version: cleanOptionalString(payload?.appVersion, 40)") &&
+      source.deviceApi.includes(
+        "const appBuild = cleanRequiredString(payload?.appBuild, 40)",
+      ) &&
+      source.deviceApi.includes(
+        "const appVersion = cleanRequiredString(payload?.appVersion, 40)",
+      ) &&
+      source.deviceApi.includes("!appBuild ||") &&
+      source.deviceApi.includes("!appVersion ||") &&
+      source.deviceApi.includes("app_build: appBuild") &&
+      source.deviceApi.includes("app_version: appVersion") &&
       source.migration.includes("app_version text") &&
       source.migration.includes("app_build text") &&
       source.migration.includes("char_length(app_version) between 1 and 40") &&
