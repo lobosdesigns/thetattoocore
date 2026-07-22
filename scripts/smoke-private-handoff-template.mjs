@@ -14,7 +14,7 @@ const checks = [
       packageJson.includes('"prepare:private-release-handoff": "node scripts/generate-private-release-handoff.mjs"') &&
       packageJson.includes('"prepare:private-console-tabs": "node scripts/write-private-console-tabs.mjs"') &&
       packageJson.includes('"smoke:handoff": "node scripts/smoke-private-handoff-template.mjs"') &&
-      packageJson.includes("npm run smoke:native && npm run smoke:app-links && npm run smoke:handoff && npm run smoke:docs") &&
+      packageJson.includes("npm run smoke:native && npm run smoke:native-push && npm run smoke:app-links && npm run smoke:handoff && npm run smoke:docs") &&
       packageJson.includes("npm run smoke:payments && npm run smoke:payment-cutover && npm run smoke:pwa && npm run smoke:security && npm run smoke:handoff && npm run smoke:docs") &&
       packageJson.includes("npm run smoke:store && npm run smoke:pwa && npm run smoke:handoff && npm run smoke:docs") &&
       gitignore.includes("/private-release-handoff/") &&
@@ -102,9 +102,9 @@ const checks = [
       generator.includes("Installed release/version/build") &&
       generator.includes("A missing listing, account mismatch, or unconfirmed web opt-in is a blocker") &&
       generator.includes("API 36 signed upload bundle") &&
-      generator.includes("Fresh version code 2 / version name 1.0.1 API 36 upload bundle is staged") &&
-      generator.includes("before any post-deadline submission/update") &&
-      generator.includes("rerun Android wrapper plus real-device QA") &&
+      generator.includes("Version code 2 / version name 1.0.1 API 36 update is uploaded and in review") &&
+      generator.includes("do not upload the same version code again") &&
+      generator.includes("verify the served Play build plus real-device QA after processing") &&
       generator.includes("Console submit/retry evidence") &&
       generator.includes("record the visible error code, page URL, retry path") &&
       generator.includes("whether reload/new-tab retry was attempted") &&

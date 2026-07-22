@@ -444,7 +444,7 @@ const checks = [
       packageJson.includes('"verify:store-release"') &&
       packageJson.includes('"verify:app-review-preflight"') &&
       packageJson.includes("npm run lint && npm run build && npm run smoke:env && npm run smoke:content && npm run smoke:store && npm run smoke:pwa && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
-      packageJson.includes("npm run lint && npm run build && npm run smoke:env && npm run smoke:security && npm run smoke:content && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run smoke:app-links && npm run qa:android-device && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
+      packageJson.includes("npm run lint && npm run build && npm run smoke:env && npm run smoke:security && npm run smoke:content && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run smoke:native-push && npm run smoke:app-links && npm run qa:android-device && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
       source.readme.includes("npm.cmd run verify:app-review-preflight") &&
       source.readme.includes("npm.cmd run verify:store-release") &&
       source.readme.includes("This checks lint, production build, production environment boundaries") &&
@@ -505,9 +505,9 @@ const checks = [
       source.readiness.includes("Apple iOS `1.0` build `1.0 (3)` is submitted for App Review") &&
       source.readiness.includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
       source.readiness.includes("age/content rating, Accessibility Nutrition Labels, Google Play closed-test tester opt-in/duration evidence if required, and final console validation") &&
-      source.readiness.includes("Closed testing - Alpha release `1 (1.0)` is available to selected testers on Google Play") &&
-      source.readiness.includes("The track tester access now uses the same Google Group tester community as the Lobos Designs closed test") &&
-      source.readiness.includes("the track is active, and the Android/web tester join links are saved privately") &&
+      source.readiness.includes("Closed testing - Alpha release `1 (1.0)` remains available to selected testers") &&
+      source.readiness.includes("The same Google Group tester community as the Lobos Designs closed test remains attached") &&
+      source.readiness.includes("API 36 update `1.0.1 (2)` was uploaded at 100% of the selected tester audience and submitted for review") &&
       (source.readiness.includes("final content-rating summary/save handoff, and any required closed-test production-access evidence") ||
         source.readiness.includes("14-day production-access evidence still needs eligible tester opt-in/install proof")) &&
       source.readiness.includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&

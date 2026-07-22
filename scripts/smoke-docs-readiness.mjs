@@ -237,7 +237,7 @@ const checks = [
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("August 31, 2026") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Android 16 / API 36") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("target Android 16 / API 36") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checked-in Android wrapper now targets API 36") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checked-in Android wrapper and submitted update `1.0.1 (2)` target API 36") &&
       docs["docs/APP_STORE_READINESS.md"].includes("targetSdkVersion` set to 36") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not request precise device location") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not prompt on first open") &&
@@ -497,7 +497,8 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("passing Android console/log review") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Native build/install evidence should use the matrix") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play Closed testing - Alpha release `1 (1.0)` is active and available to selected testers") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("fresh signed API 36 upload bundle for version code `2` / version name `1.0.1`") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("API 36 update `1.0.1 (2)` is uploaded at 100% of the selected tester audience and in review") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Do not upload the same version code again") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("## Google Play Tester Install Handoff") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("same account that belongs to the configured tester community") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("confirm the account has opted in before opening the Android join link") &&
