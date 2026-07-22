@@ -427,7 +427,13 @@ const checks = [
   {
     label: "store internal notes avoid native push overclaims",
     ok:
+      source.appleWhatsNewInternal.includes("profile privacy controls") &&
+      source.appleWhatsNewInternal.includes("4U/Gossip/Gigs tagging") &&
+      source.appleWhatsNewInternal.includes("review-controlled commerce flows") &&
       source.appleWhatsNewInternal.includes("in-app alerts") &&
+      source.googleReleaseNotesInternal.includes("profile privacy controls") &&
+      source.googleReleaseNotesInternal.includes("4U/Gossip/Gigs tagging") &&
+      source.googleReleaseNotesInternal.includes("review-controlled commerce flows") &&
       source.googleReleaseNotesInternal.includes("in-app alerts") &&
       !source.appleWhatsNewInternal.includes("search, notifications, reporting") &&
       !source.googleReleaseNotesInternal.includes("search, notifications, reporting"),
