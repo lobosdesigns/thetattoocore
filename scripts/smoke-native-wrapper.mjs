@@ -24,6 +24,10 @@ const files = {
   realDeviceQa: "docs/REAL_DEVICE_QA_CHECKLIST.md",
   readiness: "docs/APP_STORE_READINESS.md",
   androidDeviceProbe: "scripts/android-device-qa-probe.mjs",
+  appLinkAssociation: "src/lib/app-link-association.ts",
+  androidAssetLinksRoute: "src/app/.well-known/assetlinks.json/route.ts",
+  appleAssociationRoute: "src/app/.well-known/apple-app-site-association/route.ts",
+  envExample: ".env.example",
   packageJson: `${wrapperRoot}/package.json`,
   readme: `${wrapperRoot}/README.md`,
   webFallback: `${wrapperRoot}/www/index.html`,
@@ -67,7 +71,7 @@ const forbiddenNativePushDependencies = [
 ];
 
 const nativeSourceForLeakChecks = Object.entries(source)
-  .filter(([key]) => key !== "nativePrep" && key !== "mobileRunbook")
+  .filter(([key]) => key !== "nativePrep" && key !== "mobileRunbook" && key !== "envExample")
   .map(([key, content]) => `${key}\n${content}`)
   .join("\n");
 
@@ -121,6 +125,12 @@ const androidApi35InternalOnly =
   source.readme.includes("| Internal testing before the API 36 deadline | `35 / 35` |") &&
   source.readme.includes("| Public submission or update on or after August 31, 2026 | `35 / 35` |") &&
   source.readme.includes("rebuilt at `36 / 36`");
+const hardcodedAndroidFingerprint =
+  /([A-F0-9]{2}:){31}[A-F0-9]{2}/i.test(source.appLinkAssociation) ||
+  /([A-F0-9]{2}:){31}[A-F0-9]{2}/i.test(source.androidAssetLinksRoute);
+const hardcodedAppleAppId =
+  /[A-Z0-9]{10}\.com\.thetattoocore\.app/i.test(source.appLinkAssociation) ||
+  /[A-Z0-9]{10}\.com\.thetattoocore\.app/i.test(source.appleAssociationRoute);
 
 const iosProjectBuildVersions = [
   ...source.iosProject.matchAll(/CURRENT_PROJECT_VERSION = (\d+);/g),
@@ -199,6 +209,27 @@ const checks = [
       source.mobileRunbook.includes("Verified app-link and universal-link proof should use the matrix") &&
       source.readme.includes("Verified app-link evidence should follow") &&
       source.readme.includes("without committing fingerprints, team identifiers, provisioning details, console screenshots, tester accounts, or raw device logs"),
+  },
+  {
+    label: "well-known association routes are private-env gated and fail closed",
+    ok:
+      source.androidAssetLinksRoute.includes("androidAssetLinksPayload") &&
+      source.androidAssetLinksRoute.includes("unavailableAssociationResponse") &&
+      source.appleAssociationRoute.includes("appleAppSiteAssociationPayload") &&
+      source.appleAssociationRoute.includes("unavailableAssociationResponse") &&
+      source.appLinkAssociation.includes("TTC_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS") &&
+      source.appLinkAssociation.includes("TTC_IOS_APP_LINK_APP_IDS") &&
+      source.appLinkAssociation.includes("delegate_permission/common.handle_all_urls") &&
+      source.appLinkAssociation.includes("sha256_cert_fingerprints") &&
+      source.appLinkAssociation.includes("Association file is not available for this build.") &&
+      source.appLinkAssociation.includes("cache-control") &&
+      source.nativePrep.includes("fail-closed `.well-known` association routes") &&
+      source.nativePrep.includes("private deployment environment") &&
+      source.mobileRunbook.includes("fail-closed `.well-known` association routes") &&
+      source.envExample.includes("TTC_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS=replace_with_google_play_app_signing_sha256_fingerprints") &&
+      source.envExample.includes("TTC_IOS_APP_LINK_APP_IDS=replace_with_apple_team_id_dot_bundle_id") &&
+      !hardcodedAndroidFingerprint &&
+      !hardcodedAppleAppId,
   },
   {
     label: "native wrapper keeps launch permissions minimal",

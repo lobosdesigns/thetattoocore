@@ -1008,7 +1008,8 @@ const checks = [
       !docs["docs/APP_STORE_READINESS.md"].includes("provider review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Native wrapper") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Android API 36") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("app-link association files"),
+      docs["docs/APP_STORE_READINESS.md"].includes("fail-closed app-link association routes") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("final Android and Apple signed identifiers still need private deployment configuration"),
   },
   {
     label: "native push setup evidence stays private and route-testable",

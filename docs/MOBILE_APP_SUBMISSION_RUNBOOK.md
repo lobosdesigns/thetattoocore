@@ -57,6 +57,7 @@ Start with a thin native wrapper now that core web smoke/390px mobile checks are
 - Keep the canonical app experience served from the production web app.
 - Do not store payment, mail, privileged server, checkout, admin, or database secrets in native code.
 - Keep app links pointed at `thetattoocore.com` so shared content, login, support, privacy, and terms remain consistent.
+- The website includes fail-closed `.well-known` association routes; configure final Android app-signing fingerprints and Apple app IDs only in the private deployment environment before treating app links as release evidence.
 
 ## Required Before Store Submission
 

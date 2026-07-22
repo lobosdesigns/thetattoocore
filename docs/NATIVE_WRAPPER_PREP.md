@@ -100,6 +100,12 @@ Gigs, Merch, booking, support, privacy, and terms links open inside the app.
 iOS universal links are deferred for the first TestFlight build until the Apple
 provisioning profile includes the Associated Domains capability.
 
+The website now has fail-closed `.well-known` association routes for Android
+App Links and iOS Universal Links. They return unavailable responses until the
+final Google Play app-signing fingerprints and Apple app IDs are configured in
+the private deployment environment. Do not commit real fingerprints, team IDs,
+or provisioning details.
+
 ## Verified Link Evidence Matrix
 
 Keep completed evidence private with the release handoff. Do not commit signing

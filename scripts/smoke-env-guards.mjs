@@ -16,6 +16,9 @@ const expectedKeys = [
   "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
   "NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY",
   "NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED",
+  "TTC_ANDROID_APP_LINK_PACKAGE_NAME",
+  "TTC_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS",
+  "TTC_IOS_APP_LINK_APP_IDS",
   "SUPABASE_SERVICE_ROLE_KEY",
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
@@ -77,6 +80,17 @@ function valueLooksLikePlaceholder(key, value) {
 
   if (key === "NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED") {
     return value === "false";
+  }
+
+  if (key === "TTC_ANDROID_APP_LINK_PACKAGE_NAME") {
+    return value === "com.thetattoocore.app";
+  }
+
+  if (
+    key === "TTC_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS" ||
+    key === "TTC_IOS_APP_LINK_APP_IDS"
+  ) {
+    return value.startsWith("replace_with_");
   }
 
   return /replace_|_key|_secret|server_only|sk_test_or_live|whsec_from|when_ready/.test(value);
@@ -193,6 +207,15 @@ const checks = [
     ok: valueByKey.get("NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED") === "false",
   },
   {
+    label: ".env.example keeps app-link association identifiers as placeholders",
+    ok:
+      valueByKey.get("TTC_ANDROID_APP_LINK_PACKAGE_NAME") === "com.thetattoocore.app" &&
+      valueByKey.get("TTC_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS") ===
+        "replace_with_google_play_app_signing_sha256_fingerprints" &&
+      valueByKey.get("TTC_IOS_APP_LINK_APP_IDS") ===
+        "replace_with_apple_team_id_dot_bundle_id",
+  },
+  {
     label: ".env.example does not contain live-looking secret material",
     ok: liveLookingSecretLabels.length === 0,
     message: `live-looking secret pattern categories: ${liveLookingSecretLabels.join(", ")}`,
@@ -206,6 +229,14 @@ const checks = [
     ok:
       readme.includes("STRIPE_EXPECTED_LIVEMODE") &&
       readme.includes("penny-test evidence"),
+  },
+  {
+    label: "README documents private app-link association deployment inputs",
+    ok:
+      readme.includes("TTC_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS") &&
+      readme.includes("TTC_IOS_APP_LINK_APP_IDS") &&
+      readme.includes("The `.well-known` association routes stay unavailable") &&
+      readme.includes("configured privately"),
   },
   {
     label: "README documents device alert setup fail-closed default",

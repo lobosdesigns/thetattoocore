@@ -56,6 +56,9 @@ production behavior:
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: browser-safe Supabase publishable key.
 - `NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY`: browser-safe public key for future device alert setup; keep the placeholder until production delivery is enabled.
 - `NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED`: keep `false` until device-alert delivery, tap routing, opt-out, quiet hours, and category preference evidence is complete.
+- `TTC_ANDROID_APP_LINK_PACKAGE_NAME`: Android package name used by the public app-link association route.
+- `TTC_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS`: private deploy-time Google Play app-signing SHA-256 fingerprint list for `/.well-known/assetlinks.json`; keep the placeholder until final signing proof is ready.
+- `TTC_IOS_APP_LINK_APP_IDS`: private deploy-time Apple team/app identifier list for `/.well-known/apple-app-site-association`; keep the placeholder until Associated Domains proof is ready.
 - `HOSTGATOR_SMTP_PASSWORD`: required for HostGator transactional email.
 - `SUPABASE_SERVICE_ROLE_KEY`: required for server-only Supabase Auth email lookup, used by verification approval/rejection emails. Never expose this as a `NEXT_PUBLIC_` variable.
 - `STRIPE_SECRET_KEY`: server-only Stripe key for test/live checkout sessions.
@@ -79,6 +82,10 @@ Native app config files also stay private-build-only. Keep `google-services.json
 and `GoogleService-Info.plist` out of git; add them only in the private Android
 or iOS build environment after app-store, signing, and device-evidence gates are
 ready.
+
+Verified app-link association values are deployment inputs, not committed
+artifacts. The `.well-known` association routes stay unavailable until final
+Android app-signing fingerprints and Apple app IDs are configured privately.
 
 After adding or rotating secrets, redeploy with:
 
