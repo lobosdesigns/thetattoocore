@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 
+const appActions = readFileSync("src/app/actions.ts", "utf8");
 const messageActions = readFileSync("src/app/messages/actions.ts", "utf8");
 const messagePage = readFileSync("src/app/messages/page.tsx", "utf8");
 const messageStartForm = readFileSync("src/app/messages/message-start-form.tsx", "utf8");
@@ -94,6 +95,8 @@ const checks = [
     label: "deleted unread DMs cascade their exact notification source",
     ok:
       (messageActions.match(/message_id: message\.id/g) ?? []).length >= 2 &&
+      appActions.includes("export async function replyToStory") &&
+      appActions.includes("message_id: message.id") &&
       notificationWriter.includes("message_id?: string | null") &&
       messageNotificationMigration.includes(
         "add column if not exists message_id uuid",

@@ -1885,6 +1885,7 @@ export async function replyToStory(formData: FormData) {
       actor_id: userId,
       body: body.slice(0, 160),
       href: `/messages?c=${conversationId}`,
+      message_id: message.id,
       recipient_id: story.author_id,
       subject_id: story.id,
       subject_type: "story_post",
