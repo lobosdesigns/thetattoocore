@@ -54,12 +54,6 @@ export async function POST() {
   const admin = createAdminClient();
   const checkoutPreflight = stripeCheckoutPreflight();
 
-  if (!stripe || !admin || !checkoutPreflight.ready) {
-    return accountRedirect("Seller payout setup is temporarily unavailable.", "unavailable");
-  }
-
-  const livemode = checkoutPreflight.actual;
-
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -90,6 +84,12 @@ export async function POST() {
       "needs_verification",
     );
   }
+
+  if (!stripe || !admin || !checkoutPreflight.ready) {
+    return accountRedirect("Seller payout setup is temporarily unavailable.", "unavailable");
+  }
+
+  const livemode = checkoutPreflight.actual;
 
   let setupStep = "lookup";
 

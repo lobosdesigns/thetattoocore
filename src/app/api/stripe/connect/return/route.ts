@@ -23,12 +23,6 @@ export async function GET() {
   const admin = createAdminClient();
   const checkoutPreflight = stripeCheckoutPreflight();
 
-  if (!stripe || !admin || !checkoutPreflight.ready) {
-    return accountRedirect("Seller payout setup could not be checked.", "check_failed");
-  }
-
-  const livemode = checkoutPreflight.actual;
-
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -39,6 +33,12 @@ export async function GET() {
       { status: 303 },
     );
   }
+
+  if (!stripe || !admin || !checkoutPreflight.ready) {
+    return accountRedirect("Seller payout setup could not be checked.", "check_failed");
+  }
+
+  const livemode = checkoutPreflight.actual;
 
   const { data: connectAccount, error: connectAccountError } = await admin
     .from("stripe_connect_accounts")

@@ -27,6 +27,10 @@ const merchPrintReceiptButton = readFileSync(
 const adminMerchPage = readFileSync("src/app/admin/merch/page.tsx", "utf8");
 const adminPaymentsPage = readFileSync("src/app/admin/payments/page.tsx", "utf8");
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
+const stripeConnectOnboarding = readFileSync(
+  "src/app/api/stripe/connect/onboarding/route.ts",
+  "utf8",
+);
 const stripeConnectReturn = readFileSync("src/app/api/stripe/connect/return/route.ts", "utf8");
 const adCreditSpendMigration = readFileSync(
   "supabase/migrations/20260715041500_spend_ad_credit_for_campaign.sql",
@@ -905,6 +909,14 @@ checks.push({
     accountPage.includes("stay in private support review") &&
     privacyPage.includes("Checkout stays review-controlled") &&
     supportPage.includes("Merch checkout stays review-controlled"),
+});
+checks.push({
+  label: "seller payout mode checks preserve signed-out login redirects",
+  ok:
+    stripeConnectOnboarding.indexOf("if (!claims?.sub)") <
+      stripeConnectOnboarding.indexOf("if (!stripe || !admin || !checkoutPreflight.ready)") &&
+    stripeConnectReturn.indexOf("if (!claims?.sub)") <
+      stripeConnectReturn.indexOf("if (!stripe || !admin || !checkoutPreflight.ready)"),
 });
 checks.push({
   label: "seller payout readiness is isolated by payment mode",
