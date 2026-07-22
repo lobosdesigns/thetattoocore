@@ -61,6 +61,10 @@ const legacyMerchFulfillmentRetirementMigration = readFileSync(
   "supabase/migrations/20260722202417_drop_legacy_merch_fulfillment_overload.sql",
   "utf8",
 );
+const bookingCheckoutReservationMigration = readFileSync(
+  "supabase/migrations/20260722205002_reserve_booking_deposit_checkout.sql",
+  "utf8",
+);
 const globalsCss = readFileSync("src/app/globals.css", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
@@ -522,6 +526,45 @@ checks.push({
     bookingCheckout.includes('if (!updatedBooking) {\n    await rollBackReservation();'),
 });
 checks.push({
+  label: "booking checkout atomically revalidates its recipient before payment",
+  ok:
+    bookingCheckoutReservationMigration.includes(
+      "create or replace function public.reserve_booking_deposit_checkout",
+    ) &&
+    bookingCheckoutReservationMigration.includes("security invoker") &&
+    bookingCheckoutReservationMigration.includes("set search_path = ''") &&
+    bookingCheckoutReservationMigration.includes("for update of booking, recipient") &&
+    bookingCheckoutReservationMigration.includes("booking.client_id = p_client_id") &&
+    bookingCheckoutReservationMigration.includes("booking.status = 'accepted'") &&
+    bookingCheckoutReservationMigration.includes(
+      "booking.payment_status in ('not_ready', 'payment_failed')",
+    ) &&
+    bookingCheckoutReservationMigration.includes("not booking.payment_dispute_hold") &&
+    bookingCheckoutReservationMigration.includes(
+      "recipient.account_type in ('artist', 'studio')",
+    ) &&
+    bookingCheckoutReservationMigration.includes(
+      "recipient.license_verified_at is not null",
+    ) &&
+    bookingCheckoutReservationMigration.includes("recipient.suspended_at is null") &&
+    bookingCheckoutReservationMigration.includes("recipient.banned_at is null") &&
+    bookingCheckoutReservationMigration.includes(
+      "revoke all on function public.reserve_booking_deposit_checkout(uuid, uuid)",
+    ) &&
+    bookingCheckoutReservationMigration.includes("from public, anon, authenticated") &&
+    bookingCheckoutReservationMigration.includes(
+      "grant execute on function public.reserve_booking_deposit_checkout(uuid, uuid)",
+    ) &&
+    bookingCheckoutReservationMigration.includes("to service_role") &&
+    bookingCheckout.includes('.rpc("reserve_booking_deposit_checkout"') &&
+    bookingCheckout.includes("p_booking_id: booking.id") &&
+    bookingCheckout.includes("p_client_id: claims.sub") &&
+    bookingCheckout.includes("createBookingCheckoutSession(reservedBooking, returnTo)") &&
+    bookingCheckout.indexOf('.rpc("reserve_booking_deposit_checkout"') <
+      bookingCheckout.indexOf("createBookingCheckoutSession(reservedBooking, returnTo)") &&
+    !bookingCheckout.includes('.from("booking_requests")\n    .update({\n      payment_status: "checkout_started"'),
+});
+checks.push({
   label: "payment webhook rejects unsigned events before processing",
   ok:
     stripeWebhook.includes("const signature = request.headers.get(\"stripe-signature\")") &&
@@ -736,7 +779,7 @@ checks.push({
     bookingCheckout.includes("text.startsWith(\"//\")") &&
     bookingCheckout.includes("function pathWithMessage") &&
     bookingCheckout.includes('formData.get("return_to")') &&
-    bookingCheckout.includes("createBookingCheckoutSession(booking, returnTo)") &&
+    bookingCheckout.includes("createBookingCheckoutSession(reservedBooking, returnTo)") &&
     bookingCheckout.includes('"success_url": successUrl') &&
       bookingCheckout.includes('"cancel_url": cancelUrl'),
 });

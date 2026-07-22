@@ -238,19 +238,11 @@ export async function POST(request: Request) {
   }
 
   const { data: reservedBooking, error: reserveError } = await adminSupabase
-    .from("booking_requests")
-    .update({
-      payment_status: "checkout_started",
-      status: "deposit_pending",
-      stripe_checkout_session_id: null,
-      updated_at: new Date().toISOString(),
+    .rpc("reserve_booking_deposit_checkout", {
+      p_booking_id: booking.id,
+      p_client_id: claims.sub,
     })
-    .eq("id", booking.id)
-    .eq("client_id", claims.sub)
-    .eq("status", "accepted")
-    .in("payment_status", ["not_ready", "payment_failed"])
-    .select("id")
-    .maybeSingle<{ id: string }>();
+    .maybeSingle<BookingRequest>();
 
   if (reserveError) {
     console.error("Booking deposit reservation failed.", reserveError);
@@ -262,7 +254,7 @@ export async function POST(request: Request) {
 
   if (!reservedBooking) {
     return redirectWithMessage(
-      "Booking deposit checkout has already started. Finish that checkout or wait for it to expire before trying again.",
+      "This booking deposit is no longer available for checkout. Refresh your bookings and try again.",
       returnTo,
     );
   }
@@ -286,7 +278,7 @@ export async function POST(request: Request) {
   let session: CheckoutSession;
 
   try {
-    session = await createBookingCheckoutSession(booking, returnTo);
+    session = await createBookingCheckoutSession(reservedBooking, returnTo);
   } catch (error) {
     console.error("Booking checkout session creation failed.", error);
     await rollBackReservation();
