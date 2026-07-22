@@ -310,9 +310,15 @@ const checks = [
       authSignup.includes("emailRedirectTo") &&
       authSignup.includes("encodeURIComponent(returnTo)") &&
       signupPage.includes("loginHref") &&
+      authConfirm.includes("function safeInternalRedirectUrl") &&
+      authConfirm.includes("new URL(next, request.url)") &&
+      authConfirm.includes("nextUrl.origin !== request.nextUrl.origin") &&
+      authConfirm.includes("redirectTo.pathname = nextUrl.pathname") &&
+      authConfirm.includes("redirectTo.search = nextUrl.search") &&
+      authConfirm.includes("redirectTo.hash = nextUrl.hash") &&
       authConfirm.includes("next?.startsWith(\"/\")") &&
-      authConfirm.includes("!next.startsWith(\"//\")") &&
-      authConfirm.includes('!next.includes("\\\\")'),
+      authConfirm.includes("next.startsWith(\"//\")") &&
+      authConfirm.includes('next.includes("\\\\")'),
   },
   {
     label: "signup and confirmation resend hide raw auth-provider errors",
@@ -341,9 +347,12 @@ const checks = [
       authSignup.includes("returnTo") &&
       authLogin.includes("Could not sign in. Check your email and password, then try again.") &&
       authConfirm.includes("Could not confirm your email") &&
+      authConfirm.includes("function safeInternalRedirectUrl") &&
+      authConfirm.includes("redirectTo.search = nextUrl.search") &&
+      authConfirm.includes("redirectTo.hash = nextUrl.hash") &&
       authConfirm.includes("next?.startsWith(\"/\")") &&
-      authConfirm.includes("!next.startsWith(\"//\")") &&
-      authConfirm.includes('!next.includes("\\\\")') &&
+      authConfirm.includes("next.startsWith(\"//\")") &&
+      authConfirm.includes('next.includes("\\\\")') &&
       authSignup.includes("signupRedirect") &&
       authResendConfirmation.includes(
         'console.error("Confirmation resend failed.", error)',
@@ -361,9 +370,11 @@ const checks = [
     label: "auth confirm rejects protocol-relative next paths",
     ok:
       authConfirm.includes('next?.startsWith("/")') &&
-      authConfirm.includes("!next.startsWith(\"//\")") &&
-      authConfirm.includes('!next.includes("\\\\")') &&
-      authConfirm.includes(': "/account"'),
+      authConfirm.includes("next.startsWith(\"//\")") &&
+      authConfirm.includes('next.includes("\\\\")') &&
+      authConfirm.includes("nextUrl.origin !== request.nextUrl.origin") &&
+      authConfirm.includes('redirectTo.hash = ""') &&
+      authConfirm.includes('redirectTo.pathname = "/account"'),
   },
   {
     label: "password recovery hides raw provider errors and uses canonical links",
