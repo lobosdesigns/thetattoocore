@@ -581,6 +581,8 @@ checks.push({
     stripeWebhook.includes('throw new Error("Could not update booking refund status.")') &&
     stripeWebhook.includes('console.error("Webhook booking refund problem lookup failed.", error)') &&
     stripeWebhook.includes('throw new Error("Could not inspect booking refund status.")') &&
+    stripeWebhook.includes('console.error("Webhook booking refund problem audit record failed.", auditError)') &&
+    stripeWebhook.includes('throw new Error("Could not record booking refund review.")') &&
     !stripeWebhook.includes('error.message || "Could not update merch refund status."') &&
     !stripeWebhook.includes('adError.message || "Could not update ad refund status."') &&
     !stripeWebhook.includes('bookingError.message || "Could not update booking refund status."') &&
@@ -591,6 +593,8 @@ checks.push({
   ok:
     stripeWebhook.includes('console.error("Webhook disputed payment lookup failed.", firstError)') &&
     stripeWebhook.includes('throw new Error("Could not inspect disputed payment.")') &&
+    stripeWebhook.includes('console.error("Webhook payment dispute audit record failed.", auditError)') &&
+    stripeWebhook.includes('throw new Error("Could not record disputed payment.")') &&
     !stripeWebhook.includes('firstError.message || "Could not inspect disputed payment."'),
 });
 checks.push({

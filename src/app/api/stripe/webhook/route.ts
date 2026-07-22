@@ -946,7 +946,14 @@ async function recordRefundProblem({
   }));
 
   if (auditLogs.length) {
-    await supabase.from("admin_audit_logs").insert(auditLogs);
+    const { error: auditError } = await supabase
+      .from("admin_audit_logs")
+      .insert(auditLogs);
+
+    if (auditError) {
+      console.error("Webhook booking refund problem audit record failed.", auditError);
+      throw new Error("Could not record booking refund review.");
+    }
   }
 
   revalidatePath("/admin");
@@ -1105,7 +1112,14 @@ async function recordPaymentDispute({
   ];
 
   if (auditLogs.length) {
-    await supabase.from("admin_audit_logs").insert(auditLogs);
+    const { error: auditError } = await supabase
+      .from("admin_audit_logs")
+      .insert(auditLogs);
+
+    if (auditError) {
+      console.error("Webhook payment dispute audit record failed.", auditError);
+      throw new Error("Could not record disputed payment.");
+    }
   }
 
   revalidatePath("/admin");
