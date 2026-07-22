@@ -6,6 +6,7 @@ type NotificationInsert = {
   actor_id: string | null;
   body?: string | null;
   href?: string | null;
+  message_id?: string | null;
   recipient_id: string;
   subject_id?: string | null;
   subject_type: string;

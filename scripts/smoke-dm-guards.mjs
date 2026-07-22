@@ -7,6 +7,11 @@ const messageThread = readFileSync("src/app/messages/message-thread.tsx", "utf8"
 const columnTabs = readFileSync("src/app/column-tabs.tsx", "utf8");
 const columnSnapRail = readFileSync("src/app/column-snap-rail.tsx", "utf8");
 const homePage = readFileSync("src/app/page.tsx", "utf8");
+const messageNotificationMigration = readFileSync(
+  "supabase/migrations/20260722142805_message_notification_linkage.sql",
+  "utf8",
+);
+const notificationWriter = readFileSync("src/lib/notification-write.ts", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const qaChecklist = readFileSync("docs/REAL_DEVICE_QA_CHECKLIST.md", "utf8");
 
@@ -84,6 +89,22 @@ const checks = [
       messageActions.includes('"Could not delete that unread DM. Please try again."') &&
       !messageActions.includes('deleteError.message || "Could not delete that unread DM."') &&
       messageActions.includes(".delete()"),
+  },
+  {
+    label: "deleted unread DMs cascade their exact notification source",
+    ok:
+      (messageActions.match(/message_id: message\.id/g) ?? []).length >= 2 &&
+      notificationWriter.includes("message_id?: string | null") &&
+      messageNotificationMigration.includes(
+        "add column if not exists message_id uuid",
+      ) &&
+      messageNotificationMigration.includes(
+        "references public.messages(id) on delete cascade",
+      ) &&
+      messageNotificationMigration.includes(
+        "check (message_id is null or type = 'message')",
+      ) &&
+      messageNotificationMigration.includes("notifications_message_id_idx"),
   },
   {
     label: "DM create and send actions hide raw database errors",

@@ -27,6 +27,9 @@ const source = {
   notificationAccessMigration: read(
     "supabase/migrations/20260722132614_notification_writes_service_role_only.sql",
   ),
+  notificationAnonAccessMigration: read(
+    "supabase/migrations/20260722143153_notification_anon_privilege_cleanup.sql",
+  ),
   notificationProducers: [
     read("src/app/actions.ts"),
     read("src/app/account/actions.ts"),
@@ -174,6 +177,12 @@ const checks = [
         "grant select, update, delete on table public.notifications to authenticated",
       ) &&
       source.notificationAccessMigration.includes(
+        "grant select, insert, update, delete on table public.notifications to service_role",
+      ) &&
+      source.notificationAnonAccessMigration.includes(
+        "revoke all privileges on table public.notifications from anon",
+      ) &&
+      source.notificationAnonAccessMigration.includes(
         "grant select, insert, update, delete on table public.notifications to service_role",
       ),
   },
