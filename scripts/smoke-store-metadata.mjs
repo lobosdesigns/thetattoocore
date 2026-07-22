@@ -478,6 +478,9 @@ const checks = [
       source.readme.includes("Contact phone: keep console-only/private") &&
       source.readme.includes("## Private Console Evidence Template") &&
       source.readme.includes("| Build selection | Apple build number, Google release track") &&
+      source.readme.includes("| Google Play API 36 signed upload bundle | Fresh bundle built from the checked-in API 36 wrapper") &&
+      source.readme.includes("privately signed, and checked against real-device QA before public submission or post-deadline updates") &&
+      source.readme.includes("no keystore, signing certificate, local path, or console identifiers") &&
       source.readme.includes("| Google Play closed testing | Tester list or Google Group selection") &&
       source.readme.includes("14-day continuous opt-in window if production access requires it") &&
       source.readme.includes("| Reviewer account | Test account creation, email-confirmed sign-in") &&

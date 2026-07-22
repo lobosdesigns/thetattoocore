@@ -37,6 +37,7 @@ account identifiers out of repo docs.
 | Apple | App Privacy and Privacy Policy URL | Use Privacy URL https://thetattoocore.com/privacy; answer App Privacy from docs/DATA_SAFETY_PREP.md and selected build behavior | pending | |
 | Apple | Age rating and Accessibility Nutrition Labels | Use submitted-build iPhone/iPad QA evidence only | pending | |
 | Google Play | Closed testing production-access evidence | Confirm Closed testing - Alpha is served, tester opt-ins are sufficient, and the 14-day window is counted only after the closed test is live | pending | |
+| Google Play | API 36 signed upload bundle | Build from the checked-in API 36 wrapper, sign a fresh upload bundle privately, and rerun Android wrapper plus real-device QA before public submission or post-deadline updates | pending | |
 | Google Play | Console submit/retry evidence | If Play Console errors before submit, record the visible error code, page URL, retry path, whether reload/new-tab retry was attempted, and whether Publishing overview still shows changes not sent for review | pending | |
 
 ## Store Console Evidence
@@ -44,6 +45,7 @@ account identifiers out of repo docs.
 | Area | Apple result | Google Play result | Private proof filename or location | Repo-safe summary |
 | --- | --- | --- | --- | --- |
 | Build selection | pending | pending | | |
+| Google Play API 36 signed upload bundle | n/a | pending | | |
 | Google Play phone screenshots | n/a | pending | | |
 | Google Play feature graphic | n/a | pending | | |
 | App Store iPhone 6.5-inch screenshots | pending | n/a | | |
