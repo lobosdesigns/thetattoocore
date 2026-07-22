@@ -510,8 +510,11 @@ const checks = [
       source.readiness.includes("authorized Android 16 device confirmed the installed build and target SDK 36") &&
       source.readiness.includes("one Android install of `1.0.1 (2)` is verified") &&
       source.readiness.includes("organization account is not subject to the personal-account 12-tester/14-day production-access rule") &&
-      source.readiness.includes("production rollout of the same build is saved in Publishing Overview awaiting final submit-for-review confirmation") &&
-      source.readiness.includes("Production release `1.0.1 (2)` is prepared and saved in Publishing Overview") &&
+      source.readiness.includes("production rollout of the same build was sent for review") &&
+      source.readiness.includes("Production release `1.0.1 (2)` was sent for review") &&
+      source.readiness.includes("Publishing Overview shows `Changes in review`") &&
+      source.readiness.includes("Do not restart or remove that review") &&
+      !source.readiness.includes("awaiting final submit-for-review confirmation") &&
       source.readiness.includes("automated pre-review checks finished successfully") &&
       source.readiness.includes("release minification is disabled") &&
       !currentBlockerMatrix.includes("14-day production-access evidence still needs eligible tester opt-in/install proof") &&

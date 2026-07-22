@@ -1007,7 +1007,10 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("Closed testing - Alpha serves API 36 release `1.0.1 (2)`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("existing Google Group community") &&
       docs["docs/APP_STORE_READINESS.md"].includes("organization account is not subject to the personal-account 12-tester/14-day production-access rule") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Production release `1.0.1 (2)` is prepared and saved in Publishing Overview") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Production release `1.0.1 (2)` was sent for review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Publishing Overview shows `Changes in review`") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Do not restart or remove that review") &&
+      !docs["docs/APP_STORE_READINESS.md"].includes("awaiting final submit-for-review confirmation") &&
       docs["docs/APP_STORE_READINESS.md"].includes("automated pre-review checks finished successfully") &&
       docs["docs/APP_STORE_READINESS.md"].includes("release minification is disabled") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Monitor App Review status and reviewer messages") &&
@@ -1032,7 +1035,7 @@ const checks = [
       (docs["docs/APP_STORE_READINESS.md"].includes("Data Safety review") ||
         docs["docs/APP_STORE_READINESS.md"].includes("Data Safety saved")) &&
       docs["docs/APP_STORE_READINESS.md"].includes("one Android install of `1.0.1 (2)` is verified") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("production rollout of the same build is saved in Publishing Overview awaiting final submit-for-review confirmation") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("production rollout of the same build was sent for review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("applicable tester evidence") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Legal and policy") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Final counsel-reviewed Terms/Privacy") &&
