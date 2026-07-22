@@ -1091,29 +1091,42 @@ async function recordPaymentDispute({
     throw new Error("Missing Supabase service role key for Stripe webhook.");
   }
 
+  const paymentDisputeHold =
+    eventType !== "charge.dispute.funds_reinstated" &&
+    dispute.status !== "won" &&
+    dispute.status !== "warning_closed";
+  const disputeUpdate = {
+    payment_dispute_hold: paymentDisputeHold,
+    payment_dispute_status: dispute.status,
+    payment_dispute_updated_at: new Date().toISOString(),
+  };
+
   const [merchResult, adResult, bookingResult] = await Promise.all([
     supabase
       .from("merch_orders")
-      .select("id")
+      .update(disputeUpdate)
       .eq("stripe_payment_intent_id", paymentIntentId)
+      .select("id")
       .returns<DisputedMerchPayment[]>(),
     supabase
       .from("ad_campaigns")
-      .select("id, title")
+      .update(disputeUpdate)
       .eq("stripe_payment_intent_id", paymentIntentId)
+      .select("id, title")
       .returns<DisputedAdPayment[]>(),
     supabase
       .from("booking_requests")
-      .select("id, title")
+      .update(disputeUpdate)
       .eq("stripe_payment_intent_id", paymentIntentId)
+      .select("id, title")
       .returns<DisputedBookingPayment[]>(),
   ]);
 
   const firstError = merchResult.error ?? adResult.error ?? bookingResult.error;
 
   if (firstError) {
-    console.error("Webhook disputed payment lookup failed.", firstError);
-    throw new Error("Could not inspect disputed payment.");
+    console.error("Webhook disputed payment hold update failed.", firstError);
+    throw new Error("Could not update disputed payment safeguards.");
   }
 
   const sharedMetadata = {
@@ -1122,6 +1135,7 @@ async function recordPaymentDispute({
     dispute_id: dispute.id,
     dispute_reason: dispute.reason,
     dispute_status: dispute.status,
+    operational_hold: paymentDisputeHold,
     stripe_charge_id: disputeChargeId(dispute),
     payment_intent_id: paymentIntentId,
     stripe_event_type: eventType,
@@ -1180,6 +1194,10 @@ async function recordPaymentDispute({
   revalidatePath("/admin/payments");
   revalidatePath("/admin/ads");
   revalidatePath("/admin/merch");
+  revalidatePath("/");
+  revalidatePath("/merch");
+  revalidatePath("/account");
+  revalidatePath("/messages");
 }
 
 export async function POST(request: Request) {

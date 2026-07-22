@@ -6,6 +6,7 @@ const bookingCheckout = readFileSync("src/app/api/bookings/checkout/route.ts", "
 const merchCheckout = readFileSync("src/app/api/merch/checkout/route.ts", "utf8");
 const envExample = readFileSync(".env.example", "utf8");
 const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8");
+const adClickRoute = readFileSync("src/app/api/ad-click/route.ts", "utf8");
 const stripeServer = readFileSync("src/lib/stripe/server.ts", "utf8");
 const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const merchIndexPage = readFileSync("src/app/merch/page.tsx", "utf8");
@@ -50,6 +51,14 @@ const stripeConnectLivemodeMigration = readFileSync(
 );
 const stripeWebhookClaimMigration = readFileSync(
   "supabase/migrations/20260722194829_stripe_webhook_event_claim_release.sql",
+  "utf8",
+);
+const paymentDisputeHoldMigration = readFileSync(
+  "supabase/migrations/20260722202250_payment_dispute_operational_hold.sql",
+  "utf8",
+);
+const legacyMerchFulfillmentRetirementMigration = readFileSync(
+  "supabase/migrations/20260722202417_drop_legacy_merch_fulfillment_overload.sql",
   "utf8",
 );
 const globalsCss = readFileSync("src/app/globals.css", "utf8");
@@ -551,6 +560,49 @@ checks.push({
       stripeWebhook.indexOf("constructEventAsync"),
 });
 checks.push({
+  label: "payment disputes impose protected operational holds",
+  ok:
+    paymentDisputeHoldMigration.includes("alter table public.merch_orders") &&
+    paymentDisputeHoldMigration.includes("alter table public.ad_campaigns") &&
+    paymentDisputeHoldMigration.includes("alter table public.booking_requests") &&
+    paymentDisputeHoldMigration.includes("payment_dispute_hold boolean not null default false") &&
+    paymentDisputeHoldMigration.includes("private.prevent_untrusted_payment_dispute_field_changes") &&
+    paymentDisputeHoldMigration.includes("security invoker") &&
+    paymentDisputeHoldMigration.includes("set search_path = ''") &&
+    paymentDisputeHoldMigration.includes("current_user in ('postgres', 'supabase_admin', 'service_role')") &&
+    paymentDisputeHoldMigration.includes("v_request_role = 'service_role'") &&
+    !paymentDisputeHoldMigration.includes("session_user in") &&
+    paymentDisputeHoldMigration.includes("protect_merch_order_payment_dispute_fields") &&
+    paymentDisputeHoldMigration.includes("protect_ad_campaign_payment_dispute_fields") &&
+    paymentDisputeHoldMigration.includes("protect_booking_request_payment_dispute_fields") &&
+    paymentDisputeHoldMigration.includes('drop policy if exists "Active ads are publicly readable"') &&
+    paymentDisputeHoldMigration.includes('drop policy if exists "Active ad placements are publicly readable"') &&
+    paymentDisputeHoldMigration.includes('drop policy if exists "Ad events can be created"') &&
+    paymentDisputeHoldMigration.includes("and not payment_dispute_hold") &&
+    paymentDisputeHoldMigration.includes("and not ad_campaigns.payment_dispute_hold") &&
+    paymentDisputeHoldMigration.includes("if v_payment_dispute_hold then") &&
+    paymentDisputeHoldMigration.includes("This order is under payment review and cannot be fulfilled yet.") &&
+    legacyMerchFulfillmentRetirementMigration.includes(
+      "revoke all on function public.mark_own_merch_order_item_fulfilled(uuid)",
+    ) &&
+    legacyMerchFulfillmentRetirementMigration.includes(
+      "drop function if exists public.mark_own_merch_order_item_fulfilled(uuid)",
+    ) &&
+    stripeWebhook.includes('eventType !== "charge.dispute.funds_reinstated"') &&
+    stripeWebhook.includes('dispute.status !== "won"') &&
+    stripeWebhook.includes('dispute.status !== "warning_closed"') &&
+    stripeWebhook.includes("payment_dispute_hold: paymentDisputeHold") &&
+    stripeWebhook.includes("payment_dispute_status: dispute.status") &&
+    stripeWebhook.includes("operational_hold: paymentDisputeHold") &&
+    adminActions.includes("campaign.payment_dispute_hold") &&
+    adminActions.includes("This campaign is under payment review and cannot be activated.") &&
+    adminActions.includes("booking.payment_dispute_hold") &&
+    adminActions.includes("This booking payment is under review and cannot be refunded here yet.") &&
+    homePage.includes('.eq("payment_dispute_hold", false)') &&
+    merchIndexPage.includes('.eq("payment_dispute_hold", false)') &&
+    adClickRoute.includes('.eq("payment_dispute_hold", false)'),
+});
+checks.push({
   label: "payment webhook claims events before side effects and records completion",
   ok:
     stripeWebhook.includes('"claim_stripe_webhook_event"') &&
@@ -640,11 +692,11 @@ checks.push({
 checks.push({
   label: "payment webhook hides raw dispute backend errors",
   ok:
-    stripeWebhook.includes('console.error("Webhook disputed payment lookup failed.", firstError)') &&
-    stripeWebhook.includes('throw new Error("Could not inspect disputed payment.")') &&
+    stripeWebhook.includes('console.error("Webhook disputed payment hold update failed.", firstError)') &&
+    stripeWebhook.includes('throw new Error("Could not update disputed payment safeguards.")') &&
     stripeWebhook.includes('console.error("Webhook payment dispute audit record failed.", auditError)') &&
     stripeWebhook.includes('throw new Error("Could not record disputed payment.")') &&
-    !stripeWebhook.includes('firstError.message || "Could not inspect disputed payment."'),
+    !stripeWebhook.includes('firstError.message || "Could not update disputed payment safeguards."'),
 });
 checks.push({
   label: "payment webhook hides raw event status backend errors",

@@ -772,6 +772,7 @@ const checks = [
       adClickRoute.includes('const placements = new Set(["4u", "gossip", "stuff", "merch"])') &&
       adClickRoute.includes('.eq("status", "active")') &&
       adClickRoute.includes('.in("payment_status", ["paid", "waived"])') &&
+      adClickRoute.includes('.eq("payment_dispute_hold", false)') &&
       adClickRoute.includes("new URL(campaign.target_url)") &&
       adClickRoute.includes('!["http:", "https:"].includes(target.protocol)') &&
       adClickRoute.includes("NextResponse.redirect(fallback"),

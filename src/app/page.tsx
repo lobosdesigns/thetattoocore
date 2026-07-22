@@ -1542,6 +1542,7 @@ async function fetchSponsoredCampaign(
         )
     .eq("status", "active")
     .in("payment_status", ["paid", "waived"])
+    .eq("payment_dispute_hold", false)
     .or(`starts_at.is.null,starts_at.lte.${now}`)
     .or(`ends_at.is.null,ends_at.gt.${now}`)
     .eq("ad_campaign_placements.placement", placement);

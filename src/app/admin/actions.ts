@@ -1625,13 +1625,16 @@ export async function updateAdCampaignStatus(formData: FormData) {
   const { supabase, userId } = await requireModerator();
   const { data: campaign, error: campaignError } = await supabase
     .from("ad_campaigns")
-    .select("id, advertiser_id, status, payment_status, campaign_type, goal")
+    .select(
+      "id, advertiser_id, status, payment_status, payment_dispute_hold, campaign_type, goal",
+    )
     .eq("id", campaignId)
     .maybeSingle<{
       advertiser_id: string;
       campaign_type: string;
       goal: string;
       id: string;
+      payment_dispute_hold: boolean;
       payment_status: string;
       status: string;
     }>();
@@ -1643,6 +1646,15 @@ export async function updateAdCampaignStatus(formData: FormData) {
     redirect(
       adminAdsMessage(
         "Ad campaign was not found.",
+        returnTo,
+      ),
+    );
+  }
+
+  if (status === "active" && campaign.payment_dispute_hold) {
+    redirect(
+      adminAdsMessage(
+        "This campaign is under payment review and cannot be activated.",
         returnTo,
       ),
     );
@@ -2343,11 +2355,12 @@ export async function refundBookingDeposit(formData: FormData) {
   const { data: booking, error } = await adminClient
     .from("booking_requests")
     .select(
-      "id, title, payment_status, status, total_cents, stripe_payment_intent_id",
+      "id, title, payment_status, payment_dispute_hold, status, total_cents, stripe_payment_intent_id",
     )
     .eq("id", bookingId)
     .maybeSingle<{
       id: string;
+      payment_dispute_hold: boolean;
       payment_status: string;
       status: string;
       stripe_payment_intent_id: string | null;
@@ -2361,6 +2374,15 @@ export async function refundBookingDeposit(formData: FormData) {
     }
 
     redirect(adminPaymentsMessage("Booking deposit not found.", returnTo));
+  }
+
+  if (booking.payment_dispute_hold) {
+    redirect(
+      adminPaymentsMessage(
+        "This booking payment is under review and cannot be refunded here yet.",
+        returnTo,
+      ),
+    );
   }
 
   if (
