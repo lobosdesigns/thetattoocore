@@ -522,7 +522,7 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("4U, Stories, Gossip") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("booking/deposit paths") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run smoke:mobile") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("support/help/legal routes") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Support, Help, Child Safety Standards, Privacy, and Terms routes") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Search/Saved, Booking, Ads, Merch, Verification") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("privacy/safety Help Center guides") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("/help/beta-app-testing") &&
