@@ -425,6 +425,7 @@ const checks = [
       source.readme.includes("npm.cmd run sync") &&
       source.readme.includes("npm.cmd run verify:native-release") &&
       source.readme.includes("It should fail until the Android probe sees an authorized device") &&
+      source.readme.includes("app-link association endpoints") &&
       source.readme.includes("Android-profile") &&
       source.readme.includes("iOS-profile") &&
       !source.readme.includes("Run `npm install`") &&

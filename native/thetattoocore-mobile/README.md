@@ -37,9 +37,10 @@ This folder is the starting point for Apple TestFlight and Google Play internal 
    - `npm.cmd run verify:native-predevice`
    - `npm.cmd run verify:native-release`
    Use the pre-device command to check environment boundaries, private native
-   config exclusions, readiness docs, store metadata, Android-profile mobile
-   routes, and iOS-profile mobile routes before the review phone is authorized.
-   The release command checks the same starting gates first.
+   config exclusions, app-link association endpoints, readiness docs, store
+   metadata, Android-profile mobile routes, and iOS-profile mobile routes before
+   the review phone is authorized. The release command checks the same starting
+   gates first.
    It should fail until the Android probe sees an authorized device with the TTC
    package installed, then continue through store, Android-profile mobile, and
    iOS-profile mobile smoke checks.

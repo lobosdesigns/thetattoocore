@@ -502,7 +502,9 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("intentionally fails until the Android probe sees an authorized device") &&
       docs["native/thetattoocore-mobile/README.md"].includes("npm.cmd run verify:native-predevice") &&
       docs["native/thetattoocore-mobile/README.md"].includes("Use the pre-device command to check environment boundaries") &&
-      docs["native/thetattoocore-mobile/README.md"].includes("The release command checks the same starting gates first") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("app-link association endpoints") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("The release command checks the same starting") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("gates first") &&
       docs["native/thetattoocore-mobile/README.md"].includes("%LOCALAPPDATA%\\Android\\Sdk\\platform-tools\\adb.exe") &&
       docs["native/thetattoocore-mobile/README.md"].includes("ANDROID_QA adb_server=started") &&
       docs["native/thetattoocore-mobile/README.md"].includes("ANDROID_QA adb_server=start failed") &&
