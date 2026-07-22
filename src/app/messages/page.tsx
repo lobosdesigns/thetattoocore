@@ -863,6 +863,21 @@ export default async function MessagesPage({
     redirect(messagesInboxPath("Conversation was not found or is no longer available."));
   }
 
+  if (selectedConversation) {
+    const { data: selectedConversationMessages } = await supabase
+      .from("messages")
+      .select("id, body, conversation_id, sender_id, created_at")
+      .eq("conversation_id", selectedConversation.id)
+      .order("created_at", { ascending: false })
+      .limit(100)
+      .returns<Message[]>();
+
+    messagesByConversation.set(
+      selectedConversation.id,
+      (selectedConversationMessages ?? []).toReversed(),
+    );
+  }
+
   const selectedMessages = selectedConversation
     ? messagesByConversation.get(selectedConversation.id) ?? []
     : [];

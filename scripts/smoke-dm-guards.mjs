@@ -126,6 +126,8 @@ const checks = [
       messagePage.includes("prefillConversation ?? inbox[0]") &&
       messagePage.includes("const hasOpenThreadView =") &&
       messagePage.includes("hasSelectedConversationParam || prefillConversation") &&
+      messagePage.includes(".eq(\"conversation_id\", selectedConversation.id)") &&
+      messagePage.includes("selectedConversationMessages") &&
       messagePage.includes("selectedMessagesWithAttachments"),
   },
   {
