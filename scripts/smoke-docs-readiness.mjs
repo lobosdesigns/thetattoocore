@@ -965,13 +965,11 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Age 18+ override") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Play Console Dashboard previously showed app update status `Not yet sent for review`") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("closed testing was `4 of 5` complete") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Publishing overview showed `Changes not yet submitted for review`") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("July 21, 2026 retry from the saved closed-testing tab still stops at Play Console unexpected-error codes") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("record visible unexpected-error codes in the private Google Play retry log") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Closed testing - Alpha release `1 (1.0)` is available to selected testers on Google Play") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("tester access was updated on July 22, 2026 to use the same Google Group tester community as the Lobos Designs closed test") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("quick checks cleared, and Publishing overview now says that tester-access change is in review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Monitor App Review status and reviewer messages") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("send the release to Google for review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Play review complete, tester join links saved privately, group-member opt-in/install proof") &&
       docs["docs/APP_STORE_READINESS.md"].includes("with account verification and Connect setup still outstanding") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Firebase console is open at the project list/welcome state") &&
       docs["docs/APP_STORE_READINESS.md"].includes("no TTC Firebase project is selected") &&
@@ -984,14 +982,15 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("Private native QA handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Store consoles") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Apple iOS `1.0` build `1.0 (3)` is submitted for App Review") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Google Play is not yet downloadable because the closed-testing release still needs to be sent to Google for review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Google Play Closed testing - Alpha is available to selected testers") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("tester Google Group access is still in review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("13-inch iPad screenshots uploaded") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Content Rights") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Accessibility Nutrition Labels") &&
       (docs["docs/APP_STORE_READINESS.md"].includes("Data Safety review") ||
         docs["docs/APP_STORE_READINESS.md"].includes("Data Safety saved")) &&
       (docs["docs/APP_STORE_READINESS.md"].includes("required closed-test production-access evidence") ||
-        docs["docs/APP_STORE_READINESS.md"].includes("production access still needs closed-test live status")) &&
+        docs["docs/APP_STORE_READINESS.md"].includes("14-day production-access evidence still needs eligible tester opt-in/install proof")) &&
       docs["docs/APP_STORE_READINESS.md"].includes("closed-test tester opt-in/duration evidence if required") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Legal and policy") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Final counsel-reviewed Terms/Privacy") &&
