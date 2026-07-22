@@ -10,6 +10,18 @@ const homePage = readFileSync("src/app/page.tsx", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const qaChecklist = readFileSync("docs/REAL_DEVICE_QA_CHECKLIST.md", "utf8");
 
+function appearsInOrder(source, snippets) {
+  let cursor = 0;
+
+  return snippets.every((snippet) => {
+    const index = source.indexOf(snippet, cursor);
+    if (index === -1) return false;
+
+    cursor = index + snippet.length;
+    return true;
+  });
+}
+
 const checks = [
   {
     label: "DM send requires membership and blocks blocked profiles",
@@ -115,6 +127,23 @@ const checks = [
       messagePage.includes("const hasOpenThreadView =") &&
       messagePage.includes("hasSelectedConversationParam || prefillConversation") &&
       messagePage.includes("selectedMessagesWithAttachments"),
+  },
+  {
+    label: "DM prefilled profile route fetches shared thread before inbox slicing",
+    ok:
+      appearsInOrder(messagePage, [
+        "const { data: membershipRows } = await supabase",
+        "const memberships = [...(membershipRows ?? [])];",
+        "const prefillMembership = await findSharedConversationMembership",
+        "memberships.unshift(prefillMembership);",
+        "const conversationIds = memberships.map",
+        "const inboxBeforeSearch = memberships",
+        "const inbox = filteredInbox.slice(0, conversationLimit);",
+        "const prefillConversation =",
+        "const selectedMessages = selectedConversation",
+        "selectedMessagesWithAttachments",
+      ]) &&
+      !messagePage.includes("const conversationIds = membershipRows"),
   },
   {
     label: "DM launch plan and real-device QA keep the remaining manual pass visible",
