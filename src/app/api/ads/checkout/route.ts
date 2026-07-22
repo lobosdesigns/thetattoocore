@@ -158,14 +158,6 @@ export async function POST(request: Request) {
     );
   }
 
-  const checkoutPreflight = stripeCheckoutPreflight();
-  if (!checkoutPreflight.ready) {
-    console.error("Ad checkout mode preflight failed.", checkoutPreflight);
-    return redirectWithMessage(
-      "Ad checkout is temporarily unavailable. Please try again later.",
-    );
-  }
-
   const formData = await request.formData();
   const campaignId = String(formData.get("campaign_id") ?? "").trim();
   const returnTo = safeInternalReturnPath(formData.get("return_to"));
@@ -182,6 +174,15 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       `${siteUrl}/login?message=${encodeURIComponent("Sign in to pay for ads.")}&return_to=${encodeURIComponent(returnTo ?? "/account#advertising-settings")}`,
       { status: 303 },
+    );
+  }
+
+  const checkoutPreflight = stripeCheckoutPreflight();
+  if (!checkoutPreflight.ready) {
+    console.error("Ad checkout mode preflight failed.", checkoutPreflight);
+    return redirectWithMessage(
+      "Ad checkout is temporarily unavailable. Please try again later.",
+      returnTo,
     );
   }
 

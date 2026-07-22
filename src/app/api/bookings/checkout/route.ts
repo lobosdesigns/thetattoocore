@@ -162,14 +162,6 @@ export async function POST(request: Request) {
     );
   }
 
-  const checkoutPreflight = stripeCheckoutPreflight();
-  if (!checkoutPreflight.ready) {
-    console.error("Booking checkout mode preflight failed.", checkoutPreflight);
-    return redirectWithMessage(
-      "Booking checkout is temporarily unavailable. Please try again later.",
-    );
-  }
-
   const formData = await request.formData();
   const bookingId = String(formData.get("booking_id") ?? "").trim();
   const returnTo = safeInternalReturnPath(formData.get("return_to"));
@@ -186,6 +178,15 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       `${siteUrl}/login?message=${encodeURIComponent("Sign in to pay a booking deposit.")}&return_to=${encodeURIComponent(returnTo ?? "/account#booking-settings")}`,
       { status: 303 },
+    );
+  }
+
+  const checkoutPreflight = stripeCheckoutPreflight();
+  if (!checkoutPreflight.ready) {
+    console.error("Booking checkout mode preflight failed.", checkoutPreflight);
+    return redirectWithMessage(
+      "Booking checkout is temporarily unavailable. Please try again later.",
+      returnTo,
     );
   }
 

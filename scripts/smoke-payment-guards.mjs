@@ -350,12 +350,18 @@ checks.push({
     adCheckout.includes('console.error("Ad checkout mode preflight failed.", checkoutPreflight)') &&
     bookingCheckout.includes('console.error("Booking checkout mode preflight failed.", checkoutPreflight)') &&
     merchCheckout.includes('console.error("Merch checkout mode preflight failed.", checkoutPreflight)') &&
-    adCheckout.indexOf("stripeCheckoutPreflight") <
-      adCheckout.indexOf("const formData = await request.formData()") &&
-    bookingCheckout.indexOf("stripeCheckoutPreflight") <
-      bookingCheckout.indexOf("const formData = await request.formData()") &&
-    merchCheckout.indexOf("stripeCheckoutPreflight") <
-      merchCheckout.indexOf("const formData = await request.formData()"),
+    adCheckout.indexOf("const checkoutPreflight = stripeCheckoutPreflight()") <
+      adCheckout.indexOf("const { data: campaign, error }") &&
+    bookingCheckout.indexOf("const checkoutPreflight = stripeCheckoutPreflight()") <
+      bookingCheckout.indexOf("const { data: booking, error }") &&
+    merchCheckout.indexOf("const checkoutPreflight = stripeCheckoutPreflight()") <
+      merchCheckout.indexOf("const { data: product, error }") &&
+    adCheckout.indexOf("const checkoutPreflight = stripeCheckoutPreflight()") >
+      adCheckout.indexOf("if (!claims?.sub)") &&
+    bookingCheckout.indexOf("const checkoutPreflight = stripeCheckoutPreflight()") >
+      bookingCheckout.indexOf("if (!claims?.sub)") &&
+    merchCheckout.indexOf("const checkoutPreflight = stripeCheckoutPreflight()") >
+      merchCheckout.indexOf("if (!claims?.sub)"),
 });
 checks.push({
   label: "checkout creation failures log privately and show generic member copy",

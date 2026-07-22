@@ -206,15 +206,6 @@ export async function POST(request: Request) {
     );
   }
 
-  const checkoutPreflight = stripeCheckoutPreflight();
-  if (!checkoutPreflight.ready) {
-    console.error("Merch checkout mode preflight failed.", checkoutPreflight);
-    return redirectWithMessage(
-      "/merch",
-      "Checkout is temporarily unavailable. Please try again later.",
-    );
-  }
-
   const formData = await request.formData();
   const productId = String(formData.get("product_id") ?? "").trim();
   const quantity = cleanQuantity(formData.get("quantity"));
@@ -232,6 +223,15 @@ export async function POST(request: Request) {
     return loginRedirect(
       formReturnTo ?? `/merch/${productId}`,
       "Sign in to buy merch.",
+    );
+  }
+
+  const checkoutPreflight = stripeCheckoutPreflight();
+  if (!checkoutPreflight.ready) {
+    console.error("Merch checkout mode preflight failed.", checkoutPreflight);
+    return redirectWithMessage(
+      formReturnTo ?? `/merch/${productId}`,
+      "Checkout is temporarily unavailable. Please try again later.",
     );
   }
 
