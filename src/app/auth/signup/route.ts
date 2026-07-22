@@ -32,7 +32,7 @@ function signupRedirect(request: Request, message: string, returnTo = "/account"
     url.searchParams.set("return_to", returnTo);
   }
 
-  return NextResponse.redirect(url);
+  return NextResponse.redirect(url, { status: 303 });
 }
 
 function signupErrorMessage(error: { code?: string; message?: string; status?: number }) {

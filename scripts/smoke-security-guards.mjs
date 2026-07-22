@@ -322,6 +322,10 @@ const checks = [
       authConfirm.includes('next.includes("\\\\")'),
   },
   {
+    label: "signup POST redirects render the result page with GET",
+    ok: authSignup.includes("NextResponse.redirect(url, { status: 303 })"),
+  },
+  {
     label: "signup and confirmation resend hide raw auth-provider errors",
     ok:
       authSignup.includes('console.error("Signup request failed.", error)') &&

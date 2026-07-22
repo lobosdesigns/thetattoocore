@@ -397,8 +397,12 @@ const checks = [
       pushRoute.includes("supabase.auth.getClaims()") &&
       pushRoute.includes("createAdminClient()") &&
       pushRoute.includes('.from("push_subscriptions")') &&
-      pushRoute.includes(".upsert(") &&
-      pushRoute.includes('onConflict: "endpoint"') &&
+      pushRoute.includes('.select("id, profile_id")') &&
+      pushRoute.includes("existingSubscription.profile_id !== userId") &&
+      pushRoute.includes(".update(registration)") &&
+      pushRoute.includes(".insert({") &&
+      pushRoute.includes('.eq("profile_id", userId)') &&
+      !pushRoute.includes(".upsert(") &&
       pushRoute.includes("export async function GET") &&
       pushRoute.includes("export async function DELETE") &&
       pushRoute.includes("async function updatePushPreference") &&
