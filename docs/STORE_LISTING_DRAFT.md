@@ -76,6 +76,7 @@ TheTattooCore is for adults 18+ because tattoo, piercing, healing, scar cover, a
 ## Support And Legal URLs
 
 - Support: https://thetattoocore.com/support
+- Child Safety Standards: https://thetattoocore.com/child-safety-standards
 - Privacy: https://thetattoocore.com/privacy
 - Terms: https://thetattoocore.com/terms
 - Login / app start: https://thetattoocore.com/login

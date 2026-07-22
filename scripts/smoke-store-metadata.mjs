@@ -465,6 +465,7 @@ const checks = [
       source.readme.includes("## Console Field Handoff") &&
       source.readme.includes("Support URL: `https://thetattoocore.com/support`") &&
       source.readme.includes("Help URL: `https://thetattoocore.com/help`") &&
+      source.readme.includes("Child Safety Standards URL: `https://thetattoocore.com/child-safety-standards`") &&
       source.readme.includes("Privacy URL: `https://thetattoocore.com/privacy`") &&
       source.readme.includes("Terms URL: `https://thetattoocore.com/terms`") &&
       source.readme.includes("App start URL: `https://thetattoocore.com/login`") &&
@@ -488,7 +489,7 @@ const checks = [
       source.readme.includes("| Reviewer account | Test account creation, email-confirmed sign-in") &&
       source.readme.includes("| Final reviewer access | Selected Apple build and Google release track reviewer sign-in details") &&
       source.readme.includes("`pending`, `validated for selected build/track`, or `needs retry`") &&
-      source.readme.includes("| Contact details | Support email, support URL, help URL, privacy URL") &&
+      source.readme.includes("| Contact details | Support email, support URL, help URL, child-safety standards URL") &&
       source.readme.includes("| Screenshot upload | App Store iPhone/iPad validation") &&
       source.readme.includes("| Category and pricing | App Store categories, Google Play category") &&
       source.readme.includes("| Content rights | Confirmation that icons, generated screenshots") &&
@@ -530,6 +531,7 @@ const checks = [
       source.storeListingDraft.includes("| Google Play release notes | 500 characters |") &&
       source.storeListingDraft.includes("| App Store primary category | Console choice | Social Networking |") &&
       source.storeListingDraft.includes("| Google Play app category | Console choice | Social |") &&
+      source.storeListingDraft.includes("Child Safety Standards: https://thetattoocore.com/child-safety-standards") &&
       draftFieldUnderLimit("Google Play short description", 80) &&
       draftFieldUnderLimit("App Store subtitle", 30) &&
       draftFieldUnderLimit("App Store promotional text", 170) &&

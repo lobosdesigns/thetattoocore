@@ -31,6 +31,7 @@ Keep private reviewer credentials and phone details in Apple/Google console fiel
 
 - Support URL: `https://thetattoocore.com/support`
 - Help URL: `https://thetattoocore.com/help`
+- Child Safety Standards URL: `https://thetattoocore.com/child-safety-standards`
 - Privacy URL: `https://thetattoocore.com/privacy`
 - Terms URL: `https://thetattoocore.com/terms`
 - App start URL: `https://thetattoocore.com/login`
@@ -55,7 +56,7 @@ Keep completed evidence in the private release handoff, not in this repo. Store 
 | Google Play closed testing | Tester list or Google Group selection, opted-in tester count, 14-day continuous opt-in window if production access requires it, closed-test feedback summary, and production-access application answers. | Record only closed-test status, date range, and pass/fail summary; keep tester emails, group membership, console screenshots, and application answers private. |
 | Reviewer account | Test account creation, email-confirmed sign-in, role/access scope, and validation screenshot. | `created`, `validated`, or `needs retry`; never commit secrets, access codes, or private phone details. |
 | Final reviewer access | Selected Apple build and Google release track reviewer sign-in details, access notes, and store-review validation result. | `pending`, `validated for selected build/track`, or `needs retry`; no passwords, login codes, private phone details, or console identifiers. |
-| Contact details | Support email, support URL, help URL, privacy URL, terms URL, and console-only contact phone. | Confirm company support surfaces only; do not store private phone numbers or owner personal contact data. |
+| Contact details | Support email, support URL, help URL, child-safety standards URL, privacy URL, terms URL, and console-only contact phone. | Confirm company support surfaces only; do not store private phone numbers or owner personal contact data. |
 | Screenshot upload | App Store iPhone/iPad validation, Google Play phone screenshots, feature graphic, and rejection/error screenshots if any. | Note asset set and result only; do not commit store-console screenshots with private account data. |
 | Category and pricing | App Store categories, Google Play category, v1 free pricing, and availability selections. | Record category/pricing choices only after final console save. |
 | Content rights | Confirmation that icons, generated screenshots, metadata, and any sample content are owned, licensed, or permissioned. | Record approval status only; no third-party contracts or private user content. |

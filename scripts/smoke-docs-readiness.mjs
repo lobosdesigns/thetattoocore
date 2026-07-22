@@ -23,6 +23,7 @@ const docs = {
     "native/thetattoocore-mobile/README.md",
     "utf8",
   ),
+  "native/store-metadata/README.md": readFileSync("native/store-metadata/README.md", "utf8"),
 };
 const packageJson = readFileSync("package.json", "utf8");
 const screenshotGenerator = readFileSync("scripts/generate-safe-store-screenshots.mjs", "utf8");
@@ -1016,7 +1017,9 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("fail-closed app-link association routes") &&
       docs["docs/APP_STORE_READINESS.md"].includes("final Android and Apple signed identifiers still need private deployment configuration") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Run `npm.cmd run smoke:app-links` after every deploy") &&
-      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Run `npm.cmd run smoke:app-links` after deployment"),
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Run `npm.cmd run smoke:app-links` after deployment") &&
+      docs["docs/STORE_LISTING_DRAFT.md"].includes("Child Safety Standards: https://thetattoocore.com/child-safety-standards") &&
+      docs["native/store-metadata/README.md"].includes("Child Safety Standards URL: `https://thetattoocore.com/child-safety-standards`"),
   },
   {
     label: "native push setup evidence stays private and route-testable",
