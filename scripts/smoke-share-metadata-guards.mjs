@@ -7,6 +7,7 @@ const gigsDetail = readFileSync("src/app/gigs/[id]/page.tsx", "utf8");
 const merchDetail = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const profileDetail = readFileSync("src/app/u/[username]/page.tsx", "utf8");
 const helpPage = readFileSync("src/app/help/page.tsx", "utf8");
+const childSafetyPage = readFileSync("src/app/child-safety-standards/page.tsx", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
 const termsPage = readFileSync("src/app/terms/page.tsx", "utf8");
@@ -68,6 +69,8 @@ const checks = [
       siteConstants.includes('"shop verification"') &&
       siteConstants.includes('"tattoo marketplace"') &&
       siteConstants.includes("export const seoKeywordGroups") &&
+      siteConstants.includes("childSafety:") &&
+      siteConstants.includes('"child safety standards"') &&
       siteConstants.includes('"booking profile"') &&
       siteConstants.includes('"vendor listings"') &&
       siteConstants.includes("metadataKeywords(") &&
@@ -109,6 +112,7 @@ const checks = [
     label: "Public support and legal pages publish page-level canonical metadata",
     ok:
       helpPage.includes("canonical: `${siteUrl}/help`") &&
+      childSafetyPage.includes("canonical: `${siteUrl}/child-safety-standards`") &&
       supportPage.includes("canonical: `${siteUrl}/support`") &&
       privacyPage.includes("canonical: `${siteUrl}/privacy`") &&
       termsPage.includes("canonical: `${siteUrl}/terms`"),
@@ -117,6 +121,9 @@ const checks = [
     label: "Public support and legal pages expose safe discovery keywords",
     ok:
       helpPage.includes("keywords: metadataKeywords(siteKeywords, seoKeywordGroups.help)") &&
+      childSafetyPage.includes("keywords: metadataKeywords(") &&
+      childSafetyPage.includes("seoKeywordGroups.childSafety") &&
+      childSafetyPage.includes("seoKeywordGroups.help") &&
       supportPage.includes("keywords: metadataKeywords(") &&
       supportPage.includes("seoKeywordGroups.help") &&
       supportPage.includes('"tattoo app support"') &&
@@ -124,7 +131,7 @@ const checks = [
       privacyPage.includes('"tattoo app privacy"') &&
       termsPage.includes("keywords: metadataKeywords(") &&
       termsPage.includes('"tattoo community terms"') &&
-      [helpPage, supportPage, privacyPage, termsPage].every(
+      [helpPage, childSafetyPage, supportPage, privacyPage, termsPage].every(
         (source) =>
           !source.toLowerCase().includes("supabase") &&
           !source.toLowerCase().includes("stripe") &&
@@ -182,6 +189,7 @@ const checks = [
       robots.includes('"/t/"') &&
       robots.includes('"/stuff/"') &&
       robots.includes('"/gigs/"') &&
+      robots.includes('"/child-safety-standards"') &&
       robots.includes('"/help"') &&
       robots.includes('"/merch/"') &&
       robots.includes('"/support"') &&

@@ -519,6 +519,7 @@ const checks = [
     status: [200],
     includes: [
       "Child Safety Standards",
+      'rel="canonical" href="https://thetattoocore.com/child-safety-standards"',
       "minor safety concerns",
       "possible minor safety risk is treated as urgent",
       "support@thetattoocore.com",

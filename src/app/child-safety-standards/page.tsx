@@ -1,11 +1,26 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { LogoLockup } from "../logo-mark";
-import { siteName, supportEmail } from "@/lib/site";
+import {
+  metadataKeywords,
+  seoKeywordGroups,
+  siteKeywords,
+  siteName,
+  siteUrl,
+  supportEmail,
+} from "@/lib/site";
 
 export const metadata: Metadata = {
+  alternates: {
+    canonical: `${siteUrl}/child-safety-standards`,
+  },
   description:
     "TheTattooCore child safety standards, reporting paths, and escalation policy for child sexual abuse and exploitation concerns.",
+  keywords: metadataKeywords(
+    siteKeywords,
+    seoKeywordGroups.childSafety,
+    seoKeywordGroups.help,
+  ),
   title: "Child Safety Standards",
 };
 

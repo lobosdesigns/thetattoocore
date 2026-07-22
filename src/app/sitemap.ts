@@ -70,6 +70,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${siteUrl}/support`,
     },
     {
+      changeFrequency: "monthly",
+      lastModified: now,
+      priority: 0.5,
+      url: `${siteUrl}/child-safety-standards`,
+    },
+    {
       changeFrequency: "daily",
       lastModified: now,
       priority: 0.7,

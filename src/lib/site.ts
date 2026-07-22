@@ -28,6 +28,13 @@ export const siteKeywords = [
 ] as const;
 
 export const seoKeywordGroups = {
+  childSafety: [
+    "child safety standards",
+    "minor safety reports",
+    "CSAE policy",
+    "tattoo community safety",
+    "app safety reporting",
+  ],
   feed: ["4U", "tattoo posts", "tattoo work", "artist portfolios", "tattoo reels"],
   gigs: ["tattoo jobs", "guest spots", "tattoo conventions", "artist gigs", "shop openings"],
   gossip: ["Gossip", "tattoo discussions", "artist community", "shop talk", "vendor talk"],
