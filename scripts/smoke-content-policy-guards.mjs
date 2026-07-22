@@ -61,6 +61,10 @@ const tagRecipientAudienceMigration = readFileSync(
   "supabase/migrations/20260722175815_tag_recipient_audience_eligibility.sql",
   "utf8",
 );
+const blockVisibilityMigration = readFileSync(
+  "supabase/migrations/20260722182552_block_relationship_content_visibility.sql",
+  "utf8",
+);
 const contentAudienceEnumMigration = readFileSync(
   "supabase/migrations/20260721152000_content_audience_enum.sql",
   "utf8",
@@ -641,6 +645,45 @@ const checks = [
       feedGossipAudienceMigration.includes("post_visibility = 'followers'") &&
       feedGossipAudienceMigration.includes("post_visibility = 'verified_professionals'") &&
       artistShopAudiencePolicyMigration.includes("post_visibility = 'verified_artists_shops'"),
+  },
+  {
+    label: "4U, Gossip, and Gig RLS visibility hides blocked profile content",
+    ok:
+      blockVisibilityMigration.includes(
+        "create or replace function private.current_user_has_block_relationship",
+      ) &&
+      blockVisibilityMigration.includes("security definer") &&
+      blockVisibilityMigration.includes("set search_path = ''") &&
+      blockVisibilityMigration.includes("from public.user_blocks relationship") &&
+      blockVisibilityMigration.includes(
+        "relationship.blocker_id = (select auth.uid())",
+      ) &&
+      blockVisibilityMigration.includes(
+        "relationship.blocked_id = (select auth.uid())",
+      ) &&
+      blockVisibilityMigration.includes(
+        "revoke all on function private.current_user_has_block_relationship(uuid)",
+      ) &&
+      blockVisibilityMigration.includes("grant usage on schema private to anon") &&
+      blockVisibilityMigration.match(
+        /not private\.current_user_has_block_relationship\((author|poster)_profile_id\)/g,
+      )?.length === 3 &&
+      blockVisibilityMigration.includes(
+        "create or replace function public.current_user_can_view_feed_post",
+      ) &&
+      blockVisibilityMigration.includes(
+        "create or replace function public.current_user_can_view_thread_post",
+      ) &&
+      blockVisibilityMigration.includes(
+        "create or replace function public.current_user_can_view_gig",
+      ) &&
+      blockVisibilityMigration.includes('create policy "Visible gigs can be read"') &&
+      blockVisibilityMigration.includes(
+        'create policy "Gig media follows gig visibility"',
+      ) &&
+      blockVisibilityMigration.includes(
+        'create policy "Visible gig tags can be read"',
+      ),
   },
   {
     label: "tag recipients must be eligible for the subject audience before rows or alerts are written",
