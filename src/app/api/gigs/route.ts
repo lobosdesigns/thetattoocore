@@ -8,10 +8,18 @@ import {
 } from "@/lib/notifications";
 import { insertNotifications } from "@/lib/notification-write";
 import { createClient } from "@/lib/supabase/server";
+import {
+  resolveEligibleTaggedProfiles,
+  type TagContentVisibility,
+} from "@/lib/tag-audience";
 import { cleanExternalUrl } from "@/lib/urls";
 
 const MEDIA_BUCKET = "tattoo-media";
-const VISIBILITY_VALUES = new Set(["public_preview", "members", "private"]);
+const VISIBILITY_VALUES = new Set<TagContentVisibility>([
+  "public_preview",
+  "members",
+  "private",
+]);
 const MAX_TAGGED_MEMBERS = 10;
 
 function redirectHome(request: Request, message: string) {
@@ -30,7 +38,9 @@ function cleanText(value: FormDataEntryValue | null, maxLength: number) {
 function cleanVisibility(value: FormDataEntryValue | null) {
   const text = cleanText(value, 32);
 
-  return VISIBILITY_VALUES.has(text) ? text : "public_preview";
+  return VISIBILITY_VALUES.has(text as TagContentVisibility)
+    ? (text as TagContentVisibility)
+    : "public_preview";
 }
 
 function extensionFor(file: File) {
@@ -139,37 +149,40 @@ async function notifyGigTag({
 
 async function syncGigTags({
   gigId,
+  isSensitive,
   supabase,
   taggedUsernames,
   userId,
+  visibility,
 }: {
   gigId: string;
+  isSensitive: boolean;
   supabase: Awaited<ReturnType<typeof createClient>>;
   taggedUsernames: string[];
   userId: string;
+  visibility: TagContentVisibility;
 }) {
   if (!taggedUsernames.length) return null;
 
-  const { data: profiles, error: profileError } = await supabase
-    .from("profiles")
-    .select("id, username")
-    .in("username", taggedUsernames)
-    .is("banned_at", null)
-    .is("suspended_at", null)
-    .returns<{ id: string; username: string }[]>();
+  const eligibility = await resolveEligibleTaggedProfiles({
+    actorId: userId,
+    contentOwnerId: userId,
+    isActive: true,
+    isSensitive,
+    taggedUsernames,
+    visibility,
+  });
 
-  if (profileError) {
-    console.error("Gig tag profile lookup failed.", profileError);
+  if (eligibility.error) {
+    console.error("Gig tag eligibility check failed.", eligibility.error);
     return "Could not check tagged members. Please try again.";
   }
 
-  const rows = (profiles ?? [])
-    .filter((profile) => profile.id !== userId)
-    .map((profile) => ({
-      gig_id: gigId,
-      tagged_by: userId,
-      tagged_profile_id: profile.id,
-    }));
+  const rows = eligibility.profiles.map((profile) => ({
+    gig_id: gigId,
+    tagged_by: userId,
+    tagged_profile_id: profile.id,
+  }));
 
   if (!rows.length) return null;
 
@@ -318,9 +331,11 @@ export async function POST(request: Request) {
 
   const tagError = await syncGigTags({
     gigId: gig.id,
+    isSensitive,
     supabase,
     taggedUsernames,
     userId,
+    visibility,
   });
 
   if (tagError) {

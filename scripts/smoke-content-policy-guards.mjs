@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 
 const actions = readFileSync("src/app/actions.ts", "utf8");
 const gigRoute = readFileSync("src/app/api/gigs/route.ts", "utf8");
+const tagAudience = readFileSync("src/lib/tag-audience.ts", "utf8");
 const composer = readFileSync("src/app/floating-composer.tsx", "utf8");
 const mediaInput = readFileSync("src/app/media-input.tsx", "utf8");
 const sensitiveGate = readFileSync("src/app/sensitive-content-gate.tsx", "utf8");
@@ -54,6 +55,10 @@ const contentOwnerNotificationCleanupMigration = readFileSync(
 );
 const commentTagMigration = readFileSync(
   "supabase/migrations/20260721223000_comment_user_tags.sql",
+  "utf8",
+);
+const tagRecipientAudienceMigration = readFileSync(
+  "supabase/migrations/20260722175815_tag_recipient_audience_eligibility.sql",
   "utf8",
 );
 const contentAudienceEnumMigration = readFileSync(
@@ -135,6 +140,41 @@ function actionBody(name) {
 
   return actions.slice(start, next === -1 ? undefined : next);
 }
+
+function sourceSection(source, startMarker, endMarker) {
+  const start = source.indexOf(startMarker);
+  if (start === -1) return "";
+
+  const end = source.indexOf(endMarker, start + startMarker.length);
+
+  return source.slice(start, end === -1 ? undefined : end);
+}
+
+const feedTagSync = sourceSection(
+  actions,
+  "async function syncFeedPostTags",
+  "async function syncThreadPostTags",
+);
+const threadTagSync = sourceSection(
+  actions,
+  "async function syncThreadPostTags",
+  "async function syncGigTags",
+);
+const gigTagSync = sourceSection(
+  actions,
+  "async function syncGigTags",
+  "async function cleanupRemovedTagNotifications",
+);
+const commentTagSync = sourceSection(
+  actions,
+  "async function syncCommentTags",
+  "async function blockRelationshipExists",
+);
+const gigRouteTagSync = sourceSection(
+  gigRoute,
+  "async function syncGigTags",
+  "export async function POST",
+);
 
 const checks = [
   {
@@ -601,6 +641,63 @@ const checks = [
       feedGossipAudienceMigration.includes("post_visibility = 'followers'") &&
       feedGossipAudienceMigration.includes("post_visibility = 'verified_professionals'") &&
       artistShopAudiencePolicyMigration.includes("post_visibility = 'verified_artists_shops'"),
+  },
+  {
+    label: "tag recipients must be eligible for the subject audience before rows or alerts are written",
+    ok:
+      tagAudience.includes('import "server-only"') &&
+      tagAudience.includes("createAdminClient") &&
+      tagAudience.includes('.from("follows")') &&
+      tagAudience.includes('.eq("status", "accepted")') &&
+      tagAudience.includes('.from("user_blocks")') &&
+      tagAudience.includes("is_adult_confirmed") &&
+      tagAudience.includes("adult_terms_accepted_at") &&
+      tagAudience.includes('["artist", "studio"].includes(profile.account_type)') &&
+      tagAudience.includes('["artist", "vendor"].includes(profile.account_type)') &&
+      tagAudience.includes('visibility === "private"') &&
+      tagAudience.includes("return false;") &&
+      tagRecipientAudienceMigration.includes(
+        "create or replace function private.profile_can_receive_content_tag",
+      ) &&
+      tagRecipientAudienceMigration.includes("security definer") &&
+      tagRecipientAudienceMigration.includes("set search_path = ''") &&
+      tagRecipientAudienceMigration.includes("from public.user_blocks blocked") &&
+      tagRecipientAudienceMigration.includes("follows.status = 'accepted'") &&
+      tagRecipientAudienceMigration.includes("target.account_type in ('artist', 'studio')") &&
+      tagRecipientAudienceMigration.includes("target.account_type in ('artist', 'vendor')") &&
+      tagRecipientAudienceMigration.includes(
+        'create policy "Authors tag eligible members in own feed posts"',
+      ) &&
+      tagRecipientAudienceMigration.includes(
+        'create policy "Authors tag eligible members in own thread posts"',
+      ) &&
+      tagRecipientAudienceMigration.includes(
+        'create policy "Authors tag eligible members in own gigs"',
+      ) &&
+      tagRecipientAudienceMigration.includes(
+        'create policy "Authors tag eligible members in own post comments"',
+      ) &&
+      tagRecipientAudienceMigration.includes(
+        'create policy "Authors tag eligible members in own thread comments"',
+      ) &&
+      tagRecipientAudienceMigration.includes("delete from public.notifications notification") &&
+      tagRecipientAudienceMigration.includes("notification.type = 'feed_tag'") &&
+      tagRecipientAudienceMigration.includes("notification.type = 'thread_tag'") &&
+      tagRecipientAudienceMigration.includes("notification.type = 'gig_tag'") &&
+      tagRecipientAudienceMigration.includes("notification.type = 'feed_comment_tag'") &&
+      tagRecipientAudienceMigration.includes("notification.type = 'thread_comment_tag'") &&
+      feedTagSync.indexOf("resolveEligibleTaggedProfiles") <
+        feedTagSync.indexOf(".delete()") &&
+      threadTagSync.indexOf("resolveEligibleTaggedProfiles") <
+        threadTagSync.indexOf(".delete()") &&
+      gigTagSync.indexOf("resolveEligibleTaggedProfiles") <
+        gigTagSync.indexOf(".delete()") &&
+      commentTagSync.indexOf("resolveEligibleTaggedProfiles") <
+        commentTagSync.indexOf(".delete()") &&
+      gigRouteTagSync.indexOf("resolveEligibleTaggedProfiles") <
+        gigRouteTagSync.indexOf(".insert(rows)") &&
+      actions.includes("const currentTaggedIds = new Set(rows.map") &&
+      actions.includes("cleanupRemovedTagNotifications({"),
   },
   {
     label: "4U post tags notify newly tagged members through feed preferences",

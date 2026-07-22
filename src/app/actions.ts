@@ -13,17 +13,16 @@ import { insertNotifications } from "@/lib/notification-write";
 import { calculatePlatformFeeCents } from "@/lib/payments/fees";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import {
+  resolveEligibleTaggedProfiles,
+  type EligibleTaggedProfile,
+  type TagContentVisibility,
+} from "@/lib/tag-audience";
 import { cleanExternalUrl } from "@/lib/urls";
 import { isVerifiedArtistOrShop, isVerifiedProfessional } from "@/lib/verification";
 
 const MEDIA_BUCKET = "tattoo-media";
-type ContentVisibility =
-  | "public_preview"
-  | "members"
-  | "followers"
-  | "verified_artists_shops"
-  | "verified_professionals"
-  | "private";
+type ContentVisibility = TagContentVisibility;
 
 const BASE_VISIBILITY_VALUES = new Set<ContentVisibility>([
   "public_preview",
@@ -384,6 +383,43 @@ async function syncFeedPostTags({
     (existingTags ?? []).map((tag) => tag.tagged_profile_id),
   );
 
+  let eligibleProfiles: EligibleTaggedProfile[] = [];
+
+  if (taggedUsernames.length) {
+    const { data: post, error: postError } = await supabase
+      .from("feed_posts")
+      .select("author_id, visibility, is_sensitive, is_published, moderation_status")
+      .eq("id", postId)
+      .maybeSingle<{
+        author_id: string;
+        is_published: boolean;
+        is_sensitive: boolean;
+        moderation_status: string;
+        visibility: ContentVisibility;
+      }>();
+
+    if (postError || !post) {
+      console.error("4U post tag audience lookup failed.", postError);
+      return "Could not check tagged members. Please try again.";
+    }
+
+    const eligibility = await resolveEligibleTaggedProfiles({
+      actorId: userId,
+      contentOwnerId: post.author_id,
+      isActive: post.is_published && post.moderation_status === "active",
+      isSensitive: post.is_sensitive,
+      taggedUsernames,
+      visibility: post.visibility,
+    });
+
+    if (eligibility.error) {
+      console.error("4U post tag eligibility check failed.", eligibility.error);
+      return "Could not check tagged members. Please try again.";
+    }
+
+    eligibleProfiles = eligibility.profiles;
+  }
+
   const { error: deleteError } = await supabase
     .from("feed_post_tags")
     .delete()
@@ -394,26 +430,11 @@ async function syncFeedPostTags({
     return "Could not update post tags. Please try again.";
   }
 
-  const { data: profiles, error: profileError } = await supabase
-    .from("profiles")
-    .select("id, username")
-    .in("username", taggedUsernames.length ? taggedUsernames : ["__no_tags__"])
-    .is("banned_at", null)
-    .is("suspended_at", null)
-    .returns<{ id: string; username: string }[]>();
-
-  if (profileError) {
-    console.error("4U post tag profile lookup failed.", profileError);
-    return "Could not check tagged members. Please try again.";
-  }
-
-  const rows = (profiles ?? [])
-    .filter((profile) => profile.id !== userId)
-    .map((profile) => ({
-      post_id: postId,
-      tagged_by: userId,
-      tagged_profile_id: profile.id,
-    }));
+  const rows = eligibleProfiles.map((profile) => ({
+    post_id: postId,
+    tagged_by: userId,
+    tagged_profile_id: profile.id,
+  }));
 
   const currentTaggedIds = new Set(rows.map((row) => row.tagged_profile_id));
   await cleanupRemovedTagNotifications({
@@ -489,6 +510,42 @@ async function syncThreadPostTags({
     (existingTags ?? []).map((tag) => tag.tagged_profile_id),
   );
 
+  let eligibleProfiles: EligibleTaggedProfile[] = [];
+
+  if (taggedUsernames.length) {
+    const { data: thread, error: threadError } = await supabase
+      .from("thread_posts")
+      .select("author_id, visibility, is_sensitive, moderation_status")
+      .eq("id", threadId)
+      .maybeSingle<{
+        author_id: string;
+        is_sensitive: boolean;
+        moderation_status: string;
+        visibility: ContentVisibility;
+      }>();
+
+    if (threadError || !thread) {
+      console.error("Gossip post tag audience lookup failed.", threadError);
+      return "Could not check tagged members. Please try again.";
+    }
+
+    const eligibility = await resolveEligibleTaggedProfiles({
+      actorId: userId,
+      contentOwnerId: thread.author_id,
+      isActive: thread.moderation_status === "active",
+      isSensitive: thread.is_sensitive,
+      taggedUsernames,
+      visibility: thread.visibility,
+    });
+
+    if (eligibility.error) {
+      console.error("Gossip post tag eligibility check failed.", eligibility.error);
+      return "Could not check tagged members. Please try again.";
+    }
+
+    eligibleProfiles = eligibility.profiles;
+  }
+
   const { error: deleteError } = await supabase
     .from("thread_post_tags")
     .delete()
@@ -499,26 +556,11 @@ async function syncThreadPostTags({
     return "Could not update Gossip tags. Please try again.";
   }
 
-  const { data: profiles, error: profileError } = await supabase
-    .from("profiles")
-    .select("id, username")
-    .in("username", taggedUsernames.length ? taggedUsernames : ["__no_tags__"])
-    .is("banned_at", null)
-    .is("suspended_at", null)
-    .returns<{ id: string; username: string }[]>();
-
-  if (profileError) {
-    console.error("Gossip post tag profile lookup failed.", profileError);
-    return "Could not check tagged members. Please try again.";
-  }
-
-  const rows = (profiles ?? [])
-    .filter((profile) => profile.id !== userId)
-    .map((profile) => ({
-      tagged_by: userId,
-      tagged_profile_id: profile.id,
-      thread_id: threadId,
-    }));
+  const rows = eligibleProfiles.map((profile) => ({
+    tagged_by: userId,
+    tagged_profile_id: profile.id,
+    thread_id: threadId,
+  }));
 
   const currentTaggedIds = new Set(rows.map((row) => row.tagged_profile_id));
   await cleanupRemovedTagNotifications({
@@ -594,6 +636,43 @@ async function syncGigTags({
     (existingTags ?? []).map((tag) => tag.tagged_profile_id),
   );
 
+  let eligibleProfiles: EligibleTaggedProfile[] = [];
+
+  if (taggedUsernames.length) {
+    const { data: gig, error: gigError } = await supabase
+      .from("gigs")
+      .select("poster_id, visibility, is_sensitive, status, moderation_status")
+      .eq("id", gigId)
+      .maybeSingle<{
+        is_sensitive: boolean;
+        moderation_status: string;
+        poster_id: string;
+        status: string;
+        visibility: ContentVisibility;
+      }>();
+
+    if (gigError || !gig) {
+      console.error("Gig tag audience lookup failed.", gigError);
+      return "Could not check tagged members. Please try again.";
+    }
+
+    const eligibility = await resolveEligibleTaggedProfiles({
+      actorId: userId,
+      contentOwnerId: gig.poster_id,
+      isActive: gig.status === "active" && gig.moderation_status === "active",
+      isSensitive: gig.is_sensitive,
+      taggedUsernames,
+      visibility: gig.visibility,
+    });
+
+    if (eligibility.error) {
+      console.error("Gig tag eligibility check failed.", eligibility.error);
+      return "Could not check tagged members. Please try again.";
+    }
+
+    eligibleProfiles = eligibility.profiles;
+  }
+
   const { error: deleteError } = await supabase
     .from("gig_tags")
     .delete()
@@ -604,26 +683,11 @@ async function syncGigTags({
     return "Could not update Gig tags. Please try again.";
   }
 
-  const { data: profiles, error: profileError } = await supabase
-    .from("profiles")
-    .select("id, username")
-    .in("username", taggedUsernames.length ? taggedUsernames : ["__no_tags__"])
-    .is("banned_at", null)
-    .is("suspended_at", null)
-    .returns<{ id: string; username: string }[]>();
-
-  if (profileError) {
-    console.error("Gig tag profile lookup failed.", profileError);
-    return "Could not check tagged members. Please try again.";
-  }
-
-  const rows = (profiles ?? [])
-    .filter((profile) => profile.id !== userId)
-    .map((profile) => ({
-      gig_id: gigId,
-      tagged_by: userId,
-      tagged_profile_id: profile.id,
-    }));
+  const rows = eligibleProfiles.map((profile) => ({
+    gig_id: gigId,
+    tagged_by: userId,
+    tagged_profile_id: profile.id,
+  }));
 
   const currentTaggedIds = new Set(rows.map((row) => row.tagged_profile_id));
   await cleanupRemovedTagNotifications({
@@ -776,6 +840,89 @@ async function syncCommentTags({
     (existingTags ?? []).map((tag) => tag.tagged_profile_id),
   );
 
+  let eligibleProfiles: EligibleTaggedProfile[] = [];
+
+  if (taggedUsernames.length) {
+    let eligibility:
+      | Awaited<ReturnType<typeof resolveEligibleTaggedProfiles>>
+      | null = null;
+
+    if (tagTable === "post_comment_tags") {
+      const { data: comment, error: commentError } = await supabase
+        .from("post_comments")
+        .select(
+          "deleted_at, feed_posts!inner(author_id, visibility, is_sensitive, is_published, moderation_status)",
+        )
+        .eq("id", commentId)
+        .maybeSingle<{
+          deleted_at: string | null;
+          feed_posts: {
+            author_id: string;
+            is_published: boolean;
+            is_sensitive: boolean;
+            moderation_status: string;
+            visibility: ContentVisibility;
+          };
+        }>();
+
+      if (commentError || !comment) {
+        console.error(`${label} audience lookup failed.`, commentError);
+        return "Could not check tagged members. Please try again.";
+      }
+
+      eligibility = await resolveEligibleTaggedProfiles({
+        actorId: userId,
+        contentOwnerId: comment.feed_posts.author_id,
+        isActive:
+          comment.deleted_at === null &&
+          comment.feed_posts.is_published &&
+          comment.feed_posts.moderation_status === "active",
+        isSensitive: comment.feed_posts.is_sensitive,
+        taggedUsernames,
+        visibility: comment.feed_posts.visibility,
+      });
+    } else {
+      const { data: comment, error: commentError } = await supabase
+        .from("thread_comments")
+        .select(
+          "deleted_at, thread_posts!inner(author_id, visibility, is_sensitive, moderation_status)",
+        )
+        .eq("id", commentId)
+        .maybeSingle<{
+          deleted_at: string | null;
+          thread_posts: {
+            author_id: string;
+            is_sensitive: boolean;
+            moderation_status: string;
+            visibility: ContentVisibility;
+          };
+        }>();
+
+      if (commentError || !comment) {
+        console.error(`${label} audience lookup failed.`, commentError);
+        return "Could not check tagged members. Please try again.";
+      }
+
+      eligibility = await resolveEligibleTaggedProfiles({
+        actorId: userId,
+        contentOwnerId: comment.thread_posts.author_id,
+        isActive:
+          comment.deleted_at === null &&
+          comment.thread_posts.moderation_status === "active",
+        isSensitive: comment.thread_posts.is_sensitive,
+        taggedUsernames,
+        visibility: comment.thread_posts.visibility,
+      });
+    }
+
+    if (eligibility.error) {
+      console.error(`${label} eligibility check failed.`, eligibility.error);
+      return "Could not check tagged members. Please try again.";
+    }
+
+    eligibleProfiles = eligibility.profiles;
+  }
+
   const { error: deleteError } = await supabase
     .from(tagTable)
     .delete()
@@ -786,26 +933,11 @@ async function syncCommentTags({
     return `Could not update ${label} tags. Please try again.`;
   }
 
-  const { data: profiles, error: profileError } = await supabase
-    .from("profiles")
-    .select("id, username")
-    .in("username", taggedUsernames.length ? taggedUsernames : ["__no_tags__"])
-    .is("banned_at", null)
-    .is("suspended_at", null)
-    .returns<{ id: string; username: string }[]>();
-
-  if (profileError) {
-    console.error(`${label} tag profile lookup failed.`, profileError);
-    return "Could not check tagged members. Please try again.";
-  }
-
-  const rows = (profiles ?? [])
-    .filter((profile) => profile.id !== userId)
-    .map((profile) => ({
-      comment_id: commentId,
-      tagged_by: userId,
-      tagged_profile_id: profile.id,
-    }));
+  const rows = eligibleProfiles.map((profile) => ({
+    comment_id: commentId,
+    tagged_by: userId,
+    tagged_profile_id: profile.id,
+  }));
   const currentTaggedIds = new Set(rows.map((row) => row.tagged_profile_id));
 
   await cleanupRemovedTagNotifications({
