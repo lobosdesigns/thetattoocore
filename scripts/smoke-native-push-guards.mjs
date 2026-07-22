@@ -129,7 +129,12 @@ const checks = [
         "revoke all on table public.push_subscriptions from anon, authenticated",
       ) &&
       source.browserApi.includes('process.env.TTC_WEB_PUSH_REGISTRATION_ENABLED') &&
-      source.browserApi.includes('{ onConflict: "endpoint" }') &&
+      source.browserApi.includes('.select("id, profile_id")') &&
+      source.browserApi.includes("existingSubscription.profile_id !== userId") &&
+      source.browserApi.includes('.eq("id", existingSubscription.id)') &&
+      source.browserApi.includes('.eq("profile_id", userId)') &&
+      source.browserApi.includes(".insert({") &&
+      !source.browserApi.includes(".upsert(") &&
       source.browserApi.includes("webPushSubscriptionCookie"),
   },
   {

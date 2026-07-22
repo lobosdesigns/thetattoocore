@@ -139,25 +139,50 @@ export async function POST(request: Request) {
   }
 
   const now = new Date().toISOString();
-  const { data: subscription, error } = await admin
+  const { data: existingSubscription, error: lookupError } = await admin
     .from("push_subscriptions")
-    .upsert(
-      {
-        auth_key: authKey,
-        endpoint,
-        is_active: true,
-        last_seen_at: now,
-        p256dh_key: p256dhKey,
-        profile_id: userId,
-        updated_at: now,
-        user_agent: request.headers.get("user-agent")?.slice(0, 500) ?? null,
-      },
-      { onConflict: "endpoint" },
-    )
-    .select("id")
-    .single<{ id: string }>();
+    .select("id, profile_id")
+    .eq("endpoint", endpoint)
+    .maybeSingle<{ id: string; profile_id: string }>();
 
-  if (error) {
+  if (
+    lookupError ||
+    (existingSubscription && existingSubscription.profile_id !== userId)
+  ) {
+    return NextResponse.json(
+      { error: "Subscription rejected." },
+      { status: 409 },
+    );
+  }
+
+  const registration = {
+    auth_key: authKey,
+    is_active: true,
+    last_seen_at: now,
+    p256dh_key: p256dhKey,
+    updated_at: now,
+    user_agent: request.headers.get("user-agent")?.slice(0, 500) ?? null,
+  };
+  const registrationResult = existingSubscription
+    ? await admin
+        .from("push_subscriptions")
+        .update(registration)
+        .eq("id", existingSubscription.id)
+        .eq("profile_id", userId)
+        .select("id")
+        .single<{ id: string }>()
+    : await admin
+        .from("push_subscriptions")
+        .insert({
+          ...registration,
+          endpoint,
+          profile_id: userId,
+        })
+        .select("id")
+        .single<{ id: string }>();
+  const { data: subscription, error } = registrationResult;
+
+  if (error || !subscription) {
     return NextResponse.json({ error: "Subscription rejected." }, { status: 400 });
   }
 
