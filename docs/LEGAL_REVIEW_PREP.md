@@ -9,14 +9,14 @@ Use this private checklist before public App Store or Google Play review, produc
 - Account deletion: member request path, target review window, manual review steps, retention exceptions for safety, fraud, disputes, payment/order records, moderation, legal holds, and verification history.
 - Commerce: review-controlled checkout status, Merch product rules, buyer support language, seller obligations, fulfillment timing, tax/shipping assumptions, refund-review flow, dispute/chargeback handling, booking deposit terms, ad purchase status, and seller payout timing.
 - Native app review: whether checkout is exposed in native wrappers, whether any external payment or checkout messaging is acceptable for the submitted build, and whether screenshots/store text match the current web/app behavior.
-- Store submissions: privacy/data-safety answers, age-rating answers, Accessibility Nutrition Labels, content rights answers, support URL, Privacy URL, Terms URL, reviewer notes, and screenshot safety.
+- Store submissions: privacy/data-safety answers, age-rating answers, Accessibility Nutrition Labels, content rights answers, support URL, Child Safety Standards URL, Privacy URL, Terms URL, reviewer notes, and screenshot safety.
 
 ## Private Evidence To Keep
 
 Do not store reviewer passwords, private phone numbers, owner personal contact details, payment-account screenshots, full admin exports, buyer addresses, license documents, or private DMs in this repo or public copy.
 
 - Reviewer name or initials, role, review date, and build/web deploy version reviewed.
-- Public URLs reviewed: `https://thetattoocore.com/terms`, `https://thetattoocore.com/privacy`, `https://thetattoocore.com/support`, and `https://thetattoocore.com/help`.
+- Public URLs reviewed: `https://thetattoocore.com/terms`, `https://thetattoocore.com/privacy`, `https://thetattoocore.com/support`, `https://thetattoocore.com/help`, and `https://thetattoocore.com/child-safety-standards`.
 - Store-console sections reviewed, including App Privacy/Data Safety, age rating/content rating, Accessibility Nutrition Labels, content rights, app category, review notes, support contact, pricing, and screenshot upload validation.
 - Legal decisions recorded for account deletion SLA, retention exceptions, marketplace restrictions, prohibited goods, moderation escalation, seller payout release, refund/dispute handling, booking deposit handling, and ad purchase handling.
 - Required public copy changes listed with file/page names, owner, date, and whether the live build was rechecked after deployment.
@@ -24,7 +24,7 @@ Do not store reviewer passwords, private phone numbers, owner personal contact d
 
 ## Release Signoff
 
-- Final public Terms, Privacy, Support, Help, store metadata, screenshots, and native wrapper behavior match the reviewed build.
+- Final public Terms, Privacy, Support, Help, Child Safety Standards, store metadata, screenshots, and native wrapper behavior match the reviewed build.
 - Production commerce remains gated unless the payment, tax, shipping, refund, dispute, seller payout, and native checkout review items are explicitly approved.
 - Any public release exception has a written owner, risk note, and follow-up date.
 - The release handoff includes the legal review note alongside the real-device QA evidence pack, App Privacy/Data Safety evidence, screenshot upload evidence, and production payment evidence.
@@ -35,7 +35,7 @@ Complete this matrix in the private release handoff for the exact build, release
 
 | Area | Required private decision | Repo-safe status |
 | --- | --- | --- |
-| Public legal URLs | Terms, Privacy, Support, Help, and account deletion request path match the submitted build and store metadata. | `pending`, `passed`, or `blocked` |
+| Public legal URLs | Terms, Privacy, Support, Help, Child Safety Standards, and account deletion request path match the submitted build and store metadata. | `pending`, `passed`, or `blocked` |
 | Account deletion and retention | Deletion SLA, manual review owner, retention exceptions, legal holds, moderation records, verification history, and payment/order records are approved. | `pending`, `passed`, or `blocked` |
 | UGC and safety policy | 18+ eligibility, no visible nudity, no scratcher promotion, no AI art/search claims, report/block tools, moderation escalation, and restricted-equipment handling are approved. | `pending`, `passed`, or `blocked` |
 | Store questionnaires | App Privacy/Data Safety, age/content rating, Accessibility Nutrition Labels, content rights, pricing, category, reviewer notes, and screenshot validation match the exact build. | `pending`, `passed`, or `blocked` |

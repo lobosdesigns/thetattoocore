@@ -355,6 +355,8 @@ const checks = [
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Native app review") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Store submissions") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Accessibility Nutrition Labels") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Child Safety Standards") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("https://thetattoocore.com/child-safety-standards") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Do not store reviewer passwords") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Public URLs reviewed") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("block release, allow internal testing only, allow public release") &&

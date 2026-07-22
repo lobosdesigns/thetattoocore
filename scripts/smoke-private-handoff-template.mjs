@@ -67,6 +67,7 @@ const checks = [
       generator.includes("## Legal Submission Signoff Matrix") &&
       generator.includes("exact build, release track, and web deploy") &&
       generator.includes("Public legal URLs") &&
+      generator.includes("Child Safety Standards") &&
       generator.includes("account deletion request path match the submitted build") &&
       generator.includes("Account deletion and retention") &&
       generator.includes("Deletion SLA, manual review owner, retention exceptions") &&

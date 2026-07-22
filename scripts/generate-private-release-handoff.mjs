@@ -157,7 +157,7 @@ submitted. Repo-visible summaries should keep only pass/fail/blocker status.
 
 | Area | Required private decision | Result | Reviewer role or initials | Review date | Private proof filename or location |
 | --- | --- | --- | --- | --- | --- |
-| Public legal URLs | Terms, Privacy, Support, Help, and account deletion request path match the submitted build and store metadata | pending | | | |
+| Public legal URLs | Terms, Privacy, Support, Help, Child Safety Standards, and account deletion request path match the submitted build and store metadata | pending | | | |
 | Account deletion and retention | Deletion SLA, manual review owner, retention exceptions, legal holds, moderation records, verification history, and payment/order records are approved | pending | | | |
 | UGC and safety policy | 18+ eligibility, no visible nudity, no scratcher promotion, no AI art/search claims, report/block tools, moderation escalation, and restricted-equipment handling are approved | pending | | | |
 | Store questionnaires | App Privacy/Data Safety, age/content rating, Accessibility Nutrition Labels, content rights, pricing, category, reviewer notes, and screenshot validation match the exact build | pending | | | |
