@@ -404,6 +404,14 @@ const checks = [
       serviceWorker.includes('return "/notifications"'),
   },
   {
+    label: "notification clicks navigate before focusing existing app windows",
+    ok:
+      serviceWorker.includes(".navigate(url)") &&
+      serviceWorker.includes(".then((navigatedClient) => (navigatedClient || client).focus())") &&
+      serviceWorker.includes(".catch(() => client.focus())") &&
+      serviceWorker.includes("return self.clients.openWindow(url)"),
+  },
+  {
     label: "notification click routes are limited to user-facing paths",
     ok:
       serviceWorker.includes("allowedNotificationPath") &&
