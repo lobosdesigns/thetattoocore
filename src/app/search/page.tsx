@@ -175,6 +175,8 @@ function searchPattern(query: string) {
     .replace(/\s+/g, " ")
     .trim();
 
+  if (!clean) return "%";
+
   return `%${clean}%`;
 }
 
@@ -479,7 +481,9 @@ export default async function SearchPage({
   }>;
 }) {
   const params = await searchParams;
-  const query = cleanQuery(params.q);
+  const rawQuery = cleanQuery(params.q);
+  const terms = searchTerms(rawQuery);
+  const query = terms.length ? rawQuery : "";
   const category = cleanFilter(params.category);
   const city = cleanFilter(params.city);
   const region = cleanFilter(params.region);
@@ -487,7 +491,6 @@ export default async function SearchPage({
   const page = Math.max(1, Math.min(20, Number(params.page ?? "1") || 1));
   const resultLimit = page * 25;
   const resultFetchLimit = resultLimit + 25;
-  const terms = searchTerms(query);
   const exactUsername = usernameQuery(query);
   const cityPattern = searchPattern(city);
   const regionPattern = searchPattern(region);

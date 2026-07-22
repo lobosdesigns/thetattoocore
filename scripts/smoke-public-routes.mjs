@@ -885,6 +885,15 @@ const checks = [
     includes: ['name="robots" content="noindex, nofollow"', "Search"],
   },
   {
+    path: "/search?q=%21%21%21",
+    status: [200],
+    includes: [
+      'name="robots" content="noindex, nofollow"',
+      "Find public artists, styles, gossip, Stuff, Gigs, and public Merch previews.",
+    ],
+    excludes: ["results found"],
+  },
+  {
     path: "/search?q=shirts&type=merch",
     status: [200],
     includes: ['name="robots" content="noindex, nofollow"', "Merch"],

@@ -406,6 +406,10 @@ const checks = [
   {
     label: "search uses tokenized matching and weighted ranking",
     ok:
+      searchPage.includes("const rawQuery = cleanQuery(params.q)") &&
+      searchPage.includes("const terms = searchTerms(rawQuery)") &&
+      searchPage.includes("const query = terms.length ? rawQuery : \"\"") &&
+      searchPage.includes("if (!clean) return \"%\"") &&
       searchPage.includes("function searchTerms") &&
       searchPage.includes("const searchTermAliases") &&
       searchPage.includes("function expandSearchTerm") &&
