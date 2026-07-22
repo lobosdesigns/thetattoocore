@@ -533,7 +533,7 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Reviewer account | Reviewer test account email") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Final reviewer access | Selected Apple build and Google release track") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("`validated for selected build/track`") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Contact details | Support email, support URL, privacy URL") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Contact details | Support email, support URL, help URL, privacy URL") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Screenshot upload | App Store iPhone/iPad validation") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Category and pricing | App Store categories, Google Play category") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Content rights | Confirmation that icons, generated screenshots") &&
