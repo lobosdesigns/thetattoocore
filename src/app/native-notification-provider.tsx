@@ -13,6 +13,10 @@ import {
 import { notificationPathOrFallback } from "@/lib/notification-route";
 
 type NativePlatform = "android" | "ios";
+type NativeAppInfo = {
+  build: string;
+  version: string;
+};
 
 type NativeNotificationContextValue = {
   disable: () => Promise<void>;
@@ -49,12 +53,16 @@ async function nativeRuntime(setupEnabled: boolean) {
   if (platform !== "android" && platform !== "ios") return null;
   const nativePlatform = platform as NativePlatform;
 
+  const { App } = await import("@capacitor/app");
   const { FirebaseMessaging } = await import("@capacitor-firebase/messaging");
-  const support = await FirebaseMessaging.isSupported();
+  const [appInfo, support] = await Promise.all([
+    App.getInfo(),
+    FirebaseMessaging.isSupported(),
+  ]);
 
   if (!support.isSupported) return null;
 
-  return { messaging: FirebaseMessaging, platform: nativePlatform };
+  return { appInfo, messaging: FirebaseMessaging, platform: nativePlatform };
 }
 
 function installationId() {
@@ -67,9 +75,15 @@ function installationId() {
   return created;
 }
 
-async function saveDeviceToken(platform: NativePlatform, token: string) {
+async function saveDeviceToken(
+  platform: NativePlatform,
+  token: string,
+  appInfo: NativeAppInfo,
+) {
   const response = await fetch("/api/push/devices", {
     body: JSON.stringify({
+      appBuild: appInfo.build,
+      appVersion: appInfo.version,
       installationId: installationId(),
       platform,
       token,
@@ -164,9 +178,11 @@ export function NativeNotificationProvider({
         await keepHandle(
           await runtime.messaging.addListener("tokenReceived", (event) => {
             if (enabledRef.current) {
-              void saveDeviceToken(runtime.platform, event.token).catch(
-                () => undefined,
-              );
+              void saveDeviceToken(
+                runtime.platform,
+                event.token,
+                runtime.appInfo,
+              ).catch(() => undefined);
             }
           }),
         );
@@ -192,7 +208,7 @@ export function NativeNotificationProvider({
         if (cancelled) return;
 
         const { token } = await runtime.messaging.getToken();
-        await saveDeviceToken(runtime.platform, token);
+        await saveDeviceToken(runtime.platform, token, runtime.appInfo);
       })
       .catch(() => {
         if (!cancelled) setSupported(false);
@@ -221,7 +237,7 @@ export function NativeNotificationProvider({
     if (permission.receive !== "granted") return "denied" as const;
 
     const { token } = await runtime.messaging.getToken();
-    await saveDeviceToken(runtime.platform, token);
+    await saveDeviceToken(runtime.platform, token, runtime.appInfo);
     enabledRef.current = true;
     setEnabled(true);
 

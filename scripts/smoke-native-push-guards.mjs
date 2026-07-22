@@ -9,6 +9,12 @@ const source = {
   androidManifest: read(
     "native/thetattoocore-mobile/android/app/src/main/AndroidManifest.xml",
   ),
+  androidPluginBuild: read(
+    "native/thetattoocore-mobile/android/app/capacitor.build.gradle",
+  ),
+  androidPluginSettings: read(
+    "native/thetattoocore-mobile/android/capacitor.settings.gradle",
+  ),
   browserApi: read("src/app/api/push/subscriptions/route.ts"),
   capacitorConfig: read(
     "native/thetattoocore-mobile/capacitor.config.ts",
@@ -20,6 +26,7 @@ const source = {
     "native/thetattoocore-mobile/ios/App/App/AppDelegate.swift",
   ),
   iosInfo: read("native/thetattoocore-mobile/ios/App/App/Info.plist"),
+  iosPodfile: read("native/thetattoocore-mobile/ios/App/Podfile"),
   layout: read("src/app/layout.tsx"),
   migration: read(
     "supabase/migrations/20260722114857_native_push_devices.sql",
@@ -45,6 +52,7 @@ const source = {
   nativeProbe: read("scripts/native-push-qa-probe.mjs"),
   profileForm: read("src/app/account/profile-form.tsx"),
   provider: read("src/app/native-notification-provider.tsx"),
+  rootPackage: read("package.json"),
   routeGuard: read("src/lib/notification-route.ts"),
   signout: read("src/app/auth/signout/route.ts"),
   signoutForm: read("src/app/native-aware-signout-form.tsx"),
@@ -119,6 +127,33 @@ const checks = [
       source.provider.includes("runtime.messaging.deleteToken()") &&
       !source.provider.includes("ttc_native_push_token") &&
       !source.provider.includes("console."),
+  },
+  {
+    label: "native registrations record the exact installed app build",
+    ok:
+      source.rootPackage.includes('"@capacitor/app": "7.1.2"') &&
+      source.nativePackage.includes('"@capacitor/app": "^7.1.0"') &&
+      source.androidPluginSettings.includes("include ':capacitor-app'") &&
+      source.androidPluginBuild.includes("implementation project(':capacitor-app')") &&
+      source.iosPodfile.includes("pod 'CapacitorApp'") &&
+      source.provider.includes('import("@capacitor/app")') &&
+      source.provider.includes("App.getInfo()") &&
+      source.provider.includes("appBuild: appInfo.build") &&
+      source.provider.includes("appVersion: appInfo.version") &&
+      /saveDeviceToken\(\s*runtime\.platform,\s*event\.token,\s*runtime\.appInfo,?\s*\)/s.test(
+        source.provider,
+      ) &&
+      source.provider.includes(
+        "saveDeviceToken(runtime.platform, token, runtime.appInfo)",
+      ) &&
+      source.deviceApi.includes("app_build: cleanOptionalString(payload?.appBuild, 40)") &&
+      source.deviceApi.includes("app_version: cleanOptionalString(payload?.appVersion, 40)") &&
+      source.migration.includes("app_version text") &&
+      source.migration.includes("app_build text") &&
+      source.migration.includes("char_length(app_version) between 1 and 40") &&
+      source.migration.includes("char_length(app_build) between 1 and 40") &&
+      source.nativeProbe.includes('key: "installed_build_registration"') &&
+      source.nativeProbe.includes('"installed_build_registration"'),
   },
   {
     label: "native registration status is account-bound before automatic refresh",

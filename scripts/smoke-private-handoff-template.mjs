@@ -62,6 +62,8 @@ const checks = [
       generator.includes("iOS app config is present only in the private build environment and excluded from git") &&
       generator.includes("Device token registration") &&
       generator.includes("registers a device token") &&
+      generator.includes("exact version name and version code") &&
+      generator.includes("exact TestFlight version and build number") &&
       generator.includes("Test alert reaches the Android device for the selected release track and build") &&
       generator.includes("Test alert reaches the iOS device for the selected TestFlight build") &&
       generator.includes("Tapping the alert opens the expected safe in-app destination") &&

@@ -53,6 +53,7 @@
   },
   "dependencies": {
     "@capacitor-firebase/messaging": "7.5.0",
+    "@capacitor/app": "7.1.2",
     "@capacitor/core": "7.4.3",
     "@opennextjs/cloudflare": "^1.20.1",
     "@supabase/ssr": "^0.12.0",

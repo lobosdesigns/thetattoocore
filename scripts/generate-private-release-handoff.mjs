@@ -142,8 +142,8 @@ and console screenshots out of repo docs.
 | Project exists | Android and iOS | TTC push project exists with Android and iOS apps registered for com.thetattoocore.app | pending | |
 | Android app config | Android | Android app config is present only in the private build environment and excluded from git | pending | |
 | iOS app config | iOS | iOS app config is present only in the private build environment and excluded from git | pending | |
-| Device token registration | Android | Signed Android build requests permission only after opt-in, registers a device token, and stores it for the signed-in tester | pending | |
-| Device token registration | iOS | TestFlight build requests permission only after opt-in, registers a device token, and stores it for the signed-in tester | pending | |
+| Device token registration | Android | Signed Android build requests permission only after opt-in, registers a device token, and stores the exact version name and version code with the signed-in tester row | pending | |
+| Device token registration | iOS | TestFlight build requests permission only after opt-in, registers a device token, and stores the exact TestFlight version and build number with the signed-in tester row | pending | |
 | Alert delivery | Android | Test alert reaches the Android device for the selected release track and build | pending | |
 | Alert delivery | iOS | Test alert reaches the iOS device for the selected TestFlight build | pending | |
 | Tap routing | Android | Tapping the alert opens the expected safe in-app destination | pending | |

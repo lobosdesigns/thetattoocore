@@ -20,7 +20,9 @@ const files = {
   iosInfo: `${wrapperRoot}/ios/App/App/Info.plist`,
   iosProject: `${wrapperRoot}/ios/App/App.xcodeproj/project.pbxproj`,
   iosPodfile: `${wrapperRoot}/ios/App/Podfile`,
+  nativeDevicesMigration: "supabase/migrations/20260722114857_native_push_devices.sql",
   packageJson: `${wrapperRoot}/package.json`,
+  rootPackageJson: "package.json",
 };
 
 const source = Object.fromEntries(
@@ -127,6 +129,25 @@ const checks = [
       clientSource.includes("crypto.subtle.digest") &&
       clientSource.includes("nativePushDeviceCookie"),
   },
+  {
+    key: "installed_build_registration",
+    ready:
+      source.rootPackageJson.includes('"@capacitor/app": "7.1.2"') &&
+      source.packageJson.includes('"@capacitor/app": "^7.1.0"') &&
+      source.androidPluginSettings.includes("include ':capacitor-app'") &&
+      source.androidPluginBuild.includes("implementation project(':capacitor-app')") &&
+      source.iosPodfile.includes("pod 'CapacitorApp'") &&
+      clientSource.includes('import("@capacitor/app")') &&
+      clientSource.includes("App.getInfo()") &&
+      clientSource.includes("appBuild: appInfo.build") &&
+      clientSource.includes("appVersion: appInfo.version") &&
+      clientSource.includes("app_build: cleanOptionalString(payload?.appBuild, 40)") &&
+      clientSource.includes("app_version: cleanOptionalString(payload?.appVersion, 40)") &&
+      source.nativeDevicesMigration.includes("app_version text") &&
+      source.nativeDevicesMigration.includes("app_build text") &&
+      source.nativeDevicesMigration.includes("char_length(app_version) between 1 and 40") &&
+      source.nativeDevicesMigration.includes("char_length(app_build) between 1 and 40"),
+  },
 ];
 
 for (const check of checks) {
@@ -141,6 +162,7 @@ const bridgeCheckKeys = [
   "ios_fcm_token_bridge",
   "client_registration_flow",
   "server_registration_flow",
+  "installed_build_registration",
 ];
 const privateConfigCheckKeys = [
   "android_private_config",
