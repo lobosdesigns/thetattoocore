@@ -1997,52 +1997,45 @@ export async function updateMerchOrderStatus(formData: FormData) {
 
   if (
     status === "cancelled" &&
-    !["pending_checkout", "payment_failed", "cancelled"].includes(order.status)
+    !["pending_checkout", "payment_failed"].includes(order.status)
   ) {
     redirect(
       adminMerchMessage(
-        "Only pending, failed, or already-cancelled orders can be cancelled here. Refund paid orders in the payment review tools first.",
+        order.status === "cancelled"
+          ? "This order is already cancelled."
+          : "Only pending or failed orders can be cancelled here. Refund paid orders in the payment review tools first.",
         returnTo,
       ),
     );
   }
 
   const now = new Date().toISOString();
-  const updateValues =
-    status === "fulfilled"
-      ? {
-          admin_note: note || null,
-          fulfilled_at: now,
-          status,
-          updated_at: now,
-        }
-      : {
-          admin_note: note || null,
-          cancelled_at: now,
-          status,
-          updated_at: now,
-        };
-  const { error: updateError } = await supabase
-    .from("merch_orders")
-    .update(updateValues)
-    .eq("id", orderId);
+  if (status === "fulfilled") {
+    const { error: updateError } = await supabase
+      .from("merch_orders")
+      .update({
+        admin_note: note || null,
+        fulfilled_at: now,
+        status,
+        updated_at: now,
+      })
+      .eq("id", orderId)
+      .eq("status", "paid");
 
-  if (updateError) {
-    console.error("Admin Merch order update failed.", updateError);
-    redirect(
-      adminMerchMessage(
-        "Could not update Merch order. Please try again.",
-        returnTo,
-      ),
-    );
-  }
+    if (updateError) {
+      console.error("Admin Merch order update failed.", updateError);
+      redirect(
+        adminMerchMessage(
+          "Could not update Merch order. Please try again.",
+          returnTo,
+        ),
+      );
+    }
 
-  if (status === "fulfilled" || status === "cancelled") {
     const { error: itemError } = await supabase
       .from("merch_order_items")
       .update({
-        fulfillment_status:
-          status === "fulfilled" ? "fulfilled" : "cancelled",
+        fulfillment_status: "fulfilled",
       })
       .eq("order_id", orderId);
 
@@ -2058,22 +2051,33 @@ export async function updateMerchOrderStatus(formData: FormData) {
   }
 
   if (status === "cancelled") {
-    const inventoryReleaseClient = inventoryAdmin;
+    const orderCancellationClient = inventoryAdmin;
 
-    if (!inventoryReleaseClient) {
-      throw new Error("Inventory release client was not prepared.");
+    if (!orderCancellationClient) {
+      throw new Error("Order cancellation client was not prepared.");
     }
 
-    const { error: releaseError } = await inventoryReleaseClient.rpc(
-      "release_merch_inventory_for_order",
-      { p_order_id: orderId },
-    );
+    const { data: cancelledOrders, error: cancellationError } =
+      await orderCancellationClient
+        .rpc("cancel_unpaid_merch_order", {
+          p_admin_note: note || null,
+          p_order_id: orderId,
+        });
 
-    if (releaseError) {
-      console.error("Admin Merch inventory release failed.", releaseError);
+    if (cancellationError) {
+      console.error("Admin Merch order cancellation failed.", cancellationError);
       redirect(
         adminMerchMessage(
-          "Order changed, but inventory reservation release failed. Please try again.",
+          "Could not cancel Merch order. Please try again.",
+          returnTo,
+        ),
+      );
+    }
+
+    if (!Array.isArray(cancelledOrders) || cancelledOrders.length === 0) {
+      redirect(
+        adminMerchMessage(
+          "This order is no longer eligible for cancellation.",
           returnTo,
         ),
       );

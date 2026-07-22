@@ -333,18 +333,16 @@ export async function POST(request: Request) {
   const successUrl = `${siteUrl}/merch/checkout/success?session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl = `${siteUrl}${pathWithMessage(returnTo, "Checkout canceled.")}`;
 
-  const cancelUnreservedPendingOrder = async (message: string) => {
-    await adminSupabase
-      .from("merch_orders")
-      .update({
-        admin_note: message,
-        cancelled_at: new Date().toISOString(),
-        status: "cancelled",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", orderId)
-      .eq("buyer_id", claims.sub)
-      .eq("status", "pending_checkout");
+  const cancelPendingOrder = async (message: string) => {
+    const { error } = await adminSupabase.rpc("cancel_unpaid_merch_order", {
+      p_admin_note: message,
+      p_order_id: orderId,
+    });
+
+    if (error) {
+      console.error("Merch pending order cancellation failed.", error);
+    }
+
     revalidatePath("/account");
     revalidatePath("/admin");
     revalidatePath("/admin/merch");
@@ -383,34 +381,13 @@ export async function POST(request: Request) {
 
   if (itemError) {
     console.error("Merch order item save failed before checkout.", itemError);
-    await cancelUnreservedPendingOrder("Order item could not be saved before checkout.");
+    await cancelPendingOrder("Order item could not be saved before checkout.");
 
     return redirectWithMessage(
       returnTo,
       "Order setup could not finish. Please try again.",
     );
   }
-
-  const cancelPendingOrder = async (message: string) => {
-    await adminSupabase.rpc("release_merch_inventory_for_order", {
-      p_order_id: orderId,
-    });
-    await adminSupabase
-      .from("merch_orders")
-      .update({
-        admin_note: message,
-        cancelled_at: new Date().toISOString(),
-        status: "cancelled",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", orderId)
-      .eq("buyer_id", claims.sub)
-      .eq("status", "pending_checkout");
-    revalidatePath("/account");
-    revalidatePath("/admin");
-    revalidatePath("/admin/merch");
-    revalidatePath(`/merch/${product.id}`);
-  };
 
   const { error: reserveError } = await adminSupabase.rpc(
     "reserve_merch_inventory_for_order",

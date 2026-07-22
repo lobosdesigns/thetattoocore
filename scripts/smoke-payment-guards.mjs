@@ -36,6 +36,10 @@ const paymentRpcAccessMigration = readFileSync(
   "supabase/migrations/20260722135223_restrict_payment_inventory_rpc_execute.sql",
   "utf8",
 );
+const merchInventoryLifecycleMigration = readFileSync(
+  "supabase/migrations/20260722144527_merch_inventory_reservation_lifecycle.sql",
+  "utf8",
+);
 const globalsCss = readFileSync("src/app/globals.css", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
@@ -191,9 +195,9 @@ checks.push({
   ok:
     adminActions.includes("const inventoryAdmin =") &&
     adminActions.includes('status === "cancelled" ? createAdminClient() : null') &&
-    adminActions.includes("const inventoryReleaseClient = inventoryAdmin") &&
-    adminActions.includes("await inventoryReleaseClient.rpc(") &&
-    !adminActions.includes('await supabase.rpc(\n      "release_merch_inventory_for_order"') &&
+    adminActions.includes("const orderCancellationClient = inventoryAdmin") &&
+    adminActions.includes('.rpc("cancel_unpaid_merch_order"') &&
+    !adminActions.includes('await supabase.rpc(\n      "cancel_unpaid_merch_order"') &&
     paymentRpcAccessMigration.includes(
       "revoke execute on function public.reserve_merch_inventory_for_order(uuid)",
     ) &&
@@ -217,6 +221,38 @@ checks.push({
     ) &&
     paymentRpcAccessMigration.includes("from public, anon") &&
     paymentRpcAccessMigration.includes("to authenticated, service_role"),
+});
+checks.push({
+  label: "Merch inventory reservations are order-owned and released atomically",
+  ok:
+    merchInventoryLifecycleMigration.includes(
+      "create type public.merch_inventory_reservation_status as enum",
+    ) &&
+    merchInventoryLifecycleMigration.includes(
+      "inventory_reservation_status = 'reserved'",
+    ) &&
+    merchInventoryLifecycleMigration.includes(
+      "inventory_reservation_status = 'released'",
+    ) &&
+    merchInventoryLifecycleMigration.includes(
+      "inventory_reservation_status = 'consumed'",
+    ) &&
+    merchInventoryLifecycleMigration.includes(
+      "create or replace function public.cancel_unpaid_merch_order",
+    ) &&
+    merchInventoryLifecycleMigration.includes(
+      "create or replace function public.mark_problem_merch_order_for_checkout",
+    ) &&
+    merchInventoryLifecycleMigration.includes("for update") &&
+    merchInventoryLifecycleMigration.includes(
+      "perform public.release_merch_inventory_for_order(v_order.id)",
+    ) &&
+    (merchInventoryLifecycleMigration.match(/from public, anon, authenticated;/g) ?? [])
+      .length >= 5 &&
+    merchCheckout.includes('.rpc("cancel_unpaid_merch_order"') &&
+    !merchCheckout.includes('.rpc("release_merch_inventory_for_order"') &&
+    stripeWebhook.includes('.rpc("mark_problem_merch_order_for_checkout"') &&
+    !stripeWebhook.includes('.rpc(\n        "release_merch_inventory_for_order"'),
 });
 checks.push({
   label: "payout readiness does not execute seller payout release",
@@ -517,11 +553,8 @@ checks.push({
     stripeWebhook.includes('throw new Error("Could not mark merch order paid.")') &&
     stripeWebhook.includes('console.error("Webhook Merch order payment update failed.", error)') &&
     stripeWebhook.includes('throw new Error("Could not update merch order.")') &&
-    stripeWebhook.includes('console.error("Webhook Merch inventory release failed.", releaseError)') &&
-    stripeWebhook.includes('throw new Error("Could not release merch inventory hold.")') &&
     !stripeWebhook.includes('error.message || "Could not mark merch order paid."') &&
-    !stripeWebhook.includes('error.message || "Could not update merch order."') &&
-    !stripeWebhook.includes('releaseError.message || "Could not release merch inventory hold."'),
+    !stripeWebhook.includes('error.message || "Could not update merch order."'),
 });
 checks.push({
   label: "payment webhook hides raw ad payment backend errors",

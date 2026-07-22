@@ -112,6 +112,9 @@ type PaidOrderRpcArgs = {
   p_tax_cents: number;
   p_total_cents: number;
 };
+type ProblemOrderRpcArgs = PaidOrderRpcArgs & {
+  p_status: "cancelled" | "payment_failed";
+};
 type AdminSupabase = NonNullable<ReturnType<typeof createAdminClient>>;
 type MailSettings = {
   from_email: string | null;
@@ -363,7 +366,6 @@ async function markCheckoutSession({
     throw new Error("Missing Supabase service role key for Stripe webhook.");
   }
 
-  const now = new Date().toISOString();
   const shippingDetails = (
     session as Stripe.Checkout.Session & {
       collected_information?: {
@@ -439,34 +441,30 @@ async function markCheckoutSession({
     return;
   }
 
-  const updateValues = {
-    customer_email: session.customer_details?.email ?? session.customer_email ?? null,
-    shipping_address: collectedShippingDetails
-      ? {
-          address: collectedShippingDetails.address,
-          name: collectedShippingDetails.name,
-        }
-      : {},
-    shipping_name: collectedShippingDetails?.name ?? null,
-    status,
-    stripe_payment_intent_id:
-      typeof session.payment_intent === "string" ? session.payment_intent : null,
-    platform_fee_cents: platformFeeCents,
-    subtotal_cents: subtotalCents,
-    tax_cents: session.total_details?.amount_tax ?? 0,
-    shipping_cents: session.total_details?.amount_shipping ?? 0,
-    discount_cents: session.total_details?.amount_discount ?? 0,
-    total_cents: session.amount_total ?? 0,
-    updated_at: now,
-    ...(status === "cancelled" ? { cancelled_at: now } : {}),
-  };
-
   const { data: transitionedOrders, error } = await supabase
-    .from("merch_orders")
-    .update(updateValues)
-    .eq("stripe_checkout_session_id", session.id)
-    .eq("status", "pending_checkout")
-    .select("id, buyer_id")
+    .rpc("mark_problem_merch_order_for_checkout", {
+      p_checkout_session_id: session.id,
+      p_customer_email:
+        session.customer_details?.email ?? session.customer_email ?? null,
+      p_discount_cents: session.total_details?.amount_discount ?? 0,
+      p_payment_intent_id:
+        typeof session.payment_intent === "string"
+          ? session.payment_intent
+          : null,
+      p_platform_fee_cents: platformFeeCents,
+      p_shipping_address: collectedShippingDetails
+        ? {
+            address: collectedShippingDetails.address,
+            name: collectedShippingDetails.name,
+          }
+        : {},
+      p_shipping_cents: session.total_details?.amount_shipping ?? 0,
+      p_shipping_name: collectedShippingDetails?.name ?? null,
+      p_status: status,
+      p_subtotal_cents: subtotalCents,
+      p_tax_cents: session.total_details?.amount_tax ?? 0,
+      p_total_cents: session.amount_total ?? 0,
+    } satisfies ProblemOrderRpcArgs)
     .returns<MerchOrderPaymentProblemTransition[]>();
 
   if (error) {
@@ -474,21 +472,10 @@ async function markCheckoutSession({
     throw new Error("Could not update merch order.");
   }
 
-  if (status === "cancelled" || status === "payment_failed") {
-    for (const order of transitionedOrders ?? []) {
-      const { error: releaseError } = await supabase.rpc(
-        "release_merch_inventory_for_order",
-        { p_order_id: order.id },
-      );
-
-      if (releaseError) {
-        console.error("Webhook Merch inventory release failed.", releaseError);
-        throw new Error("Could not release merch inventory hold.");
-      }
-    }
-  }
-
-  const buyerPaymentNotifications = (transitionedOrders ?? []).map((order) => ({
+  const paymentProblemRows = Array.isArray(transitionedOrders)
+    ? transitionedOrders
+    : [];
+  const buyerPaymentNotifications = paymentProblemRows.map((order) => ({
     actor_id: null,
     body:
       status === "cancelled"
@@ -510,7 +497,7 @@ async function markCheckoutSession({
     revalidatePath("/notifications");
   }
 
-  for (const order of transitionedOrders ?? []) {
+  for (const order of paymentProblemRows) {
     await maybeSendPaymentEmail({
       headerKind:
         status === "cancelled"
@@ -535,7 +522,7 @@ async function markCheckoutSession({
 
   await revalidateMerchOrderProducts(
     supabase,
-    (transitionedOrders ?? []).map((order) => order.id),
+    paymentProblemRows.map((order) => order.id),
   );
   revalidatePath("/account");
   revalidatePath("/admin");
