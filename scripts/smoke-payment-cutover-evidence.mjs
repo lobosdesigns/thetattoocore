@@ -36,6 +36,20 @@ const requiredPaymentBlockers = [
 const defaultPrivateEvidencePath = "private-release-handoff/release-handoff-template.md";
 const fixtureRoot = resolve("scripts/fixtures");
 const fixtureMarker = "SANITIZED PAYMENT GO-LIVE TEST FIXTURE - NOT RELEASE EVIDENCE";
+const privateProofPlaceholders = new Set([
+  "-",
+  "blocked",
+  "fixture-only",
+  "n/a",
+  "na",
+  "none",
+  "not available",
+  "not recorded",
+  "pending",
+  "tbd",
+  "todo",
+  "unknown",
+]);
 
 function pass(label) {
   console.log(`PASS ${label}`);
@@ -107,6 +121,19 @@ function stateBlocker(scope, value, { allowNotApplicable = false } = {}) {
   return `${scope}: must be exactly passed`;
 }
 
+function privateProofBlocker(scope, value, { allowFixtureOnly = false } = {}) {
+  const proofLocation = value.trim();
+  const normalizedProofLocation = proofLocation.toLowerCase();
+
+  if (!proofLocation) return `${scope}: missing`;
+  if (allowFixtureOnly && normalizedProofLocation === "fixture-only") return null;
+  if (privateProofPlaceholders.has(normalizedProofLocation)) {
+    return `${scope}: placeholder is not allowed`;
+  }
+
+  return null;
+}
+
 function releaseCandidatesMatch(recorded, expected) {
   const normalizedRecorded = recorded.trim().toLowerCase();
   const normalizedExpected = expected.trim().toLowerCase();
@@ -122,7 +149,11 @@ function releaseCandidatesMatch(recorded, expected) {
   );
 }
 
-function validateStrictEvidence(source, expectedReleaseCandidate) {
+function validateStrictEvidence(
+  source,
+  expectedReleaseCandidate,
+  { allowFixtureOnly = false } = {},
+) {
   const blockers = [];
   const currentBlockersTable = markdownTable(
     sectionBetween(
@@ -167,6 +198,13 @@ function validateStrictEvidence(source, expectedReleaseCandidate) {
         row.Result ?? "",
       );
       if (blocker) blockers.push(blocker);
+
+      const proofBlocker = privateProofBlocker(
+        `Payments blocker / ${blockerName} / Private proof filename or location`,
+        row["Private proof filename or location"] ?? "",
+        { allowFixtureOnly },
+      );
+      if (proofBlocker) blockers.push(proofBlocker);
     }
   }
 
@@ -239,6 +277,13 @@ function validateStrictEvidence(source, expectedReleaseCandidate) {
         row.Result ?? "",
       );
       if (blocker) blockers.push(blocker);
+
+      const proofBlocker = privateProofBlocker(
+        `Payment dashboard / ${area} / Private proof filename or location`,
+        row["Private proof filename or location"] ?? "",
+        { allowFixtureOnly },
+      );
+      if (proofBlocker) blockers.push(proofBlocker);
     }
   }
 
@@ -344,7 +389,9 @@ function runStrictEvidenceGate() {
     return ["Private payment evidence file: test fixtures cannot approve go-live"];
   }
 
-  return validateStrictEvidence(evidence, expectedReleaseCandidate);
+  return validateStrictEvidence(evidence, expectedReleaseCandidate, {
+    allowFixtureOnly: testFixtureMode,
+  });
 }
 
 const paymentEvidenceSection = generator.slice(
@@ -421,6 +468,7 @@ const requiredReadinessText = [
   "Keep payment intent IDs, checkout session IDs, webhook event IDs, refund IDs, dispute IDs, seller account IDs",
   "`pending`, `passed`, or `blocked`; no payment IDs",
   "Each flow must be verified against the same release candidate",
+  "Every required Payments blocker and Payment Dashboard row must name a non-placeholder private proof filename or location",
 ];
 const missingReadinessText = requiredReadinessText.filter(
   (snippet) => !readinessEvidenceSection.includes(snippet),

@@ -591,7 +591,9 @@ const checks = [
       source.screenshotInventory.includes("Safe draft only; not submission-ready until real-device capture and Play Console upload validation are recorded privately.") &&
       source.screenshotInventory.includes("Safe draft only; not submission-ready until Play Console feature-graphic validation is recorded privately.") &&
       source.screenshotInventory.includes("Safe draft only; not submission-ready until real-device capture and App Store Connect upload validation are recorded privately.") &&
-      source.screenshotInventory.includes("Safe draft only; not submission-ready until App Store Connect iPad upload validation is recorded privately.") &&
+      source.screenshotInventory.includes("App Store Connect accepted this set for submitted build `1.0 (3)`") &&
+      source.screenshotInventory.includes("final real-device iPad capture confirmation remains pending privately") &&
+      !source.screenshotInventory.includes("not submission-ready until App Store Connect iPad upload validation") &&
       source.screenshotInventory.includes("Replace generated draft assets with final real-device screenshots") &&
       source.screenshotInventory.includes("Merch guide shortcut screenshot is covered by") &&
       !source.screenshotInventory.includes("Generated placeholder ready") &&

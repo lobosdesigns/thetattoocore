@@ -71,8 +71,8 @@ the first App Store Connect upload validation attempt:
 - `mobile-privacy-safety-safe-1242x2688.png`
 - `mobile-help-support-1242x2688.png`
 
-Use this 3-file selected 13-inch iPad set from the generated safe pool for the
-first App Store Connect upload validation attempt:
+App Store Connect accepted this 3-file selected 13-inch iPad set from the
+generated safe pool for submitted iOS build `1.0 (3)`:
 
 - `mobile-home-2048x2732.png`
 - `mobile-login-signup-2048x2732.png`
@@ -111,7 +111,7 @@ build after metadata, privacy, age-rating, and payment-status edits.
 | Google Play phone screenshots | Generated safe phone derivatives, 15 PNGs, 1080 x 1920, no alpha. | Replace or confirm with real Android internal-test captures for the selected release track and version. | Safe draft only; not submission-ready until real-device capture and Play Console upload validation are recorded privately. |
 | Google Play feature graphic | Generated TTC-branded 1024 x 500 PNG, no alpha. | Confirm final rights-safe feature graphic uploads without private member, payment, or console details. | Safe draft only; not submission-ready until Play Console feature-graphic validation is recorded privately. |
 | App Store iPhone 6.5-inch screenshots | Generated safe iPhone derivatives, 15 PNGs, 1242 x 2688, no alpha. | Replace or confirm with TestFlight build screenshots for the selected iOS build/version. | Safe draft only; not submission-ready until real-device capture and App Store Connect upload validation are recorded privately. |
-| App Store 13-inch iPad screenshots | Generated safe iPad derivatives, 3 PNGs, 2048 x 2732, no alpha; 2064 x 2752 is also accepted by the current 13-inch iPad class. | Upload and validate the required 13-inch iPad set for the selected iOS build/version. | Safe draft only; not submission-ready until App Store Connect iPad upload validation is recorded privately. |
+| App Store 13-inch iPad screenshots | Generated safe iPad derivatives, 3 PNGs, 2048 x 2732, no alpha; 2064 x 2752 is also accepted by the current 13-inch iPad class. | Keep the accepted console set tied to submitted build `1.0 (3)` and replace it only if final real-device review finds a mismatch. | App Store Connect accepted this set for submitted build `1.0 (3)`; final real-device iPad capture confirmation remains pending privately. |
 
 These generated draft assets are TTC-branded, rights-safe, and show the current
 main content columns and tutorial surfaces: 4U, Gossip, Stuff, Gigs, Merch,
@@ -121,7 +121,7 @@ Merch guide shortcut screenshot is covered by
 `public/screenshots/mobile-merch-help-shortcut-safe.png` without showing private
 seller payout setup details.
 
-Still needed before public store review:
+Still needed before final evidence closure or any replacement submission:
 
 - Replace generated draft assets with final real-device screenshots after
   mobile QA, using safe sample accounts and rights-cleared non-sensitive media.

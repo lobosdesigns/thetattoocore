@@ -914,7 +914,7 @@ const checks = [
       accountPage.includes("Private admin review only."),
   },
   {
-    label: "security headers stay on edge middleware until proxy deploy support is verified",
+    label: "security headers and validated auth refresh stay on the supported edge hook",
     ok:
       existsSync("src/middleware.ts") &&
       !existsSync("src/proxy.ts") &&
@@ -929,12 +929,14 @@ const checks = [
       middlewareSource.includes("request.cookies.getAll()") &&
       middlewareSource.includes("request.cookies.set(name, value)") &&
       middlewareSource.includes("response.cookies.set(name, value, options)") &&
-      middlewareSource.includes("await supabase.auth.getSession()") &&
+      middlewareSource.includes("await supabase.auth.getClaims()") &&
+      !middlewareSource.includes("await supabase.auth.getSession()") &&
       readinessDoc.includes(
         "Keep the security-header route hook on `src/middleware.ts`",
       ) &&
       readinessDoc.includes("`proxy.ts` migration builds locally") &&
-      readinessDoc.includes("unsupported Node middleware"),
+      readinessDoc.includes("unsupported Node middleware") &&
+      readinessDoc.includes("validated auth claims"),
   },
 ];
 
