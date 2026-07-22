@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ImagePlus, Search, Send } from "lucide-react";
 import { MediaInput } from "@/app/media-input";
@@ -129,11 +130,6 @@ export function MessageStartForm({
     setSelectedUsername("");
   }
 
-  function selectProfile(profile: ConnectedProfile) {
-    setQuery(`@${profile.username}`);
-    setSelectedUsername(profile.username);
-  }
-
   return (
     <form action={startConversation} className="space-y-3" encType="multipart/form-data">
       <input name="username" type="hidden" value={targetUsername} />
@@ -183,16 +179,15 @@ export function MessageStartForm({
                 const active = targetUsername === profile.username;
 
                 return (
-                  <button
-                    aria-pressed={active}
+                  <Link
+                    aria-current={active ? "true" : undefined}
                     className={`ttc-surface flex w-full items-center gap-3 rounded-md border px-3 py-2 text-left ${
                       active
                         ? "border-[color-mix(in_srgb,var(--gold)_58%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_16%,var(--paper-warm))]"
                         : "hover:bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)]"
                     }`}
+                    href={`/messages?to=${encodeURIComponent(profile.username)}`}
                     key={profile.id}
-                    onClick={() => selectProfile(profile)}
-                    type="button"
                   >
                     <ProfileAvatar profile={profile} size="sm" />
                     <span className="min-w-0 flex-1">
@@ -206,7 +201,7 @@ export function MessageStartForm({
                           : ""}
                       </span>
                     </span>
-                  </button>
+                  </Link>
                 );
               })
             ) : (

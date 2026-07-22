@@ -299,18 +299,19 @@ async function findSharedConversationMembership({
 
   if (!conversationIds.length) return null;
 
-  const { data: targetMembership } = await supabase
+  const { data: targetMemberships } = await supabase
     .from("conversation_members")
     .select("conversation_id")
     .eq("user_id", targetId)
     .in("conversation_id", conversationIds)
-    .limit(1)
-    .maybeSingle<{ conversation_id: string }>();
+    .returns<{ conversation_id: string }[]>();
+  const targetConversationIds = new Set(
+    targetMemberships?.map((membership) => membership.conversation_id) ?? [],
+  );
 
   return (
     myMemberships?.find(
-      (membership) =>
-        membership.conversation_id === targetMembership?.conversation_id,
+      (membership) => targetConversationIds.has(membership.conversation_id),
     ) ?? null
   );
 }

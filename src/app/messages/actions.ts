@@ -198,21 +198,28 @@ async function findExistingConversation(
   const { data: myMemberships } = await supabase
     .from("conversation_members")
     .select("conversation_id")
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
   const conversationIds =
     myMemberships?.map((membership) => membership.conversation_id) ?? [];
 
   if (!conversationIds.length) return null;
 
-  const { data: targetMembership } = await supabase
+  const { data: targetMemberships } = await supabase
     .from("conversation_members")
     .select("conversation_id")
     .eq("user_id", targetId)
     .in("conversation_id", conversationIds)
-    .limit(1)
-    .maybeSingle<{ conversation_id: string }>();
+    .returns<{ conversation_id: string }[]>();
+  const targetConversationIds = new Set(
+    targetMemberships?.map((membership) => membership.conversation_id) ?? [],
+  );
 
-  return targetMembership?.conversation_id ?? null;
+  return (
+    myMemberships?.find((membership) =>
+      targetConversationIds.has(membership.conversation_id),
+    )?.conversation_id ?? null
+  );
 }
 
 async function blockRelationshipExists(

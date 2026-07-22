@@ -123,6 +123,8 @@ const checks = [
     ok:
       messagePage.includes("async function findSharedConversationMembership") &&
       messagePage.includes(".eq(\"username\", prefillUsername)") &&
+      messagePage.includes("const targetConversationIds = new Set") &&
+      messagePage.includes("targetConversationIds.has(membership.conversation_id)") &&
       messagePage.includes("const prefillConversation =") &&
       messagePage.includes("conversation.otherProfile?.username === prefillUsername") &&
       messagePage.includes("prefillConversation ?? inbox[0]") &&
@@ -130,7 +132,21 @@ const checks = [
       messagePage.includes("hasSelectedConversationParam || prefillConversation") &&
       messagePage.includes(".eq(\"conversation_id\", selectedConversation.id)") &&
       messagePage.includes("selectedConversationMessages") &&
-      messagePage.includes("selectedMessagesWithAttachments"),
+      messagePage.includes("selectedMessagesWithAttachments") &&
+      messageStartForm.includes('import Link from "next/link"') &&
+      messageStartForm.includes('href={`/messages?to=${encodeURIComponent(profile.username)}`}') &&
+      messageStartForm.includes('aria-current={active ? "true" : undefined}') &&
+      !messageStartForm.includes("onClick={() => selectProfile(profile)}"),
+  },
+  {
+    label: "DM start action reuses the newest shared thread deterministically",
+    ok:
+      messageActions.includes("async function findExistingConversation") &&
+      messageActions.includes('.select("conversation_id")') &&
+      messageActions.includes('.order("created_at", { ascending: false })') &&
+      messageActions.includes("const targetConversationIds = new Set") &&
+      messageActions.includes("targetConversationIds.has(membership.conversation_id)") &&
+      !messageActions.includes(".limit(1)\n    .maybeSingle<{ conversation_id: string }>()"),
   },
   {
     label: "DM prefilled profile route fetches shared thread before inbox slicing",
