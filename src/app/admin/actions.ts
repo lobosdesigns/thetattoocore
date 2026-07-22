@@ -1,5 +1,6 @@
 "use server";
 
+import type Stripe from "stripe";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sendHostgatorEmail } from "@/lib/mail/hostgator";
@@ -2376,21 +2377,9 @@ export async function refundBookingDeposit(formData: FormData) {
     redirect(adminPaymentsMessage("Booking deposit not found.", returnTo));
   }
 
-  if (booking.payment_dispute_hold) {
-    redirect(
-      adminPaymentsMessage(
-        "This booking payment is under review and cannot be refunded here yet.",
-        returnTo,
-      ),
-    );
-  }
+  const paymentIntentId = booking.stripe_payment_intent_id;
 
-  if (
-    booking.payment_status !== "paid" ||
-    booking.status !== "deposit_paid" ||
-    !booking.stripe_payment_intent_id ||
-    booking.total_cents <= 0
-  ) {
+  if (!paymentIntentId || booking.total_cents <= 0) {
     redirect(
       adminPaymentsMessage(
         "Only paid booking deposits with a payment record can be refunded here.",
@@ -2399,35 +2388,133 @@ export async function refundBookingDeposit(formData: FormData) {
     );
   }
 
-  try {
-    const refund = await stripe.refunds.create({
-      metadata: {
-        booking_request_id: booking.id,
-        refund_kind: "booking_deposit",
-      },
-      payment_intent: booking.stripe_payment_intent_id,
-      reason: "requested_by_customer",
-    });
+  const { data: existingRefundAudits, error: refundAuditLookupError } =
+    await adminClient
+      .from("admin_audit_logs")
+      .select("id")
+      .eq("event_type", "refund_booking_deposit_requested")
+      .eq("target_id", booking.id)
+      .eq("target_type", "booking_request")
+      .limit(1)
+      .returns<{ id: string }[]>();
 
-    await supabase.from("admin_audit_logs").insert({
+  if (refundAuditLookupError) {
+    console.error(
+      "Admin booking deposit refund audit lookup failed.",
+      refundAuditLookupError,
+    );
+    redirect(
+      adminPaymentsMessage(
+        "Could not verify booking refund history. No refund was requested. Please try again.",
+        returnTo,
+      ),
+    );
+  }
+
+  if (existingRefundAudits?.length) {
+    redirect(
+      adminPaymentsMessage(
+        "Booking deposit refund was already requested.",
+        returnTo,
+      ),
+    );
+  }
+
+  const bookingRefundRequestKeyVersion = "booking-full-refund-v1";
+  const bookingRefundRequestKey = `${bookingRefundRequestKeyVersion}:${booking.id}:${paymentIntentId}`;
+  let matchingRefund: Stripe.Refund | undefined;
+
+  try {
+    const refunds = await stripe.refunds.list({
+      limit: 100,
+      payment_intent: paymentIntentId,
+    });
+    matchingRefund = refunds.data.find(
+      (refund) =>
+        refund.metadata?.booking_request_id === booking.id &&
+        refund.metadata?.refund_kind === "booking_deposit",
+    );
+  } catch (error) {
+    console.error("Admin booking deposit refund history lookup failed.", error);
+    redirect(
+      adminPaymentsMessage(
+        "Could not confirm booking refund history. No new refund was requested. Please try again.",
+        returnTo,
+      ),
+    );
+  }
+
+  if (!matchingRefund) {
+    if (booking.payment_dispute_hold) {
+      redirect(
+        adminPaymentsMessage(
+          "This booking payment is under review and cannot be refunded here yet.",
+          returnTo,
+        ),
+      );
+    }
+
+    if (
+      booking.payment_status !== "paid" ||
+      booking.status !== "deposit_paid"
+    ) {
+      redirect(
+        adminPaymentsMessage(
+          "Only paid booking deposits with a payment record can be refunded here.",
+          returnTo,
+        ),
+      );
+    }
+
+    try {
+      matchingRefund = await stripe.refunds.create(
+        {
+          metadata: {
+            booking_request_id: booking.id,
+            refund_kind: "booking_deposit",
+          },
+          payment_intent: paymentIntentId,
+          reason: "requested_by_customer",
+        },
+        { idempotencyKey: bookingRefundRequestKey },
+      );
+    } catch (error) {
+      console.error("Admin booking deposit refund request failed.", error);
+      redirect(
+        adminPaymentsMessage(
+          "Could not confirm booking refund. Retry this action; it will not send a duplicate refund.",
+          returnTo,
+        ),
+      );
+    }
+  }
+
+  const { error: refundAuditError } = await adminClient
+    .from("admin_audit_logs")
+    .insert({
       actor_id: userId,
       event_type: "refund_booking_deposit_requested",
       metadata: {
         booking_request_id: booking.id,
-        payment_intent_id: booking.stripe_payment_intent_id,
-        refund_id: refund.id,
-        refund_status: refund.status,
+        payment_intent_id: paymentIntentId,
+        refund_id: matchingRefund.id,
+        refund_status: matchingRefund.status,
+        request_key_version: bookingRefundRequestKeyVersion,
         total_cents: booking.total_cents,
       },
       summary: `Requested full booking deposit refund for ${booking.title}.`,
       target_id: booking.id,
       target_type: "booking_request",
     });
-  } catch (error) {
-    console.error("Admin booking deposit refund request failed.", error);
+
+  if (refundAuditError) {
+    console.error(
+      "Admin booking deposit refund audit record failed.",
+      refundAuditError,
+    );
     redirect(
       adminPaymentsMessage(
-        "Could not request booking refund. Please try again.",
+        "Refund request needs audit confirmation. Retry this action; it will not send a duplicate refund.",
         returnTo,
       ),
     );
@@ -2438,7 +2525,7 @@ export async function refundBookingDeposit(formData: FormData) {
   revalidatePath("/messages");
   redirect(
     adminPaymentsMessage(
-      "Booking deposit refund requested. The payment processor will update the final status shortly.",
+      "Booking deposit refund request recorded. Final payment status will update shortly.",
       returnTo,
     ),
   );

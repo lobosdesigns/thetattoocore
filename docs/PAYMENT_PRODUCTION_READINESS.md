@@ -123,6 +123,7 @@ Booking deposits need separate rules from Merch because they are tied to appoint
 - Booking checkout should open only after the artist/studio accepts the request, confirms the appointment/deposit terms, and the client can see the TTC fee.
 - Deposit refund rules must cover cancellations, reschedules, no-shows, artist cancellation, shop emergencies, and failed calendar conflicts.
 - Paid booking refund requests should remain admin-reviewed until the final cancellation policy is legally reviewed.
+- Admin booking refund submission reuses a matching existing refund before sending a new request, uses one deterministic request key per booking payment, and must save its operator audit row before reporting success. Retrying after an ambiguous response or audit failure must not send a duplicate refund.
 - Payout timing for booking deposits should account for appointment date, cancellation window, dispute window, and any shop-specific deposit policy.
 - Calendar integrations must not expose private client notes, phone numbers, addresses, payment details, or admin-only review state.
 

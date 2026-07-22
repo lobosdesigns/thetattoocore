@@ -767,8 +767,9 @@ checks.push({
   label: "admin refund requests keep processor names out of redirect copy",
   ok:
     adminActions.includes(
-      "Booking deposit refund requested. The payment processor will update the final status shortly.",
+      "Booking deposit refund request recorded. Final payment status will update shortly.",
     ) &&
+    !adminActions.includes("The payment processor will update the final status shortly.") &&
     !adminActions.includes("Stripe will update the final status shortly."),
 });
 checks.push({
@@ -1265,8 +1266,17 @@ checks.push({
     adminActions.includes('event_type: "reset_stale_booking_deposit_checkouts"') &&
     adminActions.includes('event_type: "refund_booking_deposit_requested"') &&
     adminActions.includes("createStripeClient") &&
+    adminActions.includes("stripe.refunds.list") &&
     adminActions.includes("stripe.refunds.create") &&
-    adminActions.includes('payment_intent: booking.stripe_payment_intent_id') &&
+    adminActions.includes('const bookingRefundRequestKeyVersion = "booking-full-refund-v1"') &&
+    adminActions.includes("{ idempotencyKey: bookingRefundRequestKey }") &&
+    adminActions.includes('payment_intent: paymentIntentId') &&
+    adminActions.includes('refund.metadata?.refund_kind === "booking_deposit"') &&
+    adminActions.includes("existingRefundAudits?.length") &&
+    adminActions.includes("const { error: refundAuditError } = await adminClient") &&
+    adminActions.includes("if (refundAuditError)") &&
+    adminActions.includes('"Admin booking deposit refund audit record failed."') &&
+    adminActions.includes('"Refund request needs audit confirmation. Retry this action; it will not send a duplicate refund."') &&
     adminActions.includes('confirm !== "refund"') &&
     adminActions.includes('.eq("status", "deposit_pending")') &&
     adminActions.includes('.eq("payment_status", "checkout_started")') &&
@@ -1279,7 +1289,7 @@ checks.push({
     adminActions.includes('console.error("Admin booking deposit lookup failed.", error)') &&
     adminActions.includes('"Booking deposit not found."') &&
     adminActions.includes('console.error("Admin booking deposit refund request failed.", error)') &&
-    adminActions.includes('"Could not request booking refund. Please try again."') &&
+    adminActions.includes('"Could not confirm booking refund. Retry this action; it will not send a duplicate refund."') &&
     !adminActions.includes('error.message || "Could not reset stale booking checkouts."') &&
     !adminActions.includes('error?.message || "Booking deposit not found."') &&
     !adminActions.includes('error instanceof Error ? error.message : "Could not request booking refund."') &&
