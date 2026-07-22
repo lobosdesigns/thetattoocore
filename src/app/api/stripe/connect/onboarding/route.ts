@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { siteUrl } from "@/lib/site";
-import { createStripeClient } from "@/lib/stripe/server";
+import { createStripeClient, stripeCheckoutPreflight } from "@/lib/stripe/server";
 import { stripeConnectStatus } from "@/lib/stripe/connect";
 import { isVerifiedProfessional } from "@/lib/verification";
 
@@ -52,10 +52,13 @@ function sellerBusinessType(profile: Pick<Profile, "account_type" | "role">) {
 export async function POST() {
   const stripe = createStripeClient();
   const admin = createAdminClient();
+  const checkoutPreflight = stripeCheckoutPreflight();
 
-  if (!stripe || !admin) {
+  if (!stripe || !admin || !checkoutPreflight.ready) {
     return accountRedirect("Seller payout setup is temporarily unavailable.", "unavailable");
   }
+
+  const livemode = checkoutPreflight.actual;
 
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -93,16 +96,17 @@ export async function POST() {
   try {
     const { data: existingAccount, error: existingAccountError } = await admin
       .from("stripe_connect_accounts")
-      .select("stripe_account_id")
+      .select("stripe_account_id, livemode")
       .eq("profile_id", claims.sub)
-      .maybeSingle<{ stripe_account_id: string }>();
+      .maybeSingle<{ livemode: boolean | null; stripe_account_id: string }>();
 
     if (existingAccountError) {
       console.error("Seller payout account lookup failed.", existingAccountError);
       return accountRedirect("Seller payout setup is temporarily unavailable.", "unavailable");
     }
 
-    let stripeAccountId = existingAccount?.stripe_account_id ?? null;
+    let stripeAccountId =
+      existingAccount?.livemode === livemode ? existingAccount.stripe_account_id : null;
 
     if (!stripeAccountId) {
       setupStep = "account_create";
@@ -130,7 +134,7 @@ export async function POST() {
 
       setupStep = "account_create_sync";
       const { error: upsertError } = await admin.from("stripe_connect_accounts").upsert({
-        ...stripeConnectStatus(account),
+        ...stripeConnectStatus(account, livemode),
         onboarding_started_at: new Date().toISOString(),
         profile_id: claims.sub,
       });
@@ -145,7 +149,7 @@ export async function POST() {
 
       setupStep = "account_status_sync";
       const { error: upsertError } = await admin.from("stripe_connect_accounts").upsert({
-        ...stripeConnectStatus(account),
+        ...stripeConnectStatus(account, livemode),
         onboarding_started_at: new Date().toISOString(),
         profile_id: claims.sub,
       });

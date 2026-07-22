@@ -42,6 +42,7 @@ import {
   titleCaseStatus,
 } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
+import { stripeCheckoutPreflight } from "@/lib/stripe/server";
 import { supportEmail } from "@/lib/site";
 import { safeStatusMessage } from "@/lib/status-message";
 import { verificationEligibleAccountTypes } from "@/lib/verification";
@@ -109,6 +110,7 @@ type SellerPayoutAccount = {
   details_submitted: boolean;
   disabled_reason: string | null;
   last_synced_at: string | null;
+  livemode: boolean;
   onboarding_started_at: string | null;
   payouts_enabled: boolean;
   requirements_currently_due: string[];
@@ -784,13 +786,17 @@ export default async function AccountPage({
         title: string;
       }[]
     >();
-  const { data: sellerPayoutAccount } = await supabase
-    .from("stripe_connect_accounts")
-    .select(
-      "charges_enabled, payouts_enabled, details_submitted, disabled_reason, requirements_currently_due, onboarding_started_at, last_synced_at",
-    )
-    .eq("profile_id", claims.sub)
-    .maybeSingle<SellerPayoutAccount>();
+  const sellerPayoutMode = stripeCheckoutPreflight();
+  const { data: sellerPayoutAccount } = sellerPayoutMode.ready
+    ? await supabase
+        .from("stripe_connect_accounts")
+        .select(
+          "livemode, charges_enabled, payouts_enabled, details_submitted, disabled_reason, requirements_currently_due, onboarding_started_at, last_synced_at",
+        )
+        .eq("profile_id", claims.sub)
+        .eq("livemode", sellerPayoutMode.actual)
+        .maybeSingle<SellerPayoutAccount>()
+    : { data: null };
   const { data: incomingBookings } = await (() => {
     let query = supabase
       .from("booking_requests")
@@ -977,7 +983,9 @@ export default async function AccountPage({
         ["artist", "studio", "vendor"].includes(profile.account_type as string),
     );
   const sellerPayoutReady = Boolean(
-    sellerPayoutAccount?.charges_enabled &&
+    sellerPayoutMode.ready &&
+      sellerPayoutAccount?.livemode === sellerPayoutMode.actual &&
+      sellerPayoutAccount.charges_enabled &&
       sellerPayoutAccount.payouts_enabled &&
       sellerPayoutAccount.details_submitted,
   );

@@ -275,11 +275,13 @@ async function revalidateMerchOrderProducts(
 async function syncStripeConnectAccountFromWebhook(
   supabase: AdminSupabase,
   account: Stripe.Account,
+  livemode: boolean,
 ) {
   const { data: existingAccount, error: existingAccountError } = await supabase
     .from("stripe_connect_accounts")
     .select("profile_id")
     .eq("stripe_account_id", account.id)
+    .eq("livemode", livemode)
     .maybeSingle<{ profile_id: string }>();
 
   if (existingAccountError) {
@@ -296,9 +298,10 @@ async function syncStripeConnectAccountFromWebhook(
 
   const { error: updateError } = await supabase
     .from("stripe_connect_accounts")
-    .update(stripeConnectStatus(account))
+    .update(stripeConnectStatus(account, livemode))
     .eq("profile_id", existingAccount.profile_id)
-    .eq("stripe_account_id", account.id);
+    .eq("stripe_account_id", account.id)
+    .eq("livemode", livemode);
 
   if (updateError) {
     console.error("Webhook connected account sync failed.", updateError);
@@ -1284,7 +1287,7 @@ export async function POST(request: Request) {
 
     if (event.type === "account.updated") {
       const account = event.data.object as Stripe.Account;
-      await syncStripeConnectAccountFromWebhook(supabase, account);
+      await syncStripeConnectAccountFromWebhook(supabase, account, event.livemode);
     }
 
     const { error: recordEventError } = await supabase

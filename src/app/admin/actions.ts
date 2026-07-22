@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { sendHostgatorEmail } from "@/lib/mail/hostgator";
 import { insertNotifications } from "@/lib/notification-write";
 import { siteName, siteUrl, supportEmail } from "@/lib/site";
-import { createStripeClient } from "@/lib/stripe/server";
+import { createStripeClient, stripeCheckoutPreflight } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -1874,18 +1874,32 @@ export async function updateMerchProductStatus(formData: FormData) {
   }
 
   if (status === "active" && !product.is_official) {
+    const payoutMode = stripeCheckoutPreflight();
+
+    if (!payoutMode.ready) {
+      redirect(
+        adminMerchMessage(
+          "This seller must finish payout setup before Merch checkout can be activated.",
+          returnTo,
+        ),
+      );
+    }
+
     const { data: payoutAccount, error: payoutError } = await supabase
       .from("stripe_connect_accounts")
-      .select("charges_enabled, payouts_enabled, details_submitted")
+      .select("livemode, charges_enabled, payouts_enabled, details_submitted")
       .eq("profile_id", product.seller_id)
+      .eq("livemode", payoutMode.actual)
       .maybeSingle<{
         charges_enabled: boolean;
         details_submitted: boolean;
+        livemode: boolean;
         payouts_enabled: boolean;
       }>();
 
     const payoutReady =
-      Boolean(payoutAccount?.charges_enabled) &&
+      payoutAccount?.livemode === payoutMode.actual &&
+      Boolean(payoutAccount.charges_enabled) &&
       Boolean(payoutAccount?.payouts_enabled) &&
       Boolean(payoutAccount?.details_submitted);
 

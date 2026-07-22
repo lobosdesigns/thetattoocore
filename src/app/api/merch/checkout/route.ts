@@ -287,16 +287,19 @@ export async function POST(request: Request) {
   if (!product.is_official) {
     const { data: payoutAccount, error: payoutError } = await adminSupabase
       .from("stripe_connect_accounts")
-      .select("charges_enabled, payouts_enabled, details_submitted")
+      .select("livemode, charges_enabled, payouts_enabled, details_submitted")
       .eq("profile_id", product.seller_id)
+      .eq("livemode", checkoutPreflight.actual)
       .maybeSingle<{
         charges_enabled: boolean;
         details_submitted: boolean;
+        livemode: boolean;
         payouts_enabled: boolean;
       }>();
 
     const payoutReady =
-      Boolean(payoutAccount?.charges_enabled) &&
+      payoutAccount?.livemode === checkoutPreflight.actual &&
+      Boolean(payoutAccount.charges_enabled) &&
       Boolean(payoutAccount?.payouts_enabled) &&
       Boolean(payoutAccount?.details_submitted);
 

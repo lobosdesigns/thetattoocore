@@ -18,6 +18,7 @@ import {
 } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
 import { safeStatusMessage } from "@/lib/status-message";
+import { stripeCheckoutPreflight } from "@/lib/stripe/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
 type Claims = {
@@ -827,14 +828,19 @@ export default async function AdminMerchPage({
     redirect("/admin");
   }
 
-  const { data: allSellerPayoutRows } = activeSellerPayoutStatus
+  const sellerPayoutMode = stripeCheckoutPreflight();
+
+  const { data: allSellerPayoutRows } =
+    activeSellerPayoutStatus && sellerPayoutMode.ready
     ? await supabase
         .from("stripe_connect_accounts")
-        .select("profile_id, charges_enabled, payouts_enabled, details_submitted")
+        .select("profile_id, livemode, charges_enabled, payouts_enabled, details_submitted")
+        .eq("livemode", sellerPayoutMode.actual)
         .returns<
           {
             charges_enabled: boolean;
             details_submitted: boolean;
+            livemode: boolean;
             payouts_enabled: boolean;
             profile_id: string;
           }[]
@@ -914,18 +920,20 @@ export default async function AdminMerchPage({
     new Set((productRows ?? []).map((product) => product.seller_id).filter(Boolean)),
   );
   const { data: sellerPayoutRows } =
-    sellerIds.length > 0
+    sellerIds.length > 0 && sellerPayoutMode.ready
       ? await supabase
           .from("stripe_connect_accounts")
           .select(
-            "profile_id, charges_enabled, payouts_enabled, details_submitted, disabled_reason",
+            "profile_id, livemode, charges_enabled, payouts_enabled, details_submitted, disabled_reason",
           )
           .in("profile_id", sellerIds)
+          .eq("livemode", sellerPayoutMode.actual)
           .returns<
             {
               charges_enabled: boolean;
               details_submitted: boolean;
               disabled_reason: string | null;
+              livemode: boolean;
               payouts_enabled: boolean;
               profile_id: string;
             }[]
@@ -956,7 +964,8 @@ export default async function AdminMerchPage({
       sellerPayoutByProfile.get(product.seller_id)?.disabled_reason ?? null,
     sellerPayoutStatus: !sellerPayoutByProfile.has(product.seller_id)
       ? "not_started"
-      : sellerPayoutByProfile.get(product.seller_id)?.charges_enabled &&
+      : sellerPayoutByProfile.get(product.seller_id)?.livemode === sellerPayoutMode.actual &&
+          sellerPayoutByProfile.get(product.seller_id)?.charges_enabled &&
           sellerPayoutByProfile.get(product.seller_id)?.payouts_enabled &&
           sellerPayoutByProfile.get(product.seller_id)?.details_submitted
         ? "ready"

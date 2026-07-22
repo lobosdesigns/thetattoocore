@@ -40,6 +40,10 @@ const merchInventoryLifecycleMigration = readFileSync(
   "supabase/migrations/20260722144527_merch_inventory_reservation_lifecycle.sql",
   "utf8",
 );
+const stripeConnectLivemodeMigration = readFileSync(
+  "supabase/migrations/20260722152821_stripe_connect_livemode_isolation.sql",
+  "utf8",
+);
 const globalsCss = readFileSync("src/app/globals.css", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
@@ -528,7 +532,7 @@ checks.push({
     stripeWebhook.includes('event.type === "account.updated"') &&
     stripeWebhook.includes("syncStripeConnectAccountFromWebhook") &&
     stripeWebhook.includes('from("stripe_connect_accounts")') &&
-    stripeWebhook.includes("stripeConnectStatus(account)") &&
+    stripeWebhook.includes("stripeConnectStatus(account, livemode)") &&
     stripeWebhook.indexOf("Missing payment verification.") <
       stripeWebhook.indexOf("constructEventAsync"),
 });
@@ -901,6 +905,28 @@ checks.push({
     accountPage.includes("stay in private support review") &&
     privacyPage.includes("Checkout stays review-controlled") &&
     supportPage.includes("Merch checkout stays review-controlled"),
+});
+checks.push({
+  label: "seller payout readiness is isolated by payment mode",
+  ok:
+    stripeConnectLivemodeMigration.includes("add column if not exists livemode boolean") &&
+    stripeConnectLivemodeMigration.includes("where livemode is null") &&
+    stripeConnectLivemodeMigration.includes("stripe_connect_accounts_livemode_readiness_check") &&
+    stripeConnectLivemodeMigration.includes("not charges_enabled") &&
+    readFileSync("src/lib/stripe/connect.ts", "utf8").includes(
+      "stripeConnectStatus(account: Stripe.Account, livemode: boolean)",
+    ) &&
+    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes(
+      "existingAccount?.livemode === livemode",
+    ) &&
+    stripeConnectReturn.includes('.eq("livemode", livemode)') &&
+    stripeWebhook.includes("syncStripeConnectAccountFromWebhook(supabase, account, event.livemode)") &&
+    stripeWebhook.includes('.eq("livemode", livemode)') &&
+    merchCheckout.includes('.eq("livemode", checkoutPreflight.actual)') &&
+    merchCheckout.includes("payoutAccount?.livemode === checkoutPreflight.actual") &&
+    adminActions.includes('.eq("livemode", payoutMode.actual)') &&
+    accountPage.includes('.eq("livemode", sellerPayoutMode.actual)') &&
+    adminMerchPage.includes('.eq("livemode", sellerPayoutMode.actual)'),
 });
 checks.push({
   label: "Stripe Connect seller onboarding stays hosted and server-side",

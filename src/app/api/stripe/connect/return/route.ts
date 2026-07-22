@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { siteUrl } from "@/lib/site";
 import { stripeConnectStatus } from "@/lib/stripe/connect";
-import { createStripeClient } from "@/lib/stripe/server";
+import { createStripeClient, stripeCheckoutPreflight } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -21,10 +21,13 @@ function accountRedirect(message: string, payoutStatus = "retry") {
 export async function GET() {
   const stripe = createStripeClient();
   const admin = createAdminClient();
+  const checkoutPreflight = stripeCheckoutPreflight();
 
-  if (!stripe || !admin) {
+  if (!stripe || !admin || !checkoutPreflight.ready) {
     return accountRedirect("Seller payout setup could not be checked.", "check_failed");
   }
+
+  const livemode = checkoutPreflight.actual;
 
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -41,6 +44,7 @@ export async function GET() {
     .from("stripe_connect_accounts")
     .select("stripe_account_id")
     .eq("profile_id", claims.sub)
+    .eq("livemode", livemode)
     .maybeSingle<{ stripe_account_id: string }>();
 
   if (connectAccountError) {
@@ -57,12 +61,13 @@ export async function GET() {
 
   try {
     const account = await stripe.accounts.retrieve(connectAccount.stripe_account_id);
-    const status = stripeConnectStatus(account);
+    const status = stripeConnectStatus(account, livemode);
 
     const { error: updateError } = await admin
       .from("stripe_connect_accounts")
       .update(status)
-      .eq("profile_id", claims.sub);
+      .eq("profile_id", claims.sub)
+      .eq("livemode", livemode);
 
     if (updateError) {
       console.error("Seller payout return sync failed.", updateError);
