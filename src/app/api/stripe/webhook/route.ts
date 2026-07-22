@@ -35,10 +35,6 @@ function checkoutSessionIsSettled(
   );
 }
 
-function isUniqueViolation(error: { code?: string } | null) {
-  return error?.code === "23505";
-}
-
 type PaidOrderTransition = {
   id: string;
 };
@@ -1224,28 +1220,40 @@ export async function POST(request: Request) {
     return stripeResponse("Payment update mode ignored.");
   }
 
+  const supabase = createAdminClient();
+
+  if (!supabase) {
+    console.error("Payment update processing is not configured.");
+    return stripeResponse("Could not process payment update.", 500);
+  }
+
+  const { data: claimStatus, error: claimError } = await supabase.rpc(
+    "claim_stripe_webhook_event",
+    {
+      p_event_id: event.id,
+      p_event_type: event.type,
+    },
+  );
+
+  if (claimError) {
+    console.error("Webhook event claim failed.", claimError);
+    return stripeResponse("Could not process payment update.", 500);
+  }
+
+  if (claimStatus === "processed") {
+    return stripeResponse("Stripe event already processed.");
+  }
+
+  if (claimStatus === "processing") {
+    return stripeResponse("Payment update is already processing.", 500);
+  }
+
+  if (claimStatus !== "claimed") {
+    console.error("Webhook event claim returned an invalid status.");
+    return stripeResponse("Could not process payment update.", 500);
+  }
+
   try {
-    const supabase = createAdminClient();
-
-    if (!supabase) {
-      throw new Error("Missing Supabase service role key for Stripe webhook.");
-    }
-
-    const { data: processedEvent, error: processedEventError } = await supabase
-      .from("stripe_webhook_events")
-      .select("event_id")
-      .eq("event_id", event.id)
-      .maybeSingle<{ event_id: string }>();
-
-    if (processedEventError) {
-      console.error("Webhook processed-event lookup failed.", processedEventError);
-      throw new Error("Could not check Stripe event status.");
-    }
-
-    if (processedEvent) {
-      return stripeResponse("Stripe event already processed.");
-    }
-
     if (
       event.type === "checkout.session.completed" ||
       event.type === "checkout.session.async_payment_succeeded"
@@ -1346,19 +1354,30 @@ export async function POST(request: Request) {
       await syncStripeConnectAccountFromWebhook(supabase, account, event.livemode);
     }
 
-    const { error: recordEventError } = await supabase
-      .from("stripe_webhook_events")
-      .insert({
-        event_id: event.id,
-        event_type: event.type,
-      });
+    const { data: completed, error: completionError } = await supabase.rpc(
+      "complete_stripe_webhook_event",
+      { p_event_id: event.id },
+    );
 
-    if (recordEventError && !isUniqueViolation(recordEventError)) {
-      console.error("Webhook event status record failed.", recordEventError);
-      throw new Error("Could not record Stripe event status.");
+    if (completionError || completed !== true) {
+      console.error("Webhook event completion failed.", completionError);
+      throw new Error("Could not complete payment update processing.");
     }
   } catch (error) {
     console.error("Payment update processing failed.", error);
+
+    const { error: failureError } = await supabase.rpc(
+      "fail_stripe_webhook_event",
+      {
+        p_error: "Payment update processing failed.",
+        p_event_id: event.id,
+      },
+    );
+
+    if (failureError) {
+      console.error("Webhook event failure status could not be saved.", failureError);
+    }
+
     return stripeResponse("Could not process payment update.", 500);
   }
 

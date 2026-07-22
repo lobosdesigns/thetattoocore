@@ -48,6 +48,10 @@ const stripeConnectLivemodeMigration = readFileSync(
   "supabase/migrations/20260722152821_stripe_connect_livemode_isolation.sql",
   "utf8",
 );
+const stripeWebhookClaimMigration = readFileSync(
+  "supabase/migrations/20260722194829_stripe_webhook_event_claim_release.sql",
+  "utf8",
+);
 const globalsCss = readFileSync("src/app/globals.css", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
@@ -547,6 +551,37 @@ checks.push({
       stripeWebhook.indexOf("constructEventAsync"),
 });
 checks.push({
+  label: "payment webhook claims events before side effects and records completion",
+  ok:
+    stripeWebhook.includes('"claim_stripe_webhook_event"') &&
+    stripeWebhook.includes('"complete_stripe_webhook_event"') &&
+    stripeWebhook.includes('"fail_stripe_webhook_event"') &&
+    stripeWebhook.includes('claimStatus === "processed"') &&
+    stripeWebhook.includes('claimStatus === "processing"') &&
+    stripeWebhook.includes('claimStatus !== "claimed"') &&
+    stripeWebhook.indexOf('"claim_stripe_webhook_event"') <
+      stripeWebhook.indexOf('event.type === "checkout.session.completed"') &&
+    stripeWebhook.indexOf('"complete_stripe_webhook_event"') >
+      stripeWebhook.indexOf('event.type === "account.updated"') &&
+    stripeWebhook.indexOf('"fail_stripe_webhook_event"') >
+      stripeWebhook.indexOf("Payment update processing failed.") &&
+    !stripeWebhook.includes('.from("stripe_webhook_events")') &&
+    stripeWebhookClaimMigration.includes("add column if not exists status text not null default 'processed'") &&
+    stripeWebhookClaimMigration.includes("status in ('processing', 'processed', 'failed')") &&
+    stripeWebhookClaimMigration.includes("create or replace function public.claim_stripe_webhook_event") &&
+    stripeWebhookClaimMigration.includes("for update") &&
+    stripeWebhookClaimMigration.includes("now() - interval '10 minutes'") &&
+    stripeWebhookClaimMigration.includes("create or replace function public.complete_stripe_webhook_event") &&
+    stripeWebhookClaimMigration.includes("create or replace function public.fail_stripe_webhook_event") &&
+    stripeWebhookClaimMigration.includes("security invoker") &&
+    stripeWebhookClaimMigration.includes("set search_path = ''") &&
+    stripeWebhookClaimMigration.includes("revoke all on table public.stripe_webhook_events from anon, authenticated") &&
+    stripeWebhookClaimMigration.includes("grant select, insert, update on table public.stripe_webhook_events to service_role") &&
+    stripeWebhookClaimMigration.includes("revoke execute on function public.claim_stripe_webhook_event(text, text)") &&
+    stripeWebhookClaimMigration.includes("grant execute on function public.claim_stripe_webhook_event(text, text)") &&
+    stripeWebhookClaimMigration.includes("to service_role"),
+});
+checks.push({
   label: "payment webhook required event coverage stays aligned with readiness docs",
   ok: webhookSourceMissingEvents.length === 0 && paymentReadinessMissingEvents.length === 0,
   message: [
@@ -614,12 +649,14 @@ checks.push({
 checks.push({
   label: "payment webhook hides raw event status backend errors",
   ok:
-    stripeWebhook.includes('console.error("Webhook processed-event lookup failed.", processedEventError)') &&
-    stripeWebhook.includes('throw new Error("Could not check Stripe event status.")') &&
-    stripeWebhook.includes('console.error("Webhook event status record failed.", recordEventError)') &&
-    stripeWebhook.includes('throw new Error("Could not record Stripe event status.")') &&
-    !stripeWebhook.includes('processedEventError.message || "Could not check Stripe event status."') &&
-    !stripeWebhook.includes('recordEventError.message || "Could not record Stripe event status."'),
+    stripeWebhook.includes('console.error("Webhook event claim failed.", claimError)') &&
+    stripeWebhook.includes('console.error("Webhook event completion failed.", completionError)') &&
+    stripeWebhook.includes('console.error("Webhook event failure status could not be saved.", failureError)') &&
+    stripeWebhook.includes('p_error: "Payment update processing failed."') &&
+    stripeWebhook.includes('return stripeResponse("Could not process payment update.", 500)') &&
+    !stripeWebhook.includes('claimError.message || "Could not process payment update."') &&
+    !stripeWebhook.includes('completionError.message || "Could not complete payment update processing."') &&
+    !stripeWebhook.includes('failureError.message || "Could not save payment update failure."'),
 });
 checks.push({
   label: "payment webhook hides raw connected-account backend errors",
