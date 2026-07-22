@@ -426,7 +426,7 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("## Evidence Pack Template") &&
       packageJson.includes('"prepare:private-release-handoff": "node scripts/generate-private-release-handoff.mjs"') &&
       packageJson.includes('"smoke:handoff": "node scripts/smoke-private-handoff-template.mjs"') &&
-      packageJson.includes("npm run smoke:native && npm run smoke:handoff && npm run smoke:docs") &&
+      packageJson.includes("npm run smoke:native && npm run smoke:app-links && npm run smoke:handoff && npm run smoke:docs") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run prepare:private-release-handoff") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run prepare:private-release-handoff") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("private-release-handoff/") &&
@@ -460,11 +460,11 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("platform tools or `adb` missing from Windows PATH") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Do not treat missing automation as a") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("## Android Connected-Device Probe") &&
-      packageJson.includes('"verify:native-predevice": "npm run smoke:env && npm run smoke:native && npm run smoke:handoff && npm run smoke:docs && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios"') &&
-      packageJson.includes('"verify:native-release": "npm run smoke:env && npm run smoke:native && npm run smoke:handoff && npm run smoke:docs && npm run qa:android-device:required && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios"') &&
+      packageJson.includes('"verify:native-predevice": "npm run smoke:env && npm run smoke:native && npm run smoke:app-links && npm run smoke:handoff && npm run smoke:docs && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios"') &&
+      packageJson.includes('"verify:native-release": "npm run smoke:env && npm run smoke:native && npm run smoke:app-links && npm run smoke:handoff && npm run smoke:docs && npm run qa:android-device:required && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios"') &&
       packageJson.includes('"qa:android-device": "node scripts/android-device-qa-probe.mjs"') &&
       packageJson.includes('"qa:android-device:required": "node scripts/android-device-qa-probe.mjs --require-device --wait-ms=30000"') &&
-      packageJson.includes("npm run smoke:native && npm run qa:android-device && npm run smoke:store") &&
+      packageJson.includes("npm run smoke:native && npm run smoke:app-links && npm run qa:android-device && npm run smoke:store") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run qa:android-device") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run qa:android-device:required") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("waits briefly for the USB/debug authorization state to settle") &&
@@ -488,16 +488,17 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Record a safe console/log review summary for mobile web, Android wrapper WebView, and iOS TestFlight") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("run the `Android Connected-Device Probe`") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Empty or unauthorized `adb devices -l` output is a handoff blocker") &&
-      packageJson.includes('"verify:app-review-preflight": "npm run lint && npm run build && npm run smoke:env && npm run smoke:security && npm run smoke:content && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run qa:android-device && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios"') &&
+      packageJson.includes('"verify:app-review-preflight": "npm run lint && npm run build && npm run smoke:env && npm run smoke:security && npm run smoke:content && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run smoke:app-links && npm run qa:android-device && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios"') &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run verify:app-review-preflight") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("It checks lint, production build, production environment boundaries") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("content-policy/reporting guardrails") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("app-link association endpoints") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("the repo-safe Android connected-device probe") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("without counting as real-device or private console evidence") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run verify:native-predevice") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run verify:native-release") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("without counting as real-device evidence") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checks environment boundaries, private native config exclusions, private handoff-template validation, and readiness docs first") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checks environment boundaries, private native config exclusions, app-link association endpoints, private handoff-template validation, and readiness docs first") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("intentionally fails until the Android probe sees an authorized device") &&
       docs["native/thetattoocore-mobile/README.md"].includes("npm.cmd run verify:native-predevice") &&
       docs["native/thetattoocore-mobile/README.md"].includes("Use the pre-device command to check environment boundaries") &&
@@ -1009,7 +1010,9 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("Native wrapper") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Android API 36") &&
       docs["docs/APP_STORE_READINESS.md"].includes("fail-closed app-link association routes") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("final Android and Apple signed identifiers still need private deployment configuration"),
+      docs["docs/APP_STORE_READINESS.md"].includes("final Android and Apple signed identifiers still need private deployment configuration") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Run `npm.cmd run smoke:app-links` after every deploy") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Run `npm.cmd run smoke:app-links` after deployment"),
   },
   {
     label: "native push setup evidence stays private and route-testable",
@@ -1034,10 +1037,10 @@ const checks = [
     ok:
       packageJson.includes('"smoke:dm": "node scripts/smoke-dm-guards.mjs"') &&
       packageJson.includes("npm run smoke:stories && npm run smoke:dm && npm run smoke:booking") &&
-      packageJson.includes("npm run smoke:env && npm run smoke:security && npm run smoke:content && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run qa:android-device && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
-      packageJson.includes("npm run smoke:native && npm run qa:android-device && npm run smoke:store") &&
-      packageJson.includes("npm run smoke:env && npm run smoke:native && npm run smoke:handoff && npm run smoke:docs && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios") &&
-      packageJson.includes("npm run smoke:env && npm run smoke:native && npm run smoke:handoff && npm run smoke:docs && npm run qa:android-device:required && npm run smoke:store") &&
+      packageJson.includes("npm run smoke:env && npm run smoke:security && npm run smoke:content && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run smoke:app-links && npm run qa:android-device && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
+      packageJson.includes("npm run smoke:native && npm run smoke:app-links && npm run qa:android-device && npm run smoke:store") &&
+      packageJson.includes("npm run smoke:env && npm run smoke:native && npm run smoke:app-links && npm run smoke:handoff && npm run smoke:docs && npm run smoke:store && npm run smoke:mobile && npm run smoke:mobile:ios") &&
+      packageJson.includes("npm run smoke:env && npm run smoke:native && npm run smoke:app-links && npm run smoke:handoff && npm run smoke:docs && npm run qa:android-device:required && npm run smoke:store") &&
       packageJson.includes("npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Android connected-device probe") &&
       docs["docs/APP_STORE_READINESS.md"].includes("dedicated DM smoke guard suite") &&

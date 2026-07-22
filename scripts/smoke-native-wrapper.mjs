@@ -22,6 +22,7 @@ const files = {
   mobileSmoke: "scripts/smoke-mobile-browser.mjs",
   middleware: "src/middleware.ts",
   nativePrep: "docs/NATIVE_WRAPPER_PREP.md",
+  appLinkSmoke: "scripts/smoke-app-link-associations.mjs",
   realDeviceQa: "docs/REAL_DEVICE_QA_CHECKLIST.md",
   readiness: "docs/APP_STORE_READINESS.md",
   androidDeviceProbe: "scripts/android-device-qa-probe.mjs",
@@ -29,6 +30,7 @@ const files = {
   androidAssetLinksRoute: "src/app/.well-known/assetlinks.json/route.ts",
   appleAssociationRoute: "src/app/.well-known/apple-app-site-association/route.ts",
   envExample: ".env.example",
+  rootPackageJson: "package.json",
   packageJson: `${wrapperRoot}/package.json`,
   readme: `${wrapperRoot}/README.md`,
   webFallback: `${wrapperRoot}/www/index.html`,
@@ -232,9 +234,18 @@ const checks = [
       source.appLinkAssociation.includes("sha256_cert_fingerprints") &&
       source.appLinkAssociation.includes("Association file is not available for this build.") &&
       source.appLinkAssociation.includes("cache-control") &&
+      source.appLinkSmoke.includes('"/.well-known/assetlinks.json"') &&
+      source.appLinkSmoke.includes('"/.well-known/apple-app-site-association"') &&
+      source.appLinkSmoke.includes("validateAndroidPayload") &&
+      source.appLinkSmoke.includes("validateIosPayload") &&
+      source.appLinkSmoke.includes("fail-closed until private identifiers are configured") &&
+      source.rootPackageJson.includes('"smoke:app-links": "node scripts/smoke-app-link-associations.mjs"') &&
+      source.rootPackageJson.includes("npm run smoke:native && npm run smoke:app-links && npm run smoke:handoff") &&
       source.nativePrep.includes("fail-closed `.well-known` association routes") &&
+      source.nativePrep.includes("Run `npm.cmd run smoke:app-links` after deployment") &&
       source.nativePrep.includes("private deployment environment") &&
       source.mobileRunbook.includes("fail-closed `.well-known` association routes") &&
+      source.mobileRunbook.includes("Run `npm.cmd run smoke:app-links` after every deploy") &&
       source.envExample.includes("TTC_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS=replace_with_google_play_app_signing_sha256_fingerprints") &&
       source.envExample.includes("TTC_IOS_APP_LINK_APP_IDS=replace_with_apple_team_id_dot_bundle_id") &&
       !hardcodedAndroidFingerprint &&

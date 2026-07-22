@@ -104,7 +104,9 @@ The website now has fail-closed `.well-known` association routes for Android
 App Links and iOS Universal Links. They return unavailable responses until the
 final Google Play app-signing fingerprints and Apple app IDs are configured in
 the private deployment environment. Do not commit real fingerprints, team IDs,
-or provisioning details.
+or provisioning details. Run `npm.cmd run smoke:app-links` after deployment to
+confirm the live endpoints are either valid association JSON or the expected
+fail-closed response.
 
 ## Verified Link Evidence Matrix
 
