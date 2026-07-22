@@ -9,6 +9,7 @@ import {
   notificationPreferenceSelect,
   type NotificationPreferenceProfile,
 } from "@/lib/notifications";
+import { insertNotifications } from "@/lib/notification-write";
 import { calculatePlatformFeeCents } from "@/lib/payments/fees";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -1155,7 +1156,7 @@ async function notifyContentOwner({
 
   if (!allowsInAppNotification(ownerProfile, preferenceCategory)) return;
 
-  const { error } = await supabase.from("notifications").insert({
+  const { error } = await insertNotifications({
     actor_id: actorId,
     body: body.slice(0, 240),
     href,
@@ -1641,7 +1642,7 @@ export async function toggleStoryReaction(formData: FormData) {
   ]);
 
   if (allowsInAppNotification(authorPreferences, "feed")) {
-    await supabase.from("notifications").insert({
+    await insertNotifications({
       actor_id: userId,
       body: STORY_REACTION_LABELS[reaction] ?? "reacted to your story",
       href: "/#stories",
@@ -1748,7 +1749,7 @@ export async function replyToStory(formData: FormData) {
   ]);
 
   if (allowsInAppNotification(authorPreferences, "message")) {
-    await supabase.from("notifications").insert({
+    await insertNotifications({
       actor_id: userId,
       body: body.slice(0, 160),
       href: `/messages?c=${conversationId}`,
@@ -2016,7 +2017,7 @@ export async function createBookingRequest(formData: FormData) {
     .maybeSingle<NotificationPreferenceProfile>();
 
   if (allowsInAppNotification(artistPreferences, "message")) {
-    await supabase.from("notifications").insert({
+    await insertNotifications({
       actor_id: userId,
       body:
         depositAmountCents > 0

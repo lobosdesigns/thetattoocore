@@ -10,6 +10,7 @@ import {
   type NotificationPreferenceCategory,
   type NotificationPreferenceProfile,
 } from "@/lib/notifications";
+import { insertNotifications } from "@/lib/notification-write";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
@@ -387,7 +388,7 @@ export async function startConversation(formData: FormData) {
     .maybeSingle<NotificationPreferenceProfile>();
 
   if (allowsInAppNotification(targetPreferences, preferenceCategory)) {
-    await supabase.from("notifications").insert({
+    await insertNotifications({
       actor_id: userId,
       body: messageBody.slice(0, 160),
       href: `/messages?c=${conversationId}`,
@@ -509,7 +510,7 @@ export async function sendMessage(formData: FormData) {
       }));
 
     if (notifications.length) {
-      await supabase.from("notifications").insert(notifications);
+      await insertNotifications(notifications);
     }
   }
 

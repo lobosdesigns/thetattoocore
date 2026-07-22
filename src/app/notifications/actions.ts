@@ -7,6 +7,7 @@ import {
   notificationPreferenceSelect,
   type NotificationPreferenceProfile,
 } from "@/lib/notifications";
+import { insertNotifications } from "@/lib/notification-write";
 import { notificationPathOrFallback } from "@/lib/notification-route";
 import { createClient } from "@/lib/supabase/server";
 
@@ -133,7 +134,7 @@ export async function respondToFollowRequest(formData: FormData) {
         .maybeSingle<NotificationPreferenceProfile>();
 
       if (allowsInAppNotification(followerPreferences, "follow")) {
-        await supabase.from("notifications").insert({
+        await insertNotifications({
           actor_id: userId,
           body: `${ownerProfile?.display_name ?? "A member"} approved your follow request.`,
           href: ownerProfile?.username ? `/u/${ownerProfile.username}` : "/",

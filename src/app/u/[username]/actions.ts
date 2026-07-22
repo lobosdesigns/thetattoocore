@@ -7,6 +7,7 @@ import {
   notificationPreferenceSelect,
   type NotificationPreferenceProfile,
 } from "@/lib/notifications";
+import { insertNotifications } from "@/lib/notification-write";
 import { createClient } from "@/lib/supabase/server";
 
 type Claims = {
@@ -159,7 +160,7 @@ export async function followProfile(formData: FormData) {
 
   if (allowsInAppNotification(targetPreferences, "follow")) {
     if (status === "pending") {
-      await supabase.from("notifications").insert({
+      await insertNotifications({
         actor_id: userId,
         body: `${actorProfile?.display_name ?? "A member"} wants to follow your private profile.`,
         href: `/u/${targetProfile.username}`,
@@ -170,7 +171,7 @@ export async function followProfile(formData: FormData) {
         type: "follow_request",
       });
     } else {
-      await supabase.from("notifications").insert({
+      await insertNotifications({
         actor_id: userId,
         body: `${actorProfile?.display_name ?? "A member"} started following you.`,
         href: actorProfile?.username ? `/u/${actorProfile.username}` : "/notifications",
@@ -257,7 +258,7 @@ export async function acceptFollowRequest(formData: FormData) {
     .maybeSingle<NotificationPreferenceProfile>();
 
   if (allowsInAppNotification(followerPreferences, "follow")) {
-    await supabase.from("notifications").insert({
+    await insertNotifications({
       actor_id: userId,
       body: `${ownerProfile?.display_name ?? "A member"} approved your follow request.`,
       href: `/u/${ownerProfile?.username ?? username}`,

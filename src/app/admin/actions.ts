@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sendHostgatorEmail } from "@/lib/mail/hostgator";
+import { insertNotifications } from "@/lib/notification-write";
 import { siteName, siteUrl, supportEmail } from "@/lib/site";
 import { createStripeClient } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -1570,7 +1571,7 @@ export async function updateLicenseVerification(formData: FormData) {
       ? `Your ${request.account_type} verification was approved. Stuff seller contact, professional access, and ad submission are now unlocked.`
       : note ||
         "Your verification was rejected. Open Settings to review the note and submit updated proof.";
-  const { error: notificationError } = await supabase.from("notifications").insert({
+  const { error: notificationError } = await insertNotifications({
     actor_id: userId,
     body: notificationBody.slice(0, 240),
     href: "/account#verification-settings",

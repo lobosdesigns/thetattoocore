@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import Stripe from "stripe";
 import { sendHostgatorEmail } from "@/lib/mail/hostgator";
+import { insertNotifications } from "@/lib/notification-write";
 import { siteName, siteUrl, supportEmail } from "@/lib/site";
 import {
   createStripeClient,
@@ -333,7 +334,7 @@ async function notifyMerchSellersAboutPaidOrders(
   }));
 
   if (notifications.length) {
-    await supabase.from("notifications").insert(notifications);
+    await insertNotifications(notifications);
     revalidatePath("/notifications");
   }
 
@@ -505,7 +506,7 @@ async function markCheckoutSession({
   }));
 
   if (buyerPaymentNotifications.length) {
-    await supabase.from("notifications").insert(buyerPaymentNotifications);
+    await insertNotifications(buyerPaymentNotifications);
     revalidatePath("/notifications");
   }
 
@@ -610,7 +611,7 @@ async function markAdCheckoutSession({
   }));
 
   if (adPaymentNotifications.length) {
-    await supabase.from("notifications").insert(adPaymentNotifications);
+    await insertNotifications(adPaymentNotifications);
     revalidatePath("/notifications");
   }
 
@@ -725,7 +726,7 @@ async function markBookingCheckoutSession({
   }
 
   if (notifications.length) {
-    await supabase.from("notifications").insert(notifications);
+    await insertNotifications(notifications);
     revalidatePath("/notifications");
   }
 
@@ -780,7 +781,7 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
   }));
 
   if (refundNotifications.length) {
-    await supabase.from("notifications").insert(refundNotifications);
+    await insertNotifications(refundNotifications);
   }
 
   for (const order of refundedOrders ?? []) {
@@ -838,7 +839,7 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
   }));
 
   if (adRefundNotifications.length) {
-    await supabase.from("notifications").insert(adRefundNotifications);
+    await insertNotifications(adRefundNotifications);
   }
 
   for (const campaign of refundedAds ?? []) {
@@ -893,7 +894,7 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
   ]);
 
   if (bookingRefundNotifications.length) {
-    await supabase.from("notifications").insert(bookingRefundNotifications);
+    await insertNotifications(bookingRefundNotifications);
   }
 
   for (const booking of refundedBookings ?? []) {

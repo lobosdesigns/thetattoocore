@@ -6,6 +6,7 @@ import {
   notificationPreferenceSelect,
   type NotificationPreferenceProfile,
 } from "@/lib/notifications";
+import { insertNotifications } from "@/lib/notification-write";
 import { createClient } from "@/lib/supabase/server";
 import { cleanExternalUrl } from "@/lib/urls";
 
@@ -124,7 +125,7 @@ async function notifyGigTag({
 
   if (!allowsInAppNotification(ownerProfile, "marketplace_gig")) return;
 
-  await supabase.from("notifications").insert({
+  await insertNotifications({
     actor_id: actorId,
     body: `${actorName} tagged you in a Gig.`,
     href: `/gigs/${gigId}`,

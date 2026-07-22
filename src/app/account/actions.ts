@@ -9,6 +9,7 @@ import {
   notificationPreferenceSelect,
   type NotificationPreferenceProfile,
 } from "@/lib/notifications";
+import { insertNotifications } from "@/lib/notification-write";
 import { siteName, siteUrl, supportEmail } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -964,7 +965,7 @@ export async function markMerchSaleFulfilled(formData: FormData) {
       .maybeSingle<NotificationPreferenceProfile>();
 
     if (allowsInAppNotification(buyerPreferences, "marketplace_gig")) {
-      await supabase.from("notifications").insert({
+      await insertNotifications({
         actor_id: claims.sub,
         body: trackingNumber
           ? `Tracking ${trackingCarrier ? `${trackingCarrier} ` : ""}${trackingNumber}`.slice(
@@ -1312,7 +1313,7 @@ export async function respondBookingRequest(formData: FormData) {
     .maybeSingle<NotificationPreferenceProfile>();
 
   if (allowsInAppNotification(clientPreferences, "message")) {
-    await admin.from("notifications").insert({
+    await insertNotifications({
       actor_id: claims.sub,
       body:
         decision === "accept"
@@ -1422,7 +1423,7 @@ export async function cancelBookingRequest(formData: FormData) {
   ]);
 
   if (allowsInAppNotification(artistPreferences, "message")) {
-    await admin.from("notifications").insert({
+    await insertNotifications({
       actor_id: claims.sub,
       body: `${client?.display_name ?? "Client"} cancelled before deposit payment.`,
       href: "/account#booking-settings",
@@ -1518,7 +1519,7 @@ export async function cancelAcceptedBookingAsArtist(formData: FormData) {
   ]);
 
   if (allowsInAppNotification(clientPreferences, "message")) {
-    await admin.from("notifications").insert({
+    await insertNotifications({
       actor_id: claims.sub,
       body: `${artist?.display_name ?? "Artist"} cancelled before deposit payment.`,
       href: `/u/${artist?.username ?? ""}#booking-request`,

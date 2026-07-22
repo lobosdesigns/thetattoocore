@@ -24,6 +24,20 @@ const source = {
   migration: read(
     "supabase/migrations/20260722114857_native_push_devices.sql",
   ),
+  notificationAccessMigration: read(
+    "supabase/migrations/20260722132614_notification_writes_service_role_only.sql",
+  ),
+  notificationProducers: [
+    read("src/app/actions.ts"),
+    read("src/app/account/actions.ts"),
+    read("src/app/admin/actions.ts"),
+    read("src/app/api/gigs/route.ts"),
+    read("src/app/api/stripe/webhook/route.ts"),
+    read("src/app/messages/actions.ts"),
+    read("src/app/notifications/actions.ts"),
+    read("src/app/u/[username]/actions.ts"),
+  ],
+  notificationWriter: read("src/lib/notification-write.ts"),
   nativePackage: read("native/thetattoocore-mobile/package.json"),
   profileForm: read("src/app/account/profile-form.tsx"),
   provider: read("src/app/native-notification-provider.tsx"),
@@ -136,6 +150,32 @@ const checks = [
       source.browserApi.includes(".insert({") &&
       !source.browserApi.includes(".upsert(") &&
       source.browserApi.includes("webPushSubscriptionCookie"),
+  },
+  {
+    label: "notification creation is restricted to the shared server-only writer",
+    ok:
+      source.notificationWriter.includes('import "server-only"') &&
+      source.notificationWriter.includes("createAdminClient()") &&
+      source.notificationWriter.includes('.from("notifications").insert(rows)') &&
+      source.notificationProducers.every(
+        (producer) =>
+          !/\.from\("notifications"\)\s*\.insert\(/s.test(producer),
+      ) &&
+      source.notificationProducers.every((producer) =>
+        producer.includes("insertNotifications"),
+      ) &&
+      source.notificationAccessMigration.includes(
+        'drop policy if exists "Users can create actor notifications"',
+      ) &&
+      source.notificationAccessMigration.includes(
+        "revoke all privileges on table public.notifications from authenticated",
+      ) &&
+      source.notificationAccessMigration.includes(
+        "grant select, update, delete on table public.notifications to authenticated",
+      ) &&
+      source.notificationAccessMigration.includes(
+        "grant select, insert, update, delete on table public.notifications to service_role",
+      ),
   },
   {
     label: "per-device opt-out does not overwrite the account alert master switch",
