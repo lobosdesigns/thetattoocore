@@ -64,14 +64,18 @@ live, enabled, or ready.
 ## Native Push Config Probe
 
 Run `npm.cmd run qa:native-push` from the repository root before changing a
-native notification build. The probe reports only `ready` or `pending` states;
+native notification build. The probe reports only `ready` or `pending` states
+for bridge wiring, private configuration, the inactive staging guard, and static
+activation readiness;
 it never prints app configuration values, device tokens, signing identifiers,
 or notification payloads. The normal probe exits successfully so it can record
 an honest staged state. `npm.cmd run qa:native-push:required` is the fail-closed
 release gate and must remain failing until both platforms have their private
-configuration, native capability wiring, and tested client registration path.
+configuration, native capability wiring, and client/server registration path.
 The iOS checks also require an iOS FCM token bridge; APNs registration callbacks
-alone do not produce the FCM token required by the planned delivery path.
+alone do not produce the FCM token required by the planned delivery path. The
+staging guard is intentionally not part of activation readiness because its
+disabled permission/capability state is mutually exclusive with activation.
 
 The cross-platform bridge is staged with its staging guard active: automatic
 token creation is disabled on both platforms, Android analytics collection is
@@ -158,8 +162,10 @@ public-submission build.
 
 | Release path | Checked-in compile/target SDK | Required action | Repo-safe result |
 | --- | ---: | --- | --- |
-| Google Play internal testing before the API 36 deadline | Previous v1 upload may still be `35 / 35`; checked-in wrapper is now `36 / 36` | Keep the existing internal-test build only while store review remains internal and the release date allows it. Rebuild before widening review. | Record release track, version code/name, test date, and pass/fail only. |
-| Google Play public submission or update on or after August 31, 2026 | `36 / 36` required; next checked-in upload target is version code `2` / version name `1.0.1` | Build from the checked-in API 36 wrapper, sign a fresh upload bundle, and rerun wrapper plus real-device QA. | Record API `36 / 36` rebuild proof, version code/name, device QA date, and pass/fail only. |
+| Current Google Play closed test | Published release `1.0.1 (2)` and checked-in wrapper are `36 / 36` | Keep version code `2` as the served tester baseline and collect tester participation/duration evidence. Do not upload the same version code again. | Record release track, version code/name, test date, device model, and pass/fail only. |
+| Google Play replacement or update on or after August 31, 2026 | `36 / 36` required; current closed-test release is version code `2` / version name `1.0.1` | Increment above version code `2`, build from the checked-in API 36 wrapper, sign a fresh upload bundle, and rerun wrapper plus real-device QA. | Record API `36 / 36` rebuild proof, version code/name, device QA date, and pass/fail only. |
+
+Any replacement must increment above version code `2`; never reuse a version code that Google Play has already served.
 
 ## Local Build Commands
 

@@ -505,9 +505,9 @@ const checks = [
       source.readiness.includes("Apple iOS `1.0` build `1.0 (3)` is submitted for App Review") &&
       source.readiness.includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
       source.readiness.includes("age/content rating, Accessibility Nutrition Labels, Google Play closed-test tester opt-in/duration evidence if required, and final console validation") &&
-      source.readiness.includes("Closed testing - Alpha release `1 (1.0)` remains available to selected testers") &&
-      source.readiness.includes("The same Google Group tester community as the Lobos Designs closed test remains attached") &&
-      source.readiness.includes("API 36 update `1.0.1 (2)` was uploaded at 100% of the selected tester audience and submitted for review") &&
+      source.readiness.includes("Closed testing - Alpha now serves API 36 release `1.0.1 (2)`") &&
+      source.readiness.includes("existing Google Group community") &&
+      source.readiness.includes("authorized Android 16 device confirmed installed Play build `1.0.1 (2)` with target SDK 36") &&
       (source.readiness.includes("final content-rating summary/save handoff, and any required closed-test production-access evidence") ||
         source.readiness.includes("14-day production-access evidence still needs eligible tester opt-in/install proof")) &&
       source.readiness.includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&

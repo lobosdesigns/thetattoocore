@@ -58,7 +58,7 @@ This folder is the starting point for Apple TestFlight and Google Play closed/in
 10. On Windows, use the checklist's Android connected-device probe with
    `%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe`; a plugged-in phone only
    counts after `adb devices -l` shows an authorized device and the installed
-   package build matches the Play testing release under review.
+   package build matches the current Play closed-testing release.
    - The probe starts the local ADB server before listing devices and prints
      `ANDROID_QA adb_server=started` or `ANDROID_QA adb_server=start failed` as
      a repo-safe setup status.
@@ -80,18 +80,18 @@ This folder is the starting point for Apple TestFlight and Google Play closed/in
      gesture or three-button navigation area.
 
 Android packaging is configured on this Windows machine. A signed Google Play upload bundle builds at `android/app/build/outputs/bundle/release/app-release.aab` when the local signing environment variables are set. On July 18, 2026, the signed v1 bundle was verified and copied to the Desktop as `TheTattooCore-app-release-v1-signed.aab` with SHA-256 `18E16D3CB5AEED158C33BF9882AC6920D6A7CB744697568E71C32631BC893B65`. The upload keystore and recovery details are intentionally kept out of git; the local recovery note is saved on the Desktop as `TheTattooCore Android Upload Key.txt`. iOS packaging requires the Mac/Xcode path.
-Android 16 / API 36 tooling is installed on this Windows machine, and the checked-in wrapper targets `36 / 36`. The next checked-in Android upload target is version code `2` / version name `1.0.1`, so a fresh API 36 bundle can be uploaded without colliding with the already-uploaded v1 internal-test artifact. On July 22, 2026, the signed API 36 bundle was rebuilt after the system-bar inset fix and copied to the Desktop as `TheTattooCore-app-release-v2-1.0.1-api36-signed.aab` with SHA-256 `291B730C457EC4753FA58DCA913B7CF950E2FA42CE4A17E79299F61315505275`. Upload that bundle to the intended Google Play track, then rerun wrapper and real-device QA before selecting any Google Play submission/update track on or after August 31, 2026.
+Android 16 / API 36 tooling is installed on this Windows machine, and the checked-in wrapper targets `36 / 36`. The current closed-test release is version code `2` / version name `1.0.1`; Google Play reported it published on July 22, 2026, and an authorized Android 16 device confirmed that installed build. The signed API 36 bundle was rebuilt after the system-bar inset fix and copied to the Desktop as `TheTattooCore-app-release-v2-1.0.1-api36-signed.aab` with SHA-256 `291B730C457EC4753FA58DCA913B7CF950E2FA42CE4A17E79299F61315505275`. Any replacement must increment above version code `2`, then rerun wrapper and real-device QA before selecting a later Google Play submission/update track.
 
 ## Android Release Target Handoff
 
 | Release path | Current compile/target SDK | Status |
 | --- | ---: | --- |
-| Internal testing before the API 36 deadline | Previous v1 upload may still be `35 / 35`; checked-in wrapper targets `36 / 36` | Existing internal-test track only; rebuild before widening review. |
-| Public submission or update on or after August 31, 2026 | `36 / 36`; next upload target `2` / `1.0.1` | Ready for a fresh signed rebuild plus real-device QA evidence before track selection. |
+| Current Play closed-test release | `36 / 36`; published `2` / `1.0.1` | Installed-build proof passed on Android 16; continue tester participation and duration evidence. |
+| Replacement or update on or after August 31, 2026 | `36 / 36`; next version code above `2` | Requires a fresh signed rebuild plus real-device QA evidence before track selection. |
 
 ## Store Path
 
-- Google Play: closed/internal testing first, with the active closed-test served build and any staged API 36 update bundle validated before wider release.
+- Google Play: closed/internal testing first, with the current API 36 closed-test release and tester participation/duration evidence validated before wider release.
 - Apple: TestFlight/App Review handoff first, with status changes and reviewer messages archived privately.
 - Public release waits for final legal review, store screenshots, data-safety/privacy answers, and production payment policy review.
 - Verified app links/universal links wait on final signing details and domain association files.

@@ -237,7 +237,7 @@ const checks = [
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("August 31, 2026") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Android 16 / API 36") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("target Android 16 / API 36") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checked-in Android wrapper and submitted update `1.0.1 (2)` target API 36") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checked-in Android wrapper now targets API 36") &&
       docs["docs/APP_STORE_READINESS.md"].includes("targetSdkVersion` set to 36") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not request precise device location") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not prompt on first open") &&
@@ -496,9 +496,9 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android automation not yet available") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("passing Android console/log review") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Native build/install evidence should use the matrix") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play Closed testing - Alpha release `1 (1.0)` is active and available to selected testers") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("API 36 update `1.0.1 (2)` is uploaded at 100% of the selected tester audience and in review") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Do not upload the same version code again") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play Closed testing - Alpha now serves API 36 release `1.0.1 (2)`") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("authorized Android 16 device reports Play build `1.0.1 (2)` with target SDK 36") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Do not upload version code `2` again") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("## Google Play Tester Install Handoff") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("same account that belongs to the configured tester community") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("confirm the account has opted in before opening the Android join link") &&
@@ -531,10 +531,10 @@ const checks = [
       docs["native/thetattoocore-mobile/README.md"].includes("ANDROID_QA adb_server=start failed") &&
       docs["native/thetattoocore-mobile/README.md"].includes("waits briefly for USB/debug authorization") &&
       docs["native/thetattoocore-mobile/README.md"].includes("authorized device") &&
-      docs["native/thetattoocore-mobile/README.md"].includes("Play testing release under review") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("current Play closed-testing release") &&
       docs["native/thetattoocore-mobile/README.md"].includes("Google Play closed/internal testing") &&
-      docs["native/thetattoocore-mobile/README.md"].includes("active closed-test served build") &&
-      docs["native/thetattoocore-mobile/README.md"].includes("staged API 36 update bundle"),
+      docs["native/thetattoocore-mobile/README.md"].includes("current API 36 closed-test release") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("tester participation/duration evidence"),
   },
   {
     label: "mobile submission runbook includes Stories, help, and booking deposit QA",
@@ -593,8 +593,8 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple Accessibility Nutrition Labels") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play target API") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Android 16 / API 36") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("staged version code") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("version name `1.0.1` API 36 bundle") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Published closed-test release") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("current API 36 baseline") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play production access") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("12 testers opted in for 14 continuous days") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Official source set checked: Apple App Store Connect App Privacy") &&
@@ -995,19 +995,19 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Age 18+ override") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Closed testing - Alpha release `1 (1.0)` remains available to selected testers") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("The same Google Group tester community as the Lobos Designs closed test remains attached") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("API 36 update `1.0.1 (2)` was uploaded at 100% of the selected tester audience and submitted for review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Closed testing - Alpha now serves API 36 release `1.0.1 (2)`") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("existing Google Group community") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Publishing Overview reported the update published on July 22, 2026") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Monitor App Review status and reviewer messages") &&
       docs["docs/APP_STORE_READINESS.md"].includes("group-member opt-in/install proof and 14-day production-access tester evidence if required") &&
       docs["docs/APP_STORE_READINESS.md"].includes("with account verification and Connect setup still outstanding") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Firebase console is open at the project list/welcome state") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("no TTC Firebase project is selected") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Firebase console is open at the final Create project dialog with Analytics disabled") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("TTC Firebase project has not been created yet") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Native pre-device verification passed") &&
       docs["docs/APP_STORE_READINESS.md"].includes("connected Android 16 phone is authorized") &&
       docs["docs/APP_STORE_READINESS.md"].includes("unsigned Release generic-iOS-device compile with Xcode 26.3") &&
       !docs["docs/APP_STORE_READINESS.md"].includes("native Firebase/FCM delivery") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Complete the Native Push Private Evidence Matrix") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("complete the Native Push Private Evidence Matrix") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private release handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private payment handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private native QA handoff only") &&

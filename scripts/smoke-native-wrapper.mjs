@@ -129,14 +129,15 @@ const androidApi36DocsReady =
   androidApi36SubmissionReady &&
   androidVersionCode >= 2 &&
   androidVersionName === "1.0.1" &&
-  source.nativePrep.includes("checked-in wrapper is now `36 / 36`") &&
+  source.nativePrep.includes("checked-in wrapper are `36 / 36`") &&
   source.nativePrep.includes("Record API `36 / 36` rebuild proof") &&
-  source.nativePrep.includes("next checked-in upload target is version code `2` / version name `1.0.1`") &&
+  source.nativePrep.includes("current closed-test release is version code `2` / version name `1.0.1`") &&
+  source.nativePrep.includes("Any replacement must increment above version code `2`") &&
   source.mobileRunbook.includes("checked-in Android wrapper now targets API 36") &&
-  source.mobileRunbook.includes("next upload target is version code `2` / version name `1.0.1`") &&
+  source.mobileRunbook.includes("Any replacement or later update must increment the version code above `2`") &&
   source.readme.includes("checked-in wrapper targets `36 / 36`") &&
-  source.readme.includes("version code `2` / version name `1.0.1`") &&
-  source.readme.includes("| Public submission or update on or after August 31, 2026 | `36 / 36`; next upload target `2` / `1.0.1` |");
+  source.readme.includes("current closed-test release is version code `2` / version name `1.0.1`") &&
+  source.readme.includes("| Current Play closed-test release | `36 / 36`; published `2` / `1.0.1` |");
 const androidApi35InternalOnly =
   compileSdkVersion === 35 &&
   targetSdkVersion === 35 &&
@@ -328,8 +329,8 @@ const checks = [
       source.readme.includes("set USB mode") &&
       source.readme.includes("accept the computer authorization prompt") &&
       source.readme.includes("authorized device missing TTC package") &&
-      source.readme.includes("active closed-test served build") &&
-      source.readme.includes("staged API 36 update bundle") &&
+      source.readme.includes("current API 36 closed-test release") &&
+      source.readme.includes("tester participation/duration evidence") &&
       source.readme.includes("reviewer messages archived privately") &&
       source.mobileRunbook.includes("Firebase Cloud Messaging") &&
       source.mobileRunbook.includes("Do not request native notification permission"),
@@ -426,7 +427,10 @@ const checks = [
       source.gitignore.includes("**/google-services.json") &&
       source.gitignore.includes("**/GoogleService-Info.plist") &&
       source.nativePushProbe.includes("NATIVE_PUSH_QA staging_guard=") &&
+      source.nativePushProbe.includes("NATIVE_PUSH_QA bridge_result=") &&
+      source.nativePushProbe.includes("NATIVE_PUSH_QA private_config_result=") &&
       source.nativePushProbe.includes("NATIVE_PUSH_QA activation_result=") &&
+      !source.nativePushProbe.includes("const activationReady = checks.every") &&
       source.nativePushProbe.includes("NATIVE_PUSH_QA delivery_evidence=required") &&
       source.nativePushProbe.includes('key: "ios_fcm_token_bridge"') &&
       source.rootPackageJson.includes('"qa:native-push": "node scripts/native-push-qa-probe.mjs"') &&
@@ -438,7 +442,7 @@ const checks = [
       source.readme.includes("Android native alert config stays private-build-only") &&
       source.nativePrep.includes("Enable Firebase/FCM notification delivery only after") &&
       source.mobileRunbook.includes("Firebase project, native app config files") &&
-      source.readiness.includes("native alert delivery is planned but not enabled"),
+      source.readiness.includes("native alert delivery is planned and not enabled"),
     message: checkedInNativePushConfigFiles.length
       ? `Remove native push config from repo before public review: ${checkedInNativePushConfigFiles.join(", ")}`
       : undefined,
@@ -459,8 +463,8 @@ const checks = [
       androidApi36SubmissionReady &&
       androidVersionCode >= 2 &&
       androidVersionName === "1.0.1" &&
-      (source.readiness.includes("next Android upload target is version code `2` / version name `1.0.1`") ||
-        source.readiness.includes("version code `2` / version name `1.0.1` signed upload bundle has been built")) &&
+      source.readiness.includes("Google Play now serves version code `2` / version name `1.0.1`") &&
+      source.readiness.includes("Any replacement must use a version code above `2`") &&
       source.realDeviceQa.includes("versionName` and `versionCode` checked into"),
   },
   {

@@ -21,6 +21,9 @@ const checks = [
       generator.includes('const outputDir = "private-release-handoff"') &&
       generator.includes('const outputPath = join(outputDir, "release-handoff-template.md")') &&
       generator.includes("mkdirSync(outputDir, { recursive: true })") &&
+      generator.includes("if (existsSync(outputPath))") &&
+      generator.includes("copyFileSync(outputPath, backupPath)") &&
+      generator.includes("Preserved existing handoff") &&
       generator.includes("writeFileSync(outputPath, template)"),
   },
   {
@@ -88,8 +91,8 @@ const checks = [
       generator.includes("selected build, 13-inch iPad screenshot upload, primary category, free pricing") &&
       generator.includes("Content Rights, App Privacy, Privacy Policy URL, and Age 18+ override") &&
       generator.includes("submitted-build iPhone/iPad QA evidence only") &&
-      generator.includes("Closed testing - Alpha release 1 (1.0) is served") &&
-      generator.includes("14-day window is counted only after the closed test is live") &&
+      generator.includes("Closed testing - Alpha release 1.0.1 (2) is served") &&
+      generator.includes("applicable production-access window is counted only after eligible testers opt in") &&
       generator.includes("Closed-test tester links and opt-in evidence") &&
       generator.includes("Save Android/web join links privately") &&
       generator.includes("device Play account matches the tester-community member") &&
@@ -102,9 +105,9 @@ const checks = [
       generator.includes("Installed release/version/build") &&
       generator.includes("A missing listing, account mismatch, or unconfirmed web opt-in is a blocker") &&
       generator.includes("API 36 signed upload bundle") &&
-      generator.includes("Version code 2 / version name 1.0.1 API 36 update is uploaded and in review") &&
+      generator.includes("Version code 2 / version name 1.0.1 API 36 update is published and verified installed") &&
       generator.includes("do not upload the same version code again") &&
-      generator.includes("verify the served Play build plus real-device QA after processing") &&
+      generator.includes("archive tester participation/duration evidence") &&
       generator.includes("Console submit/retry evidence") &&
       generator.includes("record the visible error code, page URL, retry path") &&
       generator.includes("whether reload/new-tab retry was attempted") &&

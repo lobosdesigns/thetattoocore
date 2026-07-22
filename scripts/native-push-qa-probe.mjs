@@ -108,10 +108,6 @@ const checks = [
       source.iosPodfile.includes("CapacitorFirebaseMessaging"),
   },
   {
-    key: "ios_activation_lock",
-    ready: iosActivationLocked,
-  },
-  {
     key: "client_registration_flow",
     ready:
       clientSource.includes("@capacitor-firebase/messaging") &&
@@ -137,19 +133,37 @@ for (const check of checks) {
   console.log(`NATIVE_PUSH_QA ${check.key}=${check.ready ? "ready" : "pending"}`);
 }
 
-const configReady = checks
-  .filter(
-    (check) =>
-      check.key !== "client_registration_flow" &&
-      check.key !== "server_registration_flow",
-  )
-  .every((check) => check.ready);
-const activationReady = checks.every((check) => check.ready);
+const checkByKey = new Map(checks.map((check) => [check.key, check.ready]));
+const bridgeCheckKeys = [
+  "cross_platform_bridge_dependency",
+  "android_services_hook",
+  "ios_registration_bridge",
+  "ios_fcm_token_bridge",
+  "client_registration_flow",
+  "server_registration_flow",
+];
+const privateConfigCheckKeys = [
+  "android_private_config",
+  "ios_private_config",
+  "ios_config_target",
+];
+const activationCheckKeys = [
+  ...bridgeCheckKeys,
+  ...privateConfigCheckKeys,
+  "android_permission_enabled",
+  "ios_push_capability",
+];
+const checksReady = (keys) => keys.every((key) => checkByKey.get(key) === true);
+const bridgeReady = checksReady(bridgeCheckKeys);
+const privateConfigReady = checksReady(privateConfigCheckKeys);
+const stagingGuardReady = androidActivationLocked && iosActivationLocked;
+const activationReady = checksReady(activationCheckKeys);
 
+console.log(`NATIVE_PUSH_QA bridge_result=${bridgeReady ? "ready" : "pending"}`);
 console.log(
-  `NATIVE_PUSH_QA staging_guard=${androidActivationLocked && iosActivationLocked ? "ready" : "pending"}`,
+  `NATIVE_PUSH_QA private_config_result=${privateConfigReady ? "ready" : "pending"}`,
 );
-console.log(`NATIVE_PUSH_QA config_result=${configReady ? "ready" : "pending"}`);
+console.log(`NATIVE_PUSH_QA staging_guard=${stagingGuardReady ? "ready" : "pending"}`);
 console.log(`NATIVE_PUSH_QA activation_result=${activationReady ? "ready" : "pending"}`);
 console.log("NATIVE_PUSH_QA delivery_evidence=required");
 

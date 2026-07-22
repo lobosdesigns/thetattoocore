@@ -4,7 +4,7 @@
 
 - TheTattooCore is web/PWA-first at `https://thetattoocore.com/login`.
 - Native Android and iOS beta-wrapper work is starting from `native/thetattoocore-mobile`.
-- Google Play Closed testing - Alpha release `1 (1.0)` is active and available to selected testers through the current tester community, and the Android/web tester join links are saved privately. Android v1 remains the served closed-test artifact while API 36 update `1.0.1 (2)` is uploaded at 100% of the selected tester audience and in review. Do not upload the same version code again.
+- Google Play Closed testing - Alpha now serves API 36 release `1.0.1 (2)` to the selected tester community, and the Android/web tester join links are saved privately. Publishing Overview reported the update published on July 22, 2026, and an authorized Android 16 device confirmed the installed Play build. Do not upload version code `2` again.
 - iOS build `1.0 (3)` was uploaded from Xcode Organizer on July 18, 2026, attached to TTC Internal Testers, and is available for internal TestFlight testing.
 - PWA manifest, icons, splash assets, service worker, support URL, privacy URL, and terms URL are ready for the beta wrapper path.
 - Native wrapper prep lives in `docs/NATIVE_WRAPPER_PREP.md`; follow it before adding native permissions, deep links, checkout handling, push, or store-review changes.
@@ -17,7 +17,7 @@
 - If Google Play shows a production-access testing requirement, move from internal testing to a controlled closed test with the existing tester community or Google Group, keep at least 12 testers opted in for 14 continuous days, and archive the production-access application answers privately before requesting production.
 - Production payment gates live in `docs/PAYMENT_PRODUCTION_READINESS.md` and should pass before real commerce appears in native builds.
 - Final legal review evidence lives in `docs/LEGAL_REVIEW_PREP.md`; keep reviewer notes private and recheck public Terms, Privacy, Support, Help, Child Safety Standards, store metadata, screenshots, and native wrapper behavior against the submitted build.
-- Google Play submissions or updates on or after August 31, 2026 must target Android 16 / API 36. The checked-in Android wrapper and submitted update `1.0.1 (2)` target API 36. Any replacement or later update must increment the version code above `2`, rebuild and sign a fresh upload bundle, and rerun wrapper plus real-device QA before selecting a Google Play track.
+- Google Play submissions or updates on or after August 31, 2026 must target Android 16 / API 36. The checked-in Android wrapper now targets API 36, and published closed-test release `1.0.1 (2)` uses that baseline. Any replacement or later update must increment the version code above `2`, rebuild and sign a fresh upload bundle, and rerun wrapper plus real-device QA before selecting a Google Play track.
 - Visible nudity is not allowed to reduce review and moderation risk.
 - Merch and ads use controlled launch checkout; production payments, seller payouts, taxes, refunds, disputes, and app-store policy review from `docs/PAYMENT_PRODUCTION_READINESS.md` must be finished before real commerce is promoted in native builds.
 
@@ -39,8 +39,9 @@ requirements can change between internal testing and public review.
 - Apple Accessibility Nutrition Labels: evaluate common tasks on the submitted
   iPhone/iPad build before claiming support for any accessibility feature.
 - Google Play target API: new apps and updates submitted on or after August 31,
-  2026 must target Android 16 / API 36 or higher; keep the staged version code
-  `2` / version name `1.0.1` API 36 bundle as the next upload baseline.
+  2026 must target Android 16 / API 36 or higher. Published closed-test release
+  `1.0.1 (2)` is the current API 36 baseline; any replacement must use a version
+  code above `2`.
 - Google Play production access: if the account/app is subject to closed-test
   requirements, keep at least 12 testers opted in for 14 continuous days before
   applying for production access.
@@ -81,7 +82,7 @@ treating a tester download as failed or counting it as release evidence:
 - Confirm Help/Support proof screens show public guide content only, with no private order details, seller payout setup details, support tickets, moderation queues, or admin-only investigation notes.
 - Use the public `/help/beta-app-testing` guide for beta testers so app-wrapper login, signup, reset, Help, Support, media upload, notifications, DMs, booking, Merch, checkout-return, and safe bug-report expectations stay consistent.
 - Run `npm.cmd run verify:app-review-preflight` before final screenshot upload validation, store-console final validation, or reviewer handoff. It checks lint, production build, production environment boundaries, security copy/headers, content-policy/reporting guardrails, theme contrast, payment guardrails, store metadata, PWA assets, native wrapper and staged-alert safety, app-link association endpoints, the repo-safe Android connected-device probe, readiness docs, public routes, Android-profile mobile routes, and iOS-profile mobile routes without counting as real-device or private console evidence.
-- Run `npm.cmd run prepare:private-release-handoff` to create a local ignored handoff template before collecting reviewer credentials, console screenshots, device clips, payment proof, legal notes, or push-delivery evidence. Keep the generated `private-release-handoff/` folder out of git and copy only repo-safe pass/fail summaries back into readiness docs.
+- Run `npm.cmd run prepare:private-release-handoff` to create a local ignored handoff template before collecting reviewer credentials, console screenshots, device clips, payment proof, legal notes, or push-delivery evidence. When a handoff already exists, the generator preserves a timestamped private backup before refreshing the template. Keep the generated `private-release-handoff/` folder out of git and copy only repo-safe pass/fail summaries back into readiness docs.
 - Run `npm.cmd run prepare:private-console-tabs` after saving current launch-console tab titles/URLs to `private-release-handoff/console-tabs.json` when the browser handoff needs a crash-safe restore file. Keep exact console tab URLs in the ignored private handoff folder or Desktop restore file only.
 - Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView and do not push members out to Safari.
 - Run `npm.cmd run smoke:app-links` after every deploy that changes app-link routing or private association identifiers. It should either confirm valid association JSON or the expected fail-closed unavailable response before final identifiers are configured.
@@ -171,9 +172,9 @@ Support:
 3. Add app icons and splash assets from the approved TTC shield assets.
 4. Configure allowed domains for `thetattoocore.com`, auth redirects, current checkout returns, support, privacy, and terms.
 5. Build Android first on this Windows machine if Android tooling is installed; build iOS on the Mac/remote Mac because Xcode is required.
-6. Upload to Google Play closed/internal testing and Apple TestFlight before any public review submission. Google Play Closed testing - Alpha release `1 (1.0)` is available to selected testers, API 36 update `1.0.1 (2)` is in review for that track, and iOS build `1.0 (3)` is available for internal TestFlight testing.
+6. Upload to Google Play closed/internal testing and Apple TestFlight before any public review submission. Google Play Closed testing - Alpha now serves API 36 release `1.0.1 (2)` to eligible testers, and iOS build `1.0 (3)` is available for internal TestFlight testing while App Store version `1.0` waits for review.
    - July 21, 2026 Google Play status: Closed testing - Alpha changes were submitted to review/quick checks with release `1 (1.0)`, United States availability, the existing tester email list, feedback via support email, Advertising ID set to no, Data Safety saved, and the public Child Safety Standards URL saved. Count the 14-day production-access window only after Google accepts/serves the closed test and enough testers opt in; keep tester membership and console screenshots in private handoff only.
-   - July 22, 2026 Google Play status: API 36 update `1.0.1 (2)` was uploaded, assigned to 100% of the selected Alpha tester audience, and submitted for review. Tester opt-in and account verification completed, the remote install request was accepted, and the connected device still reports served Play build `1.0 (1)` until review and processing complete.
+   - July 22, 2026 Google Play status: API 36 update `1.0.1 (2)` was published to the selected Alpha tester audience. Tester opt-in and account verification completed, the eligible-tester listing offers installation, and an authorized Android 16 device reports Play build `1.0.1 (2)` with target SDK 36. Keep tester participation, duration, and production-access evidence private.
 7. Test camera/photo-picker behavior only through normal browser file inputs unless a native upload bridge is added deliberately.
 
 Use `docs/NATIVE_WRAPPER_PREP.md` as the detailed wrapper checklist for navigation, permissions, app links, checkout-return handling, screenshots, and QA.

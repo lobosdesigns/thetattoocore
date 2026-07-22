@@ -42,6 +42,7 @@ const source = {
   ],
   notificationWriter: read("src/lib/notification-write.ts"),
   nativePackage: read("native/thetattoocore-mobile/package.json"),
+  nativeProbe: read("scripts/native-push-qa-probe.mjs"),
   profileForm: read("src/app/account/profile-form.tsx"),
   provider: read("src/app/native-notification-provider.tsx"),
   routeGuard: read("src/lib/notification-route.ts"),
@@ -57,6 +58,27 @@ const explicitEnablePosition = source.provider.indexOf(
 );
 
 const checks = [
+  {
+    label: "native readiness probe separates staging locks from activation",
+    ok: (() => {
+      const activationKeys =
+        source.nativeProbe.match(/const activationCheckKeys = \[([\s\S]*?)\];/)?.[1] ?? "";
+
+      return (
+        source.nativeProbe.includes("const bridgeCheckKeys = [") &&
+        source.nativeProbe.includes("const privateConfigCheckKeys = [") &&
+        source.nativeProbe.includes("NATIVE_PUSH_QA bridge_result=") &&
+        source.nativeProbe.includes("NATIVE_PUSH_QA private_config_result=") &&
+        source.nativeProbe.includes("NATIVE_PUSH_QA staging_guard=") &&
+        source.nativeProbe.includes("NATIVE_PUSH_QA activation_result=") &&
+        activationKeys.includes('"android_permission_enabled"') &&
+        activationKeys.includes('"ios_push_capability"') &&
+        !activationKeys.includes("activation_lock") &&
+        !activationKeys.includes("staging_guard") &&
+        !source.nativeProbe.includes("const activationReady = checks.every")
+      );
+    })(),
+  },
   {
     label: "native delivery uses one Capacitor messaging bridge",
     ok:

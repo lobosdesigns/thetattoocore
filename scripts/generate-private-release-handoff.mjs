@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const outputDir = "private-release-handoff";
@@ -34,9 +34,9 @@ account identifiers out of repo docs.
 | Apple | App Review monitoring and response evidence | App Store Connect shows iOS App Version 1.0 build 1.0 (3) submitted for App Review; archive reviewer messages, status changes, rejection notes, or approval proof privately | pending | |
 | Apple | Submitted-build console field evidence | Confirm selected build, 13-inch iPad screenshot upload, primary category, free pricing, Content Rights, App Privacy, Privacy Policy URL, and Age 18+ override remain saved for the submitted build | pending | |
 | Apple | Accessibility Nutrition Labels evidence | Use submitted-build iPhone/iPad QA evidence only before changing or confirming labels | pending | |
-| Google Play | Closed testing production-access evidence | Confirm Closed testing - Alpha release 1 (1.0) is served to the tester community, tester opt-ins are sufficient, and the 14-day window is counted only after the closed test is live | pending | |
+| Google Play | Closed testing production-access evidence | Confirm Closed testing - Alpha release 1.0.1 (2) is served to the tester community, tester opt-ins are sufficient, and the applicable production-access window is counted only after eligible testers opt in and use the closed test | pending | |
 | Google Play | Closed-test tester links and opt-in evidence | Save Android/web join links privately, confirm the device Play account matches the tester-community member, confirm web opt-in with that account, and record listing/install proof | pending | |
-| Google Play | API 36 signed upload bundle | Version code 2 / version name 1.0.1 API 36 update is uploaded and in review; do not upload the same version code again, and verify the served Play build plus real-device QA after processing | pending | |
+| Google Play | API 36 closed-test release | Version code 2 / version name 1.0.1 API 36 update is published and verified installed on an authorized Android 16 device; do not upload the same version code again, and archive tester participation/duration evidence | pending | |
 | Google Play | Console submit/retry evidence | If Play Console errors before submit, record the visible error code, page URL, retry path, whether reload/new-tab retry was attempted, and whether Publishing overview still shows changes not sent for review | pending | |
 | Payments | Account activation and Connect setup | Dashboard next setup item is Create a test connected account; business model, connected-account test, integration guide, account verification, and identity readiness still need private completion evidence | pending | |
 | Payments | Production app mode preflight | Admin shows explicit mode Needs review, server key mode Test, webhook signing Ready, and checkout blocked until the expected mode is readable and matched | blocked | |
@@ -186,5 +186,11 @@ submitted. Repo-visible summaries should keep only pass/fail/blocker status.
 `;
 
 mkdirSync(outputDir, { recursive: true });
+if (existsSync(outputPath)) {
+  const backupStamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const backupPath = join(outputDir, `release-handoff-template.backup-${backupStamp}.md`);
+  copyFileSync(outputPath, backupPath);
+  console.log(`Preserved existing handoff at ${backupPath}`);
+}
 writeFileSync(outputPath, template);
 console.log(`Created ${outputPath}`);
