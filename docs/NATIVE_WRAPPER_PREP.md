@@ -5,7 +5,7 @@ Use this before creating Android or iOS wrapper projects. The goal is a thin, po
 ## App Shell Position
 
 - Start URL: `https://thetattoocore.com/login`.
-- Keep shared links, support, privacy, terms, account deletion, and public content previews on `thetattoocore.com`.
+- Keep shared links, support, Child Safety Standards, privacy, terms, account deletion, and public content previews on `thetattoocore.com`.
 - Keep server-side auth, moderation, payments, mail, storage, verification, and admin workflows on the web app.
 - Do not place private API keys, service-role keys, payment secrets, mail credentials, admin credentials, or database credentials in native code.
 - Do not add broad native permissions just because the app is wrapped. Add permissions only when a tested feature requires them.
@@ -14,7 +14,7 @@ Use this before creating Android or iOS wrapper projects. The goal is a thin, po
 
 - Allow `https://thetattoocore.com` and same-origin app routes.
 - Allow checkout only through the current review-controlled checkout flow, then return to safe internal app routes.
-- Allow support, privacy, terms, account deletion instructions, and public shared content routes.
+- Allow support, Child Safety Standards, privacy, terms, account deletion instructions, and public shared content routes.
 - Block or open externally any unexpected third-party destinations.
 - Keep all login return paths internal and reject protocol-relative or external return paths.
 
@@ -75,7 +75,7 @@ live, enabled, or ready.
 - Run `npm.cmd run verify` against the web app.
 - Run the full `docs/REAL_DEVICE_QA_CHECKLIST.md` on mobile web before packaging.
 - Before any Google Play submission or update on or after August 31, 2026, use the Android 16 / API 36 tooling now installed on this Windows machine and keep the Android wrapper `compileSdkVersion` and `targetSdkVersion` at 36. Rebuild and sign a fresh upload bundle, then rerun wrapper and real-device QA before selecting a Google Play submission/update track.
-- Confirm `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/support`, `/privacy`, `/terms`, `/messages`, `/notifications`, `/account`, public profiles, public posts, Stories, Stuff, Gigs, Merch, and booking/deposit routes do not reload-loop or overflow horizontally.
+- Confirm `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/support`, `/child-safety-standards`, `/privacy`, `/terms`, `/messages`, `/notifications`, `/account`, public profiles, public posts, Stories, Stuff, Gigs, Merch, and booking/deposit routes do not reload-loop or overflow horizontally.
 - Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView and do not push members out to Safari.
 - Confirm install prompts or browser banners do not block scrolling in the wrapper.
 - Confirm videos do not show a visible download control in the wrapper media player.
@@ -87,7 +87,7 @@ live, enabled, or ready.
 1. Keep the wrapper in `native/thetattoocore-mobile`.
 2. Point the wrapper to `/login`.
 3. Reuse TTC shield icons, maskable icon, splash, and store screenshots.
-4. Configure app links/universal links for public profile, post, Story, Gossip, Stuff, Gigs, Merch, booking, support, privacy, and terms routes.
+4. Configure app links/universal links for public profile, post, Story, Gossip, Stuff, Gigs, Merch, booking, support, Child Safety Standards, privacy, and terms routes.
 5. Keep native permissions minimal.
 6. Run Android internal testing and TestFlight before public submission.
 7. Re-run real-device QA after every wrapper permission, deep-link, checkout, push, or upload change.
@@ -96,7 +96,8 @@ live, enabled, or ready.
 Deep-link wiring is started in the wrapper. Before public release, add the final
 domain association files using the signed Android certificate fingerprint and
 the Apple team/app identifier, then confirm profile, post, Story, Gossip, Stuff,
-Gigs, Merch, booking, support, privacy, and terms links open inside the app.
+Gigs, Merch, booking, support, Child Safety Standards, privacy, and terms links
+open inside the app.
 iOS universal links are deferred for the first TestFlight build until the Apple
 provisioning profile includes the Associated Domains capability.
 
@@ -116,8 +117,8 @@ console screenshots, tester account details, or raw device logs.
 
 | Platform | Association file | Native entitlement or manifest proof | Device proof | Repo-safe result |
 | --- | --- | --- | --- | --- |
-| Android | `/.well-known/assetlinks.json` published on `thetattoocore.com` and `www.thetattoocore.com`, using the Google Play app-signing certificate fingerprint for `com.thetattoocore.app`. | Release manifest declares verified HTTPS app links with `android:autoVerify="true"` for the public TTC routes and the signed bundle installed from the intended Play testing track. | A real Android device opens profile, post, Story, Gossip, Stuff, Gigs, Merch, booking, Support, Privacy, and Terms links inside the app without a chooser or browser bounce. | Record platform, build/version, release track, test date, device model, route set, and pass/fail only. |
-| iOS | `/.well-known/apple-app-site-association` published on `thetattoocore.com` and `www.thetattoocore.com`, using the final Apple team/app identifier for `com.thetattoocore.app`. | Associated Domains capability is present in the provisioning profile and app entitlements for the submitted TestFlight/App Store build. | A real iPhone/TestFlight device opens profile, post, Story, Gossip, Stuff, Gigs, Merch, booking, Support, Privacy, and Terms links inside the app without Safari bounce. | Record platform, build/version, TestFlight group, test date, device model, route set, and pass/fail only. |
+| Android | `/.well-known/assetlinks.json` published on `thetattoocore.com` and `www.thetattoocore.com`, using the Google Play app-signing certificate fingerprint for `com.thetattoocore.app`. | Release manifest declares verified HTTPS app links with `android:autoVerify="true"` for the public TTC routes and the signed bundle installed from the intended Play testing track. | A real Android device opens profile, post, Story, Gossip, Stuff, Gigs, Merch, booking, Support, Child Safety Standards, Privacy, and Terms links inside the app without a chooser or browser bounce. | Record platform, build/version, release track, test date, device model, route set, and pass/fail only. |
+| iOS | `/.well-known/apple-app-site-association` published on `thetattoocore.com` and `www.thetattoocore.com`, using the final Apple team/app identifier for `com.thetattoocore.app`. | Associated Domains capability is present in the provisioning profile and app entitlements for the submitted TestFlight/App Store build. | A real iPhone/TestFlight device opens profile, post, Story, Gossip, Stuff, Gigs, Merch, booking, Support, Child Safety Standards, Privacy, and Terms links inside the app without Safari bounce. | Record platform, build/version, TestFlight group, test date, device model, route set, and pass/fail only. |
 
 Do not treat URL scheme handling, simulator-only checks, browser-sized mobile QA,
 or unverified association files as public-release proof for app links.

@@ -200,6 +200,7 @@ const checks = [
       source.androidManifest.includes('android:host="www.thetattoocore.com"') &&
       source.nativePrep.includes("Deep-link wiring is started in the wrapper") &&
       source.nativePrep.includes("iOS universal links are deferred for the first TestFlight build") &&
+      source.nativePrep.includes("support, Child Safety Standards, privacy, and terms routes") &&
       source.mobileRunbook.includes("Confirm public shared links open in the wrapper"),
   },
   {
@@ -212,7 +213,7 @@ const checks = [
       source.nativePrep.includes('android:autoVerify="true"') &&
       source.nativePrep.includes("`/.well-known/apple-app-site-association`") &&
       source.nativePrep.includes("Associated Domains capability") &&
-      source.nativePrep.includes("profile, post, Story, Gossip, Stuff, Gigs, Merch, booking, Support, Privacy, and Terms links") &&
+      source.nativePrep.includes("profile, post, Story, Gossip, Stuff, Gigs, Merch, booking, Support, Child Safety Standards, Privacy, and Terms links") &&
       source.nativePrep.includes("Do not treat URL scheme handling, simulator-only checks, browser-sized mobile QA") &&
       source.nativePrep.includes("Do not commit signing") &&
       source.mobileRunbook.includes("Verified app-link and universal-link proof should use the matrix") &&
