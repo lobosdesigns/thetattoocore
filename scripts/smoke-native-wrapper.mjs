@@ -354,7 +354,8 @@ const checks = [
       androidApi36SubmissionReady &&
       androidVersionCode >= 2 &&
       androidVersionName === "1.0.1" &&
-      source.readiness.includes("next Android upload target is version code `2` / version name `1.0.1`") &&
+      (source.readiness.includes("next Android upload target is version code `2` / version name `1.0.1`") ||
+        source.readiness.includes("version code `2` / version name `1.0.1` signed upload bundle has been built")) &&
       source.realDeviceQa.includes("versionName` and `versionCode` checked into"),
   },
   {
