@@ -482,6 +482,7 @@ const checks = [
     status: [200],
     includes: [
       "Support",
+      'rel="canonical" href="https://thetattoocore.com/support"',
       "Help Center",
       'href="/help"',
       "Request deletion",
@@ -518,6 +519,7 @@ const checks = [
     status: [200],
     includes: [
       "Help Center",
+      'rel="canonical" href="https://thetattoocore.com/help"',
       "Search Help Center",
       'href="/settings/help"',
       "I need help with",
@@ -822,6 +824,7 @@ const checks = [
     status: [200],
     includes: [
       "Privacy",
+      'rel="canonical" href="https://thetattoocore.com/privacy"',
       "Account And Profile Data",
       "Commerce And Payments",
       "raw payment or payout credentials",
@@ -836,6 +839,7 @@ const checks = [
     status: [200],
     includes: [
       "Terms",
+      'rel="canonical" href="https://thetattoocore.com/terms"',
       "visible nudity is not allowed",
       "No AI And No Scratchers",
       "Stuff, Merch, And Gigs",
