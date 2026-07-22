@@ -408,11 +408,13 @@ const checks = [
       source.nativePushProbe.includes("NATIVE_PUSH_QA staging_guard=") &&
       source.nativePushProbe.includes("NATIVE_PUSH_QA activation_result=") &&
       source.nativePushProbe.includes("NATIVE_PUSH_QA delivery_evidence=required") &&
+      source.nativePushProbe.includes('key: "ios_fcm_token_bridge"') &&
       source.rootPackageJson.includes('"qa:native-push": "node scripts/native-push-qa-probe.mjs"') &&
       source.rootPackageJson.includes('"qa:native-push:required": "node scripts/native-push-qa-probe.mjs --require-ready"') &&
       source.nativePrep.includes("The Android google-services plugin stays conditional") &&
       source.nativePrep.includes("npm.cmd run qa:native-push") &&
       source.nativePrep.includes("staging guard") &&
+      source.nativePrep.includes("iOS FCM token bridge") &&
       source.readme.includes("Android native alert config stays private-build-only") &&
       source.nativePrep.includes("Enable Firebase/FCM notification delivery only after") &&
       source.mobileRunbook.includes("Firebase project, native app config files") &&

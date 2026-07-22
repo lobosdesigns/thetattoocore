@@ -18,6 +18,7 @@ const files = {
   iosConfig: `${wrapperRoot}/ios/App/App/GoogleService-Info.plist`,
   iosEntitlements: `${wrapperRoot}/ios/App/App/App.entitlements`,
   iosProject: `${wrapperRoot}/ios/App/App.xcodeproj/project.pbxproj`,
+  iosPodfile: `${wrapperRoot}/ios/App/Podfile`,
   packageJson: `${wrapperRoot}/package.json`,
 };
 
@@ -50,7 +51,7 @@ const androidActivationLocked =
 
 const checks = [
   {
-    key: "bridge_dependency",
+    key: "android_bridge_dependency",
     ready:
       source.packageJson.includes('"@capacitor/push-notifications": "7.0.7"') &&
       source.androidPluginSettings.includes("include ':capacitor-push-notifications'") &&
@@ -91,6 +92,12 @@ const checks = [
     ready:
       source.iosAppDelegate.includes("capacitorDidRegisterForRemoteNotifications") &&
       source.iosAppDelegate.includes("capacitorDidFailToRegisterForRemoteNotifications"),
+  },
+  {
+    key: "ios_fcm_token_bridge",
+    ready:
+      source.packageJson.includes('"@capacitor-firebase/messaging"') ||
+      source.iosPodfile.includes("FirebaseMessaging"),
   },
   {
     key: "client_registration_flow",

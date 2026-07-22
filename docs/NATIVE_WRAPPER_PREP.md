@@ -68,6 +68,8 @@ or notification payloads. The normal probe exits successfully so it can record
 an honest staged state. `npm.cmd run qa:native-push:required` is the fail-closed
 release gate and must remain failing until both platforms have their private
 configuration, native capability wiring, and tested client registration path.
+The iOS checks also require an iOS FCM token bridge; APNs registration callbacks
+alone do not produce the FCM token required by the planned delivery path.
 
 The Android bridge is staged with its staging guard active: automatic token
 creation and analytics collection are disabled, and the Android notification
