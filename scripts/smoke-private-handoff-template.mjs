@@ -89,6 +89,10 @@ const checks = [
       generator.includes("submitted-build iPhone/iPad QA evidence only") &&
       generator.includes("Closed testing - Alpha is served") &&
       generator.includes("14-day window is counted only after the closed test is live") &&
+      generator.includes("Closed-test tester links and opt-in evidence") &&
+      generator.includes("Save Android/web join links privately") &&
+      generator.includes("tester community access") &&
+      generator.includes("group-member opt-in/install proof") &&
       generator.includes("API 36 signed upload bundle") &&
       generator.includes("Build from the checked-in API 36 wrapper") &&
       generator.includes("sign a fresh upload bundle privately") &&
@@ -102,6 +106,7 @@ const checks = [
       generator.includes("reload and saved-tab retry pending") &&
       generator.includes("Next retry owner") &&
       generator.includes("Google Play API 36 signed upload bundle") &&
+      generator.includes("Google Play closed-test tester links") &&
       generator.includes("Google Play phone screenshots") &&
       generator.includes("Google Play feature graphic") &&
       generator.includes("App Store iPhone 6.5-inch screenshots") &&

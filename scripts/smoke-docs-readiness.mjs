@@ -966,10 +966,10 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Age 18+ override") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Closed testing - Alpha release `1 (1.0)` is available to selected testers on Google Play") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("tester access was updated on July 22, 2026 to use the same Google Group tester community as the Lobos Designs closed test") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("quick checks cleared, and Publishing overview now says that tester-access change is in review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("The track tester access now uses the same Google Group tester community as the Lobos Designs closed test") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("the track is active, and the Android/web tester join links are saved privately") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Monitor App Review status and reviewer messages") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Play review complete, tester join links saved privately, group-member opt-in/install proof") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("group-member opt-in/install proof and 14-day production-access tester evidence if required") &&
       docs["docs/APP_STORE_READINESS.md"].includes("with account verification and Connect setup still outstanding") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Firebase console is open at the project list/welcome state") &&
       docs["docs/APP_STORE_READINESS.md"].includes("no TTC Firebase project is selected") &&
@@ -983,7 +983,7 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("Store consoles") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Apple iOS `1.0` build `1.0 (3)` is submitted for App Review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Google Play Closed testing - Alpha is available to selected testers") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("tester Google Group access is still in review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("tester Google Group access is active") &&
       docs["docs/APP_STORE_READINESS.md"].includes("13-inch iPad screenshots uploaded") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Content Rights") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Accessibility Nutrition Labels") &&

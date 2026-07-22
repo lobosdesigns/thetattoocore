@@ -503,14 +503,14 @@ const checks = [
       source.readiness.includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
       source.readiness.includes("age/content rating, Accessibility Nutrition Labels, Google Play closed-test tester opt-in/duration evidence if required, and final console validation") &&
       source.readiness.includes("Closed testing - Alpha release `1 (1.0)` is available to selected testers on Google Play") &&
-      source.readiness.includes("tester access was updated on July 22, 2026 to use the same Google Group tester community as the Lobos Designs closed test") &&
-      source.readiness.includes("quick checks cleared, and Publishing overview now says that tester-access change is in review") &&
+      source.readiness.includes("The track tester access now uses the same Google Group tester community as the Lobos Designs closed test") &&
+      source.readiness.includes("the track is active, and the Android/web tester join links are saved privately") &&
       (source.readiness.includes("final content-rating summary/save handoff, and any required closed-test production-access evidence") ||
-        source.readiness.includes("14-day production-access evidence still needs eligible tester opt-in/install proof after access is served")) &&
+        source.readiness.includes("14-day production-access evidence still needs eligible tester opt-in/install proof")) &&
       source.readiness.includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&
       source.readiness.includes("Age 18+ override") &&
       source.readiness.includes("Monitor App Review status and reviewer messages") &&
-      source.readiness.includes("Play review complete, tester join links saved privately, group-member opt-in/install proof") &&
+      source.readiness.includes("group-member opt-in/install proof and 14-day production-access tester evidence if required") &&
       source.readiness.includes("Google Play closed-test tester opt-in/duration evidence if required") &&
       source.readiness.includes("build selection, reviewer test access, developer/legal entity, reviewer contact phone") &&
       source.readiness.includes("Do not store reviewer passwords, private phone numbers, account-owner data, or console identifiers in repo docs") &&
