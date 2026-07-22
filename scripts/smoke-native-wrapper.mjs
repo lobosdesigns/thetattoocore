@@ -20,6 +20,7 @@ const files = {
   gitignore: ".gitignore",
   mobileRunbook: "docs/MOBILE_APP_SUBMISSION_RUNBOOK.md",
   mobileSmoke: "scripts/smoke-mobile-browser.mjs",
+  middleware: "src/middleware.ts",
   nativePrep: "docs/NATIVE_WRAPPER_PREP.md",
   realDeviceQa: "docs/REAL_DEVICE_QA_CHECKLIST.md",
   readiness: "docs/APP_STORE_READINESS.md",
@@ -71,7 +72,13 @@ const forbiddenNativePushDependencies = [
 ];
 
 const nativeSourceForLeakChecks = Object.entries(source)
-  .filter(([key]) => key !== "nativePrep" && key !== "mobileRunbook" && key !== "envExample")
+  .filter(
+    ([key]) =>
+      key !== "nativePrep" &&
+      key !== "mobileRunbook" &&
+      key !== "envExample" &&
+      key !== "middleware",
+  )
   .map(([key, content]) => `${key}\n${content}`)
   .join("\n");
 
@@ -217,6 +224,8 @@ const checks = [
       source.androidAssetLinksRoute.includes("unavailableAssociationResponse") &&
       source.appleAssociationRoute.includes("appleAppSiteAssociationPayload") &&
       source.appleAssociationRoute.includes("unavailableAssociationResponse") &&
+      source.middleware.includes('request.nextUrl.pathname === "/.well-known/assetlinks.json"') &&
+      source.middleware.includes('request.nextUrl.pathname === "/.well-known/apple-app-site-association"') &&
       source.appLinkAssociation.includes("TTC_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS") &&
       source.appLinkAssociation.includes("TTC_IOS_APP_LINK_APP_IDS") &&
       source.appLinkAssociation.includes("delegate_permission/common.handle_all_urls") &&

@@ -1,5 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  androidAssetLinksPayload,
+  appleAppSiteAssociationPayload,
+  associationJsonResponse,
+  unavailableAssociationResponse,
+} from "@/lib/app-link-association";
 
 const securityHeaders = [
   ["X-Content-Type-Options", "nosniff"],
@@ -12,7 +18,7 @@ const securityHeaders = [
   ],
 ] as const;
 
-function applySecurityHeaders(response: NextResponse) {
+function applySecurityHeaders<T extends Response>(response: T): T {
   for (const [key, value] of securityHeaders) {
     response.headers.set(key, value);
   }
@@ -21,6 +27,24 @@ function applySecurityHeaders(response: NextResponse) {
 }
 
 export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname === "/.well-known/assetlinks.json") {
+    const payload = androidAssetLinksPayload();
+
+    return applySecurityHeaders(
+      payload ? associationJsonResponse(payload) : unavailableAssociationResponse(),
+    );
+  }
+
+  if (request.nextUrl.pathname === "/.well-known/apple-app-site-association") {
+    const payload = appleAppSiteAssociationPayload();
+
+    return applySecurityHeaders(
+      payload
+        ? associationJsonResponse(payload, "application/json")
+        : unavailableAssociationResponse(),
+    );
+  }
+
   let response = applySecurityHeaders(NextResponse.next({ request }));
 
   const supabase = createServerClient(
