@@ -5,6 +5,7 @@
 - App URL: https://thetattoocore.com
 - Login / installed app start URL: https://thetattoocore.com/login
 - Support URL: https://thetattoocore.com/support
+- Help URL: https://thetattoocore.com/help
 - Privacy URL: https://thetattoocore.com/privacy
 - Terms URL: https://thetattoocore.com/terms
 

@@ -185,6 +185,7 @@ const checks = [
     label: "public readiness docs use company support contact",
     ok:
       allDocs.includes("support@thetattoocore.com") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Help URL: https://thetattoocore.com/help") &&
       forbiddenContactSnippets.every((snippet) => !allDocs.includes(snippet)),
   },
   {
