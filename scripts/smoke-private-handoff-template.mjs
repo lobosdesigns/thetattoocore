@@ -77,9 +77,11 @@ const checks = [
       generator.includes("14-day window is counted only after the closed test is live") &&
       generator.includes("Console submit/retry evidence") &&
       generator.includes("record the visible error code, page URL, retry path") &&
+      generator.includes("whether reload/new-tab retry was attempted") &&
       generator.includes("Publishing overview still shows changes not sent for review") &&
       generator.includes("## Google Play Closed-Test Retry Log") &&
       generator.includes("Visible status or error code") &&
+      generator.includes("reload and saved-tab retry pending") &&
       generator.includes("Next retry owner") &&
       generator.includes("Google Play phone screenshots") &&
       generator.includes("Google Play feature graphic") &&

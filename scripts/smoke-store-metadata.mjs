@@ -493,13 +493,15 @@ const checks = [
       source.readiness.includes("Apple iOS `1.0` build `1.0 (3)` is submitted for App Review") &&
       source.readiness.includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
       source.readiness.includes("age/content rating, Accessibility Nutrition Labels, Google Play closed-test tester opt-in/duration evidence if required, and final console validation") &&
-      source.readiness.includes("Play Console Dashboard shows app update status `Not yet sent for review`") &&
-      source.readiness.includes("closed testing is `4 of 5` complete") &&
-      source.readiness.includes("Publishing overview shows `Changes not yet submitted for review`") &&
+      source.readiness.includes("Play Console Dashboard previously showed app update status `Not yet sent for review`") &&
+      source.readiness.includes("closed testing was `4 of 5` complete") &&
+      source.readiness.includes("Publishing overview showed `Changes not yet submitted for review`") &&
       (source.readiness.includes("final content-rating summary/save handoff, and any required closed-test production-access evidence") ||
         source.readiness.includes("production access still needs closed-test live status plus opted-in tester duration evidence if required")) &&
-      source.readiness.includes("App Store Connect shows `1 Item Submitted`") &&
+      source.readiness.includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&
       source.readiness.includes("Age 18+ override") &&
+      source.readiness.includes("July 21, 2026 retry from the saved closed-testing tab still stops at Play Console unexpected-error codes") &&
+      source.readiness.includes("record visible unexpected-error codes in the private Google Play retry log") &&
       source.readiness.includes("Monitor App Review status and reviewer messages") &&
       source.readiness.includes("send the release to Google for review") &&
       source.readiness.includes("Google Play closed-test tester opt-in/duration evidence if required") &&

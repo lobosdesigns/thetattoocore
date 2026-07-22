@@ -960,11 +960,13 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("## Current Store Console Snapshot") &&
       docs["docs/APP_STORE_READINESS.md"].includes("| Surface | Repo-safe status | Next action | Private evidence location |") &&
       docs["docs/APP_STORE_READINESS.md"].includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("App Store Connect shows `1 Item Submitted`") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Age 18+ override") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Play Console Dashboard shows app update status `Not yet sent for review`") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("closed testing is `4 of 5` complete") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Publishing overview shows `Changes not yet submitted for review`") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Play Console Dashboard previously showed app update status `Not yet sent for review`") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("closed testing was `4 of 5` complete") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Publishing overview showed `Changes not yet submitted for review`") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("July 21, 2026 retry from the saved closed-testing tab still stops at Play Console unexpected-error codes") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("record visible unexpected-error codes in the private Google Play retry log") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Monitor App Review status and reviewer messages") &&
       docs["docs/APP_STORE_READINESS.md"].includes("send the release to Google for review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("with account verification and Connect setup still outstanding") &&

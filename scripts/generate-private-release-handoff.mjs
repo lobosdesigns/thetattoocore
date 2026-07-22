@@ -37,7 +37,7 @@ account identifiers out of repo docs.
 | Apple | App Privacy and Privacy Policy URL | Use Privacy URL https://thetattoocore.com/privacy; answer App Privacy from docs/DATA_SAFETY_PREP.md and selected build behavior | pending | |
 | Apple | Age rating and Accessibility Nutrition Labels | Use submitted-build iPhone/iPad QA evidence only | pending | |
 | Google Play | Closed testing production-access evidence | Confirm Closed testing - Alpha is served, tester opt-ins are sufficient, and the 14-day window is counted only after the closed test is live | pending | |
-| Google Play | Console submit/retry evidence | If Play Console errors before submit, record the visible error code, page URL, retry path, and whether Publishing overview still shows changes not sent for review | pending | |
+| Google Play | Console submit/retry evidence | If Play Console errors before submit, record the visible error code, page URL, retry path, whether reload/new-tab retry was attempted, and whether Publishing overview still shows changes not sent for review | pending | |
 
 ## Store Console Evidence
 
@@ -72,7 +72,7 @@ identifiers in the private proof folder.
 
 | Attempt date/time | Console page | Visible status or error code | Action tried | Result | Next retry owner |
 | --- | --- | --- | --- | --- | --- |
-| | Closed testing / Publishing overview | pending | pending | pending | |
+| | Closed testing / Publishing overview | pending | reload and saved-tab retry pending | pending | |
 
 ## Reviewer Access
 
