@@ -108,6 +108,8 @@ const paymentAuditTypes = [
   "refund_booking_deposit_requested",
   "merch_refund_review_requested",
   "booking_refund_review_requested",
+  "merch_refund_problem",
+  "ad_refund_problem",
   "booking_refund_problem",
   "ad_campaign_credit_granted",
   "user_ad_credit_granted",
@@ -370,6 +372,8 @@ function auditLabel(value: string) {
   if (value === "booking_refund_review_requested") {
     return "Booking refund review requested";
   }
+  if (value === "merch_refund_problem") return "Merch refund needs review";
+  if (value === "ad_refund_problem") return "Ad refund needs review";
   if (value === "booking_refund_problem") return "Booking refund needs review";
   if (value === "ad_campaign_credit_granted") return "Ad credit granted";
   if (value === "user_ad_credit_granted") return "User ad credit granted";

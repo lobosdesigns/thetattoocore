@@ -224,7 +224,13 @@ const checks = [
       source.signout.includes('from("push_subscriptions")') &&
       source.signout.includes("nativePushDeviceCookie") &&
       source.signout.includes("webPushSubscriptionCookie") &&
+      source.signout.includes("const removalResults = await Promise.all(removals)") &&
+      source.signout.includes("removalResults.some((result) => result.error)") &&
+      source.signout.includes("if (!admin)") &&
+      source.signout.includes("Sign-out%20could%20not%20be%20completed") &&
       source.signout.indexOf("Promise.all(removals)") <
+        source.signout.indexOf("supabase.auth.signOut()") &&
+      source.signout.indexOf("removalResults.some((result) => result.error)") <
         source.signout.indexOf("supabase.auth.signOut()") &&
       source.signoutForm.includes("nativeNotifications.disable()") &&
       source.signoutForm.indexOf("nativeNotifications.disable()") <

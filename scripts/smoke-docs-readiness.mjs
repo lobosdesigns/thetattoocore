@@ -587,6 +587,10 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Last checked: July 22, 2026") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple App Privacy: privacy policy URL is required") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple Content Rights") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple age rating") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("saved higher-age override") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("random or anonymous chat is explicitly covered") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("TTC does not offer anonymous or random chat") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("one iPhone screenshot") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("current App Store Connect help") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("2064 x 2752 or 2048 x 2732") &&
@@ -600,8 +604,10 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Official source set checked: Apple App Store Connect App Privacy") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("screenshot specifications, screenshot upload, release notes") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Repo-safe current-rule source URLs") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("https://developer.apple.com/help/app-store-connect/manage-app-information/set-an-app-age-rating/") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("https://developer.apple.com/news/?id=d75yllv4") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("https://support.google.com/googleplay/android-developer/answer/11926878") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("https://developer.android.com/google/play/requirements/target-sdk") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play target API, Data Safety, testing-track, production-access testing, and payments help") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("private release handoff only"),
   },
@@ -989,7 +995,9 @@ const checks = [
   {
     label: "readiness docs keep final submission blockers explicit",
     ok:
-      docs["docs/APP_STORE_READINESS.md"].includes("## Submission Blocker Matrix") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("## Public Distribution Blocker Matrix") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("## Before Public Distribution Or Any Replacement Submission") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("## Required Before Public Distribution Or Any Replacement Submission") &&
       docs["docs/APP_STORE_READINESS.md"].includes("## Current Store Console Snapshot") &&
       docs["docs/APP_STORE_READINESS.md"].includes("| Surface | Repo-safe status | Next action | Private evidence location |") &&
       docs["docs/APP_STORE_READINESS.md"].includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
@@ -1020,8 +1028,8 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("Accessibility Nutrition Labels") &&
       (docs["docs/APP_STORE_READINESS.md"].includes("Data Safety review") ||
         docs["docs/APP_STORE_READINESS.md"].includes("Data Safety saved")) &&
-      (docs["docs/APP_STORE_READINESS.md"].includes("required closed-test production-access evidence") ||
-        docs["docs/APP_STORE_READINESS.md"].includes("14-day production-access evidence still needs eligible tester opt-in/install proof")) &&
+      docs["docs/APP_STORE_READINESS.md"].includes("one eligible Android install of `1.0.1 (2)` is verified") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("production access still needs private proof of the applicable required tester count and continuous opt-in duration") &&
       docs["docs/APP_STORE_READINESS.md"].includes("closed-test tester opt-in/duration evidence if required") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Legal and policy") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Final counsel-reviewed Terms/Privacy") &&

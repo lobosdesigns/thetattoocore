@@ -29,6 +29,13 @@ requirements can change between internal testing and public review.
 
 - Apple App Privacy: privacy policy URL is required and must match the final
   public Privacy page for the submitted iOS build.
+- Apple age rating: the current questionnaire includes in-app controls,
+  capabilities, content descriptors, and region-specific results. TTC's 18+
+  terms require the saved higher-age override to remain aligned with the
+  submitted build and public legal copy.
+- Apple user-generated content: random or anonymous chat is explicitly covered
+  by Guideline 1.2. TTC does not offer anonymous or random chat; account-bound
+  DMs must keep reporting, blocking, moderation, and reviewer access intact.
 - Apple Content Rights: confirm TTC owns, licenses, or has permission for
   metadata, icons, generated screenshots, and sample content shown in review.
 - Apple screenshots: current App Store Connect help says one iPhone screenshot
@@ -48,8 +55,8 @@ requirements can change between internal testing and public review.
 - Keep source URLs, console screenshots, tester membership, reviewer credentials,
   private contact details, and account identifiers in the private release handoff
   only.
-- Official source set checked: Apple App Store Connect App Privacy, Content Rights, screenshot specifications, screenshot upload, release notes, and Accessibility Nutrition Labels help; Google Play target API, Data Safety, testing-track, production-access testing, and payments help.
-- Repo-safe current-rule source URLs: Apple screenshot specifications `https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/`; Apple screenshot upload states `https://developer.apple.com/help/app-store-connect/manage-app-information/upload-app-previews-and-screenshots/`; Apple screenshot release note `https://developer.apple.com/help/app-store-connect/reference/release-notes/`; Google Play target API `https://support.google.com/googleplay/android-developer/answer/11926878`; Google Play production access testing `https://support.google.com/googleplay/android-developer/answer/14151465`.
+- Official source set checked: Apple App Store Connect App Privacy, Content Rights, age rating, screenshot specifications, screenshot upload, release notes, Accessibility Nutrition Labels, and February 2026 App Review guideline update; Google Play target API, Data Safety, testing-track, production-access testing, and payments help.
+- Repo-safe current-rule source URLs: Apple age rating `https://developer.apple.com/help/app-store-connect/manage-app-information/set-an-app-age-rating/`; Apple screenshot specifications `https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/`; Apple screenshot upload states `https://developer.apple.com/help/app-store-connect/manage-app-information/upload-app-previews-and-screenshots/`; Apple screenshot release note `https://developer.apple.com/help/app-store-connect/reference/release-notes/`; Apple February 2026 guideline update `https://developer.apple.com/news/?id=d75yllv4`; Google Play target API `https://developer.android.com/google/play/requirements/target-sdk`; Google Play production access testing `https://support.google.com/googleplay/android-developer/answer/14151465`.
 
 ## Wrapper Decision
 
@@ -72,7 +79,7 @@ treating a tester download as failed or counting it as release evidence:
 4. After installation, record the tester alias, release track, installed version/build, device model, OS version, test date, and pass/fail result in the private handoff.
 5. If the listing remains unavailable, recheck that the track is Active and Available to selected testers, the release country matches the tester, the selected Play account matches the opted-in account, and tester-community membership has propagated. Do not count a missing listing or account mismatch as an install pass.
 
-## Required Before Store Submission
+## Required Before Public Distribution Or Any Replacement Submission
 
 - Run the real-device checklist in `docs/REAL_DEVICE_QA_CHECKLIST.md` for signup, login, reset password, profile setup, 4U, Stories, Gossip, Stuff, Gigs, Merch browsing, DMs, booking/deposit paths, notifications, reports, blocking, verification upload, payment test paths, and account deletion request.
 - Confirm `npm.cmd run smoke:mobile` covers Support, Help, Child Safety Standards, Privacy, and Terms routes plus the Search/Saved, Booking, Ads, Merch, Verification, and privacy/safety Help Center guides, including the Merch storefront and Merch Help guide, before store screenshots or wrapper QA.

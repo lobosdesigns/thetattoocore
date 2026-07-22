@@ -72,6 +72,16 @@ type DisputedBookingPayment = {
 type DisputedMerchPayment = {
   id: string;
 };
+type RefundProblemMerch = {
+  id: string;
+  status: string;
+};
+type RefundProblemAd = {
+  id: string;
+  payment_status: string;
+  status: string;
+  title: string;
+};
 type RefundProblemBooking = {
   id: string;
   payment_status: string;
@@ -908,10 +918,12 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
 }
 
 async function recordRefundProblem({
+  failureReason,
   paymentIntentId,
   refundId,
   status,
 }: {
+  failureReason: string | null;
   paymentIntentId: string;
   refundId: string;
   status: string | null;
@@ -922,31 +934,74 @@ async function recordRefundProblem({
     throw new Error("Missing Supabase service role key for Stripe webhook.");
   }
 
-  const { data: bookings, error } = await supabase
-    .from("booking_requests")
-    .select("id, title, status, payment_status")
-    .eq("stripe_payment_intent_id", paymentIntentId)
-    .returns<RefundProblemBooking[]>();
+  const [merchResult, adResult, bookingResult] = await Promise.all([
+    supabase
+      .from("merch_orders")
+      .select("id, status")
+      .eq("stripe_payment_intent_id", paymentIntentId)
+      .returns<RefundProblemMerch[]>(),
+    supabase
+      .from("ad_campaigns")
+      .select("id, title, status, payment_status")
+      .eq("stripe_payment_intent_id", paymentIntentId)
+      .returns<RefundProblemAd[]>(),
+    supabase
+      .from("booking_requests")
+      .select("id, title, status, payment_status")
+      .eq("stripe_payment_intent_id", paymentIntentId)
+      .returns<RefundProblemBooking[]>(),
+  ]);
+  const firstError =
+    merchResult.error ?? adResult.error ?? bookingResult.error;
 
-  if (error) {
-    console.error("Webhook booking refund problem lookup failed.", error);
-    throw new Error("Could not inspect booking refund status.");
+  if (firstError) {
+    console.error("Webhook refund problem lookup failed.", firstError);
+    throw new Error("Could not inspect failed refund status.");
   }
 
-  const auditLogs = (bookings ?? []).map((booking) => ({
-    actor_id: null,
-    event_type: "booking_refund_problem",
-    metadata: {
-      booking_payment_status: booking.payment_status,
-      booking_status: booking.status,
-      payment_intent_id: paymentIntentId,
-      refund_id: refundId,
-      refund_status: status,
-    },
-    summary: `Booking refund needs review: ${booking.title}`.slice(0, 180),
-    target_id: booking.id,
-    target_type: "booking_request",
-  }));
+  const sharedMetadata = {
+    failure_reason: failureReason,
+    payment_intent_id: paymentIntentId,
+    refund_id: refundId,
+    refund_status: status,
+  };
+  const auditLogs = [
+    ...(merchResult.data ?? []).map((order) => ({
+      actor_id: null,
+      event_type: "merch_refund_problem",
+      metadata: {
+        ...sharedMetadata,
+        merch_order_status: order.status,
+      },
+      summary: `Merch refund needs review: order ${order.id}`.slice(0, 180),
+      target_id: order.id,
+      target_type: "merch_order",
+    })),
+    ...(adResult.data ?? []).map((campaign) => ({
+      actor_id: null,
+      event_type: "ad_refund_problem",
+      metadata: {
+        ...sharedMetadata,
+        ad_payment_status: campaign.payment_status,
+        ad_status: campaign.status,
+      },
+      summary: `Ad refund needs review: ${campaign.title}`.slice(0, 180),
+      target_id: campaign.id,
+      target_type: "ad_campaign",
+    })),
+    ...(bookingResult.data ?? []).map((booking) => ({
+      actor_id: null,
+      event_type: "booking_refund_problem",
+      metadata: {
+        ...sharedMetadata,
+        booking_payment_status: booking.payment_status,
+        booking_status: booking.status,
+      },
+      summary: `Booking refund needs review: ${booking.title}`.slice(0, 180),
+      target_id: booking.id,
+      target_type: "booking_request",
+    })),
+  ];
 
   if (auditLogs.length) {
     const { error: auditError } = await supabase
@@ -954,8 +1009,8 @@ async function recordRefundProblem({
       .insert(auditLogs);
 
     if (auditError) {
-      console.error("Webhook booking refund problem audit record failed.", auditError);
-      throw new Error("Could not record booking refund review.");
+      console.error("Webhook refund problem audit record failed.", auditError);
+      throw new Error("Could not record failed refund review.");
     }
   }
 
@@ -1269,6 +1324,7 @@ export async function POST(request: Request) {
 
       if (paymentIntentId) {
         await recordRefundProblem({
+          failureReason: refund.failure_reason ?? null,
           paymentIntentId,
           refundId: refund.id,
           status: refund.status,

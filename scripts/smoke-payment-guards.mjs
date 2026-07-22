@@ -516,7 +516,13 @@ checks.push({
     stripeWebhook.includes("constructEventAsync") &&
     stripeWebhook.includes('event.type === "refund.failed"') &&
     stripeWebhook.includes("recordRefundProblem") &&
+    stripeWebhook.includes('event_type: "merch_refund_problem"') &&
+    stripeWebhook.includes('event_type: "ad_refund_problem"') &&
     stripeWebhook.includes('event_type: "booking_refund_problem"') &&
+    stripeWebhook.includes("failureReason: refund.failure_reason ?? null") &&
+    stripeWebhook.includes('from("merch_orders")') &&
+    stripeWebhook.includes('from("ad_campaigns")') &&
+    stripeWebhook.includes('from("booking_requests")') &&
     stripeWebhook.includes("const disputeWebhookEvents") &&
     stripeWebhook.includes('"charge.dispute.created"') &&
     stripeWebhook.includes('"charge.dispute.updated"') &&
@@ -587,14 +593,14 @@ checks.push({
     stripeWebhook.includes('throw new Error("Could not update ad refund status.")') &&
     stripeWebhook.includes('console.error("Webhook booking refund status update failed.", bookingError)') &&
     stripeWebhook.includes('throw new Error("Could not update booking refund status.")') &&
-    stripeWebhook.includes('console.error("Webhook booking refund problem lookup failed.", error)') &&
-    stripeWebhook.includes('throw new Error("Could not inspect booking refund status.")') &&
-    stripeWebhook.includes('console.error("Webhook booking refund problem audit record failed.", auditError)') &&
-    stripeWebhook.includes('throw new Error("Could not record booking refund review.")') &&
+    stripeWebhook.includes('console.error("Webhook refund problem lookup failed.", firstError)') &&
+    stripeWebhook.includes('throw new Error("Could not inspect failed refund status.")') &&
+    stripeWebhook.includes('console.error("Webhook refund problem audit record failed.", auditError)') &&
+    stripeWebhook.includes('throw new Error("Could not record failed refund review.")') &&
     !stripeWebhook.includes('error.message || "Could not update merch refund status."') &&
     !stripeWebhook.includes('adError.message || "Could not update ad refund status."') &&
     !stripeWebhook.includes('bookingError.message || "Could not update booking refund status."') &&
-    !stripeWebhook.includes('error.message || "Could not inspect booking refund status."'),
+    !stripeWebhook.includes('firstError.message || "Could not inspect failed refund status."'),
 });
 checks.push({
   label: "payment webhook hides raw dispute backend errors",
@@ -1170,6 +1176,10 @@ checks.push({
     adminPaymentsPage.includes("paymentDisputeAuditCount") &&
     adminPaymentsPage.includes("bookingRefundReviewCount") &&
     adminPaymentsPage.includes("booking_refund_review_requested") &&
+    adminPaymentsPage.includes("merch_refund_problem") &&
+    adminPaymentsPage.includes("Merch refund needs review") &&
+    adminPaymentsPage.includes("ad_refund_problem") &&
+    adminPaymentsPage.includes("Ad refund needs review") &&
     adminPaymentsPage.includes("booking_refund_problem") &&
     adminPaymentsPage.includes("ad_campaign_credit_granted") &&
     adminPaymentsPage.includes("Ad credit granted") &&

@@ -40,7 +40,7 @@ const publicMetadataKeys = [
 ];
 const publicMetadataText = publicMetadataKeys.map((key) => source[key]).join("\n").toLowerCase();
 const storeScreenshotText = source.screenshotGenerator.toLowerCase();
-const currentBlockerMatrix = source.readiness.slice(source.readiness.indexOf("## Submission Blocker Matrix"));
+const currentBlockerMatrix = source.readiness.slice(source.readiness.indexOf("## Public Distribution Blocker Matrix"));
 
 function pngInfo(path) {
   if (!existsSync(path)) return null;
@@ -508,8 +508,9 @@ const checks = [
       source.readiness.includes("Closed testing - Alpha now serves API 36 release `1.0.1 (2)`") &&
       source.readiness.includes("existing Google Group community") &&
       source.readiness.includes("authorized Android 16 device confirmed installed Play build `1.0.1 (2)` with target SDK 36") &&
-      (source.readiness.includes("final content-rating summary/save handoff, and any required closed-test production-access evidence") ||
-        source.readiness.includes("14-day production-access evidence still needs eligible tester opt-in/install proof")) &&
+      source.readiness.includes("one eligible Android install of `1.0.1 (2)` is verified") &&
+      source.readiness.includes("production access still needs private proof of the applicable required tester count and continuous opt-in duration") &&
+      !currentBlockerMatrix.includes("14-day production-access evidence still needs eligible tester opt-in/install proof") &&
       source.readiness.includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&
       source.readiness.includes("Age 18+ override") &&
       source.readiness.includes("Monitor App Review status and reviewer messages") &&
@@ -590,7 +591,9 @@ const checks = [
       source.screenshotPrep.includes("2752 or 2048 x 2732 portrait PNG/JPEG files") &&
       source.screenshotInventory.includes("Safe draft only; not submission-ready until real-device capture and Play Console upload validation are recorded privately.") &&
       source.screenshotInventory.includes("Safe draft only; not submission-ready until Play Console feature-graphic validation is recorded privately.") &&
-      source.screenshotInventory.includes("Safe draft only; not submission-ready until real-device capture and App Store Connect upload validation are recorded privately.") &&
+      source.screenshotInventory.includes("App Store Connect accepted an iPhone set for submitted build `1.0 (3)`") &&
+      source.screenshotInventory.includes("exact mapping to these generated files and final real-device confirmation remain unverified privately") &&
+      !source.screenshotInventory.includes("not submission-ready until real-device capture and App Store Connect upload validation") &&
       source.screenshotInventory.includes("App Store Connect accepted this set for submitted build `1.0 (3)`") &&
       source.screenshotInventory.includes("final real-device iPad capture confirmation remains pending privately") &&
       !source.screenshotInventory.includes("not submission-ready until App Store Connect iPad upload validation") &&
