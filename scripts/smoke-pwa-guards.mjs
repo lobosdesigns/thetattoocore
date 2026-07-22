@@ -15,6 +15,13 @@ const notificationsPage = readFileSync("src/app/notifications/page.tsx", "utf8")
 const notificationRoute = readFileSync("src/lib/notification-route.ts", "utf8");
 const mobileSmoke = readFileSync("scripts/smoke-mobile-browser.mjs", "utf8");
 const pushRoute = readFileSync("src/app/api/push/subscriptions/route.ts", "utf8");
+const pushPostRoute = pushRoute.slice(
+  pushRoute.indexOf("export async function POST"),
+  pushRoute.indexOf("export async function DELETE"),
+);
+const pushDeleteRoute = pushRoute.slice(
+  pushRoute.indexOf("export async function DELETE"),
+);
 const envExample = readFileSync(".env.example", "utf8");
 const pushMigration = readFileSync(
   "supabase/migrations/20260713183514_push_subscription_foundation.sql",
@@ -406,6 +413,19 @@ const checks = [
       pushRoute.includes("export async function GET") &&
       pushRoute.includes("export async function DELETE") &&
       pushRoute.includes("async function updatePushPreference") &&
+      pushRoute.includes("const maxPushPayloadBytes = 12_000") &&
+      pushRoute.includes('request.headers.get("content-length")') &&
+      pushRoute.includes("body.length > maxPushPayloadBytes") &&
+      pushPostRoute.includes("const userId = await authenticatedUserId();") &&
+      pushPostRoute.includes("const payload = await readPayload(request);") &&
+      pushPostRoute.indexOf("const userId = await authenticatedUserId();") <
+        pushPostRoute.indexOf("const payload = await readPayload(request);") &&
+      pushPostRoute.indexOf("TTC_WEB_PUSH_REGISTRATION_ENABLED") <
+        pushPostRoute.indexOf("const payload = await readPayload(request);") &&
+      pushDeleteRoute.includes("const userId = await authenticatedUserId();") &&
+      pushDeleteRoute.includes("const payload = await readPayload(request);") &&
+      pushDeleteRoute.indexOf("const userId = await authenticatedUserId();") <
+        pushDeleteRoute.indexOf("const payload = await readPayload(request);") &&
       pushRoute.includes("notify_push_enabled: enabled") &&
       pushRoute.includes("enabled: true") &&
       !pushRoute.includes("hasActiveSubscriptions") &&

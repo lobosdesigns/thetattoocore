@@ -16,6 +16,8 @@ type PushPayload = {
   };
 };
 
+const maxPushPayloadBytes = 12_000;
+
 function cleanPushString(value: unknown, maxLength: number) {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
 }
@@ -37,6 +39,24 @@ async function authenticatedUserId() {
     typeof claimsData?.claims?.sub === "string" ? claimsData.claims.sub : null;
 
   return userId;
+}
+
+async function readPayload(request: Request) {
+  const contentLength = Number(request.headers.get("content-length") ?? "0");
+
+  if (Number.isFinite(contentLength) && contentLength > maxPushPayloadBytes) {
+    return null;
+  }
+
+  try {
+    const body = await request.text();
+
+    if (body.length > maxPushPayloadBytes) return null;
+
+    return JSON.parse(body) as PushPayload;
+  } catch {
+    return null;
+  }
 }
 
 async function updatePushPreference({
@@ -96,26 +116,6 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  let payload: PushPayload;
-
-  try {
-    payload = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid subscription." }, { status: 400 });
-  }
-
-  const endpoint = cleanPushString(payload.endpoint, 2000);
-  const p256dhKey = cleanPushString(payload.keys?.p256dh, 500);
-  const authKey = cleanPushString(payload.keys?.auth, 500);
-
-  if (
-    !validEndpoint(endpoint) ||
-    p256dhKey.length < 20 ||
-    authKey.length < 10
-  ) {
-    return NextResponse.json({ error: "Invalid subscription." }, { status: 400 });
-  }
-
   const userId = await authenticatedUserId();
 
   if (!userId) {
@@ -127,6 +127,19 @@ export async function POST(request: Request) {
       { error: "Device alert setup is not available." },
       { status: 503 },
     );
+  }
+
+  const payload = await readPayload(request);
+  const endpoint = cleanPushString(payload?.endpoint, 2000);
+  const p256dhKey = cleanPushString(payload?.keys?.p256dh, 500);
+  const authKey = cleanPushString(payload?.keys?.auth, 500);
+
+  if (
+    !validEndpoint(endpoint) ||
+    p256dhKey.length < 20 ||
+    authKey.length < 10
+  ) {
+    return NextResponse.json({ error: "Invalid subscription." }, { status: 400 });
   }
 
   const admin = createAdminClient();
@@ -216,20 +229,14 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  let payload: { endpoint?: unknown };
-
-  try {
-    payload = await request.json();
-  } catch {
-    payload = {};
-  }
-
-  const endpoint = cleanPushString(payload.endpoint, 2000);
   const userId = await authenticatedUserId();
 
   if (!userId) {
     return NextResponse.json({ error: "Sign in required." }, { status: 401 });
   }
+
+  const payload = await readPayload(request);
+  const endpoint = cleanPushString(payload?.endpoint, 2000);
 
   if (!validEndpoint(endpoint)) {
     return NextResponse.json({ error: "Invalid subscription." }, { status: 400 });
