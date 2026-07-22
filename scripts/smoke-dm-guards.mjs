@@ -113,6 +113,8 @@ const checks = [
       messagePage.includes(".limit(conversationFetchLimit)") &&
       messagePage.includes("const inbox = filteredInbox.slice(0, conversationLimit)") &&
       messagePage.includes("const hasMoreInbox =") &&
+      messagePage.includes("const selectedConversationCandidates = hasSelectedConversationParam") &&
+      messagePage.includes("? inboxBeforeSearch") &&
       messagePage.includes("Conversation was not found or is no longer available.") &&
       messagePage.includes("href={inboxHref({"),
   },

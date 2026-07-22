@@ -851,9 +851,14 @@ export default async function MessagesPage({
             conversation.otherProfile?.username === prefillUsername,
         ) ?? null
       : null;
+  const selectedConversationCandidates = hasSelectedConversationParam
+    ? inboxBeforeSearch
+    : inbox;
   const selectedConversation =
     (hasSelectedConversationParam
-      ? inbox.find((conversation) => conversation.id === requestedConversationId)
+      ? selectedConversationCandidates.find(
+          (conversation) => conversation.id === requestedConversationId,
+        )
       : prefillConversation ?? inbox[0]) ?? null;
   const hasOpenThreadView = Boolean(
     hasSelectedConversationParam || prefillConversation,

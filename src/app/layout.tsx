@@ -49,6 +49,10 @@ export const metadata: Metadata = {
       { type: "image/svg+xml", url: "/icon.svg?v=ttc-shield" },
     ],
   },
+  itunes: {
+    appArgument: siteUrl,
+    appId: "6791179517",
+  },
   manifest: "/manifest.webmanifest",
   metadataBase: new URL(siteUrl),
   keywords: metadataKeywords(siteKeywords),

@@ -77,6 +77,9 @@ const checks = [
       rootLayout.includes("keywords: metadataKeywords(siteKeywords)") &&
       rootLayout.includes('category: "social networking"') &&
       rootLayout.includes("creator: siteName") &&
+      rootLayout.includes("itunes:") &&
+      rootLayout.includes('appId: "6791179517"') &&
+      rootLayout.includes("appArgument: siteUrl") &&
       rootLayout.includes("publisher: siteName") &&
       rootLayout.includes('"max-image-preview": "large"') &&
       rootLayout.includes('"max-snippet": -1') &&
