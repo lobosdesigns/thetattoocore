@@ -67,15 +67,15 @@ const manifestBlockedTerms = [
 const expectedNotificationFallbacks = [
   'return `/p/${notification.subject_id}`',
   'return `/t/${notification.subject_id}`',
-  'return notification.href || "/#stories"',
-  'return notification.href || `/messages?c=${notification.subject_id}`',
-  'return notification.href || `/u/${notification.profiles.username}`',
-  'return notification.href || `/merch/${notification.subject_id}`',
-  'return notification.href || "/account#order-settings"',
-  'return notification.href || "/account#advertising-settings"',
-  'return notification.href || "/account#booking-settings"',
-  'return notification.href || "/account#verification-settings"',
-  'return notification.href || "/notifications"',
+  'return notificationHrefOrFallback(notification, "/#stories")',
+  '`/messages?c=${notification.subject_id}`',
+  '`/u/${notification.profiles.username}`',
+  '`/merch/${notification.subject_id}`',
+  'return notificationHrefOrFallback(notification, "/account#order-settings")',
+  '"/account#advertising-settings"',
+  'return notificationHrefOrFallback(notification, "/account#booking-settings")',
+  '"/account#verification-settings"',
+  'return notificationHrefOrFallback(notification, "/notifications")',
 ];
 const expectedNotificationAllowedPaths = [
   '"/"',
@@ -415,6 +415,9 @@ const checks = [
   {
     label: "service worker allows notification page fallback destinations",
     ok:
+      notificationsPage.includes("function safeNotificationHrefValue") &&
+      notificationsPage.includes("function notificationHrefOrFallback") &&
+      notificationsPage.includes("return `${url.pathname}${url.search}${url.hash}`") &&
       expectedNotificationFallbacks.every((snippet) => notificationsPage.includes(snippet)) &&
       expectedNotificationFallbackRoutePairs.every(
         ([fallbackRoute, allowedRoute]) =>

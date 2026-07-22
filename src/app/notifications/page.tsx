@@ -156,6 +156,47 @@ function subjectLabel(type: string) {
   return type.replaceAll("_", " ");
 }
 
+function safeNotificationHrefValue(value: string | null | undefined) {
+  const href = String(value ?? "").trim();
+
+  if (!href || !href.startsWith("/") || href.startsWith("//") || href.includes("\\")) {
+    return null;
+  }
+
+  let url: URL;
+  try {
+    url = new URL(href, "https://thetattoocore.local");
+  } catch {
+    return null;
+  }
+
+  const allowedPaths = [
+    "/",
+    "/account",
+    "/messages",
+    "/notifications",
+    "/saved",
+    "/search",
+  ];
+  const allowedPrefixes = ["/p/", "/t/", "/u/", "/merch/", "/stuff/", "/gigs/"];
+
+  if (
+    !allowedPaths.includes(url.pathname) &&
+    !allowedPrefixes.some((prefix) => url.pathname.startsWith(prefix))
+  ) {
+    return null;
+  }
+
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
+function notificationHrefOrFallback(
+  notification: Notification,
+  fallback: string,
+) {
+  return safeNotificationHrefValue(notification.href) ?? fallback;
+}
+
 async function getBlockedProfileIds({
   supabase,
   userId,
@@ -184,7 +225,7 @@ function notificationHref(notification: Notification) {
   }
 
   if (notification.subject_type === "post_comment") {
-    return notification.href || "/notifications";
+    return notificationHrefOrFallback(notification, "/notifications");
   }
 
   if (notification.subject_type === "thread_post" && notification.subject_id) {
@@ -192,46 +233,64 @@ function notificationHref(notification: Notification) {
   }
 
   if (notification.subject_type === "thread_comment") {
-    return notification.href || "/notifications";
+    return notificationHrefOrFallback(notification, "/notifications");
   }
 
   if (notification.subject_type === "gig" && notification.subject_id) {
-    return notification.href || `/gigs/${notification.subject_id}`;
+    return notificationHrefOrFallback(
+      notification,
+      `/gigs/${notification.subject_id}`,
+    );
   }
 
   if (notification.subject_type === "story_post") {
-    return notification.href || "/#stories";
+    return notificationHrefOrFallback(notification, "/#stories");
   }
 
   if (notification.subject_type === "conversation" && notification.subject_id) {
-    return notification.href || `/messages?c=${notification.subject_id}`;
+    return notificationHrefOrFallback(
+      notification,
+      `/messages?c=${notification.subject_id}`,
+    );
   }
 
   if (notification.subject_type === "profile" && notification.profiles?.username) {
-    return notification.href || `/u/${notification.profiles.username}`;
+    return notificationHrefOrFallback(
+      notification,
+      `/u/${notification.profiles.username}`,
+    );
   }
 
   if (notification.subject_type === "merch_product" && notification.subject_id) {
-    return notification.href || `/merch/${notification.subject_id}`;
+    return notificationHrefOrFallback(
+      notification,
+      `/merch/${notification.subject_id}`,
+    );
   }
 
   if (notification.subject_type === "merch_order") {
-    return notification.href || "/account#order-settings";
+    return notificationHrefOrFallback(notification, "/account#order-settings");
   }
 
   if (notification.subject_type === "ad_campaign") {
-    return notification.href || "/account#advertising-settings";
+    return notificationHrefOrFallback(
+      notification,
+      "/account#advertising-settings",
+    );
   }
 
   if (notification.subject_type === "booking_request") {
-    return notification.href || "/account#booking-settings";
+    return notificationHrefOrFallback(notification, "/account#booking-settings");
   }
 
   if (notification.subject_type === "license_verification_request") {
-    return notification.href || "/account#verification-settings";
+    return notificationHrefOrFallback(
+      notification,
+      "/account#verification-settings",
+    );
   }
 
-  return notification.href || "/notifications";
+  return notificationHrefOrFallback(notification, "/notifications");
 }
 
 function timeAgo(date: string) {

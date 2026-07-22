@@ -518,14 +518,31 @@ const checks = [
   {
     label: "notification page has safe fallbacks for older notification rows",
     ok:
-      notificationPage.includes('return notification.href || `/messages?c=${notification.subject_id}`') &&
-      notificationPage.includes('return notification.href || `/u/${notification.profiles.username}`') &&
-      notificationPage.includes('return notification.href || `/merch/${notification.subject_id}`') &&
-      notificationPage.includes('return notification.href || "/account#order-settings"') &&
-      notificationPage.includes('return notification.href || "/account#advertising-settings"') &&
-      notificationPage.includes('return notification.href || "/account#booking-settings"') &&
-      notificationPage.includes('return notification.href || "/account#verification-settings"') &&
-      notificationPage.includes('return notification.href || "/notifications"'),
+      notificationPage.includes("function safeNotificationHrefValue") &&
+      notificationPage.includes("function notificationHrefOrFallback") &&
+      notificationPage.includes('return notificationHrefOrFallback(notification, "/#stories")') &&
+      notificationPage.includes("`/messages?c=${notification.subject_id}`") &&
+      notificationPage.includes("`/u/${notification.profiles.username}`") &&
+      notificationPage.includes("`/merch/${notification.subject_id}`") &&
+      notificationPage.includes('return notificationHrefOrFallback(notification, "/account#order-settings")') &&
+      notificationPage.includes('"/account#advertising-settings"') &&
+      notificationPage.includes('return notificationHrefOrFallback(notification, "/account#booking-settings")') &&
+      notificationPage.includes('"/account#verification-settings"') &&
+      notificationPage.includes('return notificationHrefOrFallback(notification, "/notifications")'),
+  },
+  {
+    label: "notification page sanitizes stored hrefs before form submit",
+    ok:
+      notificationPage.includes('!href.startsWith("/")') &&
+      notificationPage.includes('href.startsWith("//")') &&
+      notificationPage.includes('href.includes("\\\\")') &&
+      notificationPage.includes('new URL(href, "https://thetattoocore.local")') &&
+      notificationPage.includes("allowedPaths") &&
+      notificationPage.includes("allowedPrefixes") &&
+      notificationPage.includes("return `${url.pathname}${url.search}${url.hash}`") &&
+      notificationPage.includes('value={href}') &&
+      notificationPage.indexOf("const href = notificationHref(notification)") <
+        notificationPage.indexOf('value={href}'),
   },
   {
     label: "notification open falls back if href parsing fails",
