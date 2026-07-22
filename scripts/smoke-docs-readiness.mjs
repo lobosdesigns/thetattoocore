@@ -547,6 +547,7 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Visible nudity is not allowed") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Email: [enter reviewer account email in console only]") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Password: [enter reviewer password in console only]") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Help URL: https://thetattoocore.com/help") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Reporting, blocking, private-account controls") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Checkout and seller payout release remain gated") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("never commit passwords, access codes, private phone details, or one-time codes") &&

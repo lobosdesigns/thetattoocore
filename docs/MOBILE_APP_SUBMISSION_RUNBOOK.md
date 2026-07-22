@@ -130,6 +130,7 @@ Commerce:
 
 Support:
 - Support URL: https://thetattoocore.com/support
+- Help URL: https://thetattoocore.com/help
 - Privacy URL: https://thetattoocore.com/privacy
 - Terms URL: https://thetattoocore.com/terms
 - Support email: support@thetattoocore.com
