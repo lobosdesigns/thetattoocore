@@ -386,6 +386,9 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Gigs") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Merch") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("DM") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Tag another known test account from 4U, Gossip, Gigs, and comments") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("stale notification that opens to a blocked, missing, or unauthorized page") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("4U, Gossip, Gigs, and comment tagging proof") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Attach a photo/GIF") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("DM access should come from the bottom DM shortcut") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("connected follower/following member's username") &&

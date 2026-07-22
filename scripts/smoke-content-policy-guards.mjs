@@ -691,7 +691,8 @@ const checks = [
       notificationsPage.includes('| "gig_tag"') &&
       notificationsPage.includes('type === "gig_tag"') &&
       notificationsPage.includes('type === "thread_comment_tag"') &&
-      notificationsPage.includes('return notification.href || `/gigs/${notification.subject_id}`'),
+      notificationsPage.includes('return notificationHrefOrFallback(') &&
+      notificationsPage.includes('`/gigs/${notification.subject_id}`'),
   },
   {
     label: "deleted or untagged 4U, Gossip, and Gig content cleans stale notifications",

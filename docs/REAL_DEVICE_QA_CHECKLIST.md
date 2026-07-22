@@ -46,6 +46,8 @@ Use this before native wrapper work, Google Play internal testing, TestFlight, o
 - Open 4U media in the lightbox, zoom images, play videos, and confirm video controls do not show a download button.
 - Create a Gossip post with longer text and optional image.
 - Like, save, share, report, edit, and delete owned 4U/Gossip content.
+- Tag another known test account from 4U, Gossip, Gigs, and comments where available; confirm the tagged member receives the correct in-app alert.
+- Delete or untag the tagged 4U, Gossip, Gig, or comment test item and confirm the tagged member no longer has a stale notification that opens to a blocked, missing, or unauthorized page.
 - Confirm home cards show comment counts only, then open detail pages for full comments.
 - Add, like, reply to, edit, delete, and report comments where supported.
 - Attach a photo/GIF to 4U and Gossip detail comments/replies, then open the attachment in the lightbox.
@@ -158,6 +160,7 @@ Store-critical proof should include at least:
 - Public Help, Support, Privacy, and Terms links opening correctly.
 - Posting, Story viewing, reporting, blocking, and account deletion request.
 - Full two-user DM send, receive, read indicator, reply, photo attachment, and notification route.
+- 4U, Gossip, Gigs, and comment tagging proof, including stale notification cleanup after delete or untag.
 - Verification upload success and admin approval/rejection evidence without exposing private documents.
 - Merch browsing, controlled checkout return, order history, and Admin Payments review evidence using safe test references.
 - Screenshot upload candidates that match `docs/SCREENSHOT_PREP.md`.
