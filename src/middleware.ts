@@ -6,6 +6,11 @@ import {
   associationJsonResponse,
   unavailableAssociationResponse,
 } from "@/lib/app-link-association";
+import {
+  authCookieOptions,
+  authSessionPreferenceCookie,
+  persistentSessionFromValue,
+} from "@/lib/auth-session";
 
 const securityHeaders = [
   ["X-Content-Type-Options", "nosniff"],
@@ -46,6 +51,9 @@ export async function middleware(request: NextRequest) {
   }
 
   let response = applySecurityHeaders(NextResponse.next({ request }));
+  const persistentSession = persistentSessionFromValue(
+    request.cookies.get(authSessionPreferenceCookie)?.value,
+  );
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -67,7 +75,11 @@ export async function middleware(request: NextRequest) {
           }
 
           cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set(name, value, options);
+            response.cookies.set(
+              name,
+              value,
+              authCookieOptions(options, persistentSession),
+            );
           });
         },
       },

@@ -383,6 +383,9 @@ const checks = [
     ok:
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Create a new account") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("forgot-password") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Stay signed in on this device") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("fully close and relaunch the Android and iOS apps") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("unchecked session remains session-only") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("4U") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Use the image crop tools") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Story photo/GIF/short video") &&

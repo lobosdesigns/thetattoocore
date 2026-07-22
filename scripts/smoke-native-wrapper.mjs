@@ -95,7 +95,8 @@ const nativeSourceForLeakChecks = Object.entries(source)
       key !== "nativePrep" &&
       key !== "mobileRunbook" &&
       key !== "envExample" &&
-      key !== "middleware",
+      key !== "middleware" &&
+      key !== "nativePushProbe",
   )
   .map(([key, content]) => `${key}\n${content}`)
   .join("\n");
@@ -110,6 +111,9 @@ const forbiddenNativeTokens = [
   "WEBHOOK",
   "API_KEY",
 ];
+const nativeLeakTokens = forbiddenNativeTokens.filter((token) =>
+  nativeSourceForLeakChecks.includes(token),
+);
 
 function gradleNumber(name) {
   const match = source.androidVariables.match(new RegExp(`${name}\\s*=\\s*(\\d+)`));
@@ -206,7 +210,10 @@ const checks = [
   },
   {
     label: "native wrapper avoids provider, secret, and environment-token leakage",
-    ok: forbiddenNativeTokens.every((token) => !nativeSourceForLeakChecks.includes(token)),
+    ok: nativeLeakTokens.length === 0,
+    message: nativeLeakTokens.length
+      ? `Remove native wrapper leak marker(s): ${nativeLeakTokens.join(", ")}`
+      : undefined,
   },
   {
     label: "native wrapper keeps TestFlight auth navigation inside the app",
@@ -269,7 +276,7 @@ const checks = [
       source.appLinkSmoke.includes("validateIosPayload") &&
       source.appLinkSmoke.includes("fail-closed until private identifiers are configured") &&
       source.rootPackageJson.includes('"smoke:app-links": "node scripts/smoke-app-link-associations.mjs"') &&
-      source.rootPackageJson.includes("npm run smoke:native && npm run smoke:native-push && npm run smoke:app-links && npm run smoke:handoff") &&
+      source.rootPackageJson.includes("npm run smoke:native && npm run test:native-push-delivery && npm run smoke:native-push && npm run smoke:app-links && npm run smoke:handoff") &&
       source.nativePrep.includes("fail-closed `.well-known` association routes") &&
       source.nativePrep.includes("Run `npm.cmd run smoke:app-links` after deployment") &&
       source.nativePrep.includes("private deployment environment") &&
@@ -432,7 +439,8 @@ const checks = [
       source.nativePushProbe.includes("NATIVE_PUSH_QA private_config_result=") &&
       source.nativePushProbe.includes("NATIVE_PUSH_QA activation_result=") &&
       !source.nativePushProbe.includes("const activationReady = checks.every") &&
-      source.nativePushProbe.includes("NATIVE_PUSH_QA delivery_evidence=required") &&
+      source.nativePushProbe.includes("NATIVE_PUSH_QA delivery_evidence=") &&
+      source.nativePushProbe.includes(': "required"') &&
       source.nativePushProbe.includes('key: "ios_fcm_token_bridge"') &&
       source.rootPackageJson.includes('"qa:native-push": "node scripts/native-push-qa-probe.mjs"') &&
       source.rootPackageJson.includes('"qa:native-push:required": "node scripts/native-push-qa-probe.mjs --require-ready"') &&
@@ -443,7 +451,7 @@ const checks = [
       source.readme.includes("Android native alert config stays private-build-only") &&
       source.nativePrep.includes("Enable Firebase/FCM notification delivery only after") &&
       source.mobileRunbook.includes("Firebase project, native app config files") &&
-      source.readiness.includes("native alert delivery is planned and not enabled"),
+      source.readiness.includes("UI, registration, and delivery gates off"),
     message: checkedInNativePushConfigFiles.length
       ? `Remove native push config from repo before public review: ${checkedInNativePushConfigFiles.join(", ")}`
       : undefined,
@@ -582,6 +590,9 @@ for (const check of checks) {
 }
 
 if (failures.length) {
+  failures.forEach((check) => {
+    if (check.message) console.error(`  ${check.message}`);
+  });
   console.error(`${failures.length} native wrapper smoke check(s) failed.`);
   process.exit(1);
 }

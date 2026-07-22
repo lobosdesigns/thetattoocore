@@ -1,7 +1,14 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { AuthLegalLinks } from "../auth-legal-links";
 import { safeStatusMessage } from "@/lib/status-message";
+import {
+  authSessionPreferenceCookie,
+  persistentSessionFromValue,
+} from "@/lib/auth-session";
+import { createClient } from "@/lib/supabase/server";
 
 const setupSteps = [
   ["1", "Confirm email", "New accounts get an email link before login."],
@@ -40,6 +47,17 @@ export default async function LoginPage({
   const signupHref = returnTo
     ? `/signup?return_to=${encodeURIComponent(returnTo)}`
     : "/signup";
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+
+  if (claimsData?.claims?.sub) {
+    redirect(returnTo && !returnTo.startsWith("/login") ? returnTo : "/account");
+  }
+
+  const cookieStore = await cookies();
+  const staySignedIn = persistentSessionFromValue(
+    cookieStore.get(authSessionPreferenceCookie)?.value,
+  );
 
   return (
     <main className="ttc-page min-h-screen px-4 py-10">
@@ -132,6 +150,16 @@ export default async function LoginPage({
                     required
                     type="password"
                   />
+                </label>
+
+                <label className="flex min-h-11 items-center gap-3 text-sm font-medium">
+                  <input
+                    className="size-4 accent-[var(--foreground)]"
+                    defaultChecked={staySignedIn}
+                    name="stay_signed_in"
+                    type="checkbox"
+                  />
+                  <span>Stay signed in on this device</span>
                 </label>
 
                 <button className="h-11 w-full rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">

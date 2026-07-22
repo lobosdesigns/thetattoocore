@@ -32,6 +32,8 @@ Use this before native wrapper work, Google Play closed testing, TestFlight, or 
 - Create a new account from `/signup` with the 18+ checkbox.
 - Confirm email delivery and confirmation redirect.
 - Sign in from `/login`; confirm the signup controls are not mixed into the login form.
+- Leave **Stay signed in on this device** checked, sign in, fully close and relaunch the Android and iOS apps, and confirm the valid session resumes into the app instead of showing the login form again.
+- Uncheck **Stay signed in on this device** on a separate QA session and confirm the session is not converted back to a persistent cookie during normal navigation or token refresh. Keep credentials and cookie values out of repo-safe evidence.
 - Run forgot-password and reset-password flows.
 - Complete profile setup with avatar, display name, username, bio, website, social links, language, country, and coarse location.
 - Confirm profile tabs fit mobile screens and do not create horizontal page overflow.

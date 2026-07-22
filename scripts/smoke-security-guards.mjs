@@ -18,6 +18,9 @@ const resetPasswordForm = readFileSync(
 );
 const adClickRoute = readFileSync("src/app/api/ad-click/route.ts", "utf8");
 const loginPage = readFileSync("src/app/login/page.tsx", "utf8");
+const authSession = readFileSync("src/lib/auth-session.ts", "utf8");
+const browserSupabase = readFileSync("src/lib/supabase/client.ts", "utf8");
+const serverSupabase = readFileSync("src/lib/supabase/server.ts", "utf8");
 const signupPage = readFileSync("src/app/signup/page.tsx", "utf8");
 const notificationActions = readFileSync("src/app/notifications/actions.ts", "utf8");
 const notificationBell = readFileSync("src/app/notification-bell-link.tsx", "utf8");
@@ -286,6 +289,26 @@ const checks = [
       loginPage.includes('!params.return_to.includes("\\\\")') &&
       authLogin.includes("function cleanReturnTo") &&
       authLogin.includes('text.includes("\\\\")'),
+  },
+  {
+    label: "login session persistence is explicit, resumable, and session-scoped on opt-out",
+    ok:
+      loginPage.includes('name="stay_signed_in"') &&
+      loginPage.includes("defaultChecked={staySignedIn}") &&
+      loginPage.includes("Stay signed in on this device") &&
+      loginPage.includes("supabase.auth.getClaims()") &&
+      loginPage.includes('redirect(returnTo && !returnTo.startsWith("/login") ? returnTo : "/account")') &&
+      authLogin.includes('formData.get("stay_signed_in") === "on"') &&
+      authLogin.includes("createClient({ persistentSession: staySignedIn })") &&
+      authLogin.includes("authSessionPreferenceValue(staySignedIn)") &&
+      authLogin.includes('text.startsWith("/login")') &&
+      authSession.includes('authSessionPreferenceCookie = "ttc_auth_session"') &&
+      authSession.includes('value !== "session"') &&
+      authSession.includes("delete sessionOptions.expires") &&
+      authSession.includes("delete sessionOptions.maxAge") &&
+      serverSupabase.includes("authCookieOptions(cookieOptions, persistentSession)") &&
+      browserSupabase.includes("authCookieOptions(options, persistentSession)") &&
+      middlewareSource.includes("authCookieOptions(options, persistentSession)"),
   },
   {
     label: "signup form is separated from login page",
@@ -933,7 +956,7 @@ const checks = [
       middlewareSource.includes('import { createServerClient } from "@supabase/ssr"') &&
       middlewareSource.includes("request.cookies.getAll()") &&
       middlewareSource.includes("request.cookies.set(name, value)") &&
-      middlewareSource.includes("response.cookies.set(name, value, options)") &&
+      middlewareSource.includes("authCookieOptions(options, persistentSession)") &&
       middlewareSource.includes("await supabase.auth.getClaims()") &&
       !middlewareSource.includes("await supabase.auth.getSession()") &&
       readinessDoc.includes(

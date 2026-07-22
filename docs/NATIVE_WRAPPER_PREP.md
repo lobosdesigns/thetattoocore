@@ -113,6 +113,7 @@ evidence privately using the matrix above.
 - Run the full `docs/REAL_DEVICE_QA_CHECKLIST.md` on mobile web before packaging.
 - Before any Google Play submission or update on or after August 31, 2026, use the Android 16 / API 36 tooling now installed on this Windows machine and keep the Android wrapper `compileSdkVersion` and `targetSdkVersion` at 36. Rebuild and sign a fresh upload bundle, then rerun wrapper and real-device QA before selecting a Google Play submission/update track.
 - Confirm `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/support`, `/child-safety-standards`, `/privacy`, `/terms`, `/messages`, `/notifications`, `/account`, public profiles, public posts, Stories, Stuff, Gigs, Merch, and booking/deposit routes do not reload-loop or overflow horizontally.
+- Confirm a valid checked **Stay signed in on this device** session resumes after fully closing and relaunching each app, while an unchecked session remains session-only through server and browser token refreshes.
 - Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView and do not push members out to Safari.
 - Confirm install prompts or browser banners do not block scrolling in the wrapper.
 - Confirm Android content and controls do not sit behind the clock, status icons,
