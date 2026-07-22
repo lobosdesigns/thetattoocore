@@ -15,7 +15,7 @@ const checks = [
       packageJson.includes('"prepare:private-console-tabs": "node scripts/write-private-console-tabs.mjs"') &&
       packageJson.includes('"smoke:handoff": "node scripts/smoke-private-handoff-template.mjs"') &&
       packageJson.includes("npm run smoke:native && npm run smoke:app-links && npm run smoke:handoff && npm run smoke:docs") &&
-      packageJson.includes("npm run smoke:payments && npm run smoke:security && npm run smoke:handoff && npm run smoke:docs") &&
+      packageJson.includes("npm run smoke:payments && npm run smoke:payment-cutover && npm run smoke:security && npm run smoke:handoff && npm run smoke:docs") &&
       packageJson.includes("npm run smoke:store && npm run smoke:pwa && npm run smoke:handoff && npm run smoke:docs") &&
       gitignore.includes("/private-release-handoff/") &&
       generator.includes('const outputDir = "private-release-handoff"') &&
@@ -31,6 +31,7 @@ const checks = [
       generator.includes("## Real-Device QA") &&
       generator.includes("## Two-User DM Evidence") &&
       generator.includes("## Payment And Commerce Evidence") &&
+      packageJson.includes('"smoke:payment-cutover": "node scripts/smoke-payment-cutover-evidence.mjs"') &&
       generator.includes("Release candidate") &&
       generator.includes("Expected mode checked") &&
       generator.includes("Server key mode checked") &&
