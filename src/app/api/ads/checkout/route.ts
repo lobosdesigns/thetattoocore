@@ -5,7 +5,7 @@ import {
   platformFeeDescription,
 } from "@/lib/payments/fees";
 import { siteName, siteUrl } from "@/lib/site";
-import { stripeCheckoutModeMismatch } from "@/lib/stripe/server";
+import { stripeCheckoutPreflight } from "@/lib/stripe/server";
 import { createClient } from "@/lib/supabase/server";
 
 type Claims = {
@@ -158,9 +158,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const modeMismatch = stripeCheckoutModeMismatch();
-  if (modeMismatch) {
-    console.error("Ad checkout mode preflight failed.", modeMismatch);
+  const checkoutPreflight = stripeCheckoutPreflight();
+  if (!checkoutPreflight.ready) {
+    console.error("Ad checkout mode preflight failed.", checkoutPreflight);
     return redirectWithMessage(
       "Ad checkout is temporarily unavailable. Please try again later.",
     );
@@ -345,6 +345,7 @@ export async function POST(request: Request) {
 
   if (updateError) {
     console.error("Ad checkout session save failed.", updateError);
+    await rollBackReservation();
     return redirectWithMessage(
       "Checkout started, but the checkout could not be saved. Please contact support if this repeats.",
       returnTo,
@@ -352,6 +353,7 @@ export async function POST(request: Request) {
   }
 
   if (!updatedCampaign) {
+    await rollBackReservation();
     return redirectWithMessage(
       "Ad checkout was reserved, but checkout could not finish opening. Wait for it to expire before trying again.",
       returnTo,

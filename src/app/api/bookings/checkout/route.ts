@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { platformFeeDescription } from "@/lib/payments/fees";
 import { siteName, siteUrl } from "@/lib/site";
-import { stripeCheckoutModeMismatch } from "@/lib/stripe/server";
+import { stripeCheckoutPreflight } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -162,9 +162,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const modeMismatch = stripeCheckoutModeMismatch();
-  if (modeMismatch) {
-    console.error("Booking checkout mode preflight failed.", modeMismatch);
+  const checkoutPreflight = stripeCheckoutPreflight();
+  if (!checkoutPreflight.ready) {
+    console.error("Booking checkout mode preflight failed.", checkoutPreflight);
     return redirectWithMessage(
       "Booking checkout is temporarily unavailable. Please try again later.",
     );
@@ -321,6 +321,7 @@ export async function POST(request: Request) {
 
   if (updateError) {
     console.error("Booking checkout session save failed.", updateError);
+    await rollBackReservation();
     return redirectWithMessage(
       "Checkout started, but the checkout could not be saved. Please contact support if this repeats.",
       returnTo,
@@ -328,6 +329,7 @@ export async function POST(request: Request) {
   }
 
   if (!updatedBooking) {
+    await rollBackReservation();
     return redirectWithMessage(
       "Checkout started, but the booking could not be reserved for this checkout.",
       returnTo,

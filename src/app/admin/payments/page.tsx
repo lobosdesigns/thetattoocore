@@ -24,6 +24,7 @@ import { createClient } from "@/lib/supabase/server";
 import { safeStatusMessage } from "@/lib/status-message";
 import {
   expectedStripeLivemode,
+  stripeCheckoutPreflight,
   stripeCheckoutModeMismatch,
   stripeSecretKeyLivemode,
 } from "@/lib/stripe/server";
@@ -666,6 +667,7 @@ export default async function AdminPaymentsPage({
   const expectedLivemode = expectedStripeLivemode();
   const keyLivemode = stripeSecretKeyLivemode();
   const modeMismatch = stripeCheckoutModeMismatch();
+  const checkoutPreflight = stripeCheckoutPreflight();
   const webhookSecretReady = Boolean(process.env.STRIPE_WEBHOOK_SECRET);
   const paymentModePreflightChecks = [
     {
@@ -690,6 +692,13 @@ export default async function AdminPaymentsPage({
         : "Webhook signing secret is missing.",
       label: "Webhook signing",
       ready: webhookSecretReady,
+    },
+    {
+      detail: !checkoutPreflight.ready
+        ? "Checkout is blocked until the expected mode and server key mode are both readable and matched."
+        : "Checkout mode preflight is ready.",
+      label: "Checkout preflight",
+      ready: checkoutPreflight.ready,
     },
     {
       detail: modeMismatch

@@ -31,6 +31,53 @@ export function stripeCheckoutModeMismatch() {
   };
 }
 
+export function stripeCheckoutPreflight() {
+  const expected = expectedStripeLivemode();
+  const actual = stripeSecretKeyLivemode();
+
+  if (expected === null) {
+    return {
+      actual,
+      expected,
+      reason: "missing_expected_mode",
+      ready: false,
+    } as const;
+  }
+
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return {
+      actual,
+      expected,
+      reason: "missing_secret_key",
+      ready: false,
+    } as const;
+  }
+
+  if (actual === null) {
+    return {
+      actual,
+      expected,
+      reason: "unreadable_secret_key_mode",
+      ready: false,
+    } as const;
+  }
+
+  if (expected !== actual) {
+    return {
+      actual,
+      expected,
+      reason: "mode_mismatch",
+      ready: false,
+    } as const;
+  }
+
+  return {
+    actual,
+    expected,
+    ready: true,
+  } as const;
+}
+
 export function createStripeClient() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
 

@@ -328,22 +328,33 @@ checks.push({
     merchCheckout.includes("Checkout is temporarily unavailable. Please try again later."),
 });
 checks.push({
-  label: "checkout routes fail closed on payment mode mismatch before reservations",
+  label: "checkout routes fail closed on strict payment mode preflight before reservations",
   ok:
     stripeServer.includes("export function stripeCheckoutModeMismatch") &&
+    stripeServer.includes("export function stripeCheckoutPreflight") &&
     stripeServer.includes("expectedStripeLivemode()") &&
     stripeServer.includes("stripeSecretKeyLivemode()") &&
-    adCheckout.includes("stripeCheckoutModeMismatch") &&
-    bookingCheckout.includes("stripeCheckoutModeMismatch") &&
-    merchCheckout.includes("stripeCheckoutModeMismatch") &&
-    adCheckout.includes('console.error("Ad checkout mode preflight failed.", modeMismatch)') &&
-    bookingCheckout.includes('console.error("Booking checkout mode preflight failed.", modeMismatch)') &&
-    merchCheckout.includes('console.error("Merch checkout mode preflight failed.", modeMismatch)') &&
-    adCheckout.indexOf("stripeCheckoutModeMismatch") <
+    stripeServer.includes('reason: "missing_expected_mode"') &&
+    stripeServer.includes('reason: "missing_secret_key"') &&
+    stripeServer.includes('reason: "unreadable_secret_key_mode"') &&
+    stripeServer.includes('reason: "mode_mismatch"') &&
+    adCheckout.includes("stripeCheckoutPreflight") &&
+    bookingCheckout.includes("stripeCheckoutPreflight") &&
+    merchCheckout.includes("stripeCheckoutPreflight") &&
+    adCheckout.includes("const checkoutPreflight = stripeCheckoutPreflight()") &&
+    bookingCheckout.includes("const checkoutPreflight = stripeCheckoutPreflight()") &&
+    merchCheckout.includes("const checkoutPreflight = stripeCheckoutPreflight()") &&
+    adCheckout.includes("if (!checkoutPreflight.ready)") &&
+    bookingCheckout.includes("if (!checkoutPreflight.ready)") &&
+    merchCheckout.includes("if (!checkoutPreflight.ready)") &&
+    adCheckout.includes('console.error("Ad checkout mode preflight failed.", checkoutPreflight)') &&
+    bookingCheckout.includes('console.error("Booking checkout mode preflight failed.", checkoutPreflight)') &&
+    merchCheckout.includes('console.error("Merch checkout mode preflight failed.", checkoutPreflight)') &&
+    adCheckout.indexOf("stripeCheckoutPreflight") <
       adCheckout.indexOf("const formData = await request.formData()") &&
-    bookingCheckout.indexOf("stripeCheckoutModeMismatch") <
+    bookingCheckout.indexOf("stripeCheckoutPreflight") <
       bookingCheckout.indexOf("const formData = await request.formData()") &&
-    merchCheckout.indexOf("stripeCheckoutModeMismatch") <
+    merchCheckout.indexOf("stripeCheckoutPreflight") <
       merchCheckout.indexOf("const formData = await request.formData()"),
 });
 checks.push({
@@ -397,6 +408,14 @@ checks.push({
     merchCheckout.includes('"Checkout opened, but order setup could not finish. Please try again."') &&
     merchCheckout.includes('"Checkout could not open for this product. Please try again."') &&
     !merchCheckout.includes('"Checkout started, but the order session could not be saved. Please contact support if this repeats."'),
+});
+checks.push({
+  label: "ad and booking checkout roll back reservations when session persistence fails",
+  ok:
+    adCheckout.includes('console.error("Ad checkout session save failed.", updateError);\n    await rollBackReservation();') &&
+    adCheckout.includes('if (!updatedCampaign) {\n    await rollBackReservation();') &&
+    bookingCheckout.includes('console.error("Booking checkout session save failed.", updateError);\n    await rollBackReservation();') &&
+    bookingCheckout.includes('if (!updatedBooking) {\n    await rollBackReservation();'),
 });
 checks.push({
   label: "payment webhook rejects unsigned events before processing",
@@ -729,6 +748,7 @@ checks.push({
     adminPaymentsPage.includes("paymentModePreflightChecks") &&
     adminPaymentsPage.includes("expectedStripeLivemode()") &&
     adminPaymentsPage.includes("stripeSecretKeyLivemode()") &&
+    adminPaymentsPage.includes("stripeCheckoutPreflight()") &&
     adminPaymentsPage.includes("stripeCheckoutModeMismatch()") &&
     adminPaymentsPage.includes("webhookSecretReady") &&
     adminPaymentsPage.includes("This panel shows") &&
@@ -736,6 +756,8 @@ checks.push({
     adminPaymentsPage.includes("Expected mode:") &&
     adminPaymentsPage.includes("Server key mode:") &&
     adminPaymentsPage.includes("Webhook signing secret is configured.") &&
+    adminPaymentsPage.includes("Checkout is blocked until the expected mode and server key mode are both readable and matched.") &&
+    adminPaymentsPage.includes("Checkout mode preflight is ready.") &&
     adminPaymentsPage.includes("Expected mode and server key mode do not match.") &&
     !stripeWebhook.includes("eventId: event.id") &&
     envExample.includes("STRIPE_EXPECTED_LIVEMODE=false") &&
