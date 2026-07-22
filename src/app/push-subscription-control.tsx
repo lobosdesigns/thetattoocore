@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { BellRing, LoaderCircle, BellOff } from "lucide-react";
+import { useNativeNotificationSetup } from "./native-notification-provider";
 
 const publicPushKey = process.env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY ?? "";
 const deviceAlertSetupEnabled =
@@ -45,15 +46,20 @@ async function postSubscription(subscription: PushSubscription) {
 }
 
 export function PushSubscriptionControl() {
-  const [enabled, setEnabled] = useState(false);
+  const nativeNotifications = useNativeNotificationSetup();
+  const [browserEnabled, setBrowserEnabled] = useState(false);
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
   const [permissionBlocked, setPermissionBlocked] = useState(false);
-  const [supported, setSupported] = useState(false);
+  const [browserSupported, setBrowserSupported] = useState(false);
   const readyForSetup = useMemo(
     () => deviceAlertSetupEnabled && Boolean(publicPushKey),
     [],
   );
+  const enabled = nativeNotifications.supported
+    ? nativeNotifications.enabled
+    : browserEnabled;
+  const supported = nativeNotifications.supported || browserSupported;
 
   useEffect(() => {
     let cancelled = false;
@@ -61,13 +67,20 @@ export function PushSubscriptionControl() {
     queueMicrotask(() => {
       if (cancelled) return;
 
+      if (nativeNotifications.supported) {
+        setBrowserSupported(false);
+        setMessage("");
+        setPermissionBlocked(false);
+        return;
+      }
+
       const hasSupport =
         readyForSetup &&
         "serviceWorker" in navigator &&
         "PushManager" in window &&
         "Notification" in window;
 
-      setSupported(hasSupport);
+      setBrowserSupported(hasSupport);
 
       if (!readyForSetup) {
         setMessage(fallbackMessage);
@@ -87,8 +100,20 @@ export function PushSubscriptionControl() {
 
       navigator.serviceWorker.ready
         .then((registration) => registration.pushManager.getSubscription())
-        .then((subscription) => {
-          if (!cancelled) setEnabled(Boolean(subscription));
+        .then(async (subscription) => {
+          if (!subscription) return false;
+
+          const response = await fetch("/api/push/subscriptions", {
+            cache: "no-store",
+          });
+
+          if (!response.ok) throw new Error("App alert status failed.");
+
+          const payload = (await response.json()) as { enabled?: unknown };
+          return payload.enabled === true;
+        })
+        .then((isEnabled) => {
+          if (!cancelled) setBrowserEnabled(isEnabled);
         })
         .catch(() => {
           if (!cancelled) setMessage("App alert status could not be checked.");
@@ -98,13 +123,28 @@ export function PushSubscriptionControl() {
     return () => {
       cancelled = true;
     };
-  }, [readyForSetup]);
+  }, [nativeNotifications.supported, readyForSetup]);
 
-  async function enablePush() {
+  async function enableAlerts() {
     setPending(true);
     setMessage("");
 
     try {
+      if (nativeNotifications.supported) {
+        const result = await nativeNotifications.enable();
+
+        if (result === "denied") {
+          setPermissionBlocked(true);
+          setMessage(
+            "Device alerts are blocked in system settings. Keep checking Notifications for now.",
+          );
+          return;
+        }
+
+        setMessage("Device alert preference saved.");
+        return;
+      }
+
       const permission = await Notification.requestPermission();
 
       if (permission !== "granted") {
@@ -124,7 +164,7 @@ export function PushSubscriptionControl() {
         }));
 
       await postSubscription(subscription);
-      setEnabled(true);
+      setBrowserEnabled(true);
       setMessage("Device alert preference saved. Keep checking Notifications for now.");
     } catch {
       setMessage("App alert setup could not be completed.");
@@ -133,11 +173,17 @@ export function PushSubscriptionControl() {
     }
   }
 
-  async function disablePush() {
+  async function disableAlerts() {
     setPending(true);
     setMessage("");
 
     try {
+      if (nativeNotifications.supported) {
+        await nativeNotifications.disable();
+        setMessage("Device alerts are off.");
+        return;
+      }
+
       const registration = await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.getSubscription();
 
@@ -153,7 +199,7 @@ export function PushSubscriptionControl() {
         await subscription.unsubscribe();
       }
 
-      setEnabled(false);
+      setBrowserEnabled(false);
       setMessage("Device alert preference is off. Keep checking Notifications for now.");
     } catch {
       setMessage("App alerts could not be turned off.");
@@ -173,14 +219,16 @@ export function PushSubscriptionControl() {
             {message ||
               (enabled
                 ? "Device alert preference saved. Keep checking Notifications for now."
-                : fallbackMessage)}
+                : nativeNotifications.supported
+                  ? "Turn on alerts for activity you care about."
+                  : fallbackMessage)}
           </p>
         </div>
         {supported && !permissionBlocked ? (
           <button
             className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-3 text-xs font-bold text-[var(--background)] disabled:opacity-60"
             disabled={pending}
-            onClick={enabled ? disablePush : enablePush}
+            onClick={enabled ? disableAlerts : enableAlerts}
             type="button"
           >
             {pending ? (

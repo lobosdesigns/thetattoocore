@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Home } from "lucide-react";
+import { NativeAwareSignOutForm } from "../native-aware-signout-form";
 import {
   cancelAcceptedBookingAsArtist,
   cancelBookingRequest,
@@ -1118,11 +1119,7 @@ export default async function AccountPage({
                 Admin
               </Link>
             ) : null}
-            <form action="/auth/signout" method="post">
-              <button className="ttc-surface h-10 rounded-md border px-4 text-sm font-semibold">
-                Sign out
-              </button>
-            </form>
+            <NativeAwareSignOutForm />
           </div>
         </div>
 

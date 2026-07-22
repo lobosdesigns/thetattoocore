@@ -594,7 +594,6 @@ export async function updateProfile(formData: FormData) {
     ),
     notification_timezone: cleanTimezone(formData.get("notification_timezone")),
     notify_email_important: formData.get("notify_email_important") === "on",
-    notify_push_enabled: formData.get("notify_push_enabled") === "on",
     preferred_language: preferredLanguage,
     region: cleanText(formData.get("region"), 40) || null,
     shop_profile_id: accountType === "artist" ? shopProfileId : null,

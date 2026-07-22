@@ -7,12 +7,15 @@ const files = {
   androidAppBuild: `${wrapperRoot}/android/app/build.gradle`,
   androidRootBuild: `${wrapperRoot}/android/build.gradle`,
   androidManifest: `${wrapperRoot}/android/app/src/main/AndroidManifest.xml`,
+  androidPluginBuild: `${wrapperRoot}/android/app/capacitor.build.gradle`,
+  androidPluginSettings: `${wrapperRoot}/android/capacitor.settings.gradle`,
   androidVariables: `${wrapperRoot}/android/variables.gradle`,
   capacitorConfig: `${wrapperRoot}/capacitor.config.ts`,
   iosBuildScript: `${wrapperRoot}/ios/build-testflight.sh`,
   iosBootstrapScript: `${wrapperRoot}/ios/mac-bootstrap-testflight.sh`,
   iosExportOptions: `${wrapperRoot}/ios/ExportOptions-AppStore.template.plist`,
   iosInfo: `${wrapperRoot}/ios/App/App/Info.plist`,
+  iosPodfile: `${wrapperRoot}/ios/App/Podfile`,
   iosPrivacy: `${wrapperRoot}/ios/App/App/PrivacyInfo.xcprivacy`,
   iosEntitlements: `${wrapperRoot}/ios/App/App/App.entitlements`,
   iosProject: `${wrapperRoot}/ios/App/App.xcodeproj/project.pbxproj`,
@@ -82,7 +85,6 @@ const checkedInNativePushConfigFiles = trackedFilesUnder(wrapperRoot).filter((pa
 );
 const committedIosTeamId = /DEVELOPMENT_TEAM = [A-Z0-9]{10};/.test(source.iosProject);
 const forbiddenNativePushDependencies = [
-  "firebase",
   "@react-native-firebase/app",
   "@react-native-firebase/messaging",
 ];
@@ -390,9 +392,16 @@ const checks = [
     label: "native push bridge stays inert and private config stays untracked before device evidence",
     ok:
       checkedInNativePushConfigFiles.length === 0 &&
-      source.packageJson.includes('"@capacitor/push-notifications": "7.0.7"') &&
+      source.packageJson.includes('"@capacitor-firebase/messaging": "7.5.0"') &&
+      source.packageJson.includes('"firebase": "11.10.0"') &&
+      !source.packageJson.includes('"@capacitor/push-notifications"') &&
+      source.androidPluginSettings.includes("include ':capacitor-firebase-messaging'") &&
+      source.androidPluginBuild.includes("implementation project(':capacitor-firebase-messaging')") &&
+      source.iosPodfile.includes("CapacitorFirebaseMessaging") &&
       source.androidManifest.includes('android:name="firebase_messaging_auto_init_enabled"') &&
       source.androidManifest.includes('android:name="firebase_analytics_collection_enabled"') &&
+      source.iosInfo.includes("FirebaseMessagingAutoInitEnabled") &&
+      source.iosInfo.includes("<false/>") &&
       source.androidManifest.includes('android:name="android.permission.POST_NOTIFICATIONS"') &&
       source.androidManifest.includes('tools:node="remove"') &&
       forbiddenNativePushDependencies.every(

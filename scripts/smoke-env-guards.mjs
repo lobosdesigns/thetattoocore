@@ -16,6 +16,9 @@ const expectedKeys = [
   "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
   "NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY",
   "NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED",
+  "TTC_DEVICE_ALERT_SETUP_ENABLED",
+  "TTC_NATIVE_PUSH_REGISTRATION_ENABLED",
+  "TTC_WEB_PUSH_REGISTRATION_ENABLED",
   "TTC_ANDROID_APP_LINK_PACKAGE_NAME",
   "TTC_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS",
   "TTC_IOS_APP_LINK_APP_IDS",
@@ -78,7 +81,12 @@ function valueLooksLikePlaceholder(key, value) {
     return value === "false";
   }
 
-  if (key === "NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED") {
+  if (
+    key === "NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED" ||
+    key === "TTC_DEVICE_ALERT_SETUP_ENABLED" ||
+    key === "TTC_NATIVE_PUSH_REGISTRATION_ENABLED" ||
+    key === "TTC_WEB_PUSH_REGISTRATION_ENABLED"
+  ) {
     return value === "false";
   }
 
@@ -204,7 +212,11 @@ const checks = [
   },
   {
     label: ".env.example keeps device alert setup behind an explicit off switch",
-    ok: valueByKey.get("NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED") === "false",
+    ok:
+      valueByKey.get("NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED") === "false" &&
+      valueByKey.get("TTC_DEVICE_ALERT_SETUP_ENABLED") === "false" &&
+      valueByKey.get("TTC_NATIVE_PUSH_REGISTRATION_ENABLED") === "false" &&
+      valueByKey.get("TTC_WEB_PUSH_REGISTRATION_ENABLED") === "false",
   },
   {
     label: ".env.example keeps app-link association identifiers as placeholders",
@@ -242,6 +254,9 @@ const checks = [
     label: "README documents device alert setup fail-closed default",
     ok:
       readme.includes("NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED") &&
+      readme.includes("TTC_DEVICE_ALERT_SETUP_ENABLED") &&
+      readme.includes("TTC_NATIVE_PUSH_REGISTRATION_ENABLED") &&
+      readme.includes("TTC_WEB_PUSH_REGISTRATION_ENABLED") &&
       readme.includes("keep `false` until device-alert delivery") &&
       readme.includes("tap routing, opt-out, quiet hours, and category preference evidence"),
   },

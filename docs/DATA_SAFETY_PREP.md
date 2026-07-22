@@ -12,6 +12,7 @@ Use this as an internal checklist before answering Google Play Data Safety, App 
 - Verification data: license or certification name, optional license number, issuing location, expiration date, verification status, reviewer notes, and private uploaded proof documents.
 - Safety and moderation data: reports, moderation status, warnings/escalations, blocks, admin audit records, account deletion requests, and related support context.
 - Usage and preference data: notifications, unread counts, story views/reactions, ad click/impression events, saved items, likes, follows, and coarse discovery preferences.
+- Device alert delivery data: server-only per-device installation identifiers, platform, app version/build when supplied, delivery token, token hash, activity timestamp, and opt-in state. Raw delivery tokens must never be exposed to browser roles, logs, repo notes, screenshots, or member-facing copy.
 
 ## Use And Purpose
 

@@ -22,6 +22,7 @@ const signupPage = readFileSync("src/app/signup/page.tsx", "utf8");
 const notificationActions = readFileSync("src/app/notifications/actions.ts", "utf8");
 const notificationBell = readFileSync("src/app/notification-bell-link.tsx", "utf8");
 const notificationPage = readFileSync("src/app/notifications/page.tsx", "utf8");
+const notificationRoute = readFileSync("src/lib/notification-route.ts", "utf8");
 const mainActions = readFileSync("src/app/actions.ts", "utf8");
 const messageActions = readFileSync("src/app/messages/actions.ts", "utf8");
 const messagePage = readFileSync("src/app/messages/page.tsx", "utf8");
@@ -513,23 +514,24 @@ const checks = [
   {
     label: "notification open rejects external, protocol-relative, and backslash hrefs",
     ok:
-      notificationActions.includes('!href.startsWith("/")') &&
-      notificationActions.includes('href.startsWith("//")') &&
-      notificationActions.includes('href.includes("\\\\")'),
+      notificationRoute.includes('!href.startsWith("/")') &&
+      notificationRoute.includes('href.startsWith("//")') &&
+      notificationRoute.includes('href.includes("\\\\")') &&
+      notificationActions.includes("notificationPathOrFallback"),
   },
   {
     label: "notification open allowlists user-facing paths",
     ok:
-      notificationActions.includes("allowedPaths") &&
-      notificationActions.includes("allowedPrefixes") &&
-      notificationActions.includes('"/messages"') &&
-      notificationActions.includes('"/p/"') &&
-      notificationActions.includes('return "/notifications"'),
+      notificationRoute.includes("notificationAllowedPaths") &&
+      notificationRoute.includes("notificationAllowedPrefixes") &&
+      notificationRoute.includes('"/messages"') &&
+      notificationRoute.includes('"/p/"') &&
+      notificationRoute.includes('return safeNotificationPath(value) ?? "/notifications"'),
   },
   {
     label: "notification page has safe fallbacks for older notification rows",
     ok:
-      notificationPage.includes("function safeNotificationHrefValue") &&
+      notificationPage.includes("safeNotificationPath") &&
       notificationPage.includes("function notificationHrefOrFallback") &&
       notificationPage.includes('return notificationHrefOrFallback(notification, "/#stories")') &&
       notificationPage.includes("`/messages?c=${notification.subject_id}`") &&
@@ -544,13 +546,13 @@ const checks = [
   {
     label: "notification page sanitizes stored hrefs before form submit",
     ok:
-      notificationPage.includes('!href.startsWith("/")') &&
-      notificationPage.includes('href.startsWith("//")') &&
-      notificationPage.includes('href.includes("\\\\")') &&
-      notificationPage.includes('new URL(href, "https://thetattoocore.local")') &&
-      notificationPage.includes("allowedPaths") &&
-      notificationPage.includes("allowedPrefixes") &&
-      notificationPage.includes("return `${url.pathname}${url.search}${url.hash}`") &&
+      notificationRoute.includes('!href.startsWith("/")') &&
+      notificationRoute.includes('href.startsWith("//")') &&
+      notificationRoute.includes('href.includes("\\\\")') &&
+      notificationRoute.includes('new URL(href, "https://thetattoocore.local")') &&
+      notificationRoute.includes("notificationAllowedPaths") &&
+      notificationRoute.includes("notificationAllowedPrefixes") &&
+      notificationRoute.includes("return `${url.pathname}${url.search}${url.hash}`") &&
       notificationPage.includes('value={href}') &&
       notificationPage.indexOf("const href = notificationHref(notification)") <
         notificationPage.indexOf('value={href}'),
@@ -558,10 +560,10 @@ const checks = [
   {
     label: "notification open falls back if href parsing fails",
     ok:
-      notificationActions.includes("try {") &&
-      notificationActions.includes('new URL(href, "https://thetattoocore.local")') &&
-      notificationActions.includes("} catch {") &&
-      notificationActions.includes('return "/notifications"'),
+      notificationRoute.includes("try {") &&
+      notificationRoute.includes('new URL(href, "https://thetattoocore.local")') &&
+      notificationRoute.includes("} catch {") &&
+      notificationRoute.includes('return safeNotificationPath(value) ?? "/notifications"'),
   },
   {
     label: "notification center filters blocked actor profiles",

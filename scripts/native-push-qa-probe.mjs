@@ -17,6 +17,7 @@ const files = {
   iosAppDelegate: `${wrapperRoot}/ios/App/App/AppDelegate.swift`,
   iosConfig: `${wrapperRoot}/ios/App/App/GoogleService-Info.plist`,
   iosEntitlements: `${wrapperRoot}/ios/App/App/App.entitlements`,
+  iosInfo: `${wrapperRoot}/ios/App/App/Info.plist`,
   iosProject: `${wrapperRoot}/ios/App/App.xcodeproj/project.pbxproj`,
   iosPodfile: `${wrapperRoot}/ios/App/Podfile`,
   packageJson: `${wrapperRoot}/package.json`,
@@ -48,14 +49,21 @@ const androidActivationLocked =
   ) &&
   source.androidManifest.includes('android:name="android.permission.POST_NOTIFICATIONS"') &&
   source.androidManifest.includes('tools:node="remove"');
+const iosActivationLocked =
+  /<key>FirebaseMessagingAutoInitEnabled<\/key>\s*<false\/>/s.test(
+    source.iosInfo,
+  ) && !source.iosEntitlements.includes("aps-environment");
 
 const checks = [
   {
-    key: "android_bridge_dependency",
+    key: "cross_platform_bridge_dependency",
     ready:
-      source.packageJson.includes('"@capacitor/push-notifications": "7.0.7"') &&
-      source.androidPluginSettings.includes("include ':capacitor-push-notifications'") &&
-      source.androidPluginBuild.includes("implementation project(':capacitor-push-notifications')"),
+      source.packageJson.includes('"@capacitor-firebase/messaging": "7.5.0"') &&
+      source.packageJson.includes('"firebase": "11.10.0"') &&
+      !source.packageJson.includes('"@capacitor/push-notifications"') &&
+      source.androidPluginSettings.includes("include ':capacitor-firebase-messaging'") &&
+      source.androidPluginBuild.includes("implementation project(':capacitor-firebase-messaging')") &&
+      source.iosPodfile.includes("CapacitorFirebaseMessaging"),
   },
   {
     key: "android_private_config",
@@ -96,17 +104,32 @@ const checks = [
   {
     key: "ios_fcm_token_bridge",
     ready:
-      source.packageJson.includes('"@capacitor-firebase/messaging"') ||
-      source.iosPodfile.includes("FirebaseMessaging"),
+      source.packageJson.includes('"@capacitor-firebase/messaging": "7.5.0"') &&
+      source.iosPodfile.includes("CapacitorFirebaseMessaging"),
+  },
+  {
+    key: "ios_activation_lock",
+    ready: iosActivationLocked,
   },
   {
     key: "client_registration_flow",
     ready:
-      clientSource.includes("@capacitor/push-notifications") &&
-      clientSource.includes("PushNotifications.checkPermissions") &&
-      clientSource.includes("PushNotifications.requestPermissions") &&
-      clientSource.includes("PushNotifications.register") &&
-      clientSource.includes("pushNotificationActionPerformed"),
+      clientSource.includes("@capacitor-firebase/messaging") &&
+      clientSource.includes("runtime.messaging.checkPermissions") &&
+      clientSource.includes("runtime.messaging.requestPermissions") &&
+      clientSource.includes("runtime.messaging.getToken") &&
+      clientSource.includes("runtime.messaging.deleteToken") &&
+      clientSource.includes('"notificationActionPerformed"') &&
+      clientSource.includes("/api/push/devices") &&
+      clientSource.includes("notificationPathOrFallback"),
+  },
+  {
+    key: "server_registration_flow",
+    ready:
+      clientSource.includes("TTC_NATIVE_PUSH_REGISTRATION_ENABLED") &&
+      clientSource.includes('from("native_push_devices")') &&
+      clientSource.includes("crypto.subtle.digest") &&
+      clientSource.includes("nativePushDeviceCookie"),
   },
 ];
 
@@ -115,11 +138,17 @@ for (const check of checks) {
 }
 
 const configReady = checks
-  .filter((check) => check.key !== "client_registration_flow")
+  .filter(
+    (check) =>
+      check.key !== "client_registration_flow" &&
+      check.key !== "server_registration_flow",
+  )
   .every((check) => check.ready);
 const activationReady = checks.every((check) => check.ready);
 
-console.log(`NATIVE_PUSH_QA staging_guard=${androidActivationLocked ? "ready" : "pending"}`);
+console.log(
+  `NATIVE_PUSH_QA staging_guard=${androidActivationLocked && iosActivationLocked ? "ready" : "pending"}`,
+);
 console.log(`NATIVE_PUSH_QA config_result=${configReady ? "ready" : "pending"}`);
 console.log(`NATIVE_PUSH_QA activation_result=${activationReady ? "ready" : "pending"}`);
 console.log("NATIVE_PUSH_QA delivery_evidence=required");

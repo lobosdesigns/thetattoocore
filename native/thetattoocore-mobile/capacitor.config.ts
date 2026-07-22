@@ -7,6 +7,9 @@ const config: CapacitorConfig = {
     Browser: {
       presentationStyle: "fullscreen",
     },
+    FirebaseMessaging: {
+      presentationOptions: [],
+    },
     SplashScreen: {
       backgroundColor: "#171412",
       launchAutoHide: true,

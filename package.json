@@ -32,6 +32,7 @@
     "smoke:payments": "node scripts/smoke-payment-guards.mjs",
     "smoke:payment-cutover": "node scripts/smoke-payment-cutover-evidence.mjs",
     "smoke:pwa": "node scripts/smoke-pwa-guards.mjs",
+    "smoke:native-push": "node scripts/smoke-native-push-guards.mjs",
     "smoke:native": "node scripts/smoke-native-wrapper.mjs",
     "smoke:app-links": "node scripts/smoke-app-link-associations.mjs",
     "smoke:handoff": "node scripts/smoke-private-handoff-template.mjs",
@@ -49,6 +50,8 @@
     "qa:android-device:required": "node scripts/android-device-qa-probe.mjs --require-device --wait-ms=30000"
   },
   "dependencies": {
+    "@capacitor-firebase/messaging": "7.5.0",
+    "@capacitor/core": "7.4.3",
     "@opennextjs/cloudflare": "^1.20.1",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.110.1",
@@ -56,6 +59,7 @@
     "next": "16.2.10",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "firebase": "11.10.0",
     "stripe": "^22.3.1",
     "worker-mailer": "^1.2.1"
   },

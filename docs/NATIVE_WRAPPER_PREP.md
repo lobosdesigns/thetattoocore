@@ -30,12 +30,14 @@ Use this before creating Android or iOS wrapper projects. The goal is a thin, po
 ## Native Push Plan
 
 - Use Firebase Cloud Messaging as the Android and iOS delivery path for native app alerts.
+- Keep one Capacitor messaging bridge for both platforms. Do not install a second native push plugin beside it on iOS.
 - Add the Android app config file to the wrapper only after the Firebase project is created for TheTattooCore and the package name `com.thetattoocore.app` is registered.
 - The Android google-services plugin stays conditional: it may be declared in
   the Gradle classpath, but it should apply only when `google-services.json`
   exists in the private build environment.
 - Add the iOS app config file only after the Apple bundle identifier, team, signing profile, and notification capability are confirmed on the Mac/Xcode build path.
 - Keep push prompts off until device-token registration, per-device opt-out, quiet hours, and notification-category preferences are connected to the signed-in account.
+- Keep the native setup UI and server registration write gates off by default. Activate them together only for controlled device QA after private app configuration is installed.
 - Archive real-device evidence for Android and iOS notification permission prompts, token registration, alert delivery, notification tap routing, and opt-out before claiming native push support in store copy.
 
 ## Native Push Private Evidence Matrix
@@ -71,9 +73,12 @@ configuration, native capability wiring, and tested client registration path.
 The iOS checks also require an iOS FCM token bridge; APNs registration callbacks
 alone do not produce the FCM token required by the planned delivery path.
 
-The Android bridge is staged with its staging guard active: automatic token
-creation and analytics collection are disabled, and the Android notification
-permission is removed from the merged manifest. Do not remove that guard until
+The cross-platform bridge is staged with its staging guard active: automatic
+token creation is disabled on both platforms, Android analytics collection is
+disabled, and the Android notification permission is removed from the merged
+manifest. The registration table is server-only, stores each device against the
+authenticated account, and is cleaned for the current device on opt-out and
+sign-out. Do not remove that guard until
 the signed-in opt-in flow, token lifecycle, preferences, and private delivery
 path are ready for device QA. A `ready` config probe still does not prove alert
 delivery, tap routing, opt-out, or store-submitted build behavior; preserve that

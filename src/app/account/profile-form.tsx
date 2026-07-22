@@ -7,6 +7,7 @@ import { MediaInput } from "../media-input";
 import { PendingSubmitButton } from "../pending-submit-button";
 import { ThemePreferencePicker } from "../theme-preference-picker";
 import { PwaInstallButton } from "../pwa-install-button";
+import { PushSubscriptionControl } from "../push-subscription-control";
 import { countryOptions, languageLabel, languageOptions } from "@/lib/localization";
 
 type Claims = {
@@ -39,7 +40,6 @@ type Profile = {
   notify_follow_activity: boolean | null;
   notify_marketplace_gig_activity: boolean | null;
   notify_message_activity: boolean | null;
-  notify_push_enabled: boolean | null;
   notify_thread_activity: boolean | null;
   preferred_language: string | null;
   region: string | null;
@@ -951,23 +951,7 @@ export function ProfileForm({
                 </span>
               </span>
             </label>
-            <label className="flex items-start gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
-              <input
-                className="mt-1 size-4"
-                defaultChecked={initialProfile?.notify_push_enabled ?? false}
-                name="notify_push_enabled"
-                type="checkbox"
-              />
-              <span>
-                <span className="block text-sm font-medium">
-                  Save device app alert preference
-                </span>
-                <span className="mt-1 block text-xs leading-5 text-[var(--muted-strong)]">
-                  Saves your preference only. Device alerts stay off until
-                  device setup and delivery settings are ready.
-                </span>
-              </span>
-            </label>
+            <PushSubscriptionControl />
           </div>
           <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-3">
             <h3 className="text-sm font-semibold">Install app</h3>

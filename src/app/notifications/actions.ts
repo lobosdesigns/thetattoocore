@@ -7,6 +7,7 @@ import {
   notificationPreferenceSelect,
   type NotificationPreferenceProfile,
 } from "@/lib/notifications";
+import { notificationPathOrFallback } from "@/lib/notification-route";
 import { createClient } from "@/lib/supabase/server";
 
 type Claims = {
@@ -46,39 +47,6 @@ async function blockRelationshipExists({
   return Boolean(data);
 }
 
-function safeInternalHref(value: FormDataEntryValue | null) {
-  const href = String(value ?? "").trim();
-
-  if (!href.startsWith("/") || href.startsWith("//") || href.includes("\\")) {
-    return "/notifications";
-  }
-
-  let url: URL;
-  try {
-    url = new URL(href, "https://thetattoocore.local");
-  } catch {
-    return "/notifications";
-  }
-  const allowedPaths = [
-    "/",
-    "/account",
-    "/messages",
-    "/notifications",
-    "/saved",
-    "/search",
-  ];
-  const allowedPrefixes = ["/p/", "/t/", "/u/", "/merch/", "/stuff/", "/gigs/"];
-
-  if (
-    !allowedPaths.includes(url.pathname) &&
-    !allowedPrefixes.some((prefix) => url.pathname.startsWith(prefix))
-  ) {
-    return "/notifications";
-  }
-
-  return href;
-}
-
 export async function markNotificationRead(formData: FormData) {
   const notificationId = String(formData.get("notification_id") ?? "");
   const { supabase, userId } = await requireUser();
@@ -100,7 +68,7 @@ export async function markNotificationRead(formData: FormData) {
 
 export async function openNotification(formData: FormData) {
   const notificationId = String(formData.get("notification_id") ?? "");
-  const href = safeInternalHref(formData.get("href"));
+  const href = notificationPathOrFallback(formData.get("href"));
   const { supabase, userId } = await requireUser();
 
   if (!notificationId) {

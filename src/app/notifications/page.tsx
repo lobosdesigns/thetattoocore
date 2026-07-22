@@ -19,6 +19,7 @@ import { createClient } from "@/lib/supabase/server";
 import { PwaInstallButton } from "@/app/pwa-install-button";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { PushSubscriptionControl } from "@/app/push-subscription-control";
+import { safeNotificationPath } from "@/lib/notification-route";
 import {
   markAllNotificationsRead,
   markNotificationRead,
@@ -156,45 +157,11 @@ function subjectLabel(type: string) {
   return type.replaceAll("_", " ");
 }
 
-function safeNotificationHrefValue(value: string | null | undefined) {
-  const href = String(value ?? "").trim();
-
-  if (!href || !href.startsWith("/") || href.startsWith("//") || href.includes("\\")) {
-    return null;
-  }
-
-  let url: URL;
-  try {
-    url = new URL(href, "https://thetattoocore.local");
-  } catch {
-    return null;
-  }
-
-  const allowedPaths = [
-    "/",
-    "/account",
-    "/messages",
-    "/notifications",
-    "/saved",
-    "/search",
-  ];
-  const allowedPrefixes = ["/p/", "/t/", "/u/", "/merch/", "/stuff/", "/gigs/"];
-
-  if (
-    !allowedPaths.includes(url.pathname) &&
-    !allowedPrefixes.some((prefix) => url.pathname.startsWith(prefix))
-  ) {
-    return null;
-  }
-
-  return `${url.pathname}${url.search}${url.hash}`;
-}
-
 function notificationHrefOrFallback(
   notification: Notification,
   fallback: string,
 ) {
-  return safeNotificationHrefValue(notification.href) ?? fallback;
+  return safeNotificationPath(notification.href) ?? fallback;
 }
 
 async function getBlockedProfileIds({

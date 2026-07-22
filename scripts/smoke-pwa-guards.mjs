@@ -12,11 +12,16 @@ const serviceWorker = readFileSync("public/sw.js", "utf8");
 const pushControl = readFileSync("src/app/push-subscription-control.tsx", "utf8");
 const accountProfileForm = readFileSync("src/app/account/profile-form.tsx", "utf8");
 const notificationsPage = readFileSync("src/app/notifications/page.tsx", "utf8");
+const notificationRoute = readFileSync("src/lib/notification-route.ts", "utf8");
 const mobileSmoke = readFileSync("scripts/smoke-mobile-browser.mjs", "utf8");
 const pushRoute = readFileSync("src/app/api/push/subscriptions/route.ts", "utf8");
 const envExample = readFileSync(".env.example", "utf8");
 const pushMigration = readFileSync(
   "supabase/migrations/20260713183514_push_subscription_foundation.sql",
+  "utf8",
+);
+const pushHardeningMigration = readFileSync(
+  "supabase/migrations/20260722114857_native_push_devices.sql",
   "utf8",
 );
 const allClientPwaSource = [suppressor, installButton, registrar].join("\n");
@@ -346,8 +351,9 @@ const checks = [
       pushControl.includes("Notification.permission === \"denied\"") &&
       userFacingPushSource.includes("Device alerts are blocked in this browser. Keep checking Notifications for now.") &&
       pushControl.includes("supported && !permissionBlocked") &&
-      userFacingPushSource.includes("Save device app alert preference") &&
-      userFacingPushSource.includes("Device alerts stay off until") &&
+      userFacingPushSource.includes("Turn on alerts for activity you care about.") &&
+      userFacingPushSource.includes("Device alerts are off.") &&
+      userFacingPushSource.includes("Device alerts are blocked in system settings.") &&
       userFacingPushSource.includes("App alert setup could not be completed.") &&
       !userFacingPushSource.includes("Enabled on this device.") &&
       !userFacingPushSource.includes("Ready when you turn it on.") &&
@@ -373,22 +379,32 @@ const checks = [
       userFacingPushSource.includes("Keep checking Notifications for now."),
   },
   {
-    label: "push subscriptions are stored behind authenticated RLS",
+    label: "push subscriptions are authenticated and server-only",
     ok:
       pushMigration.includes("create table if not exists public.push_subscriptions") &&
       pushMigration.includes("alter table public.push_subscriptions enable row level security") &&
       pushMigration.includes('create policy "Users insert own push subscriptions"') &&
       pushMigration.includes('create policy "Users update own push subscriptions"') &&
-      pushMigration.includes("profile_id, endpoint") &&
-      pushRoute.includes("await supabase.auth.getClaims()") &&
-      pushRoute.includes('.from("push_subscriptions").upsert') &&
-      pushRoute.includes('onConflict: "profile_id,endpoint"') &&
+      pushHardeningMigration.includes(
+        "add constraint push_subscriptions_endpoint_unique unique (endpoint)",
+      ) &&
+      pushHardeningMigration.includes(
+        "revoke all on table public.push_subscriptions from anon, authenticated",
+      ) &&
+      pushHardeningMigration.includes(
+        "grant select, insert, update, delete on table public.push_subscriptions to service_role",
+      ) &&
+      pushRoute.includes("supabase.auth.getClaims()") &&
+      pushRoute.includes("createAdminClient()") &&
+      pushRoute.includes('.from("push_subscriptions")') &&
+      pushRoute.includes(".upsert(") &&
+      pushRoute.includes('onConflict: "endpoint"') &&
+      pushRoute.includes("export async function GET") &&
       pushRoute.includes("export async function DELETE") &&
       pushRoute.includes("async function updatePushPreference") &&
       pushRoute.includes("notify_push_enabled: enabled") &&
       pushRoute.includes("enabled: true") &&
-      pushRoute.includes("const hasActiveSubscriptions = Boolean(activeSubscriptions?.length)") &&
-      pushRoute.includes("enabled: hasActiveSubscriptions") &&
+      !pushRoute.includes("hasActiveSubscriptions") &&
       pushControl.includes('method: "DELETE"') &&
       pushControl.includes("const response = await fetch(\"/api/push/subscriptions\"") &&
       pushControl.includes("if (!response.ok) throw new Error(\"App alert preference could not be saved.\")") &&
@@ -431,9 +447,9 @@ const checks = [
   {
     label: "service worker allows notification page fallback destinations",
     ok:
-      notificationsPage.includes("function safeNotificationHrefValue") &&
+      notificationRoute.includes("function safeNotificationPath") &&
       notificationsPage.includes("function notificationHrefOrFallback") &&
-      notificationsPage.includes("return `${url.pathname}${url.search}${url.hash}`") &&
+      notificationRoute.includes("return `${url.pathname}${url.search}${url.hash}`") &&
       expectedNotificationFallbacks.every((snippet) => notificationsPage.includes(snippet)) &&
       expectedNotificationFallbackRoutePairs.every(
         ([fallbackRoute, allowedRoute]) =>

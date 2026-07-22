@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthHashRedirect } from "./auth-hash-redirect";
 import { PwaInstallSuppressor } from "./pwa-install-suppressor";
+import { NativeNotificationProvider } from "./native-notification-provider";
 import { ServiceWorkerRegistrar } from "./service-worker-registrar";
 import { ThemeController, type ThemePreference } from "./theme-controller";
 import { normalizedLanguage } from "@/lib/localization";
@@ -131,6 +132,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const { language, themePreference } = await preferredDocumentSettings();
+  const nativeNotificationSetupEnabled =
+    process.env.TTC_DEVICE_ALERT_SETUP_ENABLED === "true";
 
   return (
     <html
@@ -138,11 +141,15 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        <AuthHashRedirect />
-        <ServiceWorkerRegistrar />
-        <PwaInstallSuppressor />
-        <ThemeController initialPreference={themePreference} />
-        {children}
+        <NativeNotificationProvider
+          setupEnabled={nativeNotificationSetupEnabled}
+        >
+          <AuthHashRedirect />
+          <ServiceWorkerRegistrar />
+          <PwaInstallSuppressor />
+          <ThemeController initialPreference={themePreference} />
+          {children}
+        </NativeNotificationProvider>
       </body>
     </html>
   );
