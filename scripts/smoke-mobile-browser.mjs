@@ -72,6 +72,11 @@ const routes = [
     textIncludes: ["support@thetattoocore.com", "Beta app testing"],
     titleIncludes: "Support",
   },
+  {
+    path: "/child-safety-standards",
+    textIncludes: ["minor safety concerns", "support@thetattoocore.com"],
+    titleIncludes: "Child Safety Standards",
+  },
   { path: "/help", textIncludes: "Search Help Center", titleIncludes: "Help Center" },
   {
     path: "/help/beta-tester-checklist",

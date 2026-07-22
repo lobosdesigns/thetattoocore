@@ -515,6 +515,17 @@ const checks = [
     ],
   },
   {
+    path: "/child-safety-standards",
+    status: [200],
+    includes: [
+      "Child Safety Standards",
+      "minor safety concerns",
+      "possible minor safety risk is treated as urgent",
+      "support@thetattoocore.com",
+      'href="/support"',
+    ],
+  },
+  {
     path: "/help",
     status: [200],
     includes: [
