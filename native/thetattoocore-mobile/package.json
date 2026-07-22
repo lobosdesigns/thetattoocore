@@ -17,7 +17,8 @@
     "@capacitor/app": "^7.1.0",
     "@capacitor/browser": "^7.0.2",
     "@capacitor/core": "^7.4.3",
-    "@capacitor/ios": "^7.4.3"
+    "@capacitor/ios": "^7.4.3",
+    "@capacitor/push-notifications": "7.0.7"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.4.3",

@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
@@ -22,6 +23,7 @@ const files = {
   mobileSmoke: "scripts/smoke-mobile-browser.mjs",
   middleware: "src/middleware.ts",
   nativePrep: "docs/NATIVE_WRAPPER_PREP.md",
+  nativePushProbe: "scripts/native-push-qa-probe.mjs",
   appLinkSmoke: "scripts/smoke-app-link-associations.mjs",
   realDeviceQa: "docs/REAL_DEVICE_QA_CHECKLIST.md",
   readiness: "docs/APP_STORE_READINESS.md",
@@ -62,12 +64,24 @@ const forbiddenNativePushConfigFiles = [
   "google-services.json",
   "GoogleService-Info.plist",
 ];
-const checkedInNativePushConfigFiles = filesUnder(wrapperRoot).filter((path) =>
+function trackedFilesUnder(root) {
+  try {
+    return execFileSync("git", ["ls-files", "--", root], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    })
+      .split(/\r?\n/)
+      .filter(Boolean);
+  } catch {
+    return filesUnder(root);
+  }
+}
+
+const checkedInNativePushConfigFiles = trackedFilesUnder(wrapperRoot).filter((path) =>
   forbiddenNativePushConfigFiles.some((fileName) => path.endsWith(fileName)),
 );
 const committedIosTeamId = /DEVELOPMENT_TEAM = [A-Z0-9]{10};/.test(source.iosProject);
 const forbiddenNativePushDependencies = [
-  "@capacitor/push-notifications",
   "firebase",
   "@react-native-firebase/app",
   "@react-native-firebase/messaging",
@@ -256,7 +270,8 @@ const checks = [
     label: "native wrapper keeps launch permissions minimal",
     ok:
       source.androidManifest.includes("android.permission.INTERNET") &&
-      !source.androidManifest.includes("android.permission.POST_NOTIFICATIONS") &&
+      source.androidManifest.includes('android:name="android.permission.POST_NOTIFICATIONS"') &&
+      source.androidManifest.includes('tools:node="remove"') &&
       !source.androidManifest.includes("android.permission.CAMERA") &&
       !source.androidManifest.includes("android.permission.RECORD_AUDIO") &&
       !source.androidManifest.includes("android.permission.ACCESS_FINE_LOCATION") &&
@@ -372,9 +387,14 @@ const checks = [
       source.mobileRunbook.includes("Keep project IDs, sender IDs, API keys, app config files, device tokens, notification payloads, signing details, and console screenshots in the private release handoff only"),
   },
   {
-    label: "native push config and dependencies stay gated before device evidence",
+    label: "native push bridge stays inert and private config stays untracked before device evidence",
     ok:
       checkedInNativePushConfigFiles.length === 0 &&
+      source.packageJson.includes('"@capacitor/push-notifications": "7.0.7"') &&
+      source.androidManifest.includes('android:name="firebase_messaging_auto_init_enabled"') &&
+      source.androidManifest.includes('android:name="firebase_analytics_collection_enabled"') &&
+      source.androidManifest.includes('android:name="android.permission.POST_NOTIFICATIONS"') &&
+      source.androidManifest.includes('tools:node="remove"') &&
       forbiddenNativePushDependencies.every(
         (dependency) => !source.packageJson.includes(`"${dependency}"`),
       ) &&
@@ -385,7 +405,14 @@ const checks = [
       source.androidAppBuild.includes("google-services.json not found") &&
       source.gitignore.includes("**/google-services.json") &&
       source.gitignore.includes("**/GoogleService-Info.plist") &&
+      source.nativePushProbe.includes("NATIVE_PUSH_QA staging_guard=") &&
+      source.nativePushProbe.includes("NATIVE_PUSH_QA activation_result=") &&
+      source.nativePushProbe.includes("NATIVE_PUSH_QA delivery_evidence=required") &&
+      source.rootPackageJson.includes('"qa:native-push": "node scripts/native-push-qa-probe.mjs"') &&
+      source.rootPackageJson.includes('"qa:native-push:required": "node scripts/native-push-qa-probe.mjs --require-ready"') &&
       source.nativePrep.includes("The Android google-services plugin stays conditional") &&
+      source.nativePrep.includes("npm.cmd run qa:native-push") &&
+      source.nativePrep.includes("staging guard") &&
       source.readme.includes("Android native alert config stays private-build-only") &&
       source.nativePrep.includes("Enable Firebase/FCM notification delivery only after") &&
       source.mobileRunbook.includes("Firebase project, native app config files") &&

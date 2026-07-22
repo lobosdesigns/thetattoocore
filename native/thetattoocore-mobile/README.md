@@ -36,11 +36,16 @@ This folder is the starting point for Apple TestFlight and Google Play closed/in
    repo root:
    - `npm.cmd run verify:native-predevice`
    - `npm.cmd run verify:native-release`
+   - `npm.cmd run qa:native-push`
    Use the pre-device command to check environment boundaries, private native
    config exclusions, app-link association endpoints, readiness docs, store
    metadata, Android-profile mobile routes, and iOS-profile mobile routes before
    the review phone is authorized. The release command checks the same starting
    gates first.
+   The native-push probe reports staged and pending prerequisites without
+   printing private app configuration, signing data, or device tokens. Its
+   `qa:native-push:required` form remains a fail-closed activation gate until
+   both native platforms and the opt-in client flow are ready.
    It should fail until the Android probe sees an authorized device with the TTC
    package installed, then continue through store, Android-profile mobile, and
    iOS-profile mobile smoke checks.

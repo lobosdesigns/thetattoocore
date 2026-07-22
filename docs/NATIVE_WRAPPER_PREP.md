@@ -59,6 +59,24 @@ Until that proof exists, repo-safe submission notes should refer to in-app
 alerts and notification settings as the current fallback, not native push being
 live, enabled, or ready.
 
+## Native Push Config Probe
+
+Run `npm.cmd run qa:native-push` from the repository root before changing a
+native notification build. The probe reports only `ready` or `pending` states;
+it never prints app configuration values, device tokens, signing identifiers,
+or notification payloads. The normal probe exits successfully so it can record
+an honest staged state. `npm.cmd run qa:native-push:required` is the fail-closed
+release gate and must remain failing until both platforms have their private
+configuration, native capability wiring, and tested client registration path.
+
+The Android bridge is staged with its staging guard active: automatic token
+creation and analytics collection are disabled, and the Android notification
+permission is removed from the merged manifest. Do not remove that guard until
+the signed-in opt-in flow, token lifecycle, preferences, and private delivery
+path are ready for device QA. A `ready` config probe still does not prove alert
+delivery, tap routing, opt-out, or store-submitted build behavior; preserve that
+evidence privately using the matrix above.
+
 ## Store Review Safety
 
 - The app remains 18+.
