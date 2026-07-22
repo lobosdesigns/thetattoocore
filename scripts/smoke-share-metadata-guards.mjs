@@ -6,6 +6,10 @@ const stuffDetail = readFileSync("src/app/stuff/[id]/page.tsx", "utf8");
 const gigsDetail = readFileSync("src/app/gigs/[id]/page.tsx", "utf8");
 const merchDetail = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const profileDetail = readFileSync("src/app/u/[username]/page.tsx", "utf8");
+const helpPage = readFileSync("src/app/help/page.tsx", "utf8");
+const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
+const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
+const termsPage = readFileSync("src/app/terms/page.tsx", "utf8");
 const siteConstants = readFileSync("src/lib/site.ts", "utf8");
 const rootLayout = readFileSync("src/app/layout.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
@@ -100,6 +104,32 @@ const checks = [
       merchDetail.includes("seoKeywordGroups.merch") &&
       profileDetail.includes("keywords: metadataKeywords(") &&
       profileDetail.includes("seoKeywordGroups.profile"),
+  },
+  {
+    label: "Public support and legal pages publish page-level canonical metadata",
+    ok:
+      helpPage.includes("canonical: `${siteUrl}/help`") &&
+      supportPage.includes("canonical: `${siteUrl}/support`") &&
+      privacyPage.includes("canonical: `${siteUrl}/privacy`") &&
+      termsPage.includes("canonical: `${siteUrl}/terms`"),
+  },
+  {
+    label: "Public support and legal pages expose safe discovery keywords",
+    ok:
+      helpPage.includes("keywords: metadataKeywords(siteKeywords, seoKeywordGroups.help)") &&
+      supportPage.includes("keywords: metadataKeywords(") &&
+      supportPage.includes("seoKeywordGroups.help") &&
+      supportPage.includes('"tattoo app support"') &&
+      privacyPage.includes("keywords: metadataKeywords(") &&
+      privacyPage.includes('"tattoo app privacy"') &&
+      termsPage.includes("keywords: metadataKeywords(") &&
+      termsPage.includes('"tattoo community terms"') &&
+      [helpPage, supportPage, privacyPage, termsPage].every(
+        (source) =>
+          !source.toLowerCase().includes("supabase") &&
+          !source.toLowerCase().includes("stripe") &&
+          !source.toLowerCase().includes("firebase"),
+      ),
   },
   {
     label: "Merch detail uses safe product image or brand fallback metadata",

@@ -8,10 +8,14 @@ import {
   seoKeywordGroups,
   siteKeywords,
   siteName,
+  siteUrl,
   supportEmail,
 } from "@/lib/site";
 
 export const metadata: Metadata = {
+  alternates: {
+    canonical: `${siteUrl}/help`,
+  },
   description:
     "TheTattooCore Help Center for account setup, verification, bookings, ads, Merch, Stuff, Gigs, Stories, DMs, and safety basics.",
   keywords: metadataKeywords(siteKeywords, seoKeywordGroups.help),

@@ -1,11 +1,21 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { LogoLockup } from "../logo-mark";
-import { supportEmail } from "@/lib/site";
+import { metadataKeywords, siteKeywords, siteUrl, supportEmail } from "@/lib/site";
 
 export const metadata: Metadata = {
+  alternates: {
+    canonical: `${siteUrl}/terms`,
+  },
   description:
     "TheTattooCore community terms, 18+ policy, content rules, Stuff, Merch, Gigs, and moderation standards.",
+  keywords: metadataKeywords(
+    siteKeywords,
+    "tattoo community terms",
+    "18+ tattoo app",
+    "content policy",
+    "tattoo moderation standards",
+  ),
   title: "Terms and Content Policy",
 };
 

@@ -1,11 +1,27 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { LogoLockup } from "../logo-mark";
-import { siteName, supportEmail } from "@/lib/site";
+import {
+  metadataKeywords,
+  siteKeywords,
+  siteName,
+  siteUrl,
+  supportEmail,
+} from "@/lib/site";
 
 export const metadata: Metadata = {
+  alternates: {
+    canonical: `${siteUrl}/privacy`,
+  },
   description:
     "TheTattooCore privacy overview for account data, public profiles, messages, location settings, and sponsored placements.",
+  keywords: metadataKeywords(
+    siteKeywords,
+    "tattoo app privacy",
+    "tattoo community privacy",
+    "account data controls",
+    "privacy and safety",
+  ),
   title: "Privacy",
 };
 

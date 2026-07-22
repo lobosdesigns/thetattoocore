@@ -1,11 +1,28 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { LogoLockup } from "../logo-mark";
-import { siteName, supportEmail } from "@/lib/site";
+import {
+  metadataKeywords,
+  seoKeywordGroups,
+  siteKeywords,
+  siteName,
+  siteUrl,
+  supportEmail,
+} from "@/lib/site";
 
 export const metadata: Metadata = {
+  alternates: {
+    canonical: `${siteUrl}/support`,
+  },
   description:
     "TheTattooCore support, safety reporting, privacy help, and account deletion request information.",
+  keywords: metadataKeywords(
+    siteKeywords,
+    seoKeywordGroups.help,
+    "tattoo app support",
+    "tattoo safety reports",
+    "account deletion help",
+  ),
   title: "Support",
 };
 
