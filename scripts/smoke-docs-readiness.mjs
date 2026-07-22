@@ -520,7 +520,10 @@ const checks = [
       docs["native/thetattoocore-mobile/README.md"].includes("ANDROID_QA adb_server=start failed") &&
       docs["native/thetattoocore-mobile/README.md"].includes("waits briefly for USB/debug authorization") &&
       docs["native/thetattoocore-mobile/README.md"].includes("authorized device") &&
-      docs["native/thetattoocore-mobile/README.md"].includes("Play testing release under review"),
+      docs["native/thetattoocore-mobile/README.md"].includes("Play testing release under review") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("Google Play closed/internal testing") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("active closed-test served build") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("staged API 36 update bundle"),
   },
   {
     label: "mobile submission runbook includes Stories, help, and booking deposit QA",

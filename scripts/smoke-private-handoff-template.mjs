@@ -15,7 +15,7 @@ const checks = [
       packageJson.includes('"prepare:private-console-tabs": "node scripts/write-private-console-tabs.mjs"') &&
       packageJson.includes('"smoke:handoff": "node scripts/smoke-private-handoff-template.mjs"') &&
       packageJson.includes("npm run smoke:native && npm run smoke:app-links && npm run smoke:handoff && npm run smoke:docs") &&
-      packageJson.includes("npm run smoke:payments && npm run smoke:payment-cutover && npm run smoke:security && npm run smoke:handoff && npm run smoke:docs") &&
+      packageJson.includes("npm run smoke:payments && npm run smoke:payment-cutover && npm run smoke:pwa && npm run smoke:security && npm run smoke:handoff && npm run smoke:docs") &&
       packageJson.includes("npm run smoke:store && npm run smoke:pwa && npm run smoke:handoff && npm run smoke:docs") &&
       gitignore.includes("/private-release-handoff/") &&
       generator.includes('const outputDir = "private-release-handoff"') &&
@@ -81,23 +81,22 @@ const checks = [
       generator.includes("Reviewer credentials, phone details, console screenshots, payment identifiers") &&
       generator.includes("Reviewer contact saved in consoles") &&
       generator.includes("## Current Console Blockers To Clear") &&
-      generator.includes("13-inch iPad screenshot upload validation") &&
-      generator.includes("mobile-home-2048x2732.png") &&
-      generator.includes("mobile-login-signup-2048x2732.png") &&
-      generator.includes("mobile-4u-safe-2048x2732.png") &&
-      generator.includes("Set Primary Category to Social Networking") &&
-      generator.includes("Confirm TTC owns or has rights") &&
-      generator.includes("Use Privacy URL https://thetattoocore.com/privacy") &&
+      generator.includes("App Review monitoring and response evidence") &&
+      generator.includes("iOS App Version 1.0 build 1.0 (3) submitted for App Review") &&
+      generator.includes("reviewer messages, status changes, rejection notes, or approval proof privately") &&
+      generator.includes("Submitted-build console field evidence") &&
+      generator.includes("selected build, 13-inch iPad screenshot upload, primary category, free pricing") &&
+      generator.includes("Content Rights, App Privacy, Privacy Policy URL, and Age 18+ override") &&
       generator.includes("submitted-build iPhone/iPad QA evidence only") &&
-      generator.includes("Closed testing - Alpha is served") &&
+      generator.includes("Closed testing - Alpha release 1 (1.0) is served") &&
       generator.includes("14-day window is counted only after the closed test is live") &&
       generator.includes("Closed-test tester links and opt-in evidence") &&
       generator.includes("Save Android/web join links privately") &&
       generator.includes("tester community access") &&
       generator.includes("group-member opt-in/install proof") &&
       generator.includes("API 36 signed upload bundle") &&
-      generator.includes("Build from the checked-in API 36 wrapper") &&
-      generator.includes("sign a fresh upload bundle privately") &&
+      generator.includes("Fresh version code 2 / version name 1.0.1 API 36 upload bundle is staged") &&
+      generator.includes("before any post-deadline submission/update") &&
       generator.includes("rerun Android wrapper plus real-device QA") &&
       generator.includes("Console submit/retry evidence") &&
       generator.includes("record the visible error code, page URL, retry path") &&
@@ -105,7 +104,7 @@ const checks = [
       generator.includes("Publishing overview still shows changes not sent for review") &&
       generator.includes("## Google Play Closed-Test Retry Log") &&
       generator.includes("Visible status or error code") &&
-      generator.includes("reload and saved-tab retry pending") &&
+      generator.includes("reload and saved-tab retry if status changes or install link fails") &&
       generator.includes("Next retry owner") &&
       generator.includes("Google Play API 36 signed upload bundle") &&
       generator.includes("Google Play closed-test tester links") &&

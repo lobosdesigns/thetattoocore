@@ -31,14 +31,12 @@ account identifiers out of repo docs.
 
 | Platform | Blocker | Current handoff value | Result | Private proof filename or location |
 | --- | --- | --- | --- | --- |
-| Apple | 13-inch iPad screenshot upload validation | Upload selected files: mobile-home-2048x2732.png, mobile-login-signup-2048x2732.png, mobile-4u-safe-2048x2732.png | pending | |
-| Apple | Primary category | Set Primary Category to Social Networking; optional Secondary Category Lifestyle | pending | |
-| Apple | Content Rights | Confirm TTC owns or has rights to icons, generated screenshots, metadata, and sample content | pending | |
-| Apple | App Privacy and Privacy Policy URL | Use Privacy URL https://thetattoocore.com/privacy; answer App Privacy from docs/DATA_SAFETY_PREP.md and selected build behavior | pending | |
-| Apple | Age rating and Accessibility Nutrition Labels | Use submitted-build iPhone/iPad QA evidence only | pending | |
-| Google Play | Closed testing production-access evidence | Confirm Closed testing - Alpha is served, tester opt-ins are sufficient, and the 14-day window is counted only after the closed test is live | pending | |
+| Apple | App Review monitoring and response evidence | App Store Connect shows iOS App Version 1.0 build 1.0 (3) submitted for App Review; archive reviewer messages, status changes, rejection notes, or approval proof privately | pending | |
+| Apple | Submitted-build console field evidence | Confirm selected build, 13-inch iPad screenshot upload, primary category, free pricing, Content Rights, App Privacy, Privacy Policy URL, and Age 18+ override remain saved for the submitted build | pending | |
+| Apple | Accessibility Nutrition Labels evidence | Use submitted-build iPhone/iPad QA evidence only before changing or confirming labels | pending | |
+| Google Play | Closed testing production-access evidence | Confirm Closed testing - Alpha release 1 (1.0) is served to the tester community, tester opt-ins are sufficient, and the 14-day window is counted only after the closed test is live | pending | |
 | Google Play | Closed-test tester links and opt-in evidence | Save Android/web join links privately, confirm tester community access, and record group-member opt-in/install proof | pending | |
-| Google Play | API 36 signed upload bundle | Build from the checked-in API 36 wrapper, sign a fresh upload bundle privately, and rerun Android wrapper plus real-device QA before public submission or post-deadline updates | pending | |
+| Google Play | API 36 signed upload bundle | Fresh version code 2 / version name 1.0.1 API 36 upload bundle is staged; upload it when required or before any post-deadline submission/update, then rerun Android wrapper plus real-device QA | pending | |
 | Google Play | Console submit/retry evidence | If Play Console errors before submit, record the visible error code, page URL, retry path, whether reload/new-tab retry was attempted, and whether Publishing overview still shows changes not sent for review | pending | |
 
 ## Store Console Evidence
@@ -76,7 +74,7 @@ identifiers in the private proof folder.
 
 | Attempt date/time | Console page | Visible status or error code | Action tried | Result | Next retry owner |
 | --- | --- | --- | --- | --- | --- |
-| | Closed testing / Publishing overview | pending | reload and saved-tab retry pending | pending | |
+| | Closed testing / Publishing overview | active or pending status to capture | reload and saved-tab retry if status changes or install link fails | pending | |
 
 ## Reviewer Access
 

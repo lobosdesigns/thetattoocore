@@ -282,10 +282,10 @@ const checks = [
       source.capacitorConfig.includes("cleartext: false"),
   },
   {
-    label: "native wrapper notes keep TestFlight and Play internal first",
+    label: "native wrapper notes keep TestFlight and Play closed/internal first",
     ok:
       source.readme.includes("Apple TestFlight") &&
-      source.readme.includes("Google Play internal testing") &&
+      source.readme.includes("Google Play closed/internal testing") &&
       source.readme.includes("Public release waits for final legal review") &&
       source.nativePrep.includes("August 31, 2026") &&
       source.nativePrep.includes("Android 16 / API 36") &&
@@ -300,6 +300,9 @@ const checks = [
       source.readme.includes("set USB mode") &&
       source.readme.includes("accept the computer authorization prompt") &&
       source.readme.includes("authorized device missing TTC package") &&
+      source.readme.includes("active closed-test served build") &&
+      source.readme.includes("staged API 36 update bundle") &&
+      source.readme.includes("reviewer messages archived privately") &&
       source.mobileRunbook.includes("Firebase Cloud Messaging") &&
       source.mobileRunbook.includes("Do not request native notification permission"),
   },
