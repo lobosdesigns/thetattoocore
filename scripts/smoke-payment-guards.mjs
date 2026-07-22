@@ -1166,12 +1166,12 @@ checks.push({
   label: "payment release verification gate is documented and wired",
   ok:
     packageJson.includes(
-      '"verify:payment-release": "npm run lint && npm run build && npm run smoke:env && npm run smoke:payments && npm run smoke:payment-cutover && npm run smoke:security && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios"',
+      '"verify:payment-release": "npm run lint && npm run build && npm run smoke:env && npm run smoke:payments && npm run smoke:payment-cutover && npm run smoke:pwa && npm run smoke:security && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios"',
     ) &&
     packageJson.includes('"smoke:payment-cutover": "node scripts/smoke-payment-cutover-evidence.mjs"') &&
     paymentReadiness.includes("npm.cmd run verify:payment-release") &&
     paymentReadiness.includes("npm.cmd run smoke:payment-cutover") &&
-    paymentReadiness.includes("lint, production build, environment mode checks, payment flow guards, private cutover-evidence rows, security headers, private handoff-template validation, readiness docs, public checkout/status routes, and Android-profile plus iOS-profile mobile checkout/account route smoke"),
+    paymentReadiness.includes("lint, production build, environment mode checks, payment flow guards, private cutover-evidence rows, app install and alert fallback guards, security headers, private handoff-template validation, readiness docs, public checkout/status routes, and Android-profile plus iOS-profile mobile checkout/account route smoke"),
 });
 
 const failures = checks.filter((check) => !check.ok);

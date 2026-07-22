@@ -491,6 +491,8 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android automation not yet available") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("passing Android console/log review") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Native build/install evidence should use the matrix") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play Closed testing - Alpha release `1 (1.0)` is available to selected testers") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("fresh signed API 36 upload bundle for version code `2` / version name `1.0.1`") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("release channel, version/build, install source, tester account pair") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("at least 12 testers opted in for 14 continuous days") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Record a safe console/log review summary for mobile web, Android wrapper WebView, and iOS TestFlight") &&
@@ -568,7 +570,7 @@ const checks = [
     label: "mobile submission runbook records current store rules check",
     ok:
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("## Current Store Rules Check") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Last checked: July 21, 2026") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Last checked: July 22, 2026") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple App Privacy: privacy policy URL is required") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple Content Rights") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("one iPhone screenshot") &&
@@ -577,6 +579,8 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple Accessibility Nutrition Labels") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play target API") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Android 16 / API 36") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("staged version code") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("version name `1.0.1` API 36 bundle") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play production access") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("12 testers opted in for 14 continuous days") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Official source set checked: Apple App Store Connect App Privacy") &&

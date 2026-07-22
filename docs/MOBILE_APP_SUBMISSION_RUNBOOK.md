@@ -4,7 +4,7 @@
 
 - TheTattooCore is web/PWA-first at `https://thetattoocore.com/login`.
 - Native Android and iOS beta-wrapper work is starting from `native/thetattoocore-mobile`.
-- Android v1 internal-test upload bundle is signed and staged on the Desktop as `TheTattooCore-app-release-v1-signed.aab`; Google Play internal testing release `1 (1.0)` is active for the existing internal tester list.
+- Google Play Closed testing - Alpha release `1 (1.0)` is available to selected testers through the current tester community, and the Android/web tester join links are saved privately. Android v1 remains the served closed-test artifact, while the fresh signed API 36 upload bundle for version code `2` / version name `1.0.1` is staged on the Desktop for the next upload attempt or any post-deadline submission/update.
 - iOS build `1.0 (3)` was uploaded from Xcode Organizer on July 18, 2026, attached to TTC Internal Testers, and is available for internal TestFlight testing.
 - PWA manifest, icons, splash assets, service worker, support URL, privacy URL, and terms URL are ready for the beta wrapper path.
 - Native wrapper prep lives in `docs/NATIVE_WRAPPER_PREP.md`; follow it before adding native permissions, deep links, checkout handling, push, or store-review changes.
@@ -23,7 +23,7 @@
 
 ## Current Store Rules Check
 
-Last checked: July 21, 2026. Recheck the official store help pages before each
+Last checked: July 22, 2026. Recheck the official store help pages before each
 new build selection, metadata save, or production-access request because console
 requirements can change between internal testing and public review.
 
@@ -39,7 +39,8 @@ requirements can change between internal testing and public review.
 - Apple Accessibility Nutrition Labels: evaluate common tasks on the submitted
   iPhone/iPad build before claiming support for any accessibility feature.
 - Google Play target API: new apps and updates submitted on or after August 31,
-  2026 must target Android 16 / API 36 or higher.
+  2026 must target Android 16 / API 36 or higher; keep the staged version code
+  `2` / version name `1.0.1` API 36 bundle as the next upload baseline.
 - Google Play production access: if the account/app is subject to closed-test
   requirements, keep at least 12 testers opted in for 14 continuous days before
   applying for production access.
@@ -159,7 +160,7 @@ Support:
 3. Add app icons and splash assets from the approved TTC shield assets.
 4. Configure allowed domains for `thetattoocore.com`, auth redirects, current checkout returns, support, privacy, and terms.
 5. Build Android first on this Windows machine if Android tooling is installed; build iOS on the Mac/remote Mac because Xcode is required.
-6. Upload to Google Play internal testing and Apple TestFlight before any public review submission. Google Play internal testing is active; iOS build `1.0 (3)` is available for internal TestFlight testing.
+6. Upload to Google Play closed/internal testing and Apple TestFlight before any public review submission. Google Play Closed testing - Alpha release `1 (1.0)` is available to selected testers, and the next checked-in Android upload target is version code `2` / version name `1.0.1`; iOS build `1.0 (3)` is available for internal TestFlight testing.
    - July 21, 2026 Google Play status: Closed testing - Alpha changes were submitted to review/quick checks with release `1 (1.0)`, United States availability, the existing tester email list, feedback via support email, Advertising ID set to no, Data Safety saved, and the public Child Safety Standards URL saved. Count the 14-day production-access window only after Google accepts/serves the closed test and enough testers opt in; keep tester membership and console screenshots in private handoff only.
 7. Test camera/photo-picker behavior only through normal browser file inputs unless a native upload bridge is added deliberately.
 
