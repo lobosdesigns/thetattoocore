@@ -293,6 +293,25 @@ const checks = [
       registrar.includes("Installability should not block normal browsing."),
   },
   {
+    label: "service worker keeps a conservative offline app shell fallback",
+    ok:
+      serviceWorker.includes('const STATIC_CACHE_NAME = "ttc-static-v1"') &&
+      serviceWorker.includes('const OFFLINE_URL = "/offline.html"') &&
+      serviceWorker.includes("cache.addAll(STATIC_CACHE_URLS)") &&
+      serviceWorker.includes("key.startsWith(\"ttc-static-\")") &&
+      serviceWorker.includes('event.request.mode === "navigate"') &&
+      serviceWorker.includes("networkFirstNavigation(event.request)") &&
+      serviceWorker.includes("caches.match(OFFLINE_URL)") &&
+      serviceWorker.includes("isStaticShellAsset(url.pathname)") &&
+      serviceWorker.includes('pathname.startsWith("/_next/static/")') &&
+      serviceWorker.includes('pathname.startsWith("/icons/")') &&
+      serviceWorker.includes('pathname.startsWith("/splash/")') &&
+      serviceWorker.includes("cache.put(request, response.clone())") &&
+      serviceWorker.includes("TheTattooCore is offline. Reconnect and try again.") &&
+      !serviceWorker.includes('pathname.startsWith("/api/")') &&
+      !serviceWorker.includes('pathname.startsWith("/admin/")'),
+  },
+  {
     label: "push display is prepared and browser subscription is key-gated",
     ok:
       serviceWorker.includes('self.addEventListener("push"') &&

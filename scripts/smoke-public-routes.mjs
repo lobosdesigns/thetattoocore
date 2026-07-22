@@ -964,8 +964,14 @@ const checks = [
     allowedForbiddenText: ["Cloudflare"],
   },
   { path: "/sitemap.xml", status: [200], includes: ["urlset"] },
+  { path: "/offline.html", status: [200], includes: ["TheTattooCore is offline", "noindex, nofollow"], headers: false },
   { path: "/manifest.webmanifest", status: [200], includes: ["TheTattooCore", "/icons/icon-192.png"], headers: false },
-  { path: "/sw.js", status: [200], includes: ["skipWaiting", "showNotification", "notificationclick"], headers: false },
+  {
+    path: "/sw.js",
+    status: [200],
+    includes: ["skipWaiting", "showNotification", "notificationclick", "networkFirstNavigation"],
+    headers: false,
+  },
 ];
 
 const pwaManifestRequirements = {
