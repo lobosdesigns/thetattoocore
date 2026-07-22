@@ -523,7 +523,8 @@ const checks = [
       source.storeListingDraft.includes("| Google Play short description | 80 characters | Tattoo community for artists, studios, vendors, collectors, and fans. |") &&
       source.storeListingDraft.includes("| App Store subtitle | 30 characters | Tattoo community hub |") &&
       source.storeListingDraft.includes("| App Store promotional text | 170 characters |") &&
-      source.storeListingDraft.includes("| App Store keywords | 100 characters | tattoo,artists,studios,body art,merch,gigs,community,stories,DMs |") &&
+      source.storeListingDraft.includes("| App Store keywords | 100 characters | tattoo,artists,studios,shops,body art,merch,gigs,guest spots,booking,stories,DMs,verification |") &&
+      source.storeListingDraft.includes("shops, body art, tattoo community, guest spots, booking, gigs, merch, stories") &&
       source.storeListingDraft.includes("| Google Play release notes | 500 characters |") &&
       source.storeListingDraft.includes("| App Store primary category | Console choice | Social Networking |") &&
       source.storeListingDraft.includes("| Google Play app category | Console choice | Social |") &&

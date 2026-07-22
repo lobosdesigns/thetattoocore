@@ -20,7 +20,7 @@ against the selected build and final legal review before public submission.
 | App Store description | 4,000 characters | Use the Full Description section below. |
 | App Store subtitle | 30 characters | Tattoo community hub |
 | App Store promotional text | 170 characters | An 18+ tattoo community for artists, studios, vendors, collectors, and fans, with 4U, Gossip, Stuff, Gigs, Merch, DMs, Help, reporting, and blocking. |
-| App Store keywords | 100 characters | tattoo,artists,studios,body art,merch,gigs,community,stories,DMs |
+| App Store keywords | 100 characters | tattoo,artists,studios,shops,body art,merch,gigs,guest spots,booking,stories,DMs,verification |
 | App Store release notes | 4,000 characters | Beta review build with profile privacy controls, safer 4U/Gossip/Gigs tagging, Help, reporting, blocking, DMs, in-app alerts, and review-controlled commerce flows. |
 | Google Play release notes | 500 characters | Beta review build with profile privacy controls, safer 4U/Gossip/Gigs tagging, Help, reporting, blocking, DMs, in-app alerts, and review-controlled commerce flows. |
 | App Store primary category | Console choice | Social Networking |
@@ -38,7 +38,8 @@ Review the web metadata, public-safe sitemap entries, canonical URLs, social
 preview cards, App Store subtitle/promotional text/keywords, Google Play short
 and full descriptions, and screenshot captions together so discovery copy stays
 consistent. Use safe tattoo community terms such as tattoo artists, studios,
-body art, tattoo community, gigs, merch, stories, DMs, and verification while
+shops, body art, tattoo community, guest spots, booking, gigs, merch, stories,
+DMs, and verification while
 avoiding provider names, price or ranking promises, install calls to action,
 AI tattoo art claims, or unsafe professional-equipment promotion.
 

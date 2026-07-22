@@ -54,10 +54,18 @@ const checks = [
       siteConstants.includes('"tattoo community"') &&
       siteConstants.includes('"tattoo artists"') &&
       siteConstants.includes('"tattoo studios"') &&
+      siteConstants.includes('"tattoo shops"') &&
       siteConstants.includes('"body art"') &&
       siteConstants.includes('"tattoo merch"') &&
       siteConstants.includes('"tattoo gigs"') &&
+      siteConstants.includes('"guest spots"') &&
+      siteConstants.includes('"tattoo booking"') &&
+      siteConstants.includes('"artist verification"') &&
+      siteConstants.includes('"shop verification"') &&
+      siteConstants.includes('"tattoo marketplace"') &&
       siteConstants.includes("export const seoKeywordGroups") &&
+      siteConstants.includes('"booking profile"') &&
+      siteConstants.includes('"vendor listings"') &&
       siteConstants.includes("metadataKeywords(") &&
       !siteConstants.toLowerCase().includes("supabase") &&
       !siteConstants.toLowerCase().includes("stripe") &&

@@ -13,23 +13,28 @@ export const siteKeywords = [
   "tattoo community",
   "tattoo artists",
   "tattoo studios",
+  "tattoo shops",
   "body art",
   "tattoo merch",
   "tattoo gigs",
+  "guest spots",
+  "tattoo booking",
   "tattoo stories",
   "artist verification",
+  "shop verification",
   "tattoo collectors",
   "tattoo vendors",
+  "tattoo marketplace",
 ] as const;
 
 export const seoKeywordGroups = {
-  feed: ["4U", "tattoo posts", "tattoo work", "artist portfolios"],
-  gigs: ["tattoo jobs", "guest spots", "tattoo conventions", "artist gigs"],
-  gossip: ["Gossip", "tattoo discussions", "artist community", "shop talk"],
-  help: ["Help Center", "tattoo app help", "account support", "safety reports"],
-  merch: ["Merch", "tattoo shirts", "tattoo prints", "artist merch"],
-  profile: ["artist profile", "studio profile", "vendor profile", "tattoo shop"],
-  stuff: ["Stuff", "verified vendors", "professional tattoo supplies", "studio listings"],
+  feed: ["4U", "tattoo posts", "tattoo work", "artist portfolios", "tattoo reels"],
+  gigs: ["tattoo jobs", "guest spots", "tattoo conventions", "artist gigs", "shop openings"],
+  gossip: ["Gossip", "tattoo discussions", "artist community", "shop talk", "vendor talk"],
+  help: ["Help Center", "tattoo app help", "account support", "safety reports", "booking help"],
+  merch: ["Merch", "tattoo shirts", "tattoo prints", "artist merch", "studio merch"],
+  profile: ["artist profile", "studio profile", "vendor profile", "tattoo shop", "booking profile"],
+  stuff: ["Stuff", "verified vendors", "professional tattoo supplies", "studio listings", "vendor listings"],
 } as const;
 
 export function metadataKeywords(
