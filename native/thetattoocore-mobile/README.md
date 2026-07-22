@@ -10,6 +10,11 @@ This folder is the starting point for Apple TestFlight and Google Play closed/in
 - Public support: `support@thetattoocore.com`
 - Native permissions at first beta: none beyond the WebView defaults.
 - Push prompts: off until native device-token delivery is built and tested.
+- Android uses automatic Android system-bar inset margins so the WebView stays
+  clear of the status bar, display cutout, and navigation area on current
+  edge-to-edge devices.
+- Android debug builds use a side-by-side QA package and label, preserving the
+  installed Play testing app and its data during connected-device checks.
 - Android native alert config stays private-build-only: the wrapper may know
   how to apply the Google services plugin, but the app config file stays out of
   git and is added only for a private build after device evidence is ready.
@@ -70,9 +75,12 @@ This folder is the starting point for Apple TestFlight and Google Play closed/in
      `TTC_ANDROID_EXPECTED_VERSION_NAME` and
      `TTC_ANDROID_EXPECTED_VERSION_CODE` for the selected track before rerunning
      the probe.
+   - On Android 15 or newer, confirm the TTC header and controls stay below the
+     clock/status area and the bottom navigation stays above the device's
+     gesture or three-button navigation area.
 
 Android packaging is configured on this Windows machine. A signed Google Play upload bundle builds at `android/app/build/outputs/bundle/release/app-release.aab` when the local signing environment variables are set. On July 18, 2026, the signed v1 bundle was verified and copied to the Desktop as `TheTattooCore-app-release-v1-signed.aab` with SHA-256 `18E16D3CB5AEED158C33BF9882AC6920D6A7CB744697568E71C32631BC893B65`. The upload keystore and recovery details are intentionally kept out of git; the local recovery note is saved on the Desktop as `TheTattooCore Android Upload Key.txt`. iOS packaging requires the Mac/Xcode path.
-Android 16 / API 36 tooling is installed on this Windows machine, and the checked-in wrapper targets `36 / 36`. The next checked-in Android upload target is version code `2` / version name `1.0.1`, so a fresh API 36 bundle can be uploaded without colliding with the already-uploaded v1 internal-test artifact. On July 22, 2026, the signed API 36 bundle was built and copied to the Desktop as `TheTattooCore-app-release-v2-1.0.1-api36-signed.aab` with SHA-256 `7F09422DDCE138DF9929F28477C24A6ABB6B480874B2B6CEDD3B8688119BD7BE`. Upload that bundle to the intended Google Play track, then rerun wrapper and real-device QA before selecting any Google Play submission/update track on or after August 31, 2026.
+Android 16 / API 36 tooling is installed on this Windows machine, and the checked-in wrapper targets `36 / 36`. The next checked-in Android upload target is version code `2` / version name `1.0.1`, so a fresh API 36 bundle can be uploaded without colliding with the already-uploaded v1 internal-test artifact. On July 22, 2026, the signed API 36 bundle was rebuilt after the system-bar inset fix and copied to the Desktop as `TheTattooCore-app-release-v2-1.0.1-api36-signed.aab` with SHA-256 `291B730C457EC4753FA58DCA913B7CF950E2FA42CE4A17E79299F61315505275`. Upload that bundle to the intended Google Play track, then rerun wrapper and real-device QA before selecting any Google Play submission/update track on or after August 31, 2026.
 
 ## Android Release Target Handoff
 

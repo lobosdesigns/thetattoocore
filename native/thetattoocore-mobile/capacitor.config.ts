@@ -3,6 +3,9 @@ import type { CapacitorConfig } from "@capacitor/cli";
 const config: CapacitorConfig = {
   appId: "com.thetattoocore.app",
   appName: "TheTattooCore",
+  android: {
+    adjustMarginsForEdgeToEdge: "auto",
+  },
   plugins: {
     Browser: {
       presentationStyle: "fullscreen",

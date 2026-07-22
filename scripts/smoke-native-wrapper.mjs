@@ -193,6 +193,17 @@ const checks = [
       source.webFallback.includes("https://thetattoocore.com/login"),
   },
   {
+    label: "native Android WebView stays inside enforced system-bar insets",
+    ok:
+      source.capacitorConfig.includes('adjustMarginsForEdgeToEdge: "auto"') &&
+      source.androidAppBuild.includes('applicationIdSuffix ".qa"') &&
+      source.androidAppBuild.includes('"TheTattooCore QA"') &&
+      source.readme.includes("automatic Android system-bar inset margins") &&
+      source.readme.includes("side-by-side QA package") &&
+      source.nativePrep.includes("clock, status icons,") &&
+      source.nativePrep.includes("camera cutout, or navigation controls"),
+  },
+  {
     label: "native wrapper avoids provider, secret, and environment-token leakage",
     ok: forbiddenNativeTokens.every((token) => !nativeSourceForLeakChecks.includes(token)),
   },
@@ -257,7 +268,7 @@ const checks = [
       source.appLinkSmoke.includes("validateIosPayload") &&
       source.appLinkSmoke.includes("fail-closed until private identifiers are configured") &&
       source.rootPackageJson.includes('"smoke:app-links": "node scripts/smoke-app-link-associations.mjs"') &&
-      source.rootPackageJson.includes("npm run smoke:native && npm run smoke:app-links && npm run smoke:handoff") &&
+      source.rootPackageJson.includes("npm run smoke:native && npm run smoke:native-push && npm run smoke:app-links && npm run smoke:handoff") &&
       source.nativePrep.includes("fail-closed `.well-known` association routes") &&
       source.nativePrep.includes("Run `npm.cmd run smoke:app-links` after deployment") &&
       source.nativePrep.includes("private deployment environment") &&

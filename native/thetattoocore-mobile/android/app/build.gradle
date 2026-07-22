@@ -35,6 +35,12 @@ android {
         }
     }
     buildTypes {
+        debug {
+            applicationIdSuffix ".qa"
+            versionNameSuffix "-qa"
+            resValue "string", "app_name", "TheTattooCore QA"
+            resValue "string", "title_activity_main", "TheTattooCore QA"
+        }
         release {
             minifyEnabled false
             if (hasTtcUploadSigning) {

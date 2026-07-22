@@ -103,6 +103,8 @@ evidence privately using the matrix above.
 - Confirm `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/support`, `/child-safety-standards`, `/privacy`, `/terms`, `/messages`, `/notifications`, `/account`, public profiles, public posts, Stories, Stuff, Gigs, Merch, and booking/deposit routes do not reload-loop or overflow horizontally.
 - Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView and do not push members out to Safari.
 - Confirm install prompts or browser banners do not block scrolling in the wrapper.
+- Confirm Android content and controls do not sit behind the clock, status icons,
+  camera cutout, or navigation controls on gesture and three-button devices.
 - Confirm videos do not show a visible download control in the wrapper media player.
 - Confirm file uploads work through normal mobile file pickers.
 - Confirm checkout returns safely to the app and does not expose raw payment or payout credentials in app forms.
