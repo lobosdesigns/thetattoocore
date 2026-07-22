@@ -14,7 +14,7 @@
 - Data-safety/privacy prep lives in `docs/DATA_SAFETY_PREP.md`; compare it to the live feature set and final Privacy policy before answering store data-safety questions.
 - Real-device QA gates live in `docs/REAL_DEVICE_QA_CHECKLIST.md` and should pass before wrapper packaging.
 - Native build/install evidence should use the matrix in `docs/REAL_DEVICE_QA_CHECKLIST.md` so Android internal-testing and iOS TestFlight proof record release channel, version/build, install source, tester account pair, device/date, and pass/fail summary without storing private reviewer secrets or console screenshots in this repo.
-- If Google Play shows a production-access testing requirement, move from internal testing to a controlled closed test with the existing tester community or Google Group, keep at least 12 testers opted in for 14 continuous days, and archive the production-access application answers privately before requesting production.
+- The signed-in Lobosdesigns LLC developer account is an organization account. Google's current 12-testers-for-14-days production-access gate applies to newly created personal accounts, so it does not delay this release. If a future personal account or console-specific requirement shows that gate, use a controlled closed test with the existing tester community or Google Group and archive the production-access evidence privately.
 - Production payment gates live in `docs/PAYMENT_PRODUCTION_READINESS.md` and should pass before real commerce appears in native builds.
 - Final legal review evidence lives in `docs/LEGAL_REVIEW_PREP.md`; keep reviewer notes private and recheck public Terms, Privacy, Support, Help, Child Safety Standards, store metadata, screenshots, and native wrapper behavior against the submitted build.
 - Google Play submissions or updates on or after August 31, 2026 must target Android 16 / API 36. The checked-in Android wrapper now targets API 36, and published closed-test release `1.0.1 (2)` uses that baseline. Any replacement or later update must increment the version code above `2`, rebuild and sign a fresh upload bundle, and rerun wrapper plus real-device QA before selecting a Google Play track.
@@ -49,9 +49,10 @@ requirements can change between internal testing and public review.
   2026 must target Android 16 / API 36 or higher. Published closed-test release
   `1.0.1 (2)` is the current API 36 baseline; any replacement must use a version
   code above `2`.
-- Google Play production access: if the account/app is subject to closed-test
-  requirements, keep at least 12 testers opted in for 14 continuous days before
-  applying for production access.
+- Google Play production access: the signed-in Lobosdesigns LLC developer
+  account is an organization account. The current 12-testers-for-14-days gate
+  applies to newly created personal accounts, so it does not apply to this
+  release. Recheck the console and official help before future submissions.
 - Keep source URLs, console screenshots, tester membership, reviewer credentials,
   private contact details, and account identifiers in the private release handoff
   only.

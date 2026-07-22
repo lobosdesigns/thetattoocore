@@ -504,18 +504,22 @@ const checks = [
     ok:
       source.readiness.includes("Apple iOS `1.0` build `1.0 (3)` is submitted for App Review") &&
       source.readiness.includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
-      source.readiness.includes("age/content rating, Accessibility Nutrition Labels, Google Play closed-test tester opt-in/duration evidence if required, and final console validation") &&
-      source.readiness.includes("Closed testing - Alpha now serves API 36 release `1.0.1 (2)`") &&
+      source.readiness.includes("age/content rating, Accessibility Nutrition Labels, applicable tester evidence, and final console validation") &&
+      source.readiness.includes("Closed testing - Alpha serves API 36 release `1.0.1 (2)`") &&
       source.readiness.includes("existing Google Group community") &&
-      source.readiness.includes("authorized Android 16 device confirmed installed Play build `1.0.1 (2)` with target SDK 36") &&
-      source.readiness.includes("one eligible Android install of `1.0.1 (2)` is verified") &&
-      source.readiness.includes("production access still needs private proof of the applicable required tester count and continuous opt-in duration") &&
+      source.readiness.includes("authorized Android 16 device confirmed the installed build and target SDK 36") &&
+      source.readiness.includes("one Android install of `1.0.1 (2)` is verified") &&
+      source.readiness.includes("organization account is not subject to the personal-account 12-tester/14-day production-access rule") &&
+      source.readiness.includes("production rollout of the same build is saved in Publishing Overview awaiting final submit-for-review confirmation") &&
+      source.readiness.includes("Production release `1.0.1 (2)` is prepared and saved in Publishing Overview") &&
+      source.readiness.includes("automated pre-review checks finished successfully") &&
+      source.readiness.includes("release minification is disabled") &&
       !currentBlockerMatrix.includes("14-day production-access evidence still needs eligible tester opt-in/install proof") &&
       source.readiness.includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&
       source.readiness.includes("Age 18+ override") &&
       source.readiness.includes("Monitor App Review status and reviewer messages") &&
       source.readiness.includes("group-member opt-in/install proof and 14-day production-access tester evidence if required") &&
-      source.readiness.includes("Google Play closed-test tester opt-in/duration evidence if required") &&
+      currentBlockerMatrix.includes("applicable tester evidence") &&
       source.readiness.includes("build selection, reviewer test access, developer/legal entity, reviewer contact phone") &&
       source.readiness.includes("Do not store reviewer passwords, private phone numbers, account-owner data, or console identifiers in repo docs") &&
       source.dataSafetyPrep.includes("Google Play Data Safety must be current before closed testing, open testing, or production release") &&

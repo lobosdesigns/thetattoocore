@@ -1,1 +1,1 @@
-Beta review build with profile privacy controls, safer 4U/Gossip/Gigs tagging, Help, reporting, blocking, DMs, in-app alerts, and review-controlled commerce flows.
+Launch release with profile privacy controls, safer 4U/Gossip/Gigs tagging, Help, reporting, blocking, DMs, in-app alerts, and review-controlled commerce flows.

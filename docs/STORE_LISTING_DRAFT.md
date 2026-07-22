@@ -22,7 +22,7 @@ against the selected build and final legal review before public submission.
 | App Store promotional text | 170 characters | An 18+ tattoo community for artists, studios, vendors, collectors, and fans, with 4U, Gossip, Stuff, Gigs, Merch, DMs, Help, reporting, and blocking. |
 | App Store keywords | 100 characters | tattoo,artists,studios,shops,body art,merch,gigs,guest spots,booking,stories,DMs,verification |
 | App Store release notes | 4,000 characters | Beta review build with profile privacy controls, safer 4U/Gossip/Gigs tagging, Help, reporting, blocking, DMs, in-app alerts, and review-controlled commerce flows. |
-| Google Play release notes | 500 characters | Beta review build with profile privacy controls, safer 4U/Gossip/Gigs tagging, Help, reporting, blocking, DMs, in-app alerts, and review-controlled commerce flows. |
+| Google Play release notes | 500 characters | Launch release with profile privacy controls, safer 4U/Gossip/Gigs tagging, Help, reporting, blocking, DMs, in-app alerts, and review-controlled commerce flows. |
 | App Store primary category | Console choice | Social Networking |
 | App Store secondary category | Console choice | Lifestyle |
 | Google Play app category | Console choice | Social |

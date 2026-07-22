@@ -505,7 +505,7 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("store listing offers Install or Update") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Do not count a missing listing or account mismatch as an install pass") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("release channel, version/build, install source, tester account pair") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("at least 12 testers opted in for 14 continuous days") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("organization account. Google's current 12-testers-for-14-days production-access gate applies to newly created personal accounts") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Record a safe console/log review summary for mobile web, Android wrapper WebView, and iOS TestFlight") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("run the `Android Connected-Device Probe`") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Empty or unauthorized `adb devices -l` output is a handoff blocker") &&
@@ -600,7 +600,8 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Published closed-test release") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("current API 36 baseline") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play production access") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("12 testers opted in for 14 continuous days") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("current 12-testers-for-14-days gate") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("applies to newly created personal accounts") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Official source set checked: Apple App Store Connect App Privacy") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("screenshot specifications, screenshot upload, release notes") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Repo-safe current-rule source URLs") &&
@@ -1003,9 +1004,12 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Age 18+ override") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Closed testing - Alpha now serves API 36 release `1.0.1 (2)`") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Closed testing - Alpha serves API 36 release `1.0.1 (2)`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("existing Google Group community") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Publishing Overview reported the update published on July 22, 2026") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("organization account is not subject to the personal-account 12-tester/14-day production-access rule") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Production release `1.0.1 (2)` is prepared and saved in Publishing Overview") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("automated pre-review checks finished successfully") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("release minification is disabled") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Monitor App Review status and reviewer messages") &&
       docs["docs/APP_STORE_READINESS.md"].includes("group-member opt-in/install proof and 14-day production-access tester evidence if required") &&
       docs["docs/APP_STORE_READINESS.md"].includes("with account verification and Connect setup still outstanding") &&
@@ -1022,15 +1026,14 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("Store consoles") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Apple iOS `1.0` build `1.0 (3)` is submitted for App Review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Google Play Closed testing - Alpha is available to selected testers") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("tester Google Group access is active") &&
       docs["docs/APP_STORE_READINESS.md"].includes("13-inch iPad screenshots uploaded") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Content Rights") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Accessibility Nutrition Labels") &&
       (docs["docs/APP_STORE_READINESS.md"].includes("Data Safety review") ||
         docs["docs/APP_STORE_READINESS.md"].includes("Data Safety saved")) &&
-      docs["docs/APP_STORE_READINESS.md"].includes("one eligible Android install of `1.0.1 (2)` is verified") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("production access still needs private proof of the applicable required tester count and continuous opt-in duration") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("closed-test tester opt-in/duration evidence if required") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("one Android install of `1.0.1 (2)` is verified") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("production rollout of the same build is saved in Publishing Overview awaiting final submit-for-review confirmation") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("applicable tester evidence") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Legal and policy") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Final counsel-reviewed Terms/Privacy") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Real-device QA") &&
