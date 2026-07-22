@@ -38,6 +38,8 @@ account identifiers out of repo docs.
 | Google Play | Closed-test tester links and opt-in evidence | Save Android/web join links privately, confirm the device Play account matches the tester-community member, confirm web opt-in with that account, and record listing/install proof | pending | |
 | Google Play | API 36 signed upload bundle | Fresh version code 2 / version name 1.0.1 API 36 upload bundle is staged; upload it when required or before any post-deadline submission/update, then rerun Android wrapper plus real-device QA | pending | |
 | Google Play | Console submit/retry evidence | If Play Console errors before submit, record the visible error code, page URL, retry path, whether reload/new-tab retry was attempted, and whether Publishing overview still shows changes not sent for review | pending | |
+| Payments | Account activation and Connect setup | Dashboard next setup item is Create a test connected account; business model, connected-account test, integration guide, account verification, and identity readiness still need private completion evidence | pending | |
+| Payments | Production app mode preflight | Admin shows explicit mode Needs review, server key mode Test, webhook signing Ready, and checkout blocked until the expected mode is readable and matched | blocked | |
 
 ## Store Console Evidence
 

@@ -199,6 +199,11 @@ checks.push({
   ok:
     paymentReadiness.includes("dashboard inspection still shows Connect setup") &&
     paymentReadiness.includes("account/go-live verification work in progress") &&
+    paymentReadiness.includes("next setup item is `Create a test connected account`") &&
+    paymentReadiness.includes("explicit mode `Needs review`") &&
+    paymentReadiness.includes("server payment key mode `Test`") &&
+    paymentReadiness.includes("webhook signing `Ready`") &&
+    paymentReadiness.includes("checkout blocked until the expected mode is readable and matched") &&
     paymentReadiness.includes("Live-money cutover remains blocked") &&
     paymentReadiness.includes("webhook mode/event proof") &&
     paymentReadiness.includes("Admin reconciliation") &&

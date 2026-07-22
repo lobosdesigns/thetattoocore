@@ -109,6 +109,12 @@ const checks = [
       generator.includes("record the visible error code, page URL, retry path") &&
       generator.includes("whether reload/new-tab retry was attempted") &&
       generator.includes("Publishing overview still shows changes not sent for review") &&
+      generator.includes("Account activation and Connect setup") &&
+      generator.includes("Dashboard next setup item is Create a test connected account") &&
+      generator.includes("business model, connected-account test, integration guide, account verification, and identity readiness") &&
+      generator.includes("Production app mode preflight") &&
+      generator.includes("explicit mode Needs review, server key mode Test, webhook signing Ready") &&
+      generator.includes("checkout blocked until the expected mode is readable and matched | blocked") &&
       generator.includes("## Google Play Closed-Test Retry Log") &&
       generator.includes("Visible status or error code") &&
       generator.includes("reload and saved-tab retry if status changes or install link fails") &&

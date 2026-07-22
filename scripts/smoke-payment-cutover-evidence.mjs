@@ -44,10 +44,14 @@ const readinessEvidenceSection = paymentReadiness.slice(
   paymentReadiness.indexOf("## Production Evidence Pack"),
   paymentReadiness.indexOf("## Draft Seller Payout Release Policy"),
 );
+const currentBlockersSection = generator.slice(
+  generator.indexOf("## Current Console Blockers To Clear"),
+  generator.indexOf("## Store Console Evidence"),
+);
 
 if (
   packageJson.includes('"smoke:payment-cutover": "node scripts/smoke-payment-cutover-evidence.mjs"') &&
-  packageJson.includes("npm run smoke:payments && npm run smoke:payment-cutover && npm run smoke:security")
+  packageJson.includes("npm run smoke:payments && npm run smoke:payment-cutover && npm run smoke:pwa && npm run smoke:security")
 ) {
   pass("payment cutover guard is wired into payment release verification");
 } else {
@@ -83,6 +87,18 @@ if (
   pass("private handoff keeps payout and live-money proof blocked until reviewed");
 } else {
   fail("private handoff keeps payout and live-money proof blocked until reviewed");
+}
+
+if (
+  currentBlockersSection.includes("| Payments | Account activation and Connect setup |") &&
+  currentBlockersSection.includes("Dashboard next setup item is Create a test connected account") &&
+  currentBlockersSection.includes("| Payments | Production app mode preflight |") &&
+  currentBlockersSection.includes("explicit mode Needs review, server key mode Test, webhook signing Ready") &&
+  currentBlockersSection.includes("checkout blocked until the expected mode is readable and matched | blocked |")
+) {
+  pass("private handoff records the current fail-closed payment activation state");
+} else {
+  fail("private handoff records the current fail-closed payment activation state");
 }
 
 const requiredReadinessText = [
