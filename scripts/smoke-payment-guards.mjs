@@ -32,6 +32,10 @@ const adCreditSpendMigration = readFileSync(
   "supabase/migrations/20260715041500_spend_ad_credit_for_campaign.sql",
   "utf8",
 );
+const paymentRpcAccessMigration = readFileSync(
+  "supabase/migrations/20260722135223_restrict_payment_inventory_rpc_execute.sql",
+  "utf8",
+);
 const globalsCss = readFileSync("src/app/globals.css", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
@@ -181,6 +185,38 @@ checks.push({
     accountPage.includes("Use ${dollars(campaign.daily_budget_cents)} ad credit") &&
     productPlan.includes("member-visible Account > Advertising balance summaries") &&
     productPlan.includes("atomic spend path that lets campaign checkout consume enough active account credit"),
+});
+checks.push({
+  label: "payment inventory RPC execution stays limited to intended roles",
+  ok:
+    adminActions.includes("const inventoryAdmin =") &&
+    adminActions.includes('status === "cancelled" ? createAdminClient() : null') &&
+    adminActions.includes("const inventoryReleaseClient = inventoryAdmin") &&
+    adminActions.includes("await inventoryReleaseClient.rpc(") &&
+    !adminActions.includes('await supabase.rpc(\n      "release_merch_inventory_for_order"') &&
+    paymentRpcAccessMigration.includes(
+      "revoke execute on function public.reserve_merch_inventory_for_order(uuid)",
+    ) &&
+    paymentRpcAccessMigration.includes(
+      "revoke execute on function public.release_merch_inventory_for_order(uuid)",
+    ) &&
+    paymentRpcAccessMigration.includes(
+      "revoke execute on function public.mark_paid_merch_order_for_checkout(",
+    ) &&
+    (paymentRpcAccessMigration.match(/from public, anon, authenticated;/g) ?? [])
+      .length === 3 &&
+    paymentRpcAccessMigration.includes(
+      "grant execute on function public.reserve_merch_inventory_for_order(uuid)",
+    ) &&
+    paymentRpcAccessMigration.includes(
+      "grant execute on function public.release_merch_inventory_for_order(uuid)",
+    ) &&
+    (paymentRpcAccessMigration.match(/to service_role;/g) ?? []).length === 3 &&
+    paymentRpcAccessMigration.includes(
+      "revoke execute on function public.spend_ad_credit_for_campaign(uuid)",
+    ) &&
+    paymentRpcAccessMigration.includes("from public, anon") &&
+    paymentRpcAccessMigration.includes("to authenticated, service_role"),
 });
 checks.push({
   label: "payout readiness does not execute seller payout release",

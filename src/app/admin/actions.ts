@@ -1955,6 +1955,18 @@ export async function updateMerchOrderStatus(formData: FormData) {
   }
 
   const { supabase, userId } = await requireModerator();
+  const inventoryAdmin = status === "cancelled" ? createAdminClient() : null;
+
+  if (status === "cancelled" && !inventoryAdmin) {
+    console.error("Admin Merch inventory release client is unavailable.");
+    redirect(
+      adminMerchMessage(
+        "Could not prepare the inventory update. Please try again.",
+        returnTo,
+      ),
+    );
+  }
+
   const { data: order, error: orderError } = await supabase
     .from("merch_orders")
     .select("id, status, buyer_id, total_cents, currency")
@@ -2046,7 +2058,13 @@ export async function updateMerchOrderStatus(formData: FormData) {
   }
 
   if (status === "cancelled") {
-    const { error: releaseError } = await supabase.rpc(
+    const inventoryReleaseClient = inventoryAdmin;
+
+    if (!inventoryReleaseClient) {
+      throw new Error("Inventory release client was not prepared.");
+    }
+
+    const { error: releaseError } = await inventoryReleaseClient.rpc(
       "release_merch_inventory_for_order",
       { p_order_id: orderId },
     );
