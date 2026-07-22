@@ -343,6 +343,9 @@ const checks = [
       userFacingPushSource.includes("Alert help") &&
       userFacingPushSource.includes("Device alerts are being prepared. Keep checking Notifications for now.") &&
       userFacingPushSource.includes("Device alert preference saved. Keep checking Notifications for now.") &&
+      pushControl.includes("Notification.permission === \"denied\"") &&
+      userFacingPushSource.includes("Device alerts are blocked in this browser. Keep checking Notifications for now.") &&
+      pushControl.includes("supported && !permissionBlocked") &&
       userFacingPushSource.includes("Save device app alert preference") &&
       userFacingPushSource.includes("Device alerts stay off until") &&
       userFacingPushSource.includes("App alert setup could not be completed.") &&

@@ -48,6 +48,7 @@ export function PushSubscriptionControl() {
   const [enabled, setEnabled] = useState(false);
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
+  const [permissionBlocked, setPermissionBlocked] = useState(false);
   const [supported, setSupported] = useState(false);
   const readyForSetup = useMemo(
     () => deviceAlertSetupEnabled && Boolean(publicPushKey),
@@ -78,6 +79,12 @@ export function PushSubscriptionControl() {
         return;
       }
 
+      if (Notification.permission === "denied") {
+        setPermissionBlocked(true);
+        setMessage("Device alerts are blocked in this browser. Keep checking Notifications for now.");
+        return;
+      }
+
       navigator.serviceWorker.ready
         .then((registration) => registration.pushManager.getSubscription())
         .then((subscription) => {
@@ -101,6 +108,9 @@ export function PushSubscriptionControl() {
       const permission = await Notification.requestPermission();
 
       if (permission !== "granted") {
+        if (permission === "denied") {
+          setPermissionBlocked(true);
+        }
         setMessage("Device alerts are still off. Keep checking Notifications for now.");
         return;
       }
@@ -166,7 +176,7 @@ export function PushSubscriptionControl() {
                 : fallbackMessage)}
           </p>
         </div>
-        {supported ? (
+        {supported && !permissionBlocked ? (
           <button
             className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-3 text-xs font-bold text-[var(--background)] disabled:opacity-60"
             disabled={pending}
