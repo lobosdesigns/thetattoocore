@@ -91,14 +91,23 @@ function gradleNumber(name) {
 const compileSdkVersion = gradleNumber("compileSdkVersion");
 const targetSdkVersion = gradleNumber("targetSdkVersion");
 const androidSdkPair = `${compileSdkVersion} / ${targetSdkVersion}`;
+const androidVersionCode =
+  Number.parseInt(source.androidAppBuild.match(/versionCode\s+(\d+)/)?.[1] ?? "", 10);
+const androidVersionName =
+  source.androidAppBuild.match(/versionName\s+"([^"]+)"/)?.[1] ?? "";
 const androidApi36SubmissionReady = compileSdkVersion >= 36 && targetSdkVersion >= 36;
 const androidApi36DocsReady =
   androidApi36SubmissionReady &&
+  androidVersionCode >= 2 &&
+  androidVersionName === "1.0.1" &&
   source.nativePrep.includes("checked-in wrapper is now `36 / 36`") &&
   source.nativePrep.includes("Record API `36 / 36` rebuild proof") &&
+  source.nativePrep.includes("next checked-in upload target is version code `2` / version name `1.0.1`") &&
   source.mobileRunbook.includes("checked-in Android wrapper now targets API 36") &&
+  source.mobileRunbook.includes("next upload target is version code `2` / version name `1.0.1`") &&
   source.readme.includes("checked-in wrapper targets `36 / 36`") &&
-  source.readme.includes("| Public submission or update on or after August 31, 2026 | `36 / 36` |");
+  source.readme.includes("version code `2` / version name `1.0.1`") &&
+  source.readme.includes("| Public submission or update on or after August 31, 2026 | `36 / 36`; next upload target `2` / `1.0.1` |");
 const androidApi35InternalOnly =
   compileSdkVersion === 35 &&
   targetSdkVersion === 35 &&
@@ -338,6 +347,15 @@ const checks = [
       source.nativePrep.includes("August 31, 2026") &&
       source.nativePrep.includes("Android 16 / API 36") &&
       (androidApi36DocsReady || androidApi35InternalOnly),
+  },
+  {
+    label: "native Android next upload uses a fresh Play version code",
+    ok:
+      androidApi36SubmissionReady &&
+      androidVersionCode >= 2 &&
+      androidVersionName === "1.0.1" &&
+      source.readiness.includes("next Android upload target is version code `2` / version name `1.0.1`") &&
+      source.realDeviceQa.includes("versionName` and `versionCode` checked into"),
   },
   {
     label: "native wrapper uses TTC app icon and splash assets",

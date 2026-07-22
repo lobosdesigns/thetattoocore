@@ -17,7 +17,7 @@
 - If Google Play shows a production-access testing requirement, move from internal testing to a controlled closed test with the existing tester community or Google Group, keep at least 12 testers opted in for 14 continuous days, and archive the production-access application answers privately before requesting production.
 - Production payment gates live in `docs/PAYMENT_PRODUCTION_READINESS.md` and should pass before real commerce appears in native builds.
 - Final legal review evidence lives in `docs/LEGAL_REVIEW_PREP.md`; keep reviewer notes private and recheck public Terms, Privacy, Support, Help, store metadata, screenshots, and native wrapper behavior against the submitted build.
-- Google Play submissions or updates on or after August 31, 2026 must target Android 16 / API 36. The checked-in Android wrapper now targets API 36 on this Windows machine; rebuild and sign a fresh upload bundle, then rerun wrapper and real-device QA before selecting any Google Play submission/update track.
+- Google Play submissions or updates on or after August 31, 2026 must target Android 16 / API 36. The checked-in Android wrapper now targets API 36 on this Windows machine, and the next upload target is version code `2` / version name `1.0.1`; rebuild and sign a fresh upload bundle, then rerun wrapper and real-device QA before selecting any Google Play submission/update track.
 - Visible nudity is not allowed to reduce review and moderation risk.
 - Merch and ads use controlled launch checkout; production payments, seller payouts, taxes, refunds, disputes, and app-store policy review from `docs/PAYMENT_PRODUCTION_READINESS.md` must be finished before real commerce is promoted in native builds.
 

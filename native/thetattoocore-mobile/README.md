@@ -66,14 +66,14 @@ This folder is the starting point for Apple TestFlight and Google Play internal 
      the probe.
 
 Android packaging is configured on this Windows machine. A signed Google Play upload bundle builds at `android/app/build/outputs/bundle/release/app-release.aab` when the local signing environment variables are set. On July 18, 2026, the signed v1 bundle was verified and copied to the Desktop as `TheTattooCore-app-release-v1-signed.aab` with SHA-256 `18E16D3CB5AEED158C33BF9882AC6920D6A7CB744697568E71C32631BC893B65`. The upload keystore and recovery details are intentionally kept out of git; the local recovery note is saved on the Desktop as `TheTattooCore Android Upload Key.txt`. iOS packaging requires the Mac/Xcode path.
-Android 16 / API 36 tooling is installed on this Windows machine, and the checked-in wrapper targets `36 / 36`. Rebuild and sign a fresh upload bundle, then rerun wrapper and real-device QA before selecting any Google Play submission/update track on or after August 31, 2026.
+Android 16 / API 36 tooling is installed on this Windows machine, and the checked-in wrapper targets `36 / 36`. The next checked-in Android upload target is version code `2` / version name `1.0.1`, so a fresh API 36 bundle can be uploaded without colliding with the already-uploaded v1 internal-test artifact. Rebuild and sign a fresh upload bundle, then rerun wrapper and real-device QA before selecting any Google Play submission/update track on or after August 31, 2026.
 
 ## Android Release Target Handoff
 
 | Release path | Current compile/target SDK | Status |
 | --- | ---: | --- |
 | Internal testing before the API 36 deadline | Previous v1 upload may still be `35 / 35`; checked-in wrapper targets `36 / 36` | Existing internal-test track only; rebuild before widening review. |
-| Public submission or update on or after August 31, 2026 | `36 / 36` | Ready for a fresh signed rebuild plus real-device QA evidence before track selection. |
+| Public submission or update on or after August 31, 2026 | `36 / 36`; next upload target `2` / `1.0.1` | Ready for a fresh signed rebuild plus real-device QA evidence before track selection. |
 
 ## Store Path
 

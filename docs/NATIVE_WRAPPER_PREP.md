@@ -123,7 +123,7 @@ public-submission build.
 | Release path | Checked-in compile/target SDK | Required action | Repo-safe result |
 | --- | ---: | --- | --- |
 | Google Play internal testing before the API 36 deadline | Previous v1 upload may still be `35 / 35`; checked-in wrapper is now `36 / 36` | Keep the existing internal-test build only while store review remains internal and the release date allows it. Rebuild before widening review. | Record release track, version code/name, test date, and pass/fail only. |
-| Google Play public submission or update on or after August 31, 2026 | `36 / 36` required | Build from the checked-in API 36 wrapper, sign a fresh upload bundle, and rerun wrapper plus real-device QA. | Record API `36 / 36` rebuild proof, version code/name, device QA date, and pass/fail only. |
+| Google Play public submission or update on or after August 31, 2026 | `36 / 36` required; next checked-in upload target is version code `2` / version name `1.0.1` | Build from the checked-in API 36 wrapper, sign a fresh upload bundle, and rerun wrapper plus real-device QA. | Record API `36 / 36` rebuild proof, version code/name, device QA date, and pass/fail only. |
 
 ## Local Build Commands
 
