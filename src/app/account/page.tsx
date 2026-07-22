@@ -292,10 +292,12 @@ function AccountSetupGuide({
           </p>
         </div>
         <Link
-          className="inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold text-[var(--foreground)]"
-          href="/"
+          aria-label="Back to 4U home"
+          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-4 text-sm font-semibold text-[var(--foreground)]"
+          href="/#feed"
         >
-          Open app
+          <Home aria-hidden="true" className="size-4" />
+          4U Home
         </Link>
       </div>
 

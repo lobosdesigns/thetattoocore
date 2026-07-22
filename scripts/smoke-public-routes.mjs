@@ -1,6 +1,11 @@
 import { readFileSync } from "node:fs";
 
 const baseUrl = (process.env.SMOKE_BASE_URL || "https://thetattoocore.com").replace(/\/$/, "");
+const accountPageSource = readFileSync("src/app/account/page.tsx", "utf8");
+const accountWorkspaceSource = readFileSync(
+  "src/app/account/account-settings-workspace.tsx",
+  "utf8",
+);
 const settingsPageSource = readFileSync("src/app/settings/page.tsx", "utf8");
 const forbiddenBodyText = [
   "This page couldn't load",
@@ -1016,6 +1021,8 @@ const smokeSettingsShortcutPaths = new Set(checks.map((check) => check.path));
 const missingVisibleSettingsShortcutPaths = visibleSettingsShortcutPaths().filter(
   (path) => !smokeSettingsShortcutPaths.has(path),
 );
+const accountHomeSource = `${accountPageSource}\n${accountWorkspaceSource}`;
+const accountHomeLinkCount = (accountHomeSource.match(/href="\/#feed"/g) || []).length;
 
 if (missingVisibleSettingsShortcutPaths.length > 0) {
   failures += 1;
@@ -1023,6 +1030,17 @@ if (missingVisibleSettingsShortcutPaths.length > 0) {
   console.error(`  missing paths: ${missingVisibleSettingsShortcutPaths.join(", ")}`);
 } else {
   console.log("PASS visible settings shortcuts have public smoke coverage");
+}
+
+if (
+  accountHomeLinkCount < 3 ||
+  !accountHomeSource.includes('aria-label="Back to 4U home"') ||
+  !accountHomeSource.includes("<Home aria-hidden=\"true\"")
+) {
+  failures += 1;
+  console.error("FAIL account page keeps visible 4U home navigation");
+} else {
+  console.log("PASS account page keeps visible 4U home navigation");
 }
 
 for (const check of checks) {
