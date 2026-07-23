@@ -44,6 +44,21 @@
   the public Support URL for both account deletion and data deletion. Apple
   Accessibility Nutrition Labels are voluntary and are not a launch blocker
   unless TTC makes a support claim.
+- Production deploy `5bd38824-8c08-4713-9093-cd7ad3d11ec6` went live on
+  July 23, 2026 from commit `58922be`. Android notifications now declare a
+  dedicated monochrome TTC status icon instead of relying on a launcher asset,
+  and the native guard requires that exact vector without gradients. The
+  active Google Play Alpha remains the already verified `1.0.2 (3)`; no store
+  version, tester track, permission gate, or delivery gate changed in this
+  release. Verification passed the native alert, controlled-delivery, wrapper,
+  and store guards, Android debug resource processing and assembly, lint,
+  production and deployment builds, live `smoke:public`, and live
+  `smoke:mobile`; public smoke noted only the known robots edge-challenge skip.
+  The auxiliary saved-site publish failed closed because its private runtime
+  configuration is not populated, while the established public deployment
+  succeeded. The strict release-evidence gate remains at 60 incomplete
+  requirements and the payment go-live gate remains at 35 evidence blockers.
+  Live money and global native alert delivery remain fail closed.
 - Production deploy `947a3db4-65c9-4f04-a6de-78daf7fec321` went live on
   July 23, 2026 from commit `b3f8d3b` after closing three independent
   readiness gaps. The payment go-live gate now rejects mutable release labels
