@@ -5,6 +5,20 @@ const envExamplePath = ".env.example";
 const gitignore = readFileSync(".gitignore", "utf8");
 const envExample = readFileSync(envExamplePath, "utf8");
 const readme = readFileSync("README.md", "utf8");
+const packageJson = readFileSync("package.json", "utf8");
+const browserClient = readFileSync("src/lib/supabase/client.ts", "utf8");
+const publicBuildVerifier = readFileSync(
+  "scripts/verify-public-build-env.mjs",
+  "utf8",
+);
+const publicBuildEnv = readFileSync(
+  "scripts/lib/public-build-env.mjs",
+  "utf8",
+);
+const publicBuildTest = readFileSync(
+  "scripts/test-public-build-env.mjs",
+  "utf8",
+);
 const lines = envExample
   .split(/\r?\n/)
   .map((line) => line.trim())
@@ -162,6 +176,40 @@ const checks = [
       existsSync(envExamplePath) &&
       gitignore.includes(".env*") &&
       gitignore.includes("!.env.example"),
+  },
+  {
+    label: "public browser configuration fails closed before production builds",
+    ok:
+      packageJson.includes(
+        '"prebuild": "node scripts/verify-public-build-env.mjs"',
+      ) &&
+      packageJson.includes(
+        '"test:public-build-env": "node scripts/test-public-build-env.mjs"',
+      ) &&
+      publicBuildVerifier.includes('import nextEnv from "@next/env"') &&
+      publicBuildVerifier.includes("const { loadEnvConfig } = nextEnv") &&
+      publicBuildVerifier.includes("loadEnvConfig(process.cwd())") &&
+      publicBuildVerifier.includes("publicBuildEnvIsValid(process.env)") &&
+      publicBuildEnv.includes("url.protocol === \"https:\"") &&
+      publicBuildEnv.includes(
+        "/^sb_publishable_[A-Za-z0-9_-]{20,}$/",
+      ) &&
+      publicBuildTest.includes("missing public URL") &&
+      publicBuildTest.includes("missing publishable key") &&
+      publicBuildTest.includes("malformed public URL") &&
+      publicBuildTest.includes("secret key in public configuration") &&
+      browserClient.includes(
+        "const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;",
+      ) &&
+      browserClient.includes(
+        "process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;",
+      ) &&
+      browserClient.includes(
+        'throw new Error("Public app configuration is unavailable.");',
+      ) &&
+      !browserClient.includes("??") &&
+      !browserClient.includes("ytznkgcslezijkehwjsj") &&
+      !browserClient.includes("sb_publishable_8hTy3"),
   },
   {
     label: "native app provider config files stay out of git",

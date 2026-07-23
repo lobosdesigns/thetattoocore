@@ -6,14 +6,15 @@ import {
   persistentSessionFromValue,
 } from "../auth-session";
 
-const supabaseUrl =
-  process.env.NEXT_PUBLIC_SUPABASE_URL ??
-  "https://ytznkgcslezijkehwjsj.supabase.co";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabasePublishableKey =
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
-  "sb_publishable_8hTy3UyxP93glZU1LN8YiQ_zs-5m2St";
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 export function createClient() {
+  if (!supabaseUrl || !supabasePublishableKey) {
+    throw new Error("Public app configuration is unavailable.");
+  }
+
   return createBrowserClient(supabaseUrl, supabasePublishableKey, {
     cookies: {
       getAll() {

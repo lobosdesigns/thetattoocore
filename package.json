@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "postinstall": "node scripts/patch-opennext-cloudflare.mjs",
+    "prebuild": "node scripts/verify-public-build-env.mjs",
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
@@ -20,6 +21,7 @@
     "prepare:private-release-handoff": "node scripts/generate-private-release-handoff.mjs",
     "prepare:private-console-tabs": "node scripts/write-private-console-tabs.mjs",
     "verify:release-evidence": "node scripts/verify-release-evidence.mjs",
+    "test:public-build-env": "node scripts/test-public-build-env.mjs",
     "lint": "eslint",
     "smoke:public": "node scripts/smoke-public-routes.mjs",
     "smoke:media": "node scripts/smoke-media-guards.mjs",
@@ -72,6 +74,7 @@
     "worker-mailer": "^1.2.1"
   },
   "devDependencies": {
+    "@next/env": "16.2.10",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
