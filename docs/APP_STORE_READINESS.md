@@ -44,6 +44,21 @@
   the public Support URL for both account deletion and data deletion. Apple
   Accessibility Nutrition Labels are voluntary and are not a launch blocker
   unless TTC makes a support claim.
+- Production deploy `cb0a86a4-a693-459d-8aa0-ef00bafc1f18` went live on
+  July 23, 2026 from commit `21ef138` after making payment-dashboard evidence
+  expire deterministically. Dashboard dates must now use `YYYY-MM-DD` or an
+  ISO-8601 timestamp with an explicit timezone, cannot be future-dated, and
+  cannot be more than 45 days old. The five-case sanitized regression suite
+  covers passing evidence plus stale, future, ambiguous, and attempted
+  production-clock-override failures. Verification passed the payment gate
+  fixture suite, focused payment guard, lint, production and deployment builds,
+  live `smoke:public`, and live `smoke:mobile`; public smoke noted only the
+  known robots edge-challenge skip. The auxiliary owner-only publish failed
+  closed because its private runtime configuration is not populated, while the
+  established public deployment succeeded. The strict release-evidence gate
+  remains at 60 incomplete requirements and the payment go-live gate remains
+  at 35 evidence blockers. No live-money transaction was performed, and live
+  money remains fail closed.
 - Production deploy `8504294e-7893-4fea-9783-d5a41ee00643` went live on
   July 23, 2026 from commit `6a4edfd` after strengthening iOS real-device
   evidence. A passing iOS QA row must now identify an actual iPhone, TestFlight
