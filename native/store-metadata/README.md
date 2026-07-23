@@ -13,17 +13,18 @@ Use this alongside:
 Before public review, verify every field against the current live app, final legal copy, current store questionnaires, and final payment/commerce launch decisions.
 
 Before final screenshot upload validation or store-console submission, run the
-repo-safe app review preflight from the repo root:
+app review preflight from the repo root with the current production version:
 
 ```powershell
+$env:TTC_RELEASE_CANDIDATE="<current-production-version>"
 npm.cmd run verify:app-review-preflight
 ```
 
-This checks lint, production build, production environment boundaries, security copy and headers, content-policy/reporting guardrails, theme contrast, payment guardrails, store metadata, PWA install assets, native wrapper safety, app-link association endpoints, private handoff-template validation, readiness docs, public routes, Android-profile mobile routes, and iOS-profile mobile routes without storing private console screenshots, reviewer secrets, tester membership, real-device evidence, or account identifiers.
+This checks lint, production build, production environment boundaries, security copy and headers, content-policy/reporting guardrails, theme contrast, payment guardrails, store metadata, PWA install assets, native wrapper safety, app-link association endpoints, private handoff-template validation, readiness docs, public routes, Android-profile mobile routes, and iOS-profile mobile routes without storing private console screenshots, reviewer secrets, tester membership, real-device evidence, or account identifiers. It finishes by proving the evidence verifier with a sanitized fixture and checking the actual ignored private handoff against the candidate, so the command fails closed until all final evidence is complete.
 
 For store metadata and screenshot-only validation, `npm.cmd run verify:store-release`
-remains available as the narrower guard and still checks the private
-handoff-template before upload evidence is collected.
+remains the narrower technical guard but now ends with the same actual private
+evidence gate. Use individual smoke commands while evidence is still being collected.
 
 ## Console Field Handoff
 

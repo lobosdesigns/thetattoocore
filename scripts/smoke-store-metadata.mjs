@@ -470,6 +470,7 @@ const checks = [
         "npm run smoke:public",
         "npm run smoke:mobile",
         "npm run smoke:mobile:ios",
+        "npm run verify:distribution-evidence",
       ]) &&
       hasOrderedScriptSteps("verify:app-review-preflight", [
         "npm run lint",
@@ -487,14 +488,16 @@ const checks = [
         "npm run smoke:app-links",
         "npm run qa:android-device",
         "npm run smoke:handoff",
-        "npm run test:release-evidence-gate",
         "npm run smoke:docs",
         "npm run smoke:public",
         "npm run smoke:mobile",
         "npm run smoke:mobile:ios",
+        "npm run verify:distribution-evidence",
       ]) &&
       source.readme.includes("npm.cmd run verify:app-review-preflight") &&
       source.readme.includes("npm.cmd run verify:store-release") &&
+      source.readme.includes('$env:TTC_RELEASE_CANDIDATE="<current-production-version>"') &&
+      source.readme.includes("actual ignored private handoff") &&
       source.readme.includes("This checks lint, production build, production environment boundaries") &&
       source.readme.includes("production environment boundaries") &&
       source.readme.includes("security copy and headers, content-policy/reporting guardrails, theme") &&
@@ -507,9 +510,9 @@ const checks = [
       source.readme.includes("without storing") &&
       source.readme.includes("private console screenshots") &&
       source.readme.includes("real-device evidence") &&
-      source.readme.includes("narrower guard") &&
-      source.readme.includes("still checks the private") &&
-      source.readme.includes("handoff-template before upload evidence is collected") &&
+      source.readme.includes("narrower technical guard") &&
+      source.readme.includes("same actual private") &&
+      source.readme.includes("evidence gate") &&
       source.readme.includes("## Console Field Handoff") &&
       source.readme.includes("Support URL: `https://thetattoocore.com/support`") &&
       source.readme.includes("Help URL: `https://thetattoocore.com/help`") &&
@@ -573,7 +576,7 @@ const checks = [
       source.dataSafetyPrep.includes("Apps active only on Google Play internal testing are currently exempt") &&
       source.screenshotPrep.includes("Track each store asset set separately") &&
       source.screenshotPrep.includes("npm.cmd run verify:store-release") &&
-      source.screenshotPrep.includes("lint, production build, production environment boundaries, content-policy/reporting guardrails, store metadata, PWA install assets, private handoff-template validation, readiness docs, public routes, Android-profile mobile routes, and iOS-profile mobile routes") &&
+      source.screenshotPrep.includes("lint, production build, production environment boundaries, content-policy/reporting guardrails, store metadata, PWA install assets, private handoff-template validation, readiness docs, public routes, Android-profile mobile routes, iOS-profile mobile routes, and the actual ignored private evidence handoff") &&
       source.storeListingDraft.includes("## Console-Ready Fields") &&
       source.storeListingDraft.includes("| Google Play short description | 80 characters | Tattoo community for artists, studios, vendors, collectors, and fans. |") &&
       source.storeListingDraft.includes("| App Store subtitle | 30 characters | Tattoo community hub |") &&
