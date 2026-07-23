@@ -51,7 +51,7 @@ export default async function LoginPage({
   const { data: claimsData } = await supabase.auth.getClaims();
 
   if (claimsData?.claims?.sub) {
-    redirect(returnTo && !returnTo.startsWith("/login") ? returnTo : "/account");
+    redirect(returnTo && !returnTo.startsWith("/login") ? returnTo : "/#feed");
   }
 
   const cookieStore = await cookies();

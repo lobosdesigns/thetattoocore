@@ -848,12 +848,20 @@ const checks = [
       contentOwnerNotificationCleanupMigration.includes("gigs.poster_id = (select auth.uid())") &&
       actions.includes("async function cleanupRemovedTagNotifications") &&
       actions.includes("async function cleanupSubjectNotifications") &&
+      actions.includes("async function cleanupChildCommentNotifications") &&
+      actions.includes('.from("post_comments")') &&
+      actions.includes('.eq("post_id", postId)') &&
+      actions.includes('.from("thread_comments")') &&
+      actions.includes('.eq("thread_id", threadId)') &&
+      actions.includes('.in("subject_id", commentIds)') &&
       actions.includes('type: "feed_tag"') &&
       actions.includes('type: "thread_tag"') &&
       actions.includes('type: "gig_tag"') &&
       actions.includes('subjectType: "feed_post"') &&
       actions.includes('subjectType: "thread_post"') &&
       actions.includes('subjectType: "gig"') &&
+      actions.includes('subjectType: "post_comment"') &&
+      actions.includes('subjectType: "thread_comment"') &&
       actions.includes('revalidatePath("/notifications")'),
   },
   {

@@ -804,6 +804,28 @@ async function cleanupSubjectNotifications({
   }
 }
 
+async function cleanupChildCommentNotifications({
+  commentIds,
+  subjectType,
+  supabase,
+}: {
+  commentIds: string[];
+  subjectType: "post_comment" | "thread_comment";
+  supabase: Awaited<ReturnType<typeof createClient>>;
+}) {
+  if (!commentIds.length) return;
+
+  const { error } = await supabase
+    .from("notifications")
+    .delete()
+    .eq("subject_type", subjectType)
+    .in("subject_id", commentIds);
+
+  if (error) {
+    console.error("Child comment notification cleanup failed.", error);
+  }
+}
+
 async function syncCommentTags({
   commentId,
   href,
@@ -2261,6 +2283,22 @@ export async function deleteFeedPost(formData: FormData) {
     redirect(redirectWithMessage({ message: "Choose a 4U post first.", path: returnPath }));
   }
 
+  const { data: childComments, error: childCommentError } = await supabase
+    .from("post_comments")
+    .select("id")
+    .eq("post_id", postId)
+    .returns<{ id: string }[]>();
+
+  if (childCommentError) {
+    console.error("4U child comment lookup failed.", childCommentError);
+    redirect(
+      redirectWithMessage({
+        message: "Could not delete 4U post. Please try again.",
+        path: returnPath,
+      }),
+    );
+  }
+
   const { data: deletedPost, error } = await supabase
     .from("feed_posts")
     .update({
@@ -2286,6 +2324,11 @@ export async function deleteFeedPost(formData: FormData) {
   await cleanupSubjectNotifications({
     subjectId: postId,
     subjectType: "feed_post",
+    supabase,
+  });
+  await cleanupChildCommentNotifications({
+    commentIds: (childComments ?? []).map((comment) => comment.id),
+    subjectType: "post_comment",
     supabase,
   });
 
@@ -2485,6 +2528,22 @@ export async function deleteThreadPost(formData: FormData) {
     redirect(redirectWithMessage({ message: "Choose a Gossip post first.", path: returnPath }));
   }
 
+  const { data: childComments, error: childCommentError } = await supabase
+    .from("thread_comments")
+    .select("id")
+    .eq("thread_id", threadId)
+    .returns<{ id: string }[]>();
+
+  if (childCommentError) {
+    console.error("Gossip child comment lookup failed.", childCommentError);
+    redirect(
+      redirectWithMessage({
+        message: "Could not delete Gossip post. Please try again.",
+        path: returnPath,
+      }),
+    );
+  }
+
   const { data: deletedThread, error } = await supabase
     .from("thread_posts")
     .update({
@@ -2510,6 +2569,11 @@ export async function deleteThreadPost(formData: FormData) {
   await cleanupSubjectNotifications({
     subjectId: threadId,
     subjectType: "thread_post",
+    supabase,
+  });
+  await cleanupChildCommentNotifications({
+    commentIds: (childComments ?? []).map((comment) => comment.id),
+    subjectType: "thread_comment",
     supabase,
   });
 

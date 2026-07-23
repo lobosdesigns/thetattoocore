@@ -297,11 +297,13 @@ const checks = [
       loginPage.includes("defaultChecked={staySignedIn}") &&
       loginPage.includes("Stay signed in on this device") &&
       loginPage.includes("supabase.auth.getClaims()") &&
-      loginPage.includes('redirect(returnTo && !returnTo.startsWith("/login") ? returnTo : "/account")') &&
+      loginPage.includes('redirect(returnTo && !returnTo.startsWith("/login") ? returnTo : "/#feed")') &&
       authLogin.includes('formData.get("stay_signed_in") === "on"') &&
       authLogin.includes("createClient({ persistentSession: staySignedIn })") &&
       authLogin.includes("authSessionPreferenceValue(staySignedIn)") &&
       authLogin.includes('text.startsWith("/login")') &&
+      authLogin.includes('const returnTo = cleanReturnTo(formData.get("return_to"))') &&
+      authLogin.includes('return "/account"') &&
       authSession.includes('authSessionPreferenceCookie = "ttc_auth_session"') &&
       authSession.includes('value !== "session"') &&
       authSession.includes("delete sessionOptions.expires") &&

@@ -48,9 +48,10 @@ function pathWithMessage(returnTo: string | null, message: string) {
     return `/account?message=${encodeURIComponent(message)}#advertising-settings`;
   }
 
-  const separator = returnTo.includes("?") ? "&" : "?";
+  const returnUrl = new URL(returnTo, siteUrl);
+  returnUrl.searchParams.set("message", message);
 
-  return `${returnTo}${separator}message=${encodeURIComponent(message)}`;
+  return `${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`;
 }
 
 function redirectWithMessage(message: string, returnTo: string | null = null) {

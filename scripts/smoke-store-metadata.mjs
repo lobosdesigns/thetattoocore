@@ -444,7 +444,7 @@ const checks = [
       packageJson.includes('"verify:store-release"') &&
       packageJson.includes('"verify:app-review-preflight"') &&
       packageJson.includes("npm run lint && npm run build && npm run smoke:env && npm run smoke:content && npm run smoke:store && npm run smoke:pwa && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
-      packageJson.includes("npm run lint && npm run build && npm run smoke:env && npm run smoke:security && npm run smoke:content && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run smoke:native-push && npm run smoke:app-links && npm run qa:android-device && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
+      packageJson.includes("npm run lint && npm run build && npm run smoke:env && npm run smoke:security && npm run smoke:content && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run test:native-push-delivery && npm run smoke:native-push && npm run smoke:app-links && npm run qa:android-device && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
       source.readme.includes("npm.cmd run verify:app-review-preflight") &&
       source.readme.includes("npm.cmd run verify:store-release") &&
       source.readme.includes("This checks lint, production build, production environment boundaries") &&

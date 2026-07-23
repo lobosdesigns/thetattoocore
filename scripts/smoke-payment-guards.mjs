@@ -791,6 +791,9 @@ checks.push({
     adCheckout.includes("text.startsWith(\"/\")") &&
     adCheckout.includes("text.startsWith(\"//\")") &&
     adCheckout.includes("function pathWithMessage") &&
+    adCheckout.includes("const returnUrl = new URL(returnTo, siteUrl)") &&
+    adCheckout.includes('returnUrl.searchParams.set("message", message)') &&
+    adCheckout.includes("`${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`") &&
     adCheckout.includes('formData.get("return_to")') &&
     adCheckout.includes("returnTo: string | null") &&
     adCheckout.includes('return_to=${encodeURIComponent(returnTo ?? "/account#advertising-settings")}') &&
