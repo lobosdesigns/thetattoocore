@@ -26,8 +26,12 @@
 - Signed-in Apple recheck on July 22, 2026 confirmed iOS version `1.0` remains `Waiting for Review` with build `1.0 (3)`. Notification-capability build `1.0 (4)` remains separate in `TTC Internal Testers` for controlled QA.
 - Signed-in Apple recheck on July 23, 2026 reconfirmed App Review is still
   `Waiting for Review` on build `1.0 (3)`. TestFlight build `1.0 (4)` is
-  processed, assigned to `TTC Internal Testers`, and has one invitation but no
-  installation yet, so its iPhone evidence remains pending.
+  processed and assigned to `TTC Internal Testers`. The owner subsequently
+  confirmed installing build `1.0 (4)` on an iPad. App Store Connect still
+  shows a blank installation metric, so console propagation is pending. This is
+  partial iOS evidence only: separate iPhone layout, retained sign-in, reviewer
+  access, messaging, alert delivery/routing, deep-link, and preference evidence
+  remains pending.
 - Signed-in store recheck on July 23, 2026 confirmed Apple iOS `1.0`
   build `1.0 (3)` remains `Waiting for Review` with three accepted iPhone and
   three accepted 13-inch iPad screenshots. Google Play production `1.0.1 (2)`
@@ -40,6 +44,22 @@
   the public Support URL for both account deletion and data deletion. Apple
   Accessibility Nutrition Labels are voluntary and are not a launch blocker
   unless TTC makes a support claim.
+- Production deploy `263e73de-fa6e-400f-bdf3-80963707bbed` went live on
+  July 23, 2026 from commit `14fb221` after the private release gate began
+  requiring a dated real-device proof whenever a proof location is recorded.
+  Proof dates must be valid, non-future, and no more than 45 days old; the
+  sanitized regression suite now covers 17 release-evidence cases, including a
+  stale real-device date. The owner-confirmed TestFlight `1.0 (4)` iPad install
+  was recorded privately with today's date as partial evidence while the
+  console installation metric remains pending propagation. It reduced the
+  strict release-evidence total from 63 to 60 incomplete fields without marking
+  iOS QA or reviewer access passed. The payment gate remains at 36
+  operational/evidence blockers and live money remains fail closed. Focused
+  release, handoff, and docs guards, lint, production build, public deployment,
+  live `smoke:public`, and live `smoke:mobile` passed; public smoke noted only
+  the known robots edge-challenge skip. The auxiliary owner-only preview failed
+  closed because its private runtime configuration is not populated, while the
+  established public deployment succeeded.
 - Production deploy `bea918f6-afc0-49ae-bf4a-d4a9c372dff7` went live on
   July 23, 2026 from commit `982581b` after making future iOS archives
   reproducible from one full reviewed commit instead of silently switching to
