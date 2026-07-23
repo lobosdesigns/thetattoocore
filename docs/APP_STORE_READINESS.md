@@ -44,6 +44,21 @@
   the public Support URL for both account deletion and data deletion. Apple
   Accessibility Nutrition Labels are voluntary and are not a launch blocker
   unless TTC makes a support claim.
+- Production deploy `4ed7902f-ac02-46be-8224-1a80db58df68` went live on
+  July 23, 2026 from commit `ea5dd58` after making Admin > Payments fail closed
+  when any required reconciliation query cannot be read. Query errors are now
+  preserved instead of becoming zero counts, and the full decision surface,
+  including refund controls, is replaced by a generic retry state that blocks
+  payment, fulfillment, ad-credit, booking-closeout, and payout decisions from
+  partial information. Verification passed the focused payment guard, lint,
+  production and deployment builds, live `smoke:public`, and live
+  `smoke:mobile`; public smoke noted only the known robots edge-challenge skip.
+  The first public publish uploaded the unchanged bundle but lost its final
+  network response; retrying that same bundle succeeded. The auxiliary
+  owner-only publish remained nonterminal and was not used as production proof.
+  The strict release-evidence gate remains at 60 incomplete requirements and the
+  payment go-live gate remains at 35 evidence blockers. No live payment or
+  refund was performed, and live money remains fail closed.
 - Production deploy `58115e91-0c87-46f3-a77a-e60a292b7f83` went live on
   July 23, 2026 from commit `dd79062` after closing the remaining booking-refund
   mode gap. An admin booking refund now stops unless checkout is ready for a
