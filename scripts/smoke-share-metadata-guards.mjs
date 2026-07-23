@@ -152,6 +152,18 @@ const checks = [
       ),
   },
   {
+    label:
+      "Public support offers account and associated-data deletion outside the installed app",
+    ok:
+      supportPage.includes('href: "#account-deletion"') &&
+      supportPage.includes('id="account-deletion"') &&
+      supportPage.includes("Delete your account and associated data") &&
+      supportPage.includes("If you cannot sign in or no longer have the app") &&
+      supportPage.includes("Email deletion request") &&
+      supportPage.includes("unresolved orders or payment disputes") &&
+      supportPage.includes("review target is within 30 days"),
+  },
+  {
     label: "Merch detail uses safe product image or brand fallback metadata",
     ok:
       merchDetail.includes("brandShareImage") &&

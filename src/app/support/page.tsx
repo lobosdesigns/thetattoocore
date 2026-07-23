@@ -39,11 +39,6 @@ const sections = [
   },
   {
     body:
-      "Signed-in members can request account deletion from Settings > Data and Help. Deletion requests are reviewed manually so safety reports, marketplace issues, fraud concerns, and legal obligations can be handled correctly. The review target is within 30 days unless a safety, dispute, or legal hold requires more time.",
-    title: "Account Deletion",
-  },
-  {
-    body:
       "Merch checkout stays review-controlled. For missing, damaged, wrong, delayed, returned, fulfillment, refund, seller, or product-safety questions, use Support with the product or order link so the issue can be reviewed privately.",
     title: "Merch Support",
   },
@@ -61,9 +56,10 @@ const sections = [
 
 const quickActions = [
   {
-    body: "Sign in and go straight to Settings data controls.",
-    href: "/login?return_to=%2Fsettings%2Fhelp",
-    label: "Request deletion",
+    body:
+      "Delete your account and associated data, including when you cannot sign in.",
+    href: "#account-deletion",
+    label: "Delete account and data",
   },
   {
     body: "Read FAQ and tutorial topics for bookings, ads, Merch, verification, and member safety.",
@@ -81,6 +77,10 @@ const quickActions = [
     label: "Sign in",
   },
 ] as const;
+
+const deletionEmailHref = `mailto:${supportEmail}?subject=${encodeURIComponent(
+  `${siteName} account deletion request`,
+)}`;
 
 const guideLinks = [
   {
@@ -190,6 +190,53 @@ export default function SupportPage() {
               </Link>
             ))}
           </div>
+
+          <section
+            aria-labelledby="account-deletion-heading"
+            className="mt-7 scroll-mt-6 border-y border-[var(--card-rim)] py-5"
+            id="account-deletion"
+          >
+            <h2 className="text-lg font-bold" id="account-deletion-heading">
+              Delete your account and associated data
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+              Signed-in members can initiate deletion from Settings &gt; Data
+              and Help. This requests deletion of the entire {siteName} account
+              and associated personal data, including profile information and
+              user-generated posts, comments, messages, and uploaded media,
+              subject to the limited retention needs below.
+            </p>
+            <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
+              If you cannot sign in or no longer have the app, email support
+              from the address tied to the account when possible. Include your
+              username and clearly state that you want the entire account and
+              associated data deleted. Support will verify account ownership
+              before processing the request.
+            </p>
+            <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
+              We may retain only records needed for safety investigations,
+              fraud prevention, unresolved orders or payment disputes,
+              moderation audits, or legal obligations. Retained records are
+              restricted and are not used to keep a public profile active. The
+              review target is within 30 days unless a safety, dispute, or legal
+              hold requires more time, and support confirms when processing is
+              complete.
+            </p>
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+              <Link
+                className="ttc-surface inline-flex min-h-10 items-center justify-center rounded-md border px-4 text-sm font-semibold"
+                href="/login?return_to=%2Fsettings%2Fhelp"
+              >
+                Open deletion controls
+              </Link>
+              <a
+                className="ttc-surface inline-flex min-h-10 items-center justify-center rounded-md border px-4 text-sm font-semibold"
+                href={deletionEmailHref}
+              >
+                Email deletion request
+              </a>
+            </div>
+          </section>
 
           <div className="mt-7 space-y-5">
             {sections.map((section) => (
