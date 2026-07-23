@@ -22,6 +22,15 @@
 - Admin > Media Ops now has an app handoff checklist for final legal/support copy, data-safety/privacy answers, safe screenshots, native wrapper auth/return-route checks, production payment review, and archived real-device QA evidence before external app review.
 - Google Play Closed testing - Alpha is Active with API 36 release `1.0.2 (3)`, released July 22, 2026 and Available to selected testers through the existing `testers-community` Google Group. Play reported no supported-device loss. The authorized Android 16 review phone joined the test, installed exact build `1.0.2 (3)`, and passed target SDK 36, retained-session cold-launch, system-bar framing, and permission-off baseline checks.
 - Google Play production release `1.0.1 (2)` is published at 100%. Publishing Overview reports no unpublished changes, and the app dashboard reports the update published on July 22, 2026.
+- Google Play accepted signed API 36 candidate `1.0.3 (4)` into the existing
+  Closed testing - Alpha track on July 23, 2026. Preview confirmed zero
+  supported-device loss and only the expected no-deobfuscation warning while
+  release minification remains disabled. The single Alpha change was sent for
+  review and automated checks are running. Active release `1.0.2 (3)` and its
+  completed device evidence remain authoritative until build 4 is served,
+  installed from Google Play, and verified on the authorized Android phone.
+  The signed bundle is preserved privately with SHA-256
+  `BD4401E2560CDF5BB11D4C5AE8F573C98061A9B3DEA03D3E9F0C0A769C8F08C0`.
 - The private native-alert project was created on July 22, 2026 with analytics disabled, and Android plus Apple apps were registered for the production package/bundle ID. Both downloaded platform configuration files were validated, installed only in ignored native-wrapper paths, and excluded from git. Android `1.0.2 (3)` is active in the Alpha closed test. Signed iOS `1.0 (4)` completed TestFlight processing with production alert entitlement and is assigned to `TTC Internal Testers`. Automatic token creation and delivery remain off pending exact-build registration, delivery, tap-routing, opt-out, quiet-hours, and category-preference device evidence.
 - Signed-in Apple recheck on July 22, 2026 confirmed iOS version `1.0` remains `Waiting for Review` with build `1.0 (3)`. Notification-capability build `1.0 (4)` remains separate in `TTC Internal Testers` for controlled QA.
 - Signed-in Apple recheck on July 23, 2026 reconfirmed App Review is still
