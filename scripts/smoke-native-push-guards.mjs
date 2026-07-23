@@ -6,6 +6,9 @@ function read(path) {
 
 const source = {
   actions: read("src/app/account/actions.ts"),
+  androidAppBuild: read(
+    "native/thetattoocore-mobile/android/app/build.gradle",
+  ),
   androidManifest: read(
     "native/thetattoocore-mobile/android/app/src/main/AndroidManifest.xml",
   ),
@@ -115,6 +118,18 @@ const checks = [
         !source.nativeProbe.includes("const activationReady = checks.every")
       );
     })(),
+  },
+  {
+    label: "Android service-hook readiness follows guarded private config",
+    ok:
+      source.androidAppBuild.includes(
+        "def ttcServicesFile = file('google-services.json')",
+      ) &&
+      source.androidAppBuild.includes("if (hasTtcServicesConfig)") &&
+      source.nativeProbe.includes(
+        "def ttcServicesFile = file('google-services.json')",
+      ) &&
+      source.nativeProbe.includes("if (hasTtcServicesConfig)"),
   },
   {
     label: "native delivery uses one Capacitor messaging bridge",

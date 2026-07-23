@@ -125,7 +125,8 @@ const checks = [
   {
     key: "android_services_hook",
     ready:
-      source.androidAppBuild.includes("def servicesJSON = file('google-services.json')") &&
+      source.androidAppBuild.includes("def ttcServicesFile = file('google-services.json')") &&
+      source.androidAppBuild.includes("if (hasTtcServicesConfig)") &&
       source.androidAppBuild.includes("apply plugin: 'com.google.gms.google-services'"),
   },
   {
