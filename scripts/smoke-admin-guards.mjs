@@ -26,6 +26,10 @@ const ownerModerationServiceGuardMigration = readFileSync(
   "supabase/migrations/20260723013449_fix_profile_moderation_service_role_guard.sql",
   "utf8",
 );
+const ownerModerationServiceHelperGuardMigration = readFileSync(
+  "supabase/migrations/20260723052528_fix_profile_service_role_helper_short_circuit.sql",
+  "utf8",
+);
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
@@ -227,6 +231,15 @@ const checks = [
       ) &&
       ownerModerationServiceGuardMigration.includes(
         "actor_can_moderate := coalesce(private.current_user_can_moderate(), false)",
+      ) &&
+      ownerModerationServiceHelperGuardMigration.includes(
+        "coalesce(auth.role(), '') = 'service_role'",
+      ) &&
+      ownerModerationServiceHelperGuardMigration.includes(
+        "if new.role is distinct from old.role then",
+      ) &&
+      ownerModerationServiceHelperGuardMigration.includes(
+        "if not private.current_user_is_owner() then",
       ),
   },
   {
