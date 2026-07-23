@@ -613,7 +613,26 @@ if (realDeviceQa) {
         row?.["Proof date"],
       );
     }
-    if (platform === "iOS" && isPassing(row?.Result)) {
+    if (platform === "Android" && isPassing(row?.Result)) {
+      requireContains(
+        "Real-Device QA",
+        "Android install source must be Google Play",
+        row?.["Install source"],
+        "Google Play",
+      );
+      requireExact(
+        "Real-Device QA",
+        "Android evidence basis must be device-captured",
+        row?.["Evidence basis"],
+        "device-captured",
+      );
+      requireExact(
+        "Real-Device QA",
+        "Android QA scope must be full checklist",
+        row?.["QA scope"],
+        "full checklist",
+      );
+    } else if (platform === "iOS" && isPassing(row?.Result)) {
       requireContains(
         "Real-Device QA",
         "iOS device model must be an iPhone",

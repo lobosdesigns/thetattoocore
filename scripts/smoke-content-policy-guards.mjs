@@ -849,6 +849,10 @@ const checks = [
       actions.includes("async function cleanupRemovedTagNotifications") &&
       actions.includes("async function cleanupSubjectNotifications") &&
       actions.includes("async function cleanupChildCommentNotifications") &&
+      actions.includes("const subjectCleanupClient = createAdminClient() ?? supabase") &&
+      actions.includes("const childCleanupClient = createAdminClient() ?? supabase") &&
+      actions.includes("await subjectCleanupClient") &&
+      actions.includes("await childCleanupClient") &&
       actions.includes('.from("post_comments")') &&
       actions.includes('.eq("post_id", postId)') &&
       actions.includes('.from("thread_comments")') &&

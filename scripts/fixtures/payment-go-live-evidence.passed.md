@@ -18,10 +18,10 @@ Fixture section boundary.
 
 | Flow | Release candidate | Expected mode checked | Server key mode checked | Webhook endpoint/events checked | Admin reconciliation | Refund/dispute/payout gate | Penny/live-test proof | Result |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Merch checkout | fixture-release-candidate | passed | passed | passed | passed | passed | passed | passed |
-| Booking deposit | fixture-release-candidate | passed | passed | passed | passed | passed | passed | passed |
-| Ads checkout | fixture-release-candidate | passed | passed | passed | passed | passed | passed | passed |
-| Seller payout readiness | fixture-release-candidate | passed | passed | passed | passed | passed | n/a | passed |
+| Merch checkout | 0123456789abcdef0123456789abcdef01234567 | passed | passed | passed | passed | passed | passed | passed |
+| Booking deposit | 0123456789abcdef0123456789abcdef01234567 | passed | passed | passed | passed | passed | passed | passed |
+| Ads checkout | 0123456789abcdef0123456789abcdef01234567 | passed | passed | passed | passed | passed | passed | passed |
+| Seller payout readiness | 0123456789abcdef0123456789abcdef01234567 | passed | passed | passed | passed | passed | n/a | passed |
 
 ## Payment Dashboard Readiness Log
 

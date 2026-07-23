@@ -9,7 +9,7 @@ import { join } from "node:path";
 
 const gatePath = "scripts/smoke-payment-cutover-evidence.mjs";
 const fixturePath = "scripts/fixtures/payment-go-live-evidence.passed.md";
-const fixtureCandidate = "fixture-release-candidate";
+const fixtureCandidate = "0123456789abcdef0123456789abcdef01234567";
 const fixtureReferenceDate = "2026-07-23";
 const fixtureSource = readFileSync(fixturePath, "utf8");
 const variantDir = mkdtempSync(
@@ -44,7 +44,7 @@ const ambiguousFixture = writeVariant(
   "07/22/2026 12:00",
 );
 
-function runGate(evidencePath) {
+function runGate(evidencePath, releaseCandidate = fixtureCandidate) {
   return spawnSync(
     process.execPath,
     [
@@ -56,7 +56,7 @@ function runGate(evidencePath) {
       "--evidence",
       evidencePath,
       "--release-candidate",
-      fixtureCandidate,
+      releaseCandidate,
     ],
     { encoding: "utf8" },
   );
@@ -74,6 +74,21 @@ function runProductionClockOverride() {
       fixturePath,
       "--release-candidate",
       fixtureCandidate,
+    ],
+    { encoding: "utf8" },
+  );
+}
+
+function runProductionUnknownCandidate() {
+  return spawnSync(
+    process.execPath,
+    [
+      gatePath,
+      "--strict",
+      "--evidence",
+      fixturePath,
+      "--release-candidate",
+      "0000000000000000000000000000000000000000",
     ],
     { encoding: "utf8" },
   );
@@ -119,6 +134,26 @@ const checks = [
       return (
         result.status === 1 &&
         result.stderr.includes("Attempt date/time: invalid date")
+      );
+    },
+  },
+  {
+    label: "payment gate rejects symbolic release candidates",
+    result: runGate(fixturePath, "latest"),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes("must be a 7-40 character Git commit ID")
+      );
+    },
+  },
+  {
+    label: "payment gate rejects unresolved production commits",
+    result: runProductionUnknownCandidate(),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes("does not resolve to a local Git commit")
       );
     },
   },

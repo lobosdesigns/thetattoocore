@@ -61,6 +61,14 @@ const promotedIpadFixture = writeVariant("promoted-ipad.md", (source) =>
     "| iOS | iPad fixture-device | iOS current | 1.0 (4) | TestFlight | Wi-Fi and cellular | owner-confirmed | install only | passed | fixture-proof | 2026-07-23 |",
   ),
 );
+const promotedAndroidPartialFixture = writeVariant(
+  "promoted-android-partial.md",
+  (source) =>
+    source.replace(
+      "| Android | fixture-device | Android 16 | 1.0.2 (3) | Google Play | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-07-23 |",
+      "| Android | fixture-device | Android 16 | 1.0.2 (3) | manual install | Wi-Fi | owner-confirmed | install only | passed | fixture-proof | 2026-07-23 |",
+    ),
+);
 const missingMarkerFixture = writeVariant("missing-marker.md", (source) =>
   source.replace(fixtureMarker, ""),
 );
@@ -334,6 +342,33 @@ const checks = [
         result.status === 1 &&
         result.stderr.includes(
           "Real-Device QA: Android proof date must be within 45 days",
+        )
+      );
+    },
+  },
+  {
+    label: "release evidence rejects promoted Android install-only QA",
+    result: runGate([
+      "--test-fixture",
+      "--reference-date",
+      fixtureReferenceDate,
+      "--verbose",
+      "--evidence",
+      promotedAndroidPartialFixture,
+      "--release-candidate",
+      fixtureCandidate,
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Real-Device QA: Android install source must be Google Play",
+        ) &&
+        result.stderr.includes(
+          "Real-Device QA: Android evidence basis must be device-captured",
+        ) &&
+        result.stderr.includes(
+          "Real-Device QA: Android QA scope must be full checklist",
         )
       );
     },

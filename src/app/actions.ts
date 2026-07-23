@@ -793,7 +793,8 @@ async function cleanupSubjectNotifications({
     | "thread_comment";
   supabase: Awaited<ReturnType<typeof createClient>>;
 }) {
-  const { error } = await supabase
+  const subjectCleanupClient = createAdminClient() ?? supabase;
+  const { error } = await subjectCleanupClient
     .from("notifications")
     .delete()
     .eq("subject_id", subjectId)
@@ -815,7 +816,8 @@ async function cleanupChildCommentNotifications({
 }) {
   if (!commentIds.length) return;
 
-  const { error } = await supabase
+  const childCleanupClient = createAdminClient() ?? supabase;
+  const { error } = await childCleanupClient
     .from("notifications")
     .delete()
     .eq("subject_type", subjectType)

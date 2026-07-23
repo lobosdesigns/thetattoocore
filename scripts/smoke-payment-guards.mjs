@@ -1556,12 +1556,16 @@ checks.push({
     ) &&
     paymentCutoverGate.includes("const MAX_EVIDENCE_AGE_DAYS = 45") &&
     paymentCutoverGate.includes("function paymentEvidenceDateBlocker") &&
+    paymentCutoverGate.includes("const COMMIT_PATTERN = /^[0-9a-f]{7,40}$/") &&
+    paymentCutoverGate.includes("function gitReleaseCandidateExists") &&
     paymentCutoverGate.includes("date cannot be in the future") &&
     paymentCutoverGate.includes("date must be within ${MAX_EVIDENCE_AGE_DAYS} days") &&
     paymentCutoverGate.includes("Strict command option --reference-date: test fixtures only") &&
     paymentCutoverGateTest.includes("payment gate rejects stale dashboard evidence") &&
     paymentCutoverGateTest.includes("payment gate rejects future dashboard evidence") &&
     paymentCutoverGateTest.includes("payment gate rejects ambiguous dashboard dates") &&
+    paymentCutoverGateTest.includes("payment gate rejects symbolic release candidates") &&
+    paymentCutoverGateTest.includes("payment gate rejects unresolved production commits") &&
     paymentCutoverGateTest.includes("payment gate rejects production clock overrides") &&
     paymentReadiness.includes("npm.cmd run verify:payment-release") &&
     paymentReadiness.includes("npm.cmd run smoke:payment-cutover") &&

@@ -102,9 +102,10 @@ passing install.
 
 ## Real-Device QA
 
-A passing iOS row must come from device-captured TestFlight evidence on an
-actual iPhone and cover the full release checklist. Keep iPad install-only
-confirmation as partial evidence.
+Every passing native row must use device-captured evidence and cover the full
+release checklist. Android must come from Google Play. iOS must come from
+TestFlight on an actual iPhone; keep iPad install-only confirmation as partial
+evidence.
 
 | Platform | Device model | OS version | Build or deploy version | Install source | Network | Evidence basis | QA scope | Result | Proof filename | Proof date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |

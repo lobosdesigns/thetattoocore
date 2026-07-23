@@ -38,6 +38,7 @@ const fixtureRoot = resolve("scripts/fixtures");
 const fixtureMarker = "SANITIZED PAYMENT GO-LIVE TEST FIXTURE - NOT RELEASE EVIDENCE";
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MAX_EVIDENCE_AGE_DAYS = 45;
+const COMMIT_PATTERN = /^[0-9a-f]{7,40}$/;
 const privateProofPlaceholders = new Set([
   "-",
   "blocked",
@@ -164,13 +165,15 @@ function paymentEvidenceDateBlocker(scope, value, referenceTimestamp) {
 function releaseCandidatesMatch(recorded, expected) {
   const normalizedRecorded = recorded.trim().toLowerCase();
   const normalizedExpected = expected.trim().toLowerCase();
-  if (!normalizedRecorded || !normalizedExpected) return false;
+  if (
+    !COMMIT_PATTERN.test(normalizedRecorded) ||
+    !COMMIT_PATTERN.test(normalizedExpected)
+  ) {
+    return false;
+  }
   if (normalizedRecorded === normalizedExpected) return true;
 
-  const commitPattern = /^[0-9a-f]{7,40}$/;
   return (
-    commitPattern.test(normalizedRecorded) &&
-    commitPattern.test(normalizedExpected) &&
     (normalizedRecorded.startsWith(normalizedExpected) ||
       normalizedExpected.startsWith(normalizedRecorded))
   );
@@ -345,6 +348,22 @@ function currentGitReleaseCandidate() {
   }).trim();
 }
 
+function gitReleaseCandidateExists(candidate) {
+  try {
+    execFileSync(
+      "git",
+      ["rev-parse", "--verify", "--quiet", `${candidate}^{commit}`],
+      {
+        encoding: "utf8",
+        stdio: ["ignore", "ignore", "ignore"],
+      },
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function fixturePathIsSafe(path) {
   const pathFromFixtureRoot = relative(fixtureRoot, path);
 
@@ -415,9 +434,28 @@ function runStrictEvidenceGate() {
   );
   const expectedReleaseCandidate =
     releaseCandidateOption.values[0] ??
-    (testFixtureMode ? "fixture-release-candidate" : currentGitReleaseCandidate());
+    (testFixtureMode
+      ? "0123456789abcdef0123456789abcdef01234567"
+      : currentGitReleaseCandidate());
   if (!expectedReleaseCandidate) {
     return ["Strict command release candidate: missing"];
+  }
+  const normalizedExpectedReleaseCandidate = expectedReleaseCandidate
+    .trim()
+    .toLowerCase();
+  if (!COMMIT_PATTERN.test(normalizedExpectedReleaseCandidate)) {
+    return [
+      "Strict command release candidate: must be a 7-40 character Git commit ID",
+    ];
+  }
+  if (
+    !testFixtureMode &&
+    releaseCandidateOption.values.length &&
+    !gitReleaseCandidateExists(normalizedExpectedReleaseCandidate)
+  ) {
+    return [
+      "Strict command release candidate: does not resolve to a local Git commit",
+    ];
   }
   if (!existsSync(evidencePath)) {
     return ["Private payment evidence file: missing"];
@@ -435,7 +473,7 @@ function runStrictEvidenceGate() {
     return ["Private payment evidence file: test fixtures cannot approve go-live"];
   }
 
-  return validateStrictEvidence(evidence, expectedReleaseCandidate, {
+  return validateStrictEvidence(evidence, normalizedExpectedReleaseCandidate, {
     allowFixtureOnly: testFixtureMode,
     referenceTimestamp,
   });
