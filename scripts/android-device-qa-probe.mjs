@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 const requireDevice = process.argv.includes("--require-device");
 const androidBuildGradlePath = "native/thetattoocore-mobile/android/app/build.gradle";
+const androidVariablesGradlePath = "native/thetattoocore-mobile/android/variables.gradle";
 const waitMsArg = process.argv.find((arg) => arg.startsWith("--wait-ms="));
 const waitMs = Math.max(
   0,
@@ -59,12 +60,20 @@ function expectedAndroidBuild() {
     process.env.TTC_ANDROID_EXPECTED_VERSION_CODE ||
     buildGradle.match(/versionCode\s+(\d+)/)?.[1] ||
     "";
+  const variablesGradle = existsSync(androidVariablesGradlePath)
+    ? readFileSync(androidVariablesGradlePath, "utf8")
+    : "";
+  const targetSdk =
+    process.env.TTC_ANDROID_EXPECTED_TARGET_SDK ||
+    variablesGradle.match(/targetSdkVersion\s*=\s*(\d+)/)?.[1] ||
+    "";
 
-  return { versionCode, versionName };
+  return { targetSdk, versionCode, versionName };
 }
 
 function installedAndroidBuild(packageDump) {
   return {
+    targetSdk: packageDump.match(/targetSdk=(\d+)/)?.[1] || "",
     versionCode: packageDump.match(/versionCode=(\d+)/)?.[1] || "",
     versionName: packageDump.match(/versionName=([^\s]+)/)?.[1] || "",
   };
@@ -158,7 +167,7 @@ let model = "unknown";
 let osVersion = "unknown";
 let packageSummary = "not installed";
 let packageInstalled = false;
-let installedBuild = { versionCode: "", versionName: "" };
+let installedBuild = { targetSdk: "", versionCode: "", versionName: "" };
 
 try {
   model = shell(["getprop", "ro.product.model"]);
@@ -188,6 +197,7 @@ console.log(
 console.log(
   `ANDROID_QA expected_versionCode=${expectedBuild.versionCode || "unknown"}`,
 );
+console.log(`ANDROID_QA expected_targetSdk=${expectedBuild.targetSdk || "unknown"}`);
 console.log(`ANDROID_QA package=${packageSummary}`);
 
 if (!packageInstalled) {
@@ -203,14 +213,19 @@ const versionNameMatches =
 const versionCodeMatches =
   !expectedBuild.versionCode ||
   installedBuild.versionCode === expectedBuild.versionCode;
+const targetSdkMatches =
+  !expectedBuild.targetSdk || installedBuild.targetSdk === expectedBuild.targetSdk;
 
-if (!versionNameMatches || !versionCodeMatches) {
+if (!versionNameMatches || !versionCodeMatches || !targetSdkMatches) {
   console.log("ANDROID_QA result=authorized device has wrong TTC build");
   console.log(
     `ANDROID_QA installed_versionName=${installedBuild.versionName || "unknown"}`,
   );
   console.log(
     `ANDROID_QA installed_versionCode=${installedBuild.versionCode || "unknown"}`,
+  );
+  console.log(
+    `ANDROID_QA installed_targetSdk=${installedBuild.targetSdk || "unknown"}`,
   );
   console.log("ANDROID_QA next=install the Google Play build selected for review, or set TTC_ANDROID_EXPECTED_VERSION_NAME and TTC_ANDROID_EXPECTED_VERSION_CODE for the selected track");
   if (requireDevice) process.exit(1);

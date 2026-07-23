@@ -131,8 +131,8 @@ const androidVersionName =
 const androidApi36SubmissionReady = compileSdkVersion >= 36 && targetSdkVersion >= 36;
 const androidApi36DocsReady =
   androidApi36SubmissionReady &&
-  androidVersionCode >= 2 &&
-  androidVersionName === "1.0.1" &&
+  androidVersionCode >= 3 &&
+  androidVersionName === "1.0.2" &&
   source.nativePrep.includes("checked-in wrapper are `36 / 36`") &&
   source.nativePrep.includes("Record API `36 / 36` rebuild proof") &&
   source.nativePrep.includes("current closed-test release is version code `2` / version name `1.0.1`") &&
@@ -292,7 +292,7 @@ const checks = [
     ok:
       source.androidManifest.includes("android.permission.INTERNET") &&
       source.androidManifest.includes('android:name="android.permission.POST_NOTIFICATIONS"') &&
-      source.androidManifest.includes('tools:node="remove"') &&
+      !source.androidManifest.includes('tools:node="remove"') &&
       !source.androidManifest.includes("android.permission.CAMERA") &&
       !source.androidManifest.includes("android.permission.RECORD_AUDIO") &&
       !source.androidManifest.includes("android.permission.ACCESS_FINE_LOCATION") &&
@@ -352,6 +352,10 @@ const checks = [
       source.androidDeviceProbe.includes("TTC_ANDROID_EXPECTED_VERSION_CODE") &&
       source.androidDeviceProbe.includes("ANDROID_QA expected_versionName=") &&
       source.androidDeviceProbe.includes("ANDROID_QA expected_versionCode=") &&
+      source.androidDeviceProbe.includes("ANDROID_QA expected_targetSdk=") &&
+      source.androidDeviceProbe.includes("ANDROID_QA installed_targetSdk=") &&
+      source.androidDeviceProbe.includes("TTC_ANDROID_EXPECTED_TARGET_SDK") &&
+      source.androidDeviceProbe.includes("targetSdkMatches") &&
       source.androidDeviceProbe.includes("ANDROID_QA result=authorized device has wrong TTC build") &&
       source.androidDeviceProbe.includes("ANDROID_QA result=authorized device missing TTC package") &&
       source.androidDeviceProbe.includes("ANDROID_QA wait_ms=") &&
@@ -423,7 +427,7 @@ const checks = [
       source.iosInfo.includes("FirebaseMessagingAutoInitEnabled") &&
       source.iosInfo.includes("<false/>") &&
       source.androidManifest.includes('android:name="android.permission.POST_NOTIFICATIONS"') &&
-      source.androidManifest.includes('tools:node="remove"') &&
+      !source.androidManifest.includes('tools:node="remove"') &&
       forbiddenNativePushDependencies.every(
         (dependency) => !source.packageJson.includes(`"${dependency}"`),
       ) &&
@@ -470,8 +474,8 @@ const checks = [
     label: "native Android next upload uses a fresh Play version code",
     ok:
       androidApi36SubmissionReady &&
-      androidVersionCode >= 2 &&
-      androidVersionName === "1.0.1" &&
+      androidVersionCode >= 3 &&
+      androidVersionName === "1.0.2" &&
       source.readiness.includes("Google Play now serves version code `2` / version name `1.0.1`") &&
       source.readiness.includes("Any replacement must use a version code above `2`") &&
       source.realDeviceQa.includes("versionName` and `versionCode` checked into"),

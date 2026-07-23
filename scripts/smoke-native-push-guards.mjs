@@ -117,7 +117,10 @@ const checks = [
       source.androidManifest.includes(
         'android:name="firebase_analytics_collection_enabled"',
       ) &&
-      source.androidManifest.includes('tools:node="remove"') &&
+      source.androidManifest.includes(
+        'android:name="android.permission.POST_NOTIFICATIONS"',
+      ) &&
+      !source.androidManifest.includes('tools:node="remove"') &&
       /<key>FirebaseMessagingAutoInitEnabled<\/key>\s*<false\/>/s.test(
         source.iosInfo,
       ) &&

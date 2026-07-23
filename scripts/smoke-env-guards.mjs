@@ -30,6 +30,7 @@ const expectedKeys = [
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
   "STRIPE_EXPECTED_LIVEMODE",
+  "STRIPE_MERCH_DESTINATION_CHARGES_ENABLED",
   "HOSTGATOR_SMTP_PASSWORD",
 ];
 const publicKeys = [
@@ -90,7 +91,8 @@ function valueLooksLikePlaceholder(key, value) {
     key === "TTC_DEVICE_ALERT_SETUP_ENABLED" ||
     key === "TTC_NATIVE_PUSH_REGISTRATION_ENABLED" ||
     key === "TTC_NATIVE_PUSH_DELIVERY_ENABLED" ||
-    key === "TTC_WEB_PUSH_REGISTRATION_ENABLED"
+    key === "TTC_WEB_PUSH_REGISTRATION_ENABLED" ||
+    key === "STRIPE_MERCH_DESTINATION_CHARGES_ENABLED"
   ) {
     return value === "false";
   }

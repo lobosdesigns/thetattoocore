@@ -1,1 +1,1 @@
-Launch release with profile privacy controls, safer 4U/Gossip/Gigs tagging, Help, reporting, blocking, DMs, in-app alerts, and review-controlled commerce flows.
+Internal test: prepares opt-in device alerts while keeping delivery off until device checks pass. Includes profile privacy controls, safer 4U/Gossip/Gigs tagging, Help, reporting, blocking, DMs, in-app alerts, and review-controlled commerce flows.

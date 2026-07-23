@@ -85,14 +85,14 @@ allowlist immediately before delivery. Its outbox, leases, retry state, and
 device-token cleanup are service-only. All three UI, registration, and delivery
 gates remain off until controlled Android and iOS QA.
 
-The cross-platform bridge is staged with its staging guard active: automatic
-token creation is disabled on both platforms, Android analytics collection is
-disabled, and the Android notification permission is removed from the merged
-manifest. The registration table is server-only, stores each device against the
-authenticated account, and is cleaned for the current device on opt-out and
-sign-out. Do not remove that guard until
-the signed-in opt-in flow, token lifecycle, preferences, and private delivery
-path are ready for device QA. A `ready` config probe still does not prove alert
+The cross-platform bridge is staged with its guard active: automatic token
+creation is disabled on both platforms and Android analytics collection is
+disabled. Android declares notification permission so the signed build can ask
+for it, but the app requests it only after a signed-in member explicitly opts in
+and both setup and registration gates are enabled for controlled QA. Delivery
+remains independently locked. The registration table is server-only, stores
+each device against the authenticated account, and is cleaned for the current
+device on opt-out and sign-out. A `ready` config probe still does not prove alert
 delivery, tap routing, opt-out, or store-submitted build behavior; preserve that
 evidence privately using the matrix above.
 
@@ -172,6 +172,7 @@ public-submission build.
 | Release path | Checked-in compile/target SDK | Required action | Repo-safe result |
 | --- | ---: | --- | --- |
 | Current Google Play closed test | Published release `1.0.1 (2)` and checked-in wrapper are `36 / 36` | Keep version code `2` as the served tester baseline and collect tester participation/duration evidence. Do not upload the same version code again. | Record release track, version code/name, test date, device model, and pass/fail only. |
+| Controlled Android alert-registration candidate | Checked-in release candidate `1.0.2 (3)` is `36 / 36` | Build and sign a fresh bundle, place it in internal testing first, and keep native delivery off until explicit opt-in, exact-build token registration, and real-device evidence pass. | Record release track, version code/name, target SDK, device date, and pass/fail only. |
 | Google Play replacement or update on or after August 31, 2026 | `36 / 36` required; current closed-test release is version code `2` / version name `1.0.1` | Increment above version code `2`, build from the checked-in API 36 wrapper, sign a fresh upload bundle, and rerun wrapper plus real-device QA. | Record API `36 / 36` rebuild proof, version code/name, device QA date, and pass/fail only. |
 
 Any replacement must increment above version code `2`; never reuse a version code that Google Play has already served.
