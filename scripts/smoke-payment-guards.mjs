@@ -80,6 +80,14 @@ const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const paymentReadiness = readFileSync("docs/PAYMENT_PRODUCTION_READINESS.md", "utf8");
 const packageJson = readFileSync("package.json", "utf8");
+const paymentCutoverGate = readFileSync(
+  "scripts/smoke-payment-cutover-evidence.mjs",
+  "utf8",
+);
+const paymentCutoverGateTest = readFileSync(
+  "scripts/test-payment-go-live-gate.mjs",
+  "utf8",
+);
 const memberPaymentSafetySource = [
   helpCenter,
   helpCenterSearch,
@@ -1543,6 +1551,18 @@ checks.push({
       '"verify:payment-release": "npm run lint && npm run build && npm run smoke:env && npm run smoke:payments && npm run smoke:payment-cutover && npm run smoke:pwa && npm run smoke:security && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios"',
     ) &&
     packageJson.includes('"smoke:payment-cutover": "node scripts/smoke-payment-cutover-evidence.mjs"') &&
+    packageJson.includes(
+      '"test:payment-go-live-gate": "node scripts/test-payment-go-live-gate.mjs"',
+    ) &&
+    paymentCutoverGate.includes("const MAX_EVIDENCE_AGE_DAYS = 45") &&
+    paymentCutoverGate.includes("function paymentEvidenceDateBlocker") &&
+    paymentCutoverGate.includes("date cannot be in the future") &&
+    paymentCutoverGate.includes("date must be within ${MAX_EVIDENCE_AGE_DAYS} days") &&
+    paymentCutoverGate.includes("Strict command option --reference-date: test fixtures only") &&
+    paymentCutoverGateTest.includes("payment gate rejects stale dashboard evidence") &&
+    paymentCutoverGateTest.includes("payment gate rejects future dashboard evidence") &&
+    paymentCutoverGateTest.includes("payment gate rejects ambiguous dashboard dates") &&
+    paymentCutoverGateTest.includes("payment gate rejects production clock overrides") &&
     paymentReadiness.includes("npm.cmd run verify:payment-release") &&
     paymentReadiness.includes("npm.cmd run smoke:payment-cutover") &&
     paymentReadiness.includes("lint, production build, environment mode checks, payment flow guards, private cutover-evidence rows, app install and alert fallback guards, security headers, private handoff-template validation, readiness docs, public checkout/status routes, and Android-profile plus iOS-profile mobile checkout/account route smoke"),

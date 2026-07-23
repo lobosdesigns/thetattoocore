@@ -36,6 +36,8 @@ const requiredPaymentBlockers = [
 const defaultPrivateEvidencePath = "private-release-handoff/release-handoff-template.md";
 const fixtureRoot = resolve("scripts/fixtures");
 const fixtureMarker = "SANITIZED PAYMENT GO-LIVE TEST FIXTURE - NOT RELEASE EVIDENCE";
+const DAY_MS = 24 * 60 * 60 * 1000;
+const MAX_EVIDENCE_AGE_DAYS = 45;
 const privateProofPlaceholders = new Set([
   "-",
   "blocked",
@@ -134,6 +136,31 @@ function privateProofBlocker(scope, value, { allowFixtureOnly = false } = {}) {
   return null;
 }
 
+function paymentEvidenceDateBlocker(scope, value, referenceTimestamp) {
+  const attemptDate = value.trim();
+  if (!attemptDate) return `${scope}: missing`;
+
+  const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(attemptDate);
+  const isIsoTimestamp =
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})$/.test(
+      attemptDate,
+    );
+  if (!isDateOnly && !isIsoTimestamp) return `${scope}: invalid date`;
+
+  const attemptTimestamp = Date.parse(
+    isDateOnly ? `${attemptDate}T00:00:00Z` : attemptDate,
+  );
+  if (!Number.isFinite(attemptTimestamp)) return `${scope}: invalid date`;
+
+  const ageDays = (referenceTimestamp - attemptTimestamp) / DAY_MS;
+  if (ageDays < 0) return `${scope}: date cannot be in the future`;
+  if (ageDays > MAX_EVIDENCE_AGE_DAYS) {
+    return `${scope}: date must be within ${MAX_EVIDENCE_AGE_DAYS} days`;
+  }
+
+  return null;
+}
+
 function releaseCandidatesMatch(recorded, expected) {
   const normalizedRecorded = recorded.trim().toLowerCase();
   const normalizedExpected = expected.trim().toLowerCase();
@@ -152,7 +179,7 @@ function releaseCandidatesMatch(recorded, expected) {
 function validateStrictEvidence(
   source,
   expectedReleaseCandidate,
-  { allowFixtureOnly = false } = {},
+  { allowFixtureOnly = false, referenceTimestamp = Date.now() } = {},
 ) {
   const blockers = [];
   const currentBlockersTable = markdownTable(
@@ -263,14 +290,12 @@ function validateStrictEvidence(
         continue;
       }
 
-      const attemptDate = row["Attempt date/time"]?.trim() ?? "";
-      if (!attemptDate) {
-        blockers.push(`Payment dashboard / ${area} / Attempt date/time: missing`);
-      } else if (Number.isNaN(Date.parse(attemptDate))) {
-        blockers.push(
-          `Payment dashboard / ${area} / Attempt date/time: invalid date`,
-        );
-      }
+      const attemptDateBlocker = paymentEvidenceDateBlocker(
+        `Payment dashboard / ${area} / Attempt date/time`,
+        row["Attempt date/time"] ?? "",
+        referenceTimestamp,
+      );
+      if (attemptDateBlocker) blockers.push(attemptDateBlocker);
 
       const blocker = stateBlocker(
         `Payment dashboard / ${area} / Result`,
@@ -335,11 +360,13 @@ function runStrictEvidenceGate() {
   const testFixtureMode = args.includes("--test-fixture");
   const evidenceOption = optionState(args, "--evidence");
   const releaseCandidateOption = optionState(args, "--release-candidate");
+  const referenceDateOption = optionState(args, "--reference-date");
   const optionNames = new Set([
     "--strict",
     "--test-fixture",
     "--evidence",
     "--release-candidate",
+    "--reference-date",
   ]);
   const unknownOptions = args.filter((arg, index) => {
     if (!arg.startsWith("--")) return false;
@@ -357,11 +384,30 @@ function runStrictEvidenceGate() {
   if (releaseCandidateOption.missingValue) {
     return ["Strict command option --release-candidate: missing value"];
   }
+  if (referenceDateOption.missingValue) {
+    return ["Strict command option --reference-date: missing value"];
+  }
   if (evidenceOption.values.length > 1) {
     return ["Strict command option --evidence: duplicate values"];
   }
   if (releaseCandidateOption.values.length > 1) {
     return ["Strict command option --release-candidate: duplicate values"];
+  }
+  if (referenceDateOption.values.length > 1) {
+    return ["Strict command option --reference-date: duplicate values"];
+  }
+  if (!testFixtureMode && referenceDateOption.values.length) {
+    return ["Strict command option --reference-date: test fixtures only"];
+  }
+
+  const referenceDate = referenceDateOption.values[0];
+  const referenceTimestamp = referenceDate
+    ? /^\d{4}-\d{2}-\d{2}$/.test(referenceDate)
+      ? Date.parse(`${referenceDate}T23:59:59.999Z`)
+      : Number.NaN
+    : Date.now();
+  if (!Number.isFinite(referenceTimestamp)) {
+    return ["Strict command option --reference-date: invalid date"];
   }
 
   const evidencePath = resolve(
@@ -391,6 +437,7 @@ function runStrictEvidenceGate() {
 
   return validateStrictEvidence(evidence, expectedReleaseCandidate, {
     allowFixtureOnly: testFixtureMode,
+    referenceTimestamp,
   });
 }
 
@@ -470,6 +517,8 @@ const requiredReadinessText = [
   "`pending`, `passed`, or `blocked`; no payment IDs",
   "Each flow must be verified against the same release candidate",
   "Every required Payments blocker and Payment Dashboard row must name a non-placeholder private proof filename or location",
+  "Dashboard evidence must be dated no more than 45 days",
+  "cannot be future-dated",
 ];
 const missingReadinessText = requiredReadinessText.filter(
   (snippet) => !readinessEvidenceSection.includes(snippet),
