@@ -36,6 +36,26 @@
   the public Support URL for both account deletion and data deletion. Apple
   Accessibility Nutrition Labels are voluntary and are not a launch blocker
   unless TTC makes a support claim.
+- Production deploy `bea918f6-afc0-49ae-bf4a-d4a9c372dff7` went live on
+  July 23, 2026 from commit `982581b` after making future iOS archives
+  reproducible from one full reviewed commit instead of silently switching to
+  stale source. The Mac bootstrap now rejects dirty, unexpected, or wrong-repo
+  inputs, verifies the source again after native sync, and hands the same commit
+  into archive creation. iOS dependencies and the generated workspace are
+  locked in source and install in deployment mode. A disposable clean Mac
+  checkout passed exact-commit dependency sync with no tracked or unexpected
+  untracked drift. The native wrapper also gained a bundled, safe-area-aware
+  load-recovery screen with a deliberate trusted retry action and no automatic
+  redirect loop or technical/provider wording. App Review remains on
+  `1.0 (3)`, TestFlight internal testing remains on `1.0 (4)`, and neither build
+  number changed. Verification passed shell syntax checks, native sync,
+  `smoke:native`, `smoke:docs`, lint, production and deployment builds, clean
+  Mac locked-dependency verification, live `smoke:public`, and live
+  `smoke:mobile`. The first production publish lost its final network response
+  after asset upload; retrying the already-built bundle succeeded. Public smoke
+  noted only the known robots edge-challenge skip. The strict release gate
+  remains at 63 external/private requirements and the payment gate remains at
+  36 operational/evidence requirements, with live money fail closed.
 - Production deploy `82855f72-361d-4439-ac58-1e48d12a2f74` went live on
   July 23, 2026 from commit `facbbcf` after hardening the private release gate
   against sanitized-fixture reuse, partial candidate matches, missing or
