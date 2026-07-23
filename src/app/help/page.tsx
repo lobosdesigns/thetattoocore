@@ -105,11 +105,11 @@ export default function HelpCenterPage() {
   return (
     <main className="ttc-page min-h-screen px-4 py-8">
       <article className="mx-auto max-w-5xl">
-        <div className="mb-8 flex items-center justify-between gap-4">
+        <div className="mb-6 flex flex-col items-start gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
           <Link href="/" aria-label={`${siteName} home`}>
             <LogoLockup />
           </Link>
-          <div className="flex flex-wrap justify-end gap-2">
+          <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto">
             <Link
               className="ttc-surface rounded-md border px-4 py-2 text-sm font-semibold"
               href="/settings/help"

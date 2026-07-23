@@ -92,12 +92,12 @@ export default function PrivacyPage() {
   return (
     <main className="ttc-page min-h-screen px-4 py-8">
       <article className="mx-auto max-w-3xl">
-        <div className="mb-8 flex items-center justify-between gap-4">
+        <div className="mb-6 flex flex-col items-start gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
           <Link href="/" aria-label="TheTattooCore home">
             <LogoLockup />
           </Link>
           <Link
-            className="ttc-surface rounded-md border px-4 py-2 text-sm font-semibold"
+            className="ttc-surface self-end rounded-md border px-4 py-2 text-sm font-semibold sm:self-auto"
             href="/"
           >
             Back home
