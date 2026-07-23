@@ -24,6 +24,8 @@ type RegisteredDevice = {
   token: string;
 };
 
+const testAlertDelayMs = 8_000;
+
 const nativePushEnvironment: NativePushDeliveryEnvironment = {
   FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
   FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY,
@@ -139,6 +141,10 @@ export async function POST(request: NextRequest) {
       ),
     );
   }
+
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, testAlertDelayMs);
+  });
 
   const result = await sendNativePushMessage(nativePushEnvironment, {
     body: "Tap to verify app alerts.",

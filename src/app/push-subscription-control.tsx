@@ -213,11 +213,11 @@ export function PushSubscriptionControl() {
 
   async function sendTestAlert() {
     setPending(true);
-    setMessage("");
+    setMessage("Test alert scheduled. Press Home or lock this device now.");
 
     try {
       await nativeNotifications.sendTest();
-      setMessage("Test alert sent. Lock this device, then tap the alert.");
+      setMessage("Test alert sent. Tap the alert to verify.");
     } catch {
       setMessage("Test alert could not be sent. Try again.");
     } finally {

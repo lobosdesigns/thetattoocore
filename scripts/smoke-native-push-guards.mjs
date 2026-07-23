@@ -238,6 +238,8 @@ const checks = [
       source.deviceTestApi.includes('title: "Test app alert"') &&
       source.deviceTestApi.includes('body: "Tap to verify app alerts."') &&
       source.deviceTestApi.includes('url: "/notifications"') &&
+      source.deviceTestApi.includes("const testAlertDelayMs = 8_000") &&
+      source.deviceTestApi.includes("setTimeout(resolve, testAlertDelayMs)") &&
       source.deviceTestApi.includes('result === "token"') &&
       !source.deviceTestApi.includes("console.") &&
       source.senderCore.includes("nativePushSenderReady") &&
@@ -246,8 +248,9 @@ const checks = [
       source.provider.includes("testAvailable: qaBuildRestricted") &&
       source.control.includes("Send test") &&
       source.control.includes(
-        "Test alert sent. Lock this device, then tap the alert.",
-      ),
+        "Test alert scheduled. Press Home or lock this device now.",
+      ) &&
+      source.control.includes("Test alert sent. Tap the alert to verify."),
   },
   {
     label: "native registration status is account-bound before automatic refresh",
