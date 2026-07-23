@@ -36,6 +36,23 @@
   the public Support URL for both account deletion and data deletion. Apple
   Accessibility Nutrition Labels are voluntary and are not a launch blocker
   unless TTC makes a support claim.
+- Production deploy `82855f72-361d-4439-ac58-1e48d12a2f74` went live on
+  July 23, 2026 from commit `facbbcf` after hardening the private release gate
+  against sanitized-fixture reuse, partial candidate matches, missing or
+  duplicate legal-review rows, and stale or future legal dates. Native alert
+  readiness now also requires the private Android and iOS app configurations to
+  identify the same project. The authorized Android 16 phone running exact Play
+  Alpha `1.0.2 (3)` received the controlled system alert and routed its tap back
+  to in-app Notifications without a login bounce, browser handoff, 403, or
+  route loop. That private evidence reduced the strict release gate from 67 to
+  63 incomplete requirements. The payment checklist is bound to the reviewed
+  commit and reports 36 real operational/evidence blockers; live money remains
+  fail closed. Verification passed all 16 sanitized release-gate cases,
+  `smoke:handoff`, `qa:native-push`, `smoke:native-push`, `smoke:native`, lint,
+  production and deployment builds, live `smoke:public`, and live
+  `smoke:mobile`; the first public-smoke wrapper reached its local time limit
+  before the longer-window rerun passed, with only the known robots
+  edge-challenge skip.
 - Production deploy `94820d6a-375e-4c67-a45c-304c62779248` went live on
   July 23, 2026 from commit `7e79c7e` after aligning the release-evidence gate,
   private handoff template, and submission docs with current Apple and Google
