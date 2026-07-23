@@ -6,6 +6,7 @@
 - Native Android and iOS beta-wrapper work is starting from `native/thetattoocore-mobile`.
 - Google Play Closed testing - Alpha now serves API 36 release `1.0.1 (2)` to the selected tester community, and the Android/web tester join links are saved privately. Publishing Overview reported the update published on July 22, 2026, and an authorized Android 16 device confirmed the installed Play build. Do not upload version code `2` again.
 - iOS build `1.0 (3)` was uploaded from Xcode Organizer on July 18, 2026, attached to TTC Internal Testers, and is available for internal TestFlight testing.
+- Checked-in iOS build `1.0 (4)` is the isolated notification-capability candidate for internal TestFlight. It adds target-scoped private app configuration and Push Notifications signing while keeping automatic token creation and delivery off; do not replace build `1.0 (3)` on the App Store version already in review.
 - PWA manifest, icons, splash assets, service worker, support URL, privacy URL, and terms URL are ready for the beta wrapper path.
 - Native wrapper prep lives in `docs/NATIVE_WRAPPER_PREP.md`; follow it before adding native permissions, deep links, checkout handling, push, or store-review changes.
 - Draft store listing copy lives in `docs/STORE_LISTING_DRAFT.md`; review it against current store policies before submission.

@@ -49,6 +49,26 @@ const clientSource = filesUnder("src")
   .filter((path) => /\.(?:js|jsx|ts|tsx)$/.test(path))
   .map((path) => read(path))
   .join("\n");
+const iosConfigFileRefId =
+  source.iosProject.match(
+    /([A-F0-9]{24}) \/\* GoogleService-Info\.plist \*\/ = \{isa = PBXFileReference;/,
+  )?.[1] ?? "";
+const iosConfigBuildFileId =
+  source.iosProject.match(
+    new RegExp(
+      `([A-F0-9]{24}) /\\* GoogleService-Info\\.plist in Resources \\*/ = \\{isa = PBXBuildFile; fileRef = ${iosConfigFileRefId}`,
+    ),
+  )?.[1] ?? "";
+const iosResourcesBlock =
+  source.iosProject.match(
+    /\/\* Begin PBXResourcesBuildPhase section \*\/([\s\S]*?)\/\* End PBXResourcesBuildPhase section \*\//,
+  )?.[1] ?? "";
+const iosConfigTargeted =
+  Boolean(iosConfigFileRefId) &&
+  Boolean(iosConfigBuildFileId) &&
+  iosResourcesBlock.includes(
+    `${iosConfigBuildFileId} /* GoogleService-Info.plist in Resources */`,
+  );
 const androidActivationLocked =
   /<meta-data\s+android:name="firebase_messaging_auto_init_enabled"\s+android:value="false"\s*\/>/s.test(
     source.androidManifest,
@@ -61,7 +81,7 @@ const androidActivationLocked =
 const iosActivationLocked =
   /<key>FirebaseMessagingAutoInitEnabled<\/key>\s*<false\/>/s.test(
     source.iosInfo,
-  ) && !source.iosEntitlements.includes("aps-environment");
+  );
 
 const checks = [
   {
@@ -96,13 +116,18 @@ const checks = [
   },
   {
     key: "ios_config_target",
-    ready: source.iosProject.includes("GoogleService-Info.plist"),
+    ready: iosConfigTargeted,
   },
   {
     key: "ios_push_capability",
     ready:
-      source.iosEntitlements.includes("aps-environment") &&
-      source.iosProject.includes("CODE_SIGN_ENTITLEMENTS"),
+      /<key>aps-environment<\/key>\s*<string>\$\(APS_ENVIRONMENT\)<\/string>/s.test(
+        source.iosEntitlements,
+      ) &&
+      source.iosProject.includes("CODE_SIGN_ENTITLEMENTS = App/App.entitlements;") &&
+      source.iosProject.includes("com.apple.Push = {") &&
+      source.iosProject.includes("APS_ENVIRONMENT = development;") &&
+      source.iosProject.includes("APS_ENVIRONMENT = production;"),
   },
   {
     key: "ios_registration_bridge",

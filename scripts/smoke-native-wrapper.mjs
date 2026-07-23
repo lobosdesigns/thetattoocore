@@ -297,8 +297,9 @@ const checks = [
       !source.androidManifest.includes("android.permission.RECORD_AUDIO") &&
       !source.androidManifest.includes("android.permission.ACCESS_FINE_LOCATION") &&
       !source.androidManifest.includes("android.permission.READ_CONTACTS") &&
-      !source.iosEntitlements.includes("aps-environment") &&
-      !source.iosProject.includes("Push Notifications") &&
+      source.iosEntitlements.includes("aps-environment") &&
+      source.iosProject.includes("com.apple.Push = {") &&
+      source.iosInfo.includes("FirebaseMessagingAutoInitEnabled") &&
       !source.iosInfo.includes("NSCameraUsageDescription") &&
       !source.iosInfo.includes("NSMicrophoneUsageDescription") &&
       !source.iosInfo.includes("NSLocationWhenInUseUsageDescription") &&
@@ -400,7 +401,7 @@ const checks = [
       source.nativePrep.includes("## Native Push Private Evidence Matrix") &&
       source.nativePrep.includes("| Firebase project | Project exists for TheTattooCore") &&
       source.nativePrep.includes("| Android app config | Android app config file added only to the private build environment") &&
-      source.nativePrep.includes("| iOS app config | iOS app config file added only on the Mac/Xcode build path") &&
+      source.nativePrep.includes("| iOS app config | Checked-in build `1.0 (4)` references the ignored private app config") &&
       source.nativePrep.includes("| Device token registration | Signed-in Android and iOS devices register and refresh tokens") &&
       source.nativePrep.includes("| Delivery and tap routing | Alerts deliver for the tested categories") &&
       source.nativePrep.includes("| Preference controls | Per-device opt-out, quiet hours, and category preferences stop delivery") &&

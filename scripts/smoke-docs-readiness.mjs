@@ -1073,7 +1073,7 @@ const checks = [
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("## Native Push Private Evidence Matrix") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Firebase project | Project exists for TheTattooCore") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Android app config | Android app config file added only to the private build environment") &&
-      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| iOS app config | iOS app config file added only on the Mac/Xcode build path") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| iOS app config | Checked-in build `1.0 (4)` references the ignored private app config") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Device token registration | Signed-in Android and iOS devices register and refresh tokens") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Delivery and tap routing | Alerts deliver for the tested categories") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Preference controls | Per-device opt-out, quiet hours, and category preferences stop delivery") &&

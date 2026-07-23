@@ -29,8 +29,14 @@ const source = {
   iosAppDelegate: read(
     "native/thetattoocore-mobile/ios/App/App/AppDelegate.swift",
   ),
+  iosEntitlements: read(
+    "native/thetattoocore-mobile/ios/App/App/App.entitlements",
+  ),
   iosInfo: read("native/thetattoocore-mobile/ios/App/App/Info.plist"),
   iosPodfile: read("native/thetattoocore-mobile/ios/App/Podfile"),
+  iosProject: read(
+    "native/thetattoocore-mobile/ios/App/App.xcodeproj/project.pbxproj",
+  ),
   layout: read("src/app/layout.tsx"),
   migration: read(
     "supabase/migrations/20260722114857_native_push_devices.sql",
@@ -382,6 +388,24 @@ const checks = [
         "didFailToRegisterForRemoteNotificationsWithError",
       ) &&
       source.iosAppDelegate.includes("didReceiveRemoteNotification"),
+  },
+  {
+    label: "iOS build 4 has target-scoped push configuration while auto-init stays off",
+    ok:
+      /<key>aps-environment<\/key>\s*<string>\$\(APS_ENVIRONMENT\)<\/string>/s.test(
+        source.iosEntitlements,
+      ) &&
+      source.iosProject.includes("GoogleService-Info.plist in Resources") &&
+      source.iosProject.includes(
+        "CODE_SIGN_ENTITLEMENTS = App/App.entitlements;",
+      ) &&
+      source.iosProject.includes("com.apple.Push = {") &&
+      source.iosProject.includes("APS_ENVIRONMENT = development;") &&
+      source.iosProject.includes("APS_ENVIRONMENT = production;") &&
+      source.iosProject.match(/CURRENT_PROJECT_VERSION = 4;/g)?.length === 2 &&
+      /<key>FirebaseMessagingAutoInitEnabled<\/key>\s*<false\/>/s.test(
+        source.iosInfo,
+      ),
   },
   {
     label: "member controls use neutral app-alert wording",
