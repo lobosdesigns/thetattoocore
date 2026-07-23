@@ -159,7 +159,19 @@ async function fetchWithRetry(url, options = {}) {
 }
 
 const checks = [
-  { path: "/", status: [307, 308], redirectIncludes: "/login", redirect: "manual" },
+  {
+    path: "/",
+    status: [200],
+    textIncludes: [
+      "Public preview",
+      "Sign in to post, reply, DM, follow creators",
+      "4U",
+      "Gossip",
+      "Stuff",
+      "Gigs",
+      "Merch",
+    ],
+  },
   { path: "/account", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Faccount"], redirect: "manual" },
   { path: "/account?booking_status=requested", status: [307, 308], redirectIncludes: "/login", locationIncludes: ["return_to=%2Faccount%3Fads%3D25%26bookings%3D25%26orders%3D25%26booking_status%3Drequested"], redirect: "manual" },
   {

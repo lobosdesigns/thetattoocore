@@ -44,12 +44,12 @@ const routeSettleDelayMs = Math.max(
   Number.parseInt(process.env.SMOKE_MOBILE_ROUTE_SETTLE_MS || "2000", 10),
 );
 const routes = [
-  { path: "/", titleIncludes: "Sign in" },
-  { path: "/#feed", titleIncludes: "Sign in" },
-  { path: "/#threads", titleIncludes: "Sign in" },
-  { path: "/#marketplace", titleIncludes: "Sign in" },
-  { path: "/#gigs", titleIncludes: "Sign in" },
-  { path: "/#merch", titleIncludes: "Sign in" },
+  { path: "/", textIncludes: "Public preview", titleIncludes: "TheTattooCore" },
+  { path: "/#feed", textIncludes: "Public preview", titleIncludes: "TheTattooCore" },
+  { path: "/#threads", textIncludes: "Public preview", titleIncludes: "TheTattooCore" },
+  { path: "/#marketplace", textIncludes: "Public preview", titleIncludes: "TheTattooCore" },
+  { path: "/#gigs", textIncludes: "Public preview", titleIncludes: "TheTattooCore" },
+  { path: "/#merch", textIncludes: "Public preview", titleIncludes: "TheTattooCore" },
   { path: "/login", titleIncludes: "Sign in" },
   { path: "/signup", titleIncludes: "Create account" },
   {

@@ -96,7 +96,7 @@ const betaReleaseStatus: {
   tone: BetaReleaseTone;
 }[] = [
   {
-    body: "Closed-testing release 1.0.1 (2) is installed on the current Android tester device. Continue the beta tester checklist on that exact build.",
+    body: "Closed-testing Alpha release 1.0.2 (3) is installed on the current Android tester device. Continue the beta tester checklist on that exact build.",
     href: "/help/beta-app-testing",
     icon: CheckCircle2,
     label: "Google Play",
@@ -104,12 +104,12 @@ const betaReleaseStatus: {
     tone: "ready",
   },
   {
-    body: "Build 1.0 (3) is attached to the TTC Internal Testers group and ready for real-device auth, posting, DM, and checkout-return smoke.",
+    body: "Build 1.0 (4) is assigned to TTC Internal Testers for notification and full real-device QA. App Review remains on build 1.0 (3), so do not replace the submitted build unless review requires it.",
     href: "/help/beta-app-testing",
     icon: CheckCircle2,
     label: "Apple TestFlight",
-    status: "Internal testing",
-    tone: "ready",
+    status: "Build 4 install pending",
+    tone: "watch",
   },
   {
     body: "Keep real purchases gated until seller payouts, refunds, disputes, tax/shipping rules, checkout returns, and app-store policy review pass.",
@@ -121,7 +121,8 @@ const betaReleaseStatus: {
   },
 ] as const;
 const betaNextActions = [
-  "Install iOS build 1.0 (3) from TestFlight and Android closed-testing release 1.0.1 (2) on real devices.",
+  "Install iOS build 1.0 (4) from TTC Internal Testers and keep Android Closed testing - Alpha 1.0.2 (3) on the current review phone.",
+  "Preserve iOS App Review build 1.0 (3) while build 1.0 (4) is used only for controlled TestFlight QA.",
   "Run real-device auth checks: login, signup, email confirmation, reset password, and support/legal links stay inside the app.",
   "Run two-user DM, notifications, posting, Stories, comments, profile edit, verification upload, Merch browsing, booking request, and test checkout passes.",
   "Save safe screenshots or short clips for any failed flow before changing code so the fix can be retested against the exact issue.",

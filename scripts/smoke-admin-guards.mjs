@@ -151,12 +151,14 @@ const checks = [
       adminMediaOps.includes("Beta release status") &&
       adminMediaOps.includes("Where the apps stand now") &&
       adminMediaOps.includes("Google Play") &&
-      adminMediaOps.includes("Closed-testing release 1.0.1 (2)") &&
+      adminMediaOps.includes("Closed-testing Alpha release 1.0.2 (3)") &&
       adminMediaOps.includes("Closed test installed") &&
       !adminMediaOps.includes("release 1 (1.0)") &&
       adminMediaOps.includes("Apple TestFlight") &&
-      adminMediaOps.includes("Build 1.0 (3)") &&
-      adminMediaOps.includes("Internal testing") &&
+      adminMediaOps.includes("Build 1.0 (4)") &&
+      adminMediaOps.includes("App Review remains on build 1.0 (3)") &&
+      adminMediaOps.includes("Build 4 install pending") &&
+      adminMediaOps.includes('tone: "watch"') &&
       adminMediaOps.includes("Next beta actions") &&
       adminMediaOps.includes("Beta QA launch checklist") &&
       adminMediaOps.includes("App handoff checklist") &&

@@ -13,6 +13,7 @@ const supportPage = readFileSync("src/app/support/page.tsx", "utf8");
 const termsPage = readFileSync("src/app/terms/page.tsx", "utf8");
 const siteConstants = readFileSync("src/lib/site.ts", "utf8");
 const rootLayout = readFileSync("src/app/layout.tsx", "utf8");
+const homePage = readFileSync("src/app/page.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const robots = readFileSync("src/app/robots.ts", "utf8");
 const sitemap = readFileSync("src/app/sitemap.ts", "utf8");
@@ -92,6 +93,17 @@ const checks = [
       rootLayout.includes('"max-image-preview": "large"') &&
       rootLayout.includes('"max-snippet": -1') &&
       rootLayout.includes('"max-video-preview": -1'),
+  },
+  {
+    label: "Canonical homepage renders an indexable signed-out public preview",
+    ok:
+      homePage.includes("function PublicVisitorGate") &&
+      homePage.includes(">Public preview</") &&
+      homePage.includes("!isSignedIn ? (") &&
+      homePage.includes("<PublicVisitorGate") &&
+      !homePage.includes('redirect("/login")') &&
+      publicSmoke.includes('path: "/"') &&
+      publicSmoke.includes("Sign in to post, reply, DM, follow creators"),
   },
   {
     label: "Public detail metadata emits route-specific SEO keywords",
