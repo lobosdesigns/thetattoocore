@@ -44,6 +44,23 @@
   the public Support URL for both account deletion and data deletion. Apple
   Accessibility Nutrition Labels are voluntary and are not a launch blocker
   unless TTC makes a support claim.
+- Production deploy `947a3db4-65c9-4f04-a6de-78daf7fec321` went live on
+  July 23, 2026 from commit `b3f8d3b` after closing three independent
+  readiness gaps. The payment go-live gate now rejects mutable release labels
+  and production commit overrides that do not resolve locally. Passing Android
+  QA now requires Google Play installation plus device-captured, full-checklist
+  evidence instead of accepting manual install-only claims. Post and child
+  comment notification cleanup now uses the trusted server path after the
+  author-scoped delete succeeds, preventing removed 4U and Gossip content from
+  leaving stale alerts. A read-only production check found zero existing orphan
+  post or comment notifications, so no data cleanup was required. Verification
+  passed the seven-case payment-gate suite, 19-case release-evidence suite,
+  payment, handoff, content, docs, and security guards, lint, production and
+  deployment builds, live `smoke:public`, and live `smoke:mobile`; public smoke
+  noted only the known robots edge-challenge skip. The strict release-evidence
+  gate remains at 60 incomplete requirements and the payment go-live gate
+  remains at 35 evidence blockers. No live-money transaction was performed,
+  and live money remains fail closed.
 - Production deploy `cb0a86a4-a693-459d-8aa0-ef00bafc1f18` went live on
   July 23, 2026 from commit `21ef138` after making payment-dashboard evidence
   expire deterministically. Dashboard dates must now use `YYYY-MM-DD` or an
