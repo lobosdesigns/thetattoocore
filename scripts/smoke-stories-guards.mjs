@@ -235,6 +235,20 @@ const checks = [
       homePage.includes("<StoryCreateButton"),
   },
   {
+    label: "floating composer contains keyboard focus and restores its opener",
+    ok:
+      composerShell.includes('role="dialog"') &&
+      composerShell.includes('aria-modal="true"') &&
+      composerShell.includes('aria-labelledby="ttc-composer-title"') &&
+      composerShell.includes("closeButtonRef.current?.focus()") &&
+      composerShell.includes('event.key !== "Tab"') &&
+      composerShell.includes("dialogRef.current.contains(focused)") &&
+      composerShell.includes("event.shiftKey && focused === first") &&
+      composerShell.includes("!event.shiftKey && focused === last") &&
+      composerShell.includes("opener?.isConnected") &&
+      composerShell.includes("focusTarget?.focus()"),
+  },
+  {
     label: "story composer is members-first, short-video enabled, and launch-policy clear",
     ok:
       composer.includes("action={createStoryPost}") &&
@@ -354,7 +368,11 @@ const checks = [
       notificationsPage.includes('| "story_reaction"') &&
       notificationsPage.includes('type === "story_reaction"') &&
       notificationsPage.includes('if (type === "story_post") return "Story"') &&
-      notificationsPage.includes('notification.href || "/#stories"'),
+      notificationsPage.includes("safeNotificationPath(notification.href)") &&
+      notificationsPage.includes('notification.subject_type === "story_post"') &&
+      notificationsPage.includes(
+        'notificationHrefOrFallback(notification, "/#stories")',
+      ),
   },
   {
     label: "plan records Stories as started for launch",

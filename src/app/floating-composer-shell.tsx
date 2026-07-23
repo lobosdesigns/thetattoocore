@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import {
   BriefcaseBusiness,
   Camera,
@@ -20,6 +20,21 @@ type ComposerMode =
   | "marketplace"
   | "gigs"
   | "merch";
+
+const focusableSelector = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled]):not([type='hidden'])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])",
+].join(",");
+
+function focusableElements(container: HTMLElement) {
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(focusableSelector),
+  ).filter((element) => element.getClientRects().length > 0);
+}
 
 const modes: Record<
   ComposerMode,
@@ -83,13 +98,42 @@ export function FloatingComposerShell({
   const [activeMode, setActiveMode] = useState<ComposerMode>("feed");
   const [isOpen, setIsOpen] = useState(false);
   const explicitOpenModeRef = useRef<ComposerMode | null>(null);
+  const createButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
   const active = modes[activeMode];
   const ActiveIcon = active.icon;
 
-  const closeComposer = () => {
+  const captureComposerOpener = useCallback((candidate?: HTMLElement | null) => {
+    const activeElement =
+      candidate ??
+      (document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null);
+
+    if (activeElement && !dialogRef.current?.contains(activeElement)) {
+      openerRef.current =
+        activeElement === document.body ? createButtonRef.current : activeElement;
+    }
+
+    openerRef.current ??= createButtonRef.current;
+  }, []);
+
+  const closeComposer = useCallback(() => {
     explicitOpenModeRef.current = null;
     setIsOpen(false);
-  };
+    window.requestAnimationFrame(() => {
+      const opener = openerRef.current;
+      const focusTarget =
+        opener?.isConnected && opener !== document.body
+          ? opener
+          : createButtonRef.current;
+
+      focusTarget?.focus();
+      openerRef.current = null;
+    });
+  }, []);
 
   useEffect(() => {
     const onHashChange = () => {
@@ -105,6 +149,7 @@ export function FloatingComposerShell({
     const composeOpenTimer =
       composeMode && composeMode in modes
         ? window.setTimeout(() => {
+            captureComposerOpener();
             explicitOpenModeRef.current = composeMode as ComposerMode;
             setActiveMode(composeMode as ComposerMode);
             setIsOpen(true);
@@ -145,23 +190,55 @@ export function FloatingComposerShell({
       if (composeOpenTimer) window.clearTimeout(composeOpenTimer);
       observer.disconnect();
     };
-  }, []);
+  }, [captureComposerOpener]);
 
   useEffect(() => {
     if (!isOpen) return;
 
+    closeButtonRef.current?.focus();
+
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeComposer();
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeComposer();
+        return;
+      }
+
+      if (event.key !== "Tab" || !dialogRef.current) return;
+
+      const focusable = focusableElements(dialogRef.current);
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      const focused = document.activeElement;
+
+      if (!first || !last) {
+        event.preventDefault();
+        dialogRef.current.focus();
+        return;
+      }
+
+      if (!dialogRef.current.contains(focused)) {
+        event.preventDefault();
+        first.focus();
+      } else if (event.shiftKey && focused === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && focused === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
 
     window.addEventListener("keydown", onKeyDown);
 
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isOpen]);
+  }, [closeComposer, isOpen]);
 
   useEffect(() => {
     const openComposer = (event: Event) => {
       const mode = (event as CustomEvent<{ mode?: ComposerMode }>).detail?.mode;
+
+      captureComposerOpener();
 
       if (mode && mode in modes) {
         explicitOpenModeRef.current = mode;
@@ -177,14 +254,16 @@ export function FloatingComposerShell({
     window.addEventListener("ttc-open-composer", openComposer);
 
     return () => window.removeEventListener("ttc-open-composer", openComposer);
-  }, []);
+  }, [captureComposerOpener]);
 
   return (
     <>
       <button
+        ref={createButtonRef}
         aria-label={`Create ${active.label}`}
         className="fixed bottom-24 right-5 z-30 flex h-14 max-w-[calc(100vw-2.5rem)] items-center gap-2 rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_28%,transparent)] bg-[var(--foreground)] px-3 text-[var(--background)] shadow-[0_14px_34px_rgba(0,0,0,0.34)] transition hover:scale-105 focus:outline-none focus:ring-4 focus:ring-[#c8953b]/35 lg:bottom-5"
-        onClick={() => {
+        onClick={(event) => {
+          captureComposerOpener(event.currentTarget);
           explicitOpenModeRef.current = null;
           setIsOpen(true);
         }}
@@ -204,18 +283,28 @@ export function FloatingComposerShell({
       {isOpen ? (
         <div className="fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-[color-mix(in_srgb,var(--foreground)_58%,transparent)] px-2 py-2 backdrop-blur-sm sm:px-4 sm:py-5">
           <div className="mx-auto flex min-h-full max-w-xl items-end sm:items-center">
-            <section className="flex max-h-[calc(100dvh-1rem)] w-full flex-col overflow-hidden rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] shadow-2xl sm:max-h-[calc(100dvh-2.5rem)]">
+            <section
+              ref={dialogRef}
+              aria-labelledby="ttc-composer-title"
+              aria-modal="true"
+              className="flex max-h-[calc(100dvh-1rem)] w-full flex-col overflow-hidden rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] shadow-2xl sm:max-h-[calc(100dvh-2.5rem)]"
+              role="dialog"
+              tabIndex={-1}
+            >
               <header className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-4 py-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] text-[var(--brand-gold)]">
                     <ActiveIcon className="size-5" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-base font-bold">{active.title}</p>
+                    <p className="text-base font-bold" id="ttc-composer-title">
+                      {active.title}
+                    </p>
                     <p className="text-xs text-[var(--muted-strong)]">{active.label}</p>
                   </div>
                 </div>
                 <button
+                  ref={closeButtonRef}
                   aria-label="Close composer"
                   className="flex size-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)]"
                   onClick={closeComposer}
