@@ -15,6 +15,7 @@ const files = {
   iosBootstrapScript: `${wrapperRoot}/ios/mac-bootstrap-testflight.sh`,
   iosExportOptions: `${wrapperRoot}/ios/ExportOptions-AppStore.template.plist`,
   iosInfo: `${wrapperRoot}/ios/App/App/Info.plist`,
+  iosWorkspace: `${wrapperRoot}/ios/App/App.xcworkspace/contents.xcworkspacedata`,
   iosPodfile: `${wrapperRoot}/ios/App/Podfile`,
   iosPodfileLock: `${wrapperRoot}/ios/App/Podfile.lock`,
   iosPrivacy: `${wrapperRoot}/ios/App/App/PrivacyInfo.xcprivacy`,
@@ -619,6 +620,8 @@ const checks = [
       source.iosPodfileLock.includes("PODS:") &&
       source.iosPodfileLock.includes("CapacitorFirebaseMessaging (7.5.0)") &&
       source.iosPodfileLock.includes("COCOAPODS: 1.16.2") &&
+      source.iosWorkspace.includes('location = "group:App.xcodeproj"') &&
+      source.iosWorkspace.includes('location = "group:Pods/Pods.xcodeproj"') &&
       source.iosExportOptions.includes("app-store-connect") &&
       source.iosExportOptions.includes("signingStyle"),
   },
