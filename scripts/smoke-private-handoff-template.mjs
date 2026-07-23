@@ -6,6 +6,11 @@ const packageJson = readFileSync("package.json", "utf8");
 const mobileRunbook = readFileSync("docs/MOBILE_APP_SUBMISSION_RUNBOOK.md", "utf8");
 const realDeviceQa = readFileSync("docs/REAL_DEVICE_QA_CHECKLIST.md", "utf8");
 const consoleTabsWriter = readFileSync("scripts/write-private-console-tabs.mjs", "utf8");
+const evidenceGate = readFileSync("scripts/verify-release-evidence.mjs", "utf8");
+const evidenceFixture = readFileSync(
+  "scripts/fixtures/release-evidence.passed.md",
+  "utf8",
+);
 
 const checks = [
   {
@@ -14,6 +19,8 @@ const checks = [
       packageJson.includes('"prepare:private-release-handoff": "node scripts/generate-private-release-handoff.mjs"') &&
       packageJson.includes('"prepare:private-console-tabs": "node scripts/write-private-console-tabs.mjs"') &&
       packageJson.includes('"smoke:handoff": "node scripts/smoke-private-handoff-template.mjs"') &&
+      packageJson.includes('"verify:release-evidence": "node scripts/verify-release-evidence.mjs"') &&
+      packageJson.includes('"test:release-evidence-gate": "node scripts/verify-release-evidence.mjs --test-fixture') &&
       packageJson.includes("npm run smoke:native && npm run test:native-push-delivery && npm run smoke:native-push && npm run smoke:app-links && npm run smoke:handoff && npm run smoke:docs") &&
       packageJson.includes("npm run smoke:payments && npm run smoke:payment-cutover && npm run smoke:pwa && npm run smoke:security && npm run smoke:handoff && npm run smoke:docs") &&
       packageJson.includes("npm run smoke:store && npm run smoke:pwa && npm run smoke:handoff && npm run smoke:docs") &&
@@ -93,8 +100,8 @@ const checks = [
       generator.includes("selected build, 13-inch iPad screenshot upload, primary category, free pricing") &&
       generator.includes("Content Rights, App Privacy, Privacy Policy URL, and Age 18+ override") &&
       generator.includes("submitted-build iPhone/iPad QA evidence only") &&
-      generator.includes("Closed testing - Alpha release 1.0.1 (2) is served") &&
-      generator.includes("applicable production-access window is counted only after eligible testers opt in") &&
+      generator.includes("Organization account confirmed") &&
+      generator.includes("personal-account 12-tester/14-day production-access gate is not applicable") &&
       generator.includes("Closed-test tester links and opt-in evidence") &&
       generator.includes("Save Android/web join links privately") &&
       generator.includes("device Play account matches the tester-community member") &&
@@ -107,9 +114,9 @@ const checks = [
       generator.includes("Installed release/version/build") &&
       generator.includes("A missing listing, account mismatch, or unconfirmed web opt-in is a blocker") &&
       generator.includes("API 36 signed upload bundle") &&
-      generator.includes("Version code 2 / version name 1.0.1 API 36 update is published and verified installed") &&
+      generator.includes("Version code 3 / version name 1.0.2 API 36 update is active and verified installed") &&
       generator.includes("do not upload the same version code again") &&
-      generator.includes("archive tester participation/duration evidence") &&
+      generator.includes("archive tester participation evidence") &&
       generator.includes("Console submit/retry evidence") &&
       generator.includes("record the visible error code, page URL, retry path") &&
       generator.includes("whether reload/new-tab retry was attempted") &&
@@ -139,6 +146,20 @@ const checks = [
       generator.includes("Google Play, App Store Connect, Firebase console, payment dashboard, owner TTC app session") &&
       generator.includes("Alert delivery") &&
       generator.includes("Tap routing"),
+  },
+  {
+    label: "strict release evidence gate is exact-build and privacy-safe",
+    ok:
+      evidenceGate.includes('const EXPECTED_ANDROID_BUILD = "1.0.2 (3)"') &&
+      evidenceGate.includes('const EXPECTED_IOS_TESTFLIGHT_BUILD = "1.0 (4)"') &&
+      evidenceGate.includes('const EXPECTED_IOS_REVIEW_BUILD = "1.0 (3)"') &&
+      evidenceGate.includes("private release evidence requirement(s) remain incomplete") &&
+      evidenceGate.includes("--test-fixture") &&
+      !evidenceGate.includes("console.error(markdown") &&
+      evidenceFixture.includes("fixture-release-candidate") &&
+      evidenceFixture.includes("Closed testing - Alpha 1.0.2 (3)") &&
+      evidenceFixture.includes("App Review 1.0 (3)") &&
+      evidenceFixture.includes("| iOS | fixture-device | iOS current | 1.0 (4) |"),
   },
   {
     label: "private console tab writer keeps exact URLs local-only",

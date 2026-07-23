@@ -30,13 +30,17 @@ export function MailTestForm({
       },
       body: JSON.stringify({ recipientEmail }),
     });
-    const payload = (await response.json().catch(() => ({}))) as {
-      error?: string;
-    };
-
     if (!response.ok) {
       setStatus("error");
-      setMessage(payload.error ?? "Could not send the test email.");
+      setMessage(
+        response.status === 400
+          ? "Enter a valid recipient email."
+          : response.status === 401
+            ? "Sign in required."
+            : response.status === 403
+              ? "Admin access required."
+              : "Could not send the test email.",
+      );
       return;
     }
 

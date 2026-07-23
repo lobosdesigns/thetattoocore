@@ -43,6 +43,14 @@ const adminReportsPage = readFileSync("src/app/admin/reports/page.tsx", "utf8");
 const adminStuffPage = readFileSync("src/app/admin/stuff/page.tsx", "utf8");
 const adminUsersPage = readFileSync("src/app/admin/users/page.tsx", "utf8");
 const adminVerificationPage = readFileSync("src/app/admin/verification/page.tsx", "utf8");
+const adminMailTestRoute = readFileSync(
+  "src/app/api/admin/mail/test/route.ts",
+  "utf8",
+);
+const adminMailTestForm = readFileSync(
+  "src/app/admin/mail-test-form.tsx",
+  "utf8",
+);
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const mobileSmoke = readFileSync("scripts/smoke-mobile-browser.mjs", "utf8");
 const urls = readFileSync("src/lib/urls.ts", "utf8");
@@ -740,6 +748,20 @@ const checks = [
       publicSmoke.includes('path: "/api/gigs"') &&
       publicSmoke.includes('"Sign in required."') &&
       publicSmoke.includes('redirectIncludes: "/login"'),
+  },
+  {
+    label: "admin mail test failures stay server-side and operator-safe",
+    ok:
+      adminMailTestRoute.includes(
+        'console.error("Admin test email send failed.", mailError);',
+      ) &&
+      adminMailTestRoute.includes(
+        '{ error: "Could not send the test email." }',
+      ) &&
+      !adminMailTestRoute.includes("mailError.message") &&
+      !adminMailTestForm.includes("payload.error") &&
+      adminMailTestForm.includes('response.status === 400') &&
+      adminMailTestForm.includes('"Could not send the test email."'),
   },
   {
     label: "support deletion action routes through safe sign-in return",

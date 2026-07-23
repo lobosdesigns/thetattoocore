@@ -78,9 +78,11 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (mailError) {
-    const message =
-      mailError instanceof Error ? mailError.message : "Could not send email.";
+    console.error("Admin test email send failed.", mailError);
 
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(
+      { error: "Could not send the test email." },
+      { status: 500 },
+    );
   }
 }
