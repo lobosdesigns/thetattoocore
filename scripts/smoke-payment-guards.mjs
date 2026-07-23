@@ -1029,13 +1029,15 @@ checks.push({
     stripeServer.includes('secretKey?.startsWith("sk_test_")') &&
     stripeWebhook.includes("expectedStripeLivemode() ?? stripeSecretKeyLivemode()") &&
     stripeWebhook.includes("function stripeLivemodeMatches") &&
-    stripeWebhook.includes("event.livemode === expected") &&
+    stripeWebhook.includes("return expected !== null && event.livemode === expected;") &&
+    !stripeWebhook.includes("expected === null || event.livemode === expected") &&
     stripeWebhook.includes("Payment update ignored because livemode did not match.") &&
     stripeWebhook.includes("function checkoutSessionIsSettled") &&
     stripeWebhook.includes('event.type === "checkout.session.async_payment_succeeded"') &&
     stripeWebhook.includes('session.payment_status === "paid"') &&
     stripeWebhook.includes("Checkout session completed before payment settled.") &&
     paymentReadiness.includes("STRIPE_EXPECTED_LIVEMODE=true") &&
+    paymentReadiness.includes("webhooks fail closed") &&
     paymentReadiness.includes("checkout.session.async_payment_succeeded") &&
     paymentReadiness.includes("charge.dispute.updated") &&
     paymentReadiness.includes("charge.dispute.funds_reinstated") &&

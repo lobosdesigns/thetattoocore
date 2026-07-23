@@ -22,7 +22,7 @@ function stripeResponse(message: string, status = 200) {
 function stripeLivemodeMatches(event: Stripe.Event) {
   const expected = expectedStripeLivemode() ?? stripeSecretKeyLivemode();
 
-  return expected === null || event.livemode === expected;
+  return expected !== null && event.livemode === expected;
 }
 
 function checkoutSessionIsSettled(
