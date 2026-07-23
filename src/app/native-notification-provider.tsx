@@ -206,7 +206,17 @@ export function NativeNotificationProvider({
           }),
         );
 
-        const savedEnabled = await deviceRegistrationEnabled(runtime.platform);
+        let savedEnabled = false;
+
+        try {
+          savedEnabled = await deviceRegistrationEnabled(runtime.platform);
+        } catch {
+          if (!cancelled) {
+            enabledRef.current = false;
+            setEnabled(false);
+          }
+          return;
+        }
 
         if (cancelled) return;
 

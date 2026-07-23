@@ -219,6 +219,10 @@ const checks = [
     label: "native registration status is account-bound before automatic refresh",
     ok:
       source.provider.includes("deviceRegistrationEnabled") &&
+      source.provider.includes("let savedEnabled = false;") &&
+      /try \{\s*savedEnabled = await deviceRegistrationEnabled\(runtime\.platform\);\s*\} catch \{\s*if \(!cancelled\) \{\s*enabledRef\.current = false;\s*setEnabled\(false\);\s*\}\s*return;\s*\}/s.test(
+        source.provider,
+      ) &&
       source.deviceApi.includes("export async function GET") &&
       source.deviceApi.includes('.eq("profile_id", userId)') &&
       source.deviceApi.includes('.eq("installation_id", installationId)'),
