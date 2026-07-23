@@ -5,6 +5,10 @@ import {
   nativePushDeviceCookie,
   validDeviceAlertUuid,
 } from "@/lib/device-alert-cookies";
+import {
+  nativePushQaBuildAllowed,
+  nativePushQaRoleAllowed,
+} from "@/lib/native-push/qa-access";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -50,12 +54,23 @@ async function hashToken(token: string) {
   ).join("");
 }
 
-async function authenticatedUserId() {
+async function authenticatedProfile() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userId = typeof data?.claims?.sub === "string" ? data.claims.sub : null;
 
-  return userId;
+  if (!userId) return null;
+  const admin = createAdminClient();
+
+  if (!admin) return null;
+
+  const { data: profile, error } = await admin
+    .from("profiles")
+    .select("id, role")
+    .eq("id", userId)
+    .maybeSingle<{ id: string; role: string | null }>();
+
+  return error ? null : profile;
 }
 
 async function readPayload(request: Request) {
@@ -75,10 +90,21 @@ async function readPayload(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const userId = await authenticatedUserId();
+  const profile = await authenticatedProfile();
 
-  if (!userId) {
+  if (!profile) {
     return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+  }
+  const userId = profile.id;
+
+  if (
+    process.env.TTC_NATIVE_PUSH_DELIVERY_ENABLED !== "true" &&
+    !nativePushQaRoleAllowed(profile.role)
+  ) {
+    return NextResponse.json(
+      { error: "Device alert setup is not available." },
+      { status: 403 },
+    );
   }
 
   const searchParams = new URL(request.url).searchParams;
@@ -115,11 +141,12 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const userId = await authenticatedUserId();
+  const profile = await authenticatedProfile();
 
-  if (!userId) {
+  if (!profile) {
     return NextResponse.json({ error: "Sign in required." }, { status: 401 });
   }
+  const userId = profile.id;
 
   if (process.env.TTC_NATIVE_PUSH_REGISTRATION_ENABLED !== "true") {
     return NextResponse.json(
@@ -143,6 +170,17 @@ export async function POST(request: Request) {
     !validToken(token)
   ) {
     return NextResponse.json({ error: "Invalid device registration." }, { status: 400 });
+  }
+
+  if (
+    process.env.TTC_NATIVE_PUSH_DELIVERY_ENABLED !== "true" &&
+    (!nativePushQaRoleAllowed(profile.role) ||
+      !nativePushQaBuildAllowed(platform, appVersion, appBuild))
+  ) {
+    return NextResponse.json(
+      { error: "Device alert setup is not available for this build." },
+      { status: 403 },
+    );
   }
 
   const admin = createAdminClient();
@@ -259,11 +297,12 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const userId = await authenticatedUserId();
+  const profile = await authenticatedProfile();
 
-  if (!userId) {
+  if (!profile) {
     return NextResponse.json({ error: "Sign in required." }, { status: 401 });
   }
+  const userId = profile.id;
 
   const payload = await readPayload(request);
   const platform = cleanPlatform(payload?.platform);

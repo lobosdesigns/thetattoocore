@@ -5,6 +5,10 @@ import {
   nativePushDeliveryReady,
   retryDelaySeconds,
 } from "../src/lib/native-push/sender-core.ts";
+import {
+  nativePushQaBuildAllowed,
+  nativePushQaRoleAllowed,
+} from "../src/lib/native-push/qa-access.ts";
 
 const readyEnvironment = {
   FIREBASE_CLIENT_EMAIL: "sender@example.invalid",
@@ -95,7 +99,19 @@ assert.equal(
 assert.equal(retryDelaySeconds(2, null), 60);
 assert.equal(retryDelaySeconds(99, null), 1920);
 
+assert.equal(nativePushQaRoleAllowed("owner"), true);
+assert.equal(nativePushQaRoleAllowed("admin"), true);
+assert.equal(nativePushQaRoleAllowed("moderator"), false);
+assert.equal(nativePushQaRoleAllowed("user"), false);
+assert.equal(nativePushQaRoleAllowed(null), false);
+assert.equal(nativePushQaBuildAllowed("android", "1.0.2", "3"), true);
+assert.equal(nativePushQaBuildAllowed("android", "1.0.1", "2"), false);
+assert.equal(nativePushQaBuildAllowed("android", "1.0.2", "4"), false);
+assert.equal(nativePushQaBuildAllowed("ios", "1.0", "4"), true);
+assert.equal(nativePushQaBuildAllowed("ios", "1.0", "3"), false);
+
 console.log("PASS native delivery gates fail closed");
 console.log("PASS native payloads stay generic and platform-aware");
 console.log("PASS native response classification protects device registrations");
 console.log("PASS native retry delays are bounded");
+console.log("PASS controlled native QA rejects unapproved roles and builds");

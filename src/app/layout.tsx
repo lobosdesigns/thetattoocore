@@ -6,6 +6,7 @@ import { NativeNotificationProvider } from "./native-notification-provider";
 import { ServiceWorkerRegistrar } from "./service-worker-registrar";
 import { ThemeController, type ThemePreference } from "./theme-controller";
 import { normalizedLanguage } from "@/lib/localization";
+import { nativePushQaRoleAllowed } from "@/lib/native-push/qa-access";
 import {
   brandShareImage,
   brandShareImageAlt,
@@ -101,21 +102,24 @@ async function preferredDocumentSettings() {
   if (!userId) {
     return {
       language: "en",
+      role: null,
       themePreference: "system" as ThemePreference,
     };
   }
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("preferred_language, theme_preference")
+    .select("preferred_language, role, theme_preference")
     .eq("id", userId)
     .maybeSingle<{
       preferred_language: string | null;
+      role: string | null;
       theme_preference: string | null;
     }>();
 
   return {
     language: normalizedLanguage(profile?.preferred_language),
+    role: profile?.role ?? null,
     themePreference: normalizedThemePreference(profile?.theme_preference),
   };
 }
@@ -131,9 +135,20 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { language, themePreference } = await preferredDocumentSettings();
+  const { language, role, themePreference } = await preferredDocumentSettings();
+  const nativeDeliveryEnabled =
+    process.env.TTC_NATIVE_PUSH_DELIVERY_ENABLED === "true";
+  const nativeRegistrationEnabled =
+    process.env.TTC_NATIVE_PUSH_REGISTRATION_ENABLED === "true";
+  const nativeQaRoleAllowed = nativePushQaRoleAllowed(role);
   const nativeNotificationSetupEnabled =
-    process.env.TTC_DEVICE_ALERT_SETUP_ENABLED === "true";
+    process.env.TTC_DEVICE_ALERT_SETUP_ENABLED === "true" &&
+    nativeRegistrationEnabled &&
+    (nativeDeliveryEnabled || nativeQaRoleAllowed);
+  const nativeNotificationQaBuildRestricted =
+    nativeNotificationSetupEnabled &&
+    !nativeDeliveryEnabled &&
+    nativeQaRoleAllowed;
 
   return (
     <html
@@ -142,6 +157,7 @@ export default async function RootLayout({
     >
       <body className="min-h-full">
         <NativeNotificationProvider
+          qaBuildRestricted={nativeNotificationQaBuildRestricted}
           setupEnabled={nativeNotificationSetupEnabled}
         >
           <AuthHashRedirect />

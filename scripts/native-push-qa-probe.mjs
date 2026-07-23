@@ -20,6 +20,7 @@ const files = {
   iosInfo: `${wrapperRoot}/ios/App/App/Info.plist`,
   iosProject: `${wrapperRoot}/ios/App/App.xcodeproj/project.pbxproj`,
   iosPodfile: `${wrapperRoot}/ios/App/Podfile`,
+  layout: "src/app/layout.tsx",
   nativeDevicesMigration: "supabase/migrations/20260722114857_native_push_devices.sql",
   nativeDeliveryMigration:
     "supabase/migrations/20260722225151_native_push_delivery_outbox.sql",
@@ -27,7 +28,10 @@ const files = {
   nativeDeliverySenderCore: "src/lib/native-push/sender-core.ts",
   notificationWriter: "src/lib/notification-write.ts",
   packageJson: `${wrapperRoot}/package.json`,
+  provider: "src/app/native-notification-provider.tsx",
+  qaAccess: "src/lib/native-push/qa-access.ts",
   rootPackageJson: "package.json",
+  deviceApi: "src/app/api/push/devices/route.ts",
   worker: "custom-worker.ts",
   wrangler: "wrangler.jsonc",
 };
@@ -162,6 +166,31 @@ const checks = [
       clientSource.includes("nativePushDeviceCookie"),
   },
   {
+    key: "controlled_registration_qa",
+    ready:
+      source.qaAccess.includes('android: { build: "3", version: "1.0.2" }') &&
+      source.qaAccess.includes('ios: { build: "4", version: "1.0" }') &&
+      source.qaAccess.includes('role === "admin" || role === "owner"') &&
+      source.layout.includes("nativePushQaRoleAllowed(role)") &&
+      source.layout.includes(
+        "qaBuildRestricted={nativeNotificationQaBuildRestricted}",
+      ) &&
+      source.provider.includes("nativePushQaBuildAllowed(") &&
+      source.deviceApi.includes("nativePushQaRoleAllowed(profile.role)") &&
+      source.deviceApi.includes(
+        "nativePushQaBuildAllowed(platform, appVersion, appBuild)",
+      ) &&
+      source.wrangler.includes(
+        '"TTC_DEVICE_ALERT_SETUP_ENABLED": "true"',
+      ) &&
+      source.wrangler.includes(
+        '"TTC_NATIVE_PUSH_REGISTRATION_ENABLED": "true"',
+      ) &&
+      source.wrangler.includes(
+        '"TTC_NATIVE_PUSH_DELIVERY_ENABLED": "false"',
+      ),
+  },
+  {
     key: "server_delivery_queue",
     ready:
       source.nativeDeliveryMigration.includes("native_push_delivery_jobs") &&
@@ -241,6 +270,7 @@ const bridgeCheckKeys = [
   "ios_fcm_token_bridge",
   "client_registration_flow",
   "server_registration_flow",
+  "controlled_registration_qa",
   "installed_build_registration",
 ];
 const privateConfigCheckKeys = [

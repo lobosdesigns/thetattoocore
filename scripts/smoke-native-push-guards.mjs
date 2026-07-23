@@ -38,6 +38,7 @@ const source = {
     "native/thetattoocore-mobile/ios/App/App.xcodeproj/project.pbxproj",
   ),
   layout: read("src/app/layout.tsx"),
+  qaAccess: read("src/lib/native-push/qa-access.ts"),
   migration: read(
     "supabase/migrations/20260722114857_native_push_devices.sql",
   ),
@@ -183,6 +184,36 @@ const checks = [
       source.migration.includes("char_length(app_build) between 1 and 40") &&
       source.nativeProbe.includes('key: "installed_build_registration"') &&
       source.nativeProbe.includes('"installed_build_registration"'),
+  },
+  {
+    label: "controlled native registration QA is role and exact-build scoped",
+    ok:
+      source.qaAccess.includes('android: { build: "3", version: "1.0.2" }') &&
+      source.qaAccess.includes('ios: { build: "4", version: "1.0" }') &&
+      source.qaAccess.includes('role === "admin" || role === "owner"') &&
+      source.layout.includes("nativePushQaRoleAllowed(role)") &&
+      source.layout.includes("!nativeDeliveryEnabled") &&
+      source.layout.includes(
+        "qaBuildRestricted={nativeNotificationQaBuildRestricted}",
+      ) &&
+      source.provider.includes("nativePushQaBuildAllowed(") &&
+      source.provider.includes("qaBuildRestricted &&") &&
+      source.deviceApi.includes("nativePushQaRoleAllowed(profile.role)") &&
+      source.deviceApi.includes(
+        "nativePushQaBuildAllowed(platform, appVersion, appBuild)",
+      ) &&
+      source.deviceApi.includes(
+        'process.env.TTC_NATIVE_PUSH_DELIVERY_ENABLED !== "true"',
+      ) &&
+      source.wrangler.includes(
+        '"TTC_DEVICE_ALERT_SETUP_ENABLED": "true"',
+      ) &&
+      source.wrangler.includes(
+        '"TTC_NATIVE_PUSH_REGISTRATION_ENABLED": "true"',
+      ) &&
+      source.wrangler.includes(
+        '"TTC_NATIVE_PUSH_DELIVERY_ENABLED": "false"',
+      ),
   },
   {
     label: "native registration status is account-bound before automatic refresh",

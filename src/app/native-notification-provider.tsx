@@ -10,9 +10,13 @@ import {
   useRef,
   useState,
 } from "react";
+import {
+  nativePushQaBuildAllowed,
+  type NativePushPlatform,
+} from "@/lib/native-push/qa-access";
 import { notificationPathOrFallback } from "@/lib/notification-route";
 
-type NativePlatform = "android" | "ios";
+type NativePlatform = NativePushPlatform;
 type NativeAppInfo = {
   build: string;
   version: string;
@@ -36,7 +40,10 @@ const installationIdKey = "ttc_native_push_installation_id";
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-async function nativeRuntime(setupEnabled: boolean) {
+async function nativeRuntime(
+  setupEnabled: boolean,
+  qaBuildRestricted: boolean,
+) {
   if (!setupEnabled) return null;
 
   const { Capacitor } = await import("@capacitor/core");
@@ -61,6 +68,16 @@ async function nativeRuntime(setupEnabled: boolean) {
   ]);
 
   if (!support.isSupported) return null;
+  if (
+    qaBuildRestricted &&
+    !nativePushQaBuildAllowed(
+      nativePlatform,
+      appInfo.version,
+      appInfo.build,
+    )
+  ) {
+    return null;
+  }
 
   return { appInfo, messaging: FirebaseMessaging, platform: nativePlatform };
 }
@@ -136,9 +153,11 @@ function tappedNotificationPath(notification: { data?: unknown }) {
 
 export function NativeNotificationProvider({
   children,
+  qaBuildRestricted,
   setupEnabled,
 }: {
   children: React.ReactNode;
+  qaBuildRestricted: boolean;
   setupEnabled: boolean;
 }) {
   const router = useRouter();
@@ -161,7 +180,7 @@ export function NativeNotificationProvider({
       handles.push(handle);
     }
 
-    void nativeRuntime(setupEnabled)
+    void nativeRuntime(setupEnabled, qaBuildRestricted)
       .then(async (runtime) => {
         if (!runtime || cancelled) return;
 
@@ -218,10 +237,10 @@ export function NativeNotificationProvider({
       cancelled = true;
       for (const handle of handles) void handle.remove();
     };
-  }, [router, setupEnabled]);
+  }, [qaBuildRestricted, router, setupEnabled]);
 
   const enable = useCallback(async () => {
-    const runtime = await nativeRuntime(setupEnabled);
+    const runtime = await nativeRuntime(setupEnabled, qaBuildRestricted);
 
     if (!runtime) throw new Error("Device alerts are unavailable.");
 
@@ -242,10 +261,10 @@ export function NativeNotificationProvider({
     setEnabled(true);
 
     return "enabled" as const;
-  }, [setupEnabled]);
+  }, [qaBuildRestricted, setupEnabled]);
 
   const disable = useCallback(async () => {
-    const runtime = await nativeRuntime(setupEnabled);
+    const runtime = await nativeRuntime(setupEnabled, qaBuildRestricted);
 
     if (!runtime) throw new Error("Device alerts are unavailable.");
 
@@ -267,7 +286,7 @@ export function NativeNotificationProvider({
     setEnabled(false);
 
     if (removalError) throw removalError;
-  }, [setupEnabled]);
+  }, [qaBuildRestricted, setupEnabled]);
 
   const value = useMemo(
     () => ({ disable, enable, enabled, supported }),
