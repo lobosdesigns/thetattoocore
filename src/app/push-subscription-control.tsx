@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BellRing, LoaderCircle, BellOff } from "lucide-react";
+import { BellOff, BellRing, LoaderCircle, Send } from "lucide-react";
 import {
   nativeNotificationSetupFailureMessage,
   useNativeNotificationSetup,
@@ -211,6 +211,20 @@ export function PushSubscriptionControl() {
     }
   }
 
+  async function sendTestAlert() {
+    setPending(true);
+    setMessage("");
+
+    try {
+      await nativeNotifications.sendTest();
+      setMessage("Test alert sent. Lock this device, then tap the alert.");
+    } catch {
+      setMessage("Test alert could not be sent. Try again.");
+    } finally {
+      setPending(false);
+    }
+  }
+
   return (
     <div className="ttc-surface mt-3 rounded-md border p-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -228,21 +242,34 @@ export function PushSubscriptionControl() {
           </p>
         </div>
         {supported && !permissionBlocked ? (
-          <button
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-3 text-xs font-bold text-[var(--background)] disabled:opacity-60"
-            disabled={pending}
-            onClick={enabled ? disableAlerts : enableAlerts}
-            type="button"
-          >
-            {pending ? (
-              <LoaderCircle className="size-4 animate-spin" />
-            ) : enabled ? (
-              <BellOff className="size-4" />
-            ) : (
-              <BellRing className="size-4" />
-            )}
-            {enabled ? "Turn off" : "Enable"}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {enabled && nativeNotifications.testAvailable ? (
+              <button
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--border)] px-3 text-xs font-bold disabled:opacity-60"
+                disabled={pending}
+                onClick={sendTestAlert}
+                type="button"
+              >
+                <Send className="size-4" />
+                Send test
+              </button>
+            ) : null}
+            <button
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-3 text-xs font-bold text-[var(--background)] disabled:opacity-60"
+              disabled={pending}
+              onClick={enabled ? disableAlerts : enableAlerts}
+              type="button"
+            >
+              {pending ? (
+                <LoaderCircle className="size-4 animate-spin" />
+              ) : enabled ? (
+                <BellOff className="size-4" />
+              ) : (
+                <BellRing className="size-4" />
+              )}
+              {enabled ? "Turn off" : "Enable"}
+            </button>
+          </div>
         ) : null}
       </div>
     </div>

@@ -750,6 +750,12 @@ const checks = [
       publicSmoke.includes('redirectIncludes: "/login"'),
   },
   {
+    label: "public smoke covers unauthenticated native test delivery",
+    ok:
+      publicSmoke.includes('path: "/api/push/devices/test"') &&
+      publicSmoke.includes('"Sign in required."'),
+  },
+  {
     label: "admin mail test failures stay server-side and operator-safe",
     ok:
       adminMailTestRoute.includes(

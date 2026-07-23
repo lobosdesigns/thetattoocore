@@ -3,6 +3,7 @@ import {
   buildNativeMessage,
   classifyFcmResponse,
   nativePushDeliveryReady,
+  nativePushSenderReady,
   retryDelaySeconds,
 } from "../src/lib/native-push/sender-core.ts";
 import {
@@ -22,6 +23,20 @@ const readyEnvironment = {
 };
 
 assert.equal(nativePushDeliveryReady(readyEnvironment), true);
+assert.equal(
+  nativePushSenderReady({
+    ...readyEnvironment,
+    TTC_NATIVE_PUSH_DELIVERY_ENABLED: "false",
+  }),
+  true,
+);
+assert.equal(
+  nativePushDeliveryReady({
+    ...readyEnvironment,
+    TTC_NATIVE_PUSH_DELIVERY_ENABLED: "false",
+  }),
+  false,
+);
 
 for (const key of Object.keys(readyEnvironment)) {
   assert.equal(
@@ -43,12 +58,24 @@ const ios = buildNativeMessage({
   token: "device-token",
   url: "/notifications",
 });
+const testAlert = buildNativeMessage({
+  body: "Tap to verify app alerts.",
+  notificationId: "33333333-3333-4333-8333-333333333333",
+  platform: "android",
+  title: "Test app alert",
+  token: "device-token",
+  type: "test",
+  url: "/notifications",
+});
 
 assert.equal(android.message.notification.title, "New message");
 assert.equal(android.message.notification.body, "You have a new message.");
 assert.equal(android.message.android.priority, "high");
 assert.equal(ios.message.apns.headers["apns-priority"], "10");
 assert.equal(ios.message.data.url, "/notifications");
+assert.equal(testAlert.message.data.type, "test");
+assert.equal(testAlert.message.notification.title, "Test app alert");
+assert.equal(testAlert.message.notification.body, "Tap to verify app alerts.");
 assert.doesNotMatch(
   JSON.stringify([android, ios]),
   /message body|booking|payment|tracking/i,
@@ -111,6 +138,7 @@ assert.equal(nativePushQaBuildAllowed("ios", "1.0", "4"), true);
 assert.equal(nativePushQaBuildAllowed("ios", "1.0", "3"), false);
 
 console.log("PASS native delivery gates fail closed");
+console.log("PASS controlled test delivery does not open the global delivery gate");
 console.log("PASS native payloads stay generic and platform-aware");
 console.log("PASS native response classification protects device registrations");
 console.log("PASS native retry delays are bounded");

@@ -22,6 +22,7 @@ const source = {
   control: read("src/app/push-subscription-control.tsx"),
   customWorker: read("custom-worker.ts"),
   deviceApi: read("src/app/api/push/devices/route.ts"),
+  deviceTestApi: read("src/app/api/push/devices/test/route.ts"),
   deliveryMigration: read(
     "supabase/migrations/20260722225151_native_push_delivery_outbox.sql",
   ),
@@ -216,6 +217,39 @@ const checks = [
       ),
   },
   {
+    label: "controlled native delivery test is self-only and exact-build scoped",
+    ok:
+      source.deviceTestApi.includes("supabase.auth.getClaims()") &&
+      source.deviceTestApi.includes("nativePushQaRoleAllowed(profile.role)") &&
+      source.deviceTestApi.includes("nativePushDeviceCookie") &&
+      source.deviceTestApi.includes("parseNativePushCookie") &&
+      source.deviceTestApi.includes('.eq("profile_id", profile.id)') &&
+      source.deviceTestApi.includes(
+        '.eq("installation_id", deviceCookie.installationId)',
+      ) &&
+      source.deviceTestApi.includes('.eq("is_active", true)') &&
+      source.deviceTestApi.includes("nativePushQaBuildAllowed(") &&
+      source.deviceTestApi.includes(
+        "nativePushSenderReady(nativePushEnvironment)",
+      ) &&
+      source.deviceTestApi.includes(
+        "sendNativePushMessage(nativePushEnvironment",
+      ) &&
+      source.deviceTestApi.includes('title: "Test app alert"') &&
+      source.deviceTestApi.includes('body: "Tap to verify app alerts."') &&
+      source.deviceTestApi.includes('url: "/notifications"') &&
+      source.deviceTestApi.includes('result === "token"') &&
+      !source.deviceTestApi.includes("console.") &&
+      source.senderCore.includes("nativePushSenderReady") &&
+      source.sender.includes("export async function sendNativePushMessage") &&
+      source.provider.includes('fetch("/api/push/devices/test"') &&
+      source.provider.includes("testAvailable: qaBuildRestricted") &&
+      source.control.includes("Send test") &&
+      source.control.includes(
+        "Test alert sent. Lock this device, then tap the alert.",
+      ),
+  },
+  {
     label: "native registration status is account-bound before automatic refresh",
     ok:
       source.provider.includes("deviceRegistrationEnabled") &&
@@ -358,8 +392,8 @@ const checks = [
       source.sender.includes("p_device_token_hash: deactivateDevice") &&
       source.sender.includes("retryDelaySeconds(") &&
       source.sender.includes("job.attempt_count") &&
-      source.senderCore.includes('body: "You have a new message."') &&
-      source.senderCore.includes('title: "New message"') &&
+      source.senderCore.includes('body = "You have a new message."') &&
+      source.senderCore.includes('title = "New message"') &&
       !source.sender.includes("console.") &&
       !deliveryTableSql.includes("device_token") &&
       !deliveryTableSql.includes(" token "),

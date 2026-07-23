@@ -367,6 +367,13 @@ const checks = [
     headers: false,
   },
   {
+    method: "POST",
+    path: "/api/push/devices/test",
+    status: [401],
+    includes: ['"Sign in required."'],
+    headers: false,
+  },
+  {
     body: JSON.stringify({
       endpoint: "https://example.com/push",
       keys: { auth: "1234567890", p256dh: "123456789012345678901" },

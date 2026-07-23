@@ -38,14 +38,18 @@ type NativeNotificationContextValue = {
   disable: () => Promise<void>;
   enable: () => Promise<"denied" | "enabled">;
   enabled: boolean;
+  sendTest: () => Promise<void>;
   supported: boolean;
+  testAvailable: boolean;
 };
 
 const NativeNotificationContext = createContext<NativeNotificationContextValue>({
   disable: async () => undefined,
   enable: async () => "denied",
   enabled: false,
+  sendTest: async () => undefined,
   supported: false,
+  testAvailable: false,
 });
 
 const installationIdKey = "ttc_native_push_installation_id";
@@ -351,9 +355,31 @@ export function NativeNotificationProvider({
     if (removalError) throw removalError;
   }, [qaBuildRestricted, setupEnabled]);
 
+  const sendTest = useCallback(async () => {
+    const response = await fetch("/api/push/devices/test", {
+      method: "POST",
+    });
+
+    if (!response.ok) throw new Error("Test alert could not be sent.");
+  }, []);
+
   const value = useMemo(
-    () => ({ disable, enable, enabled, supported }),
-    [disable, enable, enabled, supported],
+    () => ({
+      disable,
+      enable,
+      enabled,
+      sendTest,
+      supported,
+      testAvailable: qaBuildRestricted,
+    }),
+    [
+      disable,
+      enable,
+      enabled,
+      qaBuildRestricted,
+      sendTest,
+      supported,
+    ],
   );
 
   return (

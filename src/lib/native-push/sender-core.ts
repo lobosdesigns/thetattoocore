@@ -9,10 +9,13 @@ export type NativePushDeliveryEnvironment = {
   TTC_NATIVE_PUSH_REGISTRATION_ENABLED?: string;
 };
 
-type NativeMessageInput = {
+export type NativeMessageInput = {
+  body?: string;
   notificationId: string;
   platform: "android" | "ios";
   token: string;
+  title?: string;
+  type?: string;
   url: string;
 };
 
@@ -34,13 +37,12 @@ export type FcmResponseKind =
   | "token"
   | "unknown";
 
-export function nativePushDeliveryReady(
+export function nativePushSenderReady(
   env: NativePushDeliveryEnvironment,
 ) {
   return (
     env.TTC_DEVICE_ALERT_SETUP_ENABLED === "true" &&
     env.TTC_NATIVE_PUSH_REGISTRATION_ENABLED === "true" &&
-    env.TTC_NATIVE_PUSH_DELIVERY_ENABLED === "true" &&
     Boolean(env.NEXT_PUBLIC_SUPABASE_URL) &&
     Boolean(env.SUPABASE_SERVICE_ROLE_KEY) &&
     Boolean(env.FIREBASE_PROJECT_ID) &&
@@ -49,21 +51,33 @@ export function nativePushDeliveryReady(
   );
 }
 
+export function nativePushDeliveryReady(
+  env: NativePushDeliveryEnvironment,
+) {
+  return (
+    nativePushSenderReady(env) &&
+    env.TTC_NATIVE_PUSH_DELIVERY_ENABLED === "true"
+  );
+}
+
 export function buildNativeMessage({
+  body = "You have a new message.",
   notificationId,
   platform,
   token,
+  title = "New message",
+  type = "message",
   url,
 }: NativeMessageInput) {
   const message = {
     data: {
       notificationId,
-      type: "message",
+      type,
       url,
     },
     notification: {
-      body: "You have a new message.",
-      title: "New message",
+      body,
+      title,
     },
     token,
   };

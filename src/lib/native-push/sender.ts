@@ -8,6 +8,9 @@ import {
   buildNativeMessage,
   classifyFcmResponse,
   nativePushDeliveryReady,
+  nativePushSenderReady,
+  type FcmResponseKind,
+  type NativeMessageInput,
   type NativePushDeliveryEnvironment,
   retryDelaySeconds,
 } from "./sender-core";
@@ -152,6 +155,43 @@ async function serviceAccessToken(
   };
 
   return payload.access_token;
+}
+
+export async function sendNativePushMessage(
+  env: NativePushDeliveryEnvironment,
+  input: NativeMessageInput,
+  options: { fetcher?: typeof fetch } = {},
+): Promise<FcmResponseKind | "disabled"> {
+  if (!nativePushSenderReady(env)) return "disabled";
+
+  const fetcher = options.fetcher ?? fetch;
+  let accessToken: string;
+
+  try {
+    accessToken = await serviceAccessToken(env, fetcher);
+  } catch {
+    return "credentials";
+  }
+
+  try {
+    const response = await fetcher(
+      `https://fcm.googleapis.com/v1/projects/${encodeURIComponent(env.FIREBASE_PROJECT_ID!)}/messages:send`,
+      {
+        body: JSON.stringify(buildNativeMessage(input)),
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+          "content-type": "application/json",
+        },
+        method: "POST",
+        signal: AbortSignal.timeout(8_000),
+      },
+    );
+    const payload = await response.json().catch(() => null);
+
+    return classifyFcmResponse(response.status, payload);
+  } catch {
+    return "temporary";
+  }
 }
 
 function preferenceProfile(job: NativeDeliveryJob): NotificationPreferenceProfile {
