@@ -8,6 +8,19 @@ function read(path) {
   return existsSync(path) ? readFileSync(path, "utf8") : "";
 }
 
+function plistString(source, key) {
+  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  return (
+    source.match(
+      new RegExp(
+        `<key>\\s*${escapedKey}\\s*</key>\\s*<string>\\s*([^<]+?)\\s*</string>`,
+        "s",
+      ),
+    )?.[1]?.trim() ?? ""
+  );
+}
+
 const files = {
   androidAppBuild: `${wrapperRoot}/android/app/build.gradle`,
   androidConfig: `${wrapperRoot}/android/app/google-services.json`,
@@ -39,6 +52,13 @@ const files = {
 const source = Object.fromEntries(
   Object.entries(files).map(([key, path]) => [key, read(path)]),
 );
+const expectedIosBundleId = "com.thetattoocore.app";
+const iosPrivateConfigReady =
+  existsSync(files.iosConfig) &&
+  plistString(source.iosConfig, "BUNDLE_ID") === expectedIosBundleId &&
+  ["GOOGLE_APP_ID", "GCM_SENDER_ID", "PROJECT_ID"].every((key) =>
+    Boolean(plistString(source.iosConfig, key)),
+  );
 
 function filesUnder(root) {
   if (!existsSync(root)) return [];
@@ -116,7 +136,7 @@ const checks = [
   },
   {
     key: "ios_private_config",
-    ready: existsSync(files.iosConfig),
+    ready: iosPrivateConfigReady,
   },
   {
     key: "ios_config_target",
@@ -207,8 +227,10 @@ const checks = [
       source.nativeDeliverySender.includes("allowsNoisyDeliveryNow") &&
       source.nativeDeliverySender.includes("suppress_native_push_delivery") &&
       source.nativeDeliverySenderCore.includes("classifyFcmResponse") &&
-      source.nativeDeliverySenderCore.includes('title: "New message"') &&
-      source.nativeDeliverySenderCore.includes('body: "You have a new message."'),
+      source.nativeDeliverySenderCore.includes('title = "New message"') &&
+      source.nativeDeliverySenderCore.includes(
+        'body = "You have a new message."',
+      ),
   },
   {
     key: "server_delivery_schedule",

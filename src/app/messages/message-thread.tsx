@@ -1,9 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
-import { Check, CheckCheck, Trash2 } from "lucide-react";
+import { Check, CheckCheck, LoaderCircle, Trash2 } from "lucide-react";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { createClient } from "@/lib/supabase/client";
@@ -59,29 +65,100 @@ function ProfileAvatarLink({ profile }: { profile?: Profile }) {
   );
 }
 
+function compareMessages(left: ThreadMessage, right: ThreadMessage) {
+  const createdAtDifference =
+    new Date(left.created_at).getTime() - new Date(right.created_at).getTime();
+
+  return createdAtDifference || left.id.localeCompare(right.id);
+}
+
+function mergeMessages(
+  currentMessages: ThreadMessage[],
+  incomingMessages: ThreadMessage[],
+) {
+  const messageById = new Map(
+    currentMessages.map((message) => [message.id, message]),
+  );
+
+  for (const message of incomingMessages) {
+    messageById.set(message.id, message);
+  }
+
+  return [...messageById.values()].sort(compareMessages);
+}
+
 export function MessageThread({
   conversationId,
   currentUserId,
+  hasEarlierMessages,
   initialMessages,
   otherLastReadAt,
   profiles,
 }: {
   conversationId: string;
   currentUserId: string;
+  hasEarlierMessages: boolean;
   initialMessages: ThreadMessage[];
   otherLastReadAt: string | null;
   profiles: Profile[];
 }) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const previousConversationIdRef = useRef<string | null>(null);
+  const previousLatestMessageIdRef = useRef<string | null>(null);
+  const previousOldestMessageIdRef = useRef<string | null>(null);
+  const previousMessageCountRef = useRef(0);
+  const previousScrollHeightRef = useRef(0);
+  const [deletedMessageIds, setDeletedMessageIds] = useState<string[]>([]);
+  const [historyMessage, setHistoryMessage] = useState("");
+  const [historyMessages, setHistoryMessages] = useState<ThreadMessage[]>([]);
+  const [loadingEarlier, setLoadingEarlier] = useState(false);
+  const [moreHistoryAvailable, setMoreHistoryAvailable] =
+    useState(hasEarlierMessages);
   const router = useRouter();
+  const messages = useMemo(() => {
+    const deletedIds = new Set(deletedMessageIds);
+
+    return mergeMessages(historyMessages, initialMessages).filter(
+      (message) => !deletedIds.has(message.id),
+    );
+  }, [deletedMessageIds, historyMessages, initialMessages]);
   const profileById = useMemo(
     () => new Map(profiles.map((profile) => [profile.id, profile])),
     [profiles],
   );
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: "end" });
-  }, [initialMessages.length]);
+  useLayoutEffect(() => {
+    const container = scrollRef.current;
+
+    if (!container) return;
+
+    const oldestMessageId = messages[0]?.id ?? null;
+    const latestMessageId = messages.at(-1)?.id ?? null;
+    const conversationChanged =
+      previousConversationIdRef.current !== conversationId;
+    const loadedEarlierMessages =
+      !conversationChanged &&
+      messages.length > previousMessageCountRef.current &&
+      latestMessageId === previousLatestMessageIdRef.current &&
+      oldestMessageId !== previousOldestMessageIdRef.current;
+
+    if (conversationChanged || previousConversationIdRef.current === null) {
+      container.scrollTop = container.scrollHeight;
+    } else if (loadedEarlierMessages) {
+      const addedHeight =
+        container.scrollHeight - previousScrollHeightRef.current;
+      container.scrollTop += Math.max(0, addedHeight);
+    } else if (latestMessageId !== previousLatestMessageIdRef.current) {
+      bottomRef.current?.scrollIntoView({ block: "end" });
+    }
+
+    previousConversationIdRef.current = conversationId;
+    previousLatestMessageIdRef.current = latestMessageId;
+    previousOldestMessageIdRef.current = oldestMessageId;
+    previousMessageCountRef.current = messages.length;
+    previousScrollHeightRef.current = container.scrollHeight;
+  }, [conversationId, messages]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -118,7 +195,19 @@ export function MessageThread({
           schema: "public",
           table: "messages",
         },
-        refreshThread,
+        (event) => {
+          const deletedMessageId =
+            typeof event.old?.id === "string" ? event.old.id : null;
+
+          if (deletedMessageId) {
+            setDeletedMessageIds((currentIds) =>
+              currentIds.includes(deletedMessageId)
+                ? currentIds
+                : [...currentIds, deletedMessageId],
+            );
+          }
+          refreshThread();
+        },
       )
       .on(
         "postgres_changes",
@@ -139,9 +228,78 @@ export function MessageThread({
     };
   }, [conversationId, router]);
 
+  async function loadEarlierMessages() {
+    const oldestMessage = messages[0];
+
+    if (!oldestMessage || loadingEarlier) return;
+
+    setLoadingEarlier(true);
+    setHistoryMessage("");
+
+    try {
+      const query = new URLSearchParams({
+        beforeCreatedAt: oldestMessage.created_at,
+        beforeId: oldestMessage.id,
+        conversationId,
+      });
+      const response = await fetch(`/api/messages/history?${query}`, {
+        cache: "no-store",
+      });
+
+      if (!response.ok) throw new Error("Earlier messages could not be loaded.");
+
+      const payload = (await response.json()) as {
+        hasMore?: unknown;
+        messages?: ThreadMessage[];
+      };
+      const earlierMessages = Array.isArray(payload.messages)
+        ? payload.messages
+        : [];
+
+      setHistoryMessages((currentMessages) =>
+        mergeMessages(currentMessages, earlierMessages),
+      );
+      setMoreHistoryAvailable(payload.hasMore === true);
+
+      if (payload.hasMore !== true) {
+        setHistoryMessage("Start of conversation reached.");
+      }
+    } catch {
+      setHistoryMessage("Earlier messages could not be loaded. Try again.");
+    } finally {
+      setLoadingEarlier(false);
+    }
+  }
+
   return (
-    <div className="min-h-0 min-w-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-4 py-5">
-      {initialMessages.map((message) => {
+    <div
+      className="min-h-0 min-w-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-4 py-5"
+      ref={scrollRef}
+    >
+      {moreHistoryAvailable ? (
+        <div className="flex flex-col items-center gap-2 pb-1">
+          <button
+            className="ttc-surface flex h-10 items-center justify-center gap-2 rounded-md border px-4 text-sm font-bold disabled:opacity-60"
+            disabled={loadingEarlier}
+            onClick={loadEarlierMessages}
+            type="button"
+          >
+            {loadingEarlier ? (
+              <LoaderCircle className="size-4 animate-spin" />
+            ) : null}
+            {loadingEarlier ? "Loading earlier messages" : "Load 100 earlier messages"}
+          </button>
+          {historyMessage ? (
+            <p className="text-xs text-[var(--muted-strong)]">{historyMessage}</p>
+          ) : null}
+        </div>
+      ) : null}
+      {!moreHistoryAvailable && historyMessage ? (
+        <p className="text-center text-xs text-[var(--muted-strong)]">
+          {historyMessage}
+        </p>
+      ) : null}
+      {messages.map((message) => {
         const mine = message.sender_id === currentUserId;
         const sender = profileById.get(message.sender_id);
         const hasBeenRead =

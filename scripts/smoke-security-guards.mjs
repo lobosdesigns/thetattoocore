@@ -28,6 +28,10 @@ const notificationPage = readFileSync("src/app/notifications/page.tsx", "utf8");
 const notificationRoute = readFileSync("src/lib/notification-route.ts", "utf8");
 const mainActions = readFileSync("src/app/actions.ts", "utf8");
 const messageActions = readFileSync("src/app/messages/actions.ts", "utf8");
+const messageHistoryApi = readFileSync(
+  "src/app/api/messages/history/route.ts",
+  "utf8",
+);
 const messagePage = readFileSync("src/app/messages/page.tsx", "utf8");
 const messageThread = readFileSync("src/app/messages/message-thread.tsx", "utf8");
 const savedPage = readFileSync("src/app/saved/page.tsx", "utf8");
@@ -217,6 +221,18 @@ const generatedDirectoryNames = new Set([
   "dist",
   "node_modules",
 ]);
+
+function appearsInOrder(source, snippets) {
+  let cursor = 0;
+
+  return snippets.every((snippet) => {
+    const index = source.indexOf(snippet, cursor);
+    if (index === -1) return false;
+
+    cursor = index + snippet.length;
+    return true;
+  });
+}
 
 function collectFiles(dir, predicate, files = []) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -753,6 +769,21 @@ const checks = [
     label: "public smoke covers unauthenticated native test delivery",
     ok:
       publicSmoke.includes('path: "/api/push/devices/test"') &&
+      publicSmoke.includes('"Sign in required."'),
+  },
+  {
+    label: "DM history pagination authenticates before cursor handling",
+    ok:
+      appearsInOrder(messageHistoryApi, [
+        "supabase.auth.getClaims()",
+        'if (!userId)',
+        'request.nextUrl.searchParams.get("conversationId")',
+      ]) &&
+      messageHistoryApi.includes('.from("conversation_members")') &&
+      messageHistoryApi.includes('.eq("user_id", userId)') &&
+      messageHistoryApi.includes('"Earlier messages could not be loaded."') &&
+      !messageHistoryApi.includes("console.") &&
+      publicSmoke.includes('path: "/api/messages/history"') &&
       publicSmoke.includes('"Sign in required."'),
   },
   {

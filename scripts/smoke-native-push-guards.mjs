@@ -97,6 +97,15 @@ const checks = [
         source.nativeProbe.includes("NATIVE_PUSH_QA staging_guard=") &&
         source.nativeProbe.includes("NATIVE_PUSH_QA server_delivery_result=") &&
         source.nativeProbe.includes("NATIVE_PUSH_QA activation_result=") &&
+        source.nativeProbe.includes(
+          'const expectedIosBundleId = "com.thetattoocore.app"',
+        ) &&
+        source.nativeProbe.includes(
+          'plistString(source.iosConfig, "BUNDLE_ID") === expectedIosBundleId',
+        ) &&
+        source.nativeProbe.includes(
+          '["GOOGLE_APP_ID", "GCM_SENDER_ID", "PROJECT_ID"]',
+        ) &&
         activationKeys.includes('"android_permission_enabled"') &&
         activationKeys.includes('"ios_push_capability"') &&
         activationKeys.includes('"delivery_runtime_activation"') &&

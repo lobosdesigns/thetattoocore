@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 const appActions = readFileSync("src/app/actions.ts", "utf8");
 const messageActions = readFileSync("src/app/messages/actions.ts", "utf8");
 const messagePage = readFileSync("src/app/messages/page.tsx", "utf8");
+const messageHistoryApi = readFileSync("src/app/api/messages/history/route.ts", "utf8");
 const messageStartForm = readFileSync("src/app/messages/message-start-form.tsx", "utf8");
 const messageThread = readFileSync("src/app/messages/message-thread.tsx", "utf8");
 const columnTabs = readFileSync("src/app/column-tabs.tsx", "utf8");
@@ -161,6 +162,27 @@ const checks = [
       messageStartForm.includes('href={`/messages?to=${encodeURIComponent(profile.username)}`}') &&
       messageStartForm.includes('aria-current={active ? "true" : undefined}') &&
       !messageStartForm.includes("onClick={() => selectProfile(profile)}"),
+  },
+  {
+    label: "DM threads can load older history without losing scroll position",
+    ok:
+      messagePage.includes(".limit(101)") &&
+      messagePage.includes("selectedMessageRows.length > 100") &&
+      messagePage.includes("selectedMessageRows.slice(0, 100).toReversed()") &&
+      messagePage.includes("hasEarlierMessages={hasEarlierThreadMessages}") &&
+      messagePage.includes("key={selectedConversation.id}") &&
+      messageThread.includes("hasEarlierMessages: boolean") &&
+      messageThread.includes("Load 100 earlier messages") &&
+      messageThread.includes('fetch(`/api/messages/history?${query}`') &&
+      messageThread.includes("mergeMessages(currentMessages, earlierMessages)") &&
+      messageThread.includes("const loadedEarlierMessages =") &&
+      messageThread.includes("container.scrollTop += Math.max(0, addedHeight)") &&
+      messageHistoryApi.includes("supabase.auth.getClaims()") &&
+      messageHistoryApi.includes('.from("conversation_members")') &&
+      messageHistoryApi.includes('.eq("user_id", userId)') &&
+      messageHistoryApi.includes(".limit(messagePageSize + 1)") &&
+      messageHistoryApi.includes(".createSignedUrl(attachment.storage_path, 3600)") &&
+      !messageHistoryApi.includes("console."),
   },
   {
     label: "DM start action reuses the newest shared thread deterministically",

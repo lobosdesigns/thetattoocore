@@ -869,18 +869,23 @@ export default async function MessagesPage({
     redirect(messagesInboxPath("Conversation was not found or is no longer available."));
   }
 
+  let hasEarlierThreadMessages = false;
+
   if (selectedConversation) {
     const { data: selectedConversationMessages } = await supabase
       .from("messages")
       .select("id, body, conversation_id, sender_id, created_at")
       .eq("conversation_id", selectedConversation.id)
       .order("created_at", { ascending: false })
-      .limit(100)
+      .order("id", { ascending: false })
+      .limit(101)
       .returns<Message[]>();
+    const selectedMessageRows = selectedConversationMessages ?? [];
+    hasEarlierThreadMessages = selectedMessageRows.length > 100;
 
     messagesByConversation.set(
       selectedConversation.id,
-      (selectedConversationMessages ?? []).toReversed(),
+      selectedMessageRows.slice(0, 100).toReversed(),
     );
   }
 
@@ -1214,10 +1219,9 @@ export default async function MessagesPage({
               <MessageThread
                 conversationId={selectedConversation.id}
                 currentUserId={claims.sub}
+                hasEarlierMessages={hasEarlierThreadMessages}
                 initialMessages={selectedMessagesWithAttachments}
-                key={`${selectedConversation.id}:${
-                  selectedMessages[selectedMessages.length - 1]?.id ?? "empty"
-                }`}
+                key={selectedConversation.id}
                 otherLastReadAt={selectedConversation.otherLastReadAt}
                 profiles={(profiles ?? []).map((profile) => ({
                   display_name: profile.display_name,

@@ -26,6 +26,7 @@ const read = (path) =>
   existsSync(path) ? readFileSync(path, "utf8").replace(/\r\n/g, "\n").trim() : "";
 const source = Object.fromEntries(Object.entries(files).map(([key, path]) => [key, read(path)]));
 const packageJson = readFileSync("package.json", "utf8");
+const packageScripts = JSON.parse(packageJson).scripts ?? {};
 const publicMetadataKeys = [
   "appleDescription",
   "appleKeywords",
@@ -41,6 +42,22 @@ const publicMetadataKeys = [
 const publicMetadataText = publicMetadataKeys.map((key) => source[key]).join("\n").toLowerCase();
 const storeScreenshotText = source.screenshotGenerator.toLowerCase();
 const currentBlockerMatrix = source.readiness.slice(source.readiness.indexOf("## Public Distribution Blocker Matrix"));
+
+function hasOrderedScriptSteps(scriptName, expectedSteps) {
+  const steps = String(packageScripts[scriptName] ?? "")
+    .split(/\s*&&\s*/)
+    .map((step) => step.trim())
+    .filter(Boolean);
+  let cursor = 0;
+
+  return expectedSteps.every((expectedStep) => {
+    const index = steps.indexOf(expectedStep, cursor);
+    if (index === -1) return false;
+
+    cursor = index + 1;
+    return true;
+  });
+}
 
 function pngInfo(path) {
   if (!existsSync(path)) return null;
@@ -441,10 +458,41 @@ const checks = [
   {
     label: "store metadata README keeps console handoff fields private and complete",
     ok:
-      packageJson.includes('"verify:store-release"') &&
-      packageJson.includes('"verify:app-review-preflight"') &&
-      packageJson.includes("npm run lint && npm run build && npm run smoke:env && npm run smoke:content && npm run smoke:store && npm run smoke:pwa && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
-      packageJson.includes("npm run lint && npm run build && npm run smoke:env && npm run smoke:security && npm run smoke:content && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run test:native-push-delivery && npm run smoke:native-push && npm run smoke:app-links && npm run qa:android-device && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios") &&
+      hasOrderedScriptSteps("verify:store-release", [
+        "npm run lint",
+        "npm run build",
+        "npm run smoke:env",
+        "npm run smoke:content",
+        "npm run smoke:store",
+        "npm run smoke:pwa",
+        "npm run smoke:handoff",
+        "npm run smoke:docs",
+        "npm run smoke:public",
+        "npm run smoke:mobile",
+        "npm run smoke:mobile:ios",
+      ]) &&
+      hasOrderedScriptSteps("verify:app-review-preflight", [
+        "npm run lint",
+        "npm run build",
+        "npm run smoke:env",
+        "npm run smoke:security",
+        "npm run smoke:content",
+        "npm run smoke:theme",
+        "npm run smoke:payments",
+        "npm run smoke:store",
+        "npm run smoke:pwa",
+        "npm run smoke:native",
+        "npm run test:native-push-delivery",
+        "npm run smoke:native-push",
+        "npm run smoke:app-links",
+        "npm run qa:android-device",
+        "npm run smoke:handoff",
+        "npm run test:release-evidence-gate",
+        "npm run smoke:docs",
+        "npm run smoke:public",
+        "npm run smoke:mobile",
+        "npm run smoke:mobile:ios",
+      ]) &&
       source.readme.includes("npm.cmd run verify:app-review-preflight") &&
       source.readme.includes("npm.cmd run verify:store-release") &&
       source.readme.includes("This checks lint, production build, production environment boundaries") &&
