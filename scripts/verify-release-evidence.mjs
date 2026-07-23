@@ -17,7 +17,23 @@ function optionValue(name, fallback = "") {
 }
 
 const evidencePath = optionValue("--evidence", DEFAULT_EVIDENCE_PATH);
-const expectedReleaseCandidate = optionValue("--release-candidate");
+const expectedReleaseCandidate = optionValue(
+  "--release-candidate",
+  process.env.TTC_RELEASE_CANDIDATE ?? "",
+);
+const releaseCandidatePattern = /^[A-Za-z0-9][A-Za-z0-9._-]{6,127}$/;
+
+if (!expectedReleaseCandidate) {
+  console.error(
+    "FAIL current web release candidate is required. Pass --release-candidate or set TTC_RELEASE_CANDIDATE.",
+  );
+  process.exit(1);
+}
+
+if (!releaseCandidatePattern.test(expectedReleaseCandidate)) {
+  console.error("FAIL current web release candidate format is invalid.");
+  process.exit(1);
+}
 
 if (
   testFixture &&
@@ -209,14 +225,12 @@ if (releaseCandidate) {
   );
 
   requireValue("Release Candidate", "web deploy version", webDeploy?.Value);
-  if (expectedReleaseCandidate) {
-    requireContains(
-      "Release Candidate",
-      "web deploy does not match the requested release candidate",
-      webDeploy?.Value,
-      expectedReleaseCandidate,
-    );
-  }
+  requireContains(
+    "Release Candidate",
+    "web deploy does not match the requested release candidate",
+    webDeploy?.Value,
+    expectedReleaseCandidate,
+  );
   requireContains(
     "Release Candidate",
     "Android Alpha build must be exact build 1.0.2 (3)",

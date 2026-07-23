@@ -42,7 +42,7 @@
     "smoke:native": "node scripts/smoke-native-wrapper.mjs",
     "smoke:app-links": "node scripts/smoke-app-link-associations.mjs",
     "smoke:handoff": "node scripts/smoke-private-handoff-template.mjs",
-    "test:release-evidence-gate": "node scripts/verify-release-evidence.mjs --test-fixture --evidence scripts/fixtures/release-evidence.passed.md --release-candidate fixture-release-candidate",
+    "test:release-evidence-gate": "node scripts/test-release-evidence-gate.mjs",
     "smoke:store": "node scripts/smoke-store-metadata.mjs",
     "smoke:hydration": "node scripts/smoke-hydration-guards.mjs",
     "smoke:security": "node scripts/smoke-security-guards.mjs",

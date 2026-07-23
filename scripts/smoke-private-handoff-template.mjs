@@ -11,6 +11,10 @@ const evidenceFixture = readFileSync(
   "scripts/fixtures/release-evidence.passed.md",
   "utf8",
 );
+const evidenceGateTest = readFileSync(
+  "scripts/test-release-evidence-gate.mjs",
+  "utf8",
+);
 
 const checks = [
   {
@@ -20,7 +24,7 @@ const checks = [
       packageJson.includes('"prepare:private-console-tabs": "node scripts/write-private-console-tabs.mjs"') &&
       packageJson.includes('"smoke:handoff": "node scripts/smoke-private-handoff-template.mjs"') &&
       packageJson.includes('"verify:release-evidence": "node scripts/verify-release-evidence.mjs"') &&
-      packageJson.includes('"test:release-evidence-gate": "node scripts/verify-release-evidence.mjs --test-fixture') &&
+      packageJson.includes('"test:release-evidence-gate": "node scripts/test-release-evidence-gate.mjs"') &&
       packageJson.includes("npm run smoke:native && npm run test:native-push-delivery && npm run smoke:native-push && npm run smoke:app-links && npm run smoke:handoff && npm run smoke:docs") &&
       packageJson.includes("npm run smoke:payments && npm run smoke:payment-cutover && npm run smoke:pwa && npm run smoke:security && npm run smoke:handoff && npm run smoke:docs") &&
       packageJson.includes("npm run smoke:store && npm run smoke:pwa && npm run smoke:handoff && npm run smoke:docs") &&
@@ -155,6 +159,11 @@ const checks = [
       evidenceGate.includes('const EXPECTED_IOS_REVIEW_BUILD = "1.0 (3)"') &&
       evidenceGate.includes("private release evidence requirement(s) remain incomplete") &&
       evidenceGate.includes("--test-fixture") &&
+      evidenceGate.includes("process.env.TTC_RELEASE_CANDIDATE") &&
+      evidenceGate.includes("current web release candidate is required") &&
+      evidenceGateTest.includes("release evidence rejects an unbound candidate") &&
+      evidenceGateTest.includes("release evidence rejects a stale candidate") &&
+      evidenceGateTest.includes("release evidence rejects an invalid candidate format") &&
       !evidenceGate.includes("console.error(markdown") &&
       evidenceFixture.includes("fixture-release-candidate") &&
       evidenceFixture.includes("Closed testing - Alpha 1.0.2 (3)") &&
