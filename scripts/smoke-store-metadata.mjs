@@ -505,22 +505,18 @@ const checks = [
       source.readiness.includes("Apple iOS `1.0` build `1.0 (3)` is submitted for App Review") &&
       source.readiness.includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
       source.readiness.includes("age/content rating, Accessibility Nutrition Labels, applicable tester evidence, and final console validation") &&
-      source.readiness.includes("Closed testing - Alpha serves API 36 release `1.0.1 (2)`") &&
+      source.readiness.includes("Closed testing - Alpha is Active with API 36 release `1.0.2 (3)`") &&
       source.readiness.includes("existing Google Group community") &&
-      source.readiness.includes("authorized Android 16 device confirmed the installed build and target SDK 36") &&
-      source.readiness.includes("one Android install of `1.0.1 (2)` is verified") &&
+      source.readiness.includes("authorized Android 16 review phone installed exact Alpha build `1.0.2 (3)`") &&
+      source.readiness.includes("One exact Android Alpha build `1.0.2 (3)` install is verified") &&
       source.readiness.includes("organization account is not subject to the personal-account 12-tester/14-day production-access rule") &&
-      source.readiness.includes("production rollout of the same build was sent for review") &&
-      source.readiness.includes("Production release `1.0.1 (2)` was sent for review") &&
-      source.readiness.includes("Publishing Overview shows `Changes in review`") &&
-      source.readiness.includes("Do not restart or remove that review") &&
+      source.readiness.includes("Production release `1.0.1 (2)` is published separately at 100%") &&
+      source.readiness.includes("Publishing Overview reports no unpublished changes") &&
       !source.readiness.includes("awaiting final submit-for-review confirmation") &&
-      source.readiness.includes("automated pre-review checks finished successfully") &&
-      source.readiness.includes("release minification is disabled") &&
       !currentBlockerMatrix.includes("14-day production-access evidence still needs eligible tester opt-in/install proof") &&
       source.readiness.includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&
       source.readiness.includes("Age 18+ override") &&
-      source.readiness.includes("Monitor App Review status and reviewer messages") &&
+      source.readiness.includes("Monitor App Review and internal build `1.0 (4)` install/QA results") &&
       source.readiness.includes("group-member opt-in/install proof and 14-day production-access tester evidence if required") &&
       currentBlockerMatrix.includes("applicable tester evidence") &&
       source.readiness.includes("build selection, reviewer test access, developer/legal entity, reviewer contact phone") &&

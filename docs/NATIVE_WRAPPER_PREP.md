@@ -171,11 +171,11 @@ public-submission build.
 
 | Release path | Checked-in compile/target SDK | Required action | Repo-safe result |
 | --- | ---: | --- | --- |
-| Current Google Play closed test | Published release `1.0.1 (2)` and checked-in wrapper are `36 / 36` | Keep version code `2` as the served tester baseline and collect tester participation/duration evidence. Do not upload the same version code again. | Record release track, version code/name, test date, device model, and pass/fail only. |
-| Controlled Android alert-registration candidate | Checked-in release candidate `1.0.2 (3)` is `36 / 36` | Build and sign a fresh bundle, place it in internal testing first, and keep native delivery off until explicit opt-in, exact-build token registration, and real-device evidence pass. | Record release track, version code/name, target SDK, device date, and pass/fail only. |
-| Google Play replacement or update on or after August 31, 2026 | `36 / 36` required; current closed-test release is version code `2` / version name `1.0.1` | Increment above version code `2`, build from the checked-in API 36 wrapper, sign a fresh upload bundle, and rerun wrapper plus real-device QA. | Record API `36 / 36` rebuild proof, version code/name, device QA date, and pass/fail only. |
+| Current Google Play closed test | Active release `1.0.2 (3)` and checked-in wrapper are `36 / 36` | Exact-build install and baseline device checks passed; collect explicit opt-in, token-registration, delivery, tap, opt-out, and applicable participation evidence while delivery stays off. | Record release track, version code/name, test date, device model, and pass/fail only. |
+| Authorized Android review phone | Installed Alpha `1.0.2 (3)` targets API 36 | Required package probe, retained-session cold launch, system-bar framing, and permission-off baseline passed. Continue controlled notification QA only after explicit member opt-in. | Record installed build, permission state, device date, and pass/fail only. |
+| Google Play replacement or update on or after August 31, 2026 | `36 / 36` required; current closed-test release is version code `3` / version name `1.0.2` | Increment above version code `3`, build from the checked-in API 36 wrapper, sign a fresh upload bundle, and rerun wrapper plus real-device QA. | Record API `36 / 36` rebuild proof, version code/name, device QA date, and pass/fail only. |
 
-Any replacement must increment above version code `2`; never reuse a version code that Google Play has already served.
+Any replacement must increment above version code `3`; never reuse a version code that Google Play has already served.
 
 ## Local Build Commands
 

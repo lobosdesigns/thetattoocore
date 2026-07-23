@@ -133,15 +133,15 @@ const androidApi36DocsReady =
   androidApi36SubmissionReady &&
   androidVersionCode >= 3 &&
   androidVersionName === "1.0.2" &&
-  source.nativePrep.includes("checked-in wrapper are `36 / 36`") &&
+  source.nativePrep.includes("Active release `1.0.2 (3)` and checked-in wrapper are `36 / 36`") &&
   source.nativePrep.includes("Record API `36 / 36` rebuild proof") &&
-  source.nativePrep.includes("current closed-test release is version code `2` / version name `1.0.1`") &&
-  source.nativePrep.includes("Any replacement must increment above version code `2`") &&
-  source.mobileRunbook.includes("checked-in Android wrapper now targets API 36") &&
-  source.mobileRunbook.includes("Any replacement or later update must increment the version code above `2`") &&
+  source.nativePrep.includes("current closed-test release is version code `3` / version name `1.0.2`") &&
+  source.nativePrep.includes("Any replacement must increment above version code `3`") &&
+  source.mobileRunbook.includes("checked-in Android wrapper and active closed-test release `1.0.2 (3)`") &&
+  source.mobileRunbook.includes("Any replacement or later update must increment the version code above `3`") &&
   source.readme.includes("checked-in wrapper targets `36 / 36`") &&
-  source.readme.includes("current closed-test release is version code `2` / version name `1.0.1`") &&
-  source.readme.includes("| Current Play closed-test release | `36 / 36`; published `2` / `1.0.1` |");
+  source.readme.includes("Closed testing - Alpha is active with version code `3` / version name `1.0.2`") &&
+  source.readme.includes("| Current Play closed-test release | `36 / 36`; active `3` / `1.0.2` |");
 const androidApi35InternalOnly =
   compileSdkVersion === 35 &&
   targetSdkVersion === 35 &&
@@ -326,7 +326,7 @@ const checks = [
       source.readme.includes("Public release waits for final legal review") &&
       source.nativePrep.includes("August 31, 2026") &&
       source.nativePrep.includes("Android 16 / API 36") &&
-      source.mobileRunbook.includes("checked-in Android wrapper now targets API 36") &&
+      source.mobileRunbook.includes("checked-in Android wrapper and active closed-test release `1.0.2 (3)`") &&
       source.readme.includes("support@thetattoocore.com") &&
       source.readme.includes("Native permissions at first beta: none") &&
       source.readme.includes("Push prompts: off") &&
@@ -337,7 +337,7 @@ const checks = [
       source.readme.includes("set USB mode") &&
       source.readme.includes("accept the computer authorization prompt") &&
       source.readme.includes("authorized device missing TTC package") &&
-      source.readme.includes("current API 36 closed-test release") &&
+      source.readme.includes("Closed testing - Alpha is active") &&
       source.readme.includes("tester participation/duration evidence") &&
       source.readme.includes("reviewer messages archived privately") &&
       source.mobileRunbook.includes("Firebase Cloud Messaging") &&
@@ -359,14 +359,21 @@ const checks = [
       source.androidDeviceProbe.includes("targetSdkMatches") &&
       source.androidDeviceProbe.includes("ANDROID_QA result=authorized device has wrong TTC build") &&
       source.androidDeviceProbe.includes("ANDROID_QA result=authorized device missing TTC package") &&
+      source.androidDeviceProbe.includes("--open-test-join") &&
+      source.androidDeviceProbe.includes("ANDROID_QA closed_test_join_url=") &&
+      source.androidDeviceProbe.includes("ANDROID_QA play_store_url=") &&
+      source.androidDeviceProbe.includes("ANDROID_QA closed_test_join=open requested") &&
       source.androidDeviceProbe.includes("ANDROID_QA wait_ms=") &&
       source.androidDeviceProbe.includes("ANDROID_QA next=check USB cable, set USB mode to file transfer, and reopen the USB debugging prompt") &&
       source.androidDeviceProbe.includes("ANDROID_QA next=unlock device, enable USB debugging, and accept the computer authorization prompt") &&
-      source.androidDeviceProbe.includes("ANDROID_QA next=install or confirm the Google Play closed-testing build before route QA") &&
+      source.androidDeviceProbe.includes("ANDROID_QA next=join the active Google Play closed test, install its exact build, and rerun route QA") &&
       source.readme.includes("confirm the Google Play closed-testing build before route QA") &&
+      source.readme.includes("npm.cmd run qa:android-device:open-test") &&
+      source.realDeviceQa.includes("npm.cmd run qa:android-device:open-test") &&
+      source.rootPackageJson.includes('"qa:android-device:open-test": "node scripts/android-device-qa-probe.mjs --open-test-join"') &&
       source.androidDeviceProbe.includes("if (requireDevice) process.exit(1)") &&
       source.realDeviceQa.includes("authorized device is visible and the TTC") &&
-      source.realDeviceQa.includes("package is installed for the build under review") &&
+      source.realDeviceQa.includes("package is installed for the active closed-test build") &&
       source.realDeviceQa.includes("authorized device has wrong TTC build") &&
       source.realDeviceQa.includes("TTC_ANDROID_EXPECTED_VERSION_NAME") &&
       source.realDeviceQa.includes("authorized device missing TTC package") &&
@@ -477,8 +484,8 @@ const checks = [
       androidApi36SubmissionReady &&
       androidVersionCode >= 3 &&
       androidVersionName === "1.0.2" &&
-      source.readiness.includes("Google Play now serves version code `2` / version name `1.0.1`") &&
-      source.readiness.includes("Any replacement must use a version code above `2`") &&
+      source.readiness.includes("Google Play currently serves API 36 release `1.0.2 (3)` to the closed test") &&
+      source.readiness.includes("any replacement must increment above version code `3`") &&
       source.realDeviceQa.includes("versionName` and `versionCode` checked into"),
   },
   {

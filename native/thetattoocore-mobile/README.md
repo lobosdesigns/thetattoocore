@@ -71,7 +71,8 @@ This folder is the starting point for Apple TestFlight and Google Play closed/in
    - If the probe reports `authorized device missing TTC package`, install or
      confirm the Google Play closed-testing build before route QA.
    - If the probe reports `authorized device has wrong TTC build`, install the
-     Google Play build selected for review, or set
+     active Google Play closed-test build with
+     `npm.cmd run qa:android-device:open-test`, or set
      `TTC_ANDROID_EXPECTED_VERSION_NAME` and
      `TTC_ANDROID_EXPECTED_VERSION_CODE` for the selected track before rerunning
      the probe.
@@ -80,14 +81,14 @@ This folder is the starting point for Apple TestFlight and Google Play closed/in
      gesture or three-button navigation area.
 
 Android packaging is configured on this Windows machine. A signed Google Play upload bundle builds at `android/app/build/outputs/bundle/release/app-release.aab` when the local signing environment variables are set. On July 18, 2026, the signed v1 bundle was verified and copied to the Desktop as `TheTattooCore-app-release-v1-signed.aab` with SHA-256 `18E16D3CB5AEED158C33BF9882AC6920D6A7CB744697568E71C32631BC893B65`. The upload keystore and recovery details are intentionally kept out of git; the local recovery note is saved on the Desktop as `TheTattooCore Android Upload Key.txt`. iOS packaging requires the Mac/Xcode path.
-Android 16 / API 36 tooling is installed on this Windows machine, and the checked-in wrapper targets `36 / 36`. The current closed-test release is version code `2` / version name `1.0.1`; Google Play reported it published on July 22, 2026, and an authorized Android 16 device confirmed that installed build. The signed API 36 bundle was rebuilt after the system-bar inset fix and copied to the Desktop as `TheTattooCore-app-release-v2-1.0.1-api36-signed.aab` with SHA-256 `291B730C457EC4753FA58DCA913B7CF950E2FA42CE4A17E79299F61315505275`. Any replacement must increment above version code `2`, then rerun wrapper and real-device QA before selecting a later Google Play submission/update track.
+Android 16 / API 36 tooling is installed on this Windows machine, and the checked-in wrapper targets `36 / 36`. Closed testing - Alpha is active with version code `3` / version name `1.0.2`, released to the existing Google Group on July 22, 2026. The authorized Android 16 review phone joined the test, installed exact build `1.0.2 (3)`, passed the required package/target probe, and cold-launched into its retained 4U session without system-bar overlap. Notification permission remained ungranted until explicit member opt-in, as required. The signed API 36 Alpha bundle is saved on the Desktop as `TheTattooCore-app-release-v3-1.0.2-api36-signed.aab` with SHA-256 `983E08A6341B80E8A24A2D9957C4A601787CB9574AA137AA0D925256F1D2315B`. Any replacement must increment above version code `3`, then rerun wrapper and real-device QA before selecting a later Google Play submission/update track.
 
 ## Android Release Target Handoff
 
 | Release path | Current compile/target SDK | Status |
 | --- | ---: | --- |
-| Current Play closed-test release | `36 / 36`; published `2` / `1.0.1` | Installed-build proof passed on Android 16; continue tester participation and duration evidence. |
-| Replacement or update on or after August 31, 2026 | `36 / 36`; next version code above `2` | Requires a fresh signed rebuild plus real-device QA evidence before track selection. |
+| Current Play closed-test release | `36 / 36`; active `3` / `1.0.2` | Exact-build install, target SDK 36, retained-session cold launch, system-bar framing, and permission-off baseline passed on the authorized Android 16 phone. |
+| Replacement or update on or after August 31, 2026 | `36 / 36`; next version code above `3` | Requires a fresh signed rebuild plus real-device QA evidence before track selection. |
 
 ## Store Path
 

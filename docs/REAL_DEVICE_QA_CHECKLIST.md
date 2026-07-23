@@ -205,8 +205,8 @@ passing console/log review.
 
 Use this Windows probe before claiming Android real-device evidence. A connected
 USB cable is not enough: the device must appear in `adb devices -l` as an
-authorized `device`, and the installed package must match the Google Play
-closed-testing build under review.
+authorized `device`, and the installed package must match the active Google
+Play closed-testing build.
 
 By default, the probe compares the installed package against the Android
 `versionName` and `versionCode` checked into
@@ -222,11 +222,23 @@ npm.cmd run qa:android-device
 ```
 
 To make the command fail until an authorized device is visible and the TTC
-package is installed for the build under review, run:
+package is installed for the active closed-test build, run:
 
 ```powershell
 npm.cmd run qa:android-device:required
 ```
+
+If the device has an older build, unlock it and open the active closed-test
+enrollment page directly from the Windows QA command:
+
+```powershell
+npm.cmd run qa:android-device:open-test
+```
+
+This command only opens the enrollment page on the authorized device. The
+tester must already belong to the configured Google Group, join the test with
+the eligible Google account, and install the update through Google Play before
+the exact-build probe can pass.
 
 The required gate waits briefly for the USB/debug authorization state to settle
 before failing, so leave the phone unlocked and accept the computer prompt if it
@@ -279,8 +291,9 @@ probe before capturing route, login, DM, notification, checkout-return, and
 store-screenshot evidence.
 
 If the probe reports `authorized device has wrong TTC build`, record the
-installed and expected version/build values in the private handoff, install the
-Google Play build selected for review, and rerun the probe before counting the
-device as ready.
+installed and expected version/build values in the private handoff, run
+`npm.cmd run qa:android-device:open-test`, join the active closed test with an
+eligible account, install the exact Google Play build, and rerun the probe
+before counting the device as ready.
 
 Repo-safe summary fields are limited to platform, release channel, version/build, date, device model, and pass/fail status. Keep tester secrets, private contact details, account identifiers, and raw console screenshots private.

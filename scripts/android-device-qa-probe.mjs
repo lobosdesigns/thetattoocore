@@ -3,6 +3,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const requireDevice = process.argv.includes("--require-device");
+const openTestJoin = process.argv.includes("--open-test-join");
+const androidPackageName = "com.thetattoocore.app";
+const closedTestJoinUrl = `https://play.google.com/apps/testing/${androidPackageName}`;
+const playStoreUrl = `https://play.google.com/store/apps/details?id=${androidPackageName}`;
 const androidBuildGradlePath = "native/thetattoocore-mobile/android/app/build.gradle";
 const androidVariablesGradlePath = "native/thetattoocore-mobile/android/variables.gradle";
 const waitMsArg = process.argv.find((arg) => arg.startsWith("--wait-ms="));
@@ -46,6 +50,25 @@ function runAdb(adb, args) {
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
   }).trim();
+}
+
+function openClosedTestJoin(adb, serial) {
+  try {
+    runAdb(adb, [
+      "-s",
+      serial,
+      "shell",
+      "am",
+      "start",
+      "-a",
+      "android.intent.action.VIEW",
+      "-d",
+      closedTestJoinUrl,
+    ]);
+    console.log("ANDROID_QA closed_test_join=open requested");
+  } catch {
+    console.log("ANDROID_QA closed_test_join=open failed");
+  }
 }
 
 function expectedAndroidBuild() {
@@ -163,6 +186,10 @@ const primary = authorizedDevices[0];
 const shell = (args) => runAdb(adb, ["-s", primary.serial, "shell", ...args]);
 const expectedBuild = expectedAndroidBuild();
 
+if (openTestJoin) {
+  openClosedTestJoin(adb, primary.serial);
+}
+
 let model = "unknown";
 let osVersion = "unknown";
 let packageSummary = "not installed";
@@ -177,7 +204,7 @@ try {
 }
 
 try {
-  const packageDump = shell(["dumpsys", "package", "com.thetattoocore.app"]);
+  const packageDump = shell(["dumpsys", "package", androidPackageName]);
   installedBuild = installedAndroidBuild(packageDump);
   const versionLines = packageDump
     .split(/\r?\n/)
@@ -202,7 +229,9 @@ console.log(`ANDROID_QA package=${packageSummary}`);
 
 if (!packageInstalled) {
   console.log("ANDROID_QA result=authorized device missing TTC package");
-  console.log("ANDROID_QA next=install or confirm the Google Play closed-testing build before route QA");
+  console.log(`ANDROID_QA closed_test_join_url=${closedTestJoinUrl}`);
+  console.log(`ANDROID_QA play_store_url=${playStoreUrl}`);
+  console.log("ANDROID_QA next=join the active Google Play closed test, install its exact build, and rerun route QA");
   if (requireDevice) process.exit(1);
   process.exit(0);
 }
@@ -227,7 +256,9 @@ if (!versionNameMatches || !versionCodeMatches || !targetSdkMatches) {
   console.log(
     `ANDROID_QA installed_targetSdk=${installedBuild.targetSdk || "unknown"}`,
   );
-  console.log("ANDROID_QA next=install the Google Play build selected for review, or set TTC_ANDROID_EXPECTED_VERSION_NAME and TTC_ANDROID_EXPECTED_VERSION_CODE for the selected track");
+  console.log(`ANDROID_QA closed_test_join_url=${closedTestJoinUrl}`);
+  console.log(`ANDROID_QA play_store_url=${playStoreUrl}`);
+  console.log("ANDROID_QA next=join the active Google Play closed test and install its exact build, or set TTC_ANDROID_EXPECTED_VERSION_NAME and TTC_ANDROID_EXPECTED_VERSION_CODE for the selected track");
   if (requireDevice) process.exit(1);
   process.exit(0);
 }

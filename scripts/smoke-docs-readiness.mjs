@@ -237,7 +237,7 @@ const checks = [
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("August 31, 2026") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Android 16 / API 36") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("target Android 16 / API 36") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checked-in Android wrapper now targets API 36") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checked-in Android wrapper and active closed-test release `1.0.2 (3)`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("targetSdkVersion` set to 36") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not request precise device location") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not prompt on first open") &&
@@ -499,10 +499,13 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android automation not yet available") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("passing Android console/log review") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Native build/install evidence should use the matrix") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play Closed testing - Alpha now serves API 36 release `1.0.1 (2)`") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("authorized Android 16 device reports Play build `1.0.1 (2)` with target SDK 36") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Do not upload version code `2` again") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play Closed testing - Alpha now serves API 36 release `1.0.2 (3)`") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("authorized Android 16 review phone installed exact build `1.0.2 (3)`") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Do not upload version code `3` again") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("## Google Play Tester Install Handoff") &&
+      packageJson.includes('"qa:android-device:open-test": "node scripts/android-device-qa-probe.mjs --open-test-join"') &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run qa:android-device:open-test") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run qa:android-device:open-test") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("same account that belongs to the configured tester community") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("confirm the account has opted in before opening the Android join link") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("store listing offers Install or Update") &&
@@ -600,7 +603,7 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple Accessibility Nutrition Labels") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play target API") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Android 16 / API 36") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Published closed-test release") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Active closed-test release") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("current API 36 baseline") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play production access") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("current 12-testers-for-14-days gate") &&
@@ -1008,16 +1011,14 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Signed notification-capability build `1.0 (4)` was uploaded separately to TestFlight") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Age 18+ override") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Closed testing - Alpha serves API 36 release `1.0.1 (2)`") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Closed testing - Alpha is Active with API 36 release `1.0.2 (3)`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("existing Google Group community") &&
       docs["docs/APP_STORE_READINESS.md"].includes("organization account is not subject to the personal-account 12-tester/14-day production-access rule") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Controlled notification-registration candidate `1.0.2 (3)` was submitted to the same Alpha track") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Production release `1.0.1 (2)` remains separate") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Publishing Overview shows `Changes in review`") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Do not restart or remove that review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("authorized Android 16 review phone installed exact Alpha build `1.0.2 (3)`") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Production release `1.0.1 (2)` is published separately at 100%") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Publishing Overview reports no unpublished changes") &&
       !docs["docs/APP_STORE_READINESS.md"].includes("awaiting final submit-for-review confirmation") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("zero supported-device loss") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("release minification is disabled") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("no supported-device loss") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Monitor App Review and internal build `1.0 (4)` install/QA results") &&
       docs["docs/APP_STORE_READINESS.md"].includes("group-member opt-in/install proof and 14-day production-access tester evidence if required") &&
       docs["docs/APP_STORE_READINESS.md"].includes("active sandbox test connected account") &&
@@ -1037,14 +1038,14 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("Private native QA handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Store consoles") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Apple iOS `1.0` build `1.0 (3)` is submitted for App Review") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Google Play Closed testing - Alpha is available to selected testers") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Google Play Closed testing - Alpha serves `1.0.2 (3)` to selected testers") &&
       docs["docs/APP_STORE_READINESS.md"].includes("13-inch iPad screenshots uploaded") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Content Rights") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Accessibility Nutrition Labels") &&
       (docs["docs/APP_STORE_READINESS.md"].includes("Data Safety review") ||
         docs["docs/APP_STORE_READINESS.md"].includes("Data Safety saved")) &&
-      docs["docs/APP_STORE_READINESS.md"].includes("one Android install of `1.0.1 (2)` is verified") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("production rollout of the same build was sent for review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("One exact Android Alpha build `1.0.2 (3)` install is verified") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("production `1.0.1 (2)` is published at 100%") &&
       docs["docs/APP_STORE_READINESS.md"].includes("applicable tester evidence") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Legal and policy") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Final counsel-reviewed Terms/Privacy") &&

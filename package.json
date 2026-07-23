@@ -50,6 +50,7 @@
     "qa:native-push": "node scripts/native-push-qa-probe.mjs",
     "qa:native-push:required": "node scripts/native-push-qa-probe.mjs --require-ready",
     "qa:android-device": "node scripts/android-device-qa-probe.mjs",
+    "qa:android-device:open-test": "node scripts/android-device-qa-probe.mjs --open-test-join",
     "qa:android-device:required": "node scripts/android-device-qa-probe.mjs --require-device --wait-ms=30000"
   },
   "dependencies": {
