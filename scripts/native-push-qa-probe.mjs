@@ -21,6 +21,15 @@ function plistString(source, key) {
   );
 }
 
+function jsonObject(source) {
+  try {
+    const parsed = JSON.parse(source);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 const files = {
   androidAppBuild: `${wrapperRoot}/android/app/build.gradle`,
   androidConfig: `${wrapperRoot}/android/app/google-services.json`,
@@ -53,12 +62,31 @@ const source = Object.fromEntries(
   Object.entries(files).map(([key, path]) => [key, read(path)]),
 );
 const expectedIosBundleId = "com.thetattoocore.app";
+const expectedAndroidPackage = "com.thetattoocore.app";
+const androidPrivateConfig = jsonObject(source.androidConfig);
+const androidProjectInfo = androidPrivateConfig.project_info ?? {};
+const androidClient = (androidPrivateConfig.client ?? []).find(
+  (client) =>
+    client?.client_info?.android_client_info?.package_name ===
+    expectedAndroidPackage,
+);
+const androidPrivateConfigReady =
+  existsSync(files.androidConfig) &&
+  Boolean(androidProjectInfo.project_id) &&
+  Boolean(androidProjectInfo.project_number) &&
+  Boolean(androidClient?.client_info?.mobilesdk_app_id);
 const iosPrivateConfigReady =
   existsSync(files.iosConfig) &&
   plistString(source.iosConfig, "BUNDLE_ID") === expectedIosBundleId &&
   ["GOOGLE_APP_ID", "GCM_SENDER_ID", "PROJECT_ID"].every((key) =>
     Boolean(plistString(source.iosConfig, key)),
   );
+const projectConsistencyReady =
+  androidPrivateConfigReady &&
+  iosPrivateConfigReady &&
+  androidProjectInfo.project_id === plistString(source.iosConfig, "PROJECT_ID") &&
+  String(androidProjectInfo.project_number) ===
+    plistString(source.iosConfig, "GCM_SENDER_ID");
 
 function filesUnder(root) {
   if (!existsSync(root)) return [];
@@ -120,7 +148,11 @@ const checks = [
   },
   {
     key: "android_private_config",
-    ready: existsSync(files.androidConfig),
+    ready: androidPrivateConfigReady,
+  },
+  {
+    key: "project_consistency",
+    ready: projectConsistencyReady,
   },
   {
     key: "android_services_hook",
@@ -298,6 +330,7 @@ const bridgeCheckKeys = [
 ];
 const privateConfigCheckKeys = [
   "android_private_config",
+  "project_consistency",
   "ios_private_config",
   "ios_config_target",
 ];

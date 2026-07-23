@@ -106,6 +106,17 @@ const checks = [
         source.nativeProbe.includes(
           'plistString(source.iosConfig, "BUNDLE_ID") === expectedIosBundleId',
         ) &&
+        source.nativeProbe.includes("const androidPrivateConfig = jsonObject") &&
+        source.nativeProbe.includes(
+          'client_info?.android_client_info?.package_name ===',
+        ) &&
+        source.nativeProbe.includes(
+          'androidProjectInfo.project_id === plistString(source.iosConfig, "PROJECT_ID")',
+        ) &&
+        source.nativeProbe.includes(
+          'plistString(source.iosConfig, "GCM_SENDER_ID")',
+        ) &&
+        source.nativeProbe.includes('"project_consistency"') &&
         source.nativeProbe.includes(
           '["GOOGLE_APP_ID", "GCM_SENDER_ID", "PROJECT_ID"]',
         ) &&

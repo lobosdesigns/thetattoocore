@@ -1,5 +1,7 @@
 # Sanitized Release Evidence Fixture
 
+<!-- TTC_SANITIZED_RELEASE_EVIDENCE_FIXTURE -->
+
 ## Release Candidate
 
 | Field | Value |

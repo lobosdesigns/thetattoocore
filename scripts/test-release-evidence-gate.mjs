@@ -5,16 +5,20 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const gatePath = "scripts/verify-release-evidence.mjs";
 const fixturePath = "scripts/fixtures/release-evidence.passed.md";
 const fixtureCandidate = "fixture-release-candidate";
 const fixtureReferenceDate = "2026-07-23";
+const fixtureMarker = "<!-- TTC_SANITIZED_RELEASE_EVIDENCE_FIXTURE -->";
+const liveCandidate = "live-release-candidate";
 const fixtureSource = readFileSync(fixturePath, "utf8");
 const variantDir = mkdtempSync(
   join("scripts", "fixtures", ".release-evidence-test-"),
 );
+const liveVariantDir = mkdtempSync(join(tmpdir(), "ttc-release-evidence-test-"));
 
 function writeVariant(name, transform) {
   const path = join(variantDir, name);
@@ -42,6 +46,51 @@ const mismatchedBuildFixture = writeVariant("mismatched-build.md", (source) =>
     "| Alpha 1.0.2 (3) | fixture-device 2026-07-23 | fixture-tester-install-proof |",
     "| Alpha 1.0.1 (2) | fixture-device 2026-07-23 | fixture-tester-install-proof |",
   ),
+);
+const missingMarkerFixture = writeVariant("missing-marker.md", (source) =>
+  source.replace(fixtureMarker, ""),
+);
+const livePlaceholderFixture = join(liveVariantDir, "live-placeholder.md");
+writeFileSync(
+  livePlaceholderFixture,
+  fixtureSource
+    .replace(fixtureMarker, "")
+    .replaceAll(fixtureCandidate, liveCandidate),
+);
+const missingLegalReviewFixture = writeVariant(
+  "missing-legal-review.md",
+  (source) =>
+    source.replace(
+      "| Terms and Privacy match submitted build | reviewer | 2026-07-23 | passed | Fixture |\n",
+      "",
+    ),
+);
+const duplicateLegalSignoffFixture = writeVariant(
+  "duplicate-legal-signoff.md",
+  (source) =>
+    source.replace(
+      "| Public legal URLs | Sanitized fixture | passed | reviewer | 2026-07-23 | fixture-proof |",
+      [
+        "| Public legal URLs | Sanitized fixture | passed | reviewer | 2026-07-23 | fixture-proof |",
+        "| Public legal URLs | Sanitized fixture | passed | reviewer | 2026-07-23 | fixture-proof |",
+      ].join("\n"),
+    ),
+);
+const staleLegalDateFixture = writeVariant(
+  "stale-legal-date.md",
+  (source) =>
+    source.replace(
+      "| Terms and Privacy match submitted build | reviewer | 2026-07-23 | passed | Fixture |",
+      "| Terms and Privacy match submitted build | reviewer | 2026-05-01 | passed | Fixture |",
+    ),
+);
+const futureLegalDateFixture = writeVariant(
+  "future-legal-date.md",
+  (source) =>
+    source.replace(
+      "| Public legal URLs | Sanitized fixture | passed | reviewer | 2026-07-23 | fixture-proof |",
+      "| Public legal URLs | Sanitized fixture | passed | reviewer | 2026-07-24 | fixture-proof |",
+    ),
 );
 
 function runGate(args, env = {}) {
@@ -103,6 +152,41 @@ const checks = [
     },
   },
   {
+    label: "release evidence rejects sanitized fixtures outside fixture mode",
+    result: runGate([
+      "--evidence",
+      fixturePath,
+      "--release-candidate",
+      fixtureCandidate,
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "sanitized fixture candidates cannot approve a live release",
+        )
+      );
+    },
+  },
+  {
+    label: "release evidence requires an explicit fixture marker",
+    result: runGate([
+      "--test-fixture",
+      "--reference-date",
+      fixtureReferenceDate,
+      "--evidence",
+      missingMarkerFixture,
+      "--release-candidate",
+      fixtureCandidate,
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes("release evidence fixture marker is missing")
+      );
+    },
+  },
+  {
     label: "release evidence rejects a stale candidate",
     result: runGate([
       "--test-fixture",
@@ -113,6 +197,27 @@ const checks = [
       fixturePath,
       "--release-candidate",
       "different-release-candidate",
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "web deploy does not match the requested release candidate",
+        )
+      );
+    },
+  },
+  {
+    label: "release evidence rejects a partial candidate match",
+    result: runGate([
+      "--test-fixture",
+      "--reference-date",
+      fixtureReferenceDate,
+      "--verbose",
+      "--evidence",
+      fixturePath,
+      "--release-candidate",
+      "fixture-release",
     ]),
     verify(result) {
       return (
@@ -198,6 +303,104 @@ const checks = [
       );
     },
   },
+  {
+    label: "release evidence rejects fixture proof in live evidence",
+    result: runGate([
+      "--verbose",
+      "--evidence",
+      livePlaceholderFixture,
+      "--release-candidate",
+      liveCandidate,
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "private proof cannot use fixture or sample placeholders",
+        )
+      );
+    },
+  },
+  {
+    label: "release evidence rejects a missing legal review row",
+    result: runGate([
+      "--test-fixture",
+      "--reference-date",
+      fixtureReferenceDate,
+      "--verbose",
+      "--evidence",
+      missingLegalReviewFixture,
+      "--release-candidate",
+      fixtureCandidate,
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Terms and Privacy match submitted build row is missing",
+        )
+      );
+    },
+  },
+  {
+    label: "release evidence rejects duplicate legal signoff rows",
+    result: runGate([
+      "--test-fixture",
+      "--reference-date",
+      fixtureReferenceDate,
+      "--verbose",
+      "--evidence",
+      duplicateLegalSignoffFixture,
+      "--release-candidate",
+      fixtureCandidate,
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Public legal URLs row must appear exactly once",
+        )
+      );
+    },
+  },
+  {
+    label: "release evidence rejects stale legal review dates",
+    result: runGate([
+      "--test-fixture",
+      "--reference-date",
+      fixtureReferenceDate,
+      "--verbose",
+      "--evidence",
+      staleLegalDateFixture,
+      "--release-candidate",
+      fixtureCandidate,
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes("proof date must be within 45 days")
+      );
+    },
+  },
+  {
+    label: "release evidence rejects future legal signoff dates",
+    result: runGate([
+      "--test-fixture",
+      "--reference-date",
+      fixtureReferenceDate,
+      "--verbose",
+      "--evidence",
+      futureLegalDateFixture,
+      "--release-candidate",
+      fixtureCandidate,
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes("proof date cannot be in the future")
+      );
+    },
+  },
 ];
 
 let failures = 0;
@@ -213,6 +416,7 @@ for (const check of checks) {
 }
 
 rmSync(variantDir, { force: true, recursive: true });
+rmSync(liveVariantDir, { force: true, recursive: true });
 
 if (failures > 0) {
   console.error(`${failures} release evidence gate test(s) failed.`);

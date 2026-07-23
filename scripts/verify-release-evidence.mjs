@@ -1,11 +1,27 @@
 import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { isAbsolute, relative, resolve } from "node:path";
 
 const EXPECTED_ANDROID_BUILD = "1.0.2 (3)";
 const EXPECTED_IOS_TESTFLIGHT_BUILD = "1.0 (4)";
 const EXPECTED_IOS_REVIEW_BUILD = "1.0 (3)";
+const REQUIRED_LEGAL_REVIEW_AREAS = [
+  "Terms and Privacy match submitted build",
+  "Account deletion language and handling",
+  "Commerce, refunds, disputes, taxes, and shipping",
+  "Native checkout/store policy classification",
+  "Store metadata and screenshots",
+];
+const REQUIRED_LEGAL_SIGNOFF_AREAS = [
+  "Public legal URLs",
+  "Account deletion and retention",
+  "UGC and safety policy",
+  "Store questionnaires",
+  "Commerce and payments",
+  "Evidence privacy",
+];
 const DEFAULT_EVIDENCE_PATH =
   "private-release-handoff/release-handoff-template.md";
+const FIXTURE_MARKER = "<!-- TTC_SANITIZED_RELEASE_EVIDENCE_FIXTURE -->";
 const MAX_PROOF_AGE_DAYS = 45;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -25,6 +41,13 @@ const expectedReleaseCandidate = optionValue(
 );
 const referenceDateOption = optionValue("--reference-date");
 const releaseCandidatePattern = /^[A-Za-z0-9][A-Za-z0-9._-]{6,127}$/;
+const fixtureRoot = resolve("scripts/fixtures");
+const resolvedEvidencePath = resolve(evidencePath);
+const fixtureRelativePath = relative(fixtureRoot, resolvedEvidencePath);
+const evidenceUsesFixturePath =
+  Boolean(fixtureRelativePath) &&
+  !fixtureRelativePath.startsWith("..") &&
+  !isAbsolute(fixtureRelativePath);
 
 if (!expectedReleaseCandidate) {
   console.error(
@@ -35,6 +58,16 @@ if (!expectedReleaseCandidate) {
 
 if (!releaseCandidatePattern.test(expectedReleaseCandidate)) {
   console.error("FAIL current web release candidate format is invalid.");
+  process.exit(1);
+}
+
+if (
+  !testFixture &&
+  /^fixture(?:[-_.]|$)/i.test(expectedReleaseCandidate)
+) {
+  console.error(
+    "FAIL sanitized fixture candidates cannot approve a live release.",
+  );
   process.exit(1);
 }
 
@@ -54,13 +87,13 @@ if (
   process.exit(1);
 }
 
-if (
-  testFixture &&
-  !resolve(evidencePath).includes(
-    resolve("scripts/fixtures").replace(/[\\/]$/, ""),
-  )
-) {
+if (testFixture && !evidenceUsesFixturePath) {
   console.error("FAIL release evidence fixture must stay under scripts/fixtures.");
+  process.exit(1);
+}
+
+if (!testFixture && evidenceUsesFixturePath) {
+  console.error("FAIL sanitized fixtures cannot approve a live release.");
   process.exit(1);
 }
 
@@ -72,6 +105,17 @@ if (!existsSync(evidencePath)) {
 }
 
 const markdown = readFileSync(evidencePath, "utf8");
+const hasFixtureMarker = markdown.includes(FIXTURE_MARKER);
+
+if (testFixture && !hasFixtureMarker) {
+  console.error("FAIL release evidence fixture marker is missing.");
+  process.exit(1);
+}
+
+if (!testFixture && hasFixtureMarker) {
+  console.error("FAIL sanitized fixtures cannot approve a live release.");
+  process.exit(1);
+}
 
 function cleanCell(value = "") {
   return value
@@ -159,6 +203,24 @@ function rowBy(table, column, value) {
   );
 }
 
+function requiredUniqueRow(table, column, value, area) {
+  const matches =
+    table?.rows.filter(
+      (row) => normalize(row[column]) === normalize(value),
+    ) ?? [];
+
+  if (matches.length === 0) {
+    fail(area, `${value} row is missing`);
+    return null;
+  }
+
+  if (matches.length > 1) {
+    fail(area, `${value} row must appear exactly once`);
+  }
+
+  return matches[0];
+}
+
 const passingResults = new Set([
   "approved",
   "complete",
@@ -210,8 +272,26 @@ function requireContains(area, item, value, expected) {
   }
 }
 
+function requireExact(area, item, value, expected) {
+  if (normalize(value) !== normalize(expected)) {
+    fail(area, item);
+  }
+}
+
 function requireProof(area, item, value) {
-  requireValue(area, `${item} private proof`, value);
+  if (!hasValue(value)) {
+    fail(area, `${item} private proof`);
+    return;
+  }
+
+  if (
+    !testFixture &&
+    /(^|[^a-z0-9])(fixture|sample|placeholder)([^a-z0-9]|$)/i.test(
+      cleanCell(value),
+    )
+  ) {
+    fail(area, `${item} private proof cannot use fixture or sample placeholders`);
+  }
 }
 
 function requireProofDate(area, item, value) {
@@ -266,7 +346,7 @@ if (releaseCandidate) {
   );
 
   requireValue("Release Candidate", "web deploy version", webDeploy?.Value);
-  requireContains(
+  requireExact(
     "Release Candidate",
     "web deploy does not match the requested release candidate",
     webDeploy?.Value,
@@ -598,27 +678,41 @@ if (nativePush) {
 
 const legalReview = section("Legal And Policy Review");
 if (legalReview) {
-  for (const row of legalReview.rows) {
-    const area = hasValue(row.Area) ? row.Area : "required review row";
+  for (const area of REQUIRED_LEGAL_REVIEW_AREAS) {
+    const row = requiredUniqueRow(
+      legalReview,
+      "Area",
+      area,
+      "Legal And Policy Review",
+    );
+    if (!row) continue;
+
     requireValue("Legal And Policy Review", `${area} reviewer`, row["Reviewer role or initials"]);
-    requireValue("Legal And Policy Review", `${area} review date`, row["Review date"]);
+    requireProofDate("Legal And Policy Review", area, row["Review date"]);
     requirePassing("Legal And Policy Review", `${area} result`, row.Result);
   }
 }
 
 const legalSignoff = section("Legal Submission Signoff Matrix");
 if (legalSignoff) {
-  for (const row of legalSignoff.rows) {
-    const area = hasValue(row.Area) ? row.Area : "required signoff row";
+  for (const area of REQUIRED_LEGAL_SIGNOFF_AREAS) {
+    const row = requiredUniqueRow(
+      legalSignoff,
+      "Area",
+      area,
+      "Legal Submission Signoff Matrix",
+    );
+    if (!row) continue;
+
     requirePassing("Legal Submission Signoff Matrix", `${area} result`, row.Result);
     requireValue(
       "Legal Submission Signoff Matrix",
       `${area} reviewer`,
       row["Reviewer role or initials"],
     );
-    requireValue(
+    requireProofDate(
       "Legal Submission Signoff Matrix",
-      `${area} review date`,
+      area,
       row["Review date"],
     );
     requireProof(

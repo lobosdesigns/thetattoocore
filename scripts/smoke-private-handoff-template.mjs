@@ -169,17 +169,32 @@ const checks = [
       evidenceGate.includes('const EXPECTED_IOS_REVIEW_BUILD = "1.0 (3)"') &&
       evidenceGate.includes("private release evidence requirement(s) remain incomplete") &&
       evidenceGate.includes("--test-fixture") &&
+      evidenceGate.includes("TTC_SANITIZED_RELEASE_EVIDENCE_FIXTURE") &&
+      evidenceGate.includes("sanitized fixtures cannot approve a live release") &&
+      evidenceGate.includes("function requireExact") &&
+      evidenceGate.includes("const REQUIRED_LEGAL_REVIEW_AREAS = [") &&
+      evidenceGate.includes("const REQUIRED_LEGAL_SIGNOFF_AREAS = [") &&
+      evidenceGate.includes("function requiredUniqueRow") &&
       evidenceGate.includes("process.env.TTC_RELEASE_CANDIDATE") &&
       evidenceGate.includes("current web release candidate is required") &&
       evidenceGate.includes("const MAX_PROOF_AGE_DAYS = 45") &&
       evidenceGate.includes("function requireProofDate") &&
       evidenceGateTest.includes("release evidence rejects an unbound candidate") &&
+      evidenceGateTest.includes("release evidence rejects sanitized fixtures outside fixture mode") &&
+      evidenceGateTest.includes("release evidence requires an explicit fixture marker") &&
+      evidenceGateTest.includes("release evidence rejects a partial candidate match") &&
+      evidenceGateTest.includes("release evidence rejects fixture proof in live evidence") &&
+      evidenceGateTest.includes("release evidence rejects a missing legal review row") &&
+      evidenceGateTest.includes("release evidence rejects duplicate legal signoff rows") &&
+      evidenceGateTest.includes("release evidence rejects stale legal review dates") &&
+      evidenceGateTest.includes("release evidence rejects future legal signoff dates") &&
       evidenceGateTest.includes("release evidence rejects a stale candidate") &&
       evidenceGateTest.includes("release evidence rejects an invalid candidate format") &&
       evidenceGateTest.includes("release evidence rejects missing critical private proof") &&
       evidenceGateTest.includes("release evidence rejects stale critical private proof") &&
       evidenceGateTest.includes("release evidence rejects a mismatched tester build") &&
       !evidenceGate.includes("console.error(markdown") &&
+      evidenceFixture.includes("TTC_SANITIZED_RELEASE_EVIDENCE_FIXTURE") &&
       evidenceFixture.includes("fixture-release-candidate") &&
       evidenceFixture.includes("Closed testing - Alpha 1.0.2 (3)") &&
       evidenceFixture.includes("App Review 1.0 (3)") &&
