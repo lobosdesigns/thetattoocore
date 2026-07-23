@@ -2619,8 +2619,9 @@ export async function refundBookingDeposit(formData: FormData) {
 
   const adminClient = createAdminClient();
   const stripe = createStripeClient();
+  const checkoutPreflight = stripeCheckoutPreflight();
 
-  if (!adminClient || !stripe) {
+  if (!adminClient || !stripe || !checkoutPreflight.ready) {
     redirect(adminPaymentsMessage("Private payment tools unavailable.", returnTo));
   }
 
@@ -2694,6 +2695,38 @@ export async function refundBookingDeposit(formData: FormData) {
   const bookingRefundRequestKeyVersion = "booking-full-refund-v1";
   const bookingRefundRequestKey = `${bookingRefundRequestKeyVersion}:${booking.id}:${paymentIntentId}`;
   let matchingRefund: Stripe.Refund | undefined;
+  let paymentIntent: Stripe.PaymentIntent;
+
+  try {
+    paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+  } catch (error) {
+    console.error("Admin booking payment lookup failed before refund.", error);
+    redirect(
+      adminPaymentsMessage(
+        "Could not confirm the booking payment. No refund was requested. Please try again.",
+        returnTo,
+      ),
+    );
+  }
+
+  if (
+    paymentIntent.livemode !== checkoutPreflight.actual ||
+    paymentIntent.metadata?.payment_kind !== "booking_deposit" ||
+    paymentIntent.metadata?.booking_request_id !== booking.id
+  ) {
+    console.error("Admin booking refund payment ownership check failed.", {
+      bookingMatches: paymentIntent.metadata?.booking_request_id === booking.id,
+      livemodeMatches: paymentIntent.livemode === checkoutPreflight.actual,
+      paymentKindMatches:
+        paymentIntent.metadata?.payment_kind === "booking_deposit",
+    });
+    redirect(
+      adminPaymentsMessage(
+        "This payment could not be matched safely to the booking. No refund was requested.",
+        returnTo,
+      ),
+    );
+  }
 
   try {
     const refunds = await stripe.refunds.list({

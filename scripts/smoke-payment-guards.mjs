@@ -28,6 +28,9 @@ const merchPrintReceiptButton = readFileSync(
 const adminMerchPage = readFileSync("src/app/admin/merch/page.tsx", "utf8");
 const adminPaymentsPage = readFileSync("src/app/admin/payments/page.tsx", "utf8");
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
+const bookingRefundAction = adminActions.slice(
+  adminActions.indexOf("export async function refundBookingDeposit"),
+);
 const stripeConnectOnboarding = readFileSync(
   "src/app/api/stripe/connect/onboarding/route.ts",
   "utf8",
@@ -1318,6 +1321,19 @@ checks.push({
   ok:
     adminActions.includes("export async function resetStaleBookingDepositCheckouts") &&
     adminActions.includes("export async function refundBookingDeposit") &&
+    bookingRefundAction.includes("const checkoutPreflight = stripeCheckoutPreflight()") &&
+    bookingRefundAction.includes("!checkoutPreflight.ready") &&
+    bookingRefundAction.includes("stripe.paymentIntents.retrieve(paymentIntentId)") &&
+    bookingRefundAction.includes("paymentIntent.livemode !== checkoutPreflight.actual") &&
+    bookingRefundAction.includes(
+      'paymentIntent.metadata?.payment_kind !== "booking_deposit"',
+    ) &&
+    bookingRefundAction.includes(
+      "paymentIntent.metadata?.booking_request_id !== booking.id",
+    ) &&
+    bookingRefundAction.includes(
+      "This payment could not be matched safely to the booking. No refund was requested.",
+    ) &&
     adminActions.includes('event_type: "reset_stale_booking_deposit_checkouts"') &&
     adminActions.includes('event_type: "refund_booking_deposit_requested"') &&
     adminActions.includes("createStripeClient") &&
