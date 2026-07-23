@@ -138,17 +138,17 @@ const androidVersionName =
 const androidApi36SubmissionReady = compileSdkVersion >= 36 && targetSdkVersion >= 36;
 const androidApi36DocsReady =
   androidApi36SubmissionReady &&
-  androidVersionCode >= 3 &&
-  androidVersionName === "1.0.2" &&
-  source.nativePrep.includes("Active release `1.0.2 (3)` and checked-in wrapper are `36 / 36`") &&
+  androidVersionCode === 4 &&
+  androidVersionName === "1.0.3" &&
+  source.nativePrep.includes("Active release `1.0.2 (3)` and checked-in candidate `1.0.3 (4)` are `36 / 36`") &&
   source.nativePrep.includes("Record API `36 / 36` rebuild proof") &&
   source.nativePrep.includes("current closed-test release is version code `3` / version name `1.0.2`") &&
-  source.nativePrep.includes("Any replacement must increment above version code `3`") &&
-  source.mobileRunbook.includes("checked-in Android wrapper and active closed-test release `1.0.2 (3)`") &&
-  source.mobileRunbook.includes("Any replacement or later update must increment the version code above `3`") &&
-  source.readme.includes("checked-in wrapper targets `36 / 36`") &&
+  source.nativePrep.includes("Candidate `1.0.3 (4)` must be installed from Google Play") &&
+  source.mobileRunbook.includes("checked-in Android candidate `1.0.3 (4)` and active closed-test release `1.0.2 (3)`") &&
+  source.mobileRunbook.includes("Any later replacement must increment the version code above `4`") &&
+  source.readme.includes("checked-in candidate targets `36 / 36`") &&
   source.readme.includes("Closed testing - Alpha is active with version code `3` / version name `1.0.2`") &&
-  source.readme.includes("| Current Play closed-test release | `36 / 36`; active `3` / `1.0.2` |");
+  source.readme.includes("| Staged Play candidate | `36 / 36`; candidate `4` / `1.0.3` |");
 const androidApi35InternalOnly =
   compileSdkVersion === 35 &&
   targetSdkVersion === 35 &&
@@ -357,7 +357,7 @@ const checks = [
       source.readme.includes("Public release waits for final legal review") &&
       source.nativePrep.includes("August 31, 2026") &&
       source.nativePrep.includes("Android 16 / API 36") &&
-      source.mobileRunbook.includes("checked-in Android wrapper and active closed-test release `1.0.2 (3)`") &&
+      source.mobileRunbook.includes("checked-in Android candidate `1.0.3 (4)` and active closed-test release `1.0.2 (3)`") &&
       source.readme.includes("support@thetattoocore.com") &&
       source.readme.includes("Native permissions at first beta: none") &&
       source.readme.includes("Push prompts: off") &&
@@ -532,8 +532,8 @@ const checks = [
     label: "native Android next upload uses a fresh Play version code",
     ok:
       androidApi36SubmissionReady &&
-      androidVersionCode >= 3 &&
-      androidVersionName === "1.0.2" &&
+      androidVersionCode === 4 &&
+      androidVersionName === "1.0.3" &&
       source.readiness.includes("Google Play currently serves API 36 release `1.0.2 (3)` to the closed test") &&
       source.readiness.includes("any replacement must increment above version code `3`") &&
       source.realDeviceQa.includes("versionName` and `versionCode` checked into"),

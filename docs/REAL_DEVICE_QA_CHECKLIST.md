@@ -227,6 +227,10 @@ track intentionally uses a different build, set
 `TTC_ANDROID_EXPECTED_VERSION_NAME` and `TTC_ANDROID_EXPECTED_VERSION_CODE` in
 the private release shell before rerunning the probe.
 
+Before certifying the checked-in candidate, clear both override variables. An
+override may inspect another selected track, but it must not be used as passing
+evidence for candidate `1.0.3 (4)`.
+
 For a repo-safe status summary from this machine, run:
 
 ```powershell
