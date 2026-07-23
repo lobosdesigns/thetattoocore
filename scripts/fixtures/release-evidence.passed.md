@@ -64,10 +64,10 @@
 
 ## Real-Device QA
 
-| Platform | Device model | OS version | Build or deploy version | Install source | Network | Result | Proof filename |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Android | fixture-device | Android 16 | 1.0.2 (3) | Google Play | Wi-Fi and cellular | passed | fixture-proof |
-| iOS | fixture-device | iOS current | 1.0 (4) | TestFlight | Wi-Fi and cellular | passed | fixture-proof |
+| Platform | Device model | OS version | Build or deploy version | Install source | Network | Result | Proof filename | Proof date |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Android | fixture-device | Android 16 | 1.0.2 (3) | Google Play | Wi-Fi and cellular | passed | fixture-proof | 2026-07-23 |
+| iOS | fixture-device | iOS current | 1.0 (4) | TestFlight | Wi-Fi and cellular | passed | fixture-proof | 2026-07-23 |
 
 ## Two-User DM Evidence
 

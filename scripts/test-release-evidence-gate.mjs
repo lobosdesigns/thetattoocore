@@ -47,6 +47,14 @@ const mismatchedBuildFixture = writeVariant("mismatched-build.md", (source) =>
     "| Alpha 1.0.1 (2) | fixture-device 2026-07-23 | fixture-tester-install-proof |",
   ),
 );
+const staleRealDeviceDateFixture = writeVariant(
+  "stale-real-device-date.md",
+  (source) =>
+    source.replace(
+      "| Android | fixture-device | Android 16 | 1.0.2 (3) | Google Play | Wi-Fi and cellular | passed | fixture-proof | 2026-07-23 |",
+      "| Android | fixture-device | Android 16 | 1.0.2 (3) | Google Play | Wi-Fi and cellular | passed | fixture-proof | 2026-05-01 |",
+    ),
+);
 const missingMarkerFixture = writeVariant("missing-marker.md", (source) =>
   source.replace(fixtureMarker, ""),
 );
@@ -299,6 +307,27 @@ const checks = [
         result.status === 1 &&
         result.stderr.includes(
           "installed Android build must be exact build 1.0.2 (3)",
+        )
+      );
+    },
+  },
+  {
+    label: "release evidence rejects stale real-device proof dates",
+    result: runGate([
+      "--test-fixture",
+      "--reference-date",
+      fixtureReferenceDate,
+      "--verbose",
+      "--evidence",
+      staleRealDeviceDateFixture,
+      "--release-candidate",
+      fixtureCandidate,
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Real-Device QA: Android proof date must be within 45 days",
         )
       );
     },

@@ -606,6 +606,13 @@ if (realDeviceQa) {
     );
     requirePassing("Real-Device QA", `${platform} result`, row?.Result);
     requireProof("Real-Device QA", platform, row?.["Proof filename"]);
+    if (normalize(row?.["Proof filename"])) {
+      requireProofDate(
+        "Real-Device QA",
+        platform,
+        row?.["Proof date"],
+      );
+    }
   }
 }
 

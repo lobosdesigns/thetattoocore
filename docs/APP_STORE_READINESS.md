@@ -24,6 +24,10 @@
 - Google Play production release `1.0.1 (2)` is published at 100%. Publishing Overview reports no unpublished changes, and the app dashboard reports the update published on July 22, 2026.
 - The private native-alert project was created on July 22, 2026 with analytics disabled, and Android plus Apple apps were registered for the production package/bundle ID. Both downloaded platform configuration files were validated, installed only in ignored native-wrapper paths, and excluded from git. Android `1.0.2 (3)` is active in the Alpha closed test. Signed iOS `1.0 (4)` completed TestFlight processing with production alert entitlement and is assigned to `TTC Internal Testers`. Automatic token creation and delivery remain off pending exact-build registration, delivery, tap-routing, opt-out, quiet-hours, and category-preference device evidence.
 - Signed-in Apple recheck on July 22, 2026 confirmed iOS version `1.0` remains `Waiting for Review` with build `1.0 (3)`. Notification-capability build `1.0 (4)` remains separate in `TTC Internal Testers` for controlled QA.
+- Signed-in Apple recheck on July 23, 2026 reconfirmed App Review is still
+  `Waiting for Review` on build `1.0 (3)`. TestFlight build `1.0 (4)` is
+  processed, assigned to `TTC Internal Testers`, and has one invitation but no
+  installation yet, so its iPhone evidence remains pending.
 - Signed-in store recheck on July 23, 2026 confirmed Apple iOS `1.0`
   build `1.0 (3)` remains `Waiting for Review` with three accepted iPhone and
   three accepted 13-inch iPad screenshots. Google Play production `1.0.1 (2)`

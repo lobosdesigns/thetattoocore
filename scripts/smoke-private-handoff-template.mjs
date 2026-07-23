@@ -45,6 +45,7 @@ const checks = [
       generator.includes("## Store Console Evidence") &&
       generator.includes("## Reviewer Access") &&
       generator.includes("## Real-Device QA") &&
+      generator.includes("Result | Proof filename | Proof date") &&
       generator.includes("## Two-User DM Evidence") &&
       generator.includes("Private proof filename or location | Proof date") &&
       generator.includes("## Payment And Commerce Evidence") &&
@@ -193,6 +194,7 @@ const checks = [
       evidenceGateTest.includes("release evidence rejects missing critical private proof") &&
       evidenceGateTest.includes("release evidence rejects stale critical private proof") &&
       evidenceGateTest.includes("release evidence rejects a mismatched tester build") &&
+      evidenceGateTest.includes("release evidence rejects stale real-device proof dates") &&
       !evidenceGate.includes("console.error(markdown") &&
       evidenceFixture.includes("TTC_SANITIZED_RELEASE_EVIDENCE_FIXTURE") &&
       evidenceFixture.includes("fixture-release-candidate") &&
@@ -201,7 +203,7 @@ const checks = [
       evidenceFixture.includes("| Accessibility Nutrition Labels | n/a | n/a |") &&
       evidenceFixture.includes("| Child safety standards declaration | n/a | passed |") &&
       evidenceFixture.includes("| Account deletion web resource | n/a | passed |") &&
-      evidenceFixture.includes("| iOS | fixture-device | iOS current | 1.0 (4) |"),
+      evidenceFixture.includes("| iOS | fixture-device | iOS current | 1.0 (4) | TestFlight | Wi-Fi and cellular | passed | fixture-proof | 2026-07-23 |"),
   },
   {
     label: "private console tab writer keeps exact URLs local-only",

@@ -102,10 +102,10 @@ passing install.
 
 ## Real-Device QA
 
-| Platform | Device model | OS version | Build or deploy version | Install source | Network | Result | Proof filename |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Android | | | | | | pending | |
-| iOS | | | | | | pending | |
+| Platform | Device model | OS version | Build or deploy version | Install source | Network | Result | Proof filename | Proof date |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Android | | | | | | pending | | |
+| iOS | | | | | | pending | | |
 
 ## Two-User DM Evidence
 
