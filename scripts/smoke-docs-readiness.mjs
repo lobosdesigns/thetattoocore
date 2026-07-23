@@ -271,6 +271,10 @@ const checks = [
       docs["docs/SCREENSHOT_PREP.md"].includes("13-inch iPad set") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("Google Play Console: record the uploaded phone screenshot set") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("feature graphic") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("upload 2-8 JPEG or 24-bit PNG files with no") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("alpha, each 320-3840 px on every side") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("no more than a 2:1 aspect ratio") &&
+      docs["docs/SCREENSHOT_PREP.md"].includes("one 1024 x 500 JPEG or 24-bit PNG with no") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("matches the submitted build after final metadata") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("## Private Upload Validation Packet") &&
       docs["docs/SCREENSHOT_PREP.md"].includes("Use one private packet per release candidate") &&
@@ -338,6 +342,10 @@ const checks = [
       docs["docs/DATA_SAFETY_PREP.md"].includes("Google Play Data Safety must be current before closed testing, open testing, or production release") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("internal testing are currently exempt from public Data Safety section inclusion") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("internal-only exemption note, closed/open testing if used, and production") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("one private Google Play answer matrix for every declared data type") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("Child safety standards, Health apps, Financial features") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("account-deletion web resource declarations") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("## Google Play Answer Matrix") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("support@thetattoocore.com") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("## App Store Privacy Evidence") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("reviewed against the submitted iOS build") &&
@@ -374,7 +382,8 @@ const checks = [
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("UGC and safety policy") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("report/block tools, moderation escalation") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Store questionnaires") &&
-      docs["docs/LEGAL_REVIEW_PREP.md"].includes("App Privacy/Data Safety, age/content rating, Accessibility Nutrition Labels") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("App Privacy/Data Safety, age/content rating, optional Accessibility Nutrition Labels claims") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Google Play required declarations") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Commerce and payments") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("native payment-policy classification") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Evidence privacy") &&
@@ -574,7 +583,9 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Content rights | Confirmation that icons, generated screenshots") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Privacy and data safety | App Privacy, Google Data Safety") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Age/content rating | App Store age rating, Google Play/IARC summary") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Accessibility Nutrition Labels | VoiceOver, Voice Control, Larger Text") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Accessibility Nutrition Labels | Optional VoiceOver, Voice Control, Larger Text") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Google Play required declarations | Child safety standards, Health apps") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Account deletion web resource | Public URL saved in Google Play") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Google Play closed testing | Tester list or Google Group selection") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Final validation | Console errors cleared") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("## Reviewer Notes Template") &&
@@ -608,6 +619,9 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("current App Store Connect help") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("2064 x 2752 or 2048 x 2732") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple Accessibility Nutrition Labels") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple currently describes these labels as voluntary") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple minimum functionality") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("App/Universal Link handling") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play target API") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Android 16 / API 36") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Active closed-test release") &&
@@ -615,6 +629,8 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play production access") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("current 12-testers-for-14-days gate") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("applies to newly created personal accounts") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play App content") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Child safety standards, Health apps, Financial") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Official source set checked: Apple App Store Connect App Privacy") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("screenshot specifications, screenshot upload, release notes") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Repo-safe current-rule source URLs") &&
@@ -625,7 +641,8 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("https://developer.apple.com/news/?id=d75yllv4") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("https://developer.android.com/google/play/requirements/target-sdk") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play target API, Data Safety, testing-track, production-access testing, and payments help") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("https://support.google.com/googleplay/android-developer/answer/14747720") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("https://support.google.com/googleplay/android-developer/answer/13327111") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("private release handoff only"),
   },
   {

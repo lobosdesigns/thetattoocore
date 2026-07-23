@@ -42,10 +42,32 @@ Use this as an internal checklist before answering Google Play Data Safety, App 
 - Google Play Data Safety must be current before closed testing, open testing, or production release. Apps active only on Google Play internal testing are currently exempt from public Data Safety section inclusion, but still keep this prep current before widening beyond internal testers.
 - Recheck the live build against the current Google Play Data Safety and App Store privacy questions.
 - Record whether the Data Safety answers were reviewed for each active release stage: internal-only exemption note, closed/open testing if used, and production.
+- Complete one private Google Play answer matrix for every declared data type:
+  collected or shared, required or optional, ephemeral or retained, linked to an
+  account or not, each allowed purpose, encryption in transit, deletion handling,
+  and the app or third-party component responsible. Do not treat a saved summary
+  screen as proof that every data type and purpose was reviewed.
+- Keep the Google Play Child safety standards, Health apps, Financial features,
+  Ads, target audience, content rating, sign-in details, and public
+  account-deletion web resource declarations aligned with the same exact release.
 - Confirm the public Privacy page describes profile data, messages, location settings, marketplace/payment records, deletion requests, and future ads accurately.
 - Confirm no app-store or public copy exposes private infrastructure, service secrets, personal owner contact information, or internal admin procedures.
 - Confirm production payment, payout, tax, refund, and dispute policies are complete before answering real-money commerce questions as live.
 - Confirm real-device QA passes for signup, login, profile editing, posting, DMs, reports, blocking, verification upload, account deletion request, notifications, public sharing, and payment test flows.
+
+## Google Play Answer Matrix
+
+Keep the completed matrix in the ignored private handoff. Use one row per Google
+Play data type, including data handled by native dependencies or checkout flows.
+
+| Field | Required private evidence |
+| --- | --- |
+| Data category and type | Exact Google Play category/type and the TTC feature or dependency that uses it. |
+| Collected and shared | Separate yes/no answer for collection and sharing, including service-provider treatment. |
+| Processing state | Required or optional, ephemeral or retained, and linked or not linked to the member. |
+| Purposes | Every selected purpose, such as app functionality, account management, fraud prevention/security, communications, personalization, or analytics. |
+| Protection and deletion | Encryption-in-transit answer, account-deletion path, public deletion-resource URL, retention exception, and test date. |
+| Exact release review | Android version code/name, reviewer initials, review date, and private console proof location. |
 
 ## App Store Privacy Evidence
 

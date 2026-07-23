@@ -51,6 +51,14 @@ requirements can change between internal testing and public review.
   13-inch iPad portrait proof accepted 2064 x 2752 or 2048 x 2732.
 - Apple Accessibility Nutrition Labels: evaluate common tasks on the submitted
   iPhone/iPad build before claiming support for any accessibility feature.
+  Apple currently describes these labels as voluntary, so an unclaimed label is
+  not a launch blocker; any claim that is made must be supported by exact-build
+  device evidence.
+- Apple minimum functionality: preserve app-specific 4U navigation, installed
+  session continuity, App/Universal Link handling, native notification opt-in
+  and tap routing where enabled, correct system-bar framing, and native-quality
+  back/home behavior. Capture exact-build device proof so the wrapper is not
+  represented as a repackaged website with no app-specific integration.
 - Google Play target API: new apps and updates submitted on or after August 31,
   2026 must target Android 16 / API 36 or higher. Active closed-test release
   `1.0.2 (3)` is the current API 36 baseline; any replacement must use a version
@@ -59,11 +67,16 @@ requirements can change between internal testing and public review.
   account is an organization account. The current 12-testers-for-14-days gate
   applies to newly created personal accounts, so it does not apply to this
   release. Recheck the console and official help before future submissions.
+- Google Play App content: keep Child safety standards, Health apps, Financial
+  features, Ads, Data safety, content rating, target audience, sign-in details,
+  and the public account-deletion web resource complete for the exact active
+  release. Save questionnaire evidence privately and track each declaration
+  separately so an actioned section cannot hide a missing declaration.
 - Keep source URLs, console screenshots, tester membership, reviewer credentials,
   private contact details, and account identifiers in the private release handoff
   only.
-- Official source set checked: Apple App Store Connect App Privacy, privacy manifests and third-party SDK requirements, Content Rights, age rating, screenshot specifications, screenshot upload, release notes, Accessibility Nutrition Labels, and February 2026 App Review guideline update; Google Play target API, Data Safety, testing-track, production-access testing, and payments help.
-- Repo-safe current-rule source URLs: Apple privacy manifests `https://developer.apple.com/documentation/bundleresources/privacy-manifest-files`; Apple third-party SDK requirements `https://developer.apple.com/support/third-party-SDK-requirements/`; Apple App Privacy details `https://developer.apple.com/app-store/app-privacy-details/`; Apple age rating `https://developer.apple.com/help/app-store-connect/manage-app-information/set-an-app-age-rating/`; Apple screenshot specifications `https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/`; Apple screenshot upload states `https://developer.apple.com/help/app-store-connect/manage-app-information/upload-app-previews-and-screenshots/`; Apple screenshot release note `https://developer.apple.com/help/app-store-connect/reference/release-notes/`; Apple February 2026 guideline update `https://developer.apple.com/news/?id=d75yllv4`; Google Play target API `https://developer.android.com/google/play/requirements/target-sdk`; Google Play production access testing `https://support.google.com/googleplay/android-developer/answer/14151465`.
+- Official source set checked: Apple App Store Connect App Privacy, privacy manifests and third-party SDK requirements, Content Rights, age rating, screenshot specifications, screenshot upload, release notes, voluntary Accessibility Nutrition Labels, minimum functionality, and February 2026 App Review guideline update; Google Play target API, Data Safety, testing-track, production-access testing, Child Safety, Health apps, Financial features, Ads, account deletion, store media, and payments help.
+- Repo-safe current-rule source URLs: Apple App Review Guidelines `https://developer.apple.com/app-store/review/guidelines/`; Apple Accessibility Nutrition Labels `https://developer.apple.com/help/app-store-connect/manage-app-accessibility/overview-of-accessibility-nutrition-labels/`; Apple privacy manifests `https://developer.apple.com/documentation/bundleresources/privacy-manifest-files`; Apple third-party SDK requirements `https://developer.apple.com/support/third-party-SDK-requirements/`; Apple App Privacy details `https://developer.apple.com/app-store/app-privacy-details/`; Apple age rating `https://developer.apple.com/help/app-store-connect/manage-app-information/set-an-app-age-rating/`; Apple screenshot specifications `https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/`; Apple screenshot upload states `https://developer.apple.com/help/app-store-connect/manage-app-information/upload-app-previews-and-screenshots/`; Apple screenshot release note `https://developer.apple.com/help/app-store-connect/reference/release-notes/`; Apple February 2026 guideline update `https://developer.apple.com/news/?id=d75yllv4`; Google Play App content `https://support.google.com/googleplay/android-developer/answer/9859455`; Google Play Child Safety `https://support.google.com/googleplay/android-developer/answer/14747720`; Google Play Health apps `https://support.google.com/googleplay/android-developer/answer/14738291`; Google Play Financial features `https://support.google.com/googleplay/android-developer/answer/13849271`; Google Play Data Safety `https://support.google.com/googleplay/android-developer/answer/10787469`; Google Play account deletion `https://support.google.com/googleplay/android-developer/answer/13327111`; Google Play store media `https://support.google.com/googleplay/android-developer/answer/9866151`; Google Play target API `https://developer.android.com/google/play/requirements/target-sdk`; Google Play production access testing `https://support.google.com/googleplay/android-developer/answer/14151465`.
 
 ## Wrapper Decision
 
@@ -114,7 +127,11 @@ treating a tester download as failed or counting it as release evidence:
 - Decide whether native builds expose Merch checkout or keep it web-only and launch-controlled until production payment policy is approved.
 - Prepare store age rating answers around 18+, user-generated content, moderation/reporting, no visible nudity policy, social interaction, DMs, marketplace-like browsing, and review-controlled checkout.
 - Prepare store data-safety/privacy answers around account/profile data, user-generated content, DMs, verification documents, moderation records, payment references, coarse location, notifications, deletion requests, and public-search visibility.
-- Prepare App Store Accessibility Nutrition Labels from real-device common-task QA only; do not claim support for VoiceOver, Voice Control, Larger Text, Differentiate Without Color Alone, Sufficient Contrast, Reduced Motion, Captions, or Audio Descriptions until that feature has been tested on the submitted iPhone/iPad build.
+- Treat App Store Accessibility Nutrition Labels as voluntary. Prepare a label
+  only from real-device common-task QA; do not claim support for VoiceOver,
+  Voice Control, Larger Text, Differentiate Without Color Alone, Sufficient
+  Contrast, Reduced Motion, Captions, or Audio Descriptions until that feature
+  has been tested on the submitted iPhone/iPad build.
 
 ## Final Store-Console Evidence
 
@@ -131,7 +148,9 @@ Keep completed console evidence in the private release handoff, not in this repo
 | Content rights | Confirmation that icons, generated screenshots, metadata, and any sample content are owned, licensed, or permissioned. | Record approval status only; no third-party contracts or private user content. |
 | Privacy and data safety | App Privacy, Google Data Safety, Privacy Policy URL, account deletion, DMs, verification docs, commerce, and ads answers. | Record reviewed-against-build date; keep questionnaire screenshots private. |
 | Age/content rating | App Store age rating, Google Play/IARC summary, social/UGC, reporting, blocking, chat moderation, no visible nudity, and not-dating answers. | Record saved summary date; keep console certificates/screenshots private. |
-| Accessibility Nutrition Labels | VoiceOver, Voice Control, Larger Text, Differentiate Without Color Alone, Sufficient Contrast, Reduced Motion, Captions, and Audio Descriptions answers checked against common tasks on the submitted iPhone/iPad build. | Record support/not-supported summary date only; keep device screenshots and tester notes private. |
+| Accessibility Nutrition Labels | Optional VoiceOver, Voice Control, Larger Text, Differentiate Without Color Alone, Sufficient Contrast, Reduced Motion, Captions, and Audio Descriptions claims checked against common tasks on the submitted iPhone/iPad build. | Record `not claimed` or the supported/not-supported summary date; keep device screenshots and tester notes private. |
+| Google Play required declarations | Child safety standards, Health apps, Financial features, Ads, Data Safety, target audience, content rating, and sign-in details saved for the exact release. | Record each declaration separately as `pending`, `passed`, or `blocked`; keep console screenshots private. |
+| Account deletion web resource | Public URL saved in Google Play, request path works outside the installed app, and the in-app deletion path matches public Privacy/Support language. | Record the tested URL and date privately; keep member request details out of repo docs. |
 | Google Play closed testing | Tester list or Google Group selection, opted-in tester count, 14-day continuous opt-in window if production access requires it, closed-test feedback summary, and production-access application answers. | Record only closed-test status, date range, and pass/fail summary; keep tester emails, group membership, console screenshots, and application answers private. |
 | Final validation | Console errors cleared, reviewer notes saved, export/compliance prompts complete, and submit button available or submitted. | Record final state and date; no private reviewer credentials or console identifiers. |
 

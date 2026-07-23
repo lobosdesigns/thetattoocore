@@ -169,12 +169,18 @@ Store-critical proof should include at least:
 - Verification upload success and admin approval/rejection evidence without exposing private documents.
 - Merch browsing, controlled checkout return, order history, and Admin Payments review evidence using safe test references.
 - Screenshot upload candidates that match `docs/SCREENSHOT_PREP.md`.
-- Accessibility Nutrition Labels proof for the submitted iPhone/iPad build, including common-task checks for VoiceOver, Voice Control, Larger Text, Differentiate Without Color Alone, Sufficient Contrast, Reduced Motion, Captions, and Audio Descriptions before claiming support in App Store Connect.
+- Optional Accessibility Nutrition Labels proof for the submitted iPhone/iPad
+  build, including common-task checks for VoiceOver, Voice Control, Larger Text,
+  Differentiate Without Color Alone, Sufficient Contrast, Reduced Motion,
+  Captions, and Audio Descriptions before claiming support in App Store Connect.
 - Browser/device console check showing no uncaught app errors during auth, posting, DMs, checkout return, reporting/blocking, and Help/Support/legal routes.
 
 ## Accessibility Nutrition Labels Evidence Matrix
 
-Use this matrix before answering App Store accessibility labels. Test only the submitted iPhone/iPad build, mark unsupported features honestly, and keep raw device clips, tester notes, and private account details in the private release handoff.
+Use this matrix only when making a voluntary App Store accessibility claim. Test
+only the submitted iPhone/iPad build, mark unsupported features honestly, and
+keep raw device clips, tester notes, and private account details in the private
+release handoff.
 
 | Common task | VoiceOver | Voice Control | Larger Text | Differentiate Without Color Alone | Sufficient Contrast | Reduced Motion | Captions | Audio Descriptions | Repo-safe note |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |

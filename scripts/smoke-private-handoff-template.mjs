@@ -93,7 +93,8 @@ const checks = [
       generator.includes("UGC and safety policy") &&
       generator.includes("no visible nudity, no scratcher promotion, no AI art/search claims") &&
       generator.includes("Store questionnaires") &&
-      generator.includes("App Privacy/Data Safety, age/content rating, Accessibility Nutrition Labels") &&
+      generator.includes("App Privacy/Data Safety, age/content rating, optional Accessibility Nutrition Labels claims") &&
+      generator.includes("Google Play declarations") &&
       generator.includes("Commerce and payments") &&
       generator.includes("native payment-policy classification") &&
       generator.includes("Evidence privacy") &&
@@ -106,7 +107,8 @@ const checks = [
       generator.includes("Submitted-build console field evidence") &&
       generator.includes("selected build, 13-inch iPad screenshot upload, primary category, free pricing") &&
       generator.includes("Content Rights, App Privacy, Privacy Policy URL, and Age 18+ override") &&
-      generator.includes("submitted-build iPhone/iPad QA evidence only") &&
+      generator.includes("Apple currently treats these labels as voluntary") &&
+      generator.includes("leave them unclaimed unless submitted-build iPhone/iPad QA supports an honest label") &&
       generator.includes("Organization account confirmed") &&
       generator.includes("personal-account 12-tester/14-day production-access gate is not applicable") &&
       generator.includes("Closed-test tester links and opt-in evidence") &&
@@ -145,6 +147,11 @@ const checks = [
       generator.includes("App Store iPhone 6.5-inch screenshots") &&
       generator.includes("App Store 13-inch iPad screenshots") &&
       generator.includes("Accessibility Nutrition Labels") &&
+      generator.includes("Child safety standards declaration") &&
+      generator.includes("Health apps declaration") &&
+      generator.includes("Financial features declaration") &&
+      generator.includes("Ads declaration") &&
+      generator.includes("Account deletion web resource") &&
       generator.includes("Production-access closed test, if required") &&
       generator.includes("## Private Console Tab Restore") &&
       generator.includes("active launch-console tabs need a crash-safe handoff") &&
@@ -176,6 +183,9 @@ const checks = [
       evidenceFixture.includes("fixture-release-candidate") &&
       evidenceFixture.includes("Closed testing - Alpha 1.0.2 (3)") &&
       evidenceFixture.includes("App Review 1.0 (3)") &&
+      evidenceFixture.includes("| Accessibility Nutrition Labels | n/a | n/a |") &&
+      evidenceFixture.includes("| Child safety standards declaration | n/a | passed |") &&
+      evidenceFixture.includes("| Account deletion web resource | n/a | passed |") &&
       evidenceFixture.includes("| iOS | fixture-device | iOS current | 1.0 (4) |"),
   },
   {

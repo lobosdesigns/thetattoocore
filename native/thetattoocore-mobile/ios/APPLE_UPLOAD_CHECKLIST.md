@@ -49,6 +49,10 @@ In Xcode:
 - Keep messaging auto-initialization and production delivery off until explicit member opt-in, token registration, notification delivery, tap routing, and opt-out pass on build `4`.
 - Generate Xcode's aggregate Privacy Report from the next archive. Confirm the TTC app manifest declares Device ID as collected, linked to the member, used for app functionality, and not used for tracking, and confirm valid manifests are present for Capacitor, Cordova, and native messaging dependencies. Keep the report private.
 - Confirm login, signup, forgot password, reset password, and email confirmation stay inside the app WebView during the device smoke pass.
+- Capture exact-build minimum-functionality proof for app-specific 4U
+  navigation, retained installed sessions, native back/home behavior,
+  App/Universal Links, correct system-bar framing, and native notification
+  opt-in/tap routing where enabled.
 
 ## 4. Archive
 
@@ -69,11 +73,12 @@ After upload processing:
 - Use privacy URL `https://thetattoocore.com/privacy`.
 - Do not submit for public App Review until the real-device QA checklist and final legal/payment review are complete.
 - Before public App Review submission, confirm App Privacy/Privacy Policy URL,
-  age rating, Content Rights, Accessibility Nutrition Labels, screenshot upload
-  validation, category/pricing, and final reviewer access for the selected build
-  are complete in App Store Connect. Keep reviewer credentials, phone details,
-  account identifiers, and console screenshots in the private release handoff
-  only.
+  age rating, Content Rights, screenshot upload validation, category/pricing,
+  and final reviewer access for the selected build are complete in App Store
+  Connect. Accessibility Nutrition Labels are voluntary; leave them unclaimed
+  unless exact-build iPhone/iPad QA supports an honest claim. Keep reviewer
+  credentials, phone details, account identifiers, and console screenshots in
+  the private release handoff only.
 - Confirm App Privacy includes Device ID as collected, linked to the member,
   used for app functionality, and not used for tracking, alongside the broader
   TTC web/app disclosures in `docs/DATA_SAFETY_PREP.md`.

@@ -33,7 +33,7 @@ account identifiers out of repo docs.
 | --- | --- | --- | --- | --- |
 | Apple | App Review monitoring and response evidence | App Store Connect shows iOS App Version 1.0 build 1.0 (3) submitted for App Review; archive reviewer messages, status changes, rejection notes, or approval proof privately | pending | |
 | Apple | Submitted-build console field evidence | Confirm selected build, 13-inch iPad screenshot upload, primary category, free pricing, Content Rights, App Privacy, Privacy Policy URL, and Age 18+ override remain saved for the submitted build | pending | |
-| Apple | Accessibility Nutrition Labels evidence | Use submitted-build iPhone/iPad QA evidence only before changing or confirming labels | pending | |
+| Apple | Accessibility Nutrition Labels evidence | Apple currently treats these labels as voluntary; leave them unclaimed unless submitted-build iPhone/iPad QA supports an honest label | n/a | Official Apple Accessibility Nutrition Labels help, reviewed before submission |
 | Google Play | Closed testing production-access evidence | Organization account confirmed; the personal-account 12-tester/14-day production-access gate is not applicable, while tester opt-in and install evidence remain required | n/a | |
 | Google Play | Closed-test tester links and opt-in evidence | Save Android/web join links privately, confirm the device Play account matches the tester-community member, confirm web opt-in with that account, and record listing/install proof | pending | |
 | Google Play | API 36 closed-test release | Version code 3 / version name 1.0.2 API 36 update is active and verified installed on an authorized Android 16 device; do not upload the same version code again, and archive tester participation evidence | pending | |
@@ -56,7 +56,12 @@ account identifiers out of repo docs.
 | Content rights | pending | n/a | | |
 | App Privacy / Data Safety | pending | pending | | |
 | Age/content rating | pending | pending | | |
-| Accessibility Nutrition Labels | pending | n/a | | |
+| Accessibility Nutrition Labels | n/a | n/a | Official Apple Accessibility Nutrition Labels help | Voluntary for this submission; no accessibility support claim is required. |
+| Child safety standards declaration | n/a | pending | | |
+| Health apps declaration | n/a | pending | | |
+| Financial features declaration | n/a | pending | | |
+| Ads declaration | n/a | pending | | |
+| Account deletion web resource | n/a | pending | | |
 | Production-access closed test, if required | n/a | pending | | |
 | Final validation and submit readiness | pending | pending | | |
 
@@ -170,7 +175,7 @@ submitted. Repo-visible summaries should keep only pass/fail/blocker status.
 | Public legal URLs | Terms, Privacy, Support, Help, Child Safety Standards, and account deletion request path match the submitted build and store metadata | pending | | | |
 | Account deletion and retention | Deletion SLA, manual review owner, retention exceptions, legal holds, moderation records, verification history, and payment/order records are approved | pending | | | |
 | UGC and safety policy | 18+ eligibility, no visible nudity, no scratcher promotion, no AI art/search claims, report/block tools, moderation escalation, and restricted-equipment handling are approved | pending | | | |
-| Store questionnaires | App Privacy/Data Safety, age/content rating, Accessibility Nutrition Labels, content rights, pricing, category, reviewer notes, and screenshot validation match the exact build | pending | | | |
+| Store questionnaires | App Privacy/Data Safety, age/content rating, optional Accessibility Nutrition Labels claims, Google Play declarations, content rights, pricing, category, reviewer notes, and screenshot validation match the exact build | pending | | | |
 | Commerce and payments | Checkout exposure, native payment-policy classification, tax/shipping assumptions, fulfillment timing, refunds, disputes, booking deposits, ad purchases, and seller payout timing are approved or explicitly gated | pending | | | |
 | Evidence privacy | Reviewer credentials, phone details, console screenshots, payment identifiers, buyer addresses, private DMs, license documents, and owner personal details remain outside repo-visible docs | pending | | | |
 

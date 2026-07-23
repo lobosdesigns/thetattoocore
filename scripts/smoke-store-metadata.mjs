@@ -546,7 +546,8 @@ const checks = [
       source.readme.includes("| Content rights | Confirmation that icons, generated screenshots") &&
       source.readme.includes("| Privacy and data safety | App Privacy, Google Data Safety") &&
       source.readme.includes("| Age/content rating | App Store age rating, Google Play/IARC summary") &&
-      source.readme.includes("| Accessibility Nutrition Labels | VoiceOver, Voice Control, Larger Text") &&
+      source.readme.includes("| Accessibility Nutrition Labels | Optional VoiceOver, Voice Control, Larger Text") &&
+      source.readme.includes("| Google Play required declarations | Child safety standards, Health apps") &&
       source.readme.includes("| Final validation | Console errors cleared") &&
       blockedPrivateEvidenceTerms.every((term) => !source.readme.toLowerCase().includes(term)),
   },
@@ -555,7 +556,7 @@ const checks = [
     ok:
       source.readiness.includes("Apple iOS `1.0` build `1.0 (3)` is submitted for App Review") &&
       source.readiness.includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
-      source.readiness.includes("age/content rating, Accessibility Nutrition Labels, applicable tester evidence, and final console validation") &&
+      source.readiness.includes("age/content rating, optional Accessibility Nutrition Labels claims, Google Play required declarations, applicable tester evidence, and final console validation") &&
       source.readiness.includes("Closed testing - Alpha is Active with API 36 release `1.0.2 (3)`") &&
       source.readiness.includes("existing Google Group community") &&
       source.readiness.includes("authorized Android 16 review phone installed exact Alpha build `1.0.2 (3)`") &&
@@ -599,10 +600,11 @@ const checks = [
       blockedPrivateEvidenceTerms.every((term) => !currentBlockerMatrix.toLowerCase().includes(term)),
   },
   {
-    label: "App Store Accessibility Nutrition Labels evidence matrix stays submitted-build gated",
+    label: "optional App Store Accessibility Nutrition Labels stay submitted-build gated",
     ok:
       source.realDeviceQa.includes("## Accessibility Nutrition Labels Evidence Matrix") &&
-      source.realDeviceQa.includes("Test only the submitted iPhone/iPad build") &&
+      source.realDeviceQa.includes("voluntary App Store accessibility claim") &&
+      source.realDeviceQa.includes("only the submitted iPhone/iPad build") &&
       source.realDeviceQa.includes("mark unsupported features honestly") &&
       source.realDeviceQa.includes("VoiceOver") &&
       source.realDeviceQa.includes("Voice Control") &&
@@ -721,7 +723,7 @@ const checks = [
     ok:
       filesAreAtMost(selectedGooglePlayScreenshotPaths(), googlePlayScreenshotMaxBytes) &&
       source.screenshotInventory.includes("Current Google Play phone upload size cap: 8 MB per screenshot") &&
-      source.screenshotPrep.includes("Google Play phone screenshots should be 8 MB or smaller per file"),
+      source.screenshotPrep.includes("8 MB or smaller per file"),
   },
   {
     label: "selected App Store screenshots match upload dimensions and no-alpha output",

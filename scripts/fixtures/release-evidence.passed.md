@@ -17,7 +17,7 @@
 | --- | --- | --- | --- | --- |
 | Apple | App Review monitoring and response evidence | App Store Connect iOS App Version 1.0 build 1.0 (3) | passed | fixture-proof |
 | Apple | Submitted-build console field evidence | Saved | passed | fixture-proof |
-| Apple | Accessibility Nutrition Labels evidence | Confirmed | passed | fixture-proof |
+| Apple | Accessibility Nutrition Labels evidence | Voluntary and unclaimed | n/a | fixture-proof |
 | Google Play | Closed testing production-access evidence | Organization account requirement reviewed | n/a | fixture-proof |
 | Google Play | Closed-test tester links and opt-in evidence | Confirmed | passed | fixture-proof |
 | Google Play | API 36 closed-test release | Active Alpha 1.0.2 (3) | passed | fixture-proof |
@@ -38,7 +38,12 @@
 | Content rights | passed | n/a | fixture-proof | Rights saved |
 | App Privacy / Data Safety | passed | passed | fixture-proof | Answers saved |
 | Age/content rating | passed | passed | fixture-proof | Ratings saved |
-| Accessibility Nutrition Labels | passed | n/a | fixture-proof | Labels confirmed |
+| Accessibility Nutrition Labels | n/a | n/a | fixture-proof | Voluntary and unclaimed |
+| Child safety standards declaration | n/a | passed | fixture-proof | Declaration saved |
+| Health apps declaration | n/a | passed | fixture-proof | Declaration saved |
+| Financial features declaration | n/a | passed | fixture-proof | Declaration saved |
+| Ads declaration | n/a | passed | fixture-proof | Declaration saved |
+| Account deletion web resource | n/a | passed | fixture-proof | Public request path saved |
 | Production-access closed test, if required | n/a | n/a | fixture-proof | Organization account reviewed |
 | Final validation and submit readiness | passed | passed | fixture-proof | Validation passed |
 
