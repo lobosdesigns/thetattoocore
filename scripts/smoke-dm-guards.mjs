@@ -185,6 +185,17 @@ const checks = [
       !messageHistoryApi.includes("console."),
   },
   {
+    label: "incoming DMs preserve older reading position",
+    ok:
+      messageThread.includes("const nearBottomThresholdPx = 80") &&
+      messageThread.includes("const autoFollowLatestRef = useRef(true)") &&
+      messageThread.includes("const distanceFromBottom =") &&
+      messageThread.includes("distanceFromBottom <= nearBottomThresholdPx") &&
+      messageThread.includes("autoFollowLatestRef.current ||") &&
+      messageThread.includes("latestMessage?.sender_id === currentUserId") &&
+      messageThread.includes("onScroll={updateAutoFollowLatest}"),
+  },
+  {
     label: "DM start action reuses the newest shared thread deterministically",
     ok:
       messageActions.includes("async function findExistingConversation") &&

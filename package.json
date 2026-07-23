@@ -39,7 +39,7 @@
     "smoke:pwa": "node scripts/smoke-pwa-guards.mjs",
     "smoke:native-push": "node scripts/smoke-native-push-guards.mjs",
     "test:native-push-delivery": "node scripts/test-native-push-delivery.mjs",
-    "smoke:native": "node scripts/smoke-native-wrapper.mjs",
+    "smoke:native": "node scripts/smoke-native-wrapper.mjs && node scripts/test-native-app-url.mjs",
     "smoke:app-links": "node scripts/smoke-app-link-associations.mjs",
     "smoke:handoff": "node scripts/smoke-private-handoff-template.mjs",
     "test:release-evidence-gate": "node scripts/test-release-evidence-gate.mjs",

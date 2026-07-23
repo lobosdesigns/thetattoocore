@@ -26,6 +26,10 @@ const files = {
   mobileSmoke: "scripts/smoke-mobile-browser.mjs",
   middleware: "src/middleware.ts",
   nativePrep: "docs/NATIVE_WRAPPER_PREP.md",
+  nativeAppUrl: "src/lib/native-app-url.ts",
+  nativeAppUrlBridge: "src/app/native-app-url-bridge.tsx",
+  nativeAppUrlTest: "scripts/test-native-app-url.mjs",
+  rootLayout: "src/app/layout.tsx",
   nativePushProbe: "scripts/native-push-qa-probe.mjs",
   appLinkSmoke: "scripts/smoke-app-link-associations.mjs",
   realDeviceQa: "docs/REAL_DEVICE_QA_CHECKLIST.md",
@@ -226,13 +230,24 @@ const checks = [
       source.iosUploadChecklist.includes("Confirm login, signup, forgot password, reset password, and email confirmation stay inside the app WebView"),
   },
   {
-    label: "native wrapper declares TTC shared-link routing with iOS links deferred until profile support",
+    label: "native wrapper declares and handles safe TTC shared-link routing",
     ok:
       source.androidManifest.includes('android.intent.action.VIEW') &&
       source.androidManifest.includes('android:autoVerify="true"') &&
       source.androidManifest.includes('android.intent.category.BROWSABLE') &&
       source.androidManifest.includes('android:host="thetattoocore.com"') &&
       source.androidManifest.includes('android:host="www.thetattoocore.com"') &&
+      source.rootLayout.includes("<NativeAppUrlBridge />") &&
+      source.nativeAppUrlBridge.includes('App.addListener("appUrlOpen"') &&
+      source.nativeAppUrlBridge.includes("App.getLaunchUrl()") &&
+      source.nativeAppUrlBridge.includes('navigate(event.url, "push")') &&
+      source.nativeAppUrlBridge.includes('navigate(launch?.url, "replace")') &&
+      source.nativeAppUrlBridge.includes("createdHandle.remove()") &&
+      source.nativeAppUrl.includes('"https://thetattoocore.com"') &&
+      source.nativeAppUrl.includes('"https://www.thetattoocore.com"') &&
+      source.nativeAppUrl.includes("!nativeAppOrigins.has(url.origin)") &&
+      source.nativeAppUrlTest.includes("external origin is rejected") &&
+      source.nativeAppUrlTest.includes("lookalike subdomain is rejected") &&
       source.nativePrep.includes("Deep-link wiring is started in the wrapper") &&
       source.nativePrep.includes("iOS universal links are deferred for the first TestFlight build") &&
       source.nativePrep.includes("support, Child Safety Standards, privacy, and terms routes") &&

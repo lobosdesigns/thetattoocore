@@ -1370,7 +1370,7 @@ async function checkSitemapUrls() {
   const urls = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1]);
   const badUrls = [];
   const publicUrls = [];
-  const requiredSitemapUrls = [`${baseUrl}/merch`];
+  const requiredSitemapUrls = [baseUrl, `${baseUrl}/merch`];
   const missingRequiredUrls = requiredSitemapUrls.filter((url) => !urls.includes(url));
 
   if (missingRequiredUrls.length > 0) {

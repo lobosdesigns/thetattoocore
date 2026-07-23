@@ -133,11 +133,13 @@ evidence privately using the matrix above.
 7. Re-run real-device QA after every wrapper permission, deep-link, checkout, push, or upload change.
 8. Enable Firebase/FCM notification delivery only after the native push plan above has real-device evidence for both apps.
 
-Deep-link wiring is started in the wrapper. Before public release, add the final
-domain association files using the signed Android certificate fingerprint and
-the Apple team/app identifier, then confirm profile, post, Story, Gossip, Stuff,
-Gigs, Merch, booking, support, Child Safety Standards, privacy, and terms links
-open inside the app.
+Deep-link wiring is started in the wrapper. The always-mounted web bridge handles
+both cold-start and warm Capacitor app URL events, accepts only exact TTC HTTPS
+origins, and keeps the full path, query, and hash inside the WebView. Before
+public release, add the final domain association files using the signed Android
+certificate fingerprint and the Apple team/app identifier, then confirm profile,
+post, Story, Gossip, Stuff, Gigs, Merch, booking, support, Child Safety Standards,
+privacy, and terms links open inside the app.
 iOS universal links are deferred for the first TestFlight build until the Apple
 provisioning profile includes the Associated Domains capability.
 

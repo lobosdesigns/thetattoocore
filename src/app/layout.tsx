@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthHashRedirect } from "./auth-hash-redirect";
+import { NativeAppUrlBridge } from "./native-app-url-bridge";
 import { PwaInstallSuppressor } from "./pwa-install-suppressor";
 import { NativeNotificationProvider } from "./native-notification-provider";
 import { ServiceWorkerRegistrar } from "./service-worker-registrar";
@@ -160,6 +161,7 @@ export default async function RootLayout({
           qaBuildRestricted={nativeNotificationQaBuildRestricted}
           setupEnabled={nativeNotificationSetupEnabled}
         >
+          <NativeAppUrlBridge />
           <AuthHashRedirect />
           <ServiceWorkerRegistrar />
           <PwaInstallSuppressor />

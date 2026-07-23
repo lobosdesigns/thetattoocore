@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import {
+  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -21,6 +22,8 @@ type Profile = {
   display_name: string;
   avatar_url?: string | null;
 };
+
+const nearBottomThresholdPx = 80;
 
 export type ThreadMessage = {
   attachments?: {
@@ -109,6 +112,7 @@ export function MessageThread({
   const previousOldestMessageIdRef = useRef<string | null>(null);
   const previousMessageCountRef = useRef(0);
   const previousScrollHeightRef = useRef(0);
+  const autoFollowLatestRef = useRef(true);
   const [deletedMessageIds, setDeletedMessageIds] = useState<string[]>([]);
   const [historyMessage, setHistoryMessage] = useState("");
   const [historyMessages, setHistoryMessages] = useState<ThreadMessage[]>([]);
@@ -128,13 +132,25 @@ export function MessageThread({
     [profiles],
   );
 
+  const updateAutoFollowLatest = useCallback(() => {
+    const container = scrollRef.current;
+
+    if (!container) return;
+
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
+    autoFollowLatestRef.current =
+      distanceFromBottom <= nearBottomThresholdPx;
+  }, []);
+
   useLayoutEffect(() => {
     const container = scrollRef.current;
 
     if (!container) return;
 
     const oldestMessageId = messages[0]?.id ?? null;
-    const latestMessageId = messages.at(-1)?.id ?? null;
+    const latestMessage = messages.at(-1);
+    const latestMessageId = latestMessage?.id ?? null;
     const conversationChanged =
       previousConversationIdRef.current !== conversationId;
     const loadedEarlierMessages =
@@ -149,7 +165,11 @@ export function MessageThread({
       const addedHeight =
         container.scrollHeight - previousScrollHeightRef.current;
       container.scrollTop += Math.max(0, addedHeight);
-    } else if (latestMessageId !== previousLatestMessageIdRef.current) {
+    } else if (
+      latestMessageId !== previousLatestMessageIdRef.current &&
+      (autoFollowLatestRef.current ||
+        latestMessage?.sender_id === currentUserId)
+    ) {
       bottomRef.current?.scrollIntoView({ block: "end" });
     }
 
@@ -158,7 +178,8 @@ export function MessageThread({
     previousOldestMessageIdRef.current = oldestMessageId;
     previousMessageCountRef.current = messages.length;
     previousScrollHeightRef.current = container.scrollHeight;
-  }, [conversationId, messages]);
+    updateAutoFollowLatest();
+  }, [conversationId, currentUserId, messages, updateAutoFollowLatest]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -274,6 +295,7 @@ export function MessageThread({
   return (
     <div
       className="min-h-0 min-w-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-4 py-5"
+      onScroll={updateAutoFollowLatest}
       ref={scrollRef}
     >
       {moreHistoryAvailable ? (

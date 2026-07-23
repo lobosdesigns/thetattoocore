@@ -15,6 +15,7 @@ const siteConstants = readFileSync("src/lib/site.ts", "utf8");
 const rootLayout = readFileSync("src/app/layout.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const robots = readFileSync("src/app/robots.ts", "utf8");
+const sitemap = readFileSync("src/app/sitemap.ts", "utf8");
 
 const publicContentDetails = [
   ["4U detail", feedDetail, 'post.visibility === "public_preview" && !post.is_sensitive'],
@@ -197,6 +198,16 @@ const checks = [
       robots.includes('"/messages"') &&
       robots.includes('"/notifications"') &&
       robots.includes('"/admin"'),
+  },
+  {
+    label: "Sitemap keeps the canonical homepage discoverable",
+    ok:
+      sitemap.includes('changeFrequency: "daily"') &&
+      sitemap.includes("priority: 1") &&
+      sitemap.includes("url: siteUrl") &&
+      publicSmoke.includes(
+        "const requiredSitemapUrls = [baseUrl, `${baseUrl}/merch`]",
+      ),
   },
 ];
 
