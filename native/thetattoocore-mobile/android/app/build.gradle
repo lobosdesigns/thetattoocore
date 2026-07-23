@@ -1,14 +1,21 @@
 apply plugin: 'com.android.application'
 
+def ttcUploadStoreFile = project.findProperty("TTC_ANDROID_UPLOAD_STORE_FILE") ?: System.getenv("TTC_ANDROID_UPLOAD_STORE_FILE")
+def ttcUploadStorePassword = project.findProperty("TTC_ANDROID_UPLOAD_STORE_PASSWORD") ?: System.getenv("TTC_ANDROID_UPLOAD_STORE_PASSWORD")
+def ttcUploadKeyAlias = project.findProperty("TTC_ANDROID_UPLOAD_KEY_ALIAS") ?: System.getenv("TTC_ANDROID_UPLOAD_KEY_ALIAS")
+def ttcUploadKeyPassword = project.findProperty("TTC_ANDROID_UPLOAD_KEY_PASSWORD") ?: System.getenv("TTC_ANDROID_UPLOAD_KEY_PASSWORD")
+def hasTtcUploadSigning = [
+    ttcUploadStoreFile,
+    ttcUploadStorePassword,
+    ttcUploadKeyAlias,
+    ttcUploadKeyPassword,
+].every { value -> value?.toString()?.trim() }
+def ttcServicesFile = file('google-services.json')
+def hasTtcServicesConfig = ttcServicesFile.isFile() && ttcServicesFile.length() > 0
+
 android {
     namespace "com.thetattoocore.app"
     compileSdk rootProject.ext.compileSdkVersion
-
-    def ttcUploadStoreFile = project.findProperty("TTC_ANDROID_UPLOAD_STORE_FILE") ?: System.getenv("TTC_ANDROID_UPLOAD_STORE_FILE")
-    def ttcUploadStorePassword = project.findProperty("TTC_ANDROID_UPLOAD_STORE_PASSWORD") ?: System.getenv("TTC_ANDROID_UPLOAD_STORE_PASSWORD")
-    def ttcUploadKeyAlias = project.findProperty("TTC_ANDROID_UPLOAD_KEY_ALIAS") ?: System.getenv("TTC_ANDROID_UPLOAD_KEY_ALIAS")
-    def ttcUploadKeyPassword = project.findProperty("TTC_ANDROID_UPLOAD_KEY_PASSWORD") ?: System.getenv("TTC_ANDROID_UPLOAD_KEY_PASSWORD")
-    def hasTtcUploadSigning = ttcUploadStoreFile && ttcUploadStorePassword && ttcUploadKeyAlias && ttcUploadKeyPassword
 
     signingConfigs {
         if (hasTtcUploadSigning) {
@@ -71,11 +78,34 @@ dependencies {
 
 apply from: 'capacitor.build.gradle'
 
-try {
-    def servicesJSON = file('google-services.json')
-    if (servicesJSON.text) {
-        apply plugin: 'com.google.gms.google-services'
+if (hasTtcServicesConfig) {
+    apply plugin: 'com.google.gms.google-services'
+
+    tasks.matching { task -> task.name == "processDebugGoogleServices" }.configureEach {
+        enabled = false
     }
-} catch(Exception e) {
-    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}
+
+tasks.register("verifyTtcReleaseInputs") {
+    group = "verification"
+    description = "Fails closed when private TTC Android release inputs are unavailable."
+
+    doLast {
+        if (!hasTtcUploadSigning) {
+            throw new GradleException("TTC Android release signing is not configured.")
+        }
+
+        def uploadStore = file(ttcUploadStoreFile)
+        if (!uploadStore.isFile() || !uploadStore.canRead()) {
+            throw new GradleException("TTC Android release signing file is unavailable.")
+        }
+
+        if (!hasTtcServicesConfig) {
+            throw new GradleException("TTC Android release app configuration is unavailable.")
+        }
+    }
+}
+
+tasks.matching { task -> task.name == "preReleaseBuild" }.configureEach {
+    dependsOn tasks.named("verifyTtcReleaseInputs")
 }

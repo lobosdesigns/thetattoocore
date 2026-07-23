@@ -199,6 +199,8 @@ cd android
 
 Android SDK and JDK 21 are configured on this Windows machine. For a Google Play upload build, load the local signing environment variables from the private Desktop recovery note, then run `.\gradlew.bat bundleRelease`. The signed upload bundle is `native/thetattoocore-mobile/android/app/build/outputs/bundle/release/app-release.aab`. Keep `android/local.properties`, `android/keystores/`, and all keystore recovery notes out of git.
 
+Android release bundling fails closed before compilation unless all private upload-signing inputs are present, the referenced signing file is readable, and the ignored Android app configuration file is present and nonempty. The failure message names only the missing input category. The production app configuration is not processed for the side-by-side `.qa` debug package, so `assembleDebug` remains available without release signing or a separate QA app registration. Any Play replacement must increment above version code `3`.
+
 iOS on Mac:
 
 ```bash

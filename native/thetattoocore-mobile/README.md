@@ -18,6 +18,10 @@ This folder is the starting point for Apple TestFlight and Google Play closed/in
 - Android native alert config stays private-build-only: the wrapper may know
   how to apply the Google services plugin, but the app config file stays out of
   git and is added only for a private build after device evidence is ready.
+- Android release bundling fails closed when private upload signing or the
+  ignored Android app configuration is missing or unreadable. Debug packaging
+  remains available without release signing or a separate `.qa` app
+  registration.
 - TTC web links are declared for the wrapper; final verified app links still require the signed Android fingerprint and Apple site-association file before public release.
 
 ## Build Notes

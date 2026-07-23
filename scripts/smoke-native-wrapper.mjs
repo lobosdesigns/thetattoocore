@@ -464,10 +464,19 @@ const checks = [
         (dependency) => !source.packageJson.includes(`"${dependency}"`),
       ) &&
       source.androidRootBuild.includes("com.google.gms:google-services") &&
-      source.androidAppBuild.includes("def servicesJSON = file('google-services.json')") &&
-      source.androidAppBuild.includes("if (servicesJSON.text)") &&
+      source.androidAppBuild.includes("def ttcServicesFile = file('google-services.json')") &&
+      source.androidAppBuild.includes("def hasTtcServicesConfig = ttcServicesFile.isFile() && ttcServicesFile.length() > 0") &&
+      source.androidAppBuild.includes("if (hasTtcServicesConfig)") &&
       source.androidAppBuild.includes("apply plugin: 'com.google.gms.google-services'") &&
-      source.androidAppBuild.includes("google-services.json not found") &&
+      source.androidAppBuild.includes('task.name == "processDebugGoogleServices"') &&
+      source.androidAppBuild.includes("enabled = false") &&
+      source.androidAppBuild.includes('tasks.register("verifyTtcReleaseInputs")') &&
+      source.androidAppBuild.includes('task.name == "preReleaseBuild"') &&
+      source.androidAppBuild.includes('dependsOn tasks.named("verifyTtcReleaseInputs")') &&
+      source.androidAppBuild.includes("TTC Android release signing is not configured.") &&
+      source.androidAppBuild.includes("TTC Android release signing file is unavailable.") &&
+      source.androidAppBuild.includes("TTC Android release app configuration is unavailable.") &&
+      !source.androidAppBuild.includes("Push Notifications won't work") &&
       source.gitignore.includes("**/google-services.json") &&
       source.gitignore.includes("**/GoogleService-Info.plist") &&
       source.nativePushProbe.includes("NATIVE_PUSH_QA staging_guard=") &&
@@ -480,11 +489,12 @@ const checks = [
       source.nativePushProbe.includes('key: "ios_fcm_token_bridge"') &&
       source.rootPackageJson.includes('"qa:native-push": "node scripts/native-push-qa-probe.mjs"') &&
       source.rootPackageJson.includes('"qa:native-push:required": "node scripts/native-push-qa-probe.mjs --require-ready"') &&
-      source.nativePrep.includes("The Android google-services plugin stays conditional") &&
+      source.nativePrep.includes("Android release bundling fails closed") &&
       source.nativePrep.includes("npm.cmd run qa:native-push") &&
       source.nativePrep.includes("staging guard") &&
       source.nativePrep.includes("iOS FCM token bridge") &&
       source.readme.includes("Android native alert config stays private-build-only") &&
+      source.readme.includes("Android release bundling fails closed") &&
       source.nativePrep.includes("Enable Firebase/FCM notification delivery only after") &&
       source.mobileRunbook.includes("Firebase project, native app config files") &&
       source.readiness.includes("UI, registration, and delivery gates off"),
