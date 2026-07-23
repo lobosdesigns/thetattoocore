@@ -4,9 +4,11 @@ import { join } from "node:path";
 
 const requireDevice = process.argv.includes("--require-device");
 const openTestJoin = process.argv.includes("--open-test-join");
+const openAppLink = process.argv.includes("--open-app-link");
 const androidPackageName = "com.thetattoocore.app";
 const closedTestJoinUrl = `https://play.google.com/apps/testing/${androidPackageName}`;
 const playStoreUrl = `https://play.google.com/store/apps/details?id=${androidPackageName}`;
+const appLinkUrl = "https://thetattoocore.com/messages";
 const androidBuildGradlePath = "native/thetattoocore-mobile/android/app/build.gradle";
 const androidVariablesGradlePath = "native/thetattoocore-mobile/android/variables.gradle";
 const waitMsArg = process.argv.find((arg) => arg.startsWith("--wait-ms="));
@@ -68,6 +70,44 @@ function openClosedTestJoin(adb, serial) {
     console.log("ANDROID_QA closed_test_join=open requested");
   } catch {
     console.log("ANDROID_QA closed_test_join=open failed");
+  }
+}
+
+function androidAppLinkState(output) {
+  const domains = ["thetattoocore.com", "www.thetattoocore.com"];
+  const verified = domains.every((domain) =>
+    new RegExp(`^\\s*${domain}: verified\\s*$`, "m").test(output),
+  );
+  const enabledBlock = output.match(/Selection state:\s+Enabled:\s+([\s\S]*?)(?:\n\s+\w[^:\n]*:|$)/)?.[1] ?? "";
+  const enabled = domains.every((domain) =>
+    new RegExp(`^\\s*${domain}\\s*$`, "m").test(enabledBlock),
+  );
+
+  return { enabled, verified };
+}
+
+function openVerifiedAppLink(adb, serial) {
+  try {
+    const output = runAdb(adb, [
+      "-s",
+      serial,
+      "shell",
+      "am",
+      "start",
+      "-W",
+      "-a",
+      "android.intent.action.VIEW",
+      "-d",
+      appLinkUrl,
+    ]);
+    const openedProductionApp = output.includes(`${androidPackageName}/.MainActivity`);
+    console.log(
+      `ANDROID_QA app_link_open=${openedProductionApp ? "production app" : "not confirmed"}`,
+    );
+    return openedProductionApp;
+  } catch {
+    console.log("ANDROID_QA app_link_open=failed");
+    return false;
   }
 }
 
@@ -261,6 +301,34 @@ if (!versionNameMatches || !versionCodeMatches || !targetSdkMatches) {
   console.log("ANDROID_QA next=join the active Google Play closed test and install its exact build, or set TTC_ANDROID_EXPECTED_VERSION_NAME and TTC_ANDROID_EXPECTED_VERSION_CODE for the selected track");
   if (requireDevice) process.exit(1);
   process.exit(0);
+}
+
+let appLinkState = { enabled: false, verified: false };
+
+try {
+  appLinkState = androidAppLinkState(
+    shell(["pm", "get-app-links", "--user", "cur", androidPackageName]),
+  );
+} catch {
+  // Keep the device probe useful on Android versions without app-link diagnostics.
+}
+
+console.log(
+  `ANDROID_QA app_link_domains=${appLinkState.verified ? "verified" : "not verified"}`,
+);
+console.log(
+  `ANDROID_QA app_link_selection=${appLinkState.enabled ? "enabled" : "not enabled"}`,
+);
+
+if (openAppLink && appLinkState.verified && appLinkState.enabled) {
+  openVerifiedAppLink(adb, primary.serial);
+} else if (openAppLink) {
+  console.log("ANDROID_QA app_link_open=skipped until verified and enabled");
+}
+
+if (requireDevice && (!appLinkState.verified || !appLinkState.enabled)) {
+  console.log("ANDROID_QA result=verified app links are not ready");
+  process.exit(1);
 }
 
 console.log("ANDROID_QA result=authorized device ready for private route QA");

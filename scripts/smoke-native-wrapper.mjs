@@ -375,17 +375,26 @@ const checks = [
       source.androidDeviceProbe.includes("ANDROID_QA result=authorized device has wrong TTC build") &&
       source.androidDeviceProbe.includes("ANDROID_QA result=authorized device missing TTC package") &&
       source.androidDeviceProbe.includes("--open-test-join") &&
+      source.androidDeviceProbe.includes("--open-app-link") &&
       source.androidDeviceProbe.includes("ANDROID_QA closed_test_join_url=") &&
       source.androidDeviceProbe.includes("ANDROID_QA play_store_url=") &&
       source.androidDeviceProbe.includes("ANDROID_QA closed_test_join=open requested") &&
+      source.androidDeviceProbe.includes("ANDROID_QA app_link_domains=") &&
+      source.androidDeviceProbe.includes("ANDROID_QA app_link_selection=") &&
+      source.androidDeviceProbe.includes("ANDROID_QA app_link_open=") &&
+      source.androidDeviceProbe.includes("ANDROID_QA app_link_open=skipped until verified and enabled") &&
+      source.androidDeviceProbe.includes("ANDROID_QA result=verified app links are not ready") &&
       source.androidDeviceProbe.includes("ANDROID_QA wait_ms=") &&
       source.androidDeviceProbe.includes("ANDROID_QA next=check USB cable, set USB mode to file transfer, and reopen the USB debugging prompt") &&
       source.androidDeviceProbe.includes("ANDROID_QA next=unlock device, enable USB debugging, and accept the computer authorization prompt") &&
       source.androidDeviceProbe.includes("ANDROID_QA next=join the active Google Play closed test, install its exact build, and rerun route QA") &&
       source.readme.includes("confirm the Google Play closed-testing build before route QA") &&
       source.readme.includes("npm.cmd run qa:android-device:open-test") &&
+      source.readme.includes("npm.cmd run qa:android-device:open-link") &&
       source.realDeviceQa.includes("npm.cmd run qa:android-device:open-test") &&
+      source.realDeviceQa.includes("npm.cmd run qa:android-device:open-link") &&
       source.rootPackageJson.includes('"qa:android-device:open-test": "node scripts/android-device-qa-probe.mjs --open-test-join"') &&
+      source.rootPackageJson.includes('"qa:android-device:open-link": "node scripts/android-device-qa-probe.mjs --require-device --open-app-link"') &&
       source.androidDeviceProbe.includes("if (requireDevice) process.exit(1)") &&
       source.realDeviceQa.includes("authorized device is visible and the TTC") &&
       source.realDeviceQa.includes("package is installed for the active closed-test build") &&

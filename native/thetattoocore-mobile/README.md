@@ -76,6 +76,9 @@ This folder is the starting point for Apple TestFlight and Google Play closed/in
      `TTC_ANDROID_EXPECTED_VERSION_NAME` and
      `TTC_ANDROID_EXPECTED_VERSION_CODE` for the selected track before rerunning
      the probe.
+   - Run `npm.cmd run qa:android-device:open-link` after the public association
+     file is configured. The required probe confirms both TTC domains are
+     verified and enabled before requesting the safe `/messages` route.
    - On Android 15 or newer, confirm the TTC header and controls stay below the
      clock/status area and the bottom navigation stays above the device's
      gesture or three-button navigation area.
@@ -95,5 +98,7 @@ Android 16 / API 36 tooling is installed on this Windows machine, and the checke
 - Google Play: closed/internal testing first, with the current API 36 closed-test release and tester participation/duration evidence validated before wider release.
 - Apple: TestFlight/App Review handoff first, with status changes and reviewer messages archived privately.
 - Public release waits for final legal review, store screenshots, data-safety/privacy answers, and production payment policy review.
-- Verified app links/universal links wait on final signing details and domain association files.
+- Android App Links are published for the final Play signing certificate; iOS
+  Universal Links still wait on the final team/app association and signed
+  associated-domain build.
 - Verified app-link evidence should follow `../../docs/NATIVE_WRAPPER_PREP.md` and stay private: publish the Android and Apple association files only after final signing/team details are confirmed, then record real-device route proof without committing fingerprints, team identifiers, provisioning details, console screenshots, tester accounts, or raw device logs.

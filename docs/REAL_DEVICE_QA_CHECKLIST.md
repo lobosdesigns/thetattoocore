@@ -10,6 +10,7 @@ Use this before native wrapper work, Google Play closed testing, TestFlight, or 
 - Confirm the build points at `https://thetattoocore.com/login`.
 - Confirm the Android device's selected Google Play account belongs to the configured tester community, then use the private web tester join link with that same account and confirm opt-in before opening the Android join link.
 - Confirm the closed-test store listing offers Install or Update, then verify the installed Android app came from the intended Google Play closed-testing track and record the release/build number shown to testers.
+- Run `npm.cmd run qa:android-device:open-link` with the unlocked Android test phone connected. Confirm both TTC domains report verified/enabled and the safe `/messages` link opens the production app instead of a browser or chooser.
 - Treat a missing listing, mismatched Play account, unconfirmed web opt-in, or unpropagated tester-community membership as a blocker, not an install pass.
 - Confirm the installed iOS app came from the intended TestFlight group and record the version/build number shown to testers.
 - Open Admin > Media Ops and confirm the Beta QA launch checklist is visible for auth, two-user DMs, mobile posting/media, verification review, controlled launch payments, and safe store screenshots.
