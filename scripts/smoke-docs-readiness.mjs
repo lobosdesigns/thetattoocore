@@ -1006,24 +1006,26 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("| Surface | Repo-safe status | Next action | Private evidence location |") &&
       docs["docs/APP_STORE_READINESS.md"].includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Signed notification-capability build `1.0 (4)` was uploaded separately to TestFlight") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Age 18+ override") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Closed testing - Alpha serves API 36 release `1.0.1 (2)`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("existing Google Group community") &&
       docs["docs/APP_STORE_READINESS.md"].includes("organization account is not subject to the personal-account 12-tester/14-day production-access rule") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Production release `1.0.1 (2)` was sent for review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Controlled notification-registration candidate `1.0.2 (3)` was submitted to the same Alpha track") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Production release `1.0.1 (2)` remains separate") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Publishing Overview shows `Changes in review`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Do not restart or remove that review") &&
       !docs["docs/APP_STORE_READINESS.md"].includes("awaiting final submit-for-review confirmation") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("automated pre-review checks finished successfully") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("zero supported-device loss") &&
       docs["docs/APP_STORE_READINESS.md"].includes("release minification is disabled") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Monitor App Review status and reviewer messages") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Monitor App Review and internal build `1.0 (4)` install/QA results") &&
       docs["docs/APP_STORE_READINESS.md"].includes("group-member opt-in/install proof and 14-day production-access tester evidence if required") &&
       docs["docs/APP_STORE_READINESS.md"].includes("active sandbox test connected account") &&
       docs["docs/APP_STORE_READINESS.md"].includes("marketplace integration guide using destination charges") &&
       docs["docs/APP_STORE_READINESS.md"].includes("The Merch destination-charge release switch defaults off") &&
       docs["docs/APP_STORE_READINESS.md"].includes("private native-alert project and Android/Apple app registrations exist") &&
       docs["docs/APP_STORE_READINESS.md"].includes("service-only DM delivery outbox") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("UI, registration, and delivery gates off") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Keep all activation and delivery gates off") &&
       !docs["docs/APP_STORE_READINESS.md"].includes("TTC Firebase project has not been created yet") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Native pre-device verification passed") &&
       docs["docs/APP_STORE_READINESS.md"].includes("connected Android 16 phone is authorized") &&
