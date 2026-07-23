@@ -30,7 +30,8 @@ The bootstrap writes logs to `~/Desktop/ttc-ios-build.log`, checks out that
 exact commit in detached mode, and stops instead of switching source when the
 existing checkout is dirty or points at a different repository. It also stops
 before dependency installation when the ignored private iOS app configuration
-is missing.
+is missing. The archive uses the checked-in `Podfile.lock` in deployment mode
+so reviewed native dependency versions cannot drift during packaging.
 
 ## 3. Open Xcode
 

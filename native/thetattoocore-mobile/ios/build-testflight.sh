@@ -34,7 +34,15 @@ if ! command -v pod >/dev/null 2>&1; then
   exit 1
 fi
 
-pod install
+pod install --deployment
+
+if [ "$(git -C "$REPO_ROOT" rev-parse HEAD)" != "$RELEASE_COMMIT" ] ||
+  ! git -C "$REPO_ROOT" diff --quiet ||
+  ! git -C "$REPO_ROOT" diff --cached --quiet ||
+  [ -n "$(git -C "$REPO_ROOT" ls-files --others --exclude-standard)" ]; then
+  echo "Locked dependency installation changed the reviewed source." >&2
+  exit 1
+fi
 
 ARCHIVE_PATH="../build/TheTattooCore.xcarchive"
 EXPORT_PATH="../build/export"

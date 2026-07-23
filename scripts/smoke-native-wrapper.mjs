@@ -16,6 +16,7 @@ const files = {
   iosExportOptions: `${wrapperRoot}/ios/ExportOptions-AppStore.template.plist`,
   iosInfo: `${wrapperRoot}/ios/App/App/Info.plist`,
   iosPodfile: `${wrapperRoot}/ios/App/Podfile`,
+  iosPodfileLock: `${wrapperRoot}/ios/App/Podfile.lock`,
   iosPrivacy: `${wrapperRoot}/ios/App/App/PrivacyInfo.xcprivacy`,
   iosEntitlements: `${wrapperRoot}/ios/App/App/App.entitlements`,
   iosProject: `${wrapperRoot}/ios/App/App.xcodeproj/project.pbxproj`,
@@ -613,6 +614,11 @@ const checks = [
       source.iosBuildScript.includes('git -C "$REPO_ROOT" rev-parse HEAD') &&
       source.iosBuildScript.includes("git -C \"$REPO_ROOT\" diff --cached --quiet") &&
       source.iosBuildScript.includes("ls-files --others --exclude-standard") &&
+      source.iosBuildScript.includes("pod install --deployment") &&
+      source.iosBuildScript.includes("Locked dependency installation changed the reviewed source.") &&
+      source.iosPodfileLock.includes("PODS:") &&
+      source.iosPodfileLock.includes("CapacitorFirebaseMessaging (7.5.0)") &&
+      source.iosPodfileLock.includes("COCOAPODS: 1.16.2") &&
       source.iosExportOptions.includes("app-store-connect") &&
       source.iosExportOptions.includes("signingStyle"),
   },
