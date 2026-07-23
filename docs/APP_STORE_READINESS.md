@@ -44,6 +44,24 @@
   the public Support URL for both account deletion and data deletion. Apple
   Accessibility Nutrition Labels are voluntary and are not a launch blocker
   unless TTC makes a support claim.
+- Production deploy `40f5f335-d3f5-41e3-82ff-ed2f8cc60b83` went live on
+  July 23, 2026 from commit `3678a48` after closing an unknown-mode webhook
+  path that could otherwise accept a signed payment update when neither the
+  explicit expected mode nor the server key identified test versus live. The
+  webhook now fails closed before payment state changes, and the focused guard
+  rejects any return of the old unknown-mode pass-through. Signed-in production
+  payment-account inspection also completed the business phone SMS
+  verification and reconfirmed email and business verification with no active
+  account-status tasks. Public profile, identity/integration choices,
+  production marketplace onboarding, live API/webhook cutover, reconciliation,
+  controlled live-money proof, and payout evidence remain blocked. The strict
+  payment gate improved from 36 to 35 evidence blockers without marking a
+  payment flow passed; the release-evidence gate remains at 60. Verification
+  passed the focused payment guard, sanitized strict payment fixture, lint,
+  production and deployment builds, live `smoke:public`, and live
+  `smoke:mobile`. The initial publish lost its final network response after
+  asset upload; retrying the unchanged built bundle succeeded. Public smoke
+  noted only the known robots edge-challenge skip.
 - Production deploy `263e73de-fa6e-400f-bdf3-80963707bbed` went live on
   July 23, 2026 from commit `14fb221` after the private release gate began
   requiring a dated real-device proof whenever a proof location is recorded.
