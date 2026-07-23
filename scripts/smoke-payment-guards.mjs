@@ -1450,6 +1450,31 @@ checks.push({
     productPlan.includes("supports event/audit/booking payment search"),
 });
 checks.push({
+  label: "admin payment review fails closed when required data is unavailable",
+  ok:
+    adminPaymentsPage.includes("const { count, error } = await supabase") &&
+    adminPaymentsPage.includes("error: results.find(([, , error]) => error)?.[2] ?? null") &&
+    adminPaymentsPage.includes("const paymentDataErrors = [") &&
+    adminPaymentsPage.includes("stripeEventsError") &&
+    adminPaymentsPage.includes("merchStatusCountsError") &&
+    adminPaymentsPage.includes("bookingPaymentStatusCountsError") &&
+    adminPaymentsPage.includes("paymentDisputeAuditError") &&
+    adminPaymentsPage.includes("paymentAuditError") &&
+    adminPaymentsPage.includes("bookingDepositError") &&
+    adminPaymentsPage.includes(
+      "const paymentDataUnavailable = paymentDataErrors.length > 0",
+    ) &&
+    adminPaymentsPage.includes(
+      'console.error("Admin payment review data load failed.", paymentDataErrors)',
+    ) &&
+    adminPaymentsPage.includes("paymentDataUnavailable ? (") &&
+    adminPaymentsPage.includes("Payment review is temporarily unavailable") &&
+    adminPaymentsPage.includes(
+      "No payment decisions should be made from partial",
+    ) &&
+    adminPaymentsPage.includes("Retry payment review"),
+});
+checks.push({
   label: "admin payment copy uses neutral review-tool wording",
   ok:
     adminActions.includes("payment review tools first") &&

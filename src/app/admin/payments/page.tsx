@@ -417,16 +417,21 @@ async function statusCounts({
 }) {
   const results = await Promise.all(
     statuses.map(async (status) => {
-      const { count } = await supabase
+      const { count, error } = await supabase
         .from(table)
         .select(column, { count: "exact", head: true })
         .eq(column, status);
 
-      return [status, count ?? 0] as const;
+      return [status, count ?? 0, error] as const;
     }),
   );
 
-  return results.filter(([, count]) => count > 0);
+  return {
+    counts: results
+      .filter(([, count]) => count > 0)
+      .map(([status, count]) => [status, count] as const),
+    error: results.find(([, , error]) => error)?.[2] ?? null,
+  };
 }
 
 export default async function AdminPaymentsPage({
@@ -481,19 +486,30 @@ export default async function AdminPaymentsPage({
 
   const adminClient = createAdminClient();
   const [
-    { data: stripeEvents },
-    { count: stripeEventCount },
-    merchStatusCounts,
-    adStatusCounts,
-    bookingPaymentStatusCounts,
-    { count: stalePendingCheckoutCount },
-    { count: staleBookingCheckoutCount },
-    { count: activeUnpaidAdCount },
-    { count: paymentDisputeAuditCount },
-    { count: merchRefundReviewCount },
-    { count: bookingRefundReviewCount },
-    { count: paymentAuditCount, data: paymentAuditLogs },
-    { count: bookingDepositCount, data: recentBookingDeposits },
+    { data: stripeEvents, error: stripeEventsError },
+    { count: stripeEventCount, error: stripeEventCountError },
+    { counts: merchStatusCounts, error: merchStatusCountsError },
+    { counts: adStatusCounts, error: adStatusCountsError },
+    {
+      counts: bookingPaymentStatusCounts,
+      error: bookingPaymentStatusCountsError,
+    },
+    { count: stalePendingCheckoutCount, error: stalePendingCheckoutError },
+    { count: staleBookingCheckoutCount, error: staleBookingCheckoutError },
+    { count: activeUnpaidAdCount, error: activeUnpaidAdError },
+    { count: paymentDisputeAuditCount, error: paymentDisputeAuditError },
+    { count: merchRefundReviewCount, error: merchRefundReviewError },
+    { count: bookingRefundReviewCount, error: bookingRefundReviewError },
+    {
+      count: paymentAuditCount,
+      data: paymentAuditLogs,
+      error: paymentAuditError,
+    },
+    {
+      count: bookingDepositCount,
+      data: recentBookingDeposits,
+      error: bookingDepositError,
+    },
   ] = adminClient
     ? await Promise.all([
         (() => {
@@ -642,20 +658,41 @@ export default async function AdminPaymentsPage({
         })(),
       ])
     : [
-        { data: null },
-        { count: null },
-        [],
-        [],
-        [],
-        { count: null },
-        { count: null },
-        { count: null },
-        { count: null },
-        { count: null },
-        { count: null },
-        { count: null, data: null },
-        { count: null, data: null },
+        { data: null, error: null },
+        { count: null, error: null },
+        { counts: [], error: null },
+        { counts: [], error: null },
+        { counts: [], error: null },
+        { count: null, error: null },
+        { count: null, error: null },
+        { count: null, error: null },
+        { count: null, error: null },
+        { count: null, error: null },
+        { count: null, error: null },
+        { count: null, data: null, error: null },
+        { count: null, data: null, error: null },
       ];
+
+  const paymentDataErrors = [
+    stripeEventsError,
+    stripeEventCountError,
+    merchStatusCountsError,
+    adStatusCountsError,
+    bookingPaymentStatusCountsError,
+    stalePendingCheckoutError,
+    staleBookingCheckoutError,
+    activeUnpaidAdError,
+    paymentDisputeAuditError,
+    merchRefundReviewError,
+    bookingRefundReviewError,
+    paymentAuditError,
+    bookingDepositError,
+  ].filter(Boolean);
+  const paymentDataUnavailable = paymentDataErrors.length > 0;
+
+  if (paymentDataUnavailable) {
+    console.error("Admin payment review data load failed.", paymentDataErrors);
+  }
 
   const totalStripeEvents = stripeEventCount ?? stripeEvents?.length ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalStripeEvents / pageSize));
@@ -778,6 +815,29 @@ export default async function AdminPaymentsPage({
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
               Enable private owner tools before reading payment event receipts.
             </p>
+          </section>
+        ) : paymentDataUnavailable ? (
+          <section className="ttc-card rounded-lg border border-[var(--danger)] bg-[color-mix(in_srgb,var(--danger)_12%,var(--paper-warm))] p-5">
+            <ShieldAlert className="size-5 text-[var(--danger)]" />
+            <h2 className="mt-3 text-lg font-bold">
+              Payment review is temporarily unavailable
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
+              Retry before reconciling payments, issuing refunds, changing
+              fulfillment or ad credits, closing booking deposits, or releasing
+              seller payouts. No payment decisions should be made from partial
+              information.
+            </p>
+            <Link
+              className="mt-4 inline-flex min-h-10 items-center justify-center rounded-md border border-[var(--foreground)] bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)]"
+              href={paymentEventFilterHref(
+                paymentEventTypeFilter,
+                currentPage,
+                activeSearch,
+              )}
+            >
+              Retry payment review
+            </Link>
           </section>
         ) : (
           <>
