@@ -453,7 +453,8 @@ if (
 
 if (
   currentBlockersSection.includes("| Payments | Account activation and Connect setup |") &&
-  currentBlockersSection.includes("Dashboard next setup item is Create a test connected account") &&
+  currentBlockersSection.includes("Sandbox test connected account and marketplace destination-charge integration guide are confirmed") &&
+  currentBlockersSection.includes("account, email, business, identity, and production verification still need private completion evidence") &&
   currentBlockersSection.includes("| Payments | Production app mode preflight |") &&
   currentBlockersSection.includes("explicit mode Needs review, server key mode Test, webhook signing Ready") &&
   currentBlockersSection.includes("checkout blocked until the expected mode is readable and matched | blocked |")

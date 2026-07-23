@@ -113,8 +113,6 @@ const payoutReleaseForbiddenSnippets = [
   "stripe.payouts.create",
   ".transfers.create(",
   ".payouts.create(",
-  "transfer_data",
-  "application_fee_amount",
   "transfer_group",
   "on_behalf_of",
 ];
@@ -280,7 +278,7 @@ checks.push({
     !stripeWebhook.includes('.rpc(\n        "release_merch_inventory_for_order"'),
 });
 checks.push({
-  label: "payout readiness does not execute seller payout release",
+  label: "direct seller payout release APIs stay disabled pending policy",
   ok:
     payoutReleaseFindings.length === 0 &&
     paymentReadiness.includes("Production purchases, seller payout releases, and real ad spending should stay gated") &&
@@ -294,9 +292,11 @@ checks.push({
 checks.push({
   label: "payment readiness keeps dashboard live-money blockers explicit",
   ok:
-    paymentReadiness.includes("dashboard inspection still shows Connect setup") &&
-    paymentReadiness.includes("account/go-live verification work in progress") &&
-    paymentReadiness.includes("next setup item is `Create a test connected account`") &&
+    paymentReadiness.includes("dashboard inspection confirms an active sandbox test connected account") &&
+    paymentReadiness.includes("integration guide configured for marketplace destination charges") &&
+    paymentReadiness.includes("Account, email, business, identity, and production verification remain in progress") &&
+    paymentReadiness.includes("STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false") &&
+    paymentReadiness.includes("immediate transfer to the connected seller balance") &&
     paymentReadiness.includes("explicit mode `Needs review`") &&
     paymentReadiness.includes("server payment key mode `Test`") &&
     paymentReadiness.includes("webhook signing `Ready`") &&
@@ -807,6 +807,9 @@ checks.push({
     merchCheckout.includes("text.startsWith(\"/\")") &&
     merchCheckout.includes("text.startsWith(\"//\")") &&
     merchCheckout.includes("function pathWithMessage") &&
+    merchCheckout.includes("const returnUrl = new URL(path, siteUrl)") &&
+    merchCheckout.includes('returnUrl.searchParams.set("message", message)') &&
+    merchCheckout.includes("`${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`") &&
     merchCheckout.includes("function loginRedirect") &&
     merchCheckout.includes('formData.get("return_to")') &&
     merchCheckout.includes('return_to: returnTo') &&
@@ -1186,6 +1189,27 @@ checks.push({
     merchCheckout.includes("details_submitted") &&
     merchCheckout.includes("Checkout is temporarily unavailable for this product.") &&
     !merchCheckout.includes("seller payout setup is incomplete"),
+});
+checks.push({
+  label: "merch marketplace checkout routes seller funds with an application fee",
+  ok:
+    envExample.includes("STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false") &&
+    merchCheckout.includes("function merchDestinationChargesEnabled()") &&
+    merchCheckout.includes("process.env.STRIPE_MERCH_DESTINATION_CHARGES_ENABLED") &&
+    merchCheckout.includes("Merch checkout blocked by destination charge release gate.") &&
+    merchCheckout.includes('"stripe_account_id, livemode, charges_enabled, payouts_enabled, details_submitted"') &&
+    merchCheckout.includes("let sellerStripeAccountId: string | null = null") &&
+    merchCheckout.includes("sellerStripeAccountId = payoutAccount.stripe_account_id") &&
+    merchCheckout.includes('"payment_intent_data[application_fee_amount]"') &&
+    merchCheckout.includes('"payment_intent_data[transfer_data][destination]"') &&
+    merchCheckout.includes("String(platformFeeCents)") &&
+    merchCheckout.includes("sellerStripeAccountId,") &&
+    merchCheckout.indexOf("if (!merchDestinationChargesEnabled())") <
+      merchCheckout.indexOf("sellerStripeAccountId = payoutAccount.stripe_account_id") &&
+    merchCheckout.indexOf("if (sellerStripeAccountId)") <
+      merchCheckout.indexOf('"payment_intent_data[application_fee_amount]"') &&
+    merchCheckout.indexOf("if (sellerStripeAccountId)") <
+      merchCheckout.indexOf('"payment_intent_data[transfer_data][destination]"'),
 });
 checks.push({
   label: "admin Merch can filter seller payout readiness",

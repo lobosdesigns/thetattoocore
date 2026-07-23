@@ -59,9 +59,17 @@ function safeInternalReturnPath(value: FormDataEntryValue | null) {
 }
 
 function pathWithMessage(path: string, message: string) {
-  const separator = path.includes("?") ? "&" : "?";
+  const returnUrl = new URL(path, siteUrl);
+  returnUrl.searchParams.set("message", message);
 
-  return `${path}${separator}message=${encodeURIComponent(message)}`;
+  return `${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`;
+}
+
+function merchDestinationChargesEnabled() {
+  return (
+    process.env.STRIPE_MERCH_DESTINATION_CHARGES_ENABLED?.trim().toLowerCase() ===
+    "true"
+  );
 }
 
 function redirectWithMessage(path: string, message: string) {
@@ -89,6 +97,7 @@ async function createCheckoutSession({
   platformFeeCents,
   product,
   quantity,
+  sellerStripeAccountId,
   subtotalCents,
   successUrl,
 }: {
@@ -98,6 +107,7 @@ async function createCheckoutSession({
   platformFeeCents: number;
   product: Product;
   quantity: number;
+  sellerStripeAccountId: string | null;
   subtotalCents: number;
   successUrl: string;
 }) {
@@ -144,6 +154,17 @@ async function createCheckoutSession({
     "payment_intent_data[metadata][shipping_required]",
     String(product.shipping_required),
   );
+
+  if (sellerStripeAccountId) {
+    body.set(
+      "payment_intent_data[application_fee_amount]",
+      String(platformFeeCents),
+    );
+    body.set(
+      "payment_intent_data[transfer_data][destination]",
+      sellerStripeAccountId,
+    );
+  }
 
   if (product.shipping_required) {
     body.set("shipping_address_collection[allowed_countries][0]", "US");
@@ -284,10 +305,22 @@ export async function POST(request: Request) {
     );
   }
 
+  let sellerStripeAccountId: string | null = null;
+
   if (!product.is_official) {
+    if (!merchDestinationChargesEnabled()) {
+      console.error("Merch checkout blocked by destination charge release gate.");
+      return redirectWithMessage(
+        returnTo,
+        "Checkout is temporarily unavailable for this product.",
+      );
+    }
+
     const { data: payoutAccount, error: payoutError } = await adminSupabase
       .from("stripe_connect_accounts")
-      .select("livemode, charges_enabled, payouts_enabled, details_submitted")
+      .select(
+        "stripe_account_id, livemode, charges_enabled, payouts_enabled, details_submitted",
+      )
       .eq("profile_id", product.seller_id)
       .eq("livemode", checkoutPreflight.actual)
       .maybeSingle<{
@@ -295,10 +328,12 @@ export async function POST(request: Request) {
         details_submitted: boolean;
         livemode: boolean;
         payouts_enabled: boolean;
+        stripe_account_id: string;
       }>();
 
     const payoutReady =
       payoutAccount?.livemode === checkoutPreflight.actual &&
+      Boolean(payoutAccount.stripe_account_id) &&
       Boolean(payoutAccount.charges_enabled) &&
       Boolean(payoutAccount?.payouts_enabled) &&
       Boolean(payoutAccount?.details_submitted);
@@ -314,6 +349,8 @@ export async function POST(request: Request) {
         "Checkout is temporarily unavailable for this product.",
       );
     }
+
+    sellerStripeAccountId = payoutAccount.stripe_account_id;
   }
 
   if (product.seller_id === claims.sub) {
@@ -417,6 +454,7 @@ export async function POST(request: Request) {
       platformFeeCents,
       product,
       quantity,
+      sellerStripeAccountId,
       subtotalCents,
       successUrl,
     });

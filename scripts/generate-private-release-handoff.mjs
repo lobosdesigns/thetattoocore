@@ -38,7 +38,7 @@ account identifiers out of repo docs.
 | Google Play | Closed-test tester links and opt-in evidence | Save Android/web join links privately, confirm the device Play account matches the tester-community member, confirm web opt-in with that account, and record listing/install proof | pending | |
 | Google Play | API 36 closed-test release | Version code 2 / version name 1.0.1 API 36 update is published and verified installed on an authorized Android 16 device; do not upload the same version code again, and archive tester participation/duration evidence | pending | |
 | Google Play | Console submit/retry evidence | If Play Console errors before submit, record the visible error code, page URL, retry path, whether reload/new-tab retry was attempted, and whether Publishing overview still shows changes not sent for review | pending | |
-| Payments | Account activation and Connect setup | Dashboard next setup item is Create a test connected account; business model, connected-account test, integration guide, account verification, and identity readiness still need private completion evidence | pending | |
+| Payments | Account activation and Connect setup | Sandbox test connected account and marketplace destination-charge integration guide are confirmed; account, email, business, identity, and production verification still need private completion evidence | pending | |
 | Payments | Production app mode preflight | Admin shows explicit mode Needs review, server key mode Test, webhook signing Ready, and checkout blocked until the expected mode is readable and matched | blocked | |
 
 ## Store Console Evidence

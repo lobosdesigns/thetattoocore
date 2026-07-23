@@ -1018,7 +1018,9 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("release minification is disabled") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Monitor App Review status and reviewer messages") &&
       docs["docs/APP_STORE_READINESS.md"].includes("group-member opt-in/install proof and 14-day production-access tester evidence if required") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("with account verification and Connect setup still outstanding") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("active sandbox test connected account") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("marketplace integration guide using destination charges") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("The Merch destination-charge release switch defaults off") &&
       docs["docs/APP_STORE_READINESS.md"].includes("private native-alert project and Android/Apple app registrations exist") &&
       docs["docs/APP_STORE_READINESS.md"].includes("service-only DM delivery outbox") &&
       docs["docs/APP_STORE_READINESS.md"].includes("UI, registration, and delivery gates off") &&

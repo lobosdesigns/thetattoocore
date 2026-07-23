@@ -115,8 +115,8 @@ const checks = [
       generator.includes("whether reload/new-tab retry was attempted") &&
       generator.includes("Publishing overview still shows changes not sent for review") &&
       generator.includes("Account activation and Connect setup") &&
-      generator.includes("Dashboard next setup item is Create a test connected account") &&
-      generator.includes("business model, connected-account test, integration guide, account verification, and identity readiness") &&
+      generator.includes("Sandbox test connected account and marketplace destination-charge integration guide are confirmed") &&
+      generator.includes("account, email, business, identity, and production verification still need private completion evidence") &&
       generator.includes("Production app mode preflight") &&
       generator.includes("explicit mode Needs review, server key mode Test, webhook signing Ready") &&
       generator.includes("checkout blocked until the expected mode is readable and matched | blocked") &&
