@@ -51,9 +51,15 @@ const staleRealDeviceDateFixture = writeVariant(
   "stale-real-device-date.md",
   (source) =>
     source.replace(
-      "| Android | fixture-device | Android 16 | 1.0.2 (3) | Google Play | Wi-Fi and cellular | passed | fixture-proof | 2026-07-23 |",
-      "| Android | fixture-device | Android 16 | 1.0.2 (3) | Google Play | Wi-Fi and cellular | passed | fixture-proof | 2026-05-01 |",
+      "| Android | fixture-device | Android 16 | 1.0.2 (3) | Google Play | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-07-23 |",
+      "| Android | fixture-device | Android 16 | 1.0.2 (3) | Google Play | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-05-01 |",
     ),
+);
+const promotedIpadFixture = writeVariant("promoted-ipad.md", (source) =>
+  source.replace(
+    "| iOS | iPhone fixture-device | iOS current | 1.0 (4) | TestFlight | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-07-23 |",
+    "| iOS | iPad fixture-device | iOS current | 1.0 (4) | TestFlight | Wi-Fi and cellular | owner-confirmed | install only | passed | fixture-proof | 2026-07-23 |",
+  ),
 );
 const missingMarkerFixture = writeVariant("missing-marker.md", (source) =>
   source.replace(fixtureMarker, ""),
@@ -328,6 +334,33 @@ const checks = [
         result.status === 1 &&
         result.stderr.includes(
           "Real-Device QA: Android proof date must be within 45 days",
+        )
+      );
+    },
+  },
+  {
+    label: "release evidence rejects promoted iPad install-only QA",
+    result: runGate([
+      "--test-fixture",
+      "--reference-date",
+      fixtureReferenceDate,
+      "--verbose",
+      "--evidence",
+      promotedIpadFixture,
+      "--release-candidate",
+      fixtureCandidate,
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Real-Device QA: iOS device model must be an iPhone",
+        ) &&
+        result.stderr.includes(
+          "Real-Device QA: iOS evidence basis must be device-captured",
+        ) &&
+        result.stderr.includes(
+          "Real-Device QA: iOS QA scope must be full checklist",
         )
       );
     },

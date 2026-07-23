@@ -201,6 +201,11 @@ Keep completed rows in the private release handoff. Do not commit screenshots or
 | Android | Google Play closed testing. | Version name, version code, release track, and closed-test date range for the exact build under review. | Screenshot or clip proving the app was installed from the intended closed-testing track; keep tester-community handoff, same-account web opt-in, 12-tester participation, 14-day duration, feedback summary, and production-access request result in the private handoff if required. | Primary tester and second known DM tester, recorded privately. | Android device model, OS version, test date, and network. | Pass/fail for auth, posting, DMs, verification, checkout return paths, report/block, screenshots, and Play testing evidence. |
 | iOS | TestFlight internal testing | iOS version/build number and tester group for the exact build under review. | Screenshot or clip proving the app was installed from the intended TestFlight group. | Primary tester and second known DM tester, recorded privately. | iPhone model, iOS version, test date, and network. | Pass/fail for auth, posting, DMs, verification, checkout return paths, report/block, and screenshots. |
 
+In the private Real-Device QA row, record `device-captured` as the evidence basis
+and `full checklist` as the QA scope only after the complete release checklist
+has been run on that device. An owner-confirmed iPad install or install-only
+check stays `partial` and cannot satisfy the iOS release gate.
+
 If a device is physically connected but automation is unavailable, such as Android
 platform tools or `adb` missing from Windows PATH, record `manual evidence only:
 automation unavailable` in the private handoff. Capture install-source, build,

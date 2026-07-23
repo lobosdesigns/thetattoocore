@@ -613,6 +613,32 @@ if (realDeviceQa) {
         row?.["Proof date"],
       );
     }
+    if (platform === "iOS" && isPassing(row?.Result)) {
+      requireContains(
+        "Real-Device QA",
+        "iOS device model must be an iPhone",
+        row?.["Device model"],
+        "iPhone",
+      );
+      requireContains(
+        "Real-Device QA",
+        "iOS install source must be TestFlight",
+        row?.["Install source"],
+        "TestFlight",
+      );
+      requireExact(
+        "Real-Device QA",
+        "iOS evidence basis must be device-captured",
+        row?.["Evidence basis"],
+        "device-captured",
+      );
+      requireExact(
+        "Real-Device QA",
+        "iOS QA scope must be full checklist",
+        row?.["QA scope"],
+        "full checklist",
+      );
+    }
   }
 }
 

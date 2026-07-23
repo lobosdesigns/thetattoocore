@@ -195,6 +195,12 @@ const checks = [
       evidenceGateTest.includes("release evidence rejects stale critical private proof") &&
       evidenceGateTest.includes("release evidence rejects a mismatched tester build") &&
       evidenceGateTest.includes("release evidence rejects stale real-device proof dates") &&
+      evidenceGateTest.includes("release evidence rejects promoted iPad install-only QA") &&
+      evidenceGate.includes("iOS device model must be an iPhone") &&
+      evidenceGate.includes("iOS evidence basis must be device-captured") &&
+      evidenceGate.includes("iOS QA scope must be full checklist") &&
+      generator.includes("actual iPhone") &&
+      generator.includes("Keep iPad install-only") &&
       !evidenceGate.includes("console.error(markdown") &&
       evidenceFixture.includes("TTC_SANITIZED_RELEASE_EVIDENCE_FIXTURE") &&
       evidenceFixture.includes("fixture-release-candidate") &&
@@ -203,7 +209,7 @@ const checks = [
       evidenceFixture.includes("| Accessibility Nutrition Labels | n/a | n/a |") &&
       evidenceFixture.includes("| Child safety standards declaration | n/a | passed |") &&
       evidenceFixture.includes("| Account deletion web resource | n/a | passed |") &&
-      evidenceFixture.includes("| iOS | fixture-device | iOS current | 1.0 (4) | TestFlight | Wi-Fi and cellular | passed | fixture-proof | 2026-07-23 |"),
+      evidenceFixture.includes("| iOS | iPhone fixture-device | iOS current | 1.0 (4) | TestFlight | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-07-23 |"),
   },
   {
     label: "private console tab writer keeps exact URLs local-only",

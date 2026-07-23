@@ -102,10 +102,14 @@ passing install.
 
 ## Real-Device QA
 
-| Platform | Device model | OS version | Build or deploy version | Install source | Network | Result | Proof filename | Proof date |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Android | | | | | | pending | | |
-| iOS | | | | | | pending | | |
+A passing iOS row must come from device-captured TestFlight evidence on an
+actual iPhone and cover the full release checklist. Keep iPad install-only
+confirmation as partial evidence.
+
+| Platform | Device model | OS version | Build or deploy version | Install source | Network | Evidence basis | QA scope | Result | Proof filename | Proof date |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Android | | | | | | | | pending | | |
+| iOS | | | | | | | | pending | | |
 
 ## Two-User DM Evidence
 
