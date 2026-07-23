@@ -43,6 +43,7 @@ const files = {
   packageJson: `${wrapperRoot}/package.json`,
   readme: `${wrapperRoot}/README.md`,
   webFallback: `${wrapperRoot}/www/index.html`,
+  webLoadError: `${wrapperRoot}/www/load-error.html`,
 };
 
 const source = Object.fromEntries(
@@ -200,6 +201,19 @@ const checks = [
       source.capacitorConfig.includes('allowNavigation: ["thetattoocore.com", "www.thetattoocore.com"]') &&
       !source.capacitorConfig.includes("bundledWebRuntime") &&
       source.webFallback.includes("https://thetattoocore.com/login"),
+  },
+  {
+    label: "native wrapper has a safe main-load recovery screen",
+    ok:
+      source.capacitorConfig.includes('errorPath: "load-error.html"') &&
+      source.webLoadError.includes("The app couldn't load") &&
+      source.webLoadError.includes("Check your connection, then try again.") &&
+      source.webLoadError.includes('href="https://thetattoocore.com/login"') &&
+      source.webLoadError.includes(">Try again</a>") &&
+      source.webLoadError.includes("env(safe-area-inset-top)") &&
+      source.webLoadError.includes("env(safe-area-inset-bottom)") &&
+      !source.webLoadError.includes('http-equiv="refresh"') &&
+      !source.webLoadError.includes("<script"),
   },
   {
     label: "native Android WebView stays inside enforced system-bar insets",
@@ -595,6 +609,10 @@ const checks = [
       source.iosBuildScript.includes("clean archive") &&
       source.iosBuildScript.includes("-exportArchive") &&
       source.iosBuildScript.includes("App.xcworkspace") &&
+      source.iosBuildScript.includes('RELEASE_COMMIT="${TTC_IOS_RELEASE_COMMIT:-}"') &&
+      source.iosBuildScript.includes('git -C "$REPO_ROOT" rev-parse HEAD') &&
+      source.iosBuildScript.includes("git -C \"$REPO_ROOT\" diff --cached --quiet") &&
+      source.iosBuildScript.includes("ls-files --others --exclude-standard") &&
       source.iosExportOptions.includes("app-store-connect") &&
       source.iosExportOptions.includes("signingStyle"),
   },
@@ -633,13 +651,28 @@ const checks = [
       !source.iosUploadChecklist.includes("Confirm build: `1`"),
   },
   {
-    label: "native iOS wrapper has one-command Mac bootstrap",
+    label: "native iOS wrapper has a reviewed-commit Mac bootstrap",
     ok:
       source.iosBootstrapScript.includes("github.com/lobosdesigns/thetattoocore.git") &&
       source.iosBootstrapScript.includes("ttc-ios-build.log") &&
+      source.iosBootstrapScript.includes('RELEASE_COMMIT="${TTC_IOS_RELEASE_COMMIT:-}"') &&
+      source.iosBootstrapScript.includes("^[0-9a-f]{40}$") &&
+      source.iosBootstrapScript.includes('git checkout --detach "$RELEASE_COMMIT"') &&
+      source.iosBootstrapScript.includes('git rev-parse HEAD') &&
+      source.iosBootstrapScript.includes("git diff --cached --quiet") &&
+      source.iosBootstrapScript.includes("ls-files --others --exclude-standard") &&
+      source.iosBootstrapScript.includes("Dependency installation or native sync changed the reviewed source.") &&
+      source.iosBootstrapScript.includes("GoogleService-Info.plist") &&
+      source.iosBootstrapScript.includes("npm ci") &&
       source.iosBootstrapScript.includes("npm run sync") &&
-      source.iosBootstrapScript.includes("./build-testflight.sh") &&
-      source.iosUploadChecklist.includes("mac-bootstrap-testflight.sh"),
+      source.iosBootstrapScript.includes("bash ./build-testflight.sh") &&
+      !source.iosBootstrapScript.includes("git checkout main") &&
+      !source.iosBootstrapScript.includes("git pull --ff-only origin main") &&
+      !source.iosBootstrapScript.includes('rm -rf "$WORKDIR"') &&
+      !source.iosBootstrapScript.includes("chmod +x build-testflight.sh") &&
+      source.iosUploadChecklist.includes("TTC_IOS_RELEASE_COMMIT") &&
+      source.iosUploadChecklist.includes("${TTC_IOS_RELEASE_COMMIT}") &&
+      source.iosUploadChecklist.includes("exact commit in detached mode"),
   },
 ];
 

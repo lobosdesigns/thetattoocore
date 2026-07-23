@@ -14,17 +14,23 @@ From the Mac terminal:
 
 ```bash
 cd native/thetattoocore-mobile
-npm install
+npm ci
 npm run sync
 ```
 
-Or run the one-command bootstrap from the Mac terminal:
+Or run the one-command bootstrap from the Mac terminal after replacing the
+placeholder with the full 40-character commit that passed the release checks:
 
 ```bash
-curl -L https://raw.githubusercontent.com/lobosdesigns/thetattoocore/main/native/thetattoocore-mobile/ios/mac-bootstrap-testflight.sh | bash
+export TTC_IOS_RELEASE_COMMIT="<full-reviewed-commit>"
+curl -fsSL "https://raw.githubusercontent.com/lobosdesigns/thetattoocore/${TTC_IOS_RELEASE_COMMIT}/native/thetattoocore-mobile/ios/mac-bootstrap-testflight.sh" | bash
 ```
 
-The bootstrap writes logs to `~/Desktop/ttc-ios-build.log`.
+The bootstrap writes logs to `~/Desktop/ttc-ios-build.log`, checks out that
+exact commit in detached mode, and stops instead of switching source when the
+existing checkout is dirty or points at a different repository. It also stops
+before dependency installation when the ignored private iOS app configuration
+is missing.
 
 ## 3. Open Xcode
 

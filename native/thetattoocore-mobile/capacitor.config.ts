@@ -26,6 +26,7 @@ const config: CapacitorConfig = {
     allowNavigation: ["thetattoocore.com", "www.thetattoocore.com"],
     androidScheme: "https",
     cleartext: false,
+    errorPath: "load-error.html",
     url: "https://thetattoocore.com/login",
   },
   webDir: "www",

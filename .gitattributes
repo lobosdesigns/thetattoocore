@@ -1,0 +1,2 @@
+native/thetattoocore-mobile/ios/build-testflight.sh text eol=lf
+native/thetattoocore-mobile/ios/mac-bootstrap-testflight.sh text eol=lf
