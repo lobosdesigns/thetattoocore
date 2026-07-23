@@ -47,6 +47,21 @@
   `smoke:public`, and live `smoke:mobile`; the first public-smoke wrapper reached
   its local time limit before the longer-window rerun passed, with only the
   known robots edge-challenge skip.
+- Production deploy `67694f7c-89f1-4662-b412-03e72b622678` went live on
+  July 23, 2026 from commit `61c56f7` after correcting the native-alert
+  readiness probe to recognize the Android wrapper's current guarded private
+  configuration hook. A focused regression guard now keeps the probe aligned
+  with the wrapper. The authorized Android 16 phone running exact Play Alpha
+  `1.0.2 (3)` passed the connected-device gate and completed a private
+  two-account DM pass covering send, read, reply, TTC-owned image attachment,
+  retained history, and in-app notification routing without a 403 or loop.
+  The strict private release gate legitimately fell from 73 to 67 incomplete
+  requirements, clearing the six Android DM requirements while leaving the
+  corresponding iOS and broader release evidence gated. Verification passed
+  `qa:native-push`, `smoke:native-push`, `smoke:native`, `smoke:handoff`,
+  `smoke:dm`, `qa:android-device:required`, lint, production and deployment
+  builds, live `smoke:public`, and live `smoke:mobile`; public smoke noted only
+  the known robots edge-challenge skip.
 - Production deploy `7e8bc0d8-b083-44be-aba5-52adc0d36e3e` went live on July 22, 2026 from commit `8d3462a` after linking story-reply alerts to their exact DM message, so deleting an unread story-reply message also removes its pending notification instead of leaving a stale destination. Verification passed `smoke:dm`, `smoke:native-push`, `lint`, production and deployment builds, live `smoke:public`, and live `smoke:mobile`; public smoke noted only the known robots edge-challenge skip.
 - Production deploy `ce711d4e-3348-422c-b7a0-8b28ca36a358` went live on July 22, 2026 from commit `cb12310` after correcting the Google Play handoff to preserve the active production review. The repo-safe snapshot and release guards now require `Changes in review`, reject the stale awaiting-submit wording, and warn operators not to restart or remove the review. Verification passed `smoke:docs`, `smoke:store`, `smoke:handoff`, `lint`, production and deployment builds, live `smoke:public`, and live `smoke:mobile`; the first publish attempt hit a transient fetch failure after asset upload, the already-built retry succeeded, and public smoke noted only the known robots edge-challenge skip.
 - Production deploy `0d112184-b4d2-4193-aa8e-72a1693049e9` went live on July 22, 2026 from commit `43d6bfa` after adding a service-only DM alert outbox and scheduled sender that remain fail closed behind the existing UI and registration gates plus a separate delivery gate. Migration `20260722225151_native_push_delivery_outbox` was rehearsed before application and verified live for RLS, browser-role revocation, invoker-only functions, empty search paths, atomic notification/outbox writes, expiring lease tokens, bounded retries, device ownership, and token-rotation safety. Generic lock-screen payload tests, the native delivery guard, private-config guard, docs guard, DM guard, `lint`, production build, deployment dry run and build, live `smoke:public`, and live `smoke:mobile` passed; public smoke noted only the known robots edge-challenge skip. Delivery stays disabled until private sender credentials, iOS capability/provisioning, signed replacement builds, and Android/iOS registration, delivery, tap, opt-out, quiet-hours, and message-preference evidence pass.
