@@ -24,12 +24,17 @@
 
 ## Current Store Rules Check
 
-Last checked: July 22, 2026. Recheck the official store help pages before each
+Last checked: July 23, 2026. Recheck the official store help pages before each
 new build selection, metadata save, or production-access request because console
 requirements can change between internal testing and public review.
 
 - Apple App Privacy: privacy policy URL is required and must match the final
   public Privacy page for the submitted iOS build.
+- Apple privacy manifests: the app-owned manifest must accurately declare
+  app-owned collection and required-reason API use, and listed third-party SDKs
+  must contribute valid manifests. Generate Xcode's aggregate Privacy Report
+  before the next archive upload; TTC's native Device ID is linked to the
+  member, used for app functionality, and not used for tracking.
 - Apple age rating: the current questionnaire includes in-app controls,
   capabilities, content descriptors, and region-specific results. TTC's 18+
   terms require the saved higher-age override to remain aligned with the
@@ -57,8 +62,8 @@ requirements can change between internal testing and public review.
 - Keep source URLs, console screenshots, tester membership, reviewer credentials,
   private contact details, and account identifiers in the private release handoff
   only.
-- Official source set checked: Apple App Store Connect App Privacy, Content Rights, age rating, screenshot specifications, screenshot upload, release notes, Accessibility Nutrition Labels, and February 2026 App Review guideline update; Google Play target API, Data Safety, testing-track, production-access testing, and payments help.
-- Repo-safe current-rule source URLs: Apple age rating `https://developer.apple.com/help/app-store-connect/manage-app-information/set-an-app-age-rating/`; Apple screenshot specifications `https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/`; Apple screenshot upload states `https://developer.apple.com/help/app-store-connect/manage-app-information/upload-app-previews-and-screenshots/`; Apple screenshot release note `https://developer.apple.com/help/app-store-connect/reference/release-notes/`; Apple February 2026 guideline update `https://developer.apple.com/news/?id=d75yllv4`; Google Play target API `https://developer.android.com/google/play/requirements/target-sdk`; Google Play production access testing `https://support.google.com/googleplay/android-developer/answer/14151465`.
+- Official source set checked: Apple App Store Connect App Privacy, privacy manifests and third-party SDK requirements, Content Rights, age rating, screenshot specifications, screenshot upload, release notes, Accessibility Nutrition Labels, and February 2026 App Review guideline update; Google Play target API, Data Safety, testing-track, production-access testing, and payments help.
+- Repo-safe current-rule source URLs: Apple privacy manifests `https://developer.apple.com/documentation/bundleresources/privacy-manifest-files`; Apple third-party SDK requirements `https://developer.apple.com/support/third-party-SDK-requirements/`; Apple App Privacy details `https://developer.apple.com/app-store/app-privacy-details/`; Apple age rating `https://developer.apple.com/help/app-store-connect/manage-app-information/set-an-app-age-rating/`; Apple screenshot specifications `https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/`; Apple screenshot upload states `https://developer.apple.com/help/app-store-connect/manage-app-information/upload-app-previews-and-screenshots/`; Apple screenshot release note `https://developer.apple.com/help/app-store-connect/reference/release-notes/`; Apple February 2026 guideline update `https://developer.apple.com/news/?id=d75yllv4`; Google Play target API `https://developer.android.com/google/play/requirements/target-sdk`; Google Play production access testing `https://support.google.com/googleplay/android-developer/answer/14151465`.
 
 ## Wrapper Decision
 

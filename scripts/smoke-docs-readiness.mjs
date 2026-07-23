@@ -342,6 +342,8 @@ const checks = [
       docs["docs/DATA_SAFETY_PREP.md"].includes("## App Store Privacy Evidence") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("reviewed against the submitted iOS build") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("Privacy URL `https://thetattoocore.com/privacy`") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("Device ID as linked to the member") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("Xcode aggregate Privacy Report") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("do not infer tracking from the iOS native privacy manifest alone") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("final App Privacy console summary"),
   },
@@ -593,8 +595,10 @@ const checks = [
     label: "mobile submission runbook records current store rules check",
     ok:
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("## Current Store Rules Check") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Last checked: July 22, 2026") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Last checked: July 23, 2026") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple App Privacy: privacy policy URL is required") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple privacy manifests") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Generate Xcode's aggregate Privacy Report") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple Content Rights") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Apple age rating") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("saved higher-age override") &&
@@ -614,6 +618,9 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Official source set checked: Apple App Store Connect App Privacy") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("screenshot specifications, screenshot upload, release notes") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Repo-safe current-rule source URLs") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("https://developer.apple.com/documentation/bundleresources/privacy-manifest-files") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("https://developer.apple.com/support/third-party-SDK-requirements/") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("https://developer.apple.com/app-store/app-privacy-details/") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("https://developer.apple.com/help/app-store-connect/manage-app-information/set-an-app-age-rating/") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("https://developer.apple.com/news/?id=d75yllv4") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/") &&

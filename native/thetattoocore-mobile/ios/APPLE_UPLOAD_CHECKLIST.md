@@ -47,6 +47,7 @@ In Xcode:
 - Confirm the next internal TestFlight candidate is build `4`, shown as TestFlight build `1.0 (4)`, and do not replace build `3` on the App Store version already in review.
 - Confirm `GoogleService-Info.plist` belongs to the `App` target, Push Notifications is enabled, and the signed archive resolves `aps-environment` to `production`.
 - Keep messaging auto-initialization and production delivery off until explicit member opt-in, token registration, notification delivery, tap routing, and opt-out pass on build `4`.
+- Generate Xcode's aggregate Privacy Report from the next archive. Confirm the TTC app manifest declares Device ID as collected, linked to the member, used for app functionality, and not used for tracking, and confirm valid manifests are present for Capacitor, Cordova, and native messaging dependencies. Keep the report private.
 - Confirm login, signup, forgot password, reset password, and email confirmation stay inside the app WebView during the device smoke pass.
 
 ## 4. Archive
@@ -73,6 +74,9 @@ After upload processing:
   are complete in App Store Connect. Keep reviewer credentials, phone details,
   account identifiers, and console screenshots in the private release handoff
   only.
+- Confirm App Privacy includes Device ID as collected, linked to the member,
+  used for app functionality, and not used for tracking, alongside the broader
+  TTC web/app disclosures in `docs/DATA_SAFETY_PREP.md`.
 
 ## Current Status
 

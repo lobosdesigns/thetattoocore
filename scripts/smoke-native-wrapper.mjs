@@ -552,11 +552,17 @@ const checks = [
       !source.readiness.includes("once Android/iOS packaging starts"),
   },
   {
-    label: "native iOS wrapper includes privacy manifest resource",
+    label: "native iOS wrapper declares linked app-functionality device ID collection",
     ok:
       source.iosPrivacy.includes("NSPrivacyTracking") &&
       source.iosPrivacy.includes("<false/>") &&
       source.iosPrivacy.includes("NSPrivacyCollectedDataTypes") &&
+      source.iosPrivacy.includes("NSPrivacyCollectedDataTypeDeviceID") &&
+      source.iosPrivacy.includes("NSPrivacyCollectedDataTypeLinked") &&
+      source.iosPrivacy.includes("<true/>") &&
+      source.iosPrivacy.includes("NSPrivacyCollectedDataTypePurposeAppFunctionality") &&
+      source.iosPrivacy.includes("NSPrivacyCollectedDataTypeTracking") &&
+      source.iosPrivacy.includes("<key>NSPrivacyAccessedAPITypes</key>") &&
       source.iosProject.includes("PrivacyInfo.xcprivacy in Resources"),
   },
   {
@@ -571,9 +577,16 @@ const checks = [
     label: "native privacy manifest is not used as store App Privacy source",
     ok:
       source.nativePrep.includes("covers only the thin native wrapper") &&
-      source.nativePrep.includes("Do not use its empty data arrays as the App Store App Privacy answer source") &&
+      source.nativePrep.includes("declares the app-owned installation and delivery token identifiers as Device ID") &&
+      source.nativePrep.includes("linked to the member") &&
+      source.nativePrep.includes("not used for tracking") &&
+      source.nativePrep.includes("Do not use this narrow manifest as the App Store App Privacy answer source") &&
       source.nativePrep.includes("docs/DATA_SAFETY_PREP.md") &&
-      source.dataSafetyPrep?.includes("App Store privacy nutrition labels"),
+      source.dataSafetyPrep?.includes("App Store privacy nutrition labels") &&
+      source.dataSafetyPrep?.includes("Xcode aggregate Privacy Report") &&
+      source.dataSafetyPrep?.includes("Device ID as linked to the member") &&
+      source.iosUploadChecklist.includes("Generate Xcode's aggregate Privacy Report") &&
+      source.iosUploadChecklist.includes("Capacitor, Cordova, and native messaging dependencies"),
   },
   {
     label: "native iOS wrapper has App Store archive/export script",
@@ -601,6 +614,7 @@ const checks = [
       source.iosUploadChecklist.includes("age rating") &&
       source.iosUploadChecklist.includes("Content Rights") &&
       source.iosUploadChecklist.includes("Accessibility Nutrition Labels") &&
+      source.iosUploadChecklist.includes("Device ID as collected, linked to the member") &&
       source.iosUploadChecklist.includes("screenshot upload") &&
       source.iosUploadChecklist.includes("category/pricing") &&
       source.iosUploadChecklist.includes("final reviewer access for the selected build") &&

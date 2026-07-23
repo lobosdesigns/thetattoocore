@@ -53,6 +53,8 @@ Keep this evidence private with the release handoff. Do not place reviewer passw
 
 - App Store App Privacy answers reviewed against the submitted iOS build, Privacy URL `https://thetattoocore.com/privacy`, and the live web/app data flows above.
 - Data linked to account checked for account/profile fields, user-generated content, DMs, media uploads, verification documents, commerce/order records, reports, blocks, follows, saves, notifications, and support/account deletion requests.
+- Native alert answers include Device ID as linked to the member, not used for tracking, and used for app functionality because TTC retains an app-generated installation identifier and delivery token against the authenticated profile after explicit opt-in.
+- Xcode aggregate Privacy Report generated from the next archive and checked for the TTC app, Capacitor, Cordova, and native messaging dependency manifests; keep the report private.
 - Tracking answer checked separately from ad delivery, saved searches, follows, coarse discovery preferences, and basic event counts; do not infer tracking from the iOS native privacy manifest alone.
 - Payment and payout answers checked against the current production-payment decision, refund/dispute process, seller payout process, and the rule that TTC forms do not collect raw card, bank, routing, or payout credentials.
 - Screenshot or note captured for the final App Privacy console summary, review date, reviewed build/version, reviewer initials, and any questionnaire areas that must be revisited before public release.
