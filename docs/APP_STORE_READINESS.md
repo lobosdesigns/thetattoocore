@@ -44,6 +44,21 @@
   the public Support URL for both account deletion and data deletion. Apple
   Accessibility Nutrition Labels are voluntary and are not a launch blocker
   unless TTC makes a support claim.
+- Production deploy `8504294e-7893-4fea-9783-d5a41ee00643` went live on
+  July 23, 2026 from commit `6a4edfd` after strengthening iOS real-device
+  evidence. A passing iOS QA row must now identify an actual iPhone, TestFlight
+  install source, device-captured evidence, and full-checklist scope. The
+  owner-confirmed TestFlight `1.0 (4)` iPad install remains valid partial
+  evidence and cannot be promoted into full iOS QA. The sanitized release gate
+  now covers 18 cases, including an explicit promoted-iPad rejection.
+  Verification passed the release-evidence fixture suite, private-handoff and
+  docs guards, lint, production and deployment builds, live `smoke:public`, and
+  live `smoke:mobile`; public smoke noted only the known robots edge-challenge
+  skip. The auxiliary owner-only publish failed closed because its private
+  runtime configuration is not populated, while the established public
+  deployment succeeded. The strict release-evidence gate remains at 60
+  incomplete requirements and the payment go-live gate remains at 35 evidence
+  blockers.
 - Production deploy `4ed7902f-ac02-46be-8224-1a80db58df68` went live on
   July 23, 2026 from commit `ea5dd58` after making Admin > Payments fail closed
   when any required reconciliation query cannot be read. Query errors are now
