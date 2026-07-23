@@ -84,16 +84,16 @@ Keep account emails, group-membership screenshots, and exact tester links privat
 A missing listing, account mismatch, or unconfirmed web opt-in is a blocker, not a
 passing install.
 
-| Tester alias | Device Play account matches tester member | Web opt-in accepted | Android listing offers Install/Update | Installed release/version/build | Device and date | Result |
-| --- | --- | --- | --- | --- | --- | --- |
-| | pending | pending | pending | | | pending |
+| Tester alias | Device Play account matches tester member | Web opt-in accepted | Android listing offers Install/Update | Installed release/version/build | Device and date | Private proof filename or location | Proof date | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| | pending | pending | pending | | | | | pending |
 
 ## Reviewer Access
 
-| Platform | Tester alias | Account state | Build or track validated | Result | Notes |
-| --- | --- | --- | --- | --- | --- |
-| Apple | | email-confirmed | | pending | |
-| Google Play | | email-confirmed | | pending | |
+| Platform | Tester alias | Account state | Build or track validated | Private proof filename or location | Proof date | Result | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Apple | | email-confirmed | | | | pending | |
+| Google Play | | email-confirmed | | | | pending | |
 
 ## Real-Device QA
 
@@ -104,10 +104,10 @@ passing install.
 
 ## Two-User DM Evidence
 
-| Platform | Sender alias | Recipient alias | Text send/read/reply | Attachment | Notification route | Result |
-| --- | --- | --- | --- | --- | --- | --- |
-| Android | | | pending | pending | pending | pending |
-| iOS | | | pending | pending | pending | pending |
+| Platform | Sender alias | Recipient alias | Text send/read/reply | Attachment | Notification route | Private proof filename or location | Proof date | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Android | | | pending | pending | pending | | | pending |
+| iOS | | | pending | pending | pending | | | pending |
 
 ## Payment And Commerce Evidence
 

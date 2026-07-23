@@ -6,6 +6,8 @@ const EXPECTED_IOS_TESTFLIGHT_BUILD = "1.0 (4)";
 const EXPECTED_IOS_REVIEW_BUILD = "1.0 (3)";
 const DEFAULT_EVIDENCE_PATH =
   "private-release-handoff/release-handoff-template.md";
+const MAX_PROOF_AGE_DAYS = 45;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 const args = process.argv.slice(2);
 const testFixture = args.includes("--test-fixture");
@@ -21,6 +23,7 @@ const expectedReleaseCandidate = optionValue(
   "--release-candidate",
   process.env.TTC_RELEASE_CANDIDATE ?? "",
 );
+const referenceDateOption = optionValue("--reference-date");
 const releaseCandidatePattern = /^[A-Za-z0-9][A-Za-z0-9._-]{6,127}$/;
 
 if (!expectedReleaseCandidate) {
@@ -32,6 +35,22 @@ if (!expectedReleaseCandidate) {
 
 if (!releaseCandidatePattern.test(expectedReleaseCandidate)) {
   console.error("FAIL current web release candidate format is invalid.");
+  process.exit(1);
+}
+
+if (referenceDateOption && !testFixture) {
+  console.error("FAIL reference date is available only for fixture tests.");
+  process.exit(1);
+}
+
+const referenceDate = referenceDateOption || new Date().toISOString().slice(0, 10);
+const referenceTimestamp = Date.parse(`${referenceDate}T00:00:00Z`);
+
+if (
+  !/^\d{4}-\d{2}-\d{2}$/.test(referenceDate) ||
+  !Number.isFinite(referenceTimestamp)
+) {
+  console.error("FAIL release evidence reference date is invalid.");
   process.exit(1);
 }
 
@@ -193,6 +212,28 @@ function requireContains(area, item, value, expected) {
 
 function requireProof(area, item, value) {
   requireValue(area, `${item} private proof`, value);
+}
+
+function requireProofDate(area, item, value) {
+  const cleaned = cleanCell(value);
+  const proofTimestamp = /^\d{4}-\d{2}-\d{2}$/.test(cleaned)
+    ? Date.parse(`${cleaned}T00:00:00Z`)
+    : Number.NaN;
+
+  if (!Number.isFinite(proofTimestamp)) {
+    fail(area, `${item} proof date must use YYYY-MM-DD`);
+    return;
+  }
+
+  const proofAgeDays = (referenceTimestamp - proofTimestamp) / DAY_MS;
+  if (proofAgeDays < 0) {
+    fail(area, `${item} proof date cannot be in the future`);
+  } else if (proofAgeDays > MAX_PROOF_AGE_DAYS) {
+    fail(
+      area,
+      `${item} proof date must be within ${MAX_PROOF_AGE_DAYS} days`,
+    );
+  }
 }
 
 const releaseCandidate = section("Release Candidate");
@@ -408,6 +449,16 @@ if (testerInstall) {
       "device and date",
       passingInstall["Device and date"],
     );
+    requireProof(
+      "Google Play Tester Install Evidence",
+      "tester install",
+      passingInstall["Private proof filename or location"],
+    );
+    requireProofDate(
+      "Google Play Tester Install Evidence",
+      "tester install",
+      passingInstall["Proof date"],
+    );
   }
 }
 
@@ -432,6 +483,18 @@ if (reviewerAccess) {
       expectedBuild,
     );
     requirePassing("Reviewer Access", `${platform} result`, row?.Result);
+    if (isPassing(row?.Result)) {
+      requireProof(
+        "Reviewer Access",
+        platform,
+        row?.["Private proof filename or location"],
+      );
+      requireProofDate(
+        "Reviewer Access",
+        platform,
+        row?.["Proof date"],
+      );
+    }
   }
 }
 
@@ -478,6 +541,18 @@ if (dmEvidence) {
       "Result",
     ]) {
       requirePassing("Two-User DM Evidence", `${platform} ${column}`, row?.[column]);
+    }
+    if (isPassing(row?.Result)) {
+      requireProof(
+        "Two-User DM Evidence",
+        platform,
+        row?.["Private proof filename or location"],
+      );
+      requireProofDate(
+        "Two-User DM Evidence",
+        platform,
+        row?.["Proof date"],
+      );
     }
   }
 }

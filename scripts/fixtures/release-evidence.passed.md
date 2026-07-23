@@ -44,16 +44,16 @@
 
 ## Google Play Tester Install Evidence
 
-| Tester alias | Device Play account matches tester member | Web opt-in accepted | Android listing offers Install/Update | Installed release/version/build | Device and date | Result |
-| --- | --- | --- | --- | --- | --- | --- |
-| fixture-tester | passed | passed | passed | Alpha 1.0.2 (3) | fixture-device 2026-07-23 | passed |
+| Tester alias | Device Play account matches tester member | Web opt-in accepted | Android listing offers Install/Update | Installed release/version/build | Device and date | Private proof filename or location | Proof date | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| fixture-tester | passed | passed | passed | Alpha 1.0.2 (3) | fixture-device 2026-07-23 | fixture-tester-install-proof | 2026-07-23 | passed |
 
 ## Reviewer Access
 
-| Platform | Tester alias | Account state | Build or track validated | Result | Notes |
-| --- | --- | --- | --- | --- | --- |
-| Apple | fixture-reviewer | email-confirmed | App Review 1.0 (3) | passed | Validated |
-| Google Play | fixture-reviewer | email-confirmed | Alpha 1.0.2 (3) | passed | Validated |
+| Platform | Tester alias | Account state | Build or track validated | Private proof filename or location | Proof date | Result | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Apple | fixture-reviewer | email-confirmed | App Review 1.0 (3) | fixture-apple-reviewer-proof | 2026-07-23 | passed | Validated |
+| Google Play | fixture-reviewer | email-confirmed | Alpha 1.0.2 (3) | fixture-google-reviewer-proof | 2026-07-23 | passed | Validated |
 
 ## Real-Device QA
 
@@ -64,10 +64,10 @@
 
 ## Two-User DM Evidence
 
-| Platform | Sender alias | Recipient alias | Text send/read/reply | Attachment | Notification route | Result |
-| --- | --- | --- | --- | --- | --- | --- |
-| Android | fixture-sender | fixture-recipient | passed | passed | passed | passed |
-| iOS | fixture-sender | fixture-recipient | passed | passed | passed | passed |
+| Platform | Sender alias | Recipient alias | Text send/read/reply | Attachment | Notification route | Private proof filename or location | Proof date | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Android | fixture-sender | fixture-recipient | passed | passed | passed | fixture-android-dm-proof | 2026-07-23 | passed |
+| iOS | fixture-sender | fixture-recipient | passed | passed | passed | fixture-ios-dm-proof | 2026-07-23 | passed |
 
 ## Native Push Evidence
 

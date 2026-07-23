@@ -44,6 +44,7 @@ const checks = [
       generator.includes("## Reviewer Access") &&
       generator.includes("## Real-Device QA") &&
       generator.includes("## Two-User DM Evidence") &&
+      generator.includes("Private proof filename or location | Proof date") &&
       generator.includes("## Payment And Commerce Evidence") &&
       packageJson.includes('"smoke:payment-cutover": "node scripts/smoke-payment-cutover-evidence.mjs"') &&
       generator.includes("Release candidate") &&
@@ -161,9 +162,14 @@ const checks = [
       evidenceGate.includes("--test-fixture") &&
       evidenceGate.includes("process.env.TTC_RELEASE_CANDIDATE") &&
       evidenceGate.includes("current web release candidate is required") &&
+      evidenceGate.includes("const MAX_PROOF_AGE_DAYS = 45") &&
+      evidenceGate.includes("function requireProofDate") &&
       evidenceGateTest.includes("release evidence rejects an unbound candidate") &&
       evidenceGateTest.includes("release evidence rejects a stale candidate") &&
       evidenceGateTest.includes("release evidence rejects an invalid candidate format") &&
+      evidenceGateTest.includes("release evidence rejects missing critical private proof") &&
+      evidenceGateTest.includes("release evidence rejects stale critical private proof") &&
+      evidenceGateTest.includes("release evidence rejects a mismatched tester build") &&
       !evidenceGate.includes("console.error(markdown") &&
       evidenceFixture.includes("fixture-release-candidate") &&
       evidenceFixture.includes("Closed testing - Alpha 1.0.2 (3)") &&
