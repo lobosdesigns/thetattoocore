@@ -2143,6 +2143,277 @@ export async function updateMerchOrderStatus(formData: FormData) {
   redirect(adminMerchMessage("Merch order updated.", returnTo));
 }
 
+export async function refundMerchOrder(formData: FormData) {
+  const orderId = cleanText(formData.get("order_id"), 80);
+  const returnTo = cleanText(formData.get("return_to"), 120);
+  const confirm = cleanText(formData.get("confirm"), 20).toLowerCase();
+
+  if (!orderId) {
+    redirect(adminMerchMessage("Choose a Merch order first.", returnTo));
+  }
+
+  if (confirm !== "refund") {
+    redirect(
+      adminMerchMessage(
+        "Type refund to confirm the full Merch order refund.",
+        returnTo,
+      ),
+    );
+  }
+
+  const { supabase, userId } = await requireModerator();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle<{ role: UserRole }>();
+
+  if (profile?.role !== "admin" && profile?.role !== "owner") {
+    redirect(adminMerchMessage("Admin payment access required.", returnTo));
+  }
+
+  const adminClient = createAdminClient();
+  const stripe = createStripeClient();
+  const checkoutPreflight = stripeCheckoutPreflight();
+
+  if (!adminClient || !stripe || !checkoutPreflight.ready) {
+    redirect(adminMerchMessage("Private payment tools unavailable.", returnTo));
+  }
+
+  const { data: order, error: orderError } = await adminClient
+    .from("merch_orders")
+    .select(
+      "id, status, total_cents, stripe_payment_intent_id, payment_dispute_hold",
+    )
+    .eq("id", orderId)
+    .maybeSingle<{
+      id: string;
+      payment_dispute_hold: boolean;
+      status: string;
+      stripe_payment_intent_id: string | null;
+      total_cents: number;
+    }>();
+
+  if (orderError || !order) {
+    if (orderError) {
+      console.error("Admin Merch refund order lookup failed.", orderError);
+    }
+    redirect(adminMerchMessage("Merch order was not found.", returnTo));
+  }
+
+  if (
+    !order.stripe_payment_intent_id ||
+    order.total_cents <= 0 ||
+    !["paid", "fulfilled"].includes(order.status)
+  ) {
+    redirect(
+      adminMerchMessage(
+        "Only paid or fulfilled Merch orders with a payment record can be refunded here.",
+        returnTo,
+      ),
+    );
+  }
+
+  if (order.payment_dispute_hold) {
+    redirect(
+      adminMerchMessage(
+        "This Merch payment is under review and cannot be refunded here yet.",
+        returnTo,
+      ),
+    );
+  }
+
+  const paymentIntentId = order.stripe_payment_intent_id;
+  const { data: existingRefundAudits, error: refundAuditLookupError } =
+    await adminClient
+      .from("admin_audit_logs")
+      .select("id")
+      .eq("event_type", "refund_merch_order_requested")
+      .eq("target_id", order.id)
+      .eq("target_type", "merch_order")
+      .limit(1)
+      .returns<{ id: string }[]>();
+
+  if (refundAuditLookupError) {
+    console.error("Admin Merch refund audit lookup failed.", refundAuditLookupError);
+    redirect(
+      adminMerchMessage(
+        "Could not verify Merch refund history. No refund was requested. Please try again.",
+        returnTo,
+      ),
+    );
+  }
+
+  if (existingRefundAudits?.length) {
+    redirect(adminMerchMessage("This Merch refund was already requested.", returnTo));
+  }
+
+  let paymentIntent: Stripe.PaymentIntent;
+  try {
+    paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+      expand: ["latest_charge"],
+    });
+  } catch (error) {
+    console.error("Admin Merch payment lookup failed before refund.", error);
+    redirect(
+      adminMerchMessage(
+        "Could not confirm the Merch payment. No refund was requested. Please try again.",
+        returnTo,
+      ),
+    );
+  }
+
+  if (
+    paymentIntent.livemode !== checkoutPreflight.actual ||
+    paymentIntent.metadata?.payment_kind !== "merch_order" ||
+    paymentIntent.metadata?.merch_order_id !== order.id
+  ) {
+    console.error("Admin Merch refund payment ownership check failed.", {
+      livemodeMatches: paymentIntent.livemode === checkoutPreflight.actual,
+      orderMatches: paymentIntent.metadata?.merch_order_id === order.id,
+      paymentKindMatches: paymentIntent.metadata?.payment_kind === "merch_order",
+    });
+    redirect(
+      adminMerchMessage(
+        "This payment could not be matched safely to the Merch order. No refund was requested.",
+        returnTo,
+      ),
+    );
+  }
+
+  const latestCharge = paymentIntent.latest_charge;
+  if (!latestCharge || typeof latestCharge === "string") {
+    redirect(
+      adminMerchMessage(
+        "The Merch payment charge could not be inspected. No refund was requested.",
+        returnTo,
+      ),
+    );
+  }
+
+  const merchRefundRequestKeyVersion = "merch-full-refund-v1";
+  const merchRefundRequestKey = `${merchRefundRequestKeyVersion}:${order.id}:${latestCharge.id}`;
+  let matchingRefund: Stripe.Refund | undefined;
+  let existingRefunds: Stripe.Refund[] = [];
+
+  try {
+    const refunds = await stripe.refunds.list({
+      charge: latestCharge.id,
+      limit: 100,
+    });
+    existingRefunds = refunds.data;
+    matchingRefund = refunds.data.find(
+      (refund) =>
+        refund.metadata?.merch_order_id === order.id &&
+        refund.metadata?.refund_kind === "merch_order_full",
+    );
+  } catch (error) {
+    console.error("Admin Merch refund history lookup failed.", error);
+    redirect(
+      adminMerchMessage(
+        "Could not confirm Merch refund history. No new refund was requested. Please try again.",
+        returnTo,
+      ),
+    );
+  }
+
+  if (matchingRefund?.status === "failed" || matchingRefund?.status === "canceled") {
+    redirect(
+      adminMerchMessage(
+        "The earlier Merch refund needs payment review before another attempt.",
+        returnTo,
+      ),
+    );
+  }
+
+  const activeExistingRefund = existingRefunds.find(
+    (refund) => refund.status !== "failed" && refund.status !== "canceled",
+  );
+
+  if (!matchingRefund && (activeExistingRefund || latestCharge.amount_refunded > 0)) {
+    redirect(
+      adminMerchMessage(
+        "This Merch payment already has refund activity. Review it before taking another action.",
+        returnTo,
+      ),
+    );
+  }
+
+  const reverseDestinationTransfer = Boolean(latestCharge.transfer_data?.destination);
+  const refundApplicationFee =
+    reverseDestinationTransfer && (latestCharge.application_fee_amount ?? 0) > 0;
+
+  if (!matchingRefund) {
+    const refundParams: Stripe.RefundCreateParams = {
+      charge: latestCharge.id,
+      metadata: {
+        merch_order_id: order.id,
+        refund_kind: "merch_order_full",
+      },
+      reason: "requested_by_customer",
+    };
+
+    if (reverseDestinationTransfer) {
+      refundParams.reverse_transfer = true;
+      refundParams.refund_application_fee = refundApplicationFee;
+    }
+
+    try {
+      matchingRefund = await stripe.refunds.create(refundParams, {
+        idempotencyKey: merchRefundRequestKey,
+      });
+    } catch (error) {
+      console.error("Admin Merch refund request failed.", error);
+      redirect(
+        adminMerchMessage(
+          "Could not confirm the Merch refund. Retry this action; it will not send a duplicate refund.",
+          returnTo,
+        ),
+      );
+    }
+  }
+
+  const { error: refundAuditError } = await adminClient
+    .from("admin_audit_logs")
+    .insert({
+      actor_id: userId,
+      event_type: "refund_merch_order_requested",
+      metadata: {
+        application_fee_refunded: refundApplicationFee,
+        payment_intent_id: paymentIntentId,
+        refund_id: matchingRefund.id,
+        refund_status: matchingRefund.status,
+        request_key_version: merchRefundRequestKeyVersion,
+        seller_transfer_reversed: reverseDestinationTransfer,
+        total_cents: order.total_cents,
+      },
+      summary: `Requested full Merch refund for order ${order.id.slice(0, 8)}.`,
+      target_id: order.id,
+      target_type: "merch_order",
+    });
+
+  if (refundAuditError) {
+    console.error("Admin Merch refund audit record failed.", refundAuditError);
+    redirect(
+      adminMerchMessage(
+        "Refund request needs audit confirmation. Retry this action; it will not send a duplicate refund.",
+        returnTo,
+      ),
+    );
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/merch");
+  revalidatePath("/admin/payments");
+  revalidatePath("/account");
+  redirect(
+    adminMerchMessage(
+      "Merch refund request recorded. Final payment status will update shortly.",
+      returnTo,
+    ),
+  );
+}
+
 export async function updateAccountDeletionRequest(formData: FormData) {
   const requestId = cleanText(formData.get("request_id"), 80);
   const returnTo = cleanText(formData.get("return_to"), 120);

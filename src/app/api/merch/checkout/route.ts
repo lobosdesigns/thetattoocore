@@ -5,7 +5,10 @@ import {
   platformFeeDescription,
 } from "@/lib/payments/fees";
 import { siteName, siteUrl } from "@/lib/site";
-import { stripeCheckoutPreflight } from "@/lib/stripe/server";
+import {
+  stripeCheckoutPreflight,
+  stripeMerchDestinationChargesEnabled,
+} from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
@@ -63,13 +66,6 @@ function pathWithMessage(path: string, message: string) {
   returnUrl.searchParams.set("message", message);
 
   return `${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`;
-}
-
-function merchDestinationChargesEnabled() {
-  return (
-    process.env.STRIPE_MERCH_DESTINATION_CHARGES_ENABLED?.trim().toLowerCase() ===
-    "true"
-  );
 }
 
 function redirectWithMessage(path: string, message: string) {
@@ -308,7 +304,7 @@ export async function POST(request: Request) {
   let sellerStripeAccountId: string | null = null;
 
   if (!product.is_official) {
-    if (!merchDestinationChargesEnabled()) {
+    if (!stripeMerchDestinationChargesEnabled()) {
       console.error("Merch checkout blocked by destination charge release gate.");
       return redirectWithMessage(
         returnTo,

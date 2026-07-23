@@ -96,11 +96,11 @@ const betaReleaseStatus: {
   tone: BetaReleaseTone;
 }[] = [
   {
-    body: "Internal testing release 1 (1.0) is active for the current tester list. Next: install on a real device and run the beta tester checklist.",
+    body: "Closed-testing release 1.0.1 (2) is installed on the current Android tester device. Continue the beta tester checklist on that exact build.",
     href: "/help/beta-app-testing",
     icon: CheckCircle2,
     label: "Google Play",
-    status: "Active internal test",
+    status: "Closed test installed",
     tone: "ready",
   },
   {
@@ -121,7 +121,7 @@ const betaReleaseStatus: {
   },
 ] as const;
 const betaNextActions = [
-  "Install iOS build 1.0 (3) from TestFlight and Android release 1 (1.0) from internal testing on real devices.",
+  "Install iOS build 1.0 (3) from TestFlight and Android closed-testing release 1.0.1 (2) on real devices.",
   "Run real-device auth checks: login, signup, email confirmation, reset password, and support/legal links stay inside the app.",
   "Run two-user DM, notifications, posting, Stories, comments, profile edit, verification upload, Merch browsing, booking request, and test checkout passes.",
   "Save safe screenshots or short clips for any failed flow before changing code so the fix can be retested against the exact issue.",

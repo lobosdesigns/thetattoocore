@@ -9,9 +9,14 @@ import {
   Package,
   ShieldCheck,
   Store,
+  Undo2,
 } from "lucide-react";
 import { AdminSectionNav } from "../admin-section-nav";
-import { updateMerchOrderStatus, updateMerchProductStatus } from "../actions";
+import {
+  refundMerchOrder,
+  updateMerchOrderStatus,
+  updateMerchProductStatus,
+} from "../actions";
 import {
   commerceStatusLabel,
   titleCaseStatus,
@@ -78,6 +83,7 @@ type MerchOrder = {
     trackingUrl: string | null;
   }[];
   platformFeeCents: number;
+  paymentDisputeHold: boolean;
   refundedAt: string | null;
   shippingAddress: Record<string, unknown> | null;
   shippingCents: number;
@@ -558,9 +564,11 @@ function ProductCard({
 }
 
 function OrderCard({
+  canRefundPayments,
   order,
   returnTo,
 }: {
+  canRefundPayments: boolean;
   order: MerchOrder;
   returnTo: string;
 }) {
@@ -568,6 +576,11 @@ function OrderCard({
   const canCancel = ["pending_checkout", "payment_failed", "cancelled"].includes(
     order.status,
   );
+  const canRefund =
+    canRefundPayments &&
+    ["paid", "fulfilled"].includes(order.status) &&
+    Boolean(order.stripePaymentIntentId) &&
+    !order.paymentDisputeHold;
   const addressLines = shippingAddressLines(order.shippingAddress);
 
   return (
@@ -770,6 +783,49 @@ function OrderCard({
           will sync status here.
         </p>
       </form>
+      {canRefundPayments && ["paid", "fulfilled"].includes(order.status) ? (
+        <form
+          action={refundMerchOrder}
+          className="mt-4 border-t border-[var(--card-rim)] pt-4"
+        >
+          <input name="order_id" type="hidden" value={order.id} />
+          <input name="return_to" type="hidden" value={returnTo} />
+          <label
+            className="text-xs font-semibold uppercase text-[var(--muted-strong)]"
+            htmlFor={`refund-confirm-${order.id}`}
+          >
+            Full refund confirmation
+          </label>
+          <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+            <input
+              className="h-10 min-w-0 flex-1 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+              disabled={order.paymentDisputeHold}
+              id={`refund-confirm-${order.id}`}
+              maxLength={20}
+              name="confirm"
+              placeholder="Type refund"
+            />
+            <button
+              className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[var(--foreground)] px-3 text-sm font-semibold text-[var(--background)] disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!canRefund}
+              title={
+                order.paymentDisputeHold
+                  ? "Resolve the payment review before requesting a refund."
+                  : !order.stripePaymentIntentId
+                    ? "A payment record is required before requesting a refund."
+                    : undefined
+              }
+              type="submit"
+            >
+              <Undo2 aria-hidden="true" className="size-4" />
+              Refund full order
+            </button>
+          </div>
+          <p className="mt-2 text-xs leading-5 text-[var(--muted-strong)]">
+            The payment update will sync back here after the refund is confirmed.
+          </p>
+        </form>
+      ) : null}
     </article>
   );
 }
@@ -1026,7 +1082,7 @@ export default async function AdminMerchPage({
   let orderQuery = supabase
     .from("merch_orders")
     .select(
-      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, shipping_address, admin_note, stripe_checkout_session_id, stripe_payment_intent_id, created_at, fulfilled_at, cancelled_at, refunded_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id, title_snapshot, quantity, seller_fulfilled_at, tracking_carrier, tracking_number, tracking_url)",
+      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, shipping_address, admin_note, stripe_checkout_session_id, stripe_payment_intent_id, payment_dispute_hold, created_at, fulfilled_at, cancelled_at, refunded_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id, title_snapshot, quantity, seller_fulfilled_at, tracking_carrier, tracking_number, tracking_url)",
       { count: "exact" },
     );
 
@@ -1082,6 +1138,7 @@ export default async function AdminMerchPage({
           tracking_number: string | null;
           tracking_url: string | null;
         }[];
+        payment_dispute_hold: boolean;
         platform_fee_cents: number;
         profiles: { display_name: string; username: string } | null;
         refunded_at: string | null;
@@ -1116,6 +1173,7 @@ export default async function AdminMerchPage({
       trackingNumber: item.tracking_number,
       trackingUrl: item.tracking_url,
     })),
+    paymentDisputeHold: order.payment_dispute_hold,
     platformFeeCents: order.platform_fee_cents,
     refundedAt: order.refunded_at,
     shippingAddress: order.shipping_address,
@@ -1598,6 +1656,9 @@ export default async function AdminMerchPage({
             <div className="mt-4 grid gap-3">
               {orders.map((order) => (
                 <OrderCard
+                  canRefundPayments={
+                    profile.role === "admin" || profile.role === "owner"
+                  }
                   key={order.id}
                   order={order}
                   returnTo={currentOrderHref}

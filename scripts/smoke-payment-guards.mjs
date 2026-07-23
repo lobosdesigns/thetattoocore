@@ -905,7 +905,7 @@ checks.push({
     adminMerchPage.includes("<address"),
 });
 checks.push({
-  label: "merch refund reviews are audit-only before production refund rules",
+  label: "merch refund reviews and guarded full refunds stay admin-controlled",
   ok:
     accountActions.includes("export async function requestMerchRefundReview") &&
     accountActions.includes('event_type: "merch_refund_review_requested"') &&
@@ -919,7 +919,32 @@ checks.push({
     accountPage.includes("This does not send money automatically") &&
     adminPaymentsPage.includes("\"merch_refund_review_requested\"") &&
     adminPaymentsPage.includes("Merch refund reviews need admin review") &&
-    paymentReadiness.includes("buyer refund-review requests"),
+    paymentReadiness.includes("buyer refund-review requests") &&
+    adminActions.includes("export async function refundMerchOrder") &&
+    adminActions.includes('confirm !== "refund"') &&
+    adminActions.includes('profile?.role !== "admin" && profile?.role !== "owner"') &&
+    adminActions.includes('["paid", "fulfilled"].includes(order.status)') &&
+    adminActions.includes("order.payment_dispute_hold") &&
+    adminActions.includes("stripeCheckoutPreflight()") &&
+    adminActions.includes('expand: ["latest_charge"]') &&
+    adminActions.includes('paymentIntent.metadata?.payment_kind !== "merch_order"') &&
+    adminActions.includes("stripe.refunds.list") &&
+    adminActions.includes('refund.metadata?.refund_kind === "merch_order_full"') &&
+    adminActions.includes('const merchRefundRequestKeyVersion = "merch-full-refund-v1"') &&
+    adminActions.includes("refundParams.reverse_transfer = true") &&
+    adminActions.includes("refundParams.refund_application_fee = refundApplicationFee") &&
+    adminActions.includes("idempotencyKey: merchRefundRequestKey") &&
+    adminActions.includes('event_type: "refund_merch_order_requested"') &&
+    !adminActions.includes('status: "refunded"') &&
+    adminMerchPage.includes("refundMerchOrder") &&
+    adminMerchPage.includes("payment_dispute_hold") &&
+    adminMerchPage.includes("Refund full order") &&
+    adminPaymentsPage.includes('"refund_merch_order_requested"') &&
+    adminPaymentsPage.includes("Merch refund requested") &&
+    stripeWebhook.includes('event.type === "charge.refunded"') &&
+    stripeWebhook.includes("await markRefunded(paymentIntentId") &&
+    paymentReadiness.includes("destination-charge refunds reverse the seller transfer") &&
+    paymentReadiness.includes("signed payment webhook remains the order-status authority"),
 });
 checks.push({
   label: "merch products collect and display fulfillment and return notes",
@@ -1194,8 +1219,9 @@ checks.push({
   label: "merch marketplace checkout routes seller funds with an application fee",
   ok:
     envExample.includes("STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false") &&
-    merchCheckout.includes("function merchDestinationChargesEnabled()") &&
-    merchCheckout.includes("process.env.STRIPE_MERCH_DESTINATION_CHARGES_ENABLED") &&
+    stripeServer.includes("export function stripeMerchDestinationChargesEnabled()") &&
+    stripeServer.includes("process.env.STRIPE_MERCH_DESTINATION_CHARGES_ENABLED") &&
+    merchCheckout.includes("stripeMerchDestinationChargesEnabled") &&
     merchCheckout.includes("Merch checkout blocked by destination charge release gate.") &&
     merchCheckout.includes('"stripe_account_id, livemode, charges_enabled, payouts_enabled, details_submitted"') &&
     merchCheckout.includes("let sellerStripeAccountId: string | null = null") &&
@@ -1204,7 +1230,7 @@ checks.push({
     merchCheckout.includes('"payment_intent_data[transfer_data][destination]"') &&
     merchCheckout.includes("String(platformFeeCents)") &&
     merchCheckout.includes("sellerStripeAccountId,") &&
-    merchCheckout.indexOf("if (!merchDestinationChargesEnabled())") <
+    merchCheckout.indexOf("if (!stripeMerchDestinationChargesEnabled())") <
       merchCheckout.indexOf("sellerStripeAccountId = payoutAccount.stripe_account_id") &&
     merchCheckout.indexOf("if (sellerStripeAccountId)") <
       merchCheckout.indexOf('"payment_intent_data[application_fee_amount]"') &&
@@ -1412,6 +1438,16 @@ checks.push({
     adminMerchPage.includes("payment review tools first") &&
     !adminActions.includes("payment dashboard") &&
     !adminMerchPage.includes("payment dashboard"),
+});
+checks.push({
+  label: "admin payment preflight exposes the Merch seller-routing release gate",
+  ok:
+    adminPaymentsPage.includes("stripeMerchDestinationChargesEnabled") &&
+    adminPaymentsPage.includes("const merchDestinationChargesReady = stripeMerchDestinationChargesEnabled()") &&
+    adminPaymentsPage.includes('label: "Merch seller routing"') &&
+    adminPaymentsPage.includes("Seller transfer routing remains disabled pending final payout approval.") &&
+    paymentReadiness.includes("Merch seller-routing release switch") &&
+    paymentReadiness.includes("does not show private key, webhook, or connected-account values"),
 });
 checks.push({
   label: "public payment copy avoids collecting raw payout credentials",

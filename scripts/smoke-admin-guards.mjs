@@ -18,6 +18,14 @@ const adCreditMigration = readFileSync(
   "supabase/migrations/20260715033000_ad_credit_ledger.sql",
   "utf8",
 );
+const ownerModerationMigration = readFileSync(
+  "supabase/migrations/20260723013208_protect_owner_moderation_state.sql",
+  "utf8",
+);
+const ownerModerationServiceGuardMigration = readFileSync(
+  "supabase/migrations/20260723013449_fix_profile_moderation_service_role_guard.sql",
+  "utf8",
+);
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
@@ -139,7 +147,9 @@ const checks = [
       adminMediaOps.includes("Beta release status") &&
       adminMediaOps.includes("Where the apps stand now") &&
       adminMediaOps.includes("Google Play") &&
-      adminMediaOps.includes("Active internal test") &&
+      adminMediaOps.includes("Closed-testing release 1.0.1 (2)") &&
+      adminMediaOps.includes("Closed test installed") &&
+      !adminMediaOps.includes("release 1 (1.0)") &&
       adminMediaOps.includes("Apple TestFlight") &&
       adminMediaOps.includes("Build 1.0 (3)") &&
       adminMediaOps.includes("Internal testing") &&
@@ -193,6 +203,31 @@ const checks = [
       adminActions.includes('if (profileId === userId && role !== "owner")') &&
       adminActions.includes("Owners cannot demote their own account.") &&
       adminActions.includes('event_type: "profile_role_changed"'),
+  },
+  {
+    label: "profile moderation restrictions cannot bypass owner protections",
+    ok:
+      ownerModerationMigration.includes(
+        "create or replace function public.protect_profile_role_changes()",
+      ) &&
+      ownerModerationMigration.includes("current_user = 'service_role'") &&
+      ownerModerationMigration.includes("moderation_changed and not actor_can_moderate") &&
+      ownerModerationMigration.includes("actor_id = old.id") &&
+      ownerModerationMigration.includes("old.role = 'owner' or new.role = 'owner'") &&
+      ownerModerationMigration.includes("new.suspended_at is not null") &&
+      ownerModerationMigration.includes("new.banned_at is not null") &&
+      ownerModerationMigration.includes("new.moderation_note is not null") &&
+      ownerModerationMigration.includes("update public.profiles") &&
+      ownerModerationMigration.includes("where role = 'owner'") &&
+      ownerModerationServiceGuardMigration.includes(
+        "actor_can_moderate := current_user = 'service_role'",
+      ) &&
+      ownerModerationServiceGuardMigration.includes(
+        "if not actor_can_moderate then",
+      ) &&
+      ownerModerationServiceGuardMigration.includes(
+        "actor_can_moderate := coalesce(private.current_user_can_moderate(), false)",
+      ),
   },
   {
     label: "tester account creation is owner-only, confirmed, privately backed, and audited",
@@ -524,19 +559,21 @@ const checks = [
       adminActions.includes('console.error("Admin Merch order lookup failed.", orderError)') &&
       adminActions.includes('console.error("Admin Merch order update failed.", updateError)') &&
       adminActions.includes('console.error("Admin Merch order item fulfillment update failed.", itemError)') &&
-      adminActions.includes('console.error("Admin Merch inventory release failed.", releaseError)') &&
+      adminActions.includes('console.error("Admin Merch inventory release client is unavailable.")') &&
+      adminActions.includes('console.error("Admin Merch order cancellation failed.", cancellationError)') &&
       adminActions.includes('"Merch product was not found."') &&
       adminActions.includes('"Could not update Merch product. Please try again."') &&
       adminActions.includes('"Merch order was not found."') &&
       adminActions.includes('"Could not update Merch order. Please try again."') &&
       adminActions.includes('"Order changed, but line-item fulfillment status failed. Please try again."') &&
-      adminActions.includes('"Order changed, but inventory reservation release failed. Please try again."') &&
+      adminActions.includes('"Could not prepare the inventory update. Please try again."') &&
+      adminActions.includes('"Could not cancel Merch order. Please try again."') &&
       !adminActions.includes('productError?.message || "Merch product was not found."') &&
       !adminActions.includes('updateError.message || "Could not update merch product."') &&
       !adminActions.includes('orderError?.message || "Merch order was not found."') &&
       !adminActions.includes('updateError.message || "Could not update merch order."') &&
       !adminActions.includes('itemError.message ||') &&
-      !adminActions.includes('releaseError.message ||'),
+      !adminActions.includes('cancellationError.message ||'),
   },
   {
     label: "plan records dedicated admin pages and tester account tooling",

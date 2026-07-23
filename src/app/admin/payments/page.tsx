@@ -26,6 +26,7 @@ import {
   expectedStripeLivemode,
   stripeCheckoutPreflight,
   stripeCheckoutModeMismatch,
+  stripeMerchDestinationChargesEnabled,
   stripeSecretKeyLivemode,
 } from "@/lib/stripe/server";
 
@@ -106,6 +107,7 @@ const paymentEventTypes = [
 const paymentAuditTypes = [
   "reset_stale_booking_deposit_checkouts",
   "refund_booking_deposit_requested",
+  "refund_merch_order_requested",
   "merch_refund_review_requested",
   "booking_refund_review_requested",
   "merch_refund_problem",
@@ -368,6 +370,9 @@ function auditLabel(value: string) {
   }
   if (value === "merch_refund_review_requested") {
     return "Merch refund review requested";
+  }
+  if (value === "refund_merch_order_requested") {
+    return "Merch refund requested";
   }
   if (value === "booking_refund_review_requested") {
     return "Booking refund review requested";
@@ -673,6 +678,7 @@ export default async function AdminPaymentsPage({
   const modeMismatch = stripeCheckoutModeMismatch();
   const checkoutPreflight = stripeCheckoutPreflight();
   const webhookSecretReady = Boolean(process.env.STRIPE_WEBHOOK_SECRET);
+  const merchDestinationChargesReady = stripeMerchDestinationChargesEnabled();
   const paymentModePreflightChecks = [
     {
       detail:
@@ -710,6 +716,13 @@ export default async function AdminPaymentsPage({
         : "Expected mode and server key mode match or need setup.",
       label: "Mode match",
       ready: !modeMismatch && expectedLivemode !== null && keyLivemode !== null,
+    },
+    {
+      detail: merchDestinationChargesReady
+        ? "Seller transfer routing is enabled for approved connected Merch sellers."
+        : "Seller transfer routing remains disabled pending final payout approval.",
+      label: "Merch seller routing",
+      ready: merchDestinationChargesReady,
     },
   ] as const;
   const hasPaymentWarnings =

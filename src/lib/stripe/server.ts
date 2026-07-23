@@ -78,6 +78,13 @@ export function stripeCheckoutPreflight() {
   } as const;
 }
 
+export function stripeMerchDestinationChargesEnabled() {
+  return (
+    process.env.STRIPE_MERCH_DESTINATION_CHARGES_ENABLED?.trim().toLowerCase() ===
+    "true"
+  );
+}
+
 export function createStripeClient() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
 
