@@ -12,6 +12,9 @@ const source = {
   androidManifest: read(
     "native/thetattoocore-mobile/android/app/src/main/AndroidManifest.xml",
   ),
+  androidNotificationIcon: read(
+    "native/thetattoocore-mobile/android/app/src/main/res/drawable/ic_stat_ttc.xml",
+  ),
   androidPluginBuild: read(
     "native/thetattoocore-mobile/android/app/capacitor.build.gradle",
   ),
@@ -168,6 +171,25 @@ const checks = [
         source.iosInfo,
       ) &&
       source.capacitorConfig.includes("presentationOptions: []"),
+  },
+  {
+    label: "Android notifications use the dedicated monochrome TTC vector",
+    ok:
+      source.androidManifest.includes(
+        'android:name="com.google.firebase.messaging.default_notification_icon"',
+      ) &&
+      source.androidManifest.includes(
+        'android:resource="@drawable/ic_stat_ttc"',
+      ) &&
+      source.androidNotificationIcon.includes(
+        'android:fillColor="#FFFFFFFF"',
+      ) &&
+      source.androidNotificationIcon.includes('android:fillType="evenOdd"') &&
+      source.androidNotificationIcon.includes(
+        'android:pathData="M30,38h48v9',
+      ) &&
+      !source.androidNotificationIcon.includes("<gradient") &&
+      !source.androidNotificationIcon.includes("<aapt:attr"),
   },
   {
     label: "notification permission is requested only by explicit enable",
