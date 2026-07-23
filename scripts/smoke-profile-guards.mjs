@@ -91,6 +91,7 @@ const checks = [
       profileForm.includes('event.key === "Home"') &&
       profileForm.includes('event.key === "End"') &&
       profileForm.includes("window.requestAnimationFrame") &&
+      profileForm.includes("window.dispatchEvent(new Event(\"hashchange\"))") &&
       profileForm.includes('aria-labelledby={`${profilePanelId("profile")}-tab`}') &&
       !profileForm.includes("aria-pressed={activeTab === tab}"),
   },
@@ -106,7 +107,11 @@ const checks = [
       accountSettingsWorkspace.includes('role="tablist"') &&
       accountSettingsWorkspace.includes('role="tab"') &&
       accountSettingsWorkspace.includes('role="tabpanel"') &&
-      accountSettingsWorkspace.includes("aria-controls={tab.id}") &&
+      accountSettingsWorkspace.includes("function accountPanelId(tabId: string)") &&
+      accountSettingsWorkspace.includes("aria-controls={accountPanelId(tab.id)}") &&
+      accountSettingsWorkspace.includes("id={accountPanelId(tab.id)}") &&
+      accountSettingsWorkspace.includes("window.dispatchEvent(new Event(\"hashchange\"))") &&
+      !accountSettingsWorkspace.includes("id={tab.id}") &&
       accountSettingsWorkspace.includes("aria-selected={isActive}") &&
       accountSettingsWorkspace.includes('tabIndex={isActive ? 0 : -1}') &&
       accountSettingsWorkspace.includes('event.key === "ArrowRight"') &&

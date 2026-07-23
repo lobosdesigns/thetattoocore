@@ -24,6 +24,15 @@ function tabFromHash(hash: string, tabs: AccountSettingsTab[]) {
   return tabs.some((tab) => tab.id === id) ? id : tabs[0]?.id;
 }
 
+function accountPanelId(tabId: string) {
+  return `${tabId}-panel`;
+}
+
+function replaceAccountHash(hash: string) {
+  window.history.replaceState(null, "", hash);
+  window.dispatchEvent(new Event("hashchange"));
+}
+
 export function AccountSettingsWorkspace({
   children,
   tabs,
@@ -35,7 +44,7 @@ export function AccountSettingsWorkspace({
   const [activeTab, setActiveTab] = useState(tabs[0]?.id ?? "");
   const activateTab = (tabId: string) => {
     setActiveTab(tabId);
-    window.history.replaceState(null, "", `#${tabId}`);
+    replaceAccountHash(`#${tabId}`);
   };
   const handleTabKeyDown = (
     event: KeyboardEvent<HTMLButtonElement>,
@@ -122,7 +131,7 @@ export function AccountSettingsWorkspace({
 
           return (
             <button
-              aria-controls={tab.id}
+              aria-controls={accountPanelId(tab.id)}
               aria-selected={isActive}
               className={`h-10 shrink-0 rounded-md border px-3 text-sm font-bold ${
                 isActive
@@ -181,7 +190,7 @@ export function AccountSettingsWorkspace({
             <div
               aria-labelledby={`${tab.id}-tab`}
               className={activeTab === tab.id ? "block" : "hidden"}
-              id={tab.id}
+              id={accountPanelId(tab.id)}
               key={tab.id}
               role="tabpanel"
               tabIndex={0}

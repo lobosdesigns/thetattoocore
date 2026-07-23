@@ -166,6 +166,11 @@ function profilePanelId(tab: ProfileTab) {
   return `profile-${tab}-panel`;
 }
 
+function replaceProfileHash(hash: string) {
+  window.history.replaceState(null, "", hash);
+  window.dispatchEvent(new Event("hashchange"));
+}
+
 const alertSettingNotes = [
   "Current switches control in-app notifications and unread badges.",
   "The same choices can guide important email and installed-app alerts as those features open up.",
@@ -191,7 +196,7 @@ export function ProfileForm({
   const [activeTab, setActiveTab] = useState<ProfileTab>("profile");
   const activateTab = (tab: ProfileTab) => {
     setActiveTab(tab);
-    window.history.replaceState(null, "", profileHashForTab(tab));
+    replaceProfileHash(profileHashForTab(tab));
   };
   const handleTabKeyDown = (
     event: KeyboardEvent<HTMLButtonElement>,
