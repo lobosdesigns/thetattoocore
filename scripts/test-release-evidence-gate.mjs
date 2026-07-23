@@ -43,7 +43,7 @@ const staleProofFixture = writeVariant("stale-proof.md", (source) =>
 );
 const mismatchedBuildFixture = writeVariant("mismatched-build.md", (source) =>
   source.replace(
-    "| Alpha 1.0.2 (3) | fixture-device 2026-07-23 | fixture-tester-install-proof |",
+    "| Alpha 1.0.3 (4) | fixture-device 2026-07-23 | fixture-tester-install-proof |",
     "| Alpha 1.0.1 (2) | fixture-device 2026-07-23 | fixture-tester-install-proof |",
   ),
 );
@@ -51,8 +51,8 @@ const staleRealDeviceDateFixture = writeVariant(
   "stale-real-device-date.md",
   (source) =>
     source.replace(
-      "| Android | fixture-device | Android 16 | 1.0.2 (3) | Google Play | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-07-23 |",
-      "| Android | fixture-device | Android 16 | 1.0.2 (3) | Google Play | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-05-01 |",
+      "| Android | fixture-device | Android 16 | 1.0.3 (4) | Google Play | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-07-23 |",
+      "| Android | fixture-device | Android 16 | 1.0.3 (4) | Google Play | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-05-01 |",
     ),
 );
 const promotedIpadFixture = writeVariant("promoted-ipad.md", (source) =>
@@ -65,8 +65,8 @@ const promotedAndroidPartialFixture = writeVariant(
   "promoted-android-partial.md",
   (source) =>
     source.replace(
-      "| Android | fixture-device | Android 16 | 1.0.2 (3) | Google Play | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-07-23 |",
-      "| Android | fixture-device | Android 16 | 1.0.2 (3) | manual install | Wi-Fi | owner-confirmed | install only | passed | fixture-proof | 2026-07-23 |",
+      "| Android | fixture-device | Android 16 | 1.0.3 (4) | Google Play | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-07-23 |",
+      "| Android | fixture-device | Android 16 | 1.0.3 (4) | manual install | Wi-Fi | owner-confirmed | install only | passed | fixture-proof | 2026-07-23 |",
     ),
 );
 const missingMarkerFixture = writeVariant("missing-marker.md", (source) =>
@@ -320,7 +320,7 @@ const checks = [
       return (
         result.status === 1 &&
         result.stderr.includes(
-          "installed Android build must be exact build 1.0.2 (3)",
+          "installed Android build must be exact build 1.0.3 (4)",
         )
       );
     },

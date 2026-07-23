@@ -174,9 +174,9 @@ public-submission build.
 
 | Release path | Checked-in compile/target SDK | Required action | Repo-safe result |
 | --- | ---: | --- | --- |
-| Current Google Play closed test | Active release `1.0.2 (3)` and checked-in candidate `1.0.3 (4)` are `36 / 36` | Exact-build `1.0.2 (3)` install and baseline device checks passed; collect explicit opt-in, token-registration, delivery, tap, opt-out, and applicable participation evidence while delivery stays off. | Record release track, version code/name, test date, device model, and pass/fail only. |
-| Authorized Android review phone | Installed Alpha `1.0.2 (3)` targets API 36 | Required package probe, retained-session cold launch, system-bar framing, and permission-off baseline passed. Continue controlled notification QA only after explicit member opt-in. | Record installed build, permission state, device date, and pass/fail only. |
-| Staged Google Play candidate | `36 / 36`; candidate version code `4` / version name `1.0.3`; current closed-test release is version code `3` / version name `1.0.2` | Signed bundle was accepted and the Alpha change is in review. Candidate `1.0.3 (4)` must be installed from Google Play before it can replace the completed build-3 evidence or alert allowlist. | Record API `36 / 36` rebuild proof, bundle hash, track state, device QA date, and pass/fail only. |
+| Current Google Play closed test | Active release `1.0.3 (4)` is `36 / 36` | Exact-build install, verified App Links, production-link launch, retained-session landing, and system-bar framing checks passed; collect explicit opt-in, token-registration, delivery, tap, opt-out, and applicable participation evidence while global delivery stays off. | Record release track, version code/name, test date, device model, and pass/fail only. |
+| Authorized Android review phone | Installed Alpha `1.0.3 (4)` targets API 36 | Required package probe, verified App Links, production-link launch, retained-session landing, and system-bar framing passed. Continue controlled notification QA only after explicit member opt-in. | Record installed build, permission state, device date, and pass/fail only. |
+| Previous Google Play baseline | `36 / 36`; version code `3` / version name `1.0.2` | Preserve its completed historical evidence, but do not keep it in the active alert allowlist after exact Play-installed build 4 passed. | Record historical build and result only; do not treat it as current release evidence. |
 | Later Google Play replacement or update | `36 / 36` required | Increment above version code `4`, sign a fresh upload bundle, and rerun wrapper plus real-device QA. | Record API `36 / 36` rebuild proof, version code/name, device QA date, and pass/fail only. |
 
 Never reuse a version code that Google Play has already served.
@@ -201,7 +201,7 @@ cd android
 
 Android SDK and JDK 21 are configured on this Windows machine. For a Google Play upload build, load the local signing environment variables from the private Desktop recovery note, then run `.\gradlew.bat bundleRelease`. The signed upload bundle is `native/thetattoocore-mobile/android/app/build/outputs/bundle/release/app-release.aab`. Keep `android/local.properties`, `android/keystores/`, and all keystore recovery notes out of git.
 
-Android release bundling fails closed before compilation unless all private upload-signing inputs are present, the referenced signing file is readable, and the ignored Android app configuration file is present and nonempty. The failure message names only the missing input category. The production app configuration is not processed for the side-by-side `.qa` debug package, so `assembleDebug` remains available without release signing or a separate QA app registration. Any Play replacement must increment above version code `3`.
+Android release bundling fails closed before compilation unless all private upload-signing inputs are present, the referenced signing file is readable, and the ignored Android app configuration file is present and nonempty. The failure message names only the missing input category. The production app configuration is not processed for the side-by-side `.qa` debug package, so `assembleDebug` remains available without release signing or a separate QA app registration. Any Play replacement must increment above version code `4`.
 
 iOS on Mac:
 

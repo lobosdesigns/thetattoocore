@@ -124,7 +124,7 @@ const checks = [
       generator.includes("Installed release/version/build") &&
       generator.includes("A missing listing, account mismatch, or unconfirmed web opt-in is a blocker") &&
       generator.includes("API 36 signed upload bundle") &&
-      generator.includes("Version code 3 / version name 1.0.2 API 36 update is active and verified installed") &&
+      generator.includes("Version code 4 / version name 1.0.3 API 36 update is active and verified installed") &&
       generator.includes("do not upload the same version code again") &&
       generator.includes("archive tester participation evidence") &&
       generator.includes("Console submit/retry evidence") &&
@@ -165,7 +165,7 @@ const checks = [
   {
     label: "strict release evidence gate is exact-build and privacy-safe",
     ok:
-      evidenceGate.includes('const EXPECTED_ANDROID_BUILD = "1.0.2 (3)"') &&
+      evidenceGate.includes('const EXPECTED_ANDROID_BUILD = "1.0.3 (4)"') &&
       evidenceGate.includes('const EXPECTED_IOS_TESTFLIGHT_BUILD = "1.0 (4)"') &&
       evidenceGate.includes('const EXPECTED_IOS_REVIEW_BUILD = "1.0 (3)"') &&
       evidenceGate.includes("private release evidence requirement(s) remain incomplete") &&
@@ -209,7 +209,7 @@ const checks = [
       !evidenceGate.includes("console.error(markdown") &&
       evidenceFixture.includes("TTC_SANITIZED_RELEASE_EVIDENCE_FIXTURE") &&
       evidenceFixture.includes("fixture-release-candidate") &&
-      evidenceFixture.includes("Closed testing - Alpha 1.0.2 (3)") &&
+      evidenceFixture.includes("Closed testing - Alpha 1.0.3 (4)") &&
       evidenceFixture.includes("App Review 1.0 (3)") &&
       evidenceFixture.includes("| Accessibility Nutrition Labels | n/a | n/a |") &&
       evidenceFixture.includes("| Child safety standards declaration | n/a | passed |") &&

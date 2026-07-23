@@ -151,7 +151,7 @@ const checks = [
       adminMediaOps.includes("Beta release status") &&
       adminMediaOps.includes("Where the apps stand now") &&
       adminMediaOps.includes("Google Play") &&
-      adminMediaOps.includes("Closed-testing Alpha release 1.0.2 (3)") &&
+      adminMediaOps.includes("Closed-testing Alpha release 1.0.3 (4)") &&
       adminMediaOps.includes("Closed test installed") &&
       !adminMediaOps.includes("release 1 (1.0)") &&
       adminMediaOps.includes("Apple TestFlight") &&

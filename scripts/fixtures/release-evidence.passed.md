@@ -7,7 +7,7 @@
 | Field | Value |
 | --- | --- |
 | Web deploy version | fixture-release-candidate |
-| Android release track and version/build | Closed testing - Alpha 1.0.2 (3) |
+| Android release track and version/build | Closed testing - Alpha 1.0.3 (4) |
 | iOS TestFlight version/build | 1.0 (4) |
 | Store-review target date | 2026-07-23 |
 | Reviewer contact saved in consoles | passed |
@@ -22,7 +22,7 @@
 | Apple | Accessibility Nutrition Labels evidence | Voluntary and unclaimed | n/a | fixture-proof |
 | Google Play | Closed testing production-access evidence | Organization account requirement reviewed | n/a | fixture-proof |
 | Google Play | Closed-test tester links and opt-in evidence | Confirmed | passed | fixture-proof |
-| Google Play | API 36 closed-test release | Active Alpha 1.0.2 (3) | passed | fixture-proof |
+| Google Play | API 36 closed-test release | Active Alpha 1.0.3 (4) | passed | fixture-proof |
 | Google Play | Console submit/retry evidence | No retry required | n/a | fixture-proof |
 
 ## Store Console Evidence
@@ -53,20 +53,20 @@
 
 | Tester alias | Device Play account matches tester member | Web opt-in accepted | Android listing offers Install/Update | Installed release/version/build | Device and date | Private proof filename or location | Proof date | Result |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| fixture-tester | passed | passed | passed | Alpha 1.0.2 (3) | fixture-device 2026-07-23 | fixture-tester-install-proof | 2026-07-23 | passed |
+| fixture-tester | passed | passed | passed | Alpha 1.0.3 (4) | fixture-device 2026-07-23 | fixture-tester-install-proof | 2026-07-23 | passed |
 
 ## Reviewer Access
 
 | Platform | Tester alias | Account state | Build or track validated | Private proof filename or location | Proof date | Result | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Apple | fixture-reviewer | email-confirmed | App Review 1.0 (3) | fixture-apple-reviewer-proof | 2026-07-23 | passed | Validated |
-| Google Play | fixture-reviewer | email-confirmed | Alpha 1.0.2 (3) | fixture-google-reviewer-proof | 2026-07-23 | passed | Validated |
+| Google Play | fixture-reviewer | email-confirmed | Alpha 1.0.3 (4) | fixture-google-reviewer-proof | 2026-07-23 | passed | Validated |
 
 ## Real-Device QA
 
 | Platform | Device model | OS version | Build or deploy version | Install source | Network | Evidence basis | QA scope | Result | Proof filename | Proof date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Android | fixture-device | Android 16 | 1.0.2 (3) | Google Play | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-07-23 |
+| Android | fixture-device | Android 16 | 1.0.3 (4) | Google Play | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-07-23 |
 | iOS | iPhone fixture-device | iOS current | 1.0 (4) | TestFlight | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-07-23 |
 
 ## Two-User DM Evidence

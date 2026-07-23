@@ -557,10 +557,10 @@ const checks = [
       source.readiness.includes("Apple iOS `1.0` build `1.0 (3)` is submitted for App Review") &&
       source.readiness.includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
       source.readiness.includes("age/content rating, optional Accessibility Nutrition Labels claims, Google Play required declarations, applicable tester evidence, and final console validation") &&
-      source.readiness.includes("Closed testing - Alpha is Active with API 36 release `1.0.2 (3)`") &&
+      source.readiness.includes("Closed testing - Alpha is Active with API 36 release `1.0.3 (4)`") &&
       source.readiness.includes("existing Google Group community") &&
-      source.readiness.includes("authorized Android 16 review phone installed exact Alpha build `1.0.2 (3)`") &&
-      source.readiness.includes("One exact Android Alpha build `1.0.2 (3)` install is verified") &&
+      source.readiness.includes("authorized Android 16 review phone installed exact Alpha build `1.0.3 (4)`") &&
+      source.readiness.includes("One exact Android Alpha build `1.0.3 (4)` Google Play install is verified") &&
       source.readiness.includes("organization account is not subject to the personal-account 12-tester/14-day production-access rule") &&
       source.readiness.includes("Production release `1.0.1 (2)` is published separately at 100%") &&
       source.readiness.includes("Publishing Overview reports no unpublished changes") &&

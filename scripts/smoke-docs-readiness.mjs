@@ -237,7 +237,7 @@ const checks = [
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("August 31, 2026") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Android 16 / API 36") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("target Android 16 / API 36") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checked-in Android candidate `1.0.3 (4)` and active closed-test release `1.0.2 (3)`") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checked-in and active closed-test release `1.0.3 (4)` uses that baseline") &&
       docs["docs/APP_STORE_READINESS.md"].includes("targetSdkVersion` set to 36") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not request precise device location") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not prompt on first open") &&
@@ -510,9 +510,9 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android automation not yet available") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("passing Android console/log review") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Native build/install evidence should use the matrix") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play Closed testing - Alpha now serves API 36 release `1.0.2 (3)`") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("authorized Android 16 review phone installed exact build `1.0.2 (3)`") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Do not upload version code `3` again") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play Closed testing - Alpha now serves API 36 release `1.0.3 (4)`") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("authorized Android 16 review phone installed exact build `1.0.3 (4)`") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Do not upload version code `4` again") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("## Google Play Tester Install Handoff") &&
       packageJson.includes('"qa:android-device:open-test": "node scripts/android-device-qa-probe.mjs --open-test-join"') &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run qa:android-device:open-test") &&
@@ -1038,10 +1038,10 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Signed notification-capability build `1.0 (4)` was uploaded separately to TestFlight") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Age 18+ override") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Closed testing - Alpha is Active with API 36 release `1.0.2 (3)`") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Closed testing - Alpha is Active with API 36 release `1.0.3 (4)`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("existing Google Group community") &&
       docs["docs/APP_STORE_READINESS.md"].includes("organization account is not subject to the personal-account 12-tester/14-day production-access rule") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("authorized Android 16 review phone installed exact Alpha build `1.0.2 (3)`") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("authorized Android 16 review phone installed exact Alpha build `1.0.3 (4)`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Production release `1.0.1 (2)` is published separately at 100%") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Publishing Overview reports no unpublished changes") &&
       !docs["docs/APP_STORE_READINESS.md"].includes("awaiting final submit-for-review confirmation") &&
@@ -1050,28 +1050,28 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("group-member opt-in/install proof and 14-day production-access tester evidence if required") &&
       docs["docs/APP_STORE_READINESS.md"].includes("active sandbox test connected account") &&
       docs["docs/APP_STORE_READINESS.md"].includes("marketplace integration guide using destination charges") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("The Merch destination-charge release switch defaults off") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("keep the release switch off until policy approval") &&
       docs["docs/APP_STORE_READINESS.md"].includes("private native-alert project and Android/Apple app registrations exist") &&
       docs["docs/APP_STORE_READINESS.md"].includes("service-only DM delivery outbox") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Keep all activation and delivery gates off") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("before enabling global delivery or making store claims") &&
       !docs["docs/APP_STORE_READINESS.md"].includes("TTC Firebase project has not been created yet") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Native pre-device verification passed") &&
       docs["docs/APP_STORE_READINESS.md"].includes("connected Android 16 phone is authorized") &&
       docs["docs/APP_STORE_READINESS.md"].includes("unsigned Release generic-iOS-device compile with Xcode 26.3") &&
       !docs["docs/APP_STORE_READINESS.md"].includes("native Firebase/FCM delivery") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("complete the Native Push Private Evidence Matrix") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Complete the Native Push Private Evidence Matrix") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private release handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private payment handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private native QA handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Store consoles") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Apple iOS `1.0` build `1.0 (3)` is submitted for App Review") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Google Play Closed testing - Alpha serves `1.0.2 (3)` to selected testers") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Google Play Closed testing - Alpha serves `1.0.3 (4)` to selected testers") &&
       docs["docs/APP_STORE_READINESS.md"].includes("13-inch iPad screenshots uploaded") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Content Rights") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Accessibility Nutrition Labels") &&
       (docs["docs/APP_STORE_READINESS.md"].includes("Data Safety review") ||
         docs["docs/APP_STORE_READINESS.md"].includes("Data Safety saved")) &&
-      docs["docs/APP_STORE_READINESS.md"].includes("One exact Android Alpha build `1.0.2 (3)` install is verified") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("One exact Android Alpha build `1.0.3 (4)` Google Play install is verified") &&
       docs["docs/APP_STORE_READINESS.md"].includes("production `1.0.1 (2)` is published at 100%") &&
       docs["docs/APP_STORE_READINESS.md"].includes("applicable tester evidence") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Legal and policy") &&
@@ -1090,8 +1090,8 @@ const checks = [
       !docs["docs/APP_STORE_READINESS.md"].includes("provider review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Native wrapper") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Android API 36") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("fail-closed app-link association routes") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("final Android and Apple signed identifiers still need private deployment configuration") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Production App Links are verified and enabled") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("iOS Universal Link and broader exact-build evidence remain incomplete") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Run `npm.cmd run smoke:app-links` after every deploy") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Run `npm.cmd run smoke:app-links` after deployment") &&
       docs["docs/STORE_LISTING_DRAFT.md"].includes("Child Safety Standards: https://thetattoocore.com/child-safety-standards") &&

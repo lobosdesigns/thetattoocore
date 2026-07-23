@@ -96,7 +96,7 @@ const betaReleaseStatus: {
   tone: BetaReleaseTone;
 }[] = [
   {
-    body: "Closed-testing Alpha release 1.0.2 (3) is installed on the current Android tester device. Continue the beta tester checklist on that exact build.",
+    body: "Closed-testing Alpha release 1.0.3 (4) is installed on the current Android tester device. Continue the beta tester checklist on that exact build.",
     href: "/help/beta-app-testing",
     icon: CheckCircle2,
     label: "Google Play",
@@ -121,7 +121,7 @@ const betaReleaseStatus: {
   },
 ] as const;
 const betaNextActions = [
-  "Install iOS build 1.0 (4) from TTC Internal Testers and keep Android Closed testing - Alpha 1.0.2 (3) on the current review phone.",
+  "Continue iOS build 1.0 (4) testing through TTC Internal Testers and keep Android Closed testing - Alpha 1.0.3 (4) on the current review phone.",
   "Preserve iOS App Review build 1.0 (3) while build 1.0 (4) is used only for controlled TestFlight QA.",
   "Run real-device auth checks: login, signup, email confirmation, reset password, and support/legal links stay inside the app.",
   "Run two-user DM, notifications, posting, Stories, comments, profile edit, verification upload, Merch browsing, booking request, and test checkout passes.",

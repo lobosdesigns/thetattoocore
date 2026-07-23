@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
 
-const EXPECTED_ANDROID_BUILD = "1.0.2 (3)";
+const EXPECTED_ANDROID_BUILD = "1.0.3 (4)";
 const EXPECTED_IOS_TESTFLIGHT_BUILD = "1.0 (4)";
 const EXPECTED_IOS_REVIEW_BUILD = "1.0 (3)";
 const REQUIRED_LEGAL_REVIEW_AREAS = [
@@ -354,7 +354,7 @@ if (releaseCandidate) {
   );
   requireContains(
     "Release Candidate",
-    "Android Alpha build must be exact build 1.0.2 (3)",
+    "Android Alpha build must be exact build 1.0.3 (4)",
     androidBuild?.Value,
     EXPECTED_ANDROID_BUILD,
   );
@@ -525,7 +525,7 @@ if (testerInstall) {
     );
     requireContains(
       "Google Play Tester Install Evidence",
-      "installed Android build must be exact build 1.0.2 (3)",
+      "installed Android build must be exact build 1.0.3 (4)",
       passingInstall["Installed release/version/build"],
       EXPECTED_ANDROID_BUILD,
     );

@@ -221,7 +221,7 @@ const checks = [
   {
     key: "controlled_registration_qa",
     ready:
-      source.qaAccess.includes('android: { build: "3", version: "1.0.2" }') &&
+      source.qaAccess.includes('android: { build: "4", version: "1.0.3" }') &&
       source.qaAccess.includes('ios: { build: "4", version: "1.0" }') &&
       source.qaAccess.includes('role === "admin" || role === "owner"') &&
       source.layout.includes("nativePushQaRoleAllowed(role)") &&

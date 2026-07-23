@@ -6,7 +6,7 @@ type NativePushBuild = {
 };
 
 export const nativePushQaBuilds: Record<NativePushPlatform, NativePushBuild> = {
-  android: { build: "3", version: "1.0.2" },
+  android: { build: "4", version: "1.0.3" },
   ios: { build: "4", version: "1.0" },
 };
 

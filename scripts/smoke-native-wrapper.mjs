@@ -140,15 +140,15 @@ const androidApi36DocsReady =
   androidApi36SubmissionReady &&
   androidVersionCode === 4 &&
   androidVersionName === "1.0.3" &&
-  source.nativePrep.includes("Active release `1.0.2 (3)` and checked-in candidate `1.0.3 (4)` are `36 / 36`") &&
+  source.nativePrep.includes("Active release `1.0.3 (4)` is `36 / 36`") &&
   source.nativePrep.includes("Record API `36 / 36` rebuild proof") &&
-  source.nativePrep.includes("current closed-test release is version code `3` / version name `1.0.2`") &&
-  source.nativePrep.includes("Candidate `1.0.3 (4)` must be installed from Google Play") &&
-  source.mobileRunbook.includes("checked-in Android candidate `1.0.3 (4)` and active closed-test release `1.0.2 (3)`") &&
+  source.nativePrep.includes("Previous Google Play baseline") &&
+  source.nativePrep.includes("do not keep it in the active alert allowlist") &&
+  source.mobileRunbook.includes("checked-in and active closed-test release `1.0.3 (4)` uses that baseline") &&
   source.mobileRunbook.includes("Any later replacement must increment the version code above `4`") &&
-  source.readme.includes("checked-in candidate targets `36 / 36`") &&
-  source.readme.includes("Closed testing - Alpha is active with version code `3` / version name `1.0.2`") &&
-  source.readme.includes("| Staged Play candidate | `36 / 36`; candidate `4` / `1.0.3` |");
+  source.readme.includes("checked-in release targets `36 / 36`") &&
+  source.readme.includes("Closed testing - Alpha is active with version code `4` / version name `1.0.3`") &&
+  source.readme.includes("| Previous Play baseline | `36 / 36`; historical `3` / `1.0.2` |");
 const androidApi35InternalOnly =
   compileSdkVersion === 35 &&
   targetSdkVersion === 35 &&
@@ -357,7 +357,7 @@ const checks = [
       source.readme.includes("Public release waits for final legal review") &&
       source.nativePrep.includes("August 31, 2026") &&
       source.nativePrep.includes("Android 16 / API 36") &&
-      source.mobileRunbook.includes("checked-in Android candidate `1.0.3 (4)` and active closed-test release `1.0.2 (3)`") &&
+      source.mobileRunbook.includes("checked-in and active closed-test release `1.0.3 (4)` uses that baseline") &&
       source.readme.includes("support@thetattoocore.com") &&
       source.readme.includes("Native permissions at first beta: none") &&
       source.readme.includes("Push prompts: off") &&
@@ -461,7 +461,7 @@ const checks = [
       source.mobileRunbook.includes("Keep project IDs, sender IDs, API keys, app config files, device tokens, notification payloads, signing details, and console screenshots in the private release handoff only"),
   },
   {
-    label: "native push bridge stays inert and private config stays untracked before device evidence",
+    label: "native push global delivery stays inert and private config stays untracked",
     ok:
       checkedInNativePushConfigFiles.length === 0 &&
       source.packageJson.includes('"@capacitor-firebase/messaging": "7.5.0"') &&
@@ -513,7 +513,7 @@ const checks = [
       source.readme.includes("Android release bundling fails closed") &&
       source.nativePrep.includes("Enable Firebase/FCM notification delivery only after") &&
       source.mobileRunbook.includes("Firebase project, native app config files") &&
-      source.readiness.includes("UI, registration, and delivery gates off"),
+      source.readiness.includes("staged with global delivery off"),
     message: checkedInNativePushConfigFiles.length
       ? `Remove native push config from repo before public review: ${checkedInNativePushConfigFiles.join(", ")}`
       : undefined,
@@ -534,8 +534,8 @@ const checks = [
       androidApi36SubmissionReady &&
       androidVersionCode === 4 &&
       androidVersionName === "1.0.3" &&
-      source.readiness.includes("Google Play currently serves API 36 release `1.0.2 (3)` to the closed test") &&
-      source.readiness.includes("any replacement must increment above version code `3`") &&
+      source.readiness.includes("Google Play currently serves API 36 release `1.0.3 (4)` to the closed test") &&
+      source.readiness.includes("any replacement must increment above version code `4`") &&
       source.realDeviceQa.includes("versionName` and `versionCode` checked into"),
   },
   {
