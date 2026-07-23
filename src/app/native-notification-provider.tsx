@@ -22,6 +22,18 @@ type NativeAppInfo = {
   version: string;
 };
 
+type NativeNotificationSetupStage =
+  | "availability"
+  | "device"
+  | "permission"
+  | "registration";
+
+class NativeNotificationSetupError extends Error {
+  constructor(readonly stage: NativeNotificationSetupStage) {
+    super("Native app alert setup failed.");
+  }
+}
+
 type NativeNotificationContextValue = {
   disable: () => Promise<void>;
   enable: () => Promise<"denied" | "enabled">;
@@ -39,6 +51,37 @@ const NativeNotificationContext = createContext<NativeNotificationContextValue>(
 const installationIdKey = "ttc_native_push_installation_id";
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+async function setupStage<T>(
+  stage: NativeNotificationSetupStage,
+  operation: () => Promise<T>,
+) {
+  try {
+    return await operation();
+  } catch {
+    throw new NativeNotificationSetupError(stage);
+  }
+}
+
+export function nativeNotificationSetupFailureMessage(error: unknown) {
+  if (!(error instanceof NativeNotificationSetupError)) {
+    return "App alert setup could not be completed.";
+  }
+
+  if (error.stage === "availability") {
+    return "App alerts are unavailable on this device.";
+  }
+
+  if (error.stage === "permission") {
+    return "App alert permission could not be checked.";
+  }
+
+  if (error.stage === "device") {
+    return "App alert device setup could not be completed.";
+  }
+
+  return "App alert preference could not be saved.";
+}
 
 async function nativeRuntime(
   setupEnabled: boolean,
@@ -250,23 +293,33 @@ export function NativeNotificationProvider({
   }, [qaBuildRestricted, router, setupEnabled]);
 
   const enable = useCallback(async () => {
-    const runtime = await nativeRuntime(setupEnabled, qaBuildRestricted);
+    const runtime = await setupStage("availability", () =>
+      nativeRuntime(setupEnabled, qaBuildRestricted),
+    );
 
-    if (!runtime) throw new Error("Device alerts are unavailable.");
+    if (!runtime) throw new NativeNotificationSetupError("availability");
 
-    let permission = await runtime.messaging.checkPermissions();
+    let permission = await setupStage("permission", () =>
+      runtime.messaging.checkPermissions(),
+    );
 
     if (
       permission.receive === "prompt" ||
       permission.receive === "prompt-with-rationale"
     ) {
-      permission = await runtime.messaging.requestPermissions();
+      permission = await setupStage("permission", () =>
+        runtime.messaging.requestPermissions(),
+      );
     }
 
     if (permission.receive !== "granted") return "denied" as const;
 
-    const { token } = await runtime.messaging.getToken();
-    await saveDeviceToken(runtime.platform, token, runtime.appInfo);
+    const { token } = await setupStage("device", () =>
+      runtime.messaging.getToken(),
+    );
+    await setupStage("registration", () =>
+      saveDeviceToken(runtime.platform, token, runtime.appInfo),
+    );
     enabledRef.current = true;
     setEnabled(true);
 

@@ -2,7 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { BellRing, LoaderCircle, BellOff } from "lucide-react";
-import { useNativeNotificationSetup } from "./native-notification-provider";
+import {
+  nativeNotificationSetupFailureMessage,
+  useNativeNotificationSetup,
+} from "./native-notification-provider";
 
 const publicPushKey = process.env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY ?? "";
 const deviceAlertSetupEnabled =
@@ -166,8 +169,8 @@ export function PushSubscriptionControl() {
       await postSubscription(subscription);
       setBrowserEnabled(true);
       setMessage("Device alert preference saved. Keep checking Notifications for now.");
-    } catch {
-      setMessage("App alert setup could not be completed.");
+    } catch (error) {
+      setMessage(nativeNotificationSetupFailureMessage(error));
     } finally {
       setPending(false);
     }
