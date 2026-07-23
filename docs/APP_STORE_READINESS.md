@@ -36,6 +36,17 @@
   the public Support URL for both account deletion and data deletion. Apple
   Accessibility Nutrition Labels are voluntary and are not a launch blocker
   unless TTC makes a support claim.
+- Production deploy `94820d6a-375e-4c67-a45c-304c62779248` went live on
+  July 23, 2026 from commit `7e79c7e` after aligning the release-evidence gate,
+  private handoff template, and submission docs with current Apple and Google
+  requirements. The pass records verified store media, category/pricing,
+  privacy/rating status, required Google declarations, and the account-deletion
+  web resource while treating Apple's voluntary Accessibility Nutrition Labels
+  accurately. Verification passed the release-evidence fixture, handoff, docs,
+  store, and native guards, lint, production and deployment builds, live
+  `smoke:public`, and live `smoke:mobile`; the first public-smoke wrapper reached
+  its local time limit before the longer-window rerun passed, with only the
+  known robots edge-challenge skip.
 - Production deploy `7e8bc0d8-b083-44be-aba5-52adc0d36e3e` went live on July 22, 2026 from commit `8d3462a` after linking story-reply alerts to their exact DM message, so deleting an unread story-reply message also removes its pending notification instead of leaving a stale destination. Verification passed `smoke:dm`, `smoke:native-push`, `lint`, production and deployment builds, live `smoke:public`, and live `smoke:mobile`; public smoke noted only the known robots edge-challenge skip.
 - Production deploy `ce711d4e-3348-422c-b7a0-8b28ca36a358` went live on July 22, 2026 from commit `cb12310` after correcting the Google Play handoff to preserve the active production review. The repo-safe snapshot and release guards now require `Changes in review`, reject the stale awaiting-submit wording, and warn operators not to restart or remove the review. Verification passed `smoke:docs`, `smoke:store`, `smoke:handoff`, `lint`, production and deployment builds, live `smoke:public`, and live `smoke:mobile`; the first publish attempt hit a transient fetch failure after asset upload, the already-built retry succeeded, and public smoke noted only the known robots edge-challenge skip.
 - Production deploy `0d112184-b4d2-4193-aa8e-72a1693049e9` went live on July 22, 2026 from commit `43d6bfa` after adding a service-only DM alert outbox and scheduled sender that remain fail closed behind the existing UI and registration gates plus a separate delivery gate. Migration `20260722225151_native_push_delivery_outbox` was rehearsed before application and verified live for RLS, browser-role revocation, invoker-only functions, empty search paths, atomic notification/outbox writes, expiring lease tokens, bounded retries, device ownership, and token-rotation safety. Generic lock-screen payload tests, the native delivery guard, private-config guard, docs guard, DM guard, `lint`, production build, deployment dry run and build, live `smoke:public`, and live `smoke:mobile` passed; public smoke noted only the known robots edge-challenge skip. Delivery stays disabled until private sender credentials, iOS capability/provisioning, signed replacement builds, and Android/iOS registration, delivery, tap, opt-out, quiet-hours, and message-preference evidence pass.
