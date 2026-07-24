@@ -2,6 +2,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const adCheckout = readFileSync("src/app/api/ads/checkout/route.ts", "utf8");
+const commerceLaunch = readFileSync("src/lib/commerce-launch.ts", "utf8");
 const bookingCheckout = readFileSync("src/app/api/bookings/checkout/route.ts", "utf8");
 const merchCheckout = readFileSync("src/app/api/merch/checkout/route.ts", "utf8");
 const envExample = readFileSync(".env.example", "utf8");
@@ -205,7 +206,7 @@ try {
 }
 
 checks.push({
-  label: "ad checkout can consume account-level ad credits before Stripe",
+  label: "ad credit accounting remains ready behind the launch gate",
   ok:
     adCreditSpendMigration.includes(
       "create or replace function public.spend_ad_credit_for_campaign",
@@ -220,10 +221,54 @@ checks.push({
       adCheckout.indexOf("const { data: reservedCampaign") &&
     accountPage.includes(".from(\"ad_credit_ledger\")") &&
     accountPage.includes("Available ad credit") &&
-    accountPage.includes("Use ${dollars(campaign.daily_budget_cents)} ad credit") &&
     productPlan.includes("member-visible Account > Advertising balance summaries") &&
     productPlan.includes("atomic spend path that lets campaign checkout consume enough active account credit"),
 });
+try {
+  const adCheckoutPost = adCheckout.slice(
+    indexOfOrFail(adCheckout, "export async function POST"),
+  );
+  const gateIndex = indexOfOrFail(adCheckoutPost, "if (!AD_PURCHASES_AVAILABLE)");
+  const guardedWork = [
+    "process.env.STRIPE_WEBHOOK_SECRET",
+    "request.formData()",
+    "createClient()",
+    '"spend_ad_credit_for_campaign"',
+    "const { data: reservedCampaign",
+    "createAdCheckoutSession({",
+  ];
+  const accountCheckoutFormIndex = indexOfOrFail(
+    accountPage,
+    '<form action="/api/ads/checkout"',
+  );
+
+  checks.push({
+    label: "ad purchases fail closed before account, credit, reservation, or checkout work",
+    ok:
+      commerceLaunch.includes("export const AD_PURCHASES_AVAILABLE = false;") &&
+      adCheckout.includes(
+        'import { AD_PURCHASES_AVAILABLE } from "@/lib/commerce-launch";',
+      ) &&
+      adCheckoutPost.includes(
+        'return redirectWithMessage("Ad purchases are not available yet.");',
+      ) &&
+      guardedWork.every((snippet) => gateIndex < indexOfOrFail(adCheckoutPost, snippet)) &&
+      accountPage.includes(
+        'import { AD_PURCHASES_AVAILABLE } from "@/lib/commerce-launch";',
+      ) &&
+      accountPage.includes("Ad purchases are not available yet.") &&
+      accountPage.indexOf("AD_PURCHASES_AVAILABLE &&") < accountCheckoutFormIndex &&
+      helpCenter.includes(
+        "They can be applied where ad purchasing is available.",
+      ),
+  });
+} catch (error) {
+  checks.push({
+    label: "ad purchase launch gate structure",
+    ok: false,
+    message: error.message,
+  });
+}
 checks.push({
   label: "payment inventory RPC execution stays limited to intended roles",
   ok:

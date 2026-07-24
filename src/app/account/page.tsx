@@ -31,6 +31,7 @@ import { AccountSettingsWorkspace, type AccountSettingsTab } from "./account-set
 import { LicenseDocumentInput } from "./license-document-input";
 import { ProfileForm } from "./profile-form";
 import { PendingSubmitButton } from "../pending-submit-button";
+import { AD_PURCHASES_AVAILABLE } from "@/lib/commerce-launch";
 import { countryOptions, languageOptions } from "@/lib/localization";
 import {
   accountDeletionStatusLabel,
@@ -3440,6 +3441,12 @@ export default async function AccountPage({
               for admin review. Artist growth ads can run in 4U and Gossip.
               Stuff ads stay in Stuff. Merch ads stay in Merch.
             </p>
+            {!AD_PURCHASES_AVAILABLE ? (
+              <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 text-sm leading-6 text-[var(--muted)]">
+                Ad purchases are not available yet. You can still prepare and
+                submit campaigns for review.
+              </p>
+            ) : null}
             <div className="mt-4 rounded-md border border-[color-mix(in_srgb,var(--gold)_35%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] p-3">
               <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
                 Available ad credit
@@ -3448,8 +3455,8 @@ export default async function AccountPage({
                 {dollars(adCreditBalanceCents)}
               </p>
               <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
-                If your credit covers a campaign daily budget, checkout applies
-                it before opening card payment.
+                Credits remain on your account and can be applied where ad
+                purchasing is available.
               </p>
             </div>
             <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -3536,9 +3543,11 @@ export default async function AccountPage({
                         </div>
                       ))}
                     </div>
-                    {!["paid", "waived", "checkout_started"].includes(
+                    {AD_PURCHASES_AVAILABLE &&
+                    !["paid", "waived", "checkout_started"].includes(
                       campaign.payment_status,
-                    ) && campaign.daily_budget_cents > 0 ? (
+                    ) &&
+                    campaign.daily_budget_cents > 0 ? (
                       <form action="/api/ads/checkout" className="mt-3" method="post">
                         <input
                           name="campaign_id"

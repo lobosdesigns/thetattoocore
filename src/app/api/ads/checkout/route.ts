@@ -4,6 +4,7 @@ import {
   calculatePlatformFeeCents,
   platformFeeDescription,
 } from "@/lib/payments/fees";
+import { AD_PURCHASES_AVAILABLE } from "@/lib/commerce-launch";
 import { siteName, siteUrl } from "@/lib/site";
 import { stripeCheckoutPreflight } from "@/lib/stripe/server";
 import { createClient } from "@/lib/supabase/server";
@@ -143,6 +144,10 @@ async function createAdCheckoutSession({
 }
 
 export async function POST(request: Request) {
+  if (!AD_PURCHASES_AVAILABLE) {
+    return redirectWithMessage("Ad purchases are not available yet.");
+  }
+
   const canProcessStripeWebhooks = Boolean(
     process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY,
   );

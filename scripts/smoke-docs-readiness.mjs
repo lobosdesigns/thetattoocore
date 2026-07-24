@@ -806,7 +806,8 @@ const checks = [
       helpCenterData.includes("Booking setup sections") &&
       helpCenterData.includes("Verification form basics") &&
       helpCenterData.includes("Submit for review walkthrough") &&
-      helpCenterData.includes("Use ad credits") &&
+      helpCenterData.includes("Review ad credits") &&
+      !helpCenterData.includes('title: "Use ad credits"') &&
       helpCenterData.includes("Merch product setup") &&
       helpCenterData.includes("Merch guide shortcut") &&
       helpCenterData.includes("Fulfill a Merch order") &&

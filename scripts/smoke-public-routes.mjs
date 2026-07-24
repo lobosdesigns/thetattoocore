@@ -252,8 +252,8 @@ const checks = [
     method: "POST",
     path: "/api/ads/checkout",
     status: [303],
-    redirectIncludes: "/login",
-    locationIncludes: ["Sign%20in%20to%20pay%20for%20ads"],
+    redirectIncludes: "/account",
+    locationIncludes: ["Ad%20purchases%20are%20not%20available%20yet."],
     redirect: "manual",
   },
   {

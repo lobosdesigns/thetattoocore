@@ -46,7 +46,7 @@ export const helpCategories = [
   },
   {
     description:
-      "Creating ads, choosing placements, using ad credits, reading campaign status, and keeping promotions inside the content rules.",
+      "Creating ads, choosing placements, reviewing available ad credits, reading campaign status, and keeping promotions inside the content rules.",
     title: "Advertising",
     topics: ["Create ads", "Ad credits", "Campaign review"],
   },
@@ -574,11 +574,11 @@ export const helpArticles = [
   {
     category: "Advertising",
     description:
-      "Create ads, choose placements, use ad credits, and keep promotions inside the launch content rules.",
+      "Create ads, choose placements, review available ad credits, and keep promotions inside the launch content rules.",
     faqs: [
       {
         answer:
-          "Credits can reduce or cover eligible campaign checkout amounts when they are available on the account.",
+          "Credits may reduce or cover eligible campaign amounts where ad purchasing is available.",
         question: "How do ad credits work?",
       },
       {
@@ -593,7 +593,7 @@ export const helpArticles = [
       },
       {
         answer:
-          "Credits may be granted for promos, sponsorships, trades, make-goods, or company-approved support reasons. When enough active credit is available, it can cover eligible campaign checkout before a paid checkout is needed.",
+          "Credits may be granted for promos, sponsorships, trades, make-goods, or company-approved support reasons. They stay available on the account and may cover eligible campaign amounts where ad purchasing is available.",
         question: "Why do I have ad credits?",
       },
       {
@@ -619,7 +619,7 @@ export const helpArticles = [
       "Open the advertising tools from Settings.",
       "Choose the goal, placement, location, keywords, budget, and destination.",
       "Use 4U/Gossip placements for artist-client lead, message, and engagement goals. Use Merch placement for product views and safe brand goods.",
-      "Apply available ad credits before checkout when credits are available.",
+      "Review available ad credits. They can be applied where ad purchasing is available.",
       "Review the payment status before submitting. Campaigns only deliver after review and after payment is paid, waived by credit, or otherwise approved by admin rules.",
       "Submit for review and watch campaign status before the ad starts running.",
     ],
@@ -634,12 +634,12 @@ export const helpArticles = [
       {
         assetSrc: "/tutorial-clips/mobile-ads-credits-safe.mp4",
         description:
-          "Short clip of applying available ad credit and checking campaign review/payment status.",
+          "Short clip of reviewing available ad credit and campaign review/payment status.",
         kind: "short_clip",
-        title: "Use ad credits",
+        title: "Review ad credits",
       },
     ],
-    title: "How to create an ad and use ad credits",
+    title: "How to create an ad and review ad credits",
   },
   {
     category: "Merch And Stuff",

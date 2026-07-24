@@ -35,6 +35,10 @@ Google rules. It is implementation evidence, not owner or counsel approval.
   promotion, or visibility while excluding physical goods and real-world
   services. Native same-app ad checkout must remain blocked until a compliant
   store-billing path or approved exception is implemented.
+- The current web release blocks ad purchases and ad-credit spending before
+  account, reservation, or checkout work. Submitted native builds receive this
+  gate; any platform-specific reopening requires a newly signed wrapper marker
+  and a reviewed billing path.
 - Apple and Google both require an in-app account deletion path. A manual
   request may take time, but TTC must not mark it complete until the account and
   associated data and UGC are actually handled, with legally required retention
