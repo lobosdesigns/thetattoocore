@@ -9,6 +9,10 @@ const envExample = readFileSync(".env.example", "utf8");
 const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8");
 const adClickRoute = readFileSync("src/app/api/ad-click/route.ts", "utf8");
 const stripeServer = readFileSync("src/lib/stripe/server.ts", "utf8");
+const stripeCheckoutSessions = readFileSync(
+  "src/lib/stripe/checkout-session.ts",
+  "utf8",
+);
 const stripeSecretFormat = readFileSync(
   "src/lib/stripe/secret-format.ts",
   "utf8",
@@ -545,22 +549,25 @@ checks.push({
   ok:
     adCheckout.includes('console.error("Ad checkout session creation failed.", error)') &&
     adCheckout.includes('"Checkout could not open for this ad. Please try again."') &&
-    adCheckout.includes('throw new Error("Checkout could not open for this ad.")') &&
     !adCheckout.includes("session.error?.message") &&
     !adCheckout.includes("throw new Error(message)") &&
     !adCheckout.includes('error instanceof Error ? error.message : "Checkout could not open for this ad."') &&
     bookingCheckout.includes('console.error("Booking checkout session creation failed.", error)') &&
     bookingCheckout.includes('"Booking checkout could not open. Please try again."') &&
-    bookingCheckout.includes('throw new Error("Booking checkout could not open.")') &&
     !bookingCheckout.includes("session.error?.message") &&
     !bookingCheckout.includes("throw new Error(message)") &&
     !bookingCheckout.includes('error instanceof Error ? error.message : "Booking checkout could not open."') &&
     merchCheckout.includes('console.error("Merch checkout session creation failed.", error)') &&
     merchCheckout.includes('"Checkout could not open. Please try again."') &&
-    merchCheckout.includes('throw new Error("Checkout could not open.")') &&
     !merchCheckout.includes("session.error?.message") &&
     !merchCheckout.includes("throw new Error(message)") &&
-    !merchCheckout.includes('error instanceof Error ? error.message : "Checkout could not open."'),
+    !merchCheckout.includes('error instanceof Error ? error.message : "Checkout could not open."') &&
+    stripeCheckoutSessions.includes(': "Checkout could not open."') &&
+    stripeCheckoutSessions.includes(
+      '"Checkout status could not be confirmed."',
+    ) &&
+    stripeCheckoutSessions.includes("outcomeUnknown,") &&
+    !stripeCheckoutSessions.includes("error.message"),
 });
 checks.push({
   label: "checkout persistence failures do not redirect raw database errors",
@@ -593,12 +600,49 @@ checks.push({
     !merchCheckout.includes('"Checkout started, but the order session could not be saved. Please contact support if this repeats."'),
 });
 checks.push({
-  label: "ad and booking checkout roll back reservations when session persistence fails",
+  label: "checkout sessions expire before local reservations are released",
   ok:
-    adCheckout.includes('console.error("Ad checkout session save failed.", updateError);\n    await rollBackReservation();') &&
-    adCheckout.includes('if (!updatedCampaign) {\n    await rollBackReservation();') &&
-    bookingCheckout.includes('console.error("Booking checkout session save failed.", updateError);\n    await rollBackReservation();') &&
-    bookingCheckout.includes('if (!updatedBooking) {\n    await rollBackReservation();'),
+    stripeCheckoutSessions.includes('"Idempotency-Key": _options.idempotencyKey') &&
+    stripeCheckoutSessions.includes(
+      "export async function expireCheckoutSessionBeforeRollback",
+    ) &&
+    stripeCheckoutSessions.includes(
+      "response.status === 409 || response.status >= 500",
+    ) &&
+    stripeCheckoutSessions.indexOf(
+      "const expired = await expireStripeCheckoutSession(options)",
+    ) <
+      stripeCheckoutSessions.indexOf("await options.rollback()") &&
+    stripeCheckoutSessions.includes("rollback: () => Promise<boolean>") &&
+    stripeCheckoutSessions.includes("return await options.rollback()") &&
+    adCheckout.includes("expireCheckoutSessionBeforeRollback({") &&
+    adCheckout.includes("rollback: rollBackReservation") &&
+    adCheckout.includes('.select("id")') &&
+    adCheckout.includes("return Boolean(releasedCampaign)") &&
+    bookingCheckout.includes("expireCheckoutSessionBeforeRollback({") &&
+    bookingCheckout.includes("rollback: rollBackReservation") &&
+    bookingCheckout.includes('.select("id")') &&
+    bookingCheckout.includes("return Boolean(releasedBooking)") &&
+    merchCheckout.includes("expireCheckoutSessionBeforeRollback({") &&
+    merchCheckout.includes("rollback: () => cancelPendingOrder(reason)") &&
+    merchCheckout.includes(".maybeSingle<{ id: string }>()") &&
+    merchCheckout.includes("return Boolean(cancelledOrder)") &&
+    paymentReadiness.includes(
+      "Checkout Session creation uses a per-attempt idempotency key and one bounded network retry.",
+    ) &&
+    paymentReadiness.includes(
+      "keeps the reservation held for operator reconciliation instead of exposing a payable orphan",
+    ) &&
+    !adCheckout.includes(
+      'console.error("Ad checkout session save failed.", updateError);\n    await rollBackReservation();',
+    ) &&
+    !bookingCheckout.includes(
+      'console.error("Booking checkout session save failed.", updateError);\n    await rollBackReservation();',
+    ) &&
+    packageJson.includes('"test:stripe-checkout-sessions"') &&
+    packageJson.includes(
+      '"smoke:payments": "npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && node scripts/smoke-payment-guards.mjs"',
+    ),
 });
 checks.push({
   label: "booking checkout atomically revalidates its recipient before payment",
@@ -634,9 +678,9 @@ checks.push({
     bookingCheckout.includes('.rpc("reserve_booking_deposit_checkout"') &&
     bookingCheckout.includes("p_booking_id: booking.id") &&
     bookingCheckout.includes("p_client_id: claims.sub") &&
-    bookingCheckout.includes("createBookingCheckoutSession(reservedBooking, returnTo)") &&
+    bookingCheckout.includes("session = await createBookingCheckoutSession(") &&
     bookingCheckout.indexOf('.rpc("reserve_booking_deposit_checkout"') <
-      bookingCheckout.indexOf("createBookingCheckoutSession(reservedBooking, returnTo)") &&
+      bookingCheckout.indexOf("session = await createBookingCheckoutSession(") &&
     !bookingCheckout.includes('.from("booking_requests")\n    .update({\n      payment_status: "checkout_started"'),
 });
 checks.push({
@@ -879,7 +923,7 @@ checks.push({
     bookingCheckout.includes("text.startsWith(\"//\")") &&
     bookingCheckout.includes("function pathWithMessage") &&
     bookingCheckout.includes('formData.get("return_to")') &&
-    bookingCheckout.includes("createBookingCheckoutSession(reservedBooking, returnTo)") &&
+    bookingCheckout.includes("createBookingCheckoutSession(") &&
     bookingCheckout.includes('"success_url": successUrl') &&
       bookingCheckout.includes('"cancel_url": cancelUrl'),
 });
@@ -1145,7 +1189,7 @@ checks.push({
     paymentReadiness.includes("account.updated") &&
     packageJson.includes('"test:payment-webhook-config"') &&
     packageJson.includes(
-      '"smoke:payments": "npm run test:payment-webhook-config && node scripts/smoke-payment-guards.mjs"',
+      '"smoke:payments": "npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && node scripts/smoke-payment-guards.mjs"',
     ) &&
     adminPaymentsPage.includes("const paymentReconciliationChecks = [") &&
     adminPaymentsPage.includes("const sellerPayoutQaChecks = [") &&

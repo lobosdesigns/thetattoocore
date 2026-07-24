@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { platformFeeDescription } from "@/lib/payments/fees";
 import { siteName, siteUrl } from "@/lib/site";
+import {
+  createStripeCheckoutSession,
+  expireCheckoutSessionBeforeRollback,
+  StripeCheckoutRequestError,
+  type StripeCheckoutSession,
+} from "@/lib/stripe/checkout-session";
 import { stripeCheckoutPreflight } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -22,11 +28,6 @@ type BookingRequest = {
   stripe_checkout_session_id: string | null;
   title: string;
   total_cents: number;
-};
-
-type CheckoutSession = {
-  id: string;
-  url: string | null;
 };
 
 function safeInternalReturnPath(value: FormDataEntryValue | null) {
@@ -60,14 +61,10 @@ function redirectWithMessage(message: string, returnTo: string | null = null) {
 
 async function createBookingCheckoutSession(
   booking: BookingRequest,
+  idempotencyKey: string,
   returnTo: string | null,
+  secretKey: string,
 ) {
-  const secretKey = process.env.STRIPE_SECRET_KEY;
-
-  if (!secretKey) {
-    throw new Error("Booking checkout is temporarily unavailable. Please try again later.");
-  }
-
   const successUrl = `${siteUrl}${pathWithMessage(
     returnTo,
     "Booking deposit received. Deposit status will update soon.",
@@ -126,31 +123,20 @@ async function createBookingCheckoutSession(
     body.set("line_items[1][quantity]", "1");
   }
 
-  const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+  return createStripeCheckoutSession({
     body,
-    headers: {
-      Authorization: `Bearer ${secretKey}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    method: "POST",
+    idempotencyKey,
+    secretKey,
   });
-  const session = (await response.json()) as
-    | CheckoutSession
-    | { error?: { message?: string } };
-
-  if (!response.ok || !("id" in session)) {
-    throw new Error("Booking checkout could not open.");
-  }
-
-  return session;
 }
 
 export async function POST(request: Request) {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
   const canProcessStripeWebhooks = Boolean(
     process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY,
   );
 
-  if (!process.env.STRIPE_SECRET_KEY) {
+  if (!secretKey) {
     return redirectWithMessage(
       "Booking checkout is temporarily unavailable. Please try again later.",
     );
@@ -260,7 +246,7 @@ export async function POST(request: Request) {
   }
 
   const rollBackReservation = async () => {
-    await adminSupabase
+    const { data: releasedBooking, error: releaseError } = await adminSupabase
       .from("booking_requests")
       .update({
         payment_status: booking.payment_status,
@@ -272,24 +258,81 @@ export async function POST(request: Request) {
       .eq("client_id", claims.sub)
       .eq("payment_status", "checkout_started")
       .eq("status", "deposit_pending")
-      .is("stripe_checkout_session_id", null);
+      .is("stripe_checkout_session_id", null)
+      .select("id")
+      .maybeSingle<{ id: string }>();
+
+    if (releaseError) {
+      console.error(
+        "Booking checkout reservation release failed.",
+        releaseError,
+      );
+      return false;
+    }
+
+    return Boolean(releasedBooking);
   };
 
-  let session: CheckoutSession;
+  const checkoutAttemptId = crypto.randomUUID();
+  let session: StripeCheckoutSession;
 
   try {
-    session = await createBookingCheckoutSession(reservedBooking, returnTo);
+    session = await createBookingCheckoutSession(
+      reservedBooking,
+      `ttc_booking_${booking.id}_${checkoutAttemptId}`,
+      returnTo,
+      secretKey,
+    );
   } catch (error) {
     console.error("Booking checkout session creation failed.", error);
-    await rollBackReservation();
+
+    if (
+      error instanceof StripeCheckoutRequestError &&
+      error.outcomeUnknown
+    ) {
+      return redirectWithMessage(
+        "Checkout status could not be confirmed. Please wait before trying again or contact Support.",
+        returnTo,
+      );
+    }
+
+    const released = await rollBackReservation();
+
+    if (!released) {
+      console.error(
+        "Booking checkout reservation release could not be confirmed.",
+      );
+      return redirectWithMessage(
+        "Checkout status needs review. Please wait before trying again or contact Support.",
+        returnTo,
+      );
+    }
+
     return redirectWithMessage(
       "Booking checkout could not open. Please try again.",
       returnTo,
     );
   }
 
+  const releaseSessionAndReservation = () =>
+    expireCheckoutSessionBeforeRollback({
+      idempotencyKey: `ttc_booking_expire_${booking.id}_${checkoutAttemptId}`,
+      rollback: rollBackReservation,
+      secretKey,
+      sessionId: session.id,
+    });
+
   if (!session.url) {
-    await rollBackReservation();
+    const released = await releaseSessionAndReservation();
+
+    if (!released) {
+      console.error("Booking checkout expiration could not be confirmed.");
+      return redirectWithMessage(
+        "Checkout status needs review. Please wait before trying again or contact Support.",
+        returnTo,
+      );
+    }
+
     return redirectWithMessage(
       `${siteName} could not open checkout for this booking deposit.`,
       returnTo,
@@ -314,7 +357,16 @@ export async function POST(request: Request) {
 
   if (updateError) {
     console.error("Booking checkout session save failed.", updateError);
-    await rollBackReservation();
+    const released = await releaseSessionAndReservation();
+
+    if (!released) {
+      console.error("Booking checkout expiration could not be confirmed.");
+      return redirectWithMessage(
+        "Checkout status needs review. Please wait before trying again or contact Support.",
+        returnTo,
+      );
+    }
+
     return redirectWithMessage(
       "Checkout started, but the checkout could not be saved. Please contact support if this repeats.",
       returnTo,
@@ -322,7 +374,16 @@ export async function POST(request: Request) {
   }
 
   if (!updatedBooking) {
-    await rollBackReservation();
+    const released = await releaseSessionAndReservation();
+
+    if (!released) {
+      console.error("Booking checkout expiration could not be confirmed.");
+      return redirectWithMessage(
+        "Checkout status needs review. Please wait before trying again or contact Support.",
+        returnTo,
+      );
+    }
+
     return redirectWithMessage(
       "Checkout started, but the booking could not be reserved for this checkout.",
       returnTo,

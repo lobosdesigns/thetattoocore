@@ -9,6 +9,12 @@ import {
   stripeCheckoutPreflight,
   stripeMerchDestinationChargesEnabled,
 } from "@/lib/stripe/server";
+import {
+  createStripeCheckoutSession,
+  expireCheckoutSessionBeforeRollback,
+  StripeCheckoutRequestError,
+  type StripeCheckoutSession,
+} from "@/lib/stripe/checkout-session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
@@ -34,11 +40,6 @@ type Product = {
   ships_from_region: string | null;
   sku: string | null;
   title: string;
-};
-
-type CheckoutSession = {
-  id: string;
-  url: string | null;
 };
 
 function cleanQuantity(value: FormDataEntryValue | null) {
@@ -89,30 +90,28 @@ function loginRedirect(returnTo: string, message: string) {
 async function createCheckoutSession({
   buyerId,
   cancelUrl,
+  idempotencyKey,
   orderId,
   platformFeeCents,
   product,
   quantity,
+  secretKey,
   sellerStripeAccountId,
   subtotalCents,
   successUrl,
 }: {
   buyerId: string;
   cancelUrl: string;
+  idempotencyKey: string;
   orderId: string;
   platformFeeCents: number;
   product: Product;
   quantity: number;
+  secretKey: string;
   sellerStripeAccountId: string | null;
   subtotalCents: number;
   successUrl: string;
 }) {
-  const secretKey = process.env.STRIPE_SECRET_KEY;
-
-  if (!secretKey) {
-    throw new Error("Checkout is temporarily unavailable. Please try again later.");
-  }
-
   const body = new URLSearchParams({
     "allow_promotion_codes": "false",
     "billing_address_collection": "auto",
@@ -185,31 +184,20 @@ async function createCheckoutSession({
     body.set("line_items[1][quantity]", "1");
   }
 
-  const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+  return createStripeCheckoutSession({
     body,
-    headers: {
-      Authorization: `Bearer ${secretKey}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    method: "POST",
+    idempotencyKey,
+    secretKey,
   });
-  const session = (await response.json()) as
-    | CheckoutSession
-    | { error?: { message?: string } };
-
-  if (!response.ok || !("id" in session)) {
-    throw new Error("Checkout could not open.");
-  }
-
-  return session;
 }
 
 export async function POST(request: Request) {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
   const canProcessStripeWebhooks = Boolean(
     process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY,
   );
 
-  if (!process.env.STRIPE_SECRET_KEY) {
+  if (!secretKey) {
     return redirectWithMessage(
       "/merch",
       "Checkout is temporarily unavailable. Please try again later.",
@@ -363,6 +351,7 @@ export async function POST(request: Request) {
   }
 
   const orderId = crypto.randomUUID();
+  const checkoutAttemptId = crypto.randomUUID();
   const subtotalCents = product.price_cents * quantity;
   const platformFeeCents = calculatePlatformFeeCents(subtotalCents);
   const totalCents = subtotalCents + platformFeeCents;
@@ -370,10 +359,12 @@ export async function POST(request: Request) {
   const cancelUrl = `${siteUrl}${pathWithMessage(returnTo, "Checkout canceled.")}`;
 
   const cancelPendingOrder = async (message: string) => {
-    const { error } = await adminSupabase.rpc("cancel_unpaid_merch_order", {
-      p_admin_note: message,
-      p_order_id: orderId,
-    });
+    const { data: cancelledOrder, error } = await adminSupabase
+      .rpc("cancel_unpaid_merch_order", {
+        p_admin_note: message,
+        p_order_id: orderId,
+      })
+      .maybeSingle<{ id: string }>();
 
     if (error) {
       console.error("Merch pending order cancellation failed.", error);
@@ -383,6 +374,8 @@ export async function POST(request: Request) {
     revalidatePath("/admin");
     revalidatePath("/admin/merch");
     revalidatePath(`/merch/${product.id}`);
+
+    return Boolean(cancelledOrder);
   };
 
   const { error: orderError } = await supabase.from("merch_orders").insert({
@@ -417,7 +410,16 @@ export async function POST(request: Request) {
 
   if (itemError) {
     console.error("Merch order item save failed before checkout.", itemError);
-    await cancelPendingOrder("Order item could not be saved before checkout.");
+    const cancelled = await cancelPendingOrder(
+      "Order item could not be saved before checkout.",
+    );
+
+    if (!cancelled) {
+      return redirectWithMessage(
+        returnTo,
+        "Order status needs review. Please wait before trying again or contact Support.",
+      );
+    }
 
     return redirectWithMessage(
       returnTo,
@@ -432,7 +434,16 @@ export async function POST(request: Request) {
 
   if (reserveError) {
     console.error("Merch inventory reservation failed before checkout.", reserveError);
-    await cancelPendingOrder("Inventory could not be reserved for checkout.");
+    const cancelled = await cancelPendingOrder(
+      "Inventory could not be reserved for checkout.",
+    );
+
+    if (!cancelled) {
+      return redirectWithMessage(
+        returnTo,
+        "Order status needs review. Please wait before trying again or contact Support.",
+      );
+    }
 
     return redirectWithMessage(
       returnTo,
@@ -440,29 +451,57 @@ export async function POST(request: Request) {
     );
   }
 
-  let session: CheckoutSession;
+  let session: StripeCheckoutSession;
 
   try {
     session = await createCheckoutSession({
       buyerId: claims.sub,
       cancelUrl,
+      idempotencyKey: `ttc_merch_${orderId}_${checkoutAttemptId}`,
       orderId,
       platformFeeCents,
       product,
       quantity,
+      secretKey,
       sellerStripeAccountId,
       subtotalCents,
       successUrl,
     });
   } catch (error) {
     console.error("Merch checkout session creation failed.", error);
-    await cancelPendingOrder("Checkout could not open.");
+
+    if (
+      error instanceof StripeCheckoutRequestError &&
+      error.outcomeUnknown
+    ) {
+      return redirectWithMessage(
+        returnTo,
+        "Checkout status could not be confirmed. Please wait before trying again or contact Support.",
+      );
+    }
+
+    const cancelled = await cancelPendingOrder("Checkout could not open.");
+
+    if (!cancelled) {
+      return redirectWithMessage(
+        returnTo,
+        "Checkout status needs review. Please wait before trying again or contact Support.",
+      );
+    }
 
     return redirectWithMessage(
       returnTo,
       "Checkout could not open. Please try again.",
     );
   }
+
+  const releaseSessionAndOrder = (reason: string) =>
+    expireCheckoutSessionBeforeRollback({
+      idempotencyKey: `ttc_merch_expire_${orderId}_${checkoutAttemptId}`,
+      rollback: () => cancelPendingOrder(reason),
+      secretKey,
+      sessionId: session.id,
+    });
 
   const { data: sessionOrder, error: sessionError } = await adminSupabase
     .from("merch_orders")
@@ -479,7 +518,17 @@ export async function POST(request: Request) {
 
   if (sessionError) {
     console.error("Merch checkout session save failed.", sessionError);
-    await cancelPendingOrder("Checkout started, but the order session could not be saved.");
+    const released = await releaseSessionAndOrder(
+      "Checkout started, but the order session could not be saved.",
+    );
+
+    if (!released) {
+      console.error("Merch checkout expiration could not be confirmed.");
+      return redirectWithMessage(
+        returnTo,
+        "Checkout status needs review. Please wait before trying again or contact Support.",
+      );
+    }
 
     return redirectWithMessage(
       returnTo,
@@ -488,7 +537,17 @@ export async function POST(request: Request) {
   }
 
   if (!sessionOrder) {
-    await cancelPendingOrder("Checkout started, but the pending order could not be reserved for this checkout.");
+    const released = await releaseSessionAndOrder(
+      "Checkout started, but the pending order could not be reserved for this checkout.",
+    );
+
+    if (!released) {
+      console.error("Merch checkout expiration could not be confirmed.");
+      return redirectWithMessage(
+        returnTo,
+        "Checkout status needs review. Please wait before trying again or contact Support.",
+      );
+    }
 
     return redirectWithMessage(
       returnTo,
@@ -497,7 +556,17 @@ export async function POST(request: Request) {
   }
 
   if (!session.url) {
-    await cancelPendingOrder("Checkout did not return a secure payment link.");
+    const released = await releaseSessionAndOrder(
+      "Checkout did not return a secure payment link.",
+    );
+
+    if (!released) {
+      console.error("Merch checkout expiration could not be confirmed.");
+      return redirectWithMessage(
+        returnTo,
+        "Checkout status needs review. Please wait before trying again or contact Support.",
+      );
+    }
 
     return redirectWithMessage(
       returnTo,
