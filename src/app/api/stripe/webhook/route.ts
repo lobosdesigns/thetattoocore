@@ -253,8 +253,8 @@ async function maybeSendPaymentEmail({
         `Help: ${supportEmail}`,
       ].join("\n"),
     });
-  } catch (error) {
-    console.error("Payment email failed", error);
+  } catch {
+    console.error("Payment email failed.");
   }
 }
 

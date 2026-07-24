@@ -284,8 +284,8 @@ async function maybeSendAccountDeletionEmail({
         .filter(Boolean)
         .join("\n"),
     });
-  } catch (error) {
-    console.error("Account deletion confirmation email failed", error);
+  } catch {
+    console.error("Account deletion confirmation email failed.");
   }
 }
 
@@ -386,8 +386,8 @@ async function maybeSendMerchFulfillmentEmail({
         .filter(Boolean)
         .join("\n"),
     });
-  } catch (error) {
-    console.error("Merch fulfillment email failed", error);
+  } catch {
+    console.error("Merch fulfillment email failed.");
   }
 }
 

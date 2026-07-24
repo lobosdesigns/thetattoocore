@@ -55,6 +55,11 @@ const adminMailTestForm = readFileSync(
   "src/app/admin/mail-test-form.tsx",
   "utf8",
 );
+const mailSender = readFileSync("src/lib/mail/hostgator.ts", "utf8");
+const mailRedactionTest = readFileSync("scripts/test-mail-redaction.mjs", "utf8");
+const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
+const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8");
+const packageJson = readFileSync("package.json", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const mobileSmoke = readFileSync("scripts/smoke-mobile-browser.mjs", "utf8");
 const urls = readFileSync("src/lib/urls.ts", "utf8");
@@ -737,13 +742,13 @@ const checks = [
       publicSmoke.includes("excludes"),
   },
   {
-    label: "public smoke covers logged-out checkout POST redirects",
+    label: "public smoke covers checkout POST access gates",
     ok:
       publicSmoke.includes('path: "/api/ads/checkout"') &&
       publicSmoke.includes('path: "/api/bookings/checkout"') &&
       publicSmoke.includes('path: "/api/merch/checkout"') &&
       publicSmoke.includes('method: "POST"') &&
-      publicSmoke.includes("Sign%20in%20to%20pay%20for%20ads") &&
+      publicSmoke.includes("Ad%20purchases%20are%20not%20available%20yet.") &&
       publicSmoke.includes('locationIncludes: ["Sign", "booking", "deposit"]') &&
       publicSmoke.includes("Sign+in+to+buy+merch"),
   },
@@ -787,18 +792,39 @@ const checks = [
       publicSmoke.includes('"Sign in required."'),
   },
   {
-    label: "admin mail test failures stay server-side and operator-safe",
+    label: "production mail failures stay redacted and operator-safe",
     ok:
+      mailSender.includes("export class MailDeliveryError extends Error") &&
+      mailSender.includes('super("Mail delivery failed.")') &&
+      mailSender.includes('process.env.NODE_ENV === "production"') &&
+      mailSender.includes("mailerModule.LogLevel.NONE") &&
+      mailSender.includes("if (!production) throw error;") &&
+      mailSender.includes("throw new MailDeliveryError();") &&
       adminMailTestRoute.includes(
-        'console.error("Admin test email send failed.", mailError);',
+        'console.error("Admin test email send failed.");',
       ) &&
       adminMailTestRoute.includes(
         '{ error: "Could not send the test email." }',
       ) &&
-      !adminMailTestRoute.includes("mailError.message") &&
+      !adminMailTestRoute.includes("mailError") &&
       !adminMailTestForm.includes("payload.error") &&
       adminMailTestForm.includes('response.status === 400') &&
-      adminMailTestForm.includes('"Could not send the test email."'),
+      adminMailTestForm.includes('"Could not send the test email."') &&
+      accountActions.includes(
+        'console.error("Account deletion confirmation email failed.");',
+      ) &&
+      accountActions.includes(
+        'console.error("Merch fulfillment email failed.");',
+      ) &&
+      adminActions.includes(
+        'console.error("Verification decision email failed.");',
+      ) &&
+      stripeWebhook.includes('console.error("Payment email failed.");') &&
+      mailRedactionTest.includes("TTC_MAIL_REDACTION_SENTINEL") &&
+      mailRedactionTest.includes('assert.equal("cause" in error, false)') &&
+      packageJson.includes(
+        '"smoke:security": "node scripts/test-mail-redaction.mjs && node scripts/smoke-security-guards.mjs"',
+      ),
   },
   {
     label: "support deletion action routes through safe sign-in return",

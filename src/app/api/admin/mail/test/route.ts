@@ -77,8 +77,8 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ ok: true });
-  } catch (mailError) {
-    console.error("Admin test email send failed.", mailError);
+  } catch {
+    console.error("Admin test email send failed.");
 
     return NextResponse.json(
       { error: "Could not send the test email." },

@@ -25,6 +25,13 @@ type TransactionalMailInput = {
   text: string;
 };
 
+export class MailDeliveryError extends Error {
+  constructor() {
+    super("Mail delivery failed.");
+    this.name = "MailDeliveryError";
+  }
+}
+
 function required(value: string | null | undefined, label: string) {
   if (!value) {
     throw new Error(`${label} is not configured.`);
@@ -41,51 +48,61 @@ export async function sendHostgatorEmail({
   subject,
   text,
 }: TransactionalMailInput) {
-  if (!settings.is_enabled) {
-    throw new Error("Mail sending is disabled in admin settings.");
+  const production = process.env.NODE_ENV === "production";
+
+  try {
+    if (!settings.is_enabled) {
+      throw new Error("Mail sending is disabled in admin settings.");
+    }
+
+    const fromEmail = required(settings.from_email, "From email");
+    const smtpHost = required(settings.smtp_host, "SMTP host");
+    const smtpUsername = required(settings.smtp_username, "SMTP username");
+    const smtpPort = settings.smtp_port ?? 587;
+    const useImplicitTls = smtpPort === 465 && settings.smtp_secure;
+    const password = required(
+      process.env[settings.smtp_password_secret_name],
+      settings.smtp_password_secret_name,
+    );
+    const mailerModule = await import("worker-mailer");
+
+    await mailerModule.WorkerMailer.send(
+      {
+        host: smtpHost,
+        port: smtpPort,
+        secure: useImplicitTls,
+        startTls: true,
+        authType: "plain",
+        credentials: {
+          username: smtpUsername,
+          password,
+        },
+        logLevel: production
+          ? mailerModule.LogLevel.NONE
+          : mailerModule.LogLevel.ERROR,
+        socketTimeoutMs: 20_000,
+        responseTimeoutMs: 20_000,
+      },
+      {
+        from: {
+          name: settings.from_name || "TheTattooCore",
+          email: fromEmail,
+        },
+        reply: settings.reply_to_email
+          ? { email: settings.reply_to_email }
+          : undefined,
+        to: recipientEmail,
+        subject,
+        text,
+        html,
+        headers,
+      },
+    );
+  } catch (error) {
+    if (!production) throw error;
+
+    throw new MailDeliveryError();
   }
-
-  const fromEmail = required(settings.from_email, "From email");
-  const smtpHost = required(settings.smtp_host, "SMTP host");
-  const smtpUsername = required(settings.smtp_username, "SMTP username");
-  const smtpPort = settings.smtp_port ?? 587;
-  const useImplicitTls = smtpPort === 465 && settings.smtp_secure;
-  const password = required(
-    process.env[settings.smtp_password_secret_name],
-    settings.smtp_password_secret_name,
-  );
-  const mailerModule = await import("worker-mailer");
-
-  await mailerModule.WorkerMailer.send(
-    {
-      host: smtpHost,
-      port: smtpPort,
-      secure: useImplicitTls,
-      startTls: true,
-      authType: "plain",
-      credentials: {
-        username: smtpUsername,
-        password,
-      },
-      logLevel: mailerModule.LogLevel.ERROR,
-      socketTimeoutMs: 20_000,
-      responseTimeoutMs: 20_000,
-    },
-    {
-      from: {
-        name: settings.from_name || "TheTattooCore",
-        email: fromEmail,
-      },
-      reply: settings.reply_to_email
-        ? { email: settings.reply_to_email }
-        : undefined,
-      to: recipientEmail,
-      subject,
-      text,
-      html,
-      headers,
-    },
-  );
 }
 
 export async function sendHostgatorTestEmail({

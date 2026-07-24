@@ -427,8 +427,8 @@ async function maybeSendVerificationDecisionEmail({
         `Help: ${supportEmail}`,
       ].join("\n"),
     });
-  } catch (error) {
-    console.error("Verification decision email failed", error);
+  } catch {
+    console.error("Verification decision email failed.");
   }
 }
 

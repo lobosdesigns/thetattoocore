@@ -46,7 +46,7 @@
     "test:release-evidence-gate": "node scripts/test-release-evidence-gate.mjs",
     "smoke:store": "node scripts/smoke-store-metadata.mjs",
     "smoke:hydration": "node scripts/smoke-hydration-guards.mjs",
-    "smoke:security": "node scripts/smoke-security-guards.mjs",
+    "smoke:security": "node scripts/test-mail-redaction.mjs && node scripts/smoke-security-guards.mjs",
     "smoke:env": "node scripts/smoke-env-guards.mjs",
     "smoke:docs": "node scripts/smoke-docs-readiness.mjs",
     "smoke:mobile": "node scripts/smoke-mobile-browser.mjs",
