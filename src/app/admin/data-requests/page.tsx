@@ -211,7 +211,8 @@ function AccountDeletionRequestCard({
         <p className="font-bold">Manual handling checklist</p>
         <p className="mt-1">
           Confirm identity, review safety or legal holds, preserve required audit
-          records, then process the user data removal before marking completed.
+          records, then use the verified deletion workflow. This review queue
+          cannot mark a request complete on its own.
         </p>
       </div>
       {isOpen ? (
@@ -222,22 +223,19 @@ function AccountDeletionRequestCard({
             className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
             maxLength={500}
             name="note"
-            placeholder="Reviewer note, required to complete or reject"
+            placeholder="Reviewer note, required to reject"
           />
-          <div className="grid grid-cols-2 gap-2 min-[430px]:grid-cols-4">
+          <div className="grid grid-cols-3 gap-2">
             {[
               ["reviewing", "Review"],
-              ["completed", "Complete"],
               ["rejected", "Reject"],
               ["cancelled", "Cancel"],
             ].map(([value, label]) => (
               <button
                 className={
-                  value === "completed"
-                    ? "h-10 rounded-md bg-[var(--foreground)] px-2 text-sm font-semibold text-[var(--background)]"
-                    : value === "rejected"
-                      ? "h-10 rounded-md border border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] px-2 text-sm font-semibold text-[var(--danger)] hover:bg-[color-mix(in_srgb,var(--danger)_14%,var(--paper-warm))]"
-                      : "h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)]"
+                  value === "rejected"
+                    ? "h-10 rounded-md border border-[color-mix(in_srgb,var(--danger)_38%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] px-2 text-sm font-semibold text-[var(--danger)] hover:bg-[color-mix(in_srgb,var(--danger)_14%,var(--paper-warm))]"
+                    : "h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-2 text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)]"
                 }
                 key={value}
                 name="status"

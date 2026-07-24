@@ -27,7 +27,7 @@ type UserStatus = "active" | "suspended" | "banned";
 type AdCampaignStatus = "approved" | "active" | "paused" | "rejected" | "archived";
 type MerchProductStatus = "approved" | "active" | "paused" | "rejected" | "archived";
 type MerchOrderAdminStatus = "fulfilled" | "cancelled";
-type AccountDeletionStatus = "reviewing" | "completed" | "rejected" | "cancelled";
+type AccountDeletionStatus = "reviewing" | "rejected" | "cancelled";
 type AdCreditReason = "promo" | "trade" | "sponsor" | "makegood" | "other";
 type HelpCommentStatus = "pending_review" | "visible" | "hidden" | "removed";
 type MerchOrderProductRow = {
@@ -96,7 +96,6 @@ const merchOrderAdminStatuses = new Set<MerchOrderAdminStatus>([
 ]);
 const accountDeletionStatuses = new Set<AccountDeletionStatus>([
   "reviewing",
-  "completed",
   "rejected",
   "cancelled",
 ]);
@@ -2417,11 +2416,22 @@ export async function refundMerchOrder(formData: FormData) {
 export async function updateAccountDeletionRequest(formData: FormData) {
   const requestId = cleanText(formData.get("request_id"), 80);
   const returnTo = cleanText(formData.get("return_to"), 120);
-  const status = cleanText(
+  const statusValue = cleanText(
     formData.get("status"),
     40,
-  ) as AccountDeletionStatus;
+  );
   const note = cleanText(formData.get("note"), 500);
+
+  if (statusValue === "completed") {
+    redirect(
+      adminDataRequestsMessage(
+        "Completion requires the verified account deletion workflow.",
+        returnTo,
+      ),
+    );
+  }
+
+  const status = statusValue as AccountDeletionStatus;
 
   if (!requestId || !accountDeletionStatuses.has(status)) {
     redirect(
@@ -2429,10 +2439,10 @@ export async function updateAccountDeletionRequest(formData: FormData) {
     );
   }
 
-  if ((status === "completed" || status === "rejected") && note.length < 10) {
+  if (status === "rejected" && note.length < 10) {
     redirect(
       adminDataRequestsMessage(
-        "Add a clear review note before completing or rejecting the request.",
+        "Add a clear review note before rejecting the request.",
         returnTo,
       ),
     );

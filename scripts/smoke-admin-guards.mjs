@@ -375,6 +375,18 @@ const checks = [
       !adminActions.includes('updateError.message || "Could not update account deletion request."'),
   },
   {
+    label: "account deletion completion fails closed until the verified workflow runs",
+    ok:
+      adminActions.includes('const statusValue = cleanText(') &&
+      adminActions.includes('if (statusValue === "completed")') &&
+      adminActions.includes(
+        '"Completion requires the verified account deletion workflow."',
+      ) &&
+      adminDataRequests.includes("This review queue") &&
+      adminDataRequests.includes("cannot mark a request complete on its own.") &&
+      !adminDataRequests.includes('["completed", "Complete"]'),
+  },
+  {
     label: "admin data requests can filter status and search while preserving actions",
     ok:
       adminDataRequests.includes("function dataRequestFilters") &&
