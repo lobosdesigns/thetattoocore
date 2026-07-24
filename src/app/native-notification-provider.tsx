@@ -367,6 +367,7 @@ export function NativeNotificationProvider({
     const response = await fetch("/api/push/devices/test", {
       body: JSON.stringify({ target }),
       headers: { "content-type": "application/json" },
+      keepalive: true,
       method: "POST",
     });
     const payload = (await response.json().catch(() => null)) as unknown;

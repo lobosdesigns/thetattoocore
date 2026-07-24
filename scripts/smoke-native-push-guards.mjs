@@ -389,6 +389,7 @@ const checks = [
       source.sender.includes("export async function sendNativePushMessage") &&
       source.provider.includes('fetch("/api/push/devices/test"') &&
       source.provider.includes("body: JSON.stringify({ target })") &&
+      source.provider.includes("keepalive: true") &&
       source.provider.includes(
         "parseNativePushQaResponse(response.status, payload)",
       ) &&
