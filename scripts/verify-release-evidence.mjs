@@ -668,8 +668,17 @@ if (realDeviceQa) {
 
 const dmEvidence = section("Two-User DM Evidence");
 if (dmEvidence) {
-  for (const platform of ["Android", "iOS"]) {
+  for (const [platform, expectedBuild] of [
+    ["Android", EXPECTED_ANDROID_BUILD],
+    ["iOS", EXPECTED_IOS_TESTFLIGHT_BUILD],
+  ]) {
     const row = rowBy(dmEvidence, "Platform", platform);
+    requireContains(
+      "Two-User DM Evidence",
+      `${platform} DM evidence must use exact build ${expectedBuild}`,
+      row?.["Build or release version"],
+      expectedBuild,
+    );
     requireValue("Two-User DM Evidence", `${platform} sender alias`, row?.["Sender alias"]);
     requireValue(
       "Two-User DM Evidence",

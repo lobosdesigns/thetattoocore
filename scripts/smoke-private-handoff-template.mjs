@@ -197,12 +197,17 @@ const checks = [
       evidenceGateTest.includes("release evidence rejects stale real-device proof dates") &&
       evidenceGateTest.includes("release evidence rejects promoted Android install-only QA") &&
       evidenceGateTest.includes("release evidence rejects promoted iPad install-only QA") &&
+      evidenceGateTest.includes("release evidence rejects historical two-user DM builds") &&
       evidenceGate.includes("Android install source must be Google Play") &&
       evidenceGate.includes("Android evidence basis must be device-captured") &&
       evidenceGate.includes("Android QA scope must be full checklist") &&
       evidenceGate.includes("iOS device model must be an iPhone") &&
       evidenceGate.includes("iOS evidence basis must be device-captured") &&
       evidenceGate.includes("iOS QA scope must be full checklist") &&
+      evidenceGate.includes('row?.["Build or release version"]') &&
+      generator.includes("| Platform | Build or release version | Sender alias | Recipient alias |") &&
+      evidenceFixture.includes("| Android | 1.0.3 (4) | fixture-sender | fixture-recipient |") &&
+      evidenceFixture.includes("| iOS | 1.0 (4) | fixture-sender | fixture-recipient |") &&
       generator.includes("Android must come from Google Play") &&
       generator.includes("actual iPhone") &&
       generator.includes("keep iPad install-only") &&

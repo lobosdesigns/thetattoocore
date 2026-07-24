@@ -71,10 +71,10 @@
 
 ## Two-User DM Evidence
 
-| Platform | Sender alias | Recipient alias | Text send/read/reply | Attachment | Notification route | Private proof filename or location | Proof date | Result |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Android | fixture-sender | fixture-recipient | passed | passed | passed | fixture-android-dm-proof | 2026-07-23 | passed |
-| iOS | fixture-sender | fixture-recipient | passed | passed | passed | fixture-ios-dm-proof | 2026-07-23 | passed |
+| Platform | Build or release version | Sender alias | Recipient alias | Text send/read/reply | Attachment | Notification route | Private proof filename or location | Proof date | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Android | 1.0.3 (4) | fixture-sender | fixture-recipient | passed | passed | passed | fixture-android-dm-proof | 2026-07-23 | passed |
+| iOS | 1.0 (4) | fixture-sender | fixture-recipient | passed | passed | passed | fixture-ios-dm-proof | 2026-07-23 | passed |
 
 ## Native Push Evidence
 

@@ -81,6 +81,14 @@ const promotedAndroidPartialFixture = writeVariant(
       "| Android | fixture-device | Android 16 | 1.0.3 (4) | manual install | Wi-Fi | owner-confirmed | install only | passed | fixture-proof | 2026-07-23 |",
     ),
 );
+const mismatchedDmBuildFixture = writeVariant(
+  "mismatched-dm-build.md",
+  (source) =>
+    source.replace(
+      "| Android | 1.0.3 (4) | fixture-sender | fixture-recipient |",
+      "| Android | 1.0.2 (3) | fixture-sender | fixture-recipient |",
+    ),
+);
 const missingMarkerFixture = writeVariant("missing-marker.md", (source) =>
   source.replace(fixtureMarker, ""),
 );
@@ -444,6 +452,27 @@ const checks = [
         ) &&
         result.stderr.includes(
           "Real-Device QA: iOS QA scope must be full checklist",
+        )
+      );
+    },
+  },
+  {
+    label: "release evidence rejects historical two-user DM builds",
+    result: runGate([
+      "--test-fixture",
+      "--reference-date",
+      fixtureReferenceDate,
+      "--verbose",
+      "--evidence",
+      mismatchedDmBuildFixture,
+      "--release-candidate",
+      fixtureCandidate,
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Two-User DM Evidence: Android DM evidence must use exact build 1.0.3 (4)",
         )
       );
     },

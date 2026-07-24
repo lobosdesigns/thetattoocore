@@ -114,10 +114,10 @@ evidence.
 
 ## Two-User DM Evidence
 
-| Platform | Sender alias | Recipient alias | Text send/read/reply | Attachment | Notification route | Private proof filename or location | Proof date | Result |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Android | | | pending | pending | pending | | | pending |
-| iOS | | | pending | pending | pending | | | pending |
+| Platform | Build or release version | Sender alias | Recipient alias | Text send/read/reply | Attachment | Notification route | Private proof filename or location | Proof date | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Android | | | | pending | pending | pending | | | pending |
+| iOS | | | | pending | pending | pending | | | pending |
 
 ## Payment And Commerce Evidence
 
