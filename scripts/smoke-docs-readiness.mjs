@@ -1093,9 +1093,15 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("no supported-device loss") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Monitor App Review and internal build `1.0 (4)` install/QA results") &&
       docs["docs/APP_STORE_READINESS.md"].includes("group-member opt-in/install proof and 14-day production-access tester evidence if required") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("active sandbox test connected account") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("marketplace integration guide using destination charges") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("keep the release switch off until policy approval") &&
+      currentStoreConsoleSnapshot.includes(
+        "Current production-dashboard inspection confirms account activation and marketplace setup are complete",
+      ) &&
+      currentStoreConsoleSnapshot.includes(
+        "live webhook destination is active with the exact 12 required events",
+      ) &&
+      currentStoreConsoleSnapshot.includes(
+        "Keep the release switch off while completing the controlled live server-key and expected-mode cutover",
+      ) &&
       docs["docs/APP_STORE_READINESS.md"].includes("private native-alert project and Android/Apple app registrations exist") &&
       docs["docs/APP_STORE_READINESS.md"].includes("service-only DM delivery outbox") &&
       docs["docs/APP_STORE_READINESS.md"].includes("before enabling global delivery or making store claims") &&
