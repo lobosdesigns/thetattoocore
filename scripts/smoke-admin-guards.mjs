@@ -40,6 +40,10 @@ const adminRoleHierarchyMigration = readFileSync(
   "supabase/migrations/20260724054430_enforce_admin_role_hierarchy.sql",
   "utf8",
 );
+const ownerProfileDeletionMigration = readFileSync(
+  "supabase/migrations/20260724134050_protect_owner_profile_deletion.sql",
+  "utf8",
+);
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
@@ -380,7 +384,23 @@ const checks = [
       adminUsers.includes("canModerateUserStatus(profile.role, user.role)") &&
       adminUsers.includes('name="confirm_delete"') &&
       adminUsers.includes('placeholder="Type delete"') &&
-      adminUsers.includes("disabled={!canDeleteUser}"),
+      adminUsers.includes("{canDeleteUser ? (") &&
+      !adminUsers.includes("canDeleteAccounts && !isOwnerAccount ? (") &&
+      !adminUsers.includes("disabled={!canDeleteUser}") &&
+      ownerProfileDeletionMigration.includes(
+        "create or replace function public.protect_owner_profile_deletion()",
+      ) &&
+      ownerProfileDeletionMigration.includes("if old.role = 'owner' then") &&
+      ownerProfileDeletionMigration.includes(
+        "raise exception 'Owner accounts cannot be deleted.'",
+      ) &&
+      ownerProfileDeletionMigration.includes(
+        "drop trigger if exists protect_owner_profile_deletion on public.profiles",
+      ) &&
+      ownerProfileDeletionMigration.includes("before delete on public.profiles") &&
+      ownerProfileDeletionMigration.includes(
+        "execute function public.protect_owner_profile_deletion()",
+      ),
   },
   {
     label: "admin users page shows tester creation only to owners with private tool readiness",
