@@ -44,6 +44,10 @@ const ownerProfileDeletionMigration = readFileSync(
   "supabase/migrations/20260724134050_protect_owner_profile_deletion.sql",
   "utf8",
 );
+const ownerProfileDeletionFunctionLockdownMigration = readFileSync(
+  "supabase/migrations/20260724135641_lock_down_owner_profile_deletion_function.sql",
+  "utf8",
+);
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
@@ -400,6 +404,9 @@ const checks = [
       ownerProfileDeletionMigration.includes("before delete on public.profiles") &&
       ownerProfileDeletionMigration.includes(
         "execute function public.protect_owner_profile_deletion()",
+      ) &&
+      ownerProfileDeletionFunctionLockdownMigration.includes(
+        "revoke execute on function public.protect_owner_profile_deletion() from anon, authenticated;",
       ),
   },
   {
