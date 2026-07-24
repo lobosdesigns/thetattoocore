@@ -1059,8 +1059,11 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("existing Google Group community") &&
       docs["docs/APP_STORE_READINESS.md"].includes("organization account is not subject to the personal-account 12-tester/14-day production-access rule") &&
       docs["docs/APP_STORE_READINESS.md"].includes("authorized Android 16 review phone installed exact Alpha build `1.0.3 (4)`") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Production release `1.0.1 (2)` is published separately at 100%") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Publishing Overview reports no unpublished changes") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("submitted for production full-rollout review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Publishing overview shows the production change in review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Production `1.0.1 (2)` remains the served public build until that review succeeds") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("all 11 Google App Content declarations are actioned") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("target age is 18 and over") &&
       !docs["docs/APP_STORE_READINESS.md"].includes("awaiting final submit-for-review confirmation") &&
       docs["docs/APP_STORE_READINESS.md"].includes("no supported-device loss") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Monitor App Review and internal build `1.0 (4)` install/QA results") &&
@@ -1081,7 +1084,7 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("Private payment handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private native QA handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Store consoles") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Apple iOS `1.0` build `1.0 (3)` is submitted for App Review") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Apple iOS `1.0` build `1.0 (3)` remains in App Review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Google Play Closed testing - Alpha serves `1.0.3 (4)` to selected testers") &&
       docs["docs/APP_STORE_READINESS.md"].includes("13-inch iPad screenshots uploaded") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Content Rights") &&
@@ -1089,7 +1092,7 @@ const checks = [
       (docs["docs/APP_STORE_READINESS.md"].includes("Data Safety review") ||
         docs["docs/APP_STORE_READINESS.md"].includes("Data Safety saved")) &&
       docs["docs/APP_STORE_READINESS.md"].includes("One exact Android Alpha build `1.0.3 (4)` Google Play install is verified") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("production `1.0.1 (2)` is published at 100%") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("production `1.0.1 (2)` remains live") &&
       docs["docs/APP_STORE_READINESS.md"].includes("applicable tester evidence") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Legal and policy") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Final counsel-reviewed Terms/Privacy") &&
