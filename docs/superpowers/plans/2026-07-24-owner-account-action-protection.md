@@ -26,6 +26,7 @@
 - Modify: `scripts/smoke-admin-guards.mjs`
 - Modify: `src/app/admin/users/page.tsx`
 - Modify: `supabase/migrations/20260724134050_protect_owner_profile_deletion.sql`
+- Add: `supabase/migrations/20260724135641_lock_down_owner_profile_deletion_function.sql`
 
 **Interfaces:**
 - Consumes: `canDeleteUser: boolean` from the existing Admin user-card permission calculation.
@@ -41,6 +42,10 @@ const ownerProfileDeletionMigration = readFileSync(
   "supabase/migrations/20260724134050_protect_owner_profile_deletion.sql",
   "utf8",
 );
+const ownerProfileDeletionFunctionLockdownMigration = readFileSync(
+  "supabase/migrations/20260724135641_lock_down_owner_profile_deletion_function.sql",
+  "utf8",
+);
 ```
 
 Extend the account-deletion guard to require target-specific rendering and the
@@ -52,6 +57,10 @@ adminUsers.includes("{canDeleteUser ? (") &&
 !adminUsers.includes("disabled={!canDeleteUser}") &&
 ownerProfileDeletionMigration.includes(
   "create or replace function public.protect_owner_profile_deletion()",
+) &&
+ownerProfileDeletionMigration.includes("security invoker") &&
+ownerProfileDeletionMigration.includes(
+  "revoke all on function public.protect_owner_profile_deletion() from public;",
 ) &&
 ownerProfileDeletionMigration.includes("if old.role = 'owner' then") &&
 ownerProfileDeletionMigration.includes(
@@ -65,6 +74,9 @@ ownerProfileDeletionMigration.includes(
 ) &&
 ownerProfileDeletionMigration.includes(
   "execute function public.protect_owner_profile_deletion()",
+) &&
+ownerProfileDeletionFunctionLockdownMigration.includes(
+  "revoke execute on function public.protect_owner_profile_deletion() from anon, authenticated;",
 )
 ```
 
@@ -111,7 +123,18 @@ for each row
 execute function public.protect_owner_profile_deletion();
 ```
 
-- [ ] **Step 4: Implement the minimal Admin UI change**
+- [ ] **Step 4: Lock down direct client-role execution**
+
+Write the follow-up migration:
+
+```sql
+revoke execute on function public.protect_owner_profile_deletion() from anon, authenticated;
+```
+
+This explicit revoke is required in addition to the `PUBLIC` revoke because
+existing database defaults may have granted the client roles directly.
+
+- [ ] **Step 5: Implement the minimal Admin UI change**
 
 Change the delete disclosure condition from:
 
@@ -135,7 +158,7 @@ single explanation below the form:
 </p>
 ```
 
-- [ ] **Step 5: Re-run the focused guard**
+- [ ] **Step 6: Re-run the focused guard**
 
 Run:
 
@@ -145,24 +168,24 @@ npm.cmd run smoke:admin
 
 Expected: all Admin guard checks pass.
 
-- [ ] **Step 6: Review the scoped diff**
+- [ ] **Step 7: Review the scoped diff**
 
 Run:
 
 ```powershell
 git diff --check
-git diff -- scripts/smoke-admin-guards.mjs src/app/admin/users/page.tsx supabase/migrations/20260724134050_protect_owner_profile_deletion.sql
+git diff -- scripts/smoke-admin-guards.mjs src/app/admin/users/page.tsx supabase/migrations/20260724134050_protect_owner_profile_deletion.sql supabase/migrations/20260724135641_lock_down_owner_profile_deletion_function.sql
 ```
 
 Expected: no whitespace errors and only the planned guard, UI, and migration
 changes.
 
-- [ ] **Step 7: Commit the implementation**
+- [ ] **Step 8: Commit the implementation**
 
 Run:
 
 ```powershell
-git add -- scripts/smoke-admin-guards.mjs src/app/admin/users/page.tsx supabase/migrations/20260724134050_protect_owner_profile_deletion.sql
+git add -- scripts/smoke-admin-guards.mjs src/app/admin/users/page.tsx supabase/migrations/20260724134050_protect_owner_profile_deletion.sql supabase/migrations/20260724135641_lock_down_owner_profile_deletion_function.sql
 git commit -m "Protect owner account deletion"
 ```
 
@@ -192,16 +215,23 @@ npm.cmd run build
 Expected: all commands exit successfully. Existing documented Next.js warnings
 may remain, but no new errors are accepted.
 
-- [ ] **Step 2: Apply the reviewed migration**
+- [ ] **Step 2: Apply both reviewed migrations in order**
 
-Use the Supabase MCP `apply_migration` tool with:
+Use the Supabase MCP `apply_migration` tool first with:
 
 ```text
 name: protect_owner_profile_deletion
 query: exact contents of supabase/migrations/20260724134050_protect_owner_profile_deletion.sql
 ```
 
-Expected: one successful migration-history entry.
+Then apply:
+
+```text
+name: lock_down_owner_profile_deletion_function
+query: exact contents of supabase/migrations/20260724135641_lock_down_owner_profile_deletion_function.sql
+```
+
+Expected: two successful migration-history entries in this order.
 
 - [ ] **Step 3: Verify the live invariant with read-only SQL**
 
@@ -211,6 +241,8 @@ Use the Supabase MCP `execute_sql` tool to query `pg_trigger`, `pg_proc`, and
 ```text
 protect_owner_profile_deletion is enabled on public.profiles
 protect_owner_profile_deletion() remains SECURITY INVOKER
+PUBLIC, anon, and authenticated cannot execute protect_owner_profile_deletion()
+service_role retains the intended trusted execution state
 at least one owner profile still exists
 ```
 

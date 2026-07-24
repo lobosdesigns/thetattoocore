@@ -394,6 +394,10 @@ const checks = [
       ownerProfileDeletionMigration.includes(
         "create or replace function public.protect_owner_profile_deletion()",
       ) &&
+      ownerProfileDeletionMigration.includes("security invoker") &&
+      ownerProfileDeletionMigration.includes(
+        "revoke all on function public.protect_owner_profile_deletion() from public;",
+      ) &&
       ownerProfileDeletionMigration.includes("if old.role = 'owner' then") &&
       ownerProfileDeletionMigration.includes(
         "raise exception 'Owner accounts cannot be deleted.'",
