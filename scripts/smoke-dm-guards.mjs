@@ -18,6 +18,10 @@ const messageNotificationMigration = readFileSync(
   "supabase/migrations/20260722142805_message_notification_linkage.sql",
   "utf8",
 );
+const notificationsPage = readFileSync(
+  "src/app/notifications/page.tsx",
+  "utf8",
+);
 const notificationWriter = readFileSync("src/lib/notification-write.ts", "utf8");
 const legalReview = readFileSync("docs/LEGAL_REVIEW_PREP.md", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
@@ -79,6 +83,19 @@ const checks = [
       messageThread.includes("setTimeout(refreshThread, 1200)") &&
       messageThread.includes('table: "messages"') &&
       messageThread.includes('table: "conversation_members"'),
+  },
+  {
+    label: "DM alert Open uses the sanitized thread route directly",
+    ok:
+      notificationsPage.includes(
+        'const opensMessageThread = href?.startsWith("/messages") ?? false',
+      ) &&
+      notificationsPage.includes("href && opensMessageThread ?") &&
+      notificationsPage.includes("href={href}") &&
+      notificationsPage.includes("action={openNotification}") &&
+      messagePage.includes("selectedUnreadNotificationIds.length > 0") &&
+      messagePage.includes('.from("notifications")') &&
+      messagePage.includes(".update({ read_at: readAt })"),
   },
   {
     label: "DM read receipts and unread delete controls are guarded",

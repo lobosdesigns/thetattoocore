@@ -10,6 +10,10 @@ const registrar = readFileSync("src/app/service-worker-registrar.tsx", "utf8");
 const notificationPrefs = readFileSync("src/lib/notifications.ts", "utf8");
 const serviceWorker = readFileSync("public/sw.js", "utf8");
 const pushControl = readFileSync("src/app/push-subscription-control.tsx", "utf8");
+const nativeNotificationProvider = readFileSync(
+  "src/app/native-notification-provider.tsx",
+  "utf8",
+);
 const accountProfileForm = readFileSync("src/app/account/profile-form.tsx", "utf8");
 const notificationsPage = readFileSync("src/app/notifications/page.tsx", "utf8");
 const notificationRoute = readFileSync("src/lib/notification-route.ts", "utf8");
@@ -32,7 +36,12 @@ const pushHardeningMigration = readFileSync(
   "utf8",
 );
 const allClientPwaSource = [suppressor, installButton, registrar].join("\n");
-const userFacingPushSource = [accountProfileForm, notificationsPage, pushControl].join("\n");
+const userFacingPushSource = [
+  accountProfileForm,
+  notificationsPage,
+  pushControl,
+  nativeNotificationProvider,
+].join("\n");
 const manifestMemberFacingText = [
   manifestJson.name,
   manifestJson.short_name,

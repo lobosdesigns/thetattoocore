@@ -446,6 +446,7 @@ export default async function NotificationsPage({
             visibleNotifications.map((notification) => {
               const Icon = notificationIcon(notification.type);
               const href = notificationHref(notification);
+              const opensMessageThread = href?.startsWith("/messages") ?? false;
               const card = (
                 <article
                   className={`flex min-w-0 gap-3 px-4 py-4 ${
@@ -487,7 +488,14 @@ export default async function NotificationsPage({
                       </p>
                     </div>
                     <div className="mt-3 grid min-w-0 grid-cols-1 gap-2 min-[380px]:grid-cols-2 sm:flex sm:flex-wrap">
-                      {href ? (
+                      {href && opensMessageThread ? (
+                        <Link
+                          className="ttc-control-active inline-flex h-9 min-w-0 items-center justify-center rounded-md border px-3 text-sm font-semibold"
+                          href={href}
+                        >
+                          Open
+                        </Link>
+                      ) : href ? (
                         <form action={openNotification} className="min-w-0">
                           <input
                             name="notification_id"
