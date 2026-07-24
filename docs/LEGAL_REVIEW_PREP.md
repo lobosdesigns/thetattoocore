@@ -22,6 +22,41 @@ Use this private checklist before public App Store or Google Play review, produc
   or purchase age ratings apply to this 18+ social app. Do not infer that legal
   decision from a console status alone.
 
+## Current Engineering Policy Audit
+
+The July 23, 2026 engineering review checked the current official Apple and
+Google rules. It is implementation evidence, not owner or counsel approval.
+
+- Apple's App Review Guidelines were last updated June 8, 2026. Physical goods
+  and real-world services may use external payment, but digital purchases that
+  are experienced in TTC, including same-app advertising or post boosts, must
+  use In-App Purchase unless a reviewed exception applies.
+- Google Play likewise requires Play Billing for digital app features,
+  promotion, or visibility while excluding physical goods and real-world
+  services. Native same-app ad checkout must remain blocked until a compliant
+  store-billing path or approved exception is implemented.
+- Apple and Google both require an in-app account deletion path. A manual
+  request may take time, but TTC must not mark it complete until the account and
+  associated data and UGC are actually handled, with legally required retention
+  disclosed.
+- Google Play Data Safety applies to apps on closed, open, and production
+  tracks. Only apps exclusively active on the internal testing track are
+  exempt.
+- TTC's public Child Safety Standards say members can report DMs, while the
+  current DM experience does not yet expose a message-report flow. Keep that
+  mismatch blocked until the control and moderation path exist.
+- Generated store screenshot scenes can be safe upload drafts, but final
+  evidence must show the actual submitted build with fictional or consented
+  content and no private account, payment, or notification details.
+
+Official source checks:
+
+- [Apple App Review Guidelines](https://developer.apple.com/app-store/review/guidelines/)
+- [Apple account deletion guidance](https://developer.apple.com/support/offering-account-deletion-in-your-app/)
+- [Google Play Data Safety](https://support.google.com/googleplay/android-developer/answer/10787469)
+- [Google Play account deletion guidance](https://support.google.com/googleplay/android-developer/answer/13327111)
+- [Google Play payments policy](https://support.google.com/googleplay/android-developer/answer/9858738)
+
 ## Private Evidence To Keep
 
 Do not store reviewer passwords, private phone numbers, owner personal contact details, payment-account screenshots, full admin exports, buyer addresses, license documents, or private DMs in this repo or public copy.
@@ -46,6 +81,8 @@ Do not store reviewer passwords, private phone numbers, owner personal contact d
 
 - Final public Terms, Privacy, Support, Help, Child Safety Standards, store metadata, screenshots, and native wrapper behavior match the reviewed build.
 - Production commerce remains gated unless the payment, tax, shipping, refund, dispute, seller payout, and native checkout review items are explicitly approved.
+- Native same-app advertising checkout remains gated until store billing or an
+  approved platform-specific exception is implemented and reviewed.
 - Any public release exception has a written owner, risk note, and follow-up date.
 - The release handoff includes the legal review note alongside the real-device QA evidence pack, App Privacy/Data Safety evidence, screenshot upload evidence, and production payment evidence.
 

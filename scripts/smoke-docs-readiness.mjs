@@ -386,6 +386,12 @@ const checks = [
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Google Play required declarations") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Xcode 26 and the iOS 26 SDK") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Android 16 / API 36 beginning August 31, 2026") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("same-app advertising or post boosts") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Native same-app ad checkout must remain blocked") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("must not mark it complete until the account") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Google Play Data Safety applies to apps on closed, open, and production") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("does not yet expose a message-report flow") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("evidence must show the actual submitted build with fictional or consented") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Play Age Signals API") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("significant-change notices") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("applicable age-signal/state-law decisions") &&
@@ -393,6 +399,7 @@ const checks = [
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("https://support.google.com/googleplay/android-developer/answer/16569691") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Commerce and payments") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("native payment-policy classification") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Native same-app advertising checkout remains gated") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Evidence privacy") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Reviewer credentials, phone details, console screenshots, payment identifiers"),
   },
