@@ -221,19 +221,36 @@ export function PushSubscriptionControl() {
     target: "latest_message" | "notifications",
   ) {
     setPending(true);
-    setMessage("Checking your alert settings.");
+    setMessage(
+      target === "latest_message"
+        ? "Sending the message test. Keep this app in the background for a few seconds."
+        : "Sending the test alert. Keep this app in the background for a few seconds.",
+    );
 
     try {
       const result = await nativeNotifications.sendTest(target);
-      setMessage(
-        result === "suppressed"
-          ? "Your message alert or quiet-hours settings are pausing this test."
-          : result === "unavailable"
-            ? "Message test needs a recent message alert."
-            : target === "latest_message"
-              ? "Message test scheduled. Keep this app in the background for a few seconds."
-              : "Test alert scheduled. Keep this app in the background for a few seconds.",
-      );
+
+      if (result === "suppressed") {
+        setMessage(
+          "Your message alert or quiet-hours settings are pausing this test.",
+        );
+      } else if (result === "unavailable") {
+        setMessage("Message test needs a recent message alert.");
+      } else if (result === "device") {
+        setMessage("Turn app alerts on again, then retry.");
+      } else if (result === "retry") {
+        setMessage(
+          target === "latest_message"
+            ? "Message test could not be accepted. Try again."
+            : "Test alert could not be accepted. Try again.",
+        );
+      } else {
+        setMessage(
+          target === "latest_message"
+            ? "Message alert request accepted. Check device alerts."
+            : "Test alert request accepted. Check device alerts.",
+        );
+      }
     } catch {
       setMessage(
         target === "latest_message"

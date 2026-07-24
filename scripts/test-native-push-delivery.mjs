@@ -12,7 +12,10 @@ import {
 } from "../src/lib/native-push/qa-access.ts";
 import {
   buildNativePushQaAlert,
+  nativePushQaDeliveryOutcome,
+  nativePushQaDeliveryStatus,
   nativePushQaDirectConversationAllowed,
+  parseNativePushQaResponse,
   parseNativePushQaRequest,
   parseNativePushQaTarget,
   readNativePushQaTarget,
@@ -271,6 +274,46 @@ assert.equal(
   buildNativePushQaAlert("latest_message", "/notifications"),
   null,
 );
+assert.equal(nativePushQaDeliveryOutcome("success"), "accepted");
+assert.equal(nativePushQaDeliveryOutcome("token"), "device");
+assert.equal(nativePushQaDeliveryStatus("accepted"), 202);
+assert.equal(nativePushQaDeliveryStatus("device"), 409);
+assert.equal(nativePushQaDeliveryStatus("retry"), 503);
+assert.equal(
+  parseNativePushQaResponse(202, { accepted: true }),
+  "accepted",
+);
+assert.equal(
+  parseNativePushQaResponse(200, { suppressed: true }),
+  "suppressed",
+);
+assert.equal(
+  parseNativePushQaResponse(409, { reason: "no_message" }),
+  "unavailable",
+);
+assert.equal(
+  parseNativePushQaResponse(409, { reason: "device" }),
+  "device",
+);
+assert.equal(
+  parseNativePushQaResponse(503, { reason: "retry" }),
+  "retry",
+);
+assert.equal(
+  parseNativePushQaResponse(401, { accepted: true }),
+  null,
+);
+assert.equal(parseNativePushQaResponse(202, null), null);
+
+for (const result of [
+  "credentials",
+  "disabled",
+  "payload",
+  "temporary",
+  "unknown",
+]) {
+  assert.equal(nativePushQaDeliveryOutcome(result), "retry");
+}
 
 const quietHoursProfile = {
   notification_quiet_hours_enabled: true,

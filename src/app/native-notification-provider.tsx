@@ -14,7 +14,10 @@ import {
   nativePushQaBuildAllowed,
   type NativePushPlatform,
 } from "@/lib/native-push/qa-access";
-import type { NativePushQaTarget } from "@/lib/native-push/qa-target";
+import {
+  parseNativePushQaResponse,
+  type NativePushQaTarget,
+} from "@/lib/native-push/qa-target";
 import { notificationPathOrFallback } from "@/lib/notification-route";
 
 type NativePlatform = NativePushPlatform;
@@ -41,7 +44,9 @@ type NativeNotificationContextValue = {
   enabled: boolean;
   sendTest: (
     target?: NativePushQaTarget,
-  ) => Promise<"scheduled" | "suppressed" | "unavailable">;
+  ) => Promise<
+    "accepted" | "device" | "retry" | "suppressed" | "unavailable"
+  >;
   supported: boolean;
   testAvailable: boolean;
 };
@@ -50,7 +55,7 @@ const NativeNotificationContext = createContext<NativeNotificationContextValue>(
   disable: async () => undefined,
   enable: async () => "denied",
   enabled: false,
-  sendTest: async () => "scheduled",
+  sendTest: async () => "accepted",
   supported: false,
   testAvailable: false,
 });
@@ -364,22 +369,17 @@ export function NativeNotificationProvider({
       headers: { "content-type": "application/json" },
       method: "POST",
     });
-    const payload = (await response.json().catch(() => null)) as {
-      reason?: unknown;
-      scheduled?: unknown;
-      suppressed?: unknown;
-    } | null;
+    const payload = (await response.json().catch(() => null)) as unknown;
+    const result = parseNativePushQaResponse(response.status, payload);
 
-    if (response.status === 409 && payload?.reason === "no_message") {
-      return "unavailable";
+    if (!result) throw new Error("Test alert could not be sent.");
+
+    if (result === "device") {
+      await disable();
     }
 
-    if (!response.ok) throw new Error("Test alert could not be sent.");
-    if (payload?.suppressed === true) return "suppressed";
-    if (payload?.scheduled === true) return "scheduled";
-
-    throw new Error("Test alert could not be sent.");
-  }, []);
+    return result;
+  }, [disable]);
 
   const value = useMemo(
     () => ({

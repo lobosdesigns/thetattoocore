@@ -1,4 +1,4 @@
-import { after, type NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import {
   deviceAlertCookieOptions,
   nativePushDeviceCookie,
@@ -10,6 +10,8 @@ import {
 } from "@/lib/native-push/qa-access";
 import {
   buildNativePushQaAlert,
+  nativePushQaDeliveryOutcome,
+  nativePushQaDeliveryStatus,
   nativePushQaDirectConversationAllowed,
   readNativePushQaTarget,
 } from "@/lib/native-push/qa-target";
@@ -55,6 +57,8 @@ type MessageNotificationCandidate = {
 
 const recentMessageCandidateLimit = 10;
 const testAlertDelayMs = 8_000;
+
+export const maxDuration = 60;
 
 const nativePushEnvironment: NativePushDeliveryEnvironment = {
   FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
@@ -300,26 +304,48 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  after(async () => {
-    await new Promise<void>((resolve) => {
-      setTimeout(resolve, testAlertDelayMs);
-    });
-
-    const result = await sendNativePushMessage(nativePushEnvironment, {
-      ...alert,
-      notificationId: crypto.randomUUID(),
-      platform: device.platform,
-      token: device.token,
-    });
-
-    if (result === "token") {
-      await admin
-        .from("native_push_devices")
-        .delete()
-        .eq("id", device.id)
-        .eq("profile_id", profile.id);
-    }
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, testAlertDelayMs);
   });
 
-  return NextResponse.json({ scheduled: true }, { status: 202 });
+  const result = await sendNativePushMessage(nativePushEnvironment, {
+    ...alert,
+    notificationId: crypto.randomUUID(),
+    platform: device.platform,
+    token: device.token,
+  });
+  const outcome = nativePushQaDeliveryOutcome(result);
+
+  if (outcome === "device") {
+    await admin
+      .from("native_push_devices")
+      .delete()
+      .eq("id", device.id)
+      .eq("profile_id", profile.id);
+
+    return expiredDeviceCookie(
+      NextResponse.json(
+        {
+          error: "Turn app alerts on again, then retry.",
+          reason: "device",
+        },
+        { status: nativePushQaDeliveryStatus(outcome) },
+      ),
+    );
+  }
+
+  if (outcome === "retry") {
+    return NextResponse.json(
+      {
+        error: "Test alert could not be accepted. Try again.",
+        reason: "retry",
+      },
+      { status: nativePushQaDeliveryStatus(outcome) },
+    );
+  }
+
+  return NextResponse.json(
+    { accepted: true },
+    { status: nativePushQaDeliveryStatus(outcome) },
+  );
 }

@@ -337,9 +337,8 @@ const checks = [
       source.deviceTestApi.includes("scheduled: false") &&
       source.deviceTestApi.includes("suppressed: true") &&
       source.deviceTestApi.includes(
-        'import { after, type NextRequest, NextResponse } from "next/server"',
+        'import { type NextRequest, NextResponse } from "next/server"',
       ) &&
-      source.deviceTestApi.includes("after(async () =>") &&
       source.qaTarget.includes(
         'keys.some((key) => key !== "target")',
       ) &&
@@ -371,18 +370,31 @@ const checks = [
         "url: `/messages?c=${encodeURIComponent(conversationId)}`",
       ) &&
       source.deviceTestApi.includes("const testAlertDelayMs = 8_000") &&
+      source.deviceTestApi.includes("export const maxDuration = 60") &&
       source.deviceTestApi.includes("setTimeout(resolve, testAlertDelayMs)") &&
-      source.deviceTestApi.includes('result === "token"') &&
-      source.deviceTestApi.includes("NextResponse.json({ scheduled: true }") &&
-      source.deviceTestApi.includes("{ status: 202 }") &&
+      source.deviceTestApi.includes(
+        "nativePushQaDeliveryOutcome(result)",
+      ) &&
+      source.deviceTestApi.includes(
+        "nativePushQaDeliveryStatus(outcome)",
+      ) &&
+      source.deviceTestApi.includes('outcome === "device"') &&
+      source.deviceTestApi.includes('reason: "device"') &&
+      source.deviceTestApi.includes('outcome === "retry"') &&
+      source.deviceTestApi.includes('reason: "retry"') &&
+      source.deviceTestApi.includes("{ accepted: true },") &&
+      !source.deviceTestApi.includes("after(async () =>") &&
       !source.deviceTestApi.includes("console.") &&
       source.senderCore.includes("nativePushSenderReady") &&
       source.sender.includes("export async function sendNativePushMessage") &&
       source.provider.includes('fetch("/api/push/devices/test"') &&
       source.provider.includes("body: JSON.stringify({ target })") &&
-      source.provider.includes('payload?.reason === "no_message"') &&
-      source.provider.includes('return "unavailable"') &&
-      source.provider.includes('return "suppressed"') &&
+      source.provider.includes(
+        "parseNativePushQaResponse(response.status, payload)",
+      ) &&
+      /if \(result === "device"\) \{\s*await disable\(\);\s*\}/s.test(
+        source.provider,
+      ) &&
       source.provider.includes("testAvailable: qaBuildRestricted") &&
       source.control.includes("Send test") &&
       source.control.includes("Test message") &&
@@ -393,9 +405,17 @@ const checks = [
         "Your message alert or quiet-hours settings are pausing this test.",
       ) &&
       source.control.includes(
-        "Test alert scheduled. Keep this app in the background for a few seconds.",
+        "Sending the test alert. Keep this app in the background for a few seconds.",
       ) &&
-      !source.control.includes("Test alert sent."),
+      source.control.includes(
+        "Test alert request accepted. Check device alerts.",
+      ) &&
+      source.control.includes(
+        "Turn app alerts on again, then retry.",
+      ) &&
+      !source.control.includes("Test alert sent.") &&
+      !source.control.includes("Firebase") &&
+      !source.control.includes("FCM"),
   },
   {
     label: "native registration status is account-bound before automatic refresh",
