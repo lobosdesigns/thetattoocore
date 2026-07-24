@@ -84,6 +84,10 @@ const fees = readFileSync("src/lib/payments/fees.ts", "utf8");
 const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const paymentReadiness = readFileSync("docs/PAYMENT_PRODUCTION_READINESS.md", "utf8");
+const currentPaymentDashboardState =
+  paymentReadiness.match(
+    /^- July 24, 2026 current dashboard state:[^\r\n]*$/m,
+  )?.[0] ?? "";
 const packageJson = readFileSync("package.json", "utf8");
 const paymentCutoverGate = readFileSync(
   "scripts/smoke-payment-cutover-evidence.mjs",
@@ -356,22 +360,23 @@ checks.push({
 checks.push({
   label: "payment readiness keeps dashboard live-money blockers explicit",
   ok:
-    paymentReadiness.includes("dashboard inspection confirms an active sandbox test connected account") &&
-    paymentReadiness.includes("integration guide configured for marketplace destination charges") &&
-    paymentReadiness.includes("Account, email, business, identity, and production verification remain in progress") &&
+    currentPaymentDashboardState.includes("Production account activation and Connect configuration are complete") &&
+    currentPaymentDashboardState.includes("both identity workflows") &&
+    currentPaymentDashboardState.includes("owner-accepted platform agreement") &&
+    currentPaymentDashboardState.includes("signed synthetic non-money event returned `200`") &&
+    currentPaymentDashboardState.includes("server payment key remains in test mode") &&
+    currentPaymentDashboardState.includes("expected live mode remains unset") &&
+    currentPaymentDashboardState.includes("checkout and seller onboarding remain blocked") &&
+    currentPaymentDashboardState.includes("no money moved") &&
     paymentReadiness.includes("STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false") &&
     paymentReadiness.includes("immediate transfer to the connected seller balance") &&
-    paymentReadiness.includes("explicit mode `Needs review`") &&
-    paymentReadiness.includes("server payment key mode `Test`") &&
-    paymentReadiness.includes("webhook signing `Ready`") &&
-    paymentReadiness.includes("checkout blocked until the expected mode is readable and matched") &&
-    paymentReadiness.includes("Live-money cutover remains blocked") &&
-    paymentReadiness.includes("webhook mode/event proof") &&
-    paymentReadiness.includes("Admin reconciliation") &&
-    paymentReadiness.includes("penny-test proof") &&
-    paymentReadiness.includes("refund/dispute procedure") &&
-    paymentReadiness.includes("payout gate") &&
-    paymentReadiness.includes("native checkout policy review") &&
+    currentPaymentDashboardState.includes("Live-money cutover remains blocked") &&
+    currentPaymentDashboardState.includes("webhook mode/event proof") &&
+    currentPaymentDashboardState.includes("Admin reconciliation") &&
+    currentPaymentDashboardState.includes("controlled purchase/refund proof") &&
+    currentPaymentDashboardState.includes("refund/dispute procedure") &&
+    currentPaymentDashboardState.includes("payout gate") &&
+    currentPaymentDashboardState.includes("native checkout policy review") &&
     paymentReadiness.includes("private handoff"),
 });
 checks.push({

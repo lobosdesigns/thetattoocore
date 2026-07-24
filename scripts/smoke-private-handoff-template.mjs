@@ -133,11 +133,11 @@ const checks = [
       generator.includes("whether reload/new-tab retry was attempted") &&
       generator.includes("Publishing overview still shows changes not sent for review") &&
       generator.includes("Account activation and Connect setup") &&
-      generator.includes("Sandbox test connected account and marketplace destination-charge integration guide are confirmed") &&
-      generator.includes("account, email, business, identity, and production verification still need private completion evidence") &&
+      generator.includes("Production account and Connect setup are complete") &&
+      generator.includes("live cutover and money-movement evidence remain separate") &&
       generator.includes("Production app mode preflight") &&
-      generator.includes("explicit mode Needs review, server key mode Test, webhook signing Ready") &&
-      generator.includes("checkout blocked until the expected mode is readable and matched | blocked") &&
+      generator.includes("Admin still shows expected mode Needs review and server key mode Test") &&
+      generator.includes("checkout remains blocked until the live server key and expected mode are matched | blocked") &&
       generator.includes("## Google Play Closed-Test Retry Log") &&
       generator.includes("Visible status or error code") &&
       generator.includes("reload and saved-tab retry if status changes or install link fails") &&
