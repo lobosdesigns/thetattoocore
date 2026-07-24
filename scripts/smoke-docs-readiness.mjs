@@ -384,6 +384,13 @@ const checks = [
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Store questionnaires") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("App Privacy/Data Safety, age/content rating, optional Accessibility Nutrition Labels claims") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Google Play required declarations") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Xcode 26 and the iOS 26 SDK") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Android 16 / API 36 beginning August 31, 2026") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Play Age Signals API") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("significant-change notices") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("applicable age-signal/state-law decisions") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("https://developer.apple.com/news/upcoming-requirements/") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("https://support.google.com/googleplay/android-developer/answer/16569691") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Commerce and payments") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("native payment-policy classification") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Evidence privacy") &&

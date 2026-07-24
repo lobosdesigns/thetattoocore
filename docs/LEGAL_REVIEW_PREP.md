@@ -13,6 +13,14 @@ Use this private checklist before public App Store or Google Play review, produc
   voluntary Accessibility Nutrition Labels claims, Google Play required
   declarations, content rights answers, support URL, Child Safety Standards URL,
   Privacy URL, Terms URL, reviewer notes, and screenshot safety.
+- Current platform and age-law review: record that Apple submissions require
+  Xcode 26 and the iOS 26 SDK, Apple UGC apps require filtering, reporting,
+  blocking, contact, and in-app account deletion, and Google Play updates require
+  Android 16 / API 36 beginning August 31, 2026. For distribution in applicable
+  U.S. states, have the approved business reviewer or counsel decide whether the
+  Play Age Signals API, significant-change notices, parental approval handling,
+  or purchase age ratings apply to this 18+ social app. Do not infer that legal
+  decision from a console status alone.
 
 ## Private Evidence To Keep
 
@@ -25,6 +33,11 @@ Do not store reviewer passwords, private phone numbers, owner personal contact d
   Google Play Child safety, Health apps, Financial features, Ads, and account
   deletion declarations, content rights, app category, review notes, support
   contact, pricing, and screenshot upload validation.
+- Dated source check retained for the current
+  [Apple upcoming requirements](https://developer.apple.com/news/upcoming-requirements/),
+  [Apple App Review Guidelines](https://developer.apple.com/app-store/review/guidelines/),
+  [Google Play target API requirements](https://support.google.com/googleplay/android-developer/answer/11926878),
+  and [Google Play age-signal/state-law guidance](https://support.google.com/googleplay/android-developer/answer/16569691).
 - Legal decisions recorded for account deletion SLA, retention exceptions, marketplace restrictions, prohibited goods, moderation escalation, seller payout release, refund/dispute handling, booking deposit handling, and ad purchase handling.
 - Required public copy changes listed with file/page names, owner, date, and whether the live build was rechecked after deployment.
 - Open legal risks listed with a launch decision: block release, allow internal testing only, allow public release, or revisit before production commerce.
@@ -45,6 +58,6 @@ Complete this matrix in the private release handoff for the exact build, release
 | Public legal URLs | Terms, Privacy, Support, Help, Child Safety Standards, and account deletion request path match the submitted build and store metadata. | `pending`, `passed`, or `blocked` |
 | Account deletion and retention | Deletion SLA, manual review owner, retention exceptions, legal holds, moderation records, verification history, and payment/order records are approved. | `pending`, `passed`, or `blocked` |
 | UGC and safety policy | 18+ eligibility, no visible nudity, no scratcher promotion, no AI art/search claims, report/block tools, moderation escalation, and restricted-equipment handling are approved. | `pending`, `passed`, or `blocked` |
-| Store questionnaires | App Privacy/Data Safety, age/content rating, optional Accessibility Nutrition Labels claims, Google Play required declarations, content rights, pricing, category, reviewer notes, and screenshot validation match the exact build. | `pending`, `passed`, or `blocked` |
+| Store questionnaires | App Privacy/Data Safety, age/content rating, optional Accessibility Nutrition Labels claims, Google Play required declarations, applicable age-signal/state-law decisions, content rights, pricing, category, reviewer notes, and screenshot validation match the exact build. | `pending`, `passed`, or `blocked` |
 | Commerce and payments | Checkout exposure, native payment-policy classification, tax/shipping assumptions, fulfillment timing, refunds, disputes, booking deposits, ad purchases, and seller payout timing are approved or explicitly gated. | `pending`, `passed`, or `blocked` |
 | Evidence privacy | Reviewer credentials, phone details, console screenshots, payment identifiers, buyer addresses, private DMs, license documents, and owner personal details remain outside repo-visible docs. | `pending`, `passed`, or `blocked` |
