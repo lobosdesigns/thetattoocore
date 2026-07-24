@@ -393,6 +393,12 @@ const checks = [
     headers: false,
   },
   {
+    method: "GET",
+    path: "/api/auth/session",
+    status: [401],
+    headers: false,
+  },
+  {
     body: JSON.stringify({
       endpoint: "https://example.com/push",
       keys: { auth: "1234567890", p256dh: "123456789012345678901" },

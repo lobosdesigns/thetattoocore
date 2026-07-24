@@ -7,6 +7,7 @@ const files = {
   androidAppBuild: `${wrapperRoot}/android/app/build.gradle`,
   androidRootBuild: `${wrapperRoot}/android/build.gradle`,
   androidManifest: `${wrapperRoot}/android/app/src/main/AndroidManifest.xml`,
+  androidMainActivity: `${wrapperRoot}/android/app/src/main/java/com/thetattoocore/app/MainActivity.java`,
   androidPluginBuild: `${wrapperRoot}/android/app/capacitor.build.gradle`,
   androidPluginSettings: `${wrapperRoot}/android/capacitor.settings.gradle`,
   androidVariables: `${wrapperRoot}/android/variables.gradle`,
@@ -15,6 +16,7 @@ const files = {
   iosBootstrapScript: `${wrapperRoot}/ios/mac-bootstrap-testflight.sh`,
   iosExportOptions: `${wrapperRoot}/ios/ExportOptions-AppStore.template.plist`,
   iosInfo: `${wrapperRoot}/ios/App/App/Info.plist`,
+  iosAppDelegate: `${wrapperRoot}/ios/App/App/AppDelegate.swift`,
   iosWorkspace: `${wrapperRoot}/ios/App/App.xcworkspace/contents.xcworkspacedata`,
   iosPodfile: `${wrapperRoot}/ios/App/Podfile`,
   iosPodfileLock: `${wrapperRoot}/ios/App/Podfile.lock`,
@@ -30,6 +32,9 @@ const files = {
   nativePrep: "docs/NATIVE_WRAPPER_PREP.md",
   nativeAppUrl: "src/lib/native-app-url.ts",
   nativeAppUrlBridge: "src/app/native-app-url-bridge.tsx",
+  nativeSession: "src/lib/native-session.ts",
+  nativeSessionRoute: "src/app/api/auth/session/route.ts",
+  nativeSessionTest: "scripts/test-native-session-contract.mjs",
   nativeAppUrlTest: "scripts/test-native-app-url.mjs",
   rootLayout: "src/app/layout.tsx",
   nativePushProbe: "scripts/native-push-qa-probe.mjs",
@@ -258,7 +263,12 @@ const checks = [
       source.nativeAppUrlBridge.includes("App.getLaunchUrl()") &&
       source.nativeAppUrlBridge.includes('navigate(event.url, "push")') &&
       source.nativeAppUrlBridge.includes('navigate(launch?.url, "replace")') &&
-      source.nativeAppUrlBridge.includes("createdHandle.remove()") &&
+      source.nativeAppUrlBridge.includes(
+        "createdHandles.map((handle) => handle.remove())",
+      ) &&
+      source.nativeAppUrlBridge.includes(
+        "handles.map((handle) => handle.remove())",
+      ) &&
       source.nativeAppUrl.includes('"https://thetattoocore.com"') &&
       source.nativeAppUrl.includes('"https://www.thetattoocore.com"') &&
       source.nativeAppUrl.includes("!nativeAppOrigins.has(url.origin)") &&
@@ -268,6 +278,57 @@ const checks = [
       source.nativePrep.includes("iOS universal links are deferred for the first TestFlight build") &&
       source.nativePrep.includes("support, Child Safety Standards, privacy, and terms routes") &&
       source.mobileRunbook.includes("Confirm public shared links open in the wrapper"),
+  },
+  {
+    label: "native wrapper conceals stale content until foreground auth revalidation",
+    ok:
+      source.nativeAppUrlBridge.includes('App.addListener("appStateChange"') &&
+      source.nativeAppUrlBridge.includes('App.addListener("pause", pauseSessionGuard)') &&
+      source.nativeAppUrlBridge.includes('App.addListener("resume"') &&
+      source.nativeAppUrlBridge.includes('fetch("/api/auth/session"') &&
+      source.nativeAppUrlBridge.includes('cache: "no-store"') &&
+      source.nativeAppUrlBridge.includes('credentials: "same-origin"') &&
+      source.nativeAppUrlBridge.includes("new AbortController()") &&
+      source.nativeAppUrlBridge.includes("generation !== checkGeneration") &&
+      source.nativeAppUrlBridge.includes("router.refresh()") &&
+      source.nativeAppUrlBridge.includes(
+        "window.location.replace(safeLoginHref())",
+      ) &&
+      source.nativeAppUrlBridge.includes("retrySessionCheck()") &&
+      !source.nativeAppUrlBridge.includes("window.location.reload()") &&
+      source.nativeAppUrlBridge.includes("data-native-session-guard") &&
+      source.nativeAppUrlBridge.includes(
+        'window.addEventListener("ttc:native-resume", nativeResumeHandler)',
+      ) &&
+      source.nativeSessionRoute.includes('export const dynamic = "force-dynamic"') &&
+      source.nativeSessionRoute.includes("supabase.auth.getUser()") &&
+      source.nativeSessionRoute.includes(
+        'supabase.auth.signOut({ scope: "local" })',
+      ) &&
+      source.nativeSessionRoute.includes("failureStatus === 503") &&
+      source.nativeSessionRoute.includes('"Retry-After": "2"') &&
+      source.nativeSessionRoute.includes(
+        '"Cache-Control": "private, no-store, max-age=0, must-revalidate"',
+      ) &&
+      !source.nativeSessionRoute.includes("getSession()") &&
+      source.nativeSession.includes("nativeSessionFailureStatus") &&
+      source.nativeSession.includes("nativeSessionReturnPath") &&
+      source.nativeSessionTest.includes("AuthRetryableFetchError") &&
+      source.nativeSessionTest.includes('nativeSessionReturnPath("//example.test")') &&
+      source.androidMainActivity.includes("showPrivacyCover()") &&
+      source.androidMainActivity.includes("postVisualStateCallback") &&
+      source.androidMainActivity.includes("data-native-session-guard") &&
+      source.androidMainActivity.includes("ttc:native-resume") &&
+      source.iosAppDelegate.includes("showPrivacyCover()") &&
+      source.iosAppDelegate.includes("takeSnapshot(with: nil)") &&
+      source.iosAppDelegate.includes("data-native-session-guard") &&
+      source.iosAppDelegate.includes("ttc:native-resume") &&
+      source.realDeviceQa.includes(
+        "private content stays covered until the session check finishes",
+      ) &&
+      source.nativePrep.includes(
+        "cover the current WebView before backgrounding",
+      ),
   },
   {
     label: "native wrapper keeps verified app-link evidence private and route-complete",

@@ -36,6 +36,8 @@ Use this before native wrapper work, Google Play closed testing, TestFlight, or 
 - Sign in from `/login`; confirm the signup controls are not mixed into the login form.
 - Leave **Stay signed in on this device** checked, sign in, fully close and relaunch the Android and iOS apps, and confirm the valid session resumes into the app instead of showing the login form again.
 - Uncheck **Stay signed in on this device** on a separate QA session and confirm the session is not converted back to a persistent cookie during normal navigation or token refresh. Keep credentials and cookie values out of repo-safe evidence.
+- With a private page open, background the app, invalidate that QA session from another signed-in device, and resume the wrapper. Confirm private content stays covered until the session check finishes and the app returns to Sign in without requiring a tap or exposing the old page in the app switcher. Repeat with a valid **Stay signed in** session and confirm the cover clears back to the same page.
+- Repeat the foreground check while offline and during rapid background/foreground changes. Confirm the cover stays in place until connectivity returns and a current session check succeeds, stale checks never uncover the page, and Back cannot reveal the prior private page after a signed-out result.
 - Run forgot-password and reset-password flows.
 - Complete profile setup with avatar, display name, username, bio, website, social links, language, country, and coarse location.
 - Confirm profile tabs fit mobile screens and do not create horizontal page overflow.
