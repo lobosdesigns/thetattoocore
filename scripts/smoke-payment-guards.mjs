@@ -93,6 +93,10 @@ const paymentCutoverGateTest = readFileSync(
   "scripts/test-payment-go-live-gate.mjs",
   "utf8",
 );
+const paymentGoLiveCommandTest = readFileSync(
+  "scripts/test-payment-go-live-command.mjs",
+  "utf8",
+);
 const memberPaymentSafetySource = [
   helpCenter,
   helpCenterSearch,
@@ -1639,6 +1643,12 @@ checks.push({
     packageJson.includes(
       '"test:payment-go-live-gate": "node scripts/test-payment-go-live-gate.mjs"',
     ) &&
+    packageJson.includes(
+      '"verify:payment-go-live": "npm run test:payment-go-live-gate && node scripts/smoke-payment-cutover-evidence.mjs --strict"',
+    ) &&
+    packageJson.includes(
+      '"test:payment-go-live-command": "node scripts/test-payment-go-live-command.mjs"',
+    ) &&
     paymentCutoverGate.includes("const MAX_EVIDENCE_AGE_DAYS = 45") &&
     paymentCutoverGate.includes("function paymentEvidenceDateBlocker") &&
     paymentCutoverGate.includes("const COMMIT_PATTERN = /^[0-9a-f]{7,40}$/") &&
@@ -1652,6 +1662,9 @@ checks.push({
     paymentCutoverGateTest.includes("payment gate rejects symbolic release candidates") &&
     paymentCutoverGateTest.includes("payment gate rejects unresolved production commits") &&
     paymentCutoverGateTest.includes("payment gate rejects production clock overrides") &&
+    paymentGoLiveCommandTest.includes(
+      "PASS payment go-live command verifies its parser and evidence.",
+    ) &&
     paymentReadiness.includes("npm.cmd run verify:payment-release") &&
     paymentReadiness.includes("npm.cmd run smoke:payment-cutover") &&
     paymentReadiness.includes("lint, production build, environment mode checks, payment flow guards, private cutover-evidence rows, app install and alert fallback guards, security headers, private handoff-template validation, readiness docs, public checkout/status routes, and Android-profile plus iOS-profile mobile checkout/account route smoke"),
