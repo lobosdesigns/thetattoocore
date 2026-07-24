@@ -803,7 +803,7 @@ const checks = [
   {
     label: "support deletion action routes through safe sign-in return",
     ok:
-      supportPage.includes('href: "/login?return_to=%2Fsettings%2Fhelp"') &&
+      supportPage.includes('href="/login?return_to=%2Fsettings%2Fhelp"') &&
       !supportPage.includes('href: "/account#data-settings"') &&
       privacyPage.includes('href="/login?return_to=%2Fsettings%2Fhelp"') &&
       publicSmoke.includes("/login?return_to=%2Fsettings%2Fhelp"),

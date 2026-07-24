@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { after, type NextRequest, NextResponse } from "next/server";
 import {
   deviceAlertCookieOptions,
   nativePushDeviceCookie,
@@ -142,41 +142,29 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  await new Promise<void>((resolve) => {
-    setTimeout(resolve, testAlertDelayMs);
+  after(async () => {
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, testAlertDelayMs);
+    });
+
+    const result = await sendNativePushMessage(nativePushEnvironment, {
+      body: "Tap to verify app alerts.",
+      notificationId: crypto.randomUUID(),
+      platform: device.platform,
+      title: "Test app alert",
+      token: device.token,
+      type: "test",
+      url: "/notifications",
+    });
+
+    if (result === "token") {
+      await admin
+        .from("native_push_devices")
+        .delete()
+        .eq("id", device.id)
+        .eq("profile_id", profile.id);
+    }
   });
 
-  const result = await sendNativePushMessage(nativePushEnvironment, {
-    body: "Tap to verify app alerts.",
-    notificationId: crypto.randomUUID(),
-    platform: device.platform,
-    title: "Test app alert",
-    token: device.token,
-    type: "test",
-    url: "/notifications",
-  });
-
-  if (result === "success") {
-    return NextResponse.json({ ok: true });
-  }
-
-  if (result === "token") {
-    await admin
-      .from("native_push_devices")
-      .delete()
-      .eq("id", device.id)
-      .eq("profile_id", profile.id);
-
-    return expiredDeviceCookie(
-      NextResponse.json(
-        { error: "Turn app alerts off and on, then retry." },
-        { status: 409 },
-      ),
-    );
-  }
-
-  return NextResponse.json(
-    { error: "Test alert could not be sent. Try again." },
-    { status: result === "disabled" ? 503 : 502 },
-  );
+  return NextResponse.json({ scheduled: true }, { status: 202 });
 }

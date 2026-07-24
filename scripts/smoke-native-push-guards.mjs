@@ -292,12 +292,18 @@ const checks = [
       source.deviceTestApi.includes(
         "sendNativePushMessage(nativePushEnvironment",
       ) &&
+      source.deviceTestApi.includes(
+        'import { after, type NextRequest, NextResponse } from "next/server"',
+      ) &&
+      source.deviceTestApi.includes("after(async () =>") &&
       source.deviceTestApi.includes('title: "Test app alert"') &&
       source.deviceTestApi.includes('body: "Tap to verify app alerts."') &&
       source.deviceTestApi.includes('url: "/notifications"') &&
       source.deviceTestApi.includes("const testAlertDelayMs = 8_000") &&
       source.deviceTestApi.includes("setTimeout(resolve, testAlertDelayMs)") &&
       source.deviceTestApi.includes('result === "token"') &&
+      source.deviceTestApi.includes("NextResponse.json({ scheduled: true }") &&
+      source.deviceTestApi.includes("{ status: 202 }") &&
       !source.deviceTestApi.includes("console.") &&
       source.senderCore.includes("nativePushSenderReady") &&
       source.sender.includes("export async function sendNativePushMessage") &&
@@ -307,7 +313,10 @@ const checks = [
       source.control.includes(
         "Test alert scheduled. Press Home or lock this device now.",
       ) &&
-      source.control.includes("Test alert sent. Tap the alert to verify."),
+      source.control.includes(
+        "Test alert scheduled. Keep this app in the background for a few seconds.",
+      ) &&
+      !source.control.includes("Test alert sent."),
   },
   {
     label: "native registration status is account-bound before automatic refresh",

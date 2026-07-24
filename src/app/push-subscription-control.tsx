@@ -217,7 +217,7 @@ export function PushSubscriptionControl() {
 
     try {
       await nativeNotifications.sendTest();
-      setMessage("Test alert sent. Tap the alert to verify.");
+      setMessage("Test alert scheduled. Keep this app in the background for a few seconds.");
     } catch {
       setMessage("Test alert could not be sent. Try again.");
     } finally {
