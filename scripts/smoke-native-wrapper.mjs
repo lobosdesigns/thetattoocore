@@ -400,6 +400,12 @@ const checks = [
       source.androidDeviceProbe.includes("ANDROID_QA app_link_open=") &&
       source.androidDeviceProbe.includes("ANDROID_QA app_link_open=skipped until verified and enabled") &&
       source.androidDeviceProbe.includes("ANDROID_QA result=verified app links are not ready") &&
+      source.androidDeviceProbe.includes("--require-runtime") &&
+      source.androidDeviceProbe.includes("ANDROID_QA runtime_process=") &&
+      source.androidDeviceProbe.includes("ANDROID_QA runtime_log_review=") &&
+      source.androidDeviceProbe.includes("ANDROID_QA runtime_fatal_errors=") &&
+      source.androidDeviceProbe.includes("ANDROID_QA runtime_focus=") &&
+      source.androidDeviceProbe.includes("ANDROID_QA result=runtime fatal errors detected") &&
       source.androidDeviceProbe.includes("ANDROID_QA wait_ms=") &&
       source.androidDeviceProbe.includes("ANDROID_QA next=check USB cable, set USB mode to file transfer, and reopen the USB debugging prompt") &&
       source.androidDeviceProbe.includes("ANDROID_QA next=unlock device, enable USB debugging, and accept the computer authorization prompt") &&
@@ -411,6 +417,7 @@ const checks = [
       source.realDeviceQa.includes("npm.cmd run qa:android-device:open-link") &&
       source.rootPackageJson.includes('"qa:android-device:open-test": "node scripts/android-device-qa-probe.mjs --open-test-join"') &&
       source.rootPackageJson.includes('"qa:android-device:open-link": "node scripts/android-device-qa-probe.mjs --require-device --open-app-link"') &&
+      source.rootPackageJson.includes('"qa:android-device:runtime": "node scripts/android-device-qa-probe.mjs --require-device --require-runtime --wait-ms=30000"') &&
       source.androidDeviceProbe.includes("if (requireDevice) process.exit(1)") &&
       source.realDeviceQa.includes("authorized device is visible and the TTC") &&
       source.realDeviceQa.includes("package is installed for the active closed-test build") &&

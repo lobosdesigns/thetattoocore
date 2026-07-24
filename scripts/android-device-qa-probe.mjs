@@ -2,7 +2,9 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const requireDevice = process.argv.includes("--require-device");
+const requireRuntime = process.argv.includes("--require-runtime");
+const requireDevice = process.argv.includes("--require-device") || requireRuntime;
+const inspectRuntime = process.argv.includes("--inspect-runtime") || requireRuntime;
 const openTestJoin = process.argv.includes("--open-test-join");
 const openAppLink = process.argv.includes("--open-app-link");
 const androidPackageName = "com.thetattoocore.app";
@@ -139,6 +141,79 @@ function installedAndroidBuild(packageDump) {
     targetSdk: packageDump.match(/targetSdk=(\d+)/)?.[1] || "",
     versionCode: packageDump.match(/versionCode=(\d+)/)?.[1] || "",
     versionName: packageDump.match(/versionName=([^\s]+)/)?.[1] || "",
+  };
+}
+
+function runtimeFatalErrorCount(logOutput) {
+  const fatalSignals = [
+    /\bFATAL EXCEPTION\b/i,
+    /\bAndroidRuntime\b/i,
+    /\bchromium\b.*\b(?:CONSOLE|Uncaught|net::ERR_)\b/i,
+  ];
+
+  return fatalSignals.filter((pattern) => pattern.test(logOutput)).length;
+}
+
+function inspectAndroidRuntime(shell) {
+  let pid = "";
+
+  try {
+    pid = shell(["pidof", androidPackageName]).split(/\s+/)[0] || "";
+  } catch {
+    // A stopped app is a valid state for the optional probe.
+  }
+
+  if (!/^\d+$/.test(pid)) {
+    return {
+      fatalErrorCount: null,
+      focus: "unknown",
+      logReview: "unavailable",
+      process: "not running",
+    };
+  }
+
+  let fatalErrorCount = null;
+  let logReview = "unavailable";
+
+  try {
+    const logOutput = shell([
+      "logcat",
+      "-d",
+      `--pid=${pid}`,
+      "-t",
+      "400",
+      "*:E",
+    ]);
+    fatalErrorCount = runtimeFatalErrorCount(logOutput);
+    logReview = "available";
+  } catch {
+    // Keep raw device logs private and report only whether review was possible.
+  }
+
+  let focus = "unknown";
+
+  try {
+    const focusLines = shell(["dumpsys", "window"])
+      .split(/\r?\n/)
+      .filter((line) =>
+        /\b(?:mCurrentFocus|mFocusedApp|topResumedActivity|mResumedActivity)\b/.test(
+          line,
+        ),
+      );
+    focus = focusLines.some((line) => line.includes(androidPackageName))
+      ? "production app"
+      : focusLines.length > 0
+        ? "not focused"
+        : "unknown";
+  } catch {
+    // Focus is useful context but is not required for background runtime health.
+  }
+
+  return {
+    fatalErrorCount,
+    focus,
+    logReview,
+    process: "running",
   };
 }
 
@@ -329,6 +404,32 @@ if (openAppLink && appLinkState.verified && appLinkState.enabled) {
 if (requireDevice && (!appLinkState.verified || !appLinkState.enabled)) {
   console.log("ANDROID_QA result=verified app links are not ready");
   process.exit(1);
+}
+
+if (inspectRuntime) {
+  const runtime = inspectAndroidRuntime(shell);
+
+  console.log(`ANDROID_QA runtime_process=${runtime.process}`);
+  console.log(`ANDROID_QA runtime_log_review=${runtime.logReview}`);
+  console.log(
+    `ANDROID_QA runtime_fatal_errors=${runtime.fatalErrorCount ?? "unknown"}`,
+  );
+  console.log(`ANDROID_QA runtime_focus=${runtime.focus}`);
+
+  if (requireRuntime && runtime.process !== "running") {
+    console.log("ANDROID_QA result=runtime process is not running");
+    process.exit(1);
+  }
+
+  if (requireRuntime && runtime.logReview !== "available") {
+    console.log("ANDROID_QA result=runtime log review unavailable");
+    process.exit(1);
+  }
+
+  if (requireRuntime && runtime.fatalErrorCount !== 0) {
+    console.log("ANDROID_QA result=runtime fatal errors detected");
+    process.exit(1);
+  }
 }
 
 console.log("ANDROID_QA result=authorized device ready for private route QA");

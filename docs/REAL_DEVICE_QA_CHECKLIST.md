@@ -245,6 +245,19 @@ package is installed for the active closed-test build, run:
 npm.cmd run qa:android-device:required
 ```
 
+After opening the installed candidate, run the bounded app-scoped runtime check:
+
+```powershell
+npm.cmd run qa:android-device:runtime
+```
+
+This stricter check requires the exact TTC process to be running, reviews only
+its recent error-level log buffer for crash or fatal web-console signals, and
+reports whether the production app is currently focused. It emits summary
+counts only; raw device logs remain outside repository evidence. App focus is
+context rather than a pass condition because notification and deep-link QA can
+legitimately leave the wrapper in the background.
+
 If the device has an older build, unlock it and open the active closed-test
 enrollment page directly from the Windows QA command:
 

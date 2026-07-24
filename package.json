@@ -58,6 +58,7 @@
     "qa:android-device": "node scripts/android-device-qa-probe.mjs",
     "qa:android-device:open-test": "node scripts/android-device-qa-probe.mjs --open-test-join",
     "qa:android-device:open-link": "node scripts/android-device-qa-probe.mjs --require-device --open-app-link",
+    "qa:android-device:runtime": "node scripts/android-device-qa-probe.mjs --require-device --require-runtime --wait-ms=30000",
     "qa:android-device:required": "node scripts/android-device-qa-probe.mjs --require-device --wait-ms=30000"
   },
   "dependencies": {
