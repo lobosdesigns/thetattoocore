@@ -1,4 +1,8 @@
 import { readFileSync } from "node:fs";
+import {
+  assertPublicSmokeChecks,
+  formatFetchFailureDiagnostic,
+} from "./lib/public-smoke-support.mjs";
 
 const baseUrl = (process.env.SMOKE_BASE_URL || "https://thetattoocore.com").replace(/\/$/, "");
 const accountPageSource = readFileSync("src/app/account/page.tsx", "utf8");
@@ -92,6 +96,7 @@ async function fetchTextWithRetry(url, options = {}, retryOptions = {}) {
   for (let attempt = 0; attempt < fetchAttempts; attempt += 1) {
     let response;
     let body;
+    const startedAt = Date.now();
 
     try {
       response = await fetch(url, {
@@ -104,7 +109,10 @@ async function fetchTextWithRetry(url, options = {}, retryOptions = {}) {
       });
       body = await response.text();
     } catch (error) {
-      body = error instanceof Error ? error.message : String(error);
+      body = formatFetchFailureDiagnostic(error, Date.now() - startedAt);
+      console.warn(
+        `WARN public smoke fetch attempt ${attempt + 1}/${fetchAttempts}: ${body}`,
+      );
       response = new Response(body, { status: 599 });
     }
 
@@ -128,6 +136,7 @@ async function fetchWithRetry(url, options = {}) {
 
   for (let attempt = 0; attempt < fetchAttempts; attempt += 1) {
     let response;
+    const startedAt = Date.now();
 
     try {
       response = await fetch(url, {
@@ -139,9 +148,11 @@ async function fetchWithRetry(url, options = {}) {
         signal: AbortSignal.timeout(fetchTimeoutMs),
       });
     } catch (error) {
-      response = new Response(error instanceof Error ? error.message : String(error), {
-        status: 599,
-      });
+      const diagnostic = formatFetchFailureDiagnostic(error, Date.now() - startedAt);
+      console.warn(
+        `WARN public smoke fetch attempt ${attempt + 1}/${fetchAttempts}: ${diagnostic}`,
+      );
+      response = new Response(diagnostic, { status: 599 });
     }
 
     lastResponse = response;
@@ -162,7 +173,7 @@ const checks = [
   {
     path: "/",
     status: [200],
-    textIncludes: [
+    includes: [
       "Public preview",
       "Sign in to post, reply, DM, follow creators",
       "4U",
@@ -1058,6 +1069,8 @@ const checks = [
     headers: false,
   },
 ];
+
+assertPublicSmokeChecks(checks);
 
 const pwaManifestRequirements = {
   display: "standalone",

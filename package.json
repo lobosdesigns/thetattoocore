@@ -23,6 +23,7 @@
     "verify:release-evidence": "node scripts/verify-release-evidence.mjs",
     "verify:distribution-evidence": "npm run test:release-evidence-gate && npm run verify:release-evidence",
     "test:public-build-env": "node scripts/test-public-build-env.mjs",
+    "test:public-smoke-support": "node scripts/test-public-smoke-support.mjs",
     "lint": "eslint",
     "smoke:public": "node scripts/smoke-public-routes.mjs",
     "smoke:media": "node scripts/smoke-media-guards.mjs",
