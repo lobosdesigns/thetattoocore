@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     canonical: `${siteUrl}/privacy`,
   },
   description:
-    "TheTattooCore privacy overview for account data, public profiles, messages, location settings, and sponsored placements.",
+    "TheTattooCore privacy overview for account data, public profiles, messages, device alerts, location settings, and sponsored placements.",
   keywords: metadataKeywords(
     siteKeywords,
     "tattoo app privacy",
@@ -45,6 +45,11 @@ const sections = [
     body:
       "Direct messages are for conversation participants. Admin and safety review access may be added only where needed to investigate abuse, legal risk, spam, or platform safety issues.",
     title: "Messages",
+  },
+  {
+    body:
+      "When you opt in to app alerts, TheTattooCore may store an app-generated installation identifier, device platform, app version and build, alert preferences, and a delivery token linked to your signed-in account. This data is used only to route requested app alerts, maintain delivery, and respect opt-out or category settings; it is not used for advertising tracking. You can turn alerts off in TheTattooCore settings or device settings.",
+    title: "Notifications And Device Data",
   },
   {
     body:

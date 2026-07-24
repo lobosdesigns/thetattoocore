@@ -164,6 +164,17 @@ const checks = [
       supportPage.includes("review target is within 30 days"),
   },
   {
+    label:
+      "Public privacy copy discloses opt-in device alert delivery data",
+    ok:
+      privacyPage.includes("Notifications And Device Data") &&
+      privacyPage.includes("When you opt in to app alerts") &&
+      privacyPage.includes("app-generated installation identifier") &&
+      privacyPage.includes("delivery token linked to your signed-in account") &&
+      privacyPage.includes("not used for advertising tracking") &&
+      privacyPage.includes("TheTattooCore settings or device settings"),
+  },
+  {
     label: "Merch detail uses safe product image or brand fallback metadata",
     ok:
       merchDetail.includes("brandShareImage") &&
