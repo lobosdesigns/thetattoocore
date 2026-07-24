@@ -608,7 +608,7 @@ const checks = [
       "booking deposits",
       "search, find people, and use Saved",
       "reports, blocks, privacy, and support",
-      "create an ad and use ad credits",
+      "create an ad and review ad credits",
       "set up Merch products",
       "Order support, refunds, and disputes",
       "Seller payouts and payment safety",
@@ -788,7 +788,7 @@ const checks = [
     path: "/help/ads-and-credits?smoke_cache_bust=ads-guide",
     status: [200],
     includes: [
-      "How to create an ad and use ad credits",
+      "How to create an ad and review ad credits",
       "How do ad credits work?",
       "Why does my ad need review?",
       "Where can my ad appear?",
