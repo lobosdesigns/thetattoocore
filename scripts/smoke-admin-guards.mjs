@@ -1,4 +1,9 @@
 import { readFileSync } from "node:fs";
+import {
+  assignableUserRoles,
+  canModerateUserStatus,
+  isAssignableUserRole,
+} from "../src/lib/admin-role-hierarchy.ts";
 
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
 const adminNav = readFileSync("src/app/admin/admin-section-nav.tsx", "utf8");
@@ -28,6 +33,10 @@ const ownerModerationServiceGuardMigration = readFileSync(
 );
 const ownerModerationServiceHelperGuardMigration = readFileSync(
   "supabase/migrations/20260723052528_fix_profile_service_role_helper_short_circuit.sql",
+  "utf8",
+);
+const adminRoleHierarchyMigration = readFileSync(
+  "supabase/migrations/20260724054430_enforce_admin_role_hierarchy.sql",
   "utf8",
 );
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
@@ -67,6 +76,24 @@ const pagedPageSources = pagedAdminPages.map((page) => [
   readFileSync(`src/app/admin/${page}/page.tsx`, "utf8"),
 ]);
 const mediaOpsSource = [adminOverview, adminMediaOps].join("\n");
+const moderationRoleExpectations = [
+  ["user", "user", false],
+  ["user", "moderator", false],
+  ["user", "admin", false],
+  ["user", "owner", false],
+  ["moderator", "user", true],
+  ["moderator", "moderator", false],
+  ["moderator", "admin", false],
+  ["moderator", "owner", false],
+  ["admin", "user", true],
+  ["admin", "moderator", true],
+  ["admin", "admin", false],
+  ["admin", "owner", false],
+  ["owner", "user", true],
+  ["owner", "moderator", true],
+  ["owner", "admin", true],
+  ["owner", "owner", false],
+];
 
 const checks = [
   {
@@ -202,13 +229,33 @@ const checks = [
       !adminMailSettings.includes("Secret binding"),
   },
   {
-    label: "owner-only role changes cannot demote the current owner",
+    label: "ordinary role assignment excludes owner and cannot demote an owner",
     ok:
       adminActions.includes("async function requireOwner()") &&
       adminActions.includes('if (profile?.role !== "owner")') &&
-      adminActions.includes('if (profileId === userId && role !== "owner")') &&
+      adminActions.includes("isAssignableUserRole(role)") &&
+      adminActions.includes("if (profileId === userId)") &&
+      adminActions.includes('if (target.role === "owner")') &&
       adminActions.includes("Owners cannot demote their own account.") &&
-      adminActions.includes('event_type: "profile_role_changed"'),
+      adminActions.includes('event_type: "profile_role_changed"') &&
+      assignableUserRoles.join(",") === "user,moderator,admin" &&
+      !isAssignableUserRole("owner") &&
+      adminUsers.includes("assignableUserRoles.map((role)"),
+  },
+  {
+    label: "moderation actions follow the complete lower-role truth table",
+    ok:
+      moderationRoleExpectations.every(
+        ([actorRole, targetRole, expected]) =>
+          canModerateUserStatus(actorRole, targetRole) === expected,
+      ) &&
+      adminActions.includes(
+        "if (!canModerateUserStatus(actorRole, target.role))",
+      ) &&
+      adminActions.includes("Your role cannot moderate this account.") &&
+      adminUsers.includes(
+        "canModerateUserStatus(profile.role, user.role)",
+      ),
   },
   {
     label: "profile moderation restrictions cannot bypass owner protections",
@@ -242,6 +289,24 @@ const checks = [
       ) &&
       ownerModerationServiceHelperGuardMigration.includes(
         "if not private.current_user_is_owner() then",
+      ) &&
+      adminRoleHierarchyMigration.includes(
+        "actor_role := private.current_profile_role()",
+      ) &&
+      adminRoleHierarchyMigration.includes(
+        "actor_role = 'moderator' and old.role = 'user'",
+      ) &&
+      adminRoleHierarchyMigration.includes(
+        "actor_role = 'admin' and old.role in ('user', 'moderator')",
+      ) &&
+      adminRoleHierarchyMigration.includes(
+        "actor_role = 'owner' and old.role in ('user', 'moderator', 'admin')",
+      ) &&
+      adminRoleHierarchyMigration.includes(
+        "Owner assignment requires a separate ownership transfer.",
+      ) &&
+      adminRoleHierarchyMigration.includes(
+        "Owner accounts cannot be demoted.",
       ),
   },
   {
@@ -306,11 +371,12 @@ const checks = [
       adminUsers.includes("const canDeleteAccounts = canGrantAdCredits") &&
       adminUsers.includes("const isOwnerAccount = user.role === \"owner\"") &&
       adminUsers.includes("const canManageUserRole = canManageRoles && !isOwnerAccount") &&
-      adminUsers.includes("const canModerateStatus = !isOwnerAccount") &&
+      adminUsers.includes("const canModerateStatus = canModerateUserStatus(") &&
       adminUsers.includes("Owner account role is locked.") &&
       adminUsers.includes("Owner account moderation actions are locked.") &&
+      adminUsers.includes("Your role cannot moderate this account.") &&
       adminUsers.includes("const canDeleteUser =") &&
-      adminUsers.includes("canDeleteAccounts && !isOwnerAccount") &&
+      adminUsers.includes("canModerateUserStatus(profile.role, user.role)") &&
       adminUsers.includes('name="confirm_delete"') &&
       adminUsers.includes('placeholder="Type delete"') &&
       adminUsers.includes("disabled={!canDeleteUser}"),

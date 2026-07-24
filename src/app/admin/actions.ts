@@ -9,8 +9,12 @@ import { siteName, siteUrl, supportEmail } from "@/lib/site";
 import { createStripeClient, stripeCheckoutPreflight } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import {
+  canModerateUserStatus,
+  isAssignableUserRole,
+  type UserRole,
+} from "@/lib/admin-role-hierarchy";
 
-type UserRole = "user" | "moderator" | "admin" | "owner";
 type AccountType = "artist" | "enthusiast" | "studio" | "supplier" | "vendor";
 type SubjectType =
   | "feed_post"
@@ -67,7 +71,6 @@ const licenseStatuses = new Set<LicenseVerificationStatus>([
   "rejected",
 ]);
 const verificationEligibleAccountTypes = new Set(["artist", "studio", "vendor"]);
-const roleStatuses = new Set<UserRole>(["user", "moderator", "admin", "owner"]);
 const userStatuses = new Set<UserStatus>(["active", "suspended", "banned"]);
 const accountTypes = new Set<AccountType>([
   "artist",
@@ -458,7 +461,7 @@ async function requireModerator() {
     redirect(adminMessage("Admin access required."));
   }
 
-  return { supabase, userId };
+  return { role: profile.role, supabase, userId };
 }
 
 async function requireOwner() {
@@ -494,15 +497,15 @@ async function requireAdmin() {
 export async function changeUserRole(formData: FormData) {
   const profileId = cleanText(formData.get("profile_id"), 80);
   const returnTo = cleanText(formData.get("return_to"), 120);
-  const role = cleanText(formData.get("role"), 40) as UserRole;
+  const role = cleanText(formData.get("role"), 40);
 
-  if (!profileId || !roleStatuses.has(role)) {
+  if (!profileId || !isAssignableUserRole(role)) {
     redirect(adminUsersMessage("Choose a valid user and role.", returnTo));
   }
 
   const { supabase, userId } = await requireOwner();
 
-  if (profileId === userId && role !== "owner") {
+  if (profileId === userId) {
     redirect(adminUsersMessage("Owners cannot demote their own account.", returnTo));
   }
 
@@ -524,7 +527,7 @@ export async function changeUserRole(formData: FormData) {
     );
   }
 
-  if (target.role === "owner" && role !== "owner") {
+  if (target.role === "owner") {
     redirect(adminUsersMessage("Owner accounts cannot be demoted.", returnTo));
   }
 
@@ -569,7 +572,7 @@ export async function changeUserStatus(formData: FormData) {
     redirect(adminUsersMessage("Choose a valid user and status.", returnTo));
   }
 
-  const { supabase, userId } = await requireModerator();
+  const { role: actorRole, supabase, userId } = await requireModerator();
 
   if (profileId === userId && status !== "active") {
     redirect(adminUsersMessage("You cannot suspend or ban your own account.", returnTo));
@@ -598,8 +601,15 @@ export async function changeUserStatus(formData: FormData) {
     );
   }
 
-  if (target.role === "owner" && status !== "active") {
-    redirect(adminUsersMessage("Owner accounts cannot be suspended or banned.", returnTo));
+  if (!canModerateUserStatus(actorRole, target.role)) {
+    redirect(
+      adminUsersMessage(
+        target.role === "owner"
+          ? "Owner accounts cannot be suspended or banned."
+          : "Your role cannot moderate this account.",
+        returnTo,
+      ),
+    );
   }
 
   const now = new Date().toISOString();

@@ -10,10 +10,14 @@ import {
   deleteUserAccount,
   grantUserAdCredit,
 } from "../actions";
+import {
+  assignableUserRoles,
+  canModerateUserStatus,
+  type UserRole,
+} from "@/lib/admin-role-hierarchy";
 import { createClient } from "@/lib/supabase/server";
 import { safeStatusMessage } from "@/lib/status-message";
 
-type UserRole = "user" | "moderator" | "admin" | "owner";
 type Claims = {
   email?: string;
   sub: string;
@@ -476,11 +480,13 @@ export default async function AdminUsersPage({
             const isOwnerAccount = user.role === "owner";
             const canDeleteUser =
               canDeleteAccounts &&
-              !isOwnerAccount &&
               user.id !== claims.sub &&
-              (canManageRoles || user.role !== "admin");
+              canModerateUserStatus(profile.role, user.role);
             const canManageUserRole = canManageRoles && !isOwnerAccount;
-            const canModerateStatus = !isOwnerAccount;
+            const canModerateStatus = canModerateUserStatus(
+              profile.role,
+              user.role,
+            );
 
             return (
             <article
@@ -539,7 +545,7 @@ export default async function AdminUsersPage({
                       defaultValue={user.role}
                       name="role"
                     >
-                      {["user", "moderator", "admin", "owner"].map((role) => (
+                      {assignableUserRoles.map((role) => (
                         <option key={role} value={role}>
                           {role}
                         </option>
@@ -585,7 +591,9 @@ export default async function AdminUsersPage({
                   </form>
                 ) : (
                   <div className="rounded-md border border-[color-mix(in_srgb,var(--gold)_32%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_9%,var(--paper-warm))] px-3 py-2 text-xs font-semibold text-[var(--muted-strong)]">
-                    Owner account moderation actions are locked.
+                    {isOwnerAccount
+                      ? "Owner account moderation actions are locked."
+                      : "Your role cannot moderate this account."}
                   </div>
                 )}
               </div>
