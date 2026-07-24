@@ -28,6 +28,26 @@ const docs = {
 const packageJson = readFileSync("package.json", "utf8");
 const screenshotGenerator = readFileSync("scripts/generate-safe-store-screenshots.mjs", "utf8");
 const androidDeviceProbe = readFileSync("scripts/android-device-qa-probe.mjs", "utf8");
+const readinessDoc = docs["docs/APP_STORE_READINESS.md"];
+
+function markdownSection(markdown, heading, nextHeading) {
+  const start = markdown.indexOf(heading);
+  if (start === -1) return "";
+
+  const end = markdown.indexOf(nextHeading, start + heading.length);
+  return markdown.slice(start, end === -1 ? undefined : end);
+}
+
+const currentStoreConsoleSnapshot = markdownSection(
+  readinessDoc,
+  "## Current Store Console Snapshot",
+  "## Public Distribution Blocker Matrix",
+);
+const currentBlockerMatrix = markdownSection(
+  readinessDoc,
+  "## Public Distribution Blocker Matrix",
+  "## Before Public Distribution Or Any Replacement Submission",
+);
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const adminPage = readFileSync("src/app/admin/page.tsx", "utf8");
 const helpArticlePage = readFileSync("src/app/help/[slug]/page.tsx", "utf8");
@@ -1063,9 +1083,10 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("existing Google Group community") &&
       docs["docs/APP_STORE_READINESS.md"].includes("organization account is not subject to the personal-account 12-tester/14-day production-access rule") &&
       docs["docs/APP_STORE_READINESS.md"].includes("authorized Android 16 review phone installed exact Alpha build `1.0.3 (4)`") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("submitted for production full-rollout review") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Publishing overview shows the production change in review") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Production `1.0.1 (2)` remains the served public build until that review succeeds") &&
+      currentStoreConsoleSnapshot.includes("active public production release at 100% across 177 countries/regions") &&
+      currentStoreConsoleSnapshot.includes("Publishing overview confirms the production update was published") &&
+      !currentStoreConsoleSnapshot.includes("Production `1.0.1 (2)` remains the served public build") &&
+      !currentStoreConsoleSnapshot.includes("production change in review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("all 11 Google App Content declarations are actioned") &&
       docs["docs/APP_STORE_READINESS.md"].includes("target age is 18 and over") &&
       !docs["docs/APP_STORE_READINESS.md"].includes("awaiting final submit-for-review confirmation") &&
@@ -1089,14 +1110,16 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("Private native QA handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Store consoles") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Apple iOS `1.0` build `1.0 (3)` remains in App Review") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Google Play Closed testing - Alpha serves `1.0.3 (4)` to selected testers") &&
+      currentBlockerMatrix.includes("Closed testing - Alpha serves the same exact build to selected testers") &&
       docs["docs/APP_STORE_READINESS.md"].includes("13-inch iPad screenshots uploaded") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Content Rights") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Accessibility Nutrition Labels") &&
       (docs["docs/APP_STORE_READINESS.md"].includes("Data Safety review") ||
         docs["docs/APP_STORE_READINESS.md"].includes("Data Safety saved")) &&
       docs["docs/APP_STORE_READINESS.md"].includes("One exact Android Alpha build `1.0.3 (4)` Google Play install is verified") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("production `1.0.1 (2)` remains live") &&
+      currentBlockerMatrix.includes("Google Play production serves `1.0.3 (4)` publicly at 100% across 177 countries/regions") &&
+      !currentBlockerMatrix.includes("production `1.0.1 (2)` remains live") &&
+      !currentBlockerMatrix.includes("submitted for production full-rollout review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("applicable tester evidence") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Legal and policy") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Final counsel-reviewed Terms/Privacy") &&

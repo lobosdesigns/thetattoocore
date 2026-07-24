@@ -41,7 +41,25 @@ const publicMetadataKeys = [
 ];
 const publicMetadataText = publicMetadataKeys.map((key) => source[key]).join("\n").toLowerCase();
 const storeScreenshotText = source.screenshotGenerator.toLowerCase();
-const currentBlockerMatrix = source.readiness.slice(source.readiness.indexOf("## Public Distribution Blocker Matrix"));
+
+function markdownSection(markdown, heading, nextHeading) {
+  const start = markdown.indexOf(heading);
+  if (start === -1) return "";
+
+  const end = markdown.indexOf(nextHeading, start + heading.length);
+  return markdown.slice(start, end === -1 ? undefined : end);
+}
+
+const currentStoreConsoleSnapshot = markdownSection(
+  source.readiness,
+  "## Current Store Console Snapshot",
+  "## Public Distribution Blocker Matrix",
+);
+const currentBlockerMatrix = markdownSection(
+  source.readiness,
+  "## Public Distribution Blocker Matrix",
+  "## Before Public Distribution Or Any Replacement Submission",
+);
 
 function hasOrderedScriptSteps(scriptName, expectedSteps) {
   const steps = String(packageScripts[scriptName] ?? "")
@@ -568,14 +586,18 @@ const checks = [
       source.readiness.includes("authorized Android 16 review phone installed exact Alpha build `1.0.3 (4)`") &&
       source.readiness.includes("One exact Android Alpha build `1.0.3 (4)` Google Play install is verified") &&
       source.readiness.includes("organization account is not subject to the personal-account 12-tester/14-day production-access rule") &&
-      source.readiness.includes("Production `1.0.1 (2)` remains the served public build until that review succeeds") &&
-      source.readiness.includes("Publishing overview shows the production change in review") &&
-      !source.readiness.includes("Publishing Overview reports no unpublished changes") &&
-      !source.readiness.includes("awaiting final submit-for-review confirmation") &&
+      currentStoreConsoleSnapshot.includes("active public production release at 100% across 177 countries/regions") &&
+      currentStoreConsoleSnapshot.includes("Publishing overview confirms the production update was published") &&
+      !currentStoreConsoleSnapshot.includes("Production `1.0.1 (2)` remains the served public build") &&
+      !currentStoreConsoleSnapshot.includes("production change in review") &&
+      !currentStoreConsoleSnapshot.includes("awaiting final submit-for-review confirmation") &&
+      currentBlockerMatrix.includes("Google Play production serves `1.0.3 (4)` publicly at 100% across 177 countries/regions") &&
+      !currentBlockerMatrix.includes("production `1.0.1 (2)` remains live") &&
+      !currentBlockerMatrix.includes("submitted for production full-rollout review") &&
       !currentBlockerMatrix.includes("14-day production-access evidence still needs eligible tester opt-in/install proof") &&
       source.readiness.includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&
       source.readiness.includes("preserve build `1.0 (3)` as the submitted App Review build") &&
-      source.readiness.includes("without removing the active Alpha") &&
+      currentStoreConsoleSnapshot.includes("preserve the active Alpha for controlled QA") &&
       source.readiness.includes("Age 18+ override") &&
       source.readiness.includes("Monitor App Review and internal build `1.0 (4)` install/QA results") &&
       source.readiness.includes("group-member opt-in/install proof and 14-day production-access tester evidence if required") &&
