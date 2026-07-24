@@ -52,6 +52,10 @@ yarn-error.log*
 # private release evidence and console handoff notes
 /private-release-handoff/
 
+# local agent-skill installer output
+/.agents/
+/skills-lock.json
+
 # local server logs
 dev-server*.log
 
