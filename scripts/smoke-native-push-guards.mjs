@@ -155,13 +155,14 @@ const checks = [
       !source.nativePackage.includes("@capacitor/push-notifications"),
   },
   {
-    label: "native token generation and presentation stay inert by default",
+    label:
+      "native token auto-init starts disabled while iOS foreground presentation is available",
     ok:
-      source.androidManifest.includes(
-        'android:name="firebase_messaging_auto_init_enabled"',
+      /<meta-data(?=[^>]*android:name="firebase_messaging_auto_init_enabled")(?=[^>]*android:value="false")[^>]*\/>/s.test(
+        source.androidManifest,
       ) &&
-      source.androidManifest.includes(
-        'android:name="firebase_analytics_collection_enabled"',
+      /<meta-data(?=[^>]*android:name="firebase_analytics_collection_enabled")(?=[^>]*android:value="false")[^>]*\/>/s.test(
+        source.androidManifest,
       ) &&
       source.androidManifest.includes(
         'android:name="android.permission.POST_NOTIFICATIONS"',
@@ -170,7 +171,9 @@ const checks = [
       /<key>FirebaseMessagingAutoInitEnabled<\/key>\s*<false\/>/s.test(
         source.iosInfo,
       ) &&
-      source.capacitorConfig.includes("presentationOptions: []"),
+      source.capacitorConfig.includes(
+        'presentationOptions: ["alert", "badge", "sound"]',
+      ),
   },
   {
     label: "Android notifications use the dedicated monochrome TTC vector",

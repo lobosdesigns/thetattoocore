@@ -11,7 +11,7 @@ const config: CapacitorConfig = {
       presentationStyle: "fullscreen",
     },
     FirebaseMessaging: {
-      presentationOptions: [],
+      presentationOptions: ["alert", "badge", "sound"],
     },
     SplashScreen: {
       backgroundColor: "#171412",
