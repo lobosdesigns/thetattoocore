@@ -1,6 +1,11 @@
 import { readFileSync } from "node:fs";
 
 const appActions = readFileSync("src/app/actions.ts", "utf8");
+const adminReports = readFileSync("src/app/admin/reports/page.tsx", "utf8");
+const contentReportForm = readFileSync(
+  "src/app/content-report-form.tsx",
+  "utf8",
+);
 const messageActions = readFileSync("src/app/messages/actions.ts", "utf8");
 const messagePage = readFileSync("src/app/messages/page.tsx", "utf8");
 const messageHistoryApi = readFileSync("src/app/api/messages/history/route.ts", "utf8");
@@ -14,6 +19,7 @@ const messageNotificationMigration = readFileSync(
   "utf8",
 );
 const notificationWriter = readFileSync("src/lib/notification-write.ts", "utf8");
+const legalReview = readFileSync("docs/LEGAL_REVIEW_PREP.md", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const qaChecklist = readFileSync("docs/REAL_DEVICE_QA_CHECKLIST.md", "utf8");
 
@@ -127,6 +133,37 @@ const checks = [
       !messageActions.includes('messageError?.message || "Could not send message."') &&
       !messageActions.includes('error?.message || "Could not send message."') &&
       !messageActions.includes('messageError?.message || "That message was not found."'),
+  },
+  {
+    label: "received DMs can be reported through a participant-only safety path",
+    ok:
+      appActions.includes('"message",') &&
+      appActions.includes("async function findMessageSubjectOwner") &&
+      appActions.includes('.from("messages")') &&
+      appActions.includes('.from("conversation_members")') &&
+      appActions.includes('.eq("conversation_id", messageResult.data.conversation_id)') &&
+      appActions.includes('.eq("user_id", userId)') &&
+      appActions.includes(
+        'subjectType === "comment" || subjectType === "message"',
+      ) &&
+      contentReportForm.includes('"use client"') &&
+      contentReportForm.includes('| "message"') &&
+      contentReportForm.includes('return "Report message"') &&
+      messageThread.includes("<ContentReportForm") &&
+      messageThread.includes('subjectType="message"') &&
+      messageThread.includes("!mine") &&
+      adminReports.includes('"message",') &&
+      adminReports.includes('reportSubjectIds("message")') &&
+      adminReports.includes('title: "Direct message"') &&
+      legalReview.includes(
+        "Received DMs expose a per-message report control.",
+      ) &&
+      legalReview.includes(
+        "the reporter belongs to the conversation",
+      ) &&
+      !legalReview.includes(
+        "current DM experience does not yet expose a message-report flow",
+      ),
   },
   {
     label: "DM inbox stays paginated and unavailable thread links recover",

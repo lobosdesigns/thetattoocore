@@ -11,6 +11,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { Check, CheckCheck, LoaderCircle, Trash2 } from "lucide-react";
+import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { createClient } from "@/lib/supabase/client";
@@ -429,7 +430,17 @@ export function MessageThread({
                   ) : null}
                 </div>
               </div>
-            ) : null}
+            ) : (
+              <div className="mt-1 flex justify-start pl-12">
+                <div className="w-full max-w-[82%] sm:max-w-[78%]">
+                  <ContentReportForm
+                    returnPath={`/messages?c=${encodeURIComponent(conversationId)}`}
+                    subjectId={message.id}
+                    subjectType="message"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         );
       })}

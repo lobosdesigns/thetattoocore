@@ -1,3 +1,5 @@
+"use client";
+
 import { ChevronDown, Flag } from "lucide-react";
 import { createContentReport } from "@/app/actions";
 
@@ -8,6 +10,7 @@ type ReportSubjectType =
   | "help_article_comment"
   | "marketplace_listing"
   | "merch_product"
+  | "message"
   | "profile"
   | "story_post"
   | "thread_post";
@@ -15,6 +18,7 @@ type ReportSubjectType =
 function reportTitle(subjectType: ReportSubjectType) {
   if (subjectType === "help_article_comment") return "Report guide question";
   if (subjectType === "comment") return "Report comment";
+  if (subjectType === "message") return "Report message";
   return subjectType === "profile" ? "Report profile" : "Report content";
 }
 
@@ -25,6 +29,10 @@ function reportDescription(subjectType: ReportSubjectType) {
 
   if (subjectType === "comment") {
     return "Report comments or replies for harassment, scams, unsafe practice, suspected AI-generated content, sexual content, minor safety concerns, or illegal activity.";
+  }
+
+  if (subjectType === "message") {
+    return "Report a received message for harassment, threats, scams, sexual content, minor safety concerns, or illegal activity.";
   }
 
   if (subjectType === "profile") {
@@ -50,6 +58,7 @@ function reportButtonLabel(subjectType: ReportSubjectType) {
 function reportMenuLabel(subjectType: ReportSubjectType) {
   if (subjectType === "help_article_comment") return "Open guide question report form";
   if (subjectType === "comment") return "Open comment report form";
+  if (subjectType === "message") return "Open message report form";
   return subjectType === "profile" ? "Open profile report form" : "Open report form";
 }
 

@@ -50,6 +50,7 @@ const REPORT_SUBJECT_TYPES = new Set([
   "feed_post",
   "gig",
   "help_article_comment",
+  "message",
   "thread_post",
   "marketplace_listing",
   "merch_product",
@@ -116,7 +117,10 @@ const REPORT_SUBJECT_CONFIG = {
   thread_post: { ownerColumn: "author_id", table: "thread_posts" },
 } as const;
 
-type ReportSubjectType = keyof typeof REPORT_SUBJECT_CONFIG | "comment";
+type ReportSubjectType =
+  | keyof typeof REPORT_SUBJECT_CONFIG
+  | "comment"
+  | "message";
 type SavedSubjectType =
   | "feed_post"
   | "gig"
@@ -1116,6 +1120,42 @@ async function findCommentSubjectOwner({
     .select("author_id")
     .eq("id", commentId)
     .maybeSingle<{ author_id: string }>();
+}
+
+async function findMessageSubjectOwner({
+  messageId,
+  supabase,
+  userId,
+}: {
+  messageId: string;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId: string;
+}) {
+  const messageResult = await supabase
+    .from("messages")
+    .select("conversation_id, sender_id")
+    .eq("id", messageId)
+    .maybeSingle<{ conversation_id: string; sender_id: string }>();
+
+  if (!messageResult.data || messageResult.error) {
+    return { data: null, error: messageResult.error };
+  }
+
+  const membershipResult = await supabase
+    .from("conversation_members")
+    .select("conversation_id")
+    .eq("conversation_id", messageResult.data.conversation_id)
+    .eq("user_id", userId)
+    .maybeSingle<{ conversation_id: string }>();
+
+  if (!membershipResult.data || membershipResult.error) {
+    return { data: null, error: membershipResult.error };
+  }
+
+  return {
+    data: { author_id: messageResult.data.sender_id },
+    error: null,
+  };
 }
 
 async function removeFollowRelationship({
@@ -2986,14 +3026,23 @@ export async function createContentReport(formData: FormData) {
   }
 
   const subjectConfig =
-    subjectType === "comment" ? null : REPORT_SUBJECT_CONFIG[subjectType];
-  const subjectResult = subjectConfig
-    ? await supabase
-        .from(subjectConfig.table)
-        .select(subjectConfig.ownerColumn)
-        .eq("id", subjectId)
-        .maybeSingle<Record<string, string>>()
-    : await findCommentSubjectOwner({ commentId: subjectId, supabase });
+    subjectType === "comment" || subjectType === "message"
+      ? null
+      : REPORT_SUBJECT_CONFIG[subjectType];
+  const subjectResult =
+    subjectType === "message"
+      ? await findMessageSubjectOwner({
+          messageId: subjectId,
+          supabase,
+          userId,
+        })
+      : subjectConfig
+        ? await supabase
+            .from(subjectConfig.table)
+            .select(subjectConfig.ownerColumn)
+            .eq("id", subjectId)
+            .maybeSingle<Record<string, string>>()
+        : await findCommentSubjectOwner({ commentId: subjectId, supabase });
   const subject = subjectResult.data;
   const subjectError = subjectResult.error;
 
@@ -3007,7 +3056,7 @@ export async function createContentReport(formData: FormData) {
 
   let ownerId: string;
 
-  if (subjectType === "comment") {
+  if (subjectType === "comment" || subjectType === "message") {
     ownerId = (subject as { author_id: string }).author_id;
   } else if (subjectConfig) {
     ownerId = (subject as Record<string, string>)[subjectConfig.ownerColumn];

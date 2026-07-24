@@ -390,7 +390,10 @@ const checks = [
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Native same-app ad checkout must remain blocked") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("must not mark it complete until the account") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Google Play Data Safety applies to apps on closed, open, and production") &&
-      docs["docs/LEGAL_REVIEW_PREP.md"].includes("does not yet expose a message-report flow") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Received DMs expose a per-message report control") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("the reporter belongs to the conversation") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("selected-build two-user DM reporting QA") &&
+      !docs["docs/LEGAL_REVIEW_PREP.md"].includes("does not yet expose a message-report flow") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("evidence must show the actual submitted build with fictional or consented") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Play Age Signals API") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("significant-change notices") &&

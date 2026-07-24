@@ -8,6 +8,7 @@ import {
   recordReportFollowup,
   updateReportStatus,
 } from "../actions";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { safeStatusMessage } from "@/lib/status-message";
 
@@ -59,6 +60,7 @@ const reportSubjectTypes = [
   "help_article_comment",
   "marketplace_listing",
   "merch_product",
+  "message",
   "profile",
   "story_post",
   "thread_post",
@@ -461,6 +463,7 @@ export default async function AdminReportsPage({
     redirect("/admin");
   }
 
+  const reportPreviewClient = createAdminClient() ?? supabase;
   let reportsQuery = supabase
     .from("content_reports")
     .select(
@@ -656,6 +659,30 @@ export default async function AdminReportsPage({
           ownerUsername: story.profiles?.username ?? null,
           preview: story.caption,
           title: "Story",
+        });
+      }
+    })(),
+    (async () => {
+      const ids = reportSubjectIds("message");
+      if (!ids.length) return;
+      const { data } = await reportPreviewClient
+        .from("messages")
+        .select(
+          "id, body, profiles:profiles!messages_sender_id_fkey(username)",
+        )
+        .in("id", ids)
+        .returns<
+          {
+            body: string;
+            id: string;
+            profiles: { username: string } | null;
+          }[]
+        >();
+      for (const message of data ?? []) {
+        reportSubjectPreviews.set(reportSubjectKey("message", message.id), {
+          ownerUsername: message.profiles?.username ?? null,
+          preview: message.body,
+          title: "Direct message",
         });
       }
     })(),

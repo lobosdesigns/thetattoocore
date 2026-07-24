@@ -42,9 +42,11 @@ Google rules. It is implementation evidence, not owner or counsel approval.
 - Google Play Data Safety applies to apps on closed, open, and production
   tracks. Only apps exclusively active on the internal testing track are
   exempt.
-- TTC's public Child Safety Standards say members can report DMs, while the
-  current DM experience does not yet expose a message-report flow. Keep that
-  mismatch blocked until the control and moderation path exist.
+- Received DMs expose a per-message report control. The server verifies that
+  the reporter belongs to the conversation, rejects reports against the
+  reporter's own messages, and routes valid reports into the moderator queue.
+  Keep final selected-build two-user DM reporting QA in the private evidence
+  handoff until the live control and queue result are verified.
 - Generated store screenshot scenes can be safe upload drafts, but final
   evidence must show the actual submitted build with fictional or consented
   content and no private account, payment, or notification details.
