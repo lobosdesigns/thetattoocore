@@ -8,12 +8,59 @@ import {
   type NotificationPreferenceProfile,
 } from "@/lib/notifications";
 import { insertNotifications } from "@/lib/notification-write";
-import { notificationPathOrFallback } from "@/lib/notification-route";
+import {
+  notificationPathOrFallback,
+  safeNotificationPath,
+} from "@/lib/notification-route";
 import { createClient } from "@/lib/supabase/server";
 
 type Claims = {
   sub: string;
 };
+
+type NotificationOpenRow = {
+  href: string | null;
+  subject_id: string | null;
+  subject_type: string;
+  type: string;
+};
+
+const taggedSubjectConfig = {
+  feed_comment_tag: {
+    requireNotDeleted: true,
+    subjectType: "post_comment",
+    table: "post_comments",
+  },
+  feed_tag: {
+    requireNotDeleted: false,
+    subjectType: "feed_post",
+    table: "feed_posts",
+  },
+  gig_tag: {
+    requireNotDeleted: false,
+    subjectType: "gig",
+    table: "gigs",
+  },
+  thread_comment_tag: {
+    requireNotDeleted: true,
+    subjectType: "thread_comment",
+    table: "thread_comments",
+  },
+  thread_tag: {
+    requireNotDeleted: false,
+    subjectType: "thread_post",
+    table: "thread_posts",
+  },
+} as const;
+
+type TaggedNotificationType = keyof typeof taggedSubjectConfig;
+type TaggedSubjectState = "available" | "missing" | "unknown";
+
+function isTaggedNotificationType(
+  value: string,
+): value is TaggedNotificationType {
+  return Object.prototype.hasOwnProperty.call(taggedSubjectConfig, value);
+}
 
 async function requireUser() {
   const supabase = await createClient();
@@ -48,6 +95,45 @@ async function blockRelationshipExists({
   return Boolean(data);
 }
 
+async function taggedNotificationSubjectState({
+  notification,
+  supabase,
+}: {
+  notification: NotificationOpenRow;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+}): Promise<TaggedSubjectState> {
+  if (!isTaggedNotificationType(notification.type)) {
+    return "available";
+  }
+
+  const config = taggedSubjectConfig[notification.type];
+
+  if (
+    !notification.subject_id ||
+    notification.subject_type !== config.subjectType
+  ) {
+    return "missing";
+  }
+
+  let query = supabase
+    .from(config.table)
+    .select("id")
+    .eq("id", notification.subject_id);
+
+  if (config.requireNotDeleted) {
+    query = query.is("deleted_at", null);
+  }
+
+  const { data, error } = await query.maybeSingle<{ id: string }>();
+
+  if (error) {
+    console.error("Notification subject validation failed.", error);
+    return "unknown";
+  }
+
+  return data ? "available" : "missing";
+}
+
 export async function markNotificationRead(formData: FormData) {
   const notificationId = String(formData.get("notification_id") ?? "");
   const { supabase, userId } = await requireUser();
@@ -69,11 +155,51 @@ export async function markNotificationRead(formData: FormData) {
 
 export async function openNotification(formData: FormData) {
   const notificationId = String(formData.get("notification_id") ?? "");
-  const href = notificationPathOrFallback(formData.get("href"));
+  const submittedHref = notificationPathOrFallback(formData.get("href"));
   const { supabase, userId } = await requireUser();
 
   if (!notificationId) {
-    redirect(href);
+    redirect("/notifications");
+  }
+
+  const { data: notification, error: notificationError } = await supabase
+    .from("notifications")
+    .select("href, subject_id, subject_type, type")
+    .eq("id", notificationId)
+    .eq("recipient_id", userId)
+    .maybeSingle<NotificationOpenRow>();
+
+  if (notificationError) {
+    console.error("Notification open lookup failed.", notificationError);
+    redirect("/notifications");
+  }
+
+  if (!notification) {
+    redirect("/notifications");
+  }
+
+  const href = safeNotificationPath(notification.href) ?? submittedHref;
+  const subjectState = await taggedNotificationSubjectState({
+    notification,
+    supabase,
+  });
+
+  if (subjectState !== "available") {
+    if (subjectState === "missing") {
+      const { error: deleteError } = await supabase
+        .from("notifications")
+        .delete()
+        .eq("id", notificationId)
+        .eq("recipient_id", userId);
+
+      if (deleteError) {
+        console.error("Stale notification cleanup failed.", deleteError);
+      }
+    }
+
+    revalidatePath("/");
+    revalidatePath("/notifications");
+    redirect("/notifications");
   }
 
   await supabase

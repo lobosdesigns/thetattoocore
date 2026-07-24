@@ -624,6 +624,32 @@ const checks = [
       notificationRoute.includes('return safeNotificationPath(value) ?? "/notifications"'),
   },
   {
+    label: "notification open removes stale tagged-content rows before navigation",
+    ok:
+      notificationActions.includes("const taggedSubjectConfig = {") &&
+      notificationActions.includes("feed_comment_tag: {") &&
+      notificationActions.includes("feed_tag: {") &&
+      notificationActions.includes("gig_tag: {") &&
+      notificationActions.includes("thread_comment_tag: {") &&
+      notificationActions.includes("thread_tag: {") &&
+      notificationActions.includes("async function taggedNotificationSubjectState") &&
+      notificationActions.includes('.select("href, subject_id, subject_type, type")') &&
+      notificationActions.includes('.eq("recipient_id", userId)') &&
+      notificationActions.includes(
+        "safeNotificationPath(notification.href) ?? submittedHref",
+      ) &&
+      notificationActions.includes("notification.subject_type !== config.subjectType") &&
+      notificationActions.includes('query = query.is("deleted_at", null)') &&
+      notificationActions.includes('return data ? "available" : "missing"') &&
+      notificationActions.includes('if (subjectState === "missing")') &&
+      notificationActions.includes('.from("notifications")') &&
+      notificationActions.includes(".delete()") &&
+      notificationActions.includes(
+        'console.error("Stale notification cleanup failed.", deleteError)',
+      ) &&
+      notificationActions.includes('redirect("/notifications")'),
+  },
+  {
     label: "notification center filters blocked actor profiles",
     ok:
       notificationPage.includes("async function getBlockedProfileIds") &&
