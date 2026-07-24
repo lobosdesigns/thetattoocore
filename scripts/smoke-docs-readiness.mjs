@@ -567,7 +567,7 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("run the `Android Connected-Device Probe`") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Empty or unauthorized `adb devices -l` output is a handoff blocker") &&
       packageJson.includes('"verify:app-review-preflight": "npm run lint && npm run build && npm run smoke:env && npm run smoke:security && npm run smoke:content && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run test:native-push-delivery && npm run smoke:native-push && npm run smoke:app-links && npm run qa:android-device && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:narrow && npm run smoke:mobile:ios && npm run verify:distribution-evidence"') &&
-      packageJson.includes('"verify:distribution-evidence": "npm run test:release-evidence-gate && npm run verify:release-evidence"') &&
+      packageJson.includes('"verify:distribution-evidence": "npm run test:release-evidence-gate && node scripts/verify-release-evidence.mjs"') &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run verify:app-review-preflight") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes('$env:TTC_RELEASE_CANDIDATE="<current-production-version>"') &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("actual ignored private handoff") &&

@@ -24,7 +24,8 @@ const checks = [
       packageJson.includes('"prepare:private-console-tabs": "node scripts/write-private-console-tabs.mjs"') &&
       packageJson.includes('"smoke:handoff": "node scripts/smoke-private-handoff-template.mjs"') &&
       packageJson.includes('"verify:release-evidence": "node scripts/verify-release-evidence.mjs"') &&
-      packageJson.includes('"verify:distribution-evidence": "npm run test:release-evidence-gate && npm run verify:release-evidence"') &&
+      packageJson.includes('"verify:distribution-evidence": "npm run test:release-evidence-gate && node scripts/verify-release-evidence.mjs"') &&
+      packageJson.includes('"test:distribution-evidence-command": "node scripts/test-distribution-evidence-command.mjs"') &&
       packageJson.includes('"test:release-evidence-gate": "node scripts/test-release-evidence-gate.mjs"') &&
       packageJson.includes("npm run smoke:mobile:ios && npm run verify:distribution-evidence") &&
       packageJson.includes("npm run smoke:native && npm run test:native-push-delivery && npm run smoke:native-push && npm run smoke:app-links && npm run smoke:handoff && npm run smoke:docs") &&
