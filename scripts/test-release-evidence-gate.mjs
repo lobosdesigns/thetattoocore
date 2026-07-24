@@ -47,6 +47,18 @@ const mismatchedBuildFixture = writeVariant("mismatched-build.md", (source) =>
     "| Alpha 1.0.1 (2) | fixture-device 2026-07-23 | fixture-tester-install-proof |",
   ),
 );
+const productionTrackFixture = writeVariant("production-track.md", (source) =>
+  source.replace(
+    "| Android release track and version/build | Closed testing - Alpha 1.0.3 (4) |",
+    "| Android release track and version/build | Google Play Production 1.0.3 (4) Active |",
+  ),
+);
+const unknownTrackFixture = writeVariant("unknown-track.md", (source) =>
+  source.replace(
+    "| Android release track and version/build | Closed testing - Alpha 1.0.3 (4) |",
+    "| Android release track and version/build | Candidate 1.0.3 (4) |",
+  ),
+);
 const staleRealDeviceDateFixture = writeVariant(
   "stale-real-device-date.md",
   (source) =>
@@ -161,6 +173,42 @@ const checks = [
     ),
     verify(result) {
       return result.status === 0;
+    },
+  },
+  {
+    label: "release evidence accepts the exact build on the production track",
+    result: runGate([
+      "--test-fixture",
+      "--reference-date",
+      fixtureReferenceDate,
+      "--evidence",
+      productionTrackFixture,
+      "--release-candidate",
+      fixtureCandidate,
+    ]),
+    verify(result) {
+      return result.status === 0;
+    },
+  },
+  {
+    label: "release evidence rejects an unidentified Android track",
+    result: runGate([
+      "--test-fixture",
+      "--reference-date",
+      fixtureReferenceDate,
+      "--verbose",
+      "--evidence",
+      unknownTrackFixture,
+      "--release-candidate",
+      fixtureCandidate,
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Android release track must identify Alpha, closed testing, or production",
+        )
+      );
     },
   },
   {

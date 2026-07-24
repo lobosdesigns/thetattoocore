@@ -354,16 +354,21 @@ if (releaseCandidate) {
   );
   requireContains(
     "Release Candidate",
-    "Android Alpha build must be exact build 1.0.3 (4)",
+    "Android build must be exact build 1.0.3 (4)",
     androidBuild?.Value,
     EXPECTED_ANDROID_BUILD,
   );
-  requireContains(
-    "Release Candidate",
-    "Android release track must identify Alpha or closed testing",
-    androidBuild?.Value,
-    normalize(androidBuild?.Value).includes("alpha") ? "alpha" : "closed",
-  );
+  const androidTrack = normalize(androidBuild?.Value);
+  if (
+    !["alpha", "closed testing", "production"].some((track) =>
+      androidTrack.includes(track),
+    )
+  ) {
+    fail(
+      "Release Candidate",
+      "Android release track must identify Alpha, closed testing, or production",
+    );
+  }
   requireContains(
     "Release Candidate",
     "iOS TestFlight build must be exact build 1.0 (4)",
