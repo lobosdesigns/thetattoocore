@@ -541,7 +541,9 @@ const checks = [
       androidApi36SubmissionReady &&
       androidVersionCode === 4 &&
       androidVersionName === "1.0.3" &&
-      source.readiness.includes("Google Play currently serves API 36 release `1.0.3 (4)` to the closed test") &&
+      source.readiness.includes(
+        "Google Play currently serves API 36 release `1.0.3 (4)` in public production and Closed testing - Alpha",
+      ) &&
       source.readiness.includes("any replacement must increment above version code `4`") &&
       source.realDeviceQa.includes("versionName` and `versionCode` checked into"),
   },

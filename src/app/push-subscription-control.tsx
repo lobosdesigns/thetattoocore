@@ -213,11 +213,15 @@ export function PushSubscriptionControl() {
 
   async function sendTestAlert() {
     setPending(true);
-    setMessage("Test alert scheduled. Press Home or lock this device now.");
+    setMessage("Checking your alert settings.");
 
     try {
-      await nativeNotifications.sendTest();
-      setMessage("Test alert scheduled. Keep this app in the background for a few seconds.");
+      const result = await nativeNotifications.sendTest();
+      setMessage(
+        result === "suppressed"
+          ? "Your message alert or quiet-hours settings are pausing this test."
+          : "Test alert scheduled. Keep this app in the background for a few seconds.",
+      );
     } catch {
       setMessage("Test alert could not be sent. Try again.");
     } finally {

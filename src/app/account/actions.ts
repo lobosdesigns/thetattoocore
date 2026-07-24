@@ -2197,6 +2197,20 @@ export async function requestAccountDeletion(formData: FormData) {
     redirect("/login");
   }
 
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", claims.sub)
+    .maybeSingle<{ role: string | null }>();
+
+  if (profileError || !profile) {
+    redirect(accountPath("Could not verify account deletion eligibility."));
+  }
+
+  if (profile.role === "owner") {
+    redirect(accountPath("This account is protected from deletion."));
+  }
+
   const confirmation = cleanText(formData.get("delete_confirmation"), 20);
 
   if (confirmation !== "DELETE") {

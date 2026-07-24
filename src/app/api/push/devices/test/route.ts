@@ -13,8 +13,18 @@ import {
   nativePushSenderReady,
   type NativePushDeliveryEnvironment,
 } from "@/lib/native-push/sender-core";
+import {
+  allowsNoisyDeliveryNow,
+  type NotificationPreferenceProfile,
+} from "@/lib/notifications";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+
+type AuthenticatedProfile = NotificationPreferenceProfile & {
+  id: string;
+  notify_push_enabled: boolean;
+  role: string | null;
+};
 
 type RegisteredDevice = {
   app_build: string;
@@ -52,13 +62,11 @@ async function authenticatedProfile() {
 
   const { data: profile, error } = await admin
     .from("profiles")
-    .select("id, notify_push_enabled, role")
+    .select(
+      "id, notification_quiet_hours_enabled, notification_quiet_hours_end, notification_quiet_hours_start, notification_timezone, notify_message_activity, notify_push_enabled, role",
+    )
     .eq("id", userId)
-    .maybeSingle<{
-      id: string;
-      notify_push_enabled: boolean;
-      role: string | null;
-    }>();
+    .maybeSingle<AuthenticatedProfile>();
 
   return error ? null : profile;
 }
@@ -140,6 +148,14 @@ export async function POST(request: NextRequest) {
         { status: 409 },
       ),
     );
+  }
+
+  if (!allowsNoisyDeliveryNow(profile, "message")) {
+    return NextResponse.json({
+      reason: "settings",
+      scheduled: false,
+      suppressed: true,
+    });
   }
 
   after(async () => {

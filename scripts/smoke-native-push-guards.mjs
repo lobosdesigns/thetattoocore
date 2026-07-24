@@ -293,6 +293,17 @@ const checks = [
         "sendNativePushMessage(nativePushEnvironment",
       ) &&
       source.deviceTestApi.includes(
+        'allowsNoisyDeliveryNow(profile, "message")',
+      ) &&
+      source.deviceTestApi.includes("notify_message_activity") &&
+      source.deviceTestApi.includes("notification_quiet_hours_enabled") &&
+      source.deviceTestApi.includes("notification_quiet_hours_end") &&
+      source.deviceTestApi.includes("notification_quiet_hours_start") &&
+      source.deviceTestApi.includes("notification_timezone") &&
+      source.deviceTestApi.includes('reason: "settings"') &&
+      source.deviceTestApi.includes("scheduled: false") &&
+      source.deviceTestApi.includes("suppressed: true") &&
+      source.deviceTestApi.includes(
         'import { after, type NextRequest, NextResponse } from "next/server"',
       ) &&
       source.deviceTestApi.includes("after(async () =>") &&
@@ -308,10 +319,11 @@ const checks = [
       source.senderCore.includes("nativePushSenderReady") &&
       source.sender.includes("export async function sendNativePushMessage") &&
       source.provider.includes('fetch("/api/push/devices/test"') &&
+      source.provider.includes('return "suppressed"') &&
       source.provider.includes("testAvailable: qaBuildRestricted") &&
       source.control.includes("Send test") &&
       source.control.includes(
-        "Test alert scheduled. Press Home or lock this device now.",
+        "Your message alert or quiet-hours settings are pausing this test.",
       ) &&
       source.control.includes(
         "Test alert scheduled. Keep this app in the background for a few seconds.",

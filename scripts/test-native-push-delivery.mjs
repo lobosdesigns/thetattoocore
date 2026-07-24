@@ -10,6 +10,7 @@ import {
   nativePushQaBuildAllowed,
   nativePushQaRoleAllowed,
 } from "../src/lib/native-push/qa-access.ts";
+import { allowsNoisyDeliveryNow } from "../src/lib/notifications.ts";
 
 const readyEnvironment = {
   FIREBASE_CLIENT_EMAIL: "sender@example.invalid",
@@ -137,9 +138,46 @@ assert.equal(nativePushQaBuildAllowed("android", "1.0.2", "3"), false);
 assert.equal(nativePushQaBuildAllowed("ios", "1.0", "4"), true);
 assert.equal(nativePushQaBuildAllowed("ios", "1.0", "3"), false);
 
+const quietHoursProfile = {
+  notification_quiet_hours_enabled: true,
+  notification_quiet_hours_end: "17:00",
+  notification_quiet_hours_start: "09:00",
+  notification_timezone: "UTC",
+  notify_message_activity: true,
+};
+
+assert.equal(
+  allowsNoisyDeliveryNow(
+    quietHoursProfile,
+    "message",
+    new Date("2026-07-24T12:00:00Z"),
+  ),
+  false,
+);
+assert.equal(
+  allowsNoisyDeliveryNow(
+    quietHoursProfile,
+    "message",
+    new Date("2026-07-24T18:00:00Z"),
+  ),
+  true,
+);
+assert.equal(
+  allowsNoisyDeliveryNow(
+    {
+      ...quietHoursProfile,
+      notification_quiet_hours_enabled: false,
+      notify_message_activity: false,
+    },
+    "message",
+  ),
+  false,
+);
+
 console.log("PASS native delivery gates fail closed");
 console.log("PASS controlled test delivery does not open the global delivery gate");
 console.log("PASS native payloads stay generic and platform-aware");
 console.log("PASS native response classification protects device registrations");
 console.log("PASS native retry delays are bounded");
 console.log("PASS controlled native QA rejects unapproved roles and builds");
+console.log("PASS controlled native QA honors message and quiet-hours settings");

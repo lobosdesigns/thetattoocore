@@ -6,6 +6,7 @@ import {
 } from "../src/lib/admin-role-hierarchy.ts";
 
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
+const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const adminNav = readFileSync("src/app/admin/admin-section-nav.tsx", "utf8");
 const adminOverview = readFileSync("src/app/admin/page.tsx", "utf8");
 const adminMediaOps = readFileSync("src/app/admin/media-ops/page.tsx", "utf8");
@@ -429,6 +430,18 @@ const checks = [
       !accountPage.includes("{request.status} deletion request") &&
       adminDataRequests.includes("accountDeletionStatusLabel(request.status)") &&
       !adminDataRequests.includes(">{request.status}</span>"),
+  },
+  {
+    label: "owner account deletion requests are hidden and rejected server-side",
+    ok:
+      accountPage.includes('const isOwnerAccount = role === "owner"') &&
+      accountPage.includes("!isOwnerAccount && deletionRequests?.length") &&
+      accountPage.includes("!isOwnerAccount ? (") &&
+      accountPage.includes("This account is protected from deletion.") &&
+      accountActions.includes('.select("role")') &&
+      accountActions.includes('profile.role === "owner"') &&
+      accountActions.includes("Could not verify account deletion eligibility.") &&
+      accountActions.includes("This account is protected from deletion."),
   },
   {
     label: "admin account deletion actions hide raw backend errors from redirects",

@@ -38,7 +38,7 @@ type NativeNotificationContextValue = {
   disable: () => Promise<void>;
   enable: () => Promise<"denied" | "enabled">;
   enabled: boolean;
-  sendTest: () => Promise<void>;
+  sendTest: () => Promise<"scheduled" | "suppressed">;
   supported: boolean;
   testAvailable: boolean;
 };
@@ -47,7 +47,7 @@ const NativeNotificationContext = createContext<NativeNotificationContextValue>(
   disable: async () => undefined,
   enable: async () => "denied",
   enabled: false,
-  sendTest: async () => undefined,
+  sendTest: async () => "scheduled",
   supported: false,
   testAvailable: false,
 });
@@ -359,8 +359,16 @@ export function NativeNotificationProvider({
     const response = await fetch("/api/push/devices/test", {
       method: "POST",
     });
+    const payload = (await response.json().catch(() => null)) as {
+      scheduled?: unknown;
+      suppressed?: unknown;
+    } | null;
 
     if (!response.ok) throw new Error("Test alert could not be sent.");
+    if (payload?.suppressed === true) return "suppressed";
+    if (payload?.scheduled === true) return "scheduled";
+
+    throw new Error("Test alert could not be sent.");
   }, []);
 
   const value = useMemo(

@@ -613,6 +613,7 @@ export default async function AccountPage({
       !profile.banned_at,
   );
   const role = profile?.role as string | undefined;
+  const isOwnerAccount = role === "owner";
   const sellerProfileKindLabel = sellerProfileKind(
     profile?.account_type as string | undefined,
     role,
@@ -3138,11 +3139,11 @@ export default async function AccountPage({
             </span>
           </div>
           <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
-            You can make your profile private anytime. Account deletion is a
-            manual review request so safety reports, marketplace issues, and
-            legal obligations can be handled correctly.
+            {isOwnerAccount
+              ? "This account is protected from deletion."
+              : "You can make your profile private anytime. Account deletion is a manual review request so safety reports, marketplace issues, and legal obligations can be handled correctly."}
           </p>
-          {deletionRequests?.length ? (
+          {!isOwnerAccount && deletionRequests?.length ? (
             <div className="mt-4 grid gap-2">
               {deletionRequests.map((request) => (
                 <div
@@ -3166,33 +3167,35 @@ export default async function AccountPage({
               ))}
             </div>
           ) : null}
-          <form action={requestAccountDeletion} className="mt-4 grid gap-3">
-            <label className="block">
-              <span className="text-sm font-medium">Reason, optional</span>
-              <textarea
-                className="mt-2 min-h-20 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-3 text-sm outline-none focus:border-[var(--foreground)]"
-                maxLength={500}
-                name="delete_reason"
-                placeholder="Tell admins what should be reviewed before deletion."
-              />
-            </label>
-            <label className="block">
-              <span className="text-sm font-medium">
-                Type DELETE to request account deletion
-              </span>
-              <input
-                className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
-                name="delete_confirmation"
-                placeholder="DELETE"
-              />
-            </label>
-            <PendingSubmitButton
-              className="h-11 w-fit rounded-md border border-[color-mix(in_srgb,var(--danger)_55%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-5 text-sm font-semibold text-[var(--danger)]"
-              pendingLabel="Submitting"
-            >
-              Request account deletion
-            </PendingSubmitButton>
-          </form>
+          {!isOwnerAccount ? (
+            <form action={requestAccountDeletion} className="mt-4 grid gap-3">
+              <label className="block">
+                <span className="text-sm font-medium">Reason, optional</span>
+                <textarea
+                  className="mt-2 min-h-20 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-3 text-sm outline-none focus:border-[var(--foreground)]"
+                  maxLength={500}
+                  name="delete_reason"
+                  placeholder="Tell admins what should be reviewed before deletion."
+                />
+              </label>
+              <label className="block">
+                <span className="text-sm font-medium">
+                  Type DELETE to request account deletion
+                </span>
+                <input
+                  className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+                  name="delete_confirmation"
+                  placeholder="DELETE"
+                />
+              </label>
+              <PendingSubmitButton
+                className="h-11 w-fit rounded-md border border-[color-mix(in_srgb,var(--danger)_55%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-5 text-sm font-semibold text-[var(--danger)]"
+                pendingLabel="Submitting"
+              >
+                Request account deletion
+              </PendingSubmitButton>
+            </form>
+          ) : null}
           <p className="mt-3 text-xs leading-5 text-[var(--muted-strong)]">
             For urgent privacy or safety help, use the public support page.
           </p>
