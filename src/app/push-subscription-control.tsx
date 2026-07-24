@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BellOff, BellRing, LoaderCircle, Send } from "lucide-react";
+import {
+  BellOff,
+  BellRing,
+  LoaderCircle,
+  MessageCircle,
+  Send,
+} from "lucide-react";
 import {
   nativeNotificationSetupFailureMessage,
   useNativeNotificationSetup,
@@ -211,19 +217,29 @@ export function PushSubscriptionControl() {
     }
   }
 
-  async function sendTestAlert() {
+  async function sendTestAlert(
+    target: "latest_message" | "notifications",
+  ) {
     setPending(true);
     setMessage("Checking your alert settings.");
 
     try {
-      const result = await nativeNotifications.sendTest();
+      const result = await nativeNotifications.sendTest(target);
       setMessage(
         result === "suppressed"
           ? "Your message alert or quiet-hours settings are pausing this test."
-          : "Test alert scheduled. Keep this app in the background for a few seconds.",
+          : result === "unavailable"
+            ? "Message test needs a recent message alert."
+            : target === "latest_message"
+              ? "Message test scheduled. Keep this app in the background for a few seconds."
+              : "Test alert scheduled. Keep this app in the background for a few seconds.",
       );
     } catch {
-      setMessage("Test alert could not be sent. Try again.");
+      setMessage(
+        target === "latest_message"
+          ? "Message test could not be sent. Try again."
+          : "Test alert could not be sent. Try again.",
+      );
     } finally {
       setPending(false);
     }
@@ -251,11 +267,22 @@ export function PushSubscriptionControl() {
               <button
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--border)] px-3 text-xs font-bold disabled:opacity-60"
                 disabled={pending}
-                onClick={sendTestAlert}
+                onClick={() => sendTestAlert("notifications")}
                 type="button"
               >
                 <Send className="size-4" />
                 Send test
+              </button>
+            ) : null}
+            {enabled && nativeNotifications.testAvailable ? (
+              <button
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--border)] px-3 text-xs font-bold disabled:opacity-60"
+                disabled={pending}
+                onClick={() => sendTestAlert("latest_message")}
+                type="button"
+              >
+                <MessageCircle className="size-4" />
+                Test message
               </button>
             ) : null}
             <button

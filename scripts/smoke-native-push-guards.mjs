@@ -46,6 +46,7 @@ const source = {
   ),
   layout: read("src/app/layout.tsx"),
   qaAccess: read("src/lib/native-push/qa-access.ts"),
+  qaTarget: read("src/lib/native-push/qa-target.ts"),
   migration: read(
     "supabase/migrations/20260722114857_native_push_devices.sql",
   ),
@@ -277,10 +278,14 @@ const checks = [
       ),
   },
   {
-    label: "controlled native delivery test is self-only and exact-build scoped",
+    label:
+      "controlled native delivery test is self-only, exact-build scoped, and server-routed",
     ok:
       source.deviceTestApi.includes("supabase.auth.getClaims()") &&
       source.deviceTestApi.includes("nativePushQaRoleAllowed(profile.role)") &&
+      source.deviceTestApi.includes(
+        "await readNativePushQaTarget(request)",
+      ) &&
       source.deviceTestApi.includes("nativePushDeviceCookie") &&
       source.deviceTestApi.includes("parseNativePushCookie") &&
       source.deviceTestApi.includes('.eq("profile_id", profile.id)') &&
@@ -303,6 +308,31 @@ const checks = [
       source.deviceTestApi.includes("notification_quiet_hours_end") &&
       source.deviceTestApi.includes("notification_quiet_hours_start") &&
       source.deviceTestApi.includes("notification_timezone") &&
+      source.deviceTestApi.includes('.from("notifications")') &&
+      source.deviceTestApi.includes('.eq("recipient_id", profileId)') &&
+      source.deviceTestApi.includes('.eq("type", "message")') &&
+      source.deviceTestApi.includes(
+        ".limit(recentMessageCandidateLimit)",
+      ) &&
+      source.deviceTestApi.includes('.from("messages")') &&
+      source.deviceTestApi.includes('.in("id", messageIds)') &&
+      source.deviceTestApi.includes('.from("conversation_members")') &&
+      source.deviceTestApi.includes(
+        '.eq("conversation_id", message.conversation_id)',
+      ) &&
+      source.deviceTestApi.includes(".limit(3)") &&
+      source.deviceTestApi.includes('.from("user_blocks")') &&
+      source.deviceTestApi.includes(
+        "and(blocker_id.eq.${profileId},blocked_id.eq.${candidate.actor_id})",
+      ) &&
+      source.deviceTestApi.includes(
+        "and(blocker_id.eq.${candidate.actor_id},blocked_id.eq.${profileId})",
+      ) &&
+      source.deviceTestApi.includes(".limit(1)") &&
+      source.deviceTestApi.includes("nativePushQaDirectConversationAllowed({") &&
+      source.deviceTestApi.includes(
+        "buildNativePushQaAlert(target, conversationId)",
+      ) &&
       source.deviceTestApi.includes('reason: "settings"') &&
       source.deviceTestApi.includes("scheduled: false") &&
       source.deviceTestApi.includes("suppressed: true") &&
@@ -310,9 +340,36 @@ const checks = [
         'import { after, type NextRequest, NextResponse } from "next/server"',
       ) &&
       source.deviceTestApi.includes("after(async () =>") &&
-      source.deviceTestApi.includes('title: "Test app alert"') &&
-      source.deviceTestApi.includes('body: "Tap to verify app alerts."') &&
-      source.deviceTestApi.includes('url: "/notifications"') &&
+      source.qaTarget.includes(
+        'keys.some((key) => key !== "target")',
+      ) &&
+      source.qaTarget.includes("const maxRequestBodyBytes = 512") &&
+      source.qaTarget.includes("request.body.getReader()") &&
+      source.qaTarget.includes("bytesRead > maxRequestBodyBytes") &&
+      source.qaTarget.includes("await reader.cancel()") &&
+      source.qaTarget.includes(
+        'return value === "latest_message" ? value : null',
+      ) &&
+      source.qaTarget.includes(
+        "uniqueMemberIds.size === 2",
+      ) &&
+      source.qaTarget.includes(
+        "uniqueMemberIds.has(profileId)",
+      ) &&
+      source.qaTarget.includes(
+        "uniqueMemberIds.has(actorId)",
+      ) &&
+      source.qaTarget.includes("uuidPattern.test(conversationId)") &&
+      source.qaTarget.includes('title: "Test app alert"') &&
+      source.qaTarget.includes('body: "Tap to verify app alerts."') &&
+      source.qaTarget.includes('url: "/notifications"') &&
+      source.qaTarget.includes('title: "Test message alert"') &&
+      source.qaTarget.includes(
+        'body: "Tap to verify a message alert."',
+      ) &&
+      source.qaTarget.includes(
+        "url: `/messages?c=${encodeURIComponent(conversationId)}`",
+      ) &&
       source.deviceTestApi.includes("const testAlertDelayMs = 8_000") &&
       source.deviceTestApi.includes("setTimeout(resolve, testAlertDelayMs)") &&
       source.deviceTestApi.includes('result === "token"') &&
@@ -322,9 +379,16 @@ const checks = [
       source.senderCore.includes("nativePushSenderReady") &&
       source.sender.includes("export async function sendNativePushMessage") &&
       source.provider.includes('fetch("/api/push/devices/test"') &&
+      source.provider.includes("body: JSON.stringify({ target })") &&
+      source.provider.includes('payload?.reason === "no_message"') &&
+      source.provider.includes('return "unavailable"') &&
       source.provider.includes('return "suppressed"') &&
       source.provider.includes("testAvailable: qaBuildRestricted") &&
       source.control.includes("Send test") &&
+      source.control.includes("Test message") &&
+      source.control.includes(
+        "Message test needs a recent message alert.",
+      ) &&
       source.control.includes(
         "Your message alert or quiet-hours settings are pausing this test.",
       ) &&

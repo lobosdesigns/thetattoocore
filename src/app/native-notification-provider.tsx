@@ -14,6 +14,7 @@ import {
   nativePushQaBuildAllowed,
   type NativePushPlatform,
 } from "@/lib/native-push/qa-access";
+import type { NativePushQaTarget } from "@/lib/native-push/qa-target";
 import { notificationPathOrFallback } from "@/lib/notification-route";
 
 type NativePlatform = NativePushPlatform;
@@ -38,7 +39,9 @@ type NativeNotificationContextValue = {
   disable: () => Promise<void>;
   enable: () => Promise<"denied" | "enabled">;
   enabled: boolean;
-  sendTest: () => Promise<"scheduled" | "suppressed">;
+  sendTest: (
+    target?: NativePushQaTarget,
+  ) => Promise<"scheduled" | "suppressed" | "unavailable">;
   supported: boolean;
   testAvailable: boolean;
 };
@@ -355,14 +358,21 @@ export function NativeNotificationProvider({
     if (removalError) throw removalError;
   }, [qaBuildRestricted, setupEnabled]);
 
-  const sendTest = useCallback(async () => {
+  const sendTest = useCallback(async (target: NativePushQaTarget = "notifications") => {
     const response = await fetch("/api/push/devices/test", {
+      body: JSON.stringify({ target }),
+      headers: { "content-type": "application/json" },
       method: "POST",
     });
     const payload = (await response.json().catch(() => null)) as {
+      reason?: unknown;
       scheduled?: unknown;
       suppressed?: unknown;
     } | null;
+
+    if (response.status === 409 && payload?.reason === "no_message") {
+      return "unavailable";
+    }
 
     if (!response.ok) throw new Error("Test alert could not be sent.");
     if (payload?.suppressed === true) return "suppressed";

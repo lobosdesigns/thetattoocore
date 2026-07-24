@@ -10,6 +10,13 @@ import {
   nativePushQaBuildAllowed,
   nativePushQaRoleAllowed,
 } from "../src/lib/native-push/qa-access.ts";
+import {
+  buildNativePushQaAlert,
+  nativePushQaDirectConversationAllowed,
+  parseNativePushQaRequest,
+  parseNativePushQaTarget,
+  readNativePushQaTarget,
+} from "../src/lib/native-push/qa-target.ts";
 import { allowsNoisyDeliveryNow } from "../src/lib/notifications.ts";
 
 const readyEnvironment = {
@@ -138,6 +145,133 @@ assert.equal(nativePushQaBuildAllowed("android", "1.0.2", "3"), false);
 assert.equal(nativePushQaBuildAllowed("ios", "1.0", "4"), true);
 assert.equal(nativePushQaBuildAllowed("ios", "1.0", "3"), false);
 
+assert.equal(parseNativePushQaTarget(undefined), "notifications");
+assert.equal(parseNativePushQaTarget("notifications"), "notifications");
+assert.equal(parseNativePushQaTarget("latest_message"), "latest_message");
+assert.equal(parseNativePushQaTarget("/messages?c=attacker"), null);
+assert.equal(parseNativePushQaTarget({ url: "/messages?c=attacker" }), null);
+assert.equal(parseNativePushQaRequest(undefined), "notifications");
+assert.equal(
+  parseNativePushQaRequest({ target: "latest_message" }),
+  "latest_message",
+);
+assert.equal(
+  parseNativePushQaRequest({
+    target: "latest_message",
+    url: "/messages?c=attacker",
+  }),
+  null,
+);
+assert.equal(
+  parseNativePushQaRequest({ url: "/messages?c=attacker" }),
+  null,
+);
+assert.equal(parseNativePushQaRequest({ target: "unknown" }), null);
+assert.equal(
+  await readNativePushQaTarget(
+    new Request("https://example.invalid", { method: "POST" }),
+  ),
+  "notifications",
+);
+assert.equal(
+  await readNativePushQaTarget(
+    new Request("https://example.invalid", {
+      body: JSON.stringify({ target: "latest_message" }),
+      method: "POST",
+    }),
+  ),
+  "latest_message",
+);
+assert.equal(
+  await readNativePushQaTarget(
+    new Request("https://example.invalid", {
+      body: "{",
+      method: "POST",
+    }),
+  ),
+  null,
+);
+assert.equal(
+  await readNativePushQaTarget(
+    new Request("https://example.invalid", {
+      body: `${" ".repeat(486)}{"target":"notifications"}`,
+      method: "POST",
+    }),
+  ),
+  "notifications",
+);
+assert.equal(
+  await readNativePushQaTarget(
+    new Request("https://example.invalid", {
+      body: `${" ".repeat(487)}{"target":"notifications"}`,
+      method: "POST",
+    }),
+  ),
+  null,
+);
+
+assert.equal(
+  nativePushQaDirectConversationAllowed({
+    actorId: "66666666-6666-4666-8666-666666666666",
+    blocked: false,
+    memberIds: [
+      "55555555-5555-4555-8555-555555555555",
+      "66666666-6666-4666-8666-666666666666",
+    ],
+    profileId: "55555555-5555-4555-8555-555555555555",
+  }),
+  true,
+);
+assert.equal(
+  nativePushQaDirectConversationAllowed({
+    actorId: "66666666-6666-4666-8666-666666666666",
+    blocked: true,
+    memberIds: [
+      "55555555-5555-4555-8555-555555555555",
+      "66666666-6666-4666-8666-666666666666",
+    ],
+    profileId: "55555555-5555-4555-8555-555555555555",
+  }),
+  false,
+);
+assert.equal(
+  nativePushQaDirectConversationAllowed({
+    actorId: "66666666-6666-4666-8666-666666666666",
+    blocked: false,
+    memberIds: [
+      "55555555-5555-4555-8555-555555555555",
+      "66666666-6666-4666-8666-666666666666",
+      "77777777-7777-4777-8777-777777777777",
+    ],
+    profileId: "55555555-5555-4555-8555-555555555555",
+  }),
+  false,
+);
+
+assert.deepEqual(buildNativePushQaAlert("notifications"), {
+  body: "Tap to verify app alerts.",
+  title: "Test app alert",
+  type: "test",
+  url: "/notifications",
+});
+assert.deepEqual(
+  buildNativePushQaAlert(
+    "latest_message",
+    "44444444-4444-4444-8444-444444444444",
+  ),
+  {
+    body: "Tap to verify a message alert.",
+    title: "Test message alert",
+    type: "test",
+    url: "/messages?c=44444444-4444-4444-8444-444444444444",
+  },
+);
+assert.equal(buildNativePushQaAlert("latest_message"), null);
+assert.equal(
+  buildNativePushQaAlert("latest_message", "/notifications"),
+  null,
+);
+
 const quietHoursProfile = {
   notification_quiet_hours_enabled: true,
   notification_quiet_hours_end: "17:00",
@@ -180,4 +314,5 @@ console.log("PASS native payloads stay generic and platform-aware");
 console.log("PASS native response classification protects device registrations");
 console.log("PASS native retry delays are bounded");
 console.log("PASS controlled native QA rejects unapproved roles and builds");
+console.log("PASS controlled native QA destinations reject client-supplied routes");
 console.log("PASS controlled native QA honors message and quiet-hours settings");

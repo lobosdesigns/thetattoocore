@@ -8,6 +8,11 @@ import {
   nativePushQaBuildAllowed,
   nativePushQaRoleAllowed,
 } from "@/lib/native-push/qa-access";
+import {
+  buildNativePushQaAlert,
+  nativePushQaDirectConversationAllowed,
+  readNativePushQaTarget,
+} from "@/lib/native-push/qa-target";
 import { sendNativePushMessage } from "@/lib/native-push/sender";
 import {
   nativePushSenderReady,
@@ -34,6 +39,21 @@ type RegisteredDevice = {
   token: string;
 };
 
+type ConversationMessage = {
+  conversation_id: string;
+  id: string;
+};
+
+type ConversationMember = {
+  user_id: string;
+};
+
+type MessageNotificationCandidate = {
+  actor_id: string | null;
+  message_id: string | null;
+};
+
+const recentMessageCandidateLimit = 10;
 const testAlertDelayMs = 8_000;
 
 const nativePushEnvironment: NativePushDeliveryEnvironment = {
@@ -80,6 +100,93 @@ function expiredDeviceCookie(response: NextResponse) {
   return response;
 }
 
+async function recentMessageConversationId(
+  admin: NonNullable<ReturnType<typeof createAdminClient>>,
+  profileId: string,
+) {
+  const { data: notificationRows, error: notificationError } = await admin
+    .from("notifications")
+    .select("actor_id, message_id")
+    .eq("recipient_id", profileId)
+    .eq("type", "message")
+    .not("actor_id", "is", null)
+    .not("message_id", "is", null)
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(recentMessageCandidateLimit)
+    .returns<MessageNotificationCandidate[]>();
+
+  if (notificationError) throw new Error("Message alerts unavailable.");
+
+  const candidates = notificationRows ?? [];
+  const messageIds = [
+    ...new Set(
+      candidates
+        .map((candidate) => candidate.message_id)
+        .filter((messageId): messageId is string => Boolean(messageId)),
+    ),
+  ];
+
+  if (messageIds.length === 0) return null;
+
+  const { data: messages, error: messageError } = await admin
+    .from("messages")
+    .select("conversation_id, id")
+    .in("id", messageIds)
+    .returns<ConversationMessage[]>();
+
+  if (messageError) throw new Error("Messages unavailable.");
+
+  const messageById = new Map(
+    (messages ?? []).map((message) => [message.id, message]),
+  );
+
+  for (const candidate of candidates) {
+    if (!candidate.actor_id || !candidate.message_id) continue;
+
+    const message = messageById.get(candidate.message_id);
+
+    if (!message) continue;
+
+    const [membershipResult, blockResult] = await Promise.all([
+      admin
+        .from("conversation_members")
+        .select("user_id")
+        .eq("conversation_id", message.conversation_id)
+        .order("user_id", { ascending: true })
+        .limit(3)
+        .returns<ConversationMember[]>(),
+      admin
+        .from("user_blocks")
+        .select("blocker_id")
+        .or(
+          `and(blocker_id.eq.${profileId},blocked_id.eq.${candidate.actor_id}),and(blocker_id.eq.${candidate.actor_id},blocked_id.eq.${profileId})`,
+        )
+        .limit(1)
+        .maybeSingle<{ blocker_id: string }>(),
+    ]);
+
+    if (membershipResult.error || blockResult.error) {
+      throw new Error("Message eligibility unavailable.");
+    }
+
+    if (
+      nativePushQaDirectConversationAllowed({
+        actorId: candidate.actor_id,
+        blocked: Boolean(blockResult.data),
+        memberIds: (membershipResult.data ?? []).map(
+          (membership) => membership.user_id,
+        ),
+        profileId,
+      })
+    ) {
+      return message.conversation_id;
+    }
+  }
+
+  return null;
+}
+
 export async function POST(request: NextRequest) {
   const profile = await authenticatedProfile();
 
@@ -91,6 +198,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: "Test alerts are not available." },
       { status: 403 },
+    );
+  }
+
+  const target = await readNativePushQaTarget(request);
+
+  if (!target) {
+    return NextResponse.json(
+      { error: "Test alert request is invalid." },
+      { status: 400 },
     );
   }
 
@@ -158,19 +274,42 @@ export async function POST(request: NextRequest) {
     });
   }
 
+  let conversationId: string | null = null;
+
+  if (target === "latest_message") {
+    try {
+      conversationId = await recentMessageConversationId(admin, profile.id);
+    } catch {
+      return NextResponse.json(
+        { error: "Test alerts are not available." },
+        { status: 503 },
+      );
+    }
+  }
+
+  const alert = buildNativePushQaAlert(target, conversationId);
+
+  if (!alert) {
+    return NextResponse.json(
+      {
+        error:
+          "A message test needs a recent message alert. Receive a message, then retry.",
+        reason: "no_message",
+      },
+      { status: 409 },
+    );
+  }
+
   after(async () => {
     await new Promise<void>((resolve) => {
       setTimeout(resolve, testAlertDelayMs);
     });
 
     const result = await sendNativePushMessage(nativePushEnvironment, {
-      body: "Tap to verify app alerts.",
+      ...alert,
       notificationId: crypto.randomUUID(),
       platform: device.platform,
-      title: "Test app alert",
       token: device.token,
-      type: "test",
-      url: "/notifications",
     });
 
     if (result === "token") {
