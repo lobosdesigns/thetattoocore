@@ -594,11 +594,13 @@ if (
 
 if (
   currentBlockersSection.includes("| Payments | Account activation and Connect setup |") &&
-  currentBlockersSection.includes("Phone, email, business, public profile, account/profile verification, and go-live representative identity are complete") &&
-  currentBlockersSection.includes("terms-backed integration confirmation, production marketplace onboarding, application mode alignment, and live evidence remain pending") &&
+  currentBlockersSection.includes("Production account and Connect setup are complete") &&
+  currentBlockersSection.includes("platform agreement, marketplace funds flow, hosted onboarding, Express management, and platform refund/chargeback responsibility") &&
+  currentBlockersSection.includes("live cutover and money-movement evidence remain separate | passed |") &&
   currentBlockersSection.includes("| Payments | Production app mode preflight |") &&
-  currentBlockersSection.includes("explicit mode Needs review, server key mode Test, webhook signing Ready") &&
-  currentBlockersSection.includes("checkout blocked until the expected mode is readable and matched | blocked |")
+  currentBlockersSection.includes("expected mode Needs review and server key mode Test") &&
+  currentBlockersSection.includes("live endpoint and rotated signing secret passed a signed non-money 200 probe") &&
+  currentBlockersSection.includes("checkout remains blocked until the live server key and expected mode are matched | blocked |")
 ) {
   pass("private handoff records the current fail-closed payment activation state");
 } else {
