@@ -9,6 +9,10 @@ const envExample = readFileSync(".env.example", "utf8");
 const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8");
 const adClickRoute = readFileSync("src/app/api/ad-click/route.ts", "utf8");
 const stripeServer = readFileSync("src/lib/stripe/server.ts", "utf8");
+const stripeSecretFormat = readFileSync(
+  "src/lib/stripe/secret-format.ts",
+  "utf8",
+);
 const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const merchIndexPage = readFileSync("src/app/merch/page.tsx", "utf8");
 const merchNotesMigration = readFileSync(
@@ -496,6 +500,12 @@ checks.push({
     stripeServer.includes('reason: "missing_secret_key"') &&
     stripeServer.includes('reason: "unreadable_secret_key_mode"') &&
     stripeServer.includes('reason: "mode_mismatch"') &&
+    stripeServer.includes('reason: "missing_webhook_signing_secret"') &&
+    stripeServer.includes('reason: "invalid_webhook_signing_secret"') &&
+    stripeServer.includes("stripeWebhookSigningSecretConfigured(webhookSecret)") &&
+    stripeSecretFormat.includes(
+      "const webhookSigningSecretPattern = /^whsec_[A-Za-z0-9]{16,}$/",
+    ) &&
     adCheckout.includes("stripeCheckoutPreflight") &&
     bookingCheckout.includes("stripeCheckoutPreflight") &&
     merchCheckout.includes("stripeCheckoutPreflight") &&
@@ -731,6 +741,30 @@ checks.push({
     stripeWebhookClaimMigration.includes("revoke execute on function public.claim_stripe_webhook_event(text, text)") &&
     stripeWebhookClaimMigration.includes("grant execute on function public.claim_stripe_webhook_event(text, text)") &&
     stripeWebhookClaimMigration.includes("to service_role"),
+});
+checks.push({
+  label: "admin payments exposes webhook processing health without raw errors",
+  ok:
+    adminPaymentsPage.includes(
+      "event_id, event_type, received_at, status, attempt_count, claimed_at, completed_at",
+    ) &&
+    adminPaymentsPage.includes('.eq("status", "failed")') &&
+    adminPaymentsPage.includes('.eq("status", "processing")') &&
+    adminPaymentsPage.includes('.lt("claimed_at", staleWebhookClaimedBefore)') &&
+    adminPaymentsPage.includes("Date.now() - 10 * 60 * 1000") &&
+    adminPaymentsPage.includes("Boolean(failedWebhookEventCount)") &&
+    adminPaymentsPage.includes("Boolean(staleProcessingWebhookEventCount)") &&
+    adminPaymentsPage.includes('return "Processed"') &&
+    adminPaymentsPage.includes('return "Failed"') &&
+    adminPaymentsPage.includes('return "Retrying"') &&
+    adminPaymentsPage.includes("Attempt {event.attempt_count}") &&
+    adminPaymentsPage.includes("Claimed {formatDateTime(event.claimed_at)}") &&
+    adminPaymentsPage.includes(
+      "Completed {formatDateTime(event.completed_at)}",
+    ) &&
+    adminPaymentsPage.includes("Failed webhook events:") &&
+    adminPaymentsPage.includes("Webhook processing over 10m:") &&
+    !adminPaymentsPage.includes("last_error"),
 });
 checks.push({
   label: "payment webhook required event coverage stays aligned with readiness docs",
@@ -1073,8 +1107,9 @@ checks.push({
     adminPaymentsPage.includes("never shows private key or webhook values") &&
     adminPaymentsPage.includes("Expected mode:") &&
     adminPaymentsPage.includes("Server key mode:") &&
-    adminPaymentsPage.includes("Webhook signing secret is configured.") &&
-    adminPaymentsPage.includes("Checkout is blocked until the expected mode and server key mode are both readable and matched.") &&
+    adminPaymentsPage.includes("stripeWebhookSigningSecretConfigured()") &&
+    adminPaymentsPage.includes("Webhook signing format is configured; live event proof is still required.") &&
+    adminPaymentsPage.includes("Checkout is blocked until mode, server key, and webhook signing checks all pass.") &&
     adminPaymentsPage.includes("Checkout mode preflight is ready.") &&
     adminPaymentsPage.includes("Expected mode and server key mode do not match.") &&
     !stripeWebhook.includes("eventId: event.id") &&
@@ -1084,6 +1119,7 @@ checks.push({
     stripeServer.includes('secretKey?.startsWith("sk_live_")') &&
     stripeServer.includes('secretKey?.startsWith("sk_test_")') &&
     stripeWebhook.includes("expectedStripeLivemode() ?? stripeSecretKeyLivemode()") &&
+    stripeWebhook.includes("stripeWebhookSigningSecretConfigured(webhookSecret)") &&
     stripeWebhook.includes("function stripeLivemodeMatches") &&
     stripeWebhook.includes("return expected !== null && event.livemode === expected;") &&
     !stripeWebhook.includes("expected === null || event.livemode === expected") &&
@@ -1098,6 +1134,10 @@ checks.push({
     paymentReadiness.includes("charge.dispute.updated") &&
     paymentReadiness.includes("charge.dispute.funds_reinstated") &&
     paymentReadiness.includes("account.updated") &&
+    packageJson.includes('"test:payment-webhook-config"') &&
+    packageJson.includes(
+      '"smoke:payments": "npm run test:payment-webhook-config && node scripts/smoke-payment-guards.mjs"',
+    ) &&
     adminPaymentsPage.includes("const paymentReconciliationChecks = [") &&
     adminPaymentsPage.includes("const sellerPayoutQaChecks = [") &&
     adminPaymentsPage.includes("API or browser-automation shortcuts do not count as a completed seller test") &&

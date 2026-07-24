@@ -1,5 +1,6 @@
 import "server-only";
 import Stripe from "stripe";
+import { stripeWebhookSigningSecretFormatValid } from "./secret-format";
 
 export function expectedStripeLivemode() {
   const value = process.env.STRIPE_EXPECTED_LIVEMODE?.trim().toLowerCase();
@@ -15,6 +16,12 @@ export function stripeSecretKeyLivemode(secretKey = process.env.STRIPE_SECRET_KE
   if (secretKey?.startsWith("sk_test_")) return false;
 
   return null;
+}
+
+export function stripeWebhookSigningSecretConfigured(
+  webhookSecret = process.env.STRIPE_WEBHOOK_SECRET,
+) {
+  return stripeWebhookSigningSecretFormatValid(webhookSecret);
 }
 
 export function stripeCheckoutModeMismatch() {
@@ -34,6 +41,7 @@ export function stripeCheckoutModeMismatch() {
 export function stripeCheckoutPreflight() {
   const expected = expectedStripeLivemode();
   const actual = stripeSecretKeyLivemode();
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   if (expected === null) {
     return {
@@ -67,6 +75,24 @@ export function stripeCheckoutPreflight() {
       actual,
       expected,
       reason: "mode_mismatch",
+      ready: false,
+    } as const;
+  }
+
+  if (!webhookSecret) {
+    return {
+      actual,
+      expected,
+      reason: "missing_webhook_signing_secret",
+      ready: false,
+    } as const;
+  }
+
+  if (!stripeWebhookSigningSecretConfigured(webhookSecret)) {
+    return {
+      actual,
+      expected,
+      reason: "invalid_webhook_signing_secret",
       ready: false,
     } as const;
   }

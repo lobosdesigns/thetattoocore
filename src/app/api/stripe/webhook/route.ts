@@ -9,6 +9,7 @@ import {
   expectedStripeLivemode,
   stripeSecretKeyLivemode,
   stripeCryptoProvider,
+  stripeWebhookSigningSecretConfigured,
 } from "@/lib/stripe/server";
 import { stripeConnectStatus } from "@/lib/stripe/connect";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -1204,7 +1205,11 @@ export async function POST(request: Request) {
   const stripe = createStripeClient();
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-  if (!stripe || !webhookSecret) {
+  if (
+    !stripe ||
+    !webhookSecret ||
+    !stripeWebhookSigningSecretConfigured(webhookSecret)
+  ) {
     return stripeResponse("Payment updates are not configured.", 500);
   }
 

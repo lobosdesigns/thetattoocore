@@ -28,6 +28,7 @@ import {
   stripeCheckoutModeMismatch,
   stripeMerchDestinationChargesEnabled,
   stripeSecretKeyLivemode,
+  stripeWebhookSigningSecretConfigured,
 } from "@/lib/stripe/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
@@ -35,9 +36,13 @@ type Claims = {
   sub: string;
 };
 type PaymentEvent = {
+  attempt_count: number;
+  claimed_at: string;
+  completed_at: string | null;
   event_id: string;
   event_type: string;
   received_at: string;
+  status: "failed" | "processed" | "processing";
 };
 type PaymentAuditRecord = {
   created_at: string;
@@ -314,6 +319,10 @@ function staleCheckoutCutoff() {
   return new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 }
 
+function staleWebhookCutoff() {
+  return new Date(Date.now() - 10 * 60 * 1000).toISOString();
+}
+
 function statusLabel(value: string) {
   return titleCaseStatus(value);
 }
@@ -404,6 +413,24 @@ function paymentModeLabel(value: boolean | null) {
   return "Not set";
 }
 
+function paymentEventStatusLabel(status: PaymentEvent["status"]) {
+  if (status === "processed") return "Processed";
+  if (status === "failed") return "Failed";
+
+  return "Retrying";
+}
+
+function paymentEventStatusClass(status: PaymentEvent["status"]) {
+  if (status === "processed") {
+    return "border-[color-mix(in_srgb,#34a853_35%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_10%,var(--paper-warm))]";
+  }
+  if (status === "failed") {
+    return "border-[color-mix(in_srgb,var(--danger)_35%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))]";
+  }
+
+  return "border-[color-mix(in_srgb,var(--gold)_40%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))]";
+}
+
 async function statusCounts({
   column,
   statuses,
@@ -466,6 +493,7 @@ export default async function AdminPaymentsPage({
   const bookingFrom = (bookingCurrentPage - 1) * pageSize;
   const bookingTo = bookingFrom + pageSize - 1;
   const staleCheckoutCreatedBefore = staleCheckoutCutoff();
+  const staleWebhookClaimedBefore = staleWebhookCutoff();
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -488,6 +516,11 @@ export default async function AdminPaymentsPage({
   const [
     { data: stripeEvents, error: stripeEventsError },
     { count: stripeEventCount, error: stripeEventCountError },
+    { count: failedWebhookEventCount, error: failedWebhookEventError },
+    {
+      count: staleProcessingWebhookEventCount,
+      error: staleProcessingWebhookEventError,
+    },
     { counts: merchStatusCounts, error: merchStatusCountsError },
     { counts: adStatusCounts, error: adStatusCountsError },
     {
@@ -515,7 +548,10 @@ export default async function AdminPaymentsPage({
         (() => {
           let query = adminClient
             .from("stripe_webhook_events")
-            .select("event_id, event_type, received_at", { count: "exact" })
+            .select(
+              "event_id, event_type, received_at, status, attempt_count, claimed_at, completed_at",
+              { count: "exact" },
+            )
             .order("received_at", { ascending: false });
 
           if (activeSearch) {
@@ -550,6 +586,15 @@ export default async function AdminPaymentsPage({
 
           return query;
         })(),
+        adminClient
+          .from("stripe_webhook_events")
+          .select("event_id", { count: "exact", head: true })
+          .eq("status", "failed"),
+        adminClient
+          .from("stripe_webhook_events")
+          .select("event_id", { count: "exact", head: true })
+          .eq("status", "processing")
+          .lt("claimed_at", staleWebhookClaimedBefore),
         statusCounts({
           column: "status",
           statuses: merchOrderStatuses,
@@ -660,6 +705,8 @@ export default async function AdminPaymentsPage({
     : [
         { data: null, error: null },
         { count: null, error: null },
+        { count: null, error: null },
+        { count: null, error: null },
         { counts: [], error: null },
         { counts: [], error: null },
         { counts: [], error: null },
@@ -676,6 +723,8 @@ export default async function AdminPaymentsPage({
   const paymentDataErrors = [
     stripeEventsError,
     stripeEventCountError,
+    failedWebhookEventError,
+    staleProcessingWebhookEventError,
     merchStatusCountsError,
     adStatusCountsError,
     bookingPaymentStatusCountsError,
@@ -714,7 +763,7 @@ export default async function AdminPaymentsPage({
   const keyLivemode = stripeSecretKeyLivemode();
   const modeMismatch = stripeCheckoutModeMismatch();
   const checkoutPreflight = stripeCheckoutPreflight();
-  const webhookSecretReady = Boolean(process.env.STRIPE_WEBHOOK_SECRET);
+  const webhookSecretReady = stripeWebhookSigningSecretConfigured();
   const merchDestinationChargesReady = stripeMerchDestinationChargesEnabled();
   const paymentModePreflightChecks = [
     {
@@ -735,14 +784,14 @@ export default async function AdminPaymentsPage({
     },
     {
       detail: webhookSecretReady
-        ? "Webhook signing secret is configured."
-        : "Webhook signing secret is missing.",
+        ? "Webhook signing format is configured; live event proof is still required."
+        : "Webhook signing configuration needs review.",
       label: "Webhook signing",
       ready: webhookSecretReady,
     },
     {
       detail: !checkoutPreflight.ready
-        ? "Checkout is blocked until the expected mode and server key mode are both readable and matched."
+        ? "Checkout is blocked until mode, server key, and webhook signing checks all pass."
         : "Checkout mode preflight is ready.",
       label: "Checkout preflight",
       ready: checkoutPreflight.ready,
@@ -763,6 +812,8 @@ export default async function AdminPaymentsPage({
     },
   ] as const;
   const hasPaymentWarnings =
+    Boolean(failedWebhookEventCount) ||
+    Boolean(staleProcessingWebhookEventCount) ||
     Boolean(stalePendingCheckoutCount) ||
     Boolean(staleBookingCheckoutCount) ||
     Boolean(activeUnpaidAdCount) ||
@@ -948,7 +999,19 @@ export default async function AdminPaymentsPage({
                   <h2 className="text-sm font-bold uppercase tracking-wide">
                     Payment ops watch
                   </h2>
-                  <div className="mt-2 grid gap-2 text-sm text-[var(--muted)] lg:grid-cols-5">
+                  <div className="mt-2 grid gap-2 text-sm text-[var(--muted)] md:grid-cols-2 xl:grid-cols-4">
+                    <p>
+                      Failed webhook events:{" "}
+                      <span className="font-bold text-[var(--foreground)]">
+                        {failedWebhookEventCount ?? 0}
+                      </span>
+                    </p>
+                    <p>
+                      Webhook processing over 10m:{" "}
+                      <span className="font-bold text-[var(--foreground)]">
+                        {staleProcessingWebhookEventCount ?? 0}
+                      </span>
+                    </p>
                     <p>
                       <Link
                         className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
@@ -1103,13 +1166,27 @@ export default async function AdminPaymentsPage({
                           <p className="break-all text-sm font-bold">
                             {event.event_type}
                           </p>
-                          <p className="shrink-0 text-xs text-[var(--muted-strong)]">
-                            {formatDateTime(event.received_at)}
-                          </p>
+                          <div className="flex shrink-0 flex-wrap items-center gap-2 text-xs text-[var(--muted-strong)]">
+                            <span
+                              className={`rounded-md border px-2 py-1 font-bold text-[var(--foreground)] ${paymentEventStatusClass(event.status)}`}
+                            >
+                              {paymentEventStatusLabel(event.status)}
+                            </span>
+                            <span>{formatDateTime(event.received_at)}</span>
+                          </div>
                         </div>
                         <p className="mt-1 break-all text-xs text-[var(--muted-strong)]">
                           {event.event_id}
                         </p>
+                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--muted-strong)]">
+                          <span>Attempt {event.attempt_count}</span>
+                          <span>Claimed {formatDateTime(event.claimed_at)}</span>
+                          {event.completed_at ? (
+                            <span>
+                              Completed {formatDateTime(event.completed_at)}
+                            </span>
+                          ) : null}
+                        </div>
                       </article>
                     ))
                   ) : (
