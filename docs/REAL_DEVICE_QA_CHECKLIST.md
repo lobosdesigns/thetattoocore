@@ -1,6 +1,6 @@
 # Real Device QA Checklist
 
-Use this before native wrapper work, Google Play closed testing, TestFlight, or any production launch push. Run it on at least one Android phone and one actual iPhone/TestFlight device for release evidence. An iPhone-sized browser viewport is useful for layout scouting only and does not replace native iOS proof. Use safe sample content only.
+Use this before native wrapper work, Google Play Production or controlled Alpha testing, TestFlight, or any production launch push. Run it on at least one Android phone and one actual iPhone/TestFlight device for release evidence. An iPhone-sized browser viewport is useful for layout scouting only and does not replace native iOS proof. Use safe sample content only.
 
 ## Setup
 
@@ -9,10 +9,10 @@ Use this before native wrapper work, Google Play closed testing, TestFlight, or 
 - Run `npm.cmd run smoke:mobile:narrow` against production and confirm the same route matrix passes at 320x568 without document overflow before store screenshots or wrapper QA.
 - Run `npm.cmd run smoke:mobile:ios` against production as an iPhone Safari-shaped scouting pass. This is useful for route, overflow, and error checks, but it does not replace the actual iPhone/TestFlight evidence below.
 - Confirm the build points at `https://thetattoocore.com/login`.
-- Confirm the Android device's selected Google Play account belongs to the configured tester community, then use the private web tester join link with that same account and confirm opt-in before opening the Android join link.
-- Confirm the closed-test store listing offers Install or Update, then verify the installed Android app came from the intended Google Play closed-testing track and record the release/build number shown to testers.
+- Confirm the public Google Play Production listing offers Install or Update for the exact public release `1.0.3 (4)`, then verify the installed Android app came from Production and record its release/build number and install source.
+- Only for Alpha controlled QA, confirm the selected Google Play account belongs to the configured tester community, use the private web tester join link with that same account, and confirm opt-in before opening the Android join link.
 - Run `npm.cmd run qa:android-device:open-link` with the unlocked Android test phone connected. Confirm both TTC domains report verified/enabled and the safe `/messages` link opens the production app instead of a browser or chooser.
-- Treat a missing listing, mismatched Play account, unconfirmed web opt-in, or unpropagated tester-community membership as a blocker, not an install pass.
+- Treat a missing Production listing, wrong served build, or unverified install source as a release blocker. An unconfirmed web opt-in blocks Alpha controlled-QA evidence only; a mismatched Alpha account or unpropagated tester-community membership does not invalidate a separately proven Production install.
 - Confirm the installed iOS app came from the intended TestFlight group and record the version/build number shown to testers.
 - Open Admin > Media Ops and confirm the Beta QA launch checklist is visible for auth, two-user DMs, mobile posting/media, verification review, controlled launch payments, and safe store screenshots.
 - Confirm Support, Help, Child Safety Standards, Privacy, and Terms links open from logged-out and logged-in surfaces.
@@ -152,7 +152,7 @@ For each device pass, record:
 - Platform and device model.
 - OS version.
 - App build or web deploy version.
-- Native install source, such as Google Play closed testing or TestFlight, plus release track, version, and build number.
+- Native install source, such as Google Play Production, Closed testing - Alpha, or TestFlight, plus release track, version, and build number.
 - Network used, such as Wi-Fi or cellular.
 - Test accounts used, including the second known account for two-user DM read/reply checks.
 - Routes or native screens tested.
@@ -163,7 +163,7 @@ For each device pass, record:
 
 Store-critical proof should include at least:
 
-- Android closed-testing install proof and iOS TestFlight install proof for the exact build under review.
+- Android Google Play install proof and iOS TestFlight install proof for the exact build under review.
 - Android and iOS login/signup/reset staying inside the app or installed-app flow.
 - Public Help, Support, Child Safety Standards, Privacy, and Terms links opening correctly.
 - Posting, Story viewing, reporting, blocking, and account deletion request.
@@ -201,7 +201,7 @@ Keep completed rows in the private release handoff. Do not commit screenshots or
 
 | Platform | Release channel | Version/build proof | Install-source proof | Tester account pair | Device/date | Result summary |
 | --- | --- | --- | --- | --- | --- | --- |
-| Android | Google Play closed testing. | Version name, version code, release track, and closed-test date range for the exact build under review. | Screenshot or clip proving the app was installed from the intended closed-testing track; keep tester-community handoff, same-account web opt-in, 12-tester participation, 14-day duration, feedback summary, and production-access request result in the private handoff if required. | Primary tester and second known DM tester, recorded privately. | Android device model, OS version, test date, and network. | Pass/fail for auth, posting, DMs, verification, checkout return paths, report/block, screenshots, and Play testing evidence. |
+| Android | Google Play Production; Closed testing - Alpha only for controlled QA. | Version name, version code, exact release track, and test date for the build under review. | Screenshot or clip proving the app was installed from Production. For Alpha evidence, also keep tester-community handoff, same-account web opt-in, 12-tester participation, 14-day duration, feedback summary, and production-access request result in the private handoff if required. | Primary tester and second known DM tester, recorded privately. | Android device model, OS version, test date, and network. | Pass/fail for auth, posting, DMs, verification, checkout return paths, report/block, screenshots, and Play release evidence. |
 | iOS | TestFlight internal testing | iOS version/build number and tester group for the exact build under review. | Screenshot or clip proving the app was installed from the intended TestFlight group. | Primary tester and second known DM tester, recorded privately. | iPhone model, iOS version, test date, and network. | Pass/fail for auth, posting, DMs, verification, checkout return paths, report/block, and screenshots. |
 
 In the private Real-Device QA row, record `device-captured` as the evidence basis
@@ -221,7 +221,7 @@ passing console/log review.
 Use this Windows probe before claiming Android real-device evidence. A connected
 USB cable is not enough: the device must appear in `adb devices -l` as an
 authorized `device`, and the installed package must match the active Google
-Play closed-testing build.
+Play candidate build.
 
 By default, the probe compares the installed package against the Android
 `versionName` and `versionCode` checked into
@@ -241,7 +241,7 @@ npm.cmd run qa:android-device
 ```
 
 To make the command fail until an authorized device is visible and the TTC
-package is installed for the active closed-test build, run:
+package is installed for the active Google Play candidate build, run:
 
 ```powershell
 npm.cmd run qa:android-device:required
@@ -260,17 +260,18 @@ counts only; raw device logs remain outside repository evidence. App focus is
 context rather than a pass condition because notification and deep-link QA can
 legitimately leave the wrapper in the background.
 
-If the device has an older build, unlock it and open the active closed-test
-enrollment page directly from the Windows QA command:
+If the device has an older build, update it from the public Google Play
+Production listing first. When the test specifically requires Alpha, unlock the
+device and open the active Alpha enrollment page from the Windows QA command:
 
 ```powershell
 npm.cmd run qa:android-device:open-test
 ```
 
-This command only opens the enrollment page on the authorized device. The
+This command only opens the Alpha enrollment page on the authorized device. The
 tester must already belong to the configured Google Group, join the test with
 the eligible Google account, and install the update through Google Play before
-the exact-build probe can pass.
+Alpha evidence can pass. It is not needed for a normal Production install.
 
 The required gate waits briefly for the USB/debug authorization state to settle
 before failing, so leave the phone unlocked and accept the computer prompt if it
@@ -323,9 +324,10 @@ probe before capturing route, login, DM, notification, checkout-return, and
 store-screenshot evidence.
 
 If the probe reports `authorized device has wrong TTC build`, record the
-installed and expected version/build values in the private handoff, run
-`npm.cmd run qa:android-device:open-test`, join the active closed test with an
-eligible account, install the exact Google Play build, and rerun the probe
-before counting the device as ready.
+installed and expected version/build values in the private handoff, install the
+exact build from Google Play Production, and rerun the probe before counting the
+device as ready. Only when the evidence target is Alpha should you run
+`npm.cmd run qa:android-device:open-test`, join with an eligible account, and
+install the exact Alpha build.
 
 Repo-safe summary fields are limited to platform, release channel, version/build, date, device model, and pass/fail status. Keep tester secrets, private contact details, account identifiers, and raw console screenshots private.

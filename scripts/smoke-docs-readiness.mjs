@@ -34,10 +34,13 @@ function markdownSection(markdown, heading, nextHeading) {
   const start = markdown.indexOf(heading);
   if (start === -1) return "";
 
-  const end = markdown.indexOf(nextHeading, start + heading.length);
+  const end = nextHeading
+    ? markdown.indexOf(nextHeading, start + heading.length)
+    : -1;
   return markdown.slice(start, end === -1 ? undefined : end);
 }
 
+const compactWhitespace = (value) => value.replace(/\s+/g, " ").trim();
 const currentStoreConsoleSnapshot = markdownSection(
   readinessDoc,
   "## Current Store Console Snapshot",
@@ -48,6 +51,59 @@ const currentBlockerMatrix = markdownSection(
   "## Public Distribution Blocker Matrix",
   "## Before Public Distribution Or Any Replacement Submission",
 );
+const mobileSubmissionRunbook = docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"];
+const realDeviceQaChecklist = docs["docs/REAL_DEVICE_QA_CHECKLIST.md"];
+const mobileCurrentPosition = compactWhitespace(
+  markdownSection(
+    mobileSubmissionRunbook,
+    "## Current Position",
+    "## Current Store Rules Check",
+  ),
+);
+const googlePlayInstallHandoff = compactWhitespace(
+  markdownSection(
+    mobileSubmissionRunbook,
+    "## Google Play Install And Controlled QA Handoff",
+    "## Required Before Public Distribution Or Any Replacement Submission",
+  ),
+);
+const firstNativeBuildSteps = compactWhitespace(
+  markdownSection(mobileSubmissionRunbook, "## First Native Build Steps"),
+);
+const realDeviceSetup = compactWhitespace(
+  markdownSection(realDeviceQaChecklist, "## Setup", "## Auth And Account"),
+);
+const nativeBuildInstallMatrix = compactWhitespace(
+  markdownSection(
+    realDeviceQaChecklist,
+    "## Native Build And Install Evidence Matrix",
+    "## Android Connected-Device Probe",
+  ),
+);
+const androidConnectedDeviceProbe = compactWhitespace(
+  markdownSection(realDeviceQaChecklist, "## Android Connected-Device Probe"),
+);
+const currentAndroidOperationalText = [
+  mobileCurrentPosition,
+  googlePlayInstallHandoff,
+  firstNativeBuildSteps,
+  realDeviceSetup,
+  nativeBuildInstallMatrix,
+  androidConnectedDeviceProbe,
+]
+  .join("\n")
+  .toLowerCase();
+const staleAlphaFirstOperationalSnippets = [
+  "closed testing - alpha now serves",
+  "currently served closed testing - alpha release",
+  "active google play closed-testing build",
+  "active closed-test build",
+  "google play closed-testing track",
+  "android closed-testing install proof",
+  "| android | google play closed testing.",
+  "confirm the android device's selected google play account belongs to the configured tester community",
+  "confirm the closed-test store listing offers install or update",
+];
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const adminPage = readFileSync("src/app/admin/page.tsx", "utf8");
 const helpArticlePage = readFileSync("src/app/help/[slug]/page.tsx", "utf8");
@@ -257,7 +313,7 @@ const checks = [
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("August 31, 2026") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Android 16 / API 36") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("target Android 16 / API 36") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checked-in and active closed-test release `1.0.3 (4)` uses that baseline") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checked-in `1.0.3 (4)` build is active in Production and Alpha and uses that baseline") &&
       docs["docs/APP_STORE_READINESS.md"].includes("targetSdkVersion` set to 36") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not request precise device location") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not prompt on first open") &&
@@ -462,7 +518,7 @@ const checks = [
       packageJson.includes('"smoke:mobile:ios": "set SMOKE_MOBILE_PROFILE=ios&& node scripts/smoke-mobile-browser.mjs"') &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run smoke:mobile:ios") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("iPhone Safari-shaped scouting pass") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Google Play closed-testing track") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Google Play Production or controlled Alpha testing") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("TestFlight group") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("one actual iPhone/TestFlight device for release evidence") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("iPhone-sized browser viewport is useful for layout scouting only") &&
@@ -501,7 +557,7 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Console/log review result for web browser, Android wrapper WebView, and iOS TestFlight") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("keep raw logs, stack traces with account data, device identifiers, and console screenshots in the private handoff") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Browser/device console check showing no uncaught app errors") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android closed-testing install proof") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android Google Play install proof") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("iOS TestFlight install proof") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android and iOS login/signup/reset staying inside the app") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Public Help, Support, Child Safety Standards, Privacy, and Terms links opening correctly") &&
@@ -513,16 +569,20 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Sign up, log in, reset password, and open Help/Support/legal links.") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Repo-safe accessibility summary fields are limited to release candidate") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("## Native Build And Install Evidence Matrix") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("| Android | Google Play closed testing.") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("same-account web opt-in") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("12-tester participation, 14-day duration, feedback summary") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("| iOS | TestFlight internal testing | iOS version/build number") &&
+      nativeBuildInstallMatrix.includes("| Android | Google Play Production;") &&
+      nativeBuildInstallMatrix.includes("Closed testing - Alpha only for controlled QA.") &&
+      nativeBuildInstallMatrix.includes("installed from Production") &&
+      nativeBuildInstallMatrix.includes("same-account web opt-in") &&
+      nativeBuildInstallMatrix.includes("12-tester participation, 14-day duration, feedback summary") &&
+      nativeBuildInstallMatrix.includes("| iOS | TestFlight internal testing | iOS version/build number") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("release channel, version/build, date, device model, and pass/fail status") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("manual evidence only:") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("selected Google Play account belongs to the configured tester community") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("confirm opt-in before opening the Android join link") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("closed-test store listing offers Install or Update") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("unconfirmed web opt-in") &&
+      realDeviceSetup.includes("public Google Play Production listing") &&
+      realDeviceSetup.includes("Install or Update") &&
+      realDeviceSetup.includes("exact public release `1.0.3 (4)`") &&
+      realDeviceSetup.includes("Only for Alpha controlled QA") &&
+      realDeviceSetup.includes("selected Google Play account belongs to the configured tester community") &&
+      realDeviceSetup.includes("blocks Alpha controlled-QA evidence only") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("automation unavailable") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("platform tools or `adb` missing from Windows PATH") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Do not treat missing automation as a") &&
@@ -532,8 +592,9 @@ const checks = [
       packageJson.includes('"qa:android-device": "node scripts/android-device-qa-probe.mjs"') &&
       packageJson.includes('"qa:android-device:required": "node scripts/android-device-qa-probe.mjs --require-device --wait-ms=30000"') &&
       packageJson.includes("npm run smoke:native && npm run test:native-push-delivery && npm run smoke:native-push && npm run smoke:app-links && npm run qa:android-device && npm run smoke:store") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run qa:android-device") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run qa:android-device:required") &&
+      androidConnectedDeviceProbe.includes("npm.cmd run qa:android-device") &&
+      androidConnectedDeviceProbe.includes("npm.cmd run qa:android-device:required") &&
+      androidConnectedDeviceProbe.includes("active Google Play candidate build") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("waits briefly for the USB/debug authorization state to settle") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run verify:native-predevice") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run verify:native-release") &&
@@ -550,17 +611,32 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android automation not yet available") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("passing Android console/log review") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Native build/install evidence should use the matrix") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play Closed testing - Alpha now serves API 36 release `1.0.3 (4)`") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("authorized Android 16 review phone installed exact build `1.0.3 (4)`") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Do not upload version code `4` again") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("## Google Play Tester Install Handoff") &&
+      mobileCurrentPosition.includes("wrapper work is active") &&
+      !mobileCurrentPosition.includes("wrapper work is starting") &&
+      mobileCurrentPosition.includes("Google Play Production") &&
+      mobileCurrentPosition.includes("API 36 release `1.0.3 (4)`") &&
+      mobileCurrentPosition.includes("Closed testing - Alpha") &&
+      mobileCurrentPosition.includes("controlled QA") &&
+      mobileCurrentPosition.includes("authorized Android 16 review phone installed exact build `1.0.3 (4)`") &&
+      mobileCurrentPosition.includes("Do not upload version code `4` again") &&
+      googlePlayInstallHandoff.length > 0 &&
       packageJson.includes('"qa:android-device:open-test": "node scripts/android-device-qa-probe.mjs --open-test-join"') &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run qa:android-device:open-test") &&
+      googlePlayInstallHandoff.includes("npm.cmd run qa:android-device:open-test") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run qa:android-device:open-test") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("same account that belongs to the configured tester community") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("confirm the account has opted in before opening the Android join link") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("store listing offers Install or Update") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Do not count a missing listing or account mismatch as an install pass") &&
+      googlePlayInstallHandoff.includes("public Production listing") &&
+      googlePlayInstallHandoff.includes("normal install and release-evidence path") &&
+      googlePlayInstallHandoff.includes("Closed testing - Alpha only for controlled QA") &&
+      googlePlayInstallHandoff.includes("Production as the install source") &&
+      googlePlayInstallHandoff.includes("same account that belongs to the configured tester community") &&
+      googlePlayInstallHandoff.includes("account has opted in") &&
+      googlePlayInstallHandoff.includes("Alpha store listing") &&
+      googlePlayInstallHandoff.includes("missing public Production listing") &&
+      googlePlayInstallHandoff.includes("blocks only Alpha controlled-QA evidence") &&
+      firstNativeBuildSteps.includes("Google Play Production serves API 36 release `1.0.3 (4)` publicly") &&
+      firstNativeBuildSteps.includes("retained in Closed testing - Alpha for controlled QA") &&
+      staleAlphaFirstOperationalSnippets.every(
+        (snippet) => !currentAndroidOperationalText.includes(snippet),
+      ) &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("release channel, version/build, install source, tester account pair") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("organization account. Google's current 12-testers-for-14-days production-access gate applies to newly created personal accounts") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Record a safe console/log review summary for mobile web, Android wrapper WebView, and iOS TestFlight") &&
@@ -664,7 +740,7 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("App/Universal Link handling") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play target API") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Android 16 / API 36") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Active closed-test release") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Active Production and Alpha") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("current API 36 baseline") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play production access") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("current 12-testers-for-14-days gate") &&
