@@ -43,7 +43,7 @@ Keep private reviewer credentials and phone details in Apple/Google console fiel
 - Google Play category handoff: app category is `Social`.
 - Reviewer account status: test account created and sign-in validated; keep the email and secret in private handoff or console-only fields.
 - Final reviewer access status: confirm the selected Apple build and Google release track each have current reviewer sign-in details, access notes, and validation result before public submission.
-- Screenshot upload status: use upload-ready no-alpha PNG derivatives from `native/store-metadata/generated/`, then confirm upload validation in each console.
+- Screenshot draft status: generated no-alpha PNG derivatives are format-validated drafts only. They are not authorization to replace submitted assets. During active review, preserve the submitted build and accepted screenshot sets unless console rejection or selected-build QA proves a mismatch.
 - Contact phone: keep console-only/private; do not add it to public screenshots, store description text, or support/legal pages.
 
 ## Private Console Evidence Template

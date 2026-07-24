@@ -528,7 +528,13 @@ const checks = [
       source.readme.includes("Google Play category handoff: app category is `Social`") &&
       source.readme.includes("Reviewer account status: test account created and sign-in validated") &&
       source.readme.includes("Final reviewer access status: confirm the selected Apple build and Google release track") &&
-      source.readme.includes("Screenshot upload status: use upload-ready no-alpha PNG derivatives") &&
+      source.readme.includes("Screenshot draft status: generated no-alpha PNG derivatives are format-validated drafts only") &&
+      source.readme.includes("They are not authorization to replace submitted assets") &&
+      source.readme.includes("During active review, preserve the submitted build and accepted screenshot sets") &&
+      !source.readme.includes("use upload-ready") &&
+      source.screenshotInventory.includes("Format-validated draft derivatives generated from the safe mobile set") &&
+      source.screenshotInventory.includes("Generated derivatives are not authorization to replace submitted assets") &&
+      source.screenshotInventory.includes("unless console rejection or selected-build QA proves a mismatch") &&
       source.readme.includes("Contact phone: keep console-only/private") &&
       source.readme.includes("## Private Console Evidence Template") &&
       source.readme.includes("| Build selection | Apple build number, Google release track") &&
@@ -554,25 +560,28 @@ const checks = [
   {
     label: "store readiness docs keep current console blockers guarded",
     ok:
-      source.readiness.includes("Apple iOS `1.0` build `1.0 (3)` is submitted for App Review") &&
+      source.readiness.includes("Apple iOS `1.0` build `1.0 (3)` remains in App Review with automatic release selected") &&
       source.readiness.includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
-      source.readiness.includes("age/content rating, optional Accessibility Nutrition Labels claims, Google Play required declarations, applicable tester evidence, and final console validation") &&
+      source.readiness.includes("screenshot validation, category/pricing, privacy/data safety, age/content rating, declarations, applicable tester evidence, and exact-build device QA") &&
       source.readiness.includes("Closed testing - Alpha is Active with API 36 release `1.0.3 (4)`") &&
       source.readiness.includes("existing Google Group community") &&
       source.readiness.includes("authorized Android 16 review phone installed exact Alpha build `1.0.3 (4)`") &&
       source.readiness.includes("One exact Android Alpha build `1.0.3 (4)` Google Play install is verified") &&
       source.readiness.includes("organization account is not subject to the personal-account 12-tester/14-day production-access rule") &&
-      source.readiness.includes("Production release `1.0.1 (2)` is published separately at 100%") &&
-      source.readiness.includes("Publishing Overview reports no unpublished changes") &&
+      source.readiness.includes("Production `1.0.1 (2)` remains the served public build until that review succeeds") &&
+      source.readiness.includes("Publishing overview shows the production change in review") &&
+      !source.readiness.includes("Publishing Overview reports no unpublished changes") &&
       !source.readiness.includes("awaiting final submit-for-review confirmation") &&
       !currentBlockerMatrix.includes("14-day production-access evidence still needs eligible tester opt-in/install proof") &&
       source.readiness.includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&
+      source.readiness.includes("preserve build `1.0 (3)` as the submitted App Review build") &&
+      source.readiness.includes("without removing the active Alpha") &&
       source.readiness.includes("Age 18+ override") &&
       source.readiness.includes("Monitor App Review and internal build `1.0 (4)` install/QA results") &&
       source.readiness.includes("group-member opt-in/install proof and 14-day production-access tester evidence if required") &&
       currentBlockerMatrix.includes("applicable tester evidence") &&
-      source.readiness.includes("build selection, reviewer test access, developer/legal entity, reviewer contact phone") &&
-      source.readiness.includes("Do not store reviewer passwords, private phone numbers, account-owner data, or console identifiers in repo docs") &&
+      source.readiness.includes("build selection, reviewer access, entity/contact details, screenshot validation") &&
+      source.readiness.includes("Do not store credentials, private phone numbers, account-owner data, or console identifiers in repo docs") &&
       source.dataSafetyPrep.includes("Google Play Data Safety must be current before closed testing, open testing, or production release") &&
       source.dataSafetyPrep.includes("Apps active only on Google Play internal testing are currently exempt") &&
       source.screenshotPrep.includes("Track each store asset set separately") &&

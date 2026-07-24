@@ -19,7 +19,7 @@ Current generated safe screenshots:
 - `public/screenshots/mobile-help-support.png`
 - `public/screenshots/desktop-home.png`
 
-Upload-ready derivatives generated from the safe mobile set:
+Format-validated draft derivatives generated from the safe mobile set:
 
 - Google Play phone screenshots:
   `native/store-metadata/generated/google-play/phone-screenshots/*-1080x1920.png`
@@ -32,7 +32,7 @@ Upload-ready derivatives generated from the safe mobile set:
   are 1242 x 2688 PNG files with no alpha channel.
 - App Store 13-inch iPad screenshots:
   `native/store-metadata/generated/apple-app-store/ipad-13/*-2048x2732.png`
-  are 3 upload-ready 2048 x 2732 PNG files with no alpha channel. Apple also
+  are 3 format-validated draft 2048 x 2732 PNG files with no alpha channel. Apple also
   accepts 2064 x 2752 portrait files for the current 13-inch iPad class; record
   the accepted size used in the private upload validation packet.
 
@@ -77,6 +77,10 @@ generated safe pool for submitted iOS build `1.0 (3)`:
 - `mobile-home-2048x2732.png`
 - `mobile-login-signup-2048x2732.png`
 - `mobile-4u-safe-2048x2732.png`
+
+Generated derivatives are not authorization to replace submitted assets.
+During active review, preserve the submitted build and accepted screenshot sets
+unless console rejection or selected-build QA proves a mismatch.
 
 Keep rejected-upload screenshots, console validation errors, and final
 replacement decisions in the private release handoff only.

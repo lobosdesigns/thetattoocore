@@ -21,7 +21,7 @@
 - Data-safety/privacy questionnaire prep lives in `docs/DATA_SAFETY_PREP.md` and should be checked against the live build before submission.
 - Admin > Media Ops now has an app handoff checklist for final legal/support copy, data-safety/privacy answers, safe screenshots, native wrapper auth/return-route checks, production payment review, and archived real-device QA evidence before external app review.
 - Google Play Closed testing - Alpha is Active with API 36 release `1.0.3 (4)`, published July 23, 2026 and Available to selected testers through the existing `testers-community` Google Group. Play reported no supported-device loss. The authorized Android 16 review phone installed exact build `1.0.3 (4)` from Google Play and passed target SDK 36, verified App Links, production-link launch, retained-session landing, and system-bar framing checks.
-- Google Play production release `1.0.1 (2)` is published at 100%. Publishing Overview reports no unpublished changes, and the app dashboard reports the update published on July 22, 2026.
+- Google Play production release `1.0.1 (2)` remains the served public build at 100%. Publishing Overview now shows production `1.0.3 (4)` as `Changes in review`; preserve the served build and active Alpha until that review succeeds.
 - Google Play accepted signed API 36 candidate `1.0.3 (4)` into the existing
   Closed testing - Alpha track on July 23, 2026. Preview confirmed zero
   supported-device loss and only the expected no-deobfuscation warning while
