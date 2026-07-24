@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { after, type NextRequest, NextResponse } from "next/server";
 import {
   deviceAlertCookieOptions,
   nativePushDeviceCookie,
@@ -10,8 +10,6 @@ import {
 } from "@/lib/native-push/qa-access";
 import {
   buildNativePushQaAlert,
-  nativePushQaDeliveryOutcome,
-  nativePushQaDeliveryStatus,
   nativePushQaDirectConversationAllowed,
   readNativePushQaTarget,
 } from "@/lib/native-push/qa-target";
@@ -304,48 +302,26 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  await new Promise<void>((resolve) => {
-    setTimeout(resolve, testAlertDelayMs);
+  after(async () => {
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, testAlertDelayMs);
+    });
+
+    const result = await sendNativePushMessage(nativePushEnvironment, {
+      ...alert,
+      notificationId: crypto.randomUUID(),
+      platform: device.platform,
+      token: device.token,
+    });
+
+    if (result === "token") {
+      await admin
+        .from("native_push_devices")
+        .delete()
+        .eq("id", device.id)
+        .eq("profile_id", profile.id);
+    }
   });
 
-  const result = await sendNativePushMessage(nativePushEnvironment, {
-    ...alert,
-    notificationId: crypto.randomUUID(),
-    platform: device.platform,
-    token: device.token,
-  });
-  const outcome = nativePushQaDeliveryOutcome(result);
-
-  if (outcome === "device") {
-    await admin
-      .from("native_push_devices")
-      .delete()
-      .eq("id", device.id)
-      .eq("profile_id", profile.id);
-
-    return expiredDeviceCookie(
-      NextResponse.json(
-        {
-          error: "Turn app alerts on again, then retry.",
-          reason: "device",
-        },
-        { status: nativePushQaDeliveryStatus(outcome) },
-      ),
-    );
-  }
-
-  if (outcome === "retry") {
-    return NextResponse.json(
-      {
-        error: "Test alert could not be accepted. Try again.",
-        reason: "retry",
-      },
-      { status: nativePushQaDeliveryStatus(outcome) },
-    );
-  }
-
-  return NextResponse.json(
-    { accepted: true },
-    { status: nativePushQaDeliveryStatus(outcome) },
-  );
+  return NextResponse.json({ scheduled: true }, { status: 202 });
 }

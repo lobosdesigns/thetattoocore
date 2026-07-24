@@ -1,12 +1,6 @@
-import type { FcmResponseKind } from "./sender-core";
-
 export type NativePushQaTarget = "latest_message" | "notifications";
-export type NativePushQaDeliveryOutcome =
-  | "accepted"
-  | "device"
-  | "retry";
 export type NativePushQaResponse =
-  | NativePushQaDeliveryOutcome
+  | "scheduled"
   | "suppressed"
   | "unavailable";
 
@@ -21,24 +15,6 @@ const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const maxRequestBodyBytes = 512;
 
-export function nativePushQaDeliveryOutcome(
-  result: FcmResponseKind | "disabled",
-): NativePushQaDeliveryOutcome {
-  if (result === "success") return "accepted" as const;
-  if (result === "token") return "device" as const;
-
-  return "retry" as const;
-}
-
-export function nativePushQaDeliveryStatus(
-  outcome: NativePushQaDeliveryOutcome,
-) {
-  if (outcome === "accepted") return 202 as const;
-  if (outcome === "device") return 409 as const;
-
-  return 503 as const;
-}
-
 export function parseNativePushQaResponse(
   status: number,
   value: unknown,
@@ -47,15 +23,10 @@ export function parseNativePushQaResponse(
 
   const payload = value as Record<string, unknown>;
 
-  if (status === 202 && payload.accepted === true) return "accepted";
+  if (status === 202 && payload.scheduled === true) return "scheduled";
   if (status === 200 && payload.suppressed === true) return "suppressed";
 
-  if (status === 409) {
-    if (payload.reason === "no_message") return "unavailable";
-    if (payload.reason === "device") return "device";
-  }
-
-  if (status === 503 && payload.reason === "retry") return "retry";
+  if (status === 409 && payload.reason === "no_message") return "unavailable";
 
   return null;
 }

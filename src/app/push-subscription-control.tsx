@@ -236,19 +236,11 @@ export function PushSubscriptionControl() {
         );
       } else if (result === "unavailable") {
         setMessage("Message test needs a recent message alert.");
-      } else if (result === "device") {
-        setMessage("Turn app alerts on again, then retry.");
-      } else if (result === "retry") {
-        setMessage(
-          target === "latest_message"
-            ? "Message test could not be accepted. Try again."
-            : "Test alert could not be accepted. Try again.",
-        );
       } else {
         setMessage(
           target === "latest_message"
-            ? "Message alert request accepted. Check device alerts."
-            : "Test alert request accepted. Check device alerts.",
+            ? "Message test scheduled. Keep this app in the background for a few seconds."
+            : "Test alert scheduled. Keep this app in the background for a few seconds.",
         );
       }
     } catch {

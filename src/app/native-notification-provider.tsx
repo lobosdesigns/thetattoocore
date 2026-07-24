@@ -44,9 +44,7 @@ type NativeNotificationContextValue = {
   enabled: boolean;
   sendTest: (
     target?: NativePushQaTarget,
-  ) => Promise<
-    "accepted" | "device" | "retry" | "suppressed" | "unavailable"
-  >;
+  ) => Promise<"scheduled" | "suppressed" | "unavailable">;
   supported: boolean;
   testAvailable: boolean;
 };
@@ -55,7 +53,7 @@ const NativeNotificationContext = createContext<NativeNotificationContextValue>(
   disable: async () => undefined,
   enable: async () => "denied",
   enabled: false,
-  sendTest: async () => "accepted",
+  sendTest: async () => "scheduled",
   supported: false,
   testAvailable: false,
 });
@@ -367,20 +365,15 @@ export function NativeNotificationProvider({
     const response = await fetch("/api/push/devices/test", {
       body: JSON.stringify({ target }),
       headers: { "content-type": "application/json" },
-      keepalive: true,
       method: "POST",
     });
     const payload = (await response.json().catch(() => null)) as unknown;
     const result = parseNativePushQaResponse(response.status, payload);
 
-    if (!result) throw new Error("Test alert could not be sent.");
+    if (result) return result;
 
-    if (result === "device") {
-      await disable();
-    }
-
-    return result;
-  }, [disable]);
+    throw new Error("Test alert could not be sent.");
+  }, []);
 
   const value = useMemo(
     () => ({
