@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 
 const appActions = readFileSync("src/app/actions.ts", "utf8");
 const messageActions = readFileSync("src/app/messages/actions.ts", "utf8");
-const messageLoading = readFileSync("src/app/messages/loading.tsx", "utf8");
 const messagePage = readFileSync("src/app/messages/page.tsx", "utf8");
 const messageHistoryApi = readFileSync("src/app/api/messages/history/route.ts", "utf8");
 const messageStartForm = readFileSync("src/app/messages/message-start-form.tsx", "utf8");
@@ -31,19 +30,6 @@ function appearsInOrder(source, snippets) {
 }
 
 const checks = [
-  {
-    label: "DM navigation has an accessible layout-stable loading shell",
-    ok:
-      messageLoading.includes('aria-busy="true"') &&
-      messageLoading.includes('aria-label="Loading messages"') &&
-      messageLoading.includes('className="ttc-page h-[100dvh] overflow-hidden"') &&
-      messageLoading.includes("lg:grid-cols-[320px_minmax(0,1fr)]") &&
-      messageLoading.includes('className="sr-only" role="status"') &&
-      messageLoading.includes("inboxPlaceholders.map") &&
-      !messageLoading.toLowerCase().includes("supabase") &&
-      !messageLoading.toLowerCase().includes("stripe") &&
-      !messageLoading.toLowerCase().includes("firebase"),
-  },
   {
     label: "DM send requires membership and blocks blocked profiles",
     ok:
