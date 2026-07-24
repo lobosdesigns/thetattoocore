@@ -20,7 +20,7 @@ Fixture section boundary.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Merch checkout | 0123456789abcdef0123456789abcdef01234567 | passed | passed | passed | passed | passed | passed | passed |
 | Booking deposit | 0123456789abcdef0123456789abcdef01234567 | passed | passed | passed | passed | passed | passed | passed |
-| Ads checkout | 0123456789abcdef0123456789abcdef01234567 | passed | passed | passed | passed | passed | passed | passed |
+| Ads checkout | 0123456789abcdef0123456789abcdef01234567 | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | Seller payout readiness | 0123456789abcdef0123456789abcdef01234567 | passed | passed | passed | passed | passed | n/a | passed |
 
 ## Payment Dashboard Readiness Log

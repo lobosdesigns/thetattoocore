@@ -38,7 +38,7 @@ account identifiers out of repo docs.
 | Google Play | Closed-test tester links and opt-in evidence | Save Android/web join links privately, confirm the device Play account matches the tester-community member, confirm web opt-in with that account, and record listing/install proof | pending | |
 | Google Play | API 36 closed-test release | Version code 4 / version name 1.0.3 API 36 update is active and verified installed on an authorized Android 16 device; do not upload the same version code again, and archive tester participation evidence | pending | |
 | Google Play | Console submit/retry evidence | If Play Console errors before submit, record the visible error code, page URL, retry path, whether reload/new-tab retry was attempted, and whether Publishing overview still shows changes not sent for review | pending | |
-| Payments | Account activation and Connect setup | Sandbox test connected account and marketplace destination-charge integration guide are confirmed; account, email, business, identity, and production verification still need private completion evidence | pending | |
+| Payments | Account activation and Connect setup | Phone, email, business, public profile, account/profile verification, and go-live representative identity are complete; terms-backed integration confirmation, production marketplace onboarding, application mode alignment, and live evidence remain pending | blocked | |
 | Payments | Production app mode preflight | Admin shows explicit mode Needs review, server key mode Test, webhook signing Ready, and checkout blocked until the expected mode is readable and matched | blocked | |
 
 ## Store Console Evidence
@@ -125,7 +125,7 @@ evidence.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Merch checkout | pending | pending | pending | pending | pending | pending | pending | pending |
 | Booking deposit | pending | pending | pending | pending | pending | pending | pending | pending |
-| Ads checkout | pending | pending | pending | pending | pending | pending | pending | pending |
+| Ads checkout | pending | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | Seller payout readiness | pending | pending | pending | pending | pending | pending | n/a | pending |
 
 ## Payment Dashboard Readiness Log

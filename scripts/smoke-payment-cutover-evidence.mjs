@@ -5,6 +5,17 @@ import { isAbsolute, relative, resolve } from "node:path";
 const generator = readFileSync("scripts/generate-private-release-handoff.mjs", "utf8");
 const paymentReadiness = readFileSync("docs/PAYMENT_PRODUCTION_READINESS.md", "utf8");
 const packageJson = readFileSync("package.json", "utf8");
+const commerceLaunch = readFileSync("src/lib/commerce-launch.ts", "utf8");
+
+function adPurchasesDisabledInSource(source) {
+  return (
+    source.match(
+      /^\s*export const AD_PURCHASES_AVAILABLE = (true|false);\s*$/m,
+    )?.[1] === "false"
+  );
+}
+
+const adPurchasesHardDisabled = adPurchasesDisabledInSource(commerceLaunch);
 
 const requiredFlows = [
   "Merch checkout",
@@ -182,7 +193,11 @@ function releaseCandidatesMatch(recorded, expected) {
 function validateStrictEvidence(
   source,
   expectedReleaseCandidate,
-  { allowFixtureOnly = false, referenceTimestamp = Date.now() } = {},
+  {
+    adPurchasesDisabled = false,
+    allowFixtureOnly = false,
+    referenceTimestamp = Date.now(),
+  } = {},
 ) {
   const blockers = [];
   const currentBlockersTable = markdownTable(
@@ -266,6 +281,26 @@ function validateStrictEvidence(
         blockers.push(
           `Payment flow / ${flow} / Release candidate: stale or mismatched`,
         );
+      }
+
+      const adsFlowExcluded =
+        flow === "Ads checkout" &&
+        (row.Result ?? "").trim().toLowerCase() === "n/a";
+      if (adsFlowExcluded) {
+        if (!adPurchasesDisabled) {
+          blockers.push(
+            "Payment flow / Ads checkout: n/a requires the source launch gate to remain disabled",
+          );
+        }
+
+        for (const column of requiredEvidenceColumns.slice(1)) {
+          if ((row[column] ?? "").trim().toLowerCase() !== "n/a") {
+            blockers.push(
+              `Payment flow / Ads checkout / ${column}: must be exactly n/a while Ads checkout is excluded`,
+            );
+          }
+        }
+        continue;
       }
 
       for (const column of requiredEvidenceColumns.slice(1)) {
@@ -361,6 +396,17 @@ function gitReleaseCandidateExists(candidate) {
     return true;
   } catch {
     return false;
+  }
+}
+
+function gitFileAtCandidate(candidate, path) {
+  try {
+    return execFileSync("git", ["show", `${candidate}:${path}`], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+  } catch {
+    return "";
   }
 }
 
@@ -474,6 +520,14 @@ function runStrictEvidenceGate() {
   }
 
   return validateStrictEvidence(evidence, normalizedExpectedReleaseCandidate, {
+    adPurchasesDisabled: testFixtureMode
+      ? adPurchasesHardDisabled
+      : adPurchasesDisabledInSource(
+          gitFileAtCandidate(
+            normalizedExpectedReleaseCandidate,
+            "src/lib/commerce-launch.ts",
+          ),
+        ),
     allowFixtureOnly: testFixtureMode,
     referenceTimestamp,
   });
@@ -529,17 +583,19 @@ if (!missingFlows.length) {
 
 if (
   paymentEvidenceSection.includes("| Seller payout readiness | pending | pending | pending | pending | pending | pending | n/a | pending |") &&
+  paymentEvidenceSection.includes("| Ads checkout | pending | n/a | n/a | n/a | n/a | n/a | n/a | n/a |") &&
+  adPurchasesHardDisabled &&
   dashboardLogSection.includes("| | Live-money proof | Penny test, Admin reconciliation, refund/dispute procedure, payout gate, and native checkout policy review | pending | | |")
 ) {
-  pass("private handoff keeps payout and live-money proof blocked until reviewed");
+  pass("private handoff keeps excluded Ads and live-money proof fail closed");
 } else {
-  fail("private handoff keeps payout and live-money proof blocked until reviewed");
+  fail("private handoff keeps excluded Ads and live-money proof fail closed");
 }
 
 if (
   currentBlockersSection.includes("| Payments | Account activation and Connect setup |") &&
-  currentBlockersSection.includes("Sandbox test connected account and marketplace destination-charge integration guide are confirmed") &&
-  currentBlockersSection.includes("account, email, business, identity, and production verification still need private completion evidence") &&
+  currentBlockersSection.includes("Phone, email, business, public profile, account/profile verification, and go-live representative identity are complete") &&
+  currentBlockersSection.includes("terms-backed integration confirmation, production marketplace onboarding, application mode alignment, and live evidence remain pending") &&
   currentBlockersSection.includes("| Payments | Production app mode preflight |") &&
   currentBlockersSection.includes("explicit mode Needs review, server key mode Test, webhook signing Ready") &&
   currentBlockersSection.includes("checkout blocked until the expected mode is readable and matched | blocked |")
@@ -557,6 +613,7 @@ const requiredReadinessText = [
   "Every required Payments blocker and Payment Dashboard row must name a non-placeholder private proof filename or location",
   "Dashboard evidence must be dated no more than 45 days",
   "cannot be future-dated",
+  "Ads checkout may use `n/a` only while the source launch gate remains hard-disabled",
 ];
 const missingReadinessText = requiredReadinessText.filter(
   (snippet) => !readinessEvidenceSection.includes(snippet),

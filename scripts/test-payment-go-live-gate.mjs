@@ -43,6 +43,11 @@ const ambiguousFixture = writeVariant(
   "2026-07-22T12:00:00Z",
   "07/22/2026 12:00",
 );
+const mixedExcludedAdsFixture = writeVariant(
+  "mixed-excluded-ads.md",
+  "| Ads checkout | 0123456789abcdef0123456789abcdef01234567 | n/a | n/a | n/a | n/a | n/a | n/a | n/a |",
+  "| Ads checkout | 0123456789abcdef0123456789abcdef01234567 | passed | n/a | n/a | n/a | n/a | n/a | n/a |",
+);
 
 function runGate(evidencePath, releaseCandidate = fixtureCandidate) {
   return spawnSync(
@@ -134,6 +139,18 @@ const checks = [
       return (
         result.status === 1 &&
         result.stderr.includes("Attempt date/time: invalid date")
+      );
+    },
+  },
+  {
+    label: "payment gate rejects mixed evidence for an excluded Ads flow",
+    result: runGate(mixedExcludedAdsFixture),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Payment flow / Ads checkout / Expected mode checked: must be exactly n/a while Ads checkout is excluded",
+        )
       );
     },
   },

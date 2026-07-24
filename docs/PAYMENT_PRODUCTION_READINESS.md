@@ -67,6 +67,11 @@ Dashboard evidence must be dated no more than 45 days before the release check
 and cannot be future-dated. Refresh the private proof and review result instead
 of carrying an old dashboard inspection into a newer payment release.
 
+Ads checkout may use `n/a` only while the source launch gate remains hard-disabled
+and every Ads evidence field is explicitly `n/a`. If ad purchases are enabled,
+the strict gate requires the same mode, webhook, reconciliation, policy, live-test,
+and final-result evidence as the other payment flows.
+
 - Live webhook event list captured and matched to the app-required event set above.
 - Live/test mode setting, server payment key mode, and webhook mode reviewed together with no mismatch.
 - Penny test receipt captured for one approved flow after policy review.
