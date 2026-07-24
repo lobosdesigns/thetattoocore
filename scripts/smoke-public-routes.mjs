@@ -997,6 +997,8 @@ const checks = [
       'property="og:image"',
       'name="twitter:card"',
       'name="twitter:image"',
+      '"@type":"ProfilePage"',
+      '"alternateName":"@ceocore"',
     ],
   },
   {

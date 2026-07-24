@@ -6,6 +6,16 @@ const stuffDetail = readFileSync("src/app/stuff/[id]/page.tsx", "utf8");
 const gigsDetail = readFileSync("src/app/gigs/[id]/page.tsx", "utf8");
 const merchDetail = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
 const profileDetail = readFileSync("src/app/u/[username]/page.tsx", "utf8");
+const profileStructuredDataStart = profileDetail.indexOf(
+  "function publicProfileStructuredData",
+);
+const profileStructuredDataEnd = profileDetail.indexOf(
+  "function serializeStructuredData",
+);
+const profileStructuredData =
+  profileStructuredDataStart >= 0 && profileStructuredDataEnd > profileStructuredDataStart
+    ? profileDetail.slice(profileStructuredDataStart, profileStructuredDataEnd)
+    : "";
 const helpPage = readFileSync("src/app/help/page.tsx", "utf8");
 const childSafetyPage = readFileSync("src/app/child-safety-standards/page.tsx", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
@@ -210,13 +220,30 @@ const checks = [
       profileDetail.includes("twitter:"),
   },
   {
+    label: "Public profile structured data is privacy-gated and script-safe",
+    ok:
+      profileStructuredData.includes('"@type": "ProfilePage"') &&
+      profileStructuredData.includes(
+        '"@type": profile.account_type === "studio" ? "Organization" : "Person"',
+      ) &&
+      profileStructuredData.includes("alternateName: `@${profile.username}`") &&
+      profileStructuredData.includes("dateCreated: profile.created_at") &&
+      !profileStructuredData.includes("profile.id") &&
+      !profileStructuredData.toLowerCase().includes("follower") &&
+      profileDetail.includes("profile.is_private || hasBlockRelationship") &&
+      profileDetail.includes('type="application/ld+json"') &&
+      profileDetail.includes('.replace(/</g, "\\\\u003c")'),
+  },
+  {
     label: "Live public smoke checks profile share tags",
     ok:
       publicSmoke.includes("/u/ceocore") &&
       publicSmoke.includes('property="og:title"') &&
       publicSmoke.includes('property="og:image"') &&
       publicSmoke.includes('name="twitter:card"') &&
-      publicSmoke.includes('name="twitter:image"'),
+      publicSmoke.includes('name="twitter:image"') &&
+      publicSmoke.includes('"@type":"ProfilePage"') &&
+      publicSmoke.includes('"alternateName":"@ceocore"'),
   },
   {
     label: "Robots allows public shareable detail paths and blocks private app areas",

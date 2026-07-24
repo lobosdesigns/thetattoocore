@@ -482,6 +482,33 @@ function formatAccountType(value: string) {
   return value.replaceAll("_", " ");
 }
 
+function publicProfileStructuredData(profile: Profile) {
+  const accountType = formatAccountType(profile.account_type);
+  const description = profile.bio?.trim()
+    ? `${accountType} profile: ${profile.bio.trim()}`
+    : `${accountType} profile on ${siteName}.`;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    dateCreated: profile.created_at,
+    mainEntity: {
+      "@type": profile.account_type === "studio" ? "Organization" : "Person",
+      alternateName: `@${profile.username}`,
+      description,
+      ...(profile.avatar_url ? { image: profile.avatar_url } : {}),
+      name: profile.display_name,
+      url: `${siteUrl}/u/${profile.username}`,
+    },
+  };
+}
+
+function serializeStructuredData(
+  value: ReturnType<typeof publicProfileStructuredData>,
+) {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+
 function canViewCommunityList({
   hasBlockRelationship,
   isFollowing,
@@ -1777,9 +1804,21 @@ export default async function ProfilePage({
   const savedMerchIds = new Set(
     (savedMerchRows ?? []).map((item) => item.subject_id),
   );
+  const publicProfileJsonLd =
+    profile.is_private || hasBlockRelationship
+      ? null
+      : publicProfileStructuredData(profile);
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
+      {publicProfileJsonLd ? (
+        <script
+          dangerouslySetInnerHTML={{
+            __html: serializeStructuredData(publicProfileJsonLd),
+          }}
+          type="application/ld+json"
+        />
+      ) : null}
       <div className="ttc-page-panel mx-auto min-h-screen w-full max-w-5xl overflow-x-hidden">
         <header className="sticky top-0 z-10 border-b border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_94%,transparent)] px-4 py-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">

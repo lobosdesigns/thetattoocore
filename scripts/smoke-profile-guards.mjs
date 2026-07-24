@@ -187,6 +187,15 @@ const checks = [
       profilePage.includes('target="_blank"'),
   },
   {
+    label: "public profile structured data respects profile and block privacy",
+    ok:
+      profilePage.includes("function publicProfileStructuredData") &&
+      profilePage.includes('"@type": "ProfilePage"') &&
+      profilePage.includes("profile.is_private || hasBlockRelationship") &&
+      profilePage.includes('type="application/ld+json"') &&
+      profilePage.includes('.replace(/</g, "\\\\u003c")'),
+  },
+  {
     label: "studio profiles can show linked artists",
     ok:
       profilePage.includes("function LinkedArtistsSection") &&
