@@ -545,7 +545,7 @@ export default async function SearchPage({
         shouldRunProfiles
           ? (() => {
               let publicProfileQuery = supabase
-                .from("profiles")
+                .from("public_profiles")
                 .select(
                   "id, username, display_name, avatar_url, banner_url, account_type, bio, city, license_verified_at, region, shop_profile_id",
                 )
@@ -560,8 +560,7 @@ export default async function SearchPage({
                     ],
                     query,
                   ),
-                )
-                .eq("is_private", false);
+                );
 
               if (city) publicProfileQuery = publicProfileQuery.ilike("city", cityPattern);
               if (region) publicProfileQuery = publicProfileQuery.ilike("region", regionPattern);
@@ -837,7 +836,7 @@ export default async function SearchPage({
   ) as string[];
   const { data: profileShops } = profileShopIds.length
     ? await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("id, username, display_name")
         .in("id", profileShopIds)
         .returns<{ display_name: string; id: string; username: string }[]>()

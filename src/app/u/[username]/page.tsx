@@ -1299,9 +1299,9 @@ export async function generateMetadata({
   const cleanUsername = username.replace(/^@/, "").toLowerCase();
   const supabase = await createClient();
   const { data: profile } = await supabase
-    .from("profiles")
+    .from("public_profiles")
     .select(
-      "id, username, display_name, avatar_url, banner_url, account_type, bio, city, region, country, is_private",
+      "id, username, display_name, avatar_url, banner_url, account_type, bio, city, region, country",
     )
     .eq("username", cleanUsername)
     .maybeSingle<Pick<
@@ -1314,7 +1314,6 @@ export async function generateMetadata({
       | "country"
       | "display_name"
       | "id"
-      | "is_private"
       | "region"
       | "username"
     >>();
@@ -1333,8 +1332,7 @@ export async function generateMetadata({
     .filter(Boolean)
     .join(", ");
   const title = `${profile.display_name} (@${profile.username})`;
-  const noindexProfile =
-    profile.is_private || isInternalIndexingProfile(profile.username);
+  const noindexProfile = isInternalIndexingProfile(profile.username);
   const description = noindexProfile
     ? `${profile.display_name} has a private profile on ${siteName}.`
     : profile.bio?.slice(0, 155) ||
@@ -1434,13 +1432,24 @@ export default async function ProfilePage({
   const gigsProfileLimit = profileSectionLimit(query.profile_gigs);
   const merchProfileLimit = profileSectionLimit(query.profile_merch);
 
-  const { data: profileRow } = await supabase
-    .from("profiles")
-    .select(
-      "id, username, display_name, avatar_url, banner_url, account_type, bio, city, region, country, website_url, instagram_url, tiktok_url, facebook_url, youtube_url, x_url, shop_profile_id, is_private, followers_visibility, following_visibility, license_verified_at, created_at",
-    )
+  const publicProfileSelect =
+    "id, username, display_name, avatar_url, banner_url, account_type, bio, city, region, country, website_url, instagram_url, tiktok_url, facebook_url, youtube_url, x_url, shop_profile_id, followers_visibility, following_visibility, license_verified_at, created_at";
+  const privateProfileSelect = `${publicProfileSelect}, is_private`;
+  const { data: publicProfileRow } = await supabase
+    .from("public_profiles")
+    .select(publicProfileSelect)
     .eq("username", cleanUsername)
-    .maybeSingle<Omit<Profile, "shop_profile">>();
+    .maybeSingle<Omit<Profile, "is_private" | "shop_profile">>();
+  const { data: fallbackProfileRow } = publicProfileRow
+    ? { data: null as Omit<Profile, "shop_profile"> | null }
+    : await supabase
+        .from("profiles")
+        .select(privateProfileSelect)
+        .eq("username", cleanUsername)
+        .maybeSingle<Omit<Profile, "shop_profile">>();
+  const profileRow: Omit<Profile, "shop_profile"> | null = publicProfileRow
+    ? { ...publicProfileRow, is_private: false }
+    : fallbackProfileRow;
 
   if (!profileRow) {
     notFound();
@@ -1448,7 +1457,7 @@ export default async function ProfilePage({
 
   const { data: shopProfile } = profileRow.shop_profile_id
     ? await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("id, username, display_name, avatar_url, account_type, license_verified_at")
         .eq("id", profileRow.shop_profile_id)
         .maybeSingle<ShopProfile>()
@@ -1626,15 +1635,12 @@ export default async function ProfilePage({
       : Promise.resolve({ data: null }),
     profile.account_type === "studio"
       ? supabase
-          .from("profiles")
+          .from("public_profiles")
           .select(
             "id, username, display_name, avatar_url, account_type, license_verified_at",
           )
           .eq("shop_profile_id", profile.id)
           .eq("account_type", "artist")
-          .eq("is_private", false)
-          .is("banned_at", null)
-          .is("suspended_at", null)
           .order("display_name", { ascending: true })
           .limit(12)
           .returns<LinkedArtist[]>()

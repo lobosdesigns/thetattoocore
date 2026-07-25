@@ -1,0 +1,25 @@
+export type PublicProfile = {
+  id: string;
+  username: string;
+  display_name: string;
+  account_type: string;
+  bio: string | null;
+  avatar_url: string | null;
+  banner_url: string | null;
+  city: string | null;
+  region: string | null;
+  country: string | null;
+  website_url: string | null;
+  instagram_url: string | null;
+  tiktok_url: string | null;
+  facebook_url: string | null;
+  youtube_url: string | null;
+  x_url: string | null;
+  shop_profile_id: string | null;
+  license_verified_at: string | null;
+  followers_visibility: "public" | "followers" | "private";
+  following_visibility: "public" | "followers" | "private";
+  comment_permission: "everyone" | "followers" | "none";
+  created_at: string;
+  updated_at: string | null;
+};

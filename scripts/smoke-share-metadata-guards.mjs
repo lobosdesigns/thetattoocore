@@ -30,6 +30,7 @@ const sitemap = readFileSync("src/app/sitemap.ts", "utf8");
 const middlewareSource = readFileSync("src/middleware.ts", "utf8");
 const notFoundPage = readFileSync("src/app/not-found.tsx", "utf8");
 const profileIndexing = readFileSync("src/lib/profile-indexing.ts", "utf8");
+const publicProfilesMigration = readFileSync("supabase/migrations/20260725160000_create_public_profiles_view.sql", "utf8");
 
 const publicContentDetails = [
   ["4U detail", feedDetail, 'post.visibility === "public_preview" && !post.is_sensitive'],
@@ -283,7 +284,13 @@ const checks = [
       profileIndexing.includes('"qa_android_dm"') &&
       profileIndexing.includes('"ttc_tester"') &&
       profileIndexing.includes('"checkouttest"') &&
-      sitemap.includes("!isInternalIndexingProfile(profile.username)") &&
+      sitemap.includes(".from(\"public_profiles\")") &&
+      !sitemap.includes("isInternalIndexingProfile") &&
+      publicProfilesMigration.includes("lower(username) not in") &&
+      publicProfilesMigration.includes("'ttc_reviewer'") &&
+      publicProfilesMigration.includes("'qa_android_dm'") &&
+      publicProfilesMigration.includes("'ttc_tester'") &&
+      publicProfilesMigration.includes("'checkouttest'") &&
       profileDetail.includes("const noindexProfile") &&
       profileDetail.includes("follow: !noindexProfile") &&
       profileDetail.includes("index: !noindexProfile") &&

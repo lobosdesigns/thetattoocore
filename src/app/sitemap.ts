@@ -1,14 +1,9 @@
 import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { helpArticles } from "@/lib/help-center";
-import { isInternalIndexingProfile } from "@/lib/profile-indexing";
+import type { PublicProfile } from "@/lib/public-profiles";
 import { siteUrl } from "@/lib/site";
 import { isVerifiedProfessional } from "@/lib/verification";
-
-type PublicProfile = {
-  username: string;
-  updated_at: string | null;
-};
 
 type PublicListing = {
   id: string;
@@ -105,14 +100,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   });
   const { data: profiles } = await supabase
-    .from("profiles")
+    .from("public_profiles")
     .select("username, updated_at")
-    .eq("is_private", false)
-    .is("banned_at", null)
-    .is("suspended_at", null)
     .order("updated_at", { ascending: false })
     .limit(500)
-    .returns<PublicProfile[]>();
+    .returns<Pick<PublicProfile, "username" | "updated_at">[]>();
   const { data: listings } = await supabase
     .from("marketplace_listings")
     .select("id, updated_at")
@@ -167,7 +159,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...routes,
     ...(profiles ?? [])
-      .filter((profile) => !isInternalIndexingProfile(profile.username))
       .map((profile) => ({
         changeFrequency: "weekly" as const,
         lastModified: profile.updated_at
