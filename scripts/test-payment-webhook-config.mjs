@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
-import { stripeWebhookSigningSecretFormatValid } from "../src/lib/stripe/secret-format.ts";
+import { importSelfContainedTypeScript } from "./import-self-contained-typescript.mjs";
+
+const { stripeWebhookSigningSecretFormatValid } = await importSelfContainedTypeScript(
+  "../src/lib/stripe/secret-format.ts",
+  import.meta.url,
+);
 
 assert.equal(
   stripeWebhookSigningSecretFormatValid(

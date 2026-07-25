@@ -849,7 +849,7 @@ const checks = [
       mailRedactionTest.includes("TTC_MAIL_REDACTION_SENTINEL") &&
       mailRedactionTest.includes('assert.equal("cause" in error, false)') &&
       packageJson.includes(
-        '"smoke:security": "node scripts/test-mail-redaction.mjs && node scripts/smoke-security-guards.mjs"',
+        '"smoke:security": "node --experimental-default-type=module scripts/test-mail-redaction.mjs && node scripts/smoke-security-guards.mjs"',
       ),
   },
   {

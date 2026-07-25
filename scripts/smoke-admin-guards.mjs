@@ -1,9 +1,14 @@
 import { readFileSync } from "node:fs";
-import {
+import { importSelfContainedTypeScript } from "./import-self-contained-typescript.mjs";
+
+const {
   assignableUserRoles,
   canModerateUserStatus,
   isAssignableUserRole,
-} from "../src/lib/admin-role-hierarchy.ts";
+} = await importSelfContainedTypeScript(
+  "../src/lib/admin-role-hierarchy.ts",
+  import.meta.url,
+);
 
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");

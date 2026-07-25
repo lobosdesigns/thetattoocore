@@ -1,4 +1,9 @@
-import { nativeAppPathOrNull } from "../src/lib/native-app-url.ts";
+import { importSelfContainedTypeScript } from "./import-self-contained-typescript.mjs";
+
+const { nativeAppPathOrNull } = await importSelfContainedTypeScript(
+  "../src/lib/native-app-url.ts",
+  import.meta.url,
+);
 
 const checks = [
   {

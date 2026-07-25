@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
-import {
+import { importSelfContainedTypeScript } from "./import-self-contained-typescript.mjs";
+
+const {
   StripeCheckoutRequestError,
   bookingCheckoutReconciliationDecision,
   bookingCheckoutReleaseAttemptDecision,
@@ -7,7 +9,10 @@ import {
   createStripeCheckoutSession,
   expireCheckoutSessionBeforeRollback,
   expireStripeCheckoutSession,
-} from "../src/lib/stripe/checkout-session.ts";
+} = await importSelfContainedTypeScript(
+  "../src/lib/stripe/checkout-session.ts",
+  import.meta.url,
+);
 
 const secretKey = "test_secret_value";
 const createBody = new URLSearchParams({

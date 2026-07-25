@@ -1,25 +1,39 @@
 import assert from "node:assert/strict";
-import {
+import { importSelfContainedTypeScript } from "./import-self-contained-typescript.mjs";
+
+const {
   buildNativeMessage,
   buildServiceAccountJwtClaims,
   classifyFcmResponse,
   nativePushDeliveryReady,
   nativePushSenderReady,
   retryDelaySeconds,
-} from "../src/lib/native-push/sender-core.ts";
-import {
+} = await importSelfContainedTypeScript(
+  "../src/lib/native-push/sender-core.ts",
+  import.meta.url,
+);
+const {
   nativePushQaBuildAllowed,
   nativePushQaRoleAllowed,
-} from "../src/lib/native-push/qa-access.ts";
-import {
+} = await importSelfContainedTypeScript(
+  "../src/lib/native-push/qa-access.ts",
+  import.meta.url,
+);
+const {
   buildNativePushQaAlert,
   nativePushQaDirectConversationAllowed,
   parseNativePushQaResponse,
   parseNativePushQaRequest,
   parseNativePushQaTarget,
   readNativePushQaTarget,
-} from "../src/lib/native-push/qa-target.ts";
-import { allowsNoisyDeliveryNow } from "../src/lib/notifications.ts";
+} = await importSelfContainedTypeScript(
+  "../src/lib/native-push/qa-target.ts",
+  import.meta.url,
+);
+const { allowsNoisyDeliveryNow } = await importSelfContainedTypeScript(
+  "../src/lib/notifications.ts",
+  import.meta.url,
+);
 
 const readyEnvironment = {
   FIREBASE_CLIENT_EMAIL: "sender@example.invalid",

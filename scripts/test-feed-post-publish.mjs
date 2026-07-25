@@ -1,8 +1,13 @@
 import assert from "node:assert/strict";
-import {
+import { importSelfContainedTypeScript } from "./import-self-contained-typescript.mjs";
+
+const {
   publishFeedPostWithRequiredMedia,
   settlePublishedFeedPostTags,
-} from "../src/lib/feed-post-publish.ts";
+} = await importSelfContainedTypeScript(
+  "../src/lib/feed-post-publish.ts",
+  import.meta.url,
+);
 
 function createHarness({
   cleanupFailures = new Set(),

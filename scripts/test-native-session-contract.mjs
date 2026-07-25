@@ -1,8 +1,13 @@
 import assert from "node:assert/strict";
-import {
+import { importSelfContainedTypeScript } from "./import-self-contained-typescript.mjs";
+
+const {
   nativeSessionFailureStatus,
   nativeSessionReturnPath,
-} from "../src/lib/native-session.ts";
+} = await importSelfContainedTypeScript(
+  "../src/lib/native-session.ts",
+  import.meta.url,
+);
 
 assert.equal(nativeSessionFailureStatus(null), 401);
 assert.equal(nativeSessionFailureStatus({ name: "AuthSessionMissingError" }), 401);

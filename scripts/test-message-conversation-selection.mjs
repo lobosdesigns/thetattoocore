@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
-import { selectMessageConversation } from "../src/lib/message-conversation-selection.ts";
+import { importSelfContainedTypeScript } from "./import-self-contained-typescript.mjs";
+
+const { selectMessageConversation } = await importSelfContainedTypeScript(
+  "../src/lib/message-conversation-selection.ts",
+  import.meta.url,
+);
 
 const conversations = [
   {
