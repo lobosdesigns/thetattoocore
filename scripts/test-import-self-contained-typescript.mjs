@@ -56,6 +56,17 @@ try {
     /TypeScript transpilation failed/,
   );
 
+  const typeOnlyPath = await writeFixture(
+    "type-only.ts",
+    'import type { Stats } from "node:fs"; import { type Dirent } from "node:fs"; export const value = 3 satisfies number; export type Result = Stats | Dirent;\n',
+  );
+  const typeOnly = await importSelfContainedTypeScript(
+    pathToFileURL(typeOnlyPath).href,
+    parentUrl,
+  );
+
+  assert.equal(typeOnly.value, 3);
+
   for (const [name, source] of [
     [
       "static-import.ts",
@@ -69,11 +80,31 @@ try {
       "dynamic-import.ts",
       'export const dependency = import("node:path");\n',
     ],
+    [
+      "direct-eval.ts",
+      'export const dependency = eval("import(\'node:path\')");\n',
+    ],
+    [
+      "indirect-eval.ts",
+      'export const dependency = (0, eval)("import(\'node:path\')");\n',
+    ],
+    [
+      "aliased-eval.ts",
+      'const run = eval; export const dependency = run("import(\'node:path\')");\n',
+    ],
+    [
+      "function-constructor.ts",
+      'export const dependency = Function("return import(\'node:path\')")();\n',
+    ],
+    [
+      "new-function.ts",
+      'export const dependency = new Function("return import(\'node:path\')")();\n',
+    ],
   ]) {
     await writeFixture(name, source);
     await assert.rejects(
       importSelfContainedTypeScript(`./${name}`, parentUrl),
-      /Test module must be self-contained/,
+      /Test module must be self-contained: .*self-contained test modules may not use runtime dynamic-code execution/,
     );
   }
 
