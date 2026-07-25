@@ -448,7 +448,8 @@ export default async function AdminContentPage({
       .select(
         "id, caption, created_at, is_sensitive, sensitive_reason, moderation_status, visibility, profiles:profiles!feed_posts_author_id_fkey(display_name, username)",
         { count: "exact" },
-      );
+      )
+      .eq("is_published", true);
 
     if (activeStatus === "needs_review") {
       query = query.or("is_sensitive.eq.true,moderation_status.neq.active");

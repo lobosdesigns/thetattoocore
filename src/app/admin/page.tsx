@@ -542,6 +542,7 @@ export default async function AdminPage({
       .select(
         "id, caption, created_at, is_sensitive, sensitive_reason, moderation_status, visibility, profiles:profiles!feed_posts_author_id_fkey(display_name, username)",
       )
+      .eq("is_published", true)
       .or("is_sensitive.eq.true,moderation_status.neq.active")
       .order("created_at", { ascending: false })
       .limit(25)

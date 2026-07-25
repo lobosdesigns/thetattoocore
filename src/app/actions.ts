@@ -2,7 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { publishFeedPostWithRequiredMedia } from "@/lib/feed-post-publish";
+import {
+  publishFeedPostWithRequiredMedia,
+  settlePublishedFeedPostTags,
+} from "@/lib/feed-post-publish";
 import type { MediaMetadata } from "@/lib/media/metadata";
 import { inspectMediaFile, validateMediaMetadata } from "@/lib/media/metadata";
 import {
@@ -1549,6 +1552,7 @@ export async function createFeedPost(formData: FormData) {
 
   const intendedIsIndexable =
     visibility === "public_preview" && !sensitive.is_sensitive;
+  const postId = crypto.randomUUID();
   const mediaFilename = `${crypto.randomUUID()}.${extensionFor(media)}`;
   const storagePathFor = (postId: string) =>
     `${userId}/feed/${postId}/${mediaFilename}`;
@@ -1572,10 +1576,25 @@ export async function createFeedPost(formData: FormData) {
         throw error ?? new Error("4U post media attach returned no row.");
       }
     },
-    async createDraft() {
+    async confirmPublished(postId) {
+      const { data, error } = await cleanupClient
+        .from("feed_posts")
+        .select("is_published")
+        .eq("id", postId)
+        .eq("author_id", userId)
+        .maybeSingle<{ is_published: boolean }>();
+
+      if (error) {
+        throw error;
+      }
+
+      return data?.is_published === true;
+    },
+    async createDraft(postId) {
       const { data, error } = await supabase
         .from("feed_posts")
         .insert({
+          id: postId,
           author_id: userId,
           caption,
           is_indexable: false,
@@ -1594,8 +1613,6 @@ export async function createFeedPost(formData: FormData) {
       if (error || !data) {
         throw error ?? new Error("4U post draft creation returned no row.");
       }
-
-      return data.id;
     },
     async deleteDraft(postId) {
       const { data, error } = await cleanupClient
@@ -1603,13 +1620,17 @@ export async function createFeedPost(formData: FormData) {
         .delete()
         .eq("id", postId)
         .eq("author_id", userId)
+        .eq("is_published", false)
         .select("id")
-        .single<{ id: string }>();
+        .maybeSingle<{ id: string }>();
 
-      if (error || !data) {
-        throw error ?? new Error("4U post draft cleanup returned no row.");
+      if (error) {
+        throw error;
       }
+
+      return Boolean(data);
     },
+    postId,
     async publishDraft(postId) {
       const { data, error } = await supabase
         .from("feed_posts")
@@ -1659,18 +1680,39 @@ export async function createFeedPost(formData: FormData) {
         cleanupError.error,
       );
     }
+    if (publishResult.confirmationError) {
+      console.error(
+        "4U post publication confirmation failed.",
+        publishResult.confirmationError,
+      );
+    }
+    if (publishResult.statusUncertain) {
+      revalidatePath("/");
+      redirect(
+        homeMessage(
+          "We could not confirm whether your 4U post published. Check 4U before trying again.",
+          "feed",
+        ),
+      );
+    }
     redirect(homeMessage("Could not publish 4U post. Please try again.", "feed"));
   }
 
-  const tagError = await syncFeedPostTags({
-    postId: publishResult.postId,
-    supabase,
-    taggedUsernames,
-    userId,
-  });
+  const tagResult = await settlePublishedFeedPostTags(() =>
+    syncFeedPostTags({
+      postId: publishResult.postId,
+      supabase,
+      taggedUsernames,
+      userId,
+    }),
+  );
 
-  if (tagError) {
-    redirect(homeMessage(tagError, "feed"));
+  if (!tagResult.ok) {
+    console.error("4U post tag update failed.", tagResult.error);
+    revalidatePath("/");
+    redirect(
+      homeMessage("4U post published, but tags could not be updated.", "feed"),
+    );
   }
 
   revalidatePath("/");

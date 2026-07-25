@@ -330,18 +330,36 @@ const checks = [
       ) &&
       createFeedPost.includes("const cleanupClient = createAdminClient();") &&
       createFeedPost.includes("publishFeedPostWithRequiredMedia({") &&
+      createFeedPost.includes("const postId = crypto.randomUUID();") &&
+      createFeedPost.includes("id: postId") &&
+      createFeedPost.includes("async confirmPublished(postId)") &&
       createFeedPost.includes("is_indexable: false") &&
       createFeedPost.includes("is_published: false") &&
       createFeedPost.includes(".eq(\"is_published\", false)") &&
+      createFeedPost.includes(".maybeSingle<{ id: string }>()") &&
       createFeedPost.includes("is_published: true") &&
       createFeedPost.includes(".remove([storagePathFor(postId)])") &&
       createFeedPost.includes(".delete()") &&
-      feedPostPublish.indexOf("await createDraft()") <
+      createFeedPost.includes("settlePublishedFeedPostTags(() =>") &&
+      createFeedPost.includes(
+        "We could not confirm whether your 4U post published. Check 4U before trying again.",
+      ) &&
+      createFeedPost.includes(
+        'homeMessage("4U post published, but tags could not be updated.", "feed")',
+      ) &&
+      feedPostPublish.indexOf("await createDraft(postId)") <
         feedPostPublish.indexOf("await uploadMedia(postId)") &&
       feedPostPublish.indexOf("await uploadMedia(postId)") <
         feedPostPublish.indexOf("await attachMedia(postId)") &&
       feedPostPublish.indexOf("await attachMedia(postId)") <
         feedPostPublish.indexOf("await publishDraft(postId)") &&
+      feedPostPublish.indexOf("await confirmPublished(postId)") <
+        feedPostPublish.indexOf("await deleteDraft(postId)") &&
+      feedPostPublish.indexOf("await deleteDraft(postId)") <
+        feedPostPublish.indexOf("await removeMedia(postId)") &&
+      feedPostPublish.includes('stage !== "draft"') &&
+      feedPostPublish.includes('stage === "publish" && !draftDeleted') &&
+      feedPostPublish.includes("export async function settlePublishedFeedPostTags") &&
       feedPostPublish.includes('step: "media"') &&
       feedPostPublish.includes('step: "draft"'),
   },

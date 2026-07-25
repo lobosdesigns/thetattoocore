@@ -543,6 +543,12 @@ const checks = [
       productPlan.includes("Admin Content supports 50-item pagination plus status filters"),
   },
   {
+    label: "admin 4U moderation queues exclude unpublished upload drafts",
+    ok:
+      adminContent.includes('.eq("is_published", true)') &&
+      adminOverview.includes('.eq("is_published", true)'),
+  },
+  {
     label: "admin content moderation actions hide raw backend errors from redirects",
     ok:
       adminActions.includes('console.error("Admin linked content report lookup failed.", reportError)') &&
