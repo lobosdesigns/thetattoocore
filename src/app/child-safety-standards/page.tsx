@@ -6,6 +6,7 @@ import {
   seoKeywordGroups,
   siteKeywords,
   siteName,
+  siteOpenGraph,
   siteUrl,
   supportEmail,
 } from "@/lib/site";
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
     seoKeywordGroups.childSafety,
     seoKeywordGroups.help,
   ),
+  openGraph: siteOpenGraph(`${siteUrl}/child-safety-standards`),
   title: "Child Safety Standards",
 };
 

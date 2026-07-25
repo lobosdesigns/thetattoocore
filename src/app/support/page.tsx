@@ -6,6 +6,7 @@ import {
   seoKeywordGroups,
   siteKeywords,
   siteName,
+  siteOpenGraph,
   siteUrl,
   supportEmail,
 } from "@/lib/site";
@@ -23,6 +24,7 @@ export const metadata: Metadata = {
     "tattoo safety reports",
     "account deletion help",
   ),
+  openGraph: siteOpenGraph(`${siteUrl}/support`),
   title: "Support",
 };
 

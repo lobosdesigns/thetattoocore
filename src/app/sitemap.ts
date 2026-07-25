@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { helpArticles } from "@/lib/help-center";
+import { isInternalIndexingProfile } from "@/lib/profile-indexing";
 import { siteUrl } from "@/lib/site";
 import { isVerifiedProfessional } from "@/lib/verification";
 
@@ -36,54 +37,56 @@ type PublicThread = {
   updated_at: string | null;
 };
 
+const staticContentLastModified = new Date("2026-07-22T00:00:00.000Z");
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
+  const dynamicFallbackLastModified = staticContentLastModified;
   const routes: MetadataRoute.Sitemap = [
     {
       changeFrequency: "daily",
-      lastModified: now,
+      lastModified: staticContentLastModified,
       priority: 1,
       url: siteUrl,
     },
     {
       changeFrequency: "monthly",
-      lastModified: now,
+      lastModified: staticContentLastModified,
       priority: 0.4,
       url: `${siteUrl}/terms`,
     },
     {
       changeFrequency: "monthly",
-      lastModified: now,
+      lastModified: staticContentLastModified,
       priority: 0.4,
       url: `${siteUrl}/privacy`,
     },
     {
       changeFrequency: "monthly",
-      lastModified: now,
+      lastModified: staticContentLastModified,
       priority: 0.5,
       url: `${siteUrl}/help`,
     },
     ...helpArticles.map((article) => ({
       changeFrequency: "monthly" as const,
-      lastModified: now,
+      lastModified: staticContentLastModified,
       priority: 0.5,
       url: `${siteUrl}/help/${article.slug}`,
     })),
     {
       changeFrequency: "monthly",
-      lastModified: now,
+      lastModified: staticContentLastModified,
       priority: 0.5,
       url: `${siteUrl}/support`,
     },
     {
       changeFrequency: "monthly",
-      lastModified: now,
+      lastModified: staticContentLastModified,
       priority: 0.5,
       url: `${siteUrl}/child-safety-standards`,
     },
     {
       changeFrequency: "daily",
-      lastModified: now,
+      lastModified: staticContentLastModified,
       priority: 0.7,
       url: `${siteUrl}/merch`,
     },
@@ -163,35 +166,37 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...routes,
-    ...(profiles ?? []).map((profile) => ({
-      changeFrequency: "weekly" as const,
-      lastModified: profile.updated_at
-        ? new Date(profile.updated_at)
-        : now,
-      priority: 0.7,
-      url: `${siteUrl}/u/${profile.username}`,
-    })),
+    ...(profiles ?? [])
+      .filter((profile) => !isInternalIndexingProfile(profile.username))
+      .map((profile) => ({
+        changeFrequency: "weekly" as const,
+        lastModified: profile.updated_at
+          ? new Date(profile.updated_at)
+          : dynamicFallbackLastModified,
+        priority: 0.7,
+        url: `${siteUrl}/u/${profile.username}`,
+      })),
     ...(posts ?? []).map((post) => ({
       changeFrequency: "weekly" as const,
-      lastModified: post.updated_at ? new Date(post.updated_at) : now,
+      lastModified: post.updated_at ? new Date(post.updated_at) : dynamicFallbackLastModified,
       priority: 0.6,
       url: `${siteUrl}/p/${post.id}`,
     })),
     ...(threads ?? []).map((thread) => ({
       changeFrequency: "weekly" as const,
-      lastModified: thread.updated_at ? new Date(thread.updated_at) : now,
+      lastModified: thread.updated_at ? new Date(thread.updated_at) : dynamicFallbackLastModified,
       priority: 0.6,
       url: `${siteUrl}/t/${thread.id}`,
     })),
     ...(listings ?? []).map((listing) => ({
       changeFrequency: "weekly" as const,
-      lastModified: listing.updated_at ? new Date(listing.updated_at) : now,
+      lastModified: listing.updated_at ? new Date(listing.updated_at) : dynamicFallbackLastModified,
       priority: 0.6,
       url: `${siteUrl}/stuff/${listing.id}`,
     })),
     ...(gigs ?? []).map((gig) => ({
       changeFrequency: "weekly" as const,
-      lastModified: gig.updated_at ? new Date(gig.updated_at) : now,
+      lastModified: gig.updated_at ? new Date(gig.updated_at) : dynamicFallbackLastModified,
       priority: 0.6,
       url: `${siteUrl}/gigs/${gig.id}`,
     })),
@@ -202,7 +207,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       )
       .map((product) => ({
         changeFrequency: "weekly" as const,
-        lastModified: product.updated_at ? new Date(product.updated_at) : now,
+        lastModified: product.updated_at ? new Date(product.updated_at) : dynamicFallbackLastModified,
         priority: 0.6,
         url: `${siteUrl}/merch/${product.id}`,
       })),

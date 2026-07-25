@@ -27,6 +27,9 @@ const homePage = readFileSync("src/app/page.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const robots = readFileSync("src/app/robots.ts", "utf8");
 const sitemap = readFileSync("src/app/sitemap.ts", "utf8");
+const middlewareSource = readFileSync("src/middleware.ts", "utf8");
+const notFoundPage = readFileSync("src/app/not-found.tsx", "utf8");
+const profileIndexing = readFileSync("src/lib/profile-indexing.ts", "utf8");
 
 const publicContentDetails = [
   ["4U detail", feedDetail, 'post.visibility === "public_preview" && !post.is_sensitive'],
@@ -214,8 +217,10 @@ const checks = [
   {
     label: "Public profile metadata indexes public profiles only",
     ok:
-      profileDetail.includes("follow: !profile.is_private") &&
-      profileDetail.includes("index: !profile.is_private") &&
+      profileDetail.includes("const noindexProfile") &&
+      profileDetail.includes("isInternalIndexingProfile(profile.username)") &&
+      profileDetail.includes("follow: !noindexProfile") &&
+      profileDetail.includes("index: !noindexProfile") &&
       profileDetail.includes("type: \"profile\"") &&
       profileDetail.includes("twitter:"),
   },
@@ -230,7 +235,9 @@ const checks = [
       profileStructuredData.includes("dateCreated: profile.created_at") &&
       !profileStructuredData.includes("profile.id") &&
       !profileStructuredData.toLowerCase().includes("follower") &&
-      profileDetail.includes("profile.is_private || hasBlockRelationship") &&
+      profileDetail.includes("profile.is_private ||") &&
+      profileDetail.includes("isInternalIndexingProfile(profile.username) ||") &&
+      profileDetail.includes("hasBlockRelationship") &&
       profileDetail.includes('type="application/ld+json"') &&
       profileDetail.includes('.replace(/</g, "\\\\u003c")'),
   },
@@ -244,6 +251,82 @@ const checks = [
       publicSmoke.includes('name="twitter:image"') &&
       publicSmoke.includes('"@type":"ProfilePage"') &&
       publicSmoke.includes('"alternateName":"@ceocore"'),
+  },
+  {
+    label: "Canonical production host and HTTPS redirect is exact and single-hop",
+    ok:
+      middlewareSource.includes('const canonicalHost = "thetattoocore.com"') &&
+      middlewareSource.includes("redirectableProductionHosts") &&
+      middlewareSource.includes("`www.${canonicalHost}`") &&
+      middlewareSource.includes('request.headers.get("host")?.toLowerCase().split(":")[0]') &&
+      middlewareSource.includes('requestHost === canonicalHost && request.nextUrl.protocol === "https:"') &&
+      middlewareSource.includes("request.nextUrl.clone()") &&
+      middlewareSource.includes('redirectUrl.protocol = "https:"') &&
+      middlewareSource.includes("redirectUrl.hostname = canonicalHost") &&
+      middlewareSource.includes('redirectUrl.port = ""') &&
+      middlewareSource.includes("NextResponse.redirect(redirectUrl, 308)") &&
+      middlewareSource.indexOf("const redirectUrl = canonicalRedirectUrl(request)") <
+        middlewareSource.indexOf('request.nextUrl.pathname === "/.well-known/assetlinks.json"'),
+  },
+  {
+    label: "Canonical redirect does not target local, preview, or unrelated hosts",
+    ok:
+      middlewareSource.includes("!requestHost || !redirectableProductionHosts.has(requestHost)") &&
+      !middlewareSource.includes(".endsWith(canonicalHost)") &&
+      !middlewareSource.includes("includes(canonicalHost)") &&
+      !middlewareSource.includes("NEXT_PUBLIC_SITE_URL"),
+  },
+  {
+    label: "Known internal QA, reviewer, and checkout profiles are noindexed",
+    ok:
+      profileIndexing.includes('"ttc_reviewer"') &&
+      profileIndexing.includes('"qa_android_dm"') &&
+      profileIndexing.includes('"ttc_tester"') &&
+      profileIndexing.includes('"checkouttest"') &&
+      sitemap.includes("!isInternalIndexingProfile(profile.username)") &&
+      profileDetail.includes("const noindexProfile") &&
+      profileDetail.includes("follow: !noindexProfile") &&
+      profileDetail.includes("index: !noindexProfile") &&
+      profileDetail.includes("isInternalIndexingProfile(profile.username) ||") &&
+      profileDetail.includes("publicProfileStructuredData(profile)"),
+  },
+  {
+    label: "Not-found page keeps real 404 handling and overrides robots metadata",
+    ok:
+      notFoundPage.includes("export const metadata") &&
+      notFoundPage.includes("robots:") &&
+      notFoundPage.includes("googleBot:") &&
+      notFoundPage.includes("index: false") &&
+      notFoundPage.includes("follow: false") &&
+      notFoundPage.includes("export default function NotFound") &&
+      !notFoundPage.includes("redirect(") &&
+      !notFoundPage.includes("permanentRedirect("),
+  },
+  {
+    label: "Static sitemap entries use stable modification dates",
+    ok:
+      sitemap.includes('const staticContentLastModified = new Date("2026-07-22T00:00:00.000Z")') &&
+      sitemap.includes("const dynamicFallbackLastModified = staticContentLastModified") &&
+      sitemap.includes("lastModified: staticContentLastModified") &&
+      sitemap.includes("helpArticles.map") &&
+      !sitemap.includes("const now = new Date()") &&
+      !sitemap.includes("lastModified: now"),
+  },
+  {
+    label: "Page-specific Open Graph URLs preserve shared image and description fields",
+    ok:
+      siteConstants.includes("export function siteOpenGraph") &&
+      siteConstants.includes("description: siteDescription") &&
+      siteConstants.includes("images: [shareImage(brandShareImage, brandShareImageAlt)]") &&
+      rootLayout.includes("openGraph: siteOpenGraph(siteUrl)") &&
+      helpPage.includes("openGraph: siteOpenGraph(`${siteUrl}/help`)") &&
+      childSafetyPage.includes("openGraph: siteOpenGraph(`${siteUrl}/child-safety-standards`)") &&
+      supportPage.includes("openGraph: siteOpenGraph(`${siteUrl}/support`)") &&
+      privacyPage.includes("openGraph: siteOpenGraph(`${siteUrl}/privacy`)") &&
+      termsPage.includes("openGraph: siteOpenGraph(`${siteUrl}/terms`)") &&
+      [helpPage, childSafetyPage, supportPage, privacyPage, termsPage].every((source) =>
+        source.includes("siteOpenGraph"),
+      ),
   },
   {
     label: "Robots allows public shareable detail paths and blocks private app areas",
@@ -267,6 +350,7 @@ const checks = [
       sitemap.includes('changeFrequency: "daily"') &&
       sitemap.includes("priority: 1") &&
       sitemap.includes("url: siteUrl") &&
+      sitemap.includes("staticContentLastModified") &&
       publicSmoke.includes(
         "const requiredSitemapUrls = [baseUrl, `${baseUrl}/merch`]",
       ),

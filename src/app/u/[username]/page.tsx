@@ -40,6 +40,7 @@ import { NotificationBellLink } from "@/app/notification-bell-link";
 import { ProtectedVideo } from "@/app/protected-video";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { SavedItemButton } from "@/app/saved-item-button";
+import { isInternalIndexingProfile } from "@/lib/profile-indexing";
 import { calendarConnectionStatusLabel } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -1332,16 +1333,18 @@ export async function generateMetadata({
     .filter(Boolean)
     .join(", ");
   const title = `${profile.display_name} (@${profile.username})`;
-  const description = profile.is_private
+  const noindexProfile =
+    profile.is_private || isInternalIndexingProfile(profile.username);
+  const description = noindexProfile
     ? `${profile.display_name} has a private profile on ${siteName}.`
     : profile.bio?.slice(0, 155) ||
       `${profile.display_name} is a ${profile.account_type} on ${siteName}${
         location ? ` in ${location}` : ""
       }.`;
-  const shareTitle = profile.is_private
+  const shareTitle = noindexProfile
     ? `Private profile | ${siteName}`
     : title;
-  const { data: sharePost } = profile.is_private
+  const { data: sharePost } = noindexProfile
     ? { data: null }
     : await supabase
         .from("feed_posts")
@@ -1362,7 +1365,7 @@ export async function generateMetadata({
   const shareImageMedia = sharePost?.feed_media.find(
     (media) => media.media_type === "image",
   );
-  const profileShareImage = profile.is_private
+  const profileShareImage = noindexProfile
     ? brandShareImage
     : profile.banner_url
       ? profile.banner_url
@@ -1371,7 +1374,7 @@ export async function generateMetadata({
       : shareImageMedia
         ? mediaUrl(shareImageMedia.storage_bucket, shareImageMedia.storage_path)
         : brandShareImage;
-  const profileShareImageAlt = profile.is_private
+  const profileShareImageAlt = noindexProfile
     ? brandShareImageAlt
     : profile.banner_url
       ? `${profile.display_name} profile banner on ${siteName}`
@@ -1402,8 +1405,8 @@ export async function generateMetadata({
       url: `${siteUrl}/u/${profile.username}`,
     },
     robots: {
-      follow: !profile.is_private,
-      index: !profile.is_private,
+      follow: !noindexProfile,
+      index: !noindexProfile,
     },
     title,
     twitter: {
@@ -1805,7 +1808,9 @@ export default async function ProfilePage({
     (savedMerchRows ?? []).map((item) => item.subject_id),
   );
   const publicProfileJsonLd =
-    profile.is_private || hasBlockRelationship
+    profile.is_private ||
+    isInternalIndexingProfile(profile.username) ||
+    hasBlockRelationship
       ? null
       : publicProfileStructuredData(profile);
 

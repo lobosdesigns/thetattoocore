@@ -8,6 +8,7 @@ import {
   seoKeywordGroups,
   siteKeywords,
   siteName,
+  siteOpenGraph,
   siteUrl,
   supportEmail,
 } from "@/lib/site";
@@ -19,6 +20,7 @@ export const metadata: Metadata = {
   description:
     "TheTattooCore Help Center for account setup, verification, bookings, ads, Merch, Stuff, Gigs, Stories, DMs, and safety basics.",
   keywords: metadataKeywords(siteKeywords, seoKeywordGroups.help),
+  openGraph: siteOpenGraph(`${siteUrl}/help`),
   title: "Help Center",
 };
 

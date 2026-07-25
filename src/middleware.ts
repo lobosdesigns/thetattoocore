@@ -23,6 +23,9 @@ const securityHeaders = [
   ],
 ] as const;
 
+const canonicalHost = "thetattoocore.com";
+const redirectableProductionHosts = new Set([canonicalHost, `www.${canonicalHost}`]);
+
 function applySecurityHeaders<T extends Response>(response: T): T {
   for (const [key, value] of securityHeaders) {
     response.headers.set(key, value);
@@ -31,7 +34,31 @@ function applySecurityHeaders<T extends Response>(response: T): T {
   return response;
 }
 
+function canonicalRedirectUrl(request: NextRequest) {
+  const requestHost = request.headers.get("host")?.toLowerCase().split(":")[0];
+
+  if (!requestHost || !redirectableProductionHosts.has(requestHost)) {
+    return null;
+  }
+
+  if (requestHost === canonicalHost && request.nextUrl.protocol === "https:") {
+    return null;
+  }
+
+  const redirectUrl = request.nextUrl.clone();
+  redirectUrl.protocol = "https:";
+  redirectUrl.hostname = canonicalHost;
+  redirectUrl.port = "";
+
+  return redirectUrl;
+}
+
 export async function middleware(request: NextRequest) {
+  const redirectUrl = canonicalRedirectUrl(request);
+
+  if (redirectUrl) {
+    return applySecurityHeaders(NextResponse.redirect(redirectUrl, 308));
+  }
   if (request.nextUrl.pathname === "/.well-known/assetlinks.json") {
     const payload = androidAssetLinksPayload();
 

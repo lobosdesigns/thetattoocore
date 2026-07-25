@@ -61,3 +61,14 @@ export function shareImage(url: string, alt = `${siteName} shared content`) {
     url,
   };
 }
+
+export function siteOpenGraph(url = siteUrl) {
+  return {
+    description: siteDescription,
+    images: [shareImage(brandShareImage, brandShareImageAlt)],
+    siteName,
+    title: siteName,
+    type: "website" as const,
+    url,
+  };
+}

@@ -5,6 +5,7 @@ import {
   metadataKeywords,
   siteKeywords,
   siteName,
+  siteOpenGraph,
   siteUrl,
   supportEmail,
 } from "@/lib/site";
@@ -22,6 +23,7 @@ export const metadata: Metadata = {
     "account data controls",
     "privacy and safety",
   ),
+  openGraph: siteOpenGraph(`${siteUrl}/privacy`),
   title: "Privacy",
 };
 

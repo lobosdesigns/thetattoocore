@@ -10,12 +10,11 @@ import { normalizedLanguage } from "@/lib/localization";
 import { nativePushQaRoleAllowed } from "@/lib/native-push/qa-access";
 import {
   brandShareImage,
-  brandShareImageAlt,
   metadataKeywords,
-  shareImage,
   siteDescription,
   siteKeywords,
   siteName,
+  siteOpenGraph,
   siteUrl,
 } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
@@ -59,14 +58,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   metadataBase: new URL(siteUrl),
   keywords: metadataKeywords(siteKeywords),
-  openGraph: {
-    description: siteDescription,
-    images: [shareImage(brandShareImage, brandShareImageAlt)],
-    siteName,
-    title: siteName,
-    type: "website",
-    url: siteUrl,
-  },
+  openGraph: siteOpenGraph(siteUrl),
   robots: {
     follow: true,
     googleBot: {

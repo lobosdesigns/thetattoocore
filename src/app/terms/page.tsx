@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { LogoLockup } from "../logo-mark";
-import { metadataKeywords, siteKeywords, siteUrl, supportEmail } from "@/lib/site";
+import { metadataKeywords, siteKeywords, siteOpenGraph, siteUrl, supportEmail } from "@/lib/site";
 
 export const metadata: Metadata = {
   alternates: {
@@ -16,6 +16,7 @@ export const metadata: Metadata = {
     "content policy",
     "tattoo moderation standards",
   ),
+  openGraph: siteOpenGraph(`${siteUrl}/terms`),
   title: "Terms and Content Policy",
 };
 
