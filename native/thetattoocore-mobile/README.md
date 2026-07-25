@@ -1,6 +1,6 @@
 # TheTattooCore Mobile Beta Wrapper
 
-This folder is the starting point for Apple TestFlight and Google Play closed/internal testing.
+This folder supports Apple TestFlight/App Review plus Google Play Production and controlled Alpha testing.
 
 ## Position
 
@@ -62,7 +62,7 @@ This folder is the starting point for Apple TestFlight and Google Play closed/in
 10. On Windows, use the checklist's Android connected-device probe with
    `%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe`; a plugged-in phone only
    counts after `adb devices -l` shows an authorized device and the installed
-   package build matches the current Play closed-testing release.
+   package build matches the current Google Play Production release.
    - The probe starts the local ADB server before listing devices and prints
      `ANDROID_QA adb_server=started` or `ANDROID_QA adb_server=start failed` as
      a repo-safe setup status.
@@ -73,13 +73,14 @@ This folder is the starting point for Apple TestFlight and Google Play closed/in
    - If the probe reports an unauthorized or offline device, unlock the device,
      enable USB debugging, and accept the computer authorization prompt.
    - If the probe reports `authorized device missing TTC package`, install or
-     confirm the Google Play closed-testing build before route QA.
+     confirm the Google Play Production build before route QA.
    - If the probe reports `authorized device has wrong TTC build`, install the
-     active Google Play closed-test build with
-     `npm.cmd run qa:android-device:open-test`, or set
+     exact Google Play Production build and rerun the probe. Alpha is needed
+     only for controlled-QA evidence; in that case use
+     `npm.cmd run qa:android-device:open-test`, then set
      `TTC_ANDROID_EXPECTED_VERSION_NAME` and
-     `TTC_ANDROID_EXPECTED_VERSION_CODE` for the selected track before rerunning
-     the probe.
+     `TTC_ANDROID_EXPECTED_VERSION_CODE` only when the selected Alpha build
+     intentionally differs.
    - Run `npm.cmd run qa:android-device:open-link` after the public association
      file is configured. The required probe confirms both TTC domains are
      verified and enabled before requesting the safe `/messages` route.
@@ -88,21 +89,22 @@ This folder is the starting point for Apple TestFlight and Google Play closed/in
      gesture or three-button navigation area.
 
 Android packaging is configured on this Windows machine. A signed Google Play upload bundle builds at `android/app/build/outputs/bundle/release/app-release.aab` when the local signing environment variables are set. On July 18, 2026, the signed v1 bundle was verified and copied to the Desktop as `TheTattooCore-app-release-v1-signed.aab` with SHA-256 `18E16D3CB5AEED158C33BF9882AC6920D6A7CB744697568E71C32631BC893B65`. The upload keystore and recovery details are intentionally kept out of git; the local recovery note is saved on the Desktop as `TheTattooCore Android Upload Key.txt`. iOS packaging requires the Mac/Xcode path.
-Android 16 / API 36 tooling is installed on this Windows machine, and the checked-in release targets `36 / 36`. Closed testing - Alpha is active with version code `4` / version name `1.0.3`, published to the existing Google Group on July 23, 2026. The authorized Android 16 review phone installed exact build `1.0.3 (4)` from Google Play and passed the package/target probe, verified App Links, production-link launch, retained-session landing, and system-bar framing checks. Build 4 adds the dedicated monochrome TTC notification status icon and is now the only controlled Android alert-QA allowlist. Its signed bundle is saved on the Desktop as `TheTattooCore-app-release-v4-1.0.3-api36-signed.aab` with SHA-256 `BD4401E2560CDF5BB11D4C5AE8F573C98061A9B3DEA03D3E9F0C0A769C8F08C0`. The prior `1.0.2 (3)` evidence and bundle remain historical only. Any later replacement must increment above version code `4`, then rerun wrapper and real-device QA before selecting another Google Play submission/update track.
+Android 16 / API 36 tooling is installed on this Windows machine, and the checked-in release targets `36 / 36`. Google Play Production and Closed testing - Alpha both serve version code `4` / version name `1.0.3`; Production is the normal install and release-evidence path, while Alpha remains available to the existing tester community for controlled QA. The authorized Android 16 review phone installed exact build `1.0.3 (4)` from Google Play and passed the package/target probe, verified App Links, production-link launch, retained-session landing, and system-bar framing checks. Build 4 adds the dedicated monochrome TTC notification status icon and is now the only controlled Android alert-QA allowlist. Its signed bundle is saved on the Desktop as `TheTattooCore-app-release-v4-1.0.3-api36-signed.aab` with SHA-256 `BD4401E2560CDF5BB11D4C5AE8F573C98061A9B3DEA03D3E9F0C0A769C8F08C0`. The prior `1.0.2 (3)` evidence and bundle remain historical only. Any later replacement must increment above version code `4`, then rerun wrapper and real-device QA before selecting another Google Play submission/update track.
 
 ## Android Release Target Handoff
 
 | Release path | Current compile/target SDK | Status |
 | --- | ---: | --- |
-| Current Play closed-test release | `36 / 36`; active `4` / `1.0.3` | Exact Play install, target SDK 36, verified App Links, production-link launch, retained-session landing, and system-bar framing passed on the authorized Android 16 phone. |
+| Current Play Production release | `36 / 36`; active `4` / `1.0.3` | Exact Production install, target SDK 36, verified App Links, production-link launch, retained-session landing, and system-bar framing passed on the authorized Android 16 phone. |
+| Controlled Alpha release | `36 / 36`; active `4` / `1.0.3` | Same exact build remains available to the tester community for controlled QA; keep participation and tester evidence private. |
 | Previous Play baseline | `36 / 36`; historical `3` / `1.0.2` | Preserve completed historical evidence, but do not include it in the active alert allowlist. |
 | Later replacement or update | `36 / 36`; next version code above `4` | Requires a fresh signed rebuild plus real-device QA evidence before track selection. |
 
 ## Store Path
 
-- Google Play: closed/internal testing first, with the current API 36 closed-test release and tester participation/duration evidence validated before wider release.
+- Google Play: Production is the normal install and release-evidence path; use Closed testing - Alpha only for controlled QA and keep tester participation/duration evidence private.
 - Apple: TestFlight/App Review handoff first, with status changes and reviewer messages archived privately.
-- Public release waits for final legal review, store screenshots, data-safety/privacy answers, and production payment policy review.
+- Future replacement releases wait for final legal review, store screenshots, data-safety/privacy answers, and production payment policy review.
 - Android App Links are published for the final Play signing certificate; iOS
   Universal Links still wait on the final team/app association and signed
   associated-domain build.

@@ -6,6 +6,7 @@ import {
 import { notificationPathOrFallback } from "../notification-route";
 import {
   buildNativeMessage,
+  buildServiceAccountJwtClaims,
   classifyFcmResponse,
   nativePushDeliveryReady,
   nativePushSenderReady,
@@ -107,14 +108,7 @@ async function serviceAccessToken(
 
   const header = base64Url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
   const claims = base64Url(
-    JSON.stringify({
-      aud: "https://oauth2.googleapis.com/token",
-      exp: nowSeconds + 3600,
-      iat: nowSeconds,
-      iss: clientEmail,
-      scope: "https://www.googleapis.com/auth/firebase.messaging",
-      sub: clientEmail,
-    }),
+    JSON.stringify(buildServiceAccountJwtClaims(clientEmail, nowSeconds)),
   );
   const unsigned = `${header}.${claims}`;
   const key = await crypto.subtle.importKey(

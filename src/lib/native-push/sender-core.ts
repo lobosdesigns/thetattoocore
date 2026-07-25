@@ -37,6 +37,19 @@ export type FcmResponseKind =
   | "token"
   | "unknown";
 
+export function buildServiceAccountJwtClaims(
+  clientEmail: string,
+  nowSeconds: number,
+) {
+  return {
+    aud: "https://oauth2.googleapis.com/token",
+    exp: nowSeconds + 3600,
+    iat: nowSeconds,
+    iss: clientEmail,
+    scope: "https://www.googleapis.com/auth/firebase.messaging",
+  };
+}
+
 export function nativePushSenderReady(
   env: NativePushDeliveryEnvironment,
 ) {

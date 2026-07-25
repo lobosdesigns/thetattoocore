@@ -75,6 +75,22 @@ function openClosedTestJoin(adb, serial) {
   }
 }
 
+function printPlayInstallRecovery() {
+  if (openTestJoin) {
+    console.log(
+      "ANDROID_QA next=finish joining Closed testing - Alpha, install its exact build, and rerun route QA",
+    );
+    return;
+  }
+
+  console.log(
+    "ANDROID_QA next=install the exact Google Play Production build and rerun route QA",
+  );
+  console.log(
+    "ANDROID_QA alpha_next=join Closed testing - Alpha only when controlled-QA evidence is required",
+  );
+}
+
 function androidAppLinkState(output) {
   const domains = ["thetattoocore.com", "www.thetattoocore.com"];
   const verified = domains.every((domain) =>
@@ -346,7 +362,7 @@ if (!packageInstalled) {
   console.log("ANDROID_QA result=authorized device missing TTC package");
   console.log(`ANDROID_QA closed_test_join_url=${closedTestJoinUrl}`);
   console.log(`ANDROID_QA play_store_url=${playStoreUrl}`);
-  console.log("ANDROID_QA next=join the active Google Play closed test, install its exact build, and rerun route QA");
+  printPlayInstallRecovery();
   if (requireDevice) process.exit(1);
   process.exit(0);
 }
@@ -373,7 +389,7 @@ if (!versionNameMatches || !versionCodeMatches || !targetSdkMatches) {
   );
   console.log(`ANDROID_QA closed_test_join_url=${closedTestJoinUrl}`);
   console.log(`ANDROID_QA play_store_url=${playStoreUrl}`);
-  console.log("ANDROID_QA next=join the active Google Play closed test and install its exact build, or set TTC_ANDROID_EXPECTED_VERSION_NAME and TTC_ANDROID_EXPECTED_VERSION_CODE for the selected track");
+  printPlayInstallRecovery();
   if (requireDevice) process.exit(1);
   process.exit(0);
 }

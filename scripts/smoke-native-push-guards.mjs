@@ -538,6 +538,9 @@ const checks = [
       source.senderCore.includes("TTC_DEVICE_ALERT_SETUP_ENABLED === \"true\"") &&
       source.senderCore.includes("TTC_NATIVE_PUSH_REGISTRATION_ENABLED === \"true\"") &&
       source.senderCore.includes("TTC_NATIVE_PUSH_DELIVERY_ENABLED === \"true\"") &&
+      source.senderCore.includes("export function buildServiceAccountJwtClaims") &&
+      source.sender.includes("buildServiceAccountJwtClaims(clientEmail, nowSeconds)") &&
+      !source.sender.includes("sub: clientEmail") &&
       source.sender.includes('"claim_native_push_delivery_batch"') &&
       source.sender.includes('"complete_native_push_delivery"') &&
       source.sender.includes('"retry_native_push_delivery"') &&

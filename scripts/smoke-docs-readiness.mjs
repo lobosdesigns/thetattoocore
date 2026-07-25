@@ -667,9 +667,9 @@ const checks = [
       docs["native/thetattoocore-mobile/README.md"].includes("ANDROID_QA adb_server=start failed") &&
       docs["native/thetattoocore-mobile/README.md"].includes("waits briefly for USB/debug authorization") &&
       docs["native/thetattoocore-mobile/README.md"].includes("authorized device") &&
-      docs["native/thetattoocore-mobile/README.md"].includes("current Play closed-testing release") &&
-      docs["native/thetattoocore-mobile/README.md"].includes("Google Play closed/internal testing") &&
-      docs["native/thetattoocore-mobile/README.md"].includes("current API 36 closed-test release") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("current Google Play Production release") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("Google Play Production and controlled Alpha testing") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("Current Play Production release") &&
       docs["native/thetattoocore-mobile/README.md"].includes("tester participation/duration evidence"),
   },
   {

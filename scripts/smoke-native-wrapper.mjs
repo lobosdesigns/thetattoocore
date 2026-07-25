@@ -145,14 +145,21 @@ const androidApi36DocsReady =
   androidApi36SubmissionReady &&
   androidVersionCode === 4 &&
   androidVersionName === "1.0.3" &&
-  source.nativePrep.includes("Active release `1.0.3 (4)` is `36 / 36`") &&
+  source.nativePrep.includes(
+    "Active Production and Alpha release `1.0.3 (4)` is `36 / 36`",
+  ) &&
   source.nativePrep.includes("Record API `36 / 36` rebuild proof") &&
   source.nativePrep.includes("Previous Google Play baseline") &&
   source.nativePrep.includes("do not keep it in the active alert allowlist") &&
-  source.mobileRunbook.includes("checked-in and active closed-test release `1.0.3 (4)` uses that baseline") &&
+  source.mobileRunbook.includes(
+    "checked-in `1.0.3 (4)` build is active in Production and Alpha and uses that baseline",
+  ) &&
   source.mobileRunbook.includes("Any later replacement must increment the version code above `4`") &&
   source.readme.includes("checked-in release targets `36 / 36`") &&
-  source.readme.includes("Closed testing - Alpha is active with version code `4` / version name `1.0.3`") &&
+  source.readme.includes(
+    "Google Play Production and Closed testing - Alpha both serve version code `4` / version name `1.0.3`",
+  ) &&
+  source.readme.includes("| Current Play Production release | `36 / 36`; active `4` / `1.0.3` |") &&
   source.readme.includes("| Previous Play baseline | `36 / 36`; historical `3` / `1.0.2` |");
 const androidApi35InternalOnly =
   compileSdkVersion === 35 &&
@@ -411,14 +418,16 @@ const checks = [
       source.capacitorConfig.includes("cleartext: false"),
   },
   {
-    label: "native wrapper notes keep TestFlight and Play closed/internal first",
+    label: "native wrapper notes use Play Production by default and Alpha for controlled QA",
     ok:
       source.readme.includes("Apple TestFlight") &&
-      source.readme.includes("Google Play closed/internal testing") &&
-      source.readme.includes("Public release waits for final legal review") &&
+      source.readme.includes("Google Play Production and controlled Alpha testing") &&
+      source.readme.includes("Future replacement releases wait for final legal review") &&
       source.nativePrep.includes("August 31, 2026") &&
       source.nativePrep.includes("Android 16 / API 36") &&
-      source.mobileRunbook.includes("checked-in and active closed-test release `1.0.3 (4)` uses that baseline") &&
+      source.mobileRunbook.includes(
+        "checked-in `1.0.3 (4)` build is active in Production and Alpha and uses that baseline",
+      ) &&
       source.readme.includes("support@thetattoocore.com") &&
       source.readme.includes("Native permissions at first beta: none") &&
       source.readme.includes("Push prompts: off") &&
@@ -429,7 +438,9 @@ const checks = [
       source.readme.includes("set USB mode") &&
       source.readme.includes("accept the computer authorization prompt") &&
       source.readme.includes("authorized device missing TTC package") &&
-      source.readme.includes("Closed testing - Alpha is active") &&
+      source.readme.includes("Google Play Production build before route QA") &&
+      source.readme.includes("Alpha is needed") &&
+      source.readme.includes("only for controlled-QA evidence") &&
       source.readme.includes("tester participation/duration evidence") &&
       source.readme.includes("reviewer messages archived privately") &&
       source.mobileRunbook.includes("Firebase Cloud Messaging") &&
@@ -470,8 +481,16 @@ const checks = [
       source.androidDeviceProbe.includes("ANDROID_QA wait_ms=") &&
       source.androidDeviceProbe.includes("ANDROID_QA next=check USB cable, set USB mode to file transfer, and reopen the USB debugging prompt") &&
       source.androidDeviceProbe.includes("ANDROID_QA next=unlock device, enable USB debugging, and accept the computer authorization prompt") &&
-      source.androidDeviceProbe.includes("ANDROID_QA next=join the active Google Play closed test, install its exact build, and rerun route QA") &&
-      source.readme.includes("confirm the Google Play closed-testing build before route QA") &&
+      source.androidDeviceProbe.includes(
+        "ANDROID_QA next=install the exact Google Play Production build and rerun route QA",
+      ) &&
+      source.androidDeviceProbe.includes(
+        "ANDROID_QA alpha_next=join Closed testing - Alpha only when controlled-QA evidence is required",
+      ) &&
+      !source.androidDeviceProbe.includes(
+        "ANDROID_QA next=join the active Google Play closed test",
+      ) &&
+      source.readme.includes("confirm the Google Play Production build before route QA") &&
       source.readme.includes("npm.cmd run qa:android-device:open-test") &&
       source.readme.includes("npm.cmd run qa:android-device:open-link") &&
       source.realDeviceQa.includes("npm.cmd run qa:android-device:open-test") &&
@@ -481,7 +500,7 @@ const checks = [
       source.rootPackageJson.includes('"qa:android-device:runtime": "node scripts/android-device-qa-probe.mjs --require-device --require-runtime --wait-ms=30000"') &&
       source.androidDeviceProbe.includes("if (requireDevice) process.exit(1)") &&
       source.realDeviceQa.includes("authorized device is visible and the TTC") &&
-      source.realDeviceQa.includes("package is installed for the active closed-test build") &&
+      source.realDeviceQa.includes("package is installed for the active Google Play candidate build") &&
       source.realDeviceQa.includes("authorized device has wrong TTC build") &&
       source.realDeviceQa.includes("TTC_ANDROID_EXPECTED_VERSION_NAME") &&
       source.realDeviceQa.includes("authorized device missing TTC package") &&
@@ -489,7 +508,7 @@ const checks = [
       source.realDeviceQa.includes("install or confirm the Play-installed build"),
   },
   {
-    label: "Google Play closed-test evidence stays private and production-access ready",
+    label: "Google Play Production stays primary while Alpha evidence remains private",
     ok:
       source.mobileRunbook.includes("The signed-in Lobosdesigns LLC developer account is an organization account") &&
       source.mobileRunbook.includes("12-testers-for-14-days production-access gate applies to newly created personal accounts") &&
@@ -497,8 +516,10 @@ const checks = [
       source.mobileRunbook.includes("controlled closed test with the existing tester community or Google Group") &&
       source.mobileRunbook.includes("archive the production-access evidence privately") &&
       source.mobileRunbook.includes("Recheck the console and official help before future submissions.") &&
-      source.realDeviceQa.includes("Google Play closed testing") &&
-      source.realDeviceQa.includes("closed-test date range for the exact build under review") &&
+      source.realDeviceQa.includes("Google Play Production or controlled Alpha testing") &&
+      source.realDeviceQa.includes("installed Android app came from Production") &&
+      source.realDeviceQa.includes("Closed testing - Alpha only for controlled QA") &&
+      source.realDeviceQa.includes("exact release track, and test date") &&
       source.realDeviceQa.includes("same-account web opt-in, 12-tester participation, 14-day duration, feedback summary, and production-access request result in the private handoff") &&
       source.realDeviceQa.includes("Repo-safe summary fields are limited to platform, release channel, version/build, date, device model, and pass/fail status"),
   },
@@ -587,7 +608,7 @@ const checks = [
       : undefined,
   },
   {
-    label: "native Android target API stays explicit for internal testing or submission",
+    label: "native Android target API stays explicit for Production and replacement submissions",
     ok:
       source.androidVariables.includes("compileSdkVersion") &&
       source.androidVariables.includes("targetSdkVersion") &&

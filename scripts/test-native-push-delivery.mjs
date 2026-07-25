@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {
   buildNativeMessage,
+  buildServiceAccountJwtClaims,
   classifyFcmResponse,
   nativePushDeliveryReady,
   nativePushSenderReady,
@@ -30,6 +31,20 @@ const readyEnvironment = {
   TTC_NATIVE_PUSH_DELIVERY_ENABLED: "true",
   TTC_NATIVE_PUSH_REGISTRATION_ENABLED: "true",
 };
+
+assert.deepEqual(
+  buildServiceAccountJwtClaims(
+    readyEnvironment.FIREBASE_CLIENT_EMAIL,
+    1_721_800_000,
+  ),
+  {
+    aud: "https://oauth2.googleapis.com/token",
+    exp: 1_721_803_600,
+    iat: 1_721_800_000,
+    iss: readyEnvironment.FIREBASE_CLIENT_EMAIL,
+    scope: "https://www.googleapis.com/auth/firebase.messaging",
+  },
+);
 
 assert.equal(nativePushDeliveryReady(readyEnvironment), true);
 assert.equal(
@@ -327,6 +342,7 @@ assert.equal(
 );
 
 console.log("PASS native delivery gates fail closed");
+console.log("PASS native service-account claims avoid delegated user impersonation");
 console.log("PASS controlled test delivery does not open the global delivery gate");
 console.log("PASS native payloads stay generic and platform-aware");
 console.log("PASS native response classification protects device registrations");
