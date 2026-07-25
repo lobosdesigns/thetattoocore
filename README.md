@@ -36,6 +36,9 @@ creative work.
 
 ## Development
 
+Use Node.js 22.18 or newer so the verification scripts can execute the
+TypeScript contracts they import directly.
+
 ```bash
 npm.cmd run dev
 ```

@@ -2,6 +2,9 @@
   "name": "thetattoocore-web",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22.18.0"
+  },
   "scripts": {
     "postinstall": "node scripts/patch-opennext-cloudflare.mjs",
     "prebuild": "node scripts/verify-public-build-env.mjs",
@@ -34,7 +37,7 @@
     "smoke:profiles": "node scripts/smoke-profile-guards.mjs",
     "smoke:admin": "node scripts/smoke-admin-guards.mjs",
     "smoke:stories": "node scripts/smoke-stories-guards.mjs",
-    "smoke:dm": "node scripts/smoke-dm-guards.mjs",
+    "smoke:dm": "node scripts/test-message-conversation-selection.mjs && node scripts/smoke-dm-guards.mjs",
     "smoke:booking": "node scripts/smoke-booking-guards.mjs",
     "smoke:payment": "npm run smoke:payments",
     "smoke:payments": "npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && node scripts/smoke-payment-guards.mjs",

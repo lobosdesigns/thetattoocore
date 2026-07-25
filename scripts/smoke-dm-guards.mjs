@@ -192,8 +192,8 @@ const checks = [
       messagePage.includes(".limit(conversationFetchLimit)") &&
       messagePage.includes("const inbox = filteredInbox.slice(0, conversationLimit)") &&
       messagePage.includes("const hasMoreInbox =") &&
-      messagePage.includes("const selectedConversationCandidates = hasSelectedConversationParam") &&
-      messagePage.includes("? inboxBeforeSearch") &&
+      messagePage.includes("const selectedConversation = selectMessageConversation({") &&
+      messagePage.includes("conversations: inboxBeforeSearch") &&
       messagePage.includes("Conversation was not found or is no longer available.") &&
       messagePage.includes("href={inboxHref({"),
   },
@@ -204,11 +204,10 @@ const checks = [
       messagePage.includes(".eq(\"username\", prefillUsername)") &&
       messagePage.includes("const targetConversationIds = new Set") &&
       messagePage.includes("targetConversationIds.has(membership.conversation_id)") &&
-      messagePage.includes("const prefillConversation =") &&
-      messagePage.includes("conversation.otherProfile?.username === prefillUsername") &&
-      messagePage.includes("prefillConversation ?? inbox[0]") &&
-      messagePage.includes("const hasOpenThreadView =") &&
-      messagePage.includes("hasSelectedConversationParam || prefillConversation") &&
+      messagePage.includes("selectMessageConversation") &&
+      messagePage.includes("prefillUsername,") &&
+      messagePage.includes("const hasOpenThreadView = Boolean(selectedConversation)") &&
+      !messagePage.includes("prefillConversation ?? inbox[0]") &&
       messagePage.includes(".eq(\"conversation_id\", selectedConversation.id)") &&
       messagePage.includes("selectedConversationMessages") &&
       messagePage.includes("selectedMessagesWithAttachments") &&
@@ -270,7 +269,7 @@ const checks = [
         "const conversationIds = memberships.map",
         "const inboxBeforeSearch = memberships",
         "const inbox = filteredInbox.slice(0, conversationLimit);",
-        "const prefillConversation =",
+        "const selectedConversation = selectMessageConversation({",
         "const selectedMessages = selectedConversation",
         "selectedMessagesWithAttachments",
       ]) &&

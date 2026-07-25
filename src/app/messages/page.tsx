@@ -22,6 +22,7 @@ import {
   bookingPaymentStatusLabel,
   bookingStatusLabel,
 } from "@/lib/status-labels";
+import { selectMessageConversation } from "@/lib/message-conversation-selection";
 import {
   cancelAcceptedBookingAsArtist,
   cancelBookingRequest,
@@ -845,25 +846,12 @@ export default async function MessagesPage({
     (!activeInboxSearch && (membershipRows?.length ?? 0) === conversationFetchLimit);
 
   const hasSelectedConversationParam = Boolean(requestedConversationId);
-  const prefillConversation =
-    !hasSelectedConversationParam && prefillUsername
-      ? inboxBeforeSearch.find(
-          (conversation) =>
-            conversation.otherProfile?.username === prefillUsername,
-        ) ?? null
-      : null;
-  const selectedConversationCandidates = hasSelectedConversationParam
-    ? inboxBeforeSearch
-    : inbox;
-  const selectedConversation =
-    (hasSelectedConversationParam
-      ? selectedConversationCandidates.find(
-          (conversation) => conversation.id === requestedConversationId,
-        )
-      : prefillConversation ?? inbox[0]) ?? null;
-  const hasOpenThreadView = Boolean(
-    hasSelectedConversationParam || prefillConversation,
-  );
+  const selectedConversation = selectMessageConversation({
+    conversations: inboxBeforeSearch,
+    prefillUsername,
+    requestedConversationId,
+  });
+  const hasOpenThreadView = Boolean(selectedConversation);
 
   if (hasSelectedConversationParam && !selectedConversation) {
     redirect(messagesInboxPath("Conversation was not found or is no longer available."));
