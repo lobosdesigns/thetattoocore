@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
 
@@ -41,6 +42,7 @@ const expectedReleaseCandidate = optionValue(
 );
 const referenceDateOption = optionValue("--reference-date");
 const releaseCandidatePattern = /^[A-Za-z0-9][A-Za-z0-9._-]{6,127}$/;
+const gitCommitPattern = /^[0-9a-f]{7,40}$/i;
 const fixtureRoot = resolve("scripts/fixtures");
 const resolvedEvidencePath = resolve(evidencePath);
 const fixtureRelativePath = relative(fixtureRoot, resolvedEvidencePath);
@@ -48,6 +50,30 @@ const evidenceUsesFixturePath =
   Boolean(fixtureRelativePath) &&
   !fixtureRelativePath.startsWith("..") &&
   !isAbsolute(fixtureRelativePath);
+
+function gitRepositoryIsAvailable() {
+  try {
+    return (
+      execFileSync("git", ["rev-parse", "--is-inside-work-tree"], {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      }).trim() === "true"
+    );
+  } catch {
+    return false;
+  }
+}
+
+function gitObjectType(candidate) {
+  try {
+    return execFileSync("git", ["cat-file", "-t", candidate.toLowerCase()], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return "";
+  }
+}
 
 if (!expectedReleaseCandidate) {
   console.error(
@@ -67,6 +93,25 @@ if (
 ) {
   console.error(
     "FAIL sanitized fixture candidates cannot approve a live release.",
+  );
+  process.exit(1);
+}
+
+if (!testFixture && !gitCommitPattern.test(expectedReleaseCandidate)) {
+  console.error(
+    "FAIL live release candidate must be a 7-40 character Git commit ID.",
+  );
+  process.exit(1);
+}
+
+if (!testFixture && !gitRepositoryIsAvailable()) {
+  console.error("FAIL unable to inspect the local Git repository.");
+  process.exit(1);
+}
+
+if (!testFixture && gitObjectType(expectedReleaseCandidate) !== "commit") {
+  console.error(
+    "FAIL live release candidate does not resolve to a local Git commit.",
   );
   process.exit(1);
 }

@@ -6,14 +6,36 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
-const gatePath = "scripts/verify-release-evidence.mjs";
+const gatePath = resolve("scripts/verify-release-evidence.mjs");
 const fixturePath = "scripts/fixtures/release-evidence.passed.md";
 const fixtureCandidate = "fixture-release-candidate";
 const fixtureReferenceDate = "2026-07-23";
 const fixtureMarker = "<!-- TTC_SANITIZED_RELEASE_EVIDENCE_FIXTURE -->";
-const liveCandidate = "live-release-candidate";
+const gitHead = spawnSync("git", ["rev-parse", "HEAD"], {
+  encoding: "utf8",
+});
+if (gitHead.status !== 0 || !gitHead.stdout.trim()) {
+  throw new Error("Unable to resolve the current Git commit for live-mode tests.");
+}
+const liveCandidate = gitHead.stdout.trim();
+
+function findUnresolvedCandidate() {
+  for (const digit of "0123456789abcdef") {
+    const candidate = digit.repeat(40);
+    const probe = spawnSync(
+      "git",
+      ["cat-file", "-e", `${candidate}^{object}`],
+      { stdio: "ignore" },
+    );
+    if (probe.status !== 0) return candidate;
+  }
+
+  throw new Error("Unable to find an unresolved Git object ID for live-mode tests.");
+}
+
+const unresolvedCandidate = findUnresolvedCandidate();
 const fixtureSource = readFileSync(fixturePath, "utf8");
 const variantDir = mkdtempSync(
   join("scripts", "fixtures", ".release-evidence-test-"),
@@ -99,6 +121,41 @@ writeFileSync(
     .replace(fixtureMarker, "")
     .replaceAll(fixtureCandidate, liveCandidate),
 );
+const tagRepoDir = mkdtempSync(join(tmpdir(), "ttc-release-tag-test-"));
+
+function runTagRepoGit(args) {
+  const result = spawnSync("git", args, {
+    cwd: tagRepoDir,
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      GIT_AUTHOR_NAME: "TTC Fixture",
+      GIT_AUTHOR_EMAIL: "fixture@example.invalid",
+      GIT_COMMITTER_NAME: "TTC Fixture",
+      GIT_COMMITTER_EMAIL: "fixture@example.invalid",
+    },
+  });
+
+  if (result.status !== 0) {
+    throw new Error(
+      `Git fixture command failed: git ${args.join(" ")}: ${result.stderr.trim()}`,
+    );
+  }
+
+  return result.stdout.trim();
+}
+
+runTagRepoGit(["init", "--quiet"]);
+runTagRepoGit(["commit", "--allow-empty", "--message", "fixture commit"]);
+runTagRepoGit(["tag", "--annotate", "fixture-tag", "--message", "fixture tag"]);
+const annotatedTagCandidate = runTagRepoGit(["rev-parse", "refs/tags/fixture-tag"]);
+const annotatedTagEvidence = join(liveVariantDir, "annotated-tag.md");
+writeFileSync(
+  annotatedTagEvidence,
+  fixtureSource
+    .replace(fixtureMarker, "")
+    .replaceAll(fixtureCandidate, annotatedTagCandidate),
+);
 const missingLegalReviewFixture = writeVariant(
   "missing-legal-review.md",
   (source) =>
@@ -135,8 +192,9 @@ const futureLegalDateFixture = writeVariant(
     ),
 );
 
-function runGate(args, env = {}) {
+function runGate(args, env = {}, cwd = undefined) {
   return spawnSync(process.execPath, [gatePath, ...args], {
+    cwd,
     encoding: "utf8",
     env: {
       ...process.env,
@@ -319,6 +377,132 @@ const checks = [
       return (
         result.status === 1 &&
         result.stderr.includes("release candidate format is invalid")
+      );
+    },
+  },
+  {
+    label: "release evidence rejects a mutable live candidate label",
+    result: runGate([
+      "--evidence",
+      livePlaceholderFixture,
+      "--release-candidate",
+      "live-release-candidate",
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "live release candidate must be a 7-40 character Git commit ID",
+        )
+      );
+    },
+  },
+  {
+    label: "release evidence rejects an unresolved live commit",
+    result: runGate([
+      "--evidence",
+      livePlaceholderFixture,
+      "--release-candidate",
+      unresolvedCandidate,
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "live release candidate does not resolve to a local Git commit",
+        )
+      );
+    },
+  },
+  {
+    label: "release evidence resolves a valid live environment candidate",
+    result: runGate(
+      ["--verbose", "--evidence", livePlaceholderFixture],
+      {
+        TTC_RELEASE_CANDIDATE: liveCandidate,
+      },
+    ),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "private proof cannot use fixture or sample placeholders",
+        ) &&
+        !result.stderr.includes("live release candidate")
+      );
+    },
+  },
+  {
+    label: "release evidence rejects a mutable live environment candidate",
+    result: runGate(
+      ["--evidence", livePlaceholderFixture],
+      {
+        TTC_RELEASE_CANDIDATE: "live-release-candidate",
+      },
+    ),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "live release candidate must be a 7-40 character Git commit ID",
+        )
+      );
+    },
+  },
+  {
+    label: "release evidence rejects an unresolved live environment commit",
+    result: runGate(
+      ["--evidence", livePlaceholderFixture],
+      {
+        TTC_RELEASE_CANDIDATE: unresolvedCandidate,
+      },
+    ),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "live release candidate does not resolve to a local Git commit",
+        )
+      );
+    },
+  },
+  {
+    label: "release evidence rejects an annotated tag object hash",
+    result: runGate(
+      [
+        "--evidence",
+        annotatedTagEvidence,
+        "--release-candidate",
+        annotatedTagCandidate,
+      ],
+      {},
+      tagRepoDir,
+    ),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "live release candidate does not resolve to a local Git commit",
+        )
+      );
+    },
+  },
+  {
+    label: "release evidence reports an unavailable local Git repository",
+    result: runGate(
+      [
+        "--evidence",
+        livePlaceholderFixture,
+        "--release-candidate",
+        liveCandidate,
+      ],
+      {},
+      liveVariantDir,
+    ),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes("unable to inspect the local Git repository")
       );
     },
   },
@@ -591,6 +775,7 @@ for (const check of checks) {
 
 rmSync(variantDir, { force: true, recursive: true });
 rmSync(liveVariantDir, { force: true, recursive: true });
+rmSync(tagRepoDir, { force: true, recursive: true });
 
 if (failures > 0) {
   console.error(`${failures} release evidence gate test(s) failed.`);
