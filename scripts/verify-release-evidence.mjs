@@ -2,8 +2,8 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
 
-const EXPECTED_ANDROID_BUILD = "1.0.3 (4)";
-const EXPECTED_IOS_TESTFLIGHT_BUILD = "1.0 (4)";
+const EXPECTED_ANDROID_BUILD = "1.0.4 (5)";
+const EXPECTED_IOS_TESTFLIGHT_BUILD = "1.0 (5)";
 const EXPECTED_IOS_REVIEW_BUILD = "1.0 (3)";
 const REQUIRED_LEGAL_REVIEW_AREAS = [
   "Terms and Privacy match submitted build",
@@ -25,6 +25,7 @@ const DEFAULT_EVIDENCE_PATH =
 const FIXTURE_MARKER = "<!-- TTC_SANITIZED_RELEASE_EVIDENCE_FIXTURE -->";
 const MAX_PROOF_AGE_DAYS = 45;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const buildIdentityPattern = /\bv?\d+(?:\.\d+){1,2}\s+\(\d+\)/gi;
 
 const args = process.argv.slice(2);
 const testFixture = args.includes("--test-fixture");
@@ -317,6 +318,13 @@ function requireContains(area, item, value, expected) {
   }
 }
 
+function requireExactBuild(area, item, value, expected) {
+  const builds = cleanCell(value).match(buildIdentityPattern) ?? [];
+  if (builds.length !== 1 || normalize(builds[0]) !== normalize(expected)) {
+    fail(area, item);
+  }
+}
+
 function requireExact(area, item, value, expected) {
   if (normalize(value) !== normalize(expected)) {
     fail(area, item);
@@ -363,31 +371,41 @@ function requireProofDate(area, item, value) {
 
 const releaseCandidate = section("Release Candidate");
 if (releaseCandidate) {
-  const webDeploy = rowBy(releaseCandidate, "Field", "Web deploy version");
-  const androidBuild = rowBy(
+  const webDeploy = requiredUniqueRow(
+    releaseCandidate,
+    "Field",
+    "Web deploy version",
+    "Release Candidate",
+  );
+  const androidBuild = requiredUniqueRow(
     releaseCandidate,
     "Field",
     "Android release track and version/build",
+    "Release Candidate",
   );
-  const iosBuild = rowBy(
+  const iosBuild = requiredUniqueRow(
     releaseCandidate,
     "Field",
     "iOS TestFlight version/build",
+    "Release Candidate",
   );
-  const targetDate = rowBy(
+  const targetDate = requiredUniqueRow(
     releaseCandidate,
     "Field",
     "Store-review target date",
+    "Release Candidate",
   );
-  const reviewerContact = rowBy(
+  const reviewerContact = requiredUniqueRow(
     releaseCandidate,
     "Field",
     "Reviewer contact saved in consoles",
+    "Release Candidate",
   );
-  const reviewerAccount = rowBy(
+  const reviewerAccount = requiredUniqueRow(
     releaseCandidate,
     "Field",
     "Reviewer account validated for selected build/track",
+    "Release Candidate",
   );
 
   requireValue("Release Candidate", "web deploy version", webDeploy?.Value);
@@ -397,9 +415,9 @@ if (releaseCandidate) {
     webDeploy?.Value,
     expectedReleaseCandidate,
   );
-  requireContains(
+  requireExactBuild(
     "Release Candidate",
-    "Android build must be exact build 1.0.3 (4)",
+    "Android build must be exact build 1.0.4 (5)",
     androidBuild?.Value,
     EXPECTED_ANDROID_BUILD,
   );
@@ -414,9 +432,9 @@ if (releaseCandidate) {
       "Android release track must identify Alpha, closed testing, or production",
     );
   }
-  requireContains(
+  requireExactBuild(
     "Release Candidate",
-    "iOS TestFlight build must be exact build 1.0 (4)",
+    "iOS TestFlight build must be exact build 1.0 (5)",
     iosBuild?.Value,
     EXPECTED_IOS_TESTFLIGHT_BUILD,
   );
@@ -479,7 +497,7 @@ if (blockers) {
       normalize(row.Blocker) ===
         normalize("App Review monitoring and response evidence"),
   );
-  requireContains(
+  requireExactBuild(
     "Current Console Blockers",
     "Apple App Review must remain on build 1.0 (3)",
     appleReview?.["Current handoff value"],
@@ -573,9 +591,9 @@ if (testerInstall) {
       "listing offers install or update",
       passingInstall["Android listing offers Install/Update"],
     );
-    requireContains(
+    requireExactBuild(
       "Google Play Tester Install Evidence",
-      "installed Android build must be exact build 1.0.3 (4)",
+      "installed Android build must be exact build 1.0.4 (5)",
       passingInstall["Installed release/version/build"],
       EXPECTED_ANDROID_BUILD,
     );
@@ -611,7 +629,7 @@ if (reviewerAccess) {
       row?.["Account state"],
       "email-confirmed",
     );
-    requireContains(
+    requireExactBuild(
       "Reviewer Access",
       `${platform} exact build or track`,
       row?.["Build or track validated"],
@@ -648,7 +666,7 @@ if (realDeviceQa) {
     ]) {
       requireValue("Real-Device QA", `${platform} ${column}`, row?.[column]);
     }
-    requireContains(
+    requireExactBuild(
       "Real-Device QA",
       `${platform} exact build`,
       row?.["Build or deploy version"],
@@ -718,7 +736,7 @@ if (dmEvidence) {
     ["iOS", EXPECTED_IOS_TESTFLIGHT_BUILD],
   ]) {
     const row = rowBy(dmEvidence, "Platform", platform);
-    requireContains(
+    requireExactBuild(
       "Two-User DM Evidence",
       `${platform} DM evidence must use exact build ${expectedBuild}`,
       row?.["Build or release version"],

@@ -314,6 +314,7 @@ const checks = [
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Android 16 / API 36") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("target Android 16 / API 36") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checked-in replacement `1.0.4 (5)` uses the same API 36 baseline") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("strict gate also checks the exact Android Alpha `1.0.4 (5)`, App Review `1.0 (3)`, TestFlight `1.0 (5)`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("targetSdkVersion` set to 36") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not request precise device location") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not prompt on first open") &&
@@ -645,7 +646,10 @@ const checks = [
       packageJson.includes('"verify:app-review-preflight": "npm run lint && npm run build && npm run smoke:env && npm run smoke:security && npm run smoke:content && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run test:native-push-delivery && npm run smoke:native-push && npm run smoke:app-links && npm run qa:android-device && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:narrow && npm run smoke:mobile:ios && npm run verify:distribution-evidence"') &&
       packageJson.includes('"verify:distribution-evidence": "npm run test:release-evidence-gate && node scripts/verify-release-evidence.mjs"') &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("npm.cmd run verify:app-review-preflight") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes('$env:TTC_RELEASE_CANDIDATE="<current-production-version>"') &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes('$env:TTC_RELEASE_CANDIDATE="<current-git-commit-hash>"') &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("--release-candidate <current-git-commit-hash>") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("current local Git commit hash is mandatory") &&
+      !docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("<current-production-version>") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("actual ignored private handoff") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("It checks lint, production build, production environment boundaries") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("content-policy/reporting guardrails") &&

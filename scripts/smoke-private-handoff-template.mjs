@@ -166,8 +166,8 @@ const checks = [
   {
     label: "strict release evidence gate is exact-build and privacy-safe",
     ok:
-      evidenceGate.includes('const EXPECTED_ANDROID_BUILD = "1.0.3 (4)"') &&
-      evidenceGate.includes('const EXPECTED_IOS_TESTFLIGHT_BUILD = "1.0 (4)"') &&
+      evidenceGate.includes('const EXPECTED_ANDROID_BUILD = "1.0.4 (5)"') &&
+      evidenceGate.includes('const EXPECTED_IOS_TESTFLIGHT_BUILD = "1.0 (5)"') &&
       evidenceGate.includes('const EXPECTED_IOS_REVIEW_BUILD = "1.0 (3)"') &&
       evidenceGate.includes("private release evidence requirement(s) remain incomplete") &&
       evidenceGate.includes("--test-fixture") &&
@@ -207,20 +207,20 @@ const checks = [
       evidenceGate.includes("iOS QA scope must be full checklist") &&
       evidenceGate.includes('row?.["Build or release version"]') &&
       generator.includes("| Platform | Build or release version | Sender alias | Recipient alias |") &&
-      evidenceFixture.includes("| Android | 1.0.3 (4) | fixture-sender | fixture-recipient |") &&
-      evidenceFixture.includes("| iOS | 1.0 (4) | fixture-sender | fixture-recipient |") &&
+      evidenceFixture.includes("| Android | 1.0.4 (5) | fixture-sender | fixture-recipient |") &&
+      evidenceFixture.includes("| iOS | 1.0 (5) | fixture-sender | fixture-recipient |") &&
       generator.includes("Android must come from Google Play") &&
       generator.includes("actual iPhone") &&
       generator.includes("keep iPad install-only") &&
       !evidenceGate.includes("console.error(markdown") &&
       evidenceFixture.includes("TTC_SANITIZED_RELEASE_EVIDENCE_FIXTURE") &&
       evidenceFixture.includes("fixture-release-candidate") &&
-      evidenceFixture.includes("Closed testing - Alpha 1.0.3 (4)") &&
+      evidenceFixture.includes("Closed testing - Alpha 1.0.4 (5)") &&
       evidenceFixture.includes("App Review 1.0 (3)") &&
       evidenceFixture.includes("| Accessibility Nutrition Labels | n/a | n/a |") &&
       evidenceFixture.includes("| Child safety standards declaration | n/a | passed |") &&
       evidenceFixture.includes("| Account deletion web resource | n/a | passed |") &&
-      evidenceFixture.includes("| iOS | iPhone fixture-device | iOS current | 1.0 (4) | TestFlight | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-07-23 |"),
+      evidenceFixture.includes("| iOS | iPhone fixture-device | iOS current | 1.0 (5) | TestFlight | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-07-23 |"),
   },
   {
     label: "private console tab writer keeps exact URLs local-only",
