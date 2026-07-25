@@ -11,6 +11,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private var privacyGeneration = 0
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        TtcFirebaseMessagingOptOutBridge.install()
         // Override point for customization after application launch.
         return true
     }

@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import com.getcapacitor.BridgeActivity;
+import com.thetattoocore.app.notifications.TtcFirebaseMessagingPlugin;
 
 public class MainActivity extends BridgeActivity {
 
@@ -28,6 +29,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getBridge().registerPlugin(TtcFirebaseMessagingPlugin.class);
         privacyCover = new View(this);
         privacyCover.setBackgroundColor(Color.rgb(23, 20, 18));
         privacyCover.setImportantForAccessibility(
