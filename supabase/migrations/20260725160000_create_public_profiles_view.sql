@@ -9,7 +9,7 @@
 -- with src/lib/profile-indexing.ts. The profile-access smoke guard fails when
 -- these SQL values drift from the application indexing guard.
 
-create or replace view public.public_profiles
+create view public.public_profiles
 with (security_invoker = true)
 as
 select

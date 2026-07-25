@@ -38,7 +38,7 @@ const executableMigrationLower = migrationSql
   .toLowerCase();
 
 for (const required of [
-  "create or replace view public.public_profiles",
+  "create view public.public_profiles",
   "with (security_invoker = true)",
   "from public.profiles",
   "where is_private = false",
