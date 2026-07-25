@@ -313,7 +313,7 @@ const checks = [
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("August 31, 2026") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Android 16 / API 36") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("target Android 16 / API 36") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checked-in `1.0.3 (4)` build is active in Production and Alpha and uses that baseline") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checked-in replacement `1.0.4 (5)` uses the same API 36 baseline") &&
       docs["docs/APP_STORE_READINESS.md"].includes("targetSdkVersion` set to 36") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not request precise device location") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not prompt on first open") &&

@@ -178,7 +178,7 @@ public-submission build.
 | Current Google Play Production and Alpha | Active Production and Alpha release `1.0.3 (4)` is `36 / 36` | Use Production for normal install and release evidence; retain the same exact Alpha build for controlled QA. Collect explicit opt-in, token-registration, delivery, tap, opt-out, and applicable participation evidence while global delivery stays off. | Record release track, version code/name, test date, device model, and pass/fail only. |
 | Authorized Android review phone | Installed Google Play Production `1.0.3 (4)` targets API 36 | Required package probe, verified App Links, production-link launch, retained-session landing, and system-bar framing passed. Continue controlled notification QA only after explicit member opt-in. | Record installed build, permission state, device date, and pass/fail only. |
 | Previous Google Play baseline | `36 / 36`; version code `3` / version name `1.0.2` | Preserve its completed historical evidence, but do not keep it in the active alert allowlist after exact Play-installed build 4 passed. | Record historical build and result only; do not treat it as current release evidence. |
-| Later Google Play replacement or update | `36 / 36` required | Increment above version code `4`, sign a fresh upload bundle, and rerun wrapper plus real-device QA. | Record API `36 / 36` rebuild proof, version code/name, device QA date, and pass/fail only. |
+| Checked-in replacement candidate | `1.0.4 (5)` at `36 / 36` | Sign a fresh upload bundle and rerun wrapper plus real-device QA before selecting a track. | Record API `36 / 36` rebuild proof, version code/name, device QA date, and pass/fail only. |
 
 Never reuse a version code that Google Play has already served.
 
@@ -202,7 +202,7 @@ cd android
 
 Android SDK and JDK 21 are configured on this Windows machine. For a Google Play upload build, load the local signing environment variables from the private Desktop recovery note, then run `.\gradlew.bat bundleRelease`. The signed upload bundle is `native/thetattoocore-mobile/android/app/build/outputs/bundle/release/app-release.aab`. Keep `android/local.properties`, `android/keystores/`, and all keystore recovery notes out of git.
 
-Android release bundling fails closed before compilation unless all private upload-signing inputs are present, the referenced signing file is readable, and the ignored Android app configuration file is present and nonempty. The failure message names only the missing input category. The production app configuration is not processed for the side-by-side `.qa` debug package, so `assembleDebug` remains available without release signing or a separate QA app registration. Any Play replacement must increment above version code `4`.
+Android release bundling fails closed before compilation unless all private upload-signing inputs are present, the referenced signing file is readable, and the ignored Android app configuration file is present and nonempty. The failure message names only the missing input category. The production app configuration is not processed for the side-by-side `.qa` debug package, so `assembleDebug` remains available without release signing or a separate QA app registration. The checked-in Play replacement is version code `5`; never reuse version code `4`.
 
 iOS on Mac:
 

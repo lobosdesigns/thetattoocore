@@ -619,7 +619,7 @@ const checks = [
       source.iosAppDelegate.includes("didReceiveRemoteNotification"),
   },
   {
-    label: "iOS build 4 has target-scoped push configuration while auto-init stays off",
+    label: "iOS build 5 has target-scoped push configuration while auto-init stays off",
     ok:
       /<key>aps-environment<\/key>\s*<string>\$\(APS_ENVIRONMENT\)<\/string>/s.test(
         source.iosEntitlements,
@@ -631,7 +631,7 @@ const checks = [
       source.iosProject.includes("com.apple.Push = {") &&
       source.iosProject.includes("APS_ENVIRONMENT = development;") &&
       source.iosProject.includes("APS_ENVIRONMENT = production;") &&
-      source.iosProject.match(/CURRENT_PROJECT_VERSION = 4;/g)?.length === 2 &&
+      source.iosProject.match(/CURRENT_PROJECT_VERSION = 5;/g)?.length === 2 &&
       /<key>FirebaseMessagingAutoInitEnabled<\/key>\s*<false\/>/s.test(
         source.iosInfo,
       ),

@@ -8,6 +8,7 @@
 - Android `1.0.3 (4)` adds the dedicated monochrome TTC notification status icon. Its exact Play-installed build now replaces `1.0.2 (3)` as the controlled Android alert-QA allowlist; do not allow both builds concurrently.
 - iOS build `1.0 (3)` was uploaded from Xcode Organizer on July 18, 2026, attached to TTC Internal Testers, and is available for internal TestFlight testing.
 - iOS build `1.0 (4)` is the isolated notification-capability candidate in `TTC Internal Testers`. It adds target-scoped private app configuration and Push Notifications signing while keeping automatic token creation and delivery off; do not replace build `1.0 (3)` on the App Store version already in review.
+- Checked-in Android `1.0.4 (5)` and iOS `1.0 (5)` are replacement candidates containing the reviewed native notification opt-out lifecycle fixes. Build and device-QA them independently; do not replace public Android build 4 or Apple App Review build 3 until the new artifacts pass.
 - PWA manifest, icons, splash assets, service worker, support URL, privacy URL, and terms URL are ready for the beta wrapper path.
 - Native wrapper prep lives in `docs/NATIVE_WRAPPER_PREP.md`; follow it before adding native permissions, deep links, checkout handling, push, or store-review changes.
 - Draft store listing copy lives in `docs/STORE_LISTING_DRAFT.md`; review it against current store policies before submission.
@@ -19,7 +20,7 @@
 - The signed-in Lobosdesigns LLC developer account is an organization account. Google's current 12-testers-for-14-days production-access gate applies to newly created personal accounts, so it does not delay this release. If a future personal account or console-specific requirement shows that gate, use a controlled closed test with the existing tester community or Google Group and archive the production-access evidence privately.
 - Production payment gates live in `docs/PAYMENT_PRODUCTION_READINESS.md` and should pass before real commerce appears in native builds.
 - Final legal review evidence lives in `docs/LEGAL_REVIEW_PREP.md`; keep reviewer notes private and recheck public Terms, Privacy, Support, Help, Child Safety Standards, store metadata, screenshots, and native wrapper behavior against the submitted build.
-- Google Play submissions or updates on or after August 31, 2026 must target Android 16 / API 36. The checked-in `1.0.3 (4)` build is active in Production and Alpha and uses that baseline. Any later replacement must increment the version code above `4`, rebuild and sign a fresh upload bundle, and rerun wrapper plus real-device QA before selecting a Google Play track.
+- Google Play submissions or updates on or after August 31, 2026 must target Android 16 / API 36. Active `1.0.3 (4)` in Production and Alpha is the release baseline; checked-in replacement `1.0.4 (5)` uses the same API 36 baseline and must be rebuilt, signed, and real-device-QA tested before selecting a Google Play track.
 - Visible nudity is not allowed to reduce review and moderation risk.
 - Merch and ads use controlled launch checkout; production payments, seller payouts, taxes, refunds, disputes, and app-store policy review from `docs/PAYMENT_PRODUCTION_READINESS.md` must be finished before real commerce is promoted in native builds.
 
