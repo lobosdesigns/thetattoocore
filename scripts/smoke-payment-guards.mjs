@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const adCheckout = readFileSync("src/app/api/ads/checkout/route.ts", "utf8");
@@ -37,8 +37,16 @@ const merchPrintReceiptButton = readFileSync(
 const adminMerchPage = readFileSync("src/app/admin/merch/page.tsx", "utf8");
 const adminPaymentsPage = readFileSync("src/app/admin/payments/page.tsx", "utf8");
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
+const bookingCheckoutReconciliationAction = adminActions.slice(
+  adminActions.indexOf("export async function reconcileBookingDepositCheckout"),
+  adminActions.indexOf("export async function refundBookingDeposit"),
+);
 const bookingRefundAction = adminActions.slice(
   adminActions.indexOf("export async function refundBookingDeposit"),
+);
+const merchOrderStatusAction = adminActions.slice(
+  adminActions.indexOf("export async function updateMerchOrderStatus"),
+  adminActions.indexOf("export async function refundMerchOrder"),
 );
 const stripeConnectOnboarding = readFileSync(
   "src/app/api/stripe/connect/onboarding/route.ts",
@@ -77,6 +85,13 @@ const bookingCheckoutReservationMigration = readFileSync(
   "supabase/migrations/20260722205002_reserve_booking_deposit_checkout.sql",
   "utf8",
 );
+const merchOrderUpdateRestrictionMigrationPath =
+  "supabase/migrations/20260724191345_restrict_merch_order_updates.sql";
+const merchOrderUpdateRestrictionMigration = existsSync(
+  merchOrderUpdateRestrictionMigrationPath,
+)
+  ? readFileSync(merchOrderUpdateRestrictionMigrationPath, "utf8")
+  : "";
 const globalsCss = readFileSync("src/app/globals.css", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
@@ -288,9 +303,9 @@ try {
 checks.push({
   label: "payment inventory RPC execution stays limited to intended roles",
   ok:
-    adminActions.includes("const inventoryAdmin =") &&
-    adminActions.includes('status === "cancelled" ? createAdminClient() : null') &&
-    adminActions.includes("const orderCancellationClient = inventoryAdmin") &&
+    adminActions.includes("const orderAdmin = createAdminClient()") &&
+    adminActions.includes("const orderCancellationClient = orderAdmin") &&
+    adminActions.includes("const orderUpdateClient = orderAdmin") &&
     adminActions.includes('.rpc("cancel_unpaid_merch_order"') &&
     !adminActions.includes('await supabase.rpc(\n      "cancel_unpaid_merch_order"') &&
     paymentRpcAccessMigration.includes(
@@ -315,7 +330,13 @@ checks.push({
       "revoke execute on function public.spend_ad_credit_for_campaign(uuid)",
     ) &&
     paymentRpcAccessMigration.includes("from public, anon") &&
-    paymentRpcAccessMigration.includes("to authenticated, service_role"),
+    paymentRpcAccessMigration.includes("to authenticated, service_role") &&
+    merchOrderUpdateRestrictionMigration.includes(
+      "revoke update on table public.merch_orders from public, anon, authenticated",
+    ) &&
+    merchOrderUpdateRestrictionMigration.includes(
+      "grant update on table public.merch_orders to service_role",
+    ),
 });
 checks.push({
   label: "Merch inventory reservations are order-owned and released atomically",
@@ -348,6 +369,45 @@ checks.push({
     !merchCheckout.includes('.rpc("release_merch_inventory_for_order"') &&
     stripeWebhook.includes('.rpc("mark_problem_merch_order_for_checkout"') &&
     !stripeWebhook.includes('.rpc(\n        "release_merch_inventory_for_order"'),
+});
+checks.push({
+  label: "admin Merch cancellation cannot release an active checkout",
+  ok:
+    merchOrderStatusAction.includes(
+      'status === "cancelled" && order.status === "pending_checkout"',
+    ) &&
+    merchOrderStatusAction.includes(
+      '"This order still has a checkout in progress. Reconcile the checkout before cancelling it."',
+    ) &&
+    merchOrderStatusAction.includes(
+      'order.status !== "payment_failed"',
+    ) &&
+    merchOrderStatusAction.includes(
+      'order.inventory_reservation_status !== "released"',
+    ) &&
+    merchOrderStatusAction.includes(
+      '"Only failed orders can be cancelled here. Refund paid orders in the payment review tools first."',
+    ) &&
+    merchOrderStatusAction.indexOf('order.status === "payment_failed"') <
+      merchOrderStatusAction.indexOf('.rpc("cancel_unpaid_merch_order"') &&
+    merchOrderStatusAction.includes("const orderUpdateClient = orderAdmin") &&
+    !merchOrderStatusAction.includes(
+      'await supabase\n      .from("merch_orders")\n      .update',
+    ) &&
+    !merchOrderStatusAction.includes(
+      '!["pending_checkout", "payment_failed"].includes(order.status)',
+    ) &&
+    adminMerchPage.includes('order.status === "payment_failed"') &&
+    adminMerchPage.includes(
+      'order.inventoryReservationStatus === "released"',
+    ) &&
+    adminMerchPage.includes("Checkout in progress must be reconciled before cancellation.") &&
+    !adminMerchPage.includes(
+      '["pending_checkout", "payment_failed", "cancelled"].includes',
+    ) &&
+    merchOrderUpdateRestrictionMigration.includes(
+      "revoke update on table public.merch_orders from public, anon, authenticated",
+    ),
 });
 checks.push({
   label: "direct seller payout release APIs stay disabled pending policy",
@@ -682,6 +742,39 @@ checks.push({
     bookingCheckout.indexOf('.rpc("reserve_booking_deposit_checkout"') <
       bookingCheckout.indexOf("session = await createBookingCheckoutSession(") &&
     !bookingCheckout.includes('.from("booking_requests")\n    .update({\n      payment_status: "checkout_started"'),
+});
+checks.push({
+  label: "booking payment webhooks fail closed across reconciliation races",
+  ok:
+    stripeWebhook.includes(
+      'stripe_checkout_session_id: status === "paid" ? session.id : null',
+    ) &&
+    stripeWebhook.includes("const transitionedBookings = bookings ?? []") &&
+    stripeWebhook.includes(
+      'status === "paid" && transitionedBookings.length === 0',
+    ) &&
+    stripeWebhook.includes(
+      '.eq("stripe_checkout_session_id", session.id)',
+    ) &&
+    stripeWebhook.includes('.eq("payment_status", "paid")') &&
+    stripeWebhook.includes('.eq("status", "deposit_paid")') &&
+    stripeWebhook.includes(
+      '.eq("stripe_payment_intent_id", paymentIntentId)',
+    ) &&
+    stripeWebhook.includes("bookingPaidTransitionDecision({") &&
+    stripeWebhook.includes(
+      'if (paidTransitionDecision.action === "retry")',
+    ) &&
+    stripeCheckoutSessions.includes(
+      "export function bookingPaidTransitionDecision",
+    ) &&
+    stripeWebhook.includes(
+      '"Webhook paid booking transition matched no held or already-paid booking."',
+    ) &&
+    stripeWebhook.includes(
+      'throw new Error("Could not confirm booking deposit paid transition.")',
+    ) &&
+    stripeWebhook.includes("for (const booking of transitionedBookings)"),
 });
 checks.push({
   label: "payment webhook rejects unsigned events before processing",
@@ -1465,7 +1558,112 @@ checks.push({
 checks.push({
   label: "admin payments watches booking deposit state",
   ok:
-    adminActions.includes("export async function resetStaleBookingDepositCheckouts") &&
+    adminActions.includes("export async function reconcileBookingDepositCheckout") &&
+    !adminActions.includes("export async function resetStaleBookingDepositCheckouts") &&
+    bookingCheckoutReconciliationAction.includes(
+      "const checkoutPreflight = stripeCheckoutPreflight()",
+    ) &&
+    bookingCheckoutReconciliationAction.includes("!checkoutPreflight.ready") &&
+    bookingCheckoutReconciliationAction.includes(
+      "stripe.checkout.sessions.retrieve(checkoutSessionId)",
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      "bookingUpdatedAt > staleBefore",
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      '"This booking checkout is not old enough to reconcile. It remains held for review."',
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      "bookingCheckoutReconciliationDecision({",
+    ) &&
+    stripeCheckoutSessions.includes(
+      "export function bookingCheckoutReconciliationDecision",
+    ) &&
+    stripeCheckoutSessions.includes(
+      "session.livemode !== expectedLivemode",
+    ) &&
+    stripeCheckoutSessions.includes('session.mode !== "payment"') &&
+    stripeCheckoutSessions.includes(
+      'session.paymentKind !== "booking_deposit"',
+    ) &&
+    stripeCheckoutSessions.includes("session.bookingId !== booking.id") &&
+    stripeCheckoutSessions.includes(
+      "session.artistId !== booking.artistId",
+    ) &&
+    stripeCheckoutSessions.includes(
+      "session.clientId !== booking.clientId",
+    ) &&
+    stripeCheckoutSessions.includes(
+      "session.clientReferenceId !== booking.id",
+    ) &&
+    stripeCheckoutSessions.includes(
+      "session.amountTotal !== booking.totalCents",
+    ) &&
+    stripeCheckoutSessions.includes(
+      "session.currency?.toLowerCase() !== booking.currency.toLowerCase()",
+    ) &&
+    stripeCheckoutSessions.includes('session.paymentStatus !== "unpaid"') &&
+    stripeCheckoutSessions.includes('session.status === "open"') &&
+    stripeCheckoutSessions.includes('session.status === "expired"') &&
+    bookingCheckoutReconciliationAction.includes(
+      'reconciliationDecision.action === "hold"',
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      'reconciliationDecision.action === "expire"',
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      "stripe.checkout.sessions.expire(",
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      "checkoutSession.id",
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      'reconciliationDecision.action !== "release"',
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      'event_type: "booking_checkout_reconciliation_approved"',
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      "if (releaseError || !releasedBooking)",
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      "bookingCheckoutReleaseAttemptDecision({",
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      '.is("stripe_checkout_session_id", null)',
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      "updateError: Boolean(releaseError)",
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      "verifiedReleasedBookingId: alreadyReleasedBooking?.id ?? null",
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      'if (releaseDecision.action === "reject")',
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      'releaseDecision.reason !== "update_matched"',
+    ) &&
+    stripeCheckoutSessions.includes(
+      "export function bookingCheckoutReleaseAttemptDecision",
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      '"Checkout reconciliation was already completed. The booking is ready for a new deposit attempt."',
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      '"Admin booking checkout reconciliation audit failed."',
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      ".eq(\"stripe_checkout_session_id\", checkoutSessionId)",
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      '.eq("payment_dispute_hold", false)',
+    ) &&
+    bookingCheckoutReconciliationAction.includes(".select(\"id\")") &&
+    bookingCheckoutReconciliationAction.includes(".maybeSingle<{ id: string }>()") &&
+    bookingCheckoutReconciliationAction.includes(
+      '"Checkout was not released because the booking changed during reconciliation."',
+    ) &&
     adminActions.includes("export async function refundBookingDeposit") &&
     bookingRefundAction.includes("const checkoutPreflight = stripeCheckoutPreflight()") &&
     bookingRefundAction.includes("!checkoutPreflight.ready") &&
@@ -1480,7 +1678,7 @@ checks.push({
     bookingRefundAction.includes(
       "This payment could not be matched safely to the booking. No refund was requested.",
     ) &&
-    adminActions.includes('event_type: "reset_stale_booking_deposit_checkouts"') &&
+    adminActions.includes('event_type: "booking_checkout_reconciliation_approved"') &&
     adminActions.includes('event_type: "refund_booking_deposit_requested"') &&
     adminActions.includes("createStripeClient") &&
     adminActions.includes("stripe.refunds.list") &&
@@ -1501,18 +1699,25 @@ checks.push({
     adminActions.includes('status: "accepted"') &&
     adminActions.includes('stripe_checkout_session_id: null') &&
     adminActions.includes('profile?.role !== "admin" && profile?.role !== "owner"') &&
-    adminActions.includes('console.error("Admin stale booking checkout reset failed.", error)') &&
-    adminActions.includes('"Could not reset stale booking checkouts. Please try again."') &&
+    bookingCheckoutReconciliationAction.includes(
+      'console.error("Admin booking checkout lookup failed.", error)',
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      '"Could not confirm this booking checkout. It remains held for review."',
+    ) &&
     adminActions.includes('console.error("Admin booking deposit lookup failed.", error)') &&
     adminActions.includes('"Booking deposit not found."') &&
     adminActions.includes('console.error("Admin booking deposit refund request failed.", error)') &&
     adminActions.includes('"Could not confirm booking refund. Retry this action; it will not send a duplicate refund."') &&
-    !adminActions.includes('error.message || "Could not reset stale booking checkouts."') &&
+    !bookingCheckoutReconciliationAction.includes("error instanceof Error") &&
     !adminActions.includes('error?.message || "Booking deposit not found."') &&
     !adminActions.includes('error instanceof Error ? error.message : "Could not request booking refund."') &&
     adminPaymentsPage.includes("const bookingPaymentStatuses") &&
     adminPaymentsPage.includes("refundBookingDeposit") &&
-    adminPaymentsPage.includes("resetStaleBookingDepositCheckouts") &&
+    adminPaymentsPage.includes("reconcileBookingDepositCheckout") &&
+    !adminPaymentsPage.includes("resetStaleBookingDepositCheckouts") &&
+    adminPaymentsPage.includes("stripe_checkout_session_id") &&
+    adminPaymentsPage.includes("Reconcile held checkout") &&
     adminPaymentsPage.includes('table: "booking_requests"') &&
     adminPaymentsPage.includes("booking_page") &&
     adminPaymentsPage.includes("booking_payment_status") &&
@@ -1557,7 +1762,10 @@ checks.push({
     adminPaymentsPage.includes("charge.dispute.funds_reinstated") &&
     adminPaymentsPage.includes("checkout.session.async_payment_succeeded") &&
     adminPaymentsPage.includes("refund_booking_deposit_requested") &&
+    adminPaymentsPage.includes("booking_checkout_reconciliation_approved") &&
     adminPaymentsPage.includes("reset_stale_booking_deposit_checkouts") &&
+    adminPaymentsPage.includes("Historical bulk checkout reset") &&
+    adminPaymentsPage.includes("Booking checkout release approved") &&
     adminPaymentsPage.includes(".range(auditFrom, auditTo)") &&
     adminPaymentsPage.includes("Booking deposits") &&
     adminPaymentsPage.includes("recentBookingDeposits") &&
@@ -1585,7 +1793,8 @@ checks.push({
     adminPaymentsPage.includes("TTC fee") &&
     adminPaymentsPage.includes("Stale booking deposit checkouts over 24h") &&
     adminPaymentsPage.includes('bookingFilterHref("checkout_started", 1, activeSearch)') &&
-    adminPaymentsPage.includes("Reset stale booking checkouts") &&
+    adminPaymentsPage.includes("Open the filtered booking list") &&
+    !adminPaymentsPage.includes("Reset stale booking checkouts") &&
     adminPaymentsPage.includes("Dispute audit entries need review") &&
     adminPaymentsPage.includes('auditFilterHref("payment_disputes", 1, activeSearch)') &&
     adminPaymentsPage.includes("Booking refund reviews need admin review") &&

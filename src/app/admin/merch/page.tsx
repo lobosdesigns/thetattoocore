@@ -73,6 +73,7 @@ type MerchOrder = {
   discountCents: number;
   fulfilledAt: string | null;
   id: string;
+  inventoryReservationStatus: string;
   itemCount: number;
   items: {
     quantity: number;
@@ -573,9 +574,9 @@ function OrderCard({
   returnTo: string;
 }) {
   const canFulfill = order.status === "paid";
-  const canCancel = ["pending_checkout", "payment_failed", "cancelled"].includes(
-    order.status,
-  );
+  const canCancel =
+    order.status === "payment_failed" &&
+    order.inventoryReservationStatus === "released";
   const canRefund =
     canRefundPayments &&
     ["paid", "fulfilled"].includes(order.status) &&
@@ -779,8 +780,8 @@ function OrderCard({
           </button>
         </div>
         <p className="text-xs leading-5 text-[var(--muted-strong)]">
-          Refund paid orders in the payment review tools first; payment updates
-          will sync status here.
+          Checkout in progress must be reconciled before cancellation. Refund
+          paid orders in the payment review tools first.
         </p>
       </form>
       {canRefundPayments && ["paid", "fulfilled"].includes(order.status) ? (
@@ -1082,7 +1083,7 @@ export default async function AdminMerchPage({
   let orderQuery = supabase
     .from("merch_orders")
     .select(
-      "id, status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, shipping_address, admin_note, stripe_checkout_session_id, stripe_payment_intent_id, payment_dispute_hold, created_at, fulfilled_at, cancelled_at, refunded_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id, title_snapshot, quantity, seller_fulfilled_at, tracking_carrier, tracking_number, tracking_url)",
+      "id, status, inventory_reservation_status, currency, subtotal_cents, platform_fee_cents, shipping_cents, tax_cents, discount_cents, total_cents, customer_email, shipping_name, shipping_address, admin_note, stripe_checkout_session_id, stripe_payment_intent_id, payment_dispute_hold, created_at, fulfilled_at, cancelled_at, refunded_at, profiles:profiles!merch_orders_buyer_id_fkey(display_name, username), merch_order_items(id, title_snapshot, quantity, seller_fulfilled_at, tracking_carrier, tracking_number, tracking_url)",
       { count: "exact" },
     );
 
@@ -1129,6 +1130,7 @@ export default async function AdminMerchPage({
         discount_cents: number;
         fulfilled_at: string | null;
         id: string;
+        inventory_reservation_status: string;
         merch_order_items: {
           id: string;
           quantity: number;
@@ -1164,6 +1166,7 @@ export default async function AdminMerchPage({
     discountCents: order.discount_cents,
     fulfilledAt: order.fulfilled_at,
     id: order.id,
+    inventoryReservationStatus: order.inventory_reservation_status,
     itemCount: order.merch_order_items.length,
     items: order.merch_order_items.map((item) => ({
       quantity: item.quantity,

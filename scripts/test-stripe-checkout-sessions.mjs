@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import {
   StripeCheckoutRequestError,
+  bookingCheckoutReconciliationDecision,
+  bookingCheckoutReleaseAttemptDecision,
+  bookingPaidTransitionDecision,
   createStripeCheckoutSession,
   expireCheckoutSessionBeforeRollback,
   expireStripeCheckoutSession,
@@ -279,3 +282,199 @@ console.log("PASS zero-row rollback stays reconciliation-needed");
   assert.equal(released, false);
 }
 console.log("PASS rollback errors stay reconciliation-needed");
+
+const heldBooking = {
+  artistId: "artist-123",
+  clientId: "client-456",
+  currency: "usd",
+  id: "booking-789",
+  totalCents: 12500,
+};
+const expiredUnpaidBookingSession = {
+  amountTotal: heldBooking.totalCents,
+  artistId: heldBooking.artistId,
+  bookingId: heldBooking.id,
+  clientId: heldBooking.clientId,
+  clientReferenceId: heldBooking.id,
+  currency: heldBooking.currency,
+  id: "cs_test_booking_reconcile",
+  livemode: false,
+  mode: "payment",
+  paymentKind: "booking_deposit",
+  paymentStatus: "unpaid",
+  status: "expired",
+};
+
+assert.deepEqual(
+  bookingCheckoutReconciliationDecision({
+    booking: heldBooking,
+    expectedLivemode: false,
+    session: expiredUnpaidBookingSession,
+    sessionId: expiredUnpaidBookingSession.id,
+  }),
+  { action: "release", reason: "expired_unpaid" },
+);
+assert.deepEqual(
+  bookingCheckoutReconciliationDecision({
+    booking: heldBooking,
+    expectedLivemode: false,
+    session: {
+      ...expiredUnpaidBookingSession,
+      status: "open",
+    },
+    sessionId: expiredUnpaidBookingSession.id,
+  }),
+  { action: "expire", reason: "open_unpaid" },
+);
+console.log("PASS booking reconciliation distinguishes open and expired unpaid sessions");
+
+for (const session of [
+  { ...expiredUnpaidBookingSession, paymentStatus: "paid" },
+  { ...expiredUnpaidBookingSession, paymentStatus: "no_payment_required" },
+]) {
+  assert.deepEqual(
+    bookingCheckoutReconciliationDecision({
+      booking: heldBooking,
+      expectedLivemode: false,
+      session,
+      sessionId: expiredUnpaidBookingSession.id,
+    }),
+    { action: "hold", reason: "payment_activity" },
+  );
+}
+assert.deepEqual(
+  bookingCheckoutReconciliationDecision({
+    booking: heldBooking,
+    expectedLivemode: false,
+    session: {
+      ...expiredUnpaidBookingSession,
+      status: "complete",
+    },
+    sessionId: expiredUnpaidBookingSession.id,
+  }),
+  { action: "hold", reason: "unresolved_status" },
+);
+console.log("PASS booking reconciliation keeps payment activity and unresolved states held");
+
+for (const session of [
+  { ...expiredUnpaidBookingSession, amountTotal: 12499 },
+  { ...expiredUnpaidBookingSession, artistId: "other-artist" },
+  { ...expiredUnpaidBookingSession, bookingId: "other-booking" },
+  { ...expiredUnpaidBookingSession, clientId: "other-client" },
+  { ...expiredUnpaidBookingSession, clientReferenceId: "other-booking" },
+  { ...expiredUnpaidBookingSession, currency: "cad" },
+  { ...expiredUnpaidBookingSession, id: "cs_other" },
+  { ...expiredUnpaidBookingSession, livemode: true },
+  { ...expiredUnpaidBookingSession, mode: "setup" },
+  { ...expiredUnpaidBookingSession, paymentKind: "merch_order" },
+]) {
+  assert.deepEqual(
+    bookingCheckoutReconciliationDecision({
+      booking: heldBooking,
+      expectedLivemode: false,
+      session,
+      sessionId: expiredUnpaidBookingSession.id,
+    }),
+    { action: "hold", reason: "identity_mismatch" },
+  );
+}
+console.log("PASS booking reconciliation holds every identity mismatch");
+
+assert.deepEqual(
+  bookingCheckoutReleaseAttemptDecision({
+    bookingId: heldBooking.id,
+    releasedBookingId: heldBooking.id,
+    updateError: false,
+    verifiedReleasedBookingId: null,
+    verificationError: false,
+  }),
+  { action: "accept", reason: "update_matched" },
+);
+assert.deepEqual(
+  bookingCheckoutReleaseAttemptDecision({
+    bookingId: heldBooking.id,
+    releasedBookingId: null,
+    updateError: true,
+    verifiedReleasedBookingId: heldBooking.id,
+    verificationError: false,
+  }),
+  { action: "accept", reason: "update_outcome_verified" },
+);
+assert.deepEqual(
+  bookingCheckoutReleaseAttemptDecision({
+    bookingId: heldBooking.id,
+    releasedBookingId: null,
+    updateError: false,
+    verifiedReleasedBookingId: heldBooking.id,
+    verificationError: false,
+  }),
+  { action: "accept", reason: "already_released" },
+);
+console.log("PASS booking release accepts matched and verified idempotent outcomes");
+
+for (const decision of [
+  bookingCheckoutReleaseAttemptDecision({
+    bookingId: heldBooking.id,
+    releasedBookingId: null,
+    updateError: true,
+    verifiedReleasedBookingId: null,
+    verificationError: false,
+  }),
+  bookingCheckoutReleaseAttemptDecision({
+    bookingId: heldBooking.id,
+    releasedBookingId: null,
+    updateError: true,
+    verifiedReleasedBookingId: null,
+    verificationError: true,
+  }),
+]) {
+  assert.equal(decision.action, "reject");
+}
+console.log("PASS booking release rejects unverified or changed state");
+
+assert.deepEqual(
+  bookingPaidTransitionDecision({
+    bookingId: heldBooking.id,
+    existingPaidBookingId: null,
+    lookupError: false,
+    paymentIntentId: "pi_booking_paid",
+    transitionedCount: 1,
+  }),
+  { action: "accept", reason: "transitioned" },
+);
+assert.deepEqual(
+  bookingPaidTransitionDecision({
+    bookingId: heldBooking.id,
+    existingPaidBookingId: heldBooking.id,
+    lookupError: false,
+    paymentIntentId: "pi_booking_paid",
+    transitionedCount: 0,
+  }),
+  { action: "accept", reason: "already_paid" },
+);
+for (const decision of [
+  bookingPaidTransitionDecision({
+    bookingId: heldBooking.id,
+    existingPaidBookingId: null,
+    lookupError: false,
+    paymentIntentId: "pi_booking_paid",
+    transitionedCount: 0,
+  }),
+  bookingPaidTransitionDecision({
+    bookingId: heldBooking.id,
+    existingPaidBookingId: null,
+    lookupError: true,
+    paymentIntentId: "pi_booking_paid",
+    transitionedCount: 0,
+  }),
+  bookingPaidTransitionDecision({
+    bookingId: heldBooking.id,
+    existingPaidBookingId: null,
+    lookupError: false,
+    paymentIntentId: null,
+    transitionedCount: 0,
+  }),
+]) {
+  assert.equal(decision.action, "retry");
+}
+console.log("PASS booking paid transition retries mismatched and unverified zero-row outcomes");

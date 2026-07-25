@@ -696,14 +696,14 @@ const checks = [
       adminActions.includes('console.error("Admin Merch order lookup failed.", orderError)') &&
       adminActions.includes('console.error("Admin Merch order update failed.", updateError)') &&
       adminActions.includes('console.error("Admin Merch order item fulfillment update failed.", itemError)') &&
-      adminActions.includes('console.error("Admin Merch inventory release client is unavailable.")') &&
+      adminActions.includes('console.error("Admin Merch order update client is unavailable.")') &&
       adminActions.includes('console.error("Admin Merch order cancellation failed.", cancellationError)') &&
       adminActions.includes('"Merch product was not found."') &&
       adminActions.includes('"Could not update Merch product. Please try again."') &&
       adminActions.includes('"Merch order was not found."') &&
       adminActions.includes('"Could not update Merch order. Please try again."') &&
       adminActions.includes('"Order changed, but line-item fulfillment status failed. Please try again."') &&
-      adminActions.includes('"Could not prepare the inventory update. Please try again."') &&
+      adminActions.includes('"Could not prepare the order update. Please try again."') &&
       adminActions.includes('"Could not cancel Merch order. Please try again."') &&
       !adminActions.includes('productError?.message || "Merch product was not found."') &&
       !adminActions.includes('updateError.message || "Could not update merch product."') &&

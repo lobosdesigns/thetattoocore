@@ -12,6 +12,7 @@ import {
   stripeWebhookSigningSecretConfigured,
 } from "@/lib/stripe/server";
 import { stripeConnectStatus } from "@/lib/stripe/connect";
+import { bookingPaidTransitionDecision } from "@/lib/stripe/checkout-session";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -665,6 +666,7 @@ async function markBookingCheckoutSession({
     platform_fee_cents: platformFeeCents,
     deposit_amount_cents: depositAmountCents,
     status: status === "paid" ? "deposit_paid" : "accepted",
+    stripe_checkout_session_id: status === "paid" ? session.id : null,
     stripe_payment_intent_id:
       typeof session.payment_intent === "string" ? session.payment_intent : null,
     total_cents: session.amount_total ?? depositAmountCents + platformFeeCents,
@@ -687,9 +689,57 @@ async function markBookingCheckoutSession({
     throw new Error("Could not update booking deposit status.");
   }
 
+  const transitionedBookings = bookings ?? [];
+
+  if (status === "paid" && transitionedBookings.length === 0) {
+    const paymentIntentId =
+      typeof session.payment_intent === "string" ? session.payment_intent : null;
+
+    let existingPaidBooking: { id: string } | null = null;
+    let existingPaidBookingError: unknown = null;
+
+    if (paymentIntentId) {
+      const { data, error } = await supabase
+        .from("booking_requests")
+        .select("id")
+        .eq("id", bookingId)
+        .eq("stripe_checkout_session_id", session.id)
+        .eq("stripe_payment_intent_id", paymentIntentId)
+        .eq("payment_status", "paid")
+        .eq("status", "deposit_paid")
+        .maybeSingle<{ id: string }>();
+
+      existingPaidBooking = data;
+      existingPaidBookingError = error;
+    }
+
+    const paidTransitionDecision = bookingPaidTransitionDecision({
+      bookingId,
+      existingPaidBookingId: existingPaidBooking?.id ?? null,
+      lookupError: Boolean(existingPaidBookingError),
+      paymentIntentId,
+      transitionedCount: transitionedBookings.length,
+    });
+
+    if (paidTransitionDecision.action === "retry") {
+      if (existingPaidBookingError) {
+        console.error(
+          "Webhook paid booking idempotency lookup failed.",
+          existingPaidBookingError,
+        );
+      } else {
+        console.error(
+          "Webhook paid booking transition matched no held or already-paid booking.",
+        );
+      }
+
+      throw new Error("Could not confirm booking deposit paid transition.");
+    }
+  }
+
   const notifications: NotificationInsert[] = [];
 
-  for (const booking of bookings ?? []) {
+  for (const booking of transitionedBookings) {
     if (status === "paid") {
       notifications.push({
         actor_id: booking.client_id,

@@ -6,6 +6,10 @@ import { redirect } from "next/navigation";
 import { sendHostgatorEmail } from "@/lib/mail/hostgator";
 import { insertNotifications } from "@/lib/notification-write";
 import { siteName, siteUrl, supportEmail } from "@/lib/site";
+import {
+  bookingCheckoutReconciliationDecision,
+  bookingCheckoutReleaseAttemptDecision,
+} from "@/lib/stripe/checkout-session";
 import { createStripeClient, stripeCheckoutPreflight } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -308,6 +312,23 @@ function cleanText(value: FormDataEntryValue | null, maxLength: number) {
   return String(value ?? "")
     .trim()
     .slice(0, maxLength);
+}
+
+function bookingCheckoutSessionSnapshot(session: Stripe.Checkout.Session) {
+  return {
+    amountTotal: session.amount_total,
+    artistId: session.metadata?.artist_id,
+    bookingId: session.metadata?.booking_request_id,
+    clientId: session.metadata?.client_id,
+    clientReferenceId: session.client_reference_id,
+    currency: session.currency,
+    id: session.id,
+    livemode: session.livemode,
+    mode: session.mode,
+    paymentKind: session.metadata?.payment_kind,
+    paymentStatus: session.payment_status,
+    status: session.status,
+  };
 }
 
 function centsFromDollars(value: FormDataEntryValue | null, maxCents: number) {
@@ -1991,13 +2012,13 @@ export async function updateMerchOrderStatus(formData: FormData) {
   }
 
   const { supabase, userId } = await requireModerator();
-  const inventoryAdmin = status === "cancelled" ? createAdminClient() : null;
+  const orderAdmin = createAdminClient();
 
-  if (status === "cancelled" && !inventoryAdmin) {
-    console.error("Admin Merch inventory release client is unavailable.");
+  if (!orderAdmin) {
+    console.error("Admin Merch order update client is unavailable.");
     redirect(
       adminMerchMessage(
-        "Could not prepare the inventory update. Please try again.",
+        "Could not prepare the order update. Please try again.",
         returnTo,
       ),
     );
@@ -2005,12 +2026,15 @@ export async function updateMerchOrderStatus(formData: FormData) {
 
   const { data: order, error: orderError } = await supabase
     .from("merch_orders")
-    .select("id, status, buyer_id, total_cents, currency")
+    .select(
+      "id, status, inventory_reservation_status, buyer_id, total_cents, currency",
+    )
     .eq("id", orderId)
     .maybeSingle<{
       buyer_id: string;
       currency: string;
       id: string;
+      inventory_reservation_status: string;
       status: string;
       total_cents: number;
     }>();
@@ -2031,15 +2055,37 @@ export async function updateMerchOrderStatus(formData: FormData) {
     redirect(adminMerchMessage("Only paid orders can be fulfilled.", returnTo));
   }
 
+  if (status === "cancelled" && order.status === "pending_checkout") {
+    redirect(
+      adminMerchMessage(
+        "This order still has a checkout in progress. Reconcile the checkout before cancelling it.",
+        returnTo,
+      ),
+    );
+  }
+
   if (
     status === "cancelled" &&
-    !["pending_checkout", "payment_failed"].includes(order.status)
+    order.status === "payment_failed" &&
+    order.inventory_reservation_status !== "released"
+  ) {
+    redirect(
+      adminMerchMessage(
+        "This failed order is not ready for cancellation. Keep it held for review.",
+        returnTo,
+      ),
+    );
+  }
+
+  if (
+    status === "cancelled" &&
+    order.status !== "payment_failed"
   ) {
     redirect(
       adminMerchMessage(
         order.status === "cancelled"
           ? "This order is already cancelled."
-          : "Only pending or failed orders can be cancelled here. Refund paid orders in the payment review tools first.",
+          : "Only failed orders can be cancelled here. Refund paid orders in the payment review tools first.",
         returnTo,
       ),
     );
@@ -2047,7 +2093,8 @@ export async function updateMerchOrderStatus(formData: FormData) {
 
   const now = new Date().toISOString();
   if (status === "fulfilled") {
-    const { error: updateError } = await supabase
+    const orderUpdateClient = orderAdmin;
+    const { error: updateError } = await orderUpdateClient
       .from("merch_orders")
       .update({
         admin_note: note || null,
@@ -2068,7 +2115,7 @@ export async function updateMerchOrderStatus(formData: FormData) {
       );
     }
 
-    const { error: itemError } = await supabase
+    const { error: itemError } = await orderUpdateClient
       .from("merch_order_items")
       .update({
         fulfillment_status: "fulfilled",
@@ -2087,11 +2134,7 @@ export async function updateMerchOrderStatus(formData: FormData) {
   }
 
   if (status === "cancelled") {
-    const orderCancellationClient = inventoryAdmin;
-
-    if (!orderCancellationClient) {
-      throw new Error("Order cancellation client was not prepared.");
-    }
+    const orderCancellationClient = orderAdmin;
 
     const { data: cancelledOrders, error: cancellationError } =
       await orderCancellationClient
@@ -2529,14 +2572,19 @@ export async function updateAccountDeletionRequest(formData: FormData) {
   redirect(adminDataRequestsMessage("Account deletion request updated.", returnTo));
 }
 
-export async function resetStaleBookingDepositCheckouts(formData: FormData) {
+export async function reconcileBookingDepositCheckout(formData: FormData) {
   const returnTo = cleanText(formData.get("return_to"), 160);
-  const confirm = cleanText(formData.get("confirm"), 20);
+  const bookingId = cleanText(formData.get("booking_id"), 80);
+  const confirm = cleanText(formData.get("confirm"), 20).toLowerCase();
 
-  if (confirm !== "reset") {
+  if (!bookingId) {
+    redirect(adminPaymentsMessage("Choose a booking checkout first.", returnTo));
+  }
+
+  if (confirm !== "reconcile") {
     redirect(
       adminPaymentsMessage(
-        "Confirm stale booking checkout reset before running it.",
+        "Confirm the held booking checkout reconciliation before running it.",
         returnTo,
       ),
     );
@@ -2554,13 +2602,182 @@ export async function resetStaleBookingDepositCheckouts(formData: FormData) {
   }
 
   const adminClient = createAdminClient();
+  const stripe = createStripeClient();
+  const checkoutPreflight = stripeCheckoutPreflight();
 
-  if (!adminClient) {
+  if (!adminClient || !stripe || !checkoutPreflight.ready) {
     redirect(adminPaymentsMessage("Private payment tools unavailable.", returnTo));
   }
 
-  const staleCutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const { data: resetRows, error } = await adminClient
+  const { data: booking, error } = await adminClient
+    .from("booking_requests")
+    .select(
+      "id, artist_id, client_id, currency, payment_dispute_hold, payment_status, status, stripe_checkout_session_id, total_cents, updated_at",
+    )
+    .eq("id", bookingId)
+    .maybeSingle<{
+      artist_id: string;
+      client_id: string;
+      currency: string;
+      id: string;
+      payment_dispute_hold: boolean;
+      payment_status: string;
+      status: string;
+      stripe_checkout_session_id: string | null;
+      total_cents: number;
+      updated_at: string;
+    }>();
+
+  if (error || !booking) {
+    if (error) {
+      console.error("Admin booking checkout lookup failed.", error);
+    }
+
+    redirect(
+      adminPaymentsMessage(
+        "Could not confirm this booking checkout. It remains held for review.",
+        returnTo,
+      ),
+    );
+  }
+
+  const checkoutSessionId = booking.stripe_checkout_session_id;
+
+  if (
+    booking.status !== "deposit_pending" ||
+    booking.payment_status !== "checkout_started" ||
+    booking.payment_dispute_hold ||
+    !checkoutSessionId
+  ) {
+    redirect(
+      adminPaymentsMessage(
+        "This booking no longer has a held checkout to reconcile.",
+        returnTo,
+      ),
+    );
+  }
+
+  const staleBefore = Date.now() - 24 * 60 * 60 * 1000;
+  const bookingUpdatedAt = Date.parse(booking.updated_at);
+
+  if (
+    !Number.isFinite(bookingUpdatedAt) ||
+    bookingUpdatedAt > staleBefore
+  ) {
+    redirect(
+      adminPaymentsMessage(
+        "This booking checkout is not old enough to reconcile. It remains held for review.",
+        returnTo,
+      ),
+    );
+  }
+
+  let checkoutSession: Stripe.Checkout.Session;
+
+  try {
+    checkoutSession =
+      await stripe.checkout.sessions.retrieve(checkoutSessionId);
+  } catch (error) {
+    console.error("Admin booking checkout retrieval failed.", error);
+    redirect(
+      adminPaymentsMessage(
+        "Could not confirm this booking checkout. It remains held for review.",
+        returnTo,
+      ),
+    );
+  }
+
+  const reconciliationOptions = {
+    booking: {
+      artistId: booking.artist_id,
+      clientId: booking.client_id,
+      currency: booking.currency,
+      id: booking.id,
+      totalCents: booking.total_cents,
+    },
+    expectedLivemode: checkoutPreflight.actual,
+    sessionId: checkoutSessionId,
+  };
+  let reconciliationDecision = bookingCheckoutReconciliationDecision({
+    ...reconciliationOptions,
+    session: bookingCheckoutSessionSnapshot(checkoutSession),
+  });
+
+  if (reconciliationDecision.action === "hold") {
+    console.error("Admin booking checkout reconciliation held.", {
+      reason: reconciliationDecision.reason,
+    });
+    redirect(
+      adminPaymentsMessage(
+        "This checkout cannot be safely released. It remains held for review.",
+        returnTo,
+      ),
+    );
+  }
+
+  let reconciledSession = checkoutSession;
+
+  if (reconciliationDecision.action === "expire") {
+    try {
+      reconciledSession = await stripe.checkout.sessions.expire(
+        checkoutSession.id,
+      );
+    } catch (error) {
+      console.error("Admin booking checkout expiration failed.", error);
+      redirect(
+        adminPaymentsMessage(
+          "Could not safely close this checkout. It remains held for review.",
+          returnTo,
+        ),
+      );
+    }
+  }
+
+  reconciliationDecision = bookingCheckoutReconciliationDecision({
+    ...reconciliationOptions,
+    session: bookingCheckoutSessionSnapshot(reconciledSession),
+  });
+
+  if (reconciliationDecision.action !== "release") {
+    redirect(
+      adminPaymentsMessage(
+        "This checkout was not confirmed closed and unpaid. It remains held for review.",
+        returnTo,
+      ),
+    );
+  }
+
+  const { error: auditError } = await adminClient
+    .from("admin_audit_logs")
+    .insert({
+      actor_id: userId,
+      event_type: "booking_checkout_reconciliation_approved",
+      metadata: {
+        from_payment_status: booking.payment_status,
+        from_status: booking.status,
+        reconciliation_result: "expired_unpaid",
+        remote_payment_status: reconciledSession.payment_status,
+        remote_status: reconciledSession.status,
+      },
+      summary: "Approved an expired unpaid booking checkout for conditional release.",
+      target_id: booking.id,
+      target_type: "booking_request",
+    });
+
+  if (auditError) {
+    console.error(
+      "Admin booking checkout reconciliation audit failed.",
+      auditError,
+    );
+    redirect(
+      adminPaymentsMessage(
+        "Checkout remains held because reconciliation could not be recorded. Please try again.",
+        returnTo,
+      ),
+    );
+  }
+
+  const { data: releasedBooking, error: releaseError } = await adminClient
     .from("booking_requests")
     .update({
       payment_status: "payment_failed",
@@ -2568,41 +2785,74 @@ export async function resetStaleBookingDepositCheckouts(formData: FormData) {
       stripe_checkout_session_id: null,
       updated_at: new Date().toISOString(),
     })
+    .eq("id", booking.id)
     .eq("status", "deposit_pending")
     .eq("payment_status", "checkout_started")
-    .lt("updated_at", staleCutoff)
-    .select("id");
+    .eq("payment_dispute_hold", false)
+    .eq("stripe_checkout_session_id", checkoutSessionId)
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
-    console.error("Admin stale booking checkout reset failed.", error);
+  if (releaseError) {
+    console.error("Admin booking checkout release result was indeterminate.", releaseError);
+  }
+
+  let alreadyReleasedBooking: { id: string } | null = null;
+  let alreadyReleasedError: unknown = null;
+
+  if (releaseError || !releasedBooking) {
+    const {
+      data,
+      error,
+    } = await adminClient
+      .from("booking_requests")
+      .select("id")
+      .eq("id", booking.id)
+      .eq("status", "accepted")
+      .eq("payment_status", "payment_failed")
+      .eq("payment_dispute_hold", false)
+      .is("stripe_checkout_session_id", null)
+      .maybeSingle<{ id: string }>();
+
+    alreadyReleasedBooking = data;
+    alreadyReleasedError = error;
+  }
+
+  const releaseDecision = bookingCheckoutReleaseAttemptDecision({
+    bookingId: booking.id,
+    releasedBookingId: releasedBooking?.id ?? null,
+    updateError: Boolean(releaseError),
+    verifiedReleasedBookingId: alreadyReleasedBooking?.id ?? null,
+    verificationError: Boolean(alreadyReleasedError),
+  });
+
+  if (releaseDecision.action === "reject") {
+    if (alreadyReleasedError) {
+      console.error(
+        "Admin booking checkout post-race verification failed.",
+        alreadyReleasedError,
+      );
+    }
+
     redirect(
       adminPaymentsMessage(
-        "Could not reset stale booking checkouts. Please try again.",
+        "Checkout was not released because the booking changed during reconciliation.",
         returnTo,
       ),
     );
   }
 
-  const resetCount = resetRows?.length ?? 0;
-
-  await supabase.from("admin_audit_logs").insert({
-    actor_id: userId,
-    event_type: "reset_stale_booking_deposit_checkouts",
-    metadata: {
-      reset_count: resetCount,
-      stale_before: staleCutoff,
-    },
-    summary: `Reset ${resetCount} stale booking deposit checkout${resetCount === 1 ? "" : "s"}.`,
-    target_id: userId,
-    target_type: "payment_ops",
-  });
+  const releaseWasAlreadyCompleted =
+    releaseDecision.reason !== "update_matched";
 
   revalidatePath("/admin/payments");
   revalidatePath("/account");
   revalidatePath("/messages");
   redirect(
     adminPaymentsMessage(
-      `Reset ${resetCount} stale booking deposit checkout${resetCount === 1 ? "" : "s"}.`,
+      releaseWasAlreadyCompleted
+        ? "Checkout reconciliation was already completed. The booking is ready for a new deposit attempt."
+        : "Checkout reconciled. The booking is ready for a new deposit attempt.",
       returnTo,
     ),
   );

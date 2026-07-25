@@ -16,8 +16,8 @@ import {
   titleCaseStatus,
 } from "@/lib/status-labels";
 import {
+  reconcileBookingDepositCheckout,
   refundBookingDeposit,
-  resetStaleBookingDepositCheckouts,
 } from "../actions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -59,9 +59,11 @@ type BookingDepositRecord = {
   currency: string;
   deposit_amount_cents: number;
   id: string;
+  payment_dispute_hold: boolean;
   payment_status: string;
   platform_fee_cents: number;
   status: string;
+  stripe_checkout_session_id: string | null;
   stripe_payment_intent_id: string | null;
   title: string;
   total_cents: number;
@@ -111,6 +113,7 @@ const paymentEventTypes = [
 ] as const;
 const paymentAuditTypes = [
   "reset_stale_booking_deposit_checkouts",
+  "booking_checkout_reconciliation_approved",
   "refund_booking_deposit_requested",
   "refund_merch_order_requested",
   "merch_refund_review_requested",
@@ -372,7 +375,10 @@ function eventTypeLabel(value: string) {
 
 function auditLabel(value: string) {
   if (value === "reset_stale_booking_deposit_checkouts") {
-    return "Reset stale booking checkouts";
+    return "Historical bulk checkout reset";
+  }
+  if (value === "booking_checkout_reconciliation_approved") {
+    return "Booking checkout release approved";
   }
   if (value === "refund_booking_deposit_requested") {
     return "Booking refund requested";
@@ -684,7 +690,7 @@ export default async function AdminPaymentsPage({
           let query = adminClient
           .from("booking_requests")
           .select(
-            "id, title, status, payment_status, deposit_amount_cents, platform_fee_cents, total_cents, currency, stripe_payment_intent_id, updated_at, client:profiles!booking_requests_client_id_fkey(display_name, username), artist:profiles!booking_requests_artist_id_fkey(display_name, username)",
+            "id, title, status, payment_status, payment_dispute_hold, deposit_amount_cents, platform_fee_cents, total_cents, currency, stripe_checkout_session_id, stripe_payment_intent_id, updated_at, client:profiles!booking_requests_client_id_fkey(display_name, username), artist:profiles!booking_requests_artist_id_fkey(display_name, username)",
             { count: "exact" },
           )
           .gt("total_cents", 0)
@@ -1038,20 +1044,10 @@ export default async function AdminPaymentsPage({
                         </span>
                       </p>
                       {profile.role === "admin" || profile.role === "owner" ? (
-                        <form action={resetStaleBookingDepositCheckouts} className="mt-2">
-                          <input name="confirm" type="hidden" value="reset" />
-                          <input
-                            name="return_to"
-                            type="hidden"
-                            value="/admin/payments"
-                          />
-                          <button
-                            className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-1.5 text-xs font-bold text-[var(--foreground)]"
-                            type="submit"
-                          >
-                            Reset stale booking checkouts
-                          </button>
-                        </form>
+                        <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
+                          Open the filtered booking list and reconcile each held
+                          checkout individually.
+                        </p>
                       ) : null}
                     </div>
                     <p>
@@ -1407,6 +1403,51 @@ export default async function AdminPaymentsPage({
                               <dd>{formatDateTime(booking.updated_at)}</dd>
                             </div>
                           </dl>
+                          {(profile.role === "admin" ||
+                            profile.role === "owner") &&
+                          booking.status === "deposit_pending" &&
+                          booking.payment_status === "checkout_started" &&
+                          !booking.payment_dispute_hold &&
+                          booking.stripe_checkout_session_id &&
+                          booking.updated_at < staleCheckoutCreatedBefore ? (
+                            <form
+                              action={reconcileBookingDepositCheckout}
+                              className="mt-3 border-t border-[var(--card-rim)] pt-3"
+                            >
+                              <input
+                                name="booking_id"
+                                type="hidden"
+                                value={booking.id}
+                              />
+                              <input
+                                name="confirm"
+                                type="hidden"
+                                value="reconcile"
+                              />
+                              <input
+                                name="return_to"
+                                type="hidden"
+                                value="/admin/payments"
+                              />
+                              <button
+                                className="min-h-10 w-full rounded-md border border-[var(--foreground)] bg-[var(--foreground)] px-3 text-sm font-bold text-[var(--background)]"
+                                type="submit"
+                              >
+                                Reconcile held checkout
+                              </button>
+                            </form>
+                          ) : null}
+                          {(profile.role === "admin" ||
+                            profile.role === "owner") &&
+                          booking.status === "deposit_pending" &&
+                          booking.payment_status === "checkout_started" &&
+                          booking.updated_at < staleCheckoutCreatedBefore &&
+                          (!booking.stripe_checkout_session_id ||
+                            booking.payment_dispute_hold) ? (
+                            <p className="mt-3 border-t border-[var(--card-rim)] pt-3 text-xs font-semibold text-[var(--muted-strong)]">
+                              Held for manual payment review.
+                            </p>
+                          ) : null}
                           {booking.payment_status === "paid" &&
                           booking.status === "deposit_paid" &&
                           booking.stripe_payment_intent_id ? (
