@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
 
 const actions = readFileSync("src/app/actions.ts", "utf8");
+const feedPostPublish = readFileSync("src/lib/feed-post-publish.ts", "utf8");
+const packageJson = readFileSync("package.json", "utf8");
 const gigRoute = readFileSync("src/app/api/gigs/route.ts", "utf8");
 const tagAudience = readFileSync("src/lib/tag-audience.ts", "utf8");
 const composer = readFileSync("src/app/floating-composer.tsx", "utf8");
@@ -179,6 +181,7 @@ const gigRouteTagSync = sourceSection(
   "async function syncGigTags",
   "export async function POST",
 );
+const createFeedPost = actionBody("createFeedPost");
 
 const checks = [
   {
@@ -298,10 +301,11 @@ const checks = [
     ok:
       actions.includes("console.error(`${kind} media upload failed.`, error)") &&
       actions.includes('"Could not upload media. Please try again."') &&
-      actions.includes('console.error("4U post publish failed.", error)') &&
+      actions.includes(
+        "console.error(`4U post ${publishResult.stage} failed.`, publishResult.error)",
+      ) &&
       actions.includes('"Could not publish 4U post. Please try again."') &&
-      actions.includes('console.error("4U post media attach failed.", mediaError)') &&
-      actions.includes('"Media uploaded but could not attach to the post. Please try again."') &&
+      actions.includes("`4U post ${cleanupError.step} cleanup failed.`") &&
       actions.includes('console.error("4U post edit failed.", error)') &&
       actions.includes('"Could not edit 4U post. It may be gone or owned by another account."') &&
       actions.includes('console.error("4U post delete failed.", error)') &&
@@ -317,6 +321,29 @@ const checks = [
       !actions.includes('error?.message ||\n          "Could not delete 4U post. It may be gone or owned by another account."') &&
       !actions.includes('result.error.message || "Could not update like."') &&
       !actions.includes('result.error.message || "Could not update saved item."'),
+  },
+  {
+    label: "required-media 4U publication stays draft-first and cleanup-checked",
+    ok:
+      packageJson.includes(
+        '"smoke:content": "node scripts/test-feed-post-publish.mjs && node scripts/smoke-content-policy-guards.mjs"',
+      ) &&
+      createFeedPost.includes("const cleanupClient = createAdminClient();") &&
+      createFeedPost.includes("publishFeedPostWithRequiredMedia({") &&
+      createFeedPost.includes("is_indexable: false") &&
+      createFeedPost.includes("is_published: false") &&
+      createFeedPost.includes(".eq(\"is_published\", false)") &&
+      createFeedPost.includes("is_published: true") &&
+      createFeedPost.includes(".remove([storagePathFor(postId)])") &&
+      createFeedPost.includes(".delete()") &&
+      feedPostPublish.indexOf("await createDraft()") <
+        feedPostPublish.indexOf("await uploadMedia(postId)") &&
+      feedPostPublish.indexOf("await uploadMedia(postId)") <
+        feedPostPublish.indexOf("await attachMedia(postId)") &&
+      feedPostPublish.indexOf("await attachMedia(postId)") <
+        feedPostPublish.indexOf("await publishDraft(postId)") &&
+      feedPostPublish.includes('step: "media"') &&
+      feedPostPublish.includes('step: "draft"'),
   },
   {
     label: "Gossip and Stuff create actions hide raw backend errors from member redirects",

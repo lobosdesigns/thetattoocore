@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { publishFeedPostWithRequiredMedia } from "@/lib/feed-post-publish";
 import type { MediaMetadata } from "@/lib/media/metadata";
 import { inspectMediaFile, validateMediaMetadata } from "@/lib/media/metadata";
 import {
@@ -1539,64 +1540,137 @@ export async function createFeedPost(formData: FormData) {
     redirect(homeMessage(validationMessage, "feed"));
   }
 
-  const { data: post, error } = await supabase
-    .from("feed_posts")
-    .insert({
-      author_id: userId,
-      caption,
-      is_indexable: visibility === "public_preview" && !sensitive.is_sensitive,
-      is_sensitive: sensitive.is_sensitive,
-      kind: metadata.mediaType === "video" ? "reel" : "photo",
-      location_label: locationLabel || null,
-      moderation_status: "active",
-      sensitive_reason: sensitive.sensitive_reason,
-      style_tags: styleTags,
-      visibility,
-    })
-    .select("id")
-    .single<{ id: string }>();
+  const cleanupClient = createAdminClient();
 
-  if (error) {
-    console.error("4U post publish failed.", error);
+  if (!cleanupClient) {
+    console.error("4U post cleanup client is unavailable.");
     redirect(homeMessage("Could not publish 4U post. Please try again.", "feed"));
   }
 
-  if (media && post) {
-    const upload = await uploadPostMedia({
-      file: media,
-      id: post.id,
-      kind: "feed",
-      metadata,
-      supabase,
-      userId,
-    });
-    const { error: mediaError } = await supabase.from("feed_media").insert({
-      ...mediaMetadataFields(metadata),
-      media_type: upload.mediaType,
-      post_id: post.id,
-      is_sensitive: sensitive.is_sensitive,
-      sensitive_reason: sensitive.sensitive_reason,
-      storage_bucket: upload.bucket,
-      storage_path: upload.path,
-    });
+  const intendedIsIndexable =
+    visibility === "public_preview" && !sensitive.is_sensitive;
+  const mediaFilename = `${crypto.randomUUID()}.${extensionFor(media)}`;
+  const storagePathFor = (postId: string) =>
+    `${userId}/feed/${postId}/${mediaFilename}`;
+  const publishResult = await publishFeedPostWithRequiredMedia({
+    async attachMedia(postId) {
+      const { data, error } = await supabase
+        .from("feed_media")
+        .insert({
+          ...mediaMetadataFields(metadata),
+          is_sensitive: sensitive.is_sensitive,
+          media_type: metadata.mediaType,
+          post_id: postId,
+          sensitive_reason: sensitive.sensitive_reason,
+          storage_bucket: MEDIA_BUCKET,
+          storage_path: storagePathFor(postId),
+        })
+        .select("id")
+        .single<{ id: string }>();
 
-    if (mediaError) {
-      console.error("4U post media attach failed.", mediaError);
-      redirect(homeMessage("Media uploaded but could not attach to the post. Please try again.", "feed"));
+      if (error || !data) {
+        throw error ?? new Error("4U post media attach returned no row.");
+      }
+    },
+    async createDraft() {
+      const { data, error } = await supabase
+        .from("feed_posts")
+        .insert({
+          author_id: userId,
+          caption,
+          is_indexable: false,
+          is_published: false,
+          is_sensitive: sensitive.is_sensitive,
+          kind: metadata.mediaType === "video" ? "reel" : "photo",
+          location_label: locationLabel || null,
+          moderation_status: "active",
+          sensitive_reason: sensitive.sensitive_reason,
+          style_tags: styleTags,
+          visibility,
+        })
+        .select("id")
+        .single<{ id: string }>();
+
+      if (error || !data) {
+        throw error ?? new Error("4U post draft creation returned no row.");
+      }
+
+      return data.id;
+    },
+    async deleteDraft(postId) {
+      const { data, error } = await cleanupClient
+        .from("feed_posts")
+        .delete()
+        .eq("id", postId)
+        .eq("author_id", userId)
+        .select("id")
+        .single<{ id: string }>();
+
+      if (error || !data) {
+        throw error ?? new Error("4U post draft cleanup returned no row.");
+      }
+    },
+    async publishDraft(postId) {
+      const { data, error } = await supabase
+        .from("feed_posts")
+        .update({
+          is_indexable: intendedIsIndexable,
+          is_published: true,
+        })
+        .eq("id", postId)
+        .eq("author_id", userId)
+        .eq("is_published", false)
+        .select("id")
+        .single<{ id: string }>();
+
+      if (error || !data) {
+        throw error ?? new Error("4U post publish returned no row.");
+      }
+    },
+    async removeMedia(postId) {
+      const { error } = await cleanupClient.storage
+        .from(MEDIA_BUCKET)
+        .remove([storagePathFor(postId)]);
+
+      if (error) {
+        throw error;
+      }
+    },
+    async uploadMedia(postId) {
+      const { data, error } = await supabase.storage
+        .from(MEDIA_BUCKET)
+        .upload(storagePathFor(postId), media, {
+          cacheControl: "31536000",
+          contentType: metadata.mimeType,
+          upsert: false,
+        });
+
+      if (error || !data) {
+        throw error ?? new Error("4U post media upload returned no object.");
+      }
+    },
+  });
+
+  if (!publishResult.ok) {
+    console.error(`4U post ${publishResult.stage} failed.`, publishResult.error);
+    for (const cleanupError of publishResult.cleanupErrors) {
+      console.error(
+        `4U post ${cleanupError.step} cleanup failed.`,
+        cleanupError.error,
+      );
     }
+    redirect(homeMessage("Could not publish 4U post. Please try again.", "feed"));
   }
 
-  if (post) {
-    const tagError = await syncFeedPostTags({
-      postId: post.id,
-      supabase,
-      taggedUsernames,
-      userId,
-    });
+  const tagError = await syncFeedPostTags({
+    postId: publishResult.postId,
+    supabase,
+    taggedUsernames,
+    userId,
+  });
 
-    if (tagError) {
-      redirect(homeMessage(tagError, "feed"));
-    }
+  if (tagError) {
+    redirect(homeMessage(tagError, "feed"));
   }
 
   revalidatePath("/");
