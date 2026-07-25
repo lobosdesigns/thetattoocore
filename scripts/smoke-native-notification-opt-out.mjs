@@ -48,12 +48,22 @@ const androidGetToken = androidController.slice(
   androidController.indexOf("public void getToken"),
   androidController.indexOf("public void disable"),
 );
+const androidPrepareDeletion = androidController.slice(
+  androidController.indexOf(
+    "private synchronized boolean prepareDeletionIfReady",
+  ),
+  androidController.indexOf("private void startDeletion"),
+);
 const iosControllerClass = iosController.slice(
   iosController.indexOf("final class TtcNativeMessagingOptOutController"),
 );
 const iosGetToken = iosControllerClass.slice(
   iosControllerClass.indexOf("func getToken"),
   iosControllerClass.indexOf("func disable"),
+);
+const iosPrepareDeletion = iosControllerClass.slice(
+  iosControllerClass.indexOf("private func prepareDeletionIfReadyLocked"),
+  iosControllerClass.indexOf("private func startDeletion"),
 );
 
 assert.match(
@@ -81,6 +91,31 @@ assert.match(
   androidControllerTest,
   /optOutCannotBeOvertakenByConcurrentAutoInitEnable/,
   "Android must test the concurrent auto-init opt-out race",
+);
+assert.doesNotMatch(
+  androidPrepareDeletion,
+  /activeTokenRequests/,
+  "Android opt-out must delete without waiting on a stalled token request",
+);
+assert.match(
+  androidController,
+  /if \(!optOutInProgress\) \{[\s\S]*optOutInProgress = true;[\s\S]*autoInitDisabledForOptOut = true;/,
+  "Android must restart cleanup when a late token arrives after opt-out",
+);
+assert.match(
+  androidControllerTest,
+  /optOutDeletesImmediatelyThenRetiresLateToken/,
+  "Android must test immediate and late-token deletion",
+);
+assert.match(
+  androidControllerTest,
+  /stalledTokenDoesNotBlockLaterOptIn/,
+  "Android must test opt-in recovery from a stalled old token request",
+);
+assert.match(
+  androidControllerTest,
+  /lateTokenDuringDeletionQueuesFollowUpDelete/,
+  "Android must test follow-up deletion when a token arrives mid-delete",
 );
 assert.match(
   androidPlugin,
@@ -115,15 +150,45 @@ assert.match(
   /testOptOutCannotBeOvertakenByConcurrentAutoInitEnable/,
   "iOS must test the concurrent auto-init opt-out race",
 );
+assert.doesNotMatch(
+  iosPrepareDeletion,
+  /activeTokenRequests/,
+  "iOS opt-out must delete without waiting on a stalled token request",
+);
 assert.match(
-  iosBridge,
-  /replacePluginMethod\("getToken:"/,
-  "iOS must replace the installed getToken bridge method",
+  iosController,
+  /if !optOutInProgress \{[\s\S]*optOutInProgress = true[\s\S]*autoInitDisabledForOptOut = true/,
+  "iOS must restart cleanup when a late token arrives after opt-out",
+);
+assert.match(
+  iosControllerTest,
+  /testOptOutDeletesImmediatelyThenRetiresLateToken/,
+  "iOS must test immediate and late-token deletion",
+);
+assert.match(
+  iosControllerTest,
+  /testStalledTokenDoesNotBlockLaterOptIn/,
+  "iOS must test opt-in recovery from a stalled old token request",
+);
+assert.match(
+  iosControllerTest,
+  /testLateTokenDuringDeletionQueuesFollowUpDelete/,
+  "iOS must test follow-up deletion when a token arrives mid-delete",
 );
 assert.match(
   iosBridge,
-  /replacePluginMethod\("deleteToken:"/,
-  "iOS must replace the installed deleteToken bridge method",
+  /let getTokenMethod = class_getInstanceMethod[\s\S]*let deleteTokenMethod = class_getInstanceMethod[\s\S]*let tokenEventMethod = class_getInstanceMethod/,
+  "iOS must preflight every bridge hook before installation",
+);
+assert.ok(
+  iosBridge.indexOf("installTokenEventFilter(") <
+    iosBridge.indexOf("replacePluginMethod("),
+  "iOS must install the event filter before replacing token methods",
+);
+assert.match(
+  iosBridge,
+  /selector: getTokenSelector[\s\S]*selector: deleteTokenSelector/,
+  "iOS must replace both installed token bridge methods",
 );
 assert.match(
   iosBridge,

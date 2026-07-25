@@ -27,8 +27,8 @@ final class TtcNativeMessagingOptOutController: @unchecked Sendable {
     private let client: TtcNativeMessagingClient
     private let lock = NSLock()
     private var generation = 0
-    private var activeTokenRequests = 0
     private var autoInitDisabledForOptOut = false
+    private var deletionQueued = false
     private var deletionStarted = false
     private var optOutInProgress = false
     private var tokenEventsEnabled = false
@@ -48,7 +48,6 @@ final class TtcNativeMessagingOptOutController: @unchecked Sendable {
         }
 
         tokenEventsEnabled = true
-        activeTokenRequests += 1
         let requestGeneration = generation
         client.setAutoInitEnabled(true)
         lock.unlock()
@@ -99,13 +98,31 @@ final class TtcNativeMessagingOptOutController: @unchecked Sendable {
         completion: @escaping (String?, Error?) -> Void
     ) {
         lock.lock()
-        activeTokenRequests -= 1
         let requestStillAllowed =
             error == nil &&
             token != nil &&
             tokenEventsEnabled &&
             !optOutInProgress &&
             requestGeneration == generation
+        if
+            !requestStillAllowed,
+            error == nil,
+            token != nil,
+            !tokenEventsEnabled
+        {
+            if !optOutInProgress {
+                optOutInProgress = true
+                autoInitDisabledForOptOut = true
+            }
+        }
+        if
+            optOutInProgress,
+            deletionStarted,
+            !requestStillAllowed,
+            token != nil
+        {
+            deletionQueued = true
+        }
         let shouldStartDeletion = prepareDeletionIfReadyLocked()
         lock.unlock()
 
@@ -128,8 +145,7 @@ final class TtcNativeMessagingOptOutController: @unchecked Sendable {
         guard
             optOutInProgress,
             autoInitDisabledForOptOut,
-            !deletionStarted,
-            activeTokenRequests == 0
+            !deletionStarted
         else {
             return false
         }
@@ -146,17 +162,38 @@ final class TtcNativeMessagingOptOutController: @unchecked Sendable {
 
     private func finishDeletion(error deletionError: Error?) {
         lock.lock()
-        let completionError = optOutError ?? deletionError
-        let completions = pendingOptOutCompletions
-        pendingOptOutCompletions.removeAll()
-        optOutError = nil
-        autoInitDisabledForOptOut = false
+        if optOutError == nil {
+            optOutError = deletionError
+        }
         deletionStarted = false
-        optOutInProgress = false
+        let shouldStartDeletion: Bool
+        if deletionQueued {
+            deletionQueued = false
+            shouldStartDeletion = prepareDeletionIfReadyLocked()
+        } else {
+            shouldStartDeletion = false
+        }
+        let completionError: Error?
+        let completions: [(Error?) -> Void]
+        if shouldStartDeletion {
+            completionError = nil
+            completions = []
+        } else {
+            completionError = optOutError
+            completions = pendingOptOutCompletions
+            pendingOptOutCompletions.removeAll()
+            optOutError = nil
+            optOutInProgress = false
+            autoInitDisabledForOptOut = false
+        }
         lock.unlock()
 
         for completion in completions {
             completion(completionError)
+        }
+
+        if shouldStartDeletion {
+            startDeletion()
         }
     }
 }

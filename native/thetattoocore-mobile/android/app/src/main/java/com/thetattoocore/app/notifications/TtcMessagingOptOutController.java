@@ -35,8 +35,8 @@ public final class TtcMessagingOptOutController {
     private final MessagingClient client;
     private final List<VoidResult> pendingOptOutResults = new ArrayList<>();
     private long generation;
-    private int activeTokenRequests;
     private boolean autoInitDisabledForOptOut;
+    private boolean deletionQueued;
     private boolean deletionStarted;
     private boolean optOutInProgress;
     private boolean tokenEventsEnabled;
@@ -61,7 +61,6 @@ public final class TtcMessagingOptOutController {
             }
 
             tokenEventsEnabled = true;
-            activeTokenRequests += 1;
             requestGeneration = generation;
 
             try {
@@ -137,13 +136,31 @@ public final class TtcMessagingOptOutController {
         final boolean shouldStartDeletion;
 
         synchronized (this) {
-            activeTokenRequests -= 1;
             requestStillAllowed =
                 error == null &&
                 token != null &&
                 tokenEventsEnabled &&
                 !optOutInProgress &&
                 requestGeneration == generation;
+            if (
+                !requestStillAllowed &&
+                error == null &&
+                token != null &&
+                !tokenEventsEnabled
+            ) {
+                if (!optOutInProgress) {
+                    optOutInProgress = true;
+                    autoInitDisabledForOptOut = true;
+                }
+            }
+            if (
+                optOutInProgress &&
+                deletionStarted &&
+                !requestStillAllowed &&
+                token != null
+            ) {
+                deletionQueued = true;
+            }
             shouldStartDeletion = prepareDeletionIfReady();
         }
 
@@ -172,8 +189,7 @@ public final class TtcMessagingOptOutController {
         if (
             !optOutInProgress ||
             !autoInitDisabledForOptOut ||
-            deletionStarted ||
-            activeTokenRequests > 0
+            deletionStarted
         ) {
             return false;
         }
@@ -193,19 +209,38 @@ public final class TtcMessagingOptOutController {
     private void finishDeletion(Exception deletionError) {
         final List<VoidResult> results;
         final Exception completionError;
+        final boolean shouldStartDeletion;
 
         synchronized (this) {
-            completionError = optOutError != null ? optOutError : deletionError;
-            results = new ArrayList<>(pendingOptOutResults);
-            pendingOptOutResults.clear();
-            optOutError = null;
-            autoInitDisabledForOptOut = false;
+            if (deletionError != null && optOutError == null) {
+                optOutError = deletionError;
+            }
             deletionStarted = false;
-            optOutInProgress = false;
+            if (deletionQueued) {
+                deletionQueued = false;
+                shouldStartDeletion = prepareDeletionIfReady();
+            } else {
+                shouldStartDeletion = false;
+            }
+            if (shouldStartDeletion) {
+                completionError = null;
+                results = List.of();
+            } else {
+                completionError = optOutError;
+                results = new ArrayList<>(pendingOptOutResults);
+                pendingOptOutResults.clear();
+                optOutError = null;
+                optOutInProgress = false;
+                autoInitDisabledForOptOut = false;
+            }
         }
 
         for (VoidResult result : results) {
             result.complete(completionError);
+        }
+
+        if (shouldStartDeletion) {
+            startDeletion();
         }
     }
 }

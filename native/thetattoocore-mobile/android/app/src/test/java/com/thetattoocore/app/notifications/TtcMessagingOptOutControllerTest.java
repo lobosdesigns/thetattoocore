@@ -32,7 +32,7 @@ public class TtcMessagingOptOutControllerTest {
     }
 
     @Test
-    public void optOutWaitsForInFlightTokenThenDeletesAndAwaitsCompletion() {
+    public void optOutDeletesImmediatelyThenRetiresLateToken() {
         FakeMessagingClient client = new FakeMessagingClient();
         TtcMessagingOptOutController controller = new TtcMessagingOptOutController(client);
         RecordingTokenResult tokenResult = new RecordingTokenResult();
@@ -42,11 +42,22 @@ public class TtcMessagingOptOutControllerTest {
         controller.disable(deleteResult);
 
         assertEquals(
-            List.of("auto-init:true", "get-token", "auto-init:false"),
+            List.of(
+                "auto-init:true",
+                "get-token",
+                "auto-init:false",
+                "delete-token"
+            ),
             client.operations
         );
         assertFalse(controller.allowsTokenEvent());
         assertFalse(deleteResult.completed);
+
+        client.completeDeletion(null);
+
+        assertTrue(deleteResult.completed);
+        assertNull(deleteResult.error);
+        assertFalse(controller.allowsTokenEvent());
 
         client.completeToken("late-token", null);
 
@@ -57,16 +68,79 @@ public class TtcMessagingOptOutControllerTest {
                 "auto-init:true",
                 "get-token",
                 "auto-init:false",
+                "delete-token",
                 "delete-token"
             ),
             client.operations
         );
-        assertFalse(deleteResult.completed);
 
         client.completeDeletion(null);
 
+        RecordingTokenResult enabledResult = new RecordingTokenResult();
+        controller.getToken(enabledResult);
+        assertTrue(controller.allowsTokenEvent());
+    }
+
+    @Test
+    public void stalledTokenDoesNotBlockLaterOptIn() {
+        FakeMessagingClient client = new FakeMessagingClient();
+        TtcMessagingOptOutController controller = new TtcMessagingOptOutController(client);
+        RecordingTokenResult stalledResult = new RecordingTokenResult();
+        RecordingVoidResult deleteResult = new RecordingVoidResult();
+
+        controller.getToken(stalledResult);
+        controller.disable(deleteResult);
+        client.completeDeletion(null);
+
         assertTrue(deleteResult.completed);
-        assertNull(deleteResult.error);
+        RecordingTokenResult enabledResult = new RecordingTokenResult();
+        controller.getToken(enabledResult);
+        assertTrue(controller.allowsTokenEvent());
+    }
+
+    @Test
+    public void lateTokenDuringDeletionQueuesFollowUpDelete() {
+        FakeMessagingClient client = new FakeMessagingClient();
+        TtcMessagingOptOutController controller = new TtcMessagingOptOutController(client);
+        RecordingTokenResult tokenResult = new RecordingTokenResult();
+        RecordingVoidResult deleteResult = new RecordingVoidResult();
+
+        controller.getToken(tokenResult);
+        controller.disable(deleteResult);
+        client.completeToken("late-token", null);
+
+        assertNotNull(tokenResult.error);
+        assertEquals(
+            List.of(
+                "auto-init:true",
+                "get-token",
+                "auto-init:false",
+                "delete-token"
+            ),
+            client.operations
+        );
+
+        client.completeDeletion(null);
+
+        assertFalse(deleteResult.completed);
+        assertEquals(
+            List.of(
+                "auto-init:true",
+                "get-token",
+                "auto-init:false",
+                "delete-token",
+                "delete-token"
+            ),
+            client.operations
+        );
+        RecordingTokenResult blockedResult = new RecordingTokenResult();
+        controller.getToken(blockedResult);
+        assertNotNull(blockedResult.error);
+
+        client.completeDeletion(new IllegalStateException("delete failed"));
+
+        assertTrue(deleteResult.completed);
+        assertNotNull(deleteResult.error);
     }
 
     @Test

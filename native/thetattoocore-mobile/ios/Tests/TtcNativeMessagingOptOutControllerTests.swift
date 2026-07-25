@@ -90,7 +90,7 @@ private func testTokenRequestOrder() throws {
     try require(receivedError == nil, "token request unexpectedly failed")
 }
 
-private func testOptOutOrderingAndAwaiting() throws {
+private func testOptOutDeletesImmediatelyThenRetiresLateToken() throws {
     let client = FakeMessagingClient()
     let controller = TtcNativeMessagingOptOutController(client: client)
     var tokenError: Error?
@@ -106,11 +106,22 @@ private func testOptOutOrderingAndAwaiting() throws {
     }
 
     try require(
-        client.operations == ["auto-init:true", "get-token", "auto-init:false"],
-        "opt-out must disable auto-init before waiting for an in-flight token"
+        client.operations == [
+            "auto-init:true",
+            "get-token",
+            "auto-init:false",
+            "delete-token",
+        ],
+        "opt-out must disable auto-init and delete without waiting for a token"
     )
     try require(!controller.allowsTokenEvent(), "opt-out must suppress token events")
     try require(!deletionCompleted, "opt-out resolved before token deletion")
+
+    client.deletionCompletion?(nil)
+
+    try require(deletionCompleted, "opt-out did not resolve after initial deletion")
+    try require(deletionError == nil, "opt-out unexpectedly failed")
+    try require(!controller.allowsTokenEvent(), "opt-out restored token events")
 
     client.tokenCompletion?("late-token", nil)
 
@@ -121,15 +132,95 @@ private func testOptOutOrderingAndAwaiting() throws {
             "get-token",
             "auto-init:false",
             "delete-token",
+            "delete-token",
         ],
-        "token deletion did not follow the in-flight token completion"
+        "late token completion did not trigger a second deletion"
     )
-    try require(!deletionCompleted, "opt-out resolved before deletion callback")
 
     client.deletionCompletion?(nil)
 
-    try require(deletionCompleted, "opt-out did not resolve after deletion callback")
-    try require(deletionError == nil, "opt-out unexpectedly failed")
+    controller.getToken { _, _ in }
+    try require(
+        controller.allowsTokenEvent(),
+        "opt-in did not resume after late-token retirement"
+    )
+}
+
+private func testStalledTokenDoesNotBlockLaterOptIn() throws {
+    let client = FakeMessagingClient()
+    let controller = TtcNativeMessagingOptOutController(client: client)
+    var deletionCompleted = false
+
+    controller.getToken { _, _ in }
+    controller.disable { _ in
+        deletionCompleted = true
+    }
+    client.deletionCompletion?(nil)
+
+    try require(deletionCompleted, "initial deletion did not resolve")
+    controller.getToken { _, _ in }
+    try require(
+        controller.allowsTokenEvent(),
+        "stalled token request blocked a later explicit opt-in"
+    )
+}
+
+private func testLateTokenDuringDeletionQueuesFollowUpDelete() throws {
+    let client = FakeMessagingClient()
+    let controller = TtcNativeMessagingOptOutController(client: client)
+    var tokenError: Error?
+    var deletionCompleted = false
+    var deletionError: Error?
+
+    controller.getToken { _, error in
+        tokenError = error
+    }
+    controller.disable { error in
+        deletionCompleted = true
+        deletionError = error
+    }
+    client.tokenCompletion?("late-token", nil)
+
+    try require(tokenError != nil, "late token request was not invalidated")
+    try require(
+        client.operations == [
+            "auto-init:true",
+            "get-token",
+            "auto-init:false",
+            "delete-token",
+        ],
+        "late token started a concurrent deletion"
+    )
+
+    client.deletionCompletion?(nil)
+
+    try require(!deletionCompleted, "opt-out resolved before follow-up deletion")
+    try require(
+        client.operations == [
+            "auto-init:true",
+            "get-token",
+            "auto-init:false",
+            "delete-token",
+            "delete-token",
+        ],
+        "late token did not queue a follow-up deletion"
+    )
+    var blockedError: Error?
+    controller.getToken { _, error in
+        blockedError = error
+    }
+    try require(blockedError != nil, "opt-in resumed during follow-up deletion")
+
+    client.deletionCompletion?(TestFailure.failed("delete failed"))
+
+    try require(
+        deletionCompleted,
+        "opt-out did not resolve after follow-up deletion"
+    )
+    try require(
+        deletionError != nil,
+        "follow-up deletion failure was not returned to the opt-out caller"
+    )
 }
 
 private func testOptInBlockedDuringDeletion() throws {
@@ -218,7 +309,9 @@ private func testOptOutCannotBeOvertakenByConcurrentAutoInitEnable() throws {
 private struct TtcNativeMessagingOptOutControllerTests {
     static func main() throws {
         try testTokenRequestOrder()
-        try testOptOutOrderingAndAwaiting()
+        try testOptOutDeletesImmediatelyThenRetiresLateToken()
+        try testStalledTokenDoesNotBlockLaterOptIn()
+        try testLateTokenDuringDeletionQueuesFollowUpDelete()
         try testOptInBlockedDuringDeletion()
         try testOptOutCannotBeOvertakenByConcurrentAutoInitEnable()
         print("iOS native messaging opt-out controller tests passed.")

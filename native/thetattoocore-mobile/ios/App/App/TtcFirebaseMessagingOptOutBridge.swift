@@ -32,15 +32,46 @@ enum TtcFirebaseMessagingOptOutBridge {
         guard !installed else { return }
 
         let pluginClass: AnyClass = FirebaseMessagingPlugin.self
+        let getTokenSelector = NSSelectorFromString("getToken:")
+        let deleteTokenSelector = NSSelectorFromString("deleteToken:")
+        let tokenEventSelector = NSSelectorFromString(
+            "notifyListeners:data:retainUntilConsumed:"
+        )
         guard
-            replacePluginMethod("getToken:", on: pluginClass, with: getTokenImplementation()),
-            replacePluginMethod("deleteToken:", on: pluginClass, with: deleteTokenImplementation()),
-            installTokenEventFilter(on: pluginClass)
+            let getTokenMethod = class_getInstanceMethod(
+                pluginClass,
+                getTokenSelector
+            ),
+            let deleteTokenMethod = class_getInstanceMethod(
+                pluginClass,
+                deleteTokenSelector
+            ),
+            let tokenEventMethod = class_getInstanceMethod(
+                CAPPlugin.self,
+                tokenEventSelector
+            ),
+            installTokenEventFilter(
+                on: pluginClass,
+                selector: tokenEventSelector,
+                method: tokenEventMethod
+            )
         else {
             NSLog("TheTattooCore native app alert opt-out bridge could not be installed.")
             return
         }
 
+        replacePluginMethod(
+            on: pluginClass,
+            selector: getTokenSelector,
+            method: getTokenMethod,
+            with: getTokenImplementation()
+        )
+        replacePluginMethod(
+            on: pluginClass,
+            selector: deleteTokenSelector,
+            method: deleteTokenMethod,
+            with: deleteTokenImplementation()
+        )
         installed = true
     }
 
@@ -76,32 +107,24 @@ enum TtcFirebaseMessagingOptOutBridge {
     }
 
     private static func replacePluginMethod(
-        _ selectorName: String,
         on pluginClass: AnyClass,
+        selector: Selector,
+        method: Method,
         with implementation: IMP
-    ) -> Bool {
-        let selector = NSSelectorFromString(selectorName)
-        guard let method = class_getInstanceMethod(pluginClass, selector) else {
-            return false
-        }
-
+    ) {
         class_replaceMethod(
             pluginClass,
             selector,
             implementation,
             method_getTypeEncoding(method)
         )
-        return true
     }
 
-    private static func installTokenEventFilter(on pluginClass: AnyClass) -> Bool {
-        let selector = NSSelectorFromString(
-            "notifyListeners:data:retainUntilConsumed:"
-        )
-        guard let method = class_getInstanceMethod(CAPPlugin.self, selector) else {
-            return false
-        }
-
+    private static func installTokenEventFilter(
+        on pluginClass: AnyClass,
+        selector: Selector,
+        method: Method
+    ) -> Bool {
         let originalImplementation = method_getImplementation(method)
         typealias OriginalImplementation = @convention(c) (
             AnyObject,
