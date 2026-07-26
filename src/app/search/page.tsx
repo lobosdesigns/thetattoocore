@@ -13,6 +13,10 @@ import {
 } from "lucide-react";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { ProfileAvatar } from "@/app/profile-avatar";
+import {
+  loadPublicProfileMap,
+  type PublicProfileSummary,
+} from "@/lib/public-profile-hydration";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
 import { RecentSearches } from "./recent-searches";
@@ -33,12 +37,7 @@ type ProfileResult = {
     username: string;
   } | null;
   shop_profile_id: string | null;
-};
-
-type FollowRelation = {
-  follower_id: string;
-  following_id: string;
-  status: string;
+  created_at: string;
 };
 
 type SearchProfileBadge = Pick<
@@ -47,76 +46,115 @@ type SearchProfileBadge = Pick<
 > | null;
 
 type FeedResult = {
+  author_id: string;
   id: string;
   caption: string | null;
+  created_at: string;
   location_label: string | null;
   style_tags: string[];
-  profiles: Pick<
-    ProfileResult,
-    "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"
-  > | null;
+  profiles: PublicProfileSummary | null;
 };
 
 type ThreadResult = {
+  author_id: string;
   id: string;
   body: string;
-  profiles: Pick<
-    ProfileResult,
-    "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"
-  > | null;
+  created_at: string;
+  profiles: PublicProfileSummary | null;
 };
 
 type ListingResult = {
+  seller_id: string;
   description: string | null;
   id: string;
   title: string;
   category: string;
+  created_at: string;
   city: string | null;
   region: string | null;
-  profiles: Pick<
-    ProfileResult,
-    "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"
-  > | null;
+  profiles: PublicProfileSummary | null;
 };
 
 type GigResult = {
   compensation: string | null;
+  poster_id: string;
   description: string | null;
   id: string;
   title: string;
   category: string;
+  created_at: string;
   city: string | null;
   region: string | null;
-  profiles: Pick<
-    ProfileResult,
-    "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"
-  > | null;
+  profiles: PublicProfileSummary | null;
 };
 
 type MerchResult = {
   category: string;
   city: string | null;
+  created_at: string;
   currency: string;
   description: string | null;
   id: string;
   is_official: boolean;
   price_cents: number;
-  profiles: Pick<
-    ProfileResult,
-    "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"
-  > | null;
+  profiles: PublicProfileSummary | null;
   region: string | null;
+  seller_id: string;
   title: string;
 };
 
-type SearchType =
-  | "all"
-  | "profiles"
-  | "feed"
-  | "threads"
-  | "marketplace"
-  | "gigs"
-  | "merch";
+const SEARCH_RESULT_TYPES = [
+  "all",
+  "profiles",
+  "feed",
+  "threads",
+  "marketplace",
+  "gigs",
+  "merch",
+] as const;
+
+type SearchType = (typeof SEARCH_RESULT_TYPES)[number];
+
+const SEARCH_SORT_VALUES = ["best", "recent"] as const;
+type SearchSort = (typeof SEARCH_SORT_VALUES)[number];
+
+const PROFILE_CATEGORY_VALUES = new Set([
+  "artist",
+  "artists",
+  "tattooer",
+  "tattooers",
+  "tattooist",
+  "tattooists",
+  "studio",
+  "studios",
+  "shop",
+  "shops",
+  "vendor",
+  "vendors",
+  "supplier",
+  "suppliers",
+  "enthusiast",
+  "enthusiasts",
+]);
+
+const profileCategoryAccountTypes: Record<string, string[]> = {
+  artist: ["artist"],
+  artists: ["artist"],
+  enthusiast: ["enthusiast"],
+  enthusiasts: ["enthusiast"],
+  shop: ["studio"],
+  shops: ["studio"],
+  studio: ["studio"],
+  studios: ["studio"],
+  supplier: ["supplier"],
+  suppliers: ["supplier"],
+  tattooer: ["artist"],
+  tattooers: ["artist"],
+  tattooist: ["artist"],
+  tattooists: ["artist"],
+  vendor: ["vendor"],
+  vendors: ["vendor"],
+};
 
 const MERCH_CATEGORY_VALUES = new Set([
   "apparel",
@@ -155,18 +193,25 @@ function cleanFilter(value?: string, maxLength = 40) {
 function cleanType(value?: string): SearchType {
   const text = cleanFilter(value, 20);
 
-  if (
-    text === "profiles" ||
-    text === "feed" ||
-    text === "threads" ||
-    text === "marketplace" ||
-    text === "gigs" ||
-    text === "merch"
-  ) {
-    return text;
-  }
+  return SEARCH_RESULT_TYPES.includes(text as SearchType)
+    ? (text as SearchType)
+    : "all";
+}
 
-  return "all";
+function cleanSort(value?: string): SearchSort {
+  const text = cleanFilter(value, 20);
+
+  return SEARCH_SORT_VALUES.includes(text as SearchSort)
+    ? (text as SearchSort)
+    : "best";
+}
+
+function profileCategoriesFor(category: string) {
+  const values = searchTerms(category)
+    .filter((term) => PROFILE_CATEGORY_VALUES.has(term))
+    .flatMap((term) => profileCategoryAccountTypes[term] ?? []);
+
+  return Array.from(new Set(values));
 }
 
 function searchPattern(query: string) {
@@ -301,6 +346,35 @@ function compareSearchResults<T>(
 
     return fallback(a).localeCompare(fallback(b));
   };
+}
+
+function compareRecentResults<T extends { created_at: string }>(fallback: (item: T) => string) {
+  return (a: T, b: T) => {
+    const recentDiff = Date.parse(b.created_at) - Date.parse(a.created_at);
+
+    if (Number.isFinite(recentDiff) && recentDiff !== 0) return recentDiff;
+
+    return fallback(a).localeCompare(fallback(b));
+  };
+}
+
+function dedupeById<T extends { id: string }>(items: T[]) {
+  const seen = new Set<string>();
+  const next: T[] = [];
+
+  for (const item of items) {
+    if (seen.has(item.id)) continue;
+    seen.add(item.id);
+    next.push(item);
+  }
+
+  return next;
+}
+
+function filterSearchResultsWithPublicProfiles<T extends { profiles: PublicProfileSummary | null }>(
+  items: T[],
+) {
+  return items.filter((item) => Boolean(item.profiles));
 }
 
 function runSection(type: SearchType, section: Exclude<SearchType, "all">) {
@@ -468,6 +542,14 @@ function ResultAction({ children }: { children: React.ReactNode }) {
   );
 }
 
+function SearchLoadingState() {
+  return (
+    <p className="sr-only" aria-live="polite">
+      Loading search results
+    </p>
+  );
+}
+
 export default async function SearchPage({
   searchParams,
 }: {
@@ -477,6 +559,8 @@ export default async function SearchPage({
     page?: string;
     q?: string;
     region?: string;
+    sort?: string;
+    style?: string;
     type?: string;
   }>;
 }) {
@@ -487,7 +571,9 @@ export default async function SearchPage({
   const category = cleanFilter(params.category);
   const city = cleanFilter(params.city);
   const region = cleanFilter(params.region);
+  const style = cleanFilter(params.style);
   const type = cleanType(params.type);
+  const sort = cleanSort(params.sort);
   const page = Math.max(1, Math.min(20, Number(params.page ?? "1") || 1));
   const resultLimit = page * 25;
   const resultFetchLimit = resultLimit + 25;
@@ -495,17 +581,23 @@ export default async function SearchPage({
   const cityPattern = searchPattern(city);
   const regionPattern = searchPattern(region);
   const categoryPattern = searchPattern(category);
+  const merchCategory = category.toLowerCase();
+  const hasMerchCategory = MERCH_CATEGORY_VALUES.has(merchCategory);
+  const profileCategories = profileCategoriesFor(category);
   const typedParams = new URLSearchParams();
 
   if (query) typedParams.set("q", query);
   if (category) typedParams.set("category", category);
   if (city) typedParams.set("city", city);
   if (region) typedParams.set("region", region);
+  if (style) typedParams.set("style", style);
+  if (sort !== "best") typedParams.set("sort", sort);
   const loadMoreParams = new URLSearchParams(typedParams);
   if (type !== "all") loadMoreParams.set("type", type);
   loadMoreParams.set("page", String(page + 1));
 
-  const hasSearch = Boolean(query || category || city || region);
+  const hasSearch = Boolean(query || category || city || region || style);
+  const hasProfileSearch = Boolean(query || category || city || region);
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as { sub: string } | undefined;
@@ -513,25 +605,15 @@ export default async function SearchPage({
     supabase,
     userId: claims?.sub,
   });
-  const { data: visiblePrivateFollowRows } = claims?.sub
-    ? await supabase
-        .from("follows")
-        .select("follower_id, following_id, status")
-        .or(`follower_id.eq.${claims.sub},following_id.eq.${claims.sub}`)
-        .eq("status", "accepted")
-        .returns<FollowRelation[]>()
-    : { data: [] as FollowRelation[] };
-  const visiblePrivateProfileIds = new Set(
-    (visiblePrivateFollowRows ?? []).map((follow) =>
-      follow.follower_id === claims?.sub ? follow.following_id : follow.follower_id,
-    ),
-  );
-  const shouldRunProfiles = hasSearch && runSection(type, "profiles");
-  const shouldRunFeed = hasSearch && runSection(type, "feed");
-  const shouldRunThreads = hasSearch && runSection(type, "threads");
-  const shouldRunListings = hasSearch && runSection(type, "marketplace");
-  const shouldRunGigs = hasSearch && runSection(type, "gigs");
-  const shouldRunMerch = hasSearch && runSection(type, "merch");
+  const shouldRunProfiles =
+    (Boolean(query || city || region) || profileCategories.length > 0) &&
+    runSection(type, "profiles");
+  const shouldRunFeed = Boolean(query || city || style) && runSection(type, "feed");
+  const shouldRunThreads = hasSearch && runSection(type, "threads") && Boolean(query);
+  const shouldRunListings = hasProfileSearch && runSection(type, "marketplace");
+  const shouldRunGigs = hasProfileSearch && runSection(type, "gigs");
+  const shouldRunMerch =
+    Boolean(query || city || region || hasMerchCategory) && runSection(type, "merch");
 
   const [
     { data: profiles },
@@ -540,14 +622,14 @@ export default async function SearchPage({
     { data: listings },
     { data: gigs },
     { data: merchProducts },
-      ] = hasSearch
+  ] = hasSearch
     ? await Promise.all([
         shouldRunProfiles
           ? (() => {
               let publicProfileQuery = supabase
                 .from("public_profiles")
                 .select(
-                  "id, username, display_name, avatar_url, banner_url, account_type, bio, city, license_verified_at, region, shop_profile_id",
+                  "id, username, display_name, avatar_url, banner_url, account_type, bio, city, license_verified_at, region, shop_profile_id, created_at",
                 )
                 .or(
                   searchOr(
@@ -562,93 +644,25 @@ export default async function SearchPage({
                   ),
                 );
 
+              if (profileCategories.length) {
+                publicProfileQuery = publicProfileQuery.in("account_type", profileCategories);
+              }
               if (city) publicProfileQuery = publicProfileQuery.ilike("city", cityPattern);
               if (region) publicProfileQuery = publicProfileQuery.ilike("region", regionPattern);
 
-              const publicProfilesPromise = publicProfileQuery
-                .order("display_name", { ascending: true })
+              return publicProfileQuery
+                .order(sort === "recent" ? "created_at" : "display_name", {
+                  ascending: sort !== "recent",
+                })
                 .limit(resultFetchLimit)
                 .returns<ProfileResult[]>();
-              const privateProfilesPromise = visiblePrivateProfileIds.size
-                ? (() => {
-                    let privateProfileQuery = supabase
-                      .from("profiles")
-                      .select(
-                        "id, username, display_name, avatar_url, banner_url, account_type, bio, city, license_verified_at, region, shop_profile_id",
-                      )
-                      .in("id", Array.from(visiblePrivateProfileIds))
-                      .or(
-                        searchOr(
-                          [
-                            "username",
-                            "display_name",
-                            "bio",
-                            "city",
-                            "region",
-                          ],
-                          query,
-                        ),
-                      );
-
-                    if (city) privateProfileQuery = privateProfileQuery.ilike("city", cityPattern);
-                    if (region) {
-                      privateProfileQuery = privateProfileQuery.ilike("region", regionPattern);
-                    }
-
-                    return privateProfileQuery
-                      .order("display_name", { ascending: true })
-                      .limit(resultFetchLimit)
-                      .returns<ProfileResult[]>();
-                  })()
-                : Promise.resolve({ data: [] as ProfileResult[] });
-
-              return Promise.all([publicProfilesPromise, privateProfilesPromise]).then(
-                ([publicProfiles, privateProfiles]) => {
-                  const profileMap = new Map<string, ProfileResult>();
-
-                  for (const profile of publicProfiles.data ?? []) {
-                    profileMap.set(profile.id, profile);
-                  }
-                  for (const profile of privateProfiles.data ?? []) {
-                    profileMap.set(profile.id, profile);
-                  }
-
-                  return {
-                    ...publicProfiles,
-                    data: Array.from(profileMap.values()).sort((a, b) =>
-                      compareSearchResults<ProfileResult>(
-                        terms,
-                        (profile) =>
-                          weightedSearchScore(
-                            terms,
-                            [
-                              { value: profile.username, weight: 40 },
-                              { value: profile.display_name, weight: 34 },
-                              { value: profile.account_type, weight: 18 },
-                              { value: profile.city, weight: 14 },
-                              { value: profile.region, weight: 12 },
-                              { value: profile.bio, weight: 8 },
-                            ],
-                            [
-                              visiblePrivateProfileIds.has(profile.id) ? 8 : 0,
-                              isVerifiedProfile(profile) ? 5 : 0,
-                            ],
-                          ),
-                        (profile) => profile.display_name,
-                      )(a, b),
-                    ),
-                  };
-                },
-              );
             })()
           : Promise.resolve({ data: [] as ProfileResult[] }),
         shouldRunFeed
           ? (() => {
               let feedQuery = supabase
                 .from("feed_posts")
-                .select(
-                  "id, caption, location_label, style_tags, profiles:profiles!feed_posts_author_id_fkey(id, display_name, avatar_url, username, account_type, license_verified_at)",
-                )
+                .select("id, author_id, caption, created_at, location_label, style_tags")
                 .eq("is_published", true)
                 .eq("moderation_status", "active")
                 .eq("visibility", "public_preview")
@@ -656,10 +670,11 @@ export default async function SearchPage({
                 .or(
                   query
                     ? searchOr(["caption", "location_label"], query)
-                    : `caption.ilike.%,location_label.ilike.%`,
+                    : "caption.ilike.%,location_label.ilike.%",
                 );
 
               if (city) feedQuery = feedQuery.ilike("location_label", cityPattern);
+              if (style) feedQuery = feedQuery.contains("style_tags", [style.toLowerCase()]);
 
               return feedQuery
                 .order("created_at", { ascending: false })
@@ -667,12 +682,10 @@ export default async function SearchPage({
                 .returns<FeedResult[]>();
             })()
           : Promise.resolve({ data: [] as FeedResult[] }),
-        shouldRunThreads && query
+        shouldRunThreads
           ? supabase
               .from("thread_posts")
-              .select(
-                "id, body, profiles:profiles!thread_posts_author_id_fkey(id, display_name, avatar_url, username, account_type, license_verified_at)",
-              )
+              .select("id, author_id, body, created_at")
               .eq("moderation_status", "active")
               .eq("visibility", "public_preview")
               .eq("is_sensitive", false)
@@ -685,9 +698,7 @@ export default async function SearchPage({
           ? (() => {
               let listingQuery = supabase
                 .from("marketplace_listings")
-                .select(
-                  "id, title, description, category, city, region, profiles:profiles!marketplace_listings_seller_id_fkey(id, display_name, avatar_url, username, account_type, license_verified_at)",
-                )
+                .select("id, seller_id, title, description, category, created_at, city, region")
                 .eq("status", "active")
                 .eq("moderation_status", "active")
                 .eq("visibility", "public_preview")
@@ -698,7 +709,7 @@ export default async function SearchPage({
                         ["title", "description", "category", "city", "region"],
                         query,
                       )
-                    : `title.ilike.%,description.ilike.%,category.ilike.%,city.ilike.%,region.ilike.%`,
+                    : "title.ilike.%,description.ilike.%,category.ilike.%,city.ilike.%,region.ilike.%",
                 );
 
               if (category) listingQuery = listingQuery.ilike("category", categoryPattern);
@@ -715,9 +726,7 @@ export default async function SearchPage({
           ? (() => {
               let gigQuery = supabase
                 .from("gigs")
-                .select(
-                  "id, title, description, category, city, region, compensation, profiles:profiles!gigs_poster_id_fkey(id, display_name, avatar_url, username, account_type, license_verified_at)",
-                )
+                .select("id, poster_id, title, description, category, created_at, city, region, compensation")
                 .eq("status", "active")
                 .eq("moderation_status", "active")
                 .eq("visibility", "public_preview")
@@ -735,7 +744,7 @@ export default async function SearchPage({
                         ],
                         query,
                       )
-                    : `title.ilike.%,description.ilike.%,category.ilike.%,city.ilike.%,region.ilike.%,compensation.ilike.%`,
+                    : "title.ilike.%,description.ilike.%,category.ilike.%,city.ilike.%,region.ilike.%,compensation.ilike.%",
                 );
 
               if (category) gigQuery = gigQuery.ilike("category", categoryPattern);
@@ -750,11 +759,10 @@ export default async function SearchPage({
           : Promise.resolve({ data: [] as GigResult[] }),
         shouldRunMerch
           ? (() => {
-              const merchCategory = category.toLowerCase();
               let merchQuery = supabase
                 .from("merch_products")
                 .select(
-                  "id, title, description, category, price_cents, currency, is_official, ships_from_city, ships_from_region, profiles:profiles!merch_products_seller_id_fkey(id, display_name, avatar_url, username, account_type, license_verified_at)",
+                  "id, seller_id, title, description, category, created_at, price_cents, currency, is_official, ships_from_city, ships_from_region",
                 )
                 .eq("status", "active")
                 .eq("moderation_status", "active")
@@ -770,10 +778,10 @@ export default async function SearchPage({
                         ],
                         query,
                       )
-                    : `title.ilike.%,description.ilike.%,ships_from_city.ilike.%,ships_from_region.ilike.%`,
+                    : "title.ilike.%,description.ilike.%,ships_from_city.ilike.%,ships_from_region.ilike.%",
                 );
 
-              if (MERCH_CATEGORY_VALUES.has(merchCategory)) {
+              if (hasMerchCategory) {
                 merchQuery = merchQuery.eq("category", merchCategory);
               }
               if (city) merchQuery = merchQuery.ilike("ships_from_city", cityPattern);
@@ -787,36 +795,33 @@ export default async function SearchPage({
                 .returns<
                   {
                     category: string;
+                    created_at: string;
                     currency: string;
                     description: string | null;
                     id: string;
                     is_official: boolean;
                     price_cents: number;
-                    profiles: MerchResult["profiles"];
+                    seller_id: string;
                     ships_from_city: string | null;
                     ships_from_region: string | null;
                     title: string;
                   }[]
                 >()
                 .then(({ data, ...rest }) => ({
-                  data: (data ?? [])
-                    .filter(
-                      (product) =>
-                        product.is_official ||
-                        isVerifiedProfessional(product.profiles),
-                    )
-                    .map((product) => ({
-                      category: product.category,
-                      city: product.ships_from_city,
-                      currency: product.currency,
-                      description: product.description,
-                      id: product.id,
-                      is_official: product.is_official,
-                      price_cents: product.price_cents,
-                      profiles: product.profiles,
-                      region: product.ships_from_region,
-                      title: product.title,
-                    })),
+                  data: (data ?? []).map((product) => ({
+                    category: product.category,
+                    city: product.ships_from_city,
+                    created_at: product.created_at,
+                    currency: product.currency,
+                    description: product.description,
+                    id: product.id,
+                    is_official: product.is_official,
+                    price_cents: product.price_cents,
+                    profiles: null,
+                    region: product.ships_from_region,
+                    seller_id: product.seller_id,
+                    title: product.title,
+                  })),
                   ...rest,
                 }));
             })()
@@ -830,6 +835,13 @@ export default async function SearchPage({
         { data: [] as GigResult[] },
         { data: [] as MerchResult[] },
       ];
+  const contentProfileMap = await loadPublicProfileMap(supabase, [
+    ...(feedPosts ?? []).map((post) => post.author_id),
+    ...(threads ?? []).map((thread) => thread.author_id),
+    ...(listings ?? []).map((listing) => listing.seller_id),
+    ...(gigs ?? []).map((gig) => gig.poster_id),
+    ...(merchProducts ?? []).map((product) => product.seller_id),
+  ]);
   const profileShopIds = Array.from(
     new Set((profiles ?? []).map((profile) => profile.shop_profile_id).filter(Boolean)),
   ) as string[];
@@ -843,7 +855,34 @@ export default async function SearchPage({
   const profileShopMap = new Map(
     (profileShops ?? []).map((shop) => [shop.id, shop]),
   );
-  const filteredProfileResults = (profiles ?? [])
+  const profileSorter =
+    sort === "recent"
+      ? compareRecentResults<ProfileResult>((profile) => profile.display_name)
+      : compareSearchResults<ProfileResult>(
+          terms,
+          (profile) =>
+            weightedSearchScore(
+              terms,
+              [
+                { value: profile.username, weight: 40 },
+                { value: profile.display_name, weight: 34 },
+                { value: profile.account_type, weight: 18 },
+                { value: profile.city, weight: 14 },
+                { value: profile.region, weight: 12 },
+                { value: shopProfileText(profile), weight: 10 },
+                { value: profile.bio, weight: 8 },
+              ],
+              [
+                exactUsername && profile.username === exactUsername ? 70 : 0,
+                exactUsername && profile.username.startsWith(exactUsername) ? 20 : 0,
+                profile.account_type === "artist" ? 4 : 0,
+                profile.account_type === "studio" ? 4 : 0,
+                isVerifiedProfile(profile) ? 5 : 0,
+              ],
+            ),
+          (profile) => profile.display_name,
+        );
+  const filteredProfileResults = dedupeById(profiles ?? [])
     .filter((profile) => !blockedProfileIds.has(profile.id))
     .map((profile) => ({
       ...profile,
@@ -851,128 +890,142 @@ export default async function SearchPage({
         ? (profileShopMap.get(profile.shop_profile_id) ?? null)
         : null,
     }))
+    .sort(profileSorter);
+  const filteredFeedResults = filterSearchResultsWithPublicProfiles(
+    dedupeById(
+      (feedPosts ?? []).map((post) => ({
+        ...post,
+        profiles: contentProfileMap.get(post.author_id) ?? null,
+      })),
+    ),
+  )
+    .filter((post) => !blockedProfileIds.has(post.profiles!.id))
     .sort(
-      compareSearchResults<ProfileResult>(
-        terms,
-        (profile) =>
-          weightedSearchScore(
+      sort === "recent"
+        ? compareRecentResults<FeedResult>((post) => post.caption || post.style_tags.join(" ") || post.id)
+        : compareSearchResults<FeedResult>(
             terms,
-            [
-              { value: profile.username, weight: 40 },
-              { value: profile.display_name, weight: 34 },
-              { value: profile.account_type, weight: 18 },
-              { value: profile.city, weight: 14 },
-              { value: profile.region, weight: 12 },
-              { value: shopProfileText(profile), weight: 10 },
-              { value: profile.bio, weight: 8 },
-            ],
-            [
-              exactUsername && profile.username === exactUsername ? 70 : 0,
-              exactUsername && profile.username.startsWith(exactUsername) ? 20 : 0,
-              visiblePrivateProfileIds.has(profile.id) ? 8 : 0,
-              isVerifiedProfile(profile) ? 5 : 0,
-            ],
+            (post) =>
+              weightedSearchScore(terms, [
+                { value: post.caption, weight: 30 },
+                { value: post.style_tags, weight: 24 },
+                { value: post.location_label, weight: 14 },
+                { value: post.profiles?.username, weight: 12 },
+                { value: post.profiles?.display_name, weight: 10 },
+              ]),
+            (post) => post.caption || post.style_tags.join(" ") || post.id,
           ),
-        (profile) => profile.display_name,
-      ),
     );
-  const filteredFeedResults = (feedPosts ?? [])
-    .filter(
-      (post) => !post.profiles?.id || !blockedProfileIds.has(post.profiles.id),
-    )
+  const filteredThreadResults = filterSearchResultsWithPublicProfiles(
+    dedupeById(
+      (threads ?? []).map((thread) => ({
+        ...thread,
+        profiles: contentProfileMap.get(thread.author_id) ?? null,
+      })),
+    ),
+  )
+    .filter((thread) => !blockedProfileIds.has(thread.profiles!.id))
     .sort(
-      compareSearchResults<FeedResult>(
-        terms,
-        (post) =>
-          weightedSearchScore(terms, [
-            { value: post.caption, weight: 30 },
-            { value: post.style_tags, weight: 24 },
-            { value: post.location_label, weight: 14 },
-            { value: post.profiles?.username, weight: 12 },
-            { value: post.profiles?.display_name, weight: 10 },
-          ]),
-        (post) => post.caption || post.style_tags.join(" ") || post.id,
-      ),
+      sort === "recent"
+        ? compareRecentResults<ThreadResult>((thread) => thread.body)
+        : compareSearchResults<ThreadResult>(
+            terms,
+            (thread) =>
+              weightedSearchScore(terms, [
+                { value: thread.body, weight: 30 },
+                { value: thread.profiles?.username, weight: 12 },
+                { value: thread.profiles?.display_name, weight: 10 },
+              ]),
+            (thread) => thread.body,
+          ),
     );
-  const filteredThreadResults = (threads ?? [])
-    .filter(
-      (thread) =>
-        !thread.profiles?.id || !blockedProfileIds.has(thread.profiles.id),
-    )
+  const filteredListingResults = filterSearchResultsWithPublicProfiles(
+    dedupeById(
+      (listings ?? []).map((listing) => ({
+        ...listing,
+        profiles: contentProfileMap.get(listing.seller_id) ?? null,
+      })),
+    ),
+  )
+    .filter((listing) => !blockedProfileIds.has(listing.profiles!.id))
     .sort(
-      compareSearchResults<ThreadResult>(
-        terms,
-        (thread) =>
-          weightedSearchScore(terms, [
-            { value: thread.body, weight: 30 },
-            { value: thread.profiles?.username, weight: 12 },
-            { value: thread.profiles?.display_name, weight: 10 },
-          ]),
-        (thread) => thread.body,
-      ),
+      sort === "recent"
+        ? compareRecentResults<ListingResult>((listing) => listing.title)
+        : compareSearchResults<ListingResult>(
+            terms,
+            (listing) =>
+              weightedSearchScore(terms, [
+                { value: listing.title, weight: 34 },
+                { value: listing.category, weight: 20 },
+                { value: listing.city, weight: 14 },
+                { value: listing.region, weight: 12 },
+                { value: listing.description, weight: 8 },
+                { value: listing.profiles?.username, weight: 8 },
+                { value: listing.profiles?.display_name, weight: 6 },
+              ]),
+            (listing) => listing.title,
+          ),
     );
-  const filteredListingResults = (listings ?? [])
-    .filter(
-      (listing) =>
-        !listing.profiles?.id || !blockedProfileIds.has(listing.profiles.id),
-    )
+  const filteredGigResults = filterSearchResultsWithPublicProfiles(
+    dedupeById(
+      (gigs ?? []).map((gig) => ({
+        ...gig,
+        profiles: contentProfileMap.get(gig.poster_id) ?? null,
+      })),
+    ),
+  )
+    .filter((gig) => !blockedProfileIds.has(gig.profiles!.id))
     .sort(
-      compareSearchResults<ListingResult>(
-        terms,
-        (listing) =>
-          weightedSearchScore(terms, [
-            { value: listing.title, weight: 34 },
-            { value: listing.category, weight: 20 },
-            { value: listing.city, weight: 14 },
-            { value: listing.region, weight: 12 },
-            { value: listing.description, weight: 8 },
-            { value: listing.profiles?.username, weight: 8 },
-            { value: listing.profiles?.display_name, weight: 6 },
-          ]),
-        (listing) => listing.title,
-      ),
+      sort === "recent"
+        ? compareRecentResults<GigResult>((gig) => gig.title)
+        : compareSearchResults<GigResult>(
+            terms,
+            (gig) =>
+              weightedSearchScore(terms, [
+                { value: gig.title, weight: 34 },
+                { value: gig.category, weight: 20 },
+                { value: gig.city, weight: 14 },
+                { value: gig.region, weight: 12 },
+                { value: gig.compensation, weight: 10 },
+                { value: gig.description, weight: 8 },
+                { value: gig.profiles?.username, weight: 8 },
+                { value: gig.profiles?.display_name, weight: 6 },
+              ]),
+            (gig) => gig.title,
+          ),
     );
-  const filteredGigResults = (gigs ?? [])
-    .filter((gig) => !gig.profiles?.id || !blockedProfileIds.has(gig.profiles.id))
+  const filteredMerchResults = dedupeById(
+    (merchProducts ?? []).map((product) => ({
+      ...product,
+      profiles: contentProfileMap.get(product.seller_id) ?? null,
+    })),
+  )
+    .filter((product) => {
+      if (product.is_official) return true;
+      if (!product.profiles) return false;
+
+      return (
+        isVerifiedProfessional(product.profiles) &&
+        !blockedProfileIds.has(product.profiles.id)
+      );
+    })
     .sort(
-      compareSearchResults<GigResult>(
-        terms,
-        (gig) =>
-          weightedSearchScore(terms, [
-            { value: gig.title, weight: 34 },
-            { value: gig.category, weight: 20 },
-            { value: gig.city, weight: 14 },
-            { value: gig.region, weight: 12 },
-            { value: gig.compensation, weight: 10 },
-            { value: gig.description, weight: 8 },
-            { value: gig.profiles?.username, weight: 8 },
-            { value: gig.profiles?.display_name, weight: 6 },
-          ]),
-        (gig) => gig.title,
-      ),
-    );
-  const filteredMerchResults = (merchProducts ?? [])
-    .filter(
-      (product) =>
-        product.is_official ||
-        !product.profiles?.id ||
-        !blockedProfileIds.has(product.profiles.id),
-    )
-    .sort(
-      compareSearchResults<MerchResult>(
-        terms,
-        (product) =>
-          weightedSearchScore(terms, [
-            { value: product.title, weight: 34 },
-            { value: product.category, weight: 20 },
-            { value: product.city, weight: 14 },
-            { value: product.region, weight: 12 },
-            { value: product.description, weight: 8 },
-            { value: product.profiles?.username, weight: 8 },
-            { value: product.profiles?.display_name, weight: 6 },
-          ]),
-        (product) => product.title,
-      ),
+      sort === "recent"
+        ? compareRecentResults<MerchResult>((product) => product.title)
+        : compareSearchResults<MerchResult>(
+            terms,
+            (product) =>
+              weightedSearchScore(terms, [
+                { value: product.title, weight: 34 },
+                { value: product.category, weight: 20 },
+                { value: product.city, weight: 14 },
+                { value: product.region, weight: 12 },
+                { value: product.description, weight: 8 },
+                { value: product.profiles?.username, weight: 8 },
+                { value: product.profiles?.display_name, weight: 6 },
+              ]),
+            (product) => product.title,
+          ),
     );
   const profileResults = filteredProfileResults.slice(0, resultLimit);
   const feedResults = filteredFeedResults.slice(0, resultLimit);
@@ -1052,6 +1105,7 @@ export default async function SearchPage({
 
         <section className="px-4 py-5">
           <h1 className="text-2xl font-bold">Search</h1>
+          <SearchLoadingState />
           <p className="mt-1 text-sm text-[var(--muted-strong)]">
             {hasSearch
               ? `${total} result${total === 1 ? "" : "s"} found`
@@ -1072,7 +1126,7 @@ export default async function SearchPage({
           </div>
           <form
             action="/search"
-            className="mt-4 grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]"
+            className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto_auto]"
           >
             <input name="q" type="hidden" value={query} />
             <input name="type" type="hidden" value={type === "all" ? "" : type} />
@@ -1080,7 +1134,7 @@ export default async function SearchPage({
               className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
               defaultValue={category}
               name="category"
-              placeholder="category"
+              placeholder="artist, studio, gig, merch category"
             />
             <input
               className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
@@ -1094,11 +1148,25 @@ export default async function SearchPage({
               name="region"
               placeholder="state / region"
             />
+            <input
+              className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+              defaultValue={style}
+              name="style"
+              placeholder="style tag"
+            />
+            <select
+              className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
+              defaultValue={sort}
+              name="sort"
+            >
+              <option value="best">Best match</option>
+              <option value="recent">Recent</option>
+            </select>
             <button className="ttc-surface h-10 rounded-md border px-4 text-sm font-semibold">
               Filter
             </button>
           </form>
-          <div className="mt-3 flex gap-2 overflow-x-auto">
+          <div className="mt-3 flex gap-2 overflow-x-auto" aria-label="Search result categories">
             {[
               ["all", "All"],
               ["profiles", "Profiles"],

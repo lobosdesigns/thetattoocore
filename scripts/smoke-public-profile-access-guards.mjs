@@ -197,8 +197,14 @@ const searchSource = read("src/app/search/page.tsx");
 if (!/let publicProfileQuery = supabase\s*\.from\("public_profiles"\)/.test(searchSource)) {
   fail("search public profile query must use public_profiles.");
 }
-if (!/const privateProfilesPromise = visiblePrivateProfileIds\.size[\s\S]*?\.from\("profiles"\)[\s\S]*?\.in\("id", Array\.from\(visiblePrivateProfileIds\)\)/.test(searchSource)) {
-  fail("search must keep the private-profile compatibility query isolated to visible private profile ids.");
+if (/\.from\(\s*["'\`]profiles["'\`]\s*\)/.test(searchSource)) {
+  fail("search must not query public.profiles directly.");
+}
+if (searchSource.includes("profiles:profiles")) {
+  fail("search must not embed protected profile joins.");
+}
+if (!searchSource.includes("loadPublicProfileMap")) {
+  fail("search must hydrate result-card profiles through public_profiles.");
 }
 const merchQuery = searchSource.match(/let merchQuery = supabase[\s\S]*?return merchQuery/);
 if (!merchQuery) fail("Unable to locate Merch search query.");
@@ -269,6 +275,7 @@ const directProfileFiles = [];
 const embeddedProfileFiles = [];
 for (const relativePath of sourceFiles) {
   if (normalizePath(relativePath) === "scripts/smoke-public-profile-access-guards.mjs") continue;
+  if (normalizePath(relativePath) === "scripts/test-search-visibility.mjs") continue;
   const source = read(relativePath);
   if (/\.from\(\s*["'`]profiles["'`]\s*\)/.test(source)) directProfileFiles.push(normalizePath(relativePath));
   if (source.includes("profiles:profiles")) embeddedProfileFiles.push(normalizePath(relativePath));

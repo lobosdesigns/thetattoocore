@@ -15,7 +15,7 @@ Anonymous clients receive only `select` on `public.public_profiles`. Anonymous d
 ## Updated public reads
 
 - `src/app/sitemap.ts`: profile URL discovery now reads from `public_profiles`; internal/test/reviewer filtering moved into the view. Gossip thread discovery no longer references nonexistent `thread_posts.is_published`.
-- `src/app/search/page.tsx`: public profile search and batched shop-profile lookup now read from `public_profiles`; the existing private-profile compatibility query remains isolated to viewer-visible private profile ids. Merch search no longer runs `ILIKE` against the enum `category` column.
+- `src/app/search/page.tsx`: public profile search, batched shop-profile lookup, and search result-card hydration now read from `public_profiles`. Merch search no longer runs `ILIKE` against the enum `category` column.
 - `src/app/u/[username]/page.tsx`: metadata and the primary public profile path read from `public_profiles`; the old base-table fallback was removed so internal/test/private profiles return real 404s to anonymous visitors.
 
 ## Remaining direct public.profiles reads
@@ -56,7 +56,6 @@ These remain classified because they are owner, admin, authenticated relationshi
 - `src/app/p/[id]/page.tsx`: public post page profile joins classified below.
 - `src/app/page.tsx`: homepage embedded author/profile joins classified below.
 - `src/app/saved/page.tsx`: authenticated saved-items display path.
-- `src/app/search/page.tsx`: isolated visible-private-profile compatibility query remains; public search query uses the view.
 - `src/app/settings/page.tsx`: owner settings path.
 - `src/app/stuff/[id]/page.tsx`: marketplace detail author/shop context.
 - `src/app/t/[id]/page.tsx`: thread detail profile joins classified below.
@@ -93,7 +92,6 @@ These joins remain classified because each query must be reviewed with its paren
 - `src/app/p/[id]/page.tsx`
 - `src/app/page.tsx`
 - `src/app/saved/page.tsx`
-- `src/app/search/page.tsx`
 - `src/app/sitemap.ts`
 - `src/app/stuff/[id]/page.tsx`
 - `src/app/t/[id]/page.tsx`

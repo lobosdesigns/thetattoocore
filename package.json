@@ -77,7 +77,10 @@
     "test:studio-profile-presentation": "node scripts/test-studio-profile-presentation.mjs",
     "test:shop-route-status": "node scripts/test-shop-route-status.mjs",
     "test:shop-presentation": "node scripts/test-shop-presentation.mjs",
-    "test:shop-artist-hydration": "node scripts/test-shop-artist-hydration.mjs"
+    "test:shop-artist-hydration": "node scripts/test-shop-artist-hydration.mjs",
+    "test:search-visibility": "node scripts/test-search-visibility.mjs",
+    "test:search-discovery-contract": "node scripts/test-search-discovery-contract.mjs",
+    "test:search-route-status": "node scripts/test-search-route-status.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/messaging": "7.5.0",

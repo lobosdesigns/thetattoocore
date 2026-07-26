@@ -391,16 +391,16 @@ const checks = [
       searchPage.includes("async function getBlockedProfileIds") &&
       searchPage.includes("const blockedProfileIds = await getBlockedProfileIds") &&
       searchPage.includes("const resultFetchLimit = resultLimit + 25") &&
-      searchPage.includes("const filteredFeedResults = (feedPosts ?? [])") &&
-      searchPage.includes("const filteredThreadResults = (threads ?? [])") &&
-      searchPage.includes("const filteredListingResults = (listings ?? [])") &&
-      searchPage.includes("const filteredGigResults = (gigs ?? [])") &&
-      searchPage.includes("const filteredMerchResults = (merchProducts ?? [])") &&
+      searchPage.includes("const filteredFeedResults = filterSearchResultsWithPublicProfiles") &&
+      searchPage.includes("const filteredThreadResults = filterSearchResultsWithPublicProfiles") &&
+      searchPage.includes("const filteredListingResults = filterSearchResultsWithPublicProfiles") &&
+      searchPage.includes("const filteredGigResults = filterSearchResultsWithPublicProfiles") &&
+      searchPage.includes("const filteredMerchResults = dedupeById") &&
       searchPage.includes("const feedResults = filteredFeedResults.slice(0, resultLimit)") &&
       searchPage.includes("(feedPosts?.length ?? 0) === resultFetchLimit") &&
-      searchPage.includes("product.is_official ||") &&
+      searchPage.includes("if (product.is_official) return true;") &&
       searchPage.includes("!blockedProfileIds.has(profile.id)") &&
-      searchPage.includes("!blockedProfileIds.has(post.profiles.id)") &&
+      searchPage.includes("!blockedProfileIds.has(post.profiles!.id)") &&
       mobileSmoke.includes('path: "/search?q=shirts&type=merch"') &&
       searchPage.includes("feedResults.map"),
   },
@@ -426,13 +426,13 @@ const checks = [
       savedPage.includes("!blockedProfileIds.has(post.profiles.id)"),
   },
   {
-    label: "signed-in profile search can find accepted private follows",
+    label: "public search avoids private profile compatibility reads",
     ok:
-      searchPage.includes('.from("follows")') &&
-      searchPage.includes('.eq("status", "accepted")') &&
-      searchPage.includes("visiblePrivateProfileIds") &&
-      searchPage.includes("privateProfilesPromise") &&
-      productPlan.includes("private profiles they are connected to through accepted follower/following relationships"),
+      !searchPage.includes('.from("follows")') &&
+      !searchPage.includes("visiblePrivateProfileIds") &&
+      !searchPage.includes("privateProfilesPromise") &&
+      searchPage.includes("loadPublicProfileMap") &&
+      searchPage.includes("filterSearchResultsWithPublicProfiles"),
   },
   {
     label: "search uses tokenized matching and weighted ranking",
@@ -462,7 +462,8 @@ const checks = [
       searchPage.includes("TTC terms work too") &&
       searchPage.includes("profile.username === exactUsername") &&
       searchPage.includes("account_type") &&
-      searchPage.includes("visiblePrivateProfileIds.has(profile.id) ? 8 : 0") &&
+      searchPage.includes('profile.account_type === "artist"') &&
+      searchPage.includes('profile.account_type === "studio"') &&
       searchPage.includes("{ value: profile.username, weight: 40 }") &&
       searchPage.includes("{ value: post.style_tags, weight: 24 }") &&
       searchPage.includes("{ value: listing.category, weight: 20 }") &&
