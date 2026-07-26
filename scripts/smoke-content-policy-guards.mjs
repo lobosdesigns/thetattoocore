@@ -507,11 +507,13 @@ const checks = [
       actions.includes('subjectType: "post_comment"') &&
       actions.includes('subjectType: "thread_comment"') &&
       actions.includes('formData.get("tagged_usernames")') &&
-      postDetailPage.includes("post_comment_tags(profiles:profiles!post_comment_tags_tagged_profile_id_fkey") &&
+      postDetailPage.includes("post_comment_tags(tagged_profile_id)") &&
+      postDetailPage.includes("function hydratePostComments") &&
       postDetailPage.includes("function CommentTaggedMemberLinks") &&
       postDetailPage.includes("<CommentTaggedMemberLinks") &&
       postDetailPage.includes('name="tagged_usernames"') &&
-      threadDetailPage.includes("thread_comment_tags(profiles:profiles!thread_comment_tags_tagged_profile_id_fkey") &&
+      threadDetailPage.includes("thread_comment_tags(tagged_profile_id)") &&
+      threadDetailPage.includes("function hydrateThreadComments") &&
       threadDetailPage.includes("function CommentTaggedMemberLinks") &&
       threadDetailPage.includes("<CommentTaggedMemberLinks") &&
       threadDetailPage.includes('name="tagged_usernames"') &&
@@ -625,7 +627,8 @@ const checks = [
       homePage.includes("function TaggedMemberLinks") &&
       homePage.includes("feed_post_tags(profiles:profiles!feed_post_tags_tagged_profile_id_fkey") &&
       postDetailPage.includes("function TaggedMemberLinks") &&
-      postDetailPage.includes("feed_post_tags(profiles:profiles!feed_post_tags_tagged_profile_id_fkey") &&
+      postDetailPage.includes("loadPublicProfileMap") &&
+      postDetailPage.includes("feed_post_tags(tagged_profile_id)") &&
       postDetailPage.includes('name="tagged_usernames"'),
   },
   {
@@ -830,7 +833,8 @@ const checks = [
       homePage.includes("<TaggedMemberLinks tags={thread.thread_post_tags ?? []} />") &&
       homePage.includes('name="tagged_usernames"') &&
       threadDetailPage.includes("function TaggedMemberLinks") &&
-      threadDetailPage.includes("thread_post_tags(profiles:profiles!thread_post_tags_tagged_profile_id_fkey") &&
+      threadDetailPage.includes("loadPublicProfileMap") &&
+      threadDetailPage.includes("thread_post_tags(tagged_profile_id)") &&
       threadDetailPage.includes("<TaggedMemberLinks tags={thread.thread_post_tags ?? []} />") &&
       threadDetailPage.includes('name="tagged_usernames"') &&
       profilePage.includes("thread_post_tags(profiles:profiles!thread_post_tags_tagged_profile_id_fkey") &&
@@ -868,7 +872,8 @@ const checks = [
       homePage.includes("gig_tags(profiles:profiles!gig_tags_tagged_profile_id_fkey") &&
       homePage.includes("<TaggedMemberLinks tags={gig.gig_tags ?? []} />") &&
       gigsDetailPage.includes("function TaggedMemberLinks") &&
-      gigsDetailPage.includes("gig_tags(profiles:profiles!gig_tags_tagged_profile_id_fkey") &&
+      gigsDetailPage.includes("loadPublicProfileMap") &&
+      gigsDetailPage.includes("gig_tags(tagged_profile_id)") &&
       gigsDetailPage.includes("<TaggedMemberLinks tags={gig.gig_tags ?? []} />") &&
       gigsDetailPage.includes('name="tagged_usernames"') &&
       profilePage.includes("gig_tags(profiles:profiles!gig_tags_tagged_profile_id_fkey") &&

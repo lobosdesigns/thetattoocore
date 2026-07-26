@@ -23,6 +23,7 @@ import { SavedItemButton } from "@/app/saved-item-button";
 import { SensitiveContentGate } from "@/app/sensitive-content-gate";
 import { ShareActions } from "@/app/share-actions";
 import { startConversation } from "@/app/messages/actions";
+import { loadPublicProfileMap } from "@/lib/public-profile-hydration";
 import { isUuid } from "@/lib/route-ids";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -63,10 +64,12 @@ type GigMedia = {
 };
 
 type GigTag = {
+  tagged_profile_id: string | null;
   profiles: Profile | null;
 };
 
 type Gig = {
+  poster_id: string;
   category: string;
   city: string | null;
   compensation: string | null;
@@ -197,7 +200,7 @@ async function getGig(id: string) {
   const { data } = await supabase
     .from("gigs")
     .select(
-      "id, title, description, category, city, region, country, starts_at, ends_at, compensation, contact_url, visibility, is_sensitive, created_at, gig_tags(profiles:profiles!gig_tags_tagged_profile_id_fkey(id, username, display_name, account_type, license_verified_at)), gig_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!gigs_poster_id_fkey(id, username, display_name, account_type, license_verified_at)",
+      "id, poster_id, title, description, category, city, region, country, starts_at, ends_at, compensation, contact_url, visibility, is_sensitive, created_at, gig_tags(tagged_profile_id), gig_media(id, storage_bucket, storage_path, media_type, sort_order)",
     )
     .eq("id", id)
     .eq("status", "active")
@@ -208,7 +211,21 @@ async function getGig(id: string) {
     })
     .maybeSingle<Gig>();
 
-  return data;
+  if (!data) return null;
+
+  const profileMap = await loadPublicProfileMap(supabase, [
+    data.poster_id,
+    ...data.gig_tags.map((tag) => tag.tagged_profile_id),
+  ]);
+
+  return {
+    ...data,
+    profiles: profileMap.get(data.poster_id) ?? null,
+    gig_tags: data.gig_tags.map((tag) => ({
+      ...tag,
+      profiles: tag.tagged_profile_id ? profileMap.get(tag.tagged_profile_id) ?? null : null,
+    })),
+  };
 }
 
 async function hasBlockRelationship({

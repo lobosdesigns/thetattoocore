@@ -43,6 +43,7 @@ import {
   siteKeywords,
   siteUrl,
 } from "@/lib/site";
+import { loadPublicProfileMap } from "@/lib/public-profile-hydration";
 import { isUuid } from "@/lib/route-ids";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
@@ -81,6 +82,7 @@ type FeedMedia = {
 };
 
 type FeedPost = {
+  author_id: string;
   caption: string | null;
   created_at: string;
   feed_post_tags: FeedPostTag[];
@@ -96,6 +98,7 @@ type FeedPost = {
 };
 
 type FeedPostTag = {
+  tagged_profile_id: string | null;
   profiles: Pick<
     Profile,
     "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"
@@ -103,6 +106,7 @@ type FeedPostTag = {
 };
 
 type PostComment = {
+  author_id: string;
   body: string;
   created_at: string;
   deleted_at: string | null;
@@ -116,6 +120,7 @@ type PostComment = {
 };
 
 type CommentTag = {
+  tagged_profile_id: string | null;
   profiles: Pick<Profile, "display_name" | "id" | "username"> | null;
 };
 
@@ -141,7 +146,7 @@ type PostPageProps = {
 const commentsPageSize = 25;
 const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
 const postCommentSelect =
-  "id, body, parent_id, deleted_at, created_at, post_comment_tags(profiles:profiles!post_comment_tags_tagged_profile_id_fkey(id, username, display_name)), post_comment_media(id, storage_bucket, storage_path, media_type, mime_type, width, height), post_comment_hides(hidden_by), post_comment_likes(user_id), profiles:profiles!post_comments_author_id_fkey(id, avatar_url, display_name, username)";
+  "id, author_id, body, parent_id, deleted_at, created_at, post_comment_tags(tagged_profile_id), post_comment_media(id, storage_bucket, storage_path, media_type, mime_type, width, height), post_comment_hides(hidden_by), post_comment_likes(user_id)";
 
 function asArray<T>(value: T[] | null | undefined) {
   return Array.isArray(value) ? value : [];
@@ -298,7 +303,7 @@ async function getPost(id: string) {
   const { data } = await supabase
     .from("feed_posts")
     .select(
-      "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_post_tags(profiles:profiles!feed_post_tags_tagged_profile_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)), feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
+      "id, author_id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_post_tags(tagged_profile_id), feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id)",
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -309,7 +314,35 @@ async function getPost(id: string) {
     })
     .maybeSingle<FeedPost>();
 
-  return data;
+  if (!data) return null;
+
+  const profileMap = await loadPublicProfileMap(supabase, [
+    data.author_id,
+    ...asArray(data.feed_post_tags).map((tag) => tag.tagged_profile_id),
+  ]);
+
+  return {
+    ...data,
+    profiles: profileMap.get(data.author_id) ?? null,
+    feed_post_tags: asArray(data.feed_post_tags).map((tag) => ({
+      ...tag,
+      profiles: tag.tagged_profile_id ? profileMap.get(tag.tagged_profile_id) ?? null : null,
+    })),
+  };
+}
+
+function hydratePostComments(
+  comments: PostComment[],
+  profileMap: Awaited<ReturnType<typeof loadPublicProfileMap>>,
+) {
+  return comments.map((comment) => ({
+    ...comment,
+    profiles: profileMap.get(comment.author_id) ?? null,
+    post_comment_tags: asArray(comment.post_comment_tags).map((tag) => ({
+      ...tag,
+      profiles: tag.tagged_profile_id ? profileMap.get(tag.tagged_profile_id) ?? null : null,
+    })),
+  }));
 }
 
 async function getVisiblePostComments({
@@ -336,7 +369,17 @@ async function getVisiblePostComments({
       .order("created_at", { ascending: false })
       .limit(commentFetchLimit)
       .returns<PostComment[]>();
-  const visibleTopLevelComments = (topLevelCommentRows ?? [])
+  const commentProfileMap = await loadPublicProfileMap(supabase, [
+    ...(topLevelCommentRows ?? []).flatMap((comment) => [
+      comment.author_id,
+      ...asArray(comment.post_comment_tags).map((tag) => tag.tagged_profile_id),
+    ]),
+  ]);
+  const hydratedTopLevelCommentRows = hydratePostComments(
+    topLevelCommentRows ?? [],
+    commentProfileMap,
+  );
+  const visibleTopLevelComments = hydratedTopLevelCommentRows
     .filter(
       (comment) =>
         !hasCommentHide(comment.post_comment_hides) &&
@@ -356,7 +399,13 @@ async function getVisiblePostComments({
         .order("created_at", { ascending: true })
         .returns<PostComment[]>()
     : { data: [] as PostComment[] };
-  const visibleReplies = (replyRows ?? []).filter(
+  const replyProfileMap = await loadPublicProfileMap(supabase, [
+    ...(replyRows ?? []).flatMap((comment) => [
+      comment.author_id,
+      ...asArray(comment.post_comment_tags).map((tag) => tag.tagged_profile_id),
+    ]),
+  ]);
+  const visibleReplies = hydratePostComments(replyRows ?? [], replyProfileMap).filter(
     (comment) =>
       !hasCommentHide(comment.post_comment_hides) &&
       (!comment.profiles?.id ||

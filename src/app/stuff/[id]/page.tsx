@@ -27,6 +27,7 @@ import { SavedItemButton } from "@/app/saved-item-button";
 import { SensitiveContentGate } from "@/app/sensitive-content-gate";
 import { ShareActions } from "@/app/share-actions";
 import { startConversation } from "@/app/messages/actions";
+import { loadPublicProfileMap } from "@/lib/public-profile-hydration";
 import { isUuid } from "@/lib/route-ids";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -68,6 +69,7 @@ type ListingMedia = {
 };
 
 type Listing = {
+  seller_id: string;
   category: string;
   city: string | null;
   created_at: string;
@@ -160,7 +162,7 @@ async function getListing(id: string) {
   const { data } = await supabase
     .from("marketplace_listings")
     .select(
-      "id, title, description, price_cents, currency, category, city, region, visibility, is_sensitive, created_at, marketplace_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!marketplace_listings_seller_id_fkey(id, username, display_name, account_type, license_verified_at)",
+      "id, seller_id, title, description, price_cents, currency, category, city, region, visibility, is_sensitive, created_at, marketplace_media(id, storage_bucket, storage_path, media_type, sort_order)",
     )
     .eq("id", id)
     .eq("status", "active")
@@ -171,7 +173,14 @@ async function getListing(id: string) {
     })
     .maybeSingle<Listing>();
 
-  return data;
+  if (!data) return null;
+
+  const profileMap = await loadPublicProfileMap(supabase, [data.seller_id]);
+
+  return {
+    ...data,
+    profiles: profileMap.get(data.seller_id) ?? null,
+  };
 }
 
 async function hasBlockRelationship({

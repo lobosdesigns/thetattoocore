@@ -21,6 +21,7 @@ import {
   calculatePlatformFeeCents,
   platformFeePercentLabel,
 } from "@/lib/payments/fees";
+import { loadPublicProfileMap } from "@/lib/public-profile-hydration";
 import { isUuid } from "@/lib/route-ids";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -55,6 +56,7 @@ type MerchMedia = {
 };
 
 type MerchProduct = {
+  seller_id: string;
   category: string;
   currency: string;
   description: string | null;
@@ -136,7 +138,7 @@ async function getProductForViewer(id: string, viewerId?: string | null) {
   let query = supabase
     .from("merch_products")
     .select(
-      "id, title, description, fulfillment_notes, return_policy, category, status, moderation_status, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, ships_from_city, ships_from_region, is_official, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, account_type, license_verified_at)",
+      "id, seller_id, title, description, fulfillment_notes, return_policy, category, status, moderation_status, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, ships_from_city, ships_from_region, is_official, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order)",
     )
     .eq("id", id)
     .order("sort_order", {
@@ -152,19 +154,25 @@ async function getProductForViewer(id: string, viewerId?: string | null) {
 
   if (!data) return null;
 
+  const profileMap = await loadPublicProfileMap(supabase, [data.seller_id]);
+  const product = {
+    ...data,
+    profiles: profileMap.get(data.seller_id) ?? null,
+  };
+
   const isPublic =
-    data.status === "active" && data.moderation_status === "active";
-  const isOwner = Boolean(viewerId && viewerId === data.profiles?.id);
+    product.status === "active" && product.moderation_status === "active";
+  const isOwner = Boolean(viewerId && viewerId === product.profiles?.id);
 
   if (!isPublic && !isOwner) {
     return null;
   }
 
-  if (!data.is_official && !isOwner && !isVerifiedProfessional(data.profiles)) {
+  if (!product.is_official && !isOwner && !isVerifiedProfessional(product.profiles)) {
     return null;
   }
 
-  return data;
+  return product;
 }
 
 async function hasBlockRelationship({

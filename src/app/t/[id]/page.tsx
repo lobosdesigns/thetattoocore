@@ -41,6 +41,7 @@ import {
   siteKeywords,
   siteUrl,
 } from "@/lib/site";
+import { loadPublicProfileMap } from "@/lib/public-profile-hydration";
 import { isUuid } from "@/lib/route-ids";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
@@ -79,6 +80,7 @@ type ThreadMedia = {
 };
 
 type ThreadPost = {
+  author_id: string;
   body: string;
   created_at: string;
   id: string;
@@ -92,6 +94,7 @@ type ThreadPost = {
 };
 
 type ThreadPostTag = {
+  tagged_profile_id: string | null;
   profiles: Pick<
     Profile,
     "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"
@@ -99,6 +102,7 @@ type ThreadPostTag = {
 };
 
 type ThreadComment = {
+  author_id: string;
   body: string;
   created_at: string;
   deleted_at: string | null;
@@ -112,6 +116,7 @@ type ThreadComment = {
 };
 
 type CommentTag = {
+  tagged_profile_id: string | null;
   profiles: Pick<Profile, "display_name" | "id" | "username"> | null;
 };
 
@@ -137,7 +142,7 @@ type ThreadPageProps = {
 const commentsPageSize = 25;
 const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
 const threadCommentSelect =
-  "id, body, parent_id, deleted_at, created_at, thread_comment_tags(profiles:profiles!thread_comment_tags_tagged_profile_id_fkey(id, username, display_name)), thread_comment_media(id, storage_bucket, storage_path, media_type, mime_type, width, height), thread_comment_hides(hidden_by), thread_comment_likes(user_id), profiles:profiles!thread_comments_author_id_fkey(id, avatar_url, display_name, username)";
+  "id, author_id, body, parent_id, deleted_at, created_at, thread_comment_tags(tagged_profile_id), thread_comment_media(id, storage_bucket, storage_path, media_type, mime_type, width, height), thread_comment_hides(hidden_by), thread_comment_likes(user_id)";
 
 function asArray<T>(value: T[] | null | undefined) {
   return Array.isArray(value) ? value : [];
@@ -294,7 +299,7 @@ async function getThread(id: string) {
   const { data } = await supabase
     .from("thread_posts")
     .select(
-      "id, body, visibility, is_sensitive, created_at, thread_post_tags(profiles:profiles!thread_post_tags_tagged_profile_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)), thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
+      "id, author_id, body, visibility, is_sensitive, created_at, thread_post_tags(tagged_profile_id), thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id)",
     )
     .eq("id", id)
     .eq("moderation_status", "active")
@@ -304,7 +309,35 @@ async function getThread(id: string) {
     })
     .maybeSingle<ThreadPost>();
 
-  return data;
+  if (!data) return null;
+
+  const profileMap = await loadPublicProfileMap(supabase, [
+    data.author_id,
+    ...asArray(data.thread_post_tags).map((tag) => tag.tagged_profile_id),
+  ]);
+
+  return {
+    ...data,
+    profiles: profileMap.get(data.author_id) ?? null,
+    thread_post_tags: asArray(data.thread_post_tags).map((tag) => ({
+      ...tag,
+      profiles: tag.tagged_profile_id ? profileMap.get(tag.tagged_profile_id) ?? null : null,
+    })),
+  };
+}
+
+function hydrateThreadComments(
+  comments: ThreadComment[],
+  profileMap: Awaited<ReturnType<typeof loadPublicProfileMap>>,
+) {
+  return comments.map((comment) => ({
+    ...comment,
+    profiles: profileMap.get(comment.author_id) ?? null,
+    thread_comment_tags: asArray(comment.thread_comment_tags).map((tag) => ({
+      ...tag,
+      profiles: tag.tagged_profile_id ? profileMap.get(tag.tagged_profile_id) ?? null : null,
+    })),
+  }));
 }
 
 async function getVisibleThreadComments({
@@ -331,7 +364,17 @@ async function getVisibleThreadComments({
       .order("created_at", { ascending: false })
       .limit(commentFetchLimit)
       .returns<ThreadComment[]>();
-  const visibleTopLevelComments = (topLevelCommentRows ?? [])
+  const commentProfileMap = await loadPublicProfileMap(supabase, [
+    ...(topLevelCommentRows ?? []).flatMap((comment) => [
+      comment.author_id,
+      ...asArray(comment.thread_comment_tags).map((tag) => tag.tagged_profile_id),
+    ]),
+  ]);
+  const hydratedTopLevelCommentRows = hydrateThreadComments(
+    topLevelCommentRows ?? [],
+    commentProfileMap,
+  );
+  const visibleTopLevelComments = hydratedTopLevelCommentRows
     .filter(
       (comment) =>
         !hasCommentHide(comment.thread_comment_hides) &&
@@ -351,7 +394,13 @@ async function getVisibleThreadComments({
         .order("created_at", { ascending: true })
         .returns<ThreadComment[]>()
     : { data: [] as ThreadComment[] };
-  const visibleReplies = (replyRows ?? []).filter(
+  const replyProfileMap = await loadPublicProfileMap(supabase, [
+    ...(replyRows ?? []).flatMap((comment) => [
+      comment.author_id,
+      ...asArray(comment.thread_comment_tags).map((tag) => tag.tagged_profile_id),
+    ]),
+  ]);
+  const visibleReplies = hydrateThreadComments(replyRows ?? [], replyProfileMap).filter(
     (comment) =>
       !hasCommentHide(comment.thread_comment_hides) &&
       (!comment.profiles?.id ||
