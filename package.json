@@ -74,7 +74,10 @@
     "test:csp-headers": "node scripts/test-csp-headers.mjs",
     "test:csp-observation": "node scripts/smoke-csp-observation.mjs",
     "test:profile-route-status": "node scripts/test-profile-route-status.mjs",
-    "test:studio-profile-presentation": "node scripts/test-studio-profile-presentation.mjs"
+    "test:studio-profile-presentation": "node scripts/test-studio-profile-presentation.mjs",
+    "test:shop-route-status": "node scripts/test-shop-route-status.mjs",
+    "test:shop-presentation": "node scripts/test-shop-presentation.mjs",
+    "test:shop-artist-hydration": "node scripts/test-shop-artist-hydration.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/messaging": "7.5.0",

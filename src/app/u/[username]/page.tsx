@@ -377,6 +377,7 @@ type LinkedArtist = Pick<
   | "display_name"
   | "id"
   | "license_verified_at"
+  | "shop_profile_id"
   | "username"
 >;
 
@@ -392,6 +393,17 @@ function profileLocation(profile: Profile) {
   return [profile.city, profile.region, profile.country]
     .filter(Boolean)
     .join(", ");
+}
+
+function publicProfileLinks(profile: Profile) {
+  return [
+    profile.website_url ? { href: profile.website_url, label: "Website" } : null,
+    profile.instagram_url ? { href: profile.instagram_url, label: "Instagram" } : null,
+    profile.tiktok_url ? { href: profile.tiktok_url, label: "TikTok" } : null,
+    profile.facebook_url ? { href: profile.facebook_url, label: "Facebook" } : null,
+    profile.youtube_url ? { href: profile.youtube_url, label: "YouTube" } : null,
+    profile.x_url ? { href: profile.x_url, label: "X" } : null,
+  ].filter((link): link is { href: string; label: string } => Boolean(link));
 }
 
 function collectSpecialtyTags(posts: FeedPost[]) {
@@ -899,8 +911,6 @@ function LinkedArtistsSection({
   artists: LinkedArtist[];
   shopName: string;
 }) {
-  if (!artists.length) return null;
-
   return (
     <section className="border-b border-[var(--card-rim)] px-4 py-6">
       <div className="mb-4 flex items-center gap-2">
@@ -912,10 +922,133 @@ function LinkedArtistsSection({
           </p>
         </div>
       </div>
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        {artists.map((artist) => (
-          <FollowPreviewCard key={artist.id} label="artist" profile={artist} />
-        ))}
+      {artists.length ? (
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {artists.map((artist) => (
+            <FollowPreviewCard key={artist.id} label="artist" profile={artist} />
+          ))}
+        </div>
+      ) : (
+        <ProfileEmptyState
+          body="Public artist profiles linked to this studio will appear here after artists add the shop username to their profile."
+          icon={BriefcaseBusiness}
+          tips={["Public artists only", "Private profiles hidden", "No duplicate cards"]}
+          title="No linked public artists yet"
+        />
+      )}
+    </section>
+  );
+}
+
+function ShopOverviewSection({
+  artistCount,
+  canShowBookingAvailability,
+  followerCount,
+  followingCount,
+  profile,
+  specialtyTags,
+  visiblePortfolioCount,
+}: {
+  artistCount: number;
+  canShowBookingAvailability: boolean;
+  followerCount: number;
+  followingCount: number;
+  profile: Profile;
+  specialtyTags: string[];
+  visiblePortfolioCount: number;
+}) {
+  const location = profileLocation(profile);
+  const links = publicProfileLinks(profile);
+
+  return (
+    <section className="border-b border-[var(--card-rim)] px-4 py-6">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-strong)]">
+            Tattoo shop experience
+          </p>
+          <h2 className="mt-1 text-xl font-bold">{profile.display_name}</h2>
+          <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
+            Studio profile on {siteName}. Only public profile fields, public
+            portfolio previews, and linked public artists are shown here.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {isVerifiedProfile(profile) ? (
+              <ProfileDetailChip icon={BadgeCheck}>Verified shop</ProfileDetailChip>
+            ) : (
+              <ProfileDetailChip icon={ShieldCheck}>Public studio</ProfileDetailChip>
+            )}
+            {location ? (
+              <ProfileDetailChip icon={MapPin}>{location}</ProfileDetailChip>
+            ) : (
+              <ProfileDetailChip icon={MapPin}>Location not listed</ProfileDetailChip>
+            )}
+            <ProfileDetailChip icon={BriefcaseBusiness}>
+              {artistCount} linked artist{artistCount === 1 ? "" : "s"}
+            </ProfileDetailChip>
+            <ProfileDetailChip icon={Camera}>
+              {visiblePortfolioCount} portfolio post
+              {visiblePortfolioCount === 1 ? "" : "s"}
+            </ProfileDetailChip>
+            <ProfileDetailChip icon={CalendarPlus}>
+              {canShowBookingAvailability ? "Booking available" : "Booking not listed"}
+            </ProfileDetailChip>
+          </div>
+          {specialtyTags.length ? (
+            <div className="mt-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-strong)]">
+                Style signals
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {specialtyTags.map((tag) => (
+                  <span
+                    className="rounded-md bg-[color-mix(in_srgb,var(--brand-gold)_18%,var(--paper-warm))] px-2.5 py-1.5 text-xs font-bold text-[var(--foreground)]"
+                    key={tag}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+        <aside className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] p-4">
+          <h3 className="text-sm font-bold">Public contact</h3>
+          {links.length ? (
+            <div className="mt-3 grid gap-2">
+              {links.map((link) => (
+                <a
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm font-semibold"
+                  href={link.href}
+                  key={link.label}
+                  rel={userGeneratedLinkRel}
+                  target="_blank"
+                >
+                  <LinkIcon className="size-4" />
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-2 text-sm leading-6 text-[var(--muted-strong)]">
+              No public website or social link is listed for this studio.
+            </p>
+          )}
+          <div className="mt-4 grid grid-cols-2 gap-2 text-center">
+            <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3">
+              <p className="text-lg font-black">{followerCount}</p>
+              <p className="text-xs font-semibold text-[var(--muted-strong)]">
+                followers
+              </p>
+            </div>
+            <div className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3">
+              <p className="text-lg font-black">{followingCount}</p>
+              <p className="text-xs font-semibold text-[var(--muted-strong)]">
+                following
+              </p>
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
   );
@@ -1704,7 +1837,7 @@ export default async function ProfilePage({
       ? supabase
           .from("public_profiles")
           .select(
-            "id, username, display_name, avatar_url, account_type, license_verified_at",
+            "id, username, display_name, avatar_url, account_type, license_verified_at, shop_profile_id",
           )
           .eq("shop_profile_id", profile.id)
           .eq("account_type", "artist")
@@ -1876,9 +2009,17 @@ export default async function ProfilePage({
       follow.profiles &&
       !blockedProfileIds.has(follow.profiles.id),
   );
-  const visibleLinkedArtists = (linkedArtists ?? []).filter(
-    (artist) => !blockedProfileIds.has(artist.id),
-  );
+  const visibleLinkedArtists = [
+    ...new Map(
+      (linkedArtists ?? [])
+        .filter(
+          (artist) =>
+            artist.shop_profile_id === profile.id &&
+            !blockedProfileIds.has(artist.id),
+        )
+        .map((artist) => [artist.id, artist]),
+    ).values(),
+  ];
   const hiddenContentCount = isPrivateLocked
     ? 0
     : profilePostRows.length -
@@ -2589,6 +2730,18 @@ export default async function ProfilePage({
           />
         ) : null}
 
+        {!isPrivateLocked && profile.account_type === "studio" ? (
+          <ShopOverviewSection
+            artistCount={visibleLinkedArtists.length}
+            canShowBookingAvailability={canShowBookingAvailability}
+            followerCount={followerCount ?? 0}
+            followingCount={followingCount ?? 0}
+            profile={profile}
+            specialtyTags={specialtyTags}
+            visiblePortfolioCount={visiblePosts.length}
+          />
+        ) : null}
+
         {isOwnProfile && profile.is_private && followRequests?.length ? (
           <section className="border-b border-[var(--card-rim)] px-4 py-6">
             <div className="mb-4 flex items-center gap-2">
@@ -2655,7 +2808,7 @@ export default async function ProfilePage({
           />
         ) : null}
 
-        {!isPrivateLocked ? (
+        {!isPrivateLocked && profile.account_type === "studio" ? (
           <LinkedArtistsSection
             artists={visibleLinkedArtists}
             shopName={profile.display_name}
