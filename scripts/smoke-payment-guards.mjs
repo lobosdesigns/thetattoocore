@@ -546,7 +546,8 @@ checks.push({
   label: "Merch detail allows owner-only non-public product review",
   ok:
     merchDetailPage.includes("async function getProductForViewer") &&
-    merchDetailPage.includes("const isOwner = Boolean(viewerId && viewerId === data.profiles?.id)") &&
+    (merchDetailPage.includes("const isOwner = Boolean(viewerId && viewerId === product.profiles?.id)") ||
+      merchDetailPage.includes("const isOwner = Boolean(viewerId && viewerId === data.profiles?.id)")) &&
     merchDetailPage.includes("if (!isPublic && !isOwner)") &&
     merchDetailPage.includes("Seller-only product view") &&
     merchDetailPage.includes("Checkout and public discovery open only after admin approval") &&

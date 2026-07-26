@@ -92,6 +92,7 @@ const merchCheckoutSuccessPage = readFileSync(
   "utf8",
 );
 const middlewareSource = readFileSync("src/middleware.ts", "utf8");
+const cspSource = readFileSync("src/lib/security/csp.ts", "utf8");
 const readinessDoc = readFileSync("docs/APP_STORE_READINESS.md", "utf8");
 const helpCenter = readFileSync("src/lib/help-center.ts", "utf8");
 const helpCenterSearch = readFileSync("src/app/help/help-center-search.tsx", "utf8");
@@ -849,7 +850,7 @@ const checks = [
       mailRedactionTest.includes("TTC_MAIL_REDACTION_SENTINEL") &&
       mailRedactionTest.includes('assert.equal("cause" in error, false)') &&
       packageJson.includes(
-        '"smoke:security": "node --experimental-default-type=module scripts/test-mail-redaction.mjs && node scripts/smoke-security-guards.mjs"',
+        '"smoke:security": "npm run test:csp-headers && node --experimental-default-type=module scripts/test-mail-redaction.mjs && node scripts/smoke-security-guards.mjs"',
       ),
   },
   {
@@ -1066,8 +1067,24 @@ const checks = [
       middlewareSource.includes("Referrer-Policy") &&
       middlewareSource.includes("Strict-Transport-Security") &&
       middlewareSource.includes("Permissions-Policy") &&
-      middlewareSource.includes("Content-Security-Policy-Report-Only") &&
-      !middlewareSource.includes('"Content-Security-Policy",') &&
+      middlewareSource.includes("cspHeader()") &&
+      middlewareSource.includes("cspHeaderName") &&
+      middlewareSource.includes("cspReportOnlyHeaderName") &&
+      cspSource.includes('cspEnforceFlag = "TTC_CSP_ENFORCE_ENABLED"') &&
+      cspSource.includes('cspReportOnlyHeaderName = "Content-Security-Policy-Report-Only"') &&
+      cspSource.includes('cspHeaderName = "Content-Security-Policy"') &&
+      cspSource.includes('env[cspEnforceFlag] === "true"') &&
+      cspSource.includes("https://js.stripe.com") &&
+      cspSource.includes("https://checkout.stripe.com") &&
+      cspSource.includes("https://api.stripe.com") &&
+      cspSource.includes("https://*.supabase.co") &&
+      cspSource.includes("https://*.supabase.in") &&
+      cspSource.includes("wss://*.supabase.co") &&
+      cspSource.includes("wss://*.supabase.in") &&
+      cspSource.includes("manifest-src") &&
+      cspSource.includes("worker-src") &&
+      !cspSource.includes('"https:"') &&
+      !cspSource.includes("'unsafe-eval'") &&
       middlewareSource.includes('import { createServerClient } from "@supabase/ssr"') &&
       middlewareSource.includes("request.cookies.getAll()") &&
       middlewareSource.includes("request.cookies.set(name, value)") &&

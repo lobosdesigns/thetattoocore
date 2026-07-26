@@ -11,30 +11,13 @@ import {
   authSessionPreferenceCookie,
   persistentSessionFromValue,
 } from "@/lib/auth-session";
+import { cspHeader, cspHeaderName, cspReportOnlyHeaderName } from "@/lib/security/csp";
 
-const securityHeaders = [
+const staticSecurityHeaders = [
   ["X-Content-Type-Options", "nosniff"],
   ["X-Frame-Options", "DENY"],
   ["Referrer-Policy", "strict-origin-when-cross-origin"],
   ["Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload"],
-  [
-    "Content-Security-Policy-Report-Only",
-    [
-      "default-src 'self'",
-      "base-uri 'self'",
-      "object-src 'none'",
-      "frame-ancestors 'none'",
-      "form-action 'self' https://checkout.stripe.com",
-      "script-src 'self' 'unsafe-inline' https://js.stripe.com",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https:",
-      "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co https://*.supabase.in https://api.stripe.com",
-      "media-src 'self' blob: https:",
-      "frame-src https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com",
-      "worker-src 'self' blob:",
-    ].join("; "),
-  ],
   [
     "Permissions-Policy",
     'camera=(), microphone=(), payment=(self "https://checkout.stripe.com")',
@@ -45,9 +28,16 @@ const canonicalHost = "thetattoocore.com";
 const redirectableProductionHosts = new Set([canonicalHost, `www.${canonicalHost}`]);
 
 function applySecurityHeaders<T extends Response>(response: T): T {
-  for (const [key, value] of securityHeaders) {
+  const [activeCspHeader, policy] = cspHeader();
+
+  for (const [key, value] of staticSecurityHeaders) {
     response.headers.set(key, value);
   }
+
+  response.headers.delete(
+    activeCspHeader === cspHeaderName ? cspReportOnlyHeaderName : cspHeaderName,
+  );
+  response.headers.set(activeCspHeader, policy);
 
   return response;
 }

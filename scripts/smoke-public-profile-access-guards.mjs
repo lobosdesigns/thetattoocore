@@ -187,7 +187,7 @@ if (!threadQuery) fail("Unable to locate sitemap thread query.");
 if (threadQuery[0].includes('is_published')) fail("sitemap thread query must not reference nonexistent thread_posts.is_published.");
 
 const searchSource = read("src/app/search/page.tsx");
-if (!searchSource.includes('let publicProfileQuery = supabase\n                .from("public_profiles")')) {
+if (!/let publicProfileQuery = supabase\s*\.from\("public_profiles"\)/.test(searchSource)) {
   fail("search public profile query must use public_profiles.");
 }
 if (!/const privateProfilesPromise = visiblePrivateProfileIds\.size[\s\S]*?\.from\("profiles"\)[\s\S]*?\.in\("id", Array\.from\(visiblePrivateProfileIds\)\)/.test(searchSource)) {
@@ -226,11 +226,18 @@ for (const detailPath of [
 }
 
 const middlewareSource = read("src/middleware.ts");
-if (!middlewareSource.includes("Content-Security-Policy-Report-Only")) {
-  fail("middleware must emit CSP in Report-Only mode first.");
+const cspSource = read("src/lib/security/csp.ts");
+if (!middlewareSource.includes("cspHeader()")) {
+  fail("middleware must emit CSP through the centralized policy helper.");
 }
-if (middlewareSource.includes('"Content-Security-Policy",')) {
-  fail("CSP must not be enforced before Report-Only observation.");
+if (!cspSource.includes('cspEnforceFlag = "TTC_CSP_ENFORCE_ENABLED"')) {
+  fail("CSP enforcement must remain behind the explicit TTC_CSP_ENFORCE_ENABLED flag.");
+}
+if (!cspSource.includes('cspReportOnlyHeaderName = "Content-Security-Policy-Report-Only"')) {
+  fail("CSP must keep Report-Only as the default header mode.");
+}
+if (!cspSource.includes('env[cspEnforceFlag] === "true"')) {
+  fail("CSP enforcement must require the flag to be exactly true.");
 }
 
 const docsPath = "docs/PUBLIC_PROFILE_ACCESS_PHASE_1.md";
