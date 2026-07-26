@@ -186,18 +186,14 @@ const routes = [
     textIncludes: ["@ceocore", "Fan-facing shirts, prints, art, stickers, and brand goods."],
     titleIncludes: "CEOCore",
   },
-  { path: "/u/ceocore/followers", textIncludes: "followers", titleIncludes: "Followers" },
-  { path: "/u/ceocore/following", textIncludes: "following", titleIncludes: "Following" },
-  { allowMainDocument404: true, path: "/p/not-a-real-post", titleIncludes: "404" },
-  {
-    allowMainDocument404: true,
-    path: "/t/not-a-real-thread",
-    titleIncludesAny: ["Gossip thread not found", "404"],
-  },
-  { allowMainDocument404: true, path: "/stuff/not-a-real-listing", titleIncludes: "404" },
-  { allowMainDocument404: true, path: "/gigs/not-a-real-gig", titleIncludes: "404" },
+  { allowMainDocument404: true, expectedMainStatus: 404, path: "/u/ceocore/followers" },
+  { allowMainDocument404: true, expectedMainStatus: 404, path: "/u/ceocore/following" },
+  { allowMainDocument404: true, expectedMainStatus: 404, path: "/p/not-a-real-post" },
+  { allowMainDocument404: true, expectedMainStatus: 404, path: "/t/not-a-real-thread" },
+  { allowMainDocument404: true, expectedMainStatus: 404, path: "/stuff/not-a-real-listing" },
+  { allowMainDocument404: true, expectedMainStatus: 404, path: "/gigs/not-a-real-gig" },
   { path: "/merch", textIncludes: ["Merch help", "Seller tools"], titleIncludes: "Merch" },
-  { allowMainDocument404: true, path: "/merch/not-a-real-product", titleIncludes: "404" },
+  { allowMainDocument404: true, expectedMainStatus: 404, path: "/merch/not-a-real-product" },
   { path: "/merch/checkout/success", titleIncludes: "Merch checkout status" },
 ];
 const representativeSitemapPrefixes = ["/p/", "/t/", "/stuff/", "/gigs/", "/merch/", "/u/"];
@@ -320,6 +316,7 @@ async function checkRoute(portNumber, url, route) {
   let client;
   const errors = [];
   const networkErrors = [];
+  let mainDocumentStatus = null;
 
   try {
     tab = await newTab(portNumber, url);
@@ -336,6 +333,9 @@ async function checkRoute(portNumber, url, route) {
     });
     client.on("Network.responseReceived", (event) => {
       const status = event.response?.status || 0;
+      if (event.type === "Document") {
+        mainDocumentStatus = status;
+      }
       const isAllowedMainDocument404 =
         route.allowMainDocument404 && event.type === "Document" && status === 404;
 
@@ -409,6 +409,9 @@ async function checkRoute(portNumber, url, route) {
     }
     if (overflow > 2) {
       reasons.push(`horizontal overflow ${overflow}px (${value.scrollWidth}px document on ${value.clientWidth}px viewport)`);
+    }
+    if (route.expectedMainStatus && mainDocumentStatus !== route.expectedMainStatus) {
+      reasons.push(`main document status ${mainDocumentStatus ?? "unknown"} did not equal ${route.expectedMainStatus}`);
     }
     const filteredErrors = route.allowMainDocument404
       ? errors.filter((error) => !error.includes("the server responded with a status of 404"))

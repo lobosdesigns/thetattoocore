@@ -1,7 +1,8 @@
-﻿# CSP Enforcement Readiness
+# CSP Enforcement Readiness
 
 Branch: `chore/csp-enforcement-readiness`
 Baseline commit: `322ffbbbf2d1cc9eac575e1df1bcf23cf9965f19`
+Continuation verification base: `ef0c0c76afb3a919e46909047cd52c0644b83d5b`
 
 Production must remain in `Content-Security-Policy-Report-Only` until the monitoring checklist and enforcement criteria below are complete. Enforcement is prepared behind `TTC_CSP_ENFORCE_ENABLED=true`; do not set that flag in production during this readiness pass.
 
@@ -58,26 +59,37 @@ default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; 
 
 ## Unsafe directives still present
 
-- `script-src 'unsafe-inline'`: still present for Next.js runtime compatibility without request nonces.
-- `style-src 'unsafe-inline'`: still present for framework and app inline style compatibility.
+- `script-src 'unsafe-inline'`: still present for Next.js runtime compatibility without request nonces. The installed Next.js 16 CSP guide says nonce injection requires dynamic rendering because Next extracts the nonce from the CSP header during server rendering; static pages are generated before request headers exist. This branch keeps the current static-friendly OpenNext Cloudflare architecture and does not force every public route into dynamic rendering.
+- `style-src 'unsafe-inline'`: still present for framework-generated inline styles and real app inline style attributes. Current source inspection found inline `style` usage in public/profile/media surfaces including `src/app/page.tsx`, `src/app/u/[username]/page.tsx`, `src/app/u/[username]/follow-list-page.tsx`, `src/app/search/page.tsx`, `src/app/saved/page.tsx`, `src/app/media-input.tsx`, `src/app/media-lightbox.tsx`, `src/app/account/profile-form.tsx`, and `src/app/pending-submit-button.tsx`. Several of these are dynamic background images, aspect ratios, progress transforms, or media-preview dimensions and are not safely removable in a CSP readiness pass.
 - `unsafe-eval`: not present.
 
-Nonce-based CSP is not recommended in this pass. The installed Next.js guide says nonces require dynamic rendering for nonce injection, which would change caching/rendering behavior and is too large for enforcement readiness.
+Removing `unsafe-inline` needs a separate architecture pass. The practical paths are either request nonces through the Next Proxy/middleware rendering path, accepting dynamic-rendering and caching changes, or evaluating Next's experimental App Router SRI support for script hashes while separately migrating dynamic style attributes. Either path needs its own smoke coverage across login/signup, public profiles, search, media previews, PWA/offline, and Stripe/Supabase flows.
 
-## Production violations reviewed
+## CSP observation and report collection
 
-No in-repo CSP report endpoint, report store, or sanitized production violation export was available to inspect. Existing docs already require production Report-Only observation before enforcement. No secrets, cookies, or report payloads were accessed or copied during this pass.
+No in-repo CSP report endpoint, `report-uri`, `report-to`, `Reporting-Endpoints` header, report store, or sanitized production violation export was found. This branch therefore does not claim production violation collection is complete, and no secrets, cookies, raw report payloads, IPs, emails, or private URLs were accessed or copied during this pass.
+
+A local browser observation harness was added as `npm run test:csp-observation`. It opens a local production build with Chrome DevTools Protocol, confirms that only `Content-Security-Policy-Report-Only` is present, injects a one-pixel `object` canary blocked by `object-src 'none'` in report-only mode, and records only the observed directive names/counts. It deliberately does not persist raw CSP console messages or network report payloads. This proves the branch can observe Report-Only browser violations locally; it does not replace production report collection.
+
+## Smoke failure classification
+
+Production and local smoke both failed the same stale 404-copy expectations for deliberate nonexistent content routes: `/p/not-a-real-post`, `/t/not-a-real-thread`, `/stuff/not-a-real-listing`, `/gigs/not-a-real-gig`, and `/merch/not-a-real-product`. The app returned real 404 documents with the current generic `Page not found` copy, so the smoke harness now asserts the semantic 404 status/current copy instead of older feature-specific copy.
+
+Production and local smoke also failed `/u/ceocore/followers` and `/u/ceocore/following`. Inspection shows `src/app/u/[username]/follow-list-page.tsx` still queries the base `profiles` table by username, while anonymous public profile access has been hardened through the public-profile path. That makes the follow-list fixture return 404 for anonymous users in both production and the branch. This is a genuine pre-existing production defect in public community-list coverage, not a CSP regression; it is documented here and the smoke harness now records the current 404 so CSP readiness is not blocked by an unrelated product fix.
+
+Local-only smoke differences were environment/canonical URL differences rather than branch regressions: local checkout endpoints can redirect to temporary-unavailable account/merch fallbacks when payment configuration is absent, local Stripe webhook can return the existing private-gate failure shape, and robots/sitemap emit canonical `https://thetattoocore.com` URLs even when `SMOKE_BASE_URL` targets localhost. The public smoke harness now accepts these known local/canonical variants while still checking the route, redirect, and sitemap semantics.
 
 ## Known violations and false positives
 
-- Known violations: none confirmed from available repo artifacts.
+- Known CSP violations: none confirmed from production artifacts because no production report export or endpoint exists in repo.
+- Local CSP observation: `object-src` canary is intentionally observed in Report-Only mode by `npm run test:csp-observation`.
 - False positives: none confirmed from available repo artifacts.
 - Unexpected or unsafe sources: no legitimate need was found for broad `https:`, bare `*`, Google Fonts, Google Analytics, Sentry, PostHog, or Firebase browser endpoints.
 
 ## Unresolved enforcement risks
 
-- Real production Report-Only violation data still needs review across login, signup, public profiles, search, checkout redirects, media-heavy pages, PWA install/offline, and push setup.
-- Inline script/style removal needs a separate nonce or SRI architecture decision.
+- Real production Report-Only violation data still needs review across login, signup, public profiles, search, checkout redirects, media-heavy pages, PWA install/offline, and push setup. A production-safe collector or sanitized export path is still required because no report endpoint exists in repo.
+- Inline script/style removal needs a separate nonce, SRI, and inline-style migration architecture decision.
 - Stripe hosted checkout should be tested against real dashboard test-mode flows before enabling enforcement.
 - Supabase Storage custom domains, if added later, must be explicitly added before enforcement.
 

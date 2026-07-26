@@ -776,8 +776,13 @@ const checks = [
       publicSmoke.includes('path: "/api/merch/checkout"') &&
       publicSmoke.includes('method: "POST"') &&
       publicSmoke.includes("Ad%20purchases%20are%20not%20available%20yet.") &&
-      publicSmoke.includes('locationIncludes: ["Sign", "booking", "deposit"]') &&
-      publicSmoke.includes("Sign+in+to+buy+merch"),
+      publicSmoke.includes('redirectIncludesAny: ["/login", "/account"]') &&
+      publicSmoke.includes("Booking%20checkout%20is%20temporarily%20unavailable") &&
+      publicSmoke.includes('redirectIncludesAny: ["/login", "/merch"]') &&
+      publicSmoke.includes("Checkout+is+temporarily+unavailable") &&
+      publicSmoke.includes("Sign+in+to+buy+merch") &&
+      publicSmoke.includes("Payment webhook failed.") &&
+      publicSmoke.includes("Payment updates are not configured."),
   },
   {
     label: "public smoke covers unauthenticated push and invalid ad event APIs",

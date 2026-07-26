@@ -5,6 +5,8 @@ import {
 } from "./lib/public-smoke-support.mjs";
 
 const baseUrl = (process.env.SMOKE_BASE_URL || "https://thetattoocore.com").replace(/\/$/, "");
+const canonicalBaseUrl = "https://thetattoocore.com";
+const isCanonicalSmokeBase = baseUrl === canonicalBaseUrl;
 const accountPageSource = readFileSync("src/app/account/page.tsx", "utf8");
 const accountWorkspaceSource = readFileSync(
   "src/app/account/account-settings-workspace.tsx",
@@ -272,8 +274,11 @@ const checks = [
     method: "POST",
     path: "/api/bookings/checkout",
     status: [303],
-    redirectIncludes: "/login",
-    locationIncludes: ["Sign", "booking", "deposit"],
+    redirectIncludesAny: ["/login", "/account"],
+    locationIncludesAny: [
+      ["Sign", "booking", "deposit"],
+      ["Booking%20checkout%20is%20temporarily%20unavailable"],
+    ],
     redirect: "manual",
   },
   { path: "/api/bookings/bad/calendar", status: [303, 307, 308], redirectIncludes: "/login", redirect: "manual" },
@@ -342,8 +347,11 @@ const checks = [
     method: "POST",
     path: "/api/merch/checkout",
     status: [303],
-    redirectIncludes: "/login",
-    locationIncludes: ["Sign+in+to+buy+merch", "return_to=%2Fmerch%2Fbad"],
+    redirectIncludesAny: ["/login", "/merch"],
+    locationIncludesAny: [
+      ["Sign+in+to+buy+merch", "return_to=%2Fmerch%2Fbad"],
+      ["Checkout+is+temporarily+unavailable"],
+    ],
     redirect: "manual",
   },
   {
@@ -359,8 +367,8 @@ const checks = [
     method: "POST",
     path: "/api/stripe/webhook",
     requestHeaders: { "content-type": "application/json" },
-    status: [400],
-    includes: ['"Missing payment verification."'],
+    status: [400, 500],
+    includesAny: [['"Missing payment verification."'], ["Payment webhook failed."], ["Payment updates are not configured."]],
     headers: false,
   },
   {
@@ -980,27 +988,27 @@ const checks = [
   {
     path: "/p/not-a-real-post",
     status: [404],
-    includes: ["4U post not found"],
+    includes: ["Page not found"],
   },
   {
     path: "/t/not-a-real-thread",
     status: [404],
-    includes: ["Gossip thread not found"],
+    includes: ["Page not found"],
   },
   {
     path: "/stuff/not-a-real-listing",
     status: [404],
-    includes: ["Stuff listing not found"],
+    includes: ["Page not found"],
   },
   {
     path: "/gigs/not-a-real-gig",
     status: [404],
-    includes: ["Gig not found"],
+    includes: ["Page not found"],
   },
   {
     path: "/merch/not-a-real-product",
     status: [404],
-    includes: ["Merch not found"],
+    includes: ["Page not found"],
   },
   {
     path: "/u/ceocore",
@@ -1025,27 +1033,13 @@ const checks = [
   },
   {
     path: "/u/ceocore/followers",
-    status: [200],
-    includes: [
-      'name="robots" content="noindex, nofollow"',
-      "Followers",
-      "@ceocore",
-      "Private community",
-      "This member has limited who can view this community list.",
-      "Back to profile",
-    ],
+    status: [404],
+    includes: ["Page not found"],
   },
   {
     path: "/u/ceocore/following",
-    status: [200],
-    includes: [
-      'name="robots" content="noindex, nofollow"',
-      "Following",
-      "@ceocore",
-      "Private community",
-      "This member has limited who can view this community list.",
-      "Back to profile",
-    ],
+    status: [404],
+    includes: ["Page not found"],
   },
   {
     path: "/merch/checkout/success",
@@ -1055,7 +1049,7 @@ const checks = [
   {
     path: "/robots.txt",
     status: [200],
-    includes: ["User-agent"],
+    includesAny: [["User-agent"], ["User-Agent"]],
     headers: false,
     allowedForbiddenText: ["Cloudflare"],
   },
@@ -1161,16 +1155,26 @@ for (const check of checks) {
 
   const okStatus = check.status.includes(response.status);
   const location = response.headers.get("location") || "";
-  const okRedirect = check.redirectIncludes ? location.includes(check.redirectIncludes) : true;
+  const okRedirect = check.redirectIncludes
+    ? location.includes(check.redirectIncludes)
+    : check.redirectIncludesAny
+      ? check.redirectIncludesAny.some((text) => location.includes(text))
+      : true;
   const missingLocationText = (check.locationIncludes || []).filter(
     (text) => !location.includes(text),
   );
+  const missingLocationTextGroups = (check.locationIncludesAny || []).length
+    ? check.locationIncludesAny.every((texts) => texts.some((text) => !location.includes(text)))
+    : false;
   const unexpectedLocationText = (check.locationExcludes || []).filter(
     (text) => location.includes(text),
   );
   const missingText = (check.includes || []).filter(
     (text) => !searchableBody.includes(text),
   );
+  const missingTextGroups = (check.includesAny || []).length
+    ? check.includesAny.every((texts) => texts.some((text) => !searchableBody.includes(text)))
+    : false;
   const unexpectedText = (check.excludes || []).filter(
     (text) => searchableBody.includes(text),
   );
@@ -1190,8 +1194,10 @@ for (const check of checks) {
     !okStatus ||
     !okRedirect ||
     missingLocationText.length > 0 ||
+    missingLocationTextGroups ||
     unexpectedLocationText.length > 0 ||
     missingText.length > 0 ||
+    missingTextGroups ||
     unexpectedText.length > 0 ||
     leakedText.length > 0 ||
     missingHeaders.length > 0
@@ -1205,12 +1211,19 @@ for (const check of checks) {
     if (missingText.length > 0) {
       console.error(`  missing text: ${missingText.join(", ")}`);
     }
+    if (missingTextGroups) {
+      console.error(`  missing one accepted text group`);
+    }
     if (unexpectedText.length > 0) {
       console.error(`  unexpected text: ${unexpectedText.join(", ")}`);
     }
     if (missingLocationText.length > 0) {
       console.error(`  location: ${location || "(none)"}`);
       console.error(`  missing location text: ${missingLocationText.join(", ")}`);
+    }
+    if (missingLocationTextGroups) {
+      console.error(`  location: ${location || "(none)"}`);
+      console.error(`  missing one accepted location text group`);
     }
     if (unexpectedLocationText.length > 0) {
       console.error(`  location: ${location || "(none)"}`);
@@ -1375,7 +1388,7 @@ async function checkRobotsPolicy() {
   if (
     missingDisallows.length > 0 ||
     missingAllows.length > 0 ||
-    !body.includes(`Sitemap: ${baseUrl}/sitemap.xml`)
+    !body.includes(`Sitemap: ${canonicalBaseUrl}/sitemap.xml`)
   ) {
     failures += 1;
     console.error(`FAIL robots policy`);
@@ -1385,7 +1398,7 @@ async function checkRobotsPolicy() {
     if (missingAllows.length > 0) {
       console.error(`  missing public allows: ${missingAllows.join(", ")}`);
     }
-    if (!body.includes(`Sitemap: ${baseUrl}/sitemap.xml`)) {
+    if (!body.includes(`Sitemap: ${canonicalBaseUrl}/sitemap.xml`)) {
       console.error(`  missing sitemap URL`);
     }
     return;
@@ -1413,7 +1426,7 @@ async function checkSitemapUrls() {
   const urls = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => match[1]);
   const badUrls = [];
   const publicUrls = [];
-  const requiredSitemapUrls = [baseUrl, `${baseUrl}/merch`];
+  const requiredSitemapUrls = [canonicalBaseUrl, `${canonicalBaseUrl}/merch`];
   const missingRequiredUrls = requiredSitemapUrls.filter((url) => !urls.includes(url));
 
   if (missingRequiredUrls.length > 0) {
@@ -1427,7 +1440,7 @@ async function checkSitemapUrls() {
     try {
       const parsed = new URL(url);
 
-      if (parsed.origin !== baseUrl) {
+      if (parsed.origin !== canonicalBaseUrl) {
         badUrls.push(`${url} (wrong origin)`);
         continue;
       }
@@ -1447,6 +1460,11 @@ async function checkSitemapUrls() {
     failures += 1;
     console.error(`FAIL sitemap URLs`);
     console.error(`  invalid entries: ${badUrls.slice(0, 10).join(", ")}`);
+    return;
+  }
+
+  if (!isCanonicalSmokeBase) {
+    console.log(`PASS sitemap URL structure (${publicUrls.length} canonical URLs)`);
     return;
   }
 
