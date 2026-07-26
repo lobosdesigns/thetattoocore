@@ -1066,6 +1066,8 @@ const checks = [
       middlewareSource.includes("Referrer-Policy") &&
       middlewareSource.includes("Strict-Transport-Security") &&
       middlewareSource.includes("Permissions-Policy") &&
+      middlewareSource.includes("Content-Security-Policy-Report-Only") &&
+      !middlewareSource.includes('"Content-Security-Policy",') &&
       middlewareSource.includes('import { createServerClient } from "@supabase/ssr"') &&
       middlewareSource.includes("request.cookies.getAll()") &&
       middlewareSource.includes("request.cookies.set(name, value)") &&

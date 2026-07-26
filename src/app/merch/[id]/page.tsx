@@ -21,6 +21,7 @@ import {
   calculatePlatformFeeCents,
   platformFeePercentLabel,
 } from "@/lib/payments/fees";
+import { isUuid } from "@/lib/route-ids";
 import { createClient } from "@/lib/supabase/server";
 import {
   brandShareImage,
@@ -125,6 +126,8 @@ function VerifiedBadge({ profile }: { profile?: Profile | null }) {
 }
 
 async function getProduct(id: string) {
+  if (!isUuid(id)) return null;
+
   return getProductForViewer(id, null);
 }
 
@@ -190,6 +193,8 @@ export async function generateMetadata({
   params,
 }: MerchPageProps): Promise<Metadata> {
   const { id } = await params;
+  if (!isUuid(id)) notFound();
+
   const product = await getProduct(id);
 
   if (!product) {
@@ -250,6 +255,8 @@ export default async function MerchProductPage({
   searchParams,
 }: MerchPageProps) {
   const { id } = await params;
+  if (!isUuid(id)) notFound();
+
   const message = (await searchParams)?.message;
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();

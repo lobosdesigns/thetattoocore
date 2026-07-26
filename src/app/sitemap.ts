@@ -128,7 +128,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { data: threads } = await supabase
     .from("thread_posts")
     .select("id, updated_at")
-    .eq("is_published", true)
     .eq("moderation_status", "active")
     .eq("visibility", "public_preview")
     .eq("is_sensitive", false)

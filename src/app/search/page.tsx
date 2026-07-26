@@ -765,7 +765,6 @@ export default async function SearchPage({
                         [
                           "title",
                           "description",
-                          "category",
                           "ships_from_city",
                           "ships_from_region",
                         ],

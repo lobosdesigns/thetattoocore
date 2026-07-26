@@ -43,6 +43,7 @@ import {
   siteKeywords,
   siteUrl,
 } from "@/lib/site";
+import { isUuid } from "@/lib/route-ids";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
 
@@ -291,6 +292,8 @@ function canViewPost({
 }
 
 async function getPost(id: string) {
+  if (!isUuid(id)) return null;
+
   const supabase = await createClient();
   const { data } = await supabase
     .from("feed_posts")
@@ -418,6 +421,8 @@ export async function generateMetadata({
   params,
 }: PostPageProps): Promise<Metadata> {
   const { id } = await params;
+  if (!isUuid(id)) notFound();
+
   const post = await getPost(id);
 
   if (!post) {
@@ -485,6 +490,8 @@ export async function generateMetadata({
 
 export default async function PostPage({ params, searchParams }: PostPageProps) {
   const { id } = await params;
+  if (!isUuid(id)) notFound();
+
   const search = await searchParams;
   const commentsPage = pageNumber(search?.commentsPage);
   const commentLimit = commentsPage * commentsPageSize;

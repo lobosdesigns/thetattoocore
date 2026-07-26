@@ -25,29 +25,23 @@ const migrationDir = path.join(root, "supabase", "migrations");
 const publicProfileMigrations = fs
   .readdirSync(migrationDir)
   .filter((file) => file.endsWith("_create_public_profiles_view.sql"));
-const publicProfilePrivilegeMigrations = fs
+const repairMigrations = fs
   .readdirSync(migrationDir)
-  .filter((file) => file.endsWith("_restrict_public_profiles_view_privileges.sql"));
+  .filter((file) => file.endsWith("_restrict_anonymous_profile_base_table_access.sql"));
 
 if (publicProfileMigrations.length !== 1) {
   fail(`Expected exactly one public_profiles migration, found ${publicProfileMigrations.length}.`);
 }
-if (publicProfilePrivilegeMigrations.length !== 1) {
-  fail(
-    `Expected exactly one public_profiles privilege migration, found ${publicProfilePrivilegeMigrations.length}.`,
-  );
+if (repairMigrations.length !== 1) {
+  fail(`Expected exactly one anonymous profile base-table repair migration, found ${repairMigrations.length}.`);
 }
 
 const migrationPath = path.join("supabase", "migrations", publicProfileMigrations[0]);
 const migrationSql = read(migrationPath);
 const migrationLower = migrationSql.toLowerCase();
-const executableMigrationLower = migrationSql
-  .replace(/^\s*--.*$/gm, "")
-  .toLowerCase();
 
 for (const required of [
   "create view public.public_profiles",
-  "with (security_invoker = true)",
   "from public.profiles",
   "where is_private = false",
   "and suspended_at is null",
@@ -60,67 +54,43 @@ for (const required of [
   }
 }
 
-const bannedSql = [
-  "revoke",
-  "drop policy",
-  "alter policy",
-  "drop view",
-  "alter table public.profiles",
-  "drop trigger",
-  "delete from",
-  "update public.profiles",
-  "insert into public.profiles",
-];
-for (const banned of bannedSql) {
-  if (executableMigrationLower.includes(banned)) {
-    fail(`Phase 1 migration must be additive only; found forbidden SQL: ${banned}`);
-  }
-}
-
-
-const privilegeMigrationPath = path.join(
-  "supabase",
-  "migrations",
-  publicProfilePrivilegeMigrations[0],
-);
-const privilegeMigrationSql = read(privilegeMigrationPath);
-const privilegeExecutableSql = privilegeMigrationSql.replace(/^\s*--.*$/gm, "").trim();
-const privilegeStatements = privilegeExecutableSql
-  .split(";")
-  .map((statement) => statement.replace(/\s+/g, " ").trim().toLowerCase())
-  .filter(Boolean);
-const approvedPrivilegeStatements = [
-  "begin",
-  "revoke all privileges on table public.public_profiles from anon, authenticated",
-  "grant select on table public.public_profiles to anon, authenticated",
-  "commit",
-];
-if (privilegeStatements.join("\n") !== approvedPrivilegeStatements.join("\n")) {
-  fail(
-    `public_profiles privilege migration must contain only the approved revoke/grant correction.\nExpected: ${approvedPrivilegeStatements.join("; ")}\nActual: ${privilegeStatements.join("; ")}`,
-  );
-}
-const privilegeExecutableLower = privilegeExecutableSql.toLowerCase();
-for (const forbidden of [
-  "public.profiles",
-  "service_role",
-  "postgres",
-  "policy",
-  "alter default privileges",
-  "create view",
-  "create or replace view",
-  "drop",
-  "alter table",
-  "create table",
-  "delete from",
-  "insert into",
-  "update ",
-  "truncate",
+const repairPath = path.join("supabase", "migrations", repairMigrations[0]);
+const repairSql = read(repairPath);
+const repairLower = repairSql.toLowerCase();
+for (const required of [
+  "alter view public.public_profiles set (security_invoker = false)",
+  "revoke all privileges on table public.profiles",
+  "information_schema.columns",
+  "revoke select (%1$i), insert (%1$i), update (%1$i), references (%1$i)",
+  "from anon",
+  "drop policy if exists \"profiles are viewable by everyone\" on public.profiles",
+  "create policy \"authenticated users can read allowed profiles\"",
+  "to authenticated",
+  "id = (select auth.uid())",
+  "private.current_user_can_moderate()",
+  "is_private = false",
+  "suspended_at is null",
+  "banned_at is null",
+  "grant select on table public.public_profiles",
+  "to anon, authenticated",
+  "grant select on table public.profiles",
+  "to authenticated, service_role",
+  "verification sql after applying",
+  "rollback",
 ]) {
-  if (privilegeExecutableLower.includes(forbidden)) {
-    fail(`public_profiles privilege migration contains forbidden SQL: ${forbidden}`);
+  if (!repairLower.includes(required)) {
+    fail(`profile repair migration is missing required SQL or documentation: ${required}`);
   }
 }
+for (const forbidden of [
+  "drop table public.profiles",
+  "delete from public.profiles",
+  "truncate public.profiles",
+  "drop public.profiles",
+]) {
+  if (repairLower.includes(forbidden)) fail(`profile repair migration contains forbidden SQL: ${forbidden}`);
+}
+
 const selectMatch = migrationSql.match(/select\s+([\s\S]*?)\s+from\s+public\.profiles/i);
 if (!selectMatch) fail("Unable to parse public_profiles select list.");
 const selectedColumns = selectMatch[1]
@@ -203,10 +173,18 @@ for (const sensitive of [
   }
 }
 
+const profilePageSource = read("src/app/u/[username]/page.tsx");
+if (!profilePageSource.includes('.from("public_profiles")')) fail("profile page must read public profiles through public_profiles.");
+if (/fallbackProfileRow|privateProfileSelect|\.from\("profiles"\)\s*[\s\S]{0,160}\.eq\("username", cleanUsername\)/.test(profilePageSource)) {
+  fail("profile page must not fall back to public.profiles by username.");
+}
+
 const sitemapSource = read("src/app/sitemap.ts");
 if (!sitemapSource.includes('.from("public_profiles")')) fail("sitemap must read public profiles through public_profiles.");
 if (sitemapSource.includes('.from("profiles")')) fail("sitemap must not read public.profiles directly for profile URLs.");
-if (sitemapSource.includes("isInternalIndexingProfile")) fail("sitemap internal profile filtering belongs in the SQL view, not duplicated in app code.");
+const threadQuery = sitemapSource.match(/const \{ data: threads \}[\s\S]*?\.returns<PublicThread\[\]>\(\);/);
+if (!threadQuery) fail("Unable to locate sitemap thread query.");
+if (threadQuery[0].includes('is_published')) fail("sitemap thread query must not reference nonexistent thread_posts.is_published.");
 
 const searchSource = read("src/app/search/page.tsx");
 if (!searchSource.includes('let publicProfileQuery = supabase\n                .from("public_profiles")')) {
@@ -215,38 +193,58 @@ if (!searchSource.includes('let publicProfileQuery = supabase\n                .
 if (!/const privateProfilesPromise = visiblePrivateProfileIds\.size[\s\S]*?\.from\("profiles"\)[\s\S]*?\.in\("id", Array\.from\(visiblePrivateProfileIds\)\)/.test(searchSource)) {
   fail("search must keep the private-profile compatibility query isolated to visible private profile ids.");
 }
-if (!/const \{ data: profileShops \} = profileShopIds\.length[\s\S]*?\.from\("public_profiles"\)/.test(searchSource)) {
-  fail("search profile shop lookup must use public_profiles.");
+const merchQuery = searchSource.match(/let merchQuery = supabase[\s\S]*?return merchQuery/);
+if (!merchQuery) fail("Unable to locate Merch search query.");
+if (/category\.ilike/.test(merchQuery[0])) {
+  fail("Merch search must not use ILIKE against the enum category column.");
 }
-if (!searchSource.includes('.in("id", profileShopIds)')) {
-  fail("search profile shop lookup should remain batched by profileShopIds.");
+if (!merchQuery[0].includes('merchQuery.eq("category", merchCategory)')) {
+  fail("Merch search must use exact category equality for recognized category filters.");
 }
 
-const profilePageSource = read("src/app/u/[username]/page.tsx");
-for (const required of [
-  '.from("public_profiles")',
-  "const publicProfileSelect =",
-  "const privateProfileSelect = `${publicProfileSelect}, is_private`;",
-  "const { data: fallbackProfileRow } = publicProfileRow",
-  '.from("profiles")',
-  "? { ...publicProfileRow, is_private: false }",
+const uuidGuard = read("src/lib/route-ids.ts");
+if (!uuidGuard.includes("export function isUuid") || !uuidGuard.includes("uuidPattern.test")) {
+  fail("shared UUID route guard is missing.");
+}
+for (const detailPath of [
+  "src/app/p/[id]/page.tsx",
+  "src/app/t/[id]/page.tsx",
+  "src/app/stuff/[id]/page.tsx",
+  "src/app/gigs/[id]/page.tsx",
+  "src/app/merch/[id]/page.tsx",
 ]) {
-  if (!profilePageSource.includes(required)) fail(`profile page missing expected public_profiles compatibility pattern: ${required}`);
+  const detailSource = read(detailPath);
+  if (!detailSource.includes('import { isUuid } from "@/lib/route-ids"')) {
+    fail(`${detailPath} must import the shared UUID route guard.`);
+  }
+  if (!detailSource.includes("if (!isUuid(id)) return null;")) {
+    fail(`${detailPath} must reject malformed IDs before database helper queries.`);
+  }
+  if (!detailSource.includes("if (!isUuid(id)) notFound();")) {
+    fail(`${detailPath} must return a real 404 for malformed route IDs before page queries.`);
+  }
+}
+
+const middlewareSource = read("src/middleware.ts");
+if (!middlewareSource.includes("Content-Security-Policy-Report-Only")) {
+  fail("middleware must emit CSP in Report-Only mode first.");
+}
+if (middlewareSource.includes('"Content-Security-Policy",')) {
+  fail("CSP must not be enforced before Report-Only observation.");
 }
 
 const docsPath = "docs/PUBLIC_PROFILE_ACCESS_PHASE_1.md";
-if (!fs.existsSync(path.join(root, docsPath))) fail(`${docsPath} must document Phase 1 compatibility and remaining profile usage.`);
 const docsSource = read(docsPath);
 for (const required of [
-  "Phase 1 is additive only",
-  "public.profiles access remains temporarily active",
+  "revokes anonymous direct access",
+  "Supabase CLI was not installed",
   "Do not use supabase db push",
-  "No base-table revokes",
   "Remaining direct public.profiles reads",
   "Remaining embedded profiles:profiles joins",
-  migrationPath.split(path.sep).join("/"),
+  "Before enforcing CSP, observe Report-Only violations",
+  repairPath.split(path.sep).join("/"),
 ]) {
-  if (!docsSource.includes(required)) fail(`Phase 1 docs missing required note: ${required}`);
+  if (!docsSource.includes(required)) fail(`${docsPath} missing required note: ${required}`);
 }
 
 const sourceFiles = [
@@ -267,4 +265,4 @@ for (const file of [...directProfileFiles, ...embeddedProfileFiles]) {
   }
 }
 
-console.log(`public profile access guard passed (${publicProfileMigrations[0]})`);
+console.log(`public profile access guard passed (${repairMigrations[0]})`);

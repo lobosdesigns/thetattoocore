@@ -1,26 +1,26 @@
-# Public Profile Access Phase 1
+# Public Profile Access Certification Repair
 
-Phase 1 is additive only. It introduces `public.public_profiles` as a curated, security-invoker view for public profile reads while `public.profiles` access remains temporarily active for compatibility. No base-table revokes, policy changes, live Supabase writes, deployment, or migration-history repair are part of this phase.
+The certification repair keeps public profile reads on `public.public_profiles` and revokes anonymous direct access to `public.profiles`. The follow-up migration is `supabase/migrations/20260726010000_restrict_anonymous_profile_base_table_access.sql`.
 
-For Phase 1 compatibility, public.profiles access remains temporarily active. No base-table revokes are included.
+Supabase CLI was not installed in this Windows environment, so the migration was created manually instead of with `supabase migration new`.
 
-Do not use supabase db push for this work. The reviewed forward-only migration is `supabase/migrations/20260725160000_create_public_profiles_view.sql`; applying it to live Supabase is a later approved implementation task after this diff and validation pass.
+Do not use supabase db push for this work. Apply only the reviewed forward-only migrations that have not already been applied.
 
 ## View contract
 
 `public.public_profiles` exposes only public discovery fields: profile identity, display metadata, public location/social links, shop-profile linkage, verification timestamp, public list/comment visibility settings, and timestamps. It filters private, suspended, banned, and internal/test/reviewer profiles using the same usernames exported from `src/lib/profile-indexing.ts`.
 
-The migration grants only `select` on the view to `anon` and `authenticated`. It intentionally does not revoke, drop, alter, update, insert, or delete anything on `public.profiles`.
+Anonymous clients receive only `select` on `public.public_profiles`. Anonymous direct `select` on `public.profiles` is revoked, including previous column grants for banner, verification, and theme fields. The view is switched away from `security_invoker` so it remains the minimal public interface after base-table access is denied.
 
 ## Updated public reads
 
-- `src/app/sitemap.ts`: profile URL discovery now reads from `public_profiles`; internal/test/reviewer filtering moved into the view.
-- `src/app/search/page.tsx`: public profile search and batched shop-profile lookup now read from `public_profiles`; the existing private-profile compatibility query remains isolated to viewer-visible private profile ids.
-- `src/app/u/[username]/page.tsx`: metadata and the primary public profile path read from `public_profiles`; the base-table fallback remains for private profile compatibility; public shop/linked-artist lookups now read from `public_profiles`.
+- `src/app/sitemap.ts`: profile URL discovery now reads from `public_profiles`; internal/test/reviewer filtering moved into the view. Gossip thread discovery no longer references nonexistent `thread_posts.is_published`.
+- `src/app/search/page.tsx`: public profile search and batched shop-profile lookup now read from `public_profiles`; the existing private-profile compatibility query remains isolated to viewer-visible private profile ids. Merch search no longer runs `ILIKE` against the enum `category` column.
+- `src/app/u/[username]/page.tsx`: metadata and the primary public profile path read from `public_profiles`; the old base-table fallback was removed so internal/test/private profiles return real 404s to anonymous visitors.
 
 ## Remaining direct public.profiles reads
 
-These remain classified for later phases because they are owner, admin, authenticated relationship, service-route, or compatibility paths that should not be changed until the view is deployed and production behavior is verified:
+These remain classified because they are owner, admin, authenticated relationship, service-route, or embedded parent-table paths protected by authenticated RLS or service role access:
 
 - `src/app/account/actions.ts`: owner account/profile update and settings path.
 - `src/app/account/page.tsx`: owner account/settings display path.
@@ -46,7 +46,7 @@ These remain classified for later phases because they are owner, admin, authenti
 - `src/app/api/push/subscriptions/route.ts`: authenticated push subscription path.
 - `src/app/api/stripe/connect/onboarding/route.ts`: payment onboarding owner path.
 - `src/app/api/stripe/webhook/route.ts`: payment webhook/service role path.
-- `src/app/gigs/[id]/page.tsx`: public page still has author/tag embedded profile joins classified below; direct owner-safe profile reads should be handled after the view is live.
+- `src/app/gigs/[id]/page.tsx`: public page has author/tag embedded profile joins classified below.
 - `src/app/layout.tsx`: authenticated viewer shell/profile state.
 - `src/app/merch/page.tsx`: marketplace compatibility and seller context.
 - `src/app/messages/actions.ts`: authenticated DM identity and relationship path.
@@ -62,12 +62,11 @@ These remain classified for later phases because they are owner, admin, authenti
 - `src/app/t/[id]/page.tsx`: thread detail profile joins classified below.
 - `src/app/u/[username]/actions.ts`: follow/block/profile action owner and relationship path.
 - `src/app/u/[username]/follow-list-page.tsx`: follower/following relationship visibility path.
-- `src/app/u/[username]/page.tsx`: private-profile compatibility fallback remains until view deployment is verified.
 - `src/lib/tag-audience.ts`: authenticated tag-audience helper.
 
 ## Remaining embedded profiles:profiles joins
 
-These joins remain classified for later phases because each query must be reviewed with its parent table RLS, relationship visibility, ordering, and generated Supabase select shape before replacing it with view-backed alternatives:
+These joins remain classified because each query must be reviewed with its parent table RLS, relationship visibility, ordering, and generated Supabase select shape before replacing it with view-backed alternatives:
 
 - `scripts/smoke-content-policy-guards.mjs`
 - `src/app/actions.ts`
@@ -98,6 +97,6 @@ These joins remain classified for later phases because each query must be review
 - `src/app/u/[username]/follow-list-page.tsx`
 - `src/app/u/[username]/page.tsx`
 
-## Later phases
+## Enforcement notes
 
-Phase 2 should happen only after this migration and compatible application code are deployed and verified in production. The next phase can then migrate additional public reads and prepare a separate, reviewed revocation plan for broad `public.profiles` exposure.
+Before enforcing CSP, observe Report-Only violations from production pages that use Next.js runtime assets, Stripe checkout, Supabase REST/auth/storage, media delivery, analytics, and Cloudflare routing. Enforcement should only happen after violations are understood and the allowlist is narrowed without breaking login, signup, checkout status, public media, or static assets.

@@ -191,7 +191,10 @@ const checks = [
     ok:
       profilePage.includes("function publicProfileStructuredData") &&
       profilePage.includes('"@type": "ProfilePage"') &&
-      profilePage.includes("profile.is_private || hasBlockRelationship") &&
+      !profilePage.includes("fallbackProfileRow") &&
+      !profilePage.includes("privateProfileSelect") &&
+      profilePage.includes("if (!profileRow)") &&
+      profilePage.includes("notFound();") &&
       profilePage.includes('type="application/ld+json"') &&
       profilePage.includes('.replace(/</g, "\\\\u003c")'),
   },

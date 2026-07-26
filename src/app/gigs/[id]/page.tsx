@@ -23,6 +23,7 @@ import { SavedItemButton } from "@/app/saved-item-button";
 import { SensitiveContentGate } from "@/app/sensitive-content-gate";
 import { ShareActions } from "@/app/share-actions";
 import { startConversation } from "@/app/messages/actions";
+import { isUuid } from "@/lib/route-ids";
 import { createClient } from "@/lib/supabase/server";
 import {
   brandShareImage,
@@ -190,6 +191,8 @@ function canViewSensitiveMedia({
 }
 
 async function getGig(id: string) {
+  if (!isUuid(id)) return null;
+
   const supabase = await createClient();
   const { data } = await supabase
     .from("gigs")
@@ -234,6 +237,8 @@ export async function generateMetadata({
   params,
 }: GigPageProps): Promise<Metadata> {
   const { id } = await params;
+  if (!isUuid(id)) notFound();
+
   const gig = await getGig(id);
 
   if (!gig) {
@@ -303,6 +308,8 @@ export async function generateMetadata({
 
 export default async function GigPage({ params, searchParams }: GigPageProps) {
   const { id } = await params;
+  if (!isUuid(id)) notFound();
+
   const message = (await searchParams)?.message;
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();

@@ -1434,22 +1434,14 @@ export default async function ProfilePage({
 
   const publicProfileSelect =
     "id, username, display_name, avatar_url, banner_url, account_type, bio, city, region, country, website_url, instagram_url, tiktok_url, facebook_url, youtube_url, x_url, shop_profile_id, followers_visibility, following_visibility, license_verified_at, created_at";
-  const privateProfileSelect = `${publicProfileSelect}, is_private`;
   const { data: publicProfileRow } = await supabase
     .from("public_profiles")
     .select(publicProfileSelect)
     .eq("username", cleanUsername)
     .maybeSingle<Omit<Profile, "is_private" | "shop_profile">>();
-  const { data: fallbackProfileRow } = publicProfileRow
-    ? { data: null as Omit<Profile, "shop_profile"> | null }
-    : await supabase
-        .from("profiles")
-        .select(privateProfileSelect)
-        .eq("username", cleanUsername)
-        .maybeSingle<Omit<Profile, "shop_profile">>();
   const profileRow: Omit<Profile, "shop_profile"> | null = publicProfileRow
     ? { ...publicProfileRow, is_private: false }
-    : fallbackProfileRow;
+    : null;
 
   if (!profileRow) {
     notFound();

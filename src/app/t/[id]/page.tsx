@@ -41,6 +41,7 @@ import {
   siteKeywords,
   siteUrl,
 } from "@/lib/site";
+import { isUuid } from "@/lib/route-ids";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
 
@@ -287,6 +288,8 @@ function canViewThread({
 }
 
 async function getThread(id: string) {
+  if (!isUuid(id)) return null;
+
   const supabase = await createClient();
   const { data } = await supabase
     .from("thread_posts")
@@ -413,6 +416,8 @@ export async function generateMetadata({
   params,
 }: ThreadPageProps): Promise<Metadata> {
   const { id } = await params;
+  if (!isUuid(id)) notFound();
+
   const thread = await getThread(id);
 
   if (!thread) {
@@ -485,6 +490,8 @@ export default async function ThreadPage({
   searchParams,
 }: ThreadPageProps) {
   const { id } = await params;
+  if (!isUuid(id)) notFound();
+
   const search = await searchParams;
   const commentsPage = pageNumber(search?.commentsPage);
   const commentLimit = commentsPage * commentsPageSize;
