@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { ProfileAvatar } from "@/app/profile-avatar";
+import { isInternalIndexingProfile } from "@/lib/profile-indexing";
 import {
   loadPublicProfileMap,
   type PublicProfileSummary,
@@ -187,6 +188,11 @@ export async function FollowListPage({
   username: string;
 }) {
   const cleanUsername = username.replace(/^@/, "").toLowerCase();
+
+  if (isInternalIndexingProfile(cleanUsername)) {
+    notFound();
+  }
+
   const currentPage = pageNumber(page);
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
@@ -203,7 +209,7 @@ export async function FollowListPage({
     .eq("username", cleanUsername)
     .maybeSingle<Omit<Profile, "is_private">>();
 
-  if (!profile) {
+  if (!profile || isInternalIndexingProfile(profile.username)) {
     notFound();
   }
 

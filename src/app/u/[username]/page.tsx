@@ -1364,6 +1364,11 @@ export async function generateMetadata({
 }: ProfilePageProps): Promise<Metadata> {
   const { username } = await params;
   const cleanUsername = username.replace(/^@/, "").toLowerCase();
+
+  if (isInternalIndexingProfile(cleanUsername)) {
+    notFound();
+  }
+
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("public_profiles")
@@ -1386,13 +1391,7 @@ export async function generateMetadata({
     >>();
 
   if (!profile) {
-    return {
-      robots: {
-        follow: false,
-        index: false,
-      },
-      title: "Profile not found",
-    };
+    notFound();
   }
 
   const location = [profile.city, profile.region, profile.country]
@@ -1400,6 +1399,10 @@ export async function generateMetadata({
     .join(", ");
   const title = `${profile.display_name} (@${profile.username})`;
   const noindexProfile = isInternalIndexingProfile(profile.username);
+
+  if (noindexProfile) {
+    notFound();
+  }
   const description = noindexProfile
     ? `${profile.display_name} has a private profile on ${siteName}.`
     : profile.bio?.slice(0, 155) ||
@@ -1490,6 +1493,11 @@ export default async function ProfilePage({
   const { username } = await params;
   const query = await searchParams;
   const cleanUsername = username.replace(/^@/, "").toLowerCase();
+
+  if (isInternalIndexingProfile(cleanUsername)) {
+    notFound();
+  }
+
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -1510,7 +1518,7 @@ export default async function ProfilePage({
     ? { ...publicProfileRow, is_private: false }
     : null;
 
-  if (!profileRow) {
+  if (!profileRow || isInternalIndexingProfile(profileRow.username)) {
     notFound();
   }
 

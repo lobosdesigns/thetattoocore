@@ -14,6 +14,8 @@ const profileContentTabs = readFileSync(
 const followListPage = readFileSync("src/app/u/[username]/follow-list-page.tsx", "utf8");
 const profilePage = readFileSync("src/app/u/[username]/page.tsx", "utf8");
 const profileActions = readFileSync("src/app/u/[username]/actions.ts", "utf8");
+const profileRouteStatus = readFileSync("scripts/test-profile-route-status.mjs", "utf8");
+const studioProfilePresentation = readFileSync("scripts/test-studio-profile-presentation.mjs", "utf8");
 const savedPage = readFileSync("src/app/saved/page.tsx", "utf8");
 const searchPage = readFileSync("src/app/search/page.tsx", "utf8");
 const recentSearches = readFileSync("src/app/search/recent-searches.tsx", "utf8");
@@ -193,7 +195,10 @@ const checks = [
       profilePage.includes('"@type": "ProfilePage"') &&
       !profilePage.includes("fallbackProfileRow") &&
       !profilePage.includes("privateProfileSelect") &&
-      profilePage.includes("if (!profileRow)") &&
+      profilePage.includes("if (!profileRow || isInternalIndexingProfile(profileRow.username))") &&
+      profilePage.includes("if (isInternalIndexingProfile(cleanUsername))") &&
+      profileRouteStatus.includes("not-found body text is not accepted without HTTP 404") &&
+      profileRouteStatus.includes("/u/ttc_reviewer") &&
       profilePage.includes("notFound();") &&
       profilePage.includes('type="application/ld+json"') &&
       profilePage.includes('.replace(/</g, "\\\\u003c")'),
@@ -204,7 +209,10 @@ const checks = [
       profilePage.includes("function LinkedArtistsSection") &&
       profilePage.includes('profile.account_type === "studio"') &&
       profilePage.includes('.eq("shop_profile_id", profile.id)') &&
-      profilePage.includes("<LinkedArtistsSection"),
+      profilePage.includes("<LinkedArtistsSection") &&
+      studioProfilePresentation.includes("PublicStudioProfileFixture") &&
+      studioProfilePresentation.includes("studio fixture classifies the profile as a studio") &&
+      studioProfilePresentation.includes("linked artist fixture points at the studio shop profile"),
   },
   {
     label: "public profile social actions hide raw backend errors from redirects",

@@ -72,7 +72,9 @@
     "qa:android-device:runtime": "node scripts/android-device-qa-probe.mjs --require-device --require-runtime --wait-ms=30000",
     "qa:android-device:required": "node scripts/android-device-qa-probe.mjs --require-device --wait-ms=30000",
     "test:csp-headers": "node scripts/test-csp-headers.mjs",
-    "test:csp-observation": "node scripts/smoke-csp-observation.mjs"
+    "test:csp-observation": "node scripts/smoke-csp-observation.mjs",
+    "test:profile-route-status": "node scripts/test-profile-route-status.mjs",
+    "test:studio-profile-presentation": "node scripts/test-studio-profile-presentation.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/messaging": "7.5.0",
