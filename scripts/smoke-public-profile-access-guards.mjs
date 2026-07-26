@@ -25,9 +25,17 @@ const migrationDir = path.join(root, "supabase", "migrations");
 const publicProfileMigrations = fs
   .readdirSync(migrationDir)
   .filter((file) => file.endsWith("_create_public_profiles_view.sql"));
+const publicProfilePrivilegeMigrations = fs
+  .readdirSync(migrationDir)
+  .filter((file) => file.endsWith("_restrict_public_profiles_view_privileges.sql"));
 
 if (publicProfileMigrations.length !== 1) {
   fail(`Expected exactly one public_profiles migration, found ${publicProfileMigrations.length}.`);
+}
+if (publicProfilePrivilegeMigrations.length !== 1) {
+  fail(
+    `Expected exactly one public_profiles privilege migration, found ${publicProfilePrivilegeMigrations.length}.`,
+  );
 }
 
 const migrationPath = path.join("supabase", "migrations", publicProfileMigrations[0]);
@@ -69,6 +77,50 @@ for (const banned of bannedSql) {
   }
 }
 
+
+const privilegeMigrationPath = path.join(
+  "supabase",
+  "migrations",
+  publicProfilePrivilegeMigrations[0],
+);
+const privilegeMigrationSql = read(privilegeMigrationPath);
+const privilegeExecutableSql = privilegeMigrationSql.replace(/^\s*--.*$/gm, "").trim();
+const privilegeStatements = privilegeExecutableSql
+  .split(";")
+  .map((statement) => statement.replace(/\s+/g, " ").trim().toLowerCase())
+  .filter(Boolean);
+const approvedPrivilegeStatements = [
+  "begin",
+  "revoke all privileges on table public.public_profiles from anon, authenticated",
+  "grant select on table public.public_profiles to anon, authenticated",
+  "commit",
+];
+if (privilegeStatements.join("\n") !== approvedPrivilegeStatements.join("\n")) {
+  fail(
+    `public_profiles privilege migration must contain only the approved revoke/grant correction.\nExpected: ${approvedPrivilegeStatements.join("; ")}\nActual: ${privilegeStatements.join("; ")}`,
+  );
+}
+const privilegeExecutableLower = privilegeExecutableSql.toLowerCase();
+for (const forbidden of [
+  "public.profiles",
+  "service_role",
+  "postgres",
+  "policy",
+  "alter default privileges",
+  "create view",
+  "create or replace view",
+  "drop",
+  "alter table",
+  "create table",
+  "delete from",
+  "insert into",
+  "update ",
+  "truncate",
+]) {
+  if (privilegeExecutableLower.includes(forbidden)) {
+    fail(`public_profiles privilege migration contains forbidden SQL: ${forbidden}`);
+  }
+}
 const selectMatch = migrationSql.match(/select\s+([\s\S]*?)\s+from\s+public\.profiles/i);
 if (!selectMatch) fail("Unable to parse public_profiles select list.");
 const selectedColumns = selectMatch[1]
