@@ -174,9 +174,9 @@ const checks = [
       actions.includes('"Could not open a DM for this booking request. Please try again."') &&
       actions.includes('console.error("Booking request create failed.", error)') &&
       actions.includes('"Could not send booking request. Please try again."') &&
-      actions.includes('console.error("Shared DM conversation create failed.", conversationError)') &&
-      actions.includes('console.error("Shared DM creator membership create failed.", creatorMemberError)') &&
-      actions.includes('console.error("Shared DM target membership create failed.", targetMemberError)') &&
+      actions.includes('console.error("Shared DM direct conversation ensure failed.", error)') &&
+      actions.includes('.rpc("ensure_direct_conversation"') &&
+      actions.includes('p_target_id: targetId') &&
       actions.includes('throw new Error("Could not start conversation. Please try again.")') &&
       !actions.includes("error instanceof Error\n            ? error.message\n            : \"Could not open a DM for this booking request.\"") &&
       !actions.includes('error?.message || "Could not send booking request."') &&

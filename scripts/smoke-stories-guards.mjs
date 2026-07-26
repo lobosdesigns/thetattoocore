@@ -175,9 +175,9 @@ const checks = [
       actions.includes('"Could not open a DM for that story. Please try again."') &&
       actions.includes('console.error("Story reply send failed.", messageError)') &&
       actions.includes('"Could not send story reply. Please try again."') &&
-      actions.includes('console.error("Shared DM conversation create failed.", conversationError)') &&
-      actions.includes('console.error("Shared DM creator membership create failed.", creatorMemberError)') &&
-      actions.includes('console.error("Shared DM target membership create failed.", targetMemberError)') &&
+      actions.includes('console.error("Shared DM direct conversation ensure failed.", error)') &&
+      actions.includes('.rpc("ensure_direct_conversation"') &&
+      actions.includes('p_target_id: targetId') &&
       actions.includes('throw new Error("Could not start conversation. Please try again.")') &&
       !actions.includes('uploadError.message || "Could not upload story media."') &&
       !actions.includes('error?.message || "Could not create story."') &&

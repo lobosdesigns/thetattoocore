@@ -1,5 +1,6 @@
 "use client";
 
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import Link from "next/link";
 import {
   useCallback,
@@ -14,7 +15,6 @@ import { Check, CheckCheck, LoaderCircle, Trash2 } from "lucide-react";
 import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
 import { ProfileAvatar } from "@/app/profile-avatar";
-import { createClient } from "@/lib/supabase/client";
 import { deleteUnreadMessage } from "./actions";
 
 type Profile = {
@@ -183,9 +183,11 @@ export function MessageThread({
   }, [conversationId, currentUserId, messages, updateAutoFollowLatest]);
 
   useEffect(() => {
-    const supabase = createClient();
+    let active = true;
     let attachmentCatchupTimer: ReturnType<typeof setTimeout> | null = null;
     let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+    let supabase: Awaited<ReturnType<typeof import("@/lib/supabase/client").createClient>> | null = null;
+    let channel: RealtimeChannel | null = null;
     const refreshThread = () => {
       if (refreshTimer) clearTimeout(refreshTimer);
       refreshTimer = setTimeout(() => {
@@ -197,56 +199,67 @@ export function MessageThread({
       if (attachmentCatchupTimer) clearTimeout(attachmentCatchupTimer);
       attachmentCatchupTimer = setTimeout(refreshThread, 1200);
     };
-    const channel = supabase
-      .channel(`dm-thread:${conversationId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          filter: `conversation_id=eq.${conversationId}`,
-          schema: "public",
-          table: "messages",
-        },
-        refreshThreadWithAttachmentCatchup,
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "DELETE",
-          filter: `conversation_id=eq.${conversationId}`,
-          schema: "public",
-          table: "messages",
-        },
-        (event) => {
-          const deletedMessageId =
-            typeof event.old?.id === "string" ? event.old.id : null;
 
-          if (deletedMessageId) {
-            setDeletedMessageIds((currentIds) =>
-              currentIds.includes(deletedMessageId)
-                ? currentIds
-                : [...currentIds, deletedMessageId],
-            );
-          }
-          refreshThread();
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          filter: `conversation_id=eq.${conversationId}`,
-          schema: "public",
-          table: "conversation_members",
-        },
-        refreshThread,
-      )
-      .subscribe();
+    import("@/lib/supabase/client")
+      .then(({ createClient }) => {
+        if (!active) return;
+
+        supabase = createClient();
+        channel = supabase
+          .channel(`dm-thread:${conversationId}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "INSERT",
+              filter: `conversation_id=eq.${conversationId}`,
+              schema: "public",
+              table: "messages",
+            },
+            refreshThreadWithAttachmentCatchup,
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "DELETE",
+              filter: `conversation_id=eq.${conversationId}`,
+              schema: "public",
+              table: "messages",
+            },
+            (event) => {
+              const deletedMessageId =
+                typeof event.old?.id === "string" ? event.old.id : null;
+
+              if (deletedMessageId) {
+                setDeletedMessageIds((currentIds) =>
+                  currentIds.includes(deletedMessageId)
+                    ? currentIds
+                    : [...currentIds, deletedMessageId],
+                );
+              }
+              refreshThread();
+            },
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "UPDATE",
+              filter: `conversation_id=eq.${conversationId}`,
+              schema: "public",
+              table: "conversation_members",
+            },
+            refreshThread,
+          )
+          .subscribe();
+      })
+      .catch(() => {
+        // Realtime should not block reading the thread.
+      });
 
     return () => {
+      active = false;
       if (attachmentCatchupTimer) clearTimeout(attachmentCatchupTimer);
       if (refreshTimer) clearTimeout(refreshTimer);
-      supabase.removeChannel(channel);
+      if (supabase && channel) supabase.removeChannel(channel);
     };
   }, [conversationId, router]);
 

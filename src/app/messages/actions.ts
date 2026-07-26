@@ -191,38 +191,6 @@ async function attachMessageMedia({
   }
 }
 
-async function findExistingConversation(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  userId: string,
-  targetId: string,
-) {
-  const { data: myMemberships } = await supabase
-    .from("conversation_members")
-    .select("conversation_id")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false });
-  const conversationIds =
-    myMemberships?.map((membership) => membership.conversation_id) ?? [];
-
-  if (!conversationIds.length) return null;
-
-  const { data: targetMemberships } = await supabase
-    .from("conversation_members")
-    .select("conversation_id")
-    .eq("user_id", targetId)
-    .in("conversation_id", conversationIds)
-    .returns<{ conversation_id: string }[]>();
-  const targetConversationIds = new Set(
-    targetMemberships?.map((membership) => membership.conversation_id) ?? [],
-  );
-
-  return (
-    myMemberships?.find((membership) =>
-      targetConversationIds.has(membership.conversation_id),
-    )?.conversation_id ?? null
-  );
-}
-
 async function blockRelationshipExists(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
@@ -297,57 +265,19 @@ export async function startConversation(formData: FormData) {
     redirect(messagesPath("You cannot message a blocked profile."));
   }
 
-  let conversationId = await findExistingConversation(
-    supabase,
-    userId,
-    targetProfile.id,
-  );
+  const { data: conversationId, error: conversationError } = await supabase
+    .rpc("ensure_direct_conversation", {
+      p_target_id: targetProfile.id,
+    })
+    .single<string>();
 
-  if (!conversationId) {
-    const { data: conversation, error: conversationError } = await supabase
-      .from("conversations")
-      .insert({ created_by: userId })
-      .select("id")
-      .single<{ id: string }>();
-
-    if (conversationError || !conversation) {
-      console.error("DM conversation create failed.", conversationError);
-      redirect(
-        messagesPath(
-          "Could not start conversation. Please try again.",
-        ),
-      );
-    }
-
-    conversationId = conversation.id;
-
-    const { error: creatorMemberError } = await supabase
-      .from("conversation_members")
-      .insert({ conversation_id: conversationId, user_id: userId });
-
-    if (creatorMemberError) {
-      console.error("DM creator membership create failed.", creatorMemberError);
-      redirect(
-        messagesPath(
-          "Could not start conversation. Please try again.",
-          conversationId,
-        ),
-      );
-    }
-
-    const { error: targetMemberError } = await supabase
-      .from("conversation_members")
-      .insert({ conversation_id: conversationId, user_id: targetProfile.id });
-
-    if (targetMemberError) {
-      console.error("DM target membership create failed.", targetMemberError);
-      redirect(
-        messagesPath(
-          "Could not start conversation. Please try again.",
-          conversationId,
-        ),
-      );
-    }
+  if (conversationError || !conversationId) {
+    console.error("DM direct conversation ensure failed.", conversationError);
+    redirect(
+      messagesPath(
+        "Could not start conversation. Please try again.",
+      ),
+    );
   }
 
   const { data: message, error: messageError } = await supabase

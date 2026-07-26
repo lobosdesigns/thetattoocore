@@ -136,10 +136,10 @@ const checks = [
   {
     label: "DM create and send actions hide raw database errors",
     ok:
-      messageActions.includes('console.error("DM conversation create failed.", conversationError)') &&
+      messageActions.includes('console.error("DM direct conversation ensure failed.", conversationError)') &&
+      messageActions.includes('.rpc("ensure_direct_conversation"') &&
+      messageActions.includes('p_target_id: targetProfile.id') &&
       messageActions.includes('"Could not start conversation. Please try again."') &&
-      messageActions.includes('console.error("DM creator membership create failed.", creatorMemberError)') &&
-      messageActions.includes('console.error("DM target membership create failed.", targetMemberError)') &&
       messageActions.includes('console.error("DM initial message create failed.", messageError)') &&
       messageActions.includes('console.error("DM message create failed.", error)') &&
       messageActions.includes('"Could not send message. Please try again."') &&
@@ -249,14 +249,13 @@ const checks = [
       messageThread.includes("onScroll={updateAutoFollowLatest}"),
   },
   {
-    label: "DM start action reuses the newest shared thread deterministically",
+    label: "DM start action uses the direct conversation uniqueness RPC",
     ok:
-      messageActions.includes("async function findExistingConversation") &&
-      messageActions.includes('.select("conversation_id")') &&
-      messageActions.includes('.order("created_at", { ascending: false })') &&
-      messageActions.includes("const targetConversationIds = new Set") &&
-      messageActions.includes("targetConversationIds.has(membership.conversation_id)") &&
-      !messageActions.includes(".limit(1)\n    .maybeSingle<{ conversation_id: string }>()"),
+      messageActions.includes('.rpc("ensure_direct_conversation"') &&
+      messageActions.includes('p_target_id: targetProfile.id') &&
+      messageActions.includes('console.error("DM direct conversation ensure failed.", conversationError)') &&
+      !messageActions.includes("async function findExistingConversation") &&
+      !messageActions.includes('console.error("DM conversation create failed.", conversationError)'),
   },
   {
     label: "DM prefilled profile route fetches shared thread before inbox slicing",

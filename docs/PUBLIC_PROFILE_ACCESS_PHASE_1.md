@@ -70,6 +70,7 @@ These remain classified because they are owner, admin, authenticated relationshi
 
 These joins remain classified because each query must be reviewed with its parent table RLS, relationship visibility, ordering, and generated Supabase select shape before replacing it with view-backed alternatives:
 
+- `scripts/test-messaging-notifications-contracts.mjs`
 - `scripts/smoke-content-policy-guards.mjs`
 - `src/app/actions.ts`
 - `src/app/admin/actions.ts`

@@ -291,78 +291,26 @@ async function commentPermissionForOwner({
       };
 }
 
-async function findExistingConversation(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  userId: string,
-  targetId: string,
-) {
-  const { data: myMemberships } = await supabase
-    .from("conversation_members")
-    .select("conversation_id")
-    .eq("user_id", userId);
-  const conversationIds =
-    myMemberships?.map((membership) => membership.conversation_id) ?? [];
-
-  if (!conversationIds.length) return null;
-
-  const { data: targetMembership } = await supabase
-    .from("conversation_members")
-    .select("conversation_id")
-    .eq("user_id", targetId)
-    .in("conversation_id", conversationIds)
-    .limit(1)
-    .maybeSingle<{ conversation_id: string }>();
-
-  return targetMembership?.conversation_id ?? null;
-}
-
 async function ensureDirectConversation({
   supabase,
   targetId,
-  userId,
 }: {
   supabase: Awaited<ReturnType<typeof createClient>>;
   targetId: string;
   userId: string;
 }) {
-  const existingConversationId = await findExistingConversation(
-    supabase,
-    userId,
-    targetId,
-  );
+  const { data: conversationId, error } = await supabase
+    .rpc("ensure_direct_conversation", {
+      p_target_id: targetId,
+    })
+    .single<string>();
 
-  if (existingConversationId) return existingConversationId;
-
-  const { data: conversation, error: conversationError } = await supabase
-    .from("conversations")
-    .insert({ created_by: userId })
-    .select("id")
-    .single<{ id: string }>();
-
-  if (conversationError || !conversation) {
-    console.error("Shared DM conversation create failed.", conversationError);
+  if (error || !conversationId) {
+    console.error("Shared DM direct conversation ensure failed.", error);
     throw new Error("Could not start conversation. Please try again.");
   }
 
-  const { error: creatorMemberError } = await supabase
-    .from("conversation_members")
-    .insert({ conversation_id: conversation.id, user_id: userId });
-
-  if (creatorMemberError) {
-    console.error("Shared DM creator membership create failed.", creatorMemberError);
-    throw new Error("Could not start conversation. Please try again.");
-  }
-
-  const { error: targetMemberError } = await supabase
-    .from("conversation_members")
-    .insert({ conversation_id: conversation.id, user_id: targetId });
-
-  if (targetMemberError) {
-    console.error("Shared DM target membership create failed.", targetMemberError);
-    throw new Error("Could not start conversation. Please try again.");
-  }
-
-  return conversation.id;
+  return conversationId;
 }
 
 async function syncFeedPostTags({
