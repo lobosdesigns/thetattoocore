@@ -1033,13 +1033,13 @@ const checks = [
   },
   {
     path: "/u/ceocore/followers",
-    status: [404],
-    includes: ["Page not found"],
+    status: [200],
+    includes: ["CEOCore", "Followers", "Back to profile"],
   },
   {
     path: "/u/ceocore/following",
-    status: [404],
-    includes: ["Page not found"],
+    status: [200],
+    includes: ["CEOCore", "Following", "Back to profile"],
   },
   {
     path: "/merch/checkout/success",
