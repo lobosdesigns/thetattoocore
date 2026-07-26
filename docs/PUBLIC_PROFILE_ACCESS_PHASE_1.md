@@ -61,8 +61,11 @@ These remain classified because they are owner, admin, authenticated relationshi
 - `src/app/stuff/[id]/page.tsx`: marketplace detail author/shop context.
 - `src/app/t/[id]/page.tsx`: thread detail profile joins classified below.
 - `src/app/u/[username]/actions.ts`: follow/block/profile action owner and relationship path.
-- `src/app/u/[username]/follow-list-page.tsx`: follower/following relationship visibility path.
 - `src/lib/tag-audience.ts`: authenticated tag-audience helper.
+
+## Repaired public profile reads
+
+- `src/app/u/[username]/follow-list-page.tsx`: repaired in Phase 1A; route header and row display profiles now read from `public_profiles`, while `follows` supplies relationship IDs and counts.
 
 ## Remaining embedded profiles:profiles joins
 
@@ -94,7 +97,6 @@ These joins remain classified because each query must be reviewed with its paren
 - `src/app/sitemap.ts`
 - `src/app/stuff/[id]/page.tsx`
 - `src/app/t/[id]/page.tsx`
-- `src/app/u/[username]/follow-list-page.tsx`
 - `src/app/u/[username]/page.tsx`
 
 ## Enforcement notes

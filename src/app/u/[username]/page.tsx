@@ -41,6 +41,10 @@ import { ProtectedVideo } from "@/app/protected-video";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { isInternalIndexingProfile } from "@/lib/profile-indexing";
+import {
+  loadPublicProfileMap,
+  type PublicProfileSummary,
+} from "@/lib/public-profile-hydration";
 import { calendarConnectionStatusLabel } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -361,15 +365,9 @@ type FollowRequest = {
 
 type FollowPreview = {
   created_at: string;
-  profiles: Pick<
-    Profile,
-    | "account_type"
-    | "avatar_url"
-    | "display_name"
-    | "id"
-    | "license_verified_at"
-    | "username"
-  > | null;
+  follower_id?: string;
+  following_id?: string;
+  profiles?: PublicProfileSummary | null;
 };
 
 type LinkedArtist = Pick<
@@ -394,6 +392,29 @@ function profileLocation(profile: Profile) {
   return [profile.city, profile.region, profile.country]
     .filter(Boolean)
     .join(", ");
+}
+
+function collectSpecialtyTags(posts: FeedPost[]) {
+  const tagCounts = new Map<string, { count: number; label: string }>();
+
+  for (const post of posts) {
+    for (const rawTag of post.style_tags) {
+      const label = rawTag.trim();
+      if (!label) continue;
+
+      const key = label.toLowerCase();
+      const current = tagCounts.get(key);
+      tagCounts.set(key, {
+        count: (current?.count ?? 0) + 1,
+        label: current?.label ?? label,
+      });
+    }
+  }
+
+  return [...tagCounts.values()]
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
+    .slice(0, 6)
+    .map((tag) => tag.label);
 }
 
 async function getBlockedProfileIds({
@@ -1090,6 +1111,52 @@ function PostPreview({ post }: { post: FeedPost }) {
   );
 }
 
+function PortfolioPreviewSection({
+  isOwnProfile,
+  posts,
+}: {
+  isOwnProfile: boolean;
+  posts: FeedPost[];
+}) {
+  return (
+    <section className="border-b border-[var(--card-rim)] px-4 py-6">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-strong)]">
+            Portfolio preview
+          </p>
+          <h2 className="mt-1 text-lg font-bold">Recent tattoo work</h2>
+        </div>
+        <Link
+          className="ttc-surface inline-flex h-10 w-fit items-center justify-center rounded-md border px-3 text-sm font-bold"
+          href="#profile-4u"
+        >
+          View all 4U
+        </Link>
+      </div>
+      {posts.length ? (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {posts.slice(0, 3).map((post) => (
+            <PostPreview key={post.id} post={post} />
+          ))}
+        </div>
+      ) : (
+        <ProfileEmptyState
+          actionHref={isOwnProfile ? "/#feed" : undefined}
+          actionLabel={isOwnProfile ? "Post recent work" : undefined}
+          body={
+            isOwnProfile
+              ? "Add public, non-sensitive 4U posts to turn this into a stronger portfolio preview."
+              : "Public recent work will appear here when this profile shares 4U posts."
+          }
+          icon={Camera}
+          tips={["Fresh pieces", "Healed work", "Style tags"]}
+          title="No portfolio preview yet"
+        />
+      )}
+    </section>
+  );
+}
 function ProfileStoryCard({
   isOwnProfile,
   profileUsername,
@@ -1514,23 +1581,23 @@ export default async function ProfilePage({
     supabase
       .from("follows")
       .select(
-        "created_at, profiles:profiles!follows_follower_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
+        "created_at, follower_id",
       )
       .eq("following_id", profile.id)
       .eq("status", "accepted")
       .order("created_at", { ascending: false })
       .limit(4)
-      .returns<FollowPreview[]>(),
+      .returns<Array<Omit<FollowPreview, "profiles">>>(),
     supabase
       .from("follows")
       .select(
-        "created_at, profiles:profiles!follows_following_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
+        "created_at, following_id",
       )
       .eq("follower_id", profile.id)
       .eq("status", "accepted")
       .order("created_at", { ascending: false })
       .limit(4)
-      .returns<FollowPreview[]>(),
+      .returns<Array<Omit<FollowPreview, "profiles">>>(),
     claims?.sub
       ? supabase
           .from("profiles")
@@ -1760,6 +1827,7 @@ export default async function ProfilePage({
   const visibleListings = profileListingRows.filter(canShow);
   const visibleGigs = profileGigRows.filter(canShow);
   const visibleMerchProducts = isPrivateLocked ? [] : profileMerchRows;
+  const specialtyTags = collectSpecialtyTags(visiblePosts);
   const hasMoreProfilePosts = (posts?.length ?? 0) > feedProfileLimit;
   const hasMoreProfileThreads = (threads?.length ?? 0) > gossipProfileLimit;
   const hasMoreProfileListings = (listings?.length ?? 0) > stuffProfileLimit;
@@ -1769,13 +1837,32 @@ export default async function ProfilePage({
       (product) => product.is_official || isVerifiedProfessional(product.profiles),
     ).length > merchProfileLimit;
   const visibleStory = (activeStories ?? []).find(canShow);
-  const visibleFollowerPreview = (followerPreview ?? []).filter(
+  const followPreviewProfileMap = await loadPublicProfileMap(
+    supabase,
+    [
+      ...(followerPreview ?? []).map((follow) => follow.follower_id),
+      ...(followingPreview ?? []).map((follow) => follow.following_id),
+    ],
+  );
+  const hydratedFollowerPreview = (followerPreview ?? []).map((follow) => ({
+    ...follow,
+    profiles: follow.follower_id
+      ? (followPreviewProfileMap.get(follow.follower_id) ?? null)
+      : null,
+  }));
+  const hydratedFollowingPreview = (followingPreview ?? []).map((follow) => ({
+    ...follow,
+    profiles: follow.following_id
+      ? (followPreviewProfileMap.get(follow.following_id) ?? null)
+      : null,
+  }));
+  const visibleFollowerPreview = hydratedFollowerPreview.filter(
     (follow) =>
       canViewFollowers &&
       follow.profiles &&
       !blockedProfileIds.has(follow.profiles.id),
   );
-  const visibleFollowingPreview = (followingPreview ?? []).filter(
+  const visibleFollowingPreview = hydratedFollowingPreview.filter(
     (follow) =>
       canViewFollowing &&
       follow.profiles &&
@@ -1921,6 +2008,23 @@ export default async function ProfilePage({
                 <p className="mt-3 max-w-2xl whitespace-pre-wrap text-sm leading-6">
                   {profile.bio}
                 </p>
+              ) : null}
+              {!isPrivateLocked && specialtyTags.length ? (
+                <div className="mt-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted-strong)]">
+                    Specialty styles
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {specialtyTags.map((tag) => (
+                      <span
+                        className="rounded-md bg-[color-mix(in_srgb,var(--brand-gold)_18%,var(--paper-warm))] px-2.5 py-1.5 text-xs font-bold text-[var(--foreground)]"
+                        key={tag}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               ) : null}
               {isPrivateLocked ? (
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--muted-strong)]">
@@ -2253,8 +2357,29 @@ export default async function ProfilePage({
                     href={`/messages?to=${profile.username}`}
                   >
                     <Send className="size-4" />
-                    DM
+                    Message
                   </Link>
+                ) : null}
+                {!isOwnProfile &&
+                !hasBlockRelationship &&
+                ["artist", "studio"].includes(profile.account_type) ? (
+                  canRequestBooking ? (
+                    <Link
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-4 text-sm font-semibold"
+                      href="#booking-request"
+                    >
+                      <CalendarPlus className="size-4" />
+                      Book
+                    </Link>
+                  ) : (
+                    <span
+                      aria-disabled="true"
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_74%,transparent)] px-4 text-sm font-semibold text-[color-mix(in_srgb,var(--muted-strong)_76%,transparent)]"
+                    >
+                      <CalendarPlus className="size-4" />
+                      Book
+                    </span>
+                  )
                 ) : null}
                 {!isOwnProfile && claims?.sub && !hasBlockRelationship ? (
                   <SavedItemButton
@@ -2264,8 +2389,7 @@ export default async function ProfilePage({
                     subjectId={profile.id}
                     subjectType="profile"
                   />
-                ) : null}
-                {!isOwnProfile && claims?.sub && !hasBlockRelationship ? (
+                ) : null}                {!isOwnProfile && claims?.sub && !hasBlockRelationship ? (
                   <ContentReportForm
                     returnPath={`/u/${profile.username}`}
                     subjectId={profile.id}
@@ -2449,6 +2573,13 @@ export default async function ProfilePage({
             </div>
           </div>
         </section>
+
+        {!isPrivateLocked && ["artist", "studio"].includes(profile.account_type) ? (
+          <PortfolioPreviewSection
+            isOwnProfile={isOwnProfile}
+            posts={visiblePosts}
+          />
+        ) : null}
 
         {isOwnProfile && profile.is_private && followRequests?.length ? (
           <section className="border-b border-[var(--card-rim)] px-4 py-6">

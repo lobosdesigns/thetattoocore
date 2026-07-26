@@ -3,6 +3,7 @@ import type { createClient } from "@/lib/supabase/server";
 export type PublicProfileSummary = {
   account_type: string;
   avatar_url?: string | null;
+  banner_url?: string | null;
   display_name: string;
   id: string;
   license_verified_at: string | null;
@@ -21,7 +22,7 @@ export async function loadPublicProfileMap(
 
   const { data } = await supabase
     .from("public_profiles")
-    .select("id, username, display_name, avatar_url, account_type, license_verified_at")
+    .select("id, username, display_name, avatar_url, banner_url, account_type, license_verified_at")
     .in("id", ids)
     .returns<PublicProfileSummary[]>();
 

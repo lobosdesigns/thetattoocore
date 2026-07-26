@@ -179,6 +179,13 @@ if (/fallbackProfileRow|privateProfileSelect|\.from\("profiles"\)\s*[\s\S]{0,160
   fail("profile page must not fall back to public.profiles by username.");
 }
 
+const followListSource = read("src/app/u/[username]/follow-list-page.tsx");
+if (!followListSource.includes('.from("public_profiles")')) fail("follow list profile header must read through public_profiles.");
+if (followListSource.includes('.from("profiles")')) fail("follow list pages must not read public.profiles directly.");
+if (followListSource.includes("profiles:profiles")) fail("follow list pages must hydrate display profiles through public_profiles, not embedded public.profiles joins.");
+for (const required of ["loadPublicProfileMap", "created_at, follower_id", "created_at, following_id"]) {
+  if (!followListSource.includes(required)) fail(`follow list public-profile hydration missing: ${required}`);
+}
 const sitemapSource = read("src/app/sitemap.ts");
 if (!sitemapSource.includes('.from("public_profiles")')) fail("sitemap must read public profiles through public_profiles.");
 if (sitemapSource.includes('.from("profiles")')) fail("sitemap must not read public.profiles directly for profile URLs.");

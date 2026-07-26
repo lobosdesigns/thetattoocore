@@ -11,6 +11,10 @@ import {
 } from "lucide-react";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { ProfileAvatar } from "@/app/profile-avatar";
+import {
+  loadPublicProfileMap,
+  type PublicProfileSummary,
+} from "@/lib/public-profile-hydration";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
 
@@ -44,16 +48,9 @@ type BlockRecord = {
 
 type FollowListRow = {
   created_at: string;
-  profiles: Pick<
-    Profile,
-    | "account_type"
-    | "avatar_url"
-    | "banner_url"
-    | "display_name"
-    | "id"
-    | "license_verified_at"
-    | "username"
-  > | null;
+  follower_id?: string;
+  following_id?: string;
+  profiles?: PublicProfileSummary | null;
 };
 
 const pageSize = 50;
@@ -199,12 +196,12 @@ export async function FollowListPage({
   const claims = claimsData?.claims as Claims | undefined;
 
   const { data: profile } = await supabase
-    .from("profiles")
+    .from("public_profiles")
     .select(
-      "id, username, display_name, avatar_url, banner_url, account_type, is_private, followers_visibility, following_visibility, license_verified_at",
+      "id, username, display_name, avatar_url, banner_url, account_type, followers_visibility, following_visibility, license_verified_at",
     )
     .eq("username", cleanUsername)
-    .maybeSingle<Profile>();
+    .maybeSingle<Omit<Profile, "is_private">>();
 
   if (!profile) {
     notFound();
@@ -256,7 +253,7 @@ export async function FollowListPage({
     hasBlockRelationship,
     isFollowing: followRecord?.status === "accepted",
     isOwnProfile,
-    isProfilePrivate: profile.is_private,
+    isProfilePrivate: false,
     visibility: listVisibility,
   });
   const listQuery =
@@ -264,14 +261,14 @@ export async function FollowListPage({
       ? supabase
           .from("follows")
           .select(
-            "created_at, profiles:profiles!follows_follower_id_fkey(id, username, display_name, avatar_url, banner_url, account_type, license_verified_at)",
+            "created_at, follower_id",
             { count: "exact" },
           )
           .eq("following_id", profile.id)
       : supabase
           .from("follows")
           .select(
-            "created_at, profiles:profiles!follows_following_id_fkey(id, username, display_name, avatar_url, banner_url, account_type, license_verified_at)",
+            "created_at, following_id",
             { count: "exact" },
           )
           .eq("follower_id", profile.id);
@@ -280,12 +277,26 @@ export async function FollowListPage({
         .eq("status", "accepted")
         .order("created_at", { ascending: false })
         .range(from, fetchTo)
-        .returns<FollowListRow[]>()
+        .returns<Array<Omit<FollowListRow, "profiles">>>()
     : { count: 0, data: [] as FollowListRow[] };
+  const publicProfileMap = await loadPublicProfileMap(
+    supabase,
+    (rows ?? []).map((row) =>
+      kind === "followers" ? row.follower_id : row.following_id,
+    ),
+  );
+  const hydratedRows = (rows ?? []).map((row) => {
+    const profileId = kind === "followers" ? row.follower_id : row.following_id;
+
+    return {
+      ...row,
+      profiles: profileId ? (publicProfileMap.get(profileId) ?? null) : null,
+    };
+  });
   const totalRows =
     listCount ?? (kind === "followers" ? followerCount : followingCount) ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
-  const filteredRows = (rows ?? []).filter(
+  const filteredRows = hydratedRows.filter(
     (row) => row.profiles && !blockedProfileIds.has(row.profiles.id),
   );
   const visibleRows = filteredRows.slice(0, pageSize);

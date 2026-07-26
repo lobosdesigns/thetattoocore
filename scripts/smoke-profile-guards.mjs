@@ -263,10 +263,14 @@ const checks = [
       followListPage.includes("if (hasBlockRelationship) return false") &&
       followListPage.includes("const fetchTo = to + pageSize") &&
       followListPage.includes(".range(from, fetchTo)") &&
-      followListPage.includes("const filteredRows = (rows ?? []).filter") &&
+      followListPage.includes("const filteredRows = hydratedRows.filter") &&
       followListPage.includes("const visibleRows = filteredRows.slice(0, pageSize)") &&
       followListPage.includes("filteredRows.length > pageSize") &&
-      followListPage.includes("!blockedProfileIds.has(row.profiles.id)"),
+      followListPage.includes("!blockedProfileIds.has(row.profiles.id)") &&
+      followListPage.includes("loadPublicProfileMap") &&
+      followListPage.includes("created_at, follower_id") &&
+      followListPage.includes("created_at, following_id") &&
+      !followListPage.includes(["profiles", "profiles"].join(":")),
   },
   {
     label: "profile preview widgets filter blocked profiles",
@@ -281,6 +285,8 @@ const checks = [
       profilePage.includes("!blockedProfileIds.has(follow.profiles.id)") &&
       profilePage.includes("!blockedProfileIds.has(artist.id)") &&
       profilePage.includes("followers={visibleFollowerPreview}") &&
+      profilePage.includes("const followPreviewProfileMap = await loadPublicProfileMap") &&
+      profilePage.includes("const hydratedFollowerPreview") &&
       profilePage.includes("artists={visibleLinkedArtists}"),
   },
   {
