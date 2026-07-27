@@ -331,6 +331,12 @@ function bookingCheckoutSessionSnapshot(session: Stripe.Checkout.Session) {
   };
 }
 
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isUuid(value: string) {
+  return uuidPattern.test(value);
+}
+
 function centsFromDollars(value: FormDataEntryValue | null, maxCents: number) {
   const text = cleanText(value, 20);
   if (!text) return 0;
@@ -520,7 +526,7 @@ export async function changeUserRole(formData: FormData) {
   const returnTo = cleanText(formData.get("return_to"), 120);
   const role = cleanText(formData.get("role"), 40);
 
-  if (!profileId || !isAssignableUserRole(role)) {
+  if (!isUuid(profileId) || !isAssignableUserRole(role)) {
     redirect(adminUsersMessage("Choose a valid user and role.", returnTo));
   }
 
@@ -589,7 +595,7 @@ export async function changeUserStatus(formData: FormData) {
   const status = cleanText(formData.get("status"), 40) as UserStatus;
   const note = cleanText(formData.get("note"), 500);
 
-  if (!profileId || !userStatuses.has(status)) {
+  if (!isUuid(profileId) || !userStatuses.has(status)) {
     redirect(adminUsersMessage("Choose a valid user and status.", returnTo));
   }
 
@@ -700,7 +706,7 @@ export async function deleteUserAccount(formData: FormData) {
   const returnTo = cleanText(formData.get("return_to"), 120);
   const confirmation = cleanText(formData.get("confirm_delete"), 40).toLowerCase();
 
-  if (!profileId) {
+  if (!isUuid(profileId)) {
     redirect(adminUsersMessage("Choose a valid user account.", returnTo));
   }
 
@@ -925,7 +931,7 @@ export async function grantUserAdCredit(formData: FormData) {
   const expiresAt = cleanText(formData.get("expires_at"), 20);
   const creditAmountCents = centsFromDollars(formData.get("credit_amount"), 10000000);
 
-  if (!profileId || !adCreditReasons.has(reason)) {
+  if (!isUuid(profileId) || !adCreditReasons.has(reason)) {
     redirect(adminUsersMessage("Choose a valid user and ad credit reason.", returnTo));
   }
 
@@ -1001,7 +1007,7 @@ export async function moderateContent(formData: FormData) {
   const note = cleanText(formData.get("note"), 500);
   const config = subjectConfig[subjectType];
 
-  if (!config || !subjectId || !statuses.has(moderationStatus)) {
+  if (!config || !isUuid(subjectId) || !statuses.has(moderationStatus)) {
     redirect(adminContentMessage("Choose valid content and moderation status.", returnTo));
   }
 
@@ -1011,6 +1017,10 @@ export async function moderateContent(formData: FormData) {
     subject_id: string;
     subject_type: string;
   } | null = null;
+
+  if (reportId && !isUuid(reportId)) {
+    redirect(adminReportsMessage("Linked report was not found.", returnTo));
+  }
 
   if (reportId) {
     const { data: report, error: reportError } = await supabase
@@ -1186,7 +1196,7 @@ export async function moderateHelpArticleComment(formData: FormData) {
   const isOfficialAnswer = formData.get("is_official_answer") === "on";
   const isPinned = formData.get("is_pinned") === "on";
 
-  if (!commentId || !helpCommentStatuses.has(status)) {
+  if (!isUuid(commentId) || !helpCommentStatuses.has(status)) {
     redirect(adminContentMessage("Choose a valid Help question status.", returnTo));
   }
 
@@ -1263,7 +1273,7 @@ export async function updateReportStatus(formData: FormData) {
   const status = cleanText(formData.get("status"), 40) as ReportStatus;
   const note = cleanText(formData.get("note"), 500);
 
-  if (!reportId || !reportStatuses.has(status)) {
+  if (!isUuid(reportId) || !reportStatuses.has(status)) {
     redirect(adminReportsMessage("Choose a valid report status.", returnTo));
   }
 
@@ -1359,7 +1369,7 @@ export async function recordReportFollowup(formData: FormData) {
   ) as ReportFollowupAction;
   const note = cleanText(formData.get("note"), 500);
 
-  if (!reportId || !reportFollowupActions.has(followupAction)) {
+  if (!isUuid(reportId) || !reportFollowupActions.has(followupAction)) {
     redirect(adminReportsMessage("Choose a valid report follow-up.", returnTo));
   }
 
@@ -1472,7 +1482,7 @@ export async function updateLicenseVerification(formData: FormData) {
   ) as LicenseVerificationStatus;
   const note = cleanText(formData.get("note"), 500);
 
-  if (!requestId || !licenseStatuses.has(status)) {
+  if (!isUuid(requestId) || !licenseStatuses.has(status)) {
     redirect(adminVerificationMessage("Choose a valid license decision.", returnTo));
   }
 
@@ -1649,7 +1659,7 @@ export async function updateAdCampaignStatus(formData: FormData) {
   const status = cleanText(formData.get("status"), 40) as AdCampaignStatus;
   const note = cleanText(formData.get("note"), 500);
 
-  if (!campaignId || !adCampaignStatuses.has(status)) {
+  if (!isUuid(campaignId) || !adCampaignStatuses.has(status)) {
     redirect(adminAdsMessage("Choose a valid ad campaign status.", returnTo));
   }
 
@@ -1753,7 +1763,7 @@ export async function grantAdCampaignCredit(formData: FormData) {
   const note = cleanText(formData.get("credit_note"), 500);
   const creditAmountCents = centsFromDollars(formData.get("credit_amount"), 10000000);
 
-  if (!campaignId || !adCreditReasons.has(reason)) {
+  if (!isUuid(campaignId) || !adCreditReasons.has(reason)) {
     redirect(adminAdsMessage("Choose a valid ad credit reason.", returnTo));
   }
 
@@ -1843,7 +1853,7 @@ export async function updateMerchProductStatus(formData: FormData) {
   const status = cleanText(formData.get("status"), 40) as MerchProductStatus;
   const note = cleanText(formData.get("note"), 500);
 
-  if (!productId || !merchProductStatuses.has(status)) {
+  if (!isUuid(productId) || !merchProductStatuses.has(status)) {
     redirect(adminMerchMessage("Choose a valid merch product status.", returnTo));
   }
 
@@ -2007,7 +2017,7 @@ export async function updateMerchOrderStatus(formData: FormData) {
   ) as MerchOrderAdminStatus;
   const note = cleanText(formData.get("note"), 1000);
 
-  if (!orderId || !merchOrderAdminStatuses.has(status)) {
+  if (!isUuid(orderId) || !merchOrderAdminStatuses.has(status)) {
     redirect(adminMerchMessage("Choose a valid merch order and status.", returnTo));
   }
 
@@ -2200,7 +2210,7 @@ export async function refundMerchOrder(formData: FormData) {
   const returnTo = cleanText(formData.get("return_to"), 120);
   const confirm = cleanText(formData.get("confirm"), 20).toLowerCase();
 
-  if (!orderId) {
+  if (!isUuid(orderId)) {
     redirect(adminMerchMessage("Choose a Merch order first.", returnTo));
   }
 
@@ -2486,7 +2496,7 @@ export async function updateAccountDeletionRequest(formData: FormData) {
 
   const status = statusValue as AccountDeletionStatus;
 
-  if (!requestId || !accountDeletionStatuses.has(status)) {
+  if (!isUuid(requestId) || !accountDeletionStatuses.has(status)) {
     redirect(
       adminDataRequestsMessage("Choose a valid account deletion status.", returnTo),
     );
@@ -2577,7 +2587,7 @@ export async function reconcileBookingDepositCheckout(formData: FormData) {
   const bookingId = cleanText(formData.get("booking_id"), 80);
   const confirm = cleanText(formData.get("confirm"), 20).toLowerCase();
 
-  if (!bookingId) {
+  if (!isUuid(bookingId)) {
     redirect(adminPaymentsMessage("Choose a booking checkout first.", returnTo));
   }
 
@@ -2863,7 +2873,7 @@ export async function refundBookingDeposit(formData: FormData) {
   const bookingId = cleanText(formData.get("booking_id"), 80);
   const confirm = cleanText(formData.get("confirm"), 20).toLowerCase();
 
-  if (!bookingId) {
+  if (!isUuid(bookingId)) {
     redirect(adminPaymentsMessage("Choose a booking deposit first.", returnTo));
   }
 

@@ -10,6 +10,14 @@ type Claims = {
 
 const adminRoles: UserRole[] = ["admin", "owner"];
 
+export const dynamic = "force-dynamic";
+
+const privateAdminResponseHeaders = {
+  "Cache-Control": "private, no-store, max-age=0, must-revalidate",
+  Pragma: "no-cache",
+  "X-Robots-Tag": "noindex, nofollow",
+};
+
 function isEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
@@ -20,7 +28,10 @@ export async function POST(request: Request) {
   const claims = claimsData?.claims as Claims | undefined;
 
   if (!claims?.sub) {
-    return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+    return NextResponse.json(
+      { error: "Sign in required." },
+      { headers: privateAdminResponseHeaders, status: 401 },
+    );
   }
 
   const { data: profile } = await supabase
@@ -30,7 +41,10 @@ export async function POST(request: Request) {
     .maybeSingle<{ role: UserRole }>();
 
   if (!profile || !adminRoles.includes(profile.role)) {
-    return NextResponse.json({ error: "Admin access required." }, { status: 403 });
+    return NextResponse.json(
+      { error: "Admin access required." },
+      { headers: privateAdminResponseHeaders, status: 403 },
+    );
   }
 
   const body = (await request.json().catch(() => ({}))) as {
@@ -41,7 +55,7 @@ export async function POST(request: Request) {
   if (!isEmail(recipientEmail)) {
     return NextResponse.json(
       { error: "Enter a valid recipient email." },
-      { status: 400 },
+      { headers: privateAdminResponseHeaders, status: 400 },
     );
   }
 
@@ -65,7 +79,7 @@ export async function POST(request: Request) {
   if (error || !settings) {
     return NextResponse.json(
       { error: "Mail settings are not available." },
-      { status: 500 },
+      { headers: privateAdminResponseHeaders, status: 500 },
     );
   }
 
@@ -76,13 +90,13 @@ export async function POST(request: Request) {
       settings,
     });
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true }, { headers: privateAdminResponseHeaders });
   } catch {
     console.error("Admin test email send failed.");
 
     return NextResponse.json(
       { error: "Could not send the test email." },
-      { status: 500 },
+      { headers: privateAdminResponseHeaders, status: 500 },
     );
   }
 }

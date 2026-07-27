@@ -56,6 +56,12 @@ const ownerProfileDeletionFunctionLockdownMigration = readFileSync(
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
+const customWorker = readFileSync("custom-worker.ts", "utf8");
+const nativePushSender = readFileSync("src/lib/native-push/sender.ts", "utf8");
+const nativePushDeliveryMigration = readFileSync(
+  "supabase/migrations/20260722225151_native_push_delivery_outbox.sql",
+  "utf8",
+);
 
 const pagedAdminPages = [
   "ads",
@@ -722,6 +728,51 @@ const checks = [
       !adminActions.includes('updateError.message || "Could not update merch order."') &&
       !adminActions.includes('itemError.message ||') &&
       !adminActions.includes('cancellationError.message ||'),
+  },
+  {
+    label: "admin server actions reject malformed UUID inputs before lookups",
+    ok:
+      adminActions.includes("const uuidPattern =") &&
+      adminActions.includes("function isUuid(value: string)") &&
+      adminActions.includes("if (!isUuid(profileId) || !isAssignableUserRole(role))") &&
+      adminActions.includes("if (!isUuid(profileId) || !userStatuses.has(status))") &&
+      adminActions.includes("if (!isUuid(profileId))") &&
+      adminActions.includes("if (!isUuid(profileId) || !adCreditReasons.has(reason))") &&
+      adminActions.includes("if (!config || !isUuid(subjectId) || !statuses.has(moderationStatus))") &&
+      adminActions.includes("if (reportId && !isUuid(reportId))") &&
+      adminActions.includes("if (!isUuid(commentId) || !helpCommentStatuses.has(status))") &&
+      adminActions.includes("if (!isUuid(reportId) || !reportStatuses.has(status))") &&
+      adminActions.includes("if (!isUuid(reportId) || !reportFollowupActions.has(followupAction))") &&
+      adminActions.includes("if (!isUuid(requestId) || !licenseStatuses.has(status))") &&
+      adminActions.includes("if (!isUuid(campaignId) || !adCampaignStatuses.has(status))") &&
+      adminActions.includes("if (!isUuid(campaignId) || !adCreditReasons.has(reason))") &&
+      adminActions.includes("if (!isUuid(productId) || !merchProductStatuses.has(status))") &&
+      adminActions.includes("if (!isUuid(orderId) || !merchOrderAdminStatuses.has(status))") &&
+      adminActions.includes("if (!isUuid(orderId))") &&
+      adminActions.includes("if (!isUuid(requestId) || !accountDeletionStatuses.has(status))") &&
+      adminActions.includes("if (!isUuid(bookingId))") &&
+      !adminActions.includes("if (!profileId || !isAssignableUserRole(role))") &&
+      !adminActions.includes("if (!reportId || !reportStatuses.has(status))") &&
+      !adminActions.includes("if (!requestId || !licenseStatuses.has(status))") &&
+      !adminActions.includes("if (!campaignId || !adCampaignStatuses.has(status))") &&
+      !adminActions.includes("if (!productId || !merchProductStatuses.has(status))") &&
+      !adminActions.includes("if (!orderId || !merchOrderAdminStatuses.has(status))") &&
+      !adminActions.includes("if (!bookingId)"),
+  },
+  {
+    label: "scheduled native push job stays bounded, leased, and overlap-safe",
+    ok:
+      customWorker.includes("scheduled(") &&
+      customWorker.includes("controller.waitUntil(drainNativePushBatch(env))") &&
+      nativePushSender.includes('"claim_native_push_delivery_batch"') &&
+      nativePushSender.includes("p_limit: 25") &&
+      nativePushSender.includes("p_lease_seconds: 60") &&
+      nativePushDeliveryMigration.includes("for update skip locked") &&
+      nativePushDeliveryMigration.includes("lease_expires_at = clock_timestamp() + make_interval") &&
+      nativePushDeliveryMigration.includes("lease_token = gen_random_uuid()") &&
+      nativePushDeliveryMigration.includes("p_lease_token uuid") &&
+      nativePushDeliveryMigration.includes("attempt_count") &&
+      nativePushDeliveryMigration.includes("available_at = clock_timestamp()"),
   },
   {
     label: "plan records dedicated admin pages and tester account tooling",

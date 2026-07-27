@@ -1062,6 +1062,27 @@ const checks = [
       accountPage.includes("Private admin review only."),
   },
   {
+    label: "admin routes and admin APIs receive private no-store robot headers",
+    ok:
+      middlewareSource.includes("function applyPrivateAdminHeaders") &&
+      middlewareSource.includes('request.nextUrl.pathname === "/admin"') &&
+      middlewareSource.includes('request.nextUrl.pathname.startsWith("/admin/")') &&
+      middlewareSource.includes('request.nextUrl.pathname.startsWith("/api/admin/")') &&
+      middlewareSource.includes('"Cache-Control"') &&
+      middlewareSource.includes('"private, no-store, max-age=0, must-revalidate"') &&
+      middlewareSource.includes('"X-Robots-Tag"') &&
+      middlewareSource.includes('"noindex, nofollow"') &&
+      adminMailTestRoute.includes('export const dynamic = "force-dynamic"') &&
+      adminMailTestRoute.includes("const privateAdminResponseHeaders =") &&
+      adminMailTestRoute.includes('"Cache-Control": "private, no-store, max-age=0, must-revalidate"') &&
+      adminMailTestRoute.includes('"X-Robots-Tag": "noindex, nofollow"') &&
+      adminMailTestRoute.includes("{ headers: privateAdminResponseHeaders, status: 401 }") &&
+      adminMailTestRoute.includes("{ headers: privateAdminResponseHeaders, status: 403 }") &&
+      adminMailTestRoute.includes("{ ok: true }, { headers: privateAdminResponseHeaders }") &&
+      adminStatusPages.every((source) => source.includes("robots")) &&
+      adminStatusPages.every((source) => source.includes("index: false")),
+  },
+  {
     label: "security headers and validated auth refresh stay on the supported edge hook",
     ok:
       existsSync("src/middleware.ts") &&

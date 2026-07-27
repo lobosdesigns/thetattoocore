@@ -42,6 +42,26 @@ function applySecurityHeaders<T extends Response>(response: T): T {
   return response;
 }
 
+function applyPrivateAdminHeaders<T extends Response>(
+  request: NextRequest,
+  response: T,
+): T {
+  if (
+    request.nextUrl.pathname === "/admin" ||
+    request.nextUrl.pathname.startsWith("/admin/") ||
+    request.nextUrl.pathname.startsWith("/api/admin/")
+  ) {
+    response.headers.set(
+      "Cache-Control",
+      "private, no-store, max-age=0, must-revalidate",
+    );
+    response.headers.set("Pragma", "no-cache");
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+
+  return response;
+}
+
 function canonicalRedirectUrl(request: NextRequest) {
   const requestHost = request.headers.get("host")?.toLowerCase().split(":")[0];
 
@@ -65,7 +85,10 @@ export async function middleware(request: NextRequest) {
   const redirectUrl = canonicalRedirectUrl(request);
 
   if (redirectUrl) {
-    return applySecurityHeaders(NextResponse.redirect(redirectUrl, 308));
+    return applyPrivateAdminHeaders(
+      request,
+      applySecurityHeaders(NextResponse.redirect(redirectUrl, 308)),
+    );
   }
   if (request.nextUrl.pathname === "/.well-known/assetlinks.json") {
     const payload = androidAssetLinksPayload();
@@ -85,7 +108,10 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  let response = applySecurityHeaders(NextResponse.next({ request }));
+  let response = applyPrivateAdminHeaders(
+    request,
+    applySecurityHeaders(NextResponse.next({ request })),
+  );
   const persistentSession = persistentSessionFromValue(
     request.cookies.get(authSessionPreferenceCookie)?.value,
   );
@@ -103,7 +129,10 @@ export async function middleware(request: NextRequest) {
             request.cookies.set(name, value);
           });
 
-          response = applySecurityHeaders(NextResponse.next({ request }));
+          response = applyPrivateAdminHeaders(
+            request,
+            applySecurityHeaders(NextResponse.next({ request })),
+          );
 
           for (const [key, value] of Object.entries(headers)) {
             response.headers.set(key, value);
