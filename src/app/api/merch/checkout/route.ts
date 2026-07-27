@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { checkRateLimit } from "@/lib/http/reliability";
 import {
   calculatePlatformFeeCents,
   platformFeeDescription,
@@ -228,6 +229,21 @@ export async function POST(request: Request) {
     return loginRedirect(
       formReturnTo ?? `/merch/${productId}`,
       "Sign in to buy merch.",
+    );
+  }
+
+  const limit = checkRateLimit({
+    identity: claims.sub,
+    limit: 8,
+    request,
+    scope: "merch-checkout",
+    windowMs: 5 * 60_000,
+  });
+
+  if (limit.limited) {
+    return redirectWithMessage(
+      formReturnTo ?? `/merch/${productId}`,
+      "Too many checkout attempts. Please try again later.",
     );
   }
 

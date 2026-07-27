@@ -1,4 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
+import { checkRateLimit, noStoreJson, rateLimitedJson } from "@/lib/http/reliability";
 import { createClient } from "@/lib/supabase/server";
 
 type MessageRow = {
@@ -39,7 +40,19 @@ export async function GET(request: NextRequest) {
       : null;
 
   if (!userId) {
-    return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+    return noStoreJson({ error: "Sign in required." }, { status: 401 });
+  }
+
+  const limit = checkRateLimit({
+    identity: userId,
+    limit: 120,
+    request,
+    scope: "message-history",
+    windowMs: 60_000,
+  });
+
+  if (limit.limited) {
+    return rateLimitedJson(limit.retryAfterSeconds);
   }
 
   const conversationId =
@@ -54,7 +67,7 @@ export async function GET(request: NextRequest) {
     !uuidPattern.test(beforeId) ||
     !beforeTimestamp
   ) {
-    return NextResponse.json(
+    return noStoreJson(
       { error: "Earlier messages could not be loaded." },
       { status: 400 },
     );
@@ -68,7 +81,7 @@ export async function GET(request: NextRequest) {
     .maybeSingle<{ conversation_id: string }>();
 
   if (membershipError || !membership) {
-    return NextResponse.json(
+    return noStoreJson(
       { error: "Conversation was not found." },
       { status: 404 },
     );
@@ -87,7 +100,7 @@ export async function GET(request: NextRequest) {
     .returns<MessageRow[]>();
 
   if (messageError) {
-    return NextResponse.json(
+    return noStoreJson(
       { error: "Earlier messages could not be loaded." },
       { status: 503 },
     );
@@ -131,7 +144,7 @@ export async function GET(request: NextRequest) {
     attachmentsByMessage.set(attachment.message_id, messageAttachments);
   }
 
-  return NextResponse.json({
+  return noStoreJson({
     hasMore,
     messages: messages.toReversed().map((message) => ({
       ...message,

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { checkRateLimit } from "@/lib/http/reliability";
 import { platformFeeDescription } from "@/lib/payments/fees";
 import { siteName, siteUrl } from "@/lib/site";
 import {
@@ -191,6 +192,21 @@ export async function POST(request: Request) {
     return NextResponse.redirect(
       `${siteUrl}/login?message=${encodeURIComponent("Sign in to pay a booking deposit.")}&return_to=${encodeURIComponent(returnTo ?? "/account#booking-settings")}`,
       { status: 303 },
+    );
+  }
+
+  const limit = checkRateLimit({
+    identity: claims.sub,
+    limit: 8,
+    request,
+    scope: "booking-checkout",
+    windowMs: 5 * 60_000,
+  });
+
+  if (limit.limited) {
+    return redirectWithMessage(
+      "Too many checkout attempts. Please try again later.",
+      returnTo,
     );
   }
 

@@ -1,9 +1,35 @@
-import { NextResponse } from "next/server";
+import { checkRateLimit, noStoreJson, rateLimitedJson } from "@/lib/http/reliability";
 import { createClient } from "@/lib/supabase/server";
 
 const placements = new Set(["4u", "gossip", "stuff", "merch"]);
+const maxEventBodyBytes = 2048;
+
+function hasSafeJsonBody(request: Request) {
+  const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
+  const contentLength = Number(request.headers.get("content-length") ?? "0");
+
+  return (
+    contentType.startsWith("application/json") &&
+    Number.isFinite(contentLength) &&
+    contentLength <= maxEventBodyBytes
+  );
+}
 
 export async function POST(request: Request) {
+  const limit = checkRateLimit({
+    limit: 120,
+    request,
+    scope: "ad-event",
+    windowMs: 60_000,
+  });
+
+  if (limit.limited) {
+    return rateLimitedJson(limit.retryAfterSeconds);
+  }
+
+  if (!hasSafeJsonBody(request)) {
+    return noStoreJson({ error: "Invalid event." }, { status: 400 });
+  }
   let payload: {
     campaign_id?: unknown;
     placement?: unknown;
@@ -12,7 +38,7 @@ export async function POST(request: Request) {
   try {
     payload = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid event." }, { status: 400 });
+    return noStoreJson({ error: "Invalid event." }, { status: 400 });
   }
 
   const campaignId =
@@ -20,7 +46,7 @@ export async function POST(request: Request) {
   const placement = typeof payload.placement === "string" ? payload.placement : "";
 
   if (!campaignId || !placements.has(placement)) {
-    return NextResponse.json({ error: "Invalid event." }, { status: 400 });
+    return noStoreJson({ error: "Invalid event." }, { status: 400 });
   }
 
   const supabase = await createClient();
@@ -36,8 +62,8 @@ export async function POST(request: Request) {
   });
 
   if (error) {
-    return NextResponse.json({ error: "Event rejected." }, { status: 400 });
+    return noStoreJson({ error: "Event rejected." }, { status: 400 });
   }
 
-  return NextResponse.json({ ok: true });
+  return noStoreJson({ ok: true });
 }

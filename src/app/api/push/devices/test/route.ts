@@ -22,6 +22,7 @@ import {
   allowsNoisyDeliveryNow,
   type NotificationPreferenceProfile,
 } from "@/lib/notifications";
+import { checkRateLimit, noStoreJson, rateLimitedJson } from "@/lib/http/reliability";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -193,20 +194,32 @@ export async function POST(request: NextRequest) {
   const profile = await authenticatedProfile();
 
   if (!profile) {
-    return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+    return noStoreJson({ error: "Sign in required." }, { status: 401 });
   }
 
   if (!nativePushQaRoleAllowed(profile.role)) {
-    return NextResponse.json(
+    return noStoreJson(
       { error: "Test alerts are not available." },
       { status: 403 },
     );
   }
 
+  const limit = checkRateLimit({
+    identity: profile.id,
+    limit: 6,
+    request,
+    scope: "native-push-test",
+    windowMs: 10 * 60_000,
+  });
+
+  if (limit.limited) {
+    return rateLimitedJson(limit.retryAfterSeconds);
+  }
+
   const target = await readNativePushQaTarget(request);
 
   if (!target) {
-    return NextResponse.json(
+    return noStoreJson(
       { error: "Test alert request is invalid." },
       { status: 400 },
     );
@@ -216,7 +229,7 @@ export async function POST(request: NextRequest) {
     !profile.notify_push_enabled ||
     !nativePushSenderReady(nativePushEnvironment)
   ) {
-    return NextResponse.json(
+    return noStoreJson(
       { error: "Test alerts are not available." },
       { status: 503 },
     );
@@ -227,7 +240,7 @@ export async function POST(request: NextRequest) {
   );
 
   if (!deviceCookie) {
-    return NextResponse.json(
+    return noStoreJson(
       { error: "Turn app alerts off and on, then retry." },
       { status: 409 },
     );
@@ -236,7 +249,7 @@ export async function POST(request: NextRequest) {
   const admin = createAdminClient();
 
   if (!admin) {
-    return NextResponse.json(
+    return noStoreJson(
       { error: "Test alerts are not available." },
       { status: 503 },
     );
@@ -261,7 +274,7 @@ export async function POST(request: NextRequest) {
     )
   ) {
     return expiredDeviceCookie(
-      NextResponse.json(
+      noStoreJson(
         { error: "Turn app alerts off and on, then retry." },
         { status: 409 },
       ),
@@ -269,7 +282,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (!allowsNoisyDeliveryNow(profile, "message")) {
-    return NextResponse.json({
+    return noStoreJson({
       reason: "settings",
       scheduled: false,
       suppressed: true,
@@ -282,7 +295,7 @@ export async function POST(request: NextRequest) {
     try {
       conversationId = await recentMessageConversationId(admin, profile.id);
     } catch {
-      return NextResponse.json(
+      return noStoreJson(
         { error: "Test alerts are not available." },
         { status: 503 },
       );
@@ -292,7 +305,7 @@ export async function POST(request: NextRequest) {
   const alert = buildNativePushQaAlert(target, conversationId);
 
   if (!alert) {
-    return NextResponse.json(
+    return noStoreJson(
       {
         error:
           "A message test needs a recent message alert. Receive a message, then retry.",
@@ -323,5 +336,5 @@ export async function POST(request: NextRequest) {
     }
   });
 
-  return NextResponse.json({ scheduled: true }, { status: 202 });
+  return noStoreJson({ scheduled: true }, { status: 202 });
 }

@@ -917,7 +917,8 @@ const checks = [
       adClickRoute.includes('.eq("payment_dispute_hold", false)') &&
       adClickRoute.includes("new URL(campaign.target_url)") &&
       adClickRoute.includes('!["http:", "https:"].includes(target.protocol)') &&
-      adClickRoute.includes("NextResponse.redirect(fallback"),
+      adClickRoute.includes('import { checkRateLimit, noStoreRedirect } from "@/lib/http/reliability"') &&
+      adClickRoute.includes("noStoreRedirect(fallback"),
   },
   {
     label: "user-generated external links carry safe rel attributes",

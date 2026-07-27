@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { checkRateLimit, noStoreRedirect } from "@/lib/http/reliability";
 import { createClient } from "@/lib/supabase/server";
 
 const placements = new Set(["4u", "gossip", "stuff", "merch"]);
@@ -10,7 +10,21 @@ export async function GET(request: Request) {
   const fallback = new URL("/", request.url);
 
   if (!campaignId || !placements.has(placement)) {
-    return NextResponse.redirect(fallback, { status: 303 });
+    return noStoreRedirect(fallback, { status: 303 });
+  }
+
+  const limit = checkRateLimit({
+    limit: 60,
+    request,
+    scope: "ad-click",
+    windowMs: 60_000,
+  });
+
+  if (limit.limited) {
+    return noStoreRedirect(fallback, {
+      headers: { "Retry-After": String(limit.retryAfterSeconds) },
+      status: 303,
+    });
   }
 
   const supabase = await createClient();
@@ -25,7 +39,7 @@ export async function GET(request: Request) {
     .maybeSingle<{ id: string; target_url: string | null }>();
 
   if (!campaign?.target_url) {
-    return NextResponse.redirect(fallback, { status: 303 });
+    return noStoreRedirect(fallback, { status: 303 });
   }
 
   let target: URL;
@@ -33,11 +47,11 @@ export async function GET(request: Request) {
   try {
     target = new URL(campaign.target_url);
   } catch {
-    return NextResponse.redirect(fallback, { status: 303 });
+    return noStoreRedirect(fallback, { status: 303 });
   }
 
   if (!["http:", "https:"].includes(target.protocol)) {
-    return NextResponse.redirect(fallback, { status: 303 });
+    return noStoreRedirect(fallback, { status: 303 });
   }
 
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -51,5 +65,5 @@ export async function GET(request: Request) {
     viewer_id: viewerId,
   });
 
-  return NextResponse.redirect(target, { status: 303 });
+  return noStoreRedirect(target, { status: 303 });
 }
