@@ -174,7 +174,7 @@ function redirectWithMessage({
 function cleanReturnPath(value: FormDataEntryValue | null, fallback: string) {
   const path = cleanText(value, 220) || fallback;
 
-  if (!path.startsWith("/") || path.startsWith("//") || path.includes("://")) {
+  if (!path.startsWith("/") || path.startsWith("//") || path.includes("://") || path.includes("\\")) {
     return fallback;
   }
 
@@ -204,6 +204,34 @@ function cleanWords(value: FormDataEntryValue | null, maxWords: number) {
 
 function cleanId(value: FormDataEntryValue | null) {
   return String(value ?? "").trim();
+}
+
+function cleanUuid(value: FormDataEntryValue | null) {
+  const text = cleanText(value, 80);
+
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(text)
+    ? text
+    : "";
+}
+
+function cleanOptionalUuid(value: FormDataEntryValue | null) {
+  const text = cleanText(value, 80);
+
+  if (!text) return { invalid: false, value: "" };
+
+  return {
+    invalid: !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(text),
+    value: text,
+  };
+}
+
+function cleanBoundedText(value: FormDataEntryValue | null, maxLength: number) {
+  const text = String(value ?? "").trim();
+
+  return {
+    oversized: text.length > maxLength,
+    text: text.slice(0, maxLength),
+  };
 }
 
 function cleanTaggedUsernames(value: FormDataEntryValue | null) {
@@ -2030,16 +2058,24 @@ export async function replyToStory(formData: FormData) {
 
 export async function createBookingRequest(formData: FormData) {
   const { supabase, userId } = await requireProfile();
-  const artistId = cleanId(formData.get("artist_id"));
-  const appointmentTypeId = cleanId(formData.get("appointment_type_id"));
-  const preferredSlotId = cleanId(formData.get("preferred_slot_id"));
+  const artistId = cleanUuid(formData.get("artist_id"));
+  const appointmentTypeInput = cleanOptionalUuid(formData.get("appointment_type_id"));
+  const preferredSlotInput = cleanOptionalUuid(formData.get("preferred_slot_id"));
+  const appointmentTypeId = appointmentTypeInput.invalid ? "" : appointmentTypeInput.value;
+  const preferredSlotId = preferredSlotInput.invalid ? "" : preferredSlotInput.value;
   const returnPath = cleanReturnPath(formData.get("return_path"), "/");
-  const title = cleanText(formData.get("title"), 120);
-  const body = cleanText(formData.get("body"), 2000);
-  const placement = cleanText(formData.get("placement"), 120);
-  const styleTags = cleanText(formData.get("style_tags"), 160);
-  const preferredCity = cleanText(formData.get("preferred_city"), 120);
-  const preferredDates = cleanText(formData.get("preferred_dates"), 240);
+  const titleInput = cleanBoundedText(formData.get("title"), 120);
+  const bodyInput = cleanBoundedText(formData.get("body"), 2000);
+  const placementInput = cleanBoundedText(formData.get("placement"), 120);
+  const styleTagsInput = cleanBoundedText(formData.get("style_tags"), 160);
+  const preferredCityInput = cleanBoundedText(formData.get("preferred_city"), 120);
+  const preferredDatesInput = cleanBoundedText(formData.get("preferred_dates"), 240);
+  const title = titleInput.text;
+  const body = bodyInput.text;
+  const placement = placementInput.text;
+  const styleTags = styleTagsInput.text;
+  const preferredCity = preferredCityInput.text;
+  const preferredDates = preferredDatesInput.text;
   let depositAmountCents = cleanMoneyCents(formData.get("deposit_amount"));
 
   if (!artistId || artistId === userId) {
@@ -2047,6 +2083,33 @@ export async function createBookingRequest(formData: FormData) {
       redirectWithMessage({
         hash: "booking-request",
         message: "Choose a verified artist or studio for booking.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  if (appointmentTypeInput.invalid || preferredSlotInput.invalid) {
+    redirect(
+      redirectWithMessage({
+        hash: "booking-request",
+        message: "Choose an available booking option for this artist or studio.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  if (
+    titleInput.oversized ||
+    bodyInput.oversized ||
+    placementInput.oversized ||
+    styleTagsInput.oversized ||
+    preferredCityInput.oversized ||
+    preferredDatesInput.oversized
+  ) {
+    redirect(
+      redirectWithMessage({
+        hash: "booking-request",
+        message: "Keep booking request fields within their size limits.",
         path: returnPath,
       }),
     );

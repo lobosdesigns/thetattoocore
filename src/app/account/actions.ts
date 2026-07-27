@@ -110,6 +110,23 @@ function cleanText(value: FormDataEntryValue | null, maxLength: number) {
     .slice(0, maxLength);
 }
 
+function cleanUuid(value: FormDataEntryValue | null) {
+  const text = cleanText(value, 80);
+
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(text)
+    ? text
+    : "";
+}
+
+function cleanBoundedText(value: FormDataEntryValue | null, maxLength: number) {
+  const text = String(value ?? "").trim();
+
+  return {
+    oversized: text.length > maxLength,
+    text: text.slice(0, maxLength),
+  };
+}
+
 function cleanProfileUsername(value: FormDataEntryValue | null) {
   return String(value ?? "")
     .trim()
@@ -1006,7 +1023,8 @@ export async function markMerchSaleFulfilled(formData: FormData) {
 
 export async function requestMerchRefundReview(formData: FormData) {
   const orderId = cleanText(formData.get("order_id"), 80);
-  const reason = cleanText(formData.get("refund_reason"), 500);
+  const reasonInput = cleanBoundedText(formData.get("refund_reason"), 500);
+  const reason = reasonInput.text;
 
   if (!orderId) {
     redirect(accountPath("Choose a Merch order first.", "order-settings"));
@@ -1245,9 +1263,10 @@ async function ensureNoBookingScheduleConflict({
 }
 
 export async function respondBookingRequest(formData: FormData) {
-  const bookingId = cleanText(formData.get("booking_id"), 80);
+  const bookingId = cleanUuid(formData.get("booking_id"));
   const decision = cleanText(formData.get("decision"), 20);
-  const artistNote = cleanText(formData.get("artist_note"), 1000);
+  const artistNoteInput = cleanBoundedText(formData.get("artist_note"), 1000);
+  const artistNote = artistNoteInput.text;
   const finalDepositText = cleanText(formData.get("final_deposit_amount"), 20);
   const finalDepositInputCents = finalDepositText
     ? centsFromDollars(formData.get("final_deposit_amount"), 500000)
@@ -1258,6 +1277,10 @@ export async function respondBookingRequest(formData: FormData) {
 
   if (!bookingId || !["accept", "decline", "changes"].includes(decision)) {
     redirect(bookingPath("Choose a booking request and response."));
+  }
+
+  if (artistNoteInput.oversized) {
+    redirect(bookingPath("Keep booking response notes under 1000 characters."));
   }
 
   if (
@@ -1471,14 +1494,19 @@ export async function respondBookingRequest(formData: FormData) {
 
 
 export async function rescheduleBookingAsArtist(formData: FormData) {
-  const bookingId = cleanText(formData.get("booking_id"), 80);
-  const artistNote = cleanText(formData.get("artist_note"), 1000);
+  const bookingId = cleanUuid(formData.get("booking_id"));
+  const artistNoteInput = cleanBoundedText(formData.get("artist_note"), 1000);
+  const artistNote = artistNoteInput.text;
   const scheduledStartAt = bookingDateTime(formData.get("scheduled_start_at"));
   const scheduledEndAt = bookingDateTime(formData.get("scheduled_end_at"));
   const scheduledTimezone = cleanTimezone(formData.get("scheduled_timezone"));
 
   if (!bookingId) {
     redirect(bookingPath("Choose a booking first."));
+  }
+
+  if (artistNoteInput.oversized) {
+    redirect(bookingPath("Keep booking notes under 1000 characters."));
   }
 
   ensureScheduledWindow({ end: scheduledEndAt, start: scheduledStartAt });
@@ -1601,11 +1629,16 @@ export async function rescheduleBookingAsArtist(formData: FormData) {
 }
 
 export async function markBookingCompletedAsArtist(formData: FormData) {
-  const bookingId = cleanText(formData.get("booking_id"), 80);
-  const artistNote = cleanText(formData.get("artist_note"), 1000);
+  const bookingId = cleanUuid(formData.get("booking_id"));
+  const artistNoteInput = cleanBoundedText(formData.get("artist_note"), 1000);
+  const artistNote = artistNoteInput.text;
 
   if (!bookingId) {
     redirect(bookingPath("Choose a booking first."));
+  }
+
+  if (artistNoteInput.oversized) {
+    redirect(bookingPath("Keep booking notes under 1000 characters."));
   }
 
   const supabase = await createClient();
@@ -1712,11 +1745,16 @@ export async function markBookingCompletedAsArtist(formData: FormData) {
 }
 
 export async function expireBookingRequestAsArtist(formData: FormData) {
-  const bookingId = cleanText(formData.get("booking_id"), 80);
-  const artistNote = cleanText(formData.get("artist_note"), 1000);
+  const bookingId = cleanUuid(formData.get("booking_id"));
+  const artistNoteInput = cleanBoundedText(formData.get("artist_note"), 1000);
+  const artistNote = artistNoteInput.text;
 
   if (!bookingId) {
     redirect(bookingPath("Choose a booking request first."));
+  }
+
+  if (artistNoteInput.oversized) {
+    redirect(bookingPath("Keep booking notes under 1000 characters."));
   }
 
   const supabase = await createClient();
@@ -1824,7 +1862,7 @@ export async function expireBookingRequestAsArtist(formData: FormData) {
 }
 
 export async function cancelBookingRequest(formData: FormData) {
-  const bookingId = cleanText(formData.get("booking_id"), 80);
+  const bookingId = cleanUuid(formData.get("booking_id"));
 
   if (!bookingId) {
     redirect(bookingPath("Choose a booking request first."));
@@ -1934,7 +1972,7 @@ export async function cancelBookingRequest(formData: FormData) {
 }
 
 export async function cancelAcceptedBookingAsArtist(formData: FormData) {
-  const bookingId = cleanText(formData.get("booking_id"), 80);
+  const bookingId = cleanUuid(formData.get("booking_id"));
 
   if (!bookingId) {
     redirect(bookingPath("Choose a booking request first."));
@@ -2044,11 +2082,16 @@ export async function cancelAcceptedBookingAsArtist(formData: FormData) {
 }
 
 export async function requestBookingRefundReview(formData: FormData) {
-  const bookingId = cleanText(formData.get("booking_id"), 80);
-  const reason = cleanText(formData.get("refund_reason"), 500);
+  const bookingId = cleanUuid(formData.get("booking_id"));
+  const reasonInput = cleanBoundedText(formData.get("refund_reason"), 500);
+  const reason = reasonInput.text;
 
   if (!bookingId) {
     redirect(bookingPath("Choose a booking request first."));
+  }
+
+  if (reasonInput.oversized) {
+    redirect(bookingPath("Keep refund review notes under 500 characters."));
   }
 
   const supabase = await createClient();
@@ -2194,7 +2237,7 @@ export async function createBookingAppointmentType(formData: FormData) {
 
 export async function updateBookingAppointmentType(formData: FormData) {
   const { profile, supabase } = await requireBookingManager();
-  const appointmentTypeId = cleanText(formData.get("appointment_type_id"), 80);
+  const appointmentTypeId = cleanUuid(formData.get("appointment_type_id"));
   const name = cleanText(formData.get("appointment_name"), 80);
   const description = cleanText(formData.get("appointment_description"), 500);
   const durationMinutes = cleanInteger(formData.get("duration_minutes"), 60, 10, 720);
@@ -2258,7 +2301,7 @@ export async function updateBookingAppointmentType(formData: FormData) {
 
 export async function toggleBookingAppointmentType(formData: FormData) {
   const { profile, supabase } = await requireBookingManager();
-  const appointmentTypeId = cleanText(formData.get("appointment_type_id"), 80);
+  const appointmentTypeId = cleanUuid(formData.get("appointment_type_id"));
   const isActive = formData.get("is_active") === "true";
 
   if (!appointmentTypeId) {
@@ -2285,7 +2328,7 @@ export async function toggleBookingAppointmentType(formData: FormData) {
 
 export async function deleteBookingAppointmentType(formData: FormData) {
   const { profile, supabase } = await requireBookingManager();
-  const appointmentTypeId = cleanText(formData.get("appointment_type_id"), 80);
+  const appointmentTypeId = cleanUuid(formData.get("appointment_type_id"));
 
   if (!appointmentTypeId) {
     redirect(bookingPath("Choose an appointment type first."));
@@ -2351,7 +2394,7 @@ export async function createBookingSlot(formData: FormData) {
 
 export async function updateBookingSlot(formData: FormData) {
   const { profile, supabase } = await requireBookingManager();
-  const slotId = cleanText(formData.get("slot_id"), 80);
+  const slotId = cleanUuid(formData.get("slot_id"));
   const appointmentTypeId = cleanText(formData.get("slot_appointment_type_id"), 80);
   const weekday = cleanInteger(formData.get("slot_weekday"), 1, 0, 6);
   const startsAt = cleanTime(formData.get("slot_starts_at"), "10:00");
@@ -2403,7 +2446,7 @@ export async function updateBookingSlot(formData: FormData) {
 
 export async function toggleBookingSlot(formData: FormData) {
   const { profile, supabase } = await requireBookingManager();
-  const slotId = cleanText(formData.get("slot_id"), 80);
+  const slotId = cleanUuid(formData.get("slot_id"));
   const isActive = formData.get("is_active") === "true";
 
   if (!slotId) {
@@ -2430,7 +2473,7 @@ export async function toggleBookingSlot(formData: FormData) {
 
 export async function deleteBookingSlot(formData: FormData) {
   const { profile, supabase } = await requireBookingManager();
-  const slotId = cleanText(formData.get("slot_id"), 80);
+  const slotId = cleanUuid(formData.get("slot_id"));
 
   if (!slotId) {
     redirect(bookingPath("Choose a booking slot first."));
@@ -2484,7 +2527,7 @@ export async function createBookingBlackoutDate(formData: FormData) {
 
 export async function updateBookingBlackoutDate(formData: FormData) {
   const { profile, supabase } = await requireBookingManager();
-  const blackoutId = cleanText(formData.get("blackout_id"), 80);
+  const blackoutId = cleanUuid(formData.get("blackout_id"));
   const startsAt = bookingDateTime(formData.get("blackout_starts_at"));
   const endsAt = bookingDateTime(formData.get("blackout_ends_at"));
   const reason = cleanText(formData.get("blackout_reason"), 160);
@@ -2524,7 +2567,7 @@ export async function updateBookingBlackoutDate(formData: FormData) {
 
 export async function deleteBookingBlackoutDate(formData: FormData) {
   const { profile, supabase } = await requireBookingManager();
-  const blackoutId = cleanText(formData.get("blackout_id"), 80);
+  const blackoutId = cleanUuid(formData.get("blackout_id"));
 
   if (!blackoutId) {
     redirect(bookingPath("Choose a blackout window first."));

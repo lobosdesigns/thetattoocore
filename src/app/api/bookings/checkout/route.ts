@@ -42,6 +42,29 @@ function safeInternalReturnPath(value: FormDataEntryValue | null) {
   return text;
 }
 
+function cleanUuid(value: FormDataEntryValue | null) {
+  const text = String(value ?? "").trim().slice(0, 80);
+
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(text)
+    ? text
+    : "";
+}
+
+function hasSupportedFormContentType(request: Request) {
+  const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
+
+  return (
+    contentType.startsWith("application/x-www-form-urlencoded") ||
+    contentType.startsWith("multipart/form-data")
+  );
+}
+
+function hasSafeFormSize(request: Request) {
+  const contentLength = Number(request.headers.get("content-length") ?? "0");
+
+  return Number.isFinite(contentLength) && contentLength <= 4096;
+}
+
 function pathWithMessage(returnTo: string | null, message: string) {
   if (!returnTo) {
     return `/account?message=${encodeURIComponent(message)}#booking-settings`;
@@ -148,8 +171,12 @@ export async function POST(request: Request) {
     );
   }
 
+  if (!hasSupportedFormContentType(request) || !hasSafeFormSize(request)) {
+    return redirectWithMessage("Booking checkout could not open. Please try again.");
+  }
+
   const formData = await request.formData();
-  const bookingId = String(formData.get("booking_id") ?? "").trim();
+  const bookingId = cleanUuid(formData.get("booking_id"));
   const returnTo = safeInternalReturnPath(formData.get("return_to"));
 
   if (!bookingId) {
