@@ -2,19 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { AuthLegalLinks } from "../auth-legal-links";
-import { createClient } from "@/lib/supabase/client";
 
 type ResetState = "checking" | "ready" | "saving" | "done" | "blocked";
 
 export function ResetPasswordForm({ initialMessage }: { initialMessage?: string }) {
-  const supabase = createClient();
   const [state, setState] = useState<ResetState>("checking");
   const [message, setMessage] = useState(initialMessage ?? "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
+    let active = true;
+
     async function establishRecoverySession() {
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
       const params = new URLSearchParams(window.location.hash.slice(1));
       const accessToken = params.get("access_token");
       const refreshToken = params.get("refresh_token");
@@ -26,22 +28,29 @@ export function ResetPasswordForm({ initialMessage }: { initialMessage?: string 
         });
 
         if (error) {
+          if (!active) return;
           setMessage("Could not open that reset link. Please request a new one.");
           setState("blocked");
           return;
         }
 
         window.history.replaceState(null, "", "/reset-password");
+        if (!active) return;
         setState("ready");
         return;
       }
 
       const { data } = await supabase.auth.getSession();
+      if (!active) return;
       setState(data.session ? "ready" : "blocked");
     }
 
     establishRecoverySession();
-  }, [supabase.auth]);
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   async function savePassword() {
     setMessage("");
@@ -57,6 +66,8 @@ export function ResetPasswordForm({ initialMessage }: { initialMessage?: string 
     }
 
     setState("saving");
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {

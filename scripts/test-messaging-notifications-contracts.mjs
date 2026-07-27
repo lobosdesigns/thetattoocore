@@ -11,6 +11,18 @@ const source = {
   migration: read(
     "supabase/migrations/20260726183000_direct_conversation_pairs.sql",
   ),
+  availabilityMigration: read(
+    "supabase/migrations/20260726194500_harden_direct_conversation_availability.sql",
+  ),
+  dedupeMigration: read(
+    "supabase/migrations/20260726200000_dedupe_message_notifications.sql",
+  ),
+  readStateMigration: read(
+    "supabase/migrations/20260726201000_conversation_member_read_state_policy.sql",
+  ),
+  pairGrantMigration: read(
+    "supabase/migrations/20260726202000_direct_pair_member_select_grant.sql",
+  ),
   notificationWriter: read("src/lib/notification-write.ts"),
   notificationsPage: read("src/app/notifications/page.tsx"),
   nativeDeviceRoute: read("src/app/api/push/devices/route.ts"),
@@ -87,6 +99,41 @@ assert.match(
   source.migration,
   /grant execute on function public\.ensure_direct_conversation\(uuid\)\s+to authenticated;/,
   "only authenticated callers can execute direct conversation RPC",
+);
+assert.match(
+  source.availabilityMigration,
+  /suspended_at is null[\s\S]*banned_at is null/,
+  "direct conversation RPC rejects unavailable caller and target profiles",
+);
+assert.match(
+  source.availabilityMigration,
+  /lower\(username\) not in [\s\S]*ttc_reviewer/,
+  "direct conversation RPC rejects internal reviewer/test targets",
+);
+assert.match(
+  source.pairGrantMigration,
+  /grant select on table public\.direct_conversation_pairs\s+to authenticated;/,
+  "direct pair members can use the authenticated select policy",
+);
+assert.match(
+  source.readStateMigration,
+  /grant update \(last_read_at\) on table public\.conversation_members\s+to authenticated;/,
+  "participants can update only the read-state column",
+);
+assert.match(
+  source.readStateMigration,
+  /create policy "Users can update own conversation read state"/,
+  "participants can mark only their own membership read",
+);
+assert.match(
+  source.dedupeMigration,
+  /notifications_message_recipient_type_unique/,
+  "message notifications are deduped by source message and recipient",
+);
+assert.match(
+  source.dedupeMigration,
+  /on conflict do nothing/,
+  "duplicate message notification processing is ignored safely",
 );
 
 for (const [label, actionSource] of [
