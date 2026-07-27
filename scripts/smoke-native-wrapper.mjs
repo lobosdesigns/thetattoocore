@@ -38,6 +38,7 @@ const files = {
   nativeAppUrlTest: "scripts/test-native-app-url.mjs",
   rootLayout: "src/app/layout.tsx",
   nativePushProbe: "scripts/native-push-qa-probe.mjs",
+  globals: "src/app/globals.css",
   appLinkSmoke: "scripts/smoke-app-link-associations.mjs",
   realDeviceQa: "docs/REAL_DEVICE_QA_CHECKLIST.md",
   readiness: "docs/APP_STORE_READINESS.md",
@@ -245,6 +246,21 @@ const checks = [
       source.readme.includes("side-by-side QA package") &&
       source.nativePrep.includes("clock, status icons,") &&
       source.nativePrep.includes("camera cutout, or navigation controls"),
+  },
+  {
+    label: "web app shell uses platform safe-area insets instead of fixed padding",
+    ok:
+      source.rootLayout.includes("viewportFit: \"cover\"") &&
+      source.rootLayout.includes("width: \"device-width\"") &&
+      source.globals.includes("--ttc-safe-area-top: env(safe-area-inset-top, 0px)") &&
+      source.globals.includes("--ttc-safe-area-bottom: env(safe-area-inset-bottom, 0px)") &&
+      source.globals.includes("--ttc-safe-area-left: env(safe-area-inset-left, 0px)") &&
+      source.globals.includes("--ttc-safe-area-right: env(safe-area-inset-right, 0px)") &&
+      source.globals.includes(".ttc-page .sticky.top-0") &&
+      source.globals.includes(".ttc-safe-bottom-nav") &&
+      source.globals.includes(".ttc-safe-fab") &&
+      source.globals.includes(".ttc-safe-modal") &&
+      source.globals.includes(".ttc-safe-lightbox"),
   },
   {
     label: "native wrapper avoids provider, secret, and environment-token leakage",

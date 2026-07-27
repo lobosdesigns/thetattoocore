@@ -261,7 +261,7 @@ export function FloatingComposerShell({
       <button
         ref={createButtonRef}
         aria-label={`Create ${active.label}`}
-        className="fixed bottom-24 right-5 z-30 flex h-14 max-w-[calc(100vw-2.5rem)] items-center gap-2 rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_28%,transparent)] bg-[var(--foreground)] px-3 text-[var(--background)] shadow-[0_14px_34px_rgba(0,0,0,0.34)] transition hover:scale-105 focus:outline-none focus:ring-4 focus:ring-[#c8953b]/35 lg:bottom-5"
+        className="ttc-safe-fab fixed z-30 flex h-14 max-w-[calc(100vw-2.5rem)] items-center gap-2 rounded-md border border-[color-mix(in_srgb,var(--brand-gold)_28%,transparent)] bg-[var(--foreground)] px-3 text-[var(--background)] shadow-[0_14px_34px_rgba(0,0,0,0.34)] transition hover:scale-105 focus:outline-none focus:ring-4 focus:ring-[#c8953b]/35"
         onClick={(event) => {
           captureComposerOpener(event.currentTarget);
           explicitOpenModeRef.current = null;
@@ -281,13 +281,13 @@ export function FloatingComposerShell({
       </button>
 
       {isOpen ? (
-        <div className="fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-[color-mix(in_srgb,var(--foreground)_58%,transparent)] px-2 py-2 backdrop-blur-sm sm:px-4 sm:py-5">
+        <div className="ttc-safe-modal fixed inset-0 z-40 overflow-y-auto overscroll-contain bg-[color-mix(in_srgb,var(--foreground)_58%,transparent)] backdrop-blur-sm">
           <div className="mx-auto flex min-h-full max-w-xl items-end sm:items-center">
             <section
               ref={dialogRef}
               aria-labelledby="ttc-composer-title"
               aria-modal="true"
-              className="flex max-h-[calc(100dvh-1rem)] w-full flex-col overflow-hidden rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] shadow-2xl sm:max-h-[calc(100dvh-2.5rem)]"
+              className="ttc-safe-dialog flex w-full flex-col overflow-hidden rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] shadow-2xl"
               role="dialog"
               tabIndex={-1}
             >

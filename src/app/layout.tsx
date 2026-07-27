@@ -84,7 +84,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  initialScale: 1,
   themeColor: "#171412",
+  viewportFit: "cover",
+  width: "device-width",
 };
 
 async function preferredDocumentSettings() {

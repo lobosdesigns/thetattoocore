@@ -80,7 +80,7 @@ export function ProfileContentTabs({
     <section className="border-b border-[var(--card-rim)] px-4 py-6">
       <div
         aria-label="Profile content"
-        className="sticky top-[65px] z-10 -mx-4 mb-4 flex gap-2 overflow-x-auto border-y border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-4 py-3 backdrop-blur"
+        className="sticky top-[calc(65px+var(--ttc-safe-area-top))] z-10 -mx-4 mb-4 flex gap-2 overflow-x-auto border-y border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_96%,transparent)] px-4 py-3 backdrop-blur"
         role="tablist"
       >
         {tabs.map((tab, index) => {
