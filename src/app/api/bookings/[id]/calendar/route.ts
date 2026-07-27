@@ -23,14 +23,18 @@ type BookingCalendarRow = {
   title: string;
 };
 
-function cleanId(value: string) {
-  return value.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 80);
+function cleanUuid(value: string) {
+  const text = String(value ?? "").trim().slice(0, 80);
+
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(text)
+    ? text
+    : "";
 }
 
 function icsText(value: string | null | undefined) {
   return String(value ?? "")
     .replace(/\\/g, "\\\\")
-    .replace(/\n/g, "\\n")
+    .replace(/\r\n|\r|\n/g, "\\n")
     .replace(/,/g, "\\,")
     .replace(/;/g, "\\;");
 }
@@ -48,11 +52,7 @@ function localStamp(value: string) {
 
 export async function GET(_request: Request, { params }: CalendarRouteProps) {
   const { id } = await params;
-  const bookingId = cleanId(id);
-
-  if (!bookingId) {
-    return NextResponse.json({ error: "Booking not found." }, { status: 404 });
-  }
+  const bookingId = cleanUuid(id);
 
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -61,11 +61,16 @@ export async function GET(_request: Request, { params }: CalendarRouteProps) {
   if (!claims?.sub) {
     return NextResponse.redirect(
       new URL(
-        `/login?return_to=${encodeURIComponent(`/api/bookings/${bookingId}/calendar`)}`,
+        `/login?return_to=${encodeURIComponent(bookingId ? `/api/bookings/${bookingId}/calendar` : "/account#booking-settings")}`,
         siteUrl,
       ),
       { status: 303 },
     );
+  }
+
+
+  if (!bookingId) {
+    return NextResponse.json({ error: "Booking not found." }, { status: 404 });
   }
 
   const { data: booking } = await supabase
