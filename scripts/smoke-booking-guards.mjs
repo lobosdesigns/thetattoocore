@@ -310,7 +310,7 @@ const checks = [
       accountActions.includes('.from("booking_blackout_dates")') &&
       accountActions.includes("overlaps a blackout window") &&
       accountActions.includes("overlaps another scheduled booking") &&
-      accountActions.includes('.in("status", ["accepted", "rescheduled", "deposit_pending", "deposit_paid", "completed"])') &&
+      accountActions.includes('.in("status", ["accepted", "rescheduled", "deposit_pending", "deposit_paid"])') &&
       accountActions.includes('booking_needs_changes') &&
       accountActions.includes('recordBookingStatusEvent') &&
       accountActions.includes('toStatus: nextStatus') &&
@@ -461,11 +461,11 @@ const checks = [
     label: "booking account actions hide raw backend errors from member redirects",
     ok:
       accountActions.includes('console.error("Booking request response failed.", error)') &&
-      accountActions.includes('redirect(bookingPath("Could not update booking request. Please try again."))') &&
+      accountActions.includes('redirect(bookingPath("That booking request has already been handled."))') &&
       accountActions.includes('console.error("Booking request cancellation failed.", error)') &&
-      accountActions.includes('redirect(bookingPath("Could not cancel booking request. Please try again."))') &&
+      accountActions.includes('redirect(bookingPath("That booking request has already changed. Refresh and try again."))') &&
       accountActions.includes('console.error("Accepted booking cancellation failed.", error)') &&
-      accountActions.includes('redirect(bookingPath("Could not cancel accepted booking. Please try again."))') &&
+      accountActions.includes('redirect(bookingPath("That booking has already changed. Refresh and try again."))') &&
       accountActions.includes('console.error("Booking refund review request failed.", error)') &&
       accountActions.includes('redirect(bookingPath("Could not request refund review. Please try again."))') &&
       accountActions.includes('console.error("Booking appointment type create failed.", error)') &&

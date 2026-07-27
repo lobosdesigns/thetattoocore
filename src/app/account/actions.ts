@@ -1233,7 +1233,7 @@ async function ensureNoBookingScheduleConflict({
     .select("id")
     .eq("artist_id", profileId)
     .neq("id", bookingId)
-    .in("status", ["accepted", "rescheduled", "deposit_pending", "deposit_paid", "completed"])
+    .in("status", ["accepted", "rescheduled", "deposit_pending", "deposit_paid"])
     .lt("scheduled_start_at", end)
     .gt("scheduled_end_at", start)
     .limit(1)
@@ -1340,7 +1340,7 @@ export async function respondBookingRequest(formData: FormData) {
       .select("id")
       .eq("artist_id", claims.sub)
       .neq("id", booking.id)
-      .in("status", ["accepted", "rescheduled", "deposit_pending", "deposit_paid", "completed"])
+      .in("status", ["accepted", "rescheduled", "deposit_pending", "deposit_paid"])
       .lt("scheduled_start_at", scheduledEndAt)
       .gt("scheduled_end_at", scheduledStartAt)
       .limit(1)
@@ -1376,7 +1376,7 @@ export async function respondBookingRequest(formData: FormData) {
           scheduled_timezone: null,
         };
   const now = new Date().toISOString();
-  const { error } = await admin
+  const { data: updatedBooking, error } = await admin
     .from("booking_requests")
     .update({
       accepted_at: decision === "accept" ? now : null,
@@ -1393,11 +1393,15 @@ export async function respondBookingRequest(formData: FormData) {
     .eq("id", booking.id)
     .eq("artist_id", claims.sub)
     .eq("status", "requested")
-    .eq("payment_status", "not_ready");
+    .eq("payment_status", "not_ready")
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
-    console.error("Booking request response failed.", error);
-    redirect(bookingPath("Could not update booking request. Please try again."));
+  if (error || !updatedBooking) {
+    if (error) {
+      console.error("Booking request response failed.", error);
+    }
+    redirect(bookingPath("That booking request has already been handled."));
   }
 
   await recordBookingStatusEvent({
@@ -1530,7 +1534,7 @@ export async function rescheduleBookingAsArtist(formData: FormData) {
   }
 
   const now = new Date().toISOString();
-  const { error } = await admin
+  const { data: updatedBooking, error } = await admin
     .from("booking_requests")
     .update({
       artist_note: artistNote || null,
@@ -1544,11 +1548,15 @@ export async function rescheduleBookingAsArtist(formData: FormData) {
     })
     .eq("id", booking.id)
     .eq("artist_id", claims.sub)
-    .in("status", ["accepted", "rescheduled", "deposit_paid"]);
+    .in("status", ["accepted", "rescheduled", "deposit_paid"])
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
-    console.error("Booking reschedule failed.", error);
-    redirect(bookingPath("Could not reschedule booking. Please try again."));
+  if (error || !updatedBooking) {
+    if (error) {
+      console.error("Booking reschedule failed.", error);
+    }
+    redirect(bookingPath("That booking has already changed. Refresh and try again."));
   }
 
   await recordBookingStatusEvent({
@@ -1640,7 +1648,7 @@ export async function markBookingCompletedAsArtist(formData: FormData) {
   }
 
   const now = new Date().toISOString();
-  const { error } = await admin
+  const { data: updatedBooking, error } = await admin
     .from("booking_requests")
     .update({
       artist_note: artistNote || null,
@@ -1651,11 +1659,15 @@ export async function markBookingCompletedAsArtist(formData: FormData) {
     })
     .eq("id", booking.id)
     .eq("artist_id", claims.sub)
-    .in("status", ["accepted", "rescheduled", "deposit_paid"]);
+    .in("status", ["accepted", "rescheduled", "deposit_paid"])
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
-    console.error("Booking completion failed.", error);
-    redirect(bookingPath("Could not complete booking. Please try again."));
+  if (error || !updatedBooking) {
+    if (error) {
+      console.error("Booking completion failed.", error);
+    }
+    redirect(bookingPath("That booking has already changed. Refresh and try again."));
   }
 
   await recordBookingStatusEvent({
@@ -1747,7 +1759,7 @@ export async function expireBookingRequestAsArtist(formData: FormData) {
   }
 
   const now = new Date().toISOString();
-  const { error } = await admin
+  const { data: updatedBooking, error } = await admin
     .from("booking_requests")
     .update({
       artist_note: artistNote || null,
@@ -1759,11 +1771,15 @@ export async function expireBookingRequestAsArtist(formData: FormData) {
     .eq("id", booking.id)
     .eq("artist_id", claims.sub)
     .in("status", ["requested", "needs_changes", "accepted", "rescheduled"])
-    .in("payment_status", ["not_ready", "payment_failed"]);
+    .in("payment_status", ["not_ready", "payment_failed"])
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
-    console.error("Booking expiration failed.", error);
-    redirect(bookingPath("Could not expire booking request. Please try again."));
+  if (error || !updatedBooking) {
+    if (error) {
+      console.error("Booking expiration failed.", error);
+    }
+    redirect(bookingPath("That booking request has already changed. Refresh and try again."));
   }
 
   await recordBookingStatusEvent({
@@ -1854,7 +1870,7 @@ export async function cancelBookingRequest(formData: FormData) {
   }
 
   const now = new Date().toISOString();
-  const { error } = await admin
+  const { data: updatedBooking, error } = await admin
     .from("booking_requests")
     .update({
       cancelled_at: now,
@@ -1865,11 +1881,15 @@ export async function cancelBookingRequest(formData: FormData) {
     .eq("id", booking.id)
     .eq("client_id", claims.sub)
     .in("status", ["requested", "needs_changes", "accepted", "rescheduled"])
-    .in("payment_status", ["not_ready", "payment_failed"]);
+    .in("payment_status", ["not_ready", "payment_failed"])
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
-    console.error("Booking request cancellation failed.", error);
-    redirect(bookingPath("Could not cancel booking request. Please try again."));
+  if (error || !updatedBooking) {
+    if (error) {
+      console.error("Booking request cancellation failed.", error);
+    }
+    redirect(bookingPath("That booking request has already changed. Refresh and try again."));
   }
 
   await recordBookingStatusEvent({
@@ -1960,7 +1980,7 @@ export async function cancelAcceptedBookingAsArtist(formData: FormData) {
   }
 
   const now = new Date().toISOString();
-  const { error } = await admin
+  const { data: updatedBooking, error } = await admin
     .from("booking_requests")
     .update({
       cancelled_at: now,
@@ -1971,11 +1991,15 @@ export async function cancelAcceptedBookingAsArtist(formData: FormData) {
     .eq("id", booking.id)
     .eq("artist_id", claims.sub)
     .eq("status", "accepted")
-    .in("payment_status", ["not_ready", "payment_failed"]);
+    .in("payment_status", ["not_ready", "payment_failed"])
+    .select("id")
+    .maybeSingle<{ id: string }>();
 
-  if (error) {
-    console.error("Accepted booking cancellation failed.", error);
-    redirect(bookingPath("Could not cancel accepted booking. Please try again."));
+  if (error || !updatedBooking) {
+    if (error) {
+      console.error("Accepted booking cancellation failed.", error);
+    }
+    redirect(bookingPath("That booking has already changed. Refresh and try again."));
   }
 
   await recordBookingStatusEvent({
