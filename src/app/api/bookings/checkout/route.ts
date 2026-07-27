@@ -189,7 +189,7 @@ export async function POST(request: Request) {
     return redirectWithMessage("That booking request was not found.", returnTo);
   }
 
-  if (booking.status !== "accepted") {
+  if (!["accepted", "rescheduled"].includes(booking.status)) {
     return redirectWithMessage(
       "The artist or studio must accept before deposit checkout opens.",
       returnTo,

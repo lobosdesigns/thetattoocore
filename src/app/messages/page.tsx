@@ -26,8 +26,11 @@ import { selectMessageConversation } from "@/lib/message-conversation-selection"
 import {
   cancelAcceptedBookingAsArtist,
   cancelBookingRequest,
+  expireBookingRequestAsArtist,
+  markBookingCompletedAsArtist,
   requestBookingRefundReview,
   respondBookingRequest,
+  rescheduleBookingAsArtist,
 } from "@/app/account/actions";
 import { MessageStartForm } from "./message-start-form";
 import { MessageThread } from "./message-thread";
@@ -344,16 +347,27 @@ function BookingCards({
             booking.payment_status === "not_ready";
           const canPay =
             isClient &&
-            booking.status === "accepted" &&
+            ["accepted", "rescheduled"].includes(booking.status) &&
             booking.payment_status !== "paid" &&
             booking.deposit_amount_cents > 0;
           const canCancel =
             isClient &&
-            ["requested", "accepted"].includes(booking.status) &&
+            ["requested", "needs_changes", "accepted", "rescheduled"].includes(booking.status) &&
             ["not_ready", "payment_failed"].includes(booking.payment_status);
           const canCancelAsArtist =
             isArtist &&
-            booking.status === "accepted" &&
+            ["accepted", "rescheduled"].includes(booking.status) &&
+            ["not_ready", "payment_failed"].includes(booking.payment_status);
+          const canReschedule =
+            isArtist &&
+            ["accepted", "rescheduled", "deposit_paid"].includes(booking.status);
+          const canComplete =
+            isArtist &&
+            ["accepted", "rescheduled", "deposit_paid"].includes(booking.status) &&
+            !["checkout_started", "payment_failed", "refunded"].includes(booking.payment_status);
+          const canExpire =
+            isArtist &&
+            ["requested", "needs_changes", "accepted", "rescheduled"].includes(booking.status) &&
             ["not_ready", "payment_failed"].includes(booking.payment_status);
 
           return (
@@ -491,6 +505,54 @@ function BookingCards({
                     </PendingSubmitButton>
                   </div>
                 </form>
+              ) : null}
+              {canReschedule || canComplete || canExpire ? (
+                <details className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3">
+                  <summary className="cursor-pointer list-none text-xs font-bold">
+                    Manage booking
+                  </summary>
+                  {canReschedule ? (
+                    <form action={rescheduleBookingAsArtist} className="mt-3 grid gap-2">
+                      <input name="booking_id" type="hidden" value={booking.id} />
+                      <input name="return_to" type="hidden" value={returnPath} />
+                      <input name="scheduled_timezone" type="hidden" value={booking.scheduled_timezone ?? "America/Chicago"} />
+                      <textarea className="min-h-16 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]" maxLength={1000} name="artist_note" placeholder="Optional reschedule note" />
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <label className="grid gap-1 text-xs font-semibold">
+                          New start
+                          <input className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]" name="scheduled_start_at" type="datetime-local" />
+                        </label>
+                        <label className="grid gap-1 text-xs font-semibold">
+                          New end
+                          <input className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]" name="scheduled_end_at" type="datetime-local" />
+                        </label>
+                      </div>
+                      <PendingSubmitButton className="flex h-10 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)] sm:w-fit" pendingLabel="Rescheduling">
+                        Suggest new time
+                      </PendingSubmitButton>
+                    </form>
+                  ) : null}
+                  {canComplete ? (
+                    <form action={markBookingCompletedAsArtist} className="mt-3 grid gap-2">
+                      <input name="booking_id" type="hidden" value={booking.id} />
+                      <input name="return_to" type="hidden" value={returnPath} />
+                      <textarea className="min-h-16 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]" maxLength={1000} name="artist_note" placeholder="Optional completion note" />
+                      <PendingSubmitButton className="flex h-10 w-full items-center justify-center rounded-md border border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] px-4 text-sm font-bold text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))] sm:w-fit" pendingLabel="Completing">
+                        Mark completed
+                      </PendingSubmitButton>
+                    </form>
+                  ) : null}
+                  {canExpire ? (
+                    <form action={expireBookingRequestAsArtist} className="mt-3 grid gap-2">
+                      <input name="booking_id" type="hidden" value={booking.id} />
+                      <input name="return_to" type="hidden" value={returnPath} />
+                      <textarea className="min-h-16 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]" maxLength={1000} name="artist_note" placeholder="Optional expiration note" />
+                      <PendingSubmitButton className="flex h-10 w-full items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-4 text-sm font-bold text-[var(--foreground)] sm:w-fit" pendingLabel="Expiring">
+                        Mark expired
+                      </PendingSubmitButton>
+                    </form>
+                  ) : null}
+                </details>
               ) : null}
               {canPay ? (
                 <form action="/api/bookings/checkout" className="mt-4" method="post">

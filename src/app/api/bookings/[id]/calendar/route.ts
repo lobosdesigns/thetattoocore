@@ -81,7 +81,7 @@ export async function GET(_request: Request, { params }: CalendarRouteProps) {
     (booking.client_id !== claims.sub && booking.artist_id !== claims.sub) ||
     !booking.scheduled_start_at ||
     !booking.scheduled_end_at ||
-    !["accepted", "deposit_pending", "deposit_paid", "completed"].includes(booking.status)
+    !["accepted", "rescheduled", "deposit_pending", "deposit_paid", "completed"].includes(booking.status)
   ) {
     return NextResponse.json({ error: "Calendar file is not available." }, { status: 404 });
   }

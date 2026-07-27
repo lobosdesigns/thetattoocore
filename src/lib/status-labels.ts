@@ -9,6 +9,8 @@ export function titleCaseStatus(value: string) {
 export function bookingStatusLabel(status: string) {
   if (status === "deposit_paid") return "Deposit paid";
   if (status === "deposit_pending") return "Deposit pending";
+  if (status === "requested") return "Pending";
+  if (status === "needs_changes") return "Needs Changes";
 
   return titleCaseStatus(status);
 }

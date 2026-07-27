@@ -1151,6 +1151,99 @@ function cleanInteger(
   return Math.max(min, Math.min(max, parsed));
 }
 
+async function recordBookingStatusEvent({
+  actorId,
+  admin,
+  bookingId,
+  fromStatus,
+  note,
+  toStatus,
+}: {
+  actorId: string;
+  admin: NonNullable<ReturnType<typeof createAdminClient>>;
+  bookingId: string;
+  fromStatus: string;
+  note: string | null;
+  toStatus: string;
+}) {
+  const { error } = await admin.from("booking_status_events").insert({
+    actor_id: actorId,
+    booking_id: bookingId,
+    from_status: fromStatus,
+    note,
+    to_status: toStatus,
+  });
+
+  if (error) {
+    console.error("Booking status event insert failed.", error);
+  }
+}
+
+function ensureScheduledWindow({
+  end,
+  start,
+}: {
+  end: string | null;
+  start: string | null;
+}) {
+  if (!start || !end || start === "invalid" || end === "invalid") {
+    redirect(bookingPath("Add both appointment start and end times."));
+  }
+
+  const startTime = new Date(start).getTime();
+  const endTime = new Date(end).getTime();
+
+  if (startTime < Date.now()) {
+    redirect(bookingPath("Appointment start time must be in the future."));
+  }
+
+  if (endTime <= startTime || endTime - startTime > 12 * 60 * 60 * 1000) {
+    redirect(bookingPath("Appointment end time must be after the start and under 12 hours."));
+  }
+}
+
+async function ensureNoBookingScheduleConflict({
+  bookingId,
+  end,
+  profileId,
+  start,
+  supabase,
+}: {
+  bookingId: string;
+  end: string;
+  profileId: string;
+  start: string;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+}) {
+  const { data: blackoutConflict } = await supabase
+    .from("booking_blackout_dates")
+    .select("id")
+    .eq("profile_id", profileId)
+    .lt("starts_at", end)
+    .gt("ends_at", start)
+    .limit(1)
+    .maybeSingle<{ id: string }>();
+
+  if (blackoutConflict) {
+    redirect(bookingPath("That appointment time overlaps a blackout window."));
+  }
+
+  const { data: bookingConflict } = await supabase
+    .from("booking_requests")
+    .select("id")
+    .eq("artist_id", profileId)
+    .neq("id", bookingId)
+    .in("status", ["accepted", "rescheduled", "deposit_pending", "deposit_paid", "completed"])
+    .lt("scheduled_start_at", end)
+    .gt("scheduled_end_at", start)
+    .limit(1)
+    .maybeSingle<{ id: string }>();
+
+  if (bookingConflict) {
+    redirect(bookingPath("That appointment time overlaps another scheduled booking."));
+  }
+}
+
 export async function respondBookingRequest(formData: FormData) {
   const bookingId = cleanText(formData.get("booking_id"), 80);
   const decision = cleanText(formData.get("decision"), 20);
@@ -1163,7 +1256,7 @@ export async function respondBookingRequest(formData: FormData) {
   const scheduledEndAt = bookingDateTime(formData.get("scheduled_end_at"));
   const scheduledTimezone = cleanTimezone(formData.get("scheduled_timezone"));
 
-  if (!bookingId || !["accept", "decline"].includes(decision)) {
+  if (!bookingId || !["accept", "decline", "changes"].includes(decision)) {
     redirect(bookingPath("Choose a booking request and response."));
   }
 
@@ -1177,12 +1270,7 @@ export async function respondBookingRequest(formData: FormData) {
   }
 
   if (decision === "accept" && scheduledStartAt && scheduledEndAt) {
-    const startTime = new Date(scheduledStartAt).getTime();
-    const endTime = new Date(scheduledEndAt).getTime();
-
-    if (endTime <= startTime || endTime - startTime > 12 * 60 * 60 * 1000) {
-      redirect(bookingPath("Appointment end time must be after the start and under 12 hours."));
-    }
+    ensureScheduledWindow({ end: scheduledEndAt, start: scheduledStartAt });
   }
 
   const supabase = await createClient();
@@ -1218,6 +1306,10 @@ export async function respondBookingRequest(formData: FormData) {
     redirect(bookingPath("That booking request has already been handled."));
   }
 
+  if (decision === "changes" && artistNote.length < 5) {
+    redirect(bookingPath("Add a short note explaining the requested changes."));
+  }
+
   if (decision === "accept" && finalDepositInputCents != null && finalDepositInputCents < 0) {
     redirect(bookingPath("Final deposit must be a valid dollar amount."));
   }
@@ -1248,7 +1340,7 @@ export async function respondBookingRequest(formData: FormData) {
       .select("id")
       .eq("artist_id", claims.sub)
       .neq("id", booking.id)
-      .in("status", ["accepted", "deposit_pending", "deposit_paid", "completed"])
+      .in("status", ["accepted", "rescheduled", "deposit_pending", "deposit_paid", "completed"])
       .lt("scheduled_start_at", scheduledEndAt)
       .gt("scheduled_end_at", scheduledStartAt)
       .limit(1)
@@ -1265,7 +1357,12 @@ export async function respondBookingRequest(formData: FormData) {
     redirect(bookingPath("Booking responses need owner tools enabled first."));
   }
 
-  const nextStatus = decision === "accept" ? "accepted" : "declined";
+  const nextStatus =
+    decision === "accept"
+      ? "accepted"
+      : decision === "changes"
+        ? "needs_changes"
+        : "declined";
   const scheduledFields =
     decision === "accept" && scheduledStartAt && scheduledEndAt
       ? {
@@ -1286,9 +1383,11 @@ export async function respondBookingRequest(formData: FormData) {
       artist_note: artistNote || null,
       deposit_amount_cents: finalDepositAmountCents,
       declined_at: decision === "decline" ? now : null,
+      needs_changes_at: decision === "changes" ? now : null,
       platform_fee_cents: finalPlatformFeeCents,
       ...scheduledFields,
       status: nextStatus,
+      status_changed_at: now,
       total_cents: finalTotalCents,
     })
     .eq("id", booking.id)
@@ -1300,6 +1399,15 @@ export async function respondBookingRequest(formData: FormData) {
     console.error("Booking request response failed.", error);
     redirect(bookingPath("Could not update booking request. Please try again."));
   }
+
+  await recordBookingStatusEvent({
+    actorId: claims.sub,
+    admin,
+    bookingId: booking.id,
+    fromStatus: booking.status,
+    note: artistNote || null,
+    toStatus: nextStatus,
+  });
 
   const { data: artist } = await supabase
     .from("profiles")
@@ -1320,7 +1428,9 @@ export async function respondBookingRequest(formData: FormData) {
           ? finalDepositAmountCents > 0
             ? `Accepted. Deposit checkout is the next step: ${dollars(finalDepositAmountCents)} plus TTC fee ${dollars(finalPlatformFeeCents)}.${scheduledStartAt ? " Appointment time was added." : ""}`
             : `Accepted.${scheduledStartAt ? " Appointment time was added." : " Deposit checkout can be added next if needed."}`
-          : artistNote || "Declined.",
+          : decision === "changes"
+            ? artistNote
+            : artistNote || "Declined.",
       href: `/u/${artist?.username ?? ""}#booking-request`,
       recipient_id: booking.client_id,
       subject_id: booking.id,
@@ -1328,21 +1438,373 @@ export async function respondBookingRequest(formData: FormData) {
       title:
         decision === "accept"
           ? `${artist?.display_name ?? "Artist"} accepted your booking request`
-          : `${artist?.display_name ?? "Artist"} declined your booking request`,
-      type: decision === "accept" ? "booking_accepted" : "booking_declined",
+          : decision === "changes"
+            ? `${artist?.display_name ?? "Artist"} requested booking changes`
+            : `${artist?.display_name ?? "Artist"} declined your booking request`,
+      type:
+        decision === "accept"
+          ? "booking_accepted"
+          : decision === "changes"
+            ? "booking_needs_changes"
+            : "booking_declined",
     });
   }
 
   revalidatePath("/account");
+  revalidatePath("/messages");
   revalidatePath("/notifications");
   redirect(
     bookingRedirectPath(
       formData,
       decision === "accept"
         ? "Booking accepted. Deposit checkout is the next booking step."
-        : "Booking declined.",
+        : decision === "changes"
+          ? "Booking changes requested."
+          : "Booking declined.",
     ),
   );
+}
+
+
+export async function rescheduleBookingAsArtist(formData: FormData) {
+  const bookingId = cleanText(formData.get("booking_id"), 80);
+  const artistNote = cleanText(formData.get("artist_note"), 1000);
+  const scheduledStartAt = bookingDateTime(formData.get("scheduled_start_at"));
+  const scheduledEndAt = bookingDateTime(formData.get("scheduled_end_at"));
+  const scheduledTimezone = cleanTimezone(formData.get("scheduled_timezone"));
+
+  if (!bookingId) {
+    redirect(bookingPath("Choose a booking first."));
+  }
+
+  ensureScheduledWindow({ end: scheduledEndAt, start: scheduledStartAt });
+
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+
+  if (!claims?.sub) {
+    redirect("/login?return_to=%2Faccount%23booking-settings");
+  }
+
+  const { data: booking } = await supabase
+    .from("booking_requests")
+    .select("id, artist_id, client_id, title, status, payment_status")
+    .eq("id", bookingId)
+    .maybeSingle<{
+      artist_id: string;
+      client_id: string;
+      id: string;
+      payment_status: string;
+      status: string;
+      title: string;
+    }>();
+
+  if (!booking || booking.artist_id !== claims.sub) {
+    redirect(bookingPath("That booking request is not available."));
+  }
+
+  if (!["accepted", "rescheduled", "deposit_paid"].includes(booking.status)) {
+    redirect(bookingPath("Only accepted bookings can be rescheduled from here."));
+  }
+
+  if (["checkout_started", "refunded"].includes(booking.payment_status)) {
+    redirect(bookingPath("That booking cannot be rescheduled while payment review is active."));
+  }
+
+  const scheduledStart = scheduledStartAt as string;
+  const scheduledEnd = scheduledEndAt as string;
+
+  await ensureNoBookingScheduleConflict({
+    bookingId: booking.id,
+    end: scheduledEnd,
+    profileId: claims.sub,
+    start: scheduledStart,
+    supabase,
+  });
+
+  const admin = createAdminClient();
+
+  if (!admin) {
+    redirect(bookingPath("Booking rescheduling needs owner tools enabled first."));
+  }
+
+  const now = new Date().toISOString();
+  const { error } = await admin
+    .from("booking_requests")
+    .update({
+      artist_note: artistNote || null,
+      rescheduled_at: now,
+      scheduled_end_at: scheduledEndAt,
+      scheduled_start_at: scheduledStartAt,
+      scheduled_timezone: scheduledTimezone,
+      status: "rescheduled",
+      status_changed_at: now,
+      updated_at: now,
+    })
+    .eq("id", booking.id)
+    .eq("artist_id", claims.sub)
+    .in("status", ["accepted", "rescheduled", "deposit_paid"]);
+
+  if (error) {
+    console.error("Booking reschedule failed.", error);
+    redirect(bookingPath("Could not reschedule booking. Please try again."));
+  }
+
+  await recordBookingStatusEvent({
+    actorId: claims.sub,
+    admin,
+    bookingId: booking.id,
+    fromStatus: booking.status,
+    note: artistNote || null,
+    toStatus: "rescheduled",
+  });
+
+  const [{ data: artist }, { data: clientPreferences }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("display_name, username")
+      .eq("id", claims.sub)
+      .maybeSingle<{ display_name: string; username: string }>(),
+    supabase
+      .from("profiles")
+      .select(notificationPreferenceSelect("message"))
+      .eq("id", booking.client_id)
+      .maybeSingle<NotificationPreferenceProfile>(),
+  ]);
+
+  if (allowsInAppNotification(clientPreferences, "message")) {
+    await insertNotifications({
+      actor_id: claims.sub,
+      body: artistNote || "Your booking appointment time was updated.",
+      href: "/u/" + (artist?.username ?? "") + "#booking-request",
+      recipient_id: booking.client_id,
+      subject_id: booking.id,
+      subject_type: "booking_request",
+      title: ("Booking rescheduled: " + booking.title).slice(0, 120),
+      type: "booking_rescheduled",
+    });
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/messages");
+  revalidatePath("/notifications");
+  redirect(bookingRedirectPath(formData, "Booking rescheduled."));
+}
+
+export async function markBookingCompletedAsArtist(formData: FormData) {
+  const bookingId = cleanText(formData.get("booking_id"), 80);
+  const artistNote = cleanText(formData.get("artist_note"), 1000);
+
+  if (!bookingId) {
+    redirect(bookingPath("Choose a booking first."));
+  }
+
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+
+  if (!claims?.sub) {
+    redirect("/login?return_to=%2Faccount%23booking-settings");
+  }
+
+  const { data: booking } = await supabase
+    .from("booking_requests")
+    .select("id, artist_id, client_id, title, status, payment_status")
+    .eq("id", bookingId)
+    .maybeSingle<{
+      artist_id: string;
+      client_id: string;
+      id: string;
+      payment_status: string;
+      status: string;
+      title: string;
+    }>();
+
+  if (!booking || booking.artist_id !== claims.sub) {
+    redirect(bookingPath("That booking request is not available."));
+  }
+
+  if (!["accepted", "rescheduled", "deposit_paid"].includes(booking.status)) {
+    redirect(bookingPath("Only active accepted bookings can be completed."));
+  }
+
+  if (["checkout_started", "payment_failed", "refunded"].includes(booking.payment_status)) {
+    redirect(bookingPath("Resolve payment status before marking this booking completed."));
+  }
+
+  const admin = createAdminClient();
+
+  if (!admin) {
+    redirect(bookingPath("Booking completion needs owner tools enabled first."));
+  }
+
+  const now = new Date().toISOString();
+  const { error } = await admin
+    .from("booking_requests")
+    .update({
+      artist_note: artistNote || null,
+      completed_at: now,
+      status: "completed",
+      status_changed_at: now,
+      updated_at: now,
+    })
+    .eq("id", booking.id)
+    .eq("artist_id", claims.sub)
+    .in("status", ["accepted", "rescheduled", "deposit_paid"]);
+
+  if (error) {
+    console.error("Booking completion failed.", error);
+    redirect(bookingPath("Could not complete booking. Please try again."));
+  }
+
+  await recordBookingStatusEvent({
+    actorId: claims.sub,
+    admin,
+    bookingId: booking.id,
+    fromStatus: booking.status,
+    note: artistNote || null,
+    toStatus: "completed",
+  });
+
+  const [{ data: artist }, { data: clientPreferences }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("display_name, username")
+      .eq("id", claims.sub)
+      .maybeSingle<{ display_name: string; username: string }>(),
+    supabase
+      .from("profiles")
+      .select(notificationPreferenceSelect("message"))
+      .eq("id", booking.client_id)
+      .maybeSingle<NotificationPreferenceProfile>(),
+  ]);
+
+  if (allowsInAppNotification(clientPreferences, "message")) {
+    await insertNotifications({
+      actor_id: claims.sub,
+      body: artistNote || "Your artist marked this booking completed.",
+      href: "/u/" + (artist?.username ?? "") + "#booking-request",
+      recipient_id: booking.client_id,
+      subject_id: booking.id,
+      subject_type: "booking_request",
+      title: ("Booking completed: " + booking.title).slice(0, 120),
+      type: "booking_completed",
+    });
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/messages");
+  revalidatePath("/notifications");
+  redirect(bookingRedirectPath(formData, "Booking marked completed."));
+}
+
+export async function expireBookingRequestAsArtist(formData: FormData) {
+  const bookingId = cleanText(formData.get("booking_id"), 80);
+  const artistNote = cleanText(formData.get("artist_note"), 1000);
+
+  if (!bookingId) {
+    redirect(bookingPath("Choose a booking request first."));
+  }
+
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims as Claims | undefined;
+
+  if (!claims?.sub) {
+    redirect("/login?return_to=%2Faccount%23booking-settings");
+  }
+
+  const { data: booking } = await supabase
+    .from("booking_requests")
+    .select("id, artist_id, client_id, title, status, payment_status")
+    .eq("id", bookingId)
+    .maybeSingle<{
+      artist_id: string;
+      client_id: string;
+      id: string;
+      payment_status: string;
+      status: string;
+      title: string;
+    }>();
+
+  if (!booking || booking.artist_id !== claims.sub) {
+    redirect(bookingPath("That booking request is not available."));
+  }
+
+  if (!["requested", "needs_changes", "accepted", "rescheduled"].includes(booking.status)) {
+    redirect(bookingPath("That booking request cannot be expired from here."));
+  }
+
+  if (!["not_ready", "payment_failed"].includes(booking.payment_status)) {
+    redirect(bookingPath("That booking request has payment activity and cannot be expired from here."));
+  }
+
+  const admin = createAdminClient();
+
+  if (!admin) {
+    redirect(bookingPath("Booking expiration needs owner tools enabled first."));
+  }
+
+  const now = new Date().toISOString();
+  const { error } = await admin
+    .from("booking_requests")
+    .update({
+      artist_note: artistNote || null,
+      expired_at: now,
+      status: "expired",
+      status_changed_at: now,
+      updated_at: now,
+    })
+    .eq("id", booking.id)
+    .eq("artist_id", claims.sub)
+    .in("status", ["requested", "needs_changes", "accepted", "rescheduled"])
+    .in("payment_status", ["not_ready", "payment_failed"]);
+
+  if (error) {
+    console.error("Booking expiration failed.", error);
+    redirect(bookingPath("Could not expire booking request. Please try again."));
+  }
+
+  await recordBookingStatusEvent({
+    actorId: claims.sub,
+    admin,
+    bookingId: booking.id,
+    fromStatus: booking.status,
+    note: artistNote || null,
+    toStatus: "expired",
+  });
+
+  const [{ data: artist }, { data: clientPreferences }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("display_name, username")
+      .eq("id", claims.sub)
+      .maybeSingle<{ display_name: string; username: string }>(),
+    supabase
+      .from("profiles")
+      .select(notificationPreferenceSelect("message"))
+      .eq("id", booking.client_id)
+      .maybeSingle<NotificationPreferenceProfile>(),
+  ]);
+
+  if (allowsInAppNotification(clientPreferences, "message")) {
+    await insertNotifications({
+      actor_id: claims.sub,
+      body: artistNote || "This booking request expired before it was completed.",
+      href: "/u/" + (artist?.username ?? "") + "#booking-request",
+      recipient_id: booking.client_id,
+      subject_id: booking.id,
+      subject_type: "booking_request",
+      title: ("Booking expired: " + booking.title).slice(0, 120),
+      type: "booking_expired",
+    });
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/messages");
+  revalidatePath("/notifications");
+  redirect(bookingRedirectPath(formData, "Booking request expired."));
 }
 
 export async function cancelBookingRequest(formData: FormData) {
@@ -1378,7 +1840,7 @@ export async function cancelBookingRequest(formData: FormData) {
   }
 
   const canCancel =
-    ["requested", "accepted"].includes(booking.status) &&
+    ["requested", "needs_changes", "accepted", "rescheduled"].includes(booking.status) &&
     ["not_ready", "payment_failed"].includes(booking.payment_status);
 
   if (!canCancel) {
@@ -1397,17 +1859,27 @@ export async function cancelBookingRequest(formData: FormData) {
     .update({
       cancelled_at: now,
       status: "cancelled",
+      status_changed_at: now,
       updated_at: now,
     })
     .eq("id", booking.id)
     .eq("client_id", claims.sub)
-    .in("status", ["requested", "accepted"])
+    .in("status", ["requested", "needs_changes", "accepted", "rescheduled"])
     .in("payment_status", ["not_ready", "payment_failed"]);
 
   if (error) {
     console.error("Booking request cancellation failed.", error);
     redirect(bookingPath("Could not cancel booking request. Please try again."));
   }
+
+  await recordBookingStatusEvent({
+    actorId: claims.sub,
+    admin,
+    bookingId: booking.id,
+    fromStatus: booking.status,
+    note: null,
+    toStatus: "cancelled",
+  });
 
   const [{ data: client }, { data: artistPreferences }] = await Promise.all([
     supabase
@@ -1493,6 +1965,7 @@ export async function cancelAcceptedBookingAsArtist(formData: FormData) {
     .update({
       cancelled_at: now,
       status: "cancelled",
+      status_changed_at: now,
       updated_at: now,
     })
     .eq("id", booking.id)
@@ -1504,6 +1977,15 @@ export async function cancelAcceptedBookingAsArtist(formData: FormData) {
     console.error("Accepted booking cancellation failed.", error);
     redirect(bookingPath("Could not cancel accepted booking. Please try again."));
   }
+
+  await recordBookingStatusEvent({
+    actorId: claims.sub,
+    admin,
+    bookingId: booking.id,
+    fromStatus: booking.status,
+    note: null,
+    toStatus: "cancelled",
+  });
 
   const [{ data: artist }, { data: clientPreferences }] = await Promise.all([
     supabase

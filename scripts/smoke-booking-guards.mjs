@@ -310,8 +310,10 @@ const checks = [
       accountActions.includes('.from("booking_blackout_dates")') &&
       accountActions.includes("overlaps a blackout window") &&
       accountActions.includes("overlaps another scheduled booking") &&
-      accountActions.includes('.in("status", ["accepted", "deposit_pending", "deposit_paid", "completed"])') &&
-      accountActions.includes('type: decision === "accept" ? "booking_accepted" : "booking_declined"') &&
+      accountActions.includes('.in("status", ["accepted", "rescheduled", "deposit_pending", "deposit_paid", "completed"])') &&
+      accountActions.includes('booking_needs_changes') &&
+      accountActions.includes('recordBookingStatusEvent') &&
+      accountActions.includes('toStatus: nextStatus') &&
       accountActions.includes('artistNote || "Declined."') &&
       !accountActions.includes("Declined for now.") &&
       accountActions.includes("Deposit checkout is the next booking step.") &&
@@ -355,7 +357,7 @@ const checks = [
     ok:
       accountActions.includes("export async function cancelBookingRequest") &&
       accountActions.includes('type: "booking_cancelled"') &&
-      accountActions.includes('.in("status", ["requested", "accepted"])') &&
+      accountActions.includes('.in("status", ["requested", "needs_changes", "accepted", "rescheduled"])') &&
       accountActions.includes('.in("payment_status", ["not_ready", "payment_failed"])') &&
       accountPage.includes("cancelBookingRequest") &&
       accountPage.includes("Cancel request") &&

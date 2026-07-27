@@ -12,11 +12,14 @@ import {
   deleteBookingAppointmentType,
   deleteBookingBlackoutDate,
   deleteBookingSlot,
+  expireBookingRequestAsArtist,
+  markBookingCompletedAsArtist,
   markMerchSaleFulfilled,
   requestAccountDeletion,
   requestBookingRefundReview,
   requestMerchRefundReview,
   respondBookingRequest,
+  rescheduleBookingAsArtist,
   submitAdCampaign,
   submitLicenseVerification,
   toggleBookingAppointmentType,
@@ -124,10 +127,13 @@ const orderPageSize = 25;
 const bookingStatusFilters = [
   "requested",
   "accepted",
+  "needs_changes",
+  "rescheduled",
   "deposit_paid",
   "declined",
   "cancelled",
   "completed",
+  "expired",
 ] as const;
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 const slotIntervals = [15, 20, 30, 45, 60, 90, 120] as const;
@@ -2138,7 +2144,13 @@ export default async function AccountPage({
                       booking.status === "requested" &&
                       booking.payment_status === "not_ready";
                     const canCancelAcceptedBooking =
-                      booking.status === "accepted" &&
+                      ["accepted", "rescheduled"].includes(booking.status) &&
+                      ["not_ready", "payment_failed"].includes(booking.payment_status);
+                    const canRescheduleBooking = ["accepted", "rescheduled", "deposit_paid"].includes(booking.status);
+                    const canCompleteBooking = ["accepted", "rescheduled", "deposit_paid"].includes(booking.status) &&
+                      !["checkout_started", "payment_failed", "refunded"].includes(booking.payment_status);
+                    const canExpireBooking =
+                      ["requested", "needs_changes", "accepted", "rescheduled"].includes(booking.status) &&
                       ["not_ready", "payment_failed"].includes(booking.payment_status);
 
                     return (
@@ -2200,7 +2212,61 @@ export default async function AccountPage({
                           {booking.preferred_dates ? (
                             <p>Dates: {booking.preferred_dates}</p>
                           ) : null}
-                          {booking.scheduled_start_at ? (
+                          {canRescheduleBooking || canCompleteBooking || canExpireBooking ? (
+                          <details className="mt-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3">
+                            <summary className="cursor-pointer list-none text-xs font-bold">
+                              Manage booking
+                            </summary>
+                            {canRescheduleBooking ? (
+                              <form action={rescheduleBookingAsArtist} className="mt-3 grid gap-2">
+                                <input name="booking_id" type="hidden" value={booking.id} />
+                                <input
+                                  name="scheduled_timezone"
+                                  type="hidden"
+                                  value={bookingSettings?.timezone ?? "America/Chicago"}
+                                />
+                                <textarea
+                                  className="min-h-16 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
+                                  maxLength={1000}
+                                  name="artist_note"
+                                  placeholder="Optional reschedule note"
+                                />
+                                <div className="grid gap-2 sm:grid-cols-2">
+                                  <label className="grid gap-1 text-xs font-semibold">
+                                    New start
+                                    <input className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]" name="scheduled_start_at" type="datetime-local" />
+                                  </label>
+                                  <label className="grid gap-1 text-xs font-semibold">
+                                    New end
+                                    <input className="h-10 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]" name="scheduled_end_at" type="datetime-local" />
+                                  </label>
+                                </div>
+                                <PendingSubmitButton className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)] sm:w-fit" pendingLabel="Rescheduling">
+                                  Suggest new time
+                                </PendingSubmitButton>
+                              </form>
+                            ) : null}
+                            {canCompleteBooking ? (
+                              <form action={markBookingCompletedAsArtist} className="mt-3 grid gap-2">
+                                <input name="booking_id" type="hidden" value={booking.id} />
+                                <textarea className="min-h-16 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]" maxLength={1000} name="artist_note" placeholder="Optional completion note" />
+                                <PendingSubmitButton className="h-10 w-full rounded-md border border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] px-4 text-sm font-bold text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))] sm:w-fit" pendingLabel="Completing">
+                                  Mark completed
+                                </PendingSubmitButton>
+                              </form>
+                            ) : null}
+                            {canExpireBooking ? (
+                              <form action={expireBookingRequestAsArtist} className="mt-3 grid gap-2">
+                                <input name="booking_id" type="hidden" value={booking.id} />
+                                <textarea className="min-h-16 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]" maxLength={1000} name="artist_note" placeholder="Optional expiration note" />
+                                <PendingSubmitButton className="h-10 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-4 text-sm font-bold text-[var(--foreground)] sm:w-fit" pendingLabel="Expiring">
+                                  Mark expired
+                                </PendingSubmitButton>
+                              </form>
+                            ) : null}
+                          </details>
+                        ) : null}
+                        {booking.scheduled_start_at ? (
                             <p>
                               Scheduled:{" "}
                               {formatBookingDateTime(
