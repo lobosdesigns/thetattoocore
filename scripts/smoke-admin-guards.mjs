@@ -523,6 +523,12 @@ const checks = [
   {
     label: "admin data requests can filter status and search while preserving actions",
     ok:
+      adminDataRequests.includes('const adminRoles: UserRole[] = ["admin", "owner"]') &&
+      adminDataRequests.includes("!adminRoles.includes(profile.role)") &&
+      adminActions.indexOf("export async function updateAccountDeletionRequest") <
+        adminActions.indexOf("await requireAdmin()",
+          adminActions.indexOf("export async function updateAccountDeletionRequest"),
+        ) &&
       adminDataRequests.includes("function dataRequestFilters") &&
       adminDataRequests.includes("Filter data requests") &&
       adminDataRequests.includes("Username, display name, or reason") &&

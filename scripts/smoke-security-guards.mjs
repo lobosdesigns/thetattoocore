@@ -21,6 +21,7 @@ const loginPage = readFileSync("src/app/login/page.tsx", "utf8");
 const authSession = readFileSync("src/lib/auth-session.ts", "utf8");
 const browserSupabase = readFileSync("src/lib/supabase/client.ts", "utf8");
 const serverSupabase = readFileSync("src/lib/supabase/server.ts", "utf8");
+const adminSupabase = readFileSync("src/lib/supabase/admin.ts", "utf8");
 const signupPage = readFileSync("src/app/signup/page.tsx", "utf8");
 const notificationActions = readFileSync("src/app/notifications/actions.ts", "utf8");
 const notificationBell = readFileSync("src/app/notification-bell-link.tsx", "utf8");
@@ -857,6 +858,12 @@ const checks = [
       packageJson.includes(
         '"smoke:security": "npm run test:csp-headers && node --no-warnings --experimental-loader ./scripts/server-only-test-loader.mjs --experimental-default-type=module scripts/test-mail-redaction.mjs && node scripts/smoke-security-guards.mjs"',
       ),
+  },
+  {
+    label: "service-role Supabase client is server-only",
+    ok:
+      adminSupabase.startsWith('import "server-only";') &&
+      adminSupabase.includes("process.env.SUPABASE_SERVICE_ROLE_KEY"),
   },
   {
     label: "support deletion action routes through safe sign-in return",

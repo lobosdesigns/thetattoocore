@@ -114,7 +114,7 @@ const operations = [
   },
   {
     form: { request_id: testIds.other, status: "reviewing" },
-    minimumRole: "moderator",
+    minimumRole: "admin",
     name: "updateAccountDeletionRequest",
   },
   {

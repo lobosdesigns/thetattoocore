@@ -24,7 +24,7 @@ type AccountDeletionRequest = {
 };
 type DataRequestStatus = AccountDeletionRequest["status"] | "all";
 
-const moderateRoles: UserRole[] = ["moderator", "admin", "owner"];
+const adminRoles: UserRole[] = ["admin", "owner"];
 const pageSize = 50;
 const dataRequestStatuses = [
   "all",
@@ -293,7 +293,7 @@ export default async function AdminDataRequestsPage({
     .eq("id", claims.sub)
     .maybeSingle<{ username: string; display_name: string; role: UserRole }>();
 
-  if (!profile || !moderateRoles.includes(profile.role)) {
+  if (!profile || !adminRoles.includes(profile.role)) {
     redirect("/admin");
   }
 

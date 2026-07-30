@@ -2437,7 +2437,7 @@ export async function updateAccountDeletionRequest(formData: FormData) {
     );
   }
 
-  const { supabase, userId } = await requireModerator();
+  const { supabase, userId } = await requireAdmin();
   const { data: request, error: requestError } = await supabase
     .from("account_deletion_requests")
     .select("id, profile_id, status")
