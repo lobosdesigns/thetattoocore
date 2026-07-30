@@ -1251,7 +1251,7 @@ const checks = [
   {
     label: "full verification keeps focused DM, Android probe, and mobile guards in the chain",
     ok:
-      packageJson.includes('"smoke:dm": "node scripts/test-message-conversation-selection.mjs && node scripts/smoke-dm-guards.mjs"') &&
+      packageJson.includes('"smoke:dm": "node scripts/test-message-conversation-selection.mjs && node scripts/test-messaging-notifications-contracts.mjs && node scripts/test-phase3-db-contracts.mjs && node scripts/smoke-dm-guards.mjs"') &&
       packageJson.includes("npm run smoke:stories && npm run smoke:dm && npm run smoke:booking") &&
       packageJson.includes("npm run smoke:env && npm run smoke:security && npm run smoke:content && npm run smoke:theme && npm run smoke:payments && npm run smoke:store && npm run smoke:pwa && npm run smoke:native && npm run test:native-push-delivery && npm run smoke:native-push && npm run smoke:app-links && npm run qa:android-device && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:narrow && npm run smoke:mobile:ios && npm run verify:distribution-evidence") &&
       packageJson.includes("npm run smoke:native && npm run test:native-push-delivery && npm run smoke:native-push && npm run smoke:app-links && npm run qa:android-device && npm run smoke:store") &&
