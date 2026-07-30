@@ -29,6 +29,10 @@ const adCreditMigration = readFileSync(
   "supabase/migrations/20260715033000_ad_credit_ledger.sql",
   "utf8",
 );
+const adminOperationIdempotencyMigration = readFileSync(
+  "supabase/migrations/20260730123000_enforce_admin_operation_idempotency.sql",
+  "utf8",
+);
 const ownerModerationMigration = readFileSync(
   "supabase/migrations/20260723013208_protect_owner_moderation_state.sql",
   "utf8",
@@ -344,18 +348,18 @@ const checks = [
   {
     label: "admin user management actions hide raw backend errors from redirects",
     ok:
-      adminActions.includes('console.error("Admin role profile lookup failed.", targetError)') &&
-      adminActions.includes('console.error("Admin role update failed.", updateError)') &&
-      adminActions.includes('console.error("Admin user status profile lookup failed.", targetError)') &&
-      adminActions.includes('console.error("Admin user status update failed.", updateError)') &&
-      adminActions.includes('console.error("Admin user deletion profile lookup failed.", targetError)') &&
-      adminActions.includes('console.error("Admin auth user delete failed.", deleteError)') &&
-      adminActions.includes('console.error("Admin user deletion audit logging failed.", auditError)') &&
-      adminActions.includes('console.error("Tester account auth create failed.", createError)') &&
-      adminActions.includes('console.error("Tester account profile setup failed.", updateError)') &&
-      adminActions.includes('console.error("Tester account audit logging failed.", auditError)') &&
-      adminActions.includes('console.error("Admin ad credit profile lookup failed.", targetError)') &&
-      adminActions.includes('console.error("Admin ad credit grant failed.", insertError)') &&
+      adminActions.includes('console.error("Admin role profile lookup failed.")') &&
+      adminActions.includes('console.error("Admin role update failed.")') &&
+      adminActions.includes('console.error("Admin user status profile lookup failed.")') &&
+      adminActions.includes('console.error("Admin user status update failed.")') &&
+      adminActions.includes('console.error("Admin user deletion profile lookup failed.")') &&
+      adminActions.includes('console.error("Admin auth user delete failed.")') &&
+      adminActions.includes('console.error("Admin user deletion audit logging failed.")') &&
+      adminActions.includes('console.error("Tester account auth create failed.")') &&
+      adminActions.includes('console.error("Tester account profile setup failed.")') &&
+      adminActions.includes('console.error("Tester account audit logging failed.")') &&
+      adminActions.includes('console.error("Admin ad credit profile lookup failed.")') &&
+      adminActions.includes('console.error("Admin ad credit grant failed.")') &&
       adminActions.includes('"Could not update role. Please try again."') &&
       adminActions.includes('"Could not update user status. Please try again."') &&
       adminActions.includes('"Could not delete user account. Review account activity and try again."') &&
@@ -454,9 +458,18 @@ const checks = [
       adCreditMigration.includes("Users can view own ad credits") &&
       adminActions.includes("export async function grantUserAdCredit") &&
       adminActions.includes("await requireAdmin()") &&
-      adminActions.includes('event_type: "user_ad_credit_granted"') &&
-      adminActions.includes('.from("ad_credit_ledger").insert') &&
+      adminActions.includes('"grant_admin_ad_credit"') &&
+      adminOperationIdempotencyMigration.includes(
+        "create or replace function public.grant_admin_ad_credit",
+      ) &&
+      adminOperationIdempotencyMigration.includes(
+        "'user_ad_credit_granted'",
+      ) &&
+      adminOperationIdempotencyMigration.includes(
+        "on conflict (operation_id) do nothing",
+      ) &&
       adminUsers.includes("grantUserAdCredit") &&
+      adminUsers.includes('name="operation_id"') &&
       adminUsers.includes("Add ad credit") &&
       adminUsers.includes("Visible ad credits") &&
       adminUsers.includes("Ad credit {money(user.adCreditBalanceCents)}") &&
@@ -488,8 +501,8 @@ const checks = [
   {
     label: "admin account deletion actions hide raw backend errors from redirects",
     ok:
-      adminActions.includes('console.error("Account deletion request lookup failed.", requestError)') &&
-      adminActions.includes('console.error("Account deletion request update failed.", updateError)') &&
+      adminActions.includes('console.error("Account deletion request lookup failed.")') &&
+      adminActions.includes('console.error("Account deletion request update failed.")') &&
       adminActions.includes('"Account deletion request was not found."') &&
       adminActions.includes('"Could not update account deletion request. Please try again."') &&
       !adminActions.includes('requestError?.message || "Account deletion request was not found."') &&
@@ -562,12 +575,12 @@ const checks = [
   {
     label: "admin content moderation actions hide raw backend errors from redirects",
     ok:
-      adminActions.includes('console.error("Admin linked content report lookup failed.", reportError)') &&
-      adminActions.includes('console.error("Admin content subject lookup failed.", subjectError)') &&
-      adminActions.includes('console.error("Admin content moderation update failed.", updateError)') &&
-      adminActions.includes('console.error("Admin content moderation log failed.", actionError)') &&
-      adminActions.includes('console.error("Admin linked report status update failed.", reportUpdateError)') &&
-      adminActions.includes('console.error("Admin linked report resolution log failed.", reportActionError)') &&
+      adminActions.includes('console.error("Admin linked content report lookup failed.")') &&
+      adminActions.includes('console.error("Admin content subject lookup failed.")') &&
+      adminActions.includes('console.error("Admin content moderation update failed.")') &&
+      adminActions.includes('console.error("Admin content moderation log failed.")') &&
+      adminActions.includes('console.error("Admin linked report status update failed.")') &&
+      adminActions.includes('console.error("Admin linked report resolution log failed.")') &&
       adminActions.includes('"Could not update content. Please try again."') &&
       adminActions.includes('"Content changed, but moderation log failed. Please try again."') &&
       adminActions.includes('"Content changed, but the report status did not update. Please try again."') &&
@@ -582,8 +595,8 @@ const checks = [
   {
     label: "admin Help question moderation hides raw backend errors from redirects",
     ok:
-      adminActions.includes('console.error("Admin Help question lookup failed.", commentError)') &&
-      adminActions.includes('console.error("Admin Help question update failed.", updateError)') &&
+      adminActions.includes('console.error("Admin Help question lookup failed.")') &&
+      adminActions.includes('console.error("Admin Help question update failed.")') &&
       adminActions.includes('"Help question was not found."') &&
       adminActions.includes('"Could not update Help question. Please try again."') &&
       !adminActions.includes('commentError?.message || "Help question was not found."') &&
@@ -592,12 +605,12 @@ const checks = [
   {
     label: "admin report actions hide raw backend errors from redirects",
     ok:
-      adminActions.includes('console.error("Admin report status lookup failed.", reportError)') &&
-      adminActions.includes('console.error("Admin report status update failed.", updateError)') &&
-      adminActions.includes('console.error("Admin report status log failed.", actionError)') &&
-      adminActions.includes('console.error("Admin report follow-up lookup failed.", reportError)') &&
-      adminActions.includes('console.error("Admin report follow-up log failed.", actionError)') &&
-      adminActions.includes('console.error("Admin report follow-up status update failed.", updateError)') &&
+      adminActions.includes('console.error("Admin report status lookup failed.")') &&
+      adminActions.includes('console.error("Admin report status update failed.")') &&
+      adminActions.includes('console.error("Admin report status log failed.")') &&
+      adminActions.includes('console.error("Admin report follow-up lookup failed.")') &&
+      adminActions.includes('console.error("Admin report follow-up log failed.")') &&
+      adminActions.includes('console.error("Admin report follow-up status update failed.")') &&
       adminActions.includes('"Could not update report. Please try again."') &&
       adminActions.includes('"Report changed, but log failed. Please try again."') &&
       adminActions.includes('"Could not record report follow-up. Please try again."') &&
@@ -642,10 +655,10 @@ const checks = [
   {
     label: "admin verification actions hide raw backend errors from redirects",
     ok:
-      adminActions.includes('console.error("Admin verification request lookup failed.", requestError)') &&
-      adminActions.includes('console.error("Admin verification request update failed.", updateError)') &&
-      adminActions.includes('console.error("Admin verification profile badge update failed.", profileError)') &&
-      adminActions.includes('console.error("Admin verification notification failed.", notificationError)') &&
+      adminActions.includes('console.error("Admin verification request lookup failed.")') &&
+      adminActions.includes('console.error("Admin verification request update failed.")') &&
+      adminActions.includes('console.error("Admin verification profile badge update failed.")') &&
+      adminActions.includes('console.error("Admin verification notification failed.")') &&
       adminActions.includes('"License request was not found."') &&
       adminActions.includes('"Could not update license request. Please try again."') &&
       adminActions.includes('"License approved, but profile badge failed. Please try again."') &&
@@ -694,10 +707,10 @@ const checks = [
   {
     label: "admin ad actions hide raw backend errors from redirects",
     ok:
-      adminActions.includes('console.error("Admin ad campaign lookup failed.", campaignError)') &&
-      adminActions.includes('console.error("Admin ad campaign status update failed.", updateError)') &&
-      adminActions.includes('console.error("Admin ad credit campaign lookup failed.", campaignError)') &&
-      adminActions.includes('console.error("Admin ad campaign credit update failed.", updateError)') &&
+      adminActions.includes('console.error("Admin ad campaign lookup failed.")') &&
+      adminActions.includes('console.error("Admin ad campaign status update failed.")') &&
+      adminActions.includes('console.error("Admin ad credit campaign lookup failed.")') &&
+      adminActions.includes('console.error("Admin ad campaign credit update failed.")') &&
       adminActions.includes('"Ad campaign was not found."') &&
       adminActions.includes('"Could not update ad campaign. Please try again."') &&
       adminActions.includes('"Could not apply ad credit. Please try again."') &&
@@ -708,20 +721,21 @@ const checks = [
   {
     label: "admin Merch actions hide raw backend errors from redirects",
     ok:
-      adminActions.includes('console.error("Admin Merch product lookup failed.", productError)') &&
-      adminActions.includes('console.error("Admin Merch product update failed.", updateError)') &&
-      adminActions.includes('console.error("Admin Merch order lookup failed.", orderError)') &&
-      adminActions.includes('console.error("Admin Merch order update failed.", updateError)') &&
-      adminActions.includes('console.error("Admin Merch order item fulfillment update failed.", itemError)') &&
-      adminActions.includes('console.error("Admin Merch order update client is unavailable.")') &&
-      adminActions.includes('console.error("Admin Merch order cancellation failed.", cancellationError)') &&
+      adminActions.includes('console.error("Admin Merch product lookup failed.")') &&
+      adminActions.includes('console.error("Admin Merch product update failed.")') &&
+      adminActions.includes('console.error("Admin Merch order lookup failed.")') &&
+      adminActions.includes('console.error("Admin Merch order update failed.")') &&
+      adminActions.includes('"admin_update_merch_order_status"') &&
+      adminOperationIdempotencyMigration.includes(
+        "create or replace function public.admin_update_merch_order_status",
+      ) &&
       adminActions.includes('"Merch product was not found."') &&
       adminActions.includes('"Could not update Merch product. Please try again."') &&
       adminActions.includes('"Merch order was not found."') &&
       adminActions.includes('"Could not update Merch order. Please try again."') &&
-      adminActions.includes('"Order changed, but line-item fulfillment status failed. Please try again."') &&
-      adminActions.includes('"Could not prepare the order update. Please try again."') &&
-      adminActions.includes('"Could not cancel Merch order. Please try again."') &&
+      adminActions.includes(
+        '"Merch order changed before this action. Review it and try again."',
+      ) &&
       !adminActions.includes('productError?.message || "Merch product was not found."') &&
       !adminActions.includes('updateError.message || "Could not update merch product."') &&
       !adminActions.includes('orderError?.message || "Merch order was not found."') &&
@@ -737,7 +751,8 @@ const checks = [
       adminActions.includes("if (!isUuid(profileId) || !isAssignableUserRole(role))") &&
       adminActions.includes("if (!isUuid(profileId) || !userStatuses.has(status))") &&
       adminActions.includes("if (!isUuid(profileId))") &&
-      adminActions.includes("if (!isUuid(profileId) || !adCreditReasons.has(reason))") &&
+      adminActions.includes("!isUuid(operationId)") &&
+      adminActions.includes("!adCreditReasons.has(reason)") &&
       adminActions.includes("if (!config || !isUuid(subjectId) || !statuses.has(moderationStatus))") &&
       adminActions.includes("if (reportId && !isUuid(reportId))") &&
       adminActions.includes("if (!isUuid(commentId) || !helpCommentStatuses.has(status))") &&

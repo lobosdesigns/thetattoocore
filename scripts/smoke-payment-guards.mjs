@@ -61,6 +61,10 @@ const paymentRpcAccessMigration = readFileSync(
   "supabase/migrations/20260722135223_restrict_payment_inventory_rpc_execute.sql",
   "utf8",
 );
+const adminOperationIdempotencyMigration = readFileSync(
+  "supabase/migrations/20260730123000_enforce_admin_operation_idempotency.sql",
+  "utf8",
+);
 const merchInventoryLifecycleMigration = readFileSync(
   "supabase/migrations/20260722144527_merch_inventory_reservation_lifecycle.sql",
   "utf8",
@@ -303,11 +307,18 @@ try {
 checks.push({
   label: "payment inventory RPC execution stays limited to intended roles",
   ok:
-    adminActions.includes("const orderAdmin = createAdminClient()") &&
-    adminActions.includes("const orderCancellationClient = orderAdmin") &&
-    adminActions.includes("const orderUpdateClient = orderAdmin") &&
-    adminActions.includes('.rpc("cancel_unpaid_merch_order"') &&
-    !adminActions.includes('await supabase.rpc(\n      "cancel_unpaid_merch_order"') &&
+    merchOrderStatusAction.includes("await requireAdmin()") &&
+    merchOrderStatusAction.includes('"admin_update_merch_order_status"') &&
+    !merchOrderStatusAction.includes('"cancel_unpaid_merch_order"') &&
+    adminOperationIdempotencyMigration.includes(
+      "create or replace function public.admin_update_merch_order_status",
+    ) &&
+    adminOperationIdempotencyMigration.includes(
+      "not private.current_user_can_admin()",
+    ) &&
+    adminOperationIdempotencyMigration.includes(
+      "grant execute on function public.admin_update_merch_order_status",
+    ) &&
     paymentRpcAccessMigration.includes(
       "revoke execute on function public.reserve_merch_inventory_for_order(uuid)",
     ) &&
@@ -389,8 +400,13 @@ checks.push({
       '"Only failed orders can be cancelled here. Refund paid orders in the payment review tools first."',
     ) &&
     merchOrderStatusAction.indexOf('order.status === "payment_failed"') <
-      merchOrderStatusAction.indexOf('.rpc("cancel_unpaid_merch_order"') &&
-    merchOrderStatusAction.includes("const orderUpdateClient = orderAdmin") &&
+      merchOrderStatusAction.indexOf('"admin_update_merch_order_status"') &&
+    adminOperationIdempotencyMigration.includes(
+      "v_order.inventory_reservation_status <> 'released'",
+    ) &&
+    adminOperationIdempotencyMigration.includes(
+      "from public.cancel_unpaid_merch_order(v_order.id, p_admin_note)",
+    ) &&
     !merchOrderStatusAction.includes(
       'await supabase\n      .from("merch_orders")\n      .update',
     ) &&
@@ -1548,9 +1564,12 @@ checks.push({
     adminAdsPage.includes("Apply ad credit") &&
     adminActions.includes("export async function grantAdCampaignCredit") &&
     adminActions.includes("await requireAdmin()") &&
-    adminActions.includes('payment_status: "waived"') &&
-    adminActions.includes('event_type: "ad_campaign_credit_granted"') &&
-    adminActions.includes("credit_amount_cents") &&
+    adminActions.includes('"admin_grant_ad_campaign_credit"') &&
+    adminOperationIdempotencyMigration.includes("payment_status = 'waived'") &&
+    adminOperationIdempotencyMigration.includes(
+      "'ad_campaign_credit_granted'",
+    ) &&
+    adminOperationIdempotencyMigration.includes("'credit_amount_cents'") &&
     adminActions.includes("Only unpaid, failed, refunded, or already-waived ad campaigns can receive manual credit.") &&
     productPlan.includes("manual ad credits are started as campaign-level payment waivers") &&
     !accountPage.includes('return value.replaceAll("_", " ")') &&
@@ -1701,14 +1720,14 @@ checks.push({
     adminActions.includes('stripe_checkout_session_id: null') &&
     adminActions.includes('profile?.role !== "admin" && profile?.role !== "owner"') &&
     bookingCheckoutReconciliationAction.includes(
-      'console.error("Admin booking checkout lookup failed.", error)',
+      'console.error("Admin booking checkout lookup failed.")',
     ) &&
     bookingCheckoutReconciliationAction.includes(
       '"Could not confirm this booking checkout. It remains held for review."',
     ) &&
-    adminActions.includes('console.error("Admin booking deposit lookup failed.", error)') &&
+    adminActions.includes('console.error("Admin booking deposit lookup failed.")') &&
     adminActions.includes('"Booking deposit not found."') &&
-    adminActions.includes('console.error("Admin booking deposit refund request failed.", error)') &&
+    adminActions.includes('console.error("Admin booking deposit refund request failed.")') &&
     adminActions.includes('"Could not confirm booking refund. Retry this action; it will not send a duplicate refund."') &&
     !bookingCheckoutReconciliationAction.includes("error instanceof Error") &&
     !adminActions.includes('error?.message || "Booking deposit not found."') &&

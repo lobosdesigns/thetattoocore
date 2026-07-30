@@ -855,7 +855,7 @@ const checks = [
       mailRedactionTest.includes("TTC_MAIL_REDACTION_SENTINEL") &&
       mailRedactionTest.includes('assert.equal("cause" in error, false)') &&
       packageJson.includes(
-        '"smoke:security": "npm run test:csp-headers && node --experimental-default-type=module scripts/test-mail-redaction.mjs && node scripts/smoke-security-guards.mjs"',
+        '"smoke:security": "npm run test:csp-headers && node --no-warnings --experimental-loader ./scripts/server-only-test-loader.mjs --experimental-default-type=module scripts/test-mail-redaction.mjs && node scripts/smoke-security-guards.mjs"',
       ),
   },
   {
@@ -1076,9 +1076,19 @@ const checks = [
       adminMailTestRoute.includes("const privateAdminResponseHeaders =") &&
       adminMailTestRoute.includes('"Cache-Control": "private, no-store, max-age=0, must-revalidate"') &&
       adminMailTestRoute.includes('"X-Robots-Tag": "noindex, nofollow"') &&
-      adminMailTestRoute.includes("{ headers: privateAdminResponseHeaders, status: 401 }") &&
-      adminMailTestRoute.includes("{ headers: privateAdminResponseHeaders, status: 403 }") &&
-      adminMailTestRoute.includes("{ ok: true }, { headers: privateAdminResponseHeaders }") &&
+      adminMailTestRoute.includes("function privateJson(") &&
+      adminMailTestRoute.includes(
+        "return NextResponse.json(body, { headers, status })",
+      ) &&
+      adminMailTestRoute.includes(
+        'return privateJson({ error: "Sign in required." }, 401)',
+      ) &&
+      adminMailTestRoute.includes(
+        'return privateJson({ error: "Admin access required." }, 403)',
+      ) &&
+      adminMailTestRoute.includes("return privateJson({ ok: true })") &&
+
+
       adminStatusPages.every((source) => source.includes("robots")) &&
       adminStatusPages.every((source) => source.includes("index: false")),
   },

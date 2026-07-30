@@ -606,6 +606,7 @@ export default async function AdminUsersPage({
                     action={grantUserAdCredit}
                     className="mt-3 grid gap-2 lg:grid-cols-[130px_150px_1fr_150px_auto]"
                   >
+                    <input name="operation_id" type="hidden" value={crypto.randomUUID()} />
                     <input name="profile_id" type="hidden" value={user.id} />
                     <input name="return_to" type="hidden" value={pageHref(currentPage, activeSearch)} />
                     <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-[var(--muted-strong)]">

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/http/reliability";
 import { sendHostgatorTestEmail } from "@/lib/mail/hostgator";
 import { createClient } from "@/lib/supabase/server";
 
@@ -7,8 +8,13 @@ type Claims = {
   sub: string;
   email?: string;
 };
+type JsonBodyResult =
+  | { ok: true; value: Record<string, unknown> }
+  | { ok: false; status: 400 | 413 };
 
 const adminRoles: UserRole[] = ["admin", "owner"];
+const allowedBodyKeys = new Set(["recipientEmail"]);
+const maxRequestBodyBytes = 4_096;
 
 export const dynamic = "force-dynamic";
 
@@ -18,8 +24,85 @@ const privateAdminResponseHeaders = {
   "X-Robots-Tag": "noindex, nofollow",
 };
 
+function privateJson(
+  body: unknown,
+  status = 200,
+  additionalHeaders?: HeadersInit,
+) {
+  const headers = new Headers(additionalHeaders);
+
+  for (const [name, value] of Object.entries(privateAdminResponseHeaders)) {
+    headers.set(name, value);
+  }
+
+  return NextResponse.json(body, { headers, status });
+}
+
 function isEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  return (
+    value.length <= 254 &&
+    !value.includes("\r") &&
+    !value.includes("\n") &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+  );
+}
+
+function hasJsonContentType(request: Request) {
+  const mediaType = request.headers
+    .get("content-type")
+    ?.split(";", 1)[0]
+    .trim()
+    .toLowerCase();
+
+  return mediaType === "application/json" || mediaType?.endsWith("+json") === true;
+}
+
+function hasSameOrigin(request: Request) {
+  const origin = request.headers.get("origin");
+
+  if (!origin) {
+    return false;
+  }
+
+  try {
+    return new URL(origin).origin === new URL(request.url).origin;
+  } catch {
+    return false;
+  }
+}
+
+async function readJsonBody(request: Request): Promise<JsonBodyResult> {
+  const contentLength = request.headers.get("content-length");
+
+  if (contentLength !== null) {
+    const parsedLength = Number.parseInt(contentLength, 10);
+
+    if (!Number.isFinite(parsedLength) || parsedLength < 0) {
+      return { ok: false, status: 400 };
+    }
+
+    if (parsedLength > maxRequestBodyBytes) {
+      return { ok: false, status: 413 };
+    }
+  }
+
+  const rawBody = await request.text();
+
+  if (new TextEncoder().encode(rawBody).byteLength > maxRequestBodyBytes) {
+    return { ok: false, status: 413 };
+  }
+
+  try {
+    const value: unknown = JSON.parse(rawBody);
+
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      return { ok: false, status: 400 };
+    }
+
+    return { ok: true, value: value as Record<string, unknown> };
+  } catch {
+    return { ok: false, status: 400 };
+  }
 }
 
 export async function POST(request: Request) {
@@ -28,10 +111,7 @@ export async function POST(request: Request) {
   const claims = claimsData?.claims as Claims | undefined;
 
   if (!claims?.sub) {
-    return NextResponse.json(
-      { error: "Sign in required." },
-      { headers: privateAdminResponseHeaders, status: 401 },
-    );
+    return privateJson({ error: "Sign in required." }, 401);
   }
 
   const { data: profile } = await supabase
@@ -41,22 +121,64 @@ export async function POST(request: Request) {
     .maybeSingle<{ role: UserRole }>();
 
   if (!profile || !adminRoles.includes(profile.role)) {
-    return NextResponse.json(
-      { error: "Admin access required." },
-      { headers: privateAdminResponseHeaders, status: 403 },
+    return privateJson({ error: "Admin access required." }, 403);
+  }
+
+  if (!hasSameOrigin(request)) {
+    return privateJson({ error: "Request origin is not allowed." }, 403);
+  }
+
+  if (!hasJsonContentType(request)) {
+    return privateJson({ error: "Content-Type must be application/json." }, 415);
+  }
+
+  const rateLimit = checkRateLimit({
+    identity: claims.sub,
+    limit: 5,
+    request,
+    scope: "admin-mail-test",
+    windowMs: 10 * 60_000,
+  });
+
+  if (rateLimit.limited) {
+    return privateJson(
+      { error: "Too many requests. Please try again later." },
+      429,
+      { "Retry-After": String(rateLimit.retryAfterSeconds) },
     );
   }
 
-  const body = (await request.json().catch(() => ({}))) as {
-    recipientEmail?: string;
-  };
-  const recipientEmail = String(body.recipientEmail ?? claims.email ?? "").trim();
+  const bodyResult = await readJsonBody(request);
+
+  if (!bodyResult.ok) {
+    return privateJson(
+      {
+        error:
+          bodyResult.status === 413
+            ? "Request body is too large."
+            : "Enter a valid request body.",
+      },
+      bodyResult.status,
+    );
+  }
+
+  if (Object.keys(bodyResult.value).some((key) => !allowedBodyKeys.has(key))) {
+    return privateJson({ error: "Enter a valid request body." }, 400);
+  }
+
+  const requestedRecipient = bodyResult.value.recipientEmail;
+
+  if (
+    requestedRecipient !== undefined &&
+    typeof requestedRecipient !== "string"
+  ) {
+    return privateJson({ error: "Enter a valid recipient email." }, 400);
+  }
+
+  const recipientEmail = (requestedRecipient ?? claims.email ?? "").trim();
 
   if (!isEmail(recipientEmail)) {
-    return NextResponse.json(
-      { error: "Enter a valid recipient email." },
-      { headers: privateAdminResponseHeaders, status: 400 },
-    );
+    return privateJson({ error: "Enter a valid recipient email." }, 400);
   }
 
   const { data: settings, error } = await supabase
@@ -77,10 +199,7 @@ export async function POST(request: Request) {
     }>();
 
   if (error || !settings) {
-    return NextResponse.json(
-      { error: "Mail settings are not available." },
-      { headers: privateAdminResponseHeaders, status: 500 },
-    );
+    return privateJson({ error: "Mail settings are not available." }, 500);
   }
 
   try {
@@ -90,13 +209,10 @@ export async function POST(request: Request) {
       settings,
     });
 
-    return NextResponse.json({ ok: true }, { headers: privateAdminResponseHeaders });
+    return privateJson({ ok: true });
   } catch {
     console.error("Admin test email send failed.");
 
-    return NextResponse.json(
-      { error: "Could not send the test email." },
-      { headers: privateAdminResponseHeaders, status: 500 },
-    );
+    return privateJson({ error: "Could not send the test email." }, 500);
   }
 }

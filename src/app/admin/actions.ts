@@ -160,148 +160,115 @@ function adminMessage(message: string) {
   return `/admin?message=${encodeURIComponent(message)}#content`;
 }
 
-function adminUsersMessage(message: string, returnTo?: string) {
-  const safeReturnTo =
-    returnTo?.startsWith("/admin/users") || returnTo === "/admin"
-      ? returnTo
-      : "/admin#users";
-  const separator = safeReturnTo.includes("?") ? "&" : "?";
-  const hashIndex = safeReturnTo.indexOf("#");
+function safeAdminReturnPath(
+  returnTo: string | undefined,
+  allowedPath: string,
+  fallback: string,
+) {
+  const value = returnTo?.trim();
+  const hasControlCharacter =
+    value &&
+    [...value].some((character) => {
+      const code = character.charCodeAt(0);
+      return code < 32 || code === 127;
+    });
 
-  if (hashIndex >= 0) {
-    const base = safeReturnTo.slice(0, hashIndex);
-    const hash = safeReturnTo.slice(hashIndex);
-
-    return `${base}${separator}message=${encodeURIComponent(message)}${hash}`;
+  if (
+    !value ||
+    !value.startsWith("/") ||
+    value.startsWith("//") ||
+    value.includes("\\") ||
+    hasControlCharacter ||
+    /%(?:2e|2f|5c)/i.test(value)
+  ) {
+    return fallback;
   }
 
-  return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
+  try {
+    const url = new URL(value, "https://admin.internal");
+    const pathAllowed =
+      url.pathname === "/admin" ||
+      url.pathname === allowedPath ||
+      url.pathname.startsWith(`${allowedPath}/`);
+
+    if (url.origin !== "https://admin.internal" || !pathAllowed) {
+      return fallback;
+    }
+
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return fallback;
+  }
+}
+
+function adminSectionMessage(
+  message: string,
+  returnTo: string | undefined,
+  allowedPath: string,
+  fallback: string,
+) {
+  const safeReturnTo = safeAdminReturnPath(returnTo, allowedPath, fallback);
+  const url = new URL(safeReturnTo, "https://admin.internal");
+  url.searchParams.set("message", message);
+
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
+function adminUsersMessage(message: string, returnTo?: string) {
+  return adminSectionMessage(message, returnTo, "/admin/users", "/admin#users");
 }
 
 function adminAdsMessage(message: string, returnTo?: string) {
-  const safeReturnTo =
-    returnTo?.startsWith("/admin/ads") || returnTo === "/admin"
-      ? returnTo
-      : "/admin#ads";
-  const separator = safeReturnTo.includes("?") ? "&" : "?";
-  const hashIndex = safeReturnTo.indexOf("#");
-
-  if (hashIndex >= 0) {
-    const base = safeReturnTo.slice(0, hashIndex);
-    const hash = safeReturnTo.slice(hashIndex);
-
-    return `${base}${separator}message=${encodeURIComponent(message)}${hash}`;
-  }
-
-  return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
+  return adminSectionMessage(message, returnTo, "/admin/ads", "/admin#ads");
 }
 
 function adminMerchMessage(message: string, returnTo?: string) {
-  const safeReturnTo =
-    returnTo?.startsWith("/admin/merch") || returnTo === "/admin"
-      ? returnTo
-      : "/admin#merch";
-  const separator = safeReturnTo.includes("?") ? "&" : "?";
-  const hashIndex = safeReturnTo.indexOf("#");
-
-  if (hashIndex >= 0) {
-    const base = safeReturnTo.slice(0, hashIndex);
-    const hash = safeReturnTo.slice(hashIndex);
-
-    return `${base}${separator}message=${encodeURIComponent(message)}${hash}`;
-  }
-
-  return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
+  return adminSectionMessage(message, returnTo, "/admin/merch", "/admin#merch");
 }
 
 function adminPaymentsMessage(message: string, returnTo?: string) {
-  const safeReturnTo =
-    returnTo?.startsWith("/admin/payments") || returnTo === "/admin"
-      ? returnTo
-      : "/admin/payments";
-  const separator = safeReturnTo.includes("?") ? "&" : "?";
-  const hashIndex = safeReturnTo.indexOf("#");
-
-  if (hashIndex >= 0) {
-    const base = safeReturnTo.slice(0, hashIndex);
-    const hash = safeReturnTo.slice(hashIndex);
-
-    return `${base}${separator}message=${encodeURIComponent(message)}${hash}`;
-  }
-
-  return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
+  return adminSectionMessage(
+    message,
+    returnTo,
+    "/admin/payments",
+    "/admin/payments",
+  );
 }
 
 function adminDataRequestsMessage(message: string, returnTo?: string) {
-  const safeReturnTo =
-    returnTo?.startsWith("/admin/data-requests") || returnTo === "/admin"
-      ? returnTo
-      : "/admin#data-requests";
-  const separator = safeReturnTo.includes("?") ? "&" : "?";
-  const hashIndex = safeReturnTo.indexOf("#");
-
-  if (hashIndex >= 0) {
-    const base = safeReturnTo.slice(0, hashIndex);
-    const hash = safeReturnTo.slice(hashIndex);
-
-    return `${base}${separator}message=${encodeURIComponent(message)}${hash}`;
-  }
-
-  return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
+  return adminSectionMessage(
+    message,
+    returnTo,
+    "/admin/data-requests",
+    "/admin#data-requests",
+  );
 }
 
 function adminVerificationMessage(message: string, returnTo?: string) {
-  const safeReturnTo =
-    returnTo?.startsWith("/admin/verification") || returnTo === "/admin"
-      ? returnTo
-      : "/admin#verification";
-  const separator = safeReturnTo.includes("?") ? "&" : "?";
-  const hashIndex = safeReturnTo.indexOf("#");
-
-  if (hashIndex >= 0) {
-    const base = safeReturnTo.slice(0, hashIndex);
-    const hash = safeReturnTo.slice(hashIndex);
-
-    return `${base}${separator}message=${encodeURIComponent(message)}${hash}`;
-  }
-
-  return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
+  return adminSectionMessage(
+    message,
+    returnTo,
+    "/admin/verification",
+    "/admin#verification",
+  );
 }
 
 function adminReportsMessage(message: string, returnTo?: string) {
-  const safeReturnTo =
-    returnTo?.startsWith("/admin/reports") || returnTo === "/admin"
-      ? returnTo
-      : "/admin#reports";
-  const separator = safeReturnTo.includes("?") ? "&" : "?";
-  const hashIndex = safeReturnTo.indexOf("#");
-
-  if (hashIndex >= 0) {
-    const base = safeReturnTo.slice(0, hashIndex);
-    const hash = safeReturnTo.slice(hashIndex);
-
-    return `${base}${separator}message=${encodeURIComponent(message)}${hash}`;
-  }
-
-  return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
+  return adminSectionMessage(
+    message,
+    returnTo,
+    "/admin/reports",
+    "/admin#reports",
+  );
 }
 
 function adminContentMessage(message: string, returnTo?: string) {
-  const safeReturnTo =
-    returnTo?.startsWith("/admin/content") || returnTo === "/admin"
-      ? returnTo
-      : "/admin#content";
-  const separator = safeReturnTo.includes("?") ? "&" : "?";
-  const hashIndex = safeReturnTo.indexOf("#");
-
-  if (hashIndex >= 0) {
-    const base = safeReturnTo.slice(0, hashIndex);
-    const hash = safeReturnTo.slice(hashIndex);
-
-    return `${base}${separator}message=${encodeURIComponent(message)}${hash}`;
-  }
-
-  return `${safeReturnTo}${separator}message=${encodeURIComponent(message)}`;
+  return adminSectionMessage(
+    message,
+    returnTo,
+    "/admin/content",
+    "/admin#content",
+  );
 }
 
 function helpArticlePath(slug: string) {
@@ -345,6 +312,31 @@ function centsFromDollars(value: FormDataEntryValue | null, maxCents: number) {
   if (!Number.isFinite(amount) || amount < 0) return -1;
 
   return Math.min(Math.round(amount * 100), maxCents);
+}
+
+function optionalEndOfDayTimestamp(value: string) {
+  if (!value) return null;
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return undefined;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+
+  if (year < 2000 || year > 9999) return undefined;
+
+  const timestamp = new Date(Date.UTC(year, month - 1, day, 23, 59, 59));
+
+  if (
+    timestamp.getUTCFullYear() !== year ||
+    timestamp.getUTCMonth() !== month - 1 ||
+    timestamp.getUTCDate() !== day
+  ) {
+    return undefined;
+  }
+
+  return timestamp.toISOString();
 }
 
 function isPastDate(value: string | null) {
@@ -413,7 +405,7 @@ async function maybeSendVerificationDecisionEmail({
     await adminClient.auth.admin.getUserById(profileId);
 
   if (userError) {
-    console.error("Verification decision email user lookup failed", userError);
+    console.error("Verification decision email user lookup failed");
     return;
   }
 
@@ -544,7 +536,7 @@ export async function changeUserRole(formData: FormData) {
 
   if (targetError || !target) {
     if (targetError) {
-      console.error("Admin role profile lookup failed.", targetError);
+      console.error("Admin role profile lookup failed.");
     }
     redirect(
       adminUsersMessage(
@@ -558,6 +550,10 @@ export async function changeUserRole(formData: FormData) {
     redirect(adminUsersMessage("Owner accounts cannot be demoted.", returnTo));
   }
 
+  if (target.role === role) {
+    redirect(adminUsersMessage("User already has that role.", returnTo));
+  }
+
   const { error: updateError } = await supabase
     .from("profiles")
     .update({
@@ -567,7 +563,7 @@ export async function changeUserRole(formData: FormData) {
     .eq("id", profileId);
 
   if (updateError) {
-    console.error("Admin role update failed.", updateError);
+    console.error("Admin role update failed.");
     redirect(
       adminUsersMessage("Could not update role. Please try again.", returnTo),
     );
@@ -618,7 +614,7 @@ export async function changeUserStatus(formData: FormData) {
 
   if (targetError || !target) {
     if (targetError) {
-      console.error("Admin user status profile lookup failed.", targetError);
+      console.error("Admin user status profile lookup failed.");
     }
     redirect(
       adminUsersMessage(
@@ -668,7 +664,7 @@ export async function changeUserStatus(formData: FormData) {
     .eq("id", profileId);
 
   if (updateError) {
-    console.error("Admin user status update failed.", updateError);
+    console.error("Admin user status update failed.");
     redirect(
       adminUsersMessage(
         "Could not update user status. Please try again.",
@@ -740,7 +736,7 @@ export async function deleteUserAccount(formData: FormData) {
 
   if (targetError || !target) {
     if (targetError) {
-      console.error("Admin user deletion profile lookup failed.", targetError);
+      console.error("Admin user deletion profile lookup failed.");
     }
     redirect(adminUsersMessage("Profile was not found.", returnTo));
   }
@@ -767,7 +763,7 @@ export async function deleteUserAccount(formData: FormData) {
   const { error: deleteError } = await adminClient.auth.admin.deleteUser(profileId);
 
   if (deleteError) {
-    console.error("Admin auth user delete failed.", deleteError);
+    console.error("Admin auth user delete failed.");
     redirect(
       adminUsersMessage(
         "Could not delete user account. Review account activity and try again.",
@@ -791,7 +787,7 @@ export async function deleteUserAccount(formData: FormData) {
   });
 
   if (auditError) {
-    console.error("Admin user deletion audit logging failed.", auditError);
+    console.error("Admin user deletion audit logging failed.");
   }
 
   revalidatePath("/admin");
@@ -864,7 +860,7 @@ export async function createTestAccount(formData: FormData) {
 
   if (createError || !profileId) {
     if (createError) {
-      console.error("Tester account auth create failed.", createError);
+      console.error("Tester account auth create failed.");
     }
     redirect(
       adminUsersMessage(
@@ -885,7 +881,7 @@ export async function createTestAccount(formData: FormData) {
     .eq("id", profileId);
 
   if (updateError) {
-    console.error("Tester account profile setup failed.", updateError);
+    console.error("Tester account profile setup failed.");
     await adminClient.auth.admin.deleteUser(profileId);
     redirect(
       adminUsersMessage(
@@ -900,7 +896,6 @@ export async function createTestAccount(formData: FormData) {
     event_type: "tester_account_created",
     metadata: {
       account_type: accountType,
-      email,
       username,
     },
     target_id: profileId,
@@ -908,7 +903,7 @@ export async function createTestAccount(formData: FormData) {
   });
 
   if (auditError) {
-    console.error("Tester account audit logging failed.", auditError);
+    console.error("Tester account audit logging failed.");
     await adminClient.auth.admin.deleteUser(profileId);
     redirect(
       adminUsersMessage(
@@ -925,13 +920,18 @@ export async function createTestAccount(formData: FormData) {
 
 export async function grantUserAdCredit(formData: FormData) {
   const profileId = cleanText(formData.get("profile_id"), 80);
+  const operationId = cleanText(formData.get("operation_id"), 80);
   const returnTo = cleanText(formData.get("return_to"), 120);
   const reason = cleanText(formData.get("credit_reason"), 40) as AdCreditReason;
   const note = cleanText(formData.get("credit_note"), 500);
   const expiresAt = cleanText(formData.get("expires_at"), 20);
   const creditAmountCents = centsFromDollars(formData.get("credit_amount"), 10000000);
 
-  if (!isUuid(profileId) || !adCreditReasons.has(reason)) {
+  if (
+    !isUuid(profileId) ||
+    !isUuid(operationId) ||
+    !adCreditReasons.has(reason)
+  ) {
     redirect(adminUsersMessage("Choose a valid user and ad credit reason.", returnTo));
   }
 
@@ -939,11 +939,13 @@ export async function grantUserAdCredit(formData: FormData) {
     redirect(adminUsersMessage("Ad credit amount must be greater than zero.", returnTo));
   }
 
-  const expiration =
-    expiresAt && Number.isFinite(new Date(`${expiresAt}T23:59:59Z`).getTime())
-      ? new Date(`${expiresAt}T23:59:59Z`).toISOString()
-      : null;
-  const { supabase, userId } = await requireAdmin();
+  const expiration = optionalEndOfDayTimestamp(expiresAt);
+
+  if (expiration === undefined) {
+    redirect(adminUsersMessage("Choose a valid ad credit expiration date.", returnTo));
+  }
+
+  const { supabase } = await requireAdmin();
   const { data: target, error: targetError } = await supabase
     .from("profiles")
     .select("id, username")
@@ -952,41 +954,35 @@ export async function grantUserAdCredit(formData: FormData) {
 
   if (targetError || !target) {
     if (targetError) {
-      console.error("Admin ad credit profile lookup failed.", targetError);
+      console.error("Admin ad credit profile lookup failed.");
     }
     redirect(
       adminUsersMessage("Profile was not found.", returnTo),
     );
   }
 
-  const { error: insertError } = await supabase.from("ad_credit_ledger").insert({
-    actor_id: userId,
-    amount_cents: creditAmountCents,
-    credit_reason: reason,
-    expires_at: expiration,
-    note: note || null,
-    profile_id: profileId,
-  });
+  const { data: applied, error: grantError } = await supabase.rpc(
+    "grant_admin_ad_credit",
+    {
+      p_amount_cents: creditAmountCents,
+      p_credit_reason: reason,
+      p_expires_at: expiration,
+      p_note: note || null,
+      p_operation_id: operationId,
+      p_profile_id: profileId,
+    },
+  );
 
-  if (insertError) {
-    console.error("Admin ad credit grant failed.", insertError);
+  if (grantError) {
+    console.error("Admin ad credit grant failed.");
     redirect(
       adminUsersMessage("Could not grant ad credit. Please try again.", returnTo),
     );
   }
 
-  await supabase.from("admin_audit_logs").insert({
-    actor_id: userId,
-    event_type: "user_ad_credit_granted",
-    metadata: {
-      amount_cents: creditAmountCents,
-      expires_at: expiration,
-      reason,
-    },
-    summary: note || `Manual ad credit granted to @${target.username}.`,
-    target_id: profileId,
-    target_type: "profile",
-  });
+  if (!applied) {
+    redirect(adminUsersMessage("This ad credit was already applied.", returnTo));
+  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/users");
@@ -1035,7 +1031,7 @@ export async function moderateContent(formData: FormData) {
 
     if (reportError || !report) {
       if (reportError) {
-        console.error("Admin linked content report lookup failed.", reportError);
+        console.error("Admin linked content report lookup failed.");
       }
       redirect(
         adminReportsMessage(
@@ -1060,7 +1056,7 @@ export async function moderateContent(formData: FormData) {
 
   if (subjectError || !subject) {
     if (subjectError) {
-      console.error("Admin content subject lookup failed.", subjectError);
+      console.error("Admin content subject lookup failed.");
     }
     redirect(
       adminContentMessage(
@@ -1079,7 +1075,7 @@ export async function moderateContent(formData: FormData) {
     .eq(config.idColumn, subjectId);
 
   if (updateError) {
-    console.error("Admin content moderation update failed.", updateError);
+    console.error("Admin content moderation update failed.");
     redirect(
       adminContentMessage(
         "Could not update content. Please try again.",
@@ -1103,7 +1099,7 @@ export async function moderateContent(formData: FormData) {
     });
 
   if (actionError) {
-    console.error("Admin content moderation log failed.", actionError);
+    console.error("Admin content moderation log failed.");
     redirect(
       adminContentMessage(
         "Content changed, but moderation log failed. Please try again.",
@@ -1139,7 +1135,7 @@ export async function moderateContent(formData: FormData) {
       .eq("id", reportId);
 
     if (reportUpdateError) {
-      console.error("Admin linked report status update failed.", reportUpdateError);
+      console.error("Admin linked report status update failed.");
       redirect(
         adminReportsMessage(
           "Content changed, but the report status did not update. Please try again.",
@@ -1166,7 +1162,7 @@ export async function moderateContent(formData: FormData) {
         });
 
       if (reportActionError) {
-        console.error("Admin linked report resolution log failed.", reportActionError);
+        console.error("Admin linked report resolution log failed.");
         redirect(
           adminReportsMessage(
             "Content and report changed, but report log failed. Please try again.",
@@ -1214,7 +1210,7 @@ export async function moderateHelpArticleComment(formData: FormData) {
 
   if (commentError || !comment) {
     if (commentError) {
-      console.error("Admin Help question lookup failed.", commentError);
+      console.error("Admin Help question lookup failed.");
     }
     redirect(
       adminContentMessage(
@@ -1239,7 +1235,7 @@ export async function moderateHelpArticleComment(formData: FormData) {
     .eq("id", commentId);
 
   if (updateError) {
-    console.error("Admin Help question update failed.", updateError);
+    console.error("Admin Help question update failed.");
     redirect(
       adminContentMessage(
         "Could not update Help question. Please try again.",
@@ -1291,7 +1287,7 @@ export async function updateReportStatus(formData: FormData) {
 
   if (reportError || !report) {
     if (reportError) {
-      console.error("Admin report status lookup failed.", reportError);
+      console.error("Admin report status lookup failed.");
     }
     redirect(
       adminReportsMessage(
@@ -1322,7 +1318,7 @@ export async function updateReportStatus(formData: FormData) {
     .eq("id", reportId);
 
   if (updateError) {
-    console.error("Admin report status update failed.", updateError);
+    console.error("Admin report status update failed.");
     redirect(
       adminReportsMessage(
         "Could not update report. Please try again.",
@@ -1345,7 +1341,7 @@ export async function updateReportStatus(formData: FormData) {
       });
 
     if (actionError) {
-      console.error("Admin report status log failed.", actionError);
+      console.error("Admin report status log failed.");
       redirect(
         adminReportsMessage(
           "Report changed, but log failed. Please try again.",
@@ -1388,7 +1384,7 @@ export async function recordReportFollowup(formData: FormData) {
 
   if (reportError || !report) {
     if (reportError) {
-      console.error("Admin report follow-up lookup failed.", reportError);
+      console.error("Admin report follow-up lookup failed.");
     }
     redirect(
       adminReportsMessage(
@@ -1431,7 +1427,7 @@ export async function recordReportFollowup(formData: FormData) {
     });
 
   if (actionError) {
-    console.error("Admin report follow-up log failed.", actionError);
+    console.error("Admin report follow-up log failed.");
     redirect(
       adminReportsMessage(
         "Could not record report follow-up. Please try again.",
@@ -1451,7 +1447,7 @@ export async function recordReportFollowup(formData: FormData) {
       .eq("id", report.id);
 
     if (updateError) {
-      console.error("Admin report follow-up status update failed.", updateError);
+      console.error("Admin report follow-up status update failed.");
       redirect(
         adminReportsMessage(
           "Follow-up was logged, but report status did not update. Please try again.",
@@ -1510,7 +1506,7 @@ export async function updateLicenseVerification(formData: FormData) {
 
   if (requestError || !request) {
     if (requestError) {
-      console.error("Admin verification request lookup failed.", requestError);
+      console.error("Admin verification request lookup failed.");
     }
     redirect(
       adminVerificationMessage(
@@ -1563,7 +1559,7 @@ export async function updateLicenseVerification(formData: FormData) {
     .eq("status", "pending");
 
   if (updateError) {
-    console.error("Admin verification request update failed.", updateError);
+    console.error("Admin verification request update failed.");
     redirect(
       adminVerificationMessage(
         "Could not update license request. Please try again.",
@@ -1584,7 +1580,7 @@ export async function updateLicenseVerification(formData: FormData) {
       .eq("id", request.profile_id);
 
     if (profileError) {
-      console.error("Admin verification profile badge update failed.", profileError);
+      console.error("Admin verification profile badge update failed.");
       redirect(
         adminVerificationMessage(
           "License approved, but profile badge failed. Please try again.",
@@ -1630,7 +1626,7 @@ export async function updateLicenseVerification(formData: FormData) {
   });
 
   if (notificationError) {
-    console.error("Admin verification notification failed.", notificationError);
+    console.error("Admin verification notification failed.");
     redirect(
       adminVerificationMessage(
         "License updated, but member notification failed. Please try again.",
@@ -1663,7 +1659,7 @@ export async function updateAdCampaignStatus(formData: FormData) {
     redirect(adminAdsMessage("Choose a valid ad campaign status.", returnTo));
   }
 
-  const { supabase, userId } = await requireModerator();
+  const { supabase } = await requireModerator();
   const { data: campaign, error: campaignError } = await supabase
     .from("ad_campaigns")
     .select(
@@ -1682,7 +1678,7 @@ export async function updateAdCampaignStatus(formData: FormData) {
 
   if (campaignError || !campaign) {
     if (campaignError) {
-      console.error("Admin ad campaign lookup failed.", campaignError);
+      console.error("Admin ad campaign lookup failed.");
     }
     redirect(
       adminAdsMessage(
@@ -1690,6 +1686,10 @@ export async function updateAdCampaignStatus(formData: FormData) {
         returnTo,
       ),
     );
+  }
+
+  if (campaign.status === status) {
+    redirect(adminAdsMessage("Ad campaign already has that status.", returnTo));
   }
 
   if (status === "active" && campaign.payment_dispute_hold) {
@@ -1714,20 +1714,18 @@ export async function updateAdCampaignStatus(formData: FormData) {
     );
   }
 
-  const now = new Date().toISOString();
-  const { error: updateError } = await supabase
-    .from("ad_campaigns")
-    .update({
-      reviewed_at: now,
-      reviewed_by: userId,
-      reviewer_note: note || null,
-      status,
-      updated_at: now,
-    })
-    .eq("id", campaignId);
+  const { data: updated, error: updateError } = await supabase.rpc(
+    "admin_update_ad_campaign_status",
+    {
+      p_campaign_id: campaign.id,
+      p_expected_status: campaign.status,
+      p_note: note || null,
+      p_status: status,
+    },
+  );
 
   if (updateError) {
-    console.error("Admin ad campaign status update failed.", updateError);
+    console.error("Admin ad campaign status update failed.");
     redirect(
       adminAdsMessage(
         "Could not update ad campaign. Please try again.",
@@ -1736,19 +1734,14 @@ export async function updateAdCampaignStatus(formData: FormData) {
     );
   }
 
-  await supabase.from("admin_audit_logs").insert({
-    actor_id: userId,
-    event_type: `ad_campaign_${status}`,
-    metadata: {
-      campaign_type: campaign.campaign_type,
-      from_status: campaign.status,
-      goal: campaign.goal,
-      to_status: status,
-    },
-    summary: note || null,
-    target_id: campaign.id,
-    target_type: "ad_campaign",
-  });
+  if (!updated) {
+    redirect(
+      adminAdsMessage(
+        "Ad campaign changed before this decision. Review it and try again.",
+        returnTo,
+      ),
+    );
+  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/ads");
@@ -1771,7 +1764,7 @@ export async function grantAdCampaignCredit(formData: FormData) {
     redirect(adminAdsMessage("Ad credit amount must be a valid dollar amount.", returnTo));
   }
 
-  const { supabase, userId } = await requireAdmin();
+  const { supabase } = await requireAdmin();
   const { data: campaign, error: campaignError } = await supabase
     .from("ad_campaigns")
     .select("id, advertiser_id, status, payment_status, prepaid_amount_cents, daily_budget_cents, campaign_type, goal")
@@ -1789,7 +1782,7 @@ export async function grantAdCampaignCredit(formData: FormData) {
 
   if (campaignError || !campaign) {
     if (campaignError) {
-      console.error("Admin ad credit campaign lookup failed.", campaignError);
+      console.error("Admin ad credit campaign lookup failed.");
     }
     redirect(
       adminAdsMessage(
@@ -1797,6 +1790,13 @@ export async function grantAdCampaignCredit(formData: FormData) {
         returnTo,
       ),
     );
+  }
+
+  if (
+    campaign.payment_status === "waived" &&
+    campaign.prepaid_amount_cents === creditAmountCents
+  ) {
+    redirect(adminAdsMessage("This ad credit was already applied.", returnTo));
   }
 
   if (campaign.payment_status === "paid" || campaign.payment_status === "checkout_started") {
@@ -1808,37 +1808,31 @@ export async function grantAdCampaignCredit(formData: FormData) {
     );
   }
 
-  const now = new Date().toISOString();
-  const { error: updateError } = await supabase
-    .from("ad_campaigns")
-    .update({
-      payment_status: "waived",
-      platform_fee_cents: 0,
-      prepaid_amount_cents: creditAmountCents,
-      reviewer_note: note || "Ad credit applied.",
-      updated_at: now,
-    })
-    .eq("id", campaign.id);
+  const { data: updated, error: updateError } = await supabase.rpc(
+    "admin_grant_ad_campaign_credit",
+    {
+      p_campaign_id: campaign.id,
+      p_credit_amount_cents: creditAmountCents,
+      p_credit_reason: reason,
+      p_expected_payment_status: campaign.payment_status,
+      p_expected_prepaid_amount_cents: campaign.prepaid_amount_cents,
+      p_note: note || null,
+    },
+  );
 
   if (updateError) {
-    console.error("Admin ad campaign credit update failed.", updateError);
+    console.error("Admin ad campaign credit update failed.");
     redirect(adminAdsMessage("Could not apply ad credit. Please try again.", returnTo));
   }
 
-  await supabase.from("admin_audit_logs").insert({
-    actor_id: userId,
-    event_type: "ad_campaign_credit_granted",
-    metadata: {
-      campaign_type: campaign.campaign_type,
-      credit_amount_cents: creditAmountCents,
-      from_payment_status: campaign.payment_status,
-      goal: campaign.goal,
-      reason,
-    },
-    summary: note || `Manual ad credit granted for ${reason}.`,
-    target_id: campaign.id,
-    target_type: "ad_campaign",
-  });
+  if (!updated) {
+    redirect(
+      adminAdsMessage(
+        "Ad campaign payment changed before this credit. Review it and try again.",
+        returnTo,
+      ),
+    );
+  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/ads");
@@ -1857,7 +1851,7 @@ export async function updateMerchProductStatus(formData: FormData) {
     redirect(adminMerchMessage("Choose a valid merch product status.", returnTo));
   }
 
-  const { supabase, userId } = await requireModerator();
+  const { supabase } = await requireModerator();
   const { data: product, error: productError } = await supabase
     .from("merch_products")
     .select(
@@ -1883,7 +1877,7 @@ export async function updateMerchProductStatus(formData: FormData) {
 
   if (productError || !product) {
     if (productError) {
-      console.error("Admin Merch product lookup failed.", productError);
+      console.error("Admin Merch product lookup failed.");
     }
     redirect(
       adminMerchMessage(
@@ -1891,6 +1885,10 @@ export async function updateMerchProductStatus(formData: FormData) {
         returnTo,
       ),
     );
+  }
+
+  if (product.status === status) {
+    redirect(adminMerchMessage("Merch product already has that status.", returnTo));
   }
 
   if (
@@ -1966,20 +1964,18 @@ export async function updateMerchProductStatus(formData: FormData) {
     }
   }
 
-  const now = new Date().toISOString();
-  const { error: updateError } = await supabase
-    .from("merch_products")
-    .update({
-      reviewed_at: now,
-      reviewed_by: userId,
-      reviewer_note: note || null,
-      status,
-      updated_at: now,
-    })
-    .eq("id", productId);
+  const { data: updated, error: updateError } = await supabase.rpc(
+    "admin_update_merch_product_status",
+    {
+      p_expected_status: product.status,
+      p_note: note || null,
+      p_product_id: product.id,
+      p_status: status,
+    },
+  );
 
   if (updateError) {
-    console.error("Admin Merch product update failed.", updateError);
+    console.error("Admin Merch product update failed.");
     redirect(
       adminMerchMessage(
         "Could not update Merch product. Please try again.",
@@ -1988,20 +1984,14 @@ export async function updateMerchProductStatus(formData: FormData) {
     );
   }
 
-  await supabase.from("admin_audit_logs").insert({
-    actor_id: userId,
-    event_type: `merch_product_${status}`,
-    metadata: {
-      category: product.category,
-      currency: product.currency,
-      from_status: product.status,
-      price_cents: product.price_cents,
-      to_status: status,
-    },
-    summary: note || null,
-    target_id: product.id,
-    target_type: "merch_product",
-  });
+  if (!updated) {
+    redirect(
+      adminMerchMessage(
+        "Merch product changed before this decision. Review it and try again.",
+        returnTo,
+      ),
+    );
+  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/merch");
@@ -2021,18 +2011,7 @@ export async function updateMerchOrderStatus(formData: FormData) {
     redirect(adminMerchMessage("Choose a valid merch order and status.", returnTo));
   }
 
-  const { supabase, userId } = await requireModerator();
-  const orderAdmin = createAdminClient();
-
-  if (!orderAdmin) {
-    console.error("Admin Merch order update client is unavailable.");
-    redirect(
-      adminMerchMessage(
-        "Could not prepare the order update. Please try again.",
-        returnTo,
-      ),
-    );
-  }
+  const { supabase } = await requireAdmin();
 
   const { data: order, error: orderError } = await supabase
     .from("merch_orders")
@@ -2051,7 +2030,7 @@ export async function updateMerchOrderStatus(formData: FormData) {
 
   if (orderError || !order) {
     if (orderError) {
-      console.error("Admin Merch order lookup failed.", orderError);
+      console.error("Admin Merch order lookup failed.");
     }
     redirect(
       adminMerchMessage(
@@ -2059,6 +2038,10 @@ export async function updateMerchOrderStatus(formData: FormData) {
         returnTo,
       ),
     );
+  }
+
+  if (order.status === status) {
+    redirect(adminMerchMessage(`This order is already ${status}.`, returnTo));
   }
 
   if (status === "fulfilled" && order.status !== "paid") {
@@ -2101,76 +2084,32 @@ export async function updateMerchOrderStatus(formData: FormData) {
     );
   }
 
-  const now = new Date().toISOString();
-  if (status === "fulfilled") {
-    const orderUpdateClient = orderAdmin;
-    const { error: updateError } = await orderUpdateClient
-      .from("merch_orders")
-      .update({
-        admin_note: note || null,
-        fulfilled_at: now,
-        status,
-        updated_at: now,
-      })
-      .eq("id", orderId)
-      .eq("status", "paid");
+  const { data: updated, error: updateError } = await supabase.rpc(
+    "admin_update_merch_order_status",
+    {
+      p_admin_note: note || null,
+      p_order_id: order.id,
+      p_status: status,
+    },
+  );
 
-    if (updateError) {
-      console.error("Admin Merch order update failed.", updateError);
-      redirect(
-        adminMerchMessage(
-          "Could not update Merch order. Please try again.",
-          returnTo,
-        ),
-      );
-    }
-
-    const { error: itemError } = await orderUpdateClient
-      .from("merch_order_items")
-      .update({
-        fulfillment_status: "fulfilled",
-      })
-      .eq("order_id", orderId);
-
-    if (itemError) {
-      console.error("Admin Merch order item fulfillment update failed.", itemError);
-      redirect(
-        adminMerchMessage(
-          "Order changed, but line-item fulfillment status failed. Please try again.",
-          returnTo,
-        ),
-      );
-    }
+  if (updateError) {
+    console.error("Admin Merch order update failed.");
+    redirect(
+      adminMerchMessage(
+        "Could not update Merch order. Please try again.",
+        returnTo,
+      ),
+    );
   }
 
-  if (status === "cancelled") {
-    const orderCancellationClient = orderAdmin;
-
-    const { data: cancelledOrders, error: cancellationError } =
-      await orderCancellationClient
-        .rpc("cancel_unpaid_merch_order", {
-          p_admin_note: note || null,
-          p_order_id: orderId,
-        });
-
-    if (cancellationError) {
-      console.error("Admin Merch order cancellation failed.", cancellationError);
-      redirect(
-        adminMerchMessage(
-          "Could not cancel Merch order. Please try again.",
-          returnTo,
-        ),
-      );
-    }
-
-    if (!Array.isArray(cancelledOrders) || cancelledOrders.length === 0) {
-      redirect(
-        adminMerchMessage(
-          "This order is no longer eligible for cancellation.",
-          returnTo,
-        ),
-      );
-    }
+  if (!updated) {
+    redirect(
+      adminMerchMessage(
+        "Merch order changed before this action. Review it and try again.",
+        returnTo,
+      ),
+    );
   }
 
   const { data: orderItems } = await supabase
@@ -2181,20 +2120,6 @@ export async function updateMerchOrderStatus(formData: FormData) {
   const productIds = new Set(
     (orderItems ?? []).map((item) => item.product_id).filter(Boolean),
   );
-
-  await supabase.from("admin_audit_logs").insert({
-    actor_id: userId,
-    event_type: `merch_order_${status}`,
-    metadata: {
-      currency: order.currency,
-      from_status: order.status,
-      to_status: status,
-      total_cents: order.total_cents,
-    },
-    summary: note || null,
-    target_id: order.id,
-    target_type: "merch_order",
-  });
 
   revalidatePath("/admin");
   revalidatePath("/admin/merch");
@@ -2258,7 +2183,7 @@ export async function refundMerchOrder(formData: FormData) {
 
   if (orderError || !order) {
     if (orderError) {
-      console.error("Admin Merch refund order lookup failed.", orderError);
+      console.error("Admin Merch refund order lookup failed.");
     }
     redirect(adminMerchMessage("Merch order was not found.", returnTo));
   }
@@ -2297,7 +2222,7 @@ export async function refundMerchOrder(formData: FormData) {
       .returns<{ id: string }[]>();
 
   if (refundAuditLookupError) {
-    console.error("Admin Merch refund audit lookup failed.", refundAuditLookupError);
+    console.error("Admin Merch refund audit lookup failed.");
     redirect(
       adminMerchMessage(
         "Could not verify Merch refund history. No refund was requested. Please try again.",
@@ -2315,8 +2240,8 @@ export async function refundMerchOrder(formData: FormData) {
     paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
       expand: ["latest_charge"],
     });
-  } catch (error) {
-    console.error("Admin Merch payment lookup failed before refund.", error);
+  } catch {
+    console.error("Admin Merch payment lookup failed before refund.");
     redirect(
       adminMerchMessage(
         "Could not confirm the Merch payment. No refund was requested. Please try again.",
@@ -2330,11 +2255,7 @@ export async function refundMerchOrder(formData: FormData) {
     paymentIntent.metadata?.payment_kind !== "merch_order" ||
     paymentIntent.metadata?.merch_order_id !== order.id
   ) {
-    console.error("Admin Merch refund payment ownership check failed.", {
-      livemodeMatches: paymentIntent.livemode === checkoutPreflight.actual,
-      orderMatches: paymentIntent.metadata?.merch_order_id === order.id,
-      paymentKindMatches: paymentIntent.metadata?.payment_kind === "merch_order",
-    });
+    console.error("Admin Merch refund payment ownership check failed.");
     redirect(
       adminMerchMessage(
         "This payment could not be matched safely to the Merch order. No refund was requested.",
@@ -2369,8 +2290,8 @@ export async function refundMerchOrder(formData: FormData) {
         refund.metadata?.merch_order_id === order.id &&
         refund.metadata?.refund_kind === "merch_order_full",
     );
-  } catch (error) {
-    console.error("Admin Merch refund history lookup failed.", error);
+  } catch {
+    console.error("Admin Merch refund history lookup failed.");
     redirect(
       adminMerchMessage(
         "Could not confirm Merch refund history. No new refund was requested. Please try again.",
@@ -2424,8 +2345,8 @@ export async function refundMerchOrder(formData: FormData) {
       matchingRefund = await stripe.refunds.create(refundParams, {
         idempotencyKey: merchRefundRequestKey,
       });
-    } catch (error) {
-      console.error("Admin Merch refund request failed.", error);
+    } catch {
+      console.error("Admin Merch refund request failed.");
       redirect(
         adminMerchMessage(
           "Could not confirm the Merch refund. Retry this action; it will not send a duplicate refund.",
@@ -2449,13 +2370,18 @@ export async function refundMerchOrder(formData: FormData) {
         seller_transfer_reversed: reverseDestinationTransfer,
         total_cents: order.total_cents,
       },
+      operation_key: merchRefundRequestKey,
       summary: `Requested full Merch refund for order ${order.id.slice(0, 8)}.`,
       target_id: order.id,
       target_type: "merch_order",
     });
 
+  if (refundAuditError?.code === "23505") {
+    redirect(adminMerchMessage("This Merch refund was already requested.", returnTo));
+  }
+
   if (refundAuditError) {
-    console.error("Admin Merch refund audit record failed.", refundAuditError);
+    console.error("Admin Merch refund audit record failed.");
     redirect(
       adminMerchMessage(
         "Refund request needs audit confirmation. Retry this action; it will not send a duplicate refund.",
@@ -2524,7 +2450,7 @@ export async function updateAccountDeletionRequest(formData: FormData) {
 
   if (requestError || !request) {
     if (requestError) {
-      console.error("Account deletion request lookup failed.", requestError);
+      console.error("Account deletion request lookup failed.");
     }
     redirect(
       adminDataRequestsMessage(
@@ -2555,7 +2481,7 @@ export async function updateAccountDeletionRequest(formData: FormData) {
     .eq("id", requestId);
 
   if (updateError) {
-    console.error("Account deletion request update failed.", updateError);
+    console.error("Account deletion request update failed.");
     redirect(
       adminDataRequestsMessage(
         "Could not update account deletion request. Please try again.",
@@ -2640,7 +2566,7 @@ export async function reconcileBookingDepositCheckout(formData: FormData) {
 
   if (error || !booking) {
     if (error) {
-      console.error("Admin booking checkout lookup failed.", error);
+      console.error("Admin booking checkout lookup failed.");
     }
 
     redirect(
@@ -2687,8 +2613,8 @@ export async function reconcileBookingDepositCheckout(formData: FormData) {
   try {
     checkoutSession =
       await stripe.checkout.sessions.retrieve(checkoutSessionId);
-  } catch (error) {
-    console.error("Admin booking checkout retrieval failed.", error);
+  } catch {
+    console.error("Admin booking checkout retrieval failed.");
     redirect(
       adminPaymentsMessage(
         "Could not confirm this booking checkout. It remains held for review.",
@@ -2714,9 +2640,7 @@ export async function reconcileBookingDepositCheckout(formData: FormData) {
   });
 
   if (reconciliationDecision.action === "hold") {
-    console.error("Admin booking checkout reconciliation held.", {
-      reason: reconciliationDecision.reason,
-    });
+    console.error("Admin booking checkout reconciliation held.");
     redirect(
       adminPaymentsMessage(
         "This checkout cannot be safely released. It remains held for review.",
@@ -2732,8 +2656,8 @@ export async function reconcileBookingDepositCheckout(formData: FormData) {
       reconciledSession = await stripe.checkout.sessions.expire(
         checkoutSession.id,
       );
-    } catch (error) {
-      console.error("Admin booking checkout expiration failed.", error);
+    } catch {
+      console.error("Admin booking checkout expiration failed.");
       redirect(
         adminPaymentsMessage(
           "Could not safely close this checkout. It remains held for review.",
@@ -2769,16 +2693,14 @@ export async function reconcileBookingDepositCheckout(formData: FormData) {
         remote_payment_status: reconciledSession.payment_status,
         remote_status: reconciledSession.status,
       },
+      operation_key: `booking-checkout-reconciliation-v1:${booking.id}:${checkoutSessionId}`,
       summary: "Approved an expired unpaid booking checkout for conditional release.",
       target_id: booking.id,
       target_type: "booking_request",
     });
 
-  if (auditError) {
-    console.error(
-      "Admin booking checkout reconciliation audit failed.",
-      auditError,
-    );
+  if (auditError && auditError.code !== "23505") {
+    console.error("Admin booking checkout reconciliation audit failed.");
     redirect(
       adminPaymentsMessage(
         "Checkout remains held because reconciliation could not be recorded. Please try again.",
@@ -2804,7 +2726,7 @@ export async function reconcileBookingDepositCheckout(formData: FormData) {
     .maybeSingle<{ id: string }>();
 
   if (releaseError) {
-    console.error("Admin booking checkout release result was indeterminate.", releaseError);
+    console.error("Admin booking checkout release result was indeterminate.");
   }
 
   let alreadyReleasedBooking: { id: string } | null = null;
@@ -2838,10 +2760,7 @@ export async function reconcileBookingDepositCheckout(formData: FormData) {
 
   if (releaseDecision.action === "reject") {
     if (alreadyReleasedError) {
-      console.error(
-        "Admin booking checkout post-race verification failed.",
-        alreadyReleasedError,
-      );
+      console.error("Admin booking checkout post-race verification failed.");
     }
 
     redirect(
@@ -2923,7 +2842,7 @@ export async function refundBookingDeposit(formData: FormData) {
 
   if (error || !booking) {
     if (error) {
-      console.error("Admin booking deposit lookup failed.", error);
+      console.error("Admin booking deposit lookup failed.");
     }
 
     redirect(adminPaymentsMessage("Booking deposit not found.", returnTo));
@@ -2951,10 +2870,7 @@ export async function refundBookingDeposit(formData: FormData) {
       .returns<{ id: string }[]>();
 
   if (refundAuditLookupError) {
-    console.error(
-      "Admin booking deposit refund audit lookup failed.",
-      refundAuditLookupError,
-    );
+    console.error("Admin booking deposit refund audit lookup failed.");
     redirect(
       adminPaymentsMessage(
         "Could not verify booking refund history. No refund was requested. Please try again.",
@@ -2975,12 +2891,13 @@ export async function refundBookingDeposit(formData: FormData) {
   const bookingRefundRequestKeyVersion = "booking-full-refund-v1";
   const bookingRefundRequestKey = `${bookingRefundRequestKeyVersion}:${booking.id}:${paymentIntentId}`;
   let matchingRefund: Stripe.Refund | undefined;
+  let existingRefunds: Stripe.Refund[] = [];
   let paymentIntent: Stripe.PaymentIntent;
 
   try {
     paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-  } catch (error) {
-    console.error("Admin booking payment lookup failed before refund.", error);
+  } catch {
+    console.error("Admin booking payment lookup failed before refund.");
     redirect(
       adminPaymentsMessage(
         "Could not confirm the booking payment. No refund was requested. Please try again.",
@@ -2994,12 +2911,7 @@ export async function refundBookingDeposit(formData: FormData) {
     paymentIntent.metadata?.payment_kind !== "booking_deposit" ||
     paymentIntent.metadata?.booking_request_id !== booking.id
   ) {
-    console.error("Admin booking refund payment ownership check failed.", {
-      bookingMatches: paymentIntent.metadata?.booking_request_id === booking.id,
-      livemodeMatches: paymentIntent.livemode === checkoutPreflight.actual,
-      paymentKindMatches:
-        paymentIntent.metadata?.payment_kind === "booking_deposit",
-    });
+    console.error("Admin booking refund payment ownership check failed.");
     redirect(
       adminPaymentsMessage(
         "This payment could not be matched safely to the booking. No refund was requested.",
@@ -3013,16 +2925,39 @@ export async function refundBookingDeposit(formData: FormData) {
       limit: 100,
       payment_intent: paymentIntentId,
     });
+    existingRefunds = refunds.data;
     matchingRefund = refunds.data.find(
       (refund) =>
         refund.metadata?.booking_request_id === booking.id &&
         refund.metadata?.refund_kind === "booking_deposit",
     );
-  } catch (error) {
-    console.error("Admin booking deposit refund history lookup failed.", error);
+  } catch {
+    console.error("Admin booking deposit refund history lookup failed.");
     redirect(
       adminPaymentsMessage(
         "Could not confirm booking refund history. No new refund was requested. Please try again.",
+        returnTo,
+      ),
+    );
+  }
+
+  if (matchingRefund?.status === "failed" || matchingRefund?.status === "canceled") {
+    redirect(
+      adminPaymentsMessage(
+        "The earlier booking refund needs payment review before another attempt.",
+        returnTo,
+      ),
+    );
+  }
+
+  const activeExistingRefund = existingRefunds.find(
+    (refund) => refund.status !== "failed" && refund.status !== "canceled",
+  );
+
+  if (!matchingRefund && activeExistingRefund) {
+    redirect(
+      adminPaymentsMessage(
+        "This booking payment already has refund activity. Review it before taking another action.",
         returnTo,
       ),
     );
@@ -3062,8 +2997,8 @@ export async function refundBookingDeposit(formData: FormData) {
         },
         { idempotencyKey: bookingRefundRequestKey },
       );
-    } catch (error) {
-      console.error("Admin booking deposit refund request failed.", error);
+    } catch {
+      console.error("Admin booking deposit refund request failed.");
       redirect(
         adminPaymentsMessage(
           "Could not confirm booking refund. Retry this action; it will not send a duplicate refund.",
@@ -3086,16 +3021,23 @@ export async function refundBookingDeposit(formData: FormData) {
         request_key_version: bookingRefundRequestKeyVersion,
         total_cents: booking.total_cents,
       },
+      operation_key: bookingRefundRequestKey,
       summary: `Requested full booking deposit refund for ${booking.title}.`,
       target_id: booking.id,
       target_type: "booking_request",
     });
 
-  if (refundAuditError) {
-    console.error(
-      "Admin booking deposit refund audit record failed.",
-      refundAuditError,
+  if (refundAuditError?.code === "23505") {
+    redirect(
+      adminPaymentsMessage(
+        "Booking deposit refund was already requested.",
+        returnTo,
+      ),
     );
+  }
+
+  if (refundAuditError) {
+    console.error("Admin booking deposit refund audit record failed.");
     redirect(
       adminPaymentsMessage(
         "Refund request needs audit confirmation. Retry this action; it will not send a duplicate refund.",

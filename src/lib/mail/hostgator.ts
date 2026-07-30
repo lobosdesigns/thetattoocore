@@ -1,4 +1,6 @@
-type MailSettings = {
+import "server-only";
+
+export type MailSettings = {
   from_email: string | null;
   from_name: string;
   smtp_host: string | null;
@@ -25,6 +27,12 @@ type TransactionalMailInput = {
   text: string;
 };
 
+const hostgatorPasswordSecretName = "HOSTGATOR_SMTP_PASSWORD";
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const smtpHostPattern =
+  /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)*[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i;
+const headerNamePattern = /^[a-z0-9-]{1,80}$/i;
+
 export class MailDeliveryError extends Error {
   constructor() {
     super("Mail delivery failed.");
@@ -38,6 +46,108 @@ function required(value: string | null | undefined, label: string) {
   }
 
   return value;
+}
+
+function containsControlCharacter(value: string) {
+  return [...value].some((character) => {
+    const code = character.charCodeAt(0);
+    return code < 32 || code === 127;
+  });
+}
+
+function validatedText(value: string, label: string, maxLength: number) {
+  const normalized = value.trim();
+
+  if (
+    !normalized ||
+    normalized.length > maxLength ||
+    containsControlCharacter(normalized)
+  ) {
+    throw new Error(`${label} is invalid.`);
+  }
+
+  return normalized;
+}
+
+function validatedEmail(value: string, label: string) {
+  const normalized = validatedText(value, label, 254).toLowerCase();
+
+  if (!emailPattern.test(normalized)) {
+    throw new Error(`${label} is invalid.`);
+  }
+
+  return normalized;
+}
+
+function validatedHeaders(headers?: Record<string, string>) {
+  if (!headers) return undefined;
+
+  return Object.fromEntries(
+    Object.entries(headers).map(([name, value]) => {
+      if (!headerNamePattern.test(name)) {
+        throw new Error("Mail header name is invalid.");
+      }
+
+      return [name, validatedText(value, "Mail header value", 998)];
+    }),
+  );
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+export function validateMailSettings(settings: MailSettings): MailSettings {
+  if (settings.smtp_password_secret_name !== hostgatorPasswordSecretName) {
+    throw new Error(
+      `Unsupported SMTP password binding: ${settings.smtp_password_secret_name}.`,
+    );
+  }
+
+  const smtpHost = validatedText(
+    required(settings.smtp_host, "SMTP host"),
+    "SMTP host",
+    253,
+  ).toLowerCase();
+
+  if (!smtpHostPattern.test(smtpHost)) {
+    throw new Error("SMTP host is invalid.");
+  }
+
+  const smtpPort = settings.smtp_port ?? 587;
+
+  if (!Number.isInteger(smtpPort) || smtpPort < 1 || smtpPort > 65_535) {
+    throw new Error("SMTP port is invalid.");
+  }
+
+  return {
+    ...settings,
+    from_email: validatedEmail(
+      required(settings.from_email, "From email"),
+      "From email",
+    ),
+    from_name: validatedText(
+      settings.from_name || "TheTattooCore",
+      "From name",
+      120,
+    ),
+    reply_to_email: settings.reply_to_email
+      ? validatedEmail(settings.reply_to_email, "Reply-to email")
+      : null,
+    smtp_host: smtpHost,
+    smtp_password_secret_name: hostgatorPasswordSecretName,
+    smtp_port: smtpPort,
+    smtp_username: validatedText(
+      required(settings.smtp_username, "SMTP username"),
+      "SMTP username",
+      254,
+    ),
+  };
 }
 
 export async function sendHostgatorEmail({
@@ -55,26 +165,27 @@ export async function sendHostgatorEmail({
       throw new Error("Mail sending is disabled in admin settings.");
     }
 
-    const fromEmail = required(settings.from_email, "From email");
-    const smtpHost = required(settings.smtp_host, "SMTP host");
-    const smtpUsername = required(settings.smtp_username, "SMTP username");
-    const smtpPort = settings.smtp_port ?? 587;
-    const useImplicitTls = smtpPort === 465 && settings.smtp_secure;
+    const validatedSettings = validateMailSettings(settings);
+    const validatedRecipient = validatedEmail(recipientEmail, "Recipient email");
+    const validatedSubject = validatedText(subject, "Mail subject", 200);
+    const validatedMailHeaders = validatedHeaders(headers);
     const password = required(
-      process.env[settings.smtp_password_secret_name],
-      settings.smtp_password_secret_name,
+      process.env[hostgatorPasswordSecretName],
+      hostgatorPasswordSecretName,
     );
+    const smtpPort = validatedSettings.smtp_port ?? 587;
+    const useImplicitTls = smtpPort === 465 && validatedSettings.smtp_secure;
     const mailerModule = await import("worker-mailer");
 
     await mailerModule.WorkerMailer.send(
       {
-        host: smtpHost,
+        host: validatedSettings.smtp_host!,
         port: smtpPort,
         secure: useImplicitTls,
         startTls: true,
         authType: "plain",
         credentials: {
-          username: smtpUsername,
+          username: validatedSettings.smtp_username!,
           password,
         },
         logLevel: production
@@ -85,17 +196,17 @@ export async function sendHostgatorEmail({
       },
       {
         from: {
-          name: settings.from_name || "TheTattooCore",
-          email: fromEmail,
+          name: validatedSettings.from_name,
+          email: validatedSettings.from_email!,
         },
-        reply: settings.reply_to_email
-          ? { email: settings.reply_to_email }
+        reply: validatedSettings.reply_to_email
+          ? { email: validatedSettings.reply_to_email }
           : undefined,
-        to: recipientEmail,
-        subject,
+        to: validatedRecipient,
+        subject: validatedSubject,
         text,
         html,
-        headers,
+        headers: validatedMailHeaders,
       },
     );
   } catch (error) {
@@ -111,6 +222,9 @@ export async function sendHostgatorTestEmail({
   settings,
 }: TestMailInput) {
   const sentAt = new Date().toISOString();
+  const requesterEmail = sentByEmail
+    ? validatedEmail(sentByEmail, "Requester email")
+    : undefined;
 
   await sendHostgatorEmail({
     headers: {
@@ -120,20 +234,20 @@ export async function sendHostgatorTestEmail({
       "<h1>TheTattooCore mail test</h1>",
       "<p>The production app sent this through the configured company mailbox.</p>",
       `<p><strong>Sent at:</strong> ${sentAt}</p>`,
-      sentByEmail
-        ? `<p><strong>Requested by:</strong> ${sentByEmail}</p>`
+      requesterEmail
+        ? `<p><strong>Requested by:</strong> ${escapeHtml(requesterEmail)}</p>`
         : "",
     ].join(""),
     recipientEmail,
     settings,
     subject: "TheTattooCore admin mail test",
     text: [
-        "TheTattooCore production mail test succeeded.",
-        "",
-        `Sent at: ${sentAt}`,
-        sentByEmail ? `Requested by: ${sentByEmail}` : null,
-      ]
-        .filter(Boolean)
-        .join("\n"),
+      "TheTattooCore production mail test succeeded.",
+      "",
+      `Sent at: ${sentAt}`,
+      requesterEmail ? `Requested by: ${requesterEmail}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n"),
   });
 }
