@@ -359,7 +359,7 @@ const checks = [
       sitemap.includes("url: siteUrl") &&
       sitemap.includes("staticContentLastModified") &&
       publicSmoke.includes(
-        "const requiredSitemapUrls = [baseUrl, `${baseUrl}/merch`]",
+        "const requiredSitemapUrls = [canonicalBaseUrl, `${canonicalBaseUrl}/merch`]",
       ),
   },
 ];

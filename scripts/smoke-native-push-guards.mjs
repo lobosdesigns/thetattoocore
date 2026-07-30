@@ -371,11 +371,11 @@ const checks = [
       ) &&
       source.deviceTestApi.includes("const testAlertDelayMs = 8_000") &&
       source.deviceTestApi.includes("export const maxDuration = 60") &&
-      /after\(async \(\) => \{[\s\S]*setTimeout\(resolve, testAlertDelayMs\)[\s\S]*await sendNativePushMessage\([\s\S]*\}\);\s*return NextResponse\.json\(\{ scheduled: true \}, \{ status: 202 \}\);/s.test(
+      /after\(async \(\) => \{[\s\S]*setTimeout\(resolve, testAlertDelayMs\)[\s\S]*await sendNativePushMessage\([\s\S]*\}\);\s*return noStoreJson\(\{ scheduled: true \}, \{ status: 202 \}\);/s.test(
         source.deviceTestApi,
       ) &&
       source.deviceTestApi.includes('result === "token"') &&
-      source.deviceTestApi.includes("NextResponse.json({ scheduled: true }") &&
+      source.deviceTestApi.includes("noStoreJson({ scheduled: true }") &&
       source.deviceTestApi.includes("{ status: 202 }") &&
       !source.deviceTestApi.includes("console.") &&
       source.senderCore.includes("nativePushSenderReady") &&

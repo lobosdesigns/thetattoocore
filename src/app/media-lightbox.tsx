@@ -100,7 +100,7 @@ export function MediaLightbox({
           className="ttc-safe-lightbox fixed inset-0 z-50 flex flex-col bg-black text-white"
           role="dialog"
         >
-          <div className="ttc-safe-lightbox-bar ttc-safe-lightbox-top flex items-center justify-between gap-3 border-b border-white/15 bg-black py-2 text-white">
+          <div className="ttc-safe-lightbox-bar ttc-safe-lightbox-top flex items-center justify-between gap-3 border-b border-white/15 bg-black px-3 py-2 text-white">
             <div className="min-w-0">
               <div className="text-xs font-bold uppercase tracking-[0.22em] text-white">
                 {title}
@@ -196,7 +196,7 @@ export function MediaLightbox({
             ) : null}
           </div>
           {footer ? (
-            <div className="ttc-safe-lightbox-bar ttc-safe-lightbox-bottom border-t border-white/15 bg-black py-3 text-white">
+            <div className="ttc-safe-lightbox-bar ttc-safe-lightbox-bottom border-t border-white/15 bg-black px-3 py-3 text-white">
               {footer}
             </div>
           ) : null}
