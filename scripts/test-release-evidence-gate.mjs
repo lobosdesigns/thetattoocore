@@ -13,6 +13,8 @@ const fixturePath = "scripts/fixtures/release-evidence.passed.md";
 const fixtureCandidate = "fixture-release-candidate";
 const fixtureReferenceDate = "2026-07-23";
 const fixtureMarker = "<!-- TTC_SANITIZED_RELEASE_EVIDENCE_FIXTURE -->";
+const releaseProfile = "native-store-distribution";
+const noDefaultReleaseProfile = "--no-default-release-profile";
 const gitHead = spawnSync("git", ["rev-parse", "HEAD"], {
   encoding: "utf8",
 });
@@ -244,7 +246,14 @@ const futureLegalDateFixture = writeVariant(
 );
 
 function runGate(args, env = {}, cwd = undefined) {
-  return spawnSync(process.execPath, [gatePath, ...args], {
+  const useDefaultProfile = !args.includes(noDefaultReleaseProfile);
+  const forwardedArgs = args.filter((arg) => arg !== noDefaultReleaseProfile);
+  const profileArgs =
+    useDefaultProfile && !forwardedArgs.includes("--release-profile")
+      ? ["--release-profile", releaseProfile]
+      : [];
+
+  return spawnSync(process.execPath, [gatePath, ...profileArgs, ...forwardedArgs], {
     cwd,
     encoding: "utf8",
     env: {
@@ -270,7 +279,48 @@ const checks = [
     verify(result) {
       return (
         result.status === 0 &&
-        result.stdout.includes("PASS private release evidence is complete")
+        result.stdout.includes(
+          "PASS private release evidence is complete for the selected native-store-distribution",
+        )
+      );
+    },
+  },
+  {
+    label: "release evidence rejects a missing release profile",
+    result: runGate([
+      noDefaultReleaseProfile,
+      "--test-fixture",
+      "--reference-date",
+      fixtureReferenceDate,
+      "--evidence",
+      fixturePath,
+      "--release-candidate",
+      fixtureCandidate,
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes("release profile is required")
+      );
+    },
+  },
+  {
+    label: "release evidence rejects an unknown release profile",
+    result: runGate([
+      "--release-profile",
+      "web-production",
+      "--test-fixture",
+      "--reference-date",
+      fixtureReferenceDate,
+      "--evidence",
+      fixturePath,
+      "--release-candidate",
+      fixtureCandidate,
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes("unsupported release profile")
       );
     },
   },

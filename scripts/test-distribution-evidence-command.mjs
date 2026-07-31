@@ -7,6 +7,8 @@ const result = spawnSync(
     "run",
     "verify:distribution-evidence",
     "--",
+    "--release-profile",
+    "native-store-distribution",
     "--release-candidate",
     "fixture-release-candidate",
     "--evidence",
@@ -28,14 +30,14 @@ if (result.status !== 0) {
     process.stderr.write(`${result.error.message}\n`);
   }
   console.error(
-    "FAIL distribution evidence command forwards release-candidate options.",
+    "FAIL distribution evidence command forwards release-profile and release-candidate options.",
   );
   process.exit(1);
 }
 
 if (
   !result.stdout.includes(
-    "PASS private release evidence is complete for the selected web, Android, and iOS release candidates.",
+    "PASS private release evidence is complete for the selected native-store-distribution web, Android, and iOS release candidates.",
   )
 ) {
   console.error(
@@ -45,5 +47,5 @@ if (
 }
 
 console.log(
-  "PASS distribution evidence command forwards release-candidate options.",
+  "PASS distribution evidence command forwards release-profile and release-candidate options.",
 );

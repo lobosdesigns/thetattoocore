@@ -23,6 +23,7 @@ const REQUIRED_LEGAL_SIGNOFF_AREAS = [
 const DEFAULT_EVIDENCE_PATH =
   "private-release-handoff/release-handoff-template.md";
 const FIXTURE_MARKER = "<!-- TTC_SANITIZED_RELEASE_EVIDENCE_FIXTURE -->";
+const NATIVE_STORE_DISTRIBUTION_PROFILE = "native-store-distribution";
 const MAX_PROOF_AGE_DAYS = 45;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const buildIdentityPattern = /\bv?\d+(?:\.\d+){1,2}\s+\(\d+\)/gi;
@@ -37,6 +38,10 @@ function optionValue(name, fallback = "") {
 }
 
 const evidencePath = optionValue("--evidence", DEFAULT_EVIDENCE_PATH);
+const releaseProfile = optionValue(
+  "--release-profile",
+  process.env.TTC_RELEASE_PROFILE ?? "",
+);
 const expectedReleaseCandidate = optionValue(
   "--release-candidate",
   process.env.TTC_RELEASE_CANDIDATE ?? "",
@@ -51,6 +56,20 @@ const evidenceUsesFixturePath =
   Boolean(fixtureRelativePath) &&
   !fixtureRelativePath.startsWith("..") &&
   !isAbsolute(fixtureRelativePath);
+
+if (!releaseProfile) {
+  console.error(
+    `FAIL release profile is required. Use --release-profile ${NATIVE_STORE_DISTRIBUTION_PROFILE} for native/store distribution evidence.`,
+  );
+  process.exit(1);
+}
+
+if (releaseProfile !== NATIVE_STORE_DISTRIBUTION_PROFILE) {
+  console.error(
+    `FAIL unsupported release profile "${releaseProfile}". Supported profile: ${NATIVE_STORE_DISTRIBUTION_PROFILE}.`,
+  );
+  process.exit(1);
+}
 
 function gitRepositoryIsAvailable() {
   try {
@@ -874,5 +893,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  "PASS private release evidence is complete for the selected web, Android, and iOS release candidates.",
+  `PASS private release evidence is complete for the selected ${NATIVE_STORE_DISTRIBUTION_PROFILE} web, Android, and iOS release candidates.`,
 );
