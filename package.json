@@ -50,6 +50,7 @@
     "smoke:booking": "node scripts/smoke-booking-guards.mjs && npm run test:booking-input-security && node scripts/test-booking-checkout-redirect-contract.mjs",
     "test:booking-lifecycle-db": "node scripts/test-booking-lifecycle-db-contracts.mjs",
     "test:booking-input-security": "node scripts/test-booking-input-security.mjs",
+    "test:booking-checkout-redirect-contract": "node scripts/test-booking-checkout-redirect-contract.mjs",
     "smoke:payment": "npm run smoke:payments",
     "smoke:payments": "npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && node scripts/smoke-payment-guards.mjs",
     "smoke:payment-cutover": "node scripts/smoke-payment-cutover-evidence.mjs",
