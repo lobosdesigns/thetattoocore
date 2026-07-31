@@ -17,6 +17,7 @@ const source = {
   dedupeMigration: read(
     "supabase/migrations/20260726200000_dedupe_message_notifications.sql",
   ),
+  migrationRunbook: read("docs/release/v1.1.0-migration-runbook.md"),
   readStateMigration: read(
     "supabase/migrations/20260726201000_conversation_member_read_state_policy.sql",
   ),
@@ -132,8 +133,38 @@ assert.match(
 );
 assert.match(
   source.dedupeMigration,
+  /on public\.notifications \(message_id, recipient_id, type\)\s+where message_id is not null;/,
+  "message notification dedupe index uses the authoritative key and predicate",
+);
+assert.match(
+  source.dedupeMigration,
   /on conflict do nothing/,
   "duplicate message notification processing is ignored safely",
+);
+assert.match(
+  source.migrationRunbook,
+  /from public\.notifications\s+where message_id is not null\s+group by message_id, recipient_id, type\s+having count\(\*\) > 1/,
+  "release runbook duplicate preflight mirrors the message notification unique index",
+);
+assert.match(
+  source.migrationRunbook,
+  /duplicate_group_count[\s\S]*excess_duplicate_row_count/,
+  "release runbook duplicate preflight returns aggregate-only counts",
+);
+assert.match(
+  source.migrationRunbook,
+  /If `duplicate_group_count` is nonzero, stop safely\./,
+  "release runbook documents nonzero duplicate groups as a stop condition",
+);
+assert.match(
+  source.migrationRunbook,
+  /must not be expanded with message bodies, notification body text, profile fields, email addresses, tokens, or other private content/,
+  "release runbook keeps optional diagnostics content-free",
+);
+assert.doesNotMatch(
+  source.migrationRunbook,
+  /source_type|source_id/,
+  "release runbook does not reference unsupported source columns for notification preflight",
 );
 
 for (const [label, actionSource] of [

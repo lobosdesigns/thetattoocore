@@ -104,6 +104,23 @@ function asUser(userId, statements) {
   `;
 }
 
+const notificationDuplicatePreflightSql = `
+  with duplicate_message_notifications as (
+    select
+      message_id,
+      recipient_id,
+      type,
+      count(*) as duplicate_count
+    from public.notifications
+    where message_id is not null
+    group by message_id, recipient_id, type
+    having count(*) > 1
+  )
+  select
+    count(*) || ',' || coalesce(sum(duplicate_count - 1), 0)
+  from duplicate_message_notifications;
+`;
+
 const users = {
   alice: "00000000-0000-4000-8000-000000000001",
   bob: "00000000-0000-4000-8000-000000000002",
@@ -377,6 +394,57 @@ try {
 
   sql(migration("20260726183000_direct_conversation_pairs.sql"));
   sql(migration("20260726194500_harden_direct_conversation_availability.sql"));
+
+  const preflightConversationId = scalar(`
+    insert into public.conversations (created_by)
+    values ('${users.alice}')
+    returning id;
+  `);
+  const preflightMessageId = scalar(`
+    insert into public.messages (conversation_id, sender_id, body)
+    values ('${preflightConversationId}', '${users.alice}', 'preflight fixture')
+    returning id;
+  `);
+  const otherPreflightMessageId = scalar(`
+    insert into public.messages (conversation_id, sender_id, body)
+    values ('${preflightConversationId}', '${users.alice}', 'preflight fixture other message')
+    returning id;
+  `);
+
+  assert.equal(
+    scalar(notificationDuplicatePreflightSql),
+    "0,0",
+    "notification duplicate preflight returns zero groups and zero excess rows with no duplicates",
+  );
+  sql(`set role service_role;
+    insert into public.notifications (actor_id, body, href, message_id, recipient_id, subject_id, subject_type, title, type)
+    values
+      ('${users.alice}', 'one', '/messages?c=${preflightConversationId}', '${preflightMessageId}', '${users.bob}', '${preflightConversationId}', 'conversation', 'Message one', 'message'),
+      ('${users.alice}', 'two', '/messages?c=${preflightConversationId}', '${preflightMessageId}', '${users.bob}', '${preflightConversationId}', 'conversation', 'Message two', 'message'),
+      ('${users.alice}', 'different recipient', '/messages?c=${preflightConversationId}', '${preflightMessageId}', '${users.carol}', '${preflightConversationId}', 'conversation', 'Message three', 'message'),
+      ('${users.alice}', 'different message', '/messages?c=${preflightConversationId}', '${otherPreflightMessageId}', '${users.bob}', '${preflightConversationId}', 'conversation', 'Message four', 'message'),
+      ('${users.alice}', 'null source one', '/messages?c=${preflightConversationId}', null, '${users.bob}', '${preflightConversationId}', 'conversation', 'Null one', 'message'),
+      ('${users.alice}', 'null source two', '/messages?c=${preflightConversationId}', null, '${users.bob}', '${preflightConversationId}', 'conversation', 'Null two', 'message'),
+      ('${users.alice}', 'non message one', '/profiles/alice_phase3', null, '${users.bob}', '${users.alice}', 'profile', 'Follow one', 'follow_request'),
+      ('${users.alice}', 'non message two', '/profiles/alice_phase3', null, '${users.bob}', '${users.alice}', 'profile', 'Follow two', 'follow_request');
+  `);
+  assert.equal(
+    scalar(notificationDuplicatePreflightSql),
+    "1,1",
+    "notification duplicate preflight flags only exact message_id, recipient_id, type duplicates",
+  );
+  expectSqlError(
+    migration("20260726200000_dedupe_message_notifications.sql"),
+    /could not create unique index|duplicate key value/i,
+    "dedupe migration deterministically rejects existing duplicate message notifications",
+  );
+  sql("delete from public.notifications;");
+  assert.equal(
+    scalar(notificationDuplicatePreflightSql),
+    "0,0",
+    "notification duplicate preflight passes after exact duplicate rows are removed from the disposable fixture",
+  );
+
   sql(migration("20260726200000_dedupe_message_notifications.sql"));
   sql(migration("20260726201000_conversation_member_read_state_policy.sql"));
   sql(migration("20260726202000_direct_pair_member_select_grant.sql"));
