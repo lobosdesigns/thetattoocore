@@ -1,5 +1,6 @@
 "use client";
 
+import { BellRing, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   createContext,
@@ -18,7 +19,10 @@ import {
   parseNativePushQaResponse,
   type NativePushQaTarget,
 } from "@/lib/native-push/qa-target";
-import { notificationPathOrFallback } from "@/lib/notification-route";
+import {
+  nativeForegroundAlert,
+  notificationPathOrFallback,
+} from "@/lib/notification-route";
 
 type NativePlatform = NativePushPlatform;
 type NativeAppInfo = {
@@ -215,6 +219,9 @@ export function NativeNotificationProvider({
 }) {
   const router = useRouter();
   const [enabled, setEnabled] = useState(false);
+  const [foregroundAlert, setForegroundAlert] = useState<ReturnType<
+    typeof nativeForegroundAlert
+  > | null>(null);
   const [supported, setSupported] = useState(false);
   const enabledRef = useRef(false);
 
@@ -243,6 +250,16 @@ export function NativeNotificationProvider({
             "notificationActionPerformed",
             (event) => {
               router.push(tappedNotificationPath(event.notification));
+            },
+          ),
+        );
+        await keepHandle(
+          await runtime.messaging.addListener(
+            "notificationReceived",
+            (event) => {
+              if (!cancelled) {
+                setForegroundAlert(nativeForegroundAlert(event.notification));
+              }
             },
           ),
         );
@@ -301,6 +318,14 @@ export function NativeNotificationProvider({
       for (const handle of handles) void handle.remove();
     };
   }, [qaBuildRestricted, router, setupEnabled]);
+
+  useEffect(() => {
+    if (!foregroundAlert) return;
+
+    const timeout = window.setTimeout(() => setForegroundAlert(null), 8_000);
+
+    return () => window.clearTimeout(timeout);
+  }, [foregroundAlert]);
 
   const enable = useCallback(async () => {
     const runtime = await setupStage("availability", () =>
@@ -397,6 +422,42 @@ export function NativeNotificationProvider({
   return (
     <NativeNotificationContext.Provider value={value}>
       {children}
+      {foregroundAlert ? (
+        <div
+          aria-live="polite"
+          className="fixed inset-x-3 top-[calc(env(safe-area-inset-top)+0.75rem)] z-[70] mx-auto flex max-w-md items-start gap-3 rounded-md border border-[var(--border)] bg-[var(--background)] p-3 text-[var(--foreground)] shadow-lg"
+          role="status"
+        >
+          <BellRing className="mt-0.5 size-5 shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="break-words text-sm font-bold">
+              {foregroundAlert.title}
+            </p>
+            <p className="mt-1 break-words text-xs leading-5 text-[var(--muted)]">
+              {foregroundAlert.body}
+            </p>
+            <button
+              className="mt-2 text-xs font-bold underline underline-offset-4"
+              onClick={() => {
+                const destination = foregroundAlert.url;
+                setForegroundAlert(null);
+                router.push(destination);
+              }}
+              type="button"
+            >
+              Open
+            </button>
+          </div>
+          <button
+            aria-label="Dismiss app alert"
+            className="inline-flex size-9 shrink-0 items-center justify-center rounded-md"
+            onClick={() => setForegroundAlert(null)}
+            type="button"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      ) : null}
     </NativeNotificationContext.Provider>
   );
 }

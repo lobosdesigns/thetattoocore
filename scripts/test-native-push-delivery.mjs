@@ -34,6 +34,10 @@ const { allowsNoisyDeliveryNow } = await importSelfContainedTypeScript(
   "../src/lib/notifications.ts",
   import.meta.url,
 );
+const { nativeForegroundAlert } = await importSelfContainedTypeScript(
+  "../src/lib/notification-route.ts",
+  import.meta.url,
+);
 
 const readyEnvironment = {
   FIREBASE_CLIENT_EMAIL: "sender@example.invalid",
@@ -319,6 +323,31 @@ assert.equal(
 );
 assert.equal(parseNativePushQaResponse(202, null), null);
 
+assert.deepEqual(
+  nativeForegroundAlert({
+    body: "Tap to verify app alerts.",
+    data: { url: "/messages?c=44444444-4444-4444-8444-444444444444" },
+    title: "Test app alert",
+  }),
+  {
+    body: "Tap to verify app alerts.",
+    title: "Test app alert",
+    url: "/messages?c=44444444-4444-4444-8444-444444444444",
+  },
+);
+assert.deepEqual(
+  nativeForegroundAlert({
+    body: " ",
+    data: { url: "https://example.invalid/phishing" },
+    title: " ",
+  }),
+  {
+    body: "Open Notifications to view it.",
+    title: "New alert",
+    url: "/notifications",
+  },
+);
+
 const quietHoursProfile = {
   notification_quiet_hours_enabled: true,
   notification_quiet_hours_end: "17:00",
@@ -364,3 +393,4 @@ console.log("PASS native retry delays are bounded");
 console.log("PASS controlled native QA rejects unapproved roles and builds");
 console.log("PASS controlled native QA destinations reject client-supplied routes");
 console.log("PASS controlled native QA honors message and quiet-hours settings");
+console.log("PASS foreground native alerts stay visible and route safely");
