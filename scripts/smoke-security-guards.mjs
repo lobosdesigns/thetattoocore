@@ -777,8 +777,9 @@ const checks = [
       publicSmoke.includes('path: "/api/merch/checkout"') &&
       publicSmoke.includes('method: "POST"') &&
       publicSmoke.includes("Ad%20purchases%20are%20not%20available%20yet.") &&
-      publicSmoke.includes('redirectIncludesAny: ["/login", "/account"]') &&
-      publicSmoke.includes("Booking%20checkout%20is%20temporarily%20unavailable") &&
+      publicSmoke.includes('redirectIncludes: "/login"') &&
+      publicSmoke.includes("Sign%20in%20to%20pay%20a%20booking%20deposit.") &&
+      publicSmoke.includes("return_to=%2Faccount%23booking-settings") &&
       publicSmoke.includes('redirectIncludesAny: ["/login", "/merch"]') &&
       publicSmoke.includes("Checkout+is+temporarily+unavailable") &&
       publicSmoke.includes("Sign+in+to+buy+merch") &&

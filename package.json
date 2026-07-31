@@ -47,7 +47,7 @@
     "test:admin-authorization": "npm run test:admin-role-matrix && npm run test:admin-owner-protection && npm run test:admin-mail-security && npm run test:admin-audit-integrity && npm run test:admin-input-security && npm run test:admin-merchant-idempotency && npm run test:admin-operation-idempotency-db",
     "smoke:stories": "node scripts/smoke-stories-guards.mjs",
     "smoke:dm": "node scripts/test-message-conversation-selection.mjs && node scripts/test-messaging-notifications-contracts.mjs && node scripts/test-phase3-db-contracts.mjs && node scripts/smoke-dm-guards.mjs",
-    "smoke:booking": "node scripts/smoke-booking-guards.mjs && npm run test:booking-input-security",
+    "smoke:booking": "node scripts/smoke-booking-guards.mjs && npm run test:booking-input-security && node scripts/test-booking-checkout-redirect-contract.mjs",
     "test:booking-lifecycle-db": "node scripts/test-booking-lifecycle-db-contracts.mjs",
     "test:booking-input-security": "node scripts/test-booking-input-security.mjs",
     "smoke:payment": "npm run smoke:payments",

@@ -274,10 +274,10 @@ const checks = [
     method: "POST",
     path: "/api/bookings/checkout",
     status: [303],
-    redirectIncludesAny: ["/login", "/account"],
-    locationIncludesAny: [
-      ["Sign", "booking", "deposit"],
-      ["Booking%20checkout%20is%20temporarily%20unavailable"],
+    redirectIncludes: "/login",
+    locationIncludes: [
+      "Sign%20in%20to%20pay%20a%20booking%20deposit.",
+      "return_to=%2Faccount%23booking-settings",
     ],
     redirect: "manual",
   },

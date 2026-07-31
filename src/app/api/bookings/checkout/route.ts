@@ -1,6 +1,5 @@
-import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { checkRateLimit } from "@/lib/http/reliability";
+import { checkRateLimit, noStoreRedirect } from "@/lib/http/reliability";
 import { platformFeeDescription } from "@/lib/payments/fees";
 import { siteName, siteUrl } from "@/lib/site";
 import {
@@ -36,7 +35,11 @@ function safeInternalReturnPath(value: FormDataEntryValue | null) {
     .trim()
     .slice(0, 240);
 
-  if (!text || !text.startsWith("/") || text.startsWith("//") || text.includes("\\")) {
+  if (!text ||
+    !text.startsWith("/") ||
+    text.startsWith("//") ||
+    text.includes("\\") ||
+    /[\r\n]/.test(text)) {
     return null;
   }
 
@@ -77,7 +80,7 @@ function pathWithMessage(returnTo: string | null, message: string) {
 }
 
 function redirectWithMessage(message: string, returnTo: string | null = null) {
-  return NextResponse.redirect(
+  return noStoreRedirect(
     `${siteUrl}${pathWithMessage(returnTo, message)}`,
     { status: 303 },
   );
@@ -155,44 +158,28 @@ async function createBookingCheckoutSession(
 }
 
 export async function POST(request: Request) {
-  const secretKey = process.env.STRIPE_SECRET_KEY;
-  const canProcessStripeWebhooks = Boolean(
-    process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY,
-  );
-
-  if (!secretKey) {
-    return redirectWithMessage(
-      "Booking checkout is temporarily unavailable. Please try again later.",
-    );
-  }
-
-  if (!canProcessStripeWebhooks) {
-    return redirectWithMessage(
-      "Booking checkout is temporarily unavailable. Please try again later.",
-    );
-  }
-
   if (!hasSupportedFormContentType(request) || !hasSafeFormSize(request)) {
     return redirectWithMessage("Booking checkout could not open. Please try again.");
   }
 
   const formData = await request.formData();
-  const bookingId = cleanUuid(formData.get("booking_id"));
   const returnTo = safeInternalReturnPath(formData.get("return_to"));
-
-  if (!bookingId) {
-    return redirectWithMessage("Choose a booking request first.", returnTo);
-  }
 
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
 
   if (!claims?.sub) {
-    return NextResponse.redirect(
+    return noStoreRedirect(
       `${siteUrl}/login?message=${encodeURIComponent("Sign in to pay a booking deposit.")}&return_to=${encodeURIComponent(returnTo ?? "/account#booking-settings")}`,
       { status: 303 },
     );
+  }
+
+  const bookingId = cleanUuid(formData.get("booking_id"));
+
+  if (!bookingId) {
+    return redirectWithMessage("Choose a booking request first.", returnTo);
   }
 
   const limit = checkRateLimit({
@@ -206,6 +193,25 @@ export async function POST(request: Request) {
   if (limit.limited) {
     return redirectWithMessage(
       "Too many checkout attempts. Please try again later.",
+      returnTo,
+    );
+  }
+
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  const canProcessStripeWebhooks = Boolean(
+    process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY,
+  );
+
+  if (!secretKey) {
+    return redirectWithMessage(
+      "Booking checkout is temporarily unavailable. Please try again later.",
+      returnTo,
+    );
+  }
+
+  if (!canProcessStripeWebhooks) {
+    return redirectWithMessage(
+      "Booking checkout is temporarily unavailable. Please try again later.",
       returnTo,
     );
   }
@@ -436,5 +442,5 @@ export async function POST(request: Request) {
   revalidatePath("/account");
   revalidatePath("/notifications");
 
-  return NextResponse.redirect(session.url, { status: 303 });
+  return noStoreRedirect(session.url, { status: 303 });
 }

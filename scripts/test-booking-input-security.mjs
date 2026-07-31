@@ -28,6 +28,7 @@ const maliciousPayloads = [
   "not.is.null",
   "Safe\r\nBEGIN:VEVENT\r\nSUMMARY:pwned",
   "Hello\r\nATTENDEE:mailto:evil@example.com",
+  "/messages\r\nLocation: https://evil.example",
 ];
 
 const validUuid = "00000000-0000-4000-8000-000000000101";
@@ -64,7 +65,11 @@ function cleanReturnPath(value, fallback = "/") {
 function safeInternalReturnPath(value) {
   const text = String(value ?? "").trim().slice(0, 240);
 
-  if (!text || !text.startsWith("/") || text.startsWith("//") || text.includes("\\")) {
+  if (!text ||
+    !text.startsWith("/") ||
+    text.startsWith("//") ||
+    text.includes("\\") ||
+    /[\r\n]/.test(text)) {
     return null;
   }
 
