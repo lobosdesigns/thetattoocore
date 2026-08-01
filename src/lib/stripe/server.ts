@@ -1,5 +1,6 @@
 import "server-only";
 import Stripe from "stripe";
+import { STRIPE_API_VERSION } from "./checkout-session";
 import { stripeWebhookSigningSecretFormatValid } from "./secret-format";
 
 export function expectedStripeLivemode() {
@@ -119,6 +120,7 @@ export function createStripeClient() {
   }
 
   return new Stripe(secretKey, {
+    apiVersion: STRIPE_API_VERSION,
     appInfo: {
       name: "TheTattooCore",
       url: "https://thetattoocore.com",

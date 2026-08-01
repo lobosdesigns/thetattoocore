@@ -3,6 +3,8 @@ type Fetcher = (
   init?: RequestInit,
 ) => Promise<Response>;
 
+export const STRIPE_API_VERSION = "2026-06-24.dahlia";
+
 export type StripeCheckoutSession = {
   id: string;
   url: string | null;
@@ -175,6 +177,7 @@ export async function createStripeCheckoutSession(_options: {
             Authorization: `Bearer ${_options.secretKey}`,
             "Content-Type": "application/x-www-form-urlencoded",
             "Idempotency-Key": _options.idempotencyKey,
+            "Stripe-Version": STRIPE_API_VERSION,
           },
           method: "POST",
         },
@@ -258,6 +261,7 @@ export async function expireStripeCheckoutSession(options: {
           Authorization: `Bearer ${options.secretKey}`,
           "Content-Type": "application/x-www-form-urlencoded",
           "Idempotency-Key": options.idempotencyKey,
+          "Stripe-Version": STRIPE_API_VERSION,
         },
         method: "POST",
       },

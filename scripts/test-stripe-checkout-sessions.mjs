@@ -3,6 +3,7 @@ import { importSelfContainedTypeScript } from "./import-self-contained-typescrip
 
 const {
   StripeCheckoutRequestError,
+  STRIPE_API_VERSION,
   bookingCheckoutReconciliationDecision,
   bookingCheckoutReleaseAttemptDecision,
   bookingPaidTransitionDecision,
@@ -19,6 +20,9 @@ const createBody = new URLSearchParams({
   mode: "payment",
   success_url: "https://thetattoocore.com/merch/checkout/success",
 });
+
+assert.equal(STRIPE_API_VERSION, "2026-06-24.dahlia");
+console.log("PASS raw Checkout helpers export the pinned Stripe API version");
 
 {
   const calls = [];
@@ -57,6 +61,10 @@ const createBody = new URLSearchParams({
   assert.deepEqual(
     calls.map((call) => call.init?.headers?.["Idempotency-Key"]),
     ["ttc_merch_attempt_123", "ttc_merch_attempt_123"],
+  );
+  assert.deepEqual(
+    calls.map((call) => call.init?.headers?.["Stripe-Version"]),
+    [STRIPE_API_VERSION, STRIPE_API_VERSION],
   );
   assert.deepEqual(
     calls.map((call) => call.init?.method),
@@ -208,6 +216,7 @@ console.log("PASS unresolved idempotency conflicts remain classified as unknown"
           Authorization: `Bearer ${secretKey}`,
           "Content-Type": "application/x-www-form-urlencoded",
           "Idempotency-Key": "ttc_expire_attempt_123",
+          "Stripe-Version": STRIPE_API_VERSION,
         },
         method: "POST",
       },
