@@ -62,7 +62,7 @@
     "test:native-push-delivery": "node scripts/test-native-push-delivery.mjs",
     "test:typescript-loader": "node scripts/test-import-self-contained-typescript.mjs",
     "smoke:native": "npm run test:typescript-loader && node scripts/smoke-native-wrapper.mjs && node scripts/test-native-app-url.mjs && npm run test:native-session",
-    "test:native-session": "node scripts/test-native-session-contract.mjs",
+    "test:native-session": "node scripts/test-native-session-contract.mjs && node --no-warnings --experimental-vm-modules scripts/test-auth-surface-isolation.mjs",
     "test:messaging-notifications": "node scripts/test-messaging-notifications-contracts.mjs && node scripts/test-phase3-db-contracts.mjs",
     "smoke:app-links": "node scripts/smoke-app-link-associations.mjs",
     "smoke:handoff": "node scripts/smoke-private-handoff-template.mjs",

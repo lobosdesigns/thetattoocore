@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  await supabase.auth.signOut();
+  await supabase.auth.signOut({ scope: "local" });
   revalidatePath("/", "layout");
 
   const response = NextResponse.redirect(new URL("/login", request.url), {

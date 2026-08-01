@@ -4,13 +4,17 @@ import type { PluginListenerHandle } from "@capacitor/core";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { nativeAppPathOrNull } from "@/lib/native-app-url";
-import { nativeSessionReturnPath } from "@/lib/native-session";
+import {
+  nativeSessionAccountHeader,
+  nativeSessionResumeAction,
+  nativeSessionReturnPath,
+} from "@/lib/native-session";
 
 const nativeAppUrlDedupWindowMs = 1500;
 const nativeResumeFallbackMs = 400;
 const nativeSessionRetryMs = 2000;
 
-export function NativeAppUrlBridge() {
+export function NativeAppUrlBridge({ accountId }: { accountId: string | null }) {
   const router = useRouter();
   const resumeGuardRef = useRef<HTMLDivElement>(null);
 
@@ -49,6 +53,10 @@ export function NativeAppUrlBridge() {
       const returnTo = nativeSessionReturnPath(window.location.pathname);
 
       return `/login?return_to=${encodeURIComponent(returnTo)}`;
+    }
+
+    function currentPath() {
+      return `${window.location.pathname}${window.location.search}${window.location.hash}`;
     }
 
     function pauseSessionGuard() {
@@ -98,14 +106,31 @@ export function NativeAppUrlBridge() {
             return;
           }
 
-          if (response.status === 204) {
+          const action = nativeSessionResumeAction(
+            response.status,
+            window.location.pathname,
+            accountId,
+            response.headers.get(nativeSessionAccountHeader),
+          );
+
+          if (action === "refresh") {
             router.refresh();
             hideResumeGuard();
             return;
           }
 
-          if (response.status === 401) {
+          if (action === "replace-route") {
+            window.location.replace(currentPath());
+            return;
+          }
+
+          if (action === "login") {
             window.location.replace(safeLoginHref());
+            return;
+          }
+
+          if (action === "preserve-auth-form") {
+            hideResumeGuard();
             return;
           }
 
@@ -223,7 +248,7 @@ export function NativeAppUrlBridge() {
       void Promise.all(handles.map((handle) => handle.remove()));
       window.removeEventListener("ttc:native-resume", nativeResumeHandler);
     };
-  }, [router]);
+  }, [accountId, router]);
 
   return (
     <div

@@ -579,9 +579,9 @@ const checks = [
       source.signout.includes("if (!admin)") &&
       source.signout.includes("Sign-out%20could%20not%20be%20completed") &&
       source.signout.indexOf("Promise.all(removals)") <
-        source.signout.indexOf("supabase.auth.signOut()") &&
+        source.signout.indexOf('supabase.auth.signOut({ scope: "local" })') &&
       source.signout.indexOf("removalResults.some((result) => result.error)") <
-        source.signout.indexOf("supabase.auth.signOut()") &&
+        source.signout.indexOf('supabase.auth.signOut({ scope: "local" })') &&
       source.signoutForm.includes("nativeNotifications.disable()") &&
       source.signoutForm.indexOf("nativeNotifications.disable()") <
         source.signoutForm.indexOf("form.submit()"),

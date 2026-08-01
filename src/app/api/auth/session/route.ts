@@ -1,4 +1,7 @@
-import { nativeSessionFailureStatus } from "@/lib/native-session";
+import {
+  nativeSessionAccountHeader,
+  nativeSessionFailureStatus,
+} from "@/lib/native-session";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +19,10 @@ export async function GET() {
 
   if (!error && data.user) {
     return new Response(null, {
-      headers: sessionResponseHeaders,
+      headers: {
+        ...sessionResponseHeaders,
+        [nativeSessionAccountHeader]: data.user.id,
+      },
       status: 204,
     });
   }

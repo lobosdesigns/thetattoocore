@@ -287,7 +287,7 @@ const checks = [
       source.androidManifest.includes('android.intent.category.BROWSABLE') &&
       source.androidManifest.includes('android:host="thetattoocore.com"') &&
       source.androidManifest.includes('android:host="www.thetattoocore.com"') &&
-      source.rootLayout.includes("<NativeAppUrlBridge />") &&
+      source.rootLayout.includes("<NativeAppUrlBridge accountId={accountId} />") &&
       source.nativeAppUrlBridge.includes('App.addListener("appUrlOpen"') &&
       source.nativeAppUrlBridge.includes("App.getLaunchUrl()") &&
       source.nativeAppUrlBridge.includes('navigate(event.url, "push")') &&
@@ -319,7 +319,14 @@ const checks = [
       source.nativeAppUrlBridge.includes('credentials: "same-origin"') &&
       source.nativeAppUrlBridge.includes("new AbortController()") &&
       source.nativeAppUrlBridge.includes("generation !== checkGeneration") &&
+      source.nativeAppUrlBridge.includes("nativeSessionResumeAction(") &&
+      source.nativeAppUrlBridge.includes(
+        "response.headers.get(nativeSessionAccountHeader)",
+      ) &&
       source.nativeAppUrlBridge.includes("router.refresh()") &&
+      source.nativeAppUrlBridge.includes(
+        "window.location.replace(currentPath())",
+      ) &&
       source.nativeAppUrlBridge.includes(
         "window.location.replace(safeLoginHref())",
       ) &&
@@ -332,6 +339,9 @@ const checks = [
       source.nativeSessionRoute.includes('export const dynamic = "force-dynamic"') &&
       source.nativeSessionRoute.includes("supabase.auth.getUser()") &&
       source.nativeSessionRoute.includes(
+        "[nativeSessionAccountHeader]: data.user.id",
+      ) &&
+      source.nativeSessionRoute.includes(
         'supabase.auth.signOut({ scope: "local" })',
       ) &&
       source.nativeSessionRoute.includes("failureStatus === 503") &&
@@ -341,9 +351,13 @@ const checks = [
       ) &&
       !source.nativeSessionRoute.includes("getSession()") &&
       source.nativeSession.includes("nativeSessionFailureStatus") &&
+      source.nativeSession.includes("nativeSessionResumeAction") &&
       source.nativeSession.includes("nativeSessionReturnPath") &&
       source.nativeSessionTest.includes("AuthRetryableFetchError") &&
+      source.nativeSessionTest.includes('"preserve-auth-form"') &&
+      source.nativeSessionTest.includes('"replace-route"') &&
       source.nativeSessionTest.includes('nativeSessionReturnPath("//example.test")') &&
+      source.rootLayout.includes('key={accountId ?? "signed-out"}') &&
       source.androidMainActivity.includes("showPrivacyCover()") &&
       source.androidMainActivity.includes("postVisualStateCallback") &&
       source.androidMainActivity.includes("data-native-session-guard") &&

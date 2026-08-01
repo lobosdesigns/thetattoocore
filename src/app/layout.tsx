@@ -97,6 +97,7 @@ async function preferredDocumentSettings() {
 
   if (!userId) {
     return {
+      accountId: null,
       language: "en",
       role: null,
       themePreference: "system" as ThemePreference,
@@ -114,6 +115,7 @@ async function preferredDocumentSettings() {
     }>();
 
   return {
+    accountId: userId,
     language: normalizedLanguage(profile?.preferred_language),
     role: profile?.role ?? null,
     themePreference: normalizedThemePreference(profile?.theme_preference),
@@ -131,7 +133,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { language, role, themePreference } = await preferredDocumentSettings();
+  const { accountId, language, role, themePreference } =
+    await preferredDocumentSettings();
   const nativeDeliveryEnabled =
     process.env.TTC_NATIVE_PUSH_DELIVERY_ENABLED === "true";
   const nativeRegistrationEnabled =
@@ -153,10 +156,11 @@ export default async function RootLayout({
     >
       <body className="min-h-full">
         <NativeNotificationProvider
+          key={accountId ?? "signed-out"}
           qaBuildRestricted={nativeNotificationQaBuildRestricted}
           setupEnabled={nativeNotificationSetupEnabled}
         >
-          <NativeAppUrlBridge />
+          <NativeAppUrlBridge accountId={accountId} />
           <AuthHashRedirect />
           <ServiceWorkerRegistrar />
           <PwaInstallSuppressor />
