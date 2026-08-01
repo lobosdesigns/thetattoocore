@@ -174,9 +174,11 @@ assert.equal(nativePushQaRoleAllowed("moderator"), false);
 assert.equal(nativePushQaRoleAllowed("user"), false);
 assert.equal(nativePushQaRoleAllowed(null), false);
 assert.equal(nativePushQaBuildAllowed("android", "1.0.3", "4"), true);
+assert.equal(nativePushQaBuildAllowed("android", "1.0.4", "5"), true);
 assert.equal(nativePushQaBuildAllowed("android", "1.0.1", "2"), false);
 assert.equal(nativePushQaBuildAllowed("android", "1.0.2", "3"), false);
 assert.equal(nativePushQaBuildAllowed("ios", "1.0", "4"), true);
+assert.equal(nativePushQaBuildAllowed("ios", "1.0", "5"), true);
 assert.equal(nativePushQaBuildAllowed("ios", "1.0", "3"), false);
 
 assert.equal(parseNativePushQaTarget(undefined), "notifications");

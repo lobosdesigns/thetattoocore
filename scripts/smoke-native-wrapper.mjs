@@ -109,7 +109,8 @@ const nativeSourceForLeakChecks = Object.entries(source)
       key !== "mobileRunbook" &&
       key !== "envExample" &&
       key !== "middleware" &&
-      key !== "nativePushProbe",
+      key !== "nativePushProbe" &&
+      key !== "readiness",
   )
   .map(([key, content]) => `${key}\n${content}`)
   .join("\n");

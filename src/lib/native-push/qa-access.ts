@@ -5,9 +5,18 @@ type NativePushBuild = {
   version: string;
 };
 
-export const nativePushQaBuilds: Record<NativePushPlatform, NativePushBuild> = {
-  android: { build: "4", version: "1.0.3" },
-  ios: { build: "4", version: "1.0" },
+export const nativePushQaBuilds: Record<
+  NativePushPlatform,
+  readonly NativePushBuild[]
+> = {
+  android: [
+    { build: "4", version: "1.0.3" },
+    { build: "5", version: "1.0.4" },
+  ],
+  ios: [
+    { build: "4", version: "1.0" },
+    { build: "5", version: "1.0" },
+  ],
 };
 
 export function nativePushQaRoleAllowed(role?: string | null) {
@@ -19,7 +28,9 @@ export function nativePushQaBuildAllowed(
   appVersion: string,
   appBuild: string,
 ) {
-  const expected = nativePushQaBuilds[platform];
+  const allowedBuilds = nativePushQaBuilds[platform];
 
-  return expected.version === appVersion && expected.build === appBuild;
+  return allowedBuilds.some(
+    (allowed) => allowed.version === appVersion && allowed.build === appBuild,
+  );
 }

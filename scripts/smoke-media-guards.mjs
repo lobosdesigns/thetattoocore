@@ -22,6 +22,13 @@ const checks = [
     ok: protectedVideo.includes("disableRemotePlayback"),
   },
   {
+    label: "protected video primes a first frame for native WebViews",
+    ok:
+      protectedVideo.includes("primeVideoPreview") &&
+      protectedVideo.includes("videoPreviewTime") &&
+      protectedVideo.includes("onLoadedMetadata={primeVideoPreview}"),
+  },
+  {
     label: "composer launch video accept excludes webm",
     ok:
       mediaInput.includes("video/mp4,video/quicktime") &&

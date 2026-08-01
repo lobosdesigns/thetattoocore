@@ -250,8 +250,11 @@ const checks = [
   {
     label: "controlled native registration QA is role and exact-build scoped",
     ok:
-      source.qaAccess.includes('android: { build: "4", version: "1.0.3" }') &&
-      source.qaAccess.includes('ios: { build: "4", version: "1.0" }') &&
+      source.qaAccess.includes('{ build: "4", version: "1.0.3" }') &&
+      source.qaAccess.includes('{ build: "5", version: "1.0.4" }') &&
+      source.qaAccess.includes('{ build: "4", version: "1.0" }') &&
+      source.qaAccess.includes('{ build: "5", version: "1.0" }') &&
+      source.qaAccess.includes("allowedBuilds.some(") &&
       source.qaAccess.includes('role === "admin" || role === "owner"') &&
       source.layout.includes("nativePushQaRoleAllowed(role)") &&
       source.layout.includes("!nativeDeliveryEnabled") &&
