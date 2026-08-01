@@ -324,7 +324,7 @@ const checks = [
     label: "README documents checkout mode fail-closed default",
     ok:
       readme.includes("STRIPE_EXPECTED_LIVEMODE") &&
-      readme.includes("production-sale evidence"),
+      readme.includes("separate dark-staging approval"),
   },
   {
     label: "README documents private app-link association deployment inputs",

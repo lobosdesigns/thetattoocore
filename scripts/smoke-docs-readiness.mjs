@@ -1156,6 +1156,22 @@ const checks = [
       ),
   },
   {
+    label: "README keeps live-mode safety and pilot status explicit",
+    ok:
+      docs["README.md"].includes(
+        "`STRIPE_EXPECTED_LIVEMODE`: keep `false` until live keys, live webhook handling, policy review, and the separate dark-staging approval are complete. Setting it to `true` is not the checkout launch action.",
+      ) &&
+      docs["README.md"].includes(
+        "Never use real card details merely to test live mode.",
+      ) &&
+      docs["README.md"].includes(
+        "The first production proof is a genuine authorized customer sale under normal terms after separate go-live approval.",
+      ) &&
+      docs["README.md"].includes(
+        "The proposed pilot is not approved, deployed, or live.",
+      ),
+  },
+  {
     label: "real-device QA covers admin payment and Merch search",
     ok:
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("In Admin > Payments, search by a safe test payment/event reference") &&

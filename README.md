@@ -71,7 +71,7 @@ production behavior:
 - `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY`: server-only native alert sender credentials. Keep them in private deployment bindings and never expose or commit their values.
 - `STRIPE_SECRET_KEY`: server-only Stripe key for test/live checkout sessions.
 - `STRIPE_WEBHOOK_SECRET`: server-only webhook signing secret for Stripe payment status updates.
-- `STRIPE_EXPECTED_LIVEMODE`: keep `false` until live keys, live webhook events, policy review, and production-sale evidence are complete. Setting it to `true` is not the checkout launch action.
+- `STRIPE_EXPECTED_LIVEMODE`: keep `false` until live keys, live webhook handling, policy review, and the separate dark-staging approval are complete. Setting it to `true` is not the checkout launch action.
 - `STRIPE_CHECKOUT_CREATION_ENABLED`: server-only checkout creation master release switch; keep `false` until the separately approved launch.
 - `STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED`: server-only TTC-owned physical Merch release switch; keep `false` until the selected flow is approved.
 - `STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED`: server-only marketplace Merch release switch; keep `false` pending separate approval.
@@ -88,6 +88,7 @@ also remain source-disabled. For a safe rollback, disable
 `STRIPE_CHECKOUT_CREATION_ENABLED` while retaining the live expected mode, live
 key, and live webhook signing configuration so delayed events, refunds,
 disputes, expiration, and reconciliation continue.
+Never use real card details merely to test live mode. The first production proof is a genuine authorized customer sale under normal terms after separate go-live approval. The proposed pilot is not approved, deployed, or live.
 
 Keep public support and reply-to email on company mail such as
 `support@thetattoocore.com`. Do not put personal owner contact details in public
