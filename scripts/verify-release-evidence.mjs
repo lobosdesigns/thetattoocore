@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
 
-const EXPECTED_ANDROID_BUILD = "1.0.4 (5)";
+const EXPECTED_ANDROID_BUILD = "1.0.5 (6)";
 const EXPECTED_IOS_TESTFLIGHT_BUILD = "1.0 (5)";
 const EXPECTED_IOS_REVIEW_BUILD = "1.0 (3)";
 const REQUIRED_LEGAL_REVIEW_AREAS = [
@@ -436,7 +436,7 @@ if (releaseCandidate) {
   );
   requireExactBuild(
     "Release Candidate",
-    "Android build must be exact build 1.0.4 (5)",
+    "Android build must be exact build 1.0.5 (6)",
     androidBuild?.Value,
     EXPECTED_ANDROID_BUILD,
   );
@@ -612,7 +612,7 @@ if (testerInstall) {
     );
     requireExactBuild(
       "Google Play Tester Install Evidence",
-      "installed Android build must be exact build 1.0.4 (5)",
+      "installed Android build must be exact build 1.0.5 (6)",
       passingInstall["Installed release/version/build"],
       EXPECTED_ANDROID_BUILD,
     );

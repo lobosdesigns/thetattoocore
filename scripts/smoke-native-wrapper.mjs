@@ -145,29 +145,29 @@ const androidVersionName =
 const androidApi36SubmissionReady = compileSdkVersion >= 36 && targetSdkVersion >= 36;
 const androidApi36DocsReady =
   androidApi36SubmissionReady &&
-  androidVersionCode === 5 &&
-  androidVersionName === "1.0.4" &&
+  androidVersionCode === 6 &&
+  androidVersionName === "1.0.5" &&
   source.nativePrep.includes(
-    "Active Production and Alpha release `1.0.3 (4)` is `36 / 36`",
+    "Active Production release `1.0.3 (4)` and Alpha release `1.0.4 (5)` are `36 / 36`",
   ) &&
   source.nativePrep.includes("Checked-in replacement candidate") &&
-  source.nativePrep.includes("`1.0.4 (5)` at `36 / 36`") &&
+  source.nativePrep.includes("`1.0.5 (6)` at `36 / 36`") &&
   source.nativePrep.includes("Record API `36 / 36` rebuild proof") &&
   source.nativePrep.includes("Previous Google Play baseline") &&
   source.nativePrep.includes("do not keep it in the active alert allowlist") &&
   source.mobileRunbook.includes(
-    "checked-in replacement `1.0.4 (5)` uses the same API 36 baseline",
+    "checked-in replacement `1.0.5 (6)` uses the same API 36 baseline",
   ) &&
   source.mobileRunbook.includes(
-    "Checked-in Android `1.0.4 (5)` and iOS `1.0 (5)` are replacement candidates",
+    "Checked-in Android `1.0.5 (6)` and iOS `1.0 (5)` are replacement candidates",
   ) &&
   source.readme.includes("checked-in release targets `36 / 36`") &&
   source.readme.includes(
-    "Google Play Production and Closed testing - Alpha both serve version code `4` / version name `1.0.3`",
+    "Google Play Production serves version code `4` / version name `1.0.3`, while Closed testing - Alpha serves version code `5` / version name `1.0.4`",
   ) &&
-  source.readme.includes("checked-in replacement candidate is `1.0.4 (5)`") &&
+  source.readme.includes("checked-in replacement candidate is `1.0.5 (6)`") &&
   source.readme.includes("| Current Play Production release | `36 / 36`; active `4` / `1.0.3` |") &&
-  source.readme.includes("| Checked-in replacement candidate | `36 / 36`; `5` / `1.0.4` |") &&
+  source.readme.includes("| Checked-in replacement candidate | `36 / 36`; `6` / `1.0.5` |") &&
   source.readme.includes("| Previous Play baseline | `36 / 36`; historical `3` / `1.0.2` |");
 const androidApi35InternalOnly =
   compileSdkVersion === 35 &&
@@ -463,7 +463,7 @@ const checks = [
       source.nativePrep.includes("August 31, 2026") &&
       source.nativePrep.includes("Android 16 / API 36") &&
       source.mobileRunbook.includes(
-        "checked-in replacement `1.0.4 (5)` uses the same API 36 baseline",
+        "checked-in replacement `1.0.5 (6)` uses the same API 36 baseline",
       ) &&
       source.readme.includes("support@thetattoocore.com") &&
       source.readme.includes("Native permissions at first beta: none") &&
@@ -658,12 +658,12 @@ const checks = [
     label: "native Android next upload uses a fresh Play version code",
     ok:
       androidApi36SubmissionReady &&
-      androidVersionCode === 5 &&
-      androidVersionName === "1.0.4" &&
+      androidVersionCode === 6 &&
+      androidVersionName === "1.0.5" &&
       source.readiness.includes(
-        "Google Play currently serves API 36 release `1.0.3 (4)` in public production and Closed testing - Alpha",
+        "Google Play currently serves API 36 release `1.0.3 (4)` in public production and `1.0.4 (5)` in Closed testing - Alpha",
       ) &&
-      source.readiness.includes("any replacement must increment above version code `4`") &&
+      source.readiness.includes("any replacement must increment above version code `5`") &&
       source.realDeviceQa.includes("versionName` and `versionCode` checked into"),
   },
   {

@@ -175,10 +175,10 @@ public-submission build.
 
 | Release path | Checked-in compile/target SDK | Required action | Repo-safe result |
 | --- | ---: | --- | --- |
-| Current Google Play Production and Alpha | Active Production and Alpha release `1.0.3 (4)` is `36 / 36` | Use Production for normal install and release evidence; retain the same exact Alpha build for controlled QA. Collect explicit opt-in, token-registration, delivery, tap, opt-out, and applicable participation evidence while global delivery stays off. | Record release track, version code/name, test date, device model, and pass/fail only. |
+| Current Google Play Production and Alpha | Active Production release `1.0.3 (4)` and Alpha release `1.0.4 (5)` are `36 / 36` | Use Production for normal install and release evidence; use Alpha for controlled QA. Collect explicit opt-in, token-registration, delivery, tap, opt-out, and applicable participation evidence while global delivery stays off. | Record release track, version code/name, test date, device model, and pass/fail only. |
 | Authorized Android review phone | Installed Google Play Production `1.0.3 (4)` targets API 36 | Required package probe, verified App Links, production-link launch, retained-session landing, and system-bar framing passed. Continue controlled notification QA only after explicit member opt-in. | Record installed build, permission state, device date, and pass/fail only. |
 | Previous Google Play baseline | `36 / 36`; version code `3` / version name `1.0.2` | Preserve its completed historical evidence, but do not keep it in the active alert allowlist after exact Play-installed build 4 passed. | Record historical build and result only; do not treat it as current release evidence. |
-| Checked-in replacement candidate | `1.0.4 (5)` at `36 / 36` | Sign a fresh upload bundle and rerun wrapper plus real-device QA before selecting a track. | Record API `36 / 36` rebuild proof, version code/name, device QA date, and pass/fail only. |
+| Checked-in replacement candidate | `1.0.5 (6)` at `36 / 36` | Sign a fresh upload bundle and rerun wrapper plus real-device QA before selecting a track. | Record API `36 / 36` rebuild proof, version code/name, device QA date, and pass/fail only. |
 
 Never reuse a version code that Google Play has already served.
 

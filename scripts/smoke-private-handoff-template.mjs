@@ -166,7 +166,7 @@ const checks = [
   {
     label: "strict release evidence gate is exact-build and privacy-safe",
     ok:
-      evidenceGate.includes('const EXPECTED_ANDROID_BUILD = "1.0.4 (5)"') &&
+      evidenceGate.includes('const EXPECTED_ANDROID_BUILD = "1.0.5 (6)"') &&
       evidenceGate.includes('const EXPECTED_IOS_TESTFLIGHT_BUILD = "1.0 (5)"') &&
       evidenceGate.includes('const EXPECTED_IOS_REVIEW_BUILD = "1.0 (3)"') &&
       evidenceGate.includes("private release evidence requirement(s) remain incomplete") &&
@@ -207,7 +207,7 @@ const checks = [
       evidenceGate.includes("iOS QA scope must be full checklist") &&
       evidenceGate.includes('row?.["Build or release version"]') &&
       generator.includes("| Platform | Build or release version | Sender alias | Recipient alias |") &&
-      evidenceFixture.includes("| Android | 1.0.4 (5) | fixture-sender | fixture-recipient |") &&
+      evidenceFixture.includes("| Android | 1.0.5 (6) | fixture-sender | fixture-recipient |") &&
       evidenceFixture.includes("| iOS | 1.0 (5) | fixture-sender | fixture-recipient |") &&
       generator.includes("Android must come from Google Play") &&
       generator.includes("actual iPhone") &&
@@ -215,7 +215,7 @@ const checks = [
       !evidenceGate.includes("console.error(markdown") &&
       evidenceFixture.includes("TTC_SANITIZED_RELEASE_EVIDENCE_FIXTURE") &&
       evidenceFixture.includes("fixture-release-candidate") &&
-      evidenceFixture.includes("Closed testing - Alpha 1.0.4 (5)") &&
+      evidenceFixture.includes("Closed testing - Alpha 1.0.5 (6)") &&
       evidenceFixture.includes("App Review 1.0 (3)") &&
       evidenceFixture.includes("| Accessibility Nutrition Labels | n/a | n/a |") &&
       evidenceFixture.includes("| Child safety standards declaration | n/a | passed |") &&

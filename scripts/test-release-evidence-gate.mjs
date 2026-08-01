@@ -67,7 +67,7 @@ const staleProofFixture = writeVariant("stale-proof.md", (source) =>
 );
 const mismatchedBuildFixture = writeVariant("mismatched-build.md", (source) =>
   source.replace(
-    "| Alpha 1.0.4 (5) | fixture-device 2026-07-23 | fixture-tester-install-proof |",
+    "| Alpha 1.0.5 (6) | fixture-device 2026-07-23 | fixture-tester-install-proof |",
     "| Alpha 1.0.1 (2) | fixture-device 2026-07-23 | fixture-tester-install-proof |",
   ),
 );
@@ -75,25 +75,25 @@ const mixedAndroidBuildFixture = writeVariant(
   "mixed-android-build.md",
   (source) =>
     source.replace(
-      "| Android release track and version/build | Closed testing - Alpha 1.0.4 (5) |",
-      "| Android release track and version/build | Closed testing - Alpha 1.0.4 (5) plus stale 1.0.3 (4) |",
+      "| Android release track and version/build | Closed testing - Alpha 1.0.5 (6) |",
+      "| Android release track and version/build | Closed testing - Alpha 1.0.5 (6) plus stale 1.0.3 (4) |",
     ),
 );
 const mixedPrefixedAndroidBuildFixture = writeVariant(
   "mixed-prefixed-android-build.md",
   (source) =>
     source.replace(
-      "| Android release track and version/build | Closed testing - Alpha 1.0.4 (5) |",
-      "| Android release track and version/build | Closed testing - Alpha 1.0.4 (5) plus stale v1.0 (4) |",
+      "| Android release track and version/build | Closed testing - Alpha 1.0.5 (6) |",
+      "| Android release track and version/build | Closed testing - Alpha 1.0.5 (6) plus stale v1.0 (4) |",
     ),
 );
 const duplicateAndroidCandidateFixture = writeVariant(
   "duplicate-android-candidate.md",
   (source) =>
     source.replace(
-      "| Android release track and version/build | Closed testing - Alpha 1.0.4 (5) |",
+      "| Android release track and version/build | Closed testing - Alpha 1.0.5 (6) |",
       [
-        "| Android release track and version/build | Closed testing - Alpha 1.0.4 (5) |",
+        "| Android release track and version/build | Closed testing - Alpha 1.0.5 (6) |",
         "| Android release track and version/build | Closed testing - Alpha 1.0.3 (4) |",
       ].join("\n"),
     ),
@@ -124,22 +124,22 @@ const mismatchedAppReviewFixture = writeVariant(
 );
 const productionTrackFixture = writeVariant("production-track.md", (source) =>
   source.replace(
-    "| Android release track and version/build | Closed testing - Alpha 1.0.4 (5) |",
-    "| Android release track and version/build | Google Play Production 1.0.4 (5) Active |",
+    "| Android release track and version/build | Closed testing - Alpha 1.0.5 (6) |",
+    "| Android release track and version/build | Google Play Production 1.0.5 (6) Active |",
   ),
 );
 const unknownTrackFixture = writeVariant("unknown-track.md", (source) =>
   source.replace(
-    "| Android release track and version/build | Closed testing - Alpha 1.0.4 (5) |",
-    "| Android release track and version/build | Candidate 1.0.4 (5) |",
+    "| Android release track and version/build | Closed testing - Alpha 1.0.5 (6) |",
+    "| Android release track and version/build | Candidate 1.0.5 (6) |",
   ),
 );
 const staleRealDeviceDateFixture = writeVariant(
   "stale-real-device-date.md",
   (source) =>
     source.replace(
-      "| Android | fixture-device | Android 16 | 1.0.4 (5) | Google Play | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-07-23 |",
-      "| Android | fixture-device | Android 16 | 1.0.4 (5) | Google Play | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-05-01 |",
+      "| Android | fixture-device | Android 16 | 1.0.5 (6) | Google Play | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-07-23 |",
+      "| Android | fixture-device | Android 16 | 1.0.5 (6) | Google Play | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-05-01 |",
     ),
 );
 const promotedIpadFixture = writeVariant("promoted-ipad.md", (source) =>
@@ -152,15 +152,15 @@ const promotedAndroidPartialFixture = writeVariant(
   "promoted-android-partial.md",
   (source) =>
     source.replace(
-      "| Android | fixture-device | Android 16 | 1.0.4 (5) | Google Play | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-07-23 |",
-      "| Android | fixture-device | Android 16 | 1.0.4 (5) | manual install | Wi-Fi | owner-confirmed | install only | passed | fixture-proof | 2026-07-23 |",
+      "| Android | fixture-device | Android 16 | 1.0.5 (6) | Google Play | Wi-Fi and cellular | device-captured | full checklist | passed | fixture-proof | 2026-07-23 |",
+      "| Android | fixture-device | Android 16 | 1.0.5 (6) | manual install | Wi-Fi | owner-confirmed | install only | passed | fixture-proof | 2026-07-23 |",
     ),
 );
 const mismatchedDmBuildFixture = writeVariant(
   "mismatched-dm-build.md",
   (source) =>
     source.replace(
-      "| Android | 1.0.4 (5) | fixture-sender | fixture-recipient |",
+      "| Android | 1.0.5 (6) | fixture-sender | fixture-recipient |",
       "| Android | 1.0.2 (3) | fixture-sender | fixture-recipient |",
     ),
 );
@@ -373,7 +373,7 @@ const checks = [
       return (
         result.status === 1 &&
         result.stderr.includes(
-          "Android build must be exact build 1.0.4 (5)",
+          "Android build must be exact build 1.0.5 (6)",
         )
       );
     },
@@ -394,7 +394,7 @@ const checks = [
       return (
         result.status === 1 &&
         result.stderr.includes(
-          "Android build must be exact build 1.0.4 (5)",
+          "Android build must be exact build 1.0.5 (6)",
         )
       );
     },
@@ -783,7 +783,7 @@ const checks = [
       return (
         result.status === 1 &&
         result.stderr.includes(
-          "installed Android build must be exact build 1.0.4 (5)",
+          "installed Android build must be exact build 1.0.5 (6)",
         )
       );
     },
@@ -879,7 +879,7 @@ const checks = [
       return (
         result.status === 1 &&
         result.stderr.includes(
-          "Two-User DM Evidence: Android DM evidence must use exact build 1.0.4 (5)",
+          "Two-User DM Evidence: Android DM evidence must use exact build 1.0.5 (6)",
         )
       );
     },

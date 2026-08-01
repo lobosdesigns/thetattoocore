@@ -314,8 +314,8 @@ const checks = [
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("August 31, 2026") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Android 16 / API 36") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("target Android 16 / API 36") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checked-in replacement `1.0.4 (5)` uses the same API 36 baseline") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("strict gate also checks the exact Android Alpha `1.0.4 (5)`, App Review `1.0 (3)`, TestFlight `1.0 (5)`") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checked-in replacement `1.0.5 (6)` uses the same API 36 baseline") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("strict gate also checks the exact Android Alpha `1.0.5 (6)`, App Review `1.0 (3)`, TestFlight `1.0 (5)`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("targetSdkVersion` set to 36") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not request precise device location") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not prompt on first open") &&
@@ -619,8 +619,8 @@ const checks = [
       mobileCurrentPosition.includes("API 36 release `1.0.3 (4)`") &&
       mobileCurrentPosition.includes("Closed testing - Alpha") &&
       mobileCurrentPosition.includes("controlled QA") &&
-      mobileCurrentPosition.includes("authorized Android 16 review phone installed exact build `1.0.3 (4)`") &&
-      mobileCurrentPosition.includes("Do not upload version code `4` again") &&
+      mobileCurrentPosition.includes("authorized Android 16 review phone installed both builds from Google Play") &&
+      mobileCurrentPosition.includes("Do not upload version codes `4` or `5` again") &&
       googlePlayInstallHandoff.length > 0 &&
       packageJson.includes('"qa:android-device:open-test": "node scripts/android-device-qa-probe.mjs --open-test-join"') &&
       googlePlayInstallHandoff.includes("npm.cmd run qa:android-device:open-test") &&
