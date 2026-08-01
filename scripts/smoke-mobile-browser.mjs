@@ -2,6 +2,7 @@ import { mkdtempSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawn } from "node:child_process";
+import sharp from "sharp";
 
 const baseUrl = (process.env.SMOKE_BASE_URL || "https://thetattoocore.com").replace(/\/$/, "");
 const mobileProfiles = {
@@ -43,6 +44,7 @@ const routeSettleDelayMs = Math.max(
   0,
   Number.parseInt(process.env.SMOKE_MOBILE_ROUTE_SETTLE_MS || "2000", 10),
 );
+const onlyPath = process.env.SMOKE_MOBILE_ONLY_PATH;
 const routes = [
   { path: "/", textIncludes: "Public preview", titleIncludes: "TheTattooCore" },
   { path: "/#feed", textIncludes: "Public preview", titleIncludes: "TheTattooCore" },
@@ -78,6 +80,12 @@ const routes = [
     titleIncludes: "Child Safety Standards",
   },
   { path: "/help", textIncludes: "Search Help Center", titleIncludes: "Help Center" },
+  {
+    path: "/help/getting-started",
+    requirePrimedVideo: true,
+    textIncludes: "Getting started on TheTattooCore",
+    titleIncludes: "Help Center",
+  },
   {
     path: "/help/beta-tester-checklist",
     textIncludes: ["Beta tester checklist", "What counts as a beta blocker?"],
@@ -210,7 +218,15 @@ if (!chromePath) {
   process.exit(1);
 }
 
-routes.push(...(await representativeSitemapRoutes()));
+if (!onlyPath) {
+  routes.push(...(await representativeSitemapRoutes()));
+}
+const selectedRoutes = onlyPath ? routes.filter((route) => route.path === onlyPath) : routes;
+
+if (onlyPath && selectedRoutes.length === 0) {
+  console.error(`FAIL no mobile browser smoke route matches SMOKE_MOBILE_ONLY_PATH="${onlyPath}".`);
+  process.exit(1);
+}
 
 const port = 9400 + Math.floor(Math.random() * 300);
 const userDataDir = mkdtempSync(join(tmpdir(), "ttc-mobile-smoke-"));
@@ -237,7 +253,7 @@ try {
   await waitForDevtools(port);
 
   let failures = 0;
-  for (const route of routes) {
+  for (const route of selectedRoutes) {
     const result = await checkRouteWithRetry(port, `${baseUrl}${route.path}`, route);
     const prefix = result.ok ? "PASS" : "FAIL";
     console.log(`${prefix} ${route.path}`);
@@ -365,6 +381,13 @@ async function checkRoute(portNumber, url, route) {
     await loadEvent;
     await sleep(700);
 
+    if (route.requirePrimedVideo) {
+      await client.send("Runtime.evaluate", {
+        expression: 'document.querySelector("video")?.scrollIntoView({ block: "center" })',
+      });
+      await sleep(500);
+    }
+
     const evaluation = await client.send("Runtime.evaluate", {
       awaitPromise: true,
       expression: `(() => {
@@ -373,6 +396,8 @@ async function checkRoute(portNumber, url, route) {
         const text = body?.innerText || "";
         const maxScrollWidth = Math.max(doc?.scrollWidth || 0, body?.scrollWidth || 0);
         const clientWidth = doc?.clientWidth || ${width};
+        const video = document.querySelector("video");
+        const videoRectangle = video?.getBoundingClientRect();
         return {
           clientWidth,
           finalUrl: location.href,
@@ -380,11 +405,28 @@ async function checkRoute(portNumber, url, route) {
           scrollWidth: maxScrollWidth,
           text,
           title: document.title,
+          videoRect: videoRectangle ? {
+            height: videoRectangle.height,
+            left: videoRectangle.left,
+            top: videoRectangle.top,
+            width: videoRectangle.width,
+          } : null,
+          videos: [...document.querySelectorAll("video")].map((video) => ({
+            currentTime: video.currentTime,
+            duration: video.duration,
+            paused: video.paused,
+            readyState: video.readyState,
+            videoHeight: video.videoHeight,
+            videoWidth: video.videoWidth,
+          })),
         };
       })()`,
       returnByValue: true,
     });
     const value = evaluation.result?.value || {};
+    const videoFrame = route.requirePrimedVideo
+      ? await captureVideoFrame(client, value.videoRect, value.clientWidth || width)
+      : null;
     const overflow = Math.max(0, (value.scrollWidth || 0) - (value.clientWidth || width));
     const reasons = [];
 
@@ -413,6 +455,27 @@ async function checkRoute(portNumber, url, route) {
     if (route.expectedMainStatus && mainDocumentStatus !== route.expectedMainStatus) {
       reasons.push(`main document status ${mainDocumentStatus ?? "unknown"} did not equal ${route.expectedMainStatus}`);
     }
+    if (route.requirePrimedVideo) {
+      const video = value.videos?.[0];
+
+      if (!video) {
+        reasons.push("expected a shared video player");
+      } else {
+        if (!video.paused) {
+          reasons.push("video preview autoplayed instead of remaining paused");
+        }
+        if (!(video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0)) {
+          reasons.push(
+            `video preview was not decoded (readyState ${video.readyState ?? "unknown"}, ${video.videoWidth ?? 0}x${video.videoHeight ?? 0})`,
+          );
+        }
+        if (!(videoFrame?.pixelRange > 12 && videoFrame?.nonBlackRatio > 0.02)) {
+          reasons.push(
+            `video preview frame was blank (range ${videoFrame?.pixelRange ?? "unknown"}, non-black ratio ${videoFrame?.nonBlackRatio ?? "unknown"})`,
+          );
+        }
+      }
+    }
     const filteredErrors = route.allowMainDocument404
       ? errors.filter((error) => !error.includes("the server responded with a status of 404"))
       : errors;
@@ -440,6 +503,50 @@ async function checkRoute(portNumber, url, route) {
       await fetch(`http://127.0.0.1:${portNumber}/json/close/${tab.id}`).catch(() => {});
     }
   }
+}
+
+async function captureVideoFrame(client, rectangle, viewportWidth) {
+  if (!rectangle?.width || !rectangle?.height) return null;
+
+  const screenshot = await client.send("Page.captureScreenshot", {
+    captureBeyondViewport: false,
+    format: "png",
+    fromSurface: true,
+  });
+  const image = sharp(Buffer.from(screenshot.data, "base64"));
+  const metadata = await image.metadata();
+  const scale = (metadata.width || viewportWidth) / viewportWidth;
+  const left = Math.max(0, Math.round((rectangle.left + rectangle.width * 0.15) * scale));
+  const top = Math.max(0, Math.round((rectangle.top + rectangle.height * 0.08) * scale));
+  const availableWidth = Math.max(0, (metadata.width || 0) - left);
+  const availableHeight = Math.max(0, (metadata.height || 0) - top);
+  const cropWidth = Math.min(availableWidth, Math.max(1, Math.round(rectangle.width * 0.7 * scale)));
+  const cropHeight = Math.min(availableHeight, Math.max(1, Math.round(rectangle.height * 0.3 * scale)));
+
+  if (!cropWidth || !cropHeight) return null;
+
+  const { data, info } = await image
+    .extract({ height: cropHeight, left, top, width: cropWidth })
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  let maximum = 0;
+  let minimum = 255;
+  let nonBlackPixels = 0;
+
+  for (let index = 0; index < data.length; index += info.channels) {
+    const red = data[index];
+    const green = data[index + 1];
+    const blue = data[index + 2];
+    maximum = Math.max(maximum, red, green, blue);
+    minimum = Math.min(minimum, red, green, blue);
+    if (red > 8 || green > 8 || blue > 8) nonBlackPixels += 1;
+  }
+
+  return {
+    nonBlackRatio: nonBlackPixels / (info.width * info.height),
+    pixelRange: maximum - minimum,
+  };
 }
 
 function connectCdp(webSocketDebuggerUrl) {

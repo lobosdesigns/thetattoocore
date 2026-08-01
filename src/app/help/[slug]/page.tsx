@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createHelpArticleComment } from "../actions";
 import { ContentReportForm } from "@/app/content-report-form";
+import { ProtectedVideo } from "@/app/protected-video";
 import { LogoLockup } from "../../logo-mark";
 import { getHelpArticle, helpArticles } from "@/lib/help-center";
 import {
@@ -330,13 +331,9 @@ export default async function HelpArticlePage({
                       ) : null}
                       {item.kind === "short_clip" && assetSrc ? (
                         <div className="border-b border-[var(--card-rim)] bg-black p-3">
-                          <video
-                            aria-label={`${item.title} safe tutorial short video`}
+                          <ProtectedVideo
+                            ariaLabel={`${item.title} safe tutorial short video`}
                             className="mx-auto aspect-[9/16] max-h-72 w-auto rounded-md border border-[var(--card-rim)] bg-black object-cover shadow-sm"
-                            controls
-                            controlsList="nodownload"
-                            playsInline
-                            preload="metadata"
                             src={assetSrc}
                           />
                         </div>

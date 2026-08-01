@@ -3,6 +3,7 @@
 import type { MouseEvent, SyntheticEvent } from "react";
 
 type ProtectedVideoProps = {
+  ariaLabel?: string;
   className?: string;
   src?: string;
   stopClickPropagation?: boolean;
@@ -11,10 +12,11 @@ type ProtectedVideoProps = {
 function videoPreviewTime(duration: number) {
   if (!Number.isFinite(duration) || duration <= 0) return null;
 
-  return Math.min(0.001, duration / 2);
+  return Math.min(0.1, duration / 2);
 }
 
 export function ProtectedVideo({
+  ariaLabel,
   className,
   src,
   stopClickPropagation = false,
@@ -28,7 +30,7 @@ export function ProtectedVideo({
   function primeVideoPreview(event: SyntheticEvent<HTMLVideoElement>) {
     const video = event.currentTarget;
 
-    if (video.currentTime !== 0 || video.readyState >= 2) return;
+    if (video.currentTime !== 0) return;
     const previewTime = videoPreviewTime(video.duration);
 
     if (previewTime !== null) video.currentTime = previewTime;
@@ -36,6 +38,7 @@ export function ProtectedVideo({
 
   return (
     <video
+      aria-label={ariaLabel}
       className={className}
       controls
       controlsList="nodownload noplaybackrate noremoteplayback"

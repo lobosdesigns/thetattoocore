@@ -107,6 +107,7 @@ const staleAlphaFirstOperationalSnippets = [
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
 const adminPage = readFileSync("src/app/admin/page.tsx", "utf8");
 const helpArticlePage = readFileSync("src/app/help/[slug]/page.tsx", "utf8");
+const protectedVideo = readFileSync("src/app/protected-video.tsx", "utf8");
 const helpCenterData = readFileSync("src/lib/help-center.ts", "utf8");
 const helpShortClipBlocks = [...helpCenterData.matchAll(/\{[^{}]*kind: "short_clip"[^{}]*\}/gs)].map(
   ([block]) => block,
@@ -827,8 +828,9 @@ const checks = [
       helpArticlePage.includes('item.kind === "short_clip" ? "Short video" : "Screenshot"') &&
       helpArticlePage.includes('item.kind === "screenshot" && assetSrc') &&
       helpArticlePage.includes('item.kind === "short_clip" && assetSrc') &&
-      helpArticlePage.includes('controlsList="nodownload"') &&
-      helpArticlePage.includes('preload="metadata"') &&
+      helpArticlePage.includes("<ProtectedVideo") &&
+      protectedVideo.includes('controlsList="nodownload noplaybackrate noremoteplayback"') &&
+      protectedVideo.includes('preload="metadata"') &&
       helpArticlePage.includes("safe tutorial screenshot") &&
       helpArticlePage.includes("ask a guide question") &&
       helpActions.includes("Question submitted for moderation.") &&
