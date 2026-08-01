@@ -79,3 +79,12 @@ export function nativeForegroundAlert(value: unknown) {
     url: notificationPathOrFallback(data.url),
   };
 }
+
+export function nativeSystemForegroundAlertPresented(value: unknown) {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    "systemPresented" in value &&
+    value.systemPresented === true
+  );
+}

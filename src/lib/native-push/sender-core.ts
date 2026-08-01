@@ -19,6 +19,22 @@ export type NativeMessageInput = {
   url: string;
 };
 
+export type AndroidNativePushChannelOptions = {
+  description: string;
+  id: string;
+  importance: 4;
+  lights: true;
+  name: string;
+  vibration: true;
+  visibility: 0;
+};
+
+type AndroidNativePushChannelClient = {
+  createChannel: (
+    options: AndroidNativePushChannelOptions,
+  ) => Promise<void>;
+};
+
 type FcmErrorPayload = {
   error?: {
     details?: Array<{
@@ -36,6 +52,40 @@ export type FcmResponseKind =
   | "temporary"
   | "token"
   | "unknown";
+
+export function androidNativePushChannelOptions(): AndroidNativePushChannelOptions {
+  return {
+    description: "Messages, account activity, and important app updates.",
+    id: "ttc_alerts_v1",
+    importance: 4,
+    lights: true,
+    name: "TheTattooCore alerts",
+    vibration: true,
+    visibility: 0,
+  };
+}
+
+export async function ensureAndroidNativePushChannel(
+  platform: NativeMessageInput["platform"],
+  client: AndroidNativePushChannelClient,
+) {
+  if (platform !== "android") return;
+
+  try {
+    await client.createChannel(androidNativePushChannelOptions());
+  } catch (error) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "UNAVAILABLE"
+    ) {
+      return;
+    }
+
+    throw error;
+  }
+}
 
 export function buildServiceAccountJwtClaims(
   clientEmail: string,
@@ -101,7 +151,10 @@ export function buildNativeMessage({
         ...message,
         android: {
           collapse_key: notificationId,
-          notification: { sound: "default" },
+          notification: {
+            channel_id: androidNativePushChannelOptions().id,
+            sound: "default",
+          },
           priority: "high",
         },
       },

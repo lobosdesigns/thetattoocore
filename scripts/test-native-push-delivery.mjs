@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import { importSelfContainedTypeScript } from "./import-self-contained-typescript.mjs";
 
 const {
+  androidNativePushChannelOptions,
   buildNativeMessage,
   buildServiceAccountJwtClaims,
   classifyFcmResponse,
+  ensureAndroidNativePushChannel,
   nativePushDeliveryReady,
   nativePushSenderReady,
   retryDelaySeconds,
@@ -34,7 +36,10 @@ const { allowsNoisyDeliveryNow } = await importSelfContainedTypeScript(
   "../src/lib/notifications.ts",
   import.meta.url,
 );
-const { nativeForegroundAlert } = await importSelfContainedTypeScript(
+const {
+  nativeForegroundAlert,
+  nativeSystemForegroundAlertPresented,
+} = await importSelfContainedTypeScript(
   "../src/lib/notification-route.ts",
   import.meta.url,
 );
@@ -110,9 +115,62 @@ const testAlert = buildNativeMessage({
   url: "/notifications",
 });
 
+assert.equal(
+  typeof androidNativePushChannelOptions,
+  "function",
+  "Android native alerts must define a dedicated notification channel",
+);
+assert.equal(
+  typeof ensureAndroidNativePushChannel,
+  "function",
+  "the native wrapper must be able to create its Android alert channel",
+);
+const androidChannel = androidNativePushChannelOptions();
+assert.deepEqual(androidChannel, {
+  description: "Messages, account activity, and important app updates.",
+  id: "ttc_alerts_v1",
+  importance: 4,
+  lights: true,
+  name: "TheTattooCore alerts",
+  vibration: true,
+  visibility: 0,
+});
+
+const createdChannels = [];
+await ensureAndroidNativePushChannel("android", {
+  createChannel: async (options) => createdChannels.push(options),
+});
+assert.deepEqual(createdChannels, [androidChannel]);
+await ensureAndroidNativePushChannel("ios", {
+  createChannel: async () => {
+    throw new Error("iOS must not create an Android notification channel.");
+  },
+});
+await assert.doesNotReject(() =>
+  ensureAndroidNativePushChannel("android", {
+    createChannel: async () => {
+      throw { code: "UNAVAILABLE" };
+    },
+  }),
+);
+await assert.rejects(
+  () =>
+    ensureAndroidNativePushChannel("android", {
+      createChannel: async () => {
+        throw new Error("channel creation failed");
+      },
+    }),
+  /channel creation failed/,
+);
+
 assert.equal(android.message.notification.title, "New message");
 assert.equal(android.message.notification.body, "You have a new message.");
 assert.equal(android.message.android.priority, "high");
+assert.equal(
+  android.message.android.notification.channel_id,
+  androidChannel.id,
+);
+assert.equal(android.message.android.notification.sound, "default");
 assert.equal(ios.message.apns.headers["apns-priority"], "10");
 assert.equal(ios.message.data.url, "/notifications");
 assert.equal(testAlert.message.data.type, "test");
@@ -349,6 +407,26 @@ assert.deepEqual(
     url: "/notifications",
   },
 );
+assert.equal(
+  typeof nativeSystemForegroundAlertPresented,
+  "function",
+  "the web wrapper must recognize native foreground presentation",
+);
+assert.equal(
+  nativeSystemForegroundAlertPresented({ systemPresented: true }),
+  true,
+);
+assert.equal(
+  nativeSystemForegroundAlertPresented({ systemPresented: "true" }),
+  false,
+);
+assert.equal(
+  nativeSystemForegroundAlertPresented({
+    data: { systemPresented: true },
+  }),
+  false,
+);
+assert.equal(nativeSystemForegroundAlertPresented(null), false);
 
 const quietHoursProfile = {
   notification_quiet_hours_enabled: true,
@@ -389,6 +467,7 @@ assert.equal(
 console.log("PASS native delivery gates fail closed");
 console.log("PASS native service-account claims avoid delegated user impersonation");
 console.log("PASS controlled test delivery does not open the global delivery gate");
+console.log("PASS Android native alerts share one high-importance channel");
 console.log("PASS native payloads stay generic and platform-aware");
 console.log("PASS native response classification protects device registrations");
 console.log("PASS native retry delays are bounded");

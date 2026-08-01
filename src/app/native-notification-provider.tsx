@@ -15,12 +15,14 @@ import {
   nativePushQaBuildAllowed,
   type NativePushPlatform,
 } from "@/lib/native-push/qa-access";
+import { ensureAndroidNativePushChannel } from "@/lib/native-push/sender-core";
 import {
   parseNativePushQaResponse,
   type NativePushQaTarget,
 } from "@/lib/native-push/qa-target";
 import {
   nativeForegroundAlert,
+  nativeSystemForegroundAlertPresented,
   notificationPathOrFallback,
 } from "@/lib/notification-route";
 
@@ -135,6 +137,8 @@ async function nativeRuntime(
   ) {
     return null;
   }
+
+  await ensureAndroidNativePushChannel(nativePlatform, FirebaseMessaging);
 
   return { appInfo, messaging: FirebaseMessaging, platform: nativePlatform };
 }
@@ -257,7 +261,10 @@ export function NativeNotificationProvider({
           await runtime.messaging.addListener(
             "notificationReceived",
             (event) => {
-              if (!cancelled) {
+              if (
+                !cancelled &&
+                !nativeSystemForegroundAlertPresented(event.notification)
+              ) {
                 setForegroundAlert(nativeForegroundAlert(event.notification));
               }
             },

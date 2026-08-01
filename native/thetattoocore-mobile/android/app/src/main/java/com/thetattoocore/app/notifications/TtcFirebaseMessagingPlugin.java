@@ -20,6 +20,14 @@ public final class TtcFirebaseMessagingPlugin extends FirebaseMessagingPlugin {
 
     private final TtcMessagingOptOutController controller =
         new TtcMessagingOptOutController(new FirebaseMessagingClient());
+    private TtcForegroundNotificationPresenter foregroundPresenter;
+
+    @Override
+    public void load() {
+        foregroundPresenter = new TtcForegroundNotificationPresenter(getContext());
+        foregroundPresenter.ensureChannel();
+        super.load();
+    }
 
     @Override
     @PluginMethod
@@ -66,7 +74,30 @@ public final class TtcFirebaseMessagingPlugin extends FirebaseMessagingPlugin {
             return;
         }
 
+        if (
+            NOTIFICATION_RECEIVED_EVENT.equals(eventName) &&
+            foregroundPresenter != null
+        ) {
+            presentForegroundNotification(data, foregroundPresenter);
+        }
+
         super.notifyListeners(eventName, data, retainUntilConsumed);
+    }
+
+    static boolean presentForegroundNotification(
+        JSObject event,
+        TtcForegroundNotificationPresenter presenter
+    ) {
+        if (event == null || presenter == null) return false;
+
+        JSObject notification = event.getJSObject("notification");
+        if (notification == null || !presenter.present(notification)) {
+            return false;
+        }
+
+        notification.put("systemPresented", true);
+        event.put("notification", notification);
+        return true;
     }
 
     private static final class FirebaseMessagingClient
