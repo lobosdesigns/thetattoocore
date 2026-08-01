@@ -16,6 +16,7 @@ import {
   StripeCheckoutRequestError,
   type StripeCheckoutSession,
 } from "@/lib/stripe/checkout-session";
+import { stripeCheckoutCreationEnabled } from "@/lib/stripe/release-gates";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { isVerifiedProfessional } from "@/lib/verification";
@@ -91,6 +92,7 @@ function loginRedirect(returnTo: string, message: string) {
 async function createCheckoutSession({
   buyerId,
   cancelUrl,
+  checkoutCreationEnabled,
   idempotencyKey,
   orderId,
   platformFeeCents,
@@ -103,6 +105,7 @@ async function createCheckoutSession({
 }: {
   buyerId: string;
   cancelUrl: string;
+  checkoutCreationEnabled: boolean;
   idempotencyKey: string;
   orderId: string;
   platformFeeCents: number;
@@ -187,6 +190,7 @@ async function createCheckoutSession({
 
   return createStripeCheckoutSession({
     body,
+    checkoutCreationEnabled,
     idempotencyKey,
     secretKey,
   });
@@ -271,6 +275,15 @@ export async function POST(request: Request) {
   }
 
   const returnTo = formReturnTo ?? `/merch/${product.id}`;
+  const checkoutFlow = product.is_official ? "official_merch" : "marketplace_merch";
+  const checkoutCreationEnabled = stripeCheckoutCreationEnabled(checkoutFlow);
+
+  if (!checkoutCreationEnabled) {
+    return redirectWithMessage(
+      returnTo,
+      "Checkout is temporarily unavailable for this product.",
+    );
+  }
 
   const missingReviewDetails =
     !product.return_policy ||
@@ -473,6 +486,7 @@ export async function POST(request: Request) {
     session = await createCheckoutSession({
       buyerId: claims.sub,
       cancelUrl,
+      checkoutCreationEnabled,
       idempotencyKey: `ttc_merch_${orderId}_${checkoutAttemptId}`,
       orderId,
       platformFeeCents,

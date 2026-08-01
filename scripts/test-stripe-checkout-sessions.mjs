@@ -24,6 +24,43 @@ const createBody = new URLSearchParams({
 assert.equal(STRIPE_API_VERSION, "2026-06-24.dahlia");
 console.log("PASS raw Checkout helpers export the pinned Stripe API version");
 
+for (const [label, gateOptions] of [
+  ["missing", {}],
+  ["undefined", { checkoutCreationEnabled: undefined }],
+  ["false", { checkoutCreationEnabled: false }],
+  ["string", { checkoutCreationEnabled: "true" }],
+  ["number", { checkoutCreationEnabled: 1 }],
+  ["object", { checkoutCreationEnabled: {} }],
+  ["array", { checkoutCreationEnabled: [] }],
+]) {
+  let attempts = 0;
+
+  await assert.rejects(
+    () =>
+      createStripeCheckoutSession({
+        body: createBody,
+        fetcher: async () => {
+          attempts += 1;
+          return Response.json({
+            id: "cs_test_gate_bypass",
+            url: "https://checkout.example/gate-bypass",
+          });
+        },
+        idempotencyKey: `ttc_gate_${label}`,
+        secretKey,
+        ...gateOptions,
+      }),
+    (error) => {
+      assert.ok(error instanceof StripeCheckoutRequestError);
+      assert.equal(error.outcomeUnknown, false);
+      assert.equal(error.message, "Checkout could not open.");
+      return true;
+    },
+  );
+  assert.equal(attempts, 0);
+}
+console.log("PASS checkout creation requires the literal boolean true before fetch");
+
 {
   const calls = [];
   const fetcher = async (input, init) => {
@@ -41,6 +78,7 @@ console.log("PASS raw Checkout helpers export the pinned Stripe API version");
 
   const session = await createStripeCheckoutSession({
     body: createBody,
+    checkoutCreationEnabled: true,
     fetcher,
     idempotencyKey: "ttc_merch_attempt_123",
     secretKey,
@@ -80,6 +118,7 @@ console.log("PASS checkout creation retries once with one idempotency key");
     () =>
       createStripeCheckoutSession({
         body: createBody,
+        checkoutCreationEnabled: true,
         fetcher: async () => {
           attempts += 1;
           throw new TypeError("network unavailable");
@@ -105,6 +144,7 @@ console.log("PASS unresolved checkout creation stays classified as unknown");
     () =>
       createStripeCheckoutSession({
         body: createBody,
+        checkoutCreationEnabled: true,
         fetcher: async () => {
           attempts += 1;
           return Response.json(
@@ -132,6 +172,7 @@ console.log("PASS definite checkout rejection is not retried or exposed");
 
   const session = await createStripeCheckoutSession({
     body: createBody,
+    checkoutCreationEnabled: true,
     fetcher: async (_input, init) => {
       calls.push(init);
 
@@ -167,6 +208,7 @@ console.log("PASS indeterminate server errors retry once with the same key");
     () =>
       createStripeCheckoutSession({
         body: createBody,
+        checkoutCreationEnabled: true,
         fetcher: async () => {
           attempts += 1;
 

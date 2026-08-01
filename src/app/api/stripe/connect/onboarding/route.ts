@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { siteUrl } from "@/lib/site";
+import { stripeConnectOnboardingEnabled } from "@/lib/stripe/release-gates";
 import { createStripeClient, stripeCheckoutPreflight } from "@/lib/stripe/server";
 import { stripeConnectStatus } from "@/lib/stripe/connect";
 import { isVerifiedProfessional } from "@/lib/verification";
@@ -50,10 +51,6 @@ function sellerBusinessType(profile: Pick<Profile, "account_type" | "role">) {
 }
 
 export async function POST() {
-  const stripe = createStripeClient();
-  const admin = createAdminClient();
-  const checkoutPreflight = stripeCheckoutPreflight();
-
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims as Claims | undefined;
@@ -84,6 +81,14 @@ export async function POST() {
       "needs_verification",
     );
   }
+
+  if (!stripeConnectOnboardingEnabled()) {
+    return accountRedirect("Seller payout setup is temporarily unavailable.", "unavailable");
+  }
+
+  const stripe = createStripeClient();
+  const admin = createAdminClient();
+  const checkoutPreflight = stripeCheckoutPreflight();
 
   if (!stripe || !admin || !checkoutPreflight.ready) {
     return accountRedirect("Seller payout setup is temporarily unavailable.", "unavailable");

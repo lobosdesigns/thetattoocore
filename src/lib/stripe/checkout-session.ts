@@ -159,10 +159,15 @@ function isIndeterminateStripeResponse(response: Response) {
 
 export async function createStripeCheckoutSession(_options: {
   body: URLSearchParams;
+  checkoutCreationEnabled: boolean;
   fetcher?: Fetcher;
   idempotencyKey: string;
   secretKey: string;
 }): Promise<StripeCheckoutSession> {
+  if (_options.checkoutCreationEnabled !== true) {
+    throw new StripeCheckoutRequestError("Checkout could not open.", false);
+  }
+
   const fetcher = _options.fetcher ?? fetch;
 
   for (let attempt = 0; attempt < 2; attempt += 1) {

@@ -26,6 +26,7 @@ const merchNotesMigration = readFileSync(
 const merchCheckoutSuccessPage = readFileSync("src/app/merch/checkout/success/page.tsx", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
+const messagesPage = readFileSync("src/app/messages/page.tsx", "utf8");
 const homePage = readFileSync("src/app/page.tsx", "utf8");
 const appActions = readFileSync("src/app/actions.ts", "utf8");
 const floatingComposer = readFileSync("src/app/floating-composer.tsx", "utf8");
@@ -206,6 +207,166 @@ function indexOfOrFail(body, snippet) {
 }
 
 const checks = [];
+
+try {
+  const centralGateIndex = indexOfOrFail(
+    stripeCheckoutSessions,
+    "if (_options.checkoutCreationEnabled !== true)",
+  );
+  const centralFetcherIndex = indexOfOrFail(
+    stripeCheckoutSessions,
+    "const fetcher = _options.fetcher ?? fetch",
+  );
+
+  checks.push({
+    label: "checkout creation requires a literal enabled decision before network access",
+    ok:
+      stripeCheckoutSessions.includes("checkoutCreationEnabled: boolean") &&
+      stripeCheckoutSessions.includes("new StripeCheckoutRequestError(") &&
+      stripeCheckoutSessions.includes('"Checkout could not open."') &&
+      centralGateIndex < centralFetcherIndex,
+  });
+} catch (error) {
+  checks.push({
+    label: "checkout creation release gate structure",
+    ok: false,
+    message: error.message,
+  });
+}
+
+try {
+  const bookingGateIndex = indexOfOrFail(
+    bookingCheckout,
+    'stripeCheckoutCreationEnabled("booking")',
+  );
+  const bookingReservationIndex = indexOfOrFail(
+    bookingCheckout,
+    'rpc("reserve_booking_deposit_checkout"',
+  );
+  const merchProductIndex = indexOfOrFail(
+    merchCheckout,
+    "const { data: product, error }",
+  );
+  const merchGateIndex = indexOfOrFail(
+    merchCheckout,
+    "const checkoutCreationEnabled = stripeCheckoutCreationEnabled(checkoutFlow)",
+  );
+  const merchAdminIndex = indexOfOrFail(
+    merchCheckout,
+    "const adminSupabase = createAdminClient()",
+  );
+  const merchOrderIndex = indexOfOrFail(
+    merchCheckout,
+    'supabase.from("merch_orders").insert',
+  );
+  const merchReservationIndex = indexOfOrFail(
+    merchCheckout,
+    '"reserve_merch_inventory_for_order"',
+  );
+  const adLaunchGateIndex = indexOfOrFail(
+    adCheckout,
+    "if (!AD_PURCHASES_AVAILABLE)",
+  );
+  const adAccountIndex = indexOfOrFail(adCheckout, "const supabase = await createClient()");
+
+  checks.push({
+    label: "independent checkout gates precede creation side effects and reach the central helper",
+    ok:
+      bookingCheckout.includes('import { stripeCheckoutCreationEnabled } from "@/lib/stripe/release-gates"') &&
+      bookingCheckout.includes("checkoutCreationEnabled,") &&
+      bookingGateIndex < bookingReservationIndex &&
+      merchCheckout.includes('product.is_official ? "official_merch" : "marketplace_merch"') &&
+      merchCheckout.includes("checkoutCreationEnabled,") &&
+      merchProductIndex < merchGateIndex &&
+      merchGateIndex < merchAdminIndex &&
+      merchGateIndex < merchOrderIndex &&
+      merchGateIndex < merchReservationIndex &&
+      adCheckout.includes("checkoutCreationEnabled: AD_PURCHASES_AVAILABLE") &&
+      adLaunchGateIndex < adAccountIndex,
+  });
+} catch (error) {
+  checks.push({
+    label: "independent checkout route gate structure",
+    ok: false,
+    message: error.message,
+  });
+}
+
+try {
+  const onboardingAuthIndex = indexOfOrFail(stripeConnectOnboarding, "if (!claims?.sub)");
+  const onboardingVerificationIndex = indexOfOrFail(
+    stripeConnectOnboarding,
+    "!isVerifiedProfessional(profile)",
+  );
+  const onboardingGateIndex = indexOfOrFail(
+    stripeConnectOnboarding,
+    "if (!stripeConnectOnboardingEnabled())",
+  );
+  const onboardingStripeIndex = indexOfOrFail(
+    stripeConnectOnboarding,
+    "const stripe = createStripeClient()",
+  );
+  const onboardingAdminIndex = indexOfOrFail(
+    stripeConnectOnboarding,
+    "const admin = createAdminClient()",
+  );
+  const onboardingAccountIndex = indexOfOrFail(
+    stripeConnectOnboarding,
+    "stripe.accounts.create",
+  );
+  const onboardingLinkIndex = indexOfOrFail(
+    stripeConnectOnboarding,
+    "stripe.accountLinks.create",
+  );
+
+  checks.push({
+    label: "seller onboarding gate preserves auth and verification before remote setup",
+    ok:
+      stripeConnectOnboarding.includes(
+        'import { stripeConnectOnboardingEnabled } from "@/lib/stripe/release-gates"',
+      ) &&
+      onboardingAuthIndex < onboardingGateIndex &&
+      onboardingVerificationIndex < onboardingGateIndex &&
+      onboardingGateIndex < onboardingStripeIndex &&
+      onboardingGateIndex < onboardingAdminIndex &&
+      onboardingGateIndex < onboardingAccountIndex &&
+      onboardingGateIndex < onboardingLinkIndex,
+  });
+} catch (error) {
+  checks.push({
+    label: "seller onboarding release gate structure",
+    ok: false,
+    message: error.message,
+  });
+}
+
+checks.push({
+  label: "member payment actions use their matching independent release gates",
+  ok:
+    accountPage.includes('stripeCheckoutCreationEnabled("booking")') &&
+    accountPage.includes("stripeConnectOnboardingEnabled()") &&
+    accountPage.includes("bookingCheckoutEnabled ? (") &&
+    accountPage.includes("sellerPayoutOnboardingEnabled ? (") &&
+    messagesPage.includes('stripeCheckoutCreationEnabled("booking")') &&
+    messagesPage.includes("bookingCheckoutEnabled={bookingCheckoutEnabled}") &&
+    messagesPage.includes("canPay && bookingCheckoutEnabled ? (") &&
+    merchDetailPage.includes('product.is_official ? "official_merch" : "marketplace_merch"') &&
+    merchDetailPage.includes("checkoutCreationEnabled ? (") &&
+    accountPage.includes("Payment setup is temporarily unavailable.") &&
+    messagesPage.includes("Deposit payment is temporarily unavailable.") &&
+    merchDetailPage.includes("Purchasing is temporarily unavailable for this product."),
+});
+
+checks.push({
+  label: "payment completion processing remains outside creation release gates",
+  ok:
+    !stripeWebhook.includes("stripeCheckoutCreationEnabled") &&
+    !stripeWebhook.includes("stripeConnectOnboardingEnabled") &&
+    !stripeWebhook.includes("@/lib/stripe/release-gates") &&
+    !stripeConnectReturn.includes("stripeCheckoutCreationEnabled") &&
+    !stripeConnectReturn.includes("stripeConnectOnboardingEnabled") &&
+    !stripeConnectReturn.includes("@/lib/stripe/release-gates"),
+});
 
 try {
   const reserveIndex = indexOfOrFail(adCheckout, "const { data: reservedCampaign");

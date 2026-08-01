@@ -125,6 +125,7 @@ async function createAdCheckoutSession({
 
   return createStripeCheckoutSession({
     body,
+    checkoutCreationEnabled: AD_PURCHASES_AVAILABLE,
     idempotencyKey,
     secretKey,
   });

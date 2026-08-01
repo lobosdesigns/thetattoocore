@@ -8,6 +8,7 @@ import {
   StripeCheckoutRequestError,
   type StripeCheckoutSession,
 } from "@/lib/stripe/checkout-session";
+import { stripeCheckoutCreationEnabled } from "@/lib/stripe/release-gates";
 import { stripeCheckoutPreflight } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -88,6 +89,7 @@ function redirectWithMessage(message: string, returnTo: string | null = null) {
 
 async function createBookingCheckoutSession(
   booking: BookingRequest,
+  checkoutCreationEnabled: boolean,
   idempotencyKey: string,
   returnTo: string | null,
   secretKey: string,
@@ -152,6 +154,7 @@ async function createBookingCheckoutSession(
 
   return createStripeCheckoutSession({
     body,
+    checkoutCreationEnabled,
     idempotencyKey,
     secretKey,
   });
@@ -193,6 +196,14 @@ export async function POST(request: Request) {
   if (limit.limited) {
     return redirectWithMessage(
       "Too many checkout attempts. Please try again later.",
+      returnTo,
+    );
+  }
+
+  const checkoutCreationEnabled = stripeCheckoutCreationEnabled("booking");
+  if (!checkoutCreationEnabled) {
+    return redirectWithMessage(
+      "Booking checkout is temporarily unavailable. Please try again later.",
       returnTo,
     );
   }
@@ -328,6 +339,7 @@ export async function POST(request: Request) {
   try {
     session = await createBookingCheckoutSession(
       reservedBooking,
+      checkoutCreationEnabled,
       `ttc_booking_${booking.id}_${checkoutAttemptId}`,
       returnTo,
       secretKey,

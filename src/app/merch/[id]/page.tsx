@@ -23,6 +23,7 @@ import {
 } from "@/lib/payments/fees";
 import { loadPublicProfileMap } from "@/lib/public-profile-hydration";
 import { isUuid } from "@/lib/route-ids";
+import { stripeCheckoutCreationEnabled } from "@/lib/stripe/release-gates";
 import { createClient } from "@/lib/supabase/server";
 import {
   brandShareImage,
@@ -291,6 +292,8 @@ export default async function MerchProductPage({
   const estimatedSingleItemTotalCents =
     product.price_cents + estimatedPlatformFeeCents;
   const isOwnProduct = claims?.sub === product.profiles?.id;
+  const checkoutFlow = product.is_official ? "official_merch" : "marketplace_merch";
+  const checkoutCreationEnabled = stripeCheckoutCreationEnabled(checkoutFlow);
   if (
     !product.is_official &&
     !isOwnProduct &&
@@ -640,6 +643,7 @@ export default async function MerchProductPage({
 
             <section className="ttc-card rounded-md p-4">
               {claims?.sub && available > 0 && !isOwnProduct ? (
+                checkoutCreationEnabled ? (
                 <form action="/api/merch/checkout" method="post">
                   <input name="product_id" type="hidden" value={product.id} />
                   <input
@@ -663,6 +667,11 @@ export default async function MerchProductPage({
                     Checkout
                   </button>
                 </form>
+                ) : (
+                  <p className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3 text-sm text-[var(--muted)]">
+                    Purchasing is temporarily unavailable for this product.
+                  </p>
+                )
               ) : claims?.sub && isOwnProduct ? (
                 <p className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3 text-sm text-[var(--muted)]">
                   This is your merch product.

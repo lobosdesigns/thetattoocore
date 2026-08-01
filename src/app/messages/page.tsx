@@ -13,6 +13,7 @@ import {
   Send,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { stripeCheckoutCreationEnabled } from "@/lib/stripe/release-gates";
 import { safeStatusMessage } from "@/lib/status-message";
 import { MediaInput } from "@/app/media-input";
 import { PendingSubmitButton } from "@/app/pending-submit-button";
@@ -321,10 +322,12 @@ async function findSharedConversationMembership({
 }
 
 function BookingCards({
+  bookingCheckoutEnabled,
   bookings,
   currentUserId,
   returnPath,
 }: {
+  bookingCheckoutEnabled: boolean;
   bookings: BookingRequest[];
   currentUserId: string;
   returnPath: string;
@@ -554,7 +557,7 @@ function BookingCards({
                   ) : null}
                 </details>
               ) : null}
-              {canPay ? (
+              {canPay && bookingCheckoutEnabled ? (
                 <form action="/api/bookings/checkout" className="mt-4" method="post">
                   <input name="booking_id" type="hidden" value={booking.id} />
                   <input name="return_to" type="hidden" value={returnPath} />
@@ -568,6 +571,10 @@ function BookingCards({
                       : "Pay deposit"}
                   </button>
                 </form>
+              ) : canPay ? (
+                <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3 text-sm text-[var(--muted)]">
+                  Deposit payment is temporarily unavailable.
+                </p>
               ) : null}
               {booking.scheduled_start_at ? (
                 <Link
@@ -668,6 +675,8 @@ export default async function MessagesPage({
   if (!claims?.sub) {
     redirect(loginPathForMessages(params));
   }
+
+  const bookingCheckoutEnabled = stripeCheckoutCreationEnabled("booking");
 
   const { data: currentProfile } = await supabase
     .from("profiles")
@@ -1261,6 +1270,7 @@ export default async function MessagesPage({
               </header>
 
               <BookingCards
+                bookingCheckoutEnabled={bookingCheckoutEnabled}
                 bookings={selectedBookings ?? []}
                 currentUserId={claims.sub}
                 returnPath={`/messages?c=${selectedConversation.id}`}

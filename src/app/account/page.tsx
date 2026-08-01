@@ -46,6 +46,10 @@ import {
   titleCaseStatus,
 } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
+import {
+  stripeCheckoutCreationEnabled,
+  stripeConnectOnboardingEnabled,
+} from "@/lib/stripe/release-gates";
 import { stripeCheckoutPreflight } from "@/lib/stripe/server";
 import { supportEmail } from "@/lib/site";
 import { safeStatusMessage } from "@/lib/status-message";
@@ -805,6 +809,8 @@ export default async function AccountPage({
         .eq("livemode", sellerPayoutMode.actual)
         .maybeSingle<SellerPayoutAccount>()
     : { data: null };
+  const bookingCheckoutEnabled = stripeCheckoutCreationEnabled("booking");
+  const sellerPayoutOnboardingEnabled = stripeConnectOnboardingEnabled();
   const { data: incomingBookings } = await (() => {
     let query = supabase
       .from("booking_requests")
@@ -2522,6 +2528,7 @@ export default async function AccountPage({
                       {booking.status === "accepted" &&
                       booking.payment_status !== "paid" &&
                       booking.deposit_amount_cents > 0 ? (
+                        bookingCheckoutEnabled ? (
                         <form
                           action="/api/bookings/checkout"
                           className="mt-4"
@@ -2541,6 +2548,11 @@ export default async function AccountPage({
                               : "Pay deposit"}
                           </button>
                         </form>
+                        ) : (
+                          <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3 text-sm text-[var(--muted)]">
+                            Deposit payment is temporarily unavailable.
+                          </p>
+                        )
                       ) : null}
                       {canCancelBooking ? (
                         <form action={cancelBookingRequest} className="mt-3">
@@ -2807,7 +2819,9 @@ export default async function AccountPage({
                   <p className="font-bold">{payoutSetupNotice.title}</p>
                   <p className="mt-1 text-[var(--muted)]">{payoutSetupNotice.body}</p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {canSetupSellerPayouts && !sellerPayoutReady ? (
+                    {canSetupSellerPayouts &&
+                    !sellerPayoutReady &&
+                    sellerPayoutOnboardingEnabled ? (
                       <form action="/api/stripe/connect/onboarding" method="post">
                         <PendingSubmitButton
                           className="h-9 rounded-md bg-[var(--foreground)] px-3 text-xs font-bold text-[var(--background)]"
@@ -2880,6 +2894,7 @@ export default async function AccountPage({
                 </div>
               ) : null}
               {canSetupSellerPayouts ? (
+                sellerPayoutOnboardingEnabled ? (
                 <form
                   action="/api/stripe/connect/onboarding"
                   className="mt-4"
@@ -2892,6 +2907,11 @@ export default async function AccountPage({
                     {sellerPayoutAccount ? "Continue payout setup" : "Start payout setup"}
                   </PendingSubmitButton>
                 </form>
+                ) : (
+                  <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3 text-sm text-[var(--muted)]">
+                    Payment setup is temporarily unavailable.
+                  </p>
+                )
               ) : null}
               <Link
                 className="mt-3 inline-flex text-sm font-semibold underline"
