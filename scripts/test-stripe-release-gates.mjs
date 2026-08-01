@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { importTypeScriptWithStubs } from "./admin-module-test-harness.mjs";
 import { importSelfContainedTypeScript } from "./import-self-contained-typescript.mjs";
 
 const {
@@ -26,6 +27,10 @@ const keyModeCases = [
 
 for (const [key, expected] of keyModeCases) {
   assert.equal(stripeKeyMode(key), expected);
+}
+
+for (const key of [true, 1, {}]) {
+  assert.equal(stripeKeyMode(key), null);
 }
 console.log("PASS Stripe key modes accept only supported secret and restricted prefixes");
 
@@ -104,6 +109,30 @@ const checkoutGateCases = [
     "unknown_flow",
     false,
   ],
+  [
+    {
+      STRIPE_CHECKOUT_CREATION_ENABLED: true,
+      STRIPE_BOOKING_CHECKOUT_ENABLED: "true",
+    },
+    "booking",
+    false,
+  ],
+  [
+    {
+      STRIPE_CHECKOUT_CREATION_ENABLED: "true",
+      STRIPE_BOOKING_CHECKOUT_ENABLED: {},
+    },
+    "booking",
+    false,
+  ],
+  [
+    {
+      STRIPE_CHECKOUT_CREATION_ENABLED: "true",
+      STRIPE_BOOKING_CHECKOUT_ENABLED: "true",
+    },
+    true,
+    false,
+  ],
 ];
 
 for (const [environment, flow, expected] of checkoutGateCases) {
@@ -116,12 +145,64 @@ const onboardingGateCases = [
   [{ STRIPE_CONNECT_ONBOARDING_ENABLED: "false" }, false],
   [{ STRIPE_CONNECT_ONBOARDING_ENABLED: "trueish" }, false],
   [{ STRIPE_CONNECT_ONBOARDING_ENABLED: " TRUE " }, true],
+  [{ STRIPE_CONNECT_ONBOARDING_ENABLED: 1 }, false],
+  [{ STRIPE_CONNECT_ONBOARDING_ENABLED: {} }, false],
 ];
 
 for (const [environment, expected] of onboardingGateCases) {
   assert.equal(stripeConnectOnboardingEnabled(environment), expected);
 }
 console.log("PASS connected-account onboarding requires its own exact gate");
+
+async function stripePreflightForKey(secretKey, expectedLivemode) {
+  const server = await importTypeScriptWithStubs(
+    "src/lib/stripe/server.ts",
+    {
+      "./checkout-session": { STRIPE_API_VERSION: "2026-06-24.dahlia" },
+      "./release-gates": { stripeKeyMode },
+      "./secret-format": {
+        stripeWebhookSigningSecretFormatValid: () => true,
+      },
+      "server-only": {},
+      stripe: {
+        default: {
+          createFetchHttpClient: () => ({}),
+          createSubtleCryptoProvider: () => ({}),
+        },
+      },
+    },
+    {
+      globals: {
+        process: {
+          env: {
+            STRIPE_EXPECTED_LIVEMODE: String(expectedLivemode),
+            STRIPE_SECRET_KEY: secretKey,
+            STRIPE_WEBHOOK_SECRET: "whsec_test_value",
+          },
+        },
+      },
+    },
+  );
+
+  return server.stripeCheckoutPreflight();
+}
+
+const liveRestrictedPreflight = await stripePreflightForKey(
+  "rk_live_012345",
+  true,
+);
+assert.equal(liveRestrictedPreflight.actual, true);
+assert.equal(liveRestrictedPreflight.expected, true);
+assert.equal(liveRestrictedPreflight.ready, true);
+
+const testRestrictedPreflight = await stripePreflightForKey(
+  "rk_test_012345",
+  false,
+);
+assert.equal(testRestrictedPreflight.actual, false);
+assert.equal(testRestrictedPreflight.expected, false);
+assert.equal(testRestrictedPreflight.ready, true);
+console.log("PASS checkout preflight accepts supported restricted key modes");
 
 const stripeServerSource = await readFile(
   new URL("../src/lib/stripe/server.ts", import.meta.url),

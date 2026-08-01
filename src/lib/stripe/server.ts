@@ -1,6 +1,7 @@
 import "server-only";
 import Stripe from "stripe";
 import { STRIPE_API_VERSION } from "./checkout-session";
+import { stripeKeyMode } from "./release-gates";
 import { stripeWebhookSigningSecretFormatValid } from "./secret-format";
 
 export function expectedStripeLivemode() {
@@ -12,9 +13,13 @@ export function expectedStripeLivemode() {
   return null;
 }
 
-export function stripeSecretKeyLivemode(secretKey = process.env.STRIPE_SECRET_KEY) {
-  if (secretKey?.startsWith("sk_live_")) return true;
-  if (secretKey?.startsWith("sk_test_")) return false;
+export function stripeSecretKeyLivemode(
+  secretKey: unknown = process.env.STRIPE_SECRET_KEY,
+) {
+  const mode = stripeKeyMode(secretKey);
+
+  if (mode === "live") return true;
+  if (mode === "test") return false;
 
   return null;
 }

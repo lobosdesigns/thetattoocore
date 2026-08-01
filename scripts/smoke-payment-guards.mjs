@@ -1279,8 +1279,8 @@ checks.push({
     envExample.includes("STRIPE_EXPECTED_LIVEMODE=false") &&
     stripeServer.includes("process.env.STRIPE_EXPECTED_LIVEMODE") &&
     stripeServer.includes("process.env.STRIPE_SECRET_KEY") &&
-    stripeServer.includes('secretKey?.startsWith("sk_live_")') &&
-    stripeServer.includes('secretKey?.startsWith("sk_test_")') &&
+    stripeServer.includes('import { stripeKeyMode } from "./release-gates"') &&
+    stripeServer.includes("const mode = stripeKeyMode(secretKey)") &&
     stripeWebhook.includes("expectedStripeLivemode() ?? stripeSecretKeyLivemode()") &&
     stripeWebhook.includes("stripeWebhookSigningSecretConfigured(webhookSecret)") &&
     stripeWebhook.includes("function stripeLivemodeMatches") &&

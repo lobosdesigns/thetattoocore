@@ -1,4 +1,4 @@
-type StripeEnvironment = Record<string, string | undefined>;
+type StripeEnvironment = Record<string, unknown>;
 
 const checkoutFlowFlags = {
   booking: "STRIPE_BOOKING_CHECKOUT_ENABLED",
@@ -6,16 +6,20 @@ const checkoutFlowFlags = {
   official_merch: "STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED",
 } as const;
 
-function exactTrue(value: string | undefined) {
-  return value?.trim().toLowerCase() === "true";
+export type StripeCheckoutFlow = keyof typeof checkoutFlowFlags;
+
+function exactTrue(value: unknown) {
+  return typeof value === "string" && value.trim().toLowerCase() === "true";
 }
 
-export function stripeKeyMode(key: string | undefined) {
-  if (key?.startsWith("sk_test_") || key?.startsWith("rk_test_")) {
+export function stripeKeyMode(key: unknown) {
+  if (typeof key !== "string") return null;
+
+  if (key.startsWith("sk_test_") || key.startsWith("rk_test_")) {
     return "test";
   }
 
-  if (key?.startsWith("sk_live_") || key?.startsWith("rk_live_")) {
+  if (key.startsWith("sk_live_") || key.startsWith("rk_live_")) {
     return "live";
   }
 
@@ -23,7 +27,7 @@ export function stripeKeyMode(key: string | undefined) {
 }
 
 export function stripeCheckoutCreationEnabled(
-  flow: string,
+  flow: StripeCheckoutFlow,
   environment: StripeEnvironment = process.env,
 ) {
   const flowFlag = checkoutFlowFlags[flow as keyof typeof checkoutFlowFlags];
