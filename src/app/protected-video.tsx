@@ -1,6 +1,7 @@
 "use client";
 
-import type { MouseEvent, SyntheticEvent } from "react";
+import { useEffect, useRef } from "react";
+import type { MouseEvent } from "react";
 
 type ProtectedVideoProps = {
   ariaLabel?: string;
@@ -15,25 +16,29 @@ function videoPreviewTime(duration: number) {
   return Math.min(0.1, duration / 2);
 }
 
+function primeVideoPreview(video: HTMLVideoElement | null) {
+  if (!video || video.currentTime !== 0) return;
+  const previewTime = videoPreviewTime(video.duration);
+
+  if (previewTime !== null) video.currentTime = previewTime;
+}
+
 export function ProtectedVideo({
   ariaLabel,
   className,
   src,
   stopClickPropagation = false,
 }: ProtectedVideoProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    primeVideoPreview(videoRef.current);
+  }, [src]);
+
   function maybeStopClick(event: MouseEvent<HTMLVideoElement>) {
     if (stopClickPropagation) {
       event.stopPropagation();
     }
-  }
-
-  function primeVideoPreview(event: SyntheticEvent<HTMLVideoElement>) {
-    const video = event.currentTarget;
-
-    if (video.currentTime !== 0) return;
-    const previewTime = videoPreviewTime(video.duration);
-
-    if (previewTime !== null) video.currentTime = previewTime;
   }
 
   return (
@@ -46,9 +51,10 @@ export function ProtectedVideo({
       disableRemotePlayback
       onClick={maybeStopClick}
       onContextMenu={(event) => event.preventDefault()}
-      onLoadedMetadata={primeVideoPreview}
+      onLoadedMetadata={(event) => primeVideoPreview(event.currentTarget)}
       playsInline
       preload="metadata"
+      ref={videoRef}
       src={src}
     />
   );

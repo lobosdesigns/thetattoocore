@@ -40,8 +40,13 @@ const checks = [
       protectedVideo.includes("primeVideoPreview") &&
       protectedVideo.includes("videoPreviewTime") &&
       protectedVideo.includes("Math.min(0.1, duration / 2)") &&
-      protectedVideo.includes("onLoadedMetadata={primeVideoPreview}") &&
-      protectedVideo.includes("if (video.currentTime !== 0) return;") &&
+      protectedVideo.includes("useRef<HTMLVideoElement>(null)") &&
+      protectedVideo.includes("primeVideoPreview(videoRef.current)") &&
+      protectedVideo.includes("ref={videoRef}") &&
+      protectedVideo.includes(
+        "onLoadedMetadata={(event) => primeVideoPreview(event.currentTarget)}",
+      ) &&
+      protectedVideo.includes("if (!video || video.currentTime !== 0) return;") &&
       !protectedVideo.includes("video.readyState >= 2"),
   },
   {

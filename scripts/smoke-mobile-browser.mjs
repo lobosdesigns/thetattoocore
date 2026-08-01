@@ -45,6 +45,7 @@ const routeSettleDelayMs = Math.max(
   Number.parseInt(process.env.SMOKE_MOBILE_ROUTE_SETTLE_MS || "2000", 10),
 );
 const onlyPath = process.env.SMOKE_MOBILE_ONLY_PATH;
+const requireVideoPath = process.env.SMOKE_MOBILE_REQUIRE_VIDEO_PATH;
 const routes = [
   { path: "/", textIncludes: "Public preview", titleIncludes: "TheTattooCore" },
   { path: "/#feed", textIncludes: "Public preview", titleIncludes: "TheTattooCore" },
@@ -218,10 +219,17 @@ if (!chromePath) {
   process.exit(1);
 }
 
-if (!onlyPath) {
+if (onlyPath && requireVideoPath === onlyPath && !routes.some((route) => route.path === onlyPath)) {
+  routes.push({ path: onlyPath, requirePrimedVideo: true });
+} else if (!onlyPath) {
   routes.push(...(await representativeSitemapRoutes()));
 }
-const selectedRoutes = onlyPath ? routes.filter((route) => route.path === onlyPath) : routes;
+const selectedRoutes = (onlyPath ? routes.filter((route) => route.path === onlyPath) : routes).map(
+  (route) =>
+    route.path === requireVideoPath
+      ? { ...route, requirePrimedVideo: true }
+      : route,
+);
 
 if (onlyPath && selectedRoutes.length === 0) {
   console.error(`FAIL no mobile browser smoke route matches SMOKE_MOBILE_ONLY_PATH="${onlyPath}".`);
@@ -463,6 +471,11 @@ async function checkRoute(portNumber, url, route) {
       } else {
         if (!video.paused) {
           reasons.push("video preview autoplayed instead of remaining paused");
+        }
+        if (!(video.currentTime > 0 && video.currentTime <= 0.5)) {
+          reasons.push(
+            `video preview was not primed (currentTime ${video.currentTime ?? "unknown"})`,
+          );
         }
         if (!(video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0)) {
           reasons.push(
