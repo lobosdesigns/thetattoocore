@@ -20,6 +20,17 @@ Stripe checkout is wired for controlled launch testing across Merch, ads, and ac
 - July 24, 2026 current dashboard state: Production account activation and Connect configuration are complete, including the business profile, both identity workflows, marketplace integration choices, and the owner-accepted platform agreement. The live endpoint covers the exact 12 required events, its rotated signing secret remains private, and a signed synthetic non-money event returned `200` with the expected fail-closed mode response. The server payment key remains in test mode, expected live mode remains unset, checkout and seller onboarding remain blocked, and no money moved. Live-money cutover remains blocked pending live key/mode alignment, webhook mode/event proof, Admin reconciliation, controlled purchase/refund proof, refund/dispute procedure approval, payout gate approval, and native checkout policy review in the private handoff.
 - Non-official Merch destination-charge wiring is staged behind `STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false` by default and still requires matching payment mode plus a ready connected seller account. Keep the release switch off until the payout timing, refund, dispute, reserve, and legal policy decisions below are approved and tested.
 
+## Current Controlled Launch Scope
+
+- The first proposed scope is US-only, web-first, TTC-owned physical Merch.
+- Booking deposits, marketplace Merch, connected-account onboarding/routing, and ads remain disabled pending their separate approvals. Advertising purchases also remain source-disabled.
+- `STRIPE_CHECKOUT_CREATION_ENABLED` is the server-only checkout creation master. Official TTC Merch, booking deposits, and marketplace Merch also require their matching server-only flow switch to be exactly `true`; seller onboarding independently requires `STRIPE_CONNECT_ONBOARDING_ENABLED` to be exactly `true`. All switches default to `false` and fail closed.
+- Setting `STRIPE_EXPECTED_LIVEMODE=true` is not the checkout launch action; the creation master and selected flow gate are the exposure controls.
+- Safe rollback disables `STRIPE_CHECKOUT_CREATION_ENABLED` while retaining the live expected mode, live key, and live webhook signing configuration so delayed events, refunds, disputes, expiration, and reconciliation continue.
+- Never use real card details merely to test live mode. The first production proof must be a genuine authorized customer sale under normal terms, after the separate go-live approval.
+- The separate go-live approval requires legal and payment-policy review.
+- Do not claim the pilot is approved, deployed, or live.
+
 ## Must Finish Before Real Money
 
 - Stripe Connect Express onboarding is started for artists, studios, and vendors, with payout readiness stored in `stripe_connect_accounts` and webhook sync support for Stripe account status updates.
@@ -46,11 +57,12 @@ Stripe checkout is wired for controlled launch testing across Merch, ads, and ac
 - `npm.cmd run test:payment-go-live-gate` proves the strict parser's passing path and its stale, future, and ambiguous-date rejection with sanitized, explicitly marked fixtures. Fixture mode is restricted to `scripts/fixtures`, announces that it is not release evidence, and cannot be used by the default production command.
 - Run `npm.cmd run smoke:env` and `npm.cmd run smoke:payments` against the release candidate before changing live/test mode so environment drift, event coverage drift, and secret-boundary regressions are caught first.
 - Set `STRIPE_EXPECTED_LIVEMODE=true` only when the production keys and live webhook endpoint are ready; keep it `false` for test checkout so test and live payment updates cannot mix. Checkout routes require this explicit mode setting and compare it with the server payment key prefix before creating payment sessions. If the explicit mode setting is missing, checkout fails closed; webhooks fall back to the server payment key prefix and still reject mismatched payment updates. If neither source identifies the mode, webhooks fail closed before any payment state changes.
+- Keep `STRIPE_CHECKOUT_CREATION_ENABLED=false` until the separate launch approval. It is the rollback control for new checkout creation; do not remove the live expected mode, live key, or live webhook signing configuration when using it so post-checkout settlement and reconciliation continue.
 - Configure the live webhook endpoint and verify `STRIPE_WEBHOOK_SECRET` has the expected endpoint-signing format in the production runtime. The production destination is `https://thetattoocore.com/api/stripe/webhook` and should listen for checkout, refund, dispute, and seller account status events. Checkout remains blocked if the signing value is missing or malformed, and format validation never replaces a signed live-event test.
 - Enable the live webhook events needed by the app: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `charge.refunded`, `refund.failed`, `charge.dispute.created`, `charge.dispute.updated`, `charge.dispute.closed`, `charge.dispute.funds_withdrawn`, `charge.dispute.funds_reinstated`, and `account.updated`.
 - The payment smoke guard cross-checks the webhook source and this readiness doc against that required event list so endpoint or handoff drift is reported by event name before a live-money cutover.
 - Confirm `SUPABASE_SERVICE_ROLE_KEY` remains server-only and is never exposed to client bundles.
-- Run a small live-payment penny test only after legal and payment-policy review.
+- Do not use real card details merely to test live mode. After the separate go-live approval, the first production proof is a genuine authorized customer sale under normal terms.
 - Confirm Admin > Payments shows live webhook events, order states, ad payment states, booking deposit states, and ops warnings.
 - Confirm Admin > Payments shows zero failed webhook events and zero processing claims older than 10 minutes before reconciling fulfillment, credits, refunds, booking closeout, or payout release.
 - Confirm Admin > Payments reconciliation checks are followed before manual closeout, refund decisions, ad credits, fulfillment changes, booking deposit updates, or payout release.

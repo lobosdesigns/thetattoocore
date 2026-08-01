@@ -9,6 +9,7 @@ const envExample = readFileSync(".env.example", "utf8");
 const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8");
 const adClickRoute = readFileSync("src/app/api/ad-click/route.ts", "utf8");
 const stripeServer = readFileSync("src/lib/stripe/server.ts", "utf8");
+const stripeReleaseGates = readFileSync("src/lib/stripe/release-gates.ts", "utf8");
 const stripeCheckoutSessions = readFileSync(
   "src/lib/stripe/checkout-session.ts",
   "utf8",
@@ -2027,6 +2028,22 @@ checks.push({
     adminPaymentsPage.includes("Seller transfer routing remains disabled pending final payout approval.") &&
     paymentReadiness.includes("Merch seller-routing release switch") &&
     paymentReadiness.includes("does not show private key, webhook, or connected-account values"),
+});
+checks.push({
+  label: "admin payments exposes separate Stripe release switches without private values",
+  ok:
+    stripeReleaseGates.includes("stripeCheckoutCreationMasterEnabled") &&
+    adminPaymentsPage.includes("stripeCheckoutCreationMasterEnabled") &&
+    adminPaymentsPage.includes("const checkoutCreationMasterEnabled = stripeCheckoutCreationMasterEnabled()") &&
+    adminPaymentsPage.includes('label: "Checkout creation"') &&
+    adminPaymentsPage.includes('label: "Official TTC Merch"') &&
+    adminPaymentsPage.includes('label: "Booking deposits"') &&
+    adminPaymentsPage.includes('label: "Marketplace Merch"') &&
+    adminPaymentsPage.includes('label: "Seller onboarding"') &&
+    adminPaymentsPage.includes('releaseSwitch.enabled ? "Enabled" : "Blocked"') &&
+    adminPaymentsPage.includes("Release switches") &&
+    !adminPaymentsPage.includes("STRIPE_SECRET_KEY") &&
+    !adminPaymentsPage.includes("STRIPE_WEBHOOK_SECRET"),
 });
 checks.push({
   label: "public payment copy avoids collecting raw payout credentials",

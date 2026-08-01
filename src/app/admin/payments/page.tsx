@@ -30,6 +30,11 @@ import {
   stripeSecretKeyLivemode,
   stripeWebhookSigningSecretConfigured,
 } from "@/lib/stripe/server";
+import {
+  stripeCheckoutCreationEnabled,
+  stripeCheckoutCreationMasterEnabled,
+  stripeConnectOnboardingEnabled,
+} from "@/lib/stripe/release-gates";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
 type Claims = {
@@ -771,6 +776,29 @@ export default async function AdminPaymentsPage({
   const checkoutPreflight = stripeCheckoutPreflight();
   const webhookSecretReady = stripeWebhookSigningSecretConfigured();
   const merchDestinationChargesReady = stripeMerchDestinationChargesEnabled();
+  const checkoutCreationMasterEnabled = stripeCheckoutCreationMasterEnabled();
+  const checkoutReleaseSwitches = [
+    {
+      enabled: checkoutCreationMasterEnabled,
+      label: "Checkout creation",
+    },
+    {
+      enabled: stripeCheckoutCreationEnabled("official_merch"),
+      label: "Official TTC Merch",
+    },
+    {
+      enabled: stripeCheckoutCreationEnabled("booking"),
+      label: "Booking deposits",
+    },
+    {
+      enabled: stripeCheckoutCreationEnabled("marketplace_merch"),
+      label: "Marketplace Merch",
+    },
+    {
+      enabled: stripeConnectOnboardingEnabled(),
+      label: "Seller onboarding",
+    },
+  ] as const;
   const paymentModePreflightChecks = [
     {
       detail:
@@ -1536,6 +1564,33 @@ export default async function AdminPaymentsPage({
                         <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
                           {check.detail}
                         </p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
+                  <h2 className="text-lg font-bold">Release switches</h2>
+                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                    Effective checkout exposure controls only. Legal and evidence
+                    gates remain separate, and no private configuration values are shown.
+                  </p>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    {checkoutReleaseSwitches.map((releaseSwitch) => (
+                      <div
+                        className="flex items-center justify-between gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-sm"
+                        key={releaseSwitch.label}
+                      >
+                        <span className="font-bold">{releaseSwitch.label}</span>
+                        <span
+                          className={`rounded-md px-2 py-1 text-xs font-bold ${
+                            releaseSwitch.enabled
+                              ? "bg-[color-mix(in_srgb,var(--gold)_18%,var(--paper-warm))] text-[var(--foreground)]"
+                              : "bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]"
+                          }`}
+                        >
+                          {releaseSwitch.enabled ? "Enabled" : "Blocked"}
+                        </span>
                       </div>
                     ))}
                   </div>

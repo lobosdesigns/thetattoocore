@@ -5,6 +5,7 @@ import { importSelfContainedTypeScript } from "./import-self-contained-typescrip
 
 const {
   stripeCheckoutCreationEnabled,
+  stripeCheckoutCreationMasterEnabled,
   stripeConnectOnboardingEnabled,
   stripeKeyMode,
 } = await importSelfContainedTypeScript(
@@ -33,6 +34,19 @@ for (const key of [true, 1, {}]) {
   assert.equal(stripeKeyMode(key), null);
 }
 console.log("PASS Stripe key modes accept only supported secret and restricted prefixes");
+
+assert.equal(typeof stripeCheckoutCreationMasterEnabled, "function");
+for (const [environment, expected] of [
+  [{}, false],
+  [{ STRIPE_CHECKOUT_CREATION_ENABLED: "false" }, false],
+  [{ STRIPE_CHECKOUT_CREATION_ENABLED: "trueish" }, false],
+  [{ STRIPE_CHECKOUT_CREATION_ENABLED: " TRUE " }, true],
+  [{ STRIPE_CHECKOUT_CREATION_ENABLED: true }, false],
+  [{ STRIPE_CHECKOUT_CREATION_ENABLED: {} }, false],
+]) {
+  assert.equal(stripeCheckoutCreationMasterEnabled(environment), expected);
+}
+console.log("PASS checkout creation master requires its own exact gate");
 
 const checkoutGateCases = [
   [{}, "official_merch", false],

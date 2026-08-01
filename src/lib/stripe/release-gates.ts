@@ -26,6 +26,12 @@ export function stripeKeyMode(key: unknown) {
   return null;
 }
 
+export function stripeCheckoutCreationMasterEnabled(
+  environment: StripeEnvironment = process.env,
+) {
+  return exactTrue(environment.STRIPE_CHECKOUT_CREATION_ENABLED);
+}
+
 export function stripeCheckoutCreationEnabled(
   flow: StripeCheckoutFlow,
   environment: StripeEnvironment = process.env,
@@ -33,7 +39,7 @@ export function stripeCheckoutCreationEnabled(
   const flowFlag = checkoutFlowFlags[flow as keyof typeof checkoutFlowFlags];
 
   return (
-    exactTrue(environment.STRIPE_CHECKOUT_CREATION_ENABLED) &&
+    stripeCheckoutCreationMasterEnabled(environment) &&
     exactTrue(flowFlag ? environment[flowFlag] : undefined)
   );
 }

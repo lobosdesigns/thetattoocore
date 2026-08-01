@@ -5,6 +5,10 @@ const envExamplePath = ".env.example";
 const gitignore = readFileSync(".gitignore", "utf8");
 const envExample = readFileSync(envExamplePath, "utf8");
 const readme = readFileSync("README.md", "utf8");
+const environmentInventory = readFileSync(
+  "docs/release/v1.1.0-environment-inventory.md",
+  "utf8",
+);
 const packageJson = readFileSync("package.json", "utf8");
 const browserClient = readFileSync("src/lib/supabase/client.ts", "utf8");
 const publicBuildVerifier = readFileSync(
@@ -44,6 +48,11 @@ const expectedKeys = [
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
   "STRIPE_EXPECTED_LIVEMODE",
+  "STRIPE_CHECKOUT_CREATION_ENABLED",
+  "STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED",
+  "STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED",
+  "STRIPE_BOOKING_CHECKOUT_ENABLED",
+  "STRIPE_CONNECT_ONBOARDING_ENABLED",
   "STRIPE_MERCH_DESTINATION_CHARGES_ENABLED",
   "HOSTGATOR_SMTP_PASSWORD",
 ];
@@ -55,6 +64,13 @@ const publicKeys = [
   "NEXT_PUBLIC_DEVICE_ALERT_SETUP_ENABLED",
 ];
 const secretKeys = expectedKeys.filter((key) => !publicKeys.includes(key));
+const stripeReleaseSwitchKeys = [
+  "STRIPE_CHECKOUT_CREATION_ENABLED",
+  "STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED",
+  "STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED",
+  "STRIPE_BOOKING_CHECKOUT_ENABLED",
+  "STRIPE_CONNECT_ONBOARDING_ENABLED",
+];
 const pairs = lines.map((line) => {
   const separatorIndex = line.indexOf("=");
 
@@ -106,6 +122,7 @@ function valueLooksLikePlaceholder(key, value) {
     key === "TTC_NATIVE_PUSH_REGISTRATION_ENABLED" ||
     key === "TTC_NATIVE_PUSH_DELIVERY_ENABLED" ||
     key === "TTC_WEB_PUSH_REGISTRATION_ENABLED" ||
+    stripeReleaseSwitchKeys.includes(key) ||
     key === "STRIPE_MERCH_DESTINATION_CHARGES_ENABLED"
   ) {
     return value === "false";
@@ -286,10 +303,28 @@ const checks = [
     ok: valueByKey.get("STRIPE_EXPECTED_LIVEMODE") === "false",
   },
   {
+    label: ".env.example keeps Stripe release switches false in stable order",
+    ok: stripeReleaseSwitchKeys.every(
+      (key) => valueByKey.get(key) === "false",
+    ),
+  },
+  {
+    label: "Stripe release switches remain server-only and fail closed in operator guidance",
+    ok:
+      stripeReleaseSwitchKeys.every((key) => readme.includes(`\`${key}\``)) &&
+      readme.includes("server-only release switches") &&
+      readme.includes("exactly `true`") &&
+      stripeReleaseSwitchKeys.every(
+        (key) =>
+          environmentInventory.includes(`| \`${key}\``) &&
+          environmentInventory.includes(`${key}\` | Optional release gate | Worker/server | No | Defaults to \`false\``),
+      ),
+  },
+  {
     label: "README documents checkout mode fail-closed default",
     ok:
       readme.includes("STRIPE_EXPECTED_LIVEMODE") &&
-      readme.includes("penny-test evidence"),
+      readme.includes("production-sale evidence"),
   },
   {
     label: "README documents private app-link association deployment inputs",

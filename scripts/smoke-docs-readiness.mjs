@@ -1134,6 +1134,28 @@ const checks = [
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Only verified artists and studios should request deposits"),
   },
   {
+    label: "payment readiness keeps the first launch scope and rollback explicit",
+    ok:
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes(
+        "The first proposed scope is US-only, web-first, TTC-owned physical Merch.",
+      ) &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes(
+        "Booking deposits, marketplace Merch, connected-account onboarding/routing, and ads remain disabled pending their separate approvals.",
+      ) &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes(
+        "Setting `STRIPE_EXPECTED_LIVEMODE=true` is not the checkout launch action; the creation master and selected flow gate are the exposure controls.",
+      ) &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes(
+        "Safe rollback disables `STRIPE_CHECKOUT_CREATION_ENABLED` while retaining the live expected mode, live key, and live webhook signing configuration so delayed events, refunds, disputes, expiration, and reconciliation continue.",
+      ) &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes(
+        "Never use real card details merely to test live mode. The first production proof must be a genuine authorized customer sale under normal terms, after the separate go-live approval.",
+      ) &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes(
+        "Do not claim the pilot is approved, deployed, or live.",
+      ),
+  },
+  {
     label: "real-device QA covers admin payment and Merch search",
     ok:
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("In Admin > Payments, search by a safe test payment/event reference") &&
