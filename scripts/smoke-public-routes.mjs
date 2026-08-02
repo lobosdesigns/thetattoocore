@@ -344,14 +344,11 @@ const checks = [
   },
   {
     body: "product_id=bad&quantity=1",
+    bodyEquals: '{"error":"Merch checkout is unavailable."}',
+    locationEquals: "",
     method: "POST",
     path: "/api/merch/checkout",
-    status: [303],
-    redirectIncludesAny: ["/login", "/merch"],
-    locationIncludesAny: [
-      ["Sign+in+to+buy+merch", "return_to=%2Fmerch%2Fbad"],
-      ["Checkout+is+temporarily+unavailable"],
-    ],
+    status: [410],
     redirect: "manual",
   },
   {
@@ -1044,7 +1041,12 @@ const checks = [
   {
     path: "/merch/checkout/success",
     status: [200],
-    includes: ['name="robots" content="noindex, nofollow"', "Checkout received", "Back to Merch"],
+    includes: [
+      'name="robots" content="noindex, nofollow"',
+      "No TTC order was found",
+      "Seller-owned checkout purchases are confirmed and supported by the seller",
+      "Back to Merch",
+    ],
   },
   {
     path: "/robots.txt",
@@ -1155,6 +1157,9 @@ for (const check of checks) {
 
   const okStatus = check.status.includes(response.status);
   const location = response.headers.get("location") || "";
+  const okBodyEquals = check.bodyEquals === undefined || body === check.bodyEquals;
+  const okLocationEquals =
+    check.locationEquals === undefined || location === check.locationEquals;
   const okRedirect = check.redirectIncludes
     ? location.includes(check.redirectIncludes)
     : check.redirectIncludesAny
@@ -1192,6 +1197,8 @@ for (const check of checks) {
 
   if (
     !okStatus ||
+    !okBodyEquals ||
+    !okLocationEquals ||
     !okRedirect ||
     missingLocationText.length > 0 ||
     missingLocationTextGroups ||
@@ -1205,6 +1212,14 @@ for (const check of checks) {
     failures += 1;
     console.error(`FAIL ${check.path}`);
     console.error(`  status: ${response.status}, expected: ${check.status.join(" or ")}`);
+    if (!okBodyEquals) {
+      console.error(`  body: ${JSON.stringify(body)}, expected: ${JSON.stringify(check.bodyEquals)}`);
+    }
+    if (!okLocationEquals) {
+      console.error(
+        `  location: ${location || "(none)"}, expected: ${check.locationEquals || "(none)"}`,
+      );
+    }
     if (check.redirectIncludes) {
       console.error(`  location: ${location || "(none)"}, expected to include: ${check.redirectIncludes}`);
     }

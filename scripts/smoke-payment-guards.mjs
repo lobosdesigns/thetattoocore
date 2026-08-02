@@ -5,6 +5,13 @@ const adCheckout = readFileSync("src/app/api/ads/checkout/route.ts", "utf8");
 const commerceLaunch = readFileSync("src/lib/commerce-launch.ts", "utf8");
 const bookingCheckout = readFileSync("src/app/api/bookings/checkout/route.ts", "utf8");
 const merchCheckout = readFileSync("src/app/api/merch/checkout/route.ts", "utf8");
+const normalizedMerchCheckout = merchCheckout.replace(/\r\n/g, "\n").trim();
+const expectedMerchCheckoutTombstone = `export async function POST() {
+  return Response.json(
+    { error: "Merch checkout is unavailable." },
+    { status: 410 },
+  );
+}`;
 const envExample = readFileSync(".env.example", "utf8");
 const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8");
 const adClickRoute = readFileSync("src/app/api/ad-click/route.ts", "utf8");
@@ -249,26 +256,6 @@ try {
     bookingCheckout,
     'rpc("reserve_booking_deposit_checkout"',
   );
-  const merchProductIndex = indexOfOrFail(
-    merchCheckout,
-    "const { data: product, error }",
-  );
-  const merchGateIndex = indexOfOrFail(
-    merchCheckout,
-    "const checkoutCreationEnabled = stripeCheckoutCreationEnabled(checkoutFlow)",
-  );
-  const merchAdminIndex = indexOfOrFail(
-    merchCheckout,
-    "const adminSupabase = createAdminClient()",
-  );
-  const merchOrderIndex = indexOfOrFail(
-    merchCheckout,
-    'supabase.from("merch_orders").insert',
-  );
-  const merchReservationIndex = indexOfOrFail(
-    merchCheckout,
-    '"reserve_merch_inventory_for_order"',
-  );
   const adLaunchGateIndex = indexOfOrFail(
     adCheckout,
     "if (!AD_PURCHASES_AVAILABLE)",
@@ -276,23 +263,17 @@ try {
   const adAccountIndex = indexOfOrFail(adCheckout, "const supabase = await createClient()");
 
   checks.push({
-    label: "independent checkout gates precede creation side effects and reach the central helper",
+    label: "booking and ad checkout gates precede creation side effects and reach the central helper",
     ok:
       bookingCheckout.includes('import { stripeCheckoutCreationEnabled } from "@/lib/stripe/release-gates"') &&
       bookingCheckout.includes("checkoutCreationEnabled,") &&
       bookingGateIndex < bookingReservationIndex &&
-      merchCheckout.includes('product.is_official ? "official_merch" : "marketplace_merch"') &&
-      merchCheckout.includes("checkoutCreationEnabled,") &&
-      merchProductIndex < merchGateIndex &&
-      merchGateIndex < merchAdminIndex &&
-      merchGateIndex < merchOrderIndex &&
-      merchGateIndex < merchReservationIndex &&
       adCheckout.includes("checkoutCreationEnabled: AD_PURCHASES_AVAILABLE") &&
       adLaunchGateIndex < adAccountIndex,
   });
 } catch (error) {
   checks.push({
-    label: "independent checkout route gate structure",
+    label: "booking and ad checkout route gate structure",
     ok: false,
     message: error.message,
   });
@@ -518,7 +499,7 @@ checks.push({
     ),
 });
 checks.push({
-  label: "Merch inventory reservations are order-owned and released atomically",
+  label: "historical Merch inventory reservations remain order-owned and webhook-reconciled",
   ok:
     merchInventoryLifecycleMigration.includes(
       "create type public.merch_inventory_reservation_status as enum",
@@ -544,8 +525,6 @@ checks.push({
     ) &&
     (merchInventoryLifecycleMigration.match(/from public, anon, authenticated;/g) ?? [])
       .length >= 5 &&
-    merchCheckout.includes('.rpc("cancel_unpaid_merch_order"') &&
-    !merchCheckout.includes('.rpc("release_merch_inventory_for_order"') &&
     stripeWebhook.includes('.rpc("mark_problem_merch_order_for_checkout"') &&
     !stripeWebhook.includes('.rpc(\n        "release_merch_inventory_for_order"'),
 });
@@ -756,17 +735,15 @@ checks.push({
     merchDetailPage.includes('href="/merch"'),
 });
 checks.push({
-  label: "checkout routes require private payment gates before payments",
+  label: "booking and ad checkout routes require private payment gates before payments",
   ok:
     adCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&
     adCheckout.includes("Ad checkout is temporarily unavailable. Please try again later.") &&
     bookingCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&
-    bookingCheckout.includes("Booking checkout is temporarily unavailable. Please try again later.") &&
-    merchCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&
-    merchCheckout.includes("Checkout is temporarily unavailable. Please try again later."),
+    bookingCheckout.includes("Booking checkout is temporarily unavailable. Please try again later."),
 });
 checks.push({
-  label: "checkout routes fail closed on strict payment mode preflight before reservations",
+  label: "booking and ad checkout routes fail closed on strict payment mode preflight before reservations",
   ok:
     stripeServer.includes("export function stripeCheckoutModeMismatch") &&
     stripeServer.includes("export function stripeCheckoutPreflight") &&
@@ -784,31 +761,23 @@ checks.push({
     ) &&
     adCheckout.includes("stripeCheckoutPreflight") &&
     bookingCheckout.includes("stripeCheckoutPreflight") &&
-    merchCheckout.includes("stripeCheckoutPreflight") &&
     adCheckout.includes("const checkoutPreflight = stripeCheckoutPreflight()") &&
     bookingCheckout.includes("const checkoutPreflight = stripeCheckoutPreflight()") &&
-    merchCheckout.includes("const checkoutPreflight = stripeCheckoutPreflight()") &&
     adCheckout.includes("if (!checkoutPreflight.ready)") &&
     bookingCheckout.includes("if (!checkoutPreflight.ready)") &&
-    merchCheckout.includes("if (!checkoutPreflight.ready)") &&
     adCheckout.includes('console.error("Ad checkout mode preflight failed.", checkoutPreflight)') &&
     bookingCheckout.includes('console.error("Booking checkout mode preflight failed.", checkoutPreflight)') &&
-    merchCheckout.includes('console.error("Merch checkout mode preflight failed.", checkoutPreflight)') &&
     adCheckout.indexOf("const checkoutPreflight = stripeCheckoutPreflight()") <
       adCheckout.indexOf("const { data: campaign, error }") &&
     bookingCheckout.indexOf("const checkoutPreflight = stripeCheckoutPreflight()") <
       bookingCheckout.indexOf("const { data: booking, error }") &&
-    merchCheckout.indexOf("const checkoutPreflight = stripeCheckoutPreflight()") <
-      merchCheckout.indexOf("const { data: product, error }") &&
     adCheckout.indexOf("const checkoutPreflight = stripeCheckoutPreflight()") >
       adCheckout.indexOf("if (!claims?.sub)") &&
     bookingCheckout.indexOf("const checkoutPreflight = stripeCheckoutPreflight()") >
-      bookingCheckout.indexOf("if (!claims?.sub)") &&
-    merchCheckout.indexOf("const checkoutPreflight = stripeCheckoutPreflight()") >
-      merchCheckout.indexOf("if (!claims?.sub)"),
+      bookingCheckout.indexOf("if (!claims?.sub)"),
 });
 checks.push({
-  label: "checkout creation failures log privately and show generic member copy",
+  label: "booking and ad checkout creation failures log privately and show generic member copy",
   ok:
     adCheckout.includes('console.error("Ad checkout session creation failed.", error)') &&
     adCheckout.includes('"Checkout could not open for this ad. Please try again."') &&
@@ -820,11 +789,6 @@ checks.push({
     !bookingCheckout.includes("session.error?.message") &&
     !bookingCheckout.includes("throw new Error(message)") &&
     !bookingCheckout.includes('error instanceof Error ? error.message : "Booking checkout could not open."') &&
-    merchCheckout.includes('console.error("Merch checkout session creation failed.", error)') &&
-    merchCheckout.includes('"Checkout could not open. Please try again."') &&
-    !merchCheckout.includes("session.error?.message") &&
-    !merchCheckout.includes("throw new Error(message)") &&
-    !merchCheckout.includes('error instanceof Error ? error.message : "Checkout could not open."') &&
     stripeCheckoutSessions.includes(': "Checkout could not open."') &&
     stripeCheckoutSessions.includes(
       '"Checkout status could not be confirmed."',
@@ -833,7 +797,7 @@ checks.push({
     !stripeCheckoutSessions.includes("error.message"),
 });
 checks.push({
-  label: "checkout persistence failures do not redirect raw database errors",
+  label: "booking and ad checkout persistence failures do not redirect raw database errors",
   ok:
     !adCheckout.includes(".message ||") &&
     adCheckout.includes('console.error("Ad credit check failed before checkout.", creditError)') &&
@@ -846,24 +810,10 @@ checks.push({
     bookingCheckout.includes('console.error("Booking deposit reservation failed.", reserveError)') &&
     bookingCheckout.includes('"The booking deposit could not be reserved before checkout. Please try again."') &&
     bookingCheckout.includes('console.error("Booking checkout session save failed.", updateError)') &&
-    bookingCheckout.includes('"Checkout started, but the checkout could not be saved. Please contact support if this repeats."') &&
-    !merchCheckout.includes(".message ||") &&
-    merchCheckout.includes('console.error("Merch order save failed before checkout.", orderError)') &&
-    merchCheckout.includes('"Order setup could not finish. Please try again."') &&
-    !merchCheckout.includes('"The order could not be saved before checkout. Please try again."') &&
-    merchCheckout.includes('console.error("Merch order item save failed before checkout.", itemError)') &&
-    !merchCheckout.includes('"The order item could not be saved before checkout. Please try again."') &&
-    merchCheckout.includes('console.error("Merch inventory reservation failed before checkout.", reserveError)') &&
-    merchCheckout.includes('"This item could not be held for checkout. Please try again."') &&
-    !merchCheckout.includes('"Inventory could not be reserved for checkout. Please try again."') &&
-    merchCheckout.includes('console.error("Merch checkout session save failed.", sessionError)') &&
-    merchCheckout.includes('"Checkout opened, but order setup could not finish. Please contact Support if this repeats."') &&
-    merchCheckout.includes('"Checkout opened, but order setup could not finish. Please try again."') &&
-    merchCheckout.includes('"Checkout could not open for this product. Please try again."') &&
-    !merchCheckout.includes('"Checkout started, but the order session could not be saved. Please contact support if this repeats."'),
+    bookingCheckout.includes('"Checkout started, but the checkout could not be saved. Please contact support if this repeats."'),
 });
 checks.push({
-  label: "checkout sessions expire before local reservations are released",
+  label: "booking and ad checkout sessions expire before local reservations are released",
   ok:
     stripeCheckoutSessions.includes('"Idempotency-Key": _options.idempotencyKey') &&
     stripeCheckoutSessions.includes(
@@ -886,10 +836,6 @@ checks.push({
     bookingCheckout.includes("rollback: rollBackReservation") &&
     bookingCheckout.includes('.select("id")') &&
     bookingCheckout.includes("return Boolean(releasedBooking)") &&
-    merchCheckout.includes("expireCheckoutSessionBeforeRollback({") &&
-    merchCheckout.includes("rollback: () => cancelPendingOrder(reason)") &&
-    merchCheckout.includes(".maybeSingle<{ id: string }>()") &&
-    merchCheckout.includes("return Boolean(cancelledOrder)") &&
     paymentReadiness.includes(
       "Checkout Session creation uses a per-attempt idempotency key and one bounded network retry.",
     ) &&
@@ -1240,52 +1186,39 @@ checks.push({
       adCheckout.includes('"cancel_url": cancelUrl'),
 });
 checks.push({
-  label: "merch checkout preserves only safe internal return paths",
+  label: "Merch checkout route is the exact side-effect-free 410 boundary",
+  ok: normalizedMerchCheckout === expectedMerchCheckoutTombstone,
+});
+checks.push({
+  label: "merch detail has no TTC fee or internal checkout form",
   ok:
-    merchCheckout.includes("function safeInternalReturnPath") &&
-    merchCheckout.includes("text.startsWith(\"/\")") &&
-    merchCheckout.includes("text.startsWith(\"//\")") &&
-    merchCheckout.includes("function pathWithMessage") &&
-    merchCheckout.includes("const returnUrl = new URL(path, siteUrl)") &&
-    merchCheckout.includes('returnUrl.searchParams.set("message", message)') &&
-    merchCheckout.includes("`${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`") &&
-    merchCheckout.includes("function loginRedirect") &&
-    merchCheckout.includes('formData.get("return_to")') &&
-    merchCheckout.includes('return_to: returnTo') &&
-    merchCheckout.includes('formReturnTo ?? `/merch/${productId}`') &&
-    merchCheckout.includes('formReturnTo ?? "/merch"') &&
-    merchCheckout.includes("formReturnTo ?? `/merch/${product.id}`") &&
-    merchCheckout.includes('"cancel_url": cancelUrl') &&
-    !merchDetailPage.includes('name="return_to"') &&
+    merchDetailPage.includes("<SellerCheckoutDialog") &&
     !merchDetailPage.includes('/api/merch/checkout') &&
-    !merchDetailPage.includes('/login?return_to='),
+    !merchDetailPage.includes('name="quantity"') &&
+    !merchDetailPage.includes("calculatePlatformFeeCents") &&
+    !merchDetailPage.includes("TTC platform fee") &&
+    !merchDetailPage.includes("Estimated fee on one item"),
 });
 checks.push({
-  label: "merch checkout creates local order before Stripe session",
+  label: "historical Merch checkout events retain shared webhook routing",
   ok:
-    merchCheckout.indexOf('from("merch_orders").insert') <
-    merchCheckout.indexOf("await createCheckoutSession"),
-});
-checks.push({
-  label: "merch checkout identifies its payment kind for shared webhook routing",
-  ok:
-    merchCheckout.includes('metadata[payment_kind]": "merch_order"') &&
-    merchCheckout.includes('payment_intent_data[metadata][payment_kind]": "merch_order"') &&
     stripeWebhook.includes("function isMerchCheckoutSession") &&
     stripeWebhook.includes('payment_kind === "merch_order"') &&
     stripeWebhook.includes("Unknown checkout session payment type."),
 });
 checks.push({
-  label: "merch checkout only attaches Stripe session to pending unassigned order",
+  label: "historical TTC Merch receipt and admin views remain available",
   ok:
-    merchCheckout.includes('stripe_checkout_session_id: session.id') &&
-    merchCheckout.includes('.eq("status", "pending_checkout")') &&
-    merchCheckout.includes('.is("stripe_checkout_session_id", null)') &&
-    merchCheckout.includes('.select("id")') &&
-    merchCheckout.includes("if (!sessionOrder)"),
+    merchCheckoutSuccessPage.includes('.from("merch_orders")') &&
+    merchCheckoutSuccessPage.includes('.eq("stripe_checkout_session_id", sessionId)') &&
+    merchCheckoutSuccessPage.includes('.eq("buyer_id", claims.sub)') &&
+    adminMerchPage.includes('.from("merch_orders")') &&
+    adminMerchPage.includes("Recent Orders") &&
+    adminMerchPage.includes("updateMerchOrderStatus") &&
+    adminMerchPage.includes("refundMerchOrder"),
 });
 checks.push({
-  label: "buyer checkout success keeps printable receipt action",
+  label: "historical buyer receipt is printable without a false no-order success state",
   ok:
     merchCheckoutSuccessPage.includes("<PrintReceiptButton />") &&
     merchCheckoutSuccessPage.includes('href="/merch"') &&
@@ -1293,6 +1226,11 @@ checks.push({
     merchCheckoutSuccessPage.includes("ttc-print-hidden") &&
     merchCheckoutSuccessPage.includes("This order will not move forward unless checkout is completed.") &&
     merchCheckoutSuccessPage.includes("use Account orders or Support with this order number") &&
+    merchCheckoutSuccessPage.includes('heading: "No TTC order was found"') &&
+    merchCheckoutSuccessPage.includes("Seller-owned checkout purchases are confirmed and supported by the seller using the seller's receipt.") &&
+    merchCheckoutSuccessPage.includes("const copy = order") &&
+    merchCheckoutSuccessPage.includes("? statusCopy(order.status)") &&
+    !merchCheckoutSuccessPage.includes("statusCopy(order?.status)") &&
     !merchCheckoutSuccessPage.includes("No fulfillment should start") &&
     !merchCheckoutSuccessPage.includes("payment records") &&
     merchPrintReceiptButton.includes('"use client"') &&
@@ -1409,7 +1347,7 @@ checks.push({
     adminMerchPage.includes("Return note"),
 });
 checks.push({
-  label: "legacy merch cannot activate or checkout without review details",
+  label: "legacy Merch cannot activate without review details",
   ok:
     adminActions.includes("Merch needs ship-from, fulfillment, and return/refund details before checkout can be activated.") &&
     adminActions.includes("const missingMerchReviewDetails") &&
@@ -1418,10 +1356,10 @@ checks.push({
     adminMerchPage.includes("const hasReviewDetails") &&
     adminMerchPage.includes("Activation waits for ship-from, fulfillment, and return/refund") &&
     adminMerchPage.includes("Ship-from, fulfillment, and return/refund details are required before checkout can be activated.") &&
-    merchCheckout.includes("Merch checkout blocked by missing fulfillment details.") &&
-    merchCheckout.includes("const missingReviewDetails") &&
-    merchCheckout.includes("product.return_policy") &&
-    merchCheckout.includes("product.shipping_required") &&
+    merchDetailPage.includes("sellerCheckoutPurchaseReadiness") &&
+    merchDetailPage.includes("fulfillmentNotes: product.fulfillment_notes") &&
+    merchDetailPage.includes("returnPolicy: product.return_policy") &&
+    merchDetailPage.includes("shippingRequired: product.shipping_required") &&
     productPlan.includes("legacy active Merch detail guard"),
 });
 checks.push({
@@ -1567,8 +1505,6 @@ checks.push({
     stripeConnectReturn.includes('.eq("livemode", livemode)') &&
     stripeWebhook.includes("syncStripeConnectAccountFromWebhook(supabase, account, event.livemode)") &&
     stripeWebhook.includes('.eq("livemode", livemode)') &&
-    merchCheckout.includes('.eq("livemode", checkoutPreflight.actual)') &&
-    merchCheckout.includes("payoutAccount?.livemode === checkoutPreflight.actual") &&
     adminActions.includes('.eq("livemode", payoutMode.actual)') &&
     accountPage.includes('.eq("livemode", sellerPayoutMode.actual)') &&
     adminMerchPage.includes('.eq("livemode", sellerPayoutMode.actual)'),
@@ -1668,37 +1604,27 @@ checks.push({
     productPlan.includes("admin activation guard requiring seller payout readiness"),
 });
 checks.push({
-  label: "merch checkout requires seller payout readiness",
+  label: "old TTC Merch and Connect release switches remain false by default",
   ok:
-    merchCheckout.includes("Merch checkout blocked by seller payout readiness.") &&
-    merchCheckout.includes(".from(\"stripe_connect_accounts\")") &&
-    merchCheckout.includes("charges_enabled") &&
-    merchCheckout.includes("payouts_enabled") &&
-    merchCheckout.includes("details_submitted") &&
-    merchCheckout.includes("Checkout is temporarily unavailable for this product.") &&
-    !merchCheckout.includes("seller payout setup is incomplete"),
+    envExample.includes("STRIPE_CHECKOUT_CREATION_ENABLED=false") &&
+    envExample.includes("STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED=false") &&
+    envExample.includes("STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED=false") &&
+    envExample.includes("STRIPE_CONNECT_ONBOARDING_ENABLED=false") &&
+    envExample.includes("STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false") &&
+    !envExample.includes("STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED=true") &&
+    !envExample.includes("STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED=true") &&
+    !envExample.includes("STRIPE_CONNECT_ONBOARDING_ENABLED=true") &&
+    !envExample.includes("STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=true"),
 });
 checks.push({
-  label: "merch marketplace checkout routes seller funds with an application fee",
+  label: "legacy Merch destination-charge switch remains fail-closed and unused by the tombstone",
   ok:
     envExample.includes("STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false") &&
     stripeServer.includes("export function stripeMerchDestinationChargesEnabled()") &&
     stripeServer.includes("process.env.STRIPE_MERCH_DESTINATION_CHARGES_ENABLED") &&
-    merchCheckout.includes("stripeMerchDestinationChargesEnabled") &&
-    merchCheckout.includes("Merch checkout blocked by destination charge release gate.") &&
-    merchCheckout.includes('"stripe_account_id, livemode, charges_enabled, payouts_enabled, details_submitted"') &&
-    merchCheckout.includes("let sellerStripeAccountId: string | null = null") &&
-    merchCheckout.includes("sellerStripeAccountId = payoutAccount.stripe_account_id") &&
-    merchCheckout.includes('"payment_intent_data[application_fee_amount]"') &&
-    merchCheckout.includes('"payment_intent_data[transfer_data][destination]"') &&
-    merchCheckout.includes("String(platformFeeCents)") &&
-    merchCheckout.includes("sellerStripeAccountId,") &&
-    merchCheckout.indexOf("if (!stripeMerchDestinationChargesEnabled())") <
-      merchCheckout.indexOf("sellerStripeAccountId = payoutAccount.stripe_account_id") &&
-    merchCheckout.indexOf("if (sellerStripeAccountId)") <
-      merchCheckout.indexOf('"payment_intent_data[application_fee_amount]"') &&
-    merchCheckout.indexOf("if (sellerStripeAccountId)") <
-      merchCheckout.indexOf('"payment_intent_data[transfer_data][destination]"'),
+    !merchCheckout.includes("stripeMerchDestinationChargesEnabled") &&
+    !merchCheckout.includes("application_fee") &&
+    !merchCheckout.includes("transfer_data"),
 });
 checks.push({
   label: "admin Merch can filter seller payout readiness",
@@ -2096,15 +2022,12 @@ checks.push({
     !adminPaymentsPage.includes("STRIPE_WEBHOOK_SECRET"),
 });
 checks.push({
-  label: "official Merch shipping is US-only while marketplace keeps its existing countries",
+  label: "public smoke requires the exact no-redirect Merch tombstone response",
   ok:
-    merchCheckout.includes('body.set("shipping_address_collection[allowed_countries][0]", "US")') &&
-    merchCheckout.includes("if (!product.is_official)") &&
-    merchCheckout.includes('body.set("shipping_address_collection[allowed_countries][1]", "CA")') &&
-    merchCheckout.indexOf('body.set("shipping_address_collection[allowed_countries][0]", "US")') <
-      merchCheckout.indexOf("if (!product.is_official)") &&
-    merchCheckout.indexOf("if (!product.is_official)") <
-      merchCheckout.indexOf('body.set("shipping_address_collection[allowed_countries][1]", "CA")'),
+    publicSmoke.includes('path: "/api/merch/checkout"') &&
+    publicSmoke.includes("status: [410]") &&
+    publicSmoke.includes('bodyEquals: \'{"error":"Merch checkout is unavailable."}\'') &&
+    publicSmoke.includes('locationEquals: ""'),
 });
 checks.push({
   label: "standard payment smoke includes focused Stripe release gates exactly once",
