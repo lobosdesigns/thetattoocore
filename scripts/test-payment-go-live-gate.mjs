@@ -104,6 +104,24 @@ const lateOfficialRejectionSourceFixture = writeCandidateSourceVariant(
     routeLines.splice(adminIndex + 1, 0, ...rejection);
   },
 );
+const conditionalOfficialRejectionSourceFixture = writeCandidateSourceVariant(
+  "conditional-official-rejection-source.json",
+  (routeLines) => {
+    const returnIndex = routeLines.indexOf(
+      "    return redirectWithMessage();",
+      routeLines.indexOf(
+        "  if (product.is_official && product.shipping_required !== true) {",
+      ),
+    );
+    routeLines.splice(
+      returnIndex,
+      1,
+      "    if (shouldBlockOfficialProduct) {",
+      "      return redirectWithMessage();",
+      "    }",
+    );
+  },
+);
 const wrongOfficialCountrySourceFixture = writeCandidateSourceVariant(
   "wrong-official-country-source.json",
   (routeLines) => {
@@ -130,6 +148,18 @@ const missingMarketplaceGateSourceFixture = writeCandidateSourceVariant(
       "    if (!stripeMerchDestinationChargesEnabled()) return redirectWithMessage();",
     );
     routeLines[gateIndex] = "    void stripeMerchDestinationChargesEnabled;";
+  },
+);
+const lateMarketplaceGateSourceFixture = writeCandidateSourceVariant(
+  "late-marketplace-gate-source.json",
+  (routeLines) => {
+    const gateStart = routeLines.indexOf("  if (!product.is_official) {");
+    const gateEnd = routeLines.indexOf("  }", gateStart);
+    const gate = routeLines.splice(gateStart, gateEnd - gateStart + 1);
+    const checkoutIndex = routeLines.indexOf(
+      "  return createCheckoutSession({ product });",
+    );
+    routeLines.splice(checkoutIndex, 0, ...gate);
   },
 );
 const completedProductionEvidenceFixture = writeSource(
@@ -347,6 +377,23 @@ const checks = [
     },
   },
   {
+    label: "candidate proof rejects a conditional nested official return",
+    result: runGate(
+      fixturePath,
+      fixtureCandidate,
+      "preauthorization",
+      conditionalOfficialRejectionSourceFixture,
+    ),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Candidate policy / Official non-shipping products must be rejected",
+        )
+      );
+    },
+  },
+  {
     label: "candidate proof requires official physical shipping to be exactly US",
     result: runGate(
       fixturePath,
@@ -387,6 +434,23 @@ const checks = [
       fixtureCandidate,
       "preauthorization",
       missingMarketplaceGateSourceFixture,
+    ),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Candidate policy / Marketplace physical checkout must retain independent checkout and destination-charge gates",
+        )
+      );
+    },
+  },
+  {
+    label: "candidate proof requires marketplace gates before checkout side effects",
+    result: runGate(
+      fixturePath,
+      fixtureCandidate,
+      "preauthorization",
+      lateMarketplaceGateSourceFixture,
     ),
     verify(result) {
       return (

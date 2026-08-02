@@ -79,8 +79,12 @@ function isOfficialNonShippingCondition(node) {
   );
 }
 
-function hasReturn(node) {
-  return descendants(node, ts.isReturnStatement).length > 0;
+function hasGuaranteedReturn(node) {
+  const current = stripParentheses(node);
+  if (ts.isReturnStatement(current)) return true;
+  if (!ts.isBlock(current)) return false;
+
+  return current.statements.some(ts.isReturnStatement);
 }
 
 function callName(node) {
@@ -186,7 +190,11 @@ function shippingCountryContract(createCheckoutBody) {
   return officialUs && marketplaceCa;
 }
 
-function marketplaceGateContract(postBody, adminStatementIndex) {
+function marketplaceGateContract(
+  postBody,
+  adminStatementIndex,
+  firstCheckoutSideEffectIndex,
+) {
   if (!postBody) return false;
 
   const statements = [...postBody.statements];
@@ -231,9 +239,9 @@ function marketplaceGateContract(postBody, adminStatementIndex) {
       isNegationOf(statement.expression, (operand) =>
         isIdentifier(operand, "checkoutCreationEnabled"),
       ) &&
-      hasReturn(statement.thenStatement),
+      hasGuaranteedReturn(statement.thenStatement),
   );
-  const marketplaceBlock = statements.find(
+  const marketplaceBlockIndex = statements.findIndex(
     (statement) =>
       ts.isIfStatement(statement) &&
       isNegationOf(statement.expression, (operand) =>
@@ -241,6 +249,7 @@ function marketplaceGateContract(postBody, adminStatementIndex) {
       ) &&
       ts.isBlock(statement.thenStatement),
   );
+  const marketplaceBlock = statements[marketplaceBlockIndex];
   const firstMarketplaceStatement = marketplaceBlock?.thenStatement.statements[0];
   const destinationGate =
     firstMarketplaceStatement &&
@@ -252,13 +261,15 @@ function marketplaceGateContract(postBody, adminStatementIndex) {
         isIdentifier(current.expression, "stripeMerchDestinationChargesEnabled")
       );
     }) &&
-    hasReturn(firstMarketplaceStatement.thenStatement);
+    hasGuaranteedReturn(firstMarketplaceStatement.thenStatement);
 
   return (
     flowDeclarationIndex >= 0 &&
     checkoutGateIndex > flowDeclarationIndex &&
     checkoutRejectIndex > checkoutGateIndex &&
     checkoutRejectIndex < adminStatementIndex &&
+    marketplaceBlockIndex > adminStatementIndex &&
+    firstCheckoutSideEffectIndex > marketplaceBlockIndex &&
     Boolean(destinationGate)
   );
 }
@@ -284,7 +295,7 @@ export function paymentPilotCandidatePolicyBlockers(merchCheckoutSource) {
     (statement) =>
       ts.isIfStatement(statement) &&
       isOfficialNonShippingCondition(statement.expression) &&
-      hasReturn(statement.thenStatement),
+      hasGuaranteedReturn(statement.thenStatement),
   );
   const adminStatementIndex = postStatements.findIndex((statement) =>
     statementContainsCall(statement, new Set(["createAdminClient"])),
@@ -320,7 +331,13 @@ export function paymentPilotCandidatePolicyBlockers(merchCheckoutSource) {
       "Candidate policy / Marketplace physical shipping countries must remain exactly US and CA",
     );
   }
-  if (!marketplaceGateContract(postBody, adminStatementIndex)) {
+  if (
+    !marketplaceGateContract(
+      postBody,
+      adminStatementIndex,
+      firstCheckoutSideEffectIndex,
+    )
+  ) {
     blockers.push(
       "Candidate policy / Marketplace physical checkout must retain independent checkout and destination-charge gates",
     );
