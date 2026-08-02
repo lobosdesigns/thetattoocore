@@ -125,6 +125,27 @@ begin
 end;
 $$;
 
-grant select, update on table public.merch_products to service_role;
+revoke insert, update, delete on table public.merch_products from service_role;
+
+grant select on table public.merch_products to service_role;
+
+grant update (
+  category,
+  description,
+  fulfillment_notes,
+  inventory_quantity,
+  is_indexable,
+  price_cents,
+  shipping_required,
+  ships_from_city,
+  ships_from_region,
+  return_policy,
+  status,
+  title,
+  updated_at,
+  external_checkout_url,
+  seller_checkout_terms_version,
+  seller_checkout_terms_accepted_at
+) on table public.merch_products to service_role;
 
 commit;

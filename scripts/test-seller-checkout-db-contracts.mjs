@@ -131,6 +131,24 @@ const products = {
 
 const validCheckoutUrl = "https://buy.stripe.com/a1B2_c3D4";
 const alternateCheckoutUrl = "https://buy.stripe.com/Z9_y8X7";
+const requiredServiceUpdateColumns = [
+  "category",
+  "description",
+  "external_checkout_url",
+  "fulfillment_notes",
+  "inventory_quantity",
+  "is_indexable",
+  "price_cents",
+  "seller_checkout_terms_accepted_at",
+  "seller_checkout_terms_version",
+  "shipping_required",
+  "ships_from_city",
+  "ships_from_region",
+  "return_policy",
+  "status",
+  "title",
+  "updated_at",
+].sort();
 
 try {
   runBin(
@@ -208,9 +226,15 @@ try {
       ships_from_country text,
       ships_from_region text,
       ships_from_city text,
+      stripe_product_id text,
+      stripe_price_id text,
+      reviewed_by uuid,
+      reviewed_at timestamptz,
+      reviewer_note text,
       fulfillment_notes text,
       return_policy text,
       is_official boolean not null default false,
+      is_indexable boolean not null default true,
       created_at timestamptz not null default now(),
       updated_at timestamptz not null default now()
     );
@@ -281,6 +305,9 @@ try {
     grant select on public.profiles to authenticated, service_role;
     grant select on public.merch_products to anon, authenticated;
     grant insert, update on public.merch_products to authenticated;
+    grant select, insert, update, delete on public.merch_products to service_role;
+    grant insert (seller_id, moderation_status), update (seller_id, moderation_status)
+      on public.merch_products to service_role;
 
     insert into public.profiles (id, account_type, license_verified_at)
     values
@@ -369,7 +396,8 @@ try {
     "service_role can read protected checkout columns",
   );
   for (const [privilege, expected] of [
-    ["UPDATE", "true"],
+    ["SELECT", "true"],
+    ["UPDATE", "false"],
     ["INSERT", "false"],
     ["DELETE", "false"],
   ]) {
@@ -385,6 +413,60 @@ try {
       `migration sets service_role ${privilege} privilege to ${expected}`,
     );
   }
+  assert.equal(
+    scalar(`
+      select coalesce(string_agg(column_name, ',' order by column_name), '')
+      from information_schema.columns
+      where table_schema = 'public'
+        and table_name = 'merch_products'
+        and has_column_privilege(
+          'service_role',
+          'public.merch_products',
+          column_name,
+          'UPDATE'
+        );
+    `),
+    requiredServiceUpdateColumns.join(","),
+    "migration grants service_role UPDATE on exactly the Task 3 column allowlist",
+  );
+  assert.equal(
+    scalar(`
+      select count(*)
+      from information_schema.columns
+      where table_schema = 'public'
+        and table_name = 'merch_products'
+        and has_column_privilege(
+          'service_role',
+          'public.merch_products',
+          column_name,
+          'INSERT'
+        );
+    `),
+    "0",
+    "migration removes every legacy service_role column INSERT privilege",
+  );
+  sql(`alter table public.merch_products add column future_sensitive text;`);
+  assert.equal(
+    scalar(`
+      select has_column_privilege(
+        'service_role',
+        'public.merch_products',
+        'future_sensitive',
+        'UPDATE'
+      )::text;
+    `),
+    "false",
+    "service_role UPDATE does not expand to future columns",
+  );
+  assert.equal(
+    scalar(asRole("service_role", `
+      select (future_sensitive is null)::text
+      from public.merch_products
+      where id = '${products.seller}';
+    `)),
+    "true",
+    "service_role full-table SELECT includes future columns",
+  );
   console.log("PASS zero-row backfill and least-privilege checkout reads");
 
   assert.equal(
