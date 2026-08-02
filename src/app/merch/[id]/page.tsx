@@ -13,6 +13,7 @@ import {
 import { archiveMerchProduct, editMerchProduct } from "@/app/actions";
 import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
+import { SellerCheckoutFields } from "@/app/merch/seller-checkout-fields";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { ProtectedVideo } from "@/app/protected-video";
 import { SavedItemButton } from "@/app/saved-item-button";
@@ -24,6 +25,7 @@ import {
 import { loadPublicProfileMap } from "@/lib/public-profile-hydration";
 import { isUuid } from "@/lib/route-ids";
 import { stripeCheckoutCreationEnabled } from "@/lib/stripe/release-gates";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
   brandShareImage,
@@ -291,7 +293,30 @@ export default async function MerchProductPage({
   const estimatedPlatformFeeCents = calculatePlatformFeeCents(product.price_cents);
   const estimatedSingleItemTotalCents =
     product.price_cents + estimatedPlatformFeeCents;
-  const isOwnProduct = claims?.sub === product.profiles?.id;
+  const isOwnProduct = claims?.sub === product.seller_id;
+  let sellerCheckoutUrl: string | null = null;
+
+  if (isOwnProduct && !product.is_official && claims?.sub) {
+    try {
+      const adminClient = createAdminClient();
+
+      if (adminClient) {
+        const { data: checkoutRow, error: checkoutError } = await adminClient
+          .from("merch_products")
+          .select("external_checkout_url")
+          .eq("id", product.id)
+          .eq("seller_id", claims.sub)
+          .maybeSingle<{ external_checkout_url: string | null }>();
+
+        if (!checkoutError && checkoutRow) {
+          sellerCheckoutUrl = checkoutRow.external_checkout_url;
+        }
+      }
+    } catch {
+      sellerCheckoutUrl = null;
+    }
+  }
+
   const checkoutFlow = product.is_official ? "official_merch" : "marketplace_merch";
   const checkoutCreationEnabled = stripeCheckoutCreationEnabled(checkoutFlow);
   if (
@@ -567,8 +592,10 @@ export default async function MerchProductPage({
                         className="mt-1 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 py-3 text-sm text-[var(--foreground)]"
                         defaultValue={product.fulfillment_notes ?? ""}
                         maxLength={1000}
+                        minLength={10}
                         name="fulfillment_notes"
                         placeholder="Shipping timeline, pickup option, made-to-order timing."
+                        required
                         rows={4}
                       />
                     </label>
@@ -578,11 +605,14 @@ export default async function MerchProductPage({
                         className="mt-1 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 py-3 text-sm text-[var(--foreground)]"
                         defaultValue={product.return_policy ?? ""}
                         maxLength={1000}
+                        minLength={10}
                         name="return_policy"
                         placeholder="Set buyer expectations for returns or refund review."
+                        required
                         rows={4}
                       />
                     </label>
+                    <SellerCheckoutFields defaultUrl={sellerCheckoutUrl} />
                     <button className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
                       Save changes
                     </button>

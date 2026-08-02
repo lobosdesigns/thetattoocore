@@ -10,6 +10,7 @@ import {
 } from "./actions";
 import { FloatingComposerShell } from "./floating-composer-shell";
 import { MediaInput } from "./media-input";
+import { SellerCheckoutFields } from "./merch/seller-checkout-fields";
 import { PendingSubmitButton } from "./pending-submit-button";
 import { WordLimitedField } from "./word-limited-field";
 
@@ -588,18 +589,25 @@ export function FloatingComposer({
                   className="min-h-20 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
                   maxCharacters={1000}
                   maxLength={1000}
+                  minTrimmedLength={10}
                   name="fulfillment_notes"
                   placeholder="Fulfillment notes: shipping timeline, pickup option, or made-to-order timing"
+                  required
+                  validationMessage="Add at least 10 characters of fulfillment details."
                 />
                 <WordLimitedField
                   as="textarea"
                   className="min-h-20 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-3 py-2 text-sm outline-none focus:border-[var(--foreground)]"
                   maxCharacters={1000}
                   maxLength={1000}
+                  minTrimmedLength={10}
                   name="return_policy"
                   placeholder="Return/refund note buyers can understand before checkout"
+                  required
+                  validationMessage="Add at least 10 characters of return or refund details."
                 />
               </ComposerDetails>
+              <SellerCheckoutFields />
               <MediaInput
                 accept={imageVideoAccept}
                 maxImageBytes={10 * 1024 * 1024}
