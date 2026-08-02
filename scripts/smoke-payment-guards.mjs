@@ -636,19 +636,35 @@ checks.push({
     appActions.includes('from("merch_products")') &&
     appActions.includes('from("merch_product_media")') &&
     appActions.includes("Merch needs a product photo, GIF, or short video.") &&
-    appActions.includes("await supabase.from(\"merch_products\").delete()"),
+    appActions.includes("async function cleanupCreatedMerchProduct") &&
+    appActions.includes("if (checkoutError || !checkoutProduct)") &&
+    appActions.includes("seller_checkout_terms_accepted_at: null") &&
+    appActions.includes("seller_checkout_terms_version: SELLER_CHECKOUT_TERMS_VERSION") &&
+    appActions.includes(".delete()") &&
+    appActions.includes('status: "archived"') &&
+    appActions.includes("external_checkout_url: null") &&
+    appActions.includes("if (cleanupError || !cleanedProduct)"),
 });
 checks.push({
   label: "Merch submit actions hide raw backend errors from member redirects",
   ok:
-    appActions.includes('console.error("Merch product submit failed.", error)') &&
+    appActions.includes('console.error("Merch product submit failed.")') &&
+    appActions.includes('console.error("Merch checkout setup failed.")') &&
+    appActions.includes('console.error("Merch pending-row cleanup failed.")') &&
     appActions.includes('"Could not submit Merch for review. Please try again."') &&
-    appActions.includes('console.error("Merch media storage upload failed.", error)') &&
+    appActions.includes('"Could not prepare seller checkout. Please try again."') &&
+    appActions.includes('console.error("Merch media storage upload failed.")') &&
     appActions.includes('throw new Error("Could not upload Merch media.")') &&
-    appActions.includes('console.error("Merch media upload failed.", error)') &&
+    appActions.includes('console.error("Merch media upload failed.")') &&
     appActions.includes('"Could not upload Merch media. Please try again."') &&
-    appActions.includes('console.error("Merch media attach failed.", mediaError)') &&
+    appActions.includes('console.error("Merch media attach failed.")') &&
     appActions.includes('"Media uploaded but could not attach to the Merch product. Please try again."') &&
+    !appActions.includes('console.error("Merch product submit failed.",') &&
+    !appActions.includes('console.error("Merch checkout setup failed.",') &&
+    !appActions.includes('console.error("Merch pending-row cleanup failed.",') &&
+    !appActions.includes('console.error("Merch media storage upload failed.",') &&
+    !appActions.includes('console.error("Merch media upload failed.",') &&
+    !appActions.includes('console.error("Merch media attach failed.",') &&
     !appActions.includes('error?.message || "Could not submit Merch for review."') &&
     !appActions.includes('error.message || "Could not upload Merch media."') &&
     !appActions.includes('error instanceof Error ? error.message : "Could not upload Merch media."') &&
@@ -657,12 +673,14 @@ checks.push({
 checks.push({
   label: "Merch owner edit and archive actions hide raw backend errors from member redirects",
   ok:
-    appActions.includes('console.error("Merch product edit lookup failed.", productError)') &&
-    appActions.includes('console.error("Merch product update failed.", error)') &&
+    appActions.includes('console.error("Merch product edit lookup failed.")') &&
+    appActions.includes('console.error("Merch product update failed.")') &&
     appActions.includes('console.error("Merch product archive lookup failed.", productError)') &&
     appActions.includes('console.error("Merch product archive failed.", error)') &&
     appActions.includes('"Could not update Merch product. It may be gone or owned by another account."') &&
     appActions.includes('"Could not archive Merch product. It may be gone or owned by another account."') &&
+    !appActions.includes('console.error("Merch product edit lookup failed.",') &&
+    !appActions.includes('console.error("Merch product update failed.",') &&
     !appActions.includes('productError?.message || "Merch product was not found."') &&
     !appActions.includes('error?.message ||\n          "Could not update Merch product. It may be gone or owned by another account."') &&
     !appActions.includes('error?.message ||\n          "Could not archive Merch product. It may be gone or owned by another account."'),
@@ -1369,7 +1387,10 @@ checks.push({
     appActions.includes("fulfillment_notes: fulfillmentNotes || null") &&
     appActions.includes("return_policy: returnPolicy || null") &&
     appActions.includes("Add the city and state/region this Merch ships from.") &&
-    appActions.includes("Add fulfillment notes for shipped Merch, including timing or pickup details.") &&
+    (appActions.match(/if \(fulfillmentNotes\.length < 10\)/g) ?? []).length === 2 &&
+    (appActions.match(/if \(returnPolicy\.length < 10\)/g) ?? []).length === 2 &&
+    !appActions.includes("if (shippingRequired && fulfillmentNotes.length < 10)") &&
+    appActions.includes("Add fulfillment notes for Merch, including timing, shipping, or pickup details.") &&
     appActions.includes("Add a short return or refund note for Merch buyers.") &&
     floatingComposer.includes('name="fulfillment_notes"') &&
     floatingComposer.includes('name="return_policy"') &&
