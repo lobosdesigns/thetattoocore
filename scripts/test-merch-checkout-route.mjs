@@ -34,6 +34,24 @@ const officialProduct = {
   title: "TheTattooCore shirt",
 };
 
+const marketplaceProduct = {
+  ...officialProduct,
+  is_official: false,
+  profiles: {
+    account_type: "artist",
+    license_verified_at: "2026-08-01T00:00:00.000Z",
+  },
+  shipping_required: true,
+};
+
+const readyPayoutAccount = {
+  charges_enabled: true,
+  details_submitted: true,
+  livemode: false,
+  payouts_enabled: true,
+  stripe_account_id: "acct_marketplace_ready",
+};
+
 let activeScenario;
 
 function makeRedirect(url, { status }) {
@@ -43,7 +61,13 @@ function makeRedirect(url, { status }) {
   });
 }
 
-function createScenario(product, { destinationChargesEnabled = true } = {}) {
+function createScenario(
+  product,
+  {
+    destinationChargesEnabled = true,
+    payoutAccount = readyPayoutAccount,
+  } = {},
+) {
   const effects = {
     adminClientCreations: 0,
     inventoryReservations: 0,
@@ -77,13 +101,7 @@ function createScenario(product, { destinationChargesEnabled = true } = {}) {
         query.operation === "select"
       ) {
         return {
-          data: {
-            charges_enabled: true,
-            details_submitted: true,
-            livemode: false,
-            payouts_enabled: true,
-            stripe_account_id: "acct_marketplace_ready",
-          },
+          data: payoutAccount,
           error: null,
         };
       }
@@ -192,6 +210,23 @@ function allowedCountries(body) {
     .map(([, value]) => value);
 }
 
+function marketplaceRejectionState(response, scenario) {
+  const location = new URL(response.headers.get("location"));
+  const memberMessage = location.searchParams.get("message");
+
+  return {
+    inventoryReservations: scenario.effects.inventoryReservations,
+    memberMessage,
+    orderWrites: scenario.effects.orderWrites,
+    payoutLookups: scenario.adminSupabase.queries.filter(
+      (query) =>
+        query.table === "stripe_connect_accounts" && query.operation === "select",
+    ).length,
+    providerNamed: /stripe|supabase/i.test(memberMessage ?? ""),
+    stripeRequests: scenario.effects.stripeBodies.length,
+  };
+}
+
 try {
   {
     const { response, scenario } = await postCheckout(officialProduct);
@@ -225,15 +260,6 @@ try {
   console.log("PASS official shipping-required Merch sends Stripe exactly the US");
 
   {
-    const marketplaceProduct = {
-      ...officialProduct,
-      is_official: false,
-      profiles: {
-        account_type: "artist",
-        license_verified_at: "2026-08-01T00:00:00.000Z",
-      },
-      shipping_required: true,
-    };
     const { scenario } = await postCheckout(marketplaceProduct);
 
     assert.equal(
@@ -246,6 +272,41 @@ try {
     assert.deepEqual(allowedCountries(scenario.effects.stripeBodies[0]), ["US", "CA"]);
   }
   console.log("PASS marketplace shipping-required Merch keeps seller readiness and US/CA");
+
+  {
+    const { response, scenario } = await postCheckout(marketplaceProduct, {
+      destinationChargesEnabled: false,
+    });
+
+    assert.deepEqual(marketplaceRejectionState(response, scenario), {
+      inventoryReservations: 0,
+      memberMessage: "Checkout is temporarily unavailable for this product.",
+      orderWrites: 0,
+      payoutLookups: 0,
+      providerNamed: false,
+      stripeRequests: 0,
+    });
+  }
+  console.log("PASS disabled marketplace destination charges stop before payout lookup and checkout effects");
+
+  {
+    const { response, scenario } = await postCheckout(marketplaceProduct, {
+      payoutAccount: {
+        ...readyPayoutAccount,
+        payouts_enabled: false,
+      },
+    });
+
+    assert.deepEqual(marketplaceRejectionState(response, scenario), {
+      inventoryReservations: 0,
+      memberMessage: "Checkout is temporarily unavailable for this product.",
+      orderWrites: 0,
+      payoutLookups: 1,
+      providerNamed: false,
+      stripeRequests: 0,
+    });
+  }
+  console.log("PASS unready marketplace payout account fails closed before checkout effects");
 } finally {
   for (const [key, value] of Object.entries(originalEnvironment)) {
     if (value === undefined) {
