@@ -126,6 +126,7 @@ const users = {
 const products = {
   seller: "20000000-0000-4000-8000-000000000001",
   otherSeller: "20000000-0000-4000-8000-000000000002",
+  untrustedInsert: "20000000-0000-4000-8000-000000000003",
 };
 
 const validCheckoutUrl = "https://buy.stripe.com/a1B2_c3D4";
@@ -179,12 +180,22 @@ try {
       select false
     $$;
 
+    create type public.merch_product_category as enum (
+      'apparel',
+      'print',
+      'art',
+      'sticker',
+      'accessory',
+      'official',
+      'other'
+    );
+
     create table public.merch_products (
       id uuid primary key default gen_random_uuid(),
       seller_id uuid not null references public.profiles(id) on delete cascade,
       title text not null,
       description text,
-      category text not null default 'other',
+      category public.merch_product_category not null default 'other',
       status text not null default 'draft',
       moderation_status text not null default 'active',
       price_cents integer not null,
@@ -270,7 +281,6 @@ try {
     grant select on public.profiles to authenticated, service_role;
     grant select on public.merch_products to anon, authenticated;
     grant insert, update on public.merch_products to authenticated;
-    grant select, insert, update, delete on public.merch_products to service_role;
 
     insert into public.profiles (id, account_type, license_verified_at)
     values
@@ -358,6 +368,23 @@ try {
     "2",
     "service_role can read protected checkout columns",
   );
+  for (const [privilege, expected] of [
+    ["UPDATE", "true"],
+    ["INSERT", "false"],
+    ["DELETE", "false"],
+  ]) {
+    assert.equal(
+      scalar(`
+        select has_table_privilege(
+          'service_role',
+          'public.merch_products',
+          '${privilege}'
+        )::text;
+      `),
+      expected,
+      `migration sets service_role ${privilege} privilege to ${expected}`,
+    );
+  }
   console.log("PASS zero-row backfill and least-privilege checkout reads");
 
   assert.equal(
@@ -369,14 +396,14 @@ try {
     "false",
     "checkout trigger function remains security invoker",
   );
-  assert.match(
+  assert.equal(
     scalar(`
-      select proconfig::text
+      select (proconfig = array['search_path=""']::text[])::text
       from pg_proc
       where oid = 'private.protect_merch_seller_checkout_fields()'::regprocedure;
     `),
-    /search_path=/,
-    "checkout trigger function has a fixed search path",
+    "true",
+    "checkout trigger function has exactly one fixed empty search_path setting",
   );
   for (const role of ["public", "anon", "authenticated"]) {
     assert.equal(
@@ -394,6 +421,38 @@ try {
 
   expectSqlError(
     asUser(users.seller, `
+      insert into public.merch_products (
+        id,
+        seller_id,
+        title,
+        category,
+        price_cents,
+        external_checkout_url,
+        seller_checkout_terms_version,
+        seller_checkout_terms_accepted_at
+      )
+      values (
+        '${products.untrustedInsert}',
+        '${users.seller}',
+        'Protected insert attempt',
+        'art',
+        1800,
+        '${validCheckoutUrl}',
+        'seller-checkout-v1',
+        '2035-01-01 00:00:00+00'
+      );
+    `),
+    /permission denied|seller checkout fields|42501/i,
+    "authenticated seller cannot insert valid protected checkout fields",
+  );
+  assert.equal(
+    scalar(`select count(*) from public.merch_products where id = '${products.untrustedInsert}';`),
+    "0",
+    "denied authenticated protected insert leaves no row",
+  );
+
+  expectSqlError(
+    asUser(users.seller, `
       update public.merch_products
       set external_checkout_url = '${validCheckoutUrl}'
       where id = '${products.seller}';
@@ -402,33 +461,35 @@ try {
     "seller cannot directly add a checkout URL",
   );
 
-  sql(asRole("service_role", `
+  assert.equal(
+    scalar(asRole("service_role", `
+    begin;
+    select pg_sleep(1.1);
     update public.merch_products
     set external_checkout_url = '${validCheckoutUrl}',
         seller_checkout_terms_version = 'seller-checkout-v1',
-        seller_checkout_terms_accepted_at = '2000-01-01 00:00:00+00'
-    where id = '${products.seller}';
-  `));
-  assert.equal(
-    scalar(`
-      select (
-        seller_checkout_terms_accepted_at > statement_timestamp() - interval '1 minute'
-        and seller_checkout_terms_accepted_at <> '2000-01-01 00:00:00+00'::timestamptz
-      )::text
-      from public.merch_products
-      where id = '${products.seller}';
-    `),
-    "true",
-    "database replaces a trusted caller timestamp with statement_timestamp()",
+        seller_checkout_terms_accepted_at = '2000-01-01 00:00:00+00',
+        fulfillment_notes = 'Trusted server mixed-field update.'
+    where id = '${products.seller}'
+    returning
+      (seller_checkout_terms_accepted_at = statement_timestamp())::text
+      || ':' || (seller_checkout_terms_accepted_at > transaction_timestamp())::text
+      || ':' || (
+        seller_checkout_terms_accepted_at <> '2000-01-01 00:00:00+00'::timestamptz
+      )::text;
+    commit;
+  `)),
+    "true:true:true",
+    "trusted mixed-field update uses statement time after transaction start and replaces caller time",
   );
   assert.equal(
     scalar(`
-      select external_checkout_url || ':' || seller_checkout_terms_version
+      select external_checkout_url || ':' || seller_checkout_terms_version || ':' || fulfillment_notes
       from public.merch_products
       where id = '${products.seller}';
     `),
-    `${validCheckoutUrl}:seller-checkout-v1`,
-    "trusted write persists the canonical URL and fixed terms version",
+    `${validCheckoutUrl}:seller-checkout-v1:Trusted server mixed-field update.`,
+    "trusted write persists protected and commercial fields in one update",
   );
 
   const protectedSellerWrites = [
@@ -469,7 +530,7 @@ try {
   const acceptanceInvalidators = [
     ["title", "title = 'Updated seller print'"],
     ["description", "description = 'Updated archival art print.'"],
-    ["category", "category = 'prints'"],
+    ["category", "category = 'print'"],
     ["sku", "sku = 'PRINT-2'"],
     ["price", "price_cents = 2600"],
     ["compare-at price", "compare_at_price_cents = 3200"],
@@ -609,6 +670,7 @@ try {
     ["CRLF injection", "https://buy.stripe.com/a1B2\r\nX-Test: injected"],
     ["Unicode lookalike host", "https://b\u0443y.stripe.com/a1B2"],
     ["punycode host", "https://xn--by-eka.stripe.com/a1B2"],
+    ["lowercase test-mode identifier", "https://buy.stripe.com/test_123"],
     ["oversized path token", `https://buy.stripe.com/${"a".repeat(256)}`],
     ["over 500 characters", "x".repeat(501)],
     ["SQL quote payload", "https://buy.stripe.com/a1B2'; drop table public.merch_products; --"],
@@ -616,12 +678,11 @@ try {
   for (const [label, value] of invalidCheckoutUrls) {
     expectSqlError(
       asRole("service_role", `
-        insert into public.merch_products (
-          seller_id, title, category, price_cents, external_checkout_url
-        )
-        values (
-          '${users.seller}', 'Invalid checkout fixture', 'other', 1000, ${quoteLiteral(value)}
-        );
+        update public.merch_products
+        set external_checkout_url = ${quoteLiteral(value)},
+            seller_checkout_terms_version = 'seller-checkout-v1',
+            seller_checkout_terms_accepted_at = '2000-01-01 00:00:00+00'
+        where id = '${products.seller}';
       `),
       /merch_products_external_checkout_url_shape|check constraint|23514/i,
       `${label} fails the database URL constraint`,

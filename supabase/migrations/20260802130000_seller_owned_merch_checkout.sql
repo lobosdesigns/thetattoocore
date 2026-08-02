@@ -12,6 +12,7 @@ alter table public.merch_products
       or (
         char_length(external_checkout_url) <= 500
         and external_checkout_url ~ '^https://buy[.]stripe[.]com/[A-Za-z0-9_]{1,255}$'
+        and external_checkout_url !~ '^https://buy[.]stripe[.]com/test_'
       )
     ),
   add constraint merch_products_seller_checkout_terms_consistency
@@ -124,6 +125,6 @@ begin
 end;
 $$;
 
-grant select on table public.merch_products to service_role;
+grant select, update on table public.merch_products to service_role;
 
 commit;
