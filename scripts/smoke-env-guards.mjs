@@ -352,11 +352,7 @@ function wranglerPaymentConfigSafety(source) {
       issues.push(`${key} must appear exactly once with string value false`);
     }
   };
-
-  requiresOneFalseString("TTC_SELLER_CHECKOUT_LINKS_ENABLED");
-  requiresOneFalseString("TTC_NATIVE_PUSH_DELIVERY_ENABLED");
-
-  for (const key of retiredTtcPaymentSwitchKeys) {
+  const requiresAbsentOrOneFalseString = (key) => {
     const values = valuesFor(key);
     if (
       values.length > 1 ||
@@ -365,6 +361,14 @@ function wranglerPaymentConfigSafety(source) {
     ) {
       issues.push(`${key} must be absent or appear once with string value false`);
     }
+  };
+
+  requiresOneFalseString("TTC_SELLER_CHECKOUT_LINKS_ENABLED");
+  requiresOneFalseString("TTC_NATIVE_PUSH_DELIVERY_ENABLED");
+  requiresAbsentOrOneFalseString("STRIPE_EXPECTED_LIVEMODE");
+
+  for (const key of retiredTtcPaymentSwitchKeys) {
+    requiresAbsentOrOneFalseString(key);
   }
 
   return { issues, ok: issues.length === 0 };
@@ -401,6 +405,27 @@ const wranglerGuardMutationCases = [
     source: wranglerConfig.replace(
       '"TTC_NATIVE_PUSH_DELIVERY_ENABLED": "false"',
       '"TTC_NATIVE_PUSH_DELIVERY_ENABLED": "true"',
+    ),
+  },
+  {
+    label: "wrangler parser rejects duplicate expected live mode keys",
+    source: appendWranglerVar(
+      wranglerConfig,
+      '"STRIPE_EXPECTED_LIVEMODE": "false",\n    "STRIPE_EXPECTED_LIVEMODE": "false"',
+    ),
+  },
+  {
+    label: "wrangler parser rejects enabled expected live mode",
+    source: appendWranglerVar(
+      wranglerConfig,
+      '"STRIPE_EXPECTED_LIVEMODE": "true"',
+    ),
+  },
+  {
+    label: "wrangler parser rejects non-string expected live mode",
+    source: appendWranglerVar(
+      wranglerConfig,
+      '"STRIPE_EXPECTED_LIVEMODE": false',
     ),
   },
   ...retiredTtcPaymentSwitchKeys.map((key) => ({

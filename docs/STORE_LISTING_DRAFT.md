@@ -8,8 +8,21 @@ handles taxes, shipping, returns, refunds, disputes, receipts, and purchase
 support. TTC handles listing review and listing-safety reports. Do not add this
 seller-owned external checkout claim to submitted store metadata until the
 protected migration, deployment, exact-build web/Android/TestFlight iPad QA,
-store-policy review, and rollback proof are separately approved. The App Store
-build currently in review is unchanged by this draft update.
+store-policy review, and rollback proof are separately approved. This draft
+does not establish or change any current store or installed-device identity.
+
+## Current Build Evidence Boundary - August 2, 2026
+
+- Checked-in Android source candidate: `1.0.5 (6)`.
+- Checked-in iOS source candidate: `1.0 (5)`.
+- Repository source identity is not signed-artifact, upload, console-selection, served-track, or installed-device proof.
+- Exact current App Review identity: **UNKNOWN**.
+- Exact current TestFlight identity: **UNKNOWN**.
+- Exact current Google Play Production identity: **UNKNOWN**.
+- Exact current Google Play Closed testing - Alpha identity: **UNKNOWN**.
+- Exact current installed Android identity: **UNKNOWN**.
+- Exact current installed iOS identity: **UNKNOWN**.
+- A separately authorized read-only signed-in console/device verification is required before QA or release claims. Do not upload, select, submit, promote, install, or change an artifact during that verification.
 
 ## App Name
 

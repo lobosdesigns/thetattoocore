@@ -132,6 +132,7 @@ const currentPaymentDashboardState =
   )?.[0] ?? "";
 const packageJson = readFileSync("package.json", "utf8");
 const packageScripts = JSON.parse(packageJson).scripts;
+const envGuardSource = readFileSync("scripts/smoke-env-guards.mjs", "utf8");
 const expectedPaymentSmoke =
   "npm run test:stripe-release-gates && npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && npm run test:merch-checkout-route && npm run test:seller-checkout && node scripts/smoke-payment-guards.mjs";
 const expectedSecuritySmoke =
@@ -140,6 +141,33 @@ const compactWhitespace = (value) => value.replace(/\s+/g, " ").trim();
 const envGuardResult = spawnSync(process.execPath, ["scripts/smoke-env-guards.mjs"], {
   encoding: "utf8",
 });
+
+function adminPaymentsCurrentMerchCopyIsSafe(source) {
+  return (
+    source.includes("Legacy TTC seller payout readiness updated") &&
+    source.includes("Legacy TTC pending Merch checkouts over 24h") &&
+    source.includes("seller-owned Payment Link") &&
+    source.includes("seller handles payment, tax, shipping, returns, refunds, disputes, receipts, fulfillment, and purchase support") &&
+    source.includes("No TTC platform fee applies to seller-owned Merch") &&
+    !source.includes('return "Seller payout readiness updated"') &&
+    !/>\s*Stale pending Merch checkouts over 24h\s*</.test(source) &&
+    !source.includes("Enable TTC Merch checkout and seller payouts now")
+  );
+}
+
+const injectedCurrentTtcMerchInstruction = adminPaymentsPage.replace(
+  "const productionPaymentGates = [",
+  'const productionPaymentGates = [\n  "Enable TTC Merch checkout and seller payouts now",',
+);
+const injectedUnqualifiedLegacyLabels = adminPaymentsPage
+  .replace(
+    "Legacy TTC seller payout readiness updated",
+    "Seller payout readiness updated",
+  )
+  .replace(
+    "Legacy TTC pending Merch checkouts over 24h",
+    "Stale pending Merch checkouts over 24h",
+  );
 
 function legacyMerchRoutingReadiness(source, destinationChargesEnabled) {
   const expression = source.match(
@@ -1709,6 +1737,26 @@ checks.push({
       : "The repository environment guard rejected Wrangler payment configuration.",
 });
 checks.push({
+  label: "payment smoke enforces expected live mode Wrangler mutations",
+  ok:
+    envGuardResult.status === 0 &&
+    envGuardSource.includes("wrangler parser rejects duplicate expected live mode keys") &&
+    envGuardSource.includes("wrangler parser rejects enabled expected live mode") &&
+    envGuardSource.includes("wrangler parser rejects non-string expected live mode") &&
+    envGuardSource.includes('requiresAbsentOrOneFalseString("STRIPE_EXPECTED_LIVEMODE")') &&
+    envGuardSource.includes("`${key} must be absent or appear once with string value false`"),
+});
+checks.push({
+  label: "admin payment labels keep new seller links separate from legacy TTC records",
+  ok: adminPaymentsCurrentMerchCopyIsSafe(adminPaymentsPage),
+});
+checks.push({
+  label: "admin payment copy guard rejects injected TTC checkout payout and stale labels",
+  ok:
+    !adminPaymentsCurrentMerchCopyIsSafe(injectedCurrentTtcMerchInstruction) &&
+    !adminPaymentsCurrentMerchCopyIsSafe(injectedUnqualifiedLegacyLabels),
+});
+checks.push({
   label: "legacy Merch destination-charge switch remains fail-closed and unused by the tombstone",
   ok:
     envExample.includes("STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false") &&
@@ -1743,7 +1791,7 @@ checks.push({
     adminMerchPage.includes("Needs fulfillment:") &&
     adminMerchPage.includes("fulfillment by") &&
     publicSmoke.includes('path: "/admin/merch?fulfillment=needs_fulfillment"') &&
-    productPlan.includes("fulfillment filters for paid orders needing seller fulfillment"),
+    productPlan.includes("legacy TTC fulfillment/reconciliation filters"),
 });
 checks.push({
   label: "admin Merch queues include searchable product and order review",
@@ -1758,8 +1806,8 @@ checks.push({
     adminMerchPage.includes("customer_email.ilike") &&
     adminMerchPage.includes("stripe_payment_intent_id.ilike") &&
     adminMerchPage.includes("Payment intent:") &&
-    productPlan.includes("order item title, buyer, shipping, and payment-reference search") &&
-    productPlan.includes("without prompting operators for raw customer email or payment ID wording"),
+    productPlan.includes("paged product/link review") &&
+    productPlan.includes("historical TTC order/fulfillment support"),
 });
 checks.push({
   label: "admin Merch and payment queues use friendly status labels",
@@ -1992,7 +2040,10 @@ checks.push({
     adminPaymentsPage.includes("ad_payment_dispute") &&
     adminPaymentsPage.includes("booking_payment_dispute") &&
     adminPaymentsPage.includes('"account.updated"') &&
-    adminPaymentsPage.includes("Seller payout readiness updated") &&
+    adminPaymentsPage.includes("Legacy TTC seller payout readiness updated") &&
+    adminPaymentsPage.includes("Legacy TTC pending Merch checkouts over 24h") &&
+    !adminPaymentsPage.includes('return "Seller payout readiness updated"') &&
+    !/>\s*Stale pending Merch checkouts over 24h\s*</.test(adminPaymentsPage) &&
     adminPaymentsPage.includes("charge.dispute.created") &&
     adminPaymentsPage.includes("charge.dispute.updated") &&
     adminPaymentsPage.includes("charge.dispute.closed") &&

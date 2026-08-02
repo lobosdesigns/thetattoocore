@@ -2,6 +2,19 @@
 
 This folder supports Apple TestFlight/App Review plus Google Play Production and controlled Alpha testing.
 
+## Current Build Evidence Boundary - August 2, 2026
+
+- Checked-in Android source candidate: `1.0.5 (6)`.
+- Checked-in iOS source candidate: `1.0 (5)`.
+- Repository source identity is not signed-artifact, upload, console-selection, served-track, or installed-device proof.
+- Exact current App Review identity: **UNKNOWN**.
+- Exact current TestFlight identity: **UNKNOWN**.
+- Exact current Google Play Production identity: **UNKNOWN**.
+- Exact current Google Play Closed testing - Alpha identity: **UNKNOWN**.
+- Exact current installed Android identity: **UNKNOWN**.
+- Exact current installed iOS identity: **UNKNOWN**.
+- A separately authorized read-only signed-in console/device verification is required before QA or release claims. Do not upload, select, submit, promote, install, or change an artifact during that verification.
+
 ## Position
 
 - App ID: `com.thetattoocore.app`
@@ -62,7 +75,7 @@ This folder supports Apple TestFlight/App Review plus Google Play Production and
 10. On Windows, use the checklist's Android connected-device probe with
    `%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe`; a plugged-in phone only
    counts after `adb devices -l` shows an authorized device and the installed
-   package build matches the current Google Play Production release.
+   package build matches the separately verified Google Play track and installed identities selected for the QA pass.
    - The probe starts the local ADB server before listing devices and prints
      `ANDROID_QA adb_server=started` or `ANDROID_QA adb_server=start failed` as
      a repo-safe setup status.
@@ -72,8 +85,8 @@ This folder supports Apple TestFlight/App Review plus Google Play Production and
      to file transfer, and reopen the USB debugging prompt.
    - If the probe reports an unauthorized or offline device, unlock the device,
      enable USB debugging, and accept the computer authorization prompt.
-   - If the probe reports `authorized device missing TTC package`, install or
-     confirm the Google Play Production build before route QA.
+   - If the probe reports `authorized device missing TTC package`, stop and
+     verify the intended track and installed identities before route QA.
    - If the probe reports `authorized device has wrong TTC build`, install the
      exact Google Play Production build and rerun the probe. Alpha is needed
      only for controlled-QA evidence; in that case use
@@ -88,21 +101,24 @@ This folder supports Apple TestFlight/App Review plus Google Play Production and
      clock/status area and the bottom navigation stays above the device's
      gesture or three-button navigation area.
 
-Android packaging is configured on this Windows machine. A signed Google Play upload bundle builds at `android/app/build/outputs/bundle/release/app-release.aab` when the local signing environment variables are set. On July 18, 2026, the signed v1 bundle was verified and copied to the Desktop as `TheTattooCore-app-release-v1-signed.aab` with SHA-256 `18E16D3CB5AEED158C33BF9882AC6920D6A7CB744697568E71C32631BC893B65`. The upload keystore and recovery details are intentionally kept out of git; the local recovery note is saved on the Desktop as `TheTattooCore Android Upload Key.txt`. iOS packaging requires the Mac/Xcode path.
-Android 16 / API 36 tooling is installed on this Windows machine, and the checked-in release targets `36 / 36`. Google Play Production serves version code `4` / version name `1.0.3`, while Closed testing - Alpha serves version code `5` / version name `1.0.4`; Production is the normal install and release-evidence path, while Alpha remains available to the existing tester community for controlled QA. The authorized Android 16 review phone installed both builds from Google Play during their respective QA passes. Build 5's signed API 36 bundle is saved on the Desktop as `TheTattooCore-app-release-v5-1.0.4-api36-signed.aab` with SHA-256 `4E9B63723C5846AA5F26EE58C71895EA1E428966379FDF7A578A541B96B6FA2F`; its signature and upload certificate match the accepted build 4 lineage. The checked-in replacement candidate is `1.0.5 (6)` and must be freshly signed, selected in Alpha, and installed from Google Play before its notification behavior is release evidence.
+Android packaging is configured on this Windows machine. A signed Google Play upload bundle builds at `android/app/build/outputs/bundle/release/app-release.aab` only when the private signing environment is present. Android 16 / API 36 tooling is installed, and checked-in Android source candidate `1.0.5 (6)` targets `36 / 36`. That source identity does not prove signing, upload, Production or Alpha selection, served state, or installation. iOS packaging requires the Mac/Xcode path.
+
+### Historical Android Packaging Baseline - July 18-24, 2026 (Non-Operative)
+
+Earlier private evidence recorded signed Android bundles, Google Play Production `1.0.3 (4)`, Alpha `1.0.4 (5)`, and authorized-phone installs during their dated QA passes. Preserve bundle hashes, signing lineage, tester details, and device evidence only in the private handoff. These dated facts do not establish any current served, selected, or installed identity and cannot authorize a build or release action.
 
 ## Android Release Target Handoff
 
 | Release path | Current compile/target SDK | Status |
 | --- | ---: | --- |
-| Current Play Production release | `36 / 36`; active `4` / `1.0.3` | Exact Production install, target SDK 36, verified App Links, production-link launch, retained-session landing, and system-bar framing passed on the authorized Android 16 phone. |
-| Controlled Alpha release | `36 / 36`; active `5` / `1.0.4` | Previous candidate remains available to the tester community until exact build 6 replaces it; keep participation and tester evidence private. |
-| Previous Play baseline | `36 / 36`; historical `3` / `1.0.2` | Preserve completed historical evidence, but do not include it in the active alert allowlist. |
-| Checked-in replacement candidate | `36 / 36`; `6` / `1.0.5` | Requires a fresh signed rebuild plus real-device QA evidence before Alpha track selection; do not disturb public build 4. |
+| Current Play Production release | **UNKNOWN** | Read-only verify the exact track identity before QA or any release decision. |
+| Current controlled Alpha release | **UNKNOWN** | Read-only verify the exact track identity and tester availability before QA. |
+| Current installed Android build | **UNKNOWN** | Verify independently on the authorized device; source and console identity are not install proof. |
+| Checked-in Android source candidate | `36 / 36`; `6` / `1.0.5` | Source identity only. Do not call it signed, uploaded, selected, served, or installed without separate evidence. |
 
 ## Store Path
 
-- Google Play: Production is the normal install and release-evidence path; use Closed testing - Alpha only for controlled QA and keep tester participation/duration evidence private.
+- Google Play: decide the QA/install path only after read-only verification records the exact current Production and Alpha identities. Keep tester participation/duration evidence private.
 - Apple: TestFlight/App Review handoff first, with status changes and reviewer messages archived privately.
 - Future replacement releases wait for final legal review, store screenshots, data-safety/privacy answers, and production payment policy review.
 - Android App Links are published for the final Play signing certificate; iOS

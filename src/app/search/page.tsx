@@ -1119,9 +1119,11 @@ export default async function SearchPage({
           <div className="ttc-surface mt-3 flex items-start gap-2 rounded-md border px-3 py-2 text-xs leading-5 text-[var(--muted-strong)]">
             <Package className="mt-0.5 size-4 shrink-0 text-[var(--brand-gold)]" />
             <p>
-              Merch checkout stays review-controlled. Search shows active,
-              approved, fan-safe products; use Support for order, refund,
-              seller, or product-safety questions that need private review.
+              Search shows active, approved, fan-safe products with a reviewed
+              seller-owned Payment Link. The seller handles payment, receipts,
+              shipping, returns, refunds, disputes, and purchase support. TTC
+              Support handles listing-safety reports and explicitly historical
+              TTC orders.
             </p>
           </div>
           <form

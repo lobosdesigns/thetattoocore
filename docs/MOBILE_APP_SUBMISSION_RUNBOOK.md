@@ -28,7 +28,7 @@ Merch checkout while preserving the build, console, and deployment history below
 - Repository source identity is not signed-artifact, upload, console-selection, served-track, or installed-device proof.
 - Exact current App Review identity: **UNKNOWN**. Exact current TestFlight identity: **UNKNOWN**.
 - Exact current Google Play Production identity: **UNKNOWN**. Exact current Google Play Closed testing - Alpha identity: **UNKNOWN**.
-- Last evidence-backed console/device baseline (July 24, 2026): Apple App Review `1.0 (3)`, internal TestFlight `1.0 (4)`, and Google Play Production plus Alpha `1.0.3 (4)`. This is dated older evidence, not a present-tense served-state claim.
+- Exact current installed Android identity: **UNKNOWN**. Exact current installed iOS identity: **UNKNOWN**.
 - A separately authorized read-only signed-in console/device verification is required, and every exact identity must be re-verified before QA or release claims. Do not upload, select, promote, or install anything during that read-only verification.
 - PWA manifest, icons, splash assets, service worker, support URL, privacy URL, and terms URL are ready for the beta wrapper path.
 - Native wrapper prep lives in `docs/NATIVE_WRAPPER_PREP.md`; follow it before adding native permissions, deep links, checkout handling, push, or store-review changes.
@@ -44,6 +44,10 @@ Merch checkout while preserving the build, console, and deployment history below
 - Google Play submissions or updates on or after August 31, 2026 must target Android 16 / API 36. The checked-in Android candidate uses API 36, but its signing, upload, selected track, served state, and device install remain unproven until separately authorized verification and QA.
 - Visible nudity is not allowed to reduce review and moderation risk.
 - Merch uses seller-owned external checkout only after its separate approval and QA gates. Ads and booking deposits remain separate controlled TTC payment flows governed by `docs/PAYMENT_PRODUCTION_READINESS.md`.
+
+### Historical Store Baseline - July 24, 2026 (Non-Operative)
+
+The last evidence-backed baseline recorded Apple App Review `1.0 (3)`, internal TestFlight `1.0 (4)`, and Google Play Production plus Alpha `1.0.3 (4)`. This dated record does not establish a current served, selected, review, testing, or installed identity and cannot authorize QA or release work.
 
 ## Current Store Rules Check
 
@@ -83,9 +87,10 @@ requirements can change between internal testing and public review.
   back/home behavior. Capture exact-build device proof so the wrapper is not
   represented as a repackaged website with no app-specific integration.
 - Google Play target API: new apps and updates submitted on or after August 31,
-  2026 must target Android 16 / API 36 or higher. Active Production and Alpha
-  release `1.0.3 (4)` is the current API 36 baseline; any replacement must use
-  a version code above `4`.
+  2026 must target Android 16 / API 36 or higher. Checked-in Android source
+  candidate `1.0.5 (6)` targets API 36, but source does not prove a current
+  Production, Alpha, or installed identity. Re-verify those identities before
+  selecting any release action.
 - Google Play production access: the signed-in Lobosdesigns LLC developer
   account is an organization account. The current 12-testers-for-14-days gate
   applies to newly created personal accounts, so it does not apply to this

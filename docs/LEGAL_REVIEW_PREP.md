@@ -7,8 +7,21 @@ Use this private checklist before public App Store or Google Play review, produc
 - The selected physical-goods model is a seller-owned Payment Link. The seller is the merchant for the external purchase and handles payment, taxes, shipping, returns, refunds, disputes, receipts, and purchase support. TTC reviews the listing and handles listing-safety reports.
 - Counsel or the approved business reviewer must confirm the seller terms, required product/fulfillment/return disclosures, prohibited-goods rules, TTC liability boundaries, report/suspension process, and Apple/Google physical-goods classification for the exact native builds.
 - `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false` is the rollback and public-exposure gate. The historical TTC Checkout, Connect onboarding, marketplace, and destination-charge switches remain false.
-- No migration, production configuration/data change, live seller URL, deployment, native upload, Stripe console action, or store-console action occurred as part of this implementation. The App Store build currently in review remains unchanged.
+- No migration, production configuration/data change, live seller URL, deployment, native upload, Stripe console action, store-console action, or current store/device verification occurred as part of this implementation.
 - Future enablement requires exact owner approval for migration, deployment, and the gate; one seller-supplied live link reviewed privately; web, Android phone, and TestFlight iPad external-browser return QA with no false success; updated Privacy/store answers; and rollback proof.
+
+## Current Build Evidence Boundary - August 2, 2026
+
+- Checked-in Android source candidate: `1.0.5 (6)`.
+- Checked-in iOS source candidate: `1.0 (5)`.
+- Repository source identity is not signed-artifact, upload, console-selection, served-track, or installed-device proof.
+- Exact current App Review identity: **UNKNOWN**.
+- Exact current TestFlight identity: **UNKNOWN**.
+- Exact current Google Play Production identity: **UNKNOWN**.
+- Exact current Google Play Closed testing - Alpha identity: **UNKNOWN**.
+- Exact current installed Android identity: **UNKNOWN**.
+- Exact current installed iOS identity: **UNKNOWN**.
+- A separately authorized read-only signed-in console/device verification is required before QA or release claims. Do not upload, select, submit, promote, install, or change an artifact during that verification.
 
 ## Controlled Seller-Link Rollout Sequence - Current And Operative
 

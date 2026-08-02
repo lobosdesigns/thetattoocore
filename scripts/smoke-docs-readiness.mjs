@@ -31,6 +31,10 @@ const docs = {
     "native/thetattoocore-mobile/README.md",
     "utf8",
   ),
+  "native/thetattoocore-mobile/ios/APPLE_UPLOAD_CHECKLIST.md": readFileSync(
+    "native/thetattoocore-mobile/ios/APPLE_UPLOAD_CHECKLIST.md",
+    "utf8",
+  ),
   "native/store-metadata/README.md": readFileSync("native/store-metadata/README.md", "utf8"),
 };
 const packageJson = readFileSync("package.json", "utf8");
@@ -270,6 +274,7 @@ const adminPaymentsPage = readFileSync("src/app/admin/payments/page.tsx", "utf8"
 const adminMediaOpsPage = readFileSync("src/app/admin/media-ops/page.tsx", "utf8");
 const adminPage = readFileSync("src/app/admin/page.tsx", "utf8");
 const helpLandingPage = readFileSync("src/app/help/page.tsx", "utf8");
+const searchPage = readFileSync("src/app/search/page.tsx", "utf8");
 const helpArticlePage = readFileSync("src/app/help/[slug]/page.tsx", "utf8");
 const protectedVideo = readFileSync("src/app/protected-video.tsx", "utf8");
 const helpCenterData = readFileSync("src/lib/help-center.ts", "utf8");
@@ -411,6 +416,7 @@ function currentProductPlanText(markdown) {
     markdownSection(markdown, productCurrentPaymentsHeading, "## Visual Direction"),
     markdownSection(markdown, "## Lightweight Ads", productHistoricalSupportHeading),
     markdownSection(markdown, "## Help Center And Education", "## Later Columns"),
+    markdownH2Section(markdown, "## Later Columns"),
   ].join("\n");
 }
 
@@ -475,6 +481,7 @@ function currentSellerOwnedSurfaceTexts(overrides = {}) {
       source("productPlan", docs["docs/PRODUCT_PLAN.md"]),
     ),
     readme: currentReadmeSellerText(source("readme", docs["README.md"])),
+    search: source("search", searchPage),
   };
 }
 
@@ -544,12 +551,26 @@ const staleCurrentSnippetsBySurface = {
     "seller payout readiness",
     "ttc connect seller onboarding",
     "ttc handles new merch refunds",
+    "stale pending merch checkouts",
+    "paid orders needing seller fulfillment",
+    "orders/payouts",
+    "seller payout tools",
+    "review-controlled checkout/webhooks second",
+    "controlled launch checkout, paid webhooks",
+    "seller-side paid line-item fulfillment",
+    "enable ttc merch checkout and seller payouts now",
   ],
   readme: [
     "the checkout creation master and selected checkout-flow switch are the exposure controls",
     "for a safe rollback, disable `stripe_checkout_creation_enabled`",
     "server-only seller-onboarding release switch; keep `false` pending separate approval",
     "use `stripe_connect_onboarding_enabled=true` for seller payouts",
+  ],
+  search: [
+    "merch checkout stays review-controlled",
+    "use support for order, refund",
+    "ttc support handles new seller-owned purchase support",
+    "ttc handles new merch refunds",
   ],
 };
 
@@ -580,7 +601,6 @@ const buildEvidenceRequiredSnippets = [
   "Exact current TestFlight identity: **UNKNOWN**",
   "Exact current Google Play Production identity: **UNKNOWN**",
   "Exact current Google Play Closed testing - Alpha identity: **UNKNOWN**",
-  "Last evidence-backed console/device baseline (July 24, 2026)",
   "separately authorized read-only signed-in console/device verification",
   "re-verified before QA or release claims",
 ];
@@ -602,6 +622,8 @@ function buildEvidenceTruthIsUnambiguous(appStoreDoc, mobileDoc) {
     androidBuildGradle.includes('versionName "1.0.5"') &&
     iosProject.includes("CURRENT_PROJECT_VERSION = 5;") &&
     iosProject.includes("MARKETING_VERSION = 1.0;") &&
+    mobileDoc.includes("### Historical Store Baseline - July 24, 2026 (Non-Operative)") &&
+    mobileDoc.includes("This dated record does not establish a current served, selected, review, testing, or installed identity") &&
     [currentAppText, currentMobileText].every((text) =>
       buildEvidenceRequiredSnippets.every((snippet) => text.includes(snippet)),
     ) &&
@@ -623,6 +645,107 @@ const unsupportedBuildMutationCases = unsupportedCandidateServedClaims.map(
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"],
     ),
   }),
+);
+
+function withoutDatedNonOperativeSections(markdown) {
+  const kept = [];
+  let excludedHeadingLevel = null;
+
+  for (const line of markdown.split(/\r?\n/)) {
+    const heading = /^(#{1,6})\s+(.+)$/.exec(line);
+
+    if (excludedHeadingLevel !== null) {
+      if (!heading || heading[1].length > excludedHeadingLevel) continue;
+      excludedHeadingLevel = null;
+    }
+
+    if (
+      heading &&
+      /historical/i.test(heading[2]) &&
+      /non-operative/i.test(heading[2])
+    ) {
+      excludedHeadingLevel = heading[1].length;
+      continue;
+    }
+
+    kept.push(line);
+  }
+
+  return kept.join("\n");
+}
+
+const currentBuildEvidenceRequiredSnippets = [
+  "Checked-in Android source candidate: `1.0.5 (6)`",
+  "Checked-in iOS source candidate: `1.0 (5)`",
+  "Exact current App Review identity: **UNKNOWN**",
+  "Exact current TestFlight identity: **UNKNOWN**",
+  "Exact current Google Play Production identity: **UNKNOWN**",
+  "Exact current Google Play Closed testing - Alpha identity: **UNKNOWN**",
+  "Exact current installed Android identity: **UNKNOWN**",
+  "Exact current installed iOS identity: **UNKNOWN**",
+  "Repository source identity is not signed-artifact, upload, console-selection, served-track, or installed-device proof",
+  "separately authorized read-only signed-in console/device verification",
+];
+const currentBuildTruthPaths = [
+  "docs/PAYMENT_PRODUCTION_READINESS.md",
+  "docs/LEGAL_REVIEW_PREP.md",
+  "docs/STORE_LISTING_DRAFT.md",
+  "docs/MOBILE_APP_SUBMISSION_RUNBOOK.md",
+  "docs/REAL_DEVICE_QA_CHECKLIST.md",
+  "docs/NATIVE_WRAPPER_PREP.md",
+  "native/thetattoocore-mobile/README.md",
+  "native/thetattoocore-mobile/ios/APPLE_UPLOAD_CHECKLIST.md",
+];
+const staleCurrentBuildSnippets = [
+  "app store build currently in review",
+  "already in review",
+  "remains in app review",
+  "production serves",
+  "alpha serves",
+  "active production release",
+  "current api 36 baseline",
+  "exact public release `1.0.3 (4)`",
+  "candidate `1.0.3 (4)`",
+  "installed google play production `1.0.3 (4)`",
+  "android `1.0.5 (6)` is active in alpha",
+  "ios `1.0 (5)` is active in testflight",
+];
+const currentIdentityPattern =
+  /exact current (?:app review|testflight|google play production|google play closed testing - alpha|installed android|installed ios) identity:\s*(\*\*UNKNOWN\*\*|`[^`\r\n]*`|[^\s\r\n]+)/gi;
+
+function hasKnownCurrentIdentity(markdown) {
+  return [...markdown.matchAll(currentIdentityPattern)].some(
+    ([, value]) => value !== "**UNKNOWN**",
+  );
+}
+
+function currentBuildSourceTruthIsSafe(markdown) {
+  const currentText = withoutDatedNonOperativeSections(markdown);
+  const lowerCurrentText = currentText.toLowerCase();
+
+  return (
+    currentBuildEvidenceRequiredSnippets.every((snippet) => currentText.includes(snippet)) &&
+    !hasKnownCurrentIdentity(currentText) &&
+    !lowerCurrentText.includes("1.0.3 (4)") &&
+    !lowerCurrentText.includes("1.0.4 (5)") &&
+    staleCurrentBuildSnippets.every((snippet) => !lowerCurrentText.includes(snippet))
+  );
+}
+
+const unsafeCurrentBuildTruthPaths = currentBuildTruthPaths.filter(
+  (path) => !currentBuildSourceTruthIsSafe(docs[path]),
+);
+
+const currentBuildTruthMutationSnippets = [
+  "Exact current App Review identity: `1.0 (3)`",
+  "Google Play Closed testing - Alpha serves Android `1.0.5 (6)`.",
+  "Use exact public release `1.0.3 (4)` for current QA.",
+];
+const currentBuildTruthMutationCases = currentBuildTruthPaths.flatMap((path) =>
+  currentBuildTruthMutationSnippets.map((snippet, index) => ({
+    label: `docs ${path} rejects current build contradiction ${index + 1}`,
+    ok: !currentBuildSourceTruthIsSafe(`${snippet}\n${docs[path]}`),
+  })),
 );
 
 const controlledSellerRolloutDocs = [
@@ -659,6 +782,9 @@ const checks = [
       helpCenterData.includes("Buyers contact the seller for receipts, shipping, returns, refunds, disputes, and purchase support") &&
       helpLandingPage.includes("Seller Payment Links and fulfillment") &&
       helpLandingPage.includes("seller handles payment, shipping, taxes, returns, refunds, disputes, receipts, and purchase support") &&
+      searchPage.includes("seller-owned Payment Link") &&
+      compactWhitespace(searchPage).includes("The seller handles payment, receipts, shipping, returns, refunds, disputes, and purchase support") &&
+      compactWhitespace(searchPage).includes("TTC Support handles listing-safety reports and explicitly historical TTC orders") &&
       compactWhitespace(adminPaymentsPage).includes("Legacy TTC checkout controls") &&
       compactWhitespace(adminPaymentsPage).includes("disabled for the seller-link release") &&
       !accountPage.includes("stripeConnectOnboardingEnabled") &&
@@ -712,6 +838,10 @@ const checks = [
     ok:
       docs["docs/PRODUCT_PLAN.md"].includes(productCurrentSellerHeading) &&
       docs["docs/PRODUCT_PLAN.md"].includes("TTC does not create the new Merch payment") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("historical TTC pending-checkout rows") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("Merch and orders") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("seller-link review") &&
+      docs["docs/PRODUCT_PLAN.md"].includes("legacy TTC reconciliation") &&
       adminMediaOpsPage.includes("Review the seller-owned Payment Link") &&
       adminMediaOpsPage.includes("historical TTC seller-payout reconciliation") &&
       docs["docs/AGE_RATING_PREP.md"].includes("reviewed seller-owned Payment Links") &&
@@ -744,6 +874,19 @@ const checks = [
     ),
   },
   {
+    label: "every named current release source rejects contradictory exact build claims",
+    message:
+      unsafeCurrentBuildTruthPaths.length > 0
+        ? `unsafe current build truth: ${unsafeCurrentBuildTruthPaths.join(", ")}`
+        : undefined,
+    ok:
+      androidBuildGradle.includes("versionCode 6") &&
+      androidBuildGradle.includes('versionName "1.0.5"') &&
+      iosProject.includes("CURRENT_PROJECT_VERSION = 5;") &&
+      iosProject.includes("MARKETING_VERSION = 1.0;") &&
+      unsafeCurrentBuildTruthPaths.length === 0,
+  },
+  {
     label: "controlled seller checkout rollout is complete and ordered in current docs",
     ok: controlledSellerRolloutDocs.every((path) =>
       controlledSellerRolloutIsValid(docs[path]),
@@ -759,6 +902,7 @@ const checks = [
   },
   ...staleCurrentSurfaceMutationCases,
   ...unsupportedBuildMutationCases,
+  ...currentBuildTruthMutationCases,
   {
     label: "seller checkout docs stay free of live links account IDs and secrets",
     ok:
@@ -872,7 +1016,9 @@ const checks = [
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("docs/REAL_DEVICE_QA_CHECKLIST.md") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("docs/SCREENSHOT_PREP.md") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("raw payment or payout credentials") &&
-      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("review-controlled checkout flow") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("reviewed seller-owned Payment Link") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("opens in the external browser") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("without a TTC payment, order, receipt, or success claim") &&
       !docs["docs/NATIVE_WRAPPER_PREP.md"].includes("hosted checkout"),
   },
   {
@@ -1126,9 +1272,10 @@ const checks = [
       nativeBuildInstallMatrix.includes("| iOS | TestFlight internal testing | iOS version/build number") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("release channel, version/build, date, device model, and pass/fail status") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("manual evidence only:") &&
-      realDeviceSetup.includes("public Google Play Production listing") &&
-      realDeviceSetup.includes("Install or Update") &&
-      realDeviceSetup.includes("exact public release `1.0.3 (4)`") &&
+      realDeviceSetup.includes("exact Google Play Production and Alpha identities") &&
+      realDeviceSetup.includes("installed Android identity") &&
+      realDeviceSetup.includes("Keep all three unknown until verified") &&
+      realDeviceSetup.includes("source candidate or prior screenshot is not served-track or install proof") &&
       realDeviceSetup.includes("Only for Alpha controlled QA") &&
       realDeviceSetup.includes("selected Google Play account belongs to the configured tester community") &&
       realDeviceSetup.includes("blocks Alpha controlled-QA evidence only") &&
@@ -1143,7 +1290,7 @@ const checks = [
       packageJson.includes("npm run smoke:native && npm run test:native-push-delivery && npm run smoke:native-push && npm run smoke:app-links && npm run qa:android-device && npm run smoke:store") &&
       androidConnectedDeviceProbe.includes("npm.cmd run qa:android-device") &&
       androidConnectedDeviceProbe.includes("npm.cmd run qa:android-device:required") &&
-      androidConnectedDeviceProbe.includes("active Google Play candidate build") &&
+      androidConnectedDeviceProbe.includes("separately verified Google Play track identity chosen for this QA pass") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("waits briefly for the USB/debug authorization state to settle") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run verify:native-predevice") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run verify:native-release") &&
@@ -1214,7 +1361,7 @@ const checks = [
       docs["native/thetattoocore-mobile/README.md"].includes("ANDROID_QA adb_server=start failed") &&
       docs["native/thetattoocore-mobile/README.md"].includes("waits briefly for USB/debug authorization") &&
       docs["native/thetattoocore-mobile/README.md"].includes("authorized device") &&
-      docs["native/thetattoocore-mobile/README.md"].includes("current Google Play Production release") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("separately verified Google Play track and installed identities selected for the QA pass") &&
       docs["native/thetattoocore-mobile/README.md"].includes("Google Play Production and controlled Alpha testing") &&
       docs["native/thetattoocore-mobile/README.md"].includes("Current Play Production release") &&
       docs["native/thetattoocore-mobile/README.md"].includes("tester participation/duration evidence"),
@@ -1287,8 +1434,10 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("App/Universal Link handling") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play target API") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Android 16 / API 36") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Active Production and Alpha") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("current API 36 baseline") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Checked-in Android source candidate: `1.0.5 (6)`") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("source does not prove a current") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Production, Alpha, or installed identity") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Re-verify those identities before") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play production access") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("current 12-testers-for-14-days gate") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("applies to newly created personal accounts") &&
@@ -1817,7 +1966,8 @@ const checks = [
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("## Native Push Private Evidence Matrix") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Firebase project | Project exists for TheTattooCore") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Android app config | Android app config file added only to the private build environment") &&
-      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| iOS app config | Checked-in build `1.0 (4)` references the ignored private app config") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| iOS app config | Checked-in iOS source candidate `1.0 (5)` references the ignored private app-config path") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Source does not prove that private configuration, signing, TestFlight selection, or an installed build is current") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Device token registration | Signed-in Android and iOS devices register and refresh tokens") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Delivery and tap routing | Alerts deliver for the tested categories") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Preference controls | Per-device opt-out, quiet hours, and category preferences stop delivery") &&

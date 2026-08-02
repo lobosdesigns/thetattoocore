@@ -2,6 +2,19 @@
 
 Use this before native wrapper work, Google Play Production or controlled Alpha testing, TestFlight, or any production launch push. Run it on at least one Android phone and one actual iPhone/TestFlight device for release evidence. An iPhone-sized browser viewport is useful for layout scouting only and does not replace native iOS proof. Use safe sample content only.
 
+## Current Build Evidence Boundary - August 2, 2026
+
+- Checked-in Android source candidate: `1.0.5 (6)`.
+- Checked-in iOS source candidate: `1.0 (5)`.
+- Repository source identity is not signed-artifact, upload, console-selection, served-track, or installed-device proof.
+- Exact current App Review identity: **UNKNOWN**.
+- Exact current TestFlight identity: **UNKNOWN**.
+- Exact current Google Play Production identity: **UNKNOWN**.
+- Exact current Google Play Closed testing - Alpha identity: **UNKNOWN**.
+- Exact current installed Android identity: **UNKNOWN**.
+- Exact current installed iOS identity: **UNKNOWN**.
+- A separately authorized read-only signed-in console/device verification is required before QA or release claims. Do not upload, select, submit, promote, install, or change an artifact during that verification.
+
 ## Seller-Owned Merch Handoff - August 2, 2026
 
 Do not run live seller checkout until the protected migration, deployment, exact
@@ -21,7 +34,7 @@ authorized. When authorized, record only pass/fail and private evidence location
 - Run `npm.cmd run smoke:mobile:narrow` against production and confirm the same route matrix passes at 320x568 without document overflow before store screenshots or wrapper QA.
 - Run `npm.cmd run smoke:mobile:ios` against production as an iPhone Safari-shaped scouting pass. This is useful for route, overflow, and error checks, but it does not replace the actual iPhone/TestFlight evidence below.
 - Confirm the build points at `https://thetattoocore.com/login`.
-- Confirm the public Google Play Production listing offers Install or Update for the exact public release `1.0.3 (4)`, then verify the installed Android app came from Production and record its release/build number and install source.
+- After separate read-only authorization, record the exact Google Play Production and Alpha identities and independently record the installed Android identity. Keep all three unknown until verified; a source candidate or prior screenshot is not served-track or install proof.
 - Only for Alpha controlled QA, confirm the selected Google Play account belongs to the configured tester community, use the private web tester join link with that same account, and confirm opt-in before opening the Android join link.
 - Run `npm.cmd run qa:android-device:open-link` with the unlocked Android test phone connected. Confirm both TTC domains report verified/enabled and the safe `/messages` link opens the production app instead of a browser or chooser.
 - Treat a missing Production listing, wrong served build, or unverified install source as a release blocker. An unconfirmed web opt-in blocks Alpha controlled-QA evidence only; a mismatched Alpha account or unpropagated tester-community membership does not invalidate a separately proven Production install.
@@ -233,8 +246,8 @@ passing console/log review.
 
 Use this Windows probe before claiming Android real-device evidence. A connected
 USB cable is not enough: the device must appear in `adb devices -l` as an
-authorized `device`, and the installed package must match the active Google
-Play candidate build.
+authorized `device`, and the installed package must match the separately
+verified Google Play track identity selected for this QA pass.
 
 By default, the probe compares the installed package against the Android
 `versionName` and `versionCode` checked into
@@ -245,7 +258,8 @@ the private release shell before rerunning the probe.
 
 Before certifying the checked-in candidate, clear both override variables. An
 override may inspect another selected track, but it must not be used as passing
-evidence for candidate `1.0.3 (4)`.
+evidence for checked-in source candidate `1.0.5 (6)` unless the served and
+installed identities were independently verified first.
 
 For a repo-safe status summary from this machine, run:
 
@@ -254,7 +268,8 @@ npm.cmd run qa:android-device
 ```
 
 To make the command fail until an authorized device is visible and the TTC
-package is installed for the active Google Play candidate build, run:
+package matches the separately verified Google Play track identity chosen for
+this QA pass, run:
 
 ```powershell
 npm.cmd run qa:android-device:required

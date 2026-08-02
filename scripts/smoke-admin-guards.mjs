@@ -119,6 +119,24 @@ const moderationRoleExpectations = [
   ["owner", "owner", false],
 ];
 
+function adminPaymentsCurrentMerchCopyIsSafe(source) {
+  return (
+    source.includes("Legacy TTC seller payout readiness updated") &&
+    source.includes("Legacy TTC pending Merch checkouts over 24h") &&
+    source.includes("seller-owned Payment Link") &&
+    source.includes("seller handles payment, tax, shipping, returns, refunds, disputes, receipts, fulfillment, and purchase support") &&
+    source.includes("No TTC platform fee applies to seller-owned Merch") &&
+    !source.includes('return "Seller payout readiness updated"') &&
+    !/>\s*Stale pending Merch checkouts over 24h\s*</.test(source) &&
+    !source.includes("Enable TTC Merch checkout and seller payouts now")
+  );
+}
+
+const injectedCurrentTtcMerchInstruction = adminPayments.replace(
+  "const productionPaymentGates = [",
+  'const productionPaymentGates = [\n  "Enable TTC Merch checkout and seller payouts now",',
+);
+
 const checks = [
   {
     label: "admin section nav exposes each dedicated admin area",
@@ -710,7 +728,9 @@ const checks = [
       adminPayments.includes("/help/seller-payouts-payment-safety") &&
       adminPayments.includes("/help/order-refunds-disputes") &&
       adminPayments.includes("Order support guide") &&
-      productPlan.includes("historical TTC seller-payout reconciliation"),
+      productPlan.includes("historical TTC seller-payout reconciliation") &&
+      adminPaymentsCurrentMerchCopyIsSafe(adminPayments) &&
+      !adminPaymentsCurrentMerchCopyIsSafe(injectedCurrentTtcMerchInstruction),
   },
   {
     label: "admin ad actions hide raw backend errors from redirects",

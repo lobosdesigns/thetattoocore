@@ -9,7 +9,20 @@
 - No migration, production change, live seller URL, deployment, or native upload has occurred. Historical `merch_orders`, Stripe events, refunds, disputes, Connect records, and reconciliation views remain available for support and audit.
 - The controlled sequence below is mandatory for any later seller-link release. Each approval and private proof is a future release gate, not work completed by this documentation change.
 - Rollback proof must show that restoring `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false` removes the public purchase control without deleting the protected listing link or historical records. Existing TTC Checkout, Connect, destination-charge, and native-delivery switches remain false.
-- The App Store build currently in review remains unchanged. This implementation does not select, replace, submit, or upload any store build.
+- No current store or installed-device identity was verified or changed by this work.
+
+## Current Build Evidence Boundary - August 2, 2026
+
+- Checked-in Android source candidate: `1.0.5 (6)`.
+- Checked-in iOS source candidate: `1.0 (5)`.
+- Repository source identity is not signed-artifact, upload, console-selection, served-track, or installed-device proof.
+- Exact current App Review identity: **UNKNOWN**.
+- Exact current TestFlight identity: **UNKNOWN**.
+- Exact current Google Play Production identity: **UNKNOWN**.
+- Exact current Google Play Closed testing - Alpha identity: **UNKNOWN**.
+- Exact current installed Android identity: **UNKNOWN**.
+- Exact current installed iOS identity: **UNKNOWN**.
+- A separately authorized read-only signed-in console/device verification is required before QA or release claims. Do not upload, select, submit, promote, install, or change an artifact during that verification.
 
 The dated position above supersedes the former TTC-owned Merch pilot as the
 selected physical-goods model. The controlled sequence immediately below is

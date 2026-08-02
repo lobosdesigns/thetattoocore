@@ -140,10 +140,10 @@ const paymentDisputeAuditTypes = [
 ] as const;
 const productionPaymentGates = [
   "Keep legacy TTC Merch Checkout, Connect onboarding, and destination-charge controls disabled for the seller-link release.",
-  "For seller-owned purchases, verify the listing disclosure assigns payment, tax, shipping, returns, refunds, disputes, and purchase support to the seller.",
+  "For seller-owned Merch, TTC reviews listing and link safety; the seller handles payment, tax, shipping, returns, refunds, disputes, receipts, fulfillment, and purchase support.",
   "Finish booking refund, cancellation, appointment-confirmation, and deposit payout procedures before taking real appointment deposits.",
   "Keep historical Connect and seller payout evidence in admin-only review; do not collect bank or card payout data in TTC forms.",
-  "Review platform fees, app-store rules, and payment policy before turning on production purchases.",
+  "No TTC platform fee applies to seller-owned Merch. Review ad and booking platform fees, app-store rules, and payment policy as separate TTC-controlled flows.",
 ] as const;
 const paymentOpsRunbooks = [
   {
@@ -375,7 +375,7 @@ function eventTypeLabel(value: string) {
   if (value === "charge.dispute.funds_withdrawn") return "Funds withdrawn";
   if (value === "charge.dispute.funds_reinstated") return "Funds reinstated";
   if (value === "refund.failed") return "Refund failed";
-  if (value === "account.updated") return "Seller payout readiness updated";
+  if (value === "account.updated") return "Legacy TTC seller payout readiness updated";
 
   return value;
 }
@@ -1056,7 +1056,7 @@ export default async function AdminPaymentsPage({
                         className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
                         href="/admin/merch?order_status=pending_checkout"
                       >
-                        Stale pending Merch checkouts over 24h
+                        Legacy TTC pending Merch checkouts over 24h
                       </Link>
                       :{" "}
                       <span className="font-bold text-[var(--foreground)]">
@@ -1611,8 +1611,9 @@ export default async function AdminPaymentsPage({
                     Production payment gates
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                    Checkout stays review-controlled. Keep real commerce
-                    gated until these items are handled.
+                    Seller-owned Merch stays behind listing/link review and its
+                    separate gate. The checks below keep legacy TTC evidence,
+                    ads, and booking deposits in their correct review paths.
                   </p>
                   <ul className="mt-3 space-y-2 text-sm leading-6 text-[var(--muted)]">
                     {productionPaymentGates.map((gate) => (
