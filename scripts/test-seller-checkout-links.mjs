@@ -8,6 +8,8 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import vm from "node:vm";
+import ts from "typescript";
 import {
   RedirectSignal,
   createSupabaseDouble,
@@ -235,8 +237,8 @@ function readSource(path) {
 
 const actionsSource = readSource("src/app/actions.ts");
 const composerSource = readSource("src/app/floating-composer.tsx");
-const merchPageSource = readSource("src/app/merch/[id]/page.tsx");
-const sellerCheckoutDialogSource = existsSync(
+let merchPageSource = readSource("src/app/merch/[id]/page.tsx");
+let sellerCheckoutDialogSource = existsSync(
   "src/app/merch/seller-checkout-dialog.tsx",
 )
   ? readSource("src/app/merch/seller-checkout-dialog.tsx")
@@ -260,6 +262,34 @@ function replaceMutation(source, search, replacement, expectedCount = 1) {
     "Mutation target count changed for " + JSON.stringify(search),
   );
   return source.split(search).join(replacement);
+}
+
+const task4SourceMutations = {
+  "reverse-native-platform-guard": () => {
+    sellerCheckoutDialogSource = replaceMutation(
+      sellerCheckoutDialogSource,
+      "if (!Capacitor.isNativePlatform()) return;",
+      "if (Capacitor.isNativePlatform()) return;",
+    );
+  },
+  "unconditional-admin-read": () => {
+    merchPageSource = replaceMutation(
+      merchPageSource,
+      "if (canReadSellerCheckout) {",
+      "if (true) {",
+    );
+  },
+};
+
+const task4MutationName = process.env.TTC_SELLER_CHECKOUT_TASK4_MUTANT;
+if (task4MutationName) {
+  const mutate = task4SourceMutations[task4MutationName];
+  assert.equal(
+    typeof mutate,
+    "function",
+    "Unknown TTC_SELLER_CHECKOUT_TASK4_MUTANT: " + task4MutationName,
+  );
+  mutate();
 }
 
 const actionMutations = {
@@ -1652,6 +1682,271 @@ function sourceSection(source, startMarker, endMarker) {
 function occurrenceCount(source, value) {
   return source.split(value).length - 1;
 }
+
+function syntheticModule(context, identifier, exports) {
+  const names = Object.keys(exports);
+
+  return new vm.SyntheticModule(
+    names,
+    function initializeStub() {
+      for (const name of names) {
+        this.setExport(name, exports[name]);
+      }
+    },
+    { context, identifier: `stub:${identifier}` },
+  );
+}
+
+const sellerCheckoutDialogAst = ts.createSourceFile(
+  "src/app/merch/seller-checkout-dialog.tsx",
+  sellerCheckoutDialogSource,
+  ts.ScriptTarget.ES2022,
+  true,
+  ts.ScriptKind.TSX,
+);
+const sellerCheckoutClickHandlers = [];
+visitSource(sellerCheckoutDialogAst, (node) => {
+  if (
+    ts.isVariableDeclaration(node) &&
+    ts.isIdentifier(node.name) &&
+    node.name.text === "openSellerCheckout" &&
+    node.initializer &&
+    ts.isArrowFunction(node.initializer)
+  ) {
+    sellerCheckoutClickHandlers.push(node.initializer);
+  }
+});
+assert.equal(sellerCheckoutClickHandlers.length, 1);
+
+const sellerCheckoutClickHandlerSource = `
+export function createSellerCheckoutClickHandler({
+  Capacitor,
+  checkoutUrl,
+  closeDialog,
+  setErrorMessage,
+}: {
+  Capacitor: { isNativePlatform(): boolean };
+  checkoutUrl: string;
+  closeDialog(): void;
+  setErrorMessage(message: string | null): void;
+}) {
+  return ${sellerCheckoutClickHandlers[0].getText(sellerCheckoutDialogAst)};
+}
+`;
+
+async function runSellerCheckoutClickScenario(isNativePlatform) {
+  const transpiled = ts.transpileModule(sellerCheckoutClickHandlerSource, {
+    compilerOptions: {
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2022,
+    },
+    fileName: "seller-checkout-click-handler.ts",
+    reportDiagnostics: true,
+  });
+  const errors = (transpiled.diagnostics ?? []).filter(
+    (diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error,
+  );
+  assert.equal(errors.length, 0, "Dialog click handler must transpile");
+
+  const events = [];
+  const browserOpenCalls = [];
+  let nativePlatformChecks = 0;
+  const context = vm.createContext({ console, setTimeout });
+  const browserModule = syntheticModule(context, "@capacitor/browser", {
+    Browser: {
+      async open(options) {
+        events.push("browser-open");
+        browserOpenCalls.push(JSON.parse(JSON.stringify(options)));
+      },
+    },
+  });
+  const sourceModule = new vm.SourceTextModule(transpiled.outputText, {
+    context,
+    identifier: "test:seller-checkout-click-handler",
+    importModuleDynamically: async (specifier) => {
+      assert.equal(specifier, "@capacitor/browser");
+      events.push("import-browser");
+
+      if (browserModule.status === "unlinked") {
+        await browserModule.link(() => {
+          throw new Error("Browser stub has no imports");
+        });
+      }
+      if (browserModule.status === "linked") {
+        await browserModule.evaluate();
+      }
+
+      return browserModule;
+    },
+  });
+  await sourceModule.link((specifier) => {
+    throw new Error(`Unexpected static click-handler import: ${specifier}`);
+  });
+  await sourceModule.evaluate();
+
+  let preventDefaultCalls = 0;
+  const handler = sourceModule.namespace.createSellerCheckoutClickHandler({
+    Capacitor: {
+      isNativePlatform() {
+        nativePlatformChecks += 1;
+        return isNativePlatform;
+      },
+    },
+    checkoutUrl: validLiveUrl,
+    closeDialog() {},
+    setErrorMessage() {},
+  });
+  handler({
+    preventDefault() {
+      preventDefaultCalls += 1;
+      events.push("prevent-default");
+    },
+  });
+  const synchronousPreventDefaultCalls = preventDefaultCalls;
+
+  await Promise.resolve();
+  await Promise.resolve();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  return {
+    browserOpenCalls,
+    events,
+    nativePlatformChecks,
+    preventDefaultCalls,
+    synchronousPreventDefaultCalls,
+  };
+}
+
+const webCheckoutClick = await runSellerCheckoutClickScenario(false);
+assert.equal(webCheckoutClick.nativePlatformChecks, 1);
+assert.equal(webCheckoutClick.synchronousPreventDefaultCalls, 0);
+assert.equal(webCheckoutClick.preventDefaultCalls, 0);
+assertModuleValue(webCheckoutClick.events, []);
+assertModuleValue(webCheckoutClick.browserOpenCalls, []);
+
+const nativeCheckoutClick = await runSellerCheckoutClickScenario(true);
+assert.equal(nativeCheckoutClick.nativePlatformChecks, 1);
+assert.equal(nativeCheckoutClick.synchronousPreventDefaultCalls, 1);
+assert.equal(nativeCheckoutClick.preventDefaultCalls, 1);
+assertModuleValue(nativeCheckoutClick.events, [
+  "prevent-default",
+  "import-browser",
+  "browser-open",
+]);
+assertModuleValue(nativeCheckoutClick.browserOpenCalls, [{ url: validLiveUrl }]);
+console.log("PASS seller checkout web and native click behavior");
+
+function visitSource(node, visitor) {
+  visitor(node);
+  node.forEachChild((child) => visitSource(child, visitor));
+}
+
+const merchPageAst = ts.createSourceFile(
+  "src/app/merch/[id]/page.tsx",
+  merchPageSource,
+  ts.ScriptTarget.ES2022,
+  true,
+  ts.ScriptKind.TSX,
+);
+const checkoutGateDeclarations = [];
+const protectedReadGuards = [];
+visitSource(merchPageAst, (node) => {
+  if (
+    ts.isVariableDeclaration(node) &&
+    ts.isIdentifier(node.name) &&
+    node.name.text === "canReadSellerCheckout" &&
+    node.initializer
+  ) {
+    checkoutGateDeclarations.push(node);
+  }
+
+  if (ts.isIfStatement(node)) {
+    const body = node.thenStatement.getText(merchPageAst);
+    if (
+      body.includes("createAdminClient()") &&
+      body.includes("external_checkout_url")
+    ) {
+      protectedReadGuards.push(node);
+    }
+  }
+});
+assert.equal(checkoutGateDeclarations.length, 1);
+assert.equal(protectedReadGuards.length, 1);
+
+const checkoutGateScript = new vm.Script(
+  `(${checkoutGateDeclarations[0].initializer.getText(merchPageAst)})`,
+);
+const protectedReadGuardScript = new vm.Script(
+  `(${protectedReadGuards[0].expression.getText(merchPageAst)})`,
+);
+const protectedReadScenarios = [
+  {
+    environment: {},
+    expected: false,
+    isOfficial: false,
+    isOwner: false,
+    label: "missing gate blocks non-owner protected read",
+  },
+  ...["false", "TRUE", " true ", "1", true, 1, null].map((gateValue) => ({
+    environment: { TTC_SELLER_CHECKOUT_LINKS_ENABLED: gateValue },
+    expected: false,
+    isOfficial: false,
+    isOwner: false,
+    label: `malformed gate ${JSON.stringify(gateValue)} blocks non-owner protected read`,
+  })),
+  {
+    environment: { TTC_SELLER_CHECKOUT_LINKS_ENABLED: "true" },
+    expected: false,
+    isOfficial: true,
+    isOwner: false,
+    label: "official product blocks exact-gate buyer protected read",
+  },
+  {
+    environment: { TTC_SELLER_CHECKOUT_LINKS_ENABLED: "true" },
+    expected: false,
+    isOfficial: true,
+    isOwner: true,
+    label: "official product blocks owner protected read",
+  },
+  {
+    environment: {},
+    expected: true,
+    isOfficial: false,
+    isOwner: true,
+    label: "non-official owner can read protected checkout fields",
+  },
+  {
+    environment: { TTC_SELLER_CHECKOUT_LINKS_ENABLED: "true" },
+    expected: true,
+    isOfficial: false,
+    isOwner: false,
+    label: "exact gate allows eligible non-official buyer protected read",
+  },
+];
+
+for (const scenario of protectedReadScenarios) {
+  const context = vm.createContext({
+    isOwnProduct: scenario.isOwner,
+    process: { env: scenario.environment },
+    product: { is_official: scenario.isOfficial },
+    sellerCheckoutLinksEnabled,
+  });
+  const canReadSellerCheckout = checkoutGateScript.runInContext(context);
+  context.canReadSellerCheckout = canReadSellerCheckout;
+  const protectedReadReached = protectedReadGuardScript.runInContext(context);
+
+  assert.equal(
+    canReadSellerCheckout,
+    scenario.expected,
+    `${scenario.label}: gate decision`,
+  );
+  assert.equal(
+    protectedReadReached,
+    scenario.expected,
+    `${scenario.label}: admin read reachability`,
+  );
+}
+console.log("PASS protected seller checkout admin-read gate matrix");
 
 const createMerchForm = sourceSection(
   composerSource,
