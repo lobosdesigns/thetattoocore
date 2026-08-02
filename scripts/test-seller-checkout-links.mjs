@@ -54,6 +54,18 @@ for (const value of invalidUrls) {
   assert.equal(result.ok, false, `expected URL to be rejected: ${JSON.stringify(value)}`);
   assert.notEqual(result.code, "test_link");
 }
+for (const [label, value] of [
+  ["boolean", false],
+  ["number", 123],
+  ["object", {}],
+  ["array", []],
+]) {
+  assertModuleValue(
+    validateSellerCheckoutUrl(value),
+    { ok: false, code: "invalid" },
+    `expected ${label} checkout URL to be rejected`,
+  );
+}
 assertModuleValue(validateSellerCheckoutUrl(null), { ok: false, code: "required" });
 assertModuleValue(validateSellerCheckoutUrl("https://buy.stripe.com/test_123"), {
   ok: false,
@@ -98,15 +110,47 @@ const readyInput = {
 
 const submissionFailureCases = [
   ["official product", { isOfficial: true }, "official_product"],
+  ["malformed official-product boolean", { isOfficial: 0 }, "official_product"],
   ["unverified seller", { sellerVerified: false }, "seller_unverified"],
+  ["malformed seller-verification boolean", { sellerVerified: "false" }, "seller_unverified"],
   ["sold-out product", { inventoryReserved: 10 }, "sold_out"],
+  ["over-reserved inventory", { inventoryQuantity: 2, inventoryReserved: 3 }, "sold_out"],
+  ["non-finite inventory quantity", { inventoryQuantity: Infinity }, "sold_out"],
+  ["NaN inventory quantity", { inventoryQuantity: Number.NaN }, "sold_out"],
+  ["negative inventory quantity", { inventoryQuantity: -1 }, "sold_out"],
+  ["fractional inventory quantity", { inventoryQuantity: 2.5 }, "sold_out"],
+  ["non-number inventory quantity", { inventoryQuantity: "10" }, "sold_out"],
+  [
+    "unsafe integer inventory quantity",
+    { inventoryQuantity: Number.MAX_SAFE_INTEGER + 1 },
+    "sold_out",
+  ],
+  ["non-finite reserved inventory", { inventoryReserved: Infinity }, "sold_out"],
+  ["NaN reserved inventory", { inventoryReserved: Number.NaN }, "sold_out"],
+  ["negative reserved inventory", { inventoryReserved: -1 }, "sold_out"],
+  ["fractional reserved inventory", { inventoryReserved: 2.5 }, "sold_out"],
+  ["non-number reserved inventory", { inventoryReserved: "2" }, "sold_out"],
+  [
+    "unsafe integer reserved inventory",
+    { inventoryReserved: Number.MAX_SAFE_INTEGER + 1 },
+    "sold_out",
+  ],
   ["missing terms", { sellerCheckoutTermsVersion: null }, "missing_terms"],
   [
-    "incomplete fulfillment",
-    { fulfillmentNotes: "Short", returnPolicy: "Returns" },
+    "9-character fulfillment notes",
+    { fulfillmentNotes: " 123456789 " },
     "missing_fulfillment",
   ],
+  [
+    "9-character return policy",
+    { returnPolicy: " 123456789 " },
+    "missing_fulfillment",
+  ],
+  ["missing ship-from city", { shipsFromCity: null }, "missing_fulfillment"],
+  ["missing ship-from region", { shipsFromRegion: null }, "missing_fulfillment"],
+  ["malformed shipping-required boolean", { shippingRequired: 0 }, "missing_fulfillment"],
   ["invalid URL", { externalCheckoutUrl: "https://buy.stripe.com/test_123" }, "invalid_url"],
+  ["non-string URL", { externalCheckoutUrl: 123 }, "invalid_url"],
 ];
 
 for (const [label, changes, reason] of submissionFailureCases) {
@@ -122,14 +166,6 @@ assertModuleValue(
     sellerCheckoutTermsAcceptedAt: "not-a-timestamp",
   }),
   { ready: false, reason: "missing_terms", url: null },
-);
-assertModuleValue(
-  sellerCheckoutSubmissionReadiness({
-    ...readyInput,
-    shippingRequired: true,
-    shipsFromCity: null,
-  }),
-  { ready: false, reason: "missing_fulfillment", url: null },
 );
 assertModuleValue(
   sellerCheckoutSubmissionReadiness({

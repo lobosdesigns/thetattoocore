@@ -55,6 +55,10 @@ function hasNonEmptyText(value: string | null) {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function isValidInventoryValue(value: number) {
+  return Number.isSafeInteger(value) && value >= 0;
+}
+
 function hasAcceptedCurrentTerms(input: SellerCheckoutReadinessInput) {
   return (
     input.sellerCheckoutTermsVersion === SELLER_CHECKOUT_TERMS_VERSION &&
@@ -133,10 +137,17 @@ export function sellerCheckoutLinksEnabled(
 export function sellerCheckoutSubmissionReadiness(
   input: SellerCheckoutReadinessInput,
 ): SellerCheckoutReadiness {
-  if (input.isOfficial) return failed("official_product");
-  if (!input.sellerVerified) return failed("seller_unverified");
-  if (!(input.inventoryQuantity - input.inventoryReserved > 0)) {
+  if (input.isOfficial !== false) return failed("official_product");
+  if (input.sellerVerified !== true) return failed("seller_unverified");
+  if (
+    !isValidInventoryValue(input.inventoryQuantity) ||
+    !isValidInventoryValue(input.inventoryReserved) ||
+    input.inventoryQuantity <= input.inventoryReserved
+  ) {
     return failed("sold_out");
+  }
+  if (input.shippingRequired !== true && input.shippingRequired !== false) {
+    return failed("missing_fulfillment");
   }
   if (
     !hasMinimumText(input.fulfillmentNotes) ||
