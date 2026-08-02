@@ -61,7 +61,7 @@ const tutorialCaptureQueue = [
   ["Posting and Stories", "Create 4U, Gossip, Stuff, Gigs, Merch, and Story posts with crop tools, safe media, comments, reports, and Load more."],
   ["DMs and Search", "Find connected users, start a DM, send a photo/GIF, open alerts, reply, and confirm delivered/read markers."],
   ["Verification", "Submit safe dummy artist, studio, and vendor proof, then show approval, rejection, and resubmission notes without real documents."],
-  ["Merch and payouts", "Create a product, review seller readiness, open checkout safely, fulfill a paid order with tracking or handoff proof, and find payout help."],
+  ["Seller Payment Links and fulfillment", "Create a product, add the seller-owned Payment Link, complete listing review, test the external-browser handoff, and show that the seller handles payment, shipping, taxes, returns, refunds, disputes, receipts, and purchase support."],
   ["Bookings and ads", "Set appointment types, slots, blackout dates, deposit review, ad campaign setup, ad credits, and campaign status."],
 ] as const;
 const helpPathCards = [
@@ -78,13 +78,13 @@ const helpPathCards = [
     status: "Professional",
   },
   {
-    body: "Create Merch, understand seller review, checkout readiness, fulfillment, refunds, disputes, and payout safety.",
+    body: "Create Merch, add a seller-owned Payment Link, complete listing review, test the external-browser handoff, and manage seller fulfillment and purchase support.",
     href: "/help/merch-products-orders",
     label: "Merch and seller help",
     status: "Commerce",
   },
   {
-    body: "Install the beta app, test login/signup/reset, DMs, posting, media, notifications, Help, and checkout returns.",
+    body: "Install the beta app, test login/signup/reset, DMs, posting, media, notifications, Help, and external seller-link returns.",
     href: "/help/beta-app-testing",
     label: "Beta app testing",
     status: "QA",

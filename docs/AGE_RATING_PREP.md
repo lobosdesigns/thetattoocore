@@ -11,7 +11,7 @@ Use this as an internal checklist before answering Google Play, App Store, payme
 - User-generated content exists across 4U, Stories, Gossip, Stuff, Gigs, Merch, comments, profiles, DMs, and uploads.
 - Reporting, blocking, admin queues, moderation statuses, and content removal tools are present.
 - DMs exist and can include text plus private image attachments.
-- Merch and ads use controlled launch checkout until production payment, tax, payout, refund, dispute, and policy review is complete.
+- Merch uses reviewed seller-owned Payment Links. The seller processes payment and handles tax, shipping, returns, refunds, disputes, receipts, and purchase support; TTC reviews listing safety. Ads and booking deposits remain separate TTC-controlled payment-policy questions.
 
 ## Store Questionnaire Themes
 
@@ -19,7 +19,7 @@ Use this as an internal checklist before answering Google Play, App Store, payme
 - User-generated content: yes. The app has posting, temporary Stories, commenting, profiles, direct messages, reporting, blocking, and moderation.
 - Nudity/sexual content: no visible nudity is allowed, but tattoo/body-art context can include mature themes. Any future nudity policy change needs legal, moderation, and app-store review first.
 - Violence/gore: body-art and healing content can show skin, redness, or procedure-adjacent context, but unsafe harm, graphic injury promotion, and dangerous practices are prohibited.
-- Marketplace/commerce: yes, but launch commerce is controlled until seller approval, payout, tax, refund, and payment policies are final.
+- Marketplace/commerce: yes. Merch may hand the buyer to a reviewed seller-owned Payment Link in an external browser, without a TTC payment, order, receipt, or success claim. Describe ads and booking deposits separately from this physical-goods model.
 - Ads: yes, internal sponsored placements are planned/started. Targeting must remain coarse, transparent, non-AI, and never minor/adult-sensitive.
 - Location: coarse user-entered location is used. Precise GPS is not required for basic use.
 - AI: platform stance is no AI-generated tattoo art, no AI replacement positioning, and no opaque AI ad expansion.
@@ -33,5 +33,5 @@ Use this as an internal checklist before answering Google Play, App Store, payme
 - Verify Support, Help, Child Safety Standards, Terms, Privacy, account deletion, reporting, and blocking are reachable from the submitted app build.
 - Use store screenshots with brand-safe sample content only.
 - Avoid screenshots containing nudity, private DMs, real payment data, copyrighted tattoo art, personal contact data, or unreviewed marketplace items.
-- Decide whether Merch checkout appears in native builds or stays web-only and launch-controlled until production commerce is approved.
+- Verify whether the submitted build exposes the seller-link control. If it does, confirm the seller disclosure, intentional external-browser handoff and return, no false TTC success state, seller fulfillment/support duties, and gate-off rollback on the exact build.
 - Run real-device QA for auth, profile setup, posting, Stories, reports, blocking, DMs, notifications, verification upload, account deletion request, Child Safety Standards, and public/shared content previews.

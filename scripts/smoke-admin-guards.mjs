@@ -700,15 +700,17 @@ const checks = [
     label: "admin payments keeps operator payout and dispute runbooks visible",
     ok:
       adminPayments.includes("const paymentOpsRunbooks = [") &&
-      adminPayments.includes("Seller payout release") &&
+      adminPayments.includes('title: "Legacy TTC seller payout review"') &&
       adminPayments.includes("Refund and dispute review") &&
       adminPayments.includes("Booking deposit review") &&
-      adminPayments.includes("Freeze payout release and fulfillment closeout") &&
+      adminPayments.includes("freeze legacy payout release and fulfillment closeout") &&
+      adminPayments.includes("legacy TTC seller payout review") &&
+      adminPayments.includes("legacy TTC seller-payout reconciliation") &&
       adminPayments.includes("Keep paid deposit refunds admin-reviewed") &&
       adminPayments.includes("/help/seller-payouts-payment-safety") &&
       adminPayments.includes("/help/order-refunds-disputes") &&
       adminPayments.includes("Order support guide") &&
-      productPlan.includes("public Help guide for seller payout setup"),
+      productPlan.includes("historical TTC seller-payout reconciliation"),
   },
   {
     label: "admin ad actions hide raw backend errors from redirects",

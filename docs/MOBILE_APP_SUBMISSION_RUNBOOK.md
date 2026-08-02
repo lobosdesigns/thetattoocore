@@ -4,7 +4,7 @@
 
 - The selected physical-goods path is seller-owned external checkout from a reviewed product detail page. The seller processes payment and handles taxes, shipping, returns, refunds, disputes, receipts, and purchase support; TTC handles listing review and listing-safety reports.
 - `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false` keeps the purchase handoff unavailable. Historical TTC Checkout, Connect, marketplace, and destination-charge controls remain false and are not the current seller setup path.
-- No database migration, production configuration/data change, live seller link, deployment, native upload, payment-console action, App Store action, or Google Play action occurred in this implementation. The App Store build currently in review remains unchanged.
+- No database migration, production configuration/data change, live seller link, deployment, native upload, payment-console action, App Store action, or Google Play action occurred in this implementation. No current store identity was verified or changed.
 - A later enablement needs exact owner approval for migration/deployment/gate changes, one seller-supplied live link reviewed privately, legal/privacy/store-copy review, and web, Android phone, and TestFlight iPad external-browser open/return QA with no false TTC success state and rollback proof.
 
 This dated section supersedes older current-position statements about TTC-owned
@@ -24,11 +24,12 @@ Merch checkout while preserving the build, console, and deployment history below
 
 - TheTattooCore is web/PWA-first at `https://thetattoocore.com/login`.
 - Native Android and iOS wrapper work is active in `native/thetattoocore-mobile`.
-- Google Play Production serves API 36 release `1.0.3 (4)` publicly, while Closed testing - Alpha serves `1.0.4 (5)` to the selected tester community for controlled QA. The authorized Android 16 review phone installed both builds from Google Play during their respective QA passes. Do not upload version codes `4` or `5` again.
-- Android `1.0.4 (5)` is the previous Alpha candidate and does not contain the latest foreground system-alert presenter. Replace it in Alpha only with exact build `1.0.5 (6)` before treating phone-level banner, sound, or vibration QA as current.
-- iOS build `1.0 (3)` was uploaded from Xcode Organizer on July 18, 2026, attached to TTC Internal Testers, and is available for internal TestFlight testing.
-- iOS build `1.0 (4)` is the isolated notification-capability candidate in `TTC Internal Testers`. It adds target-scoped private app configuration and Push Notifications signing while keeping automatic token creation and delivery off; do not replace build `1.0 (3)` on the App Store version already in review.
-- Checked-in Android `1.0.5 (6)` and iOS `1.0 (5)` are replacement candidates containing the reviewed native notification fixes. Build and device-QA them independently; do not replace public Android build 4 or Apple App Review build 3 until the new artifacts pass.
+- Checked-in Android source candidate: `1.0.5 (6)`. Checked-in iOS source candidate: `1.0 (5)`.
+- Repository source identity is not signed-artifact, upload, console-selection, served-track, or installed-device proof.
+- Exact current App Review identity: **UNKNOWN**. Exact current TestFlight identity: **UNKNOWN**.
+- Exact current Google Play Production identity: **UNKNOWN**. Exact current Google Play Closed testing - Alpha identity: **UNKNOWN**.
+- Last evidence-backed console/device baseline (July 24, 2026): Apple App Review `1.0 (3)`, internal TestFlight `1.0 (4)`, and Google Play Production plus Alpha `1.0.3 (4)`. This is dated older evidence, not a present-tense served-state claim.
+- A separately authorized read-only signed-in console/device verification is required, and every exact identity must be re-verified before QA or release claims. Do not upload, select, promote, or install anything during that read-only verification.
 - PWA manifest, icons, splash assets, service worker, support URL, privacy URL, and terms URL are ready for the beta wrapper path.
 - Native wrapper prep lives in `docs/NATIVE_WRAPPER_PREP.md`; follow it before adding native permissions, deep links, checkout handling, push, or store-review changes.
 - Draft store listing copy lives in `docs/STORE_LISTING_DRAFT.md`; review it against current store policies before submission.
@@ -40,7 +41,7 @@ Merch checkout while preserving the build, console, and deployment history below
 - The signed-in Lobosdesigns LLC developer account is an organization account. Google's current 12-testers-for-14-days production-access gate applies to newly created personal accounts, so it does not delay this release. If a future personal account or console-specific requirement shows that gate, use a controlled closed test with the existing tester community or Google Group and archive the production-access evidence privately.
 - Production payment gates live in `docs/PAYMENT_PRODUCTION_READINESS.md` and should pass before real commerce appears in native builds.
 - Final legal review evidence lives in `docs/LEGAL_REVIEW_PREP.md`; keep reviewer notes private and recheck public Terms, Privacy, Support, Help, Child Safety Standards, store metadata, screenshots, and native wrapper behavior against the submitted build.
-- Google Play submissions or updates on or after August 31, 2026 must target Android 16 / API 36. Active `1.0.3 (4)` in Production and `1.0.4 (5)` in Alpha are the release baselines; checked-in replacement `1.0.5 (6)` uses the same API 36 baseline and must be rebuilt, signed, and real-device-QA tested before selecting a Google Play track.
+- Google Play submissions or updates on or after August 31, 2026 must target Android 16 / API 36. The checked-in Android candidate uses API 36, but its signing, upload, selected track, served state, and device install remain unproven until separately authorized verification and QA.
 - Visible nudity is not allowed to reduce review and moderation risk.
 - Merch uses seller-owned external checkout only after its separate approval and QA gates. Ads and booking deposits remain separate controlled TTC payment flows governed by `docs/PAYMENT_PRODUCTION_READINESS.md`.
 
@@ -112,19 +113,19 @@ Start with a thin native wrapper now that core web smoke/390px mobile checks are
 
 ## Google Play Install And Controlled QA Handoff
 
-Use the public Production listing as the normal install and release-evidence path.
-Use Closed testing - Alpha only for controlled QA:
+Do not infer a current Google Play artifact from checked-in source or the dated
+baseline. Start with separately authorized read-only signed-in console/device
+verification and make no track, upload, or install change during that pass:
 
-1. Open the public Google Play Production listing and confirm it offers Install
-   or Update for exact release `1.0.3 (4)`.
-2. After installation, record Production as the install source, the installed
-   version/build, device model, OS version, test date, and pass/fail result in
-   the private handoff.
-3. For Alpha controlled QA, confirm the Google Play account selected on the Android device is the same account that belongs to the configured tester community. Keep the email address and group-membership proof private.
-4. While signed into that same account in a browser, open the saved web tester join link and confirm the account has opted in before opening the Android join link. On the connected Windows QA machine, `npm.cmd run qa:android-device:open-test` opens that enrollment page.
-5. Confirm the Alpha store listing offers Install or Update, then record Alpha
-   as the release track and install source with the same exact-build evidence.
-6. A missing public Production listing or wrong served build is a release blocker. An Alpha account or opt-in mismatch blocks only Alpha controlled-QA evidence and does not make the public Production release unavailable.
+1. Read the current Production and Closed testing - Alpha release identities and
+   record the exact console-served identity, status, track, and verification date
+   in the ignored private handoff.
+2. Confirm the installed Android app identity independently on the authorized
+   device. A source version, bundle filename, or prior screenshot is not install proof.
+3. Require all Production, Alpha, and installed-device identities to be re-verified before QA or release claims. A mismatch or unknown identity is a blocker, not permission to upload.
+4. For Alpha controlled QA, confirm the Google Play account selected on the Android device is the same account that belongs to the configured tester community. Keep the email address and group-membership proof private.
+5. While signed into that same account in a browser, open the saved web tester join link and confirm the account has opted in before opening the Android join link. On the connected Windows QA machine, `npm.cmd run qa:android-device:open-test` opens that enrollment page.
+6. Only after identity verification, confirm the verified Production or Alpha listing offers the expected install/update action, then record the actual install source, version/build, device, OS, date, and result privately.
 
 ## Required Before Public Distribution Or Any Replacement Submission
 
@@ -136,7 +137,7 @@ Use Closed testing - Alpha only for controlled QA:
 - Confirm Help/Support proof screens show public guide content only, with no private order details, seller Payment Links, payment credentials, support tickets, moderation queues, or admin-only investigation notes.
 - Use the public `/help/beta-app-testing` guide for beta testers so app-wrapper login, signup, reset, Help, Support, media upload, notifications, DMs, booking, Merch, intentional external seller-checkout return, no-false-success, and safe bug-report expectations stay consistent.
 - Before `npm.cmd run verify:app-review-preflight`, set `$env:TTC_RELEASE_CANDIDATE="<current-git-commit-hash>"` in PowerShell. Use the immutable 7-40 character hash for the exact local commit being audited, not a branch or tag. Run the preflight before final screenshot upload validation, store-console final validation, or reviewer handoff. It checks lint, production build, production environment boundaries, security copy/headers, content-policy/reporting guardrails, theme contrast, payment guardrails, store metadata, PWA assets, native wrapper and staged-alert safety, app-link association endpoints, the repo-safe Android connected-device probe, readiness docs, public routes, Android-profile mobile routes at 390px and 320px, and iOS-profile mobile routes without counting technical checks as real-device or private console evidence. It then proves the evidence verifier with a sanitized fixture and checks the actual ignored private handoff, failing closed until every required row matches the commit.
-- Run `npm.cmd run verify:release-evidence -- --release-candidate <current-git-commit-hash>` when only the ignored private handoff needs to be rechecked. The current local Git commit hash is mandatory, must resolve directly to a commit object in this repository, and must match the handoff's web deploy row; a branch, tag, unresolved hash, or stale deploy row fails closed. Reviewer-access, tester-install, two-user DM, and real-device proof rows require a private proof location and a valid proof date no more than 45 days old. A passing iOS real-device row must identify an actual iPhone, TestFlight as the install source, device-captured evidence, and full-checklist scope; an owner-confirmed iPad install remains partial evidence. This strict gate also checks the exact Android Alpha `1.0.5 (6)`, App Review `1.0 (3)`, TestFlight `1.0 (5)`, store fields and media, real-device QA, native alert delivery/routing, and legal signoff. It reports only repo-safe requirement names and is expected to fail until every private evidence row is complete.
+- Run `npm.cmd run verify:release-evidence -- --release-candidate <current-git-commit-hash>` when only the ignored private handoff needs to be rechecked. The current local Git commit hash is mandatory and must match the handoff's web deploy row. The verifier can enforce repo candidate expectations for Android `1.0.5 (6)` and iOS `1.0 (5)`, but that does not establish App Review, TestFlight, Production, Alpha, or installed-device state. It must fail closed until a separately authorized read-only signed-in console/device pass records the exact current identities, reviewer access, store fields/media, real-device QA, native alert delivery/routing, and legal signoff without exposing private evidence.
 - Run `npm.cmd run prepare:private-release-handoff` to create a local ignored handoff template before collecting reviewer credentials, console screenshots, device clips, payment proof, legal notes, or push-delivery evidence. When a handoff already exists, the generator preserves a timestamped private backup before refreshing the template. Keep the generated `private-release-handoff/` folder out of git and copy only repo-safe pass/fail summaries back into readiness docs.
 - Run `npm.cmd run prepare:private-console-tabs` after saving current launch-console tab titles/URLs to `private-release-handoff/console-tabs.json` when the browser handoff needs a crash-safe restore file. Keep exact console tab URLs in the ignored private handoff folder or Desktop restore file only.
 - Confirm TestFlight login, signup, forgot-password, reset-password, and email-confirmation routes stay inside the app WebView and do not push members out to Safari.
@@ -150,7 +151,7 @@ Use Closed testing - Alpha only for controlled QA:
 - Confirm support email and public legal/contact surfaces use `support@thetattoocore.com` or final company/legal contact details, not personal owner information.
 - Complete `docs/LEGAL_REVIEW_PREP.md` for Terms, Privacy, account deletion language, moderation policy, marketplace rules, seller-owned payment/tax/shipping/return/refund/dispute/support duties, and native external-checkout/store submission notes.
 - Keep seller checkout disabled until web, Android phone, and TestFlight iPad external-browser open/return behavior, no false TTC success state, and rollback are approved for the exact builds.
-- Prepare store age rating answers around 18+, user-generated content, moderation/reporting, no visible nudity policy, social interaction, DMs, marketplace-like browsing, and review-controlled checkout.
+- Prepare store age rating answers around 18+, user-generated content, moderation/reporting, no visible nudity policy, social interaction, DMs, marketplace-like browsing, and the reviewed seller-link external-browser handoff.
 - Prepare store data-safety/privacy answers around account/profile data, user-generated content, DMs, verification documents, moderation records, payment references, coarse location, notifications, deletion requests, and public-search visibility.
 - Treat App Store Accessibility Nutrition Labels as voluntary. Prepare a label
   only from real-device common-task QA; do not claim support for VoiceOver,
@@ -231,9 +232,13 @@ Support:
 1. Keep the wrapper project in `native/thetattoocore-mobile`.
 2. Point the wrapper start URL to `https://thetattoocore.com/login`.
 3. Add app icons and splash assets from the approved TTC shield assets.
-4. Configure allowed domains for `thetattoocore.com`, auth redirects, current checkout returns, support, privacy, and terms.
+4. Configure allowed domains for `thetattoocore.com`, auth redirects, seller-link external-browser returns, support, privacy, and terms.
 5. Build Android first on this Windows machine if Android tooling is installed; build iOS on the Mac/remote Mac because Xcode is required.
-6. Upload replacement builds to Google Play controlled testing and Apple TestFlight before any public review submission. Google Play Production serves API 36 release `1.0.3 (4)` publicly, with the same exact build retained in Closed testing - Alpha for controlled QA; iOS build `1.0 (4)` is available to `TTC Internal Testers`, while App Store version `1.0` continues review with build `1.0 (3)`.
+6. Build Android `1.0.5 (6)` and iOS `1.0 (5)` only as checked-in source candidates. Re-verify current console identities before choosing any next action, and do not claim any candidate is uploaded, selected, served, or installed without separately authorized console and device evidence.
+### Historical Google Play Evidence - July 21-23, 2026 (Non-Operative)
+
+The dated records below preserve earlier console/device facts only. They do not establish any current Production or Alpha identity and are not instructions to upload, select, promote, or install a build.
+
    - July 21, 2026 Google Play status: Closed testing - Alpha changes were submitted to review/quick checks with release `1 (1.0)`, United States availability, the existing tester email list, feedback via support email, Advertising ID set to no, Data Safety saved, and the public Child Safety Standards URL saved. Count the 14-day production-access window only after Google accepts/serves the closed test and enough testers opt in; keep tester membership and console screenshots in private handoff only.
    - July 22, 2026 Google Play status: API 36 update `1.0.1 (2)` was published to the selected Alpha tester audience. Tester opt-in and account verification completed, the eligible-tester listing offers installation, and an authorized Android 16 device reports Play build `1.0.1 (2)` with target SDK 36. Keep tester participation, duration, and production-access evidence private.
    - July 22, 2026 Google Play status: API 36 alert-registration candidate `1.0.2 (3)` is Active and Available to selected testers through the existing Google Group. The authorized Android 16 review phone joined the test, installed build `3`, and passed exact-build, target-SDK, retained-session cold-launch, system-bar framing, and permission-off baseline checks.
