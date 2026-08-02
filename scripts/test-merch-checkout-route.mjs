@@ -254,10 +254,33 @@ try {
   {
     const shippingOfficial = { ...officialProduct, shipping_required: true };
     const { scenario } = await postCheckout(shippingOfficial);
+    const body = scenario.effects.stripeBodies[0];
 
-    assert.deepEqual(allowedCountries(scenario.effects.stripeBodies[0]), ["US"]);
+    assert.deepEqual(allowedCountries(body), ["US"]);
+    assert.deepEqual(
+      {
+        automaticTax: body.get("automatic_tax[enabled]"),
+        platformFeeTaxBehavior: body.get(
+          "line_items[1][price_data][tax_behavior]",
+        ),
+        productTaxBehavior: body.get(
+          "line_items[0][price_data][tax_behavior]",
+        ),
+        productTaxCode: body.get(
+          "line_items[0][price_data][product_data][tax_code]",
+        ),
+      },
+      {
+        automaticTax: "true",
+        platformFeeTaxBehavior: "exclusive",
+        productTaxBehavior: "exclusive",
+        productTaxCode: "txcd_99999999",
+      },
+    );
   }
-  console.log("PASS official shipping-required Merch sends Stripe exactly the US");
+  console.log(
+    "PASS official shipping-required Merch sends Stripe US-only automatic tangible-goods tax",
+  );
 
   {
     const { scenario } = await postCheckout(marketplaceProduct);
@@ -270,8 +293,14 @@ try {
       true,
     );
     assert.deepEqual(allowedCountries(scenario.effects.stripeBodies[0]), ["US", "CA"]);
+    assert.equal(
+      scenario.effects.stripeBodies[0].has("automatic_tax[enabled]"),
+      false,
+    );
   }
-  console.log("PASS marketplace shipping-required Merch keeps seller readiness and US/CA");
+  console.log(
+    "PASS marketplace shipping-required Merch keeps seller readiness, US/CA, and tax liability blocked",
+  );
 
   {
     const { response, scenario } = await postCheckout(marketplaceProduct, {

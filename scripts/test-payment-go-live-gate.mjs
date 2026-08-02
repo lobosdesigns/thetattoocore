@@ -122,6 +122,37 @@ const conditionalOfficialRejectionSourceFixture = writeCandidateSourceVariant(
     );
   },
 );
+const missingOfficialAutomaticTaxSourceFixture = writeCandidateSourceVariant(
+  "missing-official-automatic-tax-source.json",
+  (routeLines) => {
+    const taxIndex = routeLines.indexOf(
+      '    body.set("automatic_tax[enabled]", "true");',
+    );
+    routeLines[taxIndex] = "    void product.is_official;";
+  },
+);
+const wrongOfficialTaxCodeSourceFixture = writeCandidateSourceVariant(
+  "wrong-official-tax-code-source.json",
+  (routeLines) => {
+    const taxCodeIndex = routeLines.indexOf(
+      '    body.set("line_items[0][price_data][product_data][tax_code]", "txcd_99999999");',
+    );
+    routeLines[taxCodeIndex] =
+      '    body.set("line_items[0][price_data][product_data][tax_code]", "txcd_wrong");';
+  },
+);
+const lateOfficialTaxSourceFixture = writeCandidateSourceVariant(
+  "late-official-tax-source.json",
+  (routeLines) => {
+    const taxStart = routeLines.indexOf("  if (product.is_official) {");
+    const taxEnd = routeLines.indexOf("  }", taxStart);
+    const taxBlock = routeLines.splice(taxStart, taxEnd - taxStart + 1);
+    const checkoutIndex = routeLines.indexOf(
+      "  return createStripeCheckoutSession({ body });",
+    );
+    routeLines.splice(checkoutIndex + 1, 0, ...taxBlock);
+  },
+);
 const wrongOfficialCountrySourceFixture = writeCandidateSourceVariant(
   "wrong-official-country-source.json",
   (routeLines) => {
@@ -389,6 +420,57 @@ const checks = [
         result.status === 1 &&
         result.stderr.includes(
           "Candidate policy / Official non-shipping products must be rejected",
+        )
+      );
+    },
+  },
+  {
+    label: "candidate proof requires official automatic tangible-goods tax",
+    result: runGate(
+      fixturePath,
+      fixtureCandidate,
+      "preauthorization",
+      missingOfficialAutomaticTaxSourceFixture,
+    ),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Candidate policy / Official physical checkout must retain automatic tangible-goods tax",
+        )
+      );
+    },
+  },
+  {
+    label: "candidate proof requires the official tangible-goods tax code",
+    result: runGate(
+      fixturePath,
+      fixtureCandidate,
+      "preauthorization",
+      wrongOfficialTaxCodeSourceFixture,
+    ),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Candidate policy / Official physical checkout must retain automatic tangible-goods tax",
+        )
+      );
+    },
+  },
+  {
+    label: "candidate proof requires official tax before Checkout creation",
+    result: runGate(
+      fixturePath,
+      fixtureCandidate,
+      "preauthorization",
+      lateOfficialTaxSourceFixture,
+    ),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Candidate policy / Official physical checkout must retain automatic tangible-goods tax",
         )
       );
     },

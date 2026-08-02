@@ -165,6 +165,15 @@ async function createCheckoutSession({
     );
   }
 
+  if (product.is_official) {
+    body.set("automatic_tax[enabled]", "true");
+    body.set("line_items[0][price_data][tax_behavior]", "exclusive");
+    body.set(
+      "line_items[0][price_data][product_data][tax_code]",
+      "txcd_99999999",
+    );
+  }
+
   if (product.shipping_required) {
     body.set("shipping_address_collection[allowed_countries][0]", "US");
 
@@ -189,6 +198,10 @@ async function createCheckoutSession({
     );
     body.set("line_items[1][price_data][unit_amount]", String(platformFeeCents));
     body.set("line_items[1][quantity]", "1");
+
+    if (product.is_official) {
+      body.set("line_items[1][price_data][tax_behavior]", "exclusive");
+    }
   }
 
   return createStripeCheckoutSession({

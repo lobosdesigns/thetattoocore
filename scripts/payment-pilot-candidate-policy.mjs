@@ -141,6 +141,81 @@ function directExpressionCall(statement, predicate) {
   );
 }
 
+function isBodySet(node, key, value) {
+  if (!ts.isCallExpression(node)) return false;
+  const expression = stripParentheses(node.expression);
+  return (
+    ts.isPropertyAccessExpression(expression) &&
+    isIdentifier(expression.expression, "body") &&
+    expression.name.text === "set" &&
+    stringArgument(node, 0) === key &&
+    stringArgument(node, 1) === value
+  );
+}
+
+function officialTaxContract(createCheckoutBody) {
+  if (!createCheckoutBody) return false;
+
+  const requiredSets = [
+    ["automatic_tax[enabled]", "true"],
+    ["line_items[0][price_data][tax_behavior]", "exclusive"],
+    [
+      "line_items[0][price_data][product_data][tax_code]",
+      "txcd_99999999",
+    ],
+    ["line_items[1][price_data][tax_behavior]", "exclusive"],
+  ];
+  const officialBlocks = descendants(
+    createCheckoutBody,
+    (node) =>
+      ts.isIfStatement(node) &&
+      isProductProperty(node.expression, "is_official") &&
+      ts.isBlock(node.thenStatement),
+  );
+  const checkoutStatementIndex = createCheckoutBody.statements.findIndex(
+    (statement) =>
+      statementContainsCall(
+        statement,
+        new Set(["createStripeCheckoutSession"]),
+      ),
+  );
+
+  if (checkoutStatementIndex < 0) return false;
+
+  return requiredSets.every(([key, value]) => {
+    const matchingSets = descendants(
+      createCheckoutBody,
+      (node) => ts.isCallExpression(node) && isBodySet(node, key, value),
+    );
+    const allSetsForKey = descendants(
+      createCheckoutBody,
+      (node) =>
+        ts.isCallExpression(node) &&
+        stringArgument(node, 0) === key,
+    );
+    const setStatementIndex = createCheckoutBody.statements.findIndex(
+      (statement) =>
+        descendants(
+          statement,
+          (node) => ts.isCallExpression(node) && isBodySet(node, key, value),
+        ).length === 1,
+    );
+
+    return (
+      matchingSets.length === 1 &&
+      allSetsForKey.length === 1 &&
+      setStatementIndex >= 0 &&
+      setStatementIndex < checkoutStatementIndex &&
+      officialBlocks.some((block) =>
+        descendants(
+          block.thenStatement,
+          (node) => ts.isCallExpression(node) && isBodySet(node, key, value),
+        ).length === 1,
+      )
+    );
+  });
+}
+
 function shippingCountryContract(createCheckoutBody) {
   if (!createCheckoutBody) return false;
 
@@ -329,6 +404,11 @@ export function paymentPilotCandidatePolicyBlockers(merchCheckoutSource) {
     );
     blockers.push(
       "Candidate policy / Marketplace physical shipping countries must remain exactly US and CA",
+    );
+  }
+  if (!officialTaxContract(createCheckoutBody)) {
+    blockers.push(
+      "Candidate policy / Official physical checkout must retain automatic tangible-goods tax",
     );
   }
   if (

@@ -16,6 +16,12 @@
     "src/app/api/merch/checkout/route.ts": [
       "async function createCheckoutSession({ product }) {",
       "  const body = new URLSearchParams();",
+      "  if (product.is_official) {",
+      "    body.set(\"automatic_tax[enabled]\", \"true\");",
+      "    body.set(\"line_items[0][price_data][tax_behavior]\", \"exclusive\");",
+      "    body.set(\"line_items[0][price_data][product_data][tax_code]\", \"txcd_99999999\");",
+      "    body.set(\"line_items[1][price_data][tax_behavior]\", \"exclusive\");",
+      "  }",
       "  if (product.shipping_required) {",
       "    body.set(\"shipping_address_collection[allowed_countries][0]\", \"US\");",
       "    if (!product.is_official) {",
