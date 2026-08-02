@@ -288,6 +288,17 @@ export async function POST(request: Request) {
     );
   }
 
+  if (product.is_official && product.shipping_required !== true) {
+    console.error("Official Merch checkout blocked by shipping policy.", {
+      productId: product.id,
+      reason: "shipping_required",
+    });
+    return redirectWithMessage(
+      returnTo,
+      "Checkout is temporarily unavailable for this product.",
+    );
+  }
+
   const missingReviewDetails =
     !product.return_policy ||
     (product.shipping_required &&

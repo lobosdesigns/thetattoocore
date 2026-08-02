@@ -880,7 +880,7 @@ checks.push({
     ) &&
     packageJson.includes('"test:stripe-checkout-sessions"') &&
     packageJson.includes(
-      '"smoke:payments": "npm run test:stripe-release-gates && npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && node scripts/smoke-payment-guards.mjs"',
+      '"smoke:payments": "npm run test:stripe-release-gates && npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && npm run test:merch-checkout-route && node scripts/smoke-payment-guards.mjs"',
     ),
 });
 checks.push({
@@ -1461,7 +1461,7 @@ checks.push({
     paymentReadiness.includes("account.updated") &&
     packageJson.includes('"test:payment-webhook-config"') &&
     packageJson.includes(
-      '"smoke:payments": "npm run test:stripe-release-gates && npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && node scripts/smoke-payment-guards.mjs"',
+      '"smoke:payments": "npm run test:stripe-release-gates && npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && npm run test:merch-checkout-route && node scripts/smoke-payment-guards.mjs"',
     ) &&
     adminPaymentsPage.includes("const paymentReconciliationChecks = [") &&
     adminPaymentsPage.includes("const sellerPayoutQaChecks = [") &&
@@ -2070,7 +2070,7 @@ checks.push({
   label: "standard payment smoke includes focused Stripe release gates exactly once",
   ok:
     packageJson.includes(
-      '"smoke:payments": "npm run test:stripe-release-gates && npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && node scripts/smoke-payment-guards.mjs"',
+      '"smoke:payments": "npm run test:stripe-release-gates && npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && npm run test:merch-checkout-route && node scripts/smoke-payment-guards.mjs"',
     ) &&
     (packageJson.match(/npm run test:stripe-release-gates/g) ?? []).length === 1,
 });
