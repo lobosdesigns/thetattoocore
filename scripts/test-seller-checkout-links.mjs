@@ -26,6 +26,8 @@ const {
   "src/lib/merch/seller-checkout.ts",
   { "server-only": {} },
 );
+const { isVerifiedArtistOrShop, isVerifiedProfessional } =
+  await importTypeScriptWithStubs("src/lib/verification.ts", {});
 
 function assertModuleValue(actual, expected, message) {
   assert.deepEqual(JSON.parse(JSON.stringify(actual)), expected, message);
@@ -262,11 +264,29 @@ const actionMutations = {
       'console.error("Merch checkout setup failed.");',
       'console.error("Merch checkout setup failed: " + checkoutResult.url);',
     ),
+  "edit-lookup-log-leak": (source) =>
+    replaceMutation(
+      source,
+      'console.error("Merch product edit lookup failed.");',
+      'console.error("Merch product edit lookup failed: " + checkoutResult.url);',
+    ),
+  "forged-edit-seller-id": (source) =>
+    replaceMutation(
+      source,
+      "return_policy: returnPolicy || null,\n      status: nextStatus,",
+      'return_policy: returnPolicy || null,\n      seller_id: cleanText(formData.get("seller_id"), 80),\n      status: nextStatus,',
+    ),
   "forged-seller-id": (source) =>
     replaceMutation(
       source,
       "seller_id: userId,\n      shipping_required: shippingRequired,",
       'seller_id: cleanText(formData.get("seller_id"), 80),\n      shipping_required: shippingRequired,',
+    ),
+  "media-attach-log-leak": (source) =>
+    replaceMutation(
+      source,
+      'console.error("Merch media attach failed.");',
+      'console.error("Merch media attach failed: " + checkoutResult.url);',
     ),
   "official-edit-bypass": (source) =>
     replaceMutation(
@@ -281,11 +301,23 @@ const actionMutations = {
       "if (deleteError || !deletedProduct) {",
       "if (false && (deleteError || !deletedProduct)) {",
     ),
+  "submit-log-leak": (source) =>
+    replaceMutation(
+      source,
+      'console.error("Merch product submit failed.");',
+      'console.error("Merch product submit failed: " + checkoutResult.url);',
+    ),
   "unscoped-trusted-create": (source) =>
     replaceMutation(
       source,
       '.eq("id", product.id)\n      .eq("seller_id", userId)\n      .select("id")',
       '.eq("id", product.id)\n      .select("id")',
+    ),
+  "unverified-edit-bypass": (source) =>
+    replaceMutation(
+      source,
+      "if (!isVerifiedProfessional(product.profiles)) {",
+      "if (false && !isVerifiedProfessional(product.profiles)) {",
     ),
   "zero-row-create-success": (source) =>
     replaceMutation(
@@ -336,9 +368,12 @@ const submittedUrl = "https://buy.stripe.com/a1B2_c3D4";
 const forgedAcceptanceVersion = "attacker-controlled-version";
 const forgedAcceptanceTimestamp = "1999-12-31T23:59:59.999Z";
 const providerSecrets = {
+  attach: "provider-attach-row-secret",
   cleanup: "provider-cleanup-row-secret",
   delete: "provider-delete-row-secret",
   edit: "provider-edit-row-secret",
+  insert: "provider-insert-row-secret",
+  lookup: "provider-lookup-row-secret",
   storage: "provider-storage-row-secret",
   trusted: "provider-trusted-row-secret",
 };
@@ -373,6 +408,7 @@ function createMerchScenario(options = {}) {
       seller_id: testIds.actor,
       status: "active",
     }),
+    editProductError: option(options, "editProductError", null),
     events: [],
     logs: [],
     mediaAttachResult: option(options, "mediaAttachResult", {
@@ -447,7 +483,10 @@ function createMerchScenario(options = {}) {
       }
 
       if (query.table === "merch_products" && query.operation === "select") {
-        return { data: scenario.editProduct, error: null };
+        return {
+          data: scenario.editProduct,
+          error: scenario.editProductError,
+        };
       }
 
       if (query.table === "merch_products" && query.operation === "delete") {
@@ -526,20 +565,6 @@ function withScenario(options, callback) {
 function currentScenario() {
   assert.ok(activeScenario, "Action test stub used without an active scenario");
   return activeScenario;
-}
-
-function isVerifiedProfessional(profile) {
-  return Boolean(
-    profile?.license_verified_at &&
-      ["artist", "studio", "vendor"].includes(profile.account_type),
-  );
-}
-
-function isVerifiedArtistOrShop(profile) {
-  return Boolean(
-    profile?.license_verified_at &&
-      ["artist", "studio"].includes(profile.account_type),
-  );
 }
 
 async function loadMerchActions(path) {
@@ -836,6 +861,32 @@ function assertFailClosedInsert(scenario) {
   assert.equal("seller_checkout_terms_accepted_at" in inserts[0].payload, false);
 }
 
+function assertTrustedEditPayload(query, expectedStatus = "pending_review") {
+  const payload = JSON.parse(JSON.stringify(query.payload));
+  const updatedAt = payload.updated_at;
+  delete payload.updated_at;
+
+  assert.equal(typeof updatedAt, "string");
+  assert.equal(new Date(updatedAt).toISOString(), updatedAt);
+  assertModuleValue(payload, {
+    category: "apparel",
+    description: "Updated seller-owned merchandise details.",
+    external_checkout_url: submittedUrl,
+    fulfillment_notes: "Ships within five business days with tracking.",
+    inventory_quantity: 12,
+    is_indexable: false,
+    price_cents: 3500,
+    return_policy: "Returns accepted within thirty days of delivery.",
+    seller_checkout_terms_accepted_at: null,
+    seller_checkout_terms_version: SELLER_CHECKOUT_TERMS_VERSION,
+    shipping_required: true,
+    ships_from_city: "Austin",
+    ships_from_region: "TX",
+    status: expectedStatus,
+    title: "Updated seller-owned shirt",
+  });
+}
+
 async function runMerchActionContracts(actions) {
   await withScenario({ claims: null }, async (scenario) => {
     const location = await redirectedBy(
@@ -945,6 +996,47 @@ async function runMerchActionContracts(actions) {
       );
       assert.equal(scenario.admin.queries.length, 0);
       assertModuleValue(scenario.logs, []);
+    },
+  );
+
+  await withScenario(
+    {
+      productInsertResult: {
+        data: null,
+        error: { message: providerSecrets.insert },
+      },
+    },
+    async (scenario) => {
+      const location = await redirectedBy(
+        actions.createMerchProduct,
+        validCreateForm(),
+      );
+      assert.equal(
+        location,
+        homeRedirect("Could not submit Merch for review. Please try again."),
+      );
+      assert.equal(scenario.adminClientCalls, 1);
+      assert.equal(scenario.mediaInspections, 1);
+      assert.equal(
+        actionQueries(scenario, "seller", "merch_products", "insert").length,
+        1,
+      );
+      assert.equal(scenario.admin.queries.length, 0);
+      assert.equal(scenario.storageUploads.length, 0);
+      assert.equal(scenario.storageRemovals.length, 0);
+      assert.equal(
+        actionQueries(scenario, "seller", "merch_product_media", "insert").length,
+        0,
+      );
+      assert.equal(
+        actionQueries(scenario, "seller", "merch_products", "delete").length,
+        0,
+      );
+      assertModuleValue(scenario.logs, [["Merch product submit failed."]]);
+      assertNoSensitiveOutput(scenario, location, [
+        submittedUrl,
+        providerSecrets.insert,
+      ]);
     },
   );
 
@@ -1109,6 +1201,44 @@ async function runMerchActionContracts(actions) {
     },
   );
 
+  await withScenario(
+    {
+      mediaAttachResult: {
+        data: null,
+        error: { message: providerSecrets.attach },
+      },
+    },
+    async (scenario) => {
+      const location = await redirectedBy(
+        actions.createMerchProduct,
+        validCreateForm(),
+      );
+      assert.equal(
+        location,
+        homeRedirect(
+          "Media uploaded but could not attach to the Merch product. Please try again.",
+        ),
+      );
+      assertCleanupQueries(scenario);
+      assert.equal(scenario.storageUploads.length, 1);
+      assert.equal(scenario.storageRemovals.length, 1);
+      assertModuleValue(scenario.storageRemovals[0], {
+        bucket: "merch-media",
+        paths: [scenario.storageUploads[0].path],
+      });
+      assert.equal(
+        actionQueries(scenario, "seller", "merch_product_media", "insert").length,
+        1,
+      );
+      assertModuleValue(scenario.logs, [["Merch media attach failed."]]);
+      assertNoSensitiveOutput(scenario, location, [
+        submittedUrl,
+        providerSecrets.attach,
+        providerSecrets.delete,
+      ]);
+    },
+  );
+
   await withScenario({}, async (scenario) => {
     const hostileUrl = "https://buy.stripe.com/a1B2?provider=secret";
     const location = await redirectedBy(
@@ -1162,6 +1292,35 @@ async function runMerchActionContracts(actions) {
     assertValidationStopped(scenario);
   });
 
+  for (const options of [
+    {
+      editProductError: { message: providerSecrets.lookup },
+    },
+    {
+      editProduct: null,
+    },
+  ]) {
+    await withScenario(options, async (scenario) => {
+      const location = await redirectedBy(
+        actions.editMerchProduct,
+        validEditForm(),
+      );
+      assert.equal(location, editRedirect("Merch product was not found."));
+      assert.equal(
+        actionQueries(scenario, "seller", "merch_products", "select").length,
+        1,
+      );
+      assert.equal(scenario.adminClientCalls, 0);
+      assert.equal(scenario.admin.queries.length, 0);
+      assert.equal(scenario.storageUploads.length, 0);
+      assertModuleValue(scenario.logs, [["Merch product edit lookup failed."]]);
+      assertNoSensitiveOutput(scenario, location, [
+        submittedUrl,
+        providerSecrets.lookup,
+      ]);
+    });
+  }
+
   await withScenario(
     {
       editProduct: {
@@ -1181,6 +1340,38 @@ async function runMerchActionContracts(actions) {
       assert.equal(location, editRedirect("You can only edit your own Merch."));
       assert.equal(scenario.adminClientCalls, 0);
       assert.equal(scenario.admin.queries.length, 0);
+    },
+  );
+
+  await withScenario(
+    {
+      editProduct: {
+        id: productId,
+        inventory_reserved: 0,
+        is_official: false,
+        profiles: {
+          account_type: "artist",
+          license_verified_at: null,
+        },
+        seller_id: testIds.actor,
+        status: "active",
+      },
+    },
+    async (scenario) => {
+      const location = await redirectedBy(
+        actions.editMerchProduct,
+        validEditForm(),
+      );
+      assert.equal(
+        location,
+        editRedirect(
+          "Verified artist, studio, or vendor status is required to edit Merch.",
+        ),
+      );
+      assert.equal(scenario.adminClientCalls, 0);
+      assert.equal(scenario.admin.queries.length, 0);
+      assertModuleValue(scenario.logs, []);
+      assertNoSensitiveOutput(scenario, location, [submittedUrl]);
     },
   );
 
@@ -1239,14 +1430,7 @@ async function runMerchActionContracts(actions) {
         ],
         "zero-row edit trusted write was not exact ID-and-seller scoped",
       );
-      assert.equal(updates[0].payload.is_indexable, false);
-      assert.equal(updates[0].payload.status, "pending_review");
-      assert.equal(updates[0].payload.external_checkout_url, submittedUrl);
-      assert.equal(
-        updates[0].payload.seller_checkout_terms_version,
-        SELLER_CHECKOUT_TERMS_VERSION,
-      );
-      assert.equal(updates[0].payload.seller_checkout_terms_accepted_at, null);
+      assertTrustedEditPayload(updates[0]);
       assertModuleValue(scenario.logs, [["Merch product update failed."]]);
       assertNoSensitiveOutput(scenario, location, [
         submittedUrl,
@@ -1274,6 +1458,14 @@ async function runMerchActionContracts(actions) {
           "Could not update Merch product. It may be gone or owned by another account.",
         ),
       );
+      const updates = actionQueries(
+        scenario,
+        "admin",
+        "merch_products",
+        "update",
+      );
+      assert.equal(updates.length, 1);
+      assertTrustedEditPayload(updates[0]);
       assertModuleValue(scenario.logs, [["Merch product update failed."]]);
       assertNoSensitiveOutput(scenario, location, [
         submittedUrl,
@@ -1310,14 +1502,7 @@ async function runMerchActionContracts(actions) {
           "update",
         );
         assert.equal(updates.length, 1);
-        assert.equal(updates[0].payload.status, "pending_review");
-        assert.equal(updates[0].payload.is_indexable, false);
-        assert.equal(updates[0].payload.external_checkout_url, submittedUrl);
-        assert.equal(
-          updates[0].payload.seller_checkout_terms_version,
-          SELLER_CHECKOUT_TERMS_VERSION,
-        );
-        assert.equal(updates[0].payload.seller_checkout_terms_accepted_at, null);
+        assertTrustedEditPayload(updates[0]);
         assertQueryFilters(
           updates[0],
           [
