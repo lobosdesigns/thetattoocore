@@ -19,6 +19,11 @@ const stripeSecretFormat = readFileSync(
   "utf8",
 );
 const merchDetailPage = readFileSync("src/app/merch/[id]/page.tsx", "utf8");
+const sellerCheckoutDialog = existsSync(
+  "src/app/merch/seller-checkout-dialog.tsx",
+)
+  ? readFileSync("src/app/merch/seller-checkout-dialog.tsx", "utf8")
+  : "";
 const merchIndexPage = readFileSync("src/app/merch/page.tsx", "utf8");
 const merchNotesMigration = readFileSync(
   "supabase/migrations/20260715235500_merch_fulfillment_return_notes.sql",
@@ -342,7 +347,7 @@ try {
 }
 
 checks.push({
-  label: "member payment actions use their matching independent release gates",
+  label: "member payment actions and seller merch use matching independent release gates",
   ok:
     accountPage.includes('stripeCheckoutCreationEnabled("booking")') &&
     accountPage.includes("stripeConnectOnboardingEnabled()") &&
@@ -351,8 +356,9 @@ checks.push({
     messagesPage.includes('stripeCheckoutCreationEnabled("booking")') &&
     messagesPage.includes("bookingCheckoutEnabled={bookingCheckoutEnabled}") &&
     messagesPage.includes("canPay && bookingCheckoutEnabled ? (") &&
-    merchDetailPage.includes('product.is_official ? "official_merch" : "marketplace_merch"') &&
-    merchDetailPage.includes("checkoutCreationEnabled ? (") &&
+    merchDetailPage.includes("sellerCheckoutPurchaseReadiness") &&
+    merchDetailPage.includes("sellerCheckoutLinksEnabled(process.env)") &&
+    merchDetailPage.includes("checkoutReadiness.ready") &&
     accountPage.includes("Payment setup is temporarily unavailable.") &&
     messagesPage.includes("Deposit payment is temporarily unavailable.") &&
     merchDetailPage.includes("Purchasing is temporarily unavailable for this product."),
@@ -1250,9 +1256,9 @@ checks.push({
     merchCheckout.includes('formReturnTo ?? "/merch"') &&
     merchCheckout.includes("formReturnTo ?? `/merch/${product.id}`") &&
     merchCheckout.includes('"cancel_url": cancelUrl') &&
-    merchDetailPage.includes('name="return_to"') &&
-    merchDetailPage.includes('value={`/merch/${product.id}`}') &&
-    merchDetailPage.includes('href={`/login?return_to=${encodeURIComponent(`/merch/${product.id}`)}`}'),
+    !merchDetailPage.includes('name="return_to"') &&
+    !merchDetailPage.includes('/api/merch/checkout') &&
+    !merchDetailPage.includes('/login?return_to='),
 });
 checks.push({
   label: "merch checkout creates local order before Stripe session",
@@ -1419,13 +1425,26 @@ checks.push({
     productPlan.includes("legacy active Merch detail guard"),
 });
 checks.push({
-  label: "merch detail shows buyer fee estimate and shipping cue before checkout",
+  label: "merch detail discloses seller checkout without TTC payment claims",
   ok:
-    merchDetailPage.includes("calculatePlatformFeeCents(product.price_cents)") &&
-    merchDetailPage.includes("estimatedSingleItemTotalCents") &&
-    merchDetailPage.includes("Estimated fee on one item") &&
-    merchDetailPage.includes("before any shipping, tax, or discount") &&
-    merchDetailPage.includes("Shipping address is collected during checkout") &&
+    merchDetailPage.includes("<SellerCheckoutDialog") &&
+    merchDetailPage.includes("checkoutReadiness.ready") &&
+    sellerCheckoutDialog.includes("{sellerName}") &&
+    sellerCheckoutDialog.includes("payment") &&
+    sellerCheckoutDialog.includes("tax") &&
+    sellerCheckoutDialog.includes("shipping") &&
+    sellerCheckoutDialog.includes("returns") &&
+    sellerCheckoutDialog.includes("refunds") &&
+    sellerCheckoutDialog.includes("disputes") &&
+    sellerCheckoutDialog.includes("purchase support") &&
+    sellerCheckoutDialog.includes("href={checkoutUrl}") &&
+    sellerCheckoutDialog.includes('target="_blank"') &&
+    sellerCheckoutDialog.includes('rel="ugc nofollow noopener noreferrer"') &&
+    !merchDetailPage.includes('action="/api/merch/checkout"') &&
+    !merchDetailPage.includes("Sign in to buy") &&
+    !merchDetailPage.includes("calculatePlatformFeeCents") &&
+    !merchDetailPage.includes("Estimated fee on one item") &&
+    !merchDetailPage.includes("Shipping address is collected during checkout") &&
     merchDetailPage.includes('href="/help/merch-products-orders"'),
 });
 checks.push({

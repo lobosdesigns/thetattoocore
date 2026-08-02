@@ -38,6 +38,7 @@ const files = {
   nativeAppUrlTest: "scripts/test-native-app-url.mjs",
   rootLayout: "src/app/layout.tsx",
   nativePushProbe: "scripts/native-push-qa-probe.mjs",
+  sellerCheckoutDialog: "src/app/merch/seller-checkout-dialog.tsx",
   globals: "src/app/globals.css",
   appLinkSmoke: "scripts/smoke-app-link-associations.mjs",
   realDeviceQa: "docs/REAL_DEVICE_QA_CHECKLIST.md",
@@ -48,7 +49,9 @@ const files = {
   appleAssociationRoute: "src/app/.well-known/apple-app-site-association/route.ts",
   envExample: ".env.example",
   rootPackageJson: "package.json",
+  rootPackageLock: "package-lock.json",
   packageJson: `${wrapperRoot}/package.json`,
+  packageLock: `${wrapperRoot}/package-lock.json`,
   readme: `${wrapperRoot}/README.md`,
   webFallback: `${wrapperRoot}/www/index.html`,
   webLoadError: `${wrapperRoot}/www/load-error.html`,
@@ -60,6 +63,17 @@ const source = Object.fromEntries(
     existsSync(path) ? readFileSync(path, "utf8") : "",
   ]),
 );
+
+const rootPackage = source.rootPackageJson
+  ? JSON.parse(source.rootPackageJson)
+  : {};
+const rootPackageLock = source.rootPackageLock
+  ? JSON.parse(source.rootPackageLock)
+  : {};
+const nativePackage = source.packageJson ? JSON.parse(source.packageJson) : {};
+const nativePackageLock = source.packageLock
+  ? JSON.parse(source.packageLock)
+  : {};
 
 const fileSize = (path) => (existsSync(path) ? statSync(path).size : 0);
 
@@ -207,6 +221,31 @@ const iosMarketingVersionsMatch =
 const iosCurrentStoreBuild = `${iosCurrentMarketingVersion} (${iosCurrentBuildVersion})`;
 
 const checks = [
+  {
+    label: "seller checkout uses the existing native system-browser wiring",
+    ok:
+      rootPackage.dependencies?.["@capacitor/browser"] === "7.0.5" &&
+      rootPackageLock.packages?.[""]?.dependencies?.["@capacitor/browser"] ===
+        "7.0.5" &&
+      rootPackageLock.packages?.["node_modules/@capacitor/browser"]?.version ===
+        "7.0.5" &&
+      nativePackage.dependencies?.["@capacitor/browser"] === "^7.0.2" &&
+      nativePackageLock.packages?.["node_modules/@capacitor/browser"]?.version ===
+        "7.0.5" &&
+      source.iosPodfileLock.includes("CapacitorBrowser (7.0.5)") &&
+      source.androidPluginSettings.includes("include ':capacitor-browser'") &&
+      source.androidPluginSettings.includes(
+        "node_modules/@capacitor/browser/android",
+      ) &&
+      source.androidPluginBuild.includes(
+        "implementation project(':capacitor-browser')",
+      ) &&
+      source.sellerCheckoutDialog.includes("Capacitor.isNativePlatform()") &&
+      source.sellerCheckoutDialog.includes('import("@capacitor/browser")') &&
+      source.sellerCheckoutDialog.includes(
+        "Browser.open({ url: checkoutUrl })",
+      ),
+  },
   {
     label: "native wrapper scaffold exists for Android and iOS beta builds",
     ok:

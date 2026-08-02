@@ -236,9 +236,21 @@ function readSource(path) {
 const actionsSource = readSource("src/app/actions.ts");
 const composerSource = readSource("src/app/floating-composer.tsx");
 const merchPageSource = readSource("src/app/merch/[id]/page.tsx");
+const sellerCheckoutDialogSource = existsSync(
+  "src/app/merch/seller-checkout-dialog.tsx",
+)
+  ? readSource("src/app/merch/seller-checkout-dialog.tsx")
+  : "";
 const sellerCheckoutFieldsSource = existsSync("src/app/merch/seller-checkout-fields.tsx")
   ? readSource("src/app/merch/seller-checkout-fields.tsx")
   : "";
+const productCardSources = [
+  "src/app/page.tsx",
+  "src/app/merch/page.tsx",
+  "src/app/search/page.tsx",
+  "src/app/saved/page.tsx",
+  "src/app/u/[username]/page.tsx",
+].map((path) => ({ path, source: readSource(path) }));
 
 function replaceMutation(source, search, replacement, expectedCount = 1) {
   const actualCount = source.split(search).length - 1;
@@ -1653,8 +1665,8 @@ const editMerchForm = sourceSection(
 );
 const ownerCheckoutQuery = sourceSection(
   merchPageSource,
-  "if (isOwnProduct && !product.is_official && claims?.sub)",
-  "const checkoutFlow",
+  "const canReadSellerCheckout",
+  "const checkoutReadiness",
 );
 const sourceContractFailures = [];
 
@@ -1707,14 +1719,149 @@ sourceContract(
       editMerchForm.indexOf('name="return_policy"'),
 );
 sourceContract(
-  "protected checkout URL query is an exact authenticated non-official owner read",
+  "protected checkout fields use an exact admin read only for the owner or enabled buyer flow",
   merchPageSource.includes("const isOwnProduct = claims?.sub === product.seller_id") &&
+    ownerCheckoutQuery.includes(
+      "isOwnProduct || sellerCheckoutLinksEnabled(process.env)",
+    ) &&
     ownerCheckoutQuery.includes("createAdminClient()") &&
-    ownerCheckoutQuery.includes('.select("external_checkout_url")') &&
+    ownerCheckoutQuery.includes("external_checkout_url") &&
+    ownerCheckoutQuery.includes("seller_checkout_terms_accepted_at") &&
+    ownerCheckoutQuery.includes("seller_checkout_terms_version") &&
     ownerCheckoutQuery.includes('.eq("id", product.id)') &&
-    ownerCheckoutQuery.includes('.eq("seller_id", claims.sub)') &&
+    ownerCheckoutQuery.includes('.eq("seller_id", product.seller_id)') &&
     ownerCheckoutQuery.includes("if (!checkoutError && checkoutRow)") &&
     !ownerCheckoutQuery.includes("console."),
+);
+sourceContract(
+  "product detail uses seller purchase readiness and never posts to TTC checkout",
+  merchPageSource.includes("sellerCheckoutPurchaseReadiness") &&
+    merchPageSource.includes("const checkoutReadiness =") &&
+    !merchPageSource.includes('/api/merch/checkout'),
+);
+sourceContract(
+  "buyer handoff is anonymous and shown only for a ready non-owner listing",
+  merchPageSource.includes("{isOwnProduct ? (") &&
+    merchPageSource.includes(") : checkoutReadiness.ready &&") &&
+    merchPageSource.includes("available > 0 &&") &&
+    merchPageSource.includes("sellerVerified &&") &&
+    merchPageSource.includes('product.status === "active"') &&
+    merchPageSource.includes('product.moderation_status === "active"') &&
+    merchPageSource.includes("<SellerCheckoutDialog") &&
+    merchPageSource.includes("checkoutUrl={checkoutReadiness.url}") &&
+    merchPageSource.includes("sellerName={product.profiles.display_name}") &&
+    !merchPageSource.includes("Sign in to buy") &&
+    !merchPageSource.includes("/login?return_to="),
+);
+sourceContract(
+  "product cards never select or render protected seller checkout URLs",
+  productCardSources.every(
+    ({ source }) => !source.includes("external_checkout_url"),
+  ),
+);
+sourceContract(
+  "seller checkout dialog exposes the approved serializable interface",
+  sellerCheckoutDialogSource.includes('"use client"') &&
+    sellerCheckoutDialogSource.includes("export function SellerCheckoutDialog({") &&
+    sellerCheckoutDialogSource.includes("checkoutUrl: string") &&
+    sellerCheckoutDialogSource.includes("sellerName: string"),
+);
+sourceContract(
+  "seller checkout dialog traps focus and returns it after Escape or close",
+  sellerCheckoutDialogSource.includes('aria-modal="true"') &&
+    sellerCheckoutDialogSource.includes('role="dialog"') &&
+    sellerCheckoutDialogSource.includes("closeButtonRef.current?.focus()") &&
+    sellerCheckoutDialogSource.includes('event.key === "Escape"') &&
+    sellerCheckoutDialogSource.includes('event.key !== "Tab"') &&
+    sellerCheckoutDialogSource.includes("dialogRef.current.contains(focused)") &&
+    sellerCheckoutDialogSource.includes("openerRef.current?.focus()"),
+);
+sourceContract(
+  "seller checkout disclosure names the seller and assigns every purchase responsibility",
+  sellerCheckoutDialogSource.includes("{sellerName}") &&
+    [
+      "payment",
+      "tax",
+      "shipping",
+      "returns",
+      "refunds",
+      "disputes",
+      "purchase support",
+    ].every((term) => sellerCheckoutDialogSource.toLowerCase().includes(term)),
+);
+sourceContract(
+  "seller checkout keeps hostile seller text out of HTML and URL sinks",
+  sellerCheckoutDialogSource.includes("{sellerName}") &&
+    !sellerCheckoutDialogSource.includes("dangerouslySetInnerHTML") &&
+    !sellerCheckoutDialogSource.includes("innerHTML") &&
+    !sellerCheckoutDialogSource.includes("insertAdjacentHTML") &&
+    !sellerCheckoutDialogSource.includes("href={sellerName}") &&
+    !sellerCheckoutDialogSource.includes("url: sellerName"),
+);
+sourceContract(
+  "seller checkout web anchor is protected and preserves the validated URL unchanged",
+  sellerCheckoutDialogSource.includes("href={checkoutUrl}") &&
+    sellerCheckoutDialogSource.includes('target="_blank"') &&
+    sellerCheckoutDialogSource.includes(
+      'rel="ugc nofollow noopener noreferrer"',
+    ),
+);
+
+const nativeGuardIndex = sellerCheckoutDialogSource.indexOf(
+  "Capacitor.isNativePlatform()",
+);
+const preventDefaultIndex = sellerCheckoutDialogSource.indexOf(
+  "event.preventDefault()",
+  nativeGuardIndex,
+);
+const browserImportIndex = sellerCheckoutDialogSource.indexOf(
+  'import("@capacitor/browser")',
+  preventDefaultIndex,
+);
+const browserOpenIndex = sellerCheckoutDialogSource.indexOf(
+  "Browser.open({ url: checkoutUrl })",
+  browserImportIndex,
+);
+sourceContract(
+  "native seller checkout prevents WebView navigation before dynamic Browser handoff",
+  sellerCheckoutDialogSource.includes(
+    'import { Capacitor } from "@capacitor/core"',
+  ) &&
+    nativeGuardIndex !== -1 &&
+    preventDefaultIndex > nativeGuardIndex &&
+    browserImportIndex > preventDefaultIndex &&
+    browserOpenIndex > browserImportIndex,
+);
+sourceContract(
+  "native seller checkout failures remain fixed and provider-data-free",
+  sellerCheckoutDialogSource.includes(
+    'setErrorMessage("Could not open seller checkout. Try again.")',
+  ) &&
+    !sellerCheckoutDialogSource.includes("console.") &&
+    !sellerCheckoutDialogSource.includes("error.message") &&
+    !sellerCheckoutDialogSource.includes("String(error)"),
+);
+sourceContract(
+  "seller checkout handoff never appends buyer order callback or query data",
+  [
+    "URLSearchParams",
+    "searchParams",
+    "buyerId",
+    "buyer_id",
+    "orderId",
+    "order_id",
+    "callback",
+    "success_url",
+    "client_reference_id",
+  ].every((token) => !sellerCheckoutDialogSource.includes(token)) &&
+    !sellerCheckoutDialogSource.includes("new URL(") &&
+    !sellerCheckoutDialogSource.includes("`${checkoutUrl}?") &&
+    occurrenceCount(sellerCheckoutDialogSource, "checkoutUrl") >= 4,
+);
+sourceContract(
+  "owner reservations are labeled as legacy TTC checkout records",
+  !merchPageSource.includes("reserved in active checkout") &&
+    merchPageSource.includes("reserved in legacy TTC checkout records"),
 );
 
 if (sourceContractFailures.length > 0) {
