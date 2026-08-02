@@ -10,6 +10,16 @@
 This dated section supersedes older current-position statements about TTC-owned
 Merch checkout while preserving the build, console, and deployment history below.
 
+## Controlled Seller-Link Rollout Sequence - Current And Operative
+
+1. Apply the protected seller-checkout migration only after exact owner approval; do not change production data by any other path.
+2. Build and upload an inactive Worker version with `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false`, then prove that version also has `STRIPE_EXPECTED_LIVEMODE=false`, `STRIPE_CHECKOUT_CREATION_ENABLED=false`, `STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED=false`, `STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED=false`, `STRIPE_BOOKING_CHECKOUT_ENABLED=false`, `STRIPE_CONNECT_ONBOARDING_ENABLED=false`, `STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false`, and `TTC_NATIVE_PUSH_DELIVERY_ENABLED=false`.
+3. Deploy that verified Worker version while `TTC_SELLER_CHECKOUT_LINKS_ENABLED` remains false; confirm no seller purchase control is public.
+4. Have one seller provide one live seller Payment Link through the protected workflow, and review the link and seller disclosures privately without placing the URL or seller account data in repo-safe output.
+5. After explicit owner approval to enable seller links, prepare a second inactive Worker upload and prove only `TTC_SELLER_CHECKOUT_LINKS_ENABLED` changes to true while every old TTC payment switch and `TTC_NATIVE_PUSH_DELIVERY_ENABLED` remain false; deploy only that inspected version.
+6. Run web, Android phone, and TestFlight iPad QA for disclosure, external-browser open and return, and no false TTC payment, receipt, order, webhook, inventory, or success state.
+7. Rollback by restoring `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false`, upload and inspect the rollback version, deploy it, and confirm the public purchase control is removed while protected and historical records remain.
+
 ## Current Position
 
 - TheTattooCore is web/PWA-first at `https://thetattoocore.com/login`.

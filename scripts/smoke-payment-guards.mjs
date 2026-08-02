@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
@@ -135,6 +136,39 @@ const expectedPaymentSmoke =
   "npm run test:stripe-release-gates && npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && npm run test:merch-checkout-route && npm run test:seller-checkout && node scripts/smoke-payment-guards.mjs";
 const expectedSecuritySmoke =
   "npm run test:seller-checkout && npm run test:csp-headers && node --no-warnings --experimental-loader ./scripts/server-only-test-loader.mjs --experimental-default-type=module scripts/test-mail-redaction.mjs && node scripts/smoke-security-guards.mjs";
+const compactWhitespace = (value) => value.replace(/\s+/g, " ").trim();
+const envGuardResult = spawnSync(process.execPath, ["scripts/smoke-env-guards.mjs"], {
+  encoding: "utf8",
+});
+
+function legacyMerchRoutingReadiness(source, destinationChargesEnabled) {
+  const expression = source.match(
+    /function legacyMerchRoutingReady\(destinationChargesEnabled: boolean\) \{\s*return ([^;]+);\s*\}/,
+  )?.[1];
+
+  if (!expression || !/^[!()\sA-Za-z]+$/.test(expression)) return null;
+
+  try {
+    return Function(
+      "destinationChargesEnabled",
+      `"use strict"; return (${expression});`,
+    )(destinationChargesEnabled);
+  } catch {
+    return null;
+  }
+}
+
+function legacyMerchRoutingContractIsSafe(source) {
+  return (
+    legacyMerchRoutingReadiness(source, false) === true &&
+    legacyMerchRoutingReadiness(source, true) === false
+  );
+}
+
+const invertedLegacyMerchRoutingSource = adminPaymentsPage.replace(
+  "return !destinationChargesEnabled;",
+  "return destinationChargesEnabled;",
+);
 const paymentCutoverGate = readFileSync(
   "scripts/smoke-payment-cutover-evidence.mjs",
   "utf8",
@@ -1667,6 +1701,14 @@ checks.push({
     !envExample.includes("STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=true"),
 });
 checks.push({
+  label: "payment smoke reuses deterministic Wrangler payment configuration guards",
+  ok: envGuardResult.status === 0,
+  message:
+    envGuardResult.status === 0
+      ? undefined
+      : "The repository environment guard rejected Wrangler payment configuration.",
+});
+checks.push({
   label: "legacy Merch destination-charge switch remains fail-closed and unused by the tombstone",
   ok:
     envExample.includes("STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false") &&
@@ -2020,8 +2062,14 @@ checks.push({
     ) &&
     adminPaymentsPage.includes("paymentDataUnavailable ? (") &&
     adminPaymentsPage.includes("Payment review is temporarily unavailable") &&
-    adminPaymentsPage.includes(
+    compactWhitespace(adminPaymentsPage).includes(
       "No payment decisions should be made from partial",
+    ) &&
+    compactWhitespace(adminPaymentsPage).includes(
+      "performing legacy TTC seller-payout reconciliation. No payment decisions",
+    ) &&
+    compactWhitespace(adminPaymentsPage).includes(
+      "booking deposit updates, or legacy TTC seller-payout reconciliation.",
     ) &&
     adminPaymentsPage.includes("Retry payment review"),
 });
@@ -2037,11 +2085,26 @@ checks.push({
   label: "admin payment preflight exposes the Merch seller-routing release gate",
   ok:
     adminPaymentsPage.includes("stripeMerchDestinationChargesEnabled") &&
-    adminPaymentsPage.includes("const merchDestinationChargesReady = stripeMerchDestinationChargesEnabled()") &&
+    adminPaymentsPage.includes("const merchDestinationChargesEnabled = stripeMerchDestinationChargesEnabled()") &&
+    adminPaymentsPage.includes("const merchDestinationChargesReady = legacyMerchRoutingReady(") &&
+    adminPaymentsPage.includes("detail: merchDestinationChargesEnabled") &&
     adminPaymentsPage.includes('label: "Merch seller routing"') &&
+    adminPaymentsPage.includes("ready: merchDestinationChargesReady") &&
     adminPaymentsPage.includes("Legacy TTC checkout controls: Merch seller routing remains disabled for the seller-link release.") &&
     paymentReadiness.includes("Merch seller-routing release switch") &&
     paymentReadiness.includes("does not show private key, webhook, or connected-account values"),
+});
+checks.push({
+  label: "admin payment preflight treats disabled legacy routing as seller-link ready",
+  ok: legacyMerchRoutingReadiness(adminPaymentsPage, false) === true,
+});
+checks.push({
+  label: "admin payment preflight treats enabled legacy routing as a blocker",
+  ok: legacyMerchRoutingReadiness(adminPaymentsPage, true) === false,
+});
+checks.push({
+  label: "admin payment routing readiness mutation cannot invert the safe state",
+  ok: !legacyMerchRoutingContractIsSafe(invertedLegacyMerchRoutingSource),
 });
 checks.push({
   label: "admin payments exposes separate Stripe release switches without private values",

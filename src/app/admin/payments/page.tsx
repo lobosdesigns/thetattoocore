@@ -359,6 +359,10 @@ function auditTypeFilter(value: string | string[] | undefined) {
     : null;
 }
 
+function legacyMerchRoutingReady(destinationChargesEnabled: boolean) {
+  return !destinationChargesEnabled;
+}
+
 function eventTypeLabel(value: string) {
   if (value === "checkout.session.completed") return "Checkout paid";
   if (value === "checkout.session.async_payment_succeeded") return "Delayed payment paid";
@@ -773,7 +777,10 @@ export default async function AdminPaymentsPage({
   const modeMismatch = stripeCheckoutModeMismatch();
   const checkoutPreflight = stripeCheckoutPreflight();
   const webhookSecretReady = stripeWebhookSigningSecretConfigured();
-  const merchDestinationChargesReady = stripeMerchDestinationChargesEnabled();
+  const merchDestinationChargesEnabled = stripeMerchDestinationChargesEnabled();
+  const merchDestinationChargesReady = legacyMerchRoutingReady(
+    merchDestinationChargesEnabled,
+  );
   const checkoutCreationMasterEnabled = stripeCheckoutCreationMasterEnabled();
   const checkoutReleaseSwitches = [
     {
@@ -836,7 +843,7 @@ export default async function AdminPaymentsPage({
       ready: !modeMismatch && expectedLivemode !== null && keyLivemode !== null,
     },
     {
-      detail: merchDestinationChargesReady
+      detail: merchDestinationChargesEnabled
         ? "Legacy TTC checkout controls unexpectedly report seller transfer routing enabled."
         : "Legacy TTC checkout controls: Merch seller routing remains disabled for the seller-link release.",
       label: "Merch seller routing",
@@ -907,9 +914,9 @@ export default async function AdminPaymentsPage({
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
               Retry before reconciling payments, issuing refunds, changing
-              fulfillment or ad credits, closing booking deposits, or releasing
-              seller payouts. No payment decisions should be made from partial
-              information.
+              fulfillment or ad credits, closing booking deposits, or performing
+              legacy TTC seller-payout reconciliation. No payment decisions
+              should be made from partial information.
             </p>
             <Link
               className="mt-4 inline-flex min-h-10 items-center justify-center rounded-md border border-[var(--foreground)] bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)]"
@@ -1676,7 +1683,7 @@ export default async function AdminPaymentsPage({
                   <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
                     Use this before manual closeout, refund decisions, ad
                     credits, fulfillment changes, booking deposit updates, or
-                    payout release.
+                    legacy TTC seller-payout reconciliation.
                   </p>
                   <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-[var(--muted)]">
                     {paymentReconciliationChecks.map((check) => (

@@ -40,17 +40,143 @@ function markdownSection(markdown, heading, nextHeading) {
   return markdown.slice(start, end === -1 ? undefined : end);
 }
 
+function markdownH2Section(markdown, heading) {
+  const start = markdown.indexOf(heading);
+  if (start === -1) return "";
+
+  const following = markdown.slice(start + heading.length);
+  const nextHeadingOffset = following.search(/\n## [^#]/);
+
+  return nextHeadingOffset === -1
+    ? markdown.slice(start)
+    : markdown.slice(start, start + heading.length + nextHeadingOffset);
+}
+
+function containsOrderedSnippets(source, snippets) {
+  let cursor = 0;
+
+  for (const snippet of snippets) {
+    const index = source.indexOf(snippet, cursor);
+    if (index === -1) return false;
+    cursor = index + snippet.length;
+  }
+
+  return true;
+}
+
+const controlledSellerRolloutHeading =
+  "## Controlled Seller-Link Rollout Sequence - Current And Operative";
+const controlledSellerRolloutStepSnippets = [
+  "Apply the protected seller-checkout migration only after exact owner approval",
+  "Build and upload an inactive Worker version with `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false`",
+  "Deploy that verified Worker version while `TTC_SELLER_CHECKOUT_LINKS_ENABLED` remains false",
+  "Have one seller provide one live seller Payment Link through the protected workflow",
+  "After explicit owner approval to enable seller links, prepare a second inactive Worker upload and prove only `TTC_SELLER_CHECKOUT_LINKS_ENABLED` changes to true",
+  "Run web, Android phone, and TestFlight iPad QA",
+  "Rollback by restoring `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false`",
+];
+
+function controlledSellerRolloutIsValid(markdown) {
+  const section = markdownH2Section(markdown, controlledSellerRolloutHeading);
+
+  return (
+    section.length > 0 &&
+    controlledSellerRolloutStepSnippets.every((snippet, index) =>
+      section.includes(`${index + 1}. ${snippet}`),
+    ) &&
+    containsOrderedSnippets(section, controlledSellerRolloutStepSnippets)
+  );
+}
+
+function swapFirst(source, first, second) {
+  const marker = "__TTC_ROLLOUT_STEP_SWAP__";
+  if (!source.includes(first) || !source.includes(second)) return source;
+
+  return source.replace(first, marker).replace(second, first).replace(marker, second);
+}
+
 const compactWhitespace = (value) => value.replace(/\s+/g, " ").trim();
 const currentStoreConsoleSnapshot = markdownSection(
   readinessDoc,
   "## Current Store Console Snapshot",
-  "## Public Distribution Blocker Matrix",
+  "### Historical TTC-Owned Marketplace Payment Evidence - July 24, 2026 (Non-Operative)",
 );
 const currentBlockerMatrix = markdownSection(
   readinessDoc,
   "## Public Distribution Blocker Matrix",
   "## Before Public Distribution Or Any Replacement Submission",
 );
+const appHistoricalPaymentsHeading =
+  "### Historical TTC-Owned Marketplace Payment Evidence - July 24, 2026 (Non-Operative)";
+const appCurrentDistributionHeading = "### Current Seller-Owned Distribution Steps";
+const appHistoricalReadinessHeading =
+  "### Historical Readiness Deployment Record - Dated, Non-Operative";
+const staleCurrentSellerCheckoutSnippets = [
+  "controlled live server-key and expected-mode cutover",
+  "seller payout readiness",
+  "small live purchase/refund evidence",
+  "production marketplace purchases",
+  "secure seller payout or manual payout process",
+  "production seller payout releases remain gated",
+  "official ttc merch checkout is the only selected pilot flow",
+];
+
+function currentAppSellerCheckoutText(markdown) {
+  const snapshotEnd = markdown.includes(appHistoricalPaymentsHeading)
+    ? appHistoricalPaymentsHeading
+    : "## Public Distribution Blocker Matrix";
+
+  return [
+    markdownH2Section(markdown, "## Seller-Owned Merch Current Position - August 2, 2026"),
+    markdownSection(markdown, "## Current Store Console Snapshot", snapshotEnd),
+    markdownSection(
+      markdown,
+      "## Public Distribution Blocker Matrix",
+      "## Before Public Distribution Or Any Replacement Submission",
+    ),
+    markdownSection(markdown, appCurrentDistributionHeading, appHistoricalReadinessHeading),
+  ].join("\n");
+}
+
+function currentPaymentSellerCheckoutText(markdown) {
+  return [
+    markdownH2Section(markdown, "## Current Position - August 2, 2026"),
+    markdownH2Section(markdown, controlledSellerRolloutHeading),
+  ].join("\n");
+}
+
+function currentSellerCheckoutInstructionsAreClean(appStoreDoc, paymentDoc) {
+  const currentText = `${currentAppSellerCheckoutText(appStoreDoc)}\n${currentPaymentSellerCheckoutText(paymentDoc)}`.toLowerCase();
+
+  return staleCurrentSellerCheckoutSnippets.every(
+    (snippet) => !currentText.includes(snippet),
+  );
+}
+
+function paymentPilotHistoryIsUnambiguous(markdown) {
+  const requiredHeadings = [
+    "## Historical TTC-Owned Pilot Operations - Non-Operative",
+    "### Historical TTC-Owned Production Switch Checklist - Non-Operative",
+    "### Historical TTC-Owned Production Evidence Pack - Non-Operative",
+    "### Historical TTC-Owned Live-Money Cutover Preflight Matrix - Non-Operative",
+    "### Historical TTC-Owned Draft Seller Payout Release Policy - Non-Operative",
+    "### Historical TTC-Owned Draft Shipping And Tax Procedure - Non-Operative",
+    "### Historical TTC-Owned Draft Refund And Dispute Procedure - Non-Operative",
+  ];
+
+  return (
+    requiredHeadings.every((heading) => markdown.includes(heading)) &&
+    markdown.includes("Do not execute these historical TTC-owned pilot instructions")
+  );
+}
+
+function appStorePaymentHistoryIsUnambiguous(markdown) {
+  return (
+    markdown.includes(appHistoricalPaymentsHeading) &&
+    markdown.includes(appHistoricalReadinessHeading) &&
+    markdown.includes("Historical evidence only; it is not the current seller checkout path")
+  );
+}
 const mobileSubmissionRunbook = docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"];
 const realDeviceQaChecklist = docs["docs/REAL_DEVICE_QA_CHECKLIST.md"];
 const mobileCurrentPosition = compactWhitespace(
@@ -221,6 +347,34 @@ const repoSafeSubmissionDocsText = [
   docs["docs/NATIVE_WRAPPER_PREP.md"],
 ].join("\n");
 
+const controlledSellerRolloutDocs = [
+  "docs/PAYMENT_PRODUCTION_READINESS.md",
+  "docs/APP_STORE_READINESS.md",
+  "docs/LEGAL_REVIEW_PREP.md",
+  "docs/MOBILE_APP_SUBMISSION_RUNBOOK.md",
+];
+const paymentReadinessDoc = docs["docs/PAYMENT_PRODUCTION_READINESS.md"];
+const rolloutMissingStepMutationCases = controlledSellerRolloutStepSnippets.map(
+  (snippet, index) => ({
+    label: `docs rollout mutation rejects missing controlled step ${index + 1}`,
+    source: paymentReadinessDoc.replace(snippet, ""),
+  }),
+);
+const rolloutOrderMutationSource = swapFirst(
+  paymentReadinessDoc,
+  controlledSellerRolloutStepSnippets[3],
+  controlledSellerRolloutStepSnippets[4],
+);
+const staleCurrentInstructionMutationCases = staleCurrentSellerCheckoutSnippets.map(
+  (snippet) => ({
+    label: `docs current-operation mutation rejects stale instruction: ${snippet}`,
+    appStoreSource: docs["docs/APP_STORE_READINESS.md"].replace(
+      "## Seller-Owned Merch Current Position - August 2, 2026",
+      `## Seller-Owned Merch Current Position - August 2, 2026\n\n${snippet}`,
+    ),
+  }),
+);
+
 const checks = [
   {
     label: "seller-owned Merch copy is consistent across member and admin surfaces",
@@ -261,7 +415,7 @@ const checks = [
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("TTC Checkout, Connect, and destination-charge controls remain false and historical") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("TTC_SELLER_CHECKOUT_LINKS_ENABLED=false") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("No migration, production change, live seller URL, deployment, or native upload has occurred") &&
-      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("one seller-supplied live link") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Have one seller provide one live seller Payment Link") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("web, Android phone, and TestFlight iPad QA") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].toLowerCase().includes("rollback proof") &&
       docs["docs/APP_STORE_READINESS.md"].includes("App Store build currently in review remains unchanged") &&
@@ -274,6 +428,40 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("external browser") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("no false success state"),
   },
+  {
+    label: "current seller checkout operations reject stale marketplace and payout instructions",
+    ok: currentSellerCheckoutInstructionsAreClean(
+      docs["docs/APP_STORE_READINESS.md"],
+      paymentReadinessDoc,
+    ),
+  },
+  {
+    label: "legacy TTC-owned payment operations are clearly historical and non-operative",
+    ok:
+      paymentPilotHistoryIsUnambiguous(paymentReadinessDoc) &&
+      appStorePaymentHistoryIsUnambiguous(docs["docs/APP_STORE_READINESS.md"]),
+  },
+  {
+    label: "controlled seller checkout rollout is complete and ordered in current docs",
+    ok: controlledSellerRolloutDocs.every((path) =>
+      controlledSellerRolloutIsValid(docs[path]),
+    ),
+  },
+  ...rolloutMissingStepMutationCases.map(({ label, source }) => ({
+    label,
+    ok: !controlledSellerRolloutIsValid(source),
+  })),
+  {
+    label: "docs rollout mutation rejects inverted private-review and enablement steps",
+    ok: !controlledSellerRolloutIsValid(rolloutOrderMutationSource),
+  },
+  ...staleCurrentInstructionMutationCases.map(({ label, appStoreSource }) => ({
+    label,
+    ok: !currentSellerCheckoutInstructionsAreClean(
+      appStoreSource,
+      paymentReadinessDoc,
+    ),
+  })),
   {
     label: "seller checkout docs stay free of live links account IDs and secrets",
     ok:
@@ -1137,8 +1325,9 @@ const checks = [
       adminReportsPage.includes('reportSubjectKey("help_article_comment"'),
   },
   {
-    label: "payment readiness doc keeps real-money gates explicit",
+    label: "payment readiness preserves historical real-money evidence as non-operative",
     ok:
+      paymentPilotHistoryIsUnambiguous(docs["docs/PAYMENT_PRODUCTION_READINESS.md"]) &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Stripe Checkout") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Stripe Connect") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("secure seller payout onboarding") &&
@@ -1155,8 +1344,8 @@ const checks = [
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Draft Seller Payout Release Policy") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Draft Shipping And Tax Procedure") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Draft Refund And Dispute Procedure") &&
-      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Draft Booking Deposit Procedure") &&
-      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("## Production Evidence Pack") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Separate Booking Deposit Procedure") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("### Historical TTC-Owned Production Evidence Pack - Non-Operative") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Live webhook event list captured and matched to the app-required event set") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Live/test mode setting, server payment key mode, and webhook mode reviewed together") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("receipt and reconciliation proof captured for the first genuine authorized Official TTC Merch customer sale") &&
@@ -1165,7 +1354,7 @@ const checks = [
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Separate Apple and Google Play exact-build physical-goods classification or reviewer-note evidence recorded privately before preauthorization") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Support, Terms, Privacy, and Help copy checked against the live build") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Repo-safe summary fields are limited to release candidate") &&
-      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("## Live-Money Cutover Preflight Matrix") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("### Historical TTC-Owned Live-Money Cutover Preflight Matrix - Non-Operative") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("| Flow | Mode and webhook preflight | Required live event proof | Admin reconciliation proof | Fulfillment or delivery gate | Payout/refund/dispute gate | Repo-safe result |") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("| Official TTC Merch pilot checkout |") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("| Marketplace Merch checkout |") &&
@@ -1293,15 +1482,11 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("no supported-device loss") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Monitor App Review and internal build `1.0 (4)` install/QA results") &&
       docs["docs/APP_STORE_READINESS.md"].includes("group-member opt-in/install proof and 14-day production-access tester evidence if required") &&
-      currentStoreConsoleSnapshot.includes(
-        "Current production-dashboard inspection confirms account activation and marketplace setup are complete",
-      ) &&
-      currentStoreConsoleSnapshot.includes(
-        "live webhook destination is active with the exact 12 required events",
-      ) &&
-      currentStoreConsoleSnapshot.includes(
-        "Keep the release switch off while completing the controlled live server-key and expected-mode cutover",
-      ) &&
+      currentStoreConsoleSnapshot.includes("Seller-owned external Merch checkout is selected") &&
+      currentStoreConsoleSnapshot.includes("TTC_SELLER_CHECKOUT_LINKS_ENABLED=false") &&
+      currentStoreConsoleSnapshot.includes("Follow the controlled seller-link rollout sequence in order") &&
+      docs["docs/APP_STORE_READINESS.md"].includes(appHistoricalPaymentsHeading) &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Historical evidence only; it is not the current seller checkout path") &&
       docs["docs/APP_STORE_READINESS.md"].includes("private native-alert project and Android/Apple app registrations exist") &&
       docs["docs/APP_STORE_READINESS.md"].includes("service-only DM delivery outbox") &&
       docs["docs/APP_STORE_READINESS.md"].includes("before enabling global delivery or making store claims") &&
@@ -1331,13 +1516,12 @@ const checks = [
       docs["docs/APP_STORE_READINESS.md"].includes("Final counsel-reviewed Terms/Privacy") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Real-device QA") &&
       docs["docs/APP_STORE_READINESS.md"].includes("full two-user DM read/reply pass") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Payments and payouts") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("small live-payment test after review") &&
-      docs["docs/APP_STORE_READINESS.md"].includes(
-        "secure seller payout or manual payout process",
+      currentBlockerMatrix.includes("Seller-owned Merch checkout") &&
+      currentBlockerMatrix.includes("TTC does not process the new external purchase or seller payout") &&
+      currentBlockerMatrix.includes("second inactive-upload inspection and explicit owner approval") &&
+      !staleCurrentSellerCheckoutSnippets.some((snippet) =>
+        currentBlockerMatrix.toLowerCase().includes(snippet),
       ) &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Secure seller payout setup foundation") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("payment-policy review") &&
       !docs["docs/APP_STORE_READINESS.md"].includes("Stripe Connect or manual payout process") &&
       !docs["docs/APP_STORE_READINESS.md"].includes("hosted onboarding links") &&
       !docs["docs/APP_STORE_READINESS.md"].includes("provider review") &&

@@ -73,6 +73,10 @@ const stripeReleaseSwitchKeys = [
   "STRIPE_BOOKING_CHECKOUT_ENABLED",
   "STRIPE_CONNECT_ONBOARDING_ENABLED",
 ];
+const retiredTtcPaymentSwitchKeys = [
+  ...stripeReleaseSwitchKeys,
+  "STRIPE_MERCH_DESTINATION_CHARGES_ENABLED",
+];
 const pairs = lines.map((line) => {
   const separatorIndex = line.indexOf("=");
 
@@ -163,6 +167,249 @@ function liveLookingSecretPatternLabels() {
     .map(({ label }) => label);
 }
 
+function parseJsonc(source) {
+  let index = 0;
+
+  function fail(message) {
+    throw new Error(`${message} at character ${index}`);
+  }
+
+  function skipTrivia() {
+    while (index < source.length) {
+      if (/\s/.test(source[index])) {
+        index += 1;
+        continue;
+      }
+
+      if (source.startsWith("//", index)) {
+        const lineEnd = source.indexOf("\n", index + 2);
+        index = lineEnd === -1 ? source.length : lineEnd + 1;
+        continue;
+      }
+
+      if (source.startsWith("/*", index)) {
+        const commentEnd = source.indexOf("*/", index + 2);
+        if (commentEnd === -1) fail("Unterminated JSONC comment");
+        index = commentEnd + 2;
+        continue;
+      }
+
+      break;
+    }
+  }
+
+  function parseString() {
+    const start = index;
+    index += 1;
+
+    while (index < source.length) {
+      if (source[index] === "\\") {
+        index += 2;
+        continue;
+      }
+
+      if (source[index] === '"') {
+        index += 1;
+        return JSON.parse(source.slice(start, index));
+      }
+
+      index += 1;
+    }
+
+    fail("Unterminated JSONC string");
+  }
+
+  function parseArray() {
+    const items = [];
+    index += 1;
+    skipTrivia();
+
+    if (source[index] === "]") {
+      index += 1;
+      return { type: "array", items };
+    }
+
+    while (index < source.length) {
+      items.push(parseValue());
+      skipTrivia();
+
+      if (source[index] === "]") {
+        index += 1;
+        return { type: "array", items };
+      }
+
+      if (source[index] !== ",") fail("Expected a comma in JSONC array");
+      index += 1;
+      skipTrivia();
+
+      if (source[index] === "]") {
+        index += 1;
+        return { type: "array", items };
+      }
+    }
+
+    fail("Unterminated JSONC array");
+  }
+
+  function parseObject() {
+    const entries = [];
+    index += 1;
+    skipTrivia();
+
+    if (source[index] === "}") {
+      index += 1;
+      return { type: "object", entries };
+    }
+
+    while (index < source.length) {
+      if (source[index] !== '"') fail("Expected a JSONC object key");
+      const key = parseString();
+      skipTrivia();
+
+      if (source[index] !== ":") fail("Expected a colon after JSONC object key");
+      index += 1;
+      const value = parseValue();
+      entries.push({ key, value });
+      skipTrivia();
+
+      if (source[index] === "}") {
+        index += 1;
+        return { type: "object", entries };
+      }
+
+      if (source[index] !== ",") fail("Expected a comma in JSONC object");
+      index += 1;
+      skipTrivia();
+
+      if (source[index] === "}") {
+        index += 1;
+        return { type: "object", entries };
+      }
+    }
+
+    fail("Unterminated JSONC object");
+  }
+
+  function parseValue() {
+    skipTrivia();
+
+    if (source[index] === "{") return parseObject();
+    if (source[index] === "[") return parseArray();
+    if (source[index] === '"') {
+      return { type: "scalar", value: parseString() };
+    }
+
+    const start = index;
+    while (index < source.length && !/[\s,}\]]/.test(source[index])) {
+      index += 1;
+    }
+
+    if (start === index) fail("Expected a JSONC value");
+    return {
+      type: "scalar",
+      value: JSON.parse(source.slice(start, index)),
+    };
+  }
+
+  const root = parseValue();
+  skipTrivia();
+  if (index !== source.length) fail("Unexpected JSONC content");
+  return root;
+}
+
+function wranglerPaymentConfigSafety(source) {
+  const issues = [];
+  let root;
+
+  try {
+    root = parseJsonc(source);
+  } catch (error) {
+    return {
+      issues: [`wrangler JSONC parse failed: ${error instanceof Error ? error.message : "unknown error"}`],
+      ok: false,
+    };
+  }
+
+  if (root.type !== "object") {
+    return { issues: ["wrangler root must be an object"], ok: false };
+  }
+
+  const varsEntries = root.entries.filter(({ key }) => key === "vars");
+  if (varsEntries.length !== 1 || varsEntries[0].value.type !== "object") {
+    return { issues: ["wrangler vars must be one object"], ok: false };
+  }
+
+  const vars = varsEntries[0].value.entries;
+  const valuesFor = (key) =>
+    vars.filter((entry) => entry.key === key).map((entry) => entry.value);
+  const requiresOneFalseString = (key) => {
+    const values = valuesFor(key);
+    if (
+      values.length !== 1 ||
+      values[0].type !== "scalar" ||
+      values[0].value !== "false"
+    ) {
+      issues.push(`${key} must appear exactly once with string value false`);
+    }
+  };
+
+  requiresOneFalseString("TTC_SELLER_CHECKOUT_LINKS_ENABLED");
+  requiresOneFalseString("TTC_NATIVE_PUSH_DELIVERY_ENABLED");
+
+  for (const key of retiredTtcPaymentSwitchKeys) {
+    const values = valuesFor(key);
+    if (
+      values.length > 1 ||
+      (values.length === 1 &&
+        (values[0].type !== "scalar" || values[0].value !== "false"))
+    ) {
+      issues.push(`${key} must be absent or appear once with string value false`);
+    }
+  }
+
+  return { issues, ok: issues.length === 0 };
+}
+
+function wranglerPaymentConfigLooksSafe(source) {
+  return wranglerPaymentConfigSafety(source).ok;
+}
+
+function appendWranglerVar(source, entry) {
+  return source.replace(
+    '"TTC_SELLER_CHECKOUT_LINKS_ENABLED": "false"',
+    `"TTC_SELLER_CHECKOUT_LINKS_ENABLED": "false",\n    ${entry}`,
+  );
+}
+
+const wranglerGuardMutationCases = [
+  {
+    label: "wrangler parser rejects duplicate seller checkout keys",
+    source: appendWranglerVar(
+      wranglerConfig,
+      '"TTC_SELLER_CHECKOUT_LINKS_ENABLED": "false"',
+    ),
+  },
+  {
+    label: "wrangler parser rejects seller checkout enablement",
+    source: wranglerConfig.replace(
+      '"TTC_SELLER_CHECKOUT_LINKS_ENABLED": "false"',
+      '"TTC_SELLER_CHECKOUT_LINKS_ENABLED": "true"',
+    ),
+  },
+  {
+    label: "wrangler parser rejects native push delivery enablement",
+    source: wranglerConfig.replace(
+      '"TTC_NATIVE_PUSH_DELIVERY_ENABLED": "false"',
+      '"TTC_NATIVE_PUSH_DELIVERY_ENABLED": "true"',
+    ),
+  },
+  ...retiredTtcPaymentSwitchKeys.map((key) => ({
+    label: `wrangler parser rejects retired ${key} enablement`,
+    source: appendWranglerVar(wranglerConfig, `"${key}": "true"`),
+  })),
+];
+const wranglerPaymentConfig = wranglerPaymentConfigSafety(wranglerConfig);
+
 const liveLookingSecretLabels = liveLookingSecretPatternLabels();
 const nativeSigningKeys = [
   "TTC_ANDROID_UPLOAD_STORE_FILE",
@@ -190,10 +437,15 @@ const committedNativeArtifactPaths = trackedNativePaths.filter((path) => {
 });
 
 const checks = [
+  ...wranglerGuardMutationCases.map(({ label, source }) => ({
+    label,
+    ok: !wranglerPaymentConfigLooksSafe(source),
+  })),
   {
     label: "seller checkout release gate is exact false in repo-safe config",
     ok:
       valueByKey.get("TTC_SELLER_CHECKOUT_LINKS_ENABLED") === "false" &&
+      wranglerPaymentConfig.ok &&
       wranglerConfig.includes('"TTC_SELLER_CHECKOUT_LINKS_ENABLED": "false"') &&
       !envExample.includes("TTC_SELLER_CHECKOUT_LINKS_ENABLED=true") &&
       !wranglerConfig.includes('"TTC_SELLER_CHECKOUT_LINKS_ENABLED": "true"') &&
@@ -203,6 +455,7 @@ const checks = [
       environmentInventory.includes("Defaults to `false`") &&
       !/https:\/\/buy[.]stripe[.]com\//i.test(environmentInventory) &&
       !/\bacct_[A-Za-z0-9]+\b/.test(environmentInventory),
+    message: wranglerPaymentConfig.issues.join("; "),
   },
   {
     label: ".env.example exists and is the only committed env file",
