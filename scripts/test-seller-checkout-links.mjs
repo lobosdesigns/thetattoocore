@@ -307,6 +307,12 @@ const actionMutations = {
       'console.error("Merch product submit failed.");',
       'console.error("Merch product submit failed: " + checkoutResult.url);',
     ),
+  "unscoped-edit-lookup": (source) =>
+    replaceMutation(
+      source,
+      '.eq("id", productId)\n    .maybeSingle<{\n      id: string;\n      inventory_reserved: number;\n      is_official: boolean;\n      profiles:',
+      '.maybeSingle<{\n      id: string;\n      inventory_reserved: number;\n      is_official: boolean;\n      profiles:',
+    ),
   "unscoped-trusted-create": (source) =>
     replaceMutation(
       source,
@@ -319,6 +325,12 @@ const actionMutations = {
       "if (!isVerifiedProfessional(product.profiles)) {",
       "if (false && !isVerifiedProfessional(product.profiles)) {",
     ),
+  "zero-row-admin-neutralization-success": (source) =>
+    replaceMutation(
+      source,
+      "if (cleanupError || !cleanedProduct) {",
+      "if (cleanupError) {",
+    ),
   "zero-row-create-success": (source) =>
     replaceMutation(
       source,
@@ -330,6 +342,12 @@ const actionMutations = {
       source,
       "if (error || !updatedProduct) {",
       "if (error) {",
+    ),
+  "zero-row-seller-delete-success": (source) =>
+    replaceMutation(
+      source,
+      "if (deleteError || !deletedProduct) {",
+      "if (deleteError) {",
     ),
 };
 
@@ -792,6 +810,26 @@ function assertValidationStopped(scenario) {
   );
 }
 
+function assertExactEditAuthorizationLookup(scenario) {
+  const lookups = actionQueries(
+    scenario,
+    "seller",
+    "merch_products",
+    "select",
+  );
+  assert.equal(lookups.length, 1, "edit authorization did not read one product");
+  assert.equal(
+    lookups[0].selection,
+    "id, seller_id, status, is_official, inventory_reserved, profiles:profiles!merch_products_seller_id_fkey(account_type, license_verified_at)",
+  );
+  assertQueryFilters(
+    lookups[0],
+    [{ column: "id", operator: "eq", value: productId }],
+    "edit authorization lookup was not scoped to the requested product ID",
+  );
+  assert.equal(lookups[0].terminal, "maybeSingle");
+}
+
 function assertCleanupQueries(scenario) {
   const deletes = actionQueries(scenario, "seller", "merch_products", "delete");
   assert.equal(deletes.length, 1, "seller cleanup DELETE was not attempted once");
@@ -1133,6 +1171,65 @@ async function runMerchActionContracts(actions) {
 
   await withScenario(
     {
+      sellerDeleteResult: { data: null, error: null },
+      trustedCreateResult: { data: null, error: null },
+    },
+    async (scenario) => {
+      const location = await redirectedBy(
+        actions.createMerchProduct,
+        validCreateForm(),
+      );
+      assert.equal(
+        location,
+        homeRedirect("Could not prepare seller checkout. Please try again."),
+      );
+      assertFailClosedInsert(scenario);
+      assertCleanupQueries(scenario);
+      assert.equal(scenario.storageUploads.length, 0);
+      assert.equal(
+        actionQueries(scenario, "seller", "merch_product_media", "insert").length,
+        0,
+      );
+      assertModuleValue(scenario.logs, [["Merch checkout setup failed."]]);
+      assertNoSensitiveOutput(scenario, location, [submittedUrl]);
+    },
+  );
+
+  await withScenario(
+    {
+      neutralizationResult: { data: null, error: null },
+      trustedCreateResult: { data: null, error: null },
+    },
+    async (scenario) => {
+      const location = await redirectedBy(
+        actions.createMerchProduct,
+        validCreateForm(),
+      );
+      assert.equal(
+        location,
+        homeRedirect("Could not prepare seller checkout. Please try again."),
+      );
+      assertFailClosedInsert(scenario);
+      assertCleanupQueries(scenario);
+      assert.equal(scenario.storageUploads.length, 0);
+      assert.equal(scenario.storageRemovals.length, 0);
+      assert.equal(
+        actionQueries(scenario, "seller", "merch_product_media", "insert").length,
+        0,
+      );
+      assertModuleValue(scenario.logs, [
+        ["Merch checkout setup failed."],
+        ["Merch pending-row cleanup failed."],
+      ]);
+      assertNoSensitiveOutput(scenario, location, [
+        submittedUrl,
+        providerSecrets.delete,
+      ]);
+    },
+  );
+
+  await withScenario(
+    {
       neutralizationResult: {
         data: null,
         error: { message: providerSecrets.cleanup },
@@ -1306,10 +1403,7 @@ async function runMerchActionContracts(actions) {
         validEditForm(),
       );
       assert.equal(location, editRedirect("Merch product was not found."));
-      assert.equal(
-        actionQueries(scenario, "seller", "merch_products", "select").length,
-        1,
-      );
+      assertExactEditAuthorizationLookup(scenario);
       assert.equal(scenario.adminClientCalls, 0);
       assert.equal(scenario.admin.queries.length, 0);
       assert.equal(scenario.storageUploads.length, 0);
@@ -1338,6 +1432,7 @@ async function runMerchActionContracts(actions) {
         validEditForm(),
       );
       assert.equal(location, editRedirect("You can only edit your own Merch."));
+      assertExactEditAuthorizationLookup(scenario);
       assert.equal(scenario.adminClientCalls, 0);
       assert.equal(scenario.admin.queries.length, 0);
     },
@@ -1368,6 +1463,7 @@ async function runMerchActionContracts(actions) {
           "Verified artist, studio, or vendor status is required to edit Merch.",
         ),
       );
+      assertExactEditAuthorizationLookup(scenario);
       assert.equal(scenario.adminClientCalls, 0);
       assert.equal(scenario.admin.queries.length, 0);
       assertModuleValue(scenario.logs, []);
@@ -1395,6 +1491,7 @@ async function runMerchActionContracts(actions) {
         location,
         editRedirect("Official TTC Merch must be edited from admin."),
       );
+      assertExactEditAuthorizationLookup(scenario);
       assert.equal(scenario.adminClientCalls, 0);
       assert.equal(scenario.admin.queries.length, 0);
     },
