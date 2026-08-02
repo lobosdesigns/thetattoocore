@@ -9,6 +9,7 @@ const result = spawnSync(
     "--",
     "--release-candidate=0123456789abcdef0123456789abcdef01234567",
     "--evidence=scripts/fixtures/payment-go-live-evidence.passed.md",
+    "--candidate-source-fixture=scripts/fixtures/payment-candidate-source.safe.json",
     "--reference-date=2026-07-23",
     "--test-fixture",
   ],
@@ -29,7 +30,7 @@ if (result.status !== 0) {
 }
 
 const expectedOutput = [
-  "PASS payment gate accepts official-Merch-only preauthorization evidence",
+  "PASS payment gate accepts an f272f0a0-equivalent safe candidate fixture",
   "PASS sanitized payment go-live fixture validates strict gate",
 ];
 const missingOutput = expectedOutput.filter(
