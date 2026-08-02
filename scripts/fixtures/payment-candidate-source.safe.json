@@ -1,0 +1,63 @@
+{
+  "fixtureMarker": "SANITIZED PAYMENT CANDIDATE SOURCE TEST FIXTURE - NOT RELEASE EVIDENCE",
+  "releaseCandidate": "0123456789abcdef0123456789abcdef01234567",
+  "sources": {
+    ".env.example": [
+      "STRIPE_CHECKOUT_CREATION_ENABLED=false",
+      "STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED=false",
+      "STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED=false",
+      "STRIPE_BOOKING_CHECKOUT_ENABLED=false",
+      "STRIPE_CONNECT_ONBOARDING_ENABLED=false",
+      "STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false"
+    ],
+    "src/app/api/bookings/checkout/route.ts": [
+      "stripeCheckoutCreationEnabled(\"booking\");"
+    ],
+    "src/app/api/merch/checkout/route.ts": [
+      "async function createCheckoutSession({ product }) {",
+      "  const body = new URLSearchParams();",
+      "  if (product.shipping_required) {",
+      "    body.set(\"shipping_address_collection[allowed_countries][0]\", \"US\");",
+      "    if (!product.is_official) {",
+      "      body.set(\"shipping_address_collection[allowed_countries][1]\", \"CA\");",
+      "    }",
+      "  }",
+      "  return createStripeCheckoutSession({ body });",
+      "}",
+      "export async function POST() {",
+      "  const product = await loadProduct();",
+      "  const checkoutFlow = product.is_official ? \"official_merch\" : \"marketplace_merch\";",
+      "  const checkoutCreationEnabled = stripeCheckoutCreationEnabled(checkoutFlow);",
+      "  if (!checkoutCreationEnabled) return redirectWithMessage();",
+      "  if (product.is_official && product.shipping_required !== true) {",
+      "    return redirectWithMessage();",
+      "  }",
+      "  if (missingReviewDetails(product)) return redirectWithMessage();",
+      "  const adminSupabase = createAdminClient();",
+      "  if (!product.is_official) {",
+      "    if (!stripeMerchDestinationChargesEnabled()) return redirectWithMessage();",
+      "    await loadPayoutAccount();",
+      "  }",
+      "  await supabase.from(\"merch_orders\").insert({});",
+      "  await adminSupabase.rpc(\"reserve_merch_inventory_for_order\");",
+      "  return createCheckoutSession({ product });",
+      "}"
+    ],
+    "src/app/api/stripe/connect/onboarding/route.ts": [
+      "if (!stripeConnectOnboardingEnabled()) return;"
+    ],
+    "src/lib/commerce-launch.ts": [
+      "export const AD_PURCHASES_AVAILABLE = false;"
+    ],
+    "src/lib/stripe/release-gates.ts": [
+      "const checkoutFlowFlags = {",
+      "  booking: \"STRIPE_BOOKING_CHECKOUT_ENABLED\",",
+      "  marketplace_merch: \"STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED\",",
+      "  official_merch: \"STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED\",",
+      "};",
+      "function exactTrue(value) {",
+      "  return value === \"true\";",
+      "}"
+    ]
+  }
+}

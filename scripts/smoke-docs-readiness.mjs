@@ -1102,7 +1102,7 @@ const checks = [
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("receipt and reconciliation proof captured for the first genuine authorized Official TTC Merch customer sale") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Delayed or async payment success reconciliation captured before fulfillment, ad delivery, booking closeout, or seller payout release.") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Seller payout policy approval recorded with payout timing") &&
-      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Native app policy review recorded before exposing checkout in native wrappers") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Separate Apple and Google Play exact-build physical-goods classification or reviewer-note evidence recorded privately before preauthorization") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Support, Terms, Privacy, and Help copy checked against the live build") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Repo-safe summary fields are limited to release candidate") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("## Live-Money Cutover Preflight Matrix") &&
@@ -1120,8 +1120,9 @@ const checks = [
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("npm.cmd run smoke:payments") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("environment drift, event coverage drift, and secret-boundary regressions") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Native checkout policy review must be dated") &&
-      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("July 21, 2026 review source set") &&
-      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Apple App Review Guidelines and Google Play Payments policy for physical goods, services, digital goods, ads, and external-payment behavior") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Apple App Review Guidelines 3.1.3(e)") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Google Play Payments policy section 3") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("exact-build reviewer notes or classification evidence remain pending by default") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Classify every paid native flow separately before promotion") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Merch physical goods") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("accepted booking deposits or services") &&
@@ -1138,7 +1139,25 @@ const checks = [
     label: "payment readiness keeps the first launch scope and rollback explicit",
     ok:
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes(
-        "The first proposed scope is US-only, web-first, TTC-owned physical Merch.",
+        "The operating sequence is web-first for US-only, TTC-owned physical Merch; this is not technical native isolation because the iOS and Android wrappers load the production web app.",
+      ) &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes(
+        "Apple App Review Guidelines 3.1.3(e)",
+      ) &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes(
+        "https://developer.apple.com/app-store/review/guidelines/",
+      ) &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes(
+        "Google Play Payments policy section 3",
+      ) &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes(
+        "https://support.google.com/googleplay/android-developer/answer/9858738",
+      ) &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes(
+        "Both policies classify payments for physical goods outside store billing, but they do not prove approval for TheTattooCore's exact native builds.",
+      ) &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes(
+        "Exact-build Apple and Google Play review notes or physical-goods classification remain separate strict private preauthorization gates.",
       ) &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes(
         "Booking deposits, marketplace Merch, connected-account onboarding/routing, and ads remain disabled pending their separate approvals.",

@@ -41,6 +41,20 @@ const checks = [
       generator.includes("writeFileSync(outputPath, template)"),
   },
   {
+    label: "private handoff defaults both native physical-goods reviews to pending",
+    ok:
+      generator.includes(
+        "| Apple | Native physical-goods classification and review evidence | Exact iOS version/build review notes or written physical-goods classification must confirm the submitted wrapper treatment before preauthorization; general policy is not exact-build approval | pending | |",
+      ) &&
+      generator.includes(
+        "| Google Play | Native physical-goods classification and review evidence | Exact Android version/build/track review notes or Play Console physical-goods classification must confirm the submitted wrapper treatment before preauthorization; general policy is not exact-build approval | pending | |",
+      ) &&
+      generator.includes("Keep console details, screenshots,") &&
+      generator.includes(
+        "account identifiers, and private links in this ignored handoff only.",
+      ),
+  },
+  {
     label: "private handoff template covers store, QA, payment, legal, and push evidence",
     ok:
       generator.includes("## Store Console Evidence") &&

@@ -7,6 +7,8 @@ data. It exists only to prove the strict parser's passing path.
 
 | Platform | Blocker | Current handoff value | Result | Private proof filename or location |
 | --- | --- | --- | --- | --- |
+| Apple | Native physical-goods classification and review evidence | Sanitized exact-build reviewer-note fixture proof | passed | fixture-only |
+| Google Play | Native physical-goods classification and review evidence | Sanitized exact-build classification fixture proof | passed | fixture-only |
 | Payments | Production account activation | Sanitized fixture proof | passed | fixture-only |
 | Payments | Marketplace Connect setup | Excluded fixture flow | n/a | fixture-only |
 | Payments | Production app mode preflight | Sanitized fixture proof | passed | fixture-only |

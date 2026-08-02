@@ -27,10 +27,13 @@ repo docs. Use safe aliases and short pass/fail summaries in repo-visible docs.
 ## Current Console Blockers To Clear
 
 Record private proof when each blocker is cleared. Keep console screenshots and
-account identifiers out of repo docs.
+account identifiers out of repo docs. Keep console details, screenshots,
+account identifiers, and private links in this ignored handoff only.
 
 | Platform | Blocker | Current handoff value | Result | Private proof filename or location |
 | --- | --- | --- | --- | --- |
+| Apple | Native physical-goods classification and review evidence | Exact iOS version/build review notes or written physical-goods classification must confirm the submitted wrapper treatment before preauthorization; general policy is not exact-build approval | pending | |
+| Google Play | Native physical-goods classification and review evidence | Exact Android version/build/track review notes or Play Console physical-goods classification must confirm the submitted wrapper treatment before preauthorization; general policy is not exact-build approval | pending | |
 | Apple | App Review monitoring and response evidence | App Store Connect shows iOS App Version 1.0 build 1.0 (3) submitted for App Review; archive reviewer messages, status changes, rejection notes, or approval proof privately | pending | |
 | Apple | Submitted-build console field evidence | Confirm selected build, 13-inch iPad screenshot upload, primary category, free pricing, Content Rights, App Privacy, Privacy Policy URL, and Age 18+ override remain saved for the submitted build | pending | |
 | Apple | Accessibility Nutrition Labels evidence | Apple currently treats these labels as voluntary; leave them unclaimed unless submitted-build iPhone/iPad QA supports an honest label | n/a | Official Apple Accessibility Nutrition Labels help, reviewed before submission |

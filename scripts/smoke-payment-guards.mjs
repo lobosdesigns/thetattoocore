@@ -2100,8 +2100,9 @@ checks.push({
     paymentReadiness.includes("native checkout policy status") &&
     paymentReadiness.includes("pass/fail/blocker status") &&
     paymentReadiness.includes("Native checkout policy review must be dated") &&
-    paymentReadiness.includes("July 21, 2026 review source set") &&
-    paymentReadiness.includes("Apple App Review Guidelines and Google Play Payments policy") &&
+    paymentReadiness.includes("Apple App Review Guidelines 3.1.3(e)") &&
+    paymentReadiness.includes("Google Play Payments policy section 3") &&
+    paymentReadiness.includes("exact-build reviewer notes or classification evidence remain pending by default") &&
     paymentReadiness.includes("Classify every paid native flow separately before promotion") &&
     paymentReadiness.includes("Merch physical goods") &&
     paymentReadiness.includes("accepted booking deposits or services") &&

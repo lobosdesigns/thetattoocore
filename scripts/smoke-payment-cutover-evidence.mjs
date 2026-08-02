@@ -1,6 +1,11 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
+import {
+  paymentPilotCandidatePolicyBlockers,
+  paymentPilotCandidateSourcePaths,
+  readPaymentPilotCandidateSources,
+} from "./payment-pilot-candidate-policy.mjs";
 
 const generator = readFileSync("scripts/generate-private-release-handoff.mjs", "utf8");
 const paymentReadiness = readFileSync("docs/PAYMENT_PRODUCTION_READINESS.md", "utf8");
@@ -62,9 +67,21 @@ const requiredPaymentBlockers = [
   "Production app mode preflight",
   "Official Merch policy and fulfillment approval",
 ];
+const requiredNativePolicyBlockers = [
+  {
+    blocker: "Native physical-goods classification and review evidence",
+    platform: "Apple",
+  },
+  {
+    blocker: "Native physical-goods classification and review evidence",
+    platform: "Google Play",
+  },
+];
 const defaultPrivateEvidencePath = "private-release-handoff/release-handoff-template.md";
 const fixtureRoot = resolve("scripts/fixtures");
 const fixtureMarker = "SANITIZED PAYMENT GO-LIVE TEST FIXTURE - NOT RELEASE EVIDENCE";
+const candidateSourceFixtureMarker =
+  "SANITIZED PAYMENT CANDIDATE SOURCE TEST FIXTURE - NOT RELEASE EVIDENCE";
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MAX_EVIDENCE_AGE_DAYS = 45;
 const COMMIT_PATTERN = /^[0-9a-f]{7,40}$/;
@@ -287,12 +304,13 @@ function validateStrictEvidence(
   expectedReleaseCandidate,
   {
     allowFixtureOnly = false,
+    candidatePolicyBlockers = [],
     disabledFlowSourceProofs = {},
     phase = "preauthorization",
     referenceTimestamp = Date.now(),
   } = {},
 ) {
-  const blockers = [];
+  const blockers = [...candidatePolicyBlockers];
   const currentBlockersTable = markdownTable(
     sectionBetween(
       source,
@@ -321,24 +339,32 @@ function validateStrictEvidence(
   if (!currentBlockersTable) {
     blockers.push("Current Console Blockers To Clear payment table: missing");
   } else {
-    for (const blockerName of requiredPaymentBlockers) {
+    const requiredBlockers = [
+      ...requiredNativePolicyBlockers,
+      ...requiredPaymentBlockers.map((blocker) => ({
+        blocker,
+        platform: "Payments",
+      })),
+    ];
+
+    for (const { blocker: blockerName, platform } of requiredBlockers) {
       const row = currentBlockersTable.rows.find(
         (candidate) =>
-          candidate.Platform === "Payments" && candidate.Blocker === blockerName,
+          candidate.Platform === platform && candidate.Blocker === blockerName,
       );
       if (!row) {
-        blockers.push(`Payments blocker / ${blockerName}: missing`);
+        blockers.push(`${platform} blocker / ${blockerName}: missing`);
         continue;
       }
 
       const blocker = stateBlocker(
-        `Payments blocker / ${blockerName} / Result`,
+        `${platform} blocker / ${blockerName} / Result`,
         row.Result ?? "",
       );
       if (blocker) blockers.push(blocker);
 
       const proofBlocker = privateProofBlocker(
-        `Payments blocker / ${blockerName} / Private proof filename or location`,
+        `${platform} blocker / ${blockerName} / Private proof filename or location`,
         row["Private proof filename or location"] ?? "",
         { allowFixtureOnly },
       );
@@ -563,16 +589,85 @@ function fixturePathIsSafe(path) {
   );
 }
 
+function readCandidateSourceFixture(path, expectedReleaseCandidate) {
+  if (!existsSync(path)) {
+    return { blockers: ["Candidate source fixture: missing"], sources: null };
+  }
+
+  let fixture;
+  try {
+    fixture = JSON.parse(readFileSync(path, "utf8"));
+  } catch {
+    return {
+      blockers: ["Candidate source fixture: invalid JSON"],
+      sources: null,
+    };
+  }
+
+  if (fixture.fixtureMarker !== candidateSourceFixtureMarker) {
+    return {
+      blockers: ["Candidate source fixture: sanitized marker missing"],
+      sources: null,
+    };
+  }
+  if (
+    String(fixture.releaseCandidate ?? "").trim().toLowerCase() !==
+    expectedReleaseCandidate
+  ) {
+    return {
+      blockers: ["Candidate source fixture: release candidate mismatch"],
+      sources: null,
+    };
+  }
+
+  const sourceByPath = fixture.sources ?? {};
+  const missingPaths = Object.values(paymentPilotCandidateSourcePaths).filter(
+    (sourcePath) => !Array.isArray(sourceByPath[sourcePath]),
+  );
+  if (missingPaths.length > 0) {
+    return {
+      blockers: [
+        `Candidate source fixture: missing source paths ${missingPaths.join(", ")}`,
+      ],
+      sources: null,
+    };
+  }
+
+  const invalidPath = Object.values(paymentPilotCandidateSourcePaths).find(
+    (sourcePath) =>
+      !sourceByPath[sourcePath].every((line) => typeof line === "string"),
+  );
+  if (invalidPath) {
+    return {
+      blockers: [`Candidate source fixture: invalid source for ${invalidPath}`],
+      sources: null,
+    };
+  }
+
+  return {
+    blockers: [],
+    sources: readPaymentPilotCandidateSources(
+      expectedReleaseCandidate,
+      (_candidate, sourcePath) => sourceByPath[sourcePath].join("\n"),
+    ),
+  };
+}
+
 function runStrictEvidenceGate() {
   const args = process.argv.slice(2);
   const testFixtureMode = args.includes("--test-fixture");
   const evidenceOption = optionState(args, "--evidence");
+  const candidateSourceFixtureOption = optionState(
+    args,
+    "--candidate-source-fixture",
+  );
   const phaseOption = optionState(args, "--phase");
   const releaseCandidateOption = optionState(args, "--release-candidate");
   const referenceDateOption = optionState(args, "--reference-date");
   const optionNames = new Set([
     "--strict",
     "--test-fixture",
+    "--candidate-source-fixture",
     "--evidence",
     "--phase",
     "--release-candidate",
@@ -591,6 +686,9 @@ function runStrictEvidenceGate() {
   if (evidenceOption.missingValue) {
     return ["Strict command option --evidence: missing path"];
   }
+  if (candidateSourceFixtureOption.missingValue) {
+    return ["Strict command option --candidate-source-fixture: missing path"];
+  }
   if (releaseCandidateOption.missingValue) {
     return ["Strict command option --release-candidate: missing value"];
   }
@@ -603,6 +701,9 @@ function runStrictEvidenceGate() {
   if (evidenceOption.values.length > 1) {
     return ["Strict command option --evidence: duplicate values"];
   }
+  if (candidateSourceFixtureOption.values.length > 1) {
+    return ["Strict command option --candidate-source-fixture: duplicate values"];
+  }
   if (releaseCandidateOption.values.length > 1) {
     return ["Strict command option --release-candidate: duplicate values"];
   }
@@ -614,6 +715,16 @@ function runStrictEvidenceGate() {
   }
   if (!testFixtureMode && referenceDateOption.values.length) {
     return ["Strict command option --reference-date: test fixtures only"];
+  }
+  if (!testFixtureMode && candidateSourceFixtureOption.values.length) {
+    return [
+      "Strict command option --candidate-source-fixture: test fixtures only",
+    ];
+  }
+  if (testFixtureMode && !candidateSourceFixtureOption.values.length) {
+    return [
+      "Strict command option --candidate-source-fixture: required for test fixtures",
+    ];
   }
 
   const phase = phaseOption.values[0] ?? "preauthorization";
@@ -677,44 +788,32 @@ function runStrictEvidenceGate() {
     return ["Private payment evidence file: test fixtures cannot approve go-live"];
   }
 
-  const candidateSources = testFixtureMode
-    ? {
-        bookingCheckoutSource: bookingCheckout,
-        commerceLaunchSource: commerceLaunch,
-        envExampleSource: envExample,
-        merchCheckoutSource: merchCheckout,
-        releaseGatesSource: stripeReleaseGates,
-        stripeConnectOnboardingSource: stripeConnectOnboarding,
-      }
-    : {
-        bookingCheckoutSource: gitFileAtCandidate(
-          normalizedExpectedReleaseCandidate,
-          "src/app/api/bookings/checkout/route.ts",
-        ),
-        commerceLaunchSource: gitFileAtCandidate(
-          normalizedExpectedReleaseCandidate,
-          "src/lib/commerce-launch.ts",
-        ),
-        envExampleSource: gitFileAtCandidate(
-          normalizedExpectedReleaseCandidate,
-          ".env.example",
-        ),
-        merchCheckoutSource: gitFileAtCandidate(
-          normalizedExpectedReleaseCandidate,
-          "src/app/api/merch/checkout/route.ts",
-        ),
-        releaseGatesSource: gitFileAtCandidate(
-          normalizedExpectedReleaseCandidate,
-          "src/lib/stripe/release-gates.ts",
-        ),
-        stripeConnectOnboardingSource: gitFileAtCandidate(
-          normalizedExpectedReleaseCandidate,
-          "src/app/api/stripe/connect/onboarding/route.ts",
-        ),
-      };
+  let candidateSources;
+  if (testFixtureMode) {
+    const candidateSourceFixturePath = resolve(
+      candidateSourceFixtureOption.values[0],
+    );
+    if (!fixturePathIsSafe(candidateSourceFixturePath)) {
+      return ["Candidate source fixture path: must stay under scripts/fixtures"];
+    }
+    const fixtureResult = readCandidateSourceFixture(
+      candidateSourceFixturePath,
+      normalizedExpectedReleaseCandidate,
+    );
+    if (fixtureResult.blockers.length > 0) return fixtureResult.blockers;
+    candidateSources = fixtureResult.sources;
+  } else {
+    candidateSources = readPaymentPilotCandidateSources(
+      normalizedExpectedReleaseCandidate,
+      gitFileAtCandidate,
+    );
+  }
 
   return validateStrictEvidence(evidence, normalizedExpectedReleaseCandidate, {
     allowFixtureOnly: testFixtureMode,
+    candidatePolicyBlockers: paymentPilotCandidatePolicyBlockers(
+      candidateSources.merchCheckoutSource,
+    ),
     disabledFlowSourceProofs: disabledPilotFlowSourceProofs(candidateSources),
     phase,
     referenceTimestamp,
@@ -807,7 +906,7 @@ const requiredReadinessText = [
   "Repo-safe summary fields are limited to release candidate, test flow, live/test mode result",
   "Keep payment intent IDs, checkout session IDs, webhook event IDs, refund IDs, dispute IDs, seller account IDs",
   "Complete the applicable phase privately against one release candidate",
-  "Every Payments blocker and Payment Dashboard row required to pass in the selected phase must name a non-placeholder private proof filename or location",
+  "Every Payments, Apple, and Google Play blocker and Payment Dashboard row required to pass in the selected phase must name a non-placeholder private proof filename or location",
   "Dashboard evidence must be dated no more than 45 days",
   "cannot be future-dated",
   "Official TTC Merch checkout is the only selected pilot flow",

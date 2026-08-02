@@ -10,8 +10,17 @@ import { join } from "node:path";
 const gatePath = "scripts/smoke-payment-cutover-evidence.mjs";
 const fixturePath = "scripts/fixtures/payment-go-live-evidence.passed.md";
 const fixtureCandidate = "0123456789abcdef0123456789abcdef01234567";
+const unsafeFixtureCandidate = "1111111111111111111111111111111111111111";
 const fixtureReferenceDate = "2026-07-23";
+const safeCandidateSourceFixture =
+  "scripts/fixtures/payment-candidate-source.safe.json";
+const unsafeCandidateSourceFixture =
+  "scripts/fixtures/payment-candidate-source.unsafe.json";
+const merchCheckoutSourcePath = "src/app/api/merch/checkout/route.ts";
 const fixtureSource = readFileSync(fixturePath, "utf8");
+const safeCandidateSource = JSON.parse(
+  readFileSync(safeCandidateSourceFixture, "utf8"),
+);
 const variantDir = mkdtempSync(
   join("scripts", "fixtures", ".payment-go-live-test-"),
 );
@@ -30,6 +39,17 @@ function writeSource(name, source) {
   const path = join(variantDir, name);
   writeFileSync(path, source);
   return path;
+}
+
+function writeCandidateSourceVariant(name, mutateRouteLines) {
+  const source = structuredClone(safeCandidateSource);
+  const routeLines = source.sources[merchCheckoutSourcePath];
+  const originalRoute = routeLines.join("\n");
+  mutateRouteLines(routeLines);
+  if (routeLines.join("\n") === originalRoute) {
+    throw new Error(`Candidate source variant ${name} did not change the route.`);
+  }
+  return writeSource(name, `${JSON.stringify(source, null, 2)}\n`);
 }
 
 const staleFixture = writeVariant(
@@ -57,6 +77,61 @@ const missingExcludedGateProofFixture = writeVariant(
   "| Booking deposit | 0123456789abcdef0123456789abcdef01234567 | blocked | fixture-only | n/a | n/a | n/a | n/a | n/a | n/a | n/a |",
   "| Booking deposit | 0123456789abcdef0123456789abcdef01234567 | blocked | | n/a | n/a | n/a | n/a | n/a | n/a | n/a |",
 );
+const pendingAppleNativePolicyFixture = writeVariant(
+  "pending-apple-native-policy.md",
+  "| Apple | Native physical-goods classification and review evidence | Sanitized exact-build reviewer-note fixture proof | passed | fixture-only |",
+  "| Apple | Native physical-goods classification and review evidence | Exact-build reviewer note still required | pending | |",
+);
+const pendingGoogleNativePolicyFixture = writeVariant(
+  "pending-google-native-policy.md",
+  "| Google Play | Native physical-goods classification and review evidence | Sanitized exact-build classification fixture proof | passed | fixture-only |",
+  "| Google Play | Native physical-goods classification and review evidence | Exact-build classification still required | pending | |",
+);
+const unsafeCandidateEvidenceFixture = writeSource(
+  "unsafe-candidate-evidence.md",
+  fixtureSource.replaceAll(fixtureCandidate, unsafeFixtureCandidate),
+);
+const lateOfficialRejectionSourceFixture = writeCandidateSourceVariant(
+  "late-official-rejection-source.json",
+  (routeLines) => {
+    const rejectionIndex = routeLines.indexOf(
+      "  if (product.is_official && product.shipping_required !== true) {",
+    );
+    const rejection = routeLines.splice(rejectionIndex, 3);
+    const adminIndex = routeLines.indexOf(
+      "  const adminSupabase = createAdminClient();",
+    );
+    routeLines.splice(adminIndex + 1, 0, ...rejection);
+  },
+);
+const wrongOfficialCountrySourceFixture = writeCandidateSourceVariant(
+  "wrong-official-country-source.json",
+  (routeLines) => {
+    const countryIndex = routeLines.indexOf(
+      '    body.set("shipping_address_collection[allowed_countries][0]", "US");',
+    );
+    routeLines[countryIndex] =
+      '    body.set("shipping_address_collection[allowed_countries][0]", "CA");';
+  },
+);
+const missingMarketplaceCountrySourceFixture = writeCandidateSourceVariant(
+  "missing-marketplace-country-source.json",
+  (routeLines) => {
+    const countryIndex = routeLines.indexOf(
+      '      body.set("shipping_address_collection[allowed_countries][1]", "CA");',
+    );
+    routeLines[countryIndex] = "      void product.is_official;";
+  },
+);
+const missingMarketplaceGateSourceFixture = writeCandidateSourceVariant(
+  "missing-marketplace-gate-source.json",
+  (routeLines) => {
+    const gateIndex = routeLines.indexOf(
+      "    if (!stripeMerchDestinationChargesEnabled()) return redirectWithMessage();",
+    );
+    routeLines[gateIndex] = "    void stripeMerchDestinationChargesEnabled;";
+  },
+);
 const completedProductionEvidenceFixture = writeSource(
   "completed-production-evidence.md",
   fixtureSource
@@ -74,6 +149,7 @@ function runGate(
   evidencePath,
   releaseCandidate = fixtureCandidate,
   phase = "preauthorization",
+  candidateSourceFixture = safeCandidateSourceFixture,
 ) {
   return spawnSync(
     process.execPath,
@@ -83,6 +159,8 @@ function runGate(
       "--phase",
       phase,
       "--test-fixture",
+      "--candidate-source-fixture",
+      candidateSourceFixture,
       "--reference-date",
       fixtureReferenceDate,
       "--evidence",
@@ -126,9 +204,26 @@ function runProductionUnknownCandidate() {
   );
 }
 
+function runProductionCandidateSourceFixture() {
+  return spawnSync(
+    process.execPath,
+    [
+      gatePath,
+      "--strict",
+      "--candidate-source-fixture",
+      safeCandidateSourceFixture,
+      "--evidence",
+      fixturePath,
+      "--release-candidate",
+      fixtureCandidate,
+    ],
+    { encoding: "utf8" },
+  );
+}
+
 const checks = [
   {
-    label: "payment gate accepts official-Merch-only preauthorization evidence",
+    label: "payment gate accepts an f272f0a0-equivalent safe candidate fixture",
     result: runGate(fixturePath),
     verify(result) {
       return (
@@ -194,6 +289,115 @@ const checks = [
     },
   },
   {
+    label: "payment preauthorization rejects pending Apple native physical-goods evidence",
+    result: runGate(pendingAppleNativePolicyFixture),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Apple blocker / Native physical-goods classification and review evidence / Result: pending",
+        )
+      );
+    },
+  },
+  {
+    label: "payment preauthorization rejects pending Google Play native physical-goods evidence",
+    result: runGate(pendingGoogleNativePolicyFixture),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Google Play blocker / Native physical-goods classification and review evidence / Result: pending",
+        )
+      );
+    },
+  },
+  {
+    label: "payment gate rejects a d8e05bc-equivalent candidate from its selected source fixture",
+    result: runGate(
+      unsafeCandidateEvidenceFixture,
+      unsafeFixtureCandidate,
+      "preauthorization",
+      unsafeCandidateSourceFixture,
+    ),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Candidate policy / Official non-shipping products must be rejected",
+        )
+      );
+    },
+  },
+  {
+    label: "candidate proof requires official rejection before admin and checkout effects",
+    result: runGate(
+      fixturePath,
+      fixtureCandidate,
+      "preauthorization",
+      lateOfficialRejectionSourceFixture,
+    ),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Candidate policy / Official product rejection must precede admin client creation and checkout side effects",
+        )
+      );
+    },
+  },
+  {
+    label: "candidate proof requires official physical shipping to be exactly US",
+    result: runGate(
+      fixturePath,
+      fixtureCandidate,
+      "preauthorization",
+      wrongOfficialCountrySourceFixture,
+    ),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Candidate policy / Official physical shipping countries must be exactly US",
+        )
+      );
+    },
+  },
+  {
+    label: "candidate proof requires marketplace physical shipping to remain US and CA",
+    result: runGate(
+      fixturePath,
+      fixtureCandidate,
+      "preauthorization",
+      missingMarketplaceCountrySourceFixture,
+    ),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Candidate policy / Marketplace physical shipping countries must remain exactly US and CA",
+        )
+      );
+    },
+  },
+  {
+    label: "candidate proof requires the independent marketplace destination gate",
+    result: runGate(
+      fixturePath,
+      fixtureCandidate,
+      "preauthorization",
+      missingMarketplaceGateSourceFixture,
+    ),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Candidate policy / Marketplace physical checkout must retain independent checkout and destination-charge gates",
+        )
+      );
+    },
+  },
+  {
     label: "payment preauthorization does not require a production transaction",
     result: runGate(fixturePath),
     verify(result) {
@@ -250,6 +454,16 @@ const checks = [
       return (
         result.status === 1 &&
         result.stderr.includes("--reference-date: test fixtures only")
+      );
+    },
+  },
+  {
+    label: "payment gate rejects candidate source fixtures outside test mode",
+    result: runProductionCandidateSourceFixture(),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes("--candidate-source-fixture: test fixtures only")
       );
     },
   },
