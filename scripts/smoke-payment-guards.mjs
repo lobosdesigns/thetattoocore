@@ -51,6 +51,10 @@ const merchPrintReceiptButton = readFileSync(
 const adminMerchPage = readFileSync("src/app/admin/merch/page.tsx", "utf8");
 const adminPaymentsPage = readFileSync("src/app/admin/payments/page.tsx", "utf8");
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
+const merchProductStatusAction = adminActions.slice(
+  adminActions.indexOf("export async function updateMerchProductStatus"),
+  adminActions.indexOf("export async function updateMerchOrderStatus"),
+);
 const bookingCheckoutReconciliationAction = adminActions.slice(
   adminActions.indexOf("export async function reconcileBookingDepositCheckout"),
   adminActions.indexOf("export async function refundBookingDeposit"),
@@ -1213,7 +1217,7 @@ checks.push({
     merchCheckoutSuccessPage.includes('.eq("stripe_checkout_session_id", sessionId)') &&
     merchCheckoutSuccessPage.includes('.eq("buyer_id", claims.sub)') &&
     adminMerchPage.includes('.from("merch_orders")') &&
-    adminMerchPage.includes("Recent Orders") &&
+    adminMerchPage.includes("Historical TTC Orders") &&
     adminMerchPage.includes("updateMerchOrderStatus") &&
     adminMerchPage.includes("refundMerchOrder"),
 });
@@ -1347,20 +1351,23 @@ checks.push({
     adminMerchPage.includes("Return note"),
 });
 checks.push({
-  label: "legacy Merch cannot activate without review details",
+  label: "seller checkout activation requires complete product readiness",
   ok:
-    adminActions.includes("Merch needs ship-from, fulfillment, and return/refund details before checkout can be activated.") &&
-    adminActions.includes("const missingMerchReviewDetails") &&
-    adminActions.includes("product.shipping_required") &&
-    adminActions.includes("product.return_policy") &&
-    adminMerchPage.includes("const hasReviewDetails") &&
-    adminMerchPage.includes("Activation waits for ship-from, fulfillment, and return/refund") &&
-    adminMerchPage.includes("Ship-from, fulfillment, and return/refund details are required before checkout can be activated.") &&
+    merchProductStatusAction.includes("sellerCheckoutSubmissionReadiness") &&
+    merchProductStatusAction.includes("inventoryQuantity: product.inventory_quantity") &&
+    merchProductStatusAction.includes("inventoryReserved: product.inventory_reserved") &&
+    merchProductStatusAction.includes("fulfillmentNotes: product.fulfillment_notes") &&
+    merchProductStatusAction.includes("returnPolicy: product.return_policy") &&
+    merchProductStatusAction.includes("shippingRequired: product.shipping_required") &&
+    merchProductStatusAction.includes("shipsFromCity: product.ships_from_city") &&
+    merchProductStatusAction.includes("shipsFromRegion: product.ships_from_region") &&
+    adminMerchPage.includes("sellerCheckoutSubmissionReadiness") &&
+    adminMerchPage.includes("Fulfillment, returns, or ship-from details required") &&
+    adminMerchPage.includes("Available inventory required") &&
     merchDetailPage.includes("sellerCheckoutPurchaseReadiness") &&
     merchDetailPage.includes("fulfillmentNotes: product.fulfillment_notes") &&
     merchDetailPage.includes("returnPolicy: product.return_policy") &&
-    merchDetailPage.includes("shippingRequired: product.shipping_required") &&
-    productPlan.includes("legacy active Merch detail guard"),
+    merchDetailPage.includes("shippingRequired: product.shipping_required"),
 });
 checks.push({
   label: "merch detail discloses seller checkout without TTC payment claims",
@@ -1458,8 +1465,8 @@ checks.push({
     adminPaymentsPage.includes("Choose a documented payout policy") &&
     adminPaymentsPage.includes("booking refund, cancellation, appointment-confirmation") &&
     adminPaymentsPage.includes("do not collect bank or card payout data in TTC forms") &&
-    adminMerchPage.includes("Checkout and refund status stay review-controlled") &&
-    adminMerchPage.includes("finish tax, shipping, fulfillment, payouts, and payment safety rules") &&
+    adminMerchPage.includes("Seller-owned checkout activation requires inventory") &&
+    adminMerchPage.includes("Sellers provide their own Stripe Payment Link") &&
     paymentReadiness.includes("Direct API edits or browser-automation shortcuts are not a valid completion test") &&
     paymentReadiness.includes("Delayed or async payment success reconciliation captured before fulfillment, ad delivery, booking closeout, or seller payout release.") &&
     accountPage.includes("merchSellerReadinessItems") &&
@@ -1490,7 +1497,7 @@ checks.push({
       stripeConnectReturn.indexOf("if (!stripe || !admin || !checkoutPreflight.ready)"),
 });
 checks.push({
-  label: "seller payout readiness is isolated by payment mode",
+  label: "legacy seller payout readiness stays mode-isolated outside Merch moderation",
   ok:
     stripeConnectLivemodeMigration.includes("add column if not exists livemode boolean") &&
     stripeConnectLivemodeMigration.includes("where livemode is null") &&
@@ -1505,9 +1512,11 @@ checks.push({
     stripeConnectReturn.includes('.eq("livemode", livemode)') &&
     stripeWebhook.includes("syncStripeConnectAccountFromWebhook(supabase, account, event.livemode)") &&
     stripeWebhook.includes('.eq("livemode", livemode)') &&
-    adminActions.includes('.eq("livemode", payoutMode.actual)') &&
     accountPage.includes('.eq("livemode", sellerPayoutMode.actual)') &&
-    adminMerchPage.includes('.eq("livemode", sellerPayoutMode.actual)'),
+    !merchProductStatusAction.includes("stripe_connect_accounts") &&
+    !merchProductStatusAction.includes("payoutMode") &&
+    !adminMerchPage.includes("stripe_connect_accounts") &&
+    !adminMerchPage.includes("sellerPayoutMode"),
 });
 checks.push({
   label: "Stripe Connect seller onboarding stays hosted and server-side",
@@ -1571,14 +1580,20 @@ checks.push({
     ),
 });
 checks.push({
-  label: "admin Merch review shows seller payout readiness",
+  label: "admin Merch review shows protected seller checkout readiness",
   ok:
-    adminMerchPage.includes(".from(\"stripe_connect_accounts\")") &&
-    adminMerchPage.includes("Payout ready") &&
-    adminMerchPage.includes("Payout setup incomplete") &&
-    adminMerchPage.includes("Payout not started") &&
-    adminMerchPage.includes("Payout note:") &&
-    productPlan.includes("Admin Merch payout-readiness chips"),
+    adminMerchPage.includes("createAdminClient()") &&
+    adminMerchPage.includes(
+      '"id, external_checkout_url, seller_checkout_terms_version, seller_checkout_terms_accepted_at"',
+    ) &&
+    adminMerchPage.includes('.in("id", productIds)') &&
+    adminMerchPage.includes("sellerCheckoutSubmissionReadiness") &&
+    adminMerchPage.includes("Seller checkout ready") &&
+    adminMerchPage.includes("Review Stripe Payment Link") &&
+    adminMerchPage.includes('target="_blank"') &&
+    adminMerchPage.includes('rel="ugc nofollow noopener noreferrer"') &&
+    !adminMerchPage.includes("SellerPayoutFilter") &&
+    !adminMerchPage.includes("seller_payout"),
 });
 checks.push({
   label: "admin Merch filters preserve fulfillment review context",
@@ -1589,19 +1604,23 @@ checks.push({
     adminMerchPage.includes("orderStatus: activeOrderStatus"),
 });
 checks.push({
-  label: "admin Merch activation requires seller payout readiness",
+  label: "admin Merch activation requires seller checkout readiness",
   ok:
-    adminActions.includes("This seller must finish payout setup before Merch checkout can be activated.") &&
-    adminActions.includes('status === "active" && !product.is_official') &&
-    adminActions.includes(".from(\"stripe_connect_accounts\")") &&
-    adminActions.includes("charges_enabled") &&
-    adminActions.includes("payouts_enabled") &&
-    adminActions.includes("details_submitted") &&
+    merchProductStatusAction.includes("sellerCheckoutSubmissionReadiness") &&
+    merchProductStatusAction.includes("Official TTC Merch cannot be activated in this release.") &&
+    merchProductStatusAction.includes("external_checkout_url") &&
+    merchProductStatusAction.includes("seller_checkout_terms_version") &&
+    merchProductStatusAction.includes("seller_checkout_terms_accepted_at") &&
+    merchProductStatusAction.includes('.eq("id", product.id)') &&
+    merchProductStatusAction.includes('.eq("seller_id", product.seller_id)') &&
+    merchProductStatusAction.includes("Merch needs a valid live Stripe Payment Link") &&
+    merchProductStatusAction.includes("seller checkout responsibilities") &&
+    !merchProductStatusAction.includes("stripeCheckoutPreflight") &&
+    !merchProductStatusAction.includes("stripe_connect_accounts") &&
     adminMerchPage.includes("const canActivateCheckout") &&
-    adminMerchPage.includes("Activation waits for seller payout setup") &&
+    adminMerchPage.includes("Activation waits for {checkoutRequirement.toLowerCase()}") &&
     adminMerchPage.includes("disabled={activationBlocked}") &&
-    adminMerchPage.includes("Seller payout setup is required before checkout can be activated.") &&
-    productPlan.includes("admin activation guard requiring seller payout readiness"),
+    adminMerchPage.includes("!product.isOfficial && checkoutReadiness.ready"),
 });
 checks.push({
   label: "old TTC Merch and Connect release switches remain false by default",
@@ -1627,16 +1646,14 @@ checks.push({
     !merchCheckout.includes("transfer_data"),
 });
 checks.push({
-  label: "admin Merch can filter seller payout readiness",
+  label: "admin Merch removes payout filters while preserving paged product review",
   ok:
-    adminMerchPage.includes("function sellerPayoutFilter") &&
-    adminMerchPage.includes('params.set("seller_payout", sellerPayoutStatus)') &&
-    adminMerchPage.includes("Seller payout") &&
-    adminMerchPage.includes("sellerPayoutFilters.map") &&
-    adminMerchPage.includes('activeSellerPayoutStatus === "not_started"') &&
-    adminMerchPage.includes("productQuery.not") &&
-    publicSmoke.includes('path: "/admin/merch?seller_payout=incomplete"') &&
-    productPlan.includes("payout-readiness filters"),
+    !adminMerchPage.includes("function sellerPayoutFilter") &&
+    !adminMerchPage.includes('params.set("seller_payout"') &&
+    !adminMerchPage.includes("sellerPayoutFilters") &&
+    !adminMerchPage.includes("activeSellerPayoutStatus") &&
+    adminMerchPage.includes('productQuery = productQuery.eq("status", activeProductStatus)') &&
+    adminMerchPage.includes(".range(from, to)"),
 });
 checks.push({
   label: "admin Merch can filter order fulfillment review",

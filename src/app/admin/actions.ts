@@ -1855,7 +1855,7 @@ export async function updateMerchProductStatus(formData: FormData) {
   const { data: product, error: productError } = await supabase
     .from("merch_products")
     .select(
-      "id, seller_id, status, title, category, price_cents, currency, fulfillment_notes, is_official, return_policy, shipping_required, ships_from_city, ships_from_region, profiles:profiles!merch_products_seller_id_fkey(account_type, license_verified_at)",
+      "id, seller_id, status, moderation_status, title, category, price_cents, currency, inventory_quantity, inventory_reserved, fulfillment_notes, is_official, return_policy, shipping_required, ships_from_city, ships_from_region, profiles:profiles!merch_products_seller_id_fkey(account_type, license_verified_at)",
     )
     .eq("id", productId)
     .maybeSingle<{
@@ -1863,7 +1863,10 @@ export async function updateMerchProductStatus(formData: FormData) {
       currency: string;
       fulfillment_notes: string | null;
       id: string;
+      inventory_quantity: number;
+      inventory_reserved: number;
       is_official: boolean;
+      moderation_status: string;
       price_cents: number;
       profiles: { account_type: string; license_verified_at: string | null } | null;
       return_policy: string | null;
@@ -1891,13 +1894,24 @@ export async function updateMerchProductStatus(formData: FormData) {
     redirect(adminMerchMessage("Merch product already has that status.", returnTo));
   }
 
+  if (status === "active" && product.is_official) {
+    redirect(
+      adminMerchMessage(
+        "Official TTC Merch cannot be activated in this release.",
+        returnTo,
+      ),
+    );
+  }
+
+  const sellerVerified = Boolean(
+    product.profiles?.license_verified_at &&
+      verificationEligibleAccountTypes.has(product.profiles.account_type),
+  );
+
   if (
     (status === "approved" || status === "active") &&
     !product.is_official &&
-    !(
-      product.profiles?.license_verified_at &&
-      verificationEligibleAccountTypes.has(product.profiles.account_type)
-    )
+    !sellerVerified
   ) {
     redirect(
       adminMerchMessage(
@@ -1907,60 +1921,76 @@ export async function updateMerchProductStatus(formData: FormData) {
     );
   }
 
-  const missingMerchReviewDetails =
-    status === "active" &&
-    (!product.return_policy ||
-      (product.shipping_required &&
-        (!product.ships_from_city ||
-          !product.ships_from_region ||
-          !product.fulfillment_notes)));
+  if (status === "active") {
+    const adminClient = createAdminClient();
 
-  if (missingMerchReviewDetails) {
-    redirect(
-      adminMerchMessage(
-        "Merch needs ship-from, fulfillment, and return/refund details before checkout can be activated.",
-        returnTo,
-      ),
-    );
-  }
-
-  if (status === "active" && !product.is_official) {
-    const payoutMode = stripeCheckoutPreflight();
-
-    if (!payoutMode.ready) {
+    if (!adminClient) {
+      console.error("Admin Merch seller checkout lookup failed.");
       redirect(
         adminMerchMessage(
-          "This seller must finish payout setup before Merch checkout can be activated.",
+          "Could not review seller checkout readiness. Please try again.",
           returnTo,
         ),
       );
     }
 
-    const { data: payoutAccount, error: payoutError } = await supabase
-      .from("stripe_connect_accounts")
-      .select("livemode, charges_enabled, payouts_enabled, details_submitted")
-      .eq("profile_id", product.seller_id)
-      .eq("livemode", payoutMode.actual)
+    const { data: checkoutRow, error: checkoutError } = await adminClient
+      .from("merch_products")
+      .select(
+        "id, external_checkout_url, seller_checkout_terms_version, seller_checkout_terms_accepted_at",
+      )
+      .eq("id", product.id)
+      .eq("seller_id", product.seller_id)
       .maybeSingle<{
-        charges_enabled: boolean;
-        details_submitted: boolean;
-        livemode: boolean;
-        payouts_enabled: boolean;
+        external_checkout_url: string | null;
+        id: string;
+        seller_checkout_terms_accepted_at: string | null;
+        seller_checkout_terms_version: string | null;
       }>();
 
-    const payoutReady =
-      payoutAccount?.livemode === payoutMode.actual &&
-      Boolean(payoutAccount.charges_enabled) &&
-      Boolean(payoutAccount?.payouts_enabled) &&
-      Boolean(payoutAccount?.details_submitted);
-
-    if (payoutError || !payoutReady) {
+    if (checkoutError || !checkoutRow) {
+      console.error("Admin Merch seller checkout lookup failed.");
       redirect(
         adminMerchMessage(
-          "This seller must finish payout setup before Merch checkout can be activated.",
+          "Could not review seller checkout readiness. Please try again.",
           returnTo,
         ),
       );
+    }
+
+    const { sellerCheckoutSubmissionReadiness } = await import("@/lib/merch/seller-checkout");
+    const checkoutReadiness = sellerCheckoutSubmissionReadiness({
+      externalCheckoutUrl: checkoutRow.external_checkout_url,
+      fulfillmentNotes: product.fulfillment_notes,
+      inventoryQuantity: product.inventory_quantity,
+      inventoryReserved: product.inventory_reserved,
+      isOfficial: product.is_official,
+      moderationStatus: product.moderation_status,
+      returnPolicy: product.return_policy,
+      sellerCheckoutTermsAcceptedAt: checkoutRow.seller_checkout_terms_accepted_at,
+      sellerCheckoutTermsVersion: checkoutRow.seller_checkout_terms_version,
+      sellerVerified,
+      shippingRequired: product.shipping_required,
+      shipsFromCity: product.ships_from_city,
+      shipsFromRegion: product.ships_from_region,
+      status: product.status,
+    });
+
+    if (!checkoutReadiness.ready) {
+      const message =
+        checkoutReadiness.reason === "seller_unverified"
+          ? "This seller must be artist, studio, or vendor license verified before Merch can be approved or activated."
+          : checkoutReadiness.reason === "sold_out"
+            ? "Merch needs available inventory before seller checkout can be activated."
+            : checkoutReadiness.reason === "missing_fulfillment"
+              ? "Merch needs ship-from, fulfillment, and return/refund details before seller checkout can be activated."
+              : checkoutReadiness.reason === "missing_terms"
+                ? "The seller must accept the current seller checkout responsibilities before Merch can be activated."
+                : checkoutReadiness.reason === "invalid_url"
+                  ? "Merch needs a valid live Stripe Payment Link before seller checkout can be activated."
+                  : "Merch is not ready for seller checkout activation.";
+
+      redirect(adminMerchMessage(message, returnTo));
     }
   }
 

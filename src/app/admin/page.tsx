@@ -1231,7 +1231,7 @@ export default async function AdminPage({
     },
     {
       action: "Open Merch",
-      body: "Public-buyable artist, studio, vendor, and official TTC products get their own paged product and order review page.",
+      body: "Seller-owned external physical-goods checkout listings get a focused page for product, seller-link, fulfillment, and historical order review.",
       count: merchReview?.length ?? 0,
       href: "/admin/merch",
       label: "Merch",
@@ -1239,11 +1239,11 @@ export default async function AdminPage({
     },
     {
       action: "Open payments",
-      body: "Checkout receipts, payment status, refund status, and payout readiness live on a focused ops page.",
+      body: "Historical TTC checkout reconciliation, payment status, refund status, and disabled legacy payout controls live on a focused ops page.",
       count: 0,
       href: "/admin/payments",
       label: "Payments",
-      meta: "Payment events, Merch orders, and ad payments",
+      meta: "Historical payment events, TTC Merch orders, and ad payments",
     },
     {
       action: "Open mail",
@@ -1272,12 +1272,12 @@ export default async function AdminPage({
   ];
   const launchReadinessItems = [
     {
-      body: "Confirm payout setup, refund/dispute handling, and booking-deposit review before real money opens wider.",
+      body: "Review historical TTC payment, refund, dispute, and booking-deposit evidence before changing any legacy payment controls.",
       href: "/admin/payments",
       label: "Payment gates",
     },
     {
-      body: "Review seller readiness, fulfillment notes, return/refund notes, and paid-order handling before promoting products.",
+      body: "Review seller-owned Stripe Payment Links, inventory, fulfillment notes, return terms, and ship-from details before activation.",
       href: "/admin/merch",
       label: "Merch readiness",
     },
@@ -1292,7 +1292,7 @@ export default async function AdminPage({
       label: "Help coverage",
     },
     {
-      body: "Run real-device checks for login, signup, DMs, posting, booking, payouts, and mobile layout before store pushes.",
+      body: "Run real-device checks for login, signup, DMs, posting, booking, seller checkout handoff, and mobile layout before store pushes.",
       href: "/admin/media-ops",
       label: "Beta QA",
     },
@@ -1311,7 +1311,7 @@ export default async function AdminPage({
     },
     {
       lane: "Commerce",
-      body: "Keep Merch, payout setup, booking deposits, ad credits, refunds, and fulfillment proof in test review until support rules are clear.",
+      body: "Keep seller checkout links, booking deposits, ad credits, historical TTC refund evidence, and fulfillment proof in review until support rules are clear.",
       href: "/admin/payments",
       window: "Days 2-4",
     },

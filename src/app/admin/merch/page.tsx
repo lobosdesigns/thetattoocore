@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CreditCard,
+  ExternalLink,
   Package,
   ShieldCheck,
   Store,
@@ -21,9 +22,14 @@ import {
   commerceStatusLabel,
   titleCaseStatus,
 } from "@/lib/status-labels";
+import { isVerifiedProfessional } from "@/lib/verification";
+import {
+  sellerCheckoutSubmissionReadiness,
+  type SellerCheckoutReadiness,
+} from "@/lib/merch/seller-checkout";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { safeStatusMessage } from "@/lib/status-message";
-import { stripeCheckoutPreflight } from "@/lib/stripe/server";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
 type Claims = {
@@ -52,9 +58,8 @@ type MerchProduct = {
   shipsFromCity: string | null;
   shipsFromRegion: string | null;
   sellerAccountType: string | null;
+  sellerCheckoutReadiness: SellerCheckoutReadiness;
   sellerLicenseVerifiedAt: string | null;
-  sellerPayoutDisabledReason: string | null;
-  sellerPayoutStatus: "ready" | "incomplete" | "not_started";
   priceCents: number;
   returnPolicy: string | null;
   sellerName: string;
@@ -96,7 +101,6 @@ type MerchOrder = {
   taxCents: number;
   totalCents: number;
 };
-type SellerPayoutFilter = "ready" | "incomplete" | "not_started";
 
 const viewRoles: UserRole[] = ["moderator", "admin", "owner"];
 const pageSize = 50;
@@ -117,14 +121,13 @@ const orderStatusFilters = [
   "partially_refunded",
   "refunded",
 ] as const;
-const sellerPayoutFilters = ["ready", "incomplete", "not_started"] as const;
 const orderFulfillmentFilters = ["needs_fulfillment", "seller_fulfilled"] as const;
 const impossibleUuid = "00000000-0000-0000-0000-000000000000";
 const merchRules = [
   "Merch is public-buyable brand goods, separate from verified-only professional Stuff.",
   "Artist, studio, vendor, and official TheTattooCore sellers still need approval before listing products.",
   "Do not allow professional equipment, regulated services, unsafe products, counterfeits, adult sexual products, or scratcher-facing supplies.",
-  "Checkout and refund status stay review-controlled; finish tax, shipping, fulfillment, payouts, and payment safety rules before public production orders.",
+  "Seller-owned checkout activation requires inventory, fulfillment, return, ship-from, and seller-responsibility review.",
 ] as const;
 const buildSteps = [
   [
@@ -137,7 +140,7 @@ const buildSteps = [
   ],
   [
     "Checkout",
-    "Checkout, paid/failed/refunded status updates, inventory decrement, and buyer printable receipts are wired for testing. Remaining review areas: taxes, fulfillment, payouts, and production rules.",
+    "Sellers provide their own Stripe Payment Link for new purchases. Existing TTC order and payment records remain available for historical reconciliation.",
   ],
   [
     "Admin operations",
@@ -172,12 +175,6 @@ function productStatusFilter(value: string | string[] | undefined) {
   return productStatusFilters.find((status) => status === rawValue) ?? null;
 }
 
-function sellerPayoutFilter(value: string | string[] | undefined) {
-  const rawValue = Array.isArray(value) ? value[0] : value;
-
-  return sellerPayoutFilters.find((status) => status === rawValue) ?? null;
-}
-
 function orderFulfillmentFilter(value: string | string[] | undefined) {
   const rawValue = Array.isArray(value) ? value[0] : value;
 
@@ -189,7 +186,8 @@ function searchTerm(value: string | string[] | undefined) {
   const normalized = (rawValue ?? "")
     .trim()
     .replace(/[^a-zA-Z0-9 @._-]/g, " ")
-    .replace(/\s+/g, " ");
+    .replace(/\s+/g, " ")
+    .trim();
 
   return normalized.slice(0, 80);
 }
@@ -200,7 +198,6 @@ function pageHref({
   orderStatus,
   page = 1,
   productStatus,
-  sellerPayoutStatus,
   search,
 }: {
   orderFulfillmentStatus?: string | null;
@@ -208,7 +205,6 @@ function pageHref({
   orderStatus?: string | null;
   page?: number;
   productStatus?: string | null;
-  sellerPayoutStatus?: string | null;
   search?: string | null;
 }) {
   const params = new URLSearchParams();
@@ -218,7 +214,6 @@ function pageHref({
   if (orderFulfillmentStatus) params.set("fulfillment", orderFulfillmentStatus);
   if (orderStatus) params.set("order_status", orderStatus);
   if (productStatus) params.set("product_status", productStatus);
-  if (sellerPayoutStatus) params.set("seller_payout", sellerPayoutStatus);
   if (search) params.set("q", search);
 
   const query = params.toString();
@@ -279,11 +274,24 @@ function statusLabel(value: string) {
   return titleCaseStatus(value);
 }
 
-function payoutStatusLabel(value: SellerPayoutFilter) {
-  if (value === "ready") return "Payout ready";
-  if (value === "incomplete") return "Payout setup incomplete";
+function sellerCheckoutRequirementLabel(readiness: SellerCheckoutReadiness) {
+  if (readiness.ready) return "Seller checkout ready";
+  if (readiness.reason === "official_product") {
+    return "Official TTC checkout unavailable";
+  }
+  if (readiness.reason === "seller_unverified") return "Seller verification required";
+  if (readiness.reason === "sold_out") return "Available inventory required";
+  if (readiness.reason === "missing_fulfillment") {
+    return "Fulfillment, returns, or ship-from details required";
+  }
+  if (readiness.reason === "missing_terms") {
+    return "Current seller checkout acceptance required";
+  }
+  if (readiness.reason === "invalid_url") {
+    return "Valid live Stripe Payment Link required";
+  }
 
-  return "Payout not started";
+  return "Seller checkout requirements incomplete";
 }
 
 function fulfillmentFilterLabel(value: (typeof orderFulfillmentFilters)[number]) {
@@ -375,20 +383,9 @@ function ProductCard({
   product: MerchProduct;
   returnTo: string;
 }) {
-  const payoutLabel =
-    product.sellerPayoutStatus === "ready"
-      ? "Payout ready"
-      : product.sellerPayoutStatus === "incomplete"
-        ? "Payout setup incomplete"
-        : "Payout not started";
-  const canActivateCheckout =
-    product.isOfficial || product.sellerPayoutStatus === "ready";
-  const hasReviewDetails =
-    Boolean(product.returnPolicy) &&
-    (!product.shippingRequired ||
-      (Boolean(product.shipsFromCity) &&
-        Boolean(product.shipsFromRegion) &&
-        Boolean(product.fulfillmentNotes)));
+  const checkoutReadiness = product.sellerCheckoutReadiness;
+  const checkoutRequirement = sellerCheckoutRequirementLabel(checkoutReadiness);
+  const canActivateCheckout = !product.isOfficial && checkoutReadiness.ready;
 
   return (
     <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
@@ -432,19 +429,15 @@ function ProductCard({
                 : "Seller not verified"}
             </span>
           ) : null}
-          {!product.isOfficial ? (
-            <span
-              className={`rounded-md border px-2 py-1 text-xs font-semibold ${
-                product.sellerPayoutStatus === "ready"
-                  ? "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]"
-                  : product.sellerPayoutStatus === "incomplete"
-                    ? "border-[color-mix(in_srgb,var(--gold)_55%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_14%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_76%,var(--foreground))]"
-                    : "border-[color-mix(in_srgb,var(--danger)_34%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_9%,var(--paper-warm))] text-[var(--danger)]"
-              }`}
-            >
-              {payoutLabel}
-            </span>
-          ) : null}
+          <span
+            className={`rounded-md border px-2 py-1 text-xs font-semibold ${
+              checkoutReadiness.ready
+                ? "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]"
+                : "border-[color-mix(in_srgb,var(--gold)_55%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_14%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_76%,var(--foreground))]"
+            }`}
+          >
+            {checkoutRequirement}
+          </span>
         </div>
       </div>
       <dl className="mt-4 grid gap-3 text-sm text-[var(--muted)] sm:grid-cols-3">
@@ -476,21 +469,21 @@ function ProductCard({
           </dd>
         </div>
       </dl>
-      {product.sellerPayoutDisabledReason ? (
-        <p className="mt-3 rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))] p-2 text-xs font-semibold text-[color-mix(in_srgb,var(--gold)_82%,var(--foreground))]">
-          Payout note: {product.sellerPayoutDisabledReason}
-        </p>
+      {checkoutReadiness.ready ? (
+        <a
+          className="mt-3 inline-flex h-10 items-center gap-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm font-semibold text-[var(--foreground)]"
+          href={checkoutReadiness.url}
+          rel="ugc nofollow noopener noreferrer"
+          target="_blank"
+        >
+          <ExternalLink className="size-4" />
+          Review Stripe Payment Link
+        </a>
       ) : null}
       {!canActivateCheckout ? (
         <p className="mt-3 rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))] p-2 text-xs font-semibold text-[color-mix(in_srgb,var(--gold)_82%,var(--foreground))]">
-          Activation waits for seller payout setup. Approve can still be used
-          for review, but checkout stays closed until payouts are ready.
-        </p>
-      ) : null}
-      {!hasReviewDetails ? (
-        <p className="mt-3 rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))] p-2 text-xs font-semibold text-[color-mix(in_srgb,var(--gold)_82%,var(--foreground))]">
-          Activation waits for ship-from, fulfillment, and return/refund
-          details so buyer support has enough context.
+          Activation waits for {checkoutRequirement.toLowerCase()}. Approve can
+          still be used for review, but seller checkout stays unavailable.
         </p>
       ) : null}
       {product.fulfillmentNotes || product.returnPolicy ? (
@@ -531,7 +524,7 @@ function ProductCard({
             ["archived", "Archive"],
           ].map(([value, label]) => {
             const activationBlocked =
-              value === "active" && (!canActivateCheckout || !hasReviewDetails);
+              value === "active" && !canActivateCheckout;
 
             return (
             <button
@@ -547,9 +540,7 @@ function ProductCard({
               name="status"
               title={
                 activationBlocked
-                  ? !canActivateCheckout
-                    ? "Seller payout setup is required before checkout can be activated."
-                    : "Ship-from, fulfillment, and return/refund details are required before checkout can be activated."
+                  ? `${checkoutRequirement} before seller checkout can be activated.`
                   : undefined
               }
               value={value}
@@ -842,7 +833,6 @@ export default async function AdminMerchPage({
     page?: string | string[];
     product_status?: string | string[];
     q?: string | string[];
-    seller_payout?: string | string[];
   }>;
 }) {
   const params = await searchParams;
@@ -852,7 +842,6 @@ export default async function AdminMerchPage({
   const activeOrderFulfillmentStatus = orderFulfillmentFilter(params.fulfillment);
   const activeOrderStatus = orderStatusFilter(params.order_status);
   const activeProductStatus = productStatusFilter(params.product_status);
-  const activeSellerPayoutStatus = sellerPayoutFilter(params.seller_payout);
   const activeSearch = searchTerm(params.q);
   const from = (currentPage - 1) * pageSize;
   const to = from + pageSize - 1;
@@ -864,7 +853,6 @@ export default async function AdminMerchPage({
     orderStatus: activeOrderStatus,
     page: currentPage,
     productStatus: activeProductStatus,
-    sellerPayoutStatus: activeSellerPayoutStatus,
     search: activeSearch,
   });
   const supabase = await createClient();
@@ -885,36 +873,6 @@ export default async function AdminMerchPage({
     redirect("/admin");
   }
 
-  const sellerPayoutMode = stripeCheckoutPreflight();
-
-  const { data: allSellerPayoutRows } =
-    activeSellerPayoutStatus && sellerPayoutMode.ready
-    ? await supabase
-        .from("stripe_connect_accounts")
-        .select("profile_id, livemode, charges_enabled, payouts_enabled, details_submitted")
-        .eq("livemode", sellerPayoutMode.actual)
-        .returns<
-          {
-            charges_enabled: boolean;
-            details_submitted: boolean;
-            livemode: boolean;
-            payouts_enabled: boolean;
-            profile_id: string;
-          }[]
-        >()
-    : { data: [] };
-  const matchingSellerPayoutIds = (allSellerPayoutRows ?? [])
-    .filter((account) => {
-      const isReady =
-        account.charges_enabled && account.payouts_enabled && account.details_submitted;
-
-      if (activeSellerPayoutStatus === "ready") return isReady;
-      if (activeSellerPayoutStatus === "incomplete") return !isReady;
-
-      return true;
-    })
-    .map((account) => account.profile_id);
-
   let productQuery = supabase
     .from("merch_products")
     .select(
@@ -924,18 +882,6 @@ export default async function AdminMerchPage({
 
   if (activeProductStatus) {
     productQuery = productQuery.eq("status", activeProductStatus);
-  }
-  if (activeSellerPayoutStatus === "ready" || activeSellerPayoutStatus === "incomplete") {
-    productQuery = matchingSellerPayoutIds.length
-      ? productQuery.in("seller_id", matchingSellerPayoutIds)
-      : productQuery.eq("id", "00000000-0000-0000-0000-000000000000");
-  }
-  if (activeSellerPayoutStatus === "not_started" && matchingSellerPayoutIds.length) {
-    productQuery = productQuery.not(
-      "seller_id",
-      "in",
-      `(${matchingSellerPayoutIds.join(",")})`,
-    );
   }
   if (activeSearch) {
     productQuery = productQuery.or(
@@ -973,31 +919,45 @@ export default async function AdminMerchPage({
         title: string;
       }[]
     >();
-  const sellerIds = Array.from(
-    new Set((productRows ?? []).map((product) => product.seller_id).filter(Boolean)),
-  );
-  const { data: sellerPayoutRows } =
-    sellerIds.length > 0 && sellerPayoutMode.ready
-      ? await supabase
-          .from("stripe_connect_accounts")
-          .select(
-            "profile_id, livemode, charges_enabled, payouts_enabled, details_submitted, disabled_reason",
-          )
-          .in("profile_id", sellerIds)
-          .eq("livemode", sellerPayoutMode.actual)
-          .returns<
-            {
-              charges_enabled: boolean;
-              details_submitted: boolean;
-              disabled_reason: string | null;
-              livemode: boolean;
-              payouts_enabled: boolean;
-              profile_id: string;
-            }[]
-          >()
-      : { data: [] };
-  const sellerPayoutByProfile = new Map(
-    (sellerPayoutRows ?? []).map((account) => [account.profile_id, account]),
+  const productIds = (productRows ?? []).map((product) => product.id);
+  const adminClient = productIds.length > 0 ? createAdminClient() : null;
+  let sellerCheckoutRows: {
+    external_checkout_url: string | null;
+    id: string;
+    seller_checkout_terms_accepted_at: string | null;
+    seller_checkout_terms_version: string | null;
+  }[] = [];
+  let sellerCheckoutDataUnavailable = productIds.length > 0 && !adminClient;
+
+  if (adminClient && productIds.length > 0) {
+    const { data, error } = await adminClient
+      .from("merch_products")
+      .select(
+        "id, external_checkout_url, seller_checkout_terms_version, seller_checkout_terms_accepted_at",
+      )
+      .in("id", productIds)
+      .returns<
+        {
+          external_checkout_url: string | null;
+          id: string;
+          seller_checkout_terms_accepted_at: string | null;
+          seller_checkout_terms_version: string | null;
+        }[]
+      >();
+
+    if (error) {
+      console.error("Admin Merch seller checkout data load failed.");
+      sellerCheckoutDataUnavailable = true;
+    } else {
+      sellerCheckoutRows = data ?? [];
+    }
+  }
+
+  const productIdSet = new Set(productIds);
+  const sellerCheckoutByProduct = new Map(
+    sellerCheckoutRows
+      .filter((row) => productIdSet.has(row.id))
+      .map((row) => [row.id, row]),
   );
   const products: MerchProduct[] = (productRows ?? []).map((product) => ({
     category: product.category,
@@ -1015,18 +975,33 @@ export default async function AdminMerchPage({
     shipsFromCity: product.ships_from_city,
     shipsFromRegion: product.ships_from_region,
     sellerAccountType: product.profiles?.account_type ?? null,
+    sellerCheckoutReadiness: sellerCheckoutSubmissionReadiness({
+      externalCheckoutUrl:
+        sellerCheckoutByProduct.get(product.id)?.external_checkout_url ?? null,
+      fulfillmentNotes: product.fulfillment_notes,
+      inventoryQuantity: product.inventory_quantity,
+      inventoryReserved: product.inventory_reserved,
+      isOfficial: product.is_official,
+      moderationStatus: product.moderation_status,
+      returnPolicy: product.return_policy,
+      sellerCheckoutTermsAcceptedAt:
+        sellerCheckoutByProduct.get(product.id)?.seller_checkout_terms_accepted_at ??
+        null,
+      sellerCheckoutTermsVersion:
+        sellerCheckoutByProduct.get(product.id)?.seller_checkout_terms_version ?? null,
+      sellerVerified: product.profiles?.account_type
+        ? isVerifiedProfessional({
+            account_type: product.profiles.account_type,
+            license_verified_at: product.profiles.license_verified_at,
+          })
+        : false,
+      shippingRequired: product.shipping_required,
+      shipsFromCity: product.ships_from_city,
+      shipsFromRegion: product.ships_from_region,
+      status: product.status,
+    }),
     sellerLicenseVerifiedAt: product.profiles?.license_verified_at ?? null,
     sellerName: product.profiles?.display_name ?? "Seller",
-    sellerPayoutDisabledReason:
-      sellerPayoutByProfile.get(product.seller_id)?.disabled_reason ?? null,
-    sellerPayoutStatus: !sellerPayoutByProfile.has(product.seller_id)
-      ? "not_started"
-      : sellerPayoutByProfile.get(product.seller_id)?.livemode === sellerPayoutMode.actual &&
-          sellerPayoutByProfile.get(product.seller_id)?.charges_enabled &&
-          sellerPayoutByProfile.get(product.seller_id)?.payouts_enabled &&
-          sellerPayoutByProfile.get(product.seller_id)?.details_submitted
-        ? "ready"
-        : "incomplete",
     sellerUsername: product.profiles?.username ?? "seller",
     status: product.status,
     title: product.title,
@@ -1198,7 +1173,6 @@ export default async function AdminMerchPage({
     orderStatus: activeOrderStatus,
     page: currentPage,
     productStatus: activeProductStatus,
-    sellerPayoutStatus: activeSellerPayoutStatus,
     search: activeSearch,
   });
 
@@ -1220,7 +1194,8 @@ export default async function AdminMerchPage({
               </p>
               <h1 className="text-2xl font-bold sm:text-3xl">Merch</h1>
               <p className="mt-1 text-sm text-[var(--muted-strong)]">
-                50 public-buyable products per page for catalog, seller, and payment-readiness review.
+                50 public-buyable products per page for catalog, seller, and
+                seller-checkout readiness review.
               </p>
             </div>
           </div>
@@ -1269,7 +1244,6 @@ export default async function AdminMerchPage({
                 orderFulfillmentStatus: "needs_fulfillment",
                 page: currentPage,
                 productStatus: activeProductStatus,
-                sellerPayoutStatus: activeSellerPayoutStatus,
                 search: activeSearch,
               })}
             >
@@ -1286,6 +1260,13 @@ export default async function AdminMerchPage({
           </p>
         ) : null}
 
+        {sellerCheckoutDataUnavailable ? (
+          <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--gold)_12%,var(--paper-warm))] p-4 text-sm leading-6 text-[var(--muted)]">
+            Seller checkout review data is temporarily unavailable. Activation
+            remains disabled until the protected listing details can be checked.
+          </p>
+        ) : null}
+
         {statusMessage ? (
           <p className="mb-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_82%,var(--gold)_12%)] px-4 py-3 text-sm font-medium">
             {statusMessage}
@@ -1295,7 +1276,6 @@ export default async function AdminMerchPage({
         {activeProductStatus ||
         activeOrderStatus ||
         activeOrderFulfillmentStatus ||
-        activeSellerPayoutStatus ||
         activeSearch ? (
           <div className="mb-4 flex flex-col gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
             <p className="font-semibold">
@@ -1314,14 +1294,7 @@ export default async function AdminMerchPage({
                   </span>
                 </>
               ) : null}
-              {activeSellerPayoutStatus ? (
-                <>
-                  {activeSearch || activeProductStatus ? " and" : " "} seller payout by{" "}
-                  <span>{payoutStatusLabel(activeSellerPayoutStatus)}</span>
-                </>
-              ) : null}
               {(activeProductStatus ||
-                activeSellerPayoutStatus ||
                 activeOrderFulfillmentStatus) &&
               activeOrderStatus
                 ? " and"
@@ -1338,7 +1311,6 @@ export default async function AdminMerchPage({
                 <>
                   {activeSearch ||
                   activeProductStatus ||
-                  activeSellerPayoutStatus ||
                   activeOrderStatus
                     ? " and"
                     : " "} fulfillment by{" "}
@@ -1365,9 +1337,6 @@ export default async function AdminMerchPage({
           {activeOrderStatus ? (
             <input name="order_status" type="hidden" value={activeOrderStatus} />
           ) : null}
-          {activeSellerPayoutStatus ? (
-            <input name="seller_payout" type="hidden" value={activeSellerPayoutStatus} />
-          ) : null}
           {activeOrderFulfillmentStatus ? (
             <input name="fulfillment" type="hidden" value={activeOrderFulfillmentStatus} />
           ) : null}
@@ -1388,7 +1357,7 @@ export default async function AdminMerchPage({
           </button>
         </form>
 
-        <div className="mb-4 grid gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm xl:grid-cols-4">
+        <div className="mb-4 grid gap-3 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-3 text-sm xl:grid-cols-3">
           <div>
             <p className="mb-2 text-xs font-bold uppercase text-[var(--muted-strong)]">
               Product status
@@ -1406,39 +1375,11 @@ export default async function AdminMerchPage({
                     orderStatus: activeOrderStatus,
                     page: 1,
                     productStatus: status,
-                    sellerPayoutStatus: activeSellerPayoutStatus,
                     search: activeSearch,
                   })}
                   key={status}
                 >
                   {statusLabel(status)}
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="mb-2 text-xs font-bold uppercase text-[var(--muted-strong)]">
-              Seller payout
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {sellerPayoutFilters.map((status) => (
-                <Link
-                  className={`rounded-md border px-2.5 py-1.5 text-xs font-semibold ${
-                    activeSellerPayoutStatus === status
-                      ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
-                      : "border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] text-[var(--foreground)]"
-                  }`}
-                  href={pageHref({
-                    orderFulfillmentStatus: activeOrderFulfillmentStatus,
-                    orderStatus: activeOrderStatus,
-                    page: 1,
-                    productStatus: activeProductStatus,
-                    sellerPayoutStatus: status,
-                    search: activeSearch,
-                  })}
-                  key={status}
-                >
-                  {payoutStatusLabel(status)}
                 </Link>
               ))}
             </div>
@@ -1460,7 +1401,6 @@ export default async function AdminMerchPage({
                     orderStatus: status,
                     page: currentPage,
                     productStatus: activeProductStatus,
-                    sellerPayoutStatus: activeSellerPayoutStatus,
                     search: activeSearch,
                   })}
                   key={status}
@@ -1487,7 +1427,6 @@ export default async function AdminMerchPage({
                     orderStatus: activeOrderStatus,
                     page: currentPage,
                     productStatus: activeProductStatus,
-                    sellerPayoutStatus: activeSellerPayoutStatus,
                     search: activeSearch,
                   })}
                   key={status}
@@ -1559,7 +1498,6 @@ export default async function AdminMerchPage({
                 orderStatus: activeOrderStatus,
                 page: nextPage,
                 productStatus: activeProductStatus,
-                sellerPayoutStatus: activeSellerPayoutStatus,
                 search: activeSearch,
               })
             }
@@ -1593,7 +1531,6 @@ export default async function AdminMerchPage({
                   orderStatus: activeOrderStatus,
                   page: nextPage,
                   productStatus: activeProductStatus,
-                  sellerPayoutStatus: activeSellerPayoutStatus,
                   search: activeSearch,
                 })
               }
@@ -1605,9 +1542,10 @@ export default async function AdminMerchPage({
         <section className="mt-4 rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
           <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-lg font-bold">Recent Orders</h2>
+              <h2 className="text-lg font-bold">Historical TTC Orders</h2>
               <p className="mt-1 text-sm text-[var(--muted)]">
-                Checkout writes paid, failed, expired, and refunded order states here.
+                Existing TTC checkout records remain here for fulfillment,
+                refund, dispute, and payment reconciliation.
               </p>
             </div>
             <span className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 py-2 text-sm font-semibold">
@@ -1631,7 +1569,6 @@ export default async function AdminMerchPage({
                 href={pageHref({
                   page: currentPage,
                   productStatus: activeProductStatus,
-                  sellerPayoutStatus: activeSellerPayoutStatus,
                   search: activeSearch,
                 })}
               >
@@ -1649,7 +1586,6 @@ export default async function AdminMerchPage({
                 orderStatus: activeOrderStatus,
                 page: currentPage,
                 productStatus: activeProductStatus,
-                sellerPayoutStatus: activeSellerPayoutStatus,
                 search: activeSearch,
               })
             }
@@ -1682,12 +1618,11 @@ export default async function AdminMerchPage({
                 orderFulfillmentStatus: activeOrderFulfillmentStatus,
                 orderPage: nextOrderPage,
                 orderStatus: activeOrderStatus,
-                  page: currentPage,
-                  productStatus: activeProductStatus,
-                  sellerPayoutStatus: activeSellerPayoutStatus,
-                  search: activeSearch,
-                })
-              }
+                page: currentPage,
+                productStatus: activeProductStatus,
+                search: activeSearch,
+              })
+            }
               totalPages={totalOrderPages}
             />
           </div>

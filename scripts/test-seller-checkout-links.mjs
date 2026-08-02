@@ -236,6 +236,9 @@ function readSource(path) {
 }
 
 const actionsSource = readSource("src/app/actions.ts");
+let adminActionsSource = readSource("src/app/admin/actions.ts");
+let adminMerchPageSource = readSource("src/app/admin/merch/page.tsx");
+const adminOverviewSource = readSource("src/app/admin/page.tsx");
 const composerSource = readSource("src/app/floating-composer.tsx");
 let merchPageSource = readSource("src/app/merch/[id]/page.tsx");
 let sellerCheckoutDialogSource = existsSync(
@@ -288,6 +291,101 @@ if (task4MutationName) {
     typeof mutate,
     "function",
     "Unknown TTC_SELLER_CHECKOUT_TASK4_MUTANT: " + task4MutationName,
+  );
+  mutate();
+}
+
+function mutateAdminMerchStatusAction(source, mutate) {
+  const start = source.indexOf("export async function updateMerchProductStatus");
+  const end = source.indexOf("export async function updateMerchOrderStatus", start);
+  assert.notEqual(start, -1, "Task 6 admin action start was not found");
+  assert.notEqual(end, -1, "Task 6 admin action end was not found");
+
+  return source.slice(0, start) + mutate(source.slice(start, end)) + source.slice(end);
+}
+
+const task6SourceMutations = {
+  "admin-before-moderator": () => {
+    adminActionsSource = mutateAdminMerchStatusAction(adminActionsSource, (source) =>
+      replaceMutation(
+        source,
+        "  const { supabase } = await requireModerator();",
+        "  createAdminClient();\n  const { supabase } = await requireModerator();",
+      ),
+    );
+  },
+  "bypass-official-rejection": () => {
+    adminActionsSource = mutateAdminMerchStatusAction(adminActionsSource, (source) =>
+      replaceMutation(
+        source,
+        'if (status === "active" && product.is_official) {',
+        'if (status === "active" && false && product.is_official) {',
+      ),
+    );
+  },
+  "bypass-readiness-rejection": () => {
+    adminActionsSource = mutateAdminMerchStatusAction(adminActionsSource, (source) =>
+      replaceMutation(
+        source,
+        "if (!checkoutReadiness.ready) {",
+        "if (false && !checkoutReadiness.ready) {",
+      ),
+    );
+  },
+  "drift-missing-terms-message": () => {
+    adminActionsSource = mutateAdminMerchStatusAction(adminActionsSource, (source) =>
+      replaceMutation(
+        source,
+        'checkoutReadiness.reason === "missing_terms"',
+        'checkoutReadiness.reason === "invalid_url"',
+      ),
+    );
+  },
+  "expose-raw-admin-error": () => {
+    adminActionsSource = mutateAdminMerchStatusAction(adminActionsSource, (source) =>
+      replaceMutation(
+        source,
+        'console.error("Admin Merch seller checkout lookup failed.");',
+        'console.error("Admin Merch seller checkout lookup failed: " + checkoutError?.message);',
+        2,
+      ),
+    );
+  },
+  "expose-unvalidated-admin-link": () => {
+    adminMerchPageSource = replaceMutation(
+      adminMerchPageSource,
+      "href={checkoutReadiness.url}",
+      "href={product.externalCheckoutUrl}",
+    );
+  },
+  "unconditional-admin-link": () => {
+    adminMerchPageSource = replaceMutation(
+      adminMerchPageSource,
+      "{checkoutReadiness.ready ? (",
+      "{true ? (",
+    );
+  },
+  "unscoped-admin-action-read": () => {
+    adminActionsSource = mutateAdminMerchStatusAction(adminActionsSource, (source) =>
+      replaceMutation(source, '      .eq("seller_id", product.seller_id)\n', ""),
+    );
+  },
+  "unscoped-admin-page-read": () => {
+    adminMerchPageSource = replaceMutation(
+      adminMerchPageSource,
+      '      .in("id", productIds)\n',
+      "",
+    );
+  },
+};
+
+const task6MutationName = process.env.TTC_SELLER_CHECKOUT_TASK6_MUTANT;
+if (task6MutationName) {
+  const mutate = task6SourceMutations[task6MutationName];
+  assert.equal(
+    typeof mutate,
+    "function",
+    "Unknown TTC_SELLER_CHECKOUT_TASK6_MUTANT: " + task6MutationName,
   );
   mutate();
 }
@@ -1683,6 +1781,397 @@ function occurrenceCount(source, value) {
   return source.split(value).length - 1;
 }
 
+function task6AdminActionSourceForTest() {
+  const directory = mkdtempSync(join(tmpdir(), "seller-checkout-admin-action-"));
+  const path = join(directory, "actions.ts");
+  const transformedSource = adminActionsSource.replace(
+    'const { sellerCheckoutSubmissionReadiness } = await import("@/lib/merch/seller-checkout");',
+    "",
+  );
+  writeFileSync(path, transformedSource, "utf8");
+
+  return {
+    cleanup() {
+      rmSync(directory, { force: true, recursive: true });
+    },
+    path,
+  };
+}
+
+async function loadTask6AdminActions({
+  console: consoleValue,
+  createAdminClient,
+  createClient,
+}) {
+  const source = task6AdminActionSourceForTest();
+
+  try {
+    const actions = await importTypeScriptWithStubs(
+      source.path,
+      {
+        "@/lib/admin-role-hierarchy": {
+          canModerateUserStatus: () => false,
+          isAssignableUserRole: () => false,
+        },
+        "@/lib/mail/hostgator": {
+          sendHostgatorEmail: async () => {},
+        },
+        "@/lib/notification-write": {
+          insertNotifications: async () => ({ error: null }),
+        },
+        "@/lib/site": {
+          siteName: "TheTattooCore",
+          siteUrl: "https://thetattoocore.com",
+          supportEmail: "support@example.com",
+        },
+        "@/lib/stripe/checkout-session": {
+          bookingCheckoutReconciliationDecision: () => ({
+            action: "hold",
+            reason: "test",
+          }),
+          bookingCheckoutReleaseAttemptDecision: () => ({
+            action: "reject",
+            reason: "test",
+          }),
+        },
+        "@/lib/stripe/server": {
+          createStripeClient: () => null,
+          stripeCheckoutPreflight: () => ({ actual: false, ready: false }),
+        },
+        "@/lib/supabase/admin": {
+          createAdminClient,
+        },
+        "@/lib/supabase/server": {
+          createClient,
+        },
+        "next/cache": {
+          revalidatePath: () => {},
+        },
+        "next/navigation": {
+          redirect(location) {
+            throw new RedirectSignal(String(location));
+          },
+        },
+      },
+      {
+        console: consoleValue,
+        globals: { sellerCheckoutSubmissionReadiness },
+      },
+    );
+
+    return { actions, cleanup: source.cleanup };
+  } catch (error) {
+    source.cleanup();
+    throw error;
+  }
+}
+
+function task6RedirectMessage(location) {
+  return new URL(location, "https://thetattoocore.com").searchParams.get("message");
+}
+
+const readyAdminProduct = {
+  category: "apparel",
+  currency: "USD",
+  fulfillment_notes: "Ships within five business days.",
+  id: testIds.other,
+  inventory_quantity: 8,
+  inventory_reserved: 2,
+  is_official: false,
+  moderation_status: "active",
+  price_cents: 2_500,
+  profiles: {
+    account_type: "artist",
+    license_verified_at: "2026-08-01T12:00:00.000Z",
+  },
+  return_policy: "Returns accepted within fourteen days.",
+  seller_id: testIds.third,
+  shipping_required: true,
+  ships_from_city: "Austin",
+  ships_from_region: "TX",
+  status: "approved",
+  title: "Fixture flash",
+};
+const readyAdminCheckoutRow = {
+  external_checkout_url: validLiveUrl,
+  id: testIds.other,
+  seller_checkout_terms_accepted_at: "2026-08-01T12:00:00.000Z",
+  seller_checkout_terms_version: SELLER_CHECKOUT_TERMS_VERSION,
+};
+
+async function runTask6AdminActivation({
+  adminError = null,
+  checkoutRow = readyAdminCheckoutRow,
+  product = readyAdminProduct,
+  rpcResult = { data: true, error: null },
+} = {}) {
+  const events = [];
+  const logs = [];
+  const normal = createSupabaseDouble({
+    claims: { sub: testIds.actor },
+    execute(query) {
+      if (query.table === "profiles" && query.operation === "select") {
+        events.push("moderator-authorized");
+        return { data: { role: "moderator" }, error: null };
+      }
+
+      if (query.table === "merch_products" && query.operation === "select") {
+        events.push({ client: "authenticated", query });
+        return { data: product, error: null };
+      }
+
+      throw new Error(
+        `Unexpected authenticated query: ${String(query.operation)} ${query.table}`,
+      );
+    },
+    rpc(name, payload) {
+      events.push({ client: "authenticated", name, payload, type: "rpc" });
+      return Promise.resolve(rpcResult);
+    },
+  });
+  const admin = createSupabaseDouble({
+    execute(query) {
+      events.push({ client: "admin", query });
+      if (query.table === "merch_products" && query.operation === "select") {
+        return { data: checkoutRow, error: adminError };
+      }
+
+      throw new Error(`Unexpected admin query: ${String(query.operation)} ${query.table}`);
+    },
+  });
+  const consoleValue = Object.create(console);
+  consoleValue.error = (...values) => {
+    logs.push(values.map(String).join(" "));
+  };
+  const loaded = await loadTask6AdminActions({
+    console: consoleValue,
+    createAdminClient() {
+      events.push("admin-client-created");
+      return admin.client;
+    },
+    async createClient() {
+      return normal.client;
+    },
+  });
+  let outcome;
+
+  try {
+    await loaded.actions.updateMerchProductStatus(
+      makeForm({
+        note: "Reviewed",
+        product_id: product.id,
+        return_to: "/admin/merch?product_status=pending_review",
+        status: "active",
+      }),
+    );
+  } catch (error) {
+    outcome = error;
+  } finally {
+    loaded.cleanup();
+  }
+
+  assert.ok(outcome instanceof RedirectSignal, `unexpected Task 6 outcome: ${outcome}`);
+
+  return {
+    admin,
+    events,
+    location: outcome.location,
+    logs,
+    normal,
+  };
+}
+
+{
+  const scenario = await runTask6AdminActivation();
+  assert.equal(task6RedirectMessage(scenario.location), "Merch product updated.");
+  assert.ok(
+    scenario.events.indexOf("moderator-authorized") <
+      scenario.events.indexOf("admin-client-created"),
+    "service-role client was created before moderator authorization",
+  );
+  const adminReads = scenario.admin.queries.filter(
+    (query) => query.table === "merch_products" && query.operation === "select",
+  );
+  assert.equal(adminReads.length, 1);
+  assert.equal(
+    adminReads[0].selection,
+    "id, external_checkout_url, seller_checkout_terms_version, seller_checkout_terms_accepted_at",
+  );
+  assertQueryFilters(
+    adminReads[0],
+    [
+      { column: "id", operator: "eq", value: readyAdminProduct.id },
+      { column: "seller_id", operator: "eq", value: readyAdminProduct.seller_id },
+    ],
+    "admin seller checkout read was not exact ID-and-seller scoped",
+  );
+  const statusRpcs = scenario.events.filter(
+    (event) => event?.type === "rpc" && event.name === "admin_update_merch_product_status",
+  );
+  assert.equal(statusRpcs.length, 1);
+  assertModuleValue(statusRpcs[0].payload, {
+    p_expected_status: "approved",
+    p_note: "Reviewed",
+    p_product_id: readyAdminProduct.id,
+    p_status: "active",
+  });
+  assertModuleValue(scenario.logs, []);
+}
+
+for (const { checkoutRow, message, product } of [
+  {
+    message: "Official TTC Merch cannot be activated in this release.",
+    product: { ...readyAdminProduct, is_official: true },
+  },
+  {
+    message:
+      "This seller must be artist, studio, or vendor license verified before Merch can be approved or activated.",
+    product: {
+      ...readyAdminProduct,
+      profiles: { account_type: "artist", license_verified_at: null },
+    },
+  },
+  {
+    message: "Merch needs available inventory before seller checkout can be activated.",
+    product: { ...readyAdminProduct, inventory_quantity: 2 },
+  },
+  {
+    message:
+      "Merch needs ship-from, fulfillment, and return/refund details before seller checkout can be activated.",
+    product: { ...readyAdminProduct, fulfillment_notes: "short" },
+  },
+  {
+    checkoutRow: {
+      ...readyAdminCheckoutRow,
+      seller_checkout_terms_accepted_at: null,
+      seller_checkout_terms_version: null,
+    },
+    message:
+      "The seller must accept the current seller checkout responsibilities before Merch can be activated.",
+  },
+  {
+    checkoutRow: {
+      ...readyAdminCheckoutRow,
+      external_checkout_url: "javascript:provider-secret",
+    },
+    message:
+      "Merch needs a valid live Stripe Payment Link before seller checkout can be activated.",
+  },
+]) {
+  const scenario = await runTask6AdminActivation({
+    checkoutRow: checkoutRow ?? readyAdminCheckoutRow,
+    product: product ?? readyAdminProduct,
+  });
+  assert.equal(task6RedirectMessage(scenario.location), message);
+  assert.ok(!scenario.location.includes("buy.stripe.com"));
+  assert.ok(!scenario.location.includes("provider-secret"));
+  assert.equal(
+    scenario.events.some((event) => event?.type === "rpc"),
+    false,
+    `readiness failure reached status RPC: ${message}`,
+  );
+}
+
+{
+  const secretError = "provider-db-secret-token";
+  const scenario = await runTask6AdminActivation({
+    adminError: { message: secretError },
+    checkoutRow: null,
+  });
+  assert.equal(
+    task6RedirectMessage(scenario.location),
+    "Could not review seller checkout readiness. Please try again.",
+  );
+  assertModuleValue(scenario.logs, ["Admin Merch seller checkout lookup failed."]);
+  assert.ok(!scenario.location.includes(secretError));
+  assert.ok(!scenario.logs.join(" ").includes(secretError));
+  assert.ok(!scenario.location.includes(validLiveUrl));
+}
+
+for (const values of [
+  { product_id: "' OR 1=1 --", status: "active" },
+  { product_id: testIds.other, status: "active<script>" },
+]) {
+  let authCalls = 0;
+  const loaded = await loadTask6AdminActions({
+    console,
+    createAdminClient() {
+      throw new Error("malformed input reached the admin client");
+    },
+    async createClient() {
+      authCalls += 1;
+      throw new Error("malformed input reached authentication");
+    },
+  });
+  let outcome;
+
+  try {
+    await loaded.actions.updateMerchProductStatus(makeForm(values));
+  } catch (error) {
+    outcome = error;
+  } finally {
+    loaded.cleanup();
+  }
+
+  assert.ok(outcome instanceof RedirectSignal);
+  assert.equal(
+    task6RedirectMessage(outcome.location),
+    "Choose a valid merch product status.",
+  );
+  assert.equal(authCalls, 0);
+  assert.ok(!outcome.location.includes(String(values.product_id)));
+  assert.ok(!outcome.location.includes(String(values.status)));
+}
+console.log("PASS direct admin seller checkout moderation security contracts");
+
+function executableFunctionFromSource(source, fileName, functionName) {
+  const ast = ts.createSourceFile(
+    fileName,
+    source,
+    ts.ScriptTarget.ES2022,
+    true,
+    ts.ScriptKind.TSX,
+  );
+  const matches = [];
+  visitSource(ast, (node) => {
+    if (
+      ts.isFunctionDeclaration(node) &&
+      node.name?.text === functionName
+    ) {
+      matches.push(node);
+    }
+  });
+  assert.equal(matches.length, 1, `${functionName} declaration count changed`);
+  const output = ts.transpileModule(
+    `${matches[0].getText(ast)}\nglobalThis.__functionUnderTest = ${functionName};`,
+    {
+      compilerOptions: {
+        module: ts.ModuleKind.None,
+        target: ts.ScriptTarget.ES2022,
+      },
+    },
+  ).outputText;
+  const context = vm.createContext({});
+  new vm.Script(output).runInContext(context);
+  return context.__functionUnderTest;
+}
+
+const adminSearchTerm = executableFunctionFromSource(
+  adminMerchPageSource,
+  "src/app/admin/merch/page.tsx",
+  "searchTerm",
+);
+for (const [value, expected] of [
+  ["<script>alert(1)</script>", "script alert 1 script"],
+  ["' OR 1=1 --", "OR 1 1 --"],
+  ["buyer\r\nseller", "buyer seller"],
+  [["safe@example.com", "ignored"], "safe@example.com"],
+  ["x".repeat(120), "x".repeat(80)],
+]) {
+  assert.equal(adminSearchTerm(value), expected);
+}
+console.log("PASS malicious admin Merch search normalization");
+
 function syntheticModule(context, identifier, exports) {
   const names = Object.keys(exports);
 
@@ -1958,6 +2447,21 @@ const editMerchForm = sourceSection(
   "<form action={editMerchProduct}",
   "</form>",
 );
+const adminMerchStatusAction = sourceSection(
+  adminActionsSource,
+  "export async function updateMerchProductStatus",
+  "export async function updateMerchOrderStatus",
+);
+const adminMerchProductCard = sourceSection(
+  adminMerchPageSource,
+  "function ProductCard",
+  "function OrderCard",
+);
+const adminProtectedCheckoutQuery = sourceSection(
+  adminMerchPageSource,
+  "const productIds =",
+  "const products: MerchProduct[]",
+);
 const ownerCheckoutQuery = sourceSection(
   merchPageSource,
   "const canReadSellerCheckout",
@@ -2157,6 +2661,67 @@ sourceContract(
   "owner reservations are labeled as legacy TTC checkout records",
   !merchPageSource.includes("reserved in active checkout") &&
     merchPageSource.includes("reserved in legacy TTC checkout records"),
+);
+sourceContract(
+  "admin Merch activation uses seller checkout readiness after moderator authorization",
+  adminMerchStatusAction.includes("sellerCheckoutSubmissionReadiness") &&
+    adminMerchStatusAction.indexOf("await requireModerator()") <
+      adminMerchStatusAction.indexOf("createAdminClient()") &&
+    adminMerchStatusAction.includes("external_checkout_url") &&
+    adminMerchStatusAction.includes("seller_checkout_terms_version") &&
+    adminMerchStatusAction.includes("seller_checkout_terms_accepted_at") &&
+    adminMerchStatusAction.includes('.eq("id", product.id)') &&
+    adminMerchStatusAction.includes('.eq("seller_id", product.seller_id)') &&
+    adminMerchStatusAction.includes('status === "active"') &&
+    adminMerchStatusAction.includes("admin_update_merch_product_status") &&
+    !adminMerchStatusAction.includes("checkoutError?.message") &&
+    !adminMerchStatusAction.includes("checkoutError.message"),
+);
+sourceContract(
+  "admin Merch activation rejects official TTC checkout and removes Connect readiness",
+  adminMerchStatusAction.includes("Official TTC Merch cannot be activated in this release.") &&
+    !adminMerchStatusAction.includes("stripeCheckoutPreflight") &&
+    !adminMerchStatusAction.includes('.from("stripe_connect_accounts")') &&
+    !adminMerchStatusAction.includes("charges_enabled") &&
+    !adminMerchStatusAction.includes("payouts_enabled") &&
+    !adminMerchStatusAction.includes("details_submitted"),
+);
+sourceContract(
+  "admin Merch page reviews protected seller links without payout filters",
+  adminMerchPageSource.includes("sellerCheckoutSubmissionReadiness") &&
+    adminMerchPageSource.includes("createAdminClient()") &&
+    adminMerchPageSource.includes(
+      'id, external_checkout_url, seller_checkout_terms_version, seller_checkout_terms_accepted_at',
+    ) &&
+    adminMerchPageSource.includes('target="_blank"') &&
+    adminMerchPageSource.includes('rel="ugc nofollow noopener noreferrer"') &&
+    adminMerchPageSource.includes("Review Stripe Payment Link") &&
+    adminProtectedCheckoutQuery.includes('.in("id", productIds)') &&
+    adminProtectedCheckoutQuery.includes("productIdSet.has(row.id)") &&
+    adminMerchProductCard.includes("{checkoutReadiness.ready ? (") &&
+    adminMerchProductCard.includes("href={checkoutReadiness.url}") &&
+    !adminMerchProductCard.includes("externalCheckoutUrl") &&
+    !adminMerchProductCard.includes("external_checkout_url") &&
+    !adminMerchPageSource.includes("seller_payout") &&
+    !adminMerchPageSource.includes("SellerPayoutFilter") &&
+    !adminMerchPageSource.includes('.from("stripe_connect_accounts")'),
+);
+sourceContract(
+  "admin Merch keeps historical TTC order and refund controls",
+  adminMerchPageSource.includes("Historical TTC Orders") &&
+    adminMerchPageSource.includes("refundMerchOrder") &&
+    adminMerchPageSource.includes("payment_dispute_hold") &&
+    adminMerchPageSource.includes("fulfillment"),
+);
+sourceContract(
+  "admin overview distinguishes seller checkout from historical TTC reconciliation",
+  adminOverviewSource
+    .toLowerCase()
+    .includes("seller-owned external physical-goods checkout") &&
+    adminOverviewSource.includes("Historical TTC checkout reconciliation") &&
+    !adminOverviewSource.includes(
+      "Checkout receipts, payment status, refund status, and payout readiness live on a focused ops page.",
+    ),
 );
 
 if (sourceContractFailures.length > 0) {
