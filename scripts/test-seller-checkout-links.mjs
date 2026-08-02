@@ -79,12 +79,14 @@ console.log("PASS malicious URL rejection");
 
 const gateCases = [
   [{}, false],
-  [{ STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED: "false" }, false],
-  [{ STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED: "trueish" }, false],
-  [{ STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED: " TRUE " }, false],
-  [{ STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED: true }, false],
-  [{ STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED: {} }, false],
-  [{ STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED: "true" }, true],
+  [{ TTC_SELLER_CHECKOUT_LINKS_ENABLED: "false" }, false],
+  [{ TTC_SELLER_CHECKOUT_LINKS_ENABLED: "trueish" }, false],
+  [{ TTC_SELLER_CHECKOUT_LINKS_ENABLED: " TRUE " }, false],
+  [{ TTC_SELLER_CHECKOUT_LINKS_ENABLED: "TRUE" }, false],
+  [{ TTC_SELLER_CHECKOUT_LINKS_ENABLED: true }, false],
+  [{ TTC_SELLER_CHECKOUT_LINKS_ENABLED: {} }, false],
+  [{ STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED: "true" }, false],
+  [{ TTC_SELLER_CHECKOUT_LINKS_ENABLED: "true" }, true],
 ];
 for (const [environment, expected] of gateCases) {
   assert.equal(sellerCheckoutLinksEnabled(environment), expected);
@@ -186,19 +188,25 @@ assertModuleValue(
   sellerCheckoutPurchaseReadiness(readyInput, {
     STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED: "true",
   }),
+  { ready: false, reason: "disabled", url: null },
+);
+assertModuleValue(
+  sellerCheckoutPurchaseReadiness(readyInput, {
+    TTC_SELLER_CHECKOUT_LINKS_ENABLED: "true",
+  }),
   { ready: true, reason: null, url: validLiveUrl },
 );
 assertModuleValue(
   sellerCheckoutPurchaseReadiness(
     { ...readyInput, status: "inactive" },
-    { STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED: "true" },
+    { TTC_SELLER_CHECKOUT_LINKS_ENABLED: "true" },
   ),
   { ready: false, reason: "not_active", url: null },
 );
 assertModuleValue(
   sellerCheckoutPurchaseReadiness(
     { ...readyInput, moderationStatus: "hidden" },
-    { STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED: "true" },
+    { TTC_SELLER_CHECKOUT_LINKS_ENABLED: "true" },
   ),
   { ready: false, reason: "not_moderated", url: null },
 );
