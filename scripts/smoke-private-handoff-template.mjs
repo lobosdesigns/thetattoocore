@@ -123,7 +123,7 @@ const checks = [
       generator.includes("Reviewer contact saved in consoles") &&
       generator.includes("## Current Console Blockers To Clear") &&
       generator.includes("App Review monitoring and response evidence") &&
-      generator.includes("iOS App Version 1.0 build 1.0 (3) submitted for App Review") &&
+      generator.includes("Confirm the current iOS App Version and selected build in App Store Connect") &&
       generator.includes("reviewer messages, status changes, rejection notes, or approval proof privately") &&
       generator.includes("Submitted-build console field evidence") &&
       generator.includes("selected build, 13-inch iPad screenshot upload, primary category, free pricing") &&
@@ -144,9 +144,11 @@ const checks = [
       generator.includes("Installed release/version/build") &&
       generator.includes("A missing listing, account mismatch, or unconfirmed web opt-in is a blocker") &&
       generator.includes("API 36 signed upload bundle") &&
-      generator.includes("Version code 4 / version name 1.0.3 API 36 update is active and verified installed") &&
-      generator.includes("do not upload the same version code again") &&
+      generator.includes("Confirm the current API 36 version code, version name, and release track") &&
+      generator.includes("do not reuse an uploaded version code") &&
       generator.includes("archive tester participation evidence") &&
+      !generator.includes("iOS App Version 1.0 build 1.0 (3) submitted for App Review") &&
+      !generator.includes("Version code 4 / version name 1.0.3 API 36 update is active") &&
       generator.includes("Console submit/retry evidence") &&
       generator.includes("record the visible error code, page URL, retry path") &&
       generator.includes("whether reload/new-tab retry was attempted") &&
