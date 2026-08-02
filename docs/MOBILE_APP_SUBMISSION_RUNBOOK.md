@@ -1,5 +1,15 @@
 # Mobile App Submission Runbook
 
+## Seller-Owned Merch Position - August 2, 2026
+
+- The selected physical-goods path is seller-owned external checkout from a reviewed product detail page. The seller processes payment and handles taxes, shipping, returns, refunds, disputes, receipts, and purchase support; TTC handles listing review and listing-safety reports.
+- `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false` keeps the purchase handoff unavailable. Historical TTC Checkout, Connect, marketplace, and destination-charge controls remain false and are not the current seller setup path.
+- No database migration, production configuration/data change, live seller link, deployment, native upload, payment-console action, App Store action, or Google Play action occurred in this implementation. The App Store build currently in review remains unchanged.
+- A later enablement needs exact owner approval for migration/deployment/gate changes, one seller-supplied live link reviewed privately, legal/privacy/store-copy review, and web, Android phone, and TestFlight iPad external-browser open/return QA with no false TTC success state and rollback proof.
+
+This dated section supersedes older current-position statements about TTC-owned
+Merch checkout while preserving the build, console, and deployment history below.
+
 ## Current Position
 
 - TheTattooCore is web/PWA-first at `https://thetattoocore.com/login`.
@@ -22,7 +32,7 @@
 - Final legal review evidence lives in `docs/LEGAL_REVIEW_PREP.md`; keep reviewer notes private and recheck public Terms, Privacy, Support, Help, Child Safety Standards, store metadata, screenshots, and native wrapper behavior against the submitted build.
 - Google Play submissions or updates on or after August 31, 2026 must target Android 16 / API 36. Active `1.0.3 (4)` in Production and `1.0.4 (5)` in Alpha are the release baselines; checked-in replacement `1.0.5 (6)` uses the same API 36 baseline and must be rebuilt, signed, and real-device-QA tested before selecting a Google Play track.
 - Visible nudity is not allowed to reduce review and moderation risk.
-- Merch and ads use controlled launch checkout; production payments, seller payouts, taxes, refunds, disputes, and app-store policy review from `docs/PAYMENT_PRODUCTION_READINESS.md` must be finished before real commerce is promoted in native builds.
+- Merch uses seller-owned external checkout only after its separate approval and QA gates. Ads and booking deposits remain separate controlled TTC payment flows governed by `docs/PAYMENT_PRODUCTION_READINESS.md`.
 
 ## Current Store Rules Check
 
@@ -113,8 +123,8 @@ Use Closed testing - Alpha only for controlled QA:
 - Confirm app-store-safe screenshots use brand assets and safe sample content only.
 - Confirm screenshots do not expose private DMs, license documents, admin queues, real payment data, personal owner contact data, or visible infrastructure/provider names.
 - Capture at least one Help/Support proof screen that shows the Merch guide shortcut plus public self-service topics for verification, booking deposits, privacy, safety, and support boundaries.
-- Confirm Help/Support proof screens show public guide content only, with no private order details, seller payout setup details, support tickets, moderation queues, or admin-only investigation notes.
-- Use the public `/help/beta-app-testing` guide for beta testers so app-wrapper login, signup, reset, Help, Support, media upload, notifications, DMs, booking, Merch, checkout-return, and safe bug-report expectations stay consistent.
+- Confirm Help/Support proof screens show public guide content only, with no private order details, seller Payment Links, payment credentials, support tickets, moderation queues, or admin-only investigation notes.
+- Use the public `/help/beta-app-testing` guide for beta testers so app-wrapper login, signup, reset, Help, Support, media upload, notifications, DMs, booking, Merch, intentional external seller-checkout return, no-false-success, and safe bug-report expectations stay consistent.
 - Before `npm.cmd run verify:app-review-preflight`, set `$env:TTC_RELEASE_CANDIDATE="<current-git-commit-hash>"` in PowerShell. Use the immutable 7-40 character hash for the exact local commit being audited, not a branch or tag. Run the preflight before final screenshot upload validation, store-console final validation, or reviewer handoff. It checks lint, production build, production environment boundaries, security copy/headers, content-policy/reporting guardrails, theme contrast, payment guardrails, store metadata, PWA assets, native wrapper and staged-alert safety, app-link association endpoints, the repo-safe Android connected-device probe, readiness docs, public routes, Android-profile mobile routes at 390px and 320px, and iOS-profile mobile routes without counting technical checks as real-device or private console evidence. It then proves the evidence verifier with a sanitized fixture and checks the actual ignored private handoff, failing closed until every required row matches the commit.
 - Run `npm.cmd run verify:release-evidence -- --release-candidate <current-git-commit-hash>` when only the ignored private handoff needs to be rechecked. The current local Git commit hash is mandatory, must resolve directly to a commit object in this repository, and must match the handoff's web deploy row; a branch, tag, unresolved hash, or stale deploy row fails closed. Reviewer-access, tester-install, two-user DM, and real-device proof rows require a private proof location and a valid proof date no more than 45 days old. A passing iOS real-device row must identify an actual iPhone, TestFlight as the install source, device-captured evidence, and full-checklist scope; an owner-confirmed iPad install remains partial evidence. This strict gate also checks the exact Android Alpha `1.0.5 (6)`, App Review `1.0 (3)`, TestFlight `1.0 (5)`, store fields and media, real-device QA, native alert delivery/routing, and legal signoff. It reports only repo-safe requirement names and is expected to fail until every private evidence row is complete.
 - Run `npm.cmd run prepare:private-release-handoff` to create a local ignored handoff template before collecting reviewer credentials, console screenshots, device clips, payment proof, legal notes, or push-delivery evidence. When a handoff already exists, the generator preserves a timestamped private backup before refreshing the template. Keep the generated `private-release-handoff/` folder out of git and copy only repo-safe pass/fail summaries back into readiness docs.
@@ -128,8 +138,8 @@ Use Closed testing - Alpha only for controlled QA:
 - Run `npm.cmd run verify:native-predevice` before reviewer screenshots, console-copy validation, or store-console handoff when a release-candidate Android device is not authorized yet. It checks environment boundaries, private native config exclusions, native wrapper and staged-alert safety, app-link association endpoints, private handoff-template validation, readiness docs, store metadata, Android-profile mobile routes, and iOS-profile mobile routes without counting as real-device evidence.
 - Run `npm.cmd run verify:native-release` before final native handoff. It checks environment boundaries, private native config exclusions, native wrapper and staged-alert safety, app-link association endpoints, private handoff-template validation, and readiness docs first, intentionally fails until the Android probe sees an authorized device with the TTC package installed, then continues through store, Android-profile mobile, and iOS-profile mobile smoke checks.
 - Confirm support email and public legal/contact surfaces use `support@thetattoocore.com` or final company/legal contact details, not personal owner information.
-- Complete `docs/LEGAL_REVIEW_PREP.md` for Terms, Privacy, account deletion language, moderation policy, marketplace rules, payment/refund language, seller payout policy, and native checkout/store submission notes.
-- Decide whether native builds expose Merch checkout or keep it web-only and launch-controlled until production payment policy is approved.
+- Complete `docs/LEGAL_REVIEW_PREP.md` for Terms, Privacy, account deletion language, moderation policy, marketplace rules, seller-owned payment/tax/shipping/return/refund/dispute/support duties, and native external-checkout/store submission notes.
+- Keep seller checkout disabled until web, Android phone, and TestFlight iPad external-browser open/return behavior, no false TTC success state, and rollback are approved for the exact builds.
 - Prepare store age rating answers around 18+, user-generated content, moderation/reporting, no visible nudity policy, social interaction, DMs, marketplace-like browsing, and review-controlled checkout.
 - Prepare store data-safety/privacy answers around account/profile data, user-generated content, DMs, verification documents, moderation records, payment references, coarse location, notifications, deletion requests, and public-search visibility.
 - Treat App Store Accessibility Nutrition Labels as voluntary. Prepare a label
@@ -179,8 +189,8 @@ User-generated content:
 - The launch policy disallows visible nudity and unsafe/restricted professional-equipment promotion.
 
 Commerce:
-- Merch, ads, and booking/deposit flows are controlled during launch review.
-- Checkout and seller payout release remain gated until production payment, refund, dispute, tax/shipping, and policy review are complete.
+- Merch uses seller-owned external checkout only after the separate server gate, exact-build policy review, real-device QA, and rollback proof pass. The seller handles payment, tax, shipping, returns, refunds, disputes, receipts, and purchase support.
+- TTC Checkout, Connect, and destination-charge controls remain disabled and historical. Ads and booking/deposit flows remain separately gated.
 
 Support:
 - Support URL: https://thetattoocore.com/support

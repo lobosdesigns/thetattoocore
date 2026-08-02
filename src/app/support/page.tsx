@@ -41,7 +41,7 @@ const sections = [
   },
   {
     body:
-      "Merch checkout stays review-controlled. For missing, damaged, wrong, delayed, returned, fulfillment, refund, seller, or product-safety questions, use Support with the product or order link so the issue can be reviewed privately.",
+      "For new external Merch purchases, the seller is the merchant. The seller processes payment and handles shipping, taxes, returns, refunds, disputes, and purchase support. Contact the seller for receipts, delivery, returns, or payment questions. Use TTC Support to report an unsafe, prohibited, misleading, or fraudulent listing.",
     title: "Merch Support",
   },
   {
@@ -86,7 +86,7 @@ const deletionEmailHref = `mailto:${supportEmail}?subject=${encodeURIComponent(
 
 const guideLinks = [
   {
-    body: "Priority setup guides for profile, verification, posting, bookings, Merch, payouts, ads, and safety.",
+    body: "Priority setup guides for profile, verification, posting, bookings, Merch, seller checkout, ads, and safety.",
     href: "/help",
     label: "Launch setup checklist",
   },
@@ -136,19 +136,19 @@ const guideLinks = [
     label: "Verification guide",
   },
   {
-    body: "Product review, seller readiness, fulfillment, tracking, package issues, and refunds.",
+    body: "Product review, seller Payment Links, fulfillment terms, seller support, and listing-safety reports.",
     href: "/help/merch-products-orders",
     label: "Merch guide",
   },
   {
-    body: "Missing packages, wrong items, refund review, disputes, seller non-delivery, and private evidence handling.",
+    body: "How buyers contact the seller for receipts, shipping, returns, refunds, disputes, and purchase support.",
     href: "/help/order-refunds-disputes",
-    label: "Order support",
+    label: "Purchase support",
   },
   {
-    body: "Seller payout setup, checkout readiness, fees, refunds, disputes, and payment safety.",
+    body: "Seller-owned checkout readiness, Payment Link safety, buyer disclosure, and listing review.",
     href: "/help/seller-payouts-payment-safety",
-    label: "Seller payouts",
+    label: "Seller checkout",
   },
 ] as const;
 

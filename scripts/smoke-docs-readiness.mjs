@@ -105,6 +105,9 @@ const staleAlphaFirstOperationalSnippets = [
   "confirm the closed-test store listing offers install or update",
 ];
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
+const settingsPage = readFileSync("src/app/settings/page.tsx", "utf8");
+const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
+const adminPaymentsPage = readFileSync("src/app/admin/payments/page.tsx", "utf8");
 const adminPage = readFileSync("src/app/admin/page.tsx", "utf8");
 const helpArticlePage = readFileSync("src/app/help/[slug]/page.tsx", "utf8");
 const protectedVideo = readFileSync("src/app/protected-video.tsx", "utf8");
@@ -173,7 +176,6 @@ const safeBookingCalendarClipPath = "public/tutorial-clips/mobile-booking-calend
 const safeVerificationReviewClipPath = "public/tutorial-clips/mobile-verification-review-safe.mp4";
 const safeAdsCreditsClipPath = "public/tutorial-clips/mobile-ads-credits-safe.mp4";
 const safeOrderRefundClipPath = "public/tutorial-clips/mobile-order-refund-review-safe.mp4";
-const safePaymentSafetyClipPath = "public/tutorial-clips/mobile-payment-safety-safe.mp4";
 const safeAppWrapperClipPath = "public/tutorial-clips/mobile-app-wrapper-navigation-safe.mp4";
 const safeProfilePhotoClipPath = "public/tutorial-clips/mobile-profile-photo-banner-safe.mp4";
 const safePrivacyScreenshotPath = "public/screenshots/mobile-privacy-safety-safe.png";
@@ -220,6 +222,66 @@ const repoSafeSubmissionDocsText = [
 ].join("\n");
 
 const checks = [
+  {
+    label: "seller-owned Merch copy is consistent across member and admin surfaces",
+    ok:
+      accountPage.includes("Merch and orders") &&
+      accountPage.includes("Sellers add their own live Payment Link when creating or editing a product") &&
+      accountPage.includes("historical TTC order support records") &&
+      settingsPage.includes("Merch, seller checkout, historical orders, fulfillment, and support") &&
+      supportPage.includes("The seller processes payment and handles shipping, taxes, returns, refunds, disputes, and purchase support") &&
+      privacyPage.includes("The seller processes payment and handles shipping, taxes, returns, refunds, disputes, and purchase support") &&
+      helpCenterData.includes('slug: "seller-payouts-payment-safety"') &&
+      helpCenterData.includes('title: "Seller checkout and payment safety"') &&
+      helpCenterData.includes("Buyers contact the seller for receipts, shipping, returns, refunds, disputes, and purchase support") &&
+      compactWhitespace(adminPaymentsPage).includes("Legacy TTC checkout controls") &&
+      compactWhitespace(adminPaymentsPage).includes("disabled for the seller-link release") &&
+      !accountPage.includes("stripeConnectOnboardingEnabled") &&
+      !accountPage.includes("stripeCheckoutPreflight") &&
+      !accountPage.includes('from("stripe_connect_accounts")') &&
+      !accountPage.includes("payout_status") &&
+      !accountPage.includes("payout_issue") &&
+      !helpCenterData.includes('/screenshots/mobile-payout-safe.png') &&
+      !helpCenterData.includes('/tutorial-clips/mobile-payment-safety-safe.mp4'),
+  },
+  {
+    label: "privacy preserves historical records and excludes new external purchase data",
+    ok:
+      privacyPage.includes("TTC stores the seller's listing link and acceptance record") &&
+      privacyPage.includes("does not receive new external purchase card, shipping, receipt, or transaction data") &&
+      privacyPage.toLowerCase().includes("historical ttc test orders and payment audits") &&
+      privacyPage.includes("listing-safety reports") &&
+      !privacyPage.includes("TTC processes new external Merch payments"),
+  },
+  {
+    label: "current release docs supersede the TTC-owned pilot without claiming rollout",
+    ok:
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("## Current Position - August 2, 2026") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Seller-owned Stripe Payment Links are the selected physical-goods model") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("TTC Checkout, Connect, and destination-charge controls remain false and historical") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("TTC_SELLER_CHECKOUT_LINKS_ENABLED=false") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("No migration, production change, live seller URL, deployment, or native upload has occurred") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("one seller-supplied live link") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("web, Android phone, and TestFlight iPad QA") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].toLowerCase().includes("rollback proof") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("App Store build currently in review remains unchanged") &&
+      docs["docs/STORE_LISTING_DRAFT.md"].includes("seller-owned external checkout") &&
+      compactWhitespace(docs["docs/DATA_SAFETY_PREP.md"]).includes("new external Merch purchase data") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("seller-owned Payment Link") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("seller-owned external checkout") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("TestFlight iPad") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Android phone") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("external browser") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("no false success state"),
+  },
+  {
+    label: "seller checkout docs stay free of live links account IDs and secrets",
+    ok:
+      !/https:\/\/buy[.]stripe[.]com\//i.test(allDocs) &&
+      !/\bacct_[A-Za-z0-9]+\b/.test(allDocs) &&
+      !/\bsk_(?:live|test)_[A-Za-z0-9]{12,}\b/.test(allDocs) &&
+      !/\bwhsec_[A-Za-z0-9]{12,}\b/.test(allDocs),
+  },
   {
     label: "readiness docs link native wrapper prep",
     ok:
@@ -295,7 +357,7 @@ const checks = [
       docs["docs/STORE_LISTING_DRAFT.md"].includes("Help Center") &&
       docs["docs/STORE_LISTING_DRAFT.md"].includes("No AI art") &&
       docs["docs/STORE_LISTING_DRAFT.md"].includes("no scratcher promotion") &&
-      docs["docs/STORE_LISTING_DRAFT.md"].includes("review-controlled checkout") &&
+      docs["docs/STORE_LISTING_DRAFT.md"].includes("seller-owned external checkout") &&
       !docs["docs/STORE_LISTING_DRAFT.md"].includes("hosted checkout"),
   },
   {
@@ -411,8 +473,8 @@ const checks = [
       docs["docs/DATA_SAFETY_PREP.md"].includes("password handled by the account sign-in system") &&
       !docs["docs/DATA_SAFETY_PREP.md"].includes("auth provider") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("private verification/license documents") &&
-      docs["docs/DATA_SAFETY_PREP.md"].includes("Raw card, bank, routing, and payout credentials must not be collected") &&
-      docs["docs/DATA_SAFETY_PREP.md"].includes("approved review-controlled checkout flows") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("Raw card, bank, routing, payout, external receipt, external shipping, and external transaction data must not be collected") &&
+      docs["docs/DATA_SAFETY_PREP.md"].includes("New Merch payment processing happens through the seller's external checkout") &&
       !docs["docs/DATA_SAFETY_PREP.md"].includes("hosted payment-provider flows") &&
       !docs["docs/DATA_SAFETY_PREP.md"].includes("payment-provider reviews") &&
       docs["docs/DATA_SAFETY_PREP.md"].includes("coarse location") &&
@@ -440,8 +502,8 @@ const checks = [
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("no visible nudity") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("no AI art/search claims") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Account deletion") &&
-      docs["docs/LEGAL_REVIEW_PREP.md"].includes("seller payout timing") &&
-      docs["docs/LEGAL_REVIEW_PREP.md"].includes("refund/dispute handling") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("seller-owned Payment Link terms") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("seller tax/shipping/return/refund/dispute/support duties") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Native app review") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Store submissions") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Accessibility Nutrition Labels") &&
@@ -450,7 +512,7 @@ const checks = [
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Do not store reviewer passwords") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Public URLs reviewed") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("block release, allow internal testing only, allow public release") &&
-      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Production commerce remains gated") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("Seller-owned Merch remains gated") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("## Submission Signoff Matrix") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("exact build, release track, and web deploy") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Public legal URLs") &&
@@ -479,7 +541,7 @@ const checks = [
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("https://developer.apple.com/news/upcoming-requirements/") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("https://support.google.com/googleplay/android-developer/answer/16569691") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Commerce and payments") &&
-      docs["docs/LEGAL_REVIEW_PREP.md"].includes("native payment-policy classification") &&
+      docs["docs/LEGAL_REVIEW_PREP.md"].includes("exact-build physical-goods classification") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Native same-app advertising checkout remains gated") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Evidence privacy") &&
       docs["docs/LEGAL_REVIEW_PREP.md"].includes("Reviewer credentials, phone details, console screenshots, payment identifiers"),
@@ -511,7 +573,7 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("private profile connected by an accepted follow relationship") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("private Add to calendar download") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("verification") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("controlled launch checkout") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Seller-Owned Merch Handoff") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run smoke:public") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("npm.cmd run smoke:mobile") &&
       packageJson.includes('"smoke:mobile:narrow": "set SMOKE_MOBILE_WIDTH=320&& set SMOKE_MOBILE_HEIGHT=568&& node scripts/smoke-mobile-browser.mjs"') &&
@@ -536,8 +598,8 @@ const checks = [
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Ads guide") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Merch-only ads") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Merch guide") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("private buyer shipping details") &&
-      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Order Support guide") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("seller-owned Payment Links") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Purchase Support guide") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("Verification guide") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("unlocked tools") &&
       docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("missing-detail fallback") &&
@@ -688,10 +750,10 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("privacy/safety Help Center guides") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("/help/beta-app-testing") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Merch guide shortcut") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("seller payout setup details") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("seller Payment Links") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Accessibility Nutrition Labels") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("VoiceOver, Voice Control, Larger Text") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("review-controlled checkout") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("seller-owned external checkout") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checkout-return handling") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("## Final Store-Console Evidence") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("| Build selection | Apple build number, Google release track") &&
@@ -716,7 +778,7 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Password: [enter reviewer password in console only]") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Help URL: https://thetattoocore.com/help") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Reporting, blocking, private-account controls") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Checkout and seller payout release remain gated") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("TTC Checkout, Connect, and destination-charge controls remain disabled and historical") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("never commit passwords, access codes, private phone details, or one-time codes") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("do not store private phone numbers or owner personal contact data") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("do not commit store-console screenshots with private account data") &&
@@ -853,7 +915,7 @@ const checks = [
       screenshotGenerator.includes('"mobile-merch-help-shortcut-safe.png"') &&
       existsSync(safeMerchShortcutScreenshotPath) &&
       statSync(safeMerchShortcutScreenshotPath).size > 10_000 &&
-      helpCenterData.includes('assetSrc: "/screenshots/mobile-payout-safe.png"') &&
+      !helpCenterData.includes('assetSrc: "/screenshots/mobile-payout-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-order-support-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-privacy-safety-safe.png"') &&
       screenshotGenerator.includes('"mobile-privacy-safety-safe.png"') &&
@@ -889,18 +951,16 @@ const checks = [
       helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-order-refund-review-safe.mp4"') &&
       existsSync(safeOrderRefundClipPath) &&
       statSync(safeOrderRefundClipPath).size > 50_000 &&
-      helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-payment-safety-safe.mp4"') &&
-      existsSync(safePaymentSafetyClipPath) &&
-      statSync(safePaymentSafetyClipPath).size > 50_000 &&
+      !helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-payment-safety-safe.mp4"') &&
       helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-app-wrapper-navigation-safe.mp4"') &&
       existsSync(safeAppWrapperClipPath) &&
       statSync(safeAppWrapperClipPath).size > 50_000 &&
       helpCenterData.includes('assetSrc: "/tutorial-clips/mobile-profile-photo-banner-safe.mp4"') &&
       existsSync(safeProfilePhotoClipPath) &&
       statSync(safeProfilePhotoClipPath).size > 50_000 &&
-      helpShortClipBlocks.length >= 11 &&
+      helpShortClipBlocks.length >= 10 &&
       helpShortClipBlocks.every((block) => block.includes("assetSrc:")) &&
-      helpTutorialAssetPaths.length >= 25 &&
+      helpTutorialAssetPaths.length >= 23 &&
       helpTutorialAssetPaths.every(isNonEmptyHelpTutorialAsset) &&
       helpCenterData.includes("Admin beta go/no-go") &&
       helpCenterData.includes("Two-user DM and notification pass") &&
@@ -912,15 +972,15 @@ const checks = [
       !helpCenterData.includes('title: "Use ad credits"') &&
       helpCenterData.includes("Merch product setup") &&
       helpCenterData.includes("Merch guide shortcut") &&
-      helpCenterData.includes("Fulfill a Merch order") &&
+      helpCenterData.includes("Historical TTC order support") &&
       helpCenterData.includes('slug: "order-refunds-disputes"') &&
-      helpCenterData.includes("Order support, refunds, and disputes") &&
+      helpCenterData.includes("Purchase support, refunds, and disputes") &&
       helpCenterData.includes("What happens if there is a dispute?") &&
-      helpCenterData.includes("Buyer order support path") &&
+      helpCenterData.includes("Historical TTC order support path") &&
       helpCenterData.includes("Fulfillment and refund review") &&
-      helpCenterData.includes("Seller payouts and payment safety") &&
-      helpCenterData.includes("Should I send payout details to support?") &&
-      helpCenterData.includes("Payment safety walkthrough") &&
+      helpCenterData.includes("Seller checkout and payment safety") &&
+      helpCenterData.includes("Should I send private payment details to TTC?") &&
+      !helpCenterData.includes("Payment safety walkthrough") &&
       !helpCenterData.includes("hosted account flow") &&
       helpCenterData.includes("Stories rail preview") &&
       helpCenterData.includes("Gossip discussion preview") &&
@@ -937,7 +997,7 @@ const checks = [
       readFileSync("src/app/help/page.tsx", "utf8").includes("Tutorial capture queue") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("Screenshot and short-video priorities") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("Safe sample accounts only") &&
-      readFileSync("src/app/help/page.tsx", "utf8").includes("Merch and payouts") &&
+      helpCenterData.includes("Merch and orders") &&
       helpSearch.includes("Search getting started, beta app, bookings") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes("launchGuideSlugs") &&
       readFileSync("src/app/help/page.tsx", "utf8").includes('"beta-tester-checklist"') &&
@@ -963,7 +1023,7 @@ const checks = [
       helpSearch.includes("article.slug") &&
       helpSearch.includes("article.keywords") &&
       helpSearch.includes("article.relatedSlugs") &&
-      helpCenterData.includes("payout setup") &&
+      !helpCenterData.includes("payout setup") &&
       helpCenterData.includes("calendar app") &&
       helpCenterData.includes("calendar download") &&
       !helpCenterData.includes("google calendar") &&
@@ -1016,8 +1076,8 @@ const checks = [
       supportPage.includes('href: "/help/beta-app-testing"') &&
       supportPage.includes('href: "/help/merch-products-orders"') &&
       supportPage.includes('href: "/help/seller-payouts-payment-safety"') &&
-      supportPage.includes("Product review, seller readiness") &&
-      supportPage.includes("Seller payout setup") &&
+      supportPage.includes("Product review, seller Payment Links") &&
+      supportPage.includes("Seller-owned checkout readiness") &&
       profilePage.includes('href="/help/artist-profile-shop-links"') &&
       profilePage.includes('aria-label="Open profile help"') &&
       docs["docs/PRODUCT_PLAN.md"].includes("Help must be easy to find while logged in") &&
@@ -1188,7 +1248,7 @@ const checks = [
         "The first production proof is a genuine authorized customer sale under normal terms after separate go-live approval.",
       ) &&
       docs["README.md"].includes(
-        "The proposed pilot is not approved, deployed, or live.",
+        "Neither the historical TTC-owned pilot nor the seller-link release is approved, deployed, or live by this repository change.",
       ),
   },
   {

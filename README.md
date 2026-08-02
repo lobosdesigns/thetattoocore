@@ -63,6 +63,7 @@ production behavior:
 - `TTC_NATIVE_PUSH_REGISTRATION_ENABLED`: server-only native device-registration write gate; enable only with the native UI gate during controlled device QA.
 - `TTC_NATIVE_PUSH_DELIVERY_ENABLED`: server-only native delivery/outbox gate; keep `false` until the trusted sender, private credentials, platform capabilities, and Android/iOS delivery evidence pass.
 - `TTC_WEB_PUSH_REGISTRATION_ENABLED`: server-only browser subscription write gate; enable only when browser delivery is independently ready.
+- `TTC_SELLER_CHECKOUT_LINKS_ENABLED`: optional server release gate; keep `false` by default. Exact `true` may expose approved seller-owned Payment Links only after the protected migration, deployment approval, seller-supplied live-link review, real-device QA, and rollback proof are complete.
 - `TTC_ANDROID_APP_LINK_PACKAGE_NAME`: Android package name used by the public app-link association route.
 - `TTC_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS`: private deploy-time Google Play app-signing SHA-256 fingerprint list for `/.well-known/assetlinks.json`; keep the placeholder until final signing proof is ready.
 - `TTC_IOS_APP_LINK_APP_IDS`: private deploy-time Apple team/app identifier list for `/.well-known/apple-app-site-association`; keep the placeholder until Associated Domains proof is ready.
@@ -79,16 +80,33 @@ production behavior:
 - `STRIPE_CONNECT_ONBOARDING_ENABLED`: server-only seller-onboarding release switch; keep `false` pending separate approval.
 
 These server-only release switches fail closed unless the relevant value is exactly `true`.
+
+## Seller-Owned Merch Checkout - Current Position (August 2, 2026)
+
+Seller-owned Stripe Payment Links are the selected physical-goods model. Sellers
+provide their own live Payment Link on each reviewed product, and the seller
+processes payment and handles shipping, taxes, returns, refunds, disputes, and
+purchase support. TTC handles listing review and listing-safety reports.
+
+The new `TTC_SELLER_CHECKOUT_LINKS_ENABLED` server gate is optional and `false`
+by default. The old TTC Checkout, Connect onboarding, marketplace checkout, and
+destination-charge switches remain `false`; their code and order records are
+historical support and reconciliation paths, not the selected launch flow. No
+migration has been applied, no production configuration or data has changed, no
+live seller URL has been added, and no deployment or native upload has occurred
+for this work.
+
 The checkout creation master and selected checkout-flow switch are the
 exposure controls; live expected mode alone does not open checkout. The first
-proposed payment scope is US-only, web-first, TTC-owned physical Merch.
+historical payment proposal was US-only, web-first, TTC-owned physical Merch;
+the dated current position above supersedes that proposal.
 Booking deposits, marketplace Merch, connected-account onboarding/routing, and
 advertising purchases remain intentionally unavailable; advertising purchases
 also remain source-disabled. For a safe rollback, disable
 `STRIPE_CHECKOUT_CREATION_ENABLED` while retaining the live expected mode, live
 key, and live webhook signing configuration so delayed events, refunds,
 disputes, expiration, and reconciliation continue.
-Never use real card details merely to test live mode. The first production proof is a genuine authorized customer sale under normal terms after separate go-live approval. The proposed pilot is not approved, deployed, or live.
+Never use real card details merely to test live mode. The first production proof is a genuine authorized customer sale under normal terms after separate go-live approval. Neither the historical TTC-owned pilot nor the seller-link release is approved, deployed, or live by this repository change.
 
 Keep public support and reply-to email on company mail such as
 `support@thetattoocore.com`. Do not put personal owner contact details in public

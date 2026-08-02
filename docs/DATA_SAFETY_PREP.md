@@ -2,13 +2,24 @@
 
 Use this as an internal checklist before answering Google Play Data Safety, App Store privacy nutrition labels, payment-policy reviews, or privacy-policy updates. Final answers should be checked against the exact live build and current store questionnaires.
 
+## Current Seller-Owned Merch Position - August 2, 2026
+
+For a new seller-owned external Merch purchase, TTC stores the seller's protected
+listing link and server-stamped acceptance record. TTC does not receive new
+external Merch purchase data such as card details, buyer shipping details,
+seller receipts, or transaction records. The seller and the seller's payment
+provider process those data under their own terms. Historical TTC test orders,
+payment events, refund/dispute records, and audit rows remain retained according
+to the existing safety, fraud, legal-hold, and support rules. Recheck the exact
+enabled build and public Privacy copy before changing any store answer.
+
 ## Current Data Types
 
 - Account data: email address, username, display name, 18+ confirmation, password handled by the account sign-in system, account status, role, and notification preferences.
 - Profile data: avatar, bio, account type, public profile settings, website/social links, coarse city/region/country settings, language preference, appearance preference, and optional artist-to-studio/shop link.
 - User-generated content: 4U posts, Gossip posts, Stories, Stuff listings, Gigs, Merch products, comments, replies, Help Center questions/comments, reports, saves, follows, blocks, and direct messages.
 - Media: profile photos, post/listing/gig/story/comment/DM image or GIF uploads, short videos where supported, and private verification/license documents.
-- Commerce and payment records: controlled launch checkout/session identifiers, order states, ad payment states, booking-deposit states, platform fee amounts, fulfillment/refund status, and payment event references. Raw card, bank, routing, and payout credentials must not be collected in TTC forms.
+- Commerce and payment records: protected seller listing links and acceptance records for the selected seller-owned model; historical TTC checkout/session identifiers, order states, platform fees, fulfillment/refund status, and payment event references; and separate gated ad and booking-deposit states. Raw card, bank, routing, payout, external receipt, external shipping, and external transaction data must not be collected in TTC forms.
 - Verification data: license or certification name, optional license number, issuing location, expiration date, verification status, reviewer notes, and private uploaded proof documents.
 - Safety and moderation data: reports, moderation status, warnings/escalations, blocks, admin audit records, account deletion requests, and related support context.
 - Usage and preference data: notifications, unread counts, story views/reactions, ad click/impression events, saved items, likes, follows, and coarse discovery preferences.
@@ -18,7 +29,7 @@ Use this as an internal checklist before answering Google Play Data Safety, App 
 
 - Run the social app: accounts, profiles, posts, comments, DMs, follows, saves, notifications, stories, search, Help Center questions, and public previews.
 - Keep the community safe: age gate, reporting, blocking, moderation queues, verification review, restricted professional marketplace access, account deletion handling, and admin audits.
-- Support commerce while gated: Merch checkout testing, prepaid ads, booking-deposit testing, order/receipt history, seller fulfillment state, advertiser status, and payment troubleshooting.
+- Support commerce while gated: seller-owned Merch listing review and listing-safety reports, historical TTC order/receipt support, and separate prepaid-ad and booking-deposit testing while their gates remain closed.
 - Personalize responsibly: coarse location/language/profile preferences, followed accounts, interactions, and category/style signals may guide ranking and discovery. Do not describe this as AI-driven personalization.
 - Communicate important events: account, verification, marketplace, gig, booking, payment, and safety notifications by in-app alerts first, important email where configured, and future push only after production delivery is ready.
 
@@ -26,7 +37,7 @@ Use this as an internal checklist before answering Google Play Data Safety, App 
 
 - Public-safe profile fields, public-preview posts, approved listings, Gigs, and Merch may be visible to other members and search engines where allowed.
 - DMs, private account settings, admin tools, draft/unpublished content, private verification documents, and sensitive/admin-restricted media must not be publicly indexed or exposed.
-- Payment processing should happen through approved review-controlled checkout flows; TTC should not store raw payment cards, bank details, routing numbers, or debit-card payout credentials.
+- New Merch payment processing happens through the seller's external checkout. TTC should not receive or store the new purchase's card, shipping, receipt, or transaction data, or any raw bank, routing, or debit-card credentials.
 - Private license documents are for submitting users and authorized admin/moderation review only.
 - Support and legal contact surfaces should use company contact addresses such as `support@thetattoocore.com`, not personal owner contact data.
 
@@ -52,7 +63,7 @@ Use this as an internal checklist before answering Google Play Data Safety, App 
   account-deletion web resource declarations aligned with the same exact release.
 - Confirm the public Privacy page describes profile data, messages, location settings, marketplace/payment records, deletion requests, and future ads accurately.
 - Confirm no app-store or public copy exposes private infrastructure, service secrets, personal owner contact information, or internal admin procedures.
-- Confirm production payment, payout, tax, refund, and dispute policies are complete before answering real-money commerce questions as live.
+- Confirm seller-owned payment, tax, shipping, return, refund, dispute, and purchase-support responsibilities and the exact release gate before answering new Merch commerce questions as live.
 - Confirm real-device QA passes for signup, login, profile editing, posting, DMs, reports, blocking, verification upload, account deletion request, notifications, public sharing, and payment test flows.
 
 ## Google Play Answer Matrix
@@ -78,5 +89,5 @@ Keep this evidence private with the release handoff. Do not place reviewer passw
 - Native alert answers include Device ID as linked to the member, not used for tracking, and used for app functionality because TTC retains an app-generated installation identifier and delivery token against the authenticated profile after explicit opt-in.
 - Xcode aggregate Privacy Report generated from the next archive and checked for the TTC app, Capacitor, Cordova, and native messaging dependency manifests; keep the report private.
 - Tracking answer checked separately from ad delivery, saved searches, follows, coarse discovery preferences, and basic event counts; do not infer tracking from the iOS native privacy manifest alone.
-- Payment and payout answers checked against the current production-payment decision, refund/dispute process, seller payout process, and the rule that TTC forms do not collect raw card, bank, routing, or payout credentials.
+- Commerce answers checked against the seller-owned Payment Link decision, historical TTC payment/order retention, separate gated ad/booking flows, and the rule that TTC does not receive new external card, shipping, receipt, transaction, bank, routing, or payout credentials.
 - Screenshot or note captured for the final App Privacy console summary, review date, reviewed build/version, reviewer initials, and any questionnaire areas that must be revisited before public release.

@@ -26,7 +26,8 @@
     "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_8hTy3UyxP93glZU1LN8YiQ_zs-5m2St",
     "TTC_DEVICE_ALERT_SETUP_ENABLED": "true",
     "TTC_NATIVE_PUSH_REGISTRATION_ENABLED": "true",
-    "TTC_NATIVE_PUSH_DELIVERY_ENABLED": "false"
+    "TTC_NATIVE_PUSH_DELIVERY_ENABLED": "false",
+    "TTC_SELLER_CHECKOUT_LINKS_ENABLED": "false"
   },
   "observability": {
     "enabled": true

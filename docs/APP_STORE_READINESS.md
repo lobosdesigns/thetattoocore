@@ -1,5 +1,17 @@
 # App Store Readiness
 
+## Seller-Owned Merch Current Position - August 2, 2026
+
+- The selected physical-goods path is seller-owned external checkout from an approved Merch detail page. The seller processes payment and handles tax, shipping, returns, refunds, disputes, receipts, and purchase support; TTC handles listing review and listing-safety reports.
+- `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false` keeps the public purchase control off by default. The older TTC Checkout, Connect onboarding, marketplace, and destination-charge controls remain false and historical.
+- No protected database migration has been applied, no production configuration or data has changed, no live seller link has been added, no deployment has occurred, and no native build has been uploaded for this work.
+- App Store build currently in review remains unchanged. Apple iOS `1.0` build `1.0 (3)` is not replaced or resubmitted by this implementation, and App Store Connect must remain untouched until a separately approved store action.
+- Before enabling or making store claims, obtain exact owner migration/deploy/gate approval, review one seller-supplied live link privately, and pass web, Android phone, and TestFlight iPad external-browser return QA with no false TTC purchase-success state and tested rollback.
+
+This dated section supersedes older TTC-owned Merch pilot wording as the current
+commerce position while preserving the dated console and deployment record
+below.
+
 ## Ready URLs
 
 - App URL: https://thetattoocore.com

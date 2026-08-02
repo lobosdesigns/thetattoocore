@@ -1,8 +1,22 @@
 # Payment Production Readiness
 
-Stripe checkout is wired for controlled launch testing across Merch, ads, and accepted booking deposits. Keep production commerce gated until the items below are finished and reviewed.
+## Current Position - August 2, 2026
 
-## Current Position
+- Seller-owned Stripe Payment Links are the selected physical-goods model. TTC does not create the new merchandise payment, order, tax, shipping, refund, dispute, payout, or receipt record.
+- The seller processes payment and handles shipping, taxes, returns, refunds, disputes, and purchase support. TTC reviews listings and handles listing-safety reports.
+- TTC Checkout, Connect, and destination-charge controls remain false and historical: `STRIPE_CHECKOUT_CREATION_ENABLED=false`, `STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED=false`, `STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED=false`, `STRIPE_CONNECT_ONBOARDING_ENABLED=false`, and `STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false`.
+- The new optional server gate starts fail closed at `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false`. Setting it to exact `true` is a separate release action and does not occur in this implementation task.
+- No migration, production change, live seller URL, deployment, or native upload has occurred. Historical `merch_orders`, Stripe events, refunds, disputes, Connect records, and reconciliation views remain available for support and audit.
+- A future enablement requires exact owner approval, migration and deployment authorization, one seller-supplied live link reviewed without placing it in repo docs, and web, Android phone, and TestFlight iPad QA covering disclosure, external-browser open/return, and no false TTC success state.
+- Rollback proof must show that restoring `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false` removes the public purchase control without deleting the protected listing link or historical records. Existing TTC Checkout, Connect, destination-charge, and native-push switches remain false.
+- The App Store build currently in review remains unchanged. This implementation does not select, replace, submit, or upload any store build.
+
+The dated position above supersedes the former TTC-owned Merch pilot as the
+selected physical-goods model. The sections below retain prior readiness and
+dashboard evidence for audit history; they are not approval to revive that
+pilot.
+
+## Historical TTC Checkout Position (Preserved)
 
 - Stripe Checkout is the shared gateway path for Merch, prepaid ad campaigns, and accepted booking deposits.
 - Webhook event dedupe, retry-safe status transitions, failed/expired checkout handling, buyer/seller/advertiser alerts, dispute audit logging, and Admin > Payments visibility are wired.
@@ -20,7 +34,7 @@ Stripe checkout is wired for controlled launch testing across Merch, ads, and ac
 - July 24, 2026 current dashboard state: Production account activation and Connect configuration are complete, including the business profile, both identity workflows, marketplace integration choices, and the owner-accepted platform agreement. The live endpoint covers the exact 12 required events, its rotated signing secret remains private, and a signed synthetic non-money event returned `200` with the expected fail-closed mode response. The server payment key remains in test mode, expected live mode remains unset, checkout and seller onboarding remain blocked, and no money moved. Live-money cutover remains blocked pending live key/mode alignment, webhook mode/event proof, Admin reconciliation, controlled purchase/refund proof, refund/dispute procedure approval, payout gate approval, and native checkout policy review in the private handoff.
 - Non-official Merch destination-charge wiring is staged behind `STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false` by default and still requires matching payment mode plus a ready connected seller account. Keep the release switch off until the payout timing, refund, dispute, reserve, and legal policy decisions below are approved and tested.
 
-## Current Controlled Launch Scope
+## Historical TTC-Owned Pilot Scope (Preserved)
 
 - The operating sequence is web-first for US-only, TTC-owned physical Merch; this is not technical native isolation because the iOS and Android wrappers load the production web app.
 - [Apple App Review Guidelines 3.1.3(e)](https://developer.apple.com/app-store/review/guidelines/) directs apps selling physical goods or services consumed outside the app to use payment methods other than In-App Purchase. [Google Play Payments policy section 3](https://support.google.com/googleplay/android-developer/answer/9858738) states that Play Billing must not be used when payment is primarily for physical goods. Both policies classify payments for physical goods outside store billing, but they do not prove approval for TheTattooCore's exact native builds.
@@ -34,7 +48,7 @@ Stripe checkout is wired for controlled launch testing across Merch, ads, and ac
 - The separate go-live approval requires legal and payment-policy review.
 - Do not claim the pilot is approved, deployed, or live.
 
-## Must Finish Before Real Money
+## Historical TTC-Owned Pilot Gates (Preserved)
 
 - Stripe Connect Express onboarding is started for artists, studios, and vendors, with payout readiness stored in `stripe_connect_accounts` and webhook sync support for Stripe account status updates.
 - Use secure seller payout onboarding for seller payout details; do not collect bank, routing, card, or debit payout credentials in TTC forms.

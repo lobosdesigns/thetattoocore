@@ -9,6 +9,7 @@ const environmentInventory = readFileSync(
   "docs/release/v1.1.0-environment-inventory.md",
   "utf8",
 );
+const wranglerConfig = readFileSync("wrangler.jsonc", "utf8");
 const packageJson = readFileSync("package.json", "utf8");
 const browserClient = readFileSync("src/lib/supabase/client.ts", "utf8");
 const publicBuildVerifier = readFileSync(
@@ -38,6 +39,7 @@ const expectedKeys = [
   "TTC_NATIVE_PUSH_REGISTRATION_ENABLED",
   "TTC_NATIVE_PUSH_DELIVERY_ENABLED",
   "TTC_WEB_PUSH_REGISTRATION_ENABLED",
+  "TTC_SELLER_CHECKOUT_LINKS_ENABLED",
   "TTC_ANDROID_APP_LINK_PACKAGE_NAME",
   "TTC_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS",
   "TTC_IOS_APP_LINK_APP_IDS",
@@ -122,6 +124,7 @@ function valueLooksLikePlaceholder(key, value) {
     key === "TTC_NATIVE_PUSH_REGISTRATION_ENABLED" ||
     key === "TTC_NATIVE_PUSH_DELIVERY_ENABLED" ||
     key === "TTC_WEB_PUSH_REGISTRATION_ENABLED" ||
+    key === "TTC_SELLER_CHECKOUT_LINKS_ENABLED" ||
     stripeReleaseSwitchKeys.includes(key) ||
     key === "STRIPE_MERCH_DESTINATION_CHARGES_ENABLED"
   ) {
@@ -187,6 +190,20 @@ const committedNativeArtifactPaths = trackedNativePaths.filter((path) => {
 });
 
 const checks = [
+  {
+    label: "seller checkout release gate is exact false in repo-safe config",
+    ok:
+      valueByKey.get("TTC_SELLER_CHECKOUT_LINKS_ENABLED") === "false" &&
+      wranglerConfig.includes('"TTC_SELLER_CHECKOUT_LINKS_ENABLED": "false"') &&
+      !envExample.includes("TTC_SELLER_CHECKOUT_LINKS_ENABLED=true") &&
+      !wranglerConfig.includes('"TTC_SELLER_CHECKOUT_LINKS_ENABLED": "true"') &&
+      readme.includes("`TTC_SELLER_CHECKOUT_LINKS_ENABLED`: optional server release gate; keep `false` by default") &&
+      environmentInventory.includes("`TTC_SELLER_CHECKOUT_LINKS_ENABLED`") &&
+      environmentInventory.includes("Optional server release gate") &&
+      environmentInventory.includes("Defaults to `false`") &&
+      !/https:\/\/buy[.]stripe[.]com\//i.test(environmentInventory) &&
+      !/\bacct_[A-Za-z0-9]+\b/.test(environmentInventory),
+  },
   {
     label: ".env.example exists and is the only committed env file",
     ok:
