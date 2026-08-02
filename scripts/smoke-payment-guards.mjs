@@ -1613,14 +1613,21 @@ checks.push({
     merchProductStatusAction.includes("seller_checkout_terms_accepted_at") &&
     merchProductStatusAction.includes('.eq("id", product.id)') &&
     merchProductStatusAction.includes('.eq("seller_id", product.seller_id)') &&
+    merchProductStatusAction.includes('product.status !== "approved"') &&
+    merchProductStatusAction.includes(
+      "Merch must be approved before seller checkout can be activated.",
+    ) &&
     merchProductStatusAction.includes("Merch needs a valid live Stripe Payment Link") &&
     merchProductStatusAction.includes("seller checkout responsibilities") &&
     !merchProductStatusAction.includes("stripeCheckoutPreflight") &&
     !merchProductStatusAction.includes("stripe_connect_accounts") &&
     adminMerchPage.includes("const canActivateCheckout") &&
-    adminMerchPage.includes("Activation waits for {checkoutRequirement.toLowerCase()}") &&
+    adminMerchPage.includes('product.status === "approved"') &&
+    adminMerchPage.includes(
+      "Merch must be approved before seller checkout can be activated.",
+    ) &&
     adminMerchPage.includes("disabled={activationBlocked}") &&
-    adminMerchPage.includes("!product.isOfficial && checkoutReadiness.ready"),
+    adminMerchPage.includes("checkoutReadiness.ready"),
 });
 checks.push({
   label: "old TTC Merch and Connect release switches remain false by default",

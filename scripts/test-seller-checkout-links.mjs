@@ -8,6 +8,8 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { renderToStaticMarkup } from "react-dom/server";
+import { Fragment, jsx, jsxs } from "react/jsx-runtime";
 import vm from "node:vm";
 import ts from "typescript";
 import {
@@ -304,6 +306,44 @@ function mutateAdminMerchStatusAction(source, mutate) {
   return source.slice(0, start) + mutate(source.slice(start, end)) + source.slice(end);
 }
 
+function forgeAdminMerchPageReadiness(source) {
+  const ast = ts.createSourceFile(
+    "src/app/admin/merch/page.tsx",
+    source,
+    ts.ScriptTarget.ES2022,
+    true,
+    ts.ScriptKind.TSX,
+  );
+  const matches = [];
+
+  visitSource(ast, (node) => {
+    if (
+      ts.isPropertyAssignment(node) &&
+      ts.isIdentifier(node.name) &&
+      node.name.text === "sellerCheckoutReadiness" &&
+      ts.isCallExpression(node.initializer) &&
+      ts.isIdentifier(node.initializer.expression) &&
+      node.initializer.expression.text === "sellerCheckoutSubmissionReadiness"
+    ) {
+      matches.push(node.initializer);
+    }
+  });
+
+  assert.equal(matches.length, 1, "admin page readiness mapping count changed");
+  const [readinessCall] = matches;
+  const forgedReadiness = `({
+      ready: true,
+      reason: null,
+      url: sellerCheckoutByProduct.get(product.id)?.external_checkout_url ?? null,
+    })`;
+
+  return (
+    source.slice(0, readinessCall.getStart(ast)) +
+    forgedReadiness +
+    source.slice(readinessCall.getEnd())
+  );
+}
+
 const task6SourceMutations = {
   "admin-before-moderator": () => {
     adminActionsSource = mutateAdminMerchStatusAction(adminActionsSource, (source) =>
@@ -332,6 +372,22 @@ const task6SourceMutations = {
       ),
     );
   },
+  "bypass-source-status-guard": () => {
+    adminActionsSource = mutateAdminMerchStatusAction(adminActionsSource, (source) =>
+      replaceMutation(
+        source,
+        'if (status === "active" && product.status !== "approved") {',
+        'if (status === "active" && false && product.status !== "approved") {',
+      ),
+    );
+  },
+  "bypass-ui-source-status-guard": () => {
+    adminMerchPageSource = replaceMutation(
+      adminMerchPageSource,
+      '    product.status === "approved" &&\n    checkoutReadiness.ready;',
+      "    true &&\n    checkoutReadiness.ready;",
+    );
+  },
   "drift-missing-terms-message": () => {
     adminActionsSource = mutateAdminMerchStatusAction(adminActionsSource, (source) =>
       replaceMutation(
@@ -357,6 +413,9 @@ const task6SourceMutations = {
       "href={checkoutReadiness.url}",
       "href={product.externalCheckoutUrl}",
     );
+  },
+  "forged-page-readiness": () => {
+    adminMerchPageSource = forgeAdminMerchPageReadiness(adminMerchPageSource);
   },
   "unconditional-admin-link": () => {
     adminMerchPageSource = replaceMutation(
@@ -1904,6 +1963,7 @@ async function runTask6AdminActivation({
   checkoutRow = readyAdminCheckoutRow,
   product = readyAdminProduct,
   rpcResult = { data: true, error: null },
+  submittedStatus = "active",
 } = {}) {
   const events = [];
   const logs = [];
@@ -1926,7 +1986,11 @@ async function runTask6AdminActivation({
     },
     rpc(name, payload) {
       events.push({ client: "authenticated", name, payload, type: "rpc" });
-      return Promise.resolve(rpcResult);
+      return Promise.resolve(
+        typeof rpcResult === "function"
+          ? rpcResult({ name, payload })
+          : rpcResult,
+      );
     },
   });
   const admin = createSupabaseDouble({
@@ -1961,7 +2025,7 @@ async function runTask6AdminActivation({
         note: "Reviewed",
         product_id: product.id,
         return_to: "/admin/merch?product_status=pending_review",
-        status: "active",
+        status: submittedStatus,
       }),
     );
   } catch (error) {
@@ -2016,6 +2080,77 @@ async function runTask6AdminActivation({
     p_status: "active",
   });
   assertModuleValue(scenario.logs, []);
+}
+
+const approvedStatusRequiredMessage =
+  "Merch must be approved before seller checkout can be activated.";
+
+for (const sourceStatus of [
+  "pending_review",
+  "paused",
+  "rejected",
+  "archived",
+]) {
+  const scenario = await runTask6AdminActivation({
+    product: { ...readyAdminProduct, status: sourceStatus },
+  });
+  assert.equal(
+    task6RedirectMessage(scenario.location),
+    approvedStatusRequiredMessage,
+    `${sourceStatus} product activated without an approved source status`,
+  );
+  assert.equal(
+    scenario.events.includes("admin-client-created"),
+    false,
+    `${sourceStatus} source status reached the protected readiness read`,
+  );
+  assert.equal(
+    scenario.events.some((event) => event?.type === "rpc"),
+    false,
+    `${sourceStatus} source status reached the activation RPC`,
+  );
+}
+
+{
+  const scenario = await runTask6AdminActivation({
+    product: { ...readyAdminProduct, status: "pending_review" },
+    submittedStatus: " active ",
+  });
+  assert.equal(task6RedirectMessage(scenario.location), approvedStatusRequiredMessage);
+  assert.equal(
+    scenario.events.some((event) => event?.type === "rpc"),
+    false,
+    "padded active status bypassed the approved source-status guard",
+  );
+}
+
+{
+  let statusAtRpc = "approved";
+  const scenario = await runTask6AdminActivation({
+    rpcResult({ name, payload }) {
+      assert.equal(name, "admin_update_merch_product_status");
+      assert.equal(payload.p_expected_status, "approved");
+      statusAtRpc = "pending_review";
+
+      return {
+        data: statusAtRpc === payload.p_expected_status,
+        error: null,
+      };
+    },
+  });
+  assert.equal(statusAtRpc, "pending_review");
+  assert.equal(
+    task6RedirectMessage(scenario.location),
+    "Merch product changed before this decision. Review it and try again.",
+  );
+  assert.equal(
+    scenario.events.filter(
+      (event) =>
+        event?.type === "rpc" &&
+        event.name === "admin_update_merch_product_status",
+    ).length,
+    1,
+  );
 }
 
 for (const { checkoutRow, message, product } of [
@@ -2091,6 +2226,8 @@ for (const { checkoutRow, message, product } of [
 for (const values of [
   { product_id: "' OR 1=1 --", status: "active" },
   { product_id: testIds.other, status: "active<script>" },
+  { product_id: testIds.other, status: "active\u0000approved" },
+  { product_id: testIds.other, status: "active,approved" },
 ]) {
   let authCalls = 0;
   const loaded = await loadTask6AdminActions({
@@ -2185,6 +2322,290 @@ function syntheticModule(context, identifier, exports) {
     { context, identifier: `stub:${identifier}` },
   );
 }
+
+let adminMerchPageBoundaryScenario = null;
+
+async function loadAdminMerchPageBoundary() {
+  const transpiled = ts.transpileModule(adminMerchPageSource, {
+    compilerOptions: {
+      jsx: ts.JsxEmit.ReactJSX,
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2022,
+    },
+    fileName: "src/app/admin/merch/page.tsx",
+    reportDiagnostics: true,
+  });
+  const errors = (transpiled.diagnostics ?? []).filter(
+    (diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error,
+  );
+  assert.equal(errors.length, 0, "Admin Merch page boundary must transpile");
+
+  function TestIcon() {
+    return null;
+  }
+
+  const context = vm.createContext({
+    URL,
+    URLSearchParams,
+    console,
+    process,
+  });
+  const stubs = {
+    "../actions": {
+      refundMerchOrder: "/test/refund-merch-order",
+      updateMerchOrderStatus: "/test/update-merch-order-status",
+      updateMerchProductStatus: "/test/update-merch-product-status",
+    },
+    "../admin-section-nav": {
+      AdminSectionNav() {
+        return null;
+      },
+    },
+    "@/lib/merch/seller-checkout": {
+      sellerCheckoutSubmissionReadiness,
+    },
+    "@/lib/status-labels": {
+      commerceStatusLabel(value) {
+        return String(value);
+      },
+      titleCaseStatus(value) {
+        return String(value).replaceAll("_", " ");
+      },
+    },
+    "@/lib/status-message": {
+      safeStatusMessage() {
+        return null;
+      },
+    },
+    "@/lib/supabase/admin": {
+      createAdminClient() {
+        assert.ok(adminMerchPageBoundaryScenario, "missing admin page scenario");
+        return adminMerchPageBoundaryScenario.admin.client;
+      },
+    },
+    "@/lib/supabase/server": {
+      async createClient() {
+        assert.ok(adminMerchPageBoundaryScenario, "missing admin page scenario");
+        return adminMerchPageBoundaryScenario.normal.client;
+      },
+    },
+    "@/lib/verification": {
+      isVerifiedProfessional,
+    },
+    "lucide-react": {
+      ArrowLeft: TestIcon,
+      ChevronLeft: TestIcon,
+      ChevronRight: TestIcon,
+      CreditCard: TestIcon,
+      ExternalLink: TestIcon,
+      Package: TestIcon,
+      ShieldCheck: TestIcon,
+      Store: TestIcon,
+      Undo2: TestIcon,
+    },
+    "next/link": {
+      default: "a",
+    },
+    "next/navigation": {
+      redirect(location) {
+        throw new RedirectSignal(String(location));
+      },
+    },
+    "react/jsx-runtime": {
+      Fragment,
+      jsx,
+      jsxs,
+    },
+  };
+  const modules = new Map();
+  const pageModule = new vm.SourceTextModule(transpiled.outputText, {
+    context,
+    identifier: "test:admin-merch-page-boundary",
+  });
+
+  await pageModule.link((specifier) => {
+    if (modules.has(specifier)) return modules.get(specifier);
+    assert.ok(
+      Object.hasOwn(stubs, specifier),
+      `Missing admin page boundary stub for ${specifier}`,
+    );
+    const stubModule = syntheticModule(context, specifier, stubs[specifier]);
+    modules.set(specifier, stubModule);
+    return stubModule;
+  });
+  await pageModule.evaluate();
+
+  return pageModule.namespace.default;
+}
+
+async function renderAdminMerchPageBoundary({
+  externalCheckoutUrl,
+  status = "approved",
+}) {
+  const product = {
+    ...readyAdminProduct,
+    created_at: "2026-08-01T12:00:00.000Z",
+    profiles: {
+      ...readyAdminProduct.profiles,
+      display_name: "Verified Seller",
+      username: "verified-seller",
+    },
+    status,
+  };
+  const normal = createSupabaseDouble({
+    claims: { sub: testIds.actor },
+    execute(query) {
+      if (query.table === "profiles" && query.operation === "select") {
+        return {
+          data: {
+            display_name: "Moderator",
+            role: "moderator",
+            username: "moderator",
+          },
+          error: null,
+        };
+      }
+
+      if (query.table === "merch_products" && query.operation === "select") {
+        return { count: 1, data: [product], error: null };
+      }
+
+      if (query.table === "merch_order_items" && query.operation === "select") {
+        return { count: 0, data: [], error: null };
+      }
+
+      if (query.table === "merch_orders" && query.operation === "select") {
+        return { count: 0, data: [], error: null };
+      }
+
+      throw new Error(
+        `Unexpected admin page authenticated query: ${String(query.operation)} ${query.table}`,
+      );
+    },
+  });
+  const admin = createSupabaseDouble({
+    execute(query) {
+      if (query.table === "merch_products" && query.operation === "select") {
+        return {
+          data: [
+            {
+              ...readyAdminCheckoutRow,
+              external_checkout_url: externalCheckoutUrl,
+            },
+          ],
+          error: null,
+        };
+      }
+
+      throw new Error(
+        `Unexpected admin page service-role query: ${String(query.operation)} ${query.table}`,
+      );
+    },
+  });
+  adminMerchPageBoundaryScenario = { admin, normal };
+
+  try {
+    const element = await adminMerchPageBoundary({
+      searchParams: Promise.resolve({}),
+    });
+
+    return {
+      admin,
+      markup: renderToStaticMarkup(element),
+      normal,
+    };
+  } finally {
+    adminMerchPageBoundaryScenario = null;
+  }
+}
+
+function reviewStripePaymentLinks(markup) {
+  return [...markup.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)]
+    .map(([anchor]) => anchor)
+    .filter((anchor) => anchor.includes("Review Stripe Payment Link"));
+}
+
+function activateButton(markup) {
+  const match = markup.match(
+    /<button\b(?=[^>]*\bvalue="active")[^>]*>Activate<\/button>/,
+  );
+  assert.ok(match, "Admin Merch Activate button was not rendered");
+  return match[0];
+}
+
+function assertActivateDisabled(markup, label) {
+  assert.match(
+    activateButton(markup),
+    /\sdisabled(?:=""|(?=\s|>))/,
+    `${label}: Activate was enabled`,
+  );
+}
+
+const adminMerchPageBoundary = await loadAdminMerchPageBoundary();
+const hostileProtectedCheckoutUrls = [
+  ["javascript URL", "javascript:alert(1)"],
+  ["data URL", "data:text/html,provider-secret"],
+  ["lookalike host", "https://buy.stripe.com.evil.example/a1B2"],
+  ["raw invalid value", "not a Stripe Payment Link"],
+];
+
+for (const [label, externalCheckoutUrl] of hostileProtectedCheckoutUrls) {
+  const { markup } = await renderAdminMerchPageBoundary({
+    externalCheckoutUrl,
+  });
+  assert.equal(
+    reviewStripePaymentLinks(markup).length,
+    0,
+    `${label}: hostile protected row rendered a Review Stripe Payment Link anchor`,
+  );
+  assertActivateDisabled(markup, label);
+  assert.ok(
+    !markup.includes(externalCheckoutUrl),
+    `${label}: raw protected checkout value reached rendered markup`,
+  );
+}
+
+const mixedCaseLiveUrl = "HTTPS://BUY.STRIPE.COM/a1B2_c3D4";
+const canonicalBoundaryResult = validateSellerCheckoutUrl(mixedCaseLiveUrl);
+assert.equal(canonicalBoundaryResult.ok, true);
+const validAdminPage = await renderAdminMerchPageBoundary({
+  externalCheckoutUrl: mixedCaseLiveUrl,
+});
+const validReviewLinks = reviewStripePaymentLinks(validAdminPage.markup);
+assert.equal(validReviewLinks.length, 1);
+assert.ok(validReviewLinks[0].includes(`href="${canonicalBoundaryResult.url}"`));
+assert.ok(validReviewLinks[0].includes('target="_blank"'));
+assert.ok(
+  validReviewLinks[0].includes('rel="ugc nofollow noopener noreferrer"'),
+);
+assert.ok(!validAdminPage.markup.includes(mixedCaseLiveUrl));
+assert.doesNotMatch(
+  activateButton(validAdminPage.markup),
+  /\sdisabled(?:=""|(?=\s|>))/,
+);
+
+for (const sourceStatus of [
+  "pending_review",
+  "paused",
+  "rejected",
+  "archived",
+]) {
+  const { markup } = await renderAdminMerchPageBoundary({
+    externalCheckoutUrl: validLiveUrl,
+    status: sourceStatus,
+  });
+  assert.equal(
+    reviewStripePaymentLinks(markup).length,
+    1,
+    `${sourceStatus}: valid protected link was not available for moderator review`,
+  );
+  assertActivateDisabled(markup, sourceStatus);
+  assert.ok(
+    markup.includes(approvedStatusRequiredMessage),
+    `${sourceStatus}: approved-source activation reason was not rendered`,
+  );
+}
+console.log("PASS admin Merch protected-row page mapping and render boundary");
 
 const sellerCheckoutDialogAst = ts.createSourceFile(
   "src/app/merch/seller-checkout-dialog.tsx",
@@ -2673,6 +3094,8 @@ sourceContract(
     adminMerchStatusAction.includes('.eq("id", product.id)') &&
     adminMerchStatusAction.includes('.eq("seller_id", product.seller_id)') &&
     adminMerchStatusAction.includes('status === "active"') &&
+    adminMerchStatusAction.includes('product.status !== "approved"') &&
+    adminMerchStatusAction.includes(approvedStatusRequiredMessage) &&
     adminMerchStatusAction.includes("admin_update_merch_product_status") &&
     !adminMerchStatusAction.includes("checkoutError?.message") &&
     !adminMerchStatusAction.includes("checkoutError.message"),
@@ -2698,6 +3121,8 @@ sourceContract(
     adminMerchPageSource.includes("Review Stripe Payment Link") &&
     adminProtectedCheckoutQuery.includes('.in("id", productIds)') &&
     adminProtectedCheckoutQuery.includes("productIdSet.has(row.id)") &&
+    adminMerchProductCard.includes('product.status === "approved"') &&
+    adminMerchProductCard.includes(approvedStatusRequiredMessage) &&
     adminMerchProductCard.includes("{checkoutReadiness.ready ? (") &&
     adminMerchProductCard.includes("href={checkoutReadiness.url}") &&
     !adminMerchProductCard.includes("externalCheckoutUrl") &&

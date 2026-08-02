@@ -385,7 +385,17 @@ function ProductCard({
 }) {
   const checkoutReadiness = product.sellerCheckoutReadiness;
   const checkoutRequirement = sellerCheckoutRequirementLabel(checkoutReadiness);
-  const canActivateCheckout = !product.isOfficial && checkoutReadiness.ready;
+  const canActivateCheckout =
+    !product.isOfficial &&
+    product.status === "approved" &&
+    checkoutReadiness.ready;
+  const activationBlockedReason = product.isOfficial
+    ? "Official TTC Merch cannot be activated in this release."
+    : product.status !== "approved"
+      ? "Merch must be approved before seller checkout can be activated."
+      : !checkoutReadiness.ready
+        ? `${checkoutRequirement} before seller checkout can be activated.`
+        : null;
 
   return (
     <article className="ttc-card min-w-0 overflow-hidden rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4">
@@ -480,10 +490,10 @@ function ProductCard({
           Review Stripe Payment Link
         </a>
       ) : null}
-      {!canActivateCheckout ? (
+      {activationBlockedReason ? (
         <p className="mt-3 rounded-md border border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))] p-2 text-xs font-semibold text-[color-mix(in_srgb,var(--gold)_82%,var(--foreground))]">
-          Activation waits for {checkoutRequirement.toLowerCase()}. Approve can
-          still be used for review, but seller checkout stays unavailable.
+          {activationBlockedReason} Approve can still be used for review, but
+          seller checkout stays unavailable.
         </p>
       ) : null}
       {product.fulfillmentNotes || product.returnPolicy ? (
@@ -540,7 +550,7 @@ function ProductCard({
               name="status"
               title={
                 activationBlocked
-                  ? `${checkoutRequirement} before seller checkout can be activated.`
+                  ? activationBlockedReason ?? undefined
                   : undefined
               }
               value={value}

@@ -1894,6 +1894,15 @@ export async function updateMerchProductStatus(formData: FormData) {
     redirect(adminMerchMessage("Merch product already has that status.", returnTo));
   }
 
+  if (status === "active" && product.status !== "approved") {
+    redirect(
+      adminMerchMessage(
+        "Merch must be approved before seller checkout can be activated.",
+        returnTo,
+      ),
+    );
+  }
+
   if (status === "active" && product.is_official) {
     redirect(
       adminMerchMessage(
