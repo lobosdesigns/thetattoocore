@@ -55,18 +55,23 @@ const checks = [
       generator.includes("Expected mode checked") &&
       generator.includes("Server key mode checked") &&
       generator.includes("Webhook endpoint/events checked") &&
-      generator.includes("Penny/live-test proof") &&
+      generator.includes("Release switch state") &&
+      generator.includes("Private gate proof filename or location") &&
+      generator.includes("Post-transaction production proof") &&
+      generator.includes("Official TTC Merch checkout") &&
+      generator.includes("Marketplace Merch checkout") &&
       generator.includes("Seller payout readiness") &&
       generator.includes("## Payment Dashboard Readiness Log") &&
-      generator.includes("Use this for private payment dashboard evidence before any live-money cutover") &&
+      generator.includes("Use this for private payment dashboard evidence during preauthorization and post-transaction verification") &&
       generator.includes("Account verification") &&
       generator.includes("Verify email, business, profile, verified status, and identity readiness") &&
-      generator.includes("Connect setup") &&
-      generator.includes("Business model, connected-account test, and integration-guide choices") &&
+      generator.includes("Marketplace Connect setup") &&
+      generator.includes("Excluded from the official Merch pilot") &&
       generator.includes("API and webhook mode") &&
       generator.includes("Expected live/test mode, server key mode, webhook endpoint, and event list match the release candidate") &&
-      generator.includes("Live-money proof") &&
-      generator.includes("Penny test, Admin reconciliation, refund/dispute procedure, payout gate, and native checkout policy review") &&
+      generator.includes("Release switches") &&
+      generator.includes("Official TTC Merch is Armed while marketplace, booking, ads, and seller onboarding remain Blocked") &&
+      generator.includes("Record a genuine authorized customer sale and reconciliation only after separate launch approval") &&
       generator.includes("## Native Push Evidence") &&
       generator.includes("Use this for private Android/iOS alert evidence only") &&
       generator.includes("project IDs, sender") &&
@@ -132,9 +137,11 @@ const checks = [
       generator.includes("record the visible error code, page URL, retry path") &&
       generator.includes("whether reload/new-tab retry was attempted") &&
       generator.includes("Publishing overview still shows changes not sent for review") &&
-      generator.includes("Account activation and Connect setup") &&
-      generator.includes("Production account and Connect setup are complete") &&
-      generator.includes("live cutover and money-movement evidence remain separate") &&
+      generator.includes("Production account activation") &&
+      generator.includes("Production account activation is complete") &&
+      generator.includes("Marketplace Connect setup remains separate from the official Merch pilot") &&
+      generator.includes("Official Merch policy and fulfillment approval") &&
+      generator.includes("US shipping, tax, fulfillment, refund/dispute, support, and legal review") &&
       generator.includes("Production app mode preflight") &&
       generator.includes("Admin still shows expected mode Needs review and server key mode Test") &&
       generator.includes("checkout remains blocked until the live server key and expected mode are matched | blocked") &&

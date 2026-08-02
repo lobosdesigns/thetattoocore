@@ -17,13 +17,17 @@ const variantDir = mkdtempSync(
 );
 
 function writeVariant(name, from, to) {
-  const path = join(variantDir, name);
   const source = fixtureSource.replaceAll(from, to);
 
   if (source === fixtureSource) {
     throw new Error(`Fixture variant ${name} did not change the source.`);
   }
 
+  return writeSource(name, source);
+}
+
+function writeSource(name, source) {
+  const path = join(variantDir, name);
   writeFileSync(path, source);
   return path;
 }
@@ -43,18 +47,41 @@ const ambiguousFixture = writeVariant(
   "2026-07-22T12:00:00Z",
   "07/22/2026 12:00",
 );
-const mixedExcludedAdsFixture = writeVariant(
-  "mixed-excluded-ads.md",
-  "| Ads checkout | 0123456789abcdef0123456789abcdef01234567 | n/a | n/a | n/a | n/a | n/a | n/a | n/a |",
-  "| Ads checkout | 0123456789abcdef0123456789abcdef01234567 | passed | n/a | n/a | n/a | n/a | n/a | n/a |",
+const armedExcludedMarketplaceFixture = writeVariant(
+  "armed-excluded-marketplace.md",
+  "| Marketplace Merch checkout | 0123456789abcdef0123456789abcdef01234567 | blocked | fixture-only | n/a | n/a | n/a | n/a | n/a | n/a | n/a |",
+  "| Marketplace Merch checkout | 0123456789abcdef0123456789abcdef01234567 | armed | fixture-only | n/a | n/a | n/a | n/a | n/a | n/a | n/a |",
+);
+const missingExcludedGateProofFixture = writeVariant(
+  "missing-excluded-gate-proof.md",
+  "| Booking deposit | 0123456789abcdef0123456789abcdef01234567 | blocked | fixture-only | n/a | n/a | n/a | n/a | n/a | n/a | n/a |",
+  "| Booking deposit | 0123456789abcdef0123456789abcdef01234567 | blocked | | n/a | n/a | n/a | n/a | n/a | n/a | n/a |",
+);
+const completedProductionEvidenceFixture = writeSource(
+  "completed-production-evidence.md",
+  fixtureSource
+    .replace(
+      "| Official TTC Merch checkout | 0123456789abcdef0123456789abcdef01234567 | armed | fixture-only | passed | passed | passed | passed | passed | pending | passed |",
+      "| Official TTC Merch checkout | 0123456789abcdef0123456789abcdef01234567 | enabled | fixture-only | passed | passed | passed | passed | passed | passed | passed |",
+    )
+    .replace(
+      "| | Post-transaction production proof | Recorded only after a genuine authorized sale | pending | | fixture |",
+      "| 2026-07-22T12:00:00Z | Post-transaction production proof | Sanitized fixture proof | passed | fixture-only | fixture |",
+    ),
 );
 
-function runGate(evidencePath, releaseCandidate = fixtureCandidate) {
+function runGate(
+  evidencePath,
+  releaseCandidate = fixtureCandidate,
+  phase = "preauthorization",
+) {
   return spawnSync(
     process.execPath,
     [
       gatePath,
       "--strict",
+      "--phase",
+      phase,
       "--test-fixture",
       "--reference-date",
       fixtureReferenceDate,
@@ -101,7 +128,7 @@ function runProductionUnknownCandidate() {
 
 const checks = [
   {
-    label: "payment gate accepts current ISO-dated fixture evidence",
+    label: "payment gate accepts official-Merch-only preauthorization evidence",
     result: runGate(fixturePath),
     verify(result) {
       return (
@@ -143,15 +170,57 @@ const checks = [
     },
   },
   {
-    label: "payment gate rejects mixed evidence for an excluded Ads flow",
-    result: runGate(mixedExcludedAdsFixture),
+    label: "payment gate rejects n/a evidence for an armed excluded flow",
+    result: runGate(armedExcludedMarketplaceFixture),
     verify(result) {
       return (
         result.status === 1 &&
         result.stderr.includes(
-          "Payment flow / Ads checkout / Expected mode checked: must be exactly n/a while Ads checkout is excluded",
+          "Payment flow / Marketplace Merch checkout / Release switch state: must be exactly blocked while the flow is excluded",
         )
       );
+    },
+  },
+  {
+    label: "payment gate rejects excluded n/a without private blocked-state proof",
+    result: runGate(missingExcludedGateProofFixture),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Payment flow / Booking deposit / Private gate proof filename or location: missing",
+        )
+      );
+    },
+  },
+  {
+    label: "payment preauthorization does not require a production transaction",
+    result: runGate(fixturePath),
+    verify(result) {
+      return result.status === 0;
+    },
+  },
+  {
+    label: "post-transaction evidence gate rejects pending production proof",
+    result: runGate(fixturePath, fixtureCandidate, "post-transaction"),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "Payment flow / Official TTC Merch checkout / Post-transaction production proof: pending",
+        )
+      );
+    },
+  },
+  {
+    label: "post-transaction evidence gate accepts completed production proof",
+    result: runGate(
+      completedProductionEvidenceFixture,
+      fixtureCandidate,
+      "post-transaction",
+    ),
+    verify(result) {
+      return result.status === 0;
     },
   },
   {

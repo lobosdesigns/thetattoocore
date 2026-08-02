@@ -6,6 +6,14 @@ const generator = readFileSync("scripts/generate-private-release-handoff.mjs", "
 const paymentReadiness = readFileSync("docs/PAYMENT_PRODUCTION_READINESS.md", "utf8");
 const packageJson = readFileSync("package.json", "utf8");
 const commerceLaunch = readFileSync("src/lib/commerce-launch.ts", "utf8");
+const envExample = readFileSync(".env.example", "utf8");
+const stripeReleaseGates = readFileSync("src/lib/stripe/release-gates.ts", "utf8");
+const bookingCheckout = readFileSync("src/app/api/bookings/checkout/route.ts", "utf8");
+const merchCheckout = readFileSync("src/app/api/merch/checkout/route.ts", "utf8");
+const stripeConnectOnboarding = readFileSync(
+  "src/app/api/stripe/connect/onboarding/route.ts",
+  "utf8",
+);
 
 function adPurchasesDisabledInSource(source) {
   return (
@@ -15,34 +23,44 @@ function adPurchasesDisabledInSource(source) {
   );
 }
 
-const adPurchasesHardDisabled = adPurchasesDisabledInSource(commerceLaunch);
-
-const requiredFlows = [
-  "Merch checkout",
+const selectedPilotFlow = "Official TTC Merch checkout";
+const excludedPilotFlows = [
+  "Marketplace Merch checkout",
   "Booking deposit",
   "Ads checkout",
   "Seller payout readiness",
 ];
+const requiredFlows = [
+  selectedPilotFlow,
+  ...excludedPilotFlows,
+];
 
-const requiredEvidenceColumns = [
-  "Release candidate",
+const preauthorizationEvidenceColumns = [
   "Expected mode checked",
   "Server key mode checked",
   "Webhook endpoint/events checked",
   "Admin reconciliation",
   "Refund/dispute/payout gate",
-  "Penny/live-test proof",
+];
+const postTransactionEvidenceColumn = "Post-transaction production proof";
+const requiredEvidenceColumns = [
+  "Release candidate",
+  "Release switch state",
+  "Private gate proof filename or location",
+  ...preauthorizationEvidenceColumns,
+  postTransactionEvidenceColumn,
   "Result",
 ];
 const requiredDashboardAreas = [
   "Account verification",
-  "Connect setup",
   "API and webhook mode",
-  "Live-money proof",
+  "Release switches",
+  "Post-transaction production proof",
 ];
 const requiredPaymentBlockers = [
-  "Account activation and Connect setup",
+  "Production account activation",
   "Production app mode preflight",
+  "Official Merch policy and fulfillment approval",
 ];
 const defaultPrivateEvidencePath = "private-release-handoff/release-handoff-template.md";
 const fixtureRoot = resolve("scripts/fixtures");
@@ -64,6 +82,80 @@ const privateProofPlaceholders = new Set([
   "todo",
   "unknown",
 ]);
+
+function envDefaultsFalse(source, key) {
+  return new RegExp(`^${key}=false\\s*$`, "m").test(source);
+}
+
+function disabledPilotFlowSourceProofs({
+  bookingCheckoutSource,
+  commerceLaunchSource,
+  envExampleSource,
+  merchCheckoutSource,
+  releaseGatesSource,
+  stripeConnectOnboardingSource,
+}) {
+  const exactGateParser = releaseGatesSource.includes('return value === "true";');
+  const checkoutMasterDefaultsFalse = envDefaultsFalse(
+    envExampleSource,
+    "STRIPE_CHECKOUT_CREATION_ENABLED",
+  );
+
+  return {
+    "Ads checkout": adPurchasesDisabledInSource(commerceLaunchSource),
+    "Booking deposit":
+      exactGateParser &&
+      checkoutMasterDefaultsFalse &&
+      envDefaultsFalse(envExampleSource, "STRIPE_BOOKING_CHECKOUT_ENABLED") &&
+      releaseGatesSource.includes(
+        'booking: "STRIPE_BOOKING_CHECKOUT_ENABLED"',
+      ) &&
+      bookingCheckoutSource.includes(
+        'stripeCheckoutCreationEnabled("booking")',
+      ),
+    "Marketplace Merch checkout":
+      exactGateParser &&
+      checkoutMasterDefaultsFalse &&
+      envDefaultsFalse(
+        envExampleSource,
+        "STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED",
+      ) &&
+      releaseGatesSource.includes(
+        'marketplace_merch: "STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED"',
+      ) &&
+      merchCheckoutSource.includes(
+        'product.is_official ? "official_merch" : "marketplace_merch"',
+      ) &&
+      merchCheckoutSource.includes(
+        "stripeCheckoutCreationEnabled(checkoutFlow)",
+      ),
+    "Seller payout readiness":
+      exactGateParser &&
+      envDefaultsFalse(
+        envExampleSource,
+        "STRIPE_CONNECT_ONBOARDING_ENABLED",
+      ) &&
+      envDefaultsFalse(
+        envExampleSource,
+        "STRIPE_MERCH_DESTINATION_CHARGES_ENABLED",
+      ) &&
+      stripeConnectOnboardingSource.includes(
+        "if (!stripeConnectOnboardingEnabled())",
+      ) &&
+      merchCheckoutSource.includes(
+        "if (!stripeMerchDestinationChargesEnabled())",
+      ),
+  };
+}
+
+const currentDisabledPilotFlowSourceProofs = disabledPilotFlowSourceProofs({
+  bookingCheckoutSource: bookingCheckout,
+  commerceLaunchSource: commerceLaunch,
+  envExampleSource: envExample,
+  merchCheckoutSource: merchCheckout,
+  releaseGatesSource: stripeReleaseGates,
+  stripeConnectOnboardingSource: stripeConnectOnboarding,
+});
 
 function pass(label) {
   console.log(`PASS ${label}`);
@@ -194,8 +286,9 @@ function validateStrictEvidence(
   source,
   expectedReleaseCandidate,
   {
-    adPurchasesDisabled = false,
     allowFixtureOnly = false,
+    disabledFlowSourceProofs = {},
+    phase = "preauthorization",
     referenceTimestamp = Date.now(),
   } = {},
 ) {
@@ -283,38 +376,78 @@ function validateStrictEvidence(
         );
       }
 
-      const adsFlowExcluded =
-        flow === "Ads checkout" &&
-        (row.Result ?? "").trim().toLowerCase() === "n/a";
-      if (adsFlowExcluded) {
-        if (!adPurchasesDisabled) {
+      const gateProofBlocker = privateProofBlocker(
+        `Payment flow / ${flow} / Private gate proof filename or location`,
+        row["Private gate proof filename or location"] ?? "",
+        { allowFixtureOnly },
+      );
+      if (gateProofBlocker) blockers.push(gateProofBlocker);
+
+      if (excludedPilotFlows.includes(flow)) {
+        if ((row["Release switch state"] ?? "").trim().toLowerCase() !== "blocked") {
           blockers.push(
-            "Payment flow / Ads checkout: n/a requires the source launch gate to remain disabled",
+            `Payment flow / ${flow} / Release switch state: must be exactly blocked while the flow is excluded`,
+          );
+        }
+        if (!disabledFlowSourceProofs[flow]) {
+          blockers.push(
+            `Payment flow / ${flow}: n/a requires candidate source gates and fail-closed defaults`,
           );
         }
 
-        for (const column of requiredEvidenceColumns.slice(1)) {
+        for (const column of [
+          ...preauthorizationEvidenceColumns,
+          postTransactionEvidenceColumn,
+          "Result",
+        ]) {
           if ((row[column] ?? "").trim().toLowerCase() !== "n/a") {
             blockers.push(
-              `Payment flow / Ads checkout / ${column}: must be exactly n/a while Ads checkout is excluded`,
+              `Payment flow / ${flow} / ${column}: must be exactly n/a while the flow is excluded`,
             );
           }
         }
         continue;
       }
 
-      for (const column of requiredEvidenceColumns.slice(1)) {
+      const requiredReleaseState =
+        phase === "post-transaction" ? "enabled" : "armed";
+      if (
+        (row["Release switch state"] ?? "").trim().toLowerCase() !==
+        requiredReleaseState
+      ) {
+        blockers.push(
+          `Payment flow / ${flow} / Release switch state: must be exactly ${requiredReleaseState} for ${phase}`,
+        );
+      }
+
+      for (const column of preauthorizationEvidenceColumns) {
         const blocker = stateBlocker(
           `Payment flow / ${flow} / ${column}`,
           row[column] ?? "",
-          {
-            allowNotApplicable:
-              flow === "Seller payout readiness" &&
-              column === "Penny/live-test proof",
-          },
         );
         if (blocker) blockers.push(blocker);
       }
+
+      const postTransactionState = (row[postTransactionEvidenceColumn] ?? "")
+        .trim()
+        .toLowerCase();
+      if (phase === "post-transaction") {
+        const blocker = stateBlocker(
+          `Payment flow / ${flow} / ${postTransactionEvidenceColumn}`,
+          postTransactionState,
+        );
+        if (blocker) blockers.push(blocker);
+      } else if (!["pending", "passed"].includes(postTransactionState)) {
+        blockers.push(
+          `Payment flow / ${flow} / ${postTransactionEvidenceColumn}: must be pending or passed for preauthorization`,
+        );
+      }
+
+      const resultBlocker = stateBlocker(
+        `Payment flow / ${flow} / Result`,
+        row.Result ?? "",
+      );
+      if (resultBlocker) blockers.push(resultBlocker);
     }
   }
 
@@ -328,6 +461,16 @@ function validateStrictEvidence(
         continue;
       }
 
+      const postTransactionArea = area === "Post-transaction production proof";
+      const dashboardState = (row.Result ?? "").trim().toLowerCase();
+      if (
+        postTransactionArea &&
+        phase === "preauthorization" &&
+        dashboardState === "pending"
+      ) {
+        continue;
+      }
+
       const attemptDateBlocker = paymentEvidenceDateBlocker(
         `Payment dashboard / ${area} / Attempt date/time`,
         row["Attempt date/time"] ?? "",
@@ -337,7 +480,7 @@ function validateStrictEvidence(
 
       const blocker = stateBlocker(
         `Payment dashboard / ${area} / Result`,
-        row.Result ?? "",
+        dashboardState,
       );
       if (blocker) blockers.push(blocker);
 
@@ -424,12 +567,14 @@ function runStrictEvidenceGate() {
   const args = process.argv.slice(2);
   const testFixtureMode = args.includes("--test-fixture");
   const evidenceOption = optionState(args, "--evidence");
+  const phaseOption = optionState(args, "--phase");
   const releaseCandidateOption = optionState(args, "--release-candidate");
   const referenceDateOption = optionState(args, "--reference-date");
   const optionNames = new Set([
     "--strict",
     "--test-fixture",
     "--evidence",
+    "--phase",
     "--release-candidate",
     "--reference-date",
   ]);
@@ -449,6 +594,9 @@ function runStrictEvidenceGate() {
   if (releaseCandidateOption.missingValue) {
     return ["Strict command option --release-candidate: missing value"];
   }
+  if (phaseOption.missingValue) {
+    return ["Strict command option --phase: missing value"];
+  }
   if (referenceDateOption.missingValue) {
     return ["Strict command option --reference-date: missing value"];
   }
@@ -458,11 +606,21 @@ function runStrictEvidenceGate() {
   if (releaseCandidateOption.values.length > 1) {
     return ["Strict command option --release-candidate: duplicate values"];
   }
+  if (phaseOption.values.length > 1) {
+    return ["Strict command option --phase: duplicate values"];
+  }
   if (referenceDateOption.values.length > 1) {
     return ["Strict command option --reference-date: duplicate values"];
   }
   if (!testFixtureMode && referenceDateOption.values.length) {
     return ["Strict command option --reference-date: test fixtures only"];
+  }
+
+  const phase = phaseOption.values[0] ?? "preauthorization";
+  if (!["preauthorization", "post-transaction"].includes(phase)) {
+    return [
+      "Strict command option --phase: must be preauthorization or post-transaction",
+    ];
   }
 
   const referenceDate = referenceDateOption.values[0];
@@ -519,16 +677,46 @@ function runStrictEvidenceGate() {
     return ["Private payment evidence file: test fixtures cannot approve go-live"];
   }
 
-  return validateStrictEvidence(evidence, normalizedExpectedReleaseCandidate, {
-    adPurchasesDisabled: testFixtureMode
-      ? adPurchasesHardDisabled
-      : adPurchasesDisabledInSource(
-          gitFileAtCandidate(
-            normalizedExpectedReleaseCandidate,
-            "src/lib/commerce-launch.ts",
-          ),
+  const candidateSources = testFixtureMode
+    ? {
+        bookingCheckoutSource: bookingCheckout,
+        commerceLaunchSource: commerceLaunch,
+        envExampleSource: envExample,
+        merchCheckoutSource: merchCheckout,
+        releaseGatesSource: stripeReleaseGates,
+        stripeConnectOnboardingSource: stripeConnectOnboarding,
+      }
+    : {
+        bookingCheckoutSource: gitFileAtCandidate(
+          normalizedExpectedReleaseCandidate,
+          "src/app/api/bookings/checkout/route.ts",
         ),
+        commerceLaunchSource: gitFileAtCandidate(
+          normalizedExpectedReleaseCandidate,
+          "src/lib/commerce-launch.ts",
+        ),
+        envExampleSource: gitFileAtCandidate(
+          normalizedExpectedReleaseCandidate,
+          ".env.example",
+        ),
+        merchCheckoutSource: gitFileAtCandidate(
+          normalizedExpectedReleaseCandidate,
+          "src/app/api/merch/checkout/route.ts",
+        ),
+        releaseGatesSource: gitFileAtCandidate(
+          normalizedExpectedReleaseCandidate,
+          "src/lib/stripe/release-gates.ts",
+        ),
+        stripeConnectOnboardingSource: gitFileAtCandidate(
+          normalizedExpectedReleaseCandidate,
+          "src/app/api/stripe/connect/onboarding/route.ts",
+        ),
+      };
+
+  return validateStrictEvidence(evidence, normalizedExpectedReleaseCandidate, {
     allowFixtureOnly: testFixtureMode,
+    disabledFlowSourceProofs: disabledPilotFlowSourceProofs(candidateSources),
+    phase,
     referenceTimestamp,
   });
 }
@@ -581,41 +769,52 @@ if (!missingFlows.length) {
   );
 }
 
+const excludedTemplateRows = excludedPilotFlows.map(
+  (flow) =>
+    `| ${flow} | pending | blocked | | n/a | n/a | n/a | n/a | n/a | n/a | n/a |`,
+);
 if (
-  paymentEvidenceSection.includes("| Seller payout readiness | pending | pending | pending | pending | pending | pending | n/a | pending |") &&
-  paymentEvidenceSection.includes("| Ads checkout | pending | n/a | n/a | n/a | n/a | n/a | n/a | n/a |") &&
-  adPurchasesHardDisabled &&
-  dashboardLogSection.includes("| | Live-money proof | Penny test, Admin reconciliation, refund/dispute procedure, payout gate, and native checkout policy review | pending | | |")
+  excludedTemplateRows.every((row) => paymentEvidenceSection.includes(row)) &&
+  Object.values(currentDisabledPilotFlowSourceProofs).every(Boolean) &&
+  dashboardLogSection.includes(
+    "| | Post-transaction production proof | Record a genuine authorized customer sale and reconciliation only after separate launch approval | pending | | |",
+  )
 ) {
-  pass("private handoff keeps excluded Ads and live-money proof fail closed");
+  pass("private handoff keeps excluded flows and post-transaction proof fail closed");
 } else {
-  fail("private handoff keeps excluded Ads and live-money proof fail closed");
+  fail("private handoff keeps excluded flows and post-transaction proof fail closed");
 }
 
 if (
-  currentBlockersSection.includes("| Payments | Account activation and Connect setup |") &&
-  currentBlockersSection.includes("Production account and Connect setup are complete") &&
-  currentBlockersSection.includes("platform agreement, marketplace funds flow, hosted onboarding, Express management, and platform refund/chargeback responsibility") &&
-  currentBlockersSection.includes("live cutover and money-movement evidence remain separate | passed |") &&
+  currentBlockersSection.includes("| Payments | Production account activation |") &&
+  currentBlockersSection.includes("Production account activation is complete") &&
+  currentBlockersSection.includes("Marketplace Connect setup remains separate from the official Merch pilot | passed |") &&
+  currentBlockersSection.includes("| Payments | Marketplace Connect setup |") &&
+  currentBlockersSection.includes("Excluded from the official Merch pilot; seller onboarding and destination-charge routing remain blocked | n/a |") &&
   currentBlockersSection.includes("| Payments | Production app mode preflight |") &&
   currentBlockersSection.includes("expected mode Needs review and server key mode Test") &&
   currentBlockersSection.includes("live endpoint and rotated signing secret passed a signed non-money 200 probe") &&
-  currentBlockersSection.includes("checkout remains blocked until the live server key and expected mode are matched | blocked |")
+  currentBlockersSection.includes("checkout remains blocked until the live server key and expected mode are matched | blocked |") &&
+  currentBlockersSection.includes("| Payments | Official Merch policy and fulfillment approval |") &&
+  currentBlockersSection.includes("US shipping, tax, fulfillment, refund/dispute, support, and legal review must pass before the official Merch flow is armed | blocked |")
 ) {
-  pass("private handoff records the current fail-closed payment activation state");
+  pass("private handoff separates official Merch readiness from marketplace Connect");
 } else {
-  fail("private handoff records the current fail-closed payment activation state");
+  fail("private handoff separates official Merch readiness from marketplace Connect");
 }
 
 const requiredReadinessText = [
   "Repo-safe summary fields are limited to release candidate, test flow, live/test mode result",
   "Keep payment intent IDs, checkout session IDs, webhook event IDs, refund IDs, dispute IDs, seller account IDs",
-  "`pending`, `passed`, or `blocked`; no payment IDs",
-  "Each flow must be verified against the same release candidate",
-  "Every required Payments blocker and Payment Dashboard row must name a non-placeholder private proof filename or location",
+  "Complete the applicable phase privately against one release candidate",
+  "Every Payments blocker and Payment Dashboard row required to pass in the selected phase must name a non-placeholder private proof filename or location",
   "Dashboard evidence must be dated no more than 45 days",
   "cannot be future-dated",
-  "Ads checkout may use `n/a` only while the source launch gate remains hard-disabled",
+  "Official TTC Merch checkout is the only selected pilot flow",
+  "preauthorization evidence does not require a production transaction",
+  "post-transaction production evidence",
+  "Excluded rows may use `n/a` only when their Release switch state is `blocked`",
+  "candidate source gates and fail-closed defaults",
 ];
 const missingReadinessText = requiredReadinessText.filter(
   (snippet) => !readinessEvidenceSection.includes(snippet),

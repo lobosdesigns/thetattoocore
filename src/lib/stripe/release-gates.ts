@@ -1,3 +1,5 @@
+import "server-only";
+
 type StripeEnvironment = Record<string, unknown>;
 
 const checkoutFlowFlags = {
@@ -7,9 +9,10 @@ const checkoutFlowFlags = {
 } as const;
 
 export type StripeCheckoutFlow = keyof typeof checkoutFlowFlags;
+export type StripeCheckoutReleaseState = "armed" | "blocked" | "enabled";
 
 function exactTrue(value: unknown) {
-  return typeof value === "string" && value.trim().toLowerCase() === "true";
+  return value === "true";
 }
 
 export function stripeKeyMode(key: unknown) {
@@ -42,6 +45,18 @@ export function stripeCheckoutCreationEnabled(
     stripeCheckoutCreationMasterEnabled(environment) &&
     exactTrue(flowFlag ? environment[flowFlag] : undefined)
   );
+}
+
+export function stripeCheckoutCreationState(
+  flow: StripeCheckoutFlow,
+  environment: StripeEnvironment = process.env,
+): StripeCheckoutReleaseState {
+  const flowFlag = checkoutFlowFlags[flow as keyof typeof checkoutFlowFlags];
+  const configured = exactTrue(flowFlag ? environment[flowFlag] : undefined);
+
+  if (!configured) return "blocked";
+
+  return stripeCheckoutCreationMasterEnabled(environment) ? "enabled" : "armed";
 }
 
 export function stripeConnectOnboardingEnabled(

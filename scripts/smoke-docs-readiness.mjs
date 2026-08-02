@@ -1099,7 +1099,7 @@ const checks = [
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("## Production Evidence Pack") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Live webhook event list captured and matched to the app-required event set") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Live/test mode setting, server payment key mode, and webhook mode reviewed together") &&
-      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Penny test receipt captured for one approved flow after policy review") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("receipt and reconciliation proof captured for the first genuine authorized Official TTC Merch customer sale") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Delayed or async payment success reconciliation captured before fulfillment, ad delivery, booking closeout, or seller payout release.") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Seller payout policy approval recorded with payout timing") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Native app policy review recorded before exposing checkout in native wrappers") &&
@@ -1107,11 +1107,12 @@ const checks = [
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Repo-safe summary fields are limited to release candidate") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("## Live-Money Cutover Preflight Matrix") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("| Flow | Mode and webhook preflight | Required live event proof | Admin reconciliation proof | Fulfillment or delivery gate | Payout/refund/dispute gate | Repo-safe result |") &&
-      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("| Merch order checkout |") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("| Official TTC Merch pilot checkout |") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("| Marketplace Merch checkout |") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("| Prepaid ad campaign checkout |") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("| Booking deposit checkout |") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("| Seller payout readiness |") &&
-      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("a single passed flow does not clear the others") &&
+      docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Official TTC Merch must be `armed` and every excluded flow must be `blocked`") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Admin > Payments reconciliation result") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("Keep payment intent IDs, checkout session IDs") &&
       docs["docs/PAYMENT_PRODUCTION_READINESS.md"].includes("raw console exports in the private release handoff only") &&

@@ -29,7 +29,7 @@ if (result.status !== 0) {
 }
 
 const expectedOutput = [
-  "PASS payment gate accepts current ISO-dated fixture evidence",
+  "PASS payment gate accepts official-Merch-only preauthorization evidence",
   "PASS sanitized payment go-live fixture validates strict gate",
 ];
 const missingOutput = expectedOutput.filter(

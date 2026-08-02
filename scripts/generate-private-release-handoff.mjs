@@ -38,8 +38,10 @@ account identifiers out of repo docs.
 | Google Play | Closed-test tester links and opt-in evidence | Save Android/web join links privately, confirm the device Play account matches the tester-community member, confirm web opt-in with that account, and record listing/install proof | pending | |
 | Google Play | API 36 closed-test release | Version code 4 / version name 1.0.3 API 36 update is active and verified installed on an authorized Android 16 device; do not upload the same version code again, and archive tester participation evidence | pending | |
 | Google Play | Console submit/retry evidence | If Play Console errors before submit, record the visible error code, page URL, retry path, whether reload/new-tab retry was attempted, and whether Publishing overview still shows changes not sent for review | pending | |
-| Payments | Account activation and Connect setup | Production account and Connect setup are complete, including phone, email, business, public profile, both identity workflows, platform agreement, marketplace funds flow, hosted onboarding, Express management, and platform refund/chargeback responsibility; live cutover and money-movement evidence remain separate | passed | |
+| Payments | Production account activation | Production account activation is complete; Marketplace Connect setup remains separate from the official Merch pilot | passed | |
+| Payments | Marketplace Connect setup | Excluded from the official Merch pilot; seller onboarding and destination-charge routing remain blocked | n/a | |
 | Payments | Production app mode preflight | Admin still shows expected mode Needs review and server key mode Test; the live endpoint and rotated signing secret passed a signed non-money 200 probe; checkout remains blocked until the live server key and expected mode are matched | blocked | |
+| Payments | Official Merch policy and fulfillment approval | US shipping, tax, fulfillment, refund/dispute, support, and legal review must pass before the official Merch flow is armed | blocked | |
 
 ## Store Console Evidence
 
@@ -121,25 +123,26 @@ evidence.
 
 ## Payment And Commerce Evidence
 
-| Flow | Release candidate | Expected mode checked | Server key mode checked | Webhook endpoint/events checked | Admin reconciliation | Refund/dispute/payout gate | Penny/live-test proof | Result |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Merch checkout | pending | pending | pending | pending | pending | pending | pending | pending |
-| Booking deposit | pending | pending | pending | pending | pending | pending | pending | pending |
-| Ads checkout | pending | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| Seller payout readiness | pending | pending | pending | pending | pending | pending | n/a | pending |
+| Flow | Release candidate | Release switch state | Private gate proof filename or location | Expected mode checked | Server key mode checked | Webhook endpoint/events checked | Admin reconciliation | Refund/dispute/payout gate | Post-transaction production proof | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Official TTC Merch checkout | pending | blocked | | pending | pending | pending | pending | pending | pending | pending |
+| Marketplace Merch checkout | pending | blocked | | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| Booking deposit | pending | blocked | | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| Ads checkout | pending | blocked | | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| Seller payout readiness | pending | blocked | | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 
 ## Payment Dashboard Readiness Log
 
-Use this for private payment dashboard evidence before any live-money cutover.
+Use this for private payment dashboard evidence during preauthorization and post-transaction verification.
 Do not copy account identifiers, key fragments, event IDs, connected-account IDs,
 bank/card details, or dashboard screenshots into repo docs.
 
 | Attempt date/time | Area | Visible readiness item | Result | Private proof filename or location | Next owner |
 | --- | --- | --- | --- | --- | --- |
 | | Account verification | Verify email, business, profile, verified status, and identity readiness | pending | | |
-| | Connect setup | Business model, connected-account test, and integration-guide choices | pending | | |
 | | API and webhook mode | Expected live/test mode, server key mode, webhook endpoint, and event list match the release candidate | pending | | |
-| | Live-money proof | Penny test, Admin reconciliation, refund/dispute procedure, payout gate, and native checkout policy review | pending | | |
+| | Release switches | Official TTC Merch is Armed while marketplace, booking, ads, and seller onboarding remain Blocked | pending | | |
+| | Post-transaction production proof | Record a genuine authorized customer sale and reconciliation only after separate launch approval | pending | | |
 
 ## Native Push Evidence
 

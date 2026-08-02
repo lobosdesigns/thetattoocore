@@ -1,16 +1,16 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { importTypeScriptWithStubs } from "./admin-module-test-harness.mjs";
-import { importSelfContainedTypeScript } from "./import-self-contained-typescript.mjs";
 
 const {
   stripeCheckoutCreationEnabled,
   stripeCheckoutCreationMasterEnabled,
+  stripeCheckoutCreationState,
   stripeConnectOnboardingEnabled,
   stripeKeyMode,
-} = await importSelfContainedTypeScript(
-  "../src/lib/stripe/release-gates.ts",
-  import.meta.url,
+} = await importTypeScriptWithStubs(
+  "src/lib/stripe/release-gates.ts",
+  { "server-only": {} },
 );
 
 const keyModeCases = [
@@ -40,7 +40,11 @@ for (const [environment, expected] of [
   [{}, false],
   [{ STRIPE_CHECKOUT_CREATION_ENABLED: "false" }, false],
   [{ STRIPE_CHECKOUT_CREATION_ENABLED: "trueish" }, false],
-  [{ STRIPE_CHECKOUT_CREATION_ENABLED: " TRUE " }, true],
+  [{ STRIPE_CHECKOUT_CREATION_ENABLED: " TRUE " }, false],
+  [{ STRIPE_CHECKOUT_CREATION_ENABLED: "TRUE" }, false],
+  [{ STRIPE_CHECKOUT_CREATION_ENABLED: " true" }, false],
+  [{ STRIPE_CHECKOUT_CREATION_ENABLED: "true " }, false],
+  [{ STRIPE_CHECKOUT_CREATION_ENABLED: "true" }, true],
   [{ STRIPE_CHECKOUT_CREATION_ENABLED: true }, false],
   [{ STRIPE_CHECKOUT_CREATION_ENABLED: {} }, false],
 ]) {
@@ -73,7 +77,7 @@ const checkoutGateCases = [
       STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED: " TRUE ",
     },
     "official_merch",
-    true,
+    false,
   ],
   [
     {
@@ -154,11 +158,49 @@ for (const [environment, flow, expected] of checkoutGateCases) {
 }
 console.log("PASS checkout creation requires exact master and selected flow gates");
 
+for (const [environment, flow, expected] of [
+  [{}, "official_merch", "blocked"],
+  [
+    { STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED: "true" },
+    "official_merch",
+    "armed",
+  ],
+  [
+    {
+      STRIPE_CHECKOUT_CREATION_ENABLED: "true",
+      STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED: "true",
+    },
+    "official_merch",
+    "enabled",
+  ],
+  [
+    {
+      STRIPE_CHECKOUT_CREATION_ENABLED: "true",
+      STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED: " TRUE ",
+    },
+    "official_merch",
+    "blocked",
+  ],
+  [
+    {
+      STRIPE_CHECKOUT_CREATION_ENABLED: "true",
+      STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED: "true",
+    },
+    "unknown_flow",
+    "blocked",
+  ],
+]) {
+  assert.equal(stripeCheckoutCreationState(flow, environment), expected);
+}
+console.log("PASS checkout release state distinguishes blocked, armed, and enabled");
+
 const onboardingGateCases = [
   [{}, false],
   [{ STRIPE_CONNECT_ONBOARDING_ENABLED: "false" }, false],
   [{ STRIPE_CONNECT_ONBOARDING_ENABLED: "trueish" }, false],
-  [{ STRIPE_CONNECT_ONBOARDING_ENABLED: " TRUE " }, true],
+  [{ STRIPE_CONNECT_ONBOARDING_ENABLED: " TRUE " }, false],
+  [{ STRIPE_CONNECT_ONBOARDING_ENABLED: "TRUE" }, false],
+  [{ STRIPE_CONNECT_ONBOARDING_ENABLED: "true" }, true],
   [{ STRIPE_CONNECT_ONBOARDING_ENABLED: 1 }, false],
   [{ STRIPE_CONNECT_ONBOARDING_ENABLED: {} }, false],
 ];

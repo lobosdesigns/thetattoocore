@@ -880,7 +880,7 @@ checks.push({
     ) &&
     packageJson.includes('"test:stripe-checkout-sessions"') &&
     packageJson.includes(
-      '"smoke:payments": "npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && node scripts/smoke-payment-guards.mjs"',
+      '"smoke:payments": "npm run test:stripe-release-gates && npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && node scripts/smoke-payment-guards.mjs"',
     ),
 });
 checks.push({
@@ -1461,7 +1461,7 @@ checks.push({
     paymentReadiness.includes("account.updated") &&
     packageJson.includes('"test:payment-webhook-config"') &&
     packageJson.includes(
-      '"smoke:payments": "npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && node scripts/smoke-payment-guards.mjs"',
+      '"smoke:payments": "npm run test:stripe-release-gates && npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && node scripts/smoke-payment-guards.mjs"',
     ) &&
     adminPaymentsPage.includes("const paymentReconciliationChecks = [") &&
     adminPaymentsPage.includes("const sellerPayoutQaChecks = [") &&
@@ -2032,18 +2032,47 @@ checks.push({
 checks.push({
   label: "admin payments exposes separate Stripe release switches without private values",
   ok:
+    stripeReleaseGates.startsWith('import "server-only";') &&
     stripeReleaseGates.includes("stripeCheckoutCreationMasterEnabled") &&
+    stripeReleaseGates.includes("stripeCheckoutCreationState") &&
     adminPaymentsPage.includes("stripeCheckoutCreationMasterEnabled") &&
     adminPaymentsPage.includes("const checkoutCreationMasterEnabled = stripeCheckoutCreationMasterEnabled()") &&
+    adminPaymentsPage.includes('state: stripeCheckoutCreationState("official_merch")') &&
+    adminPaymentsPage.includes('state: stripeCheckoutCreationState("booking")') &&
+    adminPaymentsPage.includes('state: stripeCheckoutCreationState("marketplace_merch")') &&
     adminPaymentsPage.includes('label: "Checkout creation"') &&
     adminPaymentsPage.includes('label: "Official TTC Merch"') &&
     adminPaymentsPage.includes('label: "Booking deposits"') &&
     adminPaymentsPage.includes('label: "Marketplace Merch"') &&
     adminPaymentsPage.includes('label: "Seller onboarding"') &&
-    adminPaymentsPage.includes('releaseSwitch.enabled ? "Enabled" : "Blocked"') &&
+    adminPaymentsPage.includes('releaseSwitch.state === "enabled"') &&
+    adminPaymentsPage.includes('releaseSwitch.state === "armed"') &&
+    adminPaymentsPage.includes('releaseSwitch.state === "enabled" ? "Enabled"') &&
+    adminPaymentsPage.includes(': releaseSwitch.state === "armed"') &&
+    adminPaymentsPage.includes('? "Armed"') &&
+    adminPaymentsPage.includes(': "Blocked"') &&
     adminPaymentsPage.includes("Release switches") &&
     !adminPaymentsPage.includes("STRIPE_SECRET_KEY") &&
     !adminPaymentsPage.includes("STRIPE_WEBHOOK_SECRET"),
+});
+checks.push({
+  label: "official Merch shipping is US-only while marketplace keeps its existing countries",
+  ok:
+    merchCheckout.includes('body.set("shipping_address_collection[allowed_countries][0]", "US")') &&
+    merchCheckout.includes("if (!product.is_official)") &&
+    merchCheckout.includes('body.set("shipping_address_collection[allowed_countries][1]", "CA")') &&
+    merchCheckout.indexOf('body.set("shipping_address_collection[allowed_countries][0]", "US")') <
+      merchCheckout.indexOf("if (!product.is_official)") &&
+    merchCheckout.indexOf("if (!product.is_official)") <
+      merchCheckout.indexOf('body.set("shipping_address_collection[allowed_countries][1]", "CA")'),
+});
+checks.push({
+  label: "standard payment smoke includes focused Stripe release gates exactly once",
+  ok:
+    packageJson.includes(
+      '"smoke:payments": "npm run test:stripe-release-gates && npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && node scripts/smoke-payment-guards.mjs"',
+    ) &&
+    (packageJson.match(/npm run test:stripe-release-gates/g) ?? []).length === 1,
 });
 checks.push({
   label: "public payment copy avoids collecting raw payout credentials",
@@ -2100,7 +2129,10 @@ checks.push({
       '"test:payment-go-live-gate": "node scripts/test-payment-go-live-gate.mjs"',
     ) &&
     packageJson.includes(
-      '"verify:payment-go-live": "npm run test:payment-go-live-gate && node scripts/smoke-payment-cutover-evidence.mjs --strict"',
+      '"verify:payment-go-live": "npm run test:payment-go-live-gate && node scripts/smoke-payment-cutover-evidence.mjs --strict --phase preauthorization"',
+    ) &&
+    packageJson.includes(
+      '"verify:payment-production-evidence": "npm run test:payment-go-live-gate && node scripts/smoke-payment-cutover-evidence.mjs --strict --phase post-transaction"',
     ) &&
     packageJson.includes(
       '"test:payment-go-live-command": "node scripts/test-payment-go-live-command.mjs"',

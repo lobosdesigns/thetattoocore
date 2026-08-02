@@ -31,8 +31,8 @@ import {
   stripeWebhookSigningSecretConfigured,
 } from "@/lib/stripe/server";
 import {
-  stripeCheckoutCreationEnabled,
   stripeCheckoutCreationMasterEnabled,
+  stripeCheckoutCreationState,
   stripeConnectOnboardingEnabled,
 } from "@/lib/stripe/release-gates";
 
@@ -779,24 +779,24 @@ export default async function AdminPaymentsPage({
   const checkoutCreationMasterEnabled = stripeCheckoutCreationMasterEnabled();
   const checkoutReleaseSwitches = [
     {
-      enabled: checkoutCreationMasterEnabled,
       label: "Checkout creation",
+      state: checkoutCreationMasterEnabled ? "enabled" : "blocked",
     },
     {
-      enabled: stripeCheckoutCreationEnabled("official_merch"),
       label: "Official TTC Merch",
+      state: stripeCheckoutCreationState("official_merch"),
     },
     {
-      enabled: stripeCheckoutCreationEnabled("booking"),
       label: "Booking deposits",
+      state: stripeCheckoutCreationState("booking"),
     },
     {
-      enabled: stripeCheckoutCreationEnabled("marketplace_merch"),
       label: "Marketplace Merch",
+      state: stripeCheckoutCreationState("marketplace_merch"),
     },
     {
-      enabled: stripeConnectOnboardingEnabled(),
       label: "Seller onboarding",
+      state: stripeConnectOnboardingEnabled() ? "enabled" : "blocked",
     },
   ] as const;
   const paymentModePreflightChecks = [
@@ -1572,8 +1572,9 @@ export default async function AdminPaymentsPage({
                 <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
                   <h2 className="text-lg font-bold">Release switches</h2>
                   <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                    Effective checkout exposure controls only. Legal and evidence
-                    gates remain separate, and no private configuration values are shown.
+                    Sanitized configured and effective states only. Armed means a
+                    flow is configured while checkout creation remains blocked.
+                    Legal and evidence gates remain separate.
                   </p>
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
                     {checkoutReleaseSwitches.map((releaseSwitch) => (
@@ -1584,12 +1585,14 @@ export default async function AdminPaymentsPage({
                         <span className="font-bold">{releaseSwitch.label}</span>
                         <span
                           className={`rounded-md px-2 py-1 text-xs font-bold ${
-                            releaseSwitch.enabled
+                            releaseSwitch.state === "enabled"
                               ? "bg-[color-mix(in_srgb,var(--gold)_18%,var(--paper-warm))] text-[var(--foreground)]"
+                              : releaseSwitch.state === "armed"
+                                ? "border border-[color-mix(in_srgb,var(--gold)_48%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_10%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_72%,var(--foreground))]"
                               : "bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))] text-[var(--danger)]"
                           }`}
                         >
-                          {releaseSwitch.enabled ? "Enabled" : "Blocked"}
+                          {releaseSwitch.state === "enabled" ? "Enabled" : releaseSwitch.state === "armed" ? "Armed" : "Blocked"}
                         </span>
                       </div>
                     ))}

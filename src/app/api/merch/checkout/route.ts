@@ -167,7 +167,10 @@ async function createCheckoutSession({
 
   if (product.shipping_required) {
     body.set("shipping_address_collection[allowed_countries][0]", "US");
-    body.set("shipping_address_collection[allowed_countries][1]", "CA");
+
+    if (!product.is_official) {
+      body.set("shipping_address_collection[allowed_countries][1]", "CA");
+    }
   }
 
   if (product.description) {
