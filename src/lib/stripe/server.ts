@@ -30,6 +30,12 @@ export function stripeWebhookSigningSecretConfigured(
   return stripeWebhookSigningSecretFormatValid(webhookSecret);
 }
 
+export function stripeConnectWebhookSigningSecretConfigured(
+  webhookSecret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET,
+) {
+  return stripeWebhookSigningSecretFormatValid(webhookSecret);
+}
+
 export function stripeCheckoutModeMismatch() {
   const expected = expectedStripeLivemode();
   const actual = stripeSecretKeyLivemode();

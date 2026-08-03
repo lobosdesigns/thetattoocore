@@ -146,6 +146,33 @@ function isAssignableUserRole(role) {
   return ["user", "moderator", "admin"].includes(role);
 }
 
+function bookingRefundStripeContext({
+  connectedAccountId,
+  feePayer,
+  paymentChargeModel,
+}) {
+  if (
+    paymentChargeModel === "platform" &&
+    feePayer === "client" &&
+    connectedAccountId === null
+  ) {
+    return { refundApplicationFee: false, stripeAccount: null };
+  }
+
+  if (
+    paymentChargeModel === "connected_direct" &&
+    feePayer === "provider" &&
+    /^acct_[A-Za-z0-9]{8,200}$/.test(connectedAccountId ?? "")
+  ) {
+    return {
+      refundApplicationFee: true,
+      stripeAccount: connectedAccountId,
+    };
+  }
+
+  return null;
+}
+
 export async function loadAdminActions({
   console: consoleValue = console,
   createAdminClient = () => null,
@@ -187,6 +214,9 @@ export async function loadAdminActions({
           action: "reject",
           reason: "test",
         }),
+      },
+      "@/lib/stripe/booking-refund": {
+        bookingRefundStripeContext,
       },
       "@/lib/stripe/server": {
         createStripeClient,

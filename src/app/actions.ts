@@ -2334,8 +2334,17 @@ export async function createBookingRequest(formData: FormData) {
   }
 
   depositAmountCents = Math.max(depositAmountCents, minimumDepositAmountCents);
+  if (depositAmountCents > 0 && depositAmountCents < 50) {
+    redirect(
+      redirectWithMessage({
+        hash: "booking-request",
+        message: "Booking deposits must be at least $0.50.",
+        path: returnPath,
+      }),
+    );
+  }
   const platformFeeCents = calculatePlatformFeeCents(depositAmountCents);
-  const totalCents = depositAmountCents + platformFeeCents;
+  const totalCents = depositAmountCents;
 
   let conversationId: string;
 
@@ -2367,6 +2376,8 @@ export async function createBookingRequest(formData: FormData) {
       conversation_id: conversationId,
       currency: "USD",
       deposit_amount_cents: depositAmountCents,
+      fee_payer: "provider",
+      payment_charge_model: "connected_direct",
       payment_status: "not_ready",
       placement: placement || null,
       platform_fee_cents: platformFeeCents,
@@ -2396,7 +2407,7 @@ export async function createBookingRequest(formData: FormData) {
   }
 
   await supabase.from("messages").insert({
-    body: `Booking request: ${title}.${appointmentTypeName ? ` Type: ${appointmentTypeName}.` : ""}${preferredSlotLabel ? ` Preferred slot: ${preferredSlotLabel}.` : ""} ${depositAmountCents > 0 ? `Requested deposit ${(depositAmountCents / 100).toLocaleString("en-US", { currency: "USD", style: "currency" })} plus TTC fee.` : "No deposit requested yet."}`,
+    body: `Booking request: ${title}.${appointmentTypeName ? ` Type: ${appointmentTypeName}.` : ""}${preferredSlotLabel ? ` Preferred slot: ${preferredSlotLabel}.` : ""} ${depositAmountCents > 0 ? `Requested deposit ${(depositAmountCents / 100).toLocaleString("en-US", { currency: "USD", style: "currency" })}. The client pays this deposit amount.` : "No deposit requested yet."}`,
     conversation_id: conversationId,
     sender_id: userId,
   });
@@ -2412,7 +2423,7 @@ export async function createBookingRequest(formData: FormData) {
       actor_id: userId,
       body:
         depositAmountCents > 0
-          ? `Requested deposit: $${(depositAmountCents / 100).toFixed(2)} plus TTC processing fee.`
+          ? `Requested deposit: $${(depositAmountCents / 100).toFixed(2)}. The client pays this deposit amount.`
           : "No deposit requested yet.",
       href: `/messages?c=${conversationId}`,
       recipient_id: artist.id,

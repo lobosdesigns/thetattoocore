@@ -2,6 +2,47 @@
 
 Use this private checklist before public App Store or Google Play review, production commerce promotion, wider beta expansion, or final Terms/Privacy updates. This is an evidence handoff for counsel or the approved business reviewer; it is not member-facing copy.
 
+## Booking Deposit Legal Review - August 3, 2026
+
+The staged booking model is a Stripe Connect direct charge for a real-world
+tattoo appointment deposit. It is code-ready for review but is not merged,
+migrated, deployed, enabled, or approved for live money.
+
+- A verified artist or studio supplies the service. The client pays exactly the
+  displayed deposit amount. TTC deducts a disclosed 2% application fee from
+  provider funds; Stripe processing fees are separate.
+- Hosted Stripe onboarding collects provider identity, business, and payout
+  information. TTC stores sanitized readiness plus a private connected-account
+  reference and must not collect raw identity, bank, routing, card, or payout
+  credentials in TTC forms.
+- Counsel or the approved business reviewer must confirm who is legally treated
+  as the service provider and merchant for the direct charge, the provider/TTC
+  agreement, fee disclosure, payout and negative-balance responsibility,
+  chargeback allocation, reserves, provider suspension, and termination rules.
+- Terms and booking copy must define when a deposit is earned, refundable,
+  partially refundable, transferable, forfeited, or credited; cancellation and
+  rescheduling windows; no-show handling; provider cancellation; appointment
+  rejection; refund timing; disputes; and customer support ownership.
+- The reviewer must confirm applicable tattoo/body-art age, consent, licensing,
+  health, location, and prohibited-service rules. Payment readiness must never
+  be presented as professional-license or service-legality approval.
+- Tax treatment for appointment deposits and services must be reviewed for the
+  provider's jurisdiction. TTC must not infer a provider's registration,
+  collection, reporting, or remittance duties from Stripe readiness.
+- Apple and Google policy evidence must classify the exact native booking flow
+  as payment for a real-world service and confirm its external/web payment and
+  return behavior for the exact submitted builds. General policy text is not
+  store approval.
+- Full refunds reverse the direct-charge application fee. Partial refund,
+  dispute, failed-refund, and negative-balance procedures must be approved and
+  tested before broader enablement.
+- `STRIPE_CHECKOUT_CREATION_ENABLED=false`,
+  `STRIPE_BOOKING_CHECKOUT_ENABLED=false`, and
+  `STRIPE_CONNECT_ONBOARDING_ENABLED=false` remain the fail-closed source
+  defaults. Migration, Stripe configuration, secret changes, deployment,
+  onboarding, live charges/refunds, and gate changes each require separate
+  owner approval.
+
 ## Current Seller-Owned Merch Position - August 2, 2026
 
 - The selected physical-goods model is a seller-owned Payment Link. The seller is the merchant for the external purchase and handles payment, taxes, shipping, returns, refunds, disputes, receipts, and purchase support. TTC reviews the listing and handles listing-safety reports.

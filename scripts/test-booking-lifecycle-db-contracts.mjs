@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawn } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import net from "node:net";
@@ -159,6 +159,9 @@ const bookings = {
   otherArtist: "10000000-0000-4000-8000-000000000006",
   raceOne: "10000000-0000-4000-8000-000000000007",
   raceTwo: "10000000-0000-4000-8000-000000000008",
+  connectedDirect: "10000000-0000-4000-8000-000000000009",
+  migrationGapSafe: "10000000-0000-4000-8000-000000000010",
+  connectedRetry: "10000000-0000-4000-8000-000000000011",
 };
 
 try {
@@ -442,6 +445,289 @@ try {
     scalar(`select count(*) from public.booking_requests where id in ('${bookings.raceOne}', '${bookings.raceTwo}');`),
     "1",
     "concurrent active inserts persist exactly one booking",
+  );
+
+  sql(migration("20260715101500_stripe_connect_seller_accounts.sql"));
+  sql(migration("20260722152821_stripe_connect_livemode_isolation.sql"));
+  sql(migration("20260712122906_stripe_webhook_event_dedupe.sql"));
+  sql(migration("20260712125229_stripe_webhook_event_indexes.sql"));
+  sql(migration("20260722194829_stripe_webhook_event_claim_release.sql"));
+
+  sql(`
+    insert into public.stripe_connect_accounts (
+      profile_id,
+      stripe_account_id,
+      charges_enabled,
+      payouts_enabled,
+      details_submitted,
+      requirements_currently_due,
+      livemode,
+      onboarding_completed_at
+    ) values (
+      '${users.artist}',
+      'acct_ConnectedArtist123',
+      true,
+      true,
+      true,
+      '[]'::jsonb,
+      true,
+      now()
+    );
+  `);
+
+  const connectedMigrationNames = readdirSync(path.join(root, "supabase", "migrations"))
+    .filter((name) => name.endsWith("_booking_connected_direct_charges.sql"));
+  assert.deepEqual(
+    connectedMigrationNames,
+    ["20260803150000_booking_connected_direct_charges.sql"],
+    "exactly one planned booking direct-charge migration exists",
+  );
+  sql(migration(connectedMigrationNames[0]));
+
+  assert.equal(
+    scalar(`select fee_payer || ':' || payment_charge_model || ':' || total_cents from public.booking_requests where id = '${bookings.accepted}';`),
+    "client:platform:10500",
+    "historical buyer-paid platform booking arithmetic remains unchanged",
+  );
+  assert.equal(
+    scalar(`select coalesce(stripe_connected_account_id, 'private-null') from public.booking_requests where id = '${bookings.accepted}';`),
+    "private-null",
+    "historical bookings do not gain fabricated connected routing",
+  );
+  assert.equal(
+    scalar("select has_table_privilege('authenticated', 'public.stripe_connect_accounts', 'select')::text;"),
+    "false",
+    "connected account identifiers are not selectable by authenticated clients",
+  );
+  assert.equal(
+    scalar("select has_table_privilege('service_role', 'public.stripe_connect_accounts', 'select')::text;"),
+    "true",
+    "service role retains private connected-account access",
+  );
+  assert.equal(
+    scalar("select has_column_privilege('authenticated', 'public.booking_requests', 'stripe_connected_account_id', 'select')::text;"),
+    "false",
+    "connected account routing stays hidden from booking participants",
+  );
+  assert.equal(
+    scalar("select has_column_privilege('authenticated', 'public.booking_requests', 'stripe_application_fee_id', 'select')::text;"),
+    "false",
+    "application fee identifiers stay hidden from booking participants",
+  );
+  assert.equal(
+    scalar("select has_column_privilege('authenticated', 'public.booking_requests', 'deposit_amount_cents', 'select')::text;"),
+    "true",
+    "booking participants retain safe booking reads",
+  );
+
+  sql(`
+    insert into public.booking_requests (
+      id, client_id, artist_id, title, body, deposit_amount_cents,
+      platform_fee_cents, total_cents, status, payment_status
+    ) values (
+      '${bookings.migrationGapSafe}',
+      '${users.client}',
+      '${users.otherArtist}',
+      'Migration gap booking',
+      'Historical booking created before source deployment.',
+      10000,
+      500,
+      10500,
+      'accepted',
+      'not_ready'
+    );
+  `);
+  assert.equal(
+    scalar(`select fee_payer || ':' || payment_charge_model from public.booking_requests where id = '${bookings.migrationGapSafe}';`),
+    "client:platform",
+    "migration remains compatible with the old source until the feature deploy",
+  );
+
+  sql(`
+    insert into public.booking_requests (
+      id, client_id, artist_id, title, body, deposit_amount_cents,
+      platform_fee_cents, total_cents, fee_payer, payment_charge_model,
+      status, payment_status
+    ) values (
+      '${bookings.connectedDirect}',
+      '${users.client}',
+      '${users.artist}',
+      'Connected deposit booking',
+      'Connected direct-charge booking request.',
+      10000,
+      200,
+      10000,
+      'provider',
+      'connected_direct',
+      'accepted',
+      'not_ready'
+    );
+  `);
+  assert.equal(
+    scalar(`select fee_payer || ':' || payment_charge_model from public.booking_requests where id = '${bookings.connectedDirect}';`),
+    "provider:connected_direct",
+    "new bookings default to provider-paid connected direct charges",
+  );
+  assert.equal(
+    scalar(`set role service_role; select count(*) from public.reserve_booking_deposit_checkout('${bookings.connectedDirect}', '${users.client}', 'acct_ConnectedArtist123');`),
+    "1",
+    "server reservation atomically verifies and stores the provider account",
+  );
+  assert.equal(
+    scalar(`select payment_status || ':' || status || ':' || stripe_connected_account_id from public.booking_requests where id = '${bookings.connectedDirect}';`),
+    "checkout_started:deposit_pending:acct_ConnectedArtist123",
+    "reserved direct checkout persists account context before Stripe creation",
+  );
+  assert.equal(
+    scalar(`set role service_role; select count(*) from public.reserve_booking_deposit_checkout('${bookings.rescheduled}', '${users.client}', 'acct_ConnectedArtist123');`),
+    "0",
+    "historical platform bookings cannot enter the connected direct route",
+  );
+  expectSqlError(
+    `update public.booking_requests set fee_payer = 'client' where id = '${bookings.connectedDirect}';`,
+    /connected charge routing is immutable|P0001/i,
+    "reserved connected routing fields cannot be rewritten",
+  );
+
+  sql(`
+    insert into public.booking_requests (
+      id, client_id, artist_id, title, body, deposit_amount_cents,
+      platform_fee_cents, total_cents, fee_payer, payment_charge_model,
+      status, payment_status
+    ) values (
+      '${bookings.connectedRetry}',
+      '${users.client}',
+      '${users.artist}',
+      'Connected retry booking',
+      'Connected direct-charge retry contract.',
+      10000,
+      200,
+      10000,
+      'provider',
+      'connected_direct',
+      'accepted',
+      'not_ready'
+    );
+
+    set role service_role;
+    select count(*)
+    from public.reserve_booking_deposit_checkout(
+      '${bookings.connectedRetry}',
+      '${users.client}',
+      'acct_ConnectedArtist123'
+    );
+
+    update public.booking_requests
+    set stripe_checkout_session_id = 'cs_ConnectedRetry123'
+    where id = '${bookings.connectedRetry}';
+  `);
+  sql(
+    asUser(
+      users.client,
+      `
+        update public.booking_requests
+        set payment_status = 'payment_failed',
+            status = 'accepted',
+            stripe_checkout_session_id = null,
+            stripe_connected_account_id = null
+        where id = '${bookings.connectedRetry}';
+      `,
+    ),
+  );
+  assert.equal(
+    scalar(`select payment_status || ':' || status || ':' || stripe_checkout_session_id || ':' || stripe_connected_account_id from public.booking_requests where id = '${bookings.connectedRetry}';`),
+    "checkout_started:deposit_pending:cs_ConnectedRetry123:acct_ConnectedArtist123",
+    "RLS-filtered participant updates cannot clear connected checkout routing",
+  );
+  sql(`
+    set role service_role;
+    update public.booking_requests
+    set payment_status = 'payment_failed',
+        status = 'accepted',
+        stripe_checkout_session_id = null,
+        stripe_connected_account_id = null
+    where id = '${bookings.connectedRetry}';
+  `);
+  assert.equal(
+    scalar(`select payment_status || ':' || status || ':' || coalesce(stripe_connected_account_id, 'released') from public.booking_requests where id = '${bookings.connectedRetry}';`),
+    "payment_failed:accepted:released",
+    "trusted closed-unpaid reconciliation releases connected routing",
+  );
+  assert.equal(
+    scalar(`set role service_role; select count(*) from public.reserve_booking_deposit_checkout('${bookings.connectedRetry}', '${users.client}', 'acct_ConnectedArtist123');`),
+    "1",
+    "released direct bookings can reserve a new connected checkout",
+  );
+
+  sql(`
+    set role service_role;
+    update public.booking_requests
+    set payment_status = 'paid',
+        status = 'deposit_paid',
+        stripe_payment_intent_id = 'pi_ConnectedBooking123'
+    where id = '${bookings.connectedDirect}';
+  `);
+  expectSqlError(
+    asUser(
+      users.moderator,
+      `update public.booking_requests set refunded_amount_cents = 1 where id = '${bookings.connectedDirect}';`,
+    ),
+    /trusted services|42501/i,
+    "authenticated moderators cannot forge booking refund totals",
+  );
+  sql(`
+    set role service_role;
+    update public.booking_requests
+    set payment_status = 'partially_refunded',
+        refunded_amount_cents = 5000,
+        refunded_platform_fee_cents = 100,
+        stripe_application_fee_id = 'fee_ConnectedBooking123'
+    where id = '${bookings.connectedDirect}';
+  `);
+  assert.equal(
+    scalar(`select payment_status || ':' || refunded_amount_cents || ':' || refunded_platform_fee_cents from public.booking_requests where id = '${bookings.connectedDirect}';`),
+    "partially_refunded:5000:100",
+    "service reconciliation records partial charge and application-fee refunds",
+  );
+  expectSqlError(
+    `set role service_role; update public.booking_requests set refunded_amount_cents = 4999, refunded_platform_fee_cents = 99 where id = '${bookings.connectedDirect}';`,
+    /refund totals cannot decrease|23514/i,
+    "trusted stale webhook work cannot move refund totals backward",
+  );
+  expectSqlError(
+    `set role service_role; update public.booking_requests set refunded_platform_fee_cents = 201 where id = '${bookings.connectedDirect}';`,
+    /booking_requests_refund_amounts_check|23514/i,
+    "refunded application fees cannot exceed the platform fee",
+  );
+  sql(`
+    set role service_role;
+    update public.booking_requests
+    set payment_status = 'refunded',
+        status = 'accepted',
+        refunded_amount_cents = total_cents,
+        refunded_platform_fee_cents = platform_fee_cents
+    where id = '${bookings.connectedDirect}';
+  `);
+  assert.equal(
+    scalar(`select payment_status || ':' || refunded_amount_cents || ':' || refunded_platform_fee_cents from public.booking_requests where id = '${bookings.connectedDirect}';`),
+    "refunded:10000:200",
+    "service reconciliation records a full charge and application-fee refund",
+  );
+
+  assert.equal(
+    scalar("select public.claim_stripe_webhook_event('evt_same', 'checkout.session.completed', 'platform');"),
+    "claimed",
+    "platform event scope can be claimed",
+  );
+  assert.equal(
+    scalar("select public.claim_stripe_webhook_event('evt_same', 'checkout.session.completed', 'acct_ConnectedArtist123');"),
+    "claimed",
+    "the same event id is independently scoped to a connected account",
+  );
+  assert.equal(
+    scalar("select count(*) from public.stripe_webhook_events where event_id = 'evt_same';"),
+    "2",
+    "webhook dedupe identity includes account scope",
   );
 
   console.log(`PASS booking lifecycle database contracts on disposable PostgreSQL ${port}`);

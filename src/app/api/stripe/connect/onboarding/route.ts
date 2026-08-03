@@ -3,7 +3,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { siteUrl } from "@/lib/site";
 import { stripeConnectOnboardingEnabled } from "@/lib/stripe/release-gates";
-import { createStripeClient, stripeCheckoutPreflight } from "@/lib/stripe/server";
+import {
+  createStripeClient,
+  stripeConnectWebhookSigningSecretConfigured,
+  stripeCheckoutPreflight,
+} from "@/lib/stripe/server";
 import { stripeConnectStatus } from "@/lib/stripe/connect";
 import { isVerifiedProfessional } from "@/lib/verification";
 
@@ -36,18 +40,9 @@ function accountRedirect(message: string, payoutStatus = "retry", issue?: string
   if (issue) params.set("payout_issue", issue);
 
   return NextResponse.redirect(
-    `${siteUrl}/account?${params.toString()}#order-settings`,
+    `${siteUrl}/account?${params.toString()}#booking-settings`,
     { status: 303 },
   );
-}
-
-function sellerBusinessType(profile: Pick<Profile, "account_type" | "role">) {
-  return profile.account_type === "studio" ||
-    profile.account_type === "vendor" ||
-    profile.role === "owner" ||
-    profile.role === "admin"
-    ? "company"
-    : "individual";
 }
 
 export async function POST() {
@@ -57,7 +52,7 @@ export async function POST() {
 
   if (!claims?.sub) {
     return NextResponse.redirect(
-      `${siteUrl}/login?return_to=${encodeURIComponent("/account#order-settings")}`,
+      `${siteUrl}/login?return_to=${encodeURIComponent("/account#booking-settings")}`,
       { status: 303 },
     );
   }
@@ -74,24 +69,34 @@ export async function POST() {
     !profile ||
     profile.suspended_at ||
     profile.banned_at ||
+    !["artist", "studio"].includes(profile.account_type) ||
     !isVerifiedProfessional(profile)
   ) {
     return accountRedirect(
-      "Verified artist, studio, or vendor status is required before payout setup.",
+      "Verified artist or studio status is required before booking payment setup.",
       "needs_verification",
     );
   }
 
+  const countryCode = profile.country_code?.trim().toUpperCase() ?? "";
+  if (!/^[A-Z]{2}$/.test(countryCode)) {
+    return accountRedirect(
+      "Add your two-letter country code in Profile settings before booking payment setup.",
+      "needs_profile",
+    );
+  }
+
   if (!stripeConnectOnboardingEnabled()) {
-    return accountRedirect("Seller payout setup is temporarily unavailable.", "unavailable");
+    return accountRedirect("Booking payment setup is temporarily unavailable.", "unavailable");
   }
 
   const stripe = createStripeClient();
   const admin = createAdminClient();
   const checkoutPreflight = stripeCheckoutPreflight();
+  const connectWebhookReady = stripeConnectWebhookSigningSecretConfigured();
 
-  if (!stripe || !admin || !checkoutPreflight.ready) {
-    return accountRedirect("Seller payout setup is temporarily unavailable.", "unavailable");
+  if (!stripe || !admin || !checkoutPreflight.ready || !connectWebhookReady) {
+    return accountRedirect("Booking payment setup is temporarily unavailable.", "unavailable");
   }
 
   const livemode = checkoutPreflight.actual;
@@ -106,8 +111,8 @@ export async function POST() {
       .maybeSingle<{ livemode: boolean | null; stripe_account_id: string }>();
 
     if (existingAccountError) {
-      console.error("Seller payout account lookup failed.", existingAccountError);
-      return accountRedirect("Seller payout setup is temporarily unavailable.", "unavailable");
+      console.error("Booking payment account lookup failed.", existingAccountError);
+      return accountRedirect("Booking payment setup is temporarily unavailable.", "unavailable");
     }
 
     let stripeAccountId =
@@ -117,16 +122,16 @@ export async function POST() {
       setupStep = "account_create";
       const account = await stripe.accounts.create({
         business_profile: {
-          name: profile.display_name || "TheTattooCore seller",
-          product_description: "Body-art community merch, art, prints, apparel, and brand goods.",
+          name: profile.display_name || "TheTattooCore booking provider",
+          product_description: "Tattoo appointment deposits and in-person body-art services.",
           url: siteUrl,
         },
-        business_type: sellerBusinessType(profile),
+        business_type: profile.account_type === "studio" ? "company" : "individual",
         capabilities: {
           card_payments: { requested: true },
           transfers: { requested: true },
         },
-        country: profile.country_code || "US",
+        country: countryCode,
         email: claims.email,
         metadata: {
           profile_id: claims.sub,
@@ -145,12 +150,17 @@ export async function POST() {
       });
 
       if (upsertError) {
-        console.error("Seller payout account create sync failed.", upsertError);
-        return accountRedirect("Seller payout setup is temporarily unavailable.", "unavailable");
+        console.error("Booking payment account create sync failed.", upsertError);
+        return accountRedirect("Booking payment setup is temporarily unavailable.", "unavailable");
       }
     } else {
-      setupStep = "account_retrieve";
-      const account = await stripe.accounts.retrieve(stripeAccountId);
+      setupStep = "account_capabilities";
+      const account = await stripe.accounts.update(stripeAccountId, {
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
+      });
 
       setupStep = "account_status_sync";
       const { error: upsertError } = await admin.from("stripe_connect_accounts").upsert({
@@ -160,8 +170,8 @@ export async function POST() {
       });
 
       if (upsertError) {
-        console.error("Seller payout account status sync failed.", upsertError);
-        return accountRedirect("Seller payout setup is temporarily unavailable.", "unavailable");
+        console.error("Booking payment account status sync failed.", upsertError);
+        return accountRedirect("Booking payment setup is temporarily unavailable.", "unavailable");
       }
     }
 
@@ -169,17 +179,17 @@ export async function POST() {
     const accountLink = await stripe.accountLinks.create({
       account: stripeAccountId,
       refresh_url: `${siteUrl}/account?message=${encodeURIComponent(
-        "Seller payout setup expired. Start it again when you are ready.",
-      )}&payout_status=expired#order-settings`,
+        "Booking payment setup expired. Start it again when you are ready.",
+      )}&payout_status=expired#booking-settings`,
       return_url: `${siteUrl}/api/stripe/connect/return`,
       type: "account_onboarding",
     });
 
     return NextResponse.redirect(accountLink.url, { status: 303 });
   } catch (error) {
-    console.error("Seller payout onboarding failed.", error);
+    console.error("Booking payment onboarding failed.", error);
     return accountRedirect(
-      "Seller payout setup is temporarily unavailable. Please try again.",
+      "Booking payment setup is temporarily unavailable. Please try again.",
       "retry",
       `${typeof setupStep === "string" ? setupStep : "unknown"}:${payoutIssueCode(error)}`,
     );

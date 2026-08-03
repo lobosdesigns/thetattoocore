@@ -322,6 +322,14 @@ const staleAlphaFirstOperationalSnippets = [
   "confirm the closed-test store listing offers install or update",
 ];
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
+const accountBookingSection = accountPage.slice(
+  accountPage.indexOf('id="booking-settings"'),
+  accountPage.indexOf('id="order-settings"'),
+);
+const accountMerchSection = accountPage.slice(
+  accountPage.indexOf('id="order-settings"'),
+  accountPage.indexOf('id="data-settings"'),
+);
 const settingsPage = readFileSync("src/app/settings/page.tsx", "utf8");
 const privacyPage = readFileSync("src/app/privacy/page.tsx", "utf8");
 const adminPaymentsPage = readFileSync("src/app/admin/payments/page.tsx", "utf8");
@@ -851,9 +859,13 @@ const checks = [
       compactWhitespace(searchPage).includes("TTC Support handles listing-safety reports and explicitly historical TTC orders") &&
       compactWhitespace(adminPaymentsPage).includes("Legacy TTC checkout controls") &&
       compactWhitespace(adminPaymentsPage).includes("disabled for the seller-link release") &&
-      !accountPage.includes("stripeConnectOnboardingEnabled") &&
-      !accountPage.includes("stripeCheckoutPreflight") &&
-      !accountPage.includes('from("stripe_connect_accounts")') &&
+      accountPage.includes("stripeConnectOnboardingEnabled") &&
+      accountPage.includes("stripeCheckoutPreflight") &&
+      accountPage.includes('from("stripe_connect_accounts")') &&
+      accountBookingSection.includes("Booking payment setup") &&
+      accountBookingSection.includes('action="/api/stripe/connect/onboarding"') &&
+      !accountMerchSection.includes("stripe_connect_accounts") &&
+      !accountMerchSection.includes('action="/api/stripe/connect/onboarding"') &&
       !accountPage.includes("payout_status") &&
       !accountPage.includes("payout_issue") &&
       !helpCenterData.includes('/screenshots/mobile-payout-safe.png') &&

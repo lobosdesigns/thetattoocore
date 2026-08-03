@@ -305,7 +305,10 @@ console.log(
 
 function stripePaymentIntent(kind, targetField, targetId) {
   return {
+    amount: 10_000,
+    currency: "usd",
     latest_charge: {
+      amount: 10_000,
       amount_refunded: 0,
       application_fee_amount: 0,
       id: "ch_fixture",
@@ -433,10 +436,15 @@ console.log(
       if (query.table === "booking_requests" && query.operation === "select") {
         return {
           data: {
+            deposit_amount_cents: 9_800,
+            fee_payer: "client",
             id: testIds.other,
+            payment_charge_model: "platform",
             payment_dispute_hold: false,
             payment_status: "paid",
+            platform_fee_cents: 200,
             status: "deposit_paid",
+            stripe_connected_account_id: null,
             stripe_payment_intent_id: "pi_booking_fixture",
             title: "Fixture booking",
             total_cents: 10_000,
@@ -483,9 +491,12 @@ console.log(
         refundCreateCalls += 1;
         assert.equal(
           options.idempotencyKey,
-          `booking-full-refund-v1:${testIds.other}:pi_booking_fixture`,
+          `booking-full-refund-v2:${testIds.other}:pi_booking_fixture`,
         );
         return {
+          amount: 10_000,
+          charge: "ch_fixture",
+          currency: "usd",
           id: "re_booking_fixture",
           metadata: params.metadata,
           status: "pending",
@@ -525,6 +536,142 @@ console.log(
 );
 
 {
+  const connectedAccountId = "acct_DirectBookingFixture123";
+  let auditRecorded = false;
+  let refundCreateCalls = 0;
+  let refundListCalls = 0;
+  const userClient = staffClient("admin", (query) => {
+    throw new Error(`Unexpected direct booking-refund query on ${query.table}`);
+  });
+  const privateClient = createSupabaseDouble({
+    claims: null,
+    execute(query) {
+      if (query.table === "booking_requests" && query.operation === "select") {
+        return {
+          data: {
+            deposit_amount_cents: 10_000,
+            fee_payer: "provider",
+            id: testIds.other,
+            payment_charge_model: "connected_direct",
+            payment_dispute_hold: false,
+            payment_status: "paid",
+            platform_fee_cents: 200,
+            status: "deposit_paid",
+            stripe_connected_account_id: connectedAccountId,
+            stripe_payment_intent_id: "pi_direct_booking_fixture",
+            title: "Direct fixture booking",
+            total_cents: 10_000,
+          },
+          error: null,
+        };
+      }
+
+      if (
+        query.table === "admin_audit_logs" &&
+        query.operation === "select"
+      ) {
+        return {
+          data: auditRecorded ? [{ id: testIds.third }] : [],
+          error: null,
+        };
+      }
+
+      if (
+        query.table === "admin_audit_logs" &&
+        query.operation === "insert"
+      ) {
+        auditRecorded = true;
+        return { data: null, error: null };
+      }
+
+      throw new Error(
+        `Unexpected private direct booking refund query on ${query.table}`,
+      );
+    },
+  });
+  const stripe = {
+    paymentIntents: {
+      async retrieve(paymentIntentId, params, options) {
+        assert.equal(paymentIntentId, "pi_direct_booking_fixture");
+        assert.equal(params.expand?.[0], "latest_charge");
+        assert.equal(options.stripeAccount, connectedAccountId);
+        return {
+          amount: 10_000,
+          currency: "usd",
+          latest_charge: {
+            amount: 10_000,
+            amount_refunded: 0,
+            application_fee_amount: 200,
+            id: "ch_direct_booking_fixture",
+            transfer_data: null,
+          },
+          livemode: false,
+          metadata: {
+            booking_request_id: testIds.other,
+            fee_payer: "provider",
+            payment_charge_model: "connected_direct",
+            payment_kind: "booking_deposit",
+          },
+        };
+      },
+    },
+    refunds: {
+      async create(params, options) {
+        refundCreateCalls += 1;
+        assert.equal(params.charge, "ch_direct_booking_fixture");
+        assert.equal(params.refund_application_fee, true);
+        assert.equal(options.stripeAccount, connectedAccountId);
+        assert.equal(
+          options.idempotencyKey,
+          `booking-full-refund-v2:${testIds.other}:pi_direct_booking_fixture`,
+        );
+        return {
+          amount: 10_000,
+          charge: "ch_direct_booking_fixture",
+          currency: "usd",
+          id: "re_direct_booking_fixture",
+          metadata: params.metadata,
+          status: "pending",
+        };
+      },
+      async list(params, options) {
+        refundListCalls += 1;
+        assert.equal(params.charge, "ch_direct_booking_fixture");
+        assert.equal(options.stripeAccount, connectedAccountId);
+        return { data: [] };
+      },
+    },
+  };
+  const { actions } = await loadAdminActions({
+    createAdminClient() {
+      return privateClient.client;
+    },
+    async createClient() {
+      return userClient.client;
+    },
+    createStripeClient() {
+      return stripe;
+    },
+    stripeCheckoutPreflight() {
+      return { actual: false, ready: true };
+    },
+  });
+  const form = {
+    booking_id: testIds.other,
+    confirm: "refund",
+  };
+
+  await expectRedirect(() => actions.refundBookingDeposit(makeForm(form)));
+  await expectRedirect(() => actions.refundBookingDeposit(makeForm(form)));
+
+  assert.equal(refundCreateCalls, 1);
+  assert.equal(refundListCalls, 1);
+}
+console.log(
+  "PASS direct booking refunds stay account-scoped and reverse one application fee",
+);
+
+{
   let auditWrites = 0;
   let refundCreateCalls = 0;
   const userClient = staffClient("admin", (query) => {
@@ -536,10 +683,15 @@ console.log(
       if (query.table === "booking_requests" && query.operation === "select") {
         return {
           data: {
+            deposit_amount_cents: 9_800,
+            fee_payer: "client",
             id: testIds.other,
+            payment_charge_model: "platform",
             payment_dispute_hold: false,
             payment_status: "paid",
+            platform_fee_cents: 200,
             status: "deposit_paid",
+            stripe_connected_account_id: null,
             stripe_payment_intent_id: "pi_booking_fixture",
             title: "Fixture booking",
             total_cents: 10_000,

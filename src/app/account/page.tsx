@@ -45,8 +45,17 @@ import {
   fulfillmentStatusLabel,
   titleCaseStatus,
 } from "@/lib/status-labels";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { stripeCheckoutCreationEnabled } from "@/lib/stripe/release-gates";
+import {
+  stripeCheckoutCreationEnabled,
+  stripeConnectOnboardingEnabled,
+} from "@/lib/stripe/release-gates";
+import {
+  stripeConnectWebhookSigningSecretConfigured,
+  stripeCheckoutPreflight,
+  stripeWebhookSigningSecretConfigured,
+} from "@/lib/stripe/server";
 import { supportEmail } from "@/lib/site";
 import { safeStatusMessage } from "@/lib/status-message";
 import { verificationEligibleAccountTypes } from "@/lib/verification";
@@ -108,6 +117,24 @@ type BookingCalendarConnection = {
   status: string;
   sync_direction: string;
   updated_at: string;
+};
+type BookingPaymentReadiness = {
+  charges_enabled: boolean;
+  details_submitted: boolean;
+  disabled_reason: string | null;
+  onboarding_completed_at: string | null;
+  payouts_enabled: boolean;
+  requirements_currently_due: unknown;
+};
+type BookingMoney = {
+  currency: string;
+  deposit_amount_cents: number;
+  fee_payer: string;
+  payment_charge_model: string;
+  platform_fee_cents: number;
+  refunded_amount_cents: number;
+  refunded_platform_fee_cents: number;
+  total_cents: number;
 };
 const adminRoles = ["moderator", "admin", "owner"];
 const adPageSize = 25;
@@ -355,6 +382,58 @@ function money(cents: number, currency: string) {
     currency,
     style: "currency",
   }).format(cents / 100);
+}
+
+function BookingMoneyDetails({
+  booking,
+  providerView,
+}: {
+  booking: BookingMoney;
+  providerView: boolean;
+}) {
+  const connectedDirect =
+    booking.payment_charge_model === "connected_direct" &&
+    booking.fee_payer === "provider";
+
+  if (connectedDirect) {
+    return (
+      <>
+        <p>Client pays: {money(booking.deposit_amount_cents, booking.currency)}</p>
+        {providerView ? (
+          <>
+            <p>
+              TTC fee from provider: {money(booking.platform_fee_cents, booking.currency)}
+            </p>
+            <p>
+              Before payment processing fees:{" "}
+              {money(
+                Math.max(0, booking.deposit_amount_cents - booking.platform_fee_cents),
+                booking.currency,
+              )}
+            </p>
+            {booking.refunded_platform_fee_cents > 0 ? (
+              <p>
+                TTC fee reversed: {money(booking.refunded_platform_fee_cents, booking.currency)}
+              </p>
+            ) : null}
+          </>
+        ) : null}
+        {booking.refunded_amount_cents > 0 ? (
+          <p>Deposit refunded: {money(booking.refunded_amount_cents, booking.currency)}</p>
+        ) : null}
+      </>
+    );
+  }
+
+  return (
+    <>
+      <p>
+        Deposit: {money(booking.deposit_amount_cents, booking.currency)} + historical TTC
+        fee {money(booking.platform_fee_cents, booking.currency)}
+      </p>
+      <p>Total checkout: {money(booking.total_cents, booking.currency)}</p>
+    </>
+  );
 }
 
 function shippingAddressLines(value: unknown) {
@@ -769,11 +848,45 @@ export default async function AccountPage({
       }[]
     >();
   const bookingCheckoutEnabled = stripeCheckoutCreationEnabled("booking");
+  const bookingConnectEnabled = stripeConnectOnboardingEnabled();
+  const bookingPaymentPreflight = stripeCheckoutPreflight();
+  const bookingWebhooksReady =
+    stripeWebhookSigningSecretConfigured() &&
+    stripeConnectWebhookSigningSecretConfigured();
+  const bookingPaymentAdmin = createAdminClient();
+  const { data: bookingPaymentAccount } =
+    canManageBookingSettings &&
+    bookingPaymentAdmin &&
+    bookingPaymentPreflight.ready
+      ? await bookingPaymentAdmin
+          .from("stripe_connect_accounts")
+          .select(
+            "charges_enabled, payouts_enabled, details_submitted, disabled_reason, requirements_currently_due, onboarding_completed_at",
+          )
+          .eq("profile_id", claims.sub)
+          .eq("livemode", bookingPaymentPreflight.actual)
+          .maybeSingle<BookingPaymentReadiness>()
+      : { data: null };
+  const bookingProviderPaymentReady = Boolean(
+    bookingPaymentAccount?.charges_enabled &&
+      bookingPaymentAccount.payouts_enabled &&
+      bookingPaymentAccount.details_submitted &&
+      !bookingPaymentAccount.disabled_reason &&
+      Array.isArray(bookingPaymentAccount.requirements_currently_due) &&
+      bookingPaymentAccount.requirements_currently_due.length === 0 &&
+      bookingPaymentAccount.onboarding_completed_at,
+  );
+  const bookingPaymentReady = Boolean(
+    bookingProviderPaymentReady &&
+      bookingPaymentPreflight.ready &&
+      bookingWebhooksReady &&
+      bookingCheckoutEnabled,
+  );
   const { data: incomingBookings } = await (() => {
     let query = supabase
       .from("booking_requests")
       .select(
-        "id, title, body, placement, style_tags, preferred_city, preferred_dates, appointment_type_label, preferred_slot_label, deposit_amount_cents, platform_fee_cents, total_cents, currency, status, payment_status, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at, accepted_at, declined_at, client:profiles!booking_requests_client_id_fkey(username, display_name, avatar_url)",
+        "id, title, body, placement, style_tags, preferred_city, preferred_dates, appointment_type_label, preferred_slot_label, deposit_amount_cents, platform_fee_cents, total_cents, currency, fee_payer, payment_charge_model, refunded_amount_cents, refunded_platform_fee_cents, status, payment_status, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at, accepted_at, declined_at, client:profiles!booking_requests_client_id_fkey(username, display_name, avatar_url)",
       )
       .eq("artist_id", claims.sub);
 
@@ -799,13 +912,17 @@ export default async function AccountPage({
           currency: string;
           declined_at: string | null;
           deposit_amount_cents: number;
+          fee_payer: string;
           id: string;
+          payment_charge_model: string;
           payment_status: string;
           placement: string | null;
           platform_fee_cents: number;
           preferred_city: string | null;
           preferred_dates: string | null;
           preferred_slot_label: string | null;
+          refunded_amount_cents: number;
+          refunded_platform_fee_cents: number;
           scheduled_end_at: string | null;
           scheduled_start_at: string | null;
           scheduled_timezone: string | null;
@@ -873,7 +990,7 @@ export default async function AccountPage({
     let query = supabase
       .from("booking_requests")
       .select(
-        "id, title, body, placement, style_tags, preferred_city, preferred_dates, appointment_type_label, preferred_slot_label, deposit_amount_cents, platform_fee_cents, total_cents, currency, status, payment_status, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at, accepted_at, declined_at, artist:profiles!booking_requests_artist_id_fkey(username, display_name, avatar_url)",
+        "id, title, body, placement, style_tags, preferred_city, preferred_dates, appointment_type_label, preferred_slot_label, deposit_amount_cents, platform_fee_cents, total_cents, currency, fee_payer, payment_charge_model, refunded_amount_cents, refunded_platform_fee_cents, status, payment_status, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at, accepted_at, declined_at, artist:profiles!booking_requests_artist_id_fkey(username, display_name, avatar_url)",
       )
       .eq("client_id", claims.sub);
 
@@ -899,13 +1016,17 @@ export default async function AccountPage({
           currency: string;
           declined_at: string | null;
           deposit_amount_cents: number;
+          fee_payer: string;
           id: string;
+          payment_charge_model: string;
           payment_status: string;
           placement: string | null;
           platform_fee_cents: number;
           preferred_city: string | null;
           preferred_dates: string | null;
           preferred_slot_label: string | null;
+          refunded_amount_cents: number;
+          refunded_platform_fee_cents: number;
           scheduled_end_at: string | null;
           scheduled_start_at: string | null;
           scheduled_timezone: string | null;
@@ -1116,7 +1237,7 @@ export default async function AccountPage({
           <p className="text-sm leading-6 text-[var(--muted-strong)]">
             Booking requests are request-first. Artists and studios accept or
             decline here; deposit checkout opens only after acceptance and will
-            include the TTC processing fee.
+            charge the client the exact deposit amount.
           </p>
           <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
             <Link
@@ -1154,6 +1275,50 @@ export default async function AccountPage({
 
           {canManageBookingSettings ? (
             <>
+            <div className="mt-5 border-y border-[var(--card-rim)] py-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
+                    Booking payment setup
+                  </p>
+                  <h3 className="mt-1 text-base font-bold">
+                    {bookingPaymentReady
+                      ? "Ready for deposit payments"
+                      : bookingProviderPaymentReady
+                        ? "Provider setup complete"
+                        : "Setup required"}
+                  </h3>
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-[var(--muted)]">
+                    Clients pay the exact deposit amount. TTC deducts a 2% application fee
+                    from the provider side, and payment processing fees are separate.
+                  </p>
+                  {!bookingProviderPaymentReady &&
+                  bookingPaymentAccount?.disabled_reason ? (
+                    <p className="mt-2 text-xs font-semibold text-[var(--danger)]">
+                      Your payment provider needs more information before deposits can open.
+                    </p>
+                  ) : null}
+                </div>
+                {!bookingProviderPaymentReady && bookingConnectEnabled ? (
+                  <form action="/api/stripe/connect/onboarding" method="post">
+                    <button
+                      className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)]"
+                      type="submit"
+                    >
+                      {bookingPaymentAccount ? "Continue setup" : "Start setup"}
+                    </button>
+                  </form>
+                ) : (
+                  <span className="w-fit rounded-md border border-[var(--card-rim)] px-3 py-2 text-xs font-bold">
+                    {bookingPaymentReady
+                      ? "Payment ready"
+                      : bookingProviderPaymentReady
+                        ? "Release pending"
+                        : "Not open yet"}
+                  </span>
+                )}
+              </div>
+            </div>
             <form
               action={updateBookingSettings}
               className="mt-5 rounded-lg border border-[color-mix(in_srgb,var(--gold)_32%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-4"
@@ -2067,18 +2232,7 @@ export default async function AccountPage({
                           {booking.body}
                         </p>
                         <div className="mt-3 grid gap-1 text-xs leading-5 text-[var(--muted-strong)]">
-                          <p>
-                            Deposit: {money(booking.deposit_amount_cents, booking.currency)}
-                            {" "}+ TTC fee{" "}
-                            {money(booking.platform_fee_cents, booking.currency)}
-                          </p>
-                          <p>
-                            Total checkout:{" "}
-                            {money(
-                              booking.deposit_amount_cents + booking.platform_fee_cents,
-                              booking.currency,
-                            )}
-                          </p>
+                          <BookingMoneyDetails booking={booking} providerView />
                           {booking.placement ? <p>Placement: {booking.placement}</p> : null}
                           {booking.style_tags ? <p>Style: {booking.style_tags}</p> : null}
                           {booking.preferred_city ? <p>City: {booking.preferred_city}</p> : null}
@@ -2184,8 +2338,8 @@ export default async function AccountPage({
                                 placeholder="Example: 100"
                               />
                               <span className="text-[11px] font-normal leading-4 text-[var(--muted-strong)]">
-                                This is the deposit checkout amount before the
-                                TTC fee is added.
+                                The client pays this amount. TTC deducts 2% from
+                                the provider side; payment processing fees are separate.
                               </span>
                             </label>
                             <details className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3">
@@ -2331,18 +2485,7 @@ export default async function AccountPage({
                         {booking.body}
                       </p>
                       <div className="mt-3 grid gap-1 text-xs leading-5 text-[var(--muted-strong)]">
-                        <p>
-                          Deposit: {money(booking.deposit_amount_cents, booking.currency)}
-                          {" "}+ TTC fee{" "}
-                          {money(booking.platform_fee_cents, booking.currency)}
-                        </p>
-                        <p>
-                          Total checkout:{" "}
-                          {money(
-                            booking.deposit_amount_cents + booking.platform_fee_cents,
-                            booking.currency,
-                          )}
-                        </p>
+                        <BookingMoneyDetails booking={booking} providerView={false} />
                         <p>Payment: {bookingPaymentStatusLabel(booking.payment_status)}</p>
                         {booking.accepted_at ? (
                           <p>Accepted: {formatDate(booking.accepted_at)}</p>

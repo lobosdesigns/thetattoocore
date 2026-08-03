@@ -2,6 +2,35 @@
 
 Use this as an internal checklist before answering Google Play Data Safety, App Store privacy nutrition labels, payment-policy reviews, or privacy-policy updates. Final answers should be checked against the exact live build and current store questionnaires.
 
+## Booking Deposit Data Boundary - August 3, 2026
+
+The staged booking payment model is not live. Before enabling it, recheck the
+exact deployed web/native build and current store questionnaires against this
+data map:
+
+- TTC stores booking participants, appointment request details, displayed
+  deposit amount, provider-paid TTC application fee, charge model, payment and
+  refund state, dispute hold, Checkout/payment references, private connected
+  account and application-fee references, signed webhook account scope, and
+  audit/reconciliation records.
+- Member surfaces show booking amount, TTC fee disclosure, refund totals, and
+  sanitized readiness/state. Connected account, application-fee, payment,
+  refund, dispute, and webhook identifiers remain private operations data.
+- Stripe-hosted onboarding and payment pages process provider identity,
+  business, tax, bank/payout, and customer card data under Stripe's terms. TTC
+  must not collect raw identity, bank, routing, card, or payout credentials in
+  its own forms, logs, screenshots, analytics, support copy, or repo evidence.
+- Booking payment records may be shared with Stripe to create, reconcile,
+  refund, and dispute the provider's direct charge. Limit metadata to the
+  server-selected booking and participant references needed for reconciliation.
+- Retention and deletion decisions must preserve only the payment, refund,
+  dispute, fraud, tax/legal-hold, and audit records required by the approved
+  policy. Deleting a profile must not silently destroy unresolved money or
+  dispute evidence.
+- App Store Privacy, Google Play Data Safety, public Privacy, Terms, and support
+  answers must be updated and reviewed before the booking gates change. Source
+  implementation alone is not evidence that production collection has begun.
+
 ## Current Seller-Owned Merch Position - August 2, 2026
 
 For a new seller-owned external Merch purchase, TTC stores the seller's protected
@@ -19,7 +48,7 @@ enabled build and public Privacy copy before changing any store answer.
 - Profile data: avatar, bio, account type, public profile settings, website/social links, coarse city/region/country settings, language preference, appearance preference, and optional artist-to-studio/shop link.
 - User-generated content: 4U posts, Gossip posts, Stories, Stuff listings, Gigs, Merch products, comments, replies, Help Center questions/comments, reports, saves, follows, blocks, and direct messages.
 - Media: profile photos, post/listing/gig/story/comment/DM image or GIF uploads, short videos where supported, and private verification/license documents.
-- Commerce and payment records: protected seller listing links and acceptance records for the selected seller-owned model; historical TTC checkout/session identifiers, order states, platform fees, fulfillment/refund status, and payment event references; and separate gated ad and booking-deposit states. Raw card, bank, routing, payout, external receipt, external shipping, and external transaction data must not be collected in TTC forms.
+- Commerce and payment records: protected seller listing links and acceptance records for the selected seller-owned model; historical TTC checkout/session identifiers, order states, platform fees, fulfillment/refund status, and payment event references; and separate gated ad and booking-deposit amounts, charge routing, refund totals, disputes, and private reconciliation references. Raw card, bank, routing, payout, external receipt, external shipping, and external transaction data must not be collected in TTC forms. Raw provider identity documents must remain in the hosted onboarding flow and outside TTC forms.
 - Verification data: license or certification name, optional license number, issuing location, expiration date, verification status, reviewer notes, and private uploaded proof documents.
 - Safety and moderation data: reports, moderation status, warnings/escalations, blocks, admin audit records, account deletion requests, and related support context.
 - Usage and preference data: notifications, unread counts, story views/reactions, ad click/impression events, saved items, likes, follows, and coarse discovery preferences.

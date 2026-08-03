@@ -1341,8 +1341,15 @@ export async function respondBookingRequest(formData: FormData) {
     decision === "accept" && finalDepositInputCents != null
       ? finalDepositInputCents
       : booking.deposit_amount_cents;
+  if (
+    decision === "accept" &&
+    finalDepositAmountCents > 0 &&
+    finalDepositAmountCents < 50
+  ) {
+    redirect(bookingPath("Booking deposits must be at least $0.50."));
+  }
   const finalPlatformFeeCents = calculatePlatformFeeCents(finalDepositAmountCents);
-  const finalTotalCents = finalDepositAmountCents + finalPlatformFeeCents;
+  const finalTotalCents = finalDepositAmountCents;
 
   if (decision === "accept" && scheduledStartAt && scheduledEndAt) {
     const { data: blackoutConflict } = await supabase
@@ -1406,7 +1413,9 @@ export async function respondBookingRequest(formData: FormData) {
       artist_note: artistNote || null,
       deposit_amount_cents: finalDepositAmountCents,
       declined_at: decision === "decline" ? now : null,
+      fee_payer: "provider",
       needs_changes_at: decision === "changes" ? now : null,
+      payment_charge_model: "connected_direct",
       platform_fee_cents: finalPlatformFeeCents,
       ...scheduledFields,
       status: nextStatus,
@@ -1453,7 +1462,7 @@ export async function respondBookingRequest(formData: FormData) {
       body:
         decision === "accept"
           ? finalDepositAmountCents > 0
-            ? `Accepted. Deposit checkout is the next step: ${dollars(finalDepositAmountCents)} plus TTC fee ${dollars(finalPlatformFeeCents)}.${scheduledStartAt ? " Appointment time was added." : ""}`
+            ? `Accepted. Deposit checkout is the next step: ${dollars(finalDepositAmountCents)}. The client pays the deposit amount. TTC deducts a 2% platform fee from the provider side; payment processing fees are separate.${scheduledStartAt ? " Appointment time was added." : ""}`
             : `Accepted.${scheduledStartAt ? " Appointment time was added." : " Deposit checkout can be added next if needed."}`
           : decision === "changes"
             ? artistNote
