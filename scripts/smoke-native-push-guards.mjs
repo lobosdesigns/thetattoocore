@@ -252,6 +252,7 @@ const checks = [
     ok:
       source.qaAccess.includes('{ build: "4", version: "1.0.3" }') &&
       source.qaAccess.includes('{ build: "5", version: "1.0.4" }') &&
+      source.qaAccess.includes('{ build: "6", version: "1.0.5" }') &&
       source.qaAccess.includes('{ build: "4", version: "1.0" }') &&
       source.qaAccess.includes('{ build: "5", version: "1.0" }') &&
       source.qaAccess.includes("allowedBuilds.some(") &&

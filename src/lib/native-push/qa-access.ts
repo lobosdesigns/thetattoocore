@@ -12,6 +12,7 @@ export const nativePushQaBuilds: Record<
   android: [
     { build: "4", version: "1.0.3" },
     { build: "5", version: "1.0.4" },
+    { build: "6", version: "1.0.5" },
   ],
   ios: [
     { build: "4", version: "1.0" },
