@@ -356,7 +356,7 @@ const checks = [
     path: "/api/stripe/connect/onboarding",
     status: [303],
     redirectIncludes: "/login",
-    locationIncludes: ["return_to=%2Faccount%23order-settings"],
+    locationIncludes: ["return_to=%2Faccount%23booking-settings"],
     redirect: "manual",
   },
   {
