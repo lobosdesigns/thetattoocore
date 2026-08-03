@@ -3833,6 +3833,8 @@ export async function editMerchProduct(formData: FormData) {
     })
     .eq("id", productId)
     .eq("seller_id", userId)
+    .eq("status", product.status)
+    .eq("is_official", false)
     .select("id")
     .maybeSingle<{ id: string }>();
 

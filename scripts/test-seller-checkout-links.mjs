@@ -2280,8 +2280,10 @@ async function runMerchActionContracts(actions) {
         [
           { column: "id", operator: "eq", value: productId },
           { column: "seller_id", operator: "eq", value: testIds.actor },
+          { column: "status", operator: "eq", value: "active" },
+          { column: "is_official", operator: "eq", value: false },
         ],
-        "zero-row edit trusted write was not exact ID-and-seller scoped",
+        "zero-row edit trusted write did not recheck the authorized row snapshot",
       );
       assertTrustedEditPayload(updates[0]);
       assertModuleValue(scenario.logs, [["Merch product update failed."]]);
@@ -2361,8 +2363,10 @@ async function runMerchActionContracts(actions) {
           [
             { column: "id", operator: "eq", value: productId },
             { column: "seller_id", operator: "eq", value: testIds.actor },
+            { column: "status", operator: "eq", value: status },
+            { column: "is_official", operator: "eq", value: false },
           ],
-          status + " edit trusted write was not exact ID-and-seller scoped",
+          status + " edit trusted write did not recheck the authorized row snapshot",
         );
         assertModuleValue(scenario.logs, []);
         assertNoSensitiveOutput(scenario, location, [

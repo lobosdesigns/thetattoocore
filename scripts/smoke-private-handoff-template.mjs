@@ -146,7 +146,7 @@ const checks = [
         '"test:seller-link-rollout-evidence": "node scripts/test-payment-go-live-gate.mjs"',
       ) &&
       packageJson.includes(
-        '"verify:seller-link-rollout-evidence": "npm run test:seller-link-rollout-evidence && node scripts/smoke-payment-cutover-evidence.mjs --strict"',
+        '"verify:seller-link-rollout-evidence": "npm run smoke:env && npm run test:seller-link-rollout-evidence && node scripts/smoke-payment-cutover-evidence.mjs --strict"',
       ) &&
       !packageJson.includes('"verify:payment-go-live"') &&
       !packageJson.includes('"verify:payment-production-evidence"') &&
