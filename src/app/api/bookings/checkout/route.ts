@@ -1,15 +1,19 @@
 import { revalidatePath } from "next/cache";
 import { checkRateLimit, noStoreRedirect } from "@/lib/http/reliability";
-import { platformFeeDescription } from "@/lib/payments/fees";
+import { calculatePlatformFeeCents } from "@/lib/payments/fees";
 import { siteName, siteUrl } from "@/lib/site";
 import {
-  createStripeCheckoutSession,
-  expireCheckoutSessionBeforeRollback,
+  createConnectedCheckoutSession,
+  expireConnectedCheckoutSessionBeforeRollback,
   StripeCheckoutRequestError,
   type StripeCheckoutSession,
 } from "@/lib/stripe/checkout-session";
 import { stripeCheckoutCreationEnabled } from "@/lib/stripe/release-gates";
-import { stripeCheckoutPreflight } from "@/lib/stripe/server";
+import {
+  stripeConnectWebhookSigningSecretConfigured,
+  stripeCheckoutPreflight,
+  stripeWebhookSigningSecretConfigured,
+} from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -22,13 +26,21 @@ type BookingRequest = {
   client_id: string;
   currency: string;
   deposit_amount_cents: number;
+  fee_payer: string;
   id: string;
+  payment_charge_model: string;
   payment_status: string;
   platform_fee_cents: number;
   status: string;
   stripe_checkout_session_id: string | null;
+  stripe_connected_account_id: string | null;
   title: string;
   total_cents: number;
+};
+
+type ConnectedAccount = {
+  requirements_currently_due: unknown;
+  stripe_account_id: string;
 };
 
 function safeInternalReturnPath(value: FormDataEntryValue | null) {
@@ -89,7 +101,7 @@ function redirectWithMessage(message: string, returnTo: string | null = null) {
 
 async function createBookingCheckoutSession(
   booking: BookingRequest,
-  checkoutCreationEnabled: boolean,
+  connectedAccountId: string,
   idempotencyKey: string,
   returnTo: string | null,
   secretKey: string,
@@ -120,16 +132,21 @@ async function createBookingCheckoutSession(
     "metadata[booking_deposit_cents]": String(booking.deposit_amount_cents),
     "metadata[booking_request_id]": booking.id,
     "metadata[client_id]": booking.client_id,
+    "metadata[fee_payer]": booking.fee_payer,
     "metadata[payment_kind]": "booking_deposit",
+    "metadata[payment_charge_model]": booking.payment_charge_model,
     "metadata[platform_fee_cents]": String(booking.platform_fee_cents),
     "mode": "payment",
+    "payment_intent_data[application_fee_amount]": String(booking.platform_fee_cents),
     "payment_intent_data[metadata][artist_id]": booking.artist_id,
     "payment_intent_data[metadata][booking_deposit_cents]": String(
       booking.deposit_amount_cents,
     ),
     "payment_intent_data[metadata][booking_request_id]": booking.id,
     "payment_intent_data[metadata][client_id]": booking.client_id,
+    "payment_intent_data[metadata][fee_payer]": booking.fee_payer,
     "payment_intent_data[metadata][payment_kind]": "booking_deposit",
+    "payment_intent_data[metadata][payment_charge_model]": booking.payment_charge_model,
     "payment_intent_data[metadata][platform_fee_cents]": String(
       booking.platform_fee_cents,
     ),
@@ -138,23 +155,9 @@ async function createBookingCheckoutSession(
     "cancel_url": cancelUrl,
   });
 
-  if (booking.platform_fee_cents > 0) {
-    body.set("line_items[1][price_data][currency]", booking.currency.toLowerCase());
-    body.set("line_items[1][price_data][product_data][name]", `${siteName} platform fee`);
-    body.set(
-      "line_items[1][price_data][product_data][description]",
-      platformFeeDescription("booking"),
-    );
-    body.set(
-      "line_items[1][price_data][unit_amount]",
-      String(booking.platform_fee_cents),
-    );
-    body.set("line_items[1][quantity]", "1");
-  }
-
-  return createStripeCheckoutSession({
+  return createConnectedCheckoutSession({
     body,
-    checkoutCreationEnabled,
+    connectedAccountId,
     idempotencyKey,
     secretKey,
   });
@@ -209,9 +212,10 @@ export async function POST(request: Request) {
   }
 
   const secretKey = process.env.STRIPE_SECRET_KEY;
-  const canProcessStripeWebhooks = Boolean(
-    process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY,
-  );
+  const canProcessStripeWebhooks =
+    stripeWebhookSigningSecretConfigured() &&
+    stripeConnectWebhookSigningSecretConfigured() &&
+    Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
   if (!secretKey) {
     return redirectWithMessage(
@@ -236,10 +240,18 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data: booking, error } = await supabase
+  const adminSupabase = createAdminClient();
+  if (!adminSupabase) {
+    return redirectWithMessage(
+      "Booking checkout is temporarily unavailable. Please try again later.",
+      returnTo,
+    );
+  }
+
+  const { data: booking, error } = await adminSupabase
     .from("booking_requests")
     .select(
-      "id, artist_id, client_id, title, status, payment_status, deposit_amount_cents, platform_fee_cents, total_cents, currency, stripe_checkout_session_id",
+      "id, artist_id, client_id, title, status, payment_status, deposit_amount_cents, platform_fee_cents, total_cents, currency, fee_payer, payment_charge_model, stripe_checkout_session_id, stripe_connected_account_id",
     )
     .eq("id", bookingId)
     .eq("client_id", claims.sub)
@@ -256,7 +268,13 @@ export async function POST(request: Request) {
     );
   }
 
-  if (booking.deposit_amount_cents <= 0 || booking.total_cents <= 0) {
+  if (
+    booking.deposit_amount_cents <= 0 ||
+    booking.total_cents !== booking.deposit_amount_cents ||
+    booking.platform_fee_cents !== calculatePlatformFeeCents(booking.deposit_amount_cents) ||
+    booking.fee_payer !== "provider" ||
+    booking.payment_charge_model !== "connected_direct"
+  ) {
     return redirectWithMessage("This booking does not have a deposit to pay yet.", returnTo);
   }
 
@@ -275,10 +293,29 @@ export async function POST(request: Request) {
     return redirectWithMessage("That booking deposit is not ready for checkout.", returnTo);
   }
 
-  const adminSupabase = createAdminClient();
-  if (!adminSupabase) {
+  const { data: connectedAccount, error: connectedAccountError } =
+    await adminSupabase
+      .from("stripe_connect_accounts")
+      .select("stripe_account_id, requirements_currently_due")
+      .eq("profile_id", booking.artist_id)
+      .eq("livemode", checkoutPreflight.actual)
+      .eq("charges_enabled", true)
+      .eq("payouts_enabled", true)
+      .eq("details_submitted", true)
+      .is("disabled_reason", null)
+      .maybeSingle<ConnectedAccount>();
+
+  if (
+    connectedAccountError ||
+    !connectedAccount ||
+    !Array.isArray(connectedAccount.requirements_currently_due) ||
+    connectedAccount.requirements_currently_due.length > 0
+  ) {
+    if (connectedAccountError) {
+      console.error("Booking provider payment readiness lookup failed.", connectedAccountError);
+    }
     return redirectWithMessage(
-      "Booking checkout is temporarily unavailable. Please try again later.",
+      "This provider is not ready to accept booking deposits yet.",
       returnTo,
     );
   }
@@ -287,6 +324,7 @@ export async function POST(request: Request) {
     .rpc("reserve_booking_deposit_checkout", {
       p_booking_id: booking.id,
       p_client_id: claims.sub,
+      p_connected_account_id: connectedAccount.stripe_account_id,
     })
     .maybeSingle<BookingRequest>();
 
@@ -312,6 +350,7 @@ export async function POST(request: Request) {
         payment_status: booking.payment_status,
         status: booking.status,
         stripe_checkout_session_id: booking.stripe_checkout_session_id,
+        stripe_connected_account_id: booking.stripe_connected_account_id,
         updated_at: new Date().toISOString(),
       })
       .eq("id", booking.id)
@@ -319,6 +358,7 @@ export async function POST(request: Request) {
       .eq("payment_status", "checkout_started")
       .eq("status", "deposit_pending")
       .is("stripe_checkout_session_id", null)
+      .eq("stripe_connected_account_id", connectedAccount.stripe_account_id)
       .select("id")
       .maybeSingle<{ id: string }>();
 
@@ -339,7 +379,7 @@ export async function POST(request: Request) {
   try {
     session = await createBookingCheckoutSession(
       reservedBooking,
-      checkoutCreationEnabled,
+      connectedAccount.stripe_account_id,
       `ttc_booking_${booking.id}_${checkoutAttemptId}`,
       returnTo,
       secretKey,
@@ -376,7 +416,8 @@ export async function POST(request: Request) {
   }
 
   const releaseSessionAndReservation = () =>
-    expireCheckoutSessionBeforeRollback({
+    expireConnectedCheckoutSessionBeforeRollback({
+      connectedAccountId: connectedAccount.stripe_account_id,
       idempotencyKey: `ttc_booking_expire_${booking.id}_${checkoutAttemptId}`,
       rollback: rollBackReservation,
       secretKey,
@@ -413,6 +454,7 @@ export async function POST(request: Request) {
     .eq("payment_status", "checkout_started")
     .eq("status", "deposit_pending")
     .is("stripe_checkout_session_id", null)
+    .eq("stripe_connected_account_id", connectedAccount.stripe_account_id)
     .select("id")
     .maybeSingle<{ id: string }>();
 

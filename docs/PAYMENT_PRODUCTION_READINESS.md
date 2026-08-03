@@ -1,5 +1,75 @@
 # Payment Production Readiness
 
+## Booking Deposit Candidate - August 3, 2026
+
+Status: **CODE READY FOR REVIEW, NOT LIVE**. The booking candidate has not been
+merged, migrated, deployed, enabled, or used for a live payment.
+
+- Accepted booking requests use Stripe Connect direct charges on the verified
+  artist or studio account. The client pays exactly the displayed deposit.
+  TTC deducts a disclosed 2% application fee from provider funds, while Stripe
+  processing fees remain separate from the TTC fee.
+- Booking creation, Checkout Session creation, webhook reconciliation, admin
+  expiration, refunds, disputes, and application-fee refund totals all derive
+  connected-account routing from trusted server/database state. Caller-supplied
+  amount, fee, account, payment status, and return URL values do not control the
+  charge.
+- Full direct-charge refunds use the same connected-account context and request
+  application-fee reversal. Partial refund and application-fee totals are
+  reconciled from signed events; ambiguous or duplicate outcomes remain held
+  for review instead of claiming success.
+- Connected account identifiers, application-fee identifiers, payment
+  references, webhook account scope, and refund totals remain private payment
+  operations data. Member and admin pages show only sanitized readiness and
+  reconciliation states.
+- Booking payment readiness requires a ready provider account, matching payment
+  mode, valid account and Connected accounts webhook signing configuration,
+  and the exact booking checkout gate. Provider onboarding also fails closed
+  without the separate Connected accounts webhook configuration.
+- The August 3 Stripe dashboard audit found the existing account destination
+  active but no **Events on Connected accounts** destination. Connect onboarding
+  also still requires Payments capability configuration and an owner-reviewed
+  acknowledgement. These are external blockers, not completed work.
+- Source defaults remain fail closed:
+  `STRIPE_EXPECTED_LIVEMODE=false`,
+  `STRIPE_CHECKOUT_CREATION_ENABLED=false`,
+  `STRIPE_BOOKING_CHECKOUT_ENABLED=false`, and
+  `STRIPE_CONNECT_ONBOARDING_ENABLED=false`. The distinct
+  `STRIPE_CONNECT_WEBHOOK_SECRET` has no value in committed configuration.
+- Production migration
+  `supabase/migrations/20260803150000_booking_connected_direct_charges.sql`,
+  Worker deployment, Stripe dashboard changes, secrets, gate changes, provider
+  onboarding, and any charge/refund remain separate owner-approval boundaries.
+
+### Controlled Booking Rollout Sequence
+
+1. Review and merge the exact booking candidate only after explicit owner
+   approval; keep every payment gate false.
+2. With separate approval, complete the Stripe Connect Payments capability and
+   any owner/legal acknowledgement without changing product or payout terms by
+   assumption.
+3. Create an **Events on Connected accounts** webhook destination at the
+   production webhook URL with the required connected-account events. Store its
+   distinct signing secret only in the production secret store and prove one
+   signed non-money event without exposing identifiers or secret values.
+4. Apply the booking migration only after explicit approval, then run read-only
+   schema, constraint, trigger, grant, RLS, function, and advisor verification.
+5. Upload and inspect an inactive Worker version with all payment gates false.
+   Confirm the source, bindings, mode, routes, and rollback before requesting
+   deployment approval.
+6. Deploy the reviewed version with booking and onboarding still false; run
+   no-side-effect public and authorized admin smoke.
+7. With separate approval, enable hosted onboarding for one verified artist or
+   studio and complete the provider flow. Do not collect identity, bank, card,
+   or payout credentials in TTC.
+8. After policy, Terms, Privacy, native exact-build, refund/dispute, and support
+   review passes, authorize one controlled booking checkout. Prove exact deposit
+   amount, 2% provider-paid TTC fee, signed event reconciliation, full refund,
+   application-fee reversal, and idempotent retry behavior.
+9. Enable broader booking checkout only after the pilot evidence passes. Prove
+   rollback by restoring the booking gate to false while delayed webhooks,
+   refunds, disputes, and reconciliation remain operational.
+
 ## Current Position - August 2, 2026
 
 - Seller-owned Stripe Payment Links are the selected physical-goods model. TTC does not create the new merchandise payment, order, tax, shipping, refund, dispute, payout, or receipt record.
@@ -114,9 +184,10 @@ Do not execute these historical TTC-owned pilot instructions. They preserve the 
 - Set `STRIPE_EXPECTED_LIVEMODE=true` only when the production keys and live webhook endpoint are ready; keep it `false` for test checkout so test and live payment updates cannot mix. Checkout routes require this explicit mode setting and compare it with the server payment key prefix before creating payment sessions. If the explicit mode setting is missing, checkout fails closed; webhooks fall back to the server payment key prefix and still reject mismatched payment updates. If neither source identifies the mode, webhooks fail closed before any payment state changes.
 - Keep `STRIPE_CHECKOUT_CREATION_ENABLED=false` until the separate launch approval. It is the rollback control for new checkout creation; do not remove the live expected mode, live key, or live webhook signing configuration when using it so post-checkout settlement and reconciliation continue.
 - Keep Official TTC Merch blocked until Stripe Tax is configured for the applicable registration and the private handoff records a current tax calculation. Source and route tests require automatic tax, tax-exclusive pricing, and `txcd_99999999` for the selected physical-goods pilot.
-- Configure the live webhook endpoint and verify `STRIPE_WEBHOOK_SECRET` has the expected endpoint-signing format in the production runtime. The production destination is `https://thetattoocore.com/api/stripe/webhook` and should listen for checkout, refund, dispute, and seller account status events. Checkout remains blocked if the signing value is missing or malformed, and format validation never replaces a signed live-event test.
-- Enable the live webhook events needed by the app: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `charge.refunded`, `refund.failed`, `charge.dispute.created`, `charge.dispute.updated`, `charge.dispute.closed`, `charge.dispute.funds_withdrawn`, `charge.dispute.funds_reinstated`, and `account.updated`.
-- The payment smoke guard cross-checks the webhook source and this readiness doc against that required event list so endpoint or handoff drift is reported by event name before a live-money cutover.
+- Keep the existing account destination at `https://thetattoocore.com/api/stripe/webhook` and verify `STRIPE_WEBHOOK_SECRET` has the expected signing format in the production runtime. Add a separate destination at the same URL that listens to **Events on Connected accounts**, and store its distinct signing secret as `STRIPE_CONNECT_WEBHOOK_SECRET`. Booking checkout remains blocked if either secret is absent; format validation never replaces a signed event test.
+- The account destination must include `application_fee.created` and `application_fee.refunded` in addition to the existing account-level events. The connected-account destination must include `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `charge.refunded`, `refund.failed`, `charge.dispute.created`, `charge.dispute.updated`, `charge.dispute.closed`, `charge.dispute.funds_withdrawn`, `charge.dispute.funds_reinstated`, and `account.updated`.
+- Across the two destinations, the app-required event set is: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `charge.refunded`, `refund.failed`, `charge.dispute.created`, `charge.dispute.updated`, `charge.dispute.closed`, `charge.dispute.funds_withdrawn`, `charge.dispute.funds_reinstated`, `account.updated`, `application_fee.created`, and `application_fee.refunded`.
+- The payment smoke guard cross-checks the webhook source and this readiness doc against that required event list so endpoint or handoff drift is reported by event name before a live-money cutover. The August 3 audit found the existing account destination active but no connected-account destination; that remains an external configuration blocker, not completed evidence.
 - Confirm `SUPABASE_SERVICE_ROLE_KEY` remains server-only and is never exposed to client bundles.
 - Do not use real card details merely to test live mode. After the separate go-live approval, the first production proof is a genuine authorized customer sale under normal terms.
 - Confirm Admin > Payments shows live webhook events, order states, ad payment states, booking deposit states, and ops warnings.

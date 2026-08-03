@@ -121,7 +121,7 @@ const moderationRoleExpectations = [
 
 function adminPaymentsCurrentMerchCopyIsSafe(source) {
   return (
-    source.includes("Legacy TTC seller payout readiness updated") &&
+    source.includes("Connected payment account updated") &&
     source.includes("Legacy TTC pending Merch checkouts over 24h") &&
     source.includes("seller-owned Payment Link") &&
     source.includes("seller handles payment, tax, shipping, returns, refunds, disputes, receipts, fulfillment, and purchase support") &&

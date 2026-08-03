@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import Stripe from "stripe";
 import { sendHostgatorEmail } from "@/lib/mail/hostgator";
 import { insertNotifications } from "@/lib/notification-write";
+import { calculatePlatformFeeCents } from "@/lib/payments/fees";
 import { siteName, siteUrl, supportEmail } from "@/lib/site";
 import {
   createStripeClient,
@@ -13,6 +14,11 @@ import {
 } from "@/lib/stripe/server";
 import { stripeConnectStatus } from "@/lib/stripe/connect";
 import { bookingPaidTransitionDecision } from "@/lib/stripe/checkout-session";
+import { bookingRefundAmountProgress } from "@/lib/stripe/booking-refund";
+import {
+  stripeWebhookAccountScope,
+  type StripeWebhookSource,
+} from "@/lib/stripe/webhook-account";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -35,6 +41,48 @@ function checkoutSessionIsSettled(
     event.type === "checkout.session.async_payment_succeeded" ||
     session.payment_status === "paid"
   );
+}
+
+async function verifyStripeWebhookEvent({
+  body,
+  signature,
+  stripe,
+}: {
+  body: string;
+  signature: string;
+  stripe: Stripe;
+}) {
+  const candidates: Array<{
+    secret: string;
+    source: StripeWebhookSource;
+  }> = [];
+  const platformSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const connectSecret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET;
+
+  if (stripeWebhookSigningSecretConfigured(platformSecret)) {
+    candidates.push({ secret: platformSecret!, source: "platform" });
+  }
+  if (stripeWebhookSigningSecretConfigured(connectSecret)) {
+    candidates.push({ secret: connectSecret!, source: "connect" });
+  }
+
+  for (const candidate of candidates) {
+    try {
+      const event = await stripe.webhooks.constructEventAsync(
+        body,
+        signature,
+        candidate.secret,
+        undefined,
+        stripeCryptoProvider,
+      );
+
+      return { event, source: candidate.source };
+    } catch {
+      // Try the other configured destination secret before rejecting.
+    }
+  }
+
+  return null;
 }
 
 type PaidOrderTransition = {
@@ -152,6 +200,7 @@ const disputeWebhookEvents = [
   "charge.dispute.funds_withdrawn",
   "charge.dispute.funds_reinstated",
 ] as const;
+const stripeApplicationFeePattern = /^fee_[A-Za-z0-9]{8,200}$/;
 
 function metadataCents(value: string | null | undefined, fallback: number) {
   const parsed = Number.parseInt(value ?? "", 10);
@@ -298,9 +347,7 @@ async function syncStripeConnectAccountFromWebhook(
   }
 
   if (!existingAccount) {
-    console.warn("Ignoring Stripe Connect account update for unknown account", {
-      stripeAccountId: account.id,
-    });
+    console.warn("Ignoring Stripe Connect account update for unknown account.");
     return;
   }
 
@@ -319,6 +366,208 @@ async function syncStripeConnectAccountFromWebhook(
   revalidatePath("/account");
   revalidatePath("/admin/users");
   revalidatePath("/admin/verification");
+}
+
+async function recordBookingApplicationFee({
+  applicationFee,
+  stripe,
+}: {
+  applicationFee: Stripe.ApplicationFee;
+  stripe: Stripe;
+}) {
+  const connectedAccountId =
+    typeof applicationFee.account === "string"
+      ? applicationFee.account
+      : applicationFee.account.id;
+  const validAccountScope = stripeWebhookAccountScope({
+    eventAccount: connectedAccountId,
+    source: "connect",
+  });
+  const chargeId =
+    typeof applicationFee.charge === "string"
+      ? applicationFee.charge
+      : applicationFee.charge.id;
+
+  if (
+    !validAccountScope ||
+    !chargeId ||
+    !stripeApplicationFeePattern.test(applicationFee.id) ||
+    applicationFee.currency.toLowerCase() !== "usd" ||
+    !Number.isInteger(applicationFee.amount) ||
+    !Number.isInteger(applicationFee.amount_refunded) ||
+    applicationFee.amount <= 0 ||
+    applicationFee.amount_refunded < 0 ||
+    applicationFee.amount_refunded > applicationFee.amount
+  ) {
+    throw new Error("Application fee account context was invalid.");
+  }
+
+  const charge = await stripe.charges.retrieve(
+    chargeId,
+    {},
+    { stripeAccount: connectedAccountId },
+  );
+  const bookingId = charge.metadata?.booking_request_id;
+  const paymentIntentId =
+    typeof charge.payment_intent === "string" ? charge.payment_intent : null;
+
+  if (
+    !bookingId ||
+    !paymentIntentId ||
+    charge.metadata?.payment_kind !== "booking_deposit" ||
+    charge.metadata?.payment_charge_model !== "connected_direct" ||
+    charge.metadata?.fee_payer !== "provider"
+  ) {
+    throw new Error("Application fee booking context was missing.");
+  }
+
+  const supabase = createAdminClient();
+  if (!supabase) {
+    throw new Error("Missing Supabase service role key for Stripe webhook.");
+  }
+
+  const { data: booking, error: bookingError } = await supabase
+    .from("booking_requests")
+    .select(
+      "id, platform_fee_cents, refunded_platform_fee_cents, stripe_application_fee_id, total_cents",
+    )
+    .eq("id", bookingId)
+    .eq("stripe_connected_account_id", connectedAccountId)
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .eq("payment_charge_model", "connected_direct")
+    .eq("fee_payer", "provider")
+    .maybeSingle<{
+      id: string;
+      platform_fee_cents: number;
+      refunded_platform_fee_cents: number;
+      stripe_application_fee_id: string | null;
+      total_cents: number;
+    }>();
+
+  if (
+    bookingError ||
+    !booking ||
+    booking.platform_fee_cents !== applicationFee.amount ||
+    booking.total_cents !== charge.amount ||
+    (booking.stripe_application_fee_id !== null &&
+      booking.stripe_application_fee_id !== applicationFee.id)
+  ) {
+    console.error("Webhook booking application fee lookup failed.");
+    throw new Error("Could not match booking application fee.");
+  }
+
+  const refundProgress = bookingRefundAmountProgress({
+    currentAmount: booking.refunded_platform_fee_cents,
+    incomingAmount: applicationFee.amount_refunded,
+    totalAmount: applicationFee.amount,
+  });
+
+  if (!refundProgress) {
+    throw new Error("Application fee refund progress was invalid.");
+  }
+
+  if (refundProgress === "stale") {
+    if (booking.stripe_application_fee_id !== applicationFee.id) {
+      throw new Error("Stale application fee identity did not match.");
+    }
+
+    return;
+  }
+
+  if (
+    refundProgress === "current" &&
+    booking.stripe_application_fee_id === applicationFee.id
+  ) {
+    return;
+  }
+
+  let updateQuery = supabase
+    .from("booking_requests")
+    .update({
+      refunded_platform_fee_cents: applicationFee.amount_refunded,
+      stripe_application_fee_id: applicationFee.id,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", booking.id)
+    .eq("stripe_connected_account_id", connectedAccountId)
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .eq(
+      "refunded_platform_fee_cents",
+      booking.refunded_platform_fee_cents,
+    );
+
+  updateQuery = booking.stripe_application_fee_id
+    ? updateQuery.eq("stripe_application_fee_id", applicationFee.id)
+    : updateQuery.is("stripe_application_fee_id", null);
+
+  const { data: updated, error } = await updateQuery
+    .select("id")
+    .maybeSingle<{ id: string }>();
+
+  if (error) {
+    console.error("Webhook booking application fee update failed.");
+    throw new Error("Could not record booking application fee.");
+  }
+
+  if (!updated) {
+    const { data: latest, error: latestError } = await supabase
+      .from("booking_requests")
+      .select(
+        "id, platform_fee_cents, refunded_platform_fee_cents, stripe_application_fee_id",
+      )
+      .eq("id", booking.id)
+      .eq("stripe_connected_account_id", connectedAccountId)
+      .eq("stripe_payment_intent_id", paymentIntentId)
+      .eq("payment_charge_model", "connected_direct")
+      .eq("fee_payer", "provider")
+      .maybeSingle<{
+        id: string;
+        platform_fee_cents: number;
+        refunded_platform_fee_cents: number;
+        stripe_application_fee_id: string | null;
+      }>();
+    const latestProgress = latest
+      ? bookingRefundAmountProgress({
+          currentAmount: latest.refunded_platform_fee_cents,
+          incomingAmount: applicationFee.amount_refunded,
+          totalAmount: applicationFee.amount,
+        })
+      : null;
+
+    if (
+      latestError ||
+      !latest ||
+      latest.platform_fee_cents !== applicationFee.amount ||
+      latest.stripe_application_fee_id !== applicationFee.id ||
+      !latestProgress ||
+      latestProgress === "advance"
+    ) {
+      console.error("Webhook booking application fee race check failed.");
+      throw new Error("Could not confirm booking application fee.");
+    }
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/admin/payments");
+}
+
+async function recordLatestBookingApplicationFee({
+  applicationFeeId,
+  stripe,
+}: {
+  applicationFeeId: string;
+  stripe: Stripe;
+}) {
+  if (!stripeApplicationFeePattern.test(applicationFeeId)) {
+    throw new Error("Application fee identity was invalid.");
+  }
+
+  const applicationFee = await stripe.applicationFees.retrieve(applicationFeeId);
+  if (applicationFee.id !== applicationFeeId) {
+    throw new Error("Application fee retrieval did not match.");
+  }
+
+  await recordBookingApplicationFee({ applicationFee, stripe });
 }
 
 async function notifyMerchSellersAboutPaidOrders(
@@ -638,9 +887,11 @@ async function markAdCheckoutSession({
 }
 
 async function markBookingCheckoutSession({
+  connectedAccountId,
   session,
   status,
 }: {
+  connectedAccountId: string;
   session: Stripe.Checkout.Session;
   status: "cancelled" | "paid" | "payment_failed";
 }) {
@@ -659,8 +910,30 @@ async function markBookingCheckoutSession({
   const platformFeeCents = metadataCents(session.metadata?.platform_fee_cents, 0);
   const depositAmountCents = metadataCents(
     session.metadata?.booking_deposit_cents,
-    Math.max(0, (session.amount_total ?? 0) - platformFeeCents),
+    connectedAccountId === "platform"
+      ? Math.max(0, (session.amount_total ?? 0) - platformFeeCents)
+      : session.amount_total ?? 0,
   );
+  const connectedDirect = connectedAccountId !== "platform";
+
+  if (
+    status !== "paid" &&
+    (session.payment_status !== "unpaid" ||
+      !["complete", "expired"].includes(session.status ?? ""))
+  ) {
+    throw new Error("Unpaid booking checkout was not safely closed.");
+  }
+
+  if (
+    connectedDirect &&
+    (session.metadata?.fee_payer !== "provider" ||
+      session.metadata?.payment_charge_model !== "connected_direct" ||
+      session.amount_total !== depositAmountCents ||
+      platformFeeCents !== calculatePlatformFeeCents(depositAmountCents))
+  ) {
+    throw new Error("Connected booking checkout identity did not match.");
+  }
+
   const updateValues = {
     payment_status: status === "cancelled" ? "payment_failed" : status,
     platform_fee_cents: platformFeeCents,
@@ -669,18 +942,35 @@ async function markBookingCheckoutSession({
     stripe_checkout_session_id: status === "paid" ? session.id : null,
     stripe_payment_intent_id:
       typeof session.payment_intent === "string" ? session.payment_intent : null,
-    total_cents: session.amount_total ?? depositAmountCents + platformFeeCents,
+    total_cents: connectedDirect
+      ? depositAmountCents
+      : session.amount_total ?? depositAmountCents + platformFeeCents,
     updated_at: now,
+    ...(connectedDirect && status !== "paid"
+      ? { stripe_connected_account_id: null }
+      : {}),
     ...(status === "paid" ? { paid_at: now } : {}),
   };
 
-  const { data: bookings, error } = await supabase
+  let bookingUpdate = supabase
     .from("booking_requests")
     .update(updateValues)
     .eq("id", bookingId)
     .eq("stripe_checkout_session_id", session.id)
     .eq("payment_status", "checkout_started")
-    .eq("status", "deposit_pending")
+    .eq("status", "deposit_pending");
+
+  bookingUpdate = connectedDirect
+    ? bookingUpdate
+        .eq("stripe_connected_account_id", connectedAccountId)
+        .eq("fee_payer", "provider")
+        .eq("payment_charge_model", "connected_direct")
+    : bookingUpdate
+        .is("stripe_connected_account_id", null)
+        .eq("fee_payer", "client")
+        .eq("payment_charge_model", "platform");
+
+  const { data: bookings, error } = await bookingUpdate
     .select("id, artist_id, client_id, title")
     .returns<BookingPaymentTransition[]>();
 
@@ -699,14 +989,20 @@ async function markBookingCheckoutSession({
     let existingPaidBookingError: unknown = null;
 
     if (paymentIntentId) {
-      const { data, error } = await supabase
+      let paidLookup = supabase
         .from("booking_requests")
         .select("id")
         .eq("id", bookingId)
         .eq("stripe_checkout_session_id", session.id)
         .eq("stripe_payment_intent_id", paymentIntentId)
         .eq("payment_status", "paid")
-        .eq("status", "deposit_paid")
+        .eq("status", "deposit_paid");
+
+      paidLookup = connectedDirect
+        ? paidLookup.eq("stripe_connected_account_id", connectedAccountId)
+        : paidLookup.is("stripe_connected_account_id", null);
+
+      const { data, error } = await paidLookup
         .maybeSingle<{ id: string }>();
 
       existingPaidBooking = data;
@@ -780,7 +1076,192 @@ async function markBookingCheckoutSession({
   revalidatePath("/account");
 }
 
-async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
+async function markConnectedBookingRefunded({
+  charge,
+  connectedAccountId,
+  stripe,
+}: {
+  charge: Stripe.Charge;
+  connectedAccountId: string;
+  stripe: Stripe;
+}) {
+  if (charge.metadata?.payment_kind !== "booking_deposit") return;
+
+  const paymentIntentId =
+    typeof charge.payment_intent === "string" ? charge.payment_intent : null;
+  const applicationFeeId =
+    typeof charge.application_fee === "string"
+      ? charge.application_fee
+      : charge.application_fee?.id;
+  const fullyRefunded = charge.amount_refunded >= charge.amount;
+
+  if (
+    !paymentIntentId ||
+    !applicationFeeId ||
+    !stripeApplicationFeePattern.test(applicationFeeId) ||
+    charge.metadata?.payment_charge_model !== "connected_direct" ||
+    charge.metadata?.fee_payer !== "provider" ||
+    charge.currency.toLowerCase() !== "usd" ||
+    !Number.isInteger(charge.amount) ||
+    !Number.isInteger(charge.amount_refunded) ||
+    charge.amount <= 0 ||
+    charge.amount_refunded <= 0 ||
+    charge.amount_refunded > charge.amount
+  ) {
+    throw new Error("Connected booking refund context was invalid.");
+  }
+
+  await recordLatestBookingApplicationFee({ applicationFeeId, stripe });
+
+  const supabase = createAdminClient();
+  if (!supabase) {
+    throw new Error("Missing Supabase service role key for Stripe webhook.");
+  }
+
+  const now = new Date().toISOString();
+  const { data: refundedBookings, error } = await supabase
+    .from("booking_requests")
+    .update({
+      payment_status: fullyRefunded ? "refunded" : "partially_refunded",
+      refunded_amount_cents: charge.amount_refunded,
+      status: fullyRefunded ? "accepted" : "deposit_paid",
+      updated_at: now,
+    })
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .eq("stripe_connected_account_id", connectedAccountId)
+    .eq("stripe_application_fee_id", applicationFeeId)
+    .eq("payment_charge_model", "connected_direct")
+    .eq("fee_payer", "provider")
+    .eq("total_cents", charge.amount)
+    .in("payment_status", ["paid", "partially_refunded"])
+    .lt("refunded_amount_cents", charge.amount_refunded)
+    .select("id, artist_id, client_id, title")
+    .returns<RefundedBookingTransition[]>();
+
+  if (error) {
+    console.error("Webhook connected booking refund status update failed.");
+    throw new Error("Could not update connected booking refund status.");
+  }
+
+  if (!refundedBookings?.length) {
+    const { data: existing, error: existingError } = await supabase
+      .from("booking_requests")
+      .select("id, payment_status, refunded_amount_cents, total_cents")
+      .eq("stripe_payment_intent_id", paymentIntentId)
+      .eq("stripe_connected_account_id", connectedAccountId)
+      .eq("stripe_application_fee_id", applicationFeeId)
+      .eq("payment_charge_model", "connected_direct")
+      .eq("fee_payer", "provider")
+      .eq("total_cents", charge.amount)
+      .maybeSingle<{
+        id: string;
+        payment_status: string;
+        refunded_amount_cents: number;
+        total_cents: number;
+      }>();
+
+    const existingProgress = existing
+      ? bookingRefundAmountProgress({
+          currentAmount: existing.refunded_amount_cents,
+          incomingAmount: charge.amount_refunded,
+          totalAmount: charge.amount,
+        })
+      : null;
+    const existingStatusMatches = existing
+      ? existing.refunded_amount_cents === existing.total_cents
+        ? existing.payment_status === "refunded"
+        : existing.refunded_amount_cents > 0 &&
+          existing.payment_status === "partially_refunded"
+      : false;
+
+    if (
+      existingError ||
+      !existing ||
+      !existingProgress ||
+      existingProgress === "advance" ||
+      !existingStatusMatches
+    ) {
+      console.error("Webhook connected booking refund idempotency check failed.");
+      throw new Error("Could not confirm connected booking refund status.");
+    }
+
+    return;
+  }
+
+  const body = fullyRefunded
+    ? "A full refund was recorded for this booking deposit."
+    : "A partial refund was recorded for this booking deposit.";
+  const titlePrefix = fullyRefunded
+    ? "Booking deposit refunded"
+    : "Booking deposit partially refunded";
+  const notifications = refundedBookings.flatMap((booking) => [
+    {
+      actor_id: null,
+      body,
+      href: "/account#booking-settings",
+      recipient_id: booking.client_id,
+      subject_id: booking.id,
+      subject_type: "booking_request",
+      title: `${titlePrefix}: ${booking.title}`.slice(0, 120),
+      type: fullyRefunded ? "booking_refunded" : "booking_partially_refunded",
+    },
+    {
+      actor_id: null,
+      body,
+      href: "/account#booking-settings",
+      recipient_id: booking.artist_id,
+      subject_id: booking.id,
+      subject_type: "booking_request",
+      title: `${titlePrefix}: ${booking.title}`.slice(0, 120),
+      type: fullyRefunded ? "booking_refunded" : "booking_partially_refunded",
+    },
+  ]);
+
+  await insertNotifications(notifications);
+
+  for (const booking of refundedBookings) {
+    await maybeSendPaymentEmail({
+      headerKind: fullyRefunded
+        ? "booking-refunded-client"
+        : "booking-partially-refunded-client",
+      htmlBody: `${body.slice(0, -1)}: ${booking.title}.`,
+      subject: fullyRefunded
+        ? `${siteName} booking deposit refunded`
+        : `${siteName} booking deposit partially refunded`,
+      supabase,
+      textBody: `${body.slice(0, -1)}: ${booking.title}.`,
+      userId: booking.client_id,
+    });
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/admin/payments");
+  revalidatePath("/messages");
+  revalidatePath("/notifications");
+}
+
+async function markRefunded({
+  accountScope,
+  charge,
+  stripe,
+}: {
+  accountScope: string;
+  charge: Stripe.Charge;
+  stripe: Stripe;
+}) {
+  if (accountScope !== "platform") {
+    await markConnectedBookingRefunded({
+      charge,
+      connectedAccountId: accountScope,
+      stripe,
+    });
+    return;
+  }
+
+  const paymentIntentId =
+    typeof charge.payment_intent === "string" ? charge.payment_intent : null;
+  if (!paymentIntentId) return;
+  const fullyRefunded = charge.amount_refunded >= charge.amount;
   const supabase = createAdminClient();
 
   if (!supabase) {
@@ -904,10 +1385,14 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
     .from("booking_requests")
     .update({
       payment_status: "refunded",
+      refunded_amount_cents: charge.amount_refunded,
       status: "accepted",
       updated_at: now,
     })
     .eq("stripe_payment_intent_id", paymentIntentId)
+    .eq("total_cents", charge.amount)
+    .eq("payment_charge_model", "platform")
+    .is("stripe_connected_account_id", null)
     .eq("payment_status", "paid")
     .select("id, artist_id, client_id, title")
     .returns<RefundedBookingTransition[]>();
@@ -965,11 +1450,13 @@ async function markRefunded(paymentIntentId: string, fullyRefunded: boolean) {
 }
 
 async function recordRefundProblem({
+  accountScope,
   failureReason,
   paymentIntentId,
   refundId,
   status,
 }: {
+  accountScope: string;
   failureReason: string | null;
   paymentIntentId: string;
   refundId: string;
@@ -981,25 +1468,47 @@ async function recordRefundProblem({
     throw new Error("Missing Supabase service role key for Stripe webhook.");
   }
 
-  const [merchResult, adResult, bookingResult] = await Promise.all([
-    supabase
-      .from("merch_orders")
-      .select("id, status")
-      .eq("stripe_payment_intent_id", paymentIntentId)
-      .returns<RefundProblemMerch[]>(),
-    supabase
-      .from("ad_campaigns")
-      .select("id, title, status, payment_status")
-      .eq("stripe_payment_intent_id", paymentIntentId)
-      .returns<RefundProblemAd[]>(),
-    supabase
+  let merchRows: RefundProblemMerch[] = [];
+  let adRows: RefundProblemAd[] = [];
+  let bookingRows: RefundProblemBooking[] = [];
+  let firstError: unknown = null;
+
+  if (accountScope === "platform") {
+    const [merchResult, adResult, bookingResult] = await Promise.all([
+      supabase
+        .from("merch_orders")
+        .select("id, status")
+        .eq("stripe_payment_intent_id", paymentIntentId)
+        .returns<RefundProblemMerch[]>(),
+      supabase
+        .from("ad_campaigns")
+        .select("id, title, status, payment_status")
+        .eq("stripe_payment_intent_id", paymentIntentId)
+        .returns<RefundProblemAd[]>(),
+      supabase
+        .from("booking_requests")
+        .select("id, title, status, payment_status")
+        .eq("stripe_payment_intent_id", paymentIntentId)
+        .eq("payment_charge_model", "platform")
+        .is("stripe_connected_account_id", null)
+        .returns<RefundProblemBooking[]>(),
+    ]);
+    merchRows = merchResult.data ?? [];
+    adRows = adResult.data ?? [];
+    bookingRows = bookingResult.data ?? [];
+    firstError = merchResult.error ?? adResult.error ?? bookingResult.error;
+  } else {
+    const bookingResult = await supabase
       .from("booking_requests")
       .select("id, title, status, payment_status")
       .eq("stripe_payment_intent_id", paymentIntentId)
-      .returns<RefundProblemBooking[]>(),
-  ]);
-  const firstError =
-    merchResult.error ?? adResult.error ?? bookingResult.error;
+      .eq("stripe_connected_account_id", accountScope)
+      .eq("payment_charge_model", "connected_direct")
+      .eq("fee_payer", "provider")
+      .returns<RefundProblemBooking[]>();
+    bookingRows = bookingResult.data ?? [];
+    firstError = bookingResult.error;
+  }
 
   if (firstError) {
     console.error("Webhook refund problem lookup failed.", firstError);
@@ -1013,7 +1522,7 @@ async function recordRefundProblem({
     refund_status: status,
   };
   const auditLogs = [
-    ...(merchResult.data ?? []).map((order) => ({
+    ...merchRows.map((order) => ({
       actor_id: null,
       event_type: "merch_refund_problem",
       metadata: {
@@ -1024,7 +1533,7 @@ async function recordRefundProblem({
       target_id: order.id,
       target_type: "merch_order",
     })),
-    ...(adResult.data ?? []).map((campaign) => ({
+    ...adRows.map((campaign) => ({
       actor_id: null,
       event_type: "ad_refund_problem",
       metadata: {
@@ -1036,7 +1545,7 @@ async function recordRefundProblem({
       target_id: campaign.id,
       target_type: "ad_campaign",
     })),
-    ...(bookingResult.data ?? []).map((booking) => ({
+    ...bookingRows.map((booking) => ({
       actor_id: null,
       event_type: "booking_refund_problem",
       metadata: {
@@ -1072,7 +1581,11 @@ function disputeChargeId(dispute: Stripe.Dispute) {
   return charge?.id ?? null;
 }
 
-async function disputePaymentIntentId(dispute: Stripe.Dispute, stripe: Stripe) {
+async function disputePaymentIntentId(
+  dispute: Stripe.Dispute,
+  stripe: Stripe,
+  accountScope: string,
+) {
   const paymentIntent = (
     dispute as Stripe.Dispute & {
       payment_intent?: string | Stripe.PaymentIntent | null;
@@ -1084,7 +1597,11 @@ async function disputePaymentIntentId(dispute: Stripe.Dispute, stripe: Stripe) {
   const chargeId = disputeChargeId(dispute);
   if (!chargeId) return null;
 
-  const charge = await stripe.charges.retrieve(chargeId);
+  const charge = await stripe.charges.retrieve(
+    chargeId,
+    {},
+    accountScope === "platform" ? {} : { stripeAccount: accountScope },
+  );
 
   return typeof charge.payment_intent === "string" ? charge.payment_intent : null;
 }
@@ -1124,15 +1641,21 @@ function disputeAuditSummary({
 }
 
 async function recordPaymentDispute({
+  accountScope,
   dispute,
   eventType,
   stripe,
 }: {
+  accountScope: string;
   dispute: Stripe.Dispute;
   eventType: string;
   stripe: Stripe;
 }) {
-  const paymentIntentId = await disputePaymentIntentId(dispute, stripe);
+  const paymentIntentId = await disputePaymentIntentId(
+    dispute,
+    stripe,
+    accountScope,
+  );
 
   if (!paymentIntentId) return;
 
@@ -1152,28 +1675,51 @@ async function recordPaymentDispute({
     payment_dispute_updated_at: new Date().toISOString(),
   };
 
-  const [merchResult, adResult, bookingResult] = await Promise.all([
-    supabase
-      .from("merch_orders")
-      .update(disputeUpdate)
-      .eq("stripe_payment_intent_id", paymentIntentId)
-      .select("id")
-      .returns<DisputedMerchPayment[]>(),
-    supabase
-      .from("ad_campaigns")
-      .update(disputeUpdate)
-      .eq("stripe_payment_intent_id", paymentIntentId)
-      .select("id, title")
-      .returns<DisputedAdPayment[]>(),
-    supabase
+  let merchRows: DisputedMerchPayment[] = [];
+  let adRows: DisputedAdPayment[] = [];
+  let bookingRows: DisputedBookingPayment[] = [];
+  let firstError: unknown = null;
+
+  if (accountScope === "platform") {
+    const [merchResult, adResult, bookingResult] = await Promise.all([
+      supabase
+        .from("merch_orders")
+        .update(disputeUpdate)
+        .eq("stripe_payment_intent_id", paymentIntentId)
+        .select("id")
+        .returns<DisputedMerchPayment[]>(),
+      supabase
+        .from("ad_campaigns")
+        .update(disputeUpdate)
+        .eq("stripe_payment_intent_id", paymentIntentId)
+        .select("id, title")
+        .returns<DisputedAdPayment[]>(),
+      supabase
+        .from("booking_requests")
+        .update(disputeUpdate)
+        .eq("stripe_payment_intent_id", paymentIntentId)
+        .eq("payment_charge_model", "platform")
+        .is("stripe_connected_account_id", null)
+        .select("id, title")
+        .returns<DisputedBookingPayment[]>(),
+    ]);
+    merchRows = merchResult.data ?? [];
+    adRows = adResult.data ?? [];
+    bookingRows = bookingResult.data ?? [];
+    firstError = merchResult.error ?? adResult.error ?? bookingResult.error;
+  } else {
+    const bookingResult = await supabase
       .from("booking_requests")
       .update(disputeUpdate)
       .eq("stripe_payment_intent_id", paymentIntentId)
+      .eq("stripe_connected_account_id", accountScope)
+      .eq("payment_charge_model", "connected_direct")
+      .eq("fee_payer", "provider")
       .select("id, title")
-      .returns<DisputedBookingPayment[]>(),
-  ]);
-
-  const firstError = merchResult.error ?? adResult.error ?? bookingResult.error;
+      .returns<DisputedBookingPayment[]>();
+    bookingRows = bookingResult.data ?? [];
+    firstError = bookingResult.error;
+  }
 
   if (firstError) {
     console.error("Webhook disputed payment hold update failed.", firstError);
@@ -1192,7 +1738,7 @@ async function recordPaymentDispute({
     stripe_event_type: eventType,
   };
   const auditLogs = [
-    ...(merchResult.data ?? []).map((order) => ({
+    ...merchRows.map((order) => ({
       actor_id: null,
       event_type: disputeAuditEventType("merch_order"),
       metadata: sharedMetadata,
@@ -1204,7 +1750,7 @@ async function recordPaymentDispute({
       target_id: order.id,
       target_type: "merch_order",
     })),
-    ...(adResult.data ?? []).map((campaign) => ({
+    ...adRows.map((campaign) => ({
       actor_id: null,
       event_type: disputeAuditEventType("ad_campaign"),
       metadata: sharedMetadata,
@@ -1216,7 +1762,7 @@ async function recordPaymentDispute({
       target_id: campaign.id,
       target_type: "ad_campaign",
     })),
-    ...(bookingResult.data ?? []).map((booking) => ({
+    ...bookingRows.map((booking) => ({
       actor_id: null,
       event_type: disputeAuditEventType("booking_request"),
       metadata: sharedMetadata,
@@ -1253,13 +1799,13 @@ async function recordPaymentDispute({
 
 export async function POST(request: Request) {
   const stripe = createStripeClient();
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const hasWebhookSecret =
+    stripeWebhookSigningSecretConfigured(process.env.STRIPE_WEBHOOK_SECRET) ||
+    stripeWebhookSigningSecretConfigured(
+      process.env.STRIPE_CONNECT_WEBHOOK_SECRET,
+    );
 
-  if (
-    !stripe ||
-    !webhookSecret ||
-    !stripeWebhookSigningSecretConfigured(webhookSecret)
-  ) {
+  if (!stripe || !hasWebhookSecret) {
     return stripeResponse("Payment updates are not configured.", 500);
   }
 
@@ -1270,18 +1816,25 @@ export async function POST(request: Request) {
   }
 
   const body = await request.text();
-  let event: Stripe.Event;
+  const verifiedWebhook = await verifyStripeWebhookEvent({
+    body,
+    signature,
+    stripe,
+  });
 
-  try {
-    event = await stripe.webhooks.constructEventAsync(
-      body,
-      signature,
-      webhookSecret,
-      undefined,
-      stripeCryptoProvider,
-    );
-  } catch (error) {
-    console.error("Payment update verification failed.", error);
+  if (!verifiedWebhook) {
+    console.error("Payment update verification failed.");
+    return stripeResponse("Invalid payment update.", 400);
+  }
+
+  const { event } = verifiedWebhook;
+  const accountScope = stripeWebhookAccountScope({
+    eventAccount: event.account,
+    source: verifiedWebhook.source,
+  });
+
+  if (!accountScope) {
+    console.error("Payment update account scope did not match its destination.");
     return stripeResponse("Invalid payment update.", 400);
   }
 
@@ -1303,6 +1856,7 @@ export async function POST(request: Request) {
   const { data: claimStatus, error: claimError } = await supabase.rpc(
     "claim_stripe_webhook_event",
     {
+      p_account_scope: accountScope,
       p_event_id: event.id,
       p_event_type: event.type,
     },
@@ -1335,10 +1889,20 @@ export async function POST(request: Request) {
 
       if (checkoutSessionIsSettled(event, session)) {
         if (session.metadata?.payment_kind === "ad_campaign") {
+          if (accountScope !== "platform") {
+            throw new Error("Ad checkout arrived from a connected account.");
+          }
           await markAdCheckoutSession({ session, status: "paid" });
         } else if (session.metadata?.payment_kind === "booking_deposit") {
-          await markBookingCheckoutSession({ session, status: "paid" });
+          await markBookingCheckoutSession({
+            connectedAccountId: accountScope,
+            session,
+            status: "paid",
+          });
         } else if (isMerchCheckoutSession(session)) {
+          if (accountScope !== "platform") {
+            throw new Error("Merch checkout arrived from a connected account.");
+          }
           await markCheckoutSession({
             session,
             status: "paid",
@@ -1358,10 +1922,20 @@ export async function POST(request: Request) {
       const session = event.data.object as Stripe.Checkout.Session;
 
       if (session.metadata?.payment_kind === "ad_campaign") {
+        if (accountScope !== "platform") {
+          throw new Error("Ad checkout arrived from a connected account.");
+        }
         await markAdCheckoutSession({ session, status: "payment_failed" });
       } else if (session.metadata?.payment_kind === "booking_deposit") {
-        await markBookingCheckoutSession({ session, status: "payment_failed" });
+        await markBookingCheckoutSession({
+          connectedAccountId: accountScope,
+          session,
+          status: "payment_failed",
+        });
       } else if (isMerchCheckoutSession(session)) {
+        if (accountScope !== "platform") {
+          throw new Error("Merch checkout arrived from a connected account.");
+        }
         await markCheckoutSession({
           session,
           status: "payment_failed",
@@ -1375,10 +1949,20 @@ export async function POST(request: Request) {
       const session = event.data.object as Stripe.Checkout.Session;
 
       if (session.metadata?.payment_kind === "ad_campaign") {
+        if (accountScope !== "platform") {
+          throw new Error("Ad checkout arrived from a connected account.");
+        }
         await markAdCheckoutSession({ session, status: "payment_failed" });
       } else if (session.metadata?.payment_kind === "booking_deposit") {
-        await markBookingCheckoutSession({ session, status: "cancelled" });
+        await markBookingCheckoutSession({
+          connectedAccountId: accountScope,
+          session,
+          status: "cancelled",
+        });
       } else if (isMerchCheckoutSession(session)) {
+        if (accountScope !== "platform") {
+          throw new Error("Merch checkout arrived from a connected account.");
+        }
         await markCheckoutSession({
           session,
           status: "cancelled",
@@ -1390,12 +1974,7 @@ export async function POST(request: Request) {
 
     if (event.type === "charge.refunded") {
       const charge = event.data.object as Stripe.Charge;
-      const paymentIntentId =
-        typeof charge.payment_intent === "string" ? charge.payment_intent : null;
-
-      if (paymentIntentId) {
-        await markRefunded(paymentIntentId, charge.amount_refunded >= charge.amount);
-      }
+      await markRefunded({ accountScope, charge, stripe });
     }
 
     if (event.type === "refund.failed") {
@@ -1405,6 +1984,7 @@ export async function POST(request: Request) {
 
       if (paymentIntentId) {
         await recordRefundProblem({
+          accountScope,
           failureReason: refund.failure_reason ?? null,
           paymentIntentId,
           refundId: refund.id,
@@ -1419,17 +1999,49 @@ export async function POST(request: Request) {
       )
     ) {
       const dispute = event.data.object as Stripe.Dispute;
-      await recordPaymentDispute({ dispute, eventType: event.type, stripe });
+      await recordPaymentDispute({
+        accountScope,
+        dispute,
+        eventType: event.type,
+        stripe,
+      });
     }
 
     if (event.type === "account.updated") {
       const account = event.data.object as Stripe.Account;
-      await syncStripeConnectAccountFromWebhook(supabase, account, event.livemode);
+      if (accountScope !== "platform") {
+        if (account.id !== accountScope) {
+          throw new Error("Connected account update identity did not match.");
+        }
+        await syncStripeConnectAccountFromWebhook(supabase, account, event.livemode);
+      }
+    }
+
+    if (event.type === "application_fee.created") {
+      if (accountScope !== "platform") {
+        throw new Error("Application fee update arrived from a connected account.");
+      }
+      const applicationFee = event.data.object as Stripe.ApplicationFee;
+      await recordLatestBookingApplicationFee({
+        applicationFeeId: applicationFee.id,
+        stripe,
+      });
+    }
+
+    if (event.type === "application_fee.refunded") {
+      if (accountScope !== "platform") {
+        throw new Error("Application fee refund arrived from a connected account.");
+      }
+      const applicationFee = event.data.object as Stripe.ApplicationFee;
+      await recordLatestBookingApplicationFee({
+        applicationFeeId: applicationFee.id,
+        stripe,
+      });
     }
 
     const { data: completed, error: completionError } = await supabase.rpc(
       "complete_stripe_webhook_event",
-      { p_event_id: event.id },
+      { p_account_scope: accountScope, p_event_id: event.id },
     );
 
     if (completionError || completed !== true) {
@@ -1442,6 +2054,7 @@ export async function POST(request: Request) {
     const { error: failureError } = await supabase.rpc(
       "fail_stripe_webhook_event",
       {
+        p_account_scope: accountScope,
         p_error: "Payment update processing failed.",
         p_event_id: event.id,
       },

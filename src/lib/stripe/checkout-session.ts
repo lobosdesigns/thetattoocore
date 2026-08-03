@@ -10,6 +10,13 @@ export type StripeCheckoutSession = {
   url: string | null;
 };
 
+export type ConnectedCheckoutSessionRequest = {
+  body: URLSearchParams;
+  connectedAccountId: string;
+  idempotencyKey: string;
+  secretKey: string;
+};
+
 type HeldBookingCheckout = {
   artistId: string;
   clientId: string;
@@ -157,17 +164,17 @@ function isIndeterminateStripeResponse(response: Response) {
   return response.status === 409 || response.status >= 500;
 }
 
-export async function createStripeCheckoutSession(_options: {
+function validConnectedAccountId(value: string) {
+  return /^acct_[A-Za-z0-9]{8,200}$/.test(value);
+}
+
+async function requestStripeCheckoutSession(_options: {
   body: URLSearchParams;
-  checkoutCreationEnabled: boolean;
+  connectedAccountId?: string;
   fetcher?: Fetcher;
   idempotencyKey: string;
   secretKey: string;
 }): Promise<StripeCheckoutSession> {
-  if (_options.checkoutCreationEnabled !== true) {
-    throw new StripeCheckoutRequestError("Checkout could not open.", false);
-  }
-
   const fetcher = _options.fetcher ?? fetch;
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
@@ -182,6 +189,9 @@ export async function createStripeCheckoutSession(_options: {
             Authorization: `Bearer ${_options.secretKey}`,
             "Content-Type": "application/x-www-form-urlencoded",
             "Idempotency-Key": _options.idempotencyKey,
+            ...(_options.connectedAccountId
+              ? { "Stripe-Account": _options.connectedAccountId }
+              : {}),
             "Stripe-Version": STRIPE_API_VERSION,
           },
           method: "POST",
@@ -250,6 +260,30 @@ export async function createStripeCheckoutSession(_options: {
   );
 }
 
+export async function createStripeCheckoutSession(_options: {
+  body: URLSearchParams;
+  checkoutCreationEnabled: boolean;
+  fetcher?: Fetcher;
+  idempotencyKey: string;
+  secretKey: string;
+}): Promise<StripeCheckoutSession> {
+  if (_options.checkoutCreationEnabled !== true) {
+    throw new StripeCheckoutRequestError("Checkout could not open.", false);
+  }
+
+  return requestStripeCheckoutSession(_options);
+}
+
+export async function createConnectedCheckoutSession(
+  request: ConnectedCheckoutSessionRequest & { fetcher?: Fetcher },
+): Promise<StripeCheckoutSession> {
+  if (!validConnectedAccountId(request.connectedAccountId)) {
+    throw new StripeCheckoutRequestError("Checkout could not open.", false);
+  }
+
+  return requestStripeCheckoutSession(request);
+}
+
 export async function expireStripeCheckoutSession(options: {
   fetcher?: Fetcher;
   idempotencyKey: string;
@@ -278,6 +312,38 @@ export async function expireStripeCheckoutSession(options: {
   }
 }
 
+export async function expireConnectedStripeCheckoutSession(options: {
+  connectedAccountId: string;
+  fetcher?: Fetcher;
+  idempotencyKey: string;
+  secretKey: string;
+  sessionId: string;
+}) {
+  if (!validConnectedAccountId(options.connectedAccountId)) return false;
+
+  const fetcher = options.fetcher ?? fetch;
+
+  try {
+    const response = await fetcher(
+      `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(options.sessionId)}/expire`,
+      {
+        headers: {
+          Authorization: `Bearer ${options.secretKey}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Idempotency-Key": options.idempotencyKey,
+          "Stripe-Account": options.connectedAccountId,
+          "Stripe-Version": STRIPE_API_VERSION,
+        },
+        method: "POST",
+      },
+    );
+
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function expireCheckoutSessionBeforeRollback(options: {
   fetcher?: Fetcher;
   idempotencyKey: string;
@@ -286,6 +352,25 @@ export async function expireCheckoutSessionBeforeRollback(options: {
   sessionId: string;
 }) {
   const expired = await expireStripeCheckoutSession(options);
+
+  if (!expired) return false;
+
+  try {
+    return await options.rollback();
+  } catch {
+    return false;
+  }
+}
+
+export async function expireConnectedCheckoutSessionBeforeRollback(options: {
+  connectedAccountId: string;
+  fetcher?: Fetcher;
+  idempotencyKey: string;
+  rollback: () => Promise<boolean>;
+  secretKey: string;
+  sessionId: string;
+}) {
+  const expired = await expireConnectedStripeCheckoutSession(options);
 
   if (!expired) return false;
 

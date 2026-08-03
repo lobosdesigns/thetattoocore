@@ -15,12 +15,34 @@ const expectedMerchCheckoutTombstone = `export async function POST() {
 }`;
 const envExample = readFileSync(".env.example", "utf8");
 const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8");
+const stripeWebhookPost = stripeWebhook.slice(
+  stripeWebhook.indexOf("export async function POST"),
+);
 const adClickRoute = readFileSync("src/app/api/ad-click/route.ts", "utf8");
 const stripeServer = readFileSync("src/lib/stripe/server.ts", "utf8");
 const stripeReleaseGates = readFileSync("src/lib/stripe/release-gates.ts", "utf8");
 const stripeCheckoutSessions = readFileSync(
   "src/lib/stripe/checkout-session.ts",
   "utf8",
+);
+const platformCheckoutCreation = stripeCheckoutSessions.slice(
+  stripeCheckoutSessions.indexOf("export async function createStripeCheckoutSession"),
+  stripeCheckoutSessions.indexOf("export async function createConnectedCheckoutSession"),
+);
+const connectedCheckoutCreation = stripeCheckoutSessions.slice(
+  stripeCheckoutSessions.indexOf("export async function createConnectedCheckoutSession"),
+  stripeCheckoutSessions.indexOf("export async function expireStripeCheckoutSession"),
+);
+const platformExpirationRollback = stripeCheckoutSessions.slice(
+  stripeCheckoutSessions.indexOf("export async function expireCheckoutSessionBeforeRollback"),
+  stripeCheckoutSessions.indexOf(
+    "export async function expireConnectedCheckoutSessionBeforeRollback",
+  ),
+);
+const connectedExpirationRollback = stripeCheckoutSessions.slice(
+  stripeCheckoutSessions.indexOf(
+    "export async function expireConnectedCheckoutSessionBeforeRollback",
+  ),
 );
 const stripeSecretFormat = readFileSync(
   "src/lib/stripe/secret-format.ts",
@@ -40,6 +62,14 @@ const merchNotesMigration = readFileSync(
 const merchCheckoutSuccessPage = readFileSync("src/app/merch/checkout/success/page.tsx", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
+const accountBookingSection = accountPage.slice(
+  accountPage.indexOf('id="booking-settings"'),
+  accountPage.indexOf('id="order-settings"'),
+);
+const accountMerchSection = accountPage.slice(
+  accountPage.indexOf('id="order-settings"'),
+  accountPage.indexOf('id="data-settings"'),
+);
 const messagesPage = readFileSync("src/app/messages/page.tsx", "utf8");
 const homePage = readFileSync("src/app/page.tsx", "utf8");
 const appActions = readFileSync("src/app/actions.ts", "utf8");
@@ -134,7 +164,7 @@ const packageJson = readFileSync("package.json", "utf8");
 const packageScripts = JSON.parse(packageJson).scripts;
 const envGuardSource = readFileSync("scripts/smoke-env-guards.mjs", "utf8");
 const expectedPaymentSmoke =
-  "npm run test:stripe-release-gates && npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && npm run test:merch-checkout-route && npm run test:seller-checkout && node scripts/smoke-payment-guards.mjs";
+  "npm run test:stripe-release-gates && npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && npm run test:booking-connected-checkout && npm run test:merch-checkout-route && npm run test:seller-checkout && node scripts/smoke-payment-guards.mjs";
 const expectedSecuritySmoke =
   "npm run test:seller-checkout && npm run test:csp-headers && node --no-warnings --experimental-loader ./scripts/server-only-test-loader.mjs --experimental-default-type=module scripts/test-mail-redaction.mjs && node scripts/smoke-security-guards.mjs";
 const compactWhitespace = (value) => value.replace(/\s+/g, " ").trim();
@@ -144,7 +174,7 @@ const envGuardResult = spawnSync(process.execPath, ["scripts/smoke-env-guards.mj
 
 function adminPaymentsCurrentMerchCopyIsSafe(source) {
   return (
-    source.includes("Legacy TTC seller payout readiness updated") &&
+    source.includes("Connected payment account updated") &&
     source.includes("Legacy TTC pending Merch checkouts over 24h") &&
     source.includes("seller-owned Payment Link") &&
     source.includes("seller handles payment, tax, shipping, returns, refunds, disputes, receipts, fulfillment, and purchase support") &&
@@ -161,7 +191,7 @@ const injectedCurrentTtcMerchInstruction = adminPaymentsPage.replace(
 );
 const injectedUnqualifiedLegacyLabels = adminPaymentsPage
   .replace(
-    "Legacy TTC seller payout readiness updated",
+    "Connected payment account updated",
     "Seller payout readiness updated",
   )
   .replace(
@@ -229,6 +259,8 @@ const requiredPaymentWebhookEvents = [
   "charge.dispute.funds_withdrawn",
   "charge.dispute.funds_reinstated",
   "account.updated",
+  "application_fee.created",
+  "application_fee.refunded",
 ];
 
 function missingWebhookEventsIn(sourceText) {
@@ -306,37 +338,52 @@ checks.push({
 });
 
 checks.push({
-  label: "member Merch surfaces retire Connect payouts and describe seller responsibility",
+  label: "member Merch surfaces stay isolated from booking Connect and describe seller responsibility",
   ok:
-    accountPage.includes("Merch and orders") &&
-    accountPage.includes("historical TTC order support records") &&
+    accountMerchSection.includes("Merch and orders") &&
+    accountMerchSection.includes("historical TTC order support records") &&
     supportPage.includes("The seller processes payment and handles shipping, taxes, returns, refunds, disputes, and purchase support") &&
     privacyPage.includes("TTC stores the seller's listing link and acceptance record") &&
     helpCenter.includes('title: "Seller checkout and payment safety"') &&
-    !accountPage.includes("stripeConnectOnboardingEnabled") &&
-    !accountPage.includes("stripeCheckoutPreflight") &&
-    !accountPage.includes('from("stripe_connect_accounts")') &&
+    accountBookingSection.includes("Booking payment setup") &&
+    accountBookingSection.includes('action="/api/stripe/connect/onboarding"') &&
+    !accountMerchSection.includes("bookingConnectEnabled") &&
+    !accountMerchSection.includes('action="/api/stripe/connect/onboarding"') &&
+    !accountMerchSection.includes("stripe_connect_accounts") &&
     !accountPage.includes("Seller payout setup") &&
     !helpCenter.includes("TTC records a small platform fee where checkout is available"),
 });
 
 try {
   const centralGateIndex = indexOfOrFail(
-    stripeCheckoutSessions,
+    platformCheckoutCreation,
     "if (_options.checkoutCreationEnabled !== true)",
   );
-  const centralFetcherIndex = indexOfOrFail(
-    stripeCheckoutSessions,
-    "const fetcher = _options.fetcher ?? fetch",
+  const centralRequestIndex = indexOfOrFail(
+    platformCheckoutCreation,
+    "return requestStripeCheckoutSession(_options)",
+  );
+  const connectedAccountGateIndex = indexOfOrFail(
+    connectedCheckoutCreation,
+    "if (!validConnectedAccountId(request.connectedAccountId))",
+  );
+  const connectedRequestIndex = indexOfOrFail(
+    connectedCheckoutCreation,
+    "return requestStripeCheckoutSession(request)",
   );
 
   checks.push({
     label: "checkout creation requires a literal enabled decision before network access",
     ok:
       stripeCheckoutSessions.includes("checkoutCreationEnabled: boolean") &&
+      stripeCheckoutSessions.includes("async function requestStripeCheckoutSession") &&
+      !stripeCheckoutSessions.includes(
+        "export async function requestStripeCheckoutSession",
+      ) &&
       stripeCheckoutSessions.includes("new StripeCheckoutRequestError(") &&
       stripeCheckoutSessions.includes('"Checkout could not open."') &&
-      centralGateIndex < centralFetcherIndex,
+      centralGateIndex < centralRequestIndex &&
+      connectedAccountGateIndex < connectedRequestIndex,
   });
 } catch (error) {
   checks.push({
@@ -355,6 +402,10 @@ try {
     bookingCheckout,
     'rpc("reserve_booking_deposit_checkout"',
   );
+  const bookingSessionIndex = indexOfOrFail(
+    bookingCheckout,
+    "session = await createBookingCheckoutSession",
+  );
   const adLaunchGateIndex = indexOfOrFail(
     adCheckout,
     "if (!AD_PURCHASES_AVAILABLE)",
@@ -365,8 +416,11 @@ try {
     label: "booking and ad checkout gates precede creation side effects and reach the central helper",
     ok:
       bookingCheckout.includes('import { stripeCheckoutCreationEnabled } from "@/lib/stripe/release-gates"') &&
-      bookingCheckout.includes("checkoutCreationEnabled,") &&
+      bookingCheckout.includes("createConnectedCheckoutSession({") &&
+      bookingCheckout.includes("stripeConnectWebhookSigningSecretConfigured()") &&
+      bookingCheckout.includes("stripeWebhookSigningSecretConfigured()") &&
       bookingGateIndex < bookingReservationIndex &&
+      bookingGateIndex < bookingSessionIndex &&
       adCheckout.includes("checkoutCreationEnabled: AD_PURCHASES_AVAILABLE") &&
       adLaunchGateIndex < adAccountIndex,
   });
@@ -431,7 +485,15 @@ checks.push({
   ok:
     accountPage.includes('stripeCheckoutCreationEnabled("booking")') &&
     accountPage.includes("bookingCheckoutEnabled ? (") &&
-    !accountPage.includes("stripeConnectOnboardingEnabled") &&
+    accountPage.includes(
+      "const bookingConnectEnabled = stripeConnectOnboardingEnabled()",
+    ) &&
+    accountBookingSection.includes(
+      "!bookingProviderPaymentReady && bookingConnectEnabled",
+    ) &&
+    accountBookingSection.includes('action="/api/stripe/connect/onboarding"') &&
+    !accountMerchSection.includes("bookingConnectEnabled") &&
+    !accountMerchSection.includes('action="/api/stripe/connect/onboarding"') &&
     !accountPage.includes("sellerPayoutOnboardingEnabled") &&
     messagesPage.includes('stripeCheckoutCreationEnabled("booking")') &&
     messagesPage.includes("bookingCheckoutEnabled={bookingCheckoutEnabled}") &&
@@ -839,7 +901,9 @@ checks.push({
   ok:
     adCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&
     adCheckout.includes("Ad checkout is temporarily unavailable. Please try again later.") &&
-    bookingCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&
+    bookingCheckout.includes("stripeConnectWebhookSigningSecretConfigured()") &&
+    bookingCheckout.includes("stripeWebhookSigningSecretConfigured()") &&
+    bookingCheckout.includes("process.env.SUPABASE_SERVICE_ROLE_KEY") &&
     bookingCheckout.includes("Booking checkout is temporarily unavailable. Please try again later."),
 });
 checks.push({
@@ -920,19 +984,28 @@ checks.push({
       "export async function expireCheckoutSessionBeforeRollback",
     ) &&
     stripeCheckoutSessions.includes(
+      "export async function expireConnectedCheckoutSessionBeforeRollback",
+    ) &&
+    stripeCheckoutSessions.includes(
       "response.status === 409 || response.status >= 500",
     ) &&
-    stripeCheckoutSessions.indexOf(
+    platformExpirationRollback.indexOf(
       "const expired = await expireStripeCheckoutSession(options)",
     ) <
-      stripeCheckoutSessions.indexOf("await options.rollback()") &&
+      platformExpirationRollback.indexOf("await options.rollback()") &&
+    connectedExpirationRollback.indexOf(
+      "const expired = await expireConnectedStripeCheckoutSession(options)",
+    ) < connectedExpirationRollback.indexOf("await options.rollback()") &&
     stripeCheckoutSessions.includes("rollback: () => Promise<boolean>") &&
     stripeCheckoutSessions.includes("return await options.rollback()") &&
     adCheckout.includes("expireCheckoutSessionBeforeRollback({") &&
     adCheckout.includes("rollback: rollBackReservation") &&
     adCheckout.includes('.select("id")') &&
     adCheckout.includes("return Boolean(releasedCampaign)") &&
-    bookingCheckout.includes("expireCheckoutSessionBeforeRollback({") &&
+    bookingCheckout.includes("expireConnectedCheckoutSessionBeforeRollback({") &&
+    bookingCheckout.includes(
+      "connectedAccountId: connectedAccount.stripe_account_id",
+    ) &&
     bookingCheckout.includes("rollback: rollBackReservation") &&
     bookingCheckout.includes('.select("id")') &&
     bookingCheckout.includes("return Boolean(releasedBooking)") &&
@@ -1049,17 +1122,18 @@ checks.push({
     stripeWebhook.includes("ad_payment_dispute") &&
     stripeWebhook.includes("booking_payment_dispute") &&
     stripeWebhook.includes("function disputeChargeId") &&
-    stripeWebhook.includes("stripe.charges.retrieve(chargeId)") &&
+    stripeWebhook.includes("accountScope === \"platform\" ? {} : { stripeAccount: accountScope }") &&
     stripeWebhook.includes("stripe_charge_id: disputeChargeId(dispute)") &&
-    stripeWebhook.includes("recordPaymentDispute({ dispute, eventType: event.type, stripe })") &&
+    stripeWebhook.includes("recordPaymentDispute({") &&
+    stripeWebhook.includes("accountScope,") &&
     stripeWebhook.includes("stripe_event_type: eventType") &&
     stripeWebhook.includes("payment_intent_id: paymentIntentId") &&
     stripeWebhook.includes('event.type === "account.updated"') &&
     stripeWebhook.includes("syncStripeConnectAccountFromWebhook") &&
     stripeWebhook.includes('from("stripe_connect_accounts")') &&
     stripeWebhook.includes("stripeConnectStatus(account, livemode)") &&
-    stripeWebhook.indexOf("Missing payment verification.") <
-      stripeWebhook.indexOf("constructEventAsync"),
+    stripeWebhookPost.indexOf("Missing payment verification.") <
+      stripeWebhookPost.indexOf("await verifyStripeWebhookEvent({"),
 });
 checks.push({
   label: "payment disputes impose protected operational holds",
@@ -1139,7 +1213,7 @@ checks.push({
   label: "admin payments exposes webhook processing health without raw errors",
   ok:
     adminPaymentsPage.includes(
-      "event_id, event_type, received_at, status, attempt_count, claimed_at, completed_at",
+      "event_id, event_type, account_scope, received_at, status, attempt_count, claimed_at, completed_at",
     ) &&
     adminPaymentsPage.includes('.eq("status", "failed")') &&
     adminPaymentsPage.includes('.eq("status", "processing")') &&
@@ -1151,6 +1225,8 @@ checks.push({
     adminPaymentsPage.includes('return "Failed"') &&
     adminPaymentsPage.includes('return "Retrying"') &&
     adminPaymentsPage.includes("Attempt {event.attempt_count}") &&
+    adminPaymentsPage.includes("paymentEventScopeLabel(event.account_scope)") &&
+    adminPaymentsPage.includes('key={`${event.event_id}:${event.account_scope}`}') &&
     adminPaymentsPage.includes("Claimed {formatDateTime(event.claimed_at)}") &&
     adminPaymentsPage.includes(
       "Completed {formatDateTime(event.completed_at)}",
@@ -1417,7 +1493,7 @@ checks.push({
     adminPaymentsPage.includes('"refund_merch_order_requested"') &&
     adminPaymentsPage.includes("Merch refund requested") &&
     stripeWebhook.includes('event.type === "charge.refunded"') &&
-    stripeWebhook.includes("await markRefunded(paymentIntentId") &&
+    stripeWebhook.includes("await markRefunded({ accountScope, charge, stripe })") &&
     paymentReadiness.includes("destination-charge refunds reverse the seller transfer") &&
     paymentReadiness.includes("signed payment webhook remains the order-status authority"),
 });
@@ -1506,13 +1582,15 @@ checks.push({
     adminPaymentsPage.includes("stripeSecretKeyLivemode()") &&
     adminPaymentsPage.includes("stripeCheckoutPreflight()") &&
     adminPaymentsPage.includes("stripeCheckoutModeMismatch()") &&
-    adminPaymentsPage.includes("webhookSecretReady") &&
+    adminPaymentsPage.includes("platformWebhookSecretReady") &&
+    adminPaymentsPage.includes("connectWebhookSecretReady") &&
     adminPaymentsPage.includes("This panel shows") &&
     adminPaymentsPage.includes("never shows private key or webhook values") &&
     adminPaymentsPage.includes("Expected mode:") &&
     adminPaymentsPage.includes("Server key mode:") &&
     adminPaymentsPage.includes("stripeWebhookSigningSecretConfigured()") &&
-    adminPaymentsPage.includes("Webhook signing format is configured; live event proof is still required.") &&
+    adminPaymentsPage.includes("Account webhook signing format is configured; live event proof is still required.") &&
+    adminPaymentsPage.includes("Connected accounts webhook signing format is configured; live event proof is still required.") &&
     adminPaymentsPage.includes("Checkout is blocked until mode, server key, and webhook signing checks all pass.") &&
     adminPaymentsPage.includes("Checkout mode preflight is ready.") &&
     adminPaymentsPage.includes("Expected mode and server key mode do not match.") &&
@@ -1523,7 +1601,10 @@ checks.push({
     stripeServer.includes('import { stripeKeyMode } from "./release-gates"') &&
     stripeServer.includes("const mode = stripeKeyMode(secretKey)") &&
     stripeWebhook.includes("expectedStripeLivemode() ?? stripeSecretKeyLivemode()") &&
-    stripeWebhook.includes("stripeWebhookSigningSecretConfigured(webhookSecret)") &&
+    stripeWebhook.includes(
+      "stripeWebhookSigningSecretConfigured(process.env.STRIPE_WEBHOOK_SECRET)",
+    ) &&
+    stripeWebhook.includes("process.env.STRIPE_CONNECT_WEBHOOK_SECRET") &&
     stripeWebhook.includes("function stripeLivemodeMatches") &&
     stripeWebhook.includes("return expected !== null && event.livemode === expected;") &&
     !stripeWebhook.includes("expected === null || event.livemode === expected") &&
@@ -1568,9 +1649,11 @@ checks.push({
     !accountPage.includes("Seller payout path") &&
     !accountPage.includes("Seller payout setup") &&
     !accountPage.includes("Payout status:") &&
-    !accountPage.includes("stripe_connect_accounts") &&
+    accountBookingSection.includes("Booking payment setup") &&
+    accountBookingSection.includes('action="/api/stripe/connect/onboarding"') &&
+    !accountMerchSection.includes("stripe_connect_accounts") &&
     !accountPage.includes("raw bank, routing, card, or debit payout numbers") &&
-    !accountPage.includes('action="/api/stripe/connect/onboarding"') &&
+    !accountMerchSection.includes('action="/api/stripe/connect/onboarding"') &&
     accountPage.includes("TTC reviews the listing and handles listing-safety reports") &&
     privacyPage.includes("does not receive new external purchase card, shipping, receipt, or transaction data") &&
     supportPage.includes("Contact the seller for receipts, delivery, returns, or payment questions"),
@@ -1579,12 +1662,14 @@ checks.push({
   label: "seller payout mode checks preserve signed-out login redirects",
   ok:
     stripeConnectOnboarding.indexOf("if (!claims?.sub)") <
-      stripeConnectOnboarding.indexOf("if (!stripe || !admin || !checkoutPreflight.ready)") &&
+      stripeConnectOnboarding.indexOf(
+        "if (!stripe || !admin || !checkoutPreflight.ready || !connectWebhookReady)",
+      ) &&
     stripeConnectReturn.indexOf("if (!claims?.sub)") <
       stripeConnectReturn.indexOf("if (!stripe || !admin || !checkoutPreflight.ready)"),
 });
 checks.push({
-  label: "legacy seller payout readiness stays mode-isolated outside Merch moderation",
+  label: "booking Connect readiness stays mode-isolated outside Merch moderation",
   ok:
     stripeConnectLivemodeMigration.includes("add column if not exists livemode boolean") &&
     stripeConnectLivemodeMigration.includes("where livemode is null") &&
@@ -1600,16 +1685,21 @@ checks.push({
     stripeWebhook.includes("syncStripeConnectAccountFromWebhook(supabase, account, event.livemode)") &&
     stripeWebhook.includes('.eq("livemode", livemode)') &&
     !accountPage.includes("sellerPayoutMode") &&
-    !accountPage.includes("stripe_connect_accounts") &&
+    accountPage.includes('from("stripe_connect_accounts")') &&
+    accountBookingSection.includes("Booking payment setup") &&
+    !accountMerchSection.includes("stripe_connect_accounts") &&
     !merchProductStatusAction.includes("stripe_connect_accounts") &&
     !merchProductStatusAction.includes("payoutMode") &&
     !adminMerchPage.includes("stripe_connect_accounts") &&
     !adminMerchPage.includes("sellerPayoutMode"),
 });
 checks.push({
-  label: "Stripe Connect seller onboarding stays hosted and server-side",
+  label: "Stripe Connect booking onboarding stays hosted and server-side",
   ok:
-    !accountPage.includes(".from(\"stripe_connect_accounts\")") &&
+    accountPage.includes('.from("stripe_connect_accounts")') &&
+    accountBookingSection.includes("Booking payment setup") &&
+    accountBookingSection.includes('action="/api/stripe/connect/onboarding"') &&
+    !accountMerchSection.includes('action="/api/stripe/connect/onboarding"') &&
     !accountPage.includes("sellerPayoutReady") &&
     !accountPage.includes("sellerPayoutAccount") &&
     !accountPage.includes("payoutSetupNotice") &&
@@ -1621,9 +1711,23 @@ checks.push({
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes('"unknown_error"') &&
     !readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("message ?? details.raw?.message") &&
     !readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("param ?? details.raw?.param") &&
-    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("function sellerBusinessType") &&
-    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes('profile.role === "owner"') &&
-    readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes('profile.account_type === "vendor"') &&
+    !stripeConnectOnboarding.includes("function sellerBusinessType") &&
+    !stripeConnectOnboarding.includes('profile.role === "owner"') &&
+    !stripeConnectOnboarding.includes('profile.account_type === "vendor"') &&
+    stripeConnectOnboarding.includes(
+      '!["artist", "studio"].includes(profile.account_type)',
+    ) &&
+    stripeConnectOnboarding.includes("!isVerifiedProfessional(profile)") &&
+    stripeConnectOnboarding.includes(
+      "Tattoo appointment deposits and in-person body-art services.",
+    ) &&
+    stripeConnectOnboarding.includes("card_payments: { requested: true }") &&
+    stripeConnectOnboarding.includes("transfers: { requested: true }") &&
+    stripeConnectOnboarding.includes(
+      "stripeConnectWebhookSigningSecretConfigured",
+    ) &&
+    stripeConnectOnboarding.indexOf("!connectWebhookReady") <
+      stripeConnectOnboarding.indexOf("stripe.accounts.create") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("payout_issue") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("setupStep = \"account_create\"") &&
     !accountPage.includes("Continue payout setup") &&
@@ -1636,8 +1740,10 @@ checks.push({
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("stripe.accountLinks.create") &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes("type: \"account_onboarding\"") &&
     stripeConnectReturn.includes("stripe.accounts.retrieve") &&
-    stripeConnectReturn.includes("More details may still be needed before payouts are active.") &&
-    !stripeConnectReturn.includes("Stripe may still need more details") &&
+    stripeConnectReturn.includes(
+      "More details may still be needed before deposits are active.",
+    ) &&
+    !stripeConnectReturn.includes("before payouts are active") &&
     readFileSync("src/lib/stripe/connect.ts", "utf8").includes("stripeConnectStatus") &&
     stripeWebhook.includes("stripeConnectStatus") &&
     stripeWebhook.includes('event.type === "account.updated"') &&
@@ -1649,20 +1755,20 @@ checks.push({
   label: "Stripe Connect onboarding and return recover from provider errors",
   ok:
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes(
-      'console.error("Seller payout onboarding failed.", error)',
+      'console.error("Booking payment onboarding failed.", error)',
     ) &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes(
-      'console.error("Seller payout account lookup failed.", existingAccountError)',
+      'console.error("Booking payment account lookup failed.", existingAccountError)',
     ) &&
     readFileSync("src/app/api/stripe/connect/onboarding/route.ts", "utf8").includes(
-      "Seller payout setup is temporarily unavailable. Please try again.",
+      "Booking payment setup is temporarily unavailable. Please try again.",
     ) &&
-    stripeConnectReturn.includes('console.error("Seller payout return check failed.", error)') &&
+    stripeConnectReturn.includes('console.error("Booking payment return check failed.", error)') &&
     stripeConnectReturn.includes(
-      'console.error("Seller payout return lookup failed.", connectAccountError)',
+      'console.error("Booking payment return lookup failed.", connectAccountError)',
     ) &&
     stripeConnectReturn.includes(
-      "Seller payout setup could not be checked. Please try again.",
+      "Booking payment setup could not be checked. Please try again.",
     ),
 });
 checks.push({
@@ -1852,7 +1958,16 @@ checks.push({
     ) &&
     bookingCheckoutReconciliationAction.includes("!checkoutPreflight.ready") &&
     bookingCheckoutReconciliationAction.includes(
-      "stripe.checkout.sessions.retrieve(checkoutSessionId)",
+      "const checkoutContext = bookingRefundStripeContext({",
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      "const checkoutStripeOptions: Stripe.RequestOptions",
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      "stripe.checkout.sessions.retrieve(",
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      "checkoutStripeOptions",
     ) &&
     bookingCheckoutReconciliationAction.includes(
       "bookingUpdatedAt > staleBefore",
@@ -1905,6 +2020,12 @@ checks.push({
       "checkoutSession.id",
     ) &&
     bookingCheckoutReconciliationAction.includes(
+      "stripe_connected_account_id: null",
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
+      'releaseQuery.is("stripe_connected_account_id", null)',
+    ) &&
+    bookingCheckoutReconciliationAction.includes(
       'reconciliationDecision.action !== "release"',
     ) &&
     bookingCheckoutReconciliationAction.includes(
@@ -1954,7 +2075,8 @@ checks.push({
     adminActions.includes("export async function refundBookingDeposit") &&
     bookingRefundAction.includes("const checkoutPreflight = stripeCheckoutPreflight()") &&
     bookingRefundAction.includes("!checkoutPreflight.ready") &&
-    bookingRefundAction.includes("stripe.paymentIntents.retrieve(paymentIntentId)") &&
+    bookingRefundAction.includes("stripe.paymentIntents.retrieve(") &&
+    bookingRefundAction.includes("stripeAccountOptions") &&
     bookingRefundAction.includes("paymentIntent.livemode !== checkoutPreflight.actual") &&
     bookingRefundAction.includes(
       'paymentIntent.metadata?.payment_kind !== "booking_deposit"',
@@ -1970,9 +2092,9 @@ checks.push({
     adminActions.includes("createStripeClient") &&
     adminActions.includes("stripe.refunds.list") &&
     adminActions.includes("stripe.refunds.create") &&
-    adminActions.includes('const bookingRefundRequestKeyVersion = "booking-full-refund-v1"') &&
-    adminActions.includes("{ idempotencyKey: bookingRefundRequestKey }") &&
-    adminActions.includes('payment_intent: paymentIntentId') &&
+    adminActions.includes('const bookingRefundRequestKeyVersion = "booking-full-refund-v2"') &&
+    adminActions.includes("idempotencyKey: bookingRefundRequestKey") &&
+    bookingRefundAction.includes("charge: latestCharge.id") &&
     adminActions.includes('refund.metadata?.refund_kind === "booking_deposit"') &&
     adminActions.includes("existingRefundAudits?.length") &&
     adminActions.includes("const { error: refundAuditError } = await adminClient") &&
@@ -2041,7 +2163,7 @@ checks.push({
     adminPaymentsPage.includes("ad_payment_dispute") &&
     adminPaymentsPage.includes("booking_payment_dispute") &&
     adminPaymentsPage.includes('"account.updated"') &&
-    adminPaymentsPage.includes("Legacy TTC seller payout readiness updated") &&
+    adminPaymentsPage.includes("Connected payment account updated") &&
     adminPaymentsPage.includes("Legacy TTC pending Merch checkouts over 24h") &&
     !adminPaymentsPage.includes('return "Seller payout readiness updated"') &&
     !/>\s*Stale pending Merch checkouts over 24h\s*</.test(adminPaymentsPage) &&

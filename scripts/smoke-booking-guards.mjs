@@ -103,13 +103,14 @@ const checks = [
       bookingSettingsMigration.includes("calendar_connection_status in ('manual', 'google_planned', 'apple_ical_planned', 'connected')"),
   },
   {
-    label: "booking money fields record deposit plus TTC fee",
+    label: "booking money fields preserve history and describe provider-paid TTC fees",
     ok:
       migration.includes("deposit_amount_cents integer not null default 0") &&
       migration.includes("platform_fee_cents integer not null default 0") &&
       migration.includes("total_cents = deposit_amount_cents + platform_fee_cents") &&
       fees.includes('export type PlatformFeeKind = "ad" | "booking" | "merch"') &&
-      fees.includes("booking deposit processing"),
+      fees.includes("TTC application fee deducted from provider funds for booking deposits") &&
+      fees.includes("Payment processing fees are separate"),
   },
   {
     label: "booking notifications are accepted by database and UI",
@@ -399,7 +400,10 @@ const checks = [
       accountPage.includes("Pay deposit") &&
       bookingCheckout.includes("export async function POST") &&
       bookingCheckout.includes('metadata[payment_kind]": "booking_deposit"') &&
-      bookingCheckout.includes("platformFeeDescription(\"booking\")") &&
+      bookingCheckout.includes("createConnectedCheckoutSession") &&
+      bookingCheckout.includes(
+        '"payment_intent_data[application_fee_amount]": String(booking.platform_fee_cents)',
+      ) &&
       bookingCheckout.includes('.eq("client_id", claims.sub)') &&
       bookingCheckout.includes('encodeURIComponent(returnTo ?? "/account#booking-settings")') &&
       bookingCheckout.includes('status: "deposit_pending"') &&

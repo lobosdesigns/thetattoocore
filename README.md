@@ -72,15 +72,16 @@ production behavior:
 - `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY`: server-only native alert sender credentials. Keep them in private deployment bindings and never expose or commit their values.
 - `STRIPE_SECRET_KEY`: server-only Stripe key for test/live checkout sessions.
 - `STRIPE_WEBHOOK_SECRET`: server-only webhook signing secret for Stripe payment status updates.
+- `STRIPE_CONNECT_WEBHOOK_SECRET`: server-only signing secret for the separate Stripe destination that listens to events on connected accounts. Booking checkout stays closed when it is absent.
 - `STRIPE_EXPECTED_LIVEMODE`: keep `false` until live keys, live webhook handling, policy review, and the separate dark-staging approval are complete. Setting it to `true` is not the checkout launch action.
-- `STRIPE_CHECKOUT_CREATION_ENABLED`: Retired historical TTC payment control; keep `false`. It is not a seller-link exposure or rollback control.
+- `STRIPE_CHECKOUT_CREATION_ENABLED`: shared master gate for TTC-controlled checkout creation, including connected booking deposits; keep `false` until the selected flow's separate rollout evidence and approval pass. It is not a seller-link exposure or rollback control.
 - `STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED`: Retired historical TTC payment control for the old official-Merch path; keep `false`.
 - `STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED`: Retired historical TTC payment control for the old marketplace path; keep `false`.
-- `STRIPE_BOOKING_CHECKOUT_ENABLED`: Legacy separate booking-deposit control; keep `false`. It is not part of seller-owned Merch rollout or rollback.
-- `STRIPE_CONNECT_ONBOARDING_ENABLED`: Retired historical TTC payment control for connected seller onboarding; keep `false` and never use it as future seller-payout setup.
+- `STRIPE_BOOKING_CHECKOUT_ENABLED`: separate connected booking-deposit release gate; keep `false` until migration, webhook, onboarding, live-money, refund, device, and rollback evidence pass.
+- `STRIPE_CONNECT_ONBOARDING_ENABLED`: separate booking-provider onboarding gate; keep `false` until Payments and Transfers onboarding is approved and the connected-account webhook is ready.
 - `STRIPE_MERCH_DESTINATION_CHARGES_ENABLED`: Retired historical TTC payment control for destination routing; keep `false` and never use it as future seller-payout setup.
 
-These historical server-only controls remain false. Only the seller-link gate governs exposure of the selected seller-owned Merch handoff.
+Legacy Merch and destination-routing controls remain false. The checkout master, booking, and booking-provider onboarding gates are separate current controls that also remain false until their own approved rollout. Only the seller-link gate governs exposure of the selected seller-owned Merch handoff.
 
 ## Seller-Owned Merch Checkout - Current Position (August 2, 2026)
 

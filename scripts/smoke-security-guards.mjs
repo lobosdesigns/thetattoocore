@@ -81,6 +81,14 @@ const settingsPage = readFileSync("src/app/settings/page.tsx", "utf8");
 const helpArticlePage = readFileSync("src/app/help/[slug]/page.tsx", "utf8");
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const accountPage = readFileSync("src/app/account/page.tsx", "utf8");
+const accountBookingSection = accountPage.slice(
+  accountPage.indexOf('id="booking-settings"'),
+  accountPage.indexOf('id="order-settings"'),
+);
+const accountMerchSection = accountPage.slice(
+  accountPage.indexOf('id="order-settings"'),
+  accountPage.indexOf('id="data-settings"'),
+);
 const accountSettingsWorkspace = readFileSync(
   "src/app/account/account-settings-workspace.tsx",
   "utf8",
@@ -998,9 +1006,12 @@ const checks = [
       accountPage.includes("Merch, seller checkout, historical orders, fulfillment, and support.") &&
       !accountPage.includes("Merch and payouts") &&
       !accountPage.includes("Retry payout setup") &&
-      !accountPage.includes("stripeConnectOnboardingEnabled") &&
-      !accountPage.includes('from("stripe_connect_accounts")') &&
-      !accountPage.includes('action="/api/stripe/connect/onboarding"') &&
+      accountPage.includes("stripeConnectOnboardingEnabled") &&
+      accountPage.includes('from("stripe_connect_accounts")') &&
+      accountBookingSection.includes("Booking payment setup") &&
+      accountBookingSection.includes('action="/api/stripe/connect/onboarding"') &&
+      !accountMerchSection.includes("stripe_connect_accounts") &&
+      !accountMerchSection.includes('action="/api/stripe/connect/onboarding"') &&
       accountPage.includes('href="/help/seller-payouts-payment-safety"') &&
       accountSettingsWorkspace.includes("Choose the area you need") &&
       accountSettingsWorkspace.includes('href="/settings"') &&

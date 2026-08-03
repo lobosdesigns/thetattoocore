@@ -13,7 +13,7 @@ function accountRedirect(message: string, payoutStatus = "retry") {
   return NextResponse.redirect(
     `${siteUrl}/account?message=${encodeURIComponent(message)}&payout_status=${encodeURIComponent(
       payoutStatus,
-    )}#order-settings`,
+    )}#booking-settings`,
     { status: 303 },
   );
 }
@@ -29,13 +29,13 @@ export async function GET() {
 
   if (!claims?.sub) {
     return NextResponse.redirect(
-      `${siteUrl}/login?return_to=${encodeURIComponent("/account#order-settings")}`,
+      `${siteUrl}/login?return_to=${encodeURIComponent("/account#booking-settings")}`,
       { status: 303 },
     );
   }
 
   if (!stripe || !admin || !checkoutPreflight.ready) {
-    return accountRedirect("Seller payout setup could not be checked.", "check_failed");
+    return accountRedirect("Booking payment setup could not be checked.", "check_failed");
   }
 
   const livemode = checkoutPreflight.actual;
@@ -48,15 +48,15 @@ export async function GET() {
     .maybeSingle<{ stripe_account_id: string }>();
 
   if (connectAccountError) {
-    console.error("Seller payout return lookup failed.", connectAccountError);
+    console.error("Booking payment return lookup failed.", connectAccountError);
     return accountRedirect(
-      "Seller payout setup could not be checked. Please try again.",
+      "Booking payment setup could not be checked. Please try again.",
       "check_failed",
     );
   }
 
   if (!connectAccount?.stripe_account_id) {
-    return accountRedirect("Seller payout setup was not found. Start setup again.", "not_found");
+    return accountRedirect("Booking payment setup was not found. Start setup again.", "not_found");
   }
 
   try {
@@ -70,25 +70,25 @@ export async function GET() {
       .eq("livemode", livemode);
 
     if (updateError) {
-      console.error("Seller payout return sync failed.", updateError);
+      console.error("Booking payment return sync failed.", updateError);
       return accountRedirect(
-        "Seller payout setup could not be checked. Please try again.",
+        "Booking payment setup could not be checked. Please try again.",
         "check_failed",
       );
     }
 
     if (status.charges_enabled && status.payouts_enabled && status.details_submitted) {
-      return accountRedirect("Seller payout setup is complete.", "complete");
+      return accountRedirect("Booking payment setup is complete.", "complete");
     }
 
     return accountRedirect(
-      "Seller payout setup is saved. More details may still be needed before payouts are active.",
+      "Booking payment setup is saved. More details may still be needed before deposits are active.",
       "needs_more",
     );
   } catch (error) {
-    console.error("Seller payout return check failed.", error);
+    console.error("Booking payment return check failed.", error);
     return accountRedirect(
-      "Seller payout setup could not be checked. Please try again.",
+      "Booking payment setup could not be checked. Please try again.",
       "check_failed",
     );
   }

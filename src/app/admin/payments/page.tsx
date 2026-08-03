@@ -24,6 +24,7 @@ import { createClient } from "@/lib/supabase/server";
 import { safeStatusMessage } from "@/lib/status-message";
 import {
   expectedStripeLivemode,
+  stripeConnectWebhookSigningSecretConfigured,
   stripeCheckoutPreflight,
   stripeCheckoutModeMismatch,
   stripeMerchDestinationChargesEnabled,
@@ -41,6 +42,7 @@ type Claims = {
   sub: string;
 };
 type PaymentEvent = {
+  account_scope: string;
   attempt_count: number;
   claimed_at: string;
   completed_at: string | null;
@@ -63,12 +65,18 @@ type BookingDepositRecord = {
   client: { display_name: string | null; username: string | null } | null;
   currency: string;
   deposit_amount_cents: number;
+  fee_payer: string;
   id: string;
+  payment_charge_model: string;
   payment_dispute_hold: boolean;
   payment_status: string;
   platform_fee_cents: number;
+  refunded_amount_cents: number;
+  refunded_platform_fee_cents: number;
   status: string;
+  stripe_application_fee_id: string | null;
   stripe_checkout_session_id: string | null;
+  stripe_connected_account_id: string | null;
   stripe_payment_intent_id: string | null;
   title: string;
   total_cents: number;
@@ -91,6 +99,7 @@ const adPaymentStatuses = [
   "checkout_started",
   "paid",
   "payment_failed",
+  "partially_refunded",
   "refunded",
   "waived",
 ] as const;
@@ -99,6 +108,7 @@ const bookingPaymentStatuses = [
   "checkout_started",
   "paid",
   "payment_failed",
+  "partially_refunded",
   "refunded",
   "waived",
 ] as const;
@@ -115,6 +125,8 @@ const paymentEventTypes = [
   "charge.dispute.funds_reinstated",
   "refund.failed",
   "account.updated",
+  "application_fee.created",
+  "application_fee.refunded",
 ] as const;
 const paymentAuditTypes = [
   "reset_stale_booking_deposit_checkouts",
@@ -375,9 +387,13 @@ function eventTypeLabel(value: string) {
   if (value === "charge.dispute.funds_withdrawn") return "Funds withdrawn";
   if (value === "charge.dispute.funds_reinstated") return "Funds reinstated";
   if (value === "refund.failed") return "Refund failed";
-  if (value === "account.updated") return "Legacy TTC seller payout readiness updated";
+  if (value === "account.updated") return "Connected payment account updated";
 
   return value;
+}
+
+function paymentEventScopeLabel(value: string) {
+  return value === "platform" ? "Account event" : "Connected account event";
 }
 
 function auditLabel(value: string) {
@@ -417,6 +433,46 @@ function money(cents: number, currency = "USD") {
     currency,
     style: "currency",
   }).format(cents / 100);
+}
+
+function bookingReconciliationWarning(booking: BookingDepositRecord) {
+  if (booking.payment_charge_model !== "connected_direct") return null;
+  if (
+    booking.fee_payer !== "provider" ||
+    booking.total_cents !== booking.deposit_amount_cents
+  ) {
+    return "Direct-charge arithmetic does not match the provider-paid contract.";
+  }
+  if (
+    ["checkout_started", "paid", "partially_refunded", "refunded"].includes(
+      booking.payment_status,
+    ) &&
+    !booking.stripe_connected_account_id
+  ) {
+    return "Connected account routing is missing.";
+  }
+  if (
+    ["paid", "partially_refunded", "refunded"].includes(booking.payment_status) &&
+    !booking.stripe_application_fee_id
+  ) {
+    return "The Stripe application fee has not reconciled yet.";
+  }
+  if (
+    booking.payment_status === "refunded" &&
+    (booking.refunded_amount_cents !== booking.total_cents ||
+      booking.refunded_platform_fee_cents !== booking.platform_fee_cents)
+  ) {
+    return "The full deposit or TTC application-fee reversal is incomplete.";
+  }
+  if (
+    booking.payment_status === "partially_refunded" &&
+    (booking.refunded_amount_cents <= 0 ||
+      booking.refunded_amount_cents >= booking.total_cents)
+  ) {
+    return "The partial refund total needs review.";
+  }
+
+  return null;
 }
 
 function paymentModeLabel(value: boolean | null) {
@@ -562,14 +618,14 @@ export default async function AdminPaymentsPage({
           let query = adminClient
             .from("stripe_webhook_events")
             .select(
-              "event_id, event_type, received_at, status, attempt_count, claimed_at, completed_at",
+              "event_id, event_type, account_scope, received_at, status, attempt_count, claimed_at, completed_at",
               { count: "exact" },
             )
             .order("received_at", { ascending: false });
 
           if (activeSearch) {
             query = query.or(
-              `event_id.ilike.%${activeSearch}%,event_type.ilike.%${activeSearch}%`,
+              `event_id.ilike.%${activeSearch}%,event_type.ilike.%${activeSearch}%,account_scope.ilike.%${activeSearch}%`,
             );
           }
 
@@ -589,7 +645,7 @@ export default async function AdminPaymentsPage({
 
           if (activeSearch) {
             query = query.or(
-              `event_id.ilike.%${activeSearch}%,event_type.ilike.%${activeSearch}%`,
+              `event_id.ilike.%${activeSearch}%,event_type.ilike.%${activeSearch}%,account_scope.ilike.%${activeSearch}%`,
             );
           }
 
@@ -697,7 +753,7 @@ export default async function AdminPaymentsPage({
           let query = adminClient
           .from("booking_requests")
           .select(
-            "id, title, status, payment_status, payment_dispute_hold, deposit_amount_cents, platform_fee_cents, total_cents, currency, stripe_checkout_session_id, stripe_payment_intent_id, updated_at, client:profiles!booking_requests_client_id_fkey(display_name, username), artist:profiles!booking_requests_artist_id_fkey(display_name, username)",
+            "id, title, status, payment_status, payment_dispute_hold, deposit_amount_cents, platform_fee_cents, total_cents, currency, fee_payer, payment_charge_model, refunded_amount_cents, refunded_platform_fee_cents, stripe_connected_account_id, stripe_application_fee_id, stripe_checkout_session_id, stripe_payment_intent_id, updated_at, client:profiles!booking_requests_client_id_fkey(display_name, username), artist:profiles!booking_requests_artist_id_fkey(display_name, username)",
             { count: "exact" },
           )
           .gt("total_cents", 0)
@@ -776,7 +832,9 @@ export default async function AdminPaymentsPage({
   const keyLivemode = stripeSecretKeyLivemode();
   const modeMismatch = stripeCheckoutModeMismatch();
   const checkoutPreflight = stripeCheckoutPreflight();
-  const webhookSecretReady = stripeWebhookSigningSecretConfigured();
+  const platformWebhookSecretReady = stripeWebhookSigningSecretConfigured();
+  const connectWebhookSecretReady =
+    stripeConnectWebhookSigningSecretConfigured();
   const merchDestinationChargesEnabled = stripeMerchDestinationChargesEnabled();
   const merchDestinationChargesReady = legacyMerchRoutingReady(
     merchDestinationChargesEnabled,
@@ -822,11 +880,18 @@ export default async function AdminPaymentsPage({
       ready: keyLivemode !== null,
     },
     {
-      detail: webhookSecretReady
-        ? "Webhook signing format is configured; live event proof is still required."
-        : "Webhook signing configuration needs review.",
-      label: "Webhook signing",
-      ready: webhookSecretReady,
+      detail: platformWebhookSecretReady
+        ? "Account webhook signing format is configured; live event proof is still required."
+        : "Account webhook signing configuration needs review.",
+      label: "Account webhook signing",
+      ready: platformWebhookSecretReady,
+    },
+    {
+      detail: connectWebhookSecretReady
+        ? "Connected accounts webhook signing format is configured; live event proof is still required."
+        : "Connected accounts webhook signing configuration needs review.",
+      label: "Connected accounts webhook signing",
+      ready: connectWebhookSecretReady,
     },
     {
       detail: !checkoutPreflight.ready
@@ -1189,7 +1254,7 @@ export default async function AdminPaymentsPage({
                     stripeEvents.map((event) => (
                       <article
                         className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3"
-                        key={event.event_id}
+                        key={`${event.event_id}:${event.account_scope}`}
                       >
                         <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
                           <p className="break-all text-sm font-bold">
@@ -1208,6 +1273,7 @@ export default async function AdminPaymentsPage({
                           {event.event_id}
                         </p>
                         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--muted-strong)]">
+                          <span>{paymentEventScopeLabel(event.account_scope)}</span>
                           <span>Attempt {event.attempt_count}</span>
                           <span>Claimed {formatDateTime(event.claimed_at)}</span>
                           {event.completed_at ? (
@@ -1420,22 +1486,69 @@ export default async function AdminPaymentsPage({
                               </dd>
                             </div>
                             <div className="flex justify-between gap-2">
-                              <dt>Deposit</dt>
+                              <dt>
+                                {booking.payment_charge_model === "connected_direct"
+                                  ? "Client pays"
+                                  : "Deposit"}
+                              </dt>
                               <dd>
                                 {money(booking.deposit_amount_cents, booking.currency)}
                               </dd>
                             </div>
                             <div className="flex justify-between gap-2">
-                              <dt>TTC fee</dt>
+                              <dt>
+                                {booking.payment_charge_model === "connected_direct"
+                                  ? "TTC fee from provider"
+                                  : "Historical TTC fee"}
+                              </dt>
                               <dd>
                                 {money(booking.platform_fee_cents, booking.currency)}
                               </dd>
                             </div>
+                            {booking.payment_charge_model === "connected_direct" ? (
+                              <div className="flex justify-between gap-2">
+                                <dt>Provider before processing</dt>
+                                <dd>
+                                  {money(
+                                    Math.max(
+                                      0,
+                                      booking.deposit_amount_cents -
+                                        booking.platform_fee_cents,
+                                    ),
+                                    booking.currency,
+                                  )}
+                                </dd>
+                              </div>
+                            ) : null}
+                            {booking.refunded_amount_cents > 0 ? (
+                              <div className="flex justify-between gap-2">
+                                <dt>Deposit refunded</dt>
+                                <dd>
+                                  {money(booking.refunded_amount_cents, booking.currency)}
+                                </dd>
+                              </div>
+                            ) : null}
+                            {booking.refunded_platform_fee_cents > 0 ? (
+                              <div className="flex justify-between gap-2">
+                                <dt>TTC fee reversed</dt>
+                                <dd>
+                                  {money(
+                                    booking.refunded_platform_fee_cents,
+                                    booking.currency,
+                                  )}
+                                </dd>
+                              </div>
+                            ) : null}
                             <div className="flex justify-between gap-2">
                               <dt>Updated</dt>
                               <dd>{formatDateTime(booking.updated_at)}</dd>
                             </div>
                           </dl>
+                          {bookingReconciliationWarning(booking) ? (
+                            <p className="mt-3 border-t border-[var(--card-rim)] pt-3 text-xs font-semibold text-[var(--danger)]">
+                              Reconciliation warning: {bookingReconciliationWarning(booking)}
+                            </p>
+                          ) : null}
                           {(profile.role === "admin" ||
                             profile.role === "owner") &&
                           booking.status === "deposit_pending" &&

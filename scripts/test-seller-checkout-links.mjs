@@ -2454,6 +2454,9 @@ async function loadTask6AdminActions({
             reason: "test",
           }),
         },
+        "@/lib/stripe/booking-refund": {
+          bookingRefundStripeContext: () => null,
+        },
         "@/lib/stripe/server": {
           createStripeClient: () => null,
           stripeCheckoutPreflight: () => ({ actual: false, ready: false }),

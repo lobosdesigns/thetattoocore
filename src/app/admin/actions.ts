@@ -10,6 +10,7 @@ import {
   bookingCheckoutReconciliationDecision,
   bookingCheckoutReleaseAttemptDecision,
 } from "@/lib/stripe/checkout-session";
+import { bookingRefundStripeContext } from "@/lib/stripe/booking-refund";
 import { createStripeClient, stripeCheckoutPreflight } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -2587,18 +2588,21 @@ export async function reconcileBookingDepositCheckout(formData: FormData) {
   const { data: booking, error } = await adminClient
     .from("booking_requests")
     .select(
-      "id, artist_id, client_id, currency, payment_dispute_hold, payment_status, status, stripe_checkout_session_id, total_cents, updated_at",
+      "id, artist_id, client_id, currency, fee_payer, payment_charge_model, payment_dispute_hold, payment_status, status, stripe_checkout_session_id, stripe_connected_account_id, total_cents, updated_at",
     )
     .eq("id", bookingId)
     .maybeSingle<{
       artist_id: string;
       client_id: string;
       currency: string;
+      fee_payer: string;
       id: string;
+      payment_charge_model: string;
       payment_dispute_hold: boolean;
       payment_status: string;
       status: string;
       stripe_checkout_session_id: string | null;
+      stripe_connected_account_id: string | null;
       total_cents: number;
       updated_at: string;
     }>();
@@ -2632,6 +2636,26 @@ export async function reconcileBookingDepositCheckout(formData: FormData) {
     );
   }
 
+  const checkoutContext = bookingRefundStripeContext({
+    connectedAccountId: booking.stripe_connected_account_id,
+    feePayer: booking.fee_payer,
+    paymentChargeModel: booking.payment_charge_model,
+  });
+
+  if (!checkoutContext) {
+    console.error("Admin booking checkout routing validation failed.");
+    redirect(
+      adminPaymentsMessage(
+        "Could not confirm this booking checkout. It remains held for review.",
+        returnTo,
+      ),
+    );
+  }
+
+  const checkoutStripeOptions: Stripe.RequestOptions = checkoutContext.stripeAccount
+    ? { stripeAccount: checkoutContext.stripeAccount }
+    : {};
+
   const staleBefore = Date.now() - 24 * 60 * 60 * 1000;
   const bookingUpdatedAt = Date.parse(booking.updated_at);
 
@@ -2650,8 +2674,11 @@ export async function reconcileBookingDepositCheckout(formData: FormData) {
   let checkoutSession: Stripe.Checkout.Session;
 
   try {
-    checkoutSession =
-      await stripe.checkout.sessions.retrieve(checkoutSessionId);
+    checkoutSession = await stripe.checkout.sessions.retrieve(
+      checkoutSessionId,
+      {},
+      checkoutStripeOptions,
+    );
   } catch {
     console.error("Admin booking checkout retrieval failed.");
     redirect(
@@ -2694,6 +2721,8 @@ export async function reconcileBookingDepositCheckout(formData: FormData) {
     try {
       reconciledSession = await stripe.checkout.sessions.expire(
         checkoutSession.id,
+        {},
+        checkoutStripeOptions,
       );
     } catch {
       console.error("Admin booking checkout expiration failed.");
@@ -2726,6 +2755,7 @@ export async function reconcileBookingDepositCheckout(formData: FormData) {
       actor_id: userId,
       event_type: "booking_checkout_reconciliation_approved",
       metadata: {
+        charge_model: booking.payment_charge_model,
         from_payment_status: booking.payment_status,
         from_status: booking.status,
         reconciliation_result: "expired_unpaid",
@@ -2748,19 +2778,29 @@ export async function reconcileBookingDepositCheckout(formData: FormData) {
     );
   }
 
-  const { data: releasedBooking, error: releaseError } = await adminClient
+  let releaseQuery = adminClient
     .from("booking_requests")
     .update({
       payment_status: "payment_failed",
       status: "accepted",
       stripe_checkout_session_id: null,
+      stripe_connected_account_id: null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", booking.id)
     .eq("status", "deposit_pending")
     .eq("payment_status", "checkout_started")
     .eq("payment_dispute_hold", false)
-    .eq("stripe_checkout_session_id", checkoutSessionId)
+    .eq("stripe_checkout_session_id", checkoutSessionId);
+
+  releaseQuery = booking.stripe_connected_account_id
+    ? releaseQuery.eq(
+      "stripe_connected_account_id",
+      booking.stripe_connected_account_id,
+    )
+    : releaseQuery.is("stripe_connected_account_id", null);
+
+  const { data: releasedBooking, error: releaseError } = await releaseQuery
     .select("id")
     .maybeSingle<{ id: string }>();
 
@@ -2783,6 +2823,7 @@ export async function reconcileBookingDepositCheckout(formData: FormData) {
       .eq("payment_status", "payment_failed")
       .eq("payment_dispute_hold", false)
       .is("stripe_checkout_session_id", null)
+      .is("stripe_connected_account_id", null)
       .maybeSingle<{ id: string }>();
 
     alreadyReleasedBooking = data;
@@ -2866,14 +2907,19 @@ export async function refundBookingDeposit(formData: FormData) {
   const { data: booking, error } = await adminClient
     .from("booking_requests")
     .select(
-      "id, title, payment_status, payment_dispute_hold, status, total_cents, stripe_payment_intent_id",
+      "id, title, payment_status, payment_dispute_hold, status, deposit_amount_cents, platform_fee_cents, total_cents, fee_payer, payment_charge_model, stripe_connected_account_id, stripe_payment_intent_id",
     )
     .eq("id", bookingId)
     .maybeSingle<{
+      deposit_amount_cents: number;
+      fee_payer: string;
       id: string;
+      payment_charge_model: string;
       payment_dispute_hold: boolean;
       payment_status: string;
+      platform_fee_cents: number;
       status: string;
+      stripe_connected_account_id: string | null;
       stripe_payment_intent_id: string | null;
       title: string;
       total_cents: number;
@@ -2888,8 +2934,13 @@ export async function refundBookingDeposit(formData: FormData) {
   }
 
   const paymentIntentId = booking.stripe_payment_intent_id;
+  const refundContext = bookingRefundStripeContext({
+    connectedAccountId: booking.stripe_connected_account_id,
+    feePayer: booking.fee_payer,
+    paymentChargeModel: booking.payment_charge_model,
+  });
 
-  if (!paymentIntentId || booking.total_cents <= 0) {
+  if (!paymentIntentId || booking.total_cents <= 0 || !refundContext) {
     redirect(
       adminPaymentsMessage(
         "Only paid booking deposits with a payment record can be refunded here.",
@@ -2927,14 +2978,21 @@ export async function refundBookingDeposit(formData: FormData) {
     );
   }
 
-  const bookingRefundRequestKeyVersion = "booking-full-refund-v1";
+  const bookingRefundRequestKeyVersion = "booking-full-refund-v2";
   const bookingRefundRequestKey = `${bookingRefundRequestKeyVersion}:${booking.id}:${paymentIntentId}`;
+  const stripeAccountOptions: Stripe.RequestOptions = refundContext.stripeAccount
+    ? { stripeAccount: refundContext.stripeAccount }
+    : {};
   let matchingRefund: Stripe.Refund | undefined;
   let existingRefunds: Stripe.Refund[] = [];
   let paymentIntent: Stripe.PaymentIntent;
 
   try {
-    paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    paymentIntent = await stripe.paymentIntents.retrieve(
+      paymentIntentId,
+      { expand: ["latest_charge"] },
+      stripeAccountOptions,
+    );
   } catch {
     console.error("Admin booking payment lookup failed before refund.");
     redirect(
@@ -2948,7 +3006,12 @@ export async function refundBookingDeposit(formData: FormData) {
   if (
     paymentIntent.livemode !== checkoutPreflight.actual ||
     paymentIntent.metadata?.payment_kind !== "booking_deposit" ||
-    paymentIntent.metadata?.booking_request_id !== booking.id
+    paymentIntent.metadata?.booking_request_id !== booking.id ||
+    paymentIntent.amount !== booking.total_cents ||
+    paymentIntent.currency.toLowerCase() !== "usd" ||
+    (refundContext.stripeAccount !== null &&
+      (paymentIntent.metadata?.fee_payer !== "provider" ||
+        paymentIntent.metadata?.payment_charge_model !== "connected_direct"))
   ) {
     console.error("Admin booking refund payment ownership check failed.");
     redirect(
@@ -2959,11 +3022,30 @@ export async function refundBookingDeposit(formData: FormData) {
     );
   }
 
+  const latestCharge = paymentIntent.latest_charge;
+  if (
+    !latestCharge ||
+    typeof latestCharge === "string" ||
+    latestCharge.amount !== booking.total_cents ||
+    (refundContext.stripeAccount !== null &&
+      latestCharge.application_fee_amount !== booking.platform_fee_cents)
+  ) {
+    redirect(
+      adminPaymentsMessage(
+        "The booking payment charge could not be matched safely. No refund was requested.",
+        returnTo,
+      ),
+    );
+  }
+
   try {
-    const refunds = await stripe.refunds.list({
-      limit: 100,
-      payment_intent: paymentIntentId,
-    });
+    const refunds = await stripe.refunds.list(
+      {
+        charge: latestCharge.id,
+        limit: 100,
+      },
+      stripeAccountOptions,
+    );
     existingRefunds = refunds.data;
     matchingRefund = refunds.data.find(
       (refund) =>
@@ -3025,16 +3107,25 @@ export async function refundBookingDeposit(formData: FormData) {
     }
 
     try {
-      matchingRefund = await stripe.refunds.create(
-        {
-          metadata: {
-            booking_request_id: booking.id,
-            refund_kind: "booking_deposit",
-          },
-          payment_intent: paymentIntentId,
-          reason: "requested_by_customer",
+      const refundParams: Stripe.RefundCreateParams = {
+        charge: latestCharge.id,
+        metadata: {
+          booking_request_id: booking.id,
+          refund_kind: "booking_deposit",
         },
-        { idempotencyKey: bookingRefundRequestKey },
+        reason: "requested_by_customer",
+      };
+
+      if (refundContext.refundApplicationFee) {
+        refundParams.refund_application_fee = true;
+      }
+
+      matchingRefund = await stripe.refunds.create(
+        refundParams,
+        {
+          idempotencyKey: bookingRefundRequestKey,
+          ...stripeAccountOptions,
+        },
       );
     } catch {
       console.error("Admin booking deposit refund request failed.");
@@ -3047,6 +3138,27 @@ export async function refundBookingDeposit(formData: FormData) {
     }
   }
 
+  const matchingRefundChargeId =
+    typeof matchingRefund.charge === "string"
+      ? matchingRefund.charge
+      : matchingRefund.charge?.id ?? null;
+
+  if (
+    matchingRefundChargeId !== latestCharge.id ||
+    matchingRefund.amount !== booking.total_cents ||
+    matchingRefund.currency.toLowerCase() !== "usd" ||
+    matchingRefund.metadata?.booking_request_id !== booking.id ||
+    matchingRefund.metadata?.refund_kind !== "booking_deposit"
+  ) {
+    console.error("Admin booking deposit refund identity check failed.");
+    redirect(
+      adminPaymentsMessage(
+        "The booking refund could not be matched safely. Review it before taking another action.",
+        returnTo,
+      ),
+    );
+  }
+
   const { error: refundAuditError } = await adminClient
     .from("admin_audit_logs")
     .insert({
@@ -3054,6 +3166,8 @@ export async function refundBookingDeposit(formData: FormData) {
       event_type: "refund_booking_deposit_requested",
       metadata: {
         booking_request_id: booking.id,
+        application_fee_refunded: refundContext.refundApplicationFee,
+        charge_model: booking.payment_charge_model,
         payment_intent_id: paymentIntentId,
         refund_id: matchingRefund.id,
         refund_status: matchingRefund.status,

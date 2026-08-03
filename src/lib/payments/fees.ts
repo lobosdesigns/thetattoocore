@@ -10,12 +10,11 @@ export function calculatePlatformFeeCents(amountCents: number) {
 }
 
 export function platformFeeDescription(kind: PlatformFeeKind) {
-  const label =
-    kind === "ad"
-      ? "ad checkout"
-      : kind === "booking"
-        ? "booking deposit processing"
-        : "Merch checkout";
+  if (kind === "booking") {
+    return `Transparent ${platformFeePercentLabel} TTC application fee deducted from provider funds for booking deposits. Payment processing fees are separate.`;
+  }
+
+  const label = kind === "ad" ? "ad checkout" : "Merch checkout";
 
   return `Transparent ${platformFeePercentLabel} TTC platform fee for ${label}.`;
 }

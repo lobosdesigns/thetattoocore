@@ -109,18 +109,23 @@ type BookingRequest = {
   created_at: string;
   currency: string;
   deposit_amount_cents: number;
+  fee_payer: string;
   id: string;
+  payment_charge_model: string;
   payment_status: string;
   platform_fee_cents: number;
   preferred_city: string | null;
   preferred_dates: string | null;
   preferred_slot_label: string | null;
+  refunded_amount_cents: number;
+  refunded_platform_fee_cents: number;
   scheduled_end_at: string | null;
   scheduled_start_at: string | null;
   scheduled_timezone: string | null;
   status: string;
   style_tags: string | null;
   title: string;
+  total_cents: number;
 };
 
 const imageAccept = "image/jpeg,image/png,image/webp,image/gif";
@@ -239,6 +244,58 @@ function money(cents: number, currency: string) {
     currency,
     style: "currency",
   }).format(cents / 100);
+}
+
+function BookingMoneyDetails({
+  booking,
+  providerView,
+}: {
+  booking: BookingRequest;
+  providerView: boolean;
+}) {
+  const connectedDirect =
+    booking.payment_charge_model === "connected_direct" &&
+    booking.fee_payer === "provider";
+
+  if (connectedDirect) {
+    return (
+      <>
+        <p>Client pays: {money(booking.deposit_amount_cents, booking.currency)}</p>
+        {providerView ? (
+          <>
+            <p>
+              TTC fee from provider: {money(booking.platform_fee_cents, booking.currency)}
+            </p>
+            <p>
+              Before payment processing fees:{" "}
+              {money(
+                Math.max(0, booking.deposit_amount_cents - booking.platform_fee_cents),
+                booking.currency,
+              )}
+            </p>
+            {booking.refunded_platform_fee_cents > 0 ? (
+              <p>
+                TTC fee reversed: {money(booking.refunded_platform_fee_cents, booking.currency)}
+              </p>
+            ) : null}
+          </>
+        ) : null}
+        {booking.refunded_amount_cents > 0 ? (
+          <p>Deposit refunded: {money(booking.refunded_amount_cents, booking.currency)}</p>
+        ) : null}
+      </>
+    );
+  }
+
+  return (
+    <>
+      <p>
+        Deposit: {money(booking.deposit_amount_cents, booking.currency)} + historical TTC
+        fee {money(booking.platform_fee_cents, booking.currency)}
+      </p>
+      <p>Total checkout: {money(booking.total_cents, booking.currency)}</p>
+    </>
+  );
 }
 
 function formatDate(value: string | null) {
@@ -398,18 +455,7 @@ function BookingCards({
                 {booking.body}
               </p>
               <div className="mt-3 grid gap-1 text-xs leading-5 text-[var(--muted-strong)]">
-                <p>
-                  Deposit: {money(booking.deposit_amount_cents, booking.currency)}
-                  {" "}+ TTC fee{" "}
-                  {money(booking.platform_fee_cents, booking.currency)}
-                </p>
-                <p>
-                  Total checkout:{" "}
-                  {money(
-                    booking.deposit_amount_cents + booking.platform_fee_cents,
-                    booking.currency,
-                  )}
-                </p>
+                <BookingMoneyDetails booking={booking} providerView={isArtist} />
                 <p>Payment: {bookingPaymentStatusLabel(booking.payment_status)}</p>
                 {booking.style_tags ? <p>Style: {booking.style_tags}</p> : null}
                 {booking.preferred_city ? <p>City: {booking.preferred_city}</p> : null}
@@ -462,8 +508,8 @@ function BookingCards({
                       placeholder="Example: 100"
                     />
                     <span className="text-[11px] font-normal leading-4 text-[var(--muted-strong)]">
-                      This is the deposit checkout amount before the TTC fee is
-                      added.
+                      The client pays this amount. TTC deducts 2% from the
+                      provider side; payment processing fees are separate.
                     </span>
                   </label>
                   <details className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3">
@@ -1027,7 +1073,7 @@ export default async function MessagesPage({
     ? await supabase
         .from("booking_requests")
         .select(
-          "id, client_id, artist_id, title, body, status, payment_status, deposit_amount_cents, platform_fee_cents, currency, style_tags, preferred_city, preferred_dates, appointment_type_label, preferred_slot_label, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at",
+          "id, client_id, artist_id, title, body, status, payment_status, deposit_amount_cents, platform_fee_cents, total_cents, currency, fee_payer, payment_charge_model, refunded_amount_cents, refunded_platform_fee_cents, style_tags, preferred_city, preferred_dates, appointment_type_label, preferred_slot_label, artist_note, scheduled_start_at, scheduled_end_at, scheduled_timezone, created_at",
         )
         .eq("conversation_id", selectedConversation.id)
         .order("created_at", { ascending: false })
