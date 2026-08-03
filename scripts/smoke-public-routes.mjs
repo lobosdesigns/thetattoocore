@@ -555,8 +555,8 @@ const checks = [
       "/login?return_to=%2Fsettings%2Fhelp",
       "Open deletion controls",
       "visible nudity",
-      "Merch checkout stays review-controlled",
-      "missing, damaged, wrong, delayed, returned",
+      "Merch Support",
+      "For new external Merch purchases, the seller is the merchant.",
       "How-To Library",
       "FAQ and tutorial topics for getting started, beta app testing",
       "Popular Help Guides",
@@ -572,12 +572,19 @@ const checks = [
       "/help/merch-products-orders",
       "/help/order-refunds-disputes",
       "/help/seller-payouts-payment-safety",
-      "Product review, seller readiness",
+      "Product review, seller Payment Links, fulfillment terms, seller support, and listing-safety reports.",
       "Posting and Stories",
-      "Seller payout setup",
+      "Purchase support",
+      "Seller checkout",
+      "Seller-owned checkout readiness, Payment Link safety, buyer disclosure, and listing review.",
       "support@thetattoocore.com",
       'href="/terms"',
       'href="/privacy"',
+    ],
+    excludes: [
+      "Merch checkout stays review-controlled",
+      "Product review, seller readiness",
+      "Seller payout setup",
     ],
   },
   {
@@ -631,13 +638,18 @@ const checks = [
       "search, find people, and use Saved",
       "reports, blocks, privacy, and support",
       "create an ad and review ad credits",
-      "set up Merch products",
-      "Order support, refunds, and disputes",
-      "Seller payouts and payment safety",
+      "How to set up seller-owned Merch checkout",
+      "Purchase support, refunds, and disputes",
+      "Seller checkout and payment safety",
       "submit artist, studio, or vendor verification",
       "Last reviewed July 15, 2026",
       "pin official",
       "support@thetattoocore.com",
+    ],
+    excludes: [
+      "set up Merch products",
+      "Order support, refunds, and disputes",
+      "Seller payouts and payment safety",
     ],
   },
   {
@@ -651,7 +663,8 @@ const checks = [
       "What should a beta bug report include?",
       "outside browser",
       "two-user DM pass",
-      "test checkout return paths",
+      "purchase-support guide access",
+      "seller-checkout external-browser return",
       "App wrapper navigation pass",
       "Safe beta bug report",
       "FAQPage",
@@ -659,6 +672,7 @@ const checks = [
       "/help/beta-tester-checklist",
       "support@thetattoocore.com",
     ],
+    excludes: ["test checkout return paths"],
   },
   {
     path: "/help/beta-tester-checklist",
@@ -827,48 +841,78 @@ const checks = [
     path: "/help/merch-products-orders?smoke_cache_bust=merch-guide",
     status: [200],
     includes: [
-      "How to set up Merch products and handle orders",
+      "How to set up seller-owned Merch checkout",
       "What belongs in Merch?",
       "Can fans buy Merch?",
+      "What should sellers finish before taking orders?",
+      "Who handles a new Merch purchase?",
+      "What purchase data does TTC receive?",
+      "What if a package has a problem?",
+      "The seller processes payment and handles shipping, taxes, returns, refunds, disputes, and purchase support",
+      "TTC does not receive new external card, shipping, receipt, or transaction data.",
+      "Historical TTC order support",
+      "Listing and seller link guide",
+      "FAQPage",
+      "Last reviewed August 2, 2026",
+      "support@thetattoocore.com",
+    ],
+    excludes: [
+      "How to set up Merch products and handle orders",
       "When should I mark a Merch order fulfilled?",
       "Buyer shipping details are private order information",
-      "What if a package has a problem?",
-      "missing, damaged, wrong, delayed, or returned packages",
       "seller order card",
       "tracking number",
-      "refund review",
-      "FAQPage",
       "Last reviewed July 16, 2026",
-      "support@thetattoocore.com",
     ],
   },
   {
     path: "/help/order-refunds-disputes",
     status: [200],
     includes: [
+      "Purchase support, refunds, and disputes",
+      "How do I ask for purchase help?",
+      "Who handles a return or refund?",
+      "What happens if there is a dispute?",
+      "What about an older TTC order row?",
+      "For a new external purchase",
+      "TTC cannot issue a refund for a transaction it did not process.",
+      "Historical TTC test/order support rows remain visible in Settings",
+      "Seller purchase support",
+      "FAQPage",
+      "Last reviewed August 2, 2026",
+      "/help/merch-products-orders",
+      "support@thetattoocore.com",
+    ],
+    excludes: [
       "Order support, refunds, and disputes",
       "How do I ask for order help?",
       "How are refunds reviewed?",
-      "What happens if there is a dispute?",
       "What if the seller does not deliver?",
-      "missing, damaged, wrong, delayed, returned",
-      "seller non-delivery",
       "pause seller payout release",
       "Buyer order support path",
-      "Fulfillment and refund review",
-      "FAQPage",
       "Last reviewed July 17, 2026",
-      "/help/merch-products-orders",
-      "support@thetattoocore.com",
     ],
   },
   {
     path: "/help/seller-payouts-payment-safety",
     status: [200],
     includes: [
+      "Seller checkout and payment safety",
+      "Who creates the checkout link?",
+      "Why is checkout not open on my product?",
+      "Does TTC add a fee to the purchase?",
+      "Who handles purchase problems?",
+      "Should I send private payment details to TTC?",
+      "Create a live Payment Link inside your own payment account.",
+      "TTC does not add a Merch transaction fee to the new external seller-owned purchase.",
+      "Use your own records to support the purchase.",
+      "FAQPage",
+      "Last reviewed August 2, 2026",
+      "support@thetattoocore.com",
+    ],
+    excludes: [
       "Seller payouts and payment safety",
       "Who can set up seller payouts?",
-      "Why is checkout not open on my product?",
       "How are TTC fees handled?",
       "How do refunds and disputes affect payouts?",
       "Should I send payout details to support?",
@@ -876,9 +920,7 @@ const checks = [
       "TTC stores readiness status only",
       "Seller payout readiness",
       "Payment safety walkthrough",
-      "FAQPage",
       "Last reviewed July 17, 2026",
-      "support@thetattoocore.com",
     ],
   },
   {
@@ -1314,10 +1356,20 @@ async function checkPwaManifest() {
     "/screenshots/mobile-booking-safe.png",
     "/screenshots/mobile-ads-safe.png",
     "/screenshots/mobile-merch-safe.png",
-    "/screenshots/mobile-payout-safe.png",
-    "/screenshots/mobile-order-support-safe.png",
+    "/screenshots/mobile-seller-payment-link-safe.png",
+    "/screenshots/mobile-seller-purchase-support-safe.png",
+    "/screenshots/mobile-listing-safety-safe.png",
     "/screenshots/mobile-help-support.png",
     "/screenshots/desktop-home.png",
+  ];
+  const retiredScreenshots = [
+    "/screenshots/mobile-payout-safe.png",
+    "/screenshots/mobile-order-support-safe.png",
+    "/screenshots/mobile-merch-help-shortcut-safe.png",
+  ];
+  const retiredScreenshotLabels = [
+    "TheTattooCore payout readiness preview",
+    "TheTattooCore order support preview",
   ];
   const requiredShortcuts = [
     "/#feed",
@@ -1334,6 +1386,13 @@ async function checkPwaManifest() {
   const missingIcons = requiredIcons.filter((src) => !manifestIcons.has(src));
   const missingScreenshots = requiredScreenshots.filter((src) => !manifestScreenshots.has(src));
   const missingShortcuts = requiredShortcuts.filter((url) => !manifestShortcuts.has(url));
+  const presentRetiredScreenshots = retiredScreenshots.filter((src) => manifestScreenshots.has(src));
+  const manifestScreenshotLabels = new Set(
+    (manifest.screenshots || []).map((screenshot) => screenshot.label),
+  );
+  const presentRetiredScreenshotLabels = retiredScreenshotLabels.filter((label) =>
+    manifestScreenshotLabels.has(label),
+  );
 
   if (
     manifest.name !== "TheTattooCore" ||
@@ -1341,7 +1400,9 @@ async function checkPwaManifest() {
     missingFields.length > 0 ||
     missingIcons.length > 0 ||
     missingScreenshots.length > 0 ||
-    missingShortcuts.length > 0
+    missingShortcuts.length > 0 ||
+    presentRetiredScreenshots.length > 0 ||
+    presentRetiredScreenshotLabels.length > 0
   ) {
     failures += 1;
     console.error(`FAIL /manifest.webmanifest`);
@@ -1354,6 +1415,12 @@ async function checkPwaManifest() {
     }
     if (missingShortcuts.length > 0) {
       console.error(`  missing shortcuts: ${missingShortcuts.join(", ")}`);
+    }
+    if (presentRetiredScreenshots.length > 0) {
+      console.error(`  retired screenshots present: ${presentRetiredScreenshots.join(", ")}`);
+    }
+    if (presentRetiredScreenshotLabels.length > 0) {
+      console.error(`  retired screenshot labels present: ${presentRetiredScreenshotLabels.join(", ")}`);
     }
     return;
   }
