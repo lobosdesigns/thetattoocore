@@ -2,6 +2,47 @@
 
 Use this private checklist before public App Store or Google Play review, production commerce promotion, wider beta expansion, or final Terms/Privacy updates. This is an evidence handoff for counsel or the approved business reviewer; it is not member-facing copy.
 
+## Paid Advertising Legal And Store Review - August 3, 2026
+
+The staged ad-credit products buy advertising displayed inside TTC. They are
+digital same-app advertising, not physical Merch, a booking deposit, or a
+seller payout. The implementation is under final review and remains disabled.
+
+- Apple App Review Guidelines 3.1.3(g), checked August 3, 2026, specifically
+  require In-App Purchase for advertisements displayed in the same app. iOS
+  therefore uses StoreKit consumables and does not show or link to web Stripe
+  checkout.
+- Google Play Payments policy sections 2 and 4, checked August 3, 2026, require
+  Play Billing for in-app digital services and prohibit in-app steering to an
+  outside payment method unless an applicable program is accepted. Android
+  therefore uses Play one-time products without claiming an alternative
+  billing enrollment.
+- Web may sell the same fixed TTC ad-credit packages through Stripe. Purchased
+  credit is non-expiring, can fund only TTC campaigns, and has no additional 2%
+  TTC fee. Store-controlled localized native prices may differ from web prices.
+- Counsel or the approved business reviewer must approve package descriptions,
+  refund and chargeback treatment after partial credit use, ad moderation and
+  removal remedies, prohibited advertisers/content, tax and revenue treatment,
+  customer support ownership, and any regional availability limits.
+- The Google Play candidate answers pending chargeback reviews with a neutral
+  recommendation and no unsupported consumption evidence. Owner/legal review
+  must approve that default before the Android purchase gate is enabled.
+- Store reviewer notes must identify the three product IDs, purchase and
+  recovery path, campaign review step, Sponsored label, targeting explanation,
+  refund/support path, and exact test account/build. Do not claim availability
+  until that exact product and binary are approved.
+- `TTC_WEB_AD_PURCHASES_ENABLED=false`,
+  `TTC_IOS_AD_PURCHASES_ENABLED=false`, and
+  `TTC_ANDROID_AD_PURCHASES_ENABLED=false` remain the source defaults. No legal
+  attestation, paid-app agreement, tax form, product availability, migration,
+  credential, sandbox purchase, submission, or public enablement is completed
+  by source implementation.
+
+Official sources checked August 3, 2026:
+[Apple App Review Guidelines](https://developer.apple.com/app-store/review/guidelines/),
+[Google Play Payments policy](https://support.google.com/googleplay/android-developer/answer/9858738),
+and [Google Play Billing security guidance](https://developer.android.com/google/play/billing/security).
+
 ## Booking Deposit Legal Review - August 3, 2026
 
 The staged booking model is a Stripe Connect direct charge for a real-world

@@ -3,6 +3,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const adCheckout = readFileSync("src/app/api/ads/checkout/route.ts", "utf8");
+const adWebCheckout = readFileSync("src/lib/ads/web-checkout.ts", "utf8");
+const adCreditPackages = readFileSync("src/lib/ads/credit-packages.ts", "utf8");
 const commerceLaunch = readFileSync("src/lib/commerce-launch.ts", "utf8");
 const bookingCheckout = readFileSync("src/app/api/bookings/checkout/route.ts", "utf8");
 const merchCheckout = readFileSync("src/app/api/merch/checkout/route.ts", "utf8");
@@ -164,9 +166,9 @@ const packageJson = readFileSync("package.json", "utf8");
 const packageScripts = JSON.parse(packageJson).scripts;
 const envGuardSource = readFileSync("scripts/smoke-env-guards.mjs", "utf8");
 const expectedPaymentSmoke =
-  "npm run test:stripe-release-gates && npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && npm run test:booking-connected-checkout && npm run test:merch-checkout-route && npm run test:seller-checkout && node scripts/smoke-payment-guards.mjs";
+  "npm run test:stripe-release-gates && npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && npm run test:booking-connected-checkout && npm run test:booking-lifecycle-db && npm run test:merch-checkout-route && npm run test:seller-checkout && npm run test:ad-credit-purchases && npm run test:ad-purchase-input-security && npm run test:ad-purchase-surfaces && node scripts/smoke-payment-guards.mjs";
 const expectedSecuritySmoke =
-  "npm run test:seller-checkout && npm run test:csp-headers && node --no-warnings --experimental-loader ./scripts/server-only-test-loader.mjs --experimental-default-type=module scripts/test-mail-redaction.mjs && node scripts/smoke-security-guards.mjs";
+  "npm run test:seller-checkout && npm run test:ad-purchase-input-security && npm run test:csp-headers && node --no-warnings --experimental-loader ./scripts/server-only-test-loader.mjs --experimental-default-type=module scripts/test-mail-redaction.mjs && node scripts/smoke-security-guards.mjs";
 const compactWhitespace = (value) => value.replace(/\s+/g, " ").trim();
 const envGuardResult = spawnSync(process.execPath, ["scripts/smoke-env-guards.mjs"], {
   encoding: "utf8",
@@ -325,7 +327,7 @@ function indexOfOrFail(body, snippet) {
 const checks = [];
 
 checks.push({
-  label: "seller checkout contracts run in payment and security verification",
+  label: "seller checkout and ad purchase contracts run in payment and security verification",
   ok:
     packageScripts["smoke:payments"] === expectedPaymentSmoke &&
     packageScripts["smoke:security"] === expectedSecuritySmoke &&
@@ -334,6 +336,18 @@ checks.push({
     ).length === 1 &&
     packageScripts["smoke:security"].split(" && ").filter(
       (step) => step === "npm run test:seller-checkout",
+    ).length === 1 &&
+    packageScripts["smoke:payments"].split(" && ").filter(
+      (step) => step === "npm run test:ad-credit-purchases",
+    ).length === 1 &&
+    packageScripts["smoke:payments"].split(" && ").filter(
+      (step) => step === "npm run test:ad-purchase-input-security",
+    ).length === 1 &&
+    packageScripts["smoke:security"].split(" && ").filter(
+      (step) => step === "npm run test:ad-purchase-input-security",
+    ).length === 1 &&
+    packageScripts["smoke:payments"].split(" && ").filter(
+      (step) => step === "npm run test:ad-purchase-surfaces",
     ).length === 1,
 });
 
@@ -406,9 +420,14 @@ try {
     bookingCheckout,
     "session = await createBookingCheckoutSession",
   );
-  const adLaunchGateIndex = indexOfOrFail(
+  const adSurfaceGateIndex = indexOfOrFail(
     adCheckout,
-    "if (!AD_PURCHASES_AVAILABLE)",
+    "if (!adPurchaseSurfaceEnabled(surface))",
+  );
+  const adBodyGateIndex = indexOfOrFail(adCheckout, "if (!adCheckoutBodyAllowed(");
+  const adFormIndex = indexOfOrFail(
+    adCheckout,
+    "await readBoundedAdCheckoutForm(request)",
   );
   const adAccountIndex = indexOfOrFail(adCheckout, "const supabase = await createClient()");
 
@@ -421,8 +440,12 @@ try {
       bookingCheckout.includes("stripeWebhookSigningSecretConfigured()") &&
       bookingGateIndex < bookingReservationIndex &&
       bookingGateIndex < bookingSessionIndex &&
-      adCheckout.includes("checkoutCreationEnabled: AD_PURCHASES_AVAILABLE") &&
-      adLaunchGateIndex < adAccountIndex,
+      adCheckout.includes("createStripeCheckoutSession({") &&
+      adCheckout.includes("checkoutCreationEnabled: stripeCheckoutCreationMasterEnabled() &&") &&
+      adCheckout.includes('adPurchaseSurfaceEnabled("web")') &&
+      adSurfaceGateIndex < adBodyGateIndex &&
+      adBodyGateIndex < adFormIndex &&
+      adFormIndex < adAccountIndex,
   });
 } catch (error) {
   checks.push({
@@ -519,29 +542,47 @@ checks.push({
 });
 
 try {
-  const reserveIndex = indexOfOrFail(adCheckout, "const { data: reservedCampaign");
-  const sessionIndex = indexOfOrFail(adCheckout, "session = await createAdCheckoutSession");
-  const attachIndex = indexOfOrFail(adCheckout, "stripe_checkout_session_id: session.id");
+  const campaignSpendIndex = indexOfOrFail(adCheckout, '"spend_ad_credit_for_campaign"');
+  const packageIndex = indexOfOrFail(
+    adCheckout,
+    "adCreditPackageForProductId(intent.productId)",
+  );
+  const sessionIndex = indexOfOrFail(
+    adCheckout,
+    "session = await createAdCreditCheckoutSession",
+  );
+  const missingUrlIndex = indexOfOrFail(adCheckout, "if (!session.url)");
+  const expireIndex = indexOfOrFail(adCheckout, "await expireStripeCheckoutSession({");
 
   checks.push({
-    label: "ad checkout reserves campaign before Stripe session",
-    ok: reserveIndex < sessionIndex,
-  });
-  checks.push({
-    label: "ad checkout attaches Stripe session after creation",
-    ok: sessionIndex < attachIndex,
-  });
-  checks.push({
-    label: "ad checkout rolls back reservation on session creation failure",
+    label: "ad campaign funding spends existing ledger credit without opening Stripe",
     ok:
-      adCheckout.includes("const rollBackReservation = async () =>") &&
-      adCheckout.includes("await rollBackReservation();"),
+      campaignSpendIndex < packageIndex &&
+      adCheckout.includes('intent.kind === "campaign"') &&
+      adCheckout.includes("Ad credit applied. Campaign payment is covered.") &&
+      !adCheckout.includes('from("ad_campaigns")') &&
+      !adCheckout.includes("reserve") &&
+      !adCheckout.includes("stripe_checkout_session_id"),
   });
   checks.push({
-    label: "ad checkout only attaches session to reserved campaign",
+    label: "web ad credit checkout uses only server-owned fixed packages",
     ok:
-      adCheckout.includes('.eq("payment_status", "checkout_started")') &&
-      adCheckout.includes('.is("stripe_checkout_session_id", null)'),
+      packageIndex < sessionIndex &&
+      adCreditPackages.includes('"ttc.adcredit.2500": { creditCents: 2500, webPriceCents: 2500 }') &&
+      adCreditPackages.includes('"ttc.adcredit.5000": { creditCents: 5000, webPriceCents: 5000 }') &&
+      adCreditPackages.includes('"ttc.adcredit.10000": { creditCents: 10000, webPriceCents: 10000 }') &&
+      adCheckout.includes('"metadata[payment_kind]": "ad_credit_purchase"') &&
+      adCheckout.includes('"line_items[0][price_data][unit_amount]": String(') &&
+      adCheckout.includes("creditPackage.webPriceCents") &&
+      !adCheckout.includes('formData.get("amount') &&
+      !adCheckout.includes('formData.get("credit'),
+  });
+  checks.push({
+    label: "URL-less ad credit checkout is expired without a local reservation",
+    ok:
+      sessionIndex < missingUrlIndex &&
+      missingUrlIndex < expireIndex &&
+      adCheckout.includes("return NextResponse.redirect(session.url, { status: 303 })"),
   });
 } catch (error) {
   checks.push({
@@ -564,46 +605,50 @@ checks.push({
     adCheckout.includes('"spend_ad_credit_for_campaign"') &&
     adCheckout.includes("Ad credit applied. Campaign payment is covered.") &&
     adCheckout.indexOf('"spend_ad_credit_for_campaign"') <
-      adCheckout.indexOf("const { data: reservedCampaign") &&
+      adCheckout.indexOf("session = await createAdCreditCheckoutSession") &&
     accountPage.includes(".from(\"ad_credit_ledger\")") &&
     accountPage.includes("Available ad credit") &&
-    productPlan.includes("member-visible Account > Advertising balance summaries") &&
-    productPlan.includes("atomic spend path that lets campaign checkout consume enough active account credit"),
+    accountPage.includes("Purchased credit does") &&
+    accountPage.includes("Promotional credit"),
 });
 try {
   const adCheckoutPost = adCheckout.slice(
     indexOfOrFail(adCheckout, "export async function POST"),
   );
-  const gateIndex = indexOfOrFail(adCheckoutPost, "if (!AD_PURCHASES_AVAILABLE)");
+  const gateIndex = indexOfOrFail(
+    adCheckoutPost,
+    "if (!adPurchaseSurfaceEnabled(surface))",
+  );
   const guardedWork = [
-    "process.env.STRIPE_WEBHOOK_SECRET",
-    "request.formData()",
+    "adCheckoutBodyAllowed",
+    "readBoundedAdCheckoutForm(request)",
     "createClient()",
     '"spend_ad_credit_for_campaign"',
-    "const { data: reservedCampaign",
-    "createAdCheckoutSession({",
+    "createAdCreditCheckoutSession({",
   ];
-  const accountCheckoutFormIndex = indexOfOrFail(
+  const accountPurchaseOptionsIndex = indexOfOrFail(
     accountPage,
-    '<form action="/api/ads/checkout"',
+    "<AdCreditPurchaseOptions",
   );
 
   checks.push({
-    label: "ad purchases fail closed before account, credit, reservation, or checkout work",
+    label: "ad purchases fail closed per surface before account, credit, or checkout work",
     ok:
-      commerceLaunch.includes("export const AD_PURCHASES_AVAILABLE = false;") &&
+      commerceLaunch.includes('android: "TTC_ANDROID_AD_PURCHASES_ENABLED"') &&
+      commerceLaunch.includes('ios: "TTC_IOS_AD_PURCHASES_ENABLED"') &&
+      commerceLaunch.includes('web: "TTC_WEB_AD_PURCHASES_ENABLED"') &&
+      commerceLaunch.includes('return environment[gate] === "true"') &&
       adCheckout.includes(
-        'import { AD_PURCHASES_AVAILABLE } from "@/lib/commerce-launch";',
+        "adPurchaseSurfaceFromUserAgent",
       ) &&
       adCheckoutPost.includes(
         'return redirectWithMessage("Ad purchases are not available yet.");',
       ) &&
       guardedWork.every((snippet) => gateIndex < indexOfOrFail(adCheckoutPost, snippet)) &&
-      accountPage.includes(
-        'import { AD_PURCHASES_AVAILABLE } from "@/lib/commerce-launch";',
-      ) &&
+      accountPage.includes("adPurchaseSurfaceFromUserAgent") &&
+      accountPage.includes("adPurchaseSurfaceEnabled(adPurchaseSurface)") &&
       accountPage.includes("Ad purchases are not available yet.") &&
-      accountPage.indexOf("AD_PURCHASES_AVAILABLE &&") < accountCheckoutFormIndex &&
+      accountPage.indexOf("const adPurchaseEnabled") < accountPurchaseOptionsIndex &&
       helpCenter.includes(
         "They can be applied where ad purchasing is available.",
       ),
@@ -900,7 +945,9 @@ checks.push({
   label: "booking and ad checkout routes require private payment gates before payments",
   ok:
     adCheckout.includes("process.env.STRIPE_WEBHOOK_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY") &&
-    adCheckout.includes("Ad checkout is temporarily unavailable. Please try again later.") &&
+    adCheckout.includes("Ad credit checkout is temporarily unavailable. Please try again later.") &&
+    adCheckout.includes("stripeCheckoutCreationMasterEnabled()") &&
+    adCheckout.includes('adPurchaseSurfaceEnabled("web")') &&
     bookingCheckout.includes("stripeConnectWebhookSigningSecretConfigured()") &&
     bookingCheckout.includes("stripeWebhookSigningSecretConfigured()") &&
     bookingCheckout.includes("process.env.SUPABASE_SERVICE_ROLE_KEY") &&
@@ -927,12 +974,12 @@ checks.push({
     bookingCheckout.includes("stripeCheckoutPreflight") &&
     adCheckout.includes("const checkoutPreflight = stripeCheckoutPreflight()") &&
     bookingCheckout.includes("const checkoutPreflight = stripeCheckoutPreflight()") &&
-    adCheckout.includes("if (!checkoutPreflight.ready)") &&
+    adCheckout.includes("if (!checkoutPreflight.ready || !stripeCheckoutCreationMasterEnabled())") &&
     bookingCheckout.includes("if (!checkoutPreflight.ready)") &&
-    adCheckout.includes('console.error("Ad checkout mode preflight failed.", checkoutPreflight)') &&
+    adCheckout.includes('console.error("Ad credit checkout mode preflight failed.", checkoutPreflight)') &&
     bookingCheckout.includes('console.error("Booking checkout mode preflight failed.", checkoutPreflight)') &&
     adCheckout.indexOf("const checkoutPreflight = stripeCheckoutPreflight()") <
-      adCheckout.indexOf("const { data: campaign, error }") &&
+      adCheckout.indexOf("session = await createAdCreditCheckoutSession") &&
     bookingCheckout.indexOf("const checkoutPreflight = stripeCheckoutPreflight()") <
       bookingCheckout.indexOf("const { data: booking, error }") &&
     adCheckout.indexOf("const checkoutPreflight = stripeCheckoutPreflight()") >
@@ -943,11 +990,11 @@ checks.push({
 checks.push({
   label: "booking and ad checkout creation failures log privately and show generic member copy",
   ok:
-    adCheckout.includes('console.error("Ad checkout session creation failed.", error)') &&
-    adCheckout.includes('"Checkout could not open for this ad. Please try again."') &&
+    adCheckout.includes('console.error("Ad credit checkout session creation failed.", error)') &&
+    adCheckout.includes('"Ad credit checkout could not open. Please try again."') &&
     !adCheckout.includes("session.error?.message") &&
     !adCheckout.includes("throw new Error(message)") &&
-    !adCheckout.includes('error instanceof Error ? error.message : "Checkout could not open for this ad."') &&
+    !adCheckout.includes("error.message") &&
     bookingCheckout.includes('console.error("Booking checkout session creation failed.", error)') &&
     bookingCheckout.includes('"Booking checkout could not open. Please try again."') &&
     !bookingCheckout.includes("session.error?.message") &&
@@ -961,15 +1008,12 @@ checks.push({
     !stripeCheckoutSessions.includes("error.message"),
 });
 checks.push({
-  label: "booking and ad checkout persistence failures do not redirect raw database errors",
+  label: "booking persistence and ad ledger failures do not redirect raw database errors",
   ok:
     !adCheckout.includes(".message ||") &&
-    adCheckout.includes('console.error("Ad credit check failed before checkout.", creditError)') &&
-    adCheckout.includes('"Ad credit could not be checked for this campaign. Please try again."') &&
-    adCheckout.includes('console.error("Ad checkout reservation failed.", reserveError)') &&
-    adCheckout.includes('"The ad payment could not be reserved before checkout. Please try again."') &&
-    adCheckout.includes('console.error("Ad checkout session save failed.", updateError)') &&
-    adCheckout.includes('"Checkout started, but the checkout could not be saved. Please contact support if this repeats."') &&
+    adCheckout.includes('console.error("Ad credit spend failed.", creditError)') &&
+    adCheckout.includes('"Ad credit could not be applied. Please try again."') &&
+    !adCheckout.includes("creditError.message") &&
     !bookingCheckout.includes(".message ||") &&
     bookingCheckout.includes('console.error("Booking deposit reservation failed.", reserveError)') &&
     bookingCheckout.includes('"The booking deposit could not be reserved before checkout. Please try again."') &&
@@ -977,7 +1021,7 @@ checks.push({
     bookingCheckout.includes('"Checkout started, but the checkout could not be saved. Please contact support if this repeats."'),
 });
 checks.push({
-  label: "booking and ad checkout sessions expire before local reservations are released",
+  label: "booking reservations expire safely and ad credit checkout has no local reservation",
   ok:
     stripeCheckoutSessions.includes('"Idempotency-Key": _options.idempotencyKey') &&
     stripeCheckoutSessions.includes(
@@ -998,10 +1042,10 @@ checks.push({
     ) < connectedExpirationRollback.indexOf("await options.rollback()") &&
     stripeCheckoutSessions.includes("rollback: () => Promise<boolean>") &&
     stripeCheckoutSessions.includes("return await options.rollback()") &&
-    adCheckout.includes("expireCheckoutSessionBeforeRollback({") &&
-    adCheckout.includes("rollback: rollBackReservation") &&
-    adCheckout.includes('.select("id")') &&
-    adCheckout.includes("return Boolean(releasedCampaign)") &&
+    adCheckout.includes("expireStripeCheckoutSession({") &&
+    !adCheckout.includes("expireCheckoutSessionBeforeRollback({") &&
+    !adCheckout.includes("rollBackReservation") &&
+    !adCheckout.includes("releasedCampaign") &&
     bookingCheckout.includes("expireConnectedCheckoutSessionBeforeRollback({") &&
     bookingCheckout.includes(
       "connectedAccountId: connectedAccount.stripe_account_id",
@@ -1014,9 +1058,6 @@ checks.push({
     ) &&
     paymentReadiness.includes(
       "keeps the reservation held for operator reconciliation instead of exposing a payable orphan",
-    ) &&
-    !adCheckout.includes(
-      'console.error("Ad checkout session save failed.", updateError);\n    await rollBackReservation();',
     ) &&
     !bookingCheckout.includes(
       'console.error("Booking checkout session save failed.", updateError);\n    await rollBackReservation();',
@@ -1346,18 +1387,21 @@ checks.push({
 checks.push({
   label: "ad checkout preserves only safe internal return paths",
   ok:
-    adCheckout.includes("function safeInternalReturnPath") &&
-    adCheckout.includes("text.startsWith(\"/\")") &&
-    adCheckout.includes("text.startsWith(\"//\")") &&
+    adWebCheckout.includes("export function safeAdCheckoutReturnPath") &&
+    adWebCheckout.includes('text.startsWith("/")') &&
+    adWebCheckout.includes('text.startsWith("//")') &&
+    adWebCheckout.includes("text.length > 240") &&
+    adWebCheckout.includes("\\u0000-\\u001f\\u007f\\\\") &&
     adCheckout.includes("function pathWithMessage") &&
     adCheckout.includes("const returnUrl = new URL(returnTo, siteUrl)") &&
     adCheckout.includes('returnUrl.searchParams.set("message", message)') &&
     adCheckout.includes("`${returnUrl.pathname}${returnUrl.search}${returnUrl.hash}`") &&
-    adCheckout.includes('formData.get("return_to")') &&
-    adCheckout.includes("returnTo: string | null") &&
-    adCheckout.includes('return_to=${encodeURIComponent(returnTo ?? "/account#advertising-settings")}') &&
-    adCheckout.includes('"success_url": successUrl') &&
-      adCheckout.includes('"cancel_url": cancelUrl'),
+    adCheckout.includes("await readBoundedAdCheckoutForm(request)") &&
+    adCheckout.includes("parseAdCheckoutForm(formData)") &&
+    !adCheckout.includes("request.formData()") &&
+    adCheckout.includes("intent.returnTo") &&
+    adCheckout.includes("success_url: successUrl") &&
+    adCheckout.includes("cancel_url: cancelUrl"),
 });
 checks.push({
   label: "Merch checkout route is the exact side-effect-free 410 boundary",
@@ -1493,7 +1537,9 @@ checks.push({
     adminPaymentsPage.includes('"refund_merch_order_requested"') &&
     adminPaymentsPage.includes("Merch refund requested") &&
     stripeWebhook.includes('event.type === "charge.refunded"') &&
-    stripeWebhook.includes("await markRefunded({ accountScope, charge, stripe })") &&
+    stripeWebhook.includes(
+      "await markRefunded({ accountScope, charge, eventId: event.id, stripe })",
+    ) &&
     paymentReadiness.includes("destination-charge refunds reverse the seller transfer") &&
     paymentReadiness.includes("signed payment webhook remains the order-status authority"),
 });
@@ -1563,12 +1609,13 @@ checks.push({
     merchDetailPage.includes('href="/help/merch-products-orders"'),
 });
 checks.push({
-  label: "shared platform fee helper stays at launch rate",
+  label: "booking fee stays at launch rate while new ad credit has no added fee",
   ok:
     fees.includes("export const platformFeeRate = 0.02") &&
     fees.includes('export const platformFeePercentLabel = "2%"') &&
-    fees.includes("Transparent") &&
-    fees.includes("TTC platform fee for") &&
+    fees.includes("TTC application fee deducted from provider funds for booking deposits") &&
+    fees.includes("No additional TTC platform fee applies to ad credit purchases.") &&
+    fees.includes("TTC platform fee for historical Merch checkout") &&
     !fees.includes("test-mode") &&
     !fees.includes("test mode"),
 });
@@ -1594,7 +1641,7 @@ checks.push({
     adminPaymentsPage.includes("Checkout is blocked until mode, server key, and webhook signing checks all pass.") &&
     adminPaymentsPage.includes("Checkout mode preflight is ready.") &&
     adminPaymentsPage.includes("Expected mode and server key mode do not match.") &&
-    !stripeWebhook.includes("eventId: event.id") &&
+    stripeWebhook.includes("eventId: event.id") &&
     envExample.includes("STRIPE_EXPECTED_LIVEMODE=false") &&
     stripeServer.includes("process.env.STRIPE_EXPECTED_LIVEMODE") &&
     stripeServer.includes("process.env.STRIPE_SECRET_KEY") &&

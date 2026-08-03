@@ -40,6 +40,19 @@ const expectedKeys = [
   "TTC_NATIVE_PUSH_DELIVERY_ENABLED",
   "TTC_WEB_PUSH_REGISTRATION_ENABLED",
   "TTC_SELLER_CHECKOUT_LINKS_ENABLED",
+  "TTC_WEB_AD_PURCHASES_ENABLED",
+  "TTC_IOS_AD_PURCHASES_ENABLED",
+  "TTC_ANDROID_AD_PURCHASES_ENABLED",
+  "APPLE_APP_STORE_BUNDLE_ID",
+  "APPLE_APP_STORE_APP_ID",
+  "APPLE_APP_STORE_ALLOW_SANDBOX",
+  "APPLE_APP_STORE_ROOT_CA_PEM",
+  "GOOGLE_PLAY_PACKAGE_NAME",
+  "GOOGLE_PLAY_ALLOW_TEST_PURCHASES",
+  "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON",
+  "GOOGLE_PLAY_PUBSUB_AUDIENCE",
+  "GOOGLE_PLAY_PUBSUB_SERVICE_ACCOUNT_EMAIL",
+  "GOOGLE_PLAY_PUBSUB_SUBSCRIPTION",
   "TTC_ANDROID_APP_LINK_PACKAGE_NAME",
   "TTC_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS",
   "TTC_IOS_APP_LINK_APP_IDS",
@@ -74,6 +87,24 @@ const stripeReleaseSwitchKeys = [
   "STRIPE_BOOKING_CHECKOUT_ENABLED",
   "STRIPE_CONNECT_ONBOARDING_ENABLED",
 ];
+const adPurchaseReleaseSwitchKeys = [
+  "TTC_WEB_AD_PURCHASES_ENABLED",
+  "TTC_IOS_AD_PURCHASES_ENABLED",
+  "TTC_ANDROID_AD_PURCHASES_ENABLED",
+];
+const nativePurchaseTestSwitchKeys = [
+  "APPLE_APP_STORE_ALLOW_SANDBOX",
+  "GOOGLE_PLAY_ALLOW_TEST_PURCHASES",
+];
+const nativePurchaseFixedConfig = new Map([
+  ["APPLE_APP_STORE_BUNDLE_ID", "com.thetattoocore.app"],
+  ["APPLE_APP_STORE_APP_ID", "6791179517"],
+  ["GOOGLE_PLAY_PACKAGE_NAME", "com.thetattoocore.app"],
+  [
+    "GOOGLE_PLAY_PUBSUB_AUDIENCE",
+    "https://thetattoocore.com/api/ads/purchases/google/notifications",
+  ],
+]);
 const retiredTtcPaymentSwitchKeys = [
   ...stripeReleaseSwitchKeys,
   "STRIPE_MERCH_DESTINATION_CHARGES_ENABLED",
@@ -130,6 +161,8 @@ function valueLooksLikePlaceholder(key, value) {
     key === "TTC_NATIVE_PUSH_DELIVERY_ENABLED" ||
     key === "TTC_WEB_PUSH_REGISTRATION_ENABLED" ||
     key === "TTC_SELLER_CHECKOUT_LINKS_ENABLED" ||
+    adPurchaseReleaseSwitchKeys.includes(key) ||
+    nativePurchaseTestSwitchKeys.includes(key) ||
     stripeReleaseSwitchKeys.includes(key) ||
     key === "STRIPE_MERCH_DESTINATION_CHARGES_ENABLED"
   ) {
@@ -138,6 +171,19 @@ function valueLooksLikePlaceholder(key, value) {
 
   if (key === "TTC_ANDROID_APP_LINK_PACKAGE_NAME") {
     return value === "com.thetattoocore.app";
+  }
+
+  if (key === "APPLE_APP_STORE_BUNDLE_ID" || key === "GOOGLE_PLAY_PACKAGE_NAME") {
+    return value === "com.thetattoocore.app";
+  }
+
+  if (key === "APPLE_APP_STORE_APP_ID") {
+    return value === "6791179517";
+  }
+
+  if (key === "GOOGLE_PLAY_PUBSUB_AUDIENCE") {
+    return value ===
+      "https://thetattoocore.com/api/ads/purchases/google/notifications";
   }
 
   if (
@@ -353,13 +399,28 @@ function wranglerPaymentConfigSafety(source) {
       issues.push(`${key} must appear exactly once with string value false`);
     }
   };
+  const requiresOneExactString = (key, expected) => {
+    const values = valuesFor(key);
+    if (
+      values.length !== 1 ||
+      values[0].type !== "scalar" ||
+      values[0].value !== expected
+    ) {
+      issues.push(`${key} must appear exactly once with the reviewed string value`);
+    }
+  };
   for (const key of [
     "STRIPE_EXPECTED_LIVEMODE",
     "TTC_SELLER_CHECKOUT_LINKS_ENABLED",
     "TTC_NATIVE_PUSH_DELIVERY_ENABLED",
+    ...adPurchaseReleaseSwitchKeys,
+    ...nativePurchaseTestSwitchKeys,
     ...retiredTtcPaymentSwitchKeys,
   ]) {
     requiresOneFalseString(key);
+  }
+  for (const [key, expected] of nativePurchaseFixedConfig) {
+    requiresOneExactString(key, expected);
   }
 
   return { issues, ok: issues.length === 0 };
@@ -380,6 +441,8 @@ const requiredWranglerFalseKeys = [
   "STRIPE_EXPECTED_LIVEMODE",
   "TTC_SELLER_CHECKOUT_LINKS_ENABLED",
   "TTC_NATIVE_PUSH_DELIVERY_ENABLED",
+  ...adPurchaseReleaseSwitchKeys,
+  ...nativePurchaseTestSwitchKeys,
   ...retiredTtcPaymentSwitchKeys,
 ];
 
@@ -410,6 +473,29 @@ const wranglerGuardMutationCases = requiredWranglerFalseKeys.flatMap((key) => [
     source: mutateWranglerEntry(wranglerConfig, key, `"${key}": false`),
   },
 ]);
+const wranglerFixedConfigMutationCases = [...nativePurchaseFixedConfig].flatMap(
+  ([key, value]) => {
+    const entry = `"${key}": "${value}"`;
+    return [
+      {
+        label: `wrangler parser rejects missing ${key}`,
+        source: wranglerConfig.replace(entry, `"${key}_REMOVED": "${value}"`),
+      },
+      {
+        label: `wrangler parser rejects duplicate ${key}`,
+        source: appendWranglerVar(wranglerConfig, entry),
+      },
+      {
+        label: `wrangler parser rejects changed ${key}`,
+        source: wranglerConfig.replace(entry, `"${key}": "unexpected"`),
+      },
+      {
+        label: `wrangler parser rejects non-string ${key}`,
+        source: wranglerConfig.replace(entry, `"${key}": false`),
+      },
+    ];
+  },
+);
 const wranglerPaymentConfig = wranglerPaymentConfigSafety(wranglerConfig);
 
 const liveLookingSecretLabels = liveLookingSecretPatternLabels();
@@ -440,6 +526,10 @@ const committedNativeArtifactPaths = trackedNativePaths.filter((path) => {
 
 const checks = [
   ...wranglerGuardMutationCases.map(({ label, source }) => ({
+    label,
+    ok: !wranglerPaymentConfigLooksSafe(source),
+  })),
+  ...wranglerFixedConfigMutationCases.map(({ label, source }) => ({
     label,
     ok: !wranglerPaymentConfigLooksSafe(source),
   })),
@@ -573,6 +663,35 @@ const checks = [
   {
     label: ".env.example documents checkout mode fail-closed default",
     ok: valueByKey.get("STRIPE_EXPECTED_LIVEMODE") === "false",
+  },
+  {
+    label: "native purchase verification identities and test modes fail closed",
+    ok:
+      valueByKey.get("APPLE_APP_STORE_BUNDLE_ID") === "com.thetattoocore.app" &&
+      valueByKey.get("APPLE_APP_STORE_APP_ID") === "6791179517" &&
+      valueByKey.get("APPLE_APP_STORE_ALLOW_SANDBOX") === "false" &&
+      valueByKey.get("APPLE_APP_STORE_ROOT_CA_PEM")?.startsWith("replace_with_") &&
+      valueByKey.get("GOOGLE_PLAY_PACKAGE_NAME") === "com.thetattoocore.app" &&
+      valueByKey.get("GOOGLE_PLAY_ALLOW_TEST_PURCHASES") === "false" &&
+      valueByKey.get("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON")?.startsWith("replace_with_") &&
+      valueByKey.get("GOOGLE_PLAY_PUBSUB_AUDIENCE") ===
+        "https://thetattoocore.com/api/ads/purchases/google/notifications" &&
+      valueByKey.get("GOOGLE_PLAY_PUBSUB_SERVICE_ACCOUNT_EMAIL")?.startsWith(
+        "replace_with_",
+      ) &&
+      valueByKey.get("GOOGLE_PLAY_PUBSUB_SUBSCRIPTION")?.startsWith(
+        "replace_with_",
+      ) &&
+      [...nativePurchaseFixedConfig.keys()].every((key) =>
+        readme.includes(`\`${key}\``),
+      ) &&
+      [...nativePurchaseFixedConfig.keys()].every((key) =>
+        environmentInventory.includes(`| \`${key}\``),
+      ) &&
+      nativePurchaseTestSwitchKeys.every((key) => readme.includes(`\`${key}\``)) &&
+      nativePurchaseTestSwitchKeys.every((key) =>
+        environmentInventory.includes(`| \`${key}\``),
+      ),
   },
   {
     label: ".env.example keeps Stripe release switches false in stable order",

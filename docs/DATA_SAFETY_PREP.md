@@ -2,6 +2,38 @@
 
 Use this as an internal checklist before answering Google Play Data Safety, App Store privacy nutrition labels, payment-policy reviews, or privacy-policy updates. Final answers should be checked against the exact live build and current store questionnaires.
 
+## Paid Advertising Purchase Data Boundary - August 3, 2026
+
+The staged ad-credit purchase sources are disabled. Before any surface is
+enabled, recheck the exact build and current questionnaires against this map:
+
+- TTC stores the authenticated profile, fixed product ID, credit amount,
+  purchase origin, provider transaction reference, durable grant, amount used,
+  refundable remainder, refund/revocation/dispute state, callback replay key,
+  and audit/reconciliation timestamps. These are purchase-history and app
+  operations records, not advertising-tracking identifiers.
+- Apple processes App Store payment details and returns a signed transaction
+  plus the TTC account UUID. Google Play processes payment details and returns
+  a purchase token plus a one-way TTC account binding. Stripe processes web
+  card data on hosted Checkout. TTC must not collect raw card details, Apple or
+  Google account credentials, bank data, store signing keys, service-account
+  keys, or webhook secrets in member forms, analytics, logs, screenshots, or
+  repository evidence.
+- Provider transaction, order, callback, signing, and service-account values
+  remain server-only. Member surfaces show package, store-supplied price,
+  credit balance, non-expiration, and sanitized purchase state only.
+- Campaign impression and click events support delivery measurement and fraud
+  review. They must not be described as cross-app tracking, sold data, or
+  sensitive-data targeting. Recheck App Tracking Transparency and store privacy
+  answers if future code introduces third-party tracking or links TTC activity
+  to outside data.
+- Refund, fraud, tax, legal-hold, and audit retention must be approved before
+  launch. Profile deletion must not silently erase an unresolved purchase,
+  refund, chargeback, or required financial record.
+- Update public Privacy, App Store Privacy, Google Play Data Safety, Terms, and
+  support answers before changing any ad purchase gate. Source implementation
+  does not prove production collection or sharing has begun.
+
 ## Booking Deposit Data Boundary - August 3, 2026
 
 The staged booking payment model is not live. Before enabling it, recheck the

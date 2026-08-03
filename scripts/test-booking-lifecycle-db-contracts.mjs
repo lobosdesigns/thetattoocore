@@ -231,6 +231,11 @@ try {
     alter table public.profiles enable row level security;
     alter table public.notifications enable row level security;
 
+    create policy "Test users can read profiles"
+      on public.profiles for select
+      to authenticated
+      using (true);
+
     create function private.current_user_can_moderate()
     returns boolean
     language sql
@@ -257,7 +262,13 @@ try {
   sql(migration("20260713192618_booking_scheduled_calendar_fields.sql"));
   sql(`
     alter table public.booking_requests
-      add column if not exists payment_dispute_hold boolean not null default false;
+      add column if not exists appointment_type_id uuid,
+      add column if not exists appointment_type_label text,
+      add column if not exists preferred_slot_id uuid,
+      add column if not exists preferred_slot_label text,
+      add column if not exists payment_dispute_hold boolean not null default false,
+      add column if not exists payment_dispute_status text,
+      add column if not exists payment_dispute_updated_at timestamptz;
   `);
   sql(migration("20260727090000_booking_lifecycle_completion.sql"));
   sql(migration("20260727100000_enforce_booking_active_schedule_overlap.sql"));
@@ -484,6 +495,15 @@ try {
   );
   sql(migration(connectedMigrationNames[0]));
 
+  const hardeningMigrationNames = readdirSync(path.join(root, "supabase", "migrations"))
+    .filter((name) => name.endsWith("_harden_booking_payment_privileges.sql"));
+  assert.deepEqual(
+    hardeningMigrationNames,
+    ["20260803170000_harden_booking_payment_privileges.sql"],
+    "exactly one booking payment privilege hardening migration exists",
+  );
+  sql(migration(hardeningMigrationNames[0]));
+
   assert.equal(
     scalar(`select fee_payer || ':' || payment_charge_model || ':' || total_cents from public.booking_requests where id = '${bookings.accepted}';`),
     "client:platform:10500",
@@ -519,6 +539,109 @@ try {
     "true",
     "booking participants retain safe booking reads",
   );
+  for (const privilege of ["select", "insert", "update", "delete", "truncate", "references", "trigger"]) {
+    assert.equal(
+      scalar(`select has_table_privilege('anon', 'public.booking_requests', '${privilege}')::text;`),
+      "false",
+      `anonymous clients do not retain booking ${privilege} privileges`,
+    );
+  }
+  for (const privilege of ["update", "delete", "truncate", "references", "trigger"]) {
+    assert.equal(
+      scalar(`select has_table_privilege('authenticated', 'public.booking_requests', '${privilege}')::text;`),
+      "false",
+      `authenticated clients do not retain booking ${privilege} privileges`,
+    );
+  }
+  for (const privateColumn of [
+    "admin_note",
+    "stripe_application_fee_id",
+    "stripe_checkout_session_id",
+    "stripe_connected_account_id",
+    "stripe_payment_intent_id",
+  ]) {
+    assert.equal(
+      scalar(`select has_column_privilege('authenticated', 'public.booking_requests', '${privateColumn}', 'select')::text;`),
+      "false",
+      `${privateColumn} stays hidden from authenticated booking reads`,
+    );
+  }
+  assert.equal(
+    scalar("select has_column_privilege('authenticated', 'public.booking_requests', 'title', 'insert')::text;"),
+    "true",
+    "authenticated clients retain the bounded booking-request insert surface",
+  );
+  assert.equal(
+    scalar("select has_column_privilege('authenticated', 'public.booking_requests', 'stripe_connected_account_id', 'insert')::text;"),
+    "false",
+    "authenticated clients cannot insert connected routing identifiers",
+  );
+  assert.equal(
+    scalar("select has_function_privilege('authenticated', 'private.protect_booking_connected_routing()', 'execute')::text;"),
+    "false",
+    "the connected-routing trigger function is not directly executable by members",
+  );
+
+  expectSqlError(
+    asUser(
+      users.client,
+      `
+        insert into public.booking_requests (
+          client_id, artist_id, title, body, deposit_amount_cents,
+          platform_fee_cents, total_cents, fee_payer, payment_charge_model,
+          status, payment_status
+        ) values (
+          '${users.client}', '${users.artist}', 'Forged platform booking',
+          'A direct client must not choose payment routing.', 10000,
+          500, 10500, 'client', 'platform', 'requested', 'not_ready'
+        );
+      `,
+    ),
+    /row-level security|new row violates/i,
+    "authenticated inserts cannot forge client-paid platform routing",
+  );
+  expectSqlError(
+    asUser(
+      users.client,
+      `
+        insert into public.booking_requests (
+          client_id, artist_id, title, body, deposit_amount_cents,
+          platform_fee_cents, total_cents, fee_payer, payment_charge_model,
+          stripe_connected_account_id, status, payment_status
+        ) values (
+          '${users.client}', '${users.artist}', 'Forged account booking',
+          'A direct client must not inject a connected account.', 10000,
+          200, 10000, 'provider', 'connected_direct',
+          'acct_AttackerControlled123', 'requested', 'not_ready'
+        );
+      `,
+    ),
+    /permission denied|has no privilege/i,
+    "authenticated inserts cannot inject connected account identifiers",
+  );
+  sql(
+    asUser(
+      users.client,
+      `
+        insert into public.booking_requests (
+          client_id, artist_id, title, body, currency,
+          deposit_amount_cents, platform_fee_cents, total_cents,
+          fee_payer, payment_charge_model, status, payment_status
+        ) values (
+          '${users.client}', '${users.artist}',
+          'Hardened direct booking', 'A valid direct booking remains available.',
+          'USD', 10000, 200, 10000, 'provider', 'connected_direct',
+          'requested', 'not_ready'
+        );
+      `,
+    ),
+  );
+  assert.equal(
+    scalar("select fee_payer || ':' || payment_charge_model || ':' || total_cents from public.booking_requests where title = 'Hardened direct booking';"),
+    "provider:connected_direct:10000",
+    "the legitimate connected-direct booking insert contract remains available",
+  );
+  console.log("USER INPUT SECURITY REVIEW: PASS booking payment fields and private identifiers fail closed at the database boundary");
 
   sql(`
     insert into public.booking_requests (
@@ -621,7 +744,7 @@ try {
     set stripe_checkout_session_id = 'cs_ConnectedRetry123'
     where id = '${bookings.connectedRetry}';
   `);
-  sql(
+  expectSqlError(
     asUser(
       users.client,
       `
@@ -633,6 +756,8 @@ try {
         where id = '${bookings.connectedRetry}';
       `,
     ),
+    /permission denied/i,
+    "authenticated clients cannot update booking payment routing directly",
   );
   assert.equal(
     scalar(`select payment_status || ':' || status || ':' || stripe_checkout_session_id || ':' || stripe_connected_account_id from public.booking_requests where id = '${bookings.connectedRetry}';`),
@@ -672,7 +797,7 @@ try {
       users.moderator,
       `update public.booking_requests set refunded_amount_cents = 1 where id = '${bookings.connectedDirect}';`,
     ),
-    /trusted services|42501/i,
+    /permission denied|trusted services|42501/i,
     "authenticated moderators cannot forge booking refund totals",
   );
   sql(`

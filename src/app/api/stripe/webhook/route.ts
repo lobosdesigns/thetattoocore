@@ -1,6 +1,17 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import Stripe from "stripe";
+import {
+  grantVerifiedAdCreditPurchase,
+  reconcileVerifiedAdCreditPurchase,
+  type AdCreditReconciliationInput,
+  type AdPurchaseRpcClient,
+} from "@/lib/ads/purchase-grant";
+import {
+  stripeAdCreditDisputeReconciliation,
+  stripeAdCreditGrantFromCheckout,
+  stripeAdCreditRefundFromCharge,
+} from "@/lib/ads/stripe-credit";
 import { sendHostgatorEmail } from "@/lib/mail/hostgator";
 import { insertNotifications } from "@/lib/notification-write";
 import { calculatePlatformFeeCents } from "@/lib/payments/fees";
@@ -789,6 +800,60 @@ async function markCheckoutSession({
   revalidatePath("/admin/merch");
 }
 
+async function grantStripeAdCreditPurchase(session: Stripe.Checkout.Session) {
+  const purchase = stripeAdCreditGrantFromCheckout(session);
+  if (!purchase) {
+    throw new Error("Stripe ad credit purchase identity did not match.");
+  }
+
+  const supabase = createAdminClient();
+  if (!supabase) {
+    throw new Error("Missing Supabase service role key for Stripe webhook.");
+  }
+
+  const grant = await grantVerifiedAdCreditPurchase(
+    supabase as unknown as AdPurchaseRpcClient,
+    purchase,
+  );
+  if (!grant.ok) {
+    console.error("Webhook Stripe ad credit grant failed.");
+    throw new Error("Could not record Stripe ad credit purchase.");
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/admin/payments");
+}
+
+async function reconcileStripeAdCreditPurchaseIfPresent({
+  eventId,
+  reconciliation,
+}: {
+  eventId: string;
+  reconciliation: Omit<AdCreditReconciliationInput, "providerEventId"> | null;
+}) {
+  if (!reconciliation) return false;
+  const supabase = createAdminClient();
+  if (!supabase) {
+    throw new Error("Missing Supabase service role key for Stripe webhook.");
+  }
+
+  const result = await reconcileVerifiedAdCreditPurchase(
+    supabase as unknown as AdPurchaseRpcClient,
+    {
+      ...reconciliation,
+      providerEventId: eventId,
+    },
+  );
+  if (!result.ok) {
+    console.error("Webhook Stripe ad credit reconciliation failed.");
+    throw new Error("Could not reconcile Stripe ad credit purchase.");
+  }
+
+  revalidatePath("/account");
+  revalidatePath("/admin/payments");
+  return true;
+}
+
 async function markAdCheckoutSession({
   session,
   status,
@@ -1243,10 +1308,12 @@ async function markConnectedBookingRefunded({
 async function markRefunded({
   accountScope,
   charge,
+  eventId,
   stripe,
 }: {
   accountScope: string;
   charge: Stripe.Charge;
+  eventId: string;
   stripe: Stripe;
 }) {
   if (accountScope !== "platform") {
@@ -1261,12 +1328,37 @@ async function markRefunded({
   const paymentIntentId =
     typeof charge.payment_intent === "string" ? charge.payment_intent : null;
   if (!paymentIntentId) return;
-  const fullyRefunded = charge.amount_refunded >= charge.amount;
   const supabase = createAdminClient();
 
   if (!supabase) {
     throw new Error("Missing Supabase service role key for Stripe webhook.");
   }
+
+  const adCreditRefund = stripeAdCreditRefundFromCharge(charge);
+  const fullyRefunded = charge.amount_refunded === charge.amount;
+  const refundShapeValid =
+    charge.currency === "usd" &&
+    Number.isSafeInteger(charge.amount) &&
+    charge.amount > 0 &&
+    Number.isSafeInteger(charge.amount_refunded) &&
+    charge.amount_refunded > 0 &&
+    charge.amount_refunded <= charge.amount &&
+    charge.refunded === fullyRefunded &&
+    (charge.metadata?.payment_kind !== "ad_credit_purchase" ||
+      (adCreditRefund !== null &&
+        adCreditRefund.providerTransactionId === paymentIntentId));
+  if (
+    charge.metadata?.payment_kind === "ad_credit_purchase" &&
+    !refundShapeValid
+  ) {
+    throw new Error("Stripe ad credit refund identity did not match.");
+  }
+  const adCreditReconciled = await reconcileStripeAdCreditPurchaseIfPresent({
+    eventId,
+    reconciliation: adCreditRefund,
+  });
+
+  if (adCreditReconciled) return;
 
   const now = new Date().toISOString();
   let refundedOrderQuery = supabase
@@ -1581,7 +1673,7 @@ function disputeChargeId(dispute: Stripe.Dispute) {
   return charge?.id ?? null;
 }
 
-async function disputePaymentIntentId(
+async function disputePaymentContext(
   dispute: Stripe.Dispute,
   stripe: Stripe,
   accountScope: string,
@@ -1592,18 +1684,23 @@ async function disputePaymentIntentId(
     }
   ).payment_intent;
 
-  if (typeof paymentIntent === "string") return paymentIntent;
+  const chargeReference = dispute.charge;
+  const charge =
+    typeof chargeReference === "string"
+      ? await stripe.charges.retrieve(
+          chargeReference,
+          {},
+          accountScope === "platform" ? {} : { stripeAccount: accountScope },
+        )
+      : chargeReference;
+  const paymentIntentId =
+    typeof paymentIntent === "string"
+      ? paymentIntent
+      : typeof charge?.payment_intent === "string"
+        ? charge.payment_intent
+        : null;
 
-  const chargeId = disputeChargeId(dispute);
-  if (!chargeId) return null;
-
-  const charge = await stripe.charges.retrieve(
-    chargeId,
-    {},
-    accountScope === "platform" ? {} : { stripeAccount: accountScope },
-  );
-
-  return typeof charge.payment_intent === "string" ? charge.payment_intent : null;
+  return charge && paymentIntentId ? { charge, paymentIntentId } : null;
 }
 
 function disputeAuditEventType(targetType: string) {
@@ -1643,21 +1740,24 @@ function disputeAuditSummary({
 async function recordPaymentDispute({
   accountScope,
   dispute,
+  eventId,
   eventType,
   stripe,
 }: {
   accountScope: string;
   dispute: Stripe.Dispute;
+  eventId: string;
   eventType: string;
   stripe: Stripe;
 }) {
-  const paymentIntentId = await disputePaymentIntentId(
+  const paymentContext = await disputePaymentContext(
     dispute,
     stripe,
     accountScope,
   );
 
-  if (!paymentIntentId) return;
+  if (!paymentContext) return;
+  const { charge, paymentIntentId } = paymentContext;
 
   const supabase = createAdminClient();
 
@@ -1668,7 +1768,8 @@ async function recordPaymentDispute({
   const paymentDisputeHold =
     eventType !== "charge.dispute.funds_reinstated" &&
     dispute.status !== "won" &&
-    dispute.status !== "warning_closed";
+    dispute.status !== "warning_closed" &&
+    dispute.status !== "prevented";
   const disputeUpdate = {
     payment_dispute_hold: paymentDisputeHold,
     payment_dispute_status: dispute.status,
@@ -1724,6 +1825,24 @@ async function recordPaymentDispute({
   if (firstError) {
     console.error("Webhook disputed payment hold update failed.", firstError);
     throw new Error("Could not update disputed payment safeguards.");
+  }
+
+  if (accountScope === "platform") {
+    const adCreditReconciliation = stripeAdCreditDisputeReconciliation(
+      eventType,
+      dispute,
+      charge,
+    );
+    if (
+      charge.metadata?.payment_kind === "ad_credit_purchase" &&
+      !adCreditReconciliation
+    ) {
+      throw new Error("Stripe ad credit dispute identity did not match.");
+    }
+    await reconcileStripeAdCreditPurchaseIfPresent({
+      eventId,
+      reconciliation: adCreditReconciliation,
+    });
   }
 
   const sharedMetadata = {
@@ -1888,7 +2007,12 @@ export async function POST(request: Request) {
       const session = event.data.object as Stripe.Checkout.Session;
 
       if (checkoutSessionIsSettled(event, session)) {
-        if (session.metadata?.payment_kind === "ad_campaign") {
+        if (session.metadata?.payment_kind === "ad_credit_purchase") {
+          if (accountScope !== "platform") {
+            throw new Error("Ad credit checkout arrived from a connected account.");
+          }
+          await grantStripeAdCreditPurchase(session);
+        } else if (session.metadata?.payment_kind === "ad_campaign") {
           if (accountScope !== "platform") {
             throw new Error("Ad checkout arrived from a connected account.");
           }
@@ -1921,7 +2045,11 @@ export async function POST(request: Request) {
     if (event.type === "checkout.session.async_payment_failed") {
       const session = event.data.object as Stripe.Checkout.Session;
 
-      if (session.metadata?.payment_kind === "ad_campaign") {
+      if (session.metadata?.payment_kind === "ad_credit_purchase") {
+        if (accountScope !== "platform") {
+          throw new Error("Ad credit checkout arrived from a connected account.");
+        }
+      } else if (session.metadata?.payment_kind === "ad_campaign") {
         if (accountScope !== "platform") {
           throw new Error("Ad checkout arrived from a connected account.");
         }
@@ -1948,7 +2076,11 @@ export async function POST(request: Request) {
     if (event.type === "checkout.session.expired") {
       const session = event.data.object as Stripe.Checkout.Session;
 
-      if (session.metadata?.payment_kind === "ad_campaign") {
+      if (session.metadata?.payment_kind === "ad_credit_purchase") {
+        if (accountScope !== "platform") {
+          throw new Error("Ad credit checkout arrived from a connected account.");
+        }
+      } else if (session.metadata?.payment_kind === "ad_campaign") {
         if (accountScope !== "platform") {
           throw new Error("Ad checkout arrived from a connected account.");
         }
@@ -1974,7 +2106,7 @@ export async function POST(request: Request) {
 
     if (event.type === "charge.refunded") {
       const charge = event.data.object as Stripe.Charge;
-      await markRefunded({ accountScope, charge, stripe });
+      await markRefunded({ accountScope, charge, eventId: event.id, stripe });
     }
 
     if (event.type === "refund.failed") {
@@ -2002,6 +2134,7 @@ export async function POST(request: Request) {
       await recordPaymentDispute({
         accountScope,
         dispute,
+        eventId: event.id,
         eventType: event.type,
         stripe,
       });

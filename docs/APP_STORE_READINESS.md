@@ -1,5 +1,28 @@
 # App Store Readiness
 
+## Paid Advertising Store Boundary - August 3, 2026
+
+- Same-app advertising is classified as a digital purchase. The iOS candidate
+  uses StoreKit 2 consumables and the Android candidate uses Google Play Billing
+  one-time consumables; native wrappers do not expose web Stripe checkout.
+- Fixed candidate product IDs are `ttc.adcredit.2500`,
+  `ttc.adcredit.5000`, and `ttc.adcredit.10000`. They have not been created,
+  approved, made available, or purchase-tested in either store by this source
+  implementation.
+- Current source gates remain `TTC_WEB_AD_PURCHASES_ENABLED=false`,
+  `TTC_IOS_AD_PURCHASES_ENABLED=false`, and
+  `TTC_ANDROID_AD_PURCHASES_ENABLED=false`. The purchase-source migration is
+  unapplied and no paid-ad candidate has been signed, uploaded, selected, or
+  submitted.
+- Apple App Review Guidelines 3.1.3(g) and Google Play Payments policy were
+  rechecked on August 3, 2026. Exact product metadata, paid-app agreements,
+  tax/banking readiness, sandbox/license-test evidence, refund callbacks,
+  reviewer notes, and exact-build device recovery remain required before store
+  submission or gate enablement.
+- Rollout remains sequential and separately approved: web Stripe pilot, iOS
+  StoreKit pilot/review, then Android Play Billing pilot/review. Each surface
+  requires one exact low-value lifecycle plus rollback proof before the next.
+
 ## Seller-Owned Merch Current Position - August 2, 2026
 
 - The selected physical-goods path is seller-owned external checkout from an approved Merch detail page. The seller processes payment and handles tax, shipping, returns, refunds, disputes, receipts, and purchase support; TTC handles listing review and listing-safety reports.

@@ -1,9 +1,68 @@
 # Payment Production Readiness
 
+## Paid Advertising Commerce Candidate - August 3, 2026
+
+Status: **CODE UNDER FINAL REVIEW, NOT LIVE**. The purchase-source migration is
+not applied, the store products are not configured, and all three release gates
+remain false.
+
+- Web purchases use Stripe Checkout for one server-owned package and grant
+  credit only from a verified, settled webhook. iOS uses StoreKit 2 consumables;
+  Android uses Google Play one-time consumables. Native wrappers never expose
+  the web Stripe purchase control.
+- Product identifiers are fixed to `ttc.adcredit.2500`,
+  `ttc.adcredit.5000`, and `ttc.adcredit.10000`. Provider price, product,
+  account, transaction, refund, and callback fields are verified before a
+  durable, idempotent server grant.
+- Purchased credit does not expire. Promotional credit remains a separate
+  origin. New campaign spend records no additional TTC transaction fee because
+  the package price itself is TTC advertising revenue.
+- Refund, revocation, and dispute events must preserve a monotonic terminal
+  state: a dispute release cannot restore credit already terminally refunded.
+  Apple `REFUND_REVERSED` remains a distinct provider-authorized reversal.
+- Apple App Review Guidelines 3.1.3(g), checked August 3, 2026, expressly place
+  advertisements displayed in the same app under In-App Purchase. Google Play
+  Payments policy sections 2 and 4, checked the same day, require Play Billing
+  for in-app digital services and prohibit steering to another payment method
+  unless an enrolled exception applies. TTC is using the store billing paths,
+  not an alternative-billing exception.
+- Google guidance checked August 3, 2026 requires server verification, grant
+  before consumption, purchase queries on reconnect/resume, pending-purchase
+  handling, RTDN lifecycle processing, and voided-purchase reconciliation. The
+  implementation keeps grant and consume authority on the server.
+- Google `PendingRefundReviewNotification` callbacks receive a bounded
+  `ReviewRefund` response within the retryable callback path. The candidate
+  submits `NEUTRAL`, reports that no sample content was provided, sends no
+  unsupported consumption evidence, and records only a sanitized admin audit
+  row. Provider or audit failures remain retryable instead of claiming review
+  success.
+- Source defaults remain `TTC_WEB_AD_PURCHASES_ENABLED=false`,
+  `TTC_IOS_AD_PURCHASES_ENABLED=false`, and
+  `TTC_ANDROID_AD_PURCHASES_ENABLED=false`. Migration, credentials, product
+  creation, notification destinations, native test builds, sandbox purchases,
+  store review, and each surface enablement remain separate approval gates.
+- Production source pins the Apple bundle/App Store identity and Google package
+  identity while keeping `APPLE_APP_STORE_ALLOW_SANDBOX=false` and
+  `GOOGLE_PLAY_ALLOW_TEST_PURCHASES=false`. Apple trust certificates, Google
+  service-account credentials, and exact Pub/Sub account/subscription values
+  remain private deployment bindings; missing or mismatched configuration fails
+  verification closed.
+
+Official sources:
+[Apple App Review Guidelines](https://developer.apple.com/app-store/review/guidelines/),
+[Apple App Store Server Notifications](https://developer.apple.com/documentation/appstoreservernotifications),
+[Google Play Payments policy](https://support.google.com/googleplay/android-developer/answer/9858738),
+[Google Play Billing integration](https://developer.android.com/google/play/billing/integrate),
+[Google Play backend integration](https://developer.android.com/google/play/billing/backend),
+[Google RTDN reference](https://developer.android.com/google/play/billing/rtdn-reference),
+and [Google ReviewRefund](https://developers.google.com/android-publisher/api-ref/rest/v3/orders/reviewrefund).
+
 ## Booking Deposit Candidate - August 3, 2026
 
-Status: **CODE READY FOR REVIEW, NOT LIVE**. The booking candidate has not been
-merged, migrated, deployed, enabled, or used for a live payment.
+Status: **MERGED AND DARK-SERVED, NOT LIVE**. Commit `4e1022a8` is merged into
+`main`; the reviewed booking migration is present in production; and the merged
+Worker source is serving with every Stripe checkout/onboarding gate false. No
+booking checkout, onboarding session, live charge, or refund has been enabled.
 
 - Accepted booking requests use Stripe Connect direct charges on the verified
   artist or studio account. The client pays exactly the displayed deposit.
@@ -26,10 +85,11 @@ merged, migrated, deployed, enabled, or used for a live payment.
   mode, valid account and Connected accounts webhook signing configuration,
   and the exact booking checkout gate. Provider onboarding also fails closed
   without the separate Connected accounts webhook configuration.
-- The August 3 Stripe dashboard audit found the existing account destination
-  active but no **Events on Connected accounts** destination. Connect onboarding
-  also still requires Payments capability configuration and an owner-reviewed
-  acknowledgement. These are external blockers, not completed work.
+- A distinct Connected accounts webhook signing secret is present in the live
+  Worker binding set. A signed connected-account event and the dashboard's exact
+  event subscriptions still require pilot evidence; secret presence alone is
+  not endpoint proof. Connect onboarding also still requires confirmed Payments
+  capability configuration and any owner-reviewed acknowledgement.
 - Source defaults remain fail closed:
   `STRIPE_EXPECTED_LIVEMODE=false`,
   `STRIPE_CHECKOUT_CREATION_ENABLED=false`,
@@ -37,28 +97,39 @@ merged, migrated, deployed, enabled, or used for a live payment.
   `STRIPE_CONNECT_ONBOARDING_ENABLED=false`. The distinct
   `STRIPE_CONNECT_WEBHOOK_SECRET` has no value in committed configuration.
 - Production migration
-  `supabase/migrations/20260803150000_booking_connected_direct_charges.sql`,
-  Worker deployment, Stripe dashboard changes, secrets, gate changes, provider
-  onboarding, and any charge/refund remain separate owner-approval boundaries.
+  `supabase/migrations/20260803150000_booking_connected_direct_charges.sql` is
+  applied. Read-only verification found its columns, constraints, routing
+  trigger, service-only RPC grants, RLS, and webhook scope functions. That audit
+  also found inherited booking-table grants that are broader than the intended
+  API surface. Forward-only migration
+  `supabase/migrations/20260803170000_harden_booking_payment_privileges.sql`
+  removes them and tightens direct insert payment fields; it is tested locally
+  but not applied. This hardening migration is a release blocker. Gate changes,
+  provider onboarding, and any charge/refund remain separate approval boundaries.
 
 ### Controlled Booking Rollout Sequence
 
-1. Review and merge the exact booking candidate only after explicit owner
-   approval; keep every payment gate false.
+1. Completed: the exact booking candidate was reviewed and merged while every
+   payment gate remained false.
 2. With separate approval, complete the Stripe Connect Payments capability and
    any owner/legal acknowledgement without changing product or payout terms by
    assumption.
-3. Create an **Events on Connected accounts** webhook destination at the
-   production webhook URL with the required connected-account events. Store its
-   distinct signing secret only in the production secret store and prove one
-   signed non-money event without exposing identifiers or secret values.
-4. Apply the booking migration only after explicit approval, then run read-only
-   schema, constraint, trigger, grant, RLS, function, and advisor verification.
+3. Verify the existing **Events on Connected accounts** webhook destination at
+   the production webhook URL has the exact required events. Its distinct secret
+   is stored privately; still prove one signed non-money event without exposing
+   identifiers or secret values.
+4. Completed for the original booking migration: it is applied and its schema,
+   constraints, trigger, grants, RLS, functions, and advisors were inspected.
+   Review and separately authorize the forward-only privilege hardening
+   migration before any booking pilot.
 5. Upload and inspect an inactive Worker version with all payment gates false.
    Confirm the source, bindings, mode, routes, and rollback before requesting
    deployment approval.
-6. Deploy the reviewed version with booking and onboarding still false; run
-   no-side-effect public and authorized admin smoke.
+6. Completed for the merged booking foundation: live Worker version
+   `0f9a277e-7970-466c-b25f-514d1743515b` serves 100% with booking checkout,
+   checkout creation, onboarding, expected live mode, legacy Merch checkout,
+   and native push delivery all false. Repeat inactive upload and smoke after
+   the hardening/payment-runtime candidate is finalized.
 7. With separate approval, enable hosted onboarding for one verified artist or
    studio and complete the provider flow. Do not collect identity, bank, card,
    or payout credentials in TTC.

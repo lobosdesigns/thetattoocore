@@ -36,6 +36,7 @@ import {
   stripeCheckoutCreationState,
   stripeConnectOnboardingEnabled,
 } from "@/lib/stripe/release-gates";
+import { adPurchaseSurfaceEnabled } from "@/lib/commerce-launch";
 
 type UserRole = "user" | "moderator" | "admin" | "owner";
 type Claims = {
@@ -82,9 +83,26 @@ type BookingDepositRecord = {
   total_cents: number;
   updated_at: string;
 };
+type PurchasedAdCreditRecord = {
+  amount_cents: number;
+  created_at: string;
+  credit_origin: "stripe_web" | "apple_iap" | "google_play";
+  id: string;
+  member: { display_name: string | null; username: string | null } | null;
+  provider_product_id: string;
+  refundable_cents: number;
+  status: string;
+  used_cents: number;
+};
 
 const viewRoles: UserRole[] = ["moderator", "admin", "owner"];
 const pageSize = 50;
+const purchasedAdCreditLimit = 25;
+const purchasedAdCreditOrigins = [
+  "stripe_web",
+  "apple_iap",
+  "google_play",
+] as const;
 const merchOrderStatuses = [
   "pending_checkout",
   "paid",
@@ -144,6 +162,7 @@ const paymentAuditTypes = [
   "merch_payment_dispute",
   "ad_payment_dispute",
   "booking_payment_dispute",
+  "google_play_refund_review_neutral",
 ] as const;
 const paymentDisputeAuditTypes = [
   "merch_payment_dispute",
@@ -424,6 +443,9 @@ function auditLabel(value: string) {
   if (value === "merch_payment_dispute") return "Merch dispute";
   if (value === "ad_payment_dispute") return "Ad dispute";
   if (value === "booking_payment_dispute") return "Booking dispute";
+  if (value === "google_play_refund_review_neutral") {
+    return "Google Play neutral refund review";
+  }
 
   return titleCaseStatus(value);
 }
@@ -433,6 +455,13 @@ function money(cents: number, currency = "USD") {
     currency,
     style: "currency",
   }).format(cents / 100);
+}
+
+function adPurchaseOriginLabel(origin: PurchasedAdCreditRecord["credit_origin"]) {
+  if (origin === "stripe_web") return "Stripe web";
+  if (origin === "apple_iap") return "Apple in-app purchase";
+
+  return "Google Play purchase";
 }
 
 function bookingReconciliationWarning(booking: BookingDepositRecord) {
@@ -612,6 +641,10 @@ export default async function AdminPaymentsPage({
       data: recentBookingDeposits,
       error: bookingDepositError,
     },
+    {
+      data: purchasedAdCredits,
+      error: purchasedAdCreditsError,
+    },
   ] = adminClient
     ? await Promise.all([
         (() => {
@@ -770,6 +803,15 @@ export default async function AdminPaymentsPage({
 
           return query.range(bookingFrom, bookingTo).returns<BookingDepositRecord[]>();
         })(),
+        adminClient
+          .from("ad_credit_ledger")
+          .select(
+            "id, amount_cents, used_cents, status, created_at, credit_origin, provider_product_id, refundable_cents, member:profiles!ad_credit_ledger_profile_id_fkey(display_name, username)",
+          )
+          .in("credit_origin", purchasedAdCreditOrigins)
+          .order("created_at", { ascending: false })
+          .limit(purchasedAdCreditLimit)
+          .returns<PurchasedAdCreditRecord[]>(),
       ])
     : [
         { data: null, error: null },
@@ -787,6 +829,7 @@ export default async function AdminPaymentsPage({
         { count: null, error: null },
         { count: null, data: null, error: null },
         { count: null, data: null, error: null },
+        { data: null, error: null },
       ];
 
   const paymentDataErrors = [
@@ -805,6 +848,7 @@ export default async function AdminPaymentsPage({
     bookingRefundReviewError,
     paymentAuditError,
     bookingDepositError,
+    purchasedAdCreditsError,
   ].filter(Boolean);
   const paymentDataUnavailable = paymentDataErrors.length > 0;
 
@@ -862,6 +906,14 @@ export default async function AdminPaymentsPage({
       state: stripeConnectOnboardingEnabled() ? "enabled" : "blocked",
     },
   ] as const;
+  const adPurchaseReleaseGates = [
+    { label: "Web", surface: "web" },
+    { label: "iOS", surface: "ios" },
+    { label: "Android", surface: "android" },
+  ].map((gate) => ({
+    ...gate,
+    enabled: adPurchaseSurfaceEnabled(gate.surface),
+  }));
   const paymentModePreflightChecks = [
     {
       detail:
@@ -1205,6 +1257,120 @@ export default async function AdminPaymentsPage({
                       </span>
                     </p>
                   </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="mb-4 border-y border-[var(--card-rim)] py-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h2 className="text-lg font-bold">Purchased ad credits</h2>
+                  <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
+                    Recent verified purchases only. Promotional grants are not
+                    included in this queue.
+                  </p>
+                </div>
+                <p className="text-xs font-semibold text-[var(--muted-strong)]">
+                  Latest {purchasedAdCreditLimit}
+                </p>
+              </div>
+              <p className="mt-2 text-xs leading-5 text-[var(--muted-strong)]">
+                Refunds and reconciliation remain operator-reviewed; this view has no direct payment actions.
+              </p>
+              <div className="mt-3 overflow-x-auto">
+                {purchasedAdCredits?.length ? (
+                  <table className="w-full min-w-[860px] border-collapse text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-[var(--card-rim)] text-[var(--muted-strong)]">
+                        <th className="px-2 py-2 font-bold">Member</th>
+                        <th className="px-2 py-2 font-bold">Purchase origin</th>
+                        <th className="px-2 py-2 font-bold">Product</th>
+                        <th className="px-2 py-2 text-right font-bold">Amount</th>
+                        <th className="px-2 py-2 text-right font-bold">Used</th>
+                        <th className="px-2 py-2 text-right font-bold">Remaining</th>
+                        <th className="px-2 py-2 text-right font-bold">Refundable</th>
+                        <th className="px-2 py-2 font-bold">Status</th>
+                        <th className="px-2 py-2 font-bold">Created</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {purchasedAdCredits.map((credit) => (
+                        <tr
+                          className="border-b border-[color-mix(in_srgb,var(--card-rim)_72%,transparent)] align-top"
+                          key={credit.id}
+                        >
+                          <td className="px-2 py-3">
+                            <p className="font-semibold text-[var(--foreground)]">
+                              {credit.member?.display_name ??
+                                credit.member?.username ??
+                                "Unknown member"}
+                            </p>
+                            <p className="mt-0.5 text-[var(--muted-strong)]">
+                              {credit.member?.username
+                                ? `@${credit.member.username}`
+                                : "Username unavailable"}
+                            </p>
+                          </td>
+                          <td className="px-2 py-3">
+                            {adPurchaseOriginLabel(credit.credit_origin)}
+                          </td>
+                          <td className="px-2 py-3 font-mono text-[11px]">
+                            {credit.provider_product_id}
+                          </td>
+                          <td className="px-2 py-3 text-right">
+                            {money(credit.amount_cents)}
+                          </td>
+                          <td className="px-2 py-3 text-right">
+                            {money(credit.used_cents)}
+                          </td>
+                          <td className="px-2 py-3 text-right font-semibold">
+                            {money(
+                              Math.max(0, credit.amount_cents - credit.used_cents),
+                            )}
+                          </td>
+                          <td className="px-2 py-3 text-right">
+                            {money(credit.refundable_cents)}
+                          </td>
+                          <td className="px-2 py-3">
+                            {statusLabel(credit.status)}
+                          </td>
+                          <td className="whitespace-nowrap px-2 py-3">
+                            {formatDateTime(credit.created_at)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p className="py-3 text-sm text-[var(--muted)]">
+                    No purchased ad credits found.
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-4 border-t border-[var(--card-rim)] pt-4">
+                <h2 className="text-sm font-bold">Ad purchase release gates</h2>
+                <p className="mt-1 text-xs leading-5 text-[var(--muted-strong)]">
+                  Sanitized release state only. Private configuration values are never shown.
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {adPurchaseReleaseGates.map((gate) => (
+                    <div
+                      className="flex min-w-32 items-center justify-between gap-3 border border-[var(--card-rim)] px-3 py-2 text-xs"
+                      key={gate.surface}
+                    >
+                      <span className="font-bold">{gate.label}</span>
+                      <span
+                        className={
+                          gate.enabled
+                            ? "font-bold text-[var(--foreground)]"
+                            : "font-bold text-[var(--danger)]"
+                        }
+                      >
+                        {gate.enabled ? "Enabled" : "Blocked"}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </section>
