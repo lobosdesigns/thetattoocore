@@ -1740,11 +1740,12 @@ checks.push({
   label: "payment smoke enforces expected live mode Wrangler mutations",
   ok:
     envGuardResult.status === 0 &&
-    envGuardSource.includes("wrangler parser rejects duplicate expected live mode keys") &&
-    envGuardSource.includes("wrangler parser rejects enabled expected live mode") &&
-    envGuardSource.includes("wrangler parser rejects non-string expected live mode") &&
-    envGuardSource.includes('requiresAbsentOrOneFalseString("STRIPE_EXPECTED_LIVEMODE")') &&
-    envGuardSource.includes("`${key} must be absent or appear once with string value false`"),
+    envGuardSource.includes("wrangler parser rejects duplicate ${key}") &&
+    envGuardSource.includes("wrangler parser rejects enabled ${key}") &&
+    envGuardSource.includes("wrangler parser rejects non-string ${key}") &&
+    envGuardSource.includes("wrangler parser rejects missing ${key}") &&
+    envGuardSource.includes("`${key} must appear exactly once with string value false`") &&
+    !envGuardSource.includes("requiresAbsentOrOneFalseString"),
 });
 checks.push({
   label: "admin payment labels keep new seller links separate from legacy TTC records",
@@ -2254,40 +2255,40 @@ checks.push({
   label: "payment release verification gate is documented and wired",
   ok:
     packageJson.includes(
-      '"verify:payment-release": "npm run lint && npm run build && npm run smoke:env && npm run smoke:payments && npm run smoke:payment-cutover && npm run smoke:pwa && npm run smoke:security && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios"',
+      '"verify:payment-release": "npm run lint && npm run build && npm run smoke:env && npm run smoke:payments && npm run smoke:seller-link-rollout && npm run smoke:pwa && npm run smoke:security && npm run smoke:handoff && npm run smoke:docs && npm run smoke:public && npm run smoke:mobile && npm run smoke:mobile:ios"',
     ) &&
-    packageJson.includes('"smoke:payment-cutover": "node scripts/smoke-payment-cutover-evidence.mjs"') &&
+    packageJson.includes('"smoke:seller-link-rollout": "node scripts/smoke-payment-cutover-evidence.mjs"') &&
     packageJson.includes(
-      '"test:payment-go-live-gate": "node scripts/test-payment-go-live-gate.mjs"',
-    ) &&
-    packageJson.includes(
-      '"verify:payment-go-live": "npm run test:payment-go-live-gate && node scripts/smoke-payment-cutover-evidence.mjs --strict --phase preauthorization"',
+      '"test:seller-link-rollout-evidence": "node scripts/test-payment-go-live-gate.mjs"',
     ) &&
     packageJson.includes(
-      '"verify:payment-production-evidence": "npm run test:payment-go-live-gate && node scripts/smoke-payment-cutover-evidence.mjs --strict --phase post-transaction"',
+      '"verify:seller-link-rollout-evidence": "npm run test:seller-link-rollout-evidence && node scripts/smoke-payment-cutover-evidence.mjs --strict"',
     ) &&
     packageJson.includes(
-      '"test:payment-go-live-command": "node scripts/test-payment-go-live-command.mjs"',
+      '"test:seller-link-rollout-command": "node scripts/test-payment-go-live-command.mjs"',
     ) &&
+    !packageJson.includes('"smoke:payment-cutover"') &&
+    !packageJson.includes('"verify:payment-go-live"') &&
+    !packageJson.includes('"verify:payment-production-evidence"') &&
+    !packageJson.includes('"test:payment-go-live-gate"') &&
     paymentCutoverGate.includes("const MAX_EVIDENCE_AGE_DAYS = 45") &&
-    paymentCutoverGate.includes("function paymentEvidenceDateBlocker") &&
-    paymentCutoverGate.includes("const COMMIT_PATTERN = /^[0-9a-f]{7,40}$/") &&
-    paymentCutoverGate.includes("function gitReleaseCandidateExists") &&
-    paymentCutoverGate.includes("date cannot be in the future") &&
-    paymentCutoverGate.includes("date must be within ${MAX_EVIDENCE_AGE_DAYS} days") &&
-    paymentCutoverGate.includes("Strict command option --reference-date: test fixtures only") &&
-    paymentCutoverGateTest.includes("payment gate rejects stale dashboard evidence") &&
-    paymentCutoverGateTest.includes("payment gate rejects future dashboard evidence") &&
-    paymentCutoverGateTest.includes("payment gate rejects ambiguous dashboard dates") &&
-    paymentCutoverGateTest.includes("payment gate rejects symbolic release candidates") &&
-    paymentCutoverGateTest.includes("payment gate rejects unresolved production commits") &&
-    paymentCutoverGateTest.includes("payment gate rejects production clock overrides") &&
+    paymentCutoverGate.includes("function strictEvidenceBlockers") &&
+    paymentCutoverGate.includes("function gitCommitExists") &&
+    paymentCutoverGate.includes("proof date cannot be in the future") &&
+    paymentCutoverGate.includes("proof date must be within ${MAX_EVIDENCE_AGE_DAYS} days") &&
+    paymentCutoverGate.includes("--reference-date is fixture-only") &&
+    paymentCutoverGate.includes("Private evidence must not contain a seller link, account ID, payment ID, or secret") &&
+    paymentCutoverGateTest.includes("seller-link rollout gate rejects stale proof") &&
+    paymentCutoverGateTest.includes("seller-link rollout gate rejects future proof") &&
+    paymentCutoverGateTest.includes("seller-link rollout gate rejects a raw seller link") &&
+    paymentCutoverGateTest.includes("seller-link rollout gate rejects a seller account identifier") &&
+    paymentCutoverGateTest.includes("seller-link rollout gate rejects duplicate command options") &&
     paymentGoLiveCommandTest.includes(
-      "PASS payment go-live command verifies its parser and evidence.",
+      "PASS seller-link rollout command forwards private evidence options.",
     ) &&
     paymentReadiness.includes("npm.cmd run verify:payment-release") &&
-    paymentReadiness.includes("npm.cmd run smoke:payment-cutover") &&
-    paymentReadiness.includes("lint, production build, environment mode checks, payment flow guards, private cutover-evidence rows, app install and alert fallback guards, security headers, private handoff-template validation, readiness docs, public checkout/status routes, and Android-profile plus iOS-profile mobile checkout/account route smoke"),
+    paymentReadiness.includes("npm.cmd run smoke:seller-link-rollout") &&
+    paymentReadiness.includes("npm.cmd run verify:seller-link-rollout-evidence"),
 });
 
 const failures = checks.filter((check) => !check.ok);

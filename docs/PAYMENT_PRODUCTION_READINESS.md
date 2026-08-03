@@ -40,6 +40,14 @@ revive that pilot.
 6. Run web, Android phone, and TestFlight iPad QA for disclosure, external-browser open and return, and no false TTC payment, receipt, order, webhook, inventory, or success state.
 7. Rollback by restoring `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false`, upload and inspect the rollback version, deploy it, and confirm the public purchase control is removed while protected and historical records remain.
 
+Use `npm.cmd run smoke:seller-link-rollout` for the repo-safe source/template
+contract. Use `npm.cmd run verify:seller-link-rollout-evidence --
+--release-candidate <commit-sha>` only with the ignored private handoff after
+the separately approved operational steps are complete. The strict command
+fails closed on missing, stale, future-dated, placeholder, or `UNKNOWN`
+evidence and never accepts a seller URL, account identifier, payment ID, or
+secret as repo-safe proof.
+
 ## Historical TTC Checkout Position (Preserved)
 
 - Stripe Checkout is the shared gateway path for Merch, prepaid ad campaigns, and accepted booking deposits.

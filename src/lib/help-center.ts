@@ -719,11 +719,11 @@ export const helpArticles = [
         title: "Merch product setup",
       },
       {
-        assetSrc: "/screenshots/mobile-merch-help-shortcut-safe.png",
+        assetSrc: "/screenshots/mobile-listing-safety-safe.png",
         description:
           "Show where sellers can find Merch setup, purchase support, and seller checkout safety without exposing a Payment Link or private order details.",
         kind: "screenshot",
-        title: "Merch guide shortcut",
+        title: "Listing and seller link guide",
       },
       {
         assetSrc: "/tutorial-clips/mobile-merch-fulfillment-safe.mp4",
@@ -791,11 +791,11 @@ export const helpArticles = [
     ],
     tutorialMedia: [
       {
-        assetSrc: "/screenshots/mobile-order-support-safe.png",
+        assetSrc: "/screenshots/mobile-seller-purchase-support-safe.png",
         description:
-          "Historical TTC order support example with safe sample status and no real shipping details.",
+          "Show that the seller handles purchase support, TTC handles listing safety, and historical TTC order records remain a separate legacy support path.",
         kind: "screenshot",
-        title: "Historical TTC order support path",
+        title: "Seller purchase support",
       },
       {
         assetSrc: "/tutorial-clips/mobile-order-refund-review-safe.mp4",

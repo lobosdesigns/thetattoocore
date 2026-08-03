@@ -162,27 +162,25 @@ const androidApi36DocsReady =
   androidVersionCode === 6 &&
   androidVersionName === "1.0.5" &&
   source.nativePrep.includes(
-    "Active Production release `1.0.3 (4)` and Alpha release `1.0.4 (5)` are `36 / 36`",
+    "| Checked-in Android source candidate | `1.0.5 (6)` at `36 / 36` |",
   ) &&
-  source.nativePrep.includes("Checked-in replacement candidate") &&
-  source.nativePrep.includes("`1.0.5 (6)` at `36 / 36`") &&
-  source.nativePrep.includes("Record API `36 / 36` rebuild proof") &&
-  source.nativePrep.includes("Previous Google Play baseline") &&
-  source.nativePrep.includes("do not keep it in the active alert allowlist") &&
+  source.nativePrep.includes("| Current Google Play Production and Alpha | **UNKNOWN** |") &&
+  source.nativePrep.includes("| Current installed Android build | **UNKNOWN** |") &&
+  source.nativePrep.includes("Record API `36 / 36` source proof only") &&
   source.mobileRunbook.includes(
-    "checked-in replacement `1.0.5 (6)` uses the same API 36 baseline",
+    "Checked-in Android source candidate: `1.0.5 (6)`",
   ) &&
   source.mobileRunbook.includes(
-    "Checked-in Android `1.0.5 (6)` and iOS `1.0 (5)` are replacement candidates",
+    "Exact current Google Play Production identity: **UNKNOWN**",
   ) &&
-  source.readme.includes("checked-in release targets `36 / 36`") &&
   source.readme.includes(
-    "Google Play Production serves version code `4` / version name `1.0.3`, while Closed testing - Alpha serves version code `5` / version name `1.0.4`",
+    "checked-in Android source candidate `1.0.5 (6)` targets `36 / 36`",
   ) &&
-  source.readme.includes("checked-in replacement candidate is `1.0.5 (6)`") &&
-  source.readme.includes("| Current Play Production release | `36 / 36`; active `4` / `1.0.3` |") &&
-  source.readme.includes("| Checked-in replacement candidate | `36 / 36`; `6` / `1.0.5` |") &&
-  source.readme.includes("| Previous Play baseline | `36 / 36`; historical `3` / `1.0.2` |");
+  source.readme.includes("| Current Play Production release | **UNKNOWN** |") &&
+  source.readme.includes("| Current controlled Alpha release | **UNKNOWN** |") &&
+  source.readme.includes("| Current installed Android build | **UNKNOWN** |") &&
+  source.readme.includes("| Checked-in Android source candidate | `36 / 36`; `6` / `1.0.5` |") &&
+  source.readme.includes("Source identity only. Do not call it signed, uploaded, selected, served, or installed");
 const androidApi35InternalOnly =
   compileSdkVersion === 35 &&
   targetSdkVersion === 35 &&
@@ -220,7 +218,66 @@ const iosMarketingVersionsMatch =
   iosProjectMarketingVersions.every((version) => version === iosCurrentMarketingVersion);
 const iosCurrentStoreBuild = `${iosCurrentMarketingVersion} (${iosCurrentBuildVersion})`;
 
+const currentIdentityLabels = [
+  "App Review",
+  "TestFlight",
+  "Google Play Production",
+  "Google Play Closed testing - Alpha",
+  "installed Android",
+  "installed iOS",
+];
+
+function hasUnknownCurrentIdentityBoundary(content) {
+  return (
+    content.includes("Checked-in Android source candidate: `1.0.5 (6)`") &&
+    content.includes("Checked-in iOS source candidate: `1.0 (5)`") &&
+    content.includes(
+      "Repository source identity is not signed-artifact, upload, console-selection, served-track, or installed-device proof.",
+    ) &&
+    currentIdentityLabels.every((label) =>
+      content.includes(`Exact current ${label} identity: **UNKNOWN**`),
+    )
+  );
+}
+
+const currentBoundarySources = [
+  ["native prep", source.nativePrep],
+  ["native README", source.readme],
+  ["Apple upload checklist", source.iosUploadChecklist],
+  ["mobile submission runbook", source.mobileRunbook],
+  ["real-device QA", source.realDeviceQa],
+];
+const currentNativeBoundaryIsSafe = currentBoundarySources.every(
+  ([, content]) => hasUnknownCurrentIdentityBoundary(content),
+);
+const hardcodedCurrentIdentityMutants = currentBoundarySources.flatMap(
+  ([name, content]) => [
+    [
+      `${name} App Review mutation`,
+      content.replace(
+        "Exact current App Review identity: **UNKNOWN**",
+        "Exact current App Review identity: `1.0 (3)`",
+      ),
+    ],
+    [
+      `${name} Google Play mutation`,
+      content.replace(
+        "Exact current Google Play Production identity: **UNKNOWN**",
+        "Exact current Google Play Production identity: `1.0.3 (4)`",
+      ),
+    ],
+  ],
+);
+
 const checks = [
+  {
+    label: "native current-state guard rejects hard-coded store and installed identities",
+    ok:
+      currentNativeBoundaryIsSafe &&
+      hardcodedCurrentIdentityMutants.every(
+        ([, content]) => !hasUnknownCurrentIdentityBoundary(content),
+      ),
+  },
   {
     label: "seller checkout uses the existing native system-browser wiring",
     ok:
@@ -494,16 +551,19 @@ const checks = [
       source.capacitorConfig.includes("cleartext: false"),
   },
   {
-    label: "native wrapper notes use Play Production by default and Alpha for controlled QA",
+    label: "native wrapper notes keep current Play identities unknown before controlled QA",
     ok:
+      currentNativeBoundaryIsSafe &&
       source.readme.includes("Apple TestFlight") &&
       source.readme.includes("Google Play Production and controlled Alpha testing") &&
       source.readme.includes("Future replacement releases wait for final legal review") &&
       source.nativePrep.includes("August 31, 2026") &&
       source.nativePrep.includes("Android 16 / API 36") &&
       source.mobileRunbook.includes(
-        "checked-in replacement `1.0.5 (6)` uses the same API 36 baseline",
+        "Checked-in Android source candidate: `1.0.5 (6)`",
       ) &&
+      source.mobileRunbook.includes("Exact current Google Play Production identity: **UNKNOWN**") &&
+      source.mobileRunbook.includes("Exact current Google Play Closed testing - Alpha identity: **UNKNOWN**") &&
       source.readme.includes("support@thetattoocore.com") &&
       source.readme.includes("Native permissions at first beta: none") &&
       source.readme.includes("Push prompts: off") &&
@@ -514,7 +574,8 @@ const checks = [
       source.readme.includes("set USB mode") &&
       source.readme.includes("accept the computer authorization prompt") &&
       source.readme.includes("authorized device missing TTC package") &&
-      source.readme.includes("Google Play Production build before route QA") &&
+      source.readme.includes("verify the intended track and installed identities before route QA") &&
+      source.readme.includes("decide the QA/install path only after read-only verification") &&
       source.readme.includes("Alpha is needed") &&
       source.readme.includes("only for controlled-QA evidence") &&
       source.readme.includes("tester participation/duration evidence") &&
@@ -566,7 +627,7 @@ const checks = [
       !source.androidDeviceProbe.includes(
         "ANDROID_QA next=join the active Google Play closed test",
       ) &&
-      source.readme.includes("confirm the Google Play Production build before route QA") &&
+      source.readme.includes("package build matches the separately verified Google Play track and installed identities") &&
       source.readme.includes("npm.cmd run qa:android-device:open-test") &&
       source.readme.includes("npm.cmd run qa:android-device:open-link") &&
       source.realDeviceQa.includes("npm.cmd run qa:android-device:open-test") &&
@@ -576,7 +637,8 @@ const checks = [
       source.rootPackageJson.includes('"qa:android-device:runtime": "node scripts/android-device-qa-probe.mjs --require-device --require-runtime --wait-ms=30000"') &&
       source.androidDeviceProbe.includes("if (requireDevice) process.exit(1)") &&
       source.realDeviceQa.includes("authorized device is visible and the TTC") &&
-      source.realDeviceQa.includes("package is installed for the active Google Play candidate build") &&
+      source.realDeviceQa.includes("package matches the separately verified Google Play track identity chosen for") &&
+      source.realDeviceQa.includes("Keep all three unknown until verified") &&
       source.realDeviceQa.includes("authorized device has wrong TTC build") &&
       source.realDeviceQa.includes("TTC_ANDROID_EXPECTED_VERSION_NAME") &&
       source.realDeviceQa.includes("authorized device missing TTC package") &&
@@ -584,7 +646,7 @@ const checks = [
       source.realDeviceQa.includes("install or confirm the Play-installed build"),
   },
   {
-    label: "Google Play Production stays primary while Alpha evidence remains private",
+    label: "Google Play QA waits for verified Production or Alpha identities",
     ok:
       source.mobileRunbook.includes("The signed-in Lobosdesigns LLC developer account is an organization account") &&
       source.mobileRunbook.includes("12-testers-for-14-days production-access gate applies to newly created personal accounts") &&
@@ -593,7 +655,8 @@ const checks = [
       source.mobileRunbook.includes("archive the production-access evidence privately") &&
       source.mobileRunbook.includes("Recheck the console and official help before future submissions.") &&
       source.realDeviceQa.includes("Google Play Production or controlled Alpha testing") &&
-      source.realDeviceQa.includes("installed Android app came from Production") &&
+      source.realDeviceQa.includes("record the exact Google Play Production and Alpha identities") &&
+      source.realDeviceQa.includes("Keep all three unknown until verified") &&
       source.realDeviceQa.includes("Closed testing - Alpha only for controlled QA") &&
       source.realDeviceQa.includes("exact release track, and test date") &&
       source.realDeviceQa.includes("same-account web opt-in, 12-tester participation, 14-day duration, feedback summary, and production-access request result in the private handoff") &&
@@ -613,7 +676,8 @@ const checks = [
       source.nativePrep.includes("## Native Push Private Evidence Matrix") &&
       source.nativePrep.includes("| Firebase project | Project exists for TheTattooCore") &&
       source.nativePrep.includes("| Android app config | Android app config file added only to the private build environment") &&
-      source.nativePrep.includes("| iOS app config | Checked-in build `1.0 (4)` references the ignored private app config") &&
+      source.nativePrep.includes("| iOS app config | Checked-in iOS source candidate `1.0 (5)` references the ignored private app-config path") &&
+      source.nativePrep.includes("Source does not prove that private configuration, signing, TestFlight selection, or an installed build is current") &&
       source.nativePrep.includes("| Device token registration | Signed-in Android and iOS devices register and refresh tokens") &&
       source.nativePrep.includes("| Delivery and tap routing | Alerts deliver for the tested categories") &&
       source.nativePrep.includes("| Preference controls | Per-device opt-out, quiet hours, and category preferences stop delivery") &&
@@ -684,7 +748,7 @@ const checks = [
       : undefined,
   },
   {
-    label: "native Android target API stays explicit for Production and replacement submissions",
+    label: "native Android target API stays explicit for the checked-in source candidate",
     ok:
       source.androidVariables.includes("compileSdkVersion") &&
       source.androidVariables.includes("targetSdkVersion") &&
@@ -694,15 +758,18 @@ const checks = [
       (androidApi36DocsReady || androidApi35InternalOnly),
   },
   {
-    label: "native Android next upload uses a fresh Play version code",
+    label: "checked-in Android source candidate uses a fresh version code without store claims",
     ok:
       androidApi36SubmissionReady &&
       androidVersionCode === 6 &&
       androidVersionName === "1.0.5" &&
       source.readiness.includes(
-        "Google Play currently serves API 36 release `1.0.3 (4)` in public production and `1.0.4 (5)` in Closed testing - Alpha",
+        "Android API 36 uses checked-in Android source candidate `1.0.5 (6)`",
       ) &&
-      source.readiness.includes("any replacement must increment above version code `5`") &&
+      source.readiness.includes("current Production, Alpha, App Review, TestFlight, and installed identities remain unknown") &&
+      source.nativePrep.includes("The checked-in Android source candidate uses version code `6`") &&
+      source.nativePrep.includes("does not establish that code `6` has been uploaded or served") &&
+      source.nativePrep.includes("Never reuse a version code that Google Play has already served") &&
       source.realDeviceQa.includes("versionName` and `versionCode` checked into"),
   },
   {
@@ -728,9 +795,9 @@ const checks = [
       !source.readme.includes("Run `npm run doctor`") &&
       !source.readme.includes("Run `npm run sync`") &&
       source.readme.includes("Confirm the mapped TTC icon/splash assets stay current") &&
-      source.readiness.includes("Validate the existing beta wrapper") &&
-      source.readiness.includes("rebuild signed Android upload bundles") &&
-      source.readiness.includes("Confirm the mapped native icon/splash assets remain current") &&
+      source.readiness.includes("Android API 36 uses checked-in Android source candidate `1.0.5 (6)`") &&
+      source.readiness.includes("iOS source candidate `1.0 (5)`") &&
+      source.readiness.includes("current Production, Alpha, App Review, TestFlight, and installed identities remain unknown") &&
       !source.readiness.includes("Create and validate the beta wrapper") &&
       !source.readiness.includes("once Android/iOS packaging starts"),
   },
@@ -815,15 +882,17 @@ const checks = [
       source.iosUploadChecklist.includes("private release handoff"),
   },
   {
-    label: "native iOS build handoff matches checked-in TestFlight version",
+    label: "native iOS handoff separates the checked-in source candidate from current TestFlight",
     ok:
       iosBuildVersionsMatch &&
       iosMarketingVersionsMatch &&
       source.iosUploadChecklist.includes(`Confirm version: \`${iosCurrentMarketingVersion}\``) &&
-      source.iosUploadChecklist.includes("Confirm build matches the checked-in Xcode `CURRENT_PROJECT_VERSION`") &&
-      source.iosUploadChecklist.includes("App Store Connect/TestFlight build selected for review") &&
-      source.iosUploadChecklist.includes(`build \`${iosCurrentBuildVersion}\``) &&
-      source.iosUploadChecklist.includes(`build \`${iosCurrentStoreBuild}\``) &&
+      source.iosUploadChecklist.includes(`Confirm the archive source matches checked-in iOS source candidate \`${iosCurrentStoreBuild}\``) &&
+      source.iosUploadChecklist.includes("Source identity does not establish the App Store Connect or TestFlight selection") &&
+      source.iosUploadChecklist.includes("Separately verify the exact current App Review and TestFlight identities read-only") &&
+      source.iosUploadChecklist.includes(`Treat build \`${iosCurrentBuildVersion}\` as the source candidate only`) &&
+      hasUnknownCurrentIdentityBoundary(source.iosUploadChecklist) &&
+      !source.iosUploadChecklist.includes("App Store Connect/TestFlight build selected for review") &&
       !source.iosUploadChecklist.includes("Confirm build: `1`"),
   },
   {

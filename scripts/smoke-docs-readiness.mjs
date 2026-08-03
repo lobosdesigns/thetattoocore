@@ -36,11 +36,65 @@ const docs = {
     "utf8",
   ),
   "native/store-metadata/README.md": readFileSync("native/store-metadata/README.md", "utf8"),
+  "native/store-metadata/screenshot-inventory.md": readFileSync(
+    "native/store-metadata/screenshot-inventory.md",
+    "utf8",
+  ),
 };
 const packageJson = readFileSync("package.json", "utf8");
 const screenshotGenerator = readFileSync("scripts/generate-safe-store-screenshots.mjs", "utf8");
 const androidDeviceProbe = readFileSync("scripts/android-device-qa-probe.mjs", "utf8");
 const readinessDoc = docs["docs/APP_STORE_READINESS.md"];
+
+const retiredCurrentScreenshotFiles = [
+  "mobile-payout-safe.png",
+  "mobile-order-support-safe.png",
+  "mobile-merch-help-shortcut-safe.png",
+];
+const retiredCurrentScreenshotTerms = [
+  "Payout Readiness",
+  "Payout safety guide",
+  "submitted build `1.0 (3)`",
+  "During active review",
+];
+
+function currentScreenshotSourcesUseSellerOwnedTruth({ generator, inventory, readme }) {
+  const combined = `${generator}\n${inventory}\n${readme}`;
+  return (
+    combined.includes("mobile-seller-payment-link-safe.png") &&
+    combined.includes("mobile-seller-purchase-support-safe.png") &&
+    combined.includes("mobile-listing-safety-safe.png") &&
+    combined.includes("seller-owned Payment Link") &&
+    combined.includes("seller handles purchase support") &&
+    combined.includes("external browser") &&
+    combined.includes("no false TTC payment, order, receipt, or success state") &&
+    combined.includes("listing safety") &&
+    combined.includes("historical TTC order records") &&
+    retiredCurrentScreenshotFiles.every(
+      (file) =>
+        !inventory.includes(file) &&
+        !readme.includes(file) &&
+        !generator.includes(`"${file}": header`),
+    ) &&
+    retiredCurrentScreenshotTerms.every((term) => !combined.includes(term))
+  );
+}
+
+const screenshotSources = {
+  generator: screenshotGenerator,
+  inventory: docs["native/store-metadata/screenshot-inventory.md"],
+  readme: docs["native/store-metadata/README.md"],
+};
+const screenshotSourceMutants = [
+  {
+    ...screenshotSources,
+    inventory: `${screenshotSources.inventory}\nCurrent App Review uses submitted build \`1.0 (3)\`.`,
+  },
+  {
+    ...screenshotSources,
+    generator: `${screenshotSources.generator}\n"mobile-payout-safe.png": header`,
+  },
+];
 
 function markdownSection(markdown, heading, nextHeading) {
   const start = markdown.indexOf(heading);
@@ -353,7 +407,9 @@ const safeOrderRefundClipPath = "public/tutorial-clips/mobile-order-refund-revie
 const safeAppWrapperClipPath = "public/tutorial-clips/mobile-app-wrapper-navigation-safe.mp4";
 const safeProfilePhotoClipPath = "public/tutorial-clips/mobile-profile-photo-banner-safe.mp4";
 const safePrivacyScreenshotPath = "public/screenshots/mobile-privacy-safety-safe.png";
-const safeMerchShortcutScreenshotPath = "public/screenshots/mobile-merch-help-shortcut-safe.png";
+const safeMerchShortcutScreenshotPath = "public/screenshots/mobile-listing-safety-safe.png";
+const safeSellerSupportScreenshotPath =
+  "public/screenshots/mobile-seller-purchase-support-safe.png";
 const forbiddenContactSnippets = [
   "lobo3319@gmail.com",
   "lobosden@hotmail.com",
@@ -769,6 +825,14 @@ const rolloutOrderMutationSource = swapFirst(
 
 const checks = [
   {
+    label: "current screenshot sources use seller-owned purchase support and reject payout or hard-coded review claims",
+    ok:
+      currentScreenshotSourcesUseSellerOwnedTruth(screenshotSources) &&
+      screenshotSourceMutants.every(
+        (mutant) => !currentScreenshotSourcesUseSellerOwnedTruth(mutant),
+      ),
+  },
+  {
     label: "seller-owned Merch copy is consistent across member and admin surfaces",
     ok:
       accountPage.includes("Merch and orders") &&
@@ -1060,8 +1124,12 @@ const checks = [
       screenshotGenerator.includes("mobile-login-signup.png") &&
       screenshotGenerator.includes("mobile-ads-safe.png") &&
       screenshotGenerator.includes("mobile-merch-safe.png") &&
-      screenshotGenerator.includes("mobile-payout-safe.png") &&
-      screenshotGenerator.includes("mobile-order-support-safe.png") &&
+      screenshotGenerator.includes("mobile-seller-payment-link-safe.png") &&
+      screenshotGenerator.includes("mobile-seller-purchase-support-safe.png") &&
+      screenshotGenerator.includes("mobile-listing-safety-safe.png") &&
+      !screenshotGenerator.includes('"mobile-payout-safe.png": header') &&
+      !screenshotGenerator.includes('"mobile-order-support-safe.png": header') &&
+      !screenshotGenerator.includes('"mobile-merch-help-shortcut-safe.png": header') &&
       screenshotGenerator.includes("mobile-help-support.png") &&
       screenshotGenerator.includes("Visible nudity is not allowed"),
   },
@@ -1540,12 +1608,16 @@ const checks = [
       helpCenterData.includes('assetSrc: "/screenshots/mobile-booking-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-ads-safe.png"') &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-merch-safe.png"') &&
-      helpCenterData.includes('assetSrc: "/screenshots/mobile-merch-help-shortcut-safe.png"') &&
-      screenshotGenerator.includes('"mobile-merch-help-shortcut-safe.png"') &&
+      helpCenterData.includes('assetSrc: "/screenshots/mobile-listing-safety-safe.png"') &&
+      screenshotGenerator.includes('"mobile-listing-safety-safe.png"') &&
       existsSync(safeMerchShortcutScreenshotPath) &&
       statSync(safeMerchShortcutScreenshotPath).size > 10_000 &&
       !helpCenterData.includes('assetSrc: "/screenshots/mobile-payout-safe.png"') &&
-      helpCenterData.includes('assetSrc: "/screenshots/mobile-order-support-safe.png"') &&
+      !helpCenterData.includes('assetSrc: "/screenshots/mobile-order-support-safe.png"') &&
+      !helpCenterData.includes('assetSrc: "/screenshots/mobile-merch-help-shortcut-safe.png"') &&
+      helpCenterData.includes('assetSrc: "/screenshots/mobile-seller-purchase-support-safe.png"') &&
+      existsSync(safeSellerSupportScreenshotPath) &&
+      statSync(safeSellerSupportScreenshotPath).size > 10_000 &&
       helpCenterData.includes('assetSrc: "/screenshots/mobile-privacy-safety-safe.png"') &&
       screenshotGenerator.includes('"mobile-privacy-safety-safe.png"') &&
       existsSync(safePrivacyScreenshotPath) &&
@@ -1600,12 +1672,12 @@ const checks = [
       helpCenterData.includes("Review ad credits") &&
       !helpCenterData.includes('title: "Use ad credits"') &&
       helpCenterData.includes("Merch product setup") &&
-      helpCenterData.includes("Merch guide shortcut") &&
+      helpCenterData.includes("Listing and seller link guide") &&
       helpCenterData.includes("Historical TTC order support") &&
       helpCenterData.includes('slug: "order-refunds-disputes"') &&
       helpCenterData.includes("Purchase support, refunds, and disputes") &&
       helpCenterData.includes("What happens if there is a dispute?") &&
-      helpCenterData.includes("Historical TTC order support path") &&
+      helpCenterData.includes("Seller purchase support") &&
       helpCenterData.includes("Fulfillment and refund review") &&
       helpCenterData.includes("Seller checkout and payment safety") &&
       helpCenterData.includes("Should I send private payment details to TTC?") &&

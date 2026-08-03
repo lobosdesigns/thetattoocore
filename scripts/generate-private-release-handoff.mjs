@@ -18,8 +18,14 @@ repo docs. Use safe aliases and short pass/fail summaries in repo-visible docs.
 | Field | Value |
 | --- | --- |
 | Web deploy version | |
-| Android release track and version/build | |
-| iOS TestFlight version/build | |
+| Android checked-in source candidate | 1.0.5 (6) |
+| iOS checked-in source candidate | 1.0 (5) |
+| Current App Review version/build | UNKNOWN |
+| Current TestFlight version/build | UNKNOWN |
+| Current Google Play Production version/build | UNKNOWN |
+| Current Google Play Alpha version/build | UNKNOWN |
+| Current installed Android version/build | UNKNOWN |
+| Current installed TestFlight iPad version/build | UNKNOWN |
 | Store-review target date | |
 | Reviewer contact saved in consoles | pending |
 | Reviewer account validated for selected build/track | pending |
@@ -41,10 +47,10 @@ account identifiers, and private links in this ignored handoff only.
 | Google Play | Closed-test tester links and opt-in evidence | Save Android/web join links privately, confirm the device Play account matches the tester-community member, confirm web opt-in with that account, and record listing/install proof | pending | |
 | Google Play | API 36 closed-test release | Confirm the current API 36 version code, version name, and release track in Play Console, verify the selected build on an authorized device, do not reuse an uploaded version code, and archive tester participation evidence | pending | |
 | Google Play | Console submit/retry evidence | If Play Console errors before submit, record the visible error code, page URL, retry path, whether reload/new-tab retry was attempted, and whether Publishing overview still shows changes not sent for review | pending | |
-| Payments | Production account activation | Production account activation is complete; Marketplace Connect setup remains separate from the official Merch pilot | passed | |
-| Payments | Marketplace Connect setup | Excluded from the official Merch pilot; seller onboarding and destination-charge routing remain blocked | n/a | |
-| Payments | Production app mode preflight | Admin still shows expected mode Needs review and server key mode Test; the live endpoint and rotated signing secret passed a signed non-money 200 probe; checkout remains blocked until the live server key and expected mode are matched | blocked | |
-| Payments | Official Merch policy and fulfillment approval | US shipping, tax, fulfillment, refund/dispute, support, and legal review must pass before the official Merch flow is armed | blocked | |
+| Merch | Seller-link inactive upload evidence | Record an inactive Worker upload proving the seller-link gate, native delivery, and every retired TTC payment switch remain false | pending | |
+| Merch | Private seller Payment Link review | Review one seller-owned Payment Link privately without copying the URL, account identifier, buyer data, or secret into this file | pending | |
+| Merch | Seller-link enablement approval | Enable only the seller-link gate after explicit owner approval and a second inactive-upload comparison | blocked | |
+| Merch | External-browser QA and rollback | Record web, Android phone, and TestFlight iPad open/return QA with no false TTC success state, then prove gate-off rollback | pending | |
 
 ## Store Console Evidence
 
@@ -124,28 +130,44 @@ evidence.
 | Android | | | | pending | pending | pending | | | pending |
 | iOS | | | | pending | pending | pending | | | pending |
 
-## Payment And Commerce Evidence
+## Seller-Owned Merch Rollout Evidence
 
-| Flow | Release candidate | Release switch state | Private gate proof filename or location | Expected mode checked | Server key mode checked | Webhook endpoint/events checked | Admin reconciliation | Refund/dispute/payout gate | Post-transaction production proof | Result |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Official TTC Merch checkout | pending | blocked | | pending | pending | pending | pending | pending | pending | pending |
-| Marketplace Merch checkout | pending | blocked | | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| Booking deposit | pending | blocked | | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| Ads checkout | pending | blocked | | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| Seller payout readiness | pending | blocked | | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+The seller processes payment. The seller handles purchase support, shipping,
+tax, returns, refunds, and disputes. TTC reviews listing safety and preserves only
+historical TTC order records for legacy reconciliation. Do not paste a seller
+URL, account identifier, buyer data, receipt, transaction record, or secret here.
+Cross-platform QA must return with no false TTC payment, order, receipt, or success state.
 
-## Payment Dashboard Readiness Log
+Required false bindings for the first inactive upload and initial deploy:
+TTC_SELLER_CHECKOUT_LINKS_ENABLED=false, TTC_NATIVE_PUSH_DELIVERY_ENABLED=false,
+STRIPE_EXPECTED_LIVEMODE=false, STRIPE_CHECKOUT_CREATION_ENABLED=false,
+STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED=false,
+STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED=false,
+STRIPE_BOOKING_CHECKOUT_ENABLED=false, STRIPE_CONNECT_ONBOARDING_ENABLED=false,
+and STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false.
 
-Use this for private payment dashboard evidence during preauthorization and post-transaction verification.
-Do not copy account identifiers, key fragments, event IDs, connected-account IDs,
-bank/card details, or dashboard screenshots into repo docs.
-
-| Attempt date/time | Area | Visible readiness item | Result | Private proof filename or location | Next owner |
+| Step | Required private evidence | Expected state | Result | Private proof filename or location | Proof date |
 | --- | --- | --- | --- | --- | --- |
-| | Account verification | Verify email, business, profile, verified status, and identity readiness | pending | | |
-| | API and webhook mode | Expected live/test mode, server key mode, webhook endpoint, and event list match the release candidate | pending | | |
-| | Release switches | Official TTC Merch is Armed while marketplace, booking, ads, and seller onboarding remain Blocked | pending | | |
-| | Post-transaction production proof | Record a genuine authorized customer sale and reconciliation only after separate launch approval | pending | | |
+| 1. Approved migration | Protected seller-link migration applied only after exact approval | No public seller link | pending | | |
+| 2. First inactive Worker upload | Inactive upload proves TTC_SELLER_CHECKOUT_LINKS_ENABLED=false, TTC_NATIVE_PUSH_DELIVERY_ENABLED=false, STRIPE_EXPECTED_LIVEMODE=false, and every retired TTC checkout, booking, Connect, and destination switch false | All release gates false | pending | | |
+| 3. Deploy while disabled | Reviewed Worker version deployed with the same false bindings | Seller link hidden | pending | | |
+| 4. Private seller link review | One seller-owned Payment Link reviewed privately for live mode, seller ownership, disclosure, listing safety, and external-browser destination | Gate still false | pending | | |
+| 5. Second inactive upload and approval | After explicit owner approval, a second inactive upload proves only TTC_SELLER_CHECKOUT_LINKS_ENABLED changes to true | Only seller-link gate may change | pending | | |
+| 6. Cross-platform QA | Web, Android phone, and TestFlight iPad open the seller-owned Payment Link in the external browser and return without a TTC payment, order, receipt, or success claim | Seller handles purchase support | pending | | |
+| 7. Rollback | Restore TTC_SELLER_CHECKOUT_LINKS_ENABLED=false and prove the purchase control disappears while historical TTC order records remain readable | Gate false | pending | | |
+
+## Seller-Link Rollout Log
+
+Use this only for repo-safe private evidence references. Never copy a seller
+Payment Link, seller account identifier, buyer details, card or bank details,
+receipt, transaction identifier, or dashboard screenshot into repo-visible docs.
+
+| Attempt date/time | Area | Required proof | Result | Private proof filename or location | Next owner |
+| --- | --- | --- | --- | --- | --- |
+| | Configuration invariants | First and second inactive-upload comparisons show every required false binding and any separately approved seller-gate-only change | pending | | |
+| | Private seller link review | Seller ownership, live link, disclosure, listing safety, and external-browser destination reviewed privately | pending | | |
+| | Cross-platform behavior | Web, Android phone, and TestFlight iPad return without a false TTC payment, order, receipt, or success state | pending | | |
+| | Rollback | TTC_SELLER_CHECKOUT_LINKS_ENABLED=false hides the purchase control without removing historical TTC records | pending | | |
 
 ## Native Push Evidence
 
@@ -187,7 +209,7 @@ submitted. Repo-visible summaries should keep only pass/fail/blocker status.
 | Account deletion and retention | Deletion SLA, manual review owner, retention exceptions, legal holds, moderation records, verification history, and payment/order records are approved | pending | | | |
 | UGC and safety policy | 18+ eligibility, no visible nudity, no scratcher promotion, no AI art/search claims, report/block tools, moderation escalation, and restricted-equipment handling are approved | pending | | | |
 | Store questionnaires | App Privacy/Data Safety, age/content rating, optional Accessibility Nutrition Labels claims, Google Play declarations, content rights, pricing, category, reviewer notes, and screenshot validation match the exact build | pending | | | |
-| Commerce and payments | Checkout exposure, native payment-policy classification, tax/shipping assumptions, fulfillment timing, refunds, disputes, booking deposits, ad purchases, and seller payout timing are approved or explicitly gated | pending | | | |
+| Commerce and payments | Seller-owned Payment Link exposure, native physical-goods classification, seller shipping/tax/return/refund/dispute/purchase-support duties, booking deposits, ad purchases, listing safety, and historical TTC order reconciliation are approved or explicitly gated | pending | | | |
 | Evidence privacy | Reviewer credentials, phone details, console screenshots, payment identifiers, buyer addresses, private DMs, license documents, and owner personal details remain outside repo-visible docs | pending | | | |
 
 ## Private-Data Rules

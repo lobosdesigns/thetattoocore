@@ -352,23 +352,13 @@ function wranglerPaymentConfigSafety(source) {
       issues.push(`${key} must appear exactly once with string value false`);
     }
   };
-  const requiresAbsentOrOneFalseString = (key) => {
-    const values = valuesFor(key);
-    if (
-      values.length > 1 ||
-      (values.length === 1 &&
-        (values[0].type !== "scalar" || values[0].value !== "false"))
-    ) {
-      issues.push(`${key} must be absent or appear once with string value false`);
-    }
-  };
-
-  requiresOneFalseString("TTC_SELLER_CHECKOUT_LINKS_ENABLED");
-  requiresOneFalseString("TTC_NATIVE_PUSH_DELIVERY_ENABLED");
-  requiresAbsentOrOneFalseString("STRIPE_EXPECTED_LIVEMODE");
-
-  for (const key of retiredTtcPaymentSwitchKeys) {
-    requiresAbsentOrOneFalseString(key);
+  for (const key of [
+    "STRIPE_EXPECTED_LIVEMODE",
+    "TTC_SELLER_CHECKOUT_LINKS_ENABLED",
+    "TTC_NATIVE_PUSH_DELIVERY_ENABLED",
+    ...retiredTtcPaymentSwitchKeys,
+  ]) {
+    requiresOneFalseString(key);
   }
 
   return { issues, ok: issues.length === 0 };
@@ -385,54 +375,40 @@ function appendWranglerVar(source, entry) {
   );
 }
 
-const wranglerGuardMutationCases = [
-  {
-    label: "wrangler parser rejects duplicate seller checkout keys",
-    source: appendWranglerVar(
-      wranglerConfig,
-      '"TTC_SELLER_CHECKOUT_LINKS_ENABLED": "false"',
-    ),
-  },
-  {
-    label: "wrangler parser rejects seller checkout enablement",
-    source: wranglerConfig.replace(
-      '"TTC_SELLER_CHECKOUT_LINKS_ENABLED": "false"',
-      '"TTC_SELLER_CHECKOUT_LINKS_ENABLED": "true"',
-    ),
-  },
-  {
-    label: "wrangler parser rejects native push delivery enablement",
-    source: wranglerConfig.replace(
-      '"TTC_NATIVE_PUSH_DELIVERY_ENABLED": "false"',
-      '"TTC_NATIVE_PUSH_DELIVERY_ENABLED": "true"',
-    ),
-  },
-  {
-    label: "wrangler parser rejects duplicate expected live mode keys",
-    source: appendWranglerVar(
-      wranglerConfig,
-      '"STRIPE_EXPECTED_LIVEMODE": "false",\n    "STRIPE_EXPECTED_LIVEMODE": "false"',
-    ),
-  },
-  {
-    label: "wrangler parser rejects enabled expected live mode",
-    source: appendWranglerVar(
-      wranglerConfig,
-      '"STRIPE_EXPECTED_LIVEMODE": "true"',
-    ),
-  },
-  {
-    label: "wrangler parser rejects non-string expected live mode",
-    source: appendWranglerVar(
-      wranglerConfig,
-      '"STRIPE_EXPECTED_LIVEMODE": false',
-    ),
-  },
-  ...retiredTtcPaymentSwitchKeys.map((key) => ({
-    label: `wrangler parser rejects retired ${key} enablement`,
-    source: appendWranglerVar(wranglerConfig, `"${key}": "true"`),
-  })),
+const requiredWranglerFalseKeys = [
+  "STRIPE_EXPECTED_LIVEMODE",
+  "TTC_SELLER_CHECKOUT_LINKS_ENABLED",
+  "TTC_NATIVE_PUSH_DELIVERY_ENABLED",
+  ...retiredTtcPaymentSwitchKeys,
 ];
+
+function wranglerFalseEntry(key) {
+  return `"${key}": "false"`;
+}
+
+function mutateWranglerEntry(source, key, replacement) {
+  const entry = wranglerFalseEntry(key);
+  return source.replace(entry, replacement);
+}
+
+const wranglerGuardMutationCases = requiredWranglerFalseKeys.flatMap((key) => [
+  {
+    label: `wrangler parser rejects missing ${key}`,
+    source: mutateWranglerEntry(wranglerConfig, key, `"${key}_REMOVED": "false"`),
+  },
+  {
+    label: `wrangler parser rejects duplicate ${key}`,
+    source: appendWranglerVar(wranglerConfig, wranglerFalseEntry(key)),
+  },
+  {
+    label: `wrangler parser rejects enabled ${key}`,
+    source: mutateWranglerEntry(wranglerConfig, key, `"${key}": "true"`),
+  },
+  {
+    label: `wrangler parser rejects non-string ${key}`,
+    source: mutateWranglerEntry(wranglerConfig, key, `"${key}": false`),
+  },
+]);
 const wranglerPaymentConfig = wranglerPaymentConfigSafety(wranglerConfig);
 
 const liveLookingSecretLabels = liveLookingSecretPatternLabels();

@@ -5,12 +5,14 @@ const result = spawnSync(
   npmCommand,
   [
     "run",
-    "verify:payment-go-live",
+    "verify:seller-link-rollout-evidence",
     "--",
-    "--release-candidate=0123456789abcdef0123456789abcdef01234567",
-    "--evidence=scripts/fixtures/payment-go-live-evidence.passed.md",
-    "--candidate-source-fixture=scripts/fixtures/payment-candidate-source.safe.json",
-    "--reference-date=2026-07-23",
+    "--release-candidate",
+    "fixture-seller-link-release",
+    "--evidence",
+    "scripts/fixtures/payment-go-live-evidence.passed.md",
+    "--reference-date",
+    "2026-08-02",
     "--test-fixture",
   ],
   {
@@ -22,26 +24,22 @@ const result = spawnSync(
 if (result.status !== 0) {
   process.stderr.write(result.stdout ?? "");
   process.stderr.write(result.stderr ?? "");
-  if (result.error) {
-    process.stderr.write(`${result.error.message}\n`);
-  }
-  console.error("FAIL payment go-live command verifies its parser and evidence.");
+  if (result.error) process.stderr.write(`${result.error.message}\n`);
+  console.error("FAIL seller-link rollout command forwards private evidence options.");
   process.exit(1);
 }
 
 const expectedOutput = [
-  "PASS payment gate accepts an f272f0a0-equivalent safe candidate fixture",
-  "PASS sanitized payment go-live fixture validates strict gate",
+  "PASS seller-link rollout gate accepts the sanitized complete fixture",
+  "PASS sanitized fixture validates the seller-link rollout gate",
 ];
 const missingOutput = expectedOutput.filter(
   (message) => !result.stdout.includes(message),
 );
 
 if (missingOutput.length) {
-  console.error(
-    "FAIL payment go-live command skipped parser regression coverage.",
-  );
+  console.error("FAIL seller-link rollout command skipped evidence regression coverage.");
   process.exit(1);
 }
 
-console.log("PASS payment go-live command verifies its parser and evidence.");
+console.log("PASS seller-link rollout command forwards private evidence options.");

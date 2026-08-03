@@ -119,7 +119,7 @@ evidence privately using the matrix above.
 - The iOS `PrivacyInfo.xcprivacy` file covers only the thin native wrapper and bundled native SDK behavior. It declares the app-owned installation and delivery token identifiers as Device ID, linked to the member, used for app functionality, and not used for tracking. Do not use this narrow manifest as the App Store App Privacy answer source; complete the broader questionnaire from the live TTC web/app data flows in `docs/DATA_SAFETY_PREP.md`.
 - Before the next iOS archive upload, generate Xcode's aggregate Privacy Report and confirm valid manifests are present for the TTC app plus Capacitor, Cordova, and native messaging dependencies. Keep the report and any dependency identifiers in the private release handoff.
 - Age-rating answers must be checked against `docs/AGE_RATING_PREP.md`.
-- Real payments, seller payouts, taxes, shipping, refunds, disputes, and app-store commerce rules must pass `docs/PAYMENT_PRODUCTION_READINESS.md` before production commerce is promoted in native builds.
+- Before seller-owned Payment Links are exposed in a native wrapper, the seller-link rollout, external-browser return QA, physical-goods classification, seller shipping/tax/return/refund/dispute/purchase-support duties, listing-safety review, and rollback evidence in `docs/PAYMENT_PRODUCTION_READINESS.md` must pass. Legacy TTC payout records are reconciliation history only, not a current seller onboarding or payout gate.
 
 ## QA Before Internal Testing
 
@@ -218,7 +218,7 @@ cd android
 
 Android SDK and JDK 21 are configured on this Windows machine. For a Google Play upload build, load the local signing environment variables from the private Desktop recovery note, then run `.\gradlew.bat bundleRelease`. The signed upload bundle is `native/thetattoocore-mobile/android/app/build/outputs/bundle/release/app-release.aab`. Keep `android/local.properties`, `android/keystores/`, and all keystore recovery notes out of git.
 
-Android release bundling fails closed before compilation unless all private upload-signing inputs are present, the referenced signing file is readable, and the ignored Android app configuration file is present and nonempty. The failure message names only the missing input category. The production app configuration is not processed for the side-by-side `.qa` debug package, so `assembleDebug` remains available without release signing or a separate QA app registration. The checked-in Play replacement is version code `5`; never reuse version code `4`.
+Android release bundling fails closed before compilation unless all private upload-signing inputs are present, the referenced signing file is readable, and the ignored Android app configuration file is present and nonempty. The failure message names only the missing input category. The production app configuration is not processed for the side-by-side `.qa` debug package, so `assembleDebug` remains available without release signing or a separate QA app registration. The checked-in Android source candidate uses version code `6`; this source value does not establish that code `6` has been uploaded or served. Before any future build or upload, separately verify the current Play track identities and choose a version code that has not been uploaded.
 
 iOS on Mac:
 
