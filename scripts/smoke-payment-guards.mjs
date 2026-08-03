@@ -2262,7 +2262,7 @@ checks.push({
       '"test:seller-link-rollout-evidence": "node scripts/test-payment-go-live-gate.mjs"',
     ) &&
     packageJson.includes(
-      '"verify:seller-link-rollout-evidence": "npm run test:seller-link-rollout-evidence && node scripts/smoke-payment-cutover-evidence.mjs --strict"',
+      '"verify:seller-link-rollout-evidence": "npm run smoke:env && npm run test:seller-link-rollout-evidence && node scripts/smoke-payment-cutover-evidence.mjs --strict"',
     ) &&
     packageJson.includes(
       '"test:seller-link-rollout-command": "node scripts/test-payment-go-live-command.mjs"',

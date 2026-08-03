@@ -1,11 +1,18 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
+import { requiredFalseStringBindingsSafety } from "./lib/wrangler-config-safety.mjs";
 
 const generator = readFileSync("scripts/generate-private-release-handoff.mjs", "utf8");
 const paymentReadiness = readFileSync("docs/PAYMENT_PRODUCTION_READINESS.md", "utf8");
 const packageJson = readFileSync("package.json", "utf8");
-const wranglerConfig = readFileSync("wrangler.jsonc", "utf8");
+const wranglerFixtureSource =
+  process.argv.includes("--test-fixture") &&
+  process.env.TTC_PAYMENT_GATE_WRANGLER_FIXTURE_SOURCE;
+const wranglerConfig =
+  typeof wranglerFixtureSource === "string"
+    ? wranglerFixtureSource
+    : readFileSync("wrangler.jsonc", "utf8");
 const currentPaymentReadiness = section(
   paymentReadiness,
   "## Current Position - August 2, 2026",
@@ -156,7 +163,7 @@ function sourceContractIsSafe({ generatorSource, packageSource }) {
       '"smoke:seller-link-rollout": "node scripts/smoke-payment-cutover-evidence.mjs"',
     ) &&
     packageSource.includes(
-      '"verify:seller-link-rollout-evidence": "npm run test:seller-link-rollout-evidence && node scripts/smoke-payment-cutover-evidence.mjs --strict"',
+      '"verify:seller-link-rollout-evidence": "npm run smoke:env && npm run test:seller-link-rollout-evidence && node scripts/smoke-payment-cutover-evidence.mjs --strict"',
     ) &&
     !packageSource.includes('"smoke:payment-cutover"') &&
     !packageSource.includes('"verify:payment-go-live"') &&
@@ -186,10 +193,7 @@ function packageCurrentCompositesAreSafe(source) {
 }
 
 function wranglerHasRequiredFalseBindings(source) {
-  return requiredFalseBindings.every((key) => {
-    const matches = source.match(new RegExp(`"${key}"\\s*:\\s*"false"`, "g")) ?? [];
-    return matches.length === 1;
-  });
+  return requiredFalseStringBindingsSafety(source, requiredFalseBindings).ok;
 }
 
 function parseArgs(argv) {
@@ -353,6 +357,13 @@ const sourceMutants = [
     packageSource: packageJson.replace(
       '"smoke:seller-link-rollout"',
       '"smoke:payment-cutover"',
+    ),
+  },
+  {
+    generatorSource: generator,
+    packageSource: packageJson.replace(
+      '"verify:seller-link-rollout-evidence": "npm run smoke:env && ',
+      '"verify:seller-link-rollout-evidence": "',
     ),
   },
 ];

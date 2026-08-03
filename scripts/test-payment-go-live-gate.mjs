@@ -6,8 +6,20 @@ import { join, resolve } from "node:path";
 const gatePath = resolve("scripts/smoke-payment-cutover-evidence.mjs");
 const fixturePath = "scripts/fixtures/payment-go-live-evidence.passed.md";
 const fixtureSource = readFileSync(fixturePath, "utf8");
+const wranglerSource = readFileSync("wrangler.jsonc", "utf8");
 const fixtureCandidate = "fixture-seller-link-release";
 const referenceDate = "2026-08-02";
+const requiredFalseBindings = [
+  "STRIPE_EXPECTED_LIVEMODE",
+  "TTC_SELLER_CHECKOUT_LINKS_ENABLED",
+  "TTC_NATIVE_PUSH_DELIVERY_ENABLED",
+  "STRIPE_CHECKOUT_CREATION_ENABLED",
+  "STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED",
+  "STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED",
+  "STRIPE_BOOKING_CHECKOUT_ENABLED",
+  "STRIPE_CONNECT_ONBOARDING_ENABLED",
+  "STRIPE_MERCH_DESTINATION_CHARGES_ENABLED",
+];
 const variantDir = mkdtempSync(
   join("scripts", "fixtures", ".seller-link-rollout-test-"),
 );
@@ -62,7 +74,7 @@ const outsideFixture = variant(
   outsideFixtureDir,
 );
 
-function runGate(evidence = fixturePath, extraArgs = []) {
+function runGate(evidence = fixturePath, extraArgs = [], wranglerFixtureSource) {
   return spawnSync(
     process.execPath,
     [
@@ -77,8 +89,63 @@ function runGate(evidence = fixturePath, extraArgs = []) {
       fixtureCandidate,
       ...extraArgs,
     ],
-    { encoding: "utf8" },
+    {
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        ...(wranglerFixtureSource === undefined
+          ? {}
+          : {
+              TTC_PAYMENT_GATE_WRANGLER_FIXTURE_SOURCE: wranglerFixtureSource,
+            }),
+      },
+    },
   );
+}
+
+function mutateWranglerBinding(key, replacement) {
+  const entry = `"${key}": "false"`;
+  const occurrences = wranglerSource.split(entry).length - 1;
+  if (occurrences !== 1) {
+    throw new Error(`${key} safe Wrangler fixture occurrence changed: ${occurrences}`);
+  }
+  return wranglerSource.replace(entry, replacement);
+}
+
+const wranglerMutationChecks = requiredFalseBindings.flatMap((key) => {
+  const falseEntry = `"${key}": "false"`;
+  const variants = [
+    ["missing", `"${key}_REMOVED": "false"`],
+    ["duplicate false", `${falseEntry},\n    ${falseEntry}`],
+    ["duplicate false plus true", `${falseEntry},\n    "${key}": "true"`],
+    ["enabled string", `"${key}": "true"`],
+    ["boolean", `"${key}": false`],
+    ["number", `"${key}": 0`],
+    ["null", `"${key}": null`],
+  ];
+
+  return variants.map(([variantLabel, replacement]) => ({
+    label: `seller-link rollout gate rejects ${variantLabel} ${key}`,
+    result: runGate(
+      fixturePath,
+      [],
+      mutateWranglerBinding(key, replacement),
+    ),
+    matches: (result) =>
+      result.status === 1 &&
+      result.stderr.includes(
+        "FAIL seller-link rollout source requires every Wrangler safety binding false",
+      ),
+  }));
+});
+const duplicateVarsSource = wranglerSource.replace(
+  '  "observability":',
+  `  "vars": {\n${requiredFalseBindings
+    .map((key) => `    "${key}": "false"`)
+    .join(",\n")}\n  },\n  "observability":`,
+);
+if (duplicateVarsSource === wranglerSource) {
+  throw new Error("Duplicate Wrangler vars mutation did not change the source.");
 }
 
 const checks = [
@@ -163,6 +230,16 @@ const checks = [
     matches: (result) =>
       result.status === 1 && result.stderr.includes("unknown option --seller-link"),
   },
+  {
+    label: "seller-link rollout gate rejects duplicate Wrangler vars objects",
+    result: runGate(fixturePath, [], duplicateVarsSource),
+    matches: (result) =>
+      result.status === 1 &&
+      result.stderr.includes(
+        "FAIL seller-link rollout source requires every Wrangler safety binding false",
+      ),
+  },
+  ...wranglerMutationChecks,
 ];
 
 let failures = 0;

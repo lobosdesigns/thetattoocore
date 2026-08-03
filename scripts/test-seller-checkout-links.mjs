@@ -32,6 +32,10 @@ const {
 );
 const { isVerifiedArtistOrShop, isVerifiedProfessional } =
   await importTypeScriptWithStubs("src/lib/verification.ts", {});
+const {
+  inspectMediaFile: inspectRealMediaFile,
+  validateMediaMetadata: validateRealMediaMetadata,
+} = await importTypeScriptWithStubs("src/lib/media/metadata.ts", {});
 
 function assertModuleValue(actual, expected, message) {
   assert.deepEqual(JSON.parse(JSON.stringify(actual)), expected, message);
@@ -284,6 +288,20 @@ const task4SourceMutations = {
       "if (true) {",
     );
   },
+  "unsafe-product-title-html": () => {
+    merchPageSource = replaceMutation(
+      merchPageSource,
+      '<h1 className="text-2xl font-bold">{product.title}</h1>',
+      '<h1 className="text-2xl font-bold" dangerouslySetInnerHTML={{ __html: product.title }} />',
+    );
+  },
+  "unsafe-seller-name-html": () => {
+    sellerCheckoutDialogSource = replaceMutation(
+      sellerCheckoutDialogSource,
+      '<strong className="text-[var(--foreground)]">{sellerName}</strong>.',
+      '<strong className="text-[var(--foreground)]" dangerouslySetInnerHTML={{ __html: sellerName }} />.',
+    );
+  },
 };
 
 const task4MutationName = process.env.TTC_SELLER_CHECKOUT_TASK4_MUTANT;
@@ -449,6 +467,15 @@ if (task6MutationName) {
   mutate();
 }
 
+function mutateCreateMerchAction(source, mutate) {
+  const start = source.indexOf("export async function createMerchProduct");
+  const end = source.indexOf("export async function editMarketplaceListing", start);
+  assert.notEqual(start, -1, "create Merch action start was not found");
+  assert.notEqual(end, -1, "create Merch action end was not found");
+
+  return source.slice(0, start) + mutate(source.slice(start, end)) + source.slice(end);
+}
+
 const actionMutations = {
   "acceptance-bypass": (source) =>
     replaceMutation(
@@ -480,6 +507,77 @@ const actionMutations = {
       source,
       "seller_id: userId,\n      shipping_required: shippingRequired,",
       'seller_id: cleanText(formData.get("seller_id"), 80),\n      shipping_required: shippingRequired,',
+    ),
+  "category-allowlist-bypass": (source) =>
+    mutateCreateMerchAction(source, (createSource) =>
+      replaceMutation(
+        createSource,
+        'const category = MERCH_CATEGORIES.has(rawCategory) ? rawCategory : "other";',
+        "const category = rawCategory;",
+      ),
+    ),
+  "inventory-cap-bypass": (source) =>
+    mutateCreateMerchAction(source, (createSource) =>
+      replaceMutation(
+        createSource,
+        "? Math.max(0, Math.min(100000, Math.floor(inventoryNumber)))",
+        "? Math.max(0, Math.floor(inventoryNumber))",
+      ),
+    ),
+  "inventory-finite-bypass": (source) =>
+    mutateCreateMerchAction(source, (createSource) =>
+      replaceMutation(
+        createSource,
+        "const inventoryQuantity = Number.isFinite(inventoryNumber)",
+        "const inventoryQuantity = true",
+      ),
+    ),
+  "media-original-filename-path": (source) =>
+    replaceMutation(
+      source,
+      'const path = `${userId}/merch/${productId}/${crypto.randomUUID()}.${extensionFor(file)}`;',
+      'const path = `${userId}/merch/${productId}/${file.name}`;',
+    ),
+  "media-validation-bypass": (source) =>
+    mutateCreateMerchAction(source, (createSource) =>
+      replaceMutation(
+        createSource,
+        "if (validationMessage) {",
+        "if (false && validationMessage) {",
+      ),
+    ),
+  "price-cap-bypass": (source) =>
+    replaceMutation(
+      source,
+      "return Math.min(500000, Math.round(parsed * 100));",
+      "return Math.round(parsed * 100);",
+    ),
+  "price-finite-bypass": (source) =>
+    replaceMutation(
+      source,
+      "if (!Number.isFinite(parsed) || parsed <= 0) return 0;",
+      "if (parsed <= 0) return 0;",
+    ),
+  "return-path-control-bypass": (source) =>
+    replaceMutation(
+      source,
+      "if (/[\\u0000-\\u001f\\u007f]/.test(path)) return fallback;",
+      "if (false && /[\\u0000-\\u001f\\u007f]/.test(path)) return fallback;",
+    ),
+  "shipping-boolean-bypass": (source) =>
+    replaceMutation(
+      source,
+      'formData.get("shipping_required") === "on"',
+      'Boolean(formData.get("shipping_required"))',
+      2,
+    ),
+  "unbounded-create-title": (source) =>
+    mutateCreateMerchAction(source, (createSource) =>
+      replaceMutation(
+        createSource,
+        'const title = cleanText(formData.get("title"), 120);',
+        'const title = String(formData.get("title") ?? "").trim();',
+      ),
     ),
   "media-attach-log-leak": (source) =>
     replaceMutation(
@@ -584,6 +682,17 @@ const productId = testIds.third;
 const submittedUrl = "https://buy.stripe.com/a1B2_c3D4";
 const forgedAcceptanceVersion = "attacker-controlled-version";
 const forgedAcceptanceTimestamp = "1999-12-31T23:59:59.999Z";
+const hostileMerchText = {
+  description:
+    "Description </p><script>alert(1)</script>\r\n' OR 1=1 --\u0001",
+  fulfillment_notes:
+    'Fulfillment <svg onload=alert(2)>\r\n{"$ne":null}',
+  return_policy:
+    "Returns </textarea><img src=x onerror=alert(3)>\u0000",
+  ships_from_city: "Austin\r\nX-Injected: yes",
+  ships_from_region: "TX\u0002<script>alert(4)</script>",
+  title: "<img src=x onerror=alert(5)>",
+};
 const providerSecrets = {
   attach: "provider-attach-row-secret",
   cleanup: "provider-cleanup-row-secret",
@@ -633,6 +742,7 @@ function createMerchScenario(options = {}) {
       error: null,
     }),
     mediaInspections: 0,
+    realMediaValidation: option(options, "realMediaValidation", false),
     mediaValidationMessage: option(options, "mediaValidationMessage", null),
     neutralizationResult: option(options, "neutralizationResult", {
       data: { id: productId },
@@ -803,14 +913,20 @@ async function loadMerchActions(path) {
         settlePublishedFeedPostTags: async () => {},
       },
       "@/lib/media/metadata": {
-        async inspectMediaFile() {
+        async inspectMediaFile(file) {
           const scenario = currentScenario();
           scenario.mediaInspections += 1;
           scenario.events.push({ type: "media-inspection" });
+          if (scenario.realMediaValidation) {
+            return inspectRealMediaFile(file);
+          }
           return validMetadata;
         },
-        validateMediaMetadata() {
-          return currentScenario().mediaValidationMessage;
+        validateMediaMetadata(metadata) {
+          const scenario = currentScenario();
+          return scenario.realMediaValidation
+            ? validateRealMediaMetadata(metadata)
+            : scenario.mediaValidationMessage;
         },
       },
       "@/lib/merch/seller-checkout": {
@@ -934,6 +1050,27 @@ function validEditForm(changes = {}) {
   });
 }
 
+function formWithEntry(formData, name, value) {
+  if (value === undefined) {
+    formData.delete(name);
+  } else {
+    formData.set(name, value);
+  }
+  return formData;
+}
+
+function pngBytes(size = 24) {
+  const bytes = new Uint8Array(size);
+  bytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  bytes[19] = 1;
+  bytes[23] = 1;
+  return bytes;
+}
+
+function pngFile(name = "product.png", type = "image/png", size = 24) {
+  return new File([pngBytes(size)], name, { type });
+}
+
 async function redirectedBy(action, formData) {
   let outcome;
 
@@ -962,6 +1099,12 @@ function actionQueries(scenario, client, table, operation) {
   return scenario[client].queries.filter(
     (query) => query.table === table && query.operation === operation,
   );
+}
+
+function productInsertPayload(scenario) {
+  const inserts = actionQueries(scenario, "seller", "merch_products", "insert");
+  assert.equal(inserts.length, 1, "expected one parameterized Merch product insert");
+  return inserts[0].payload;
 }
 
 function assertQueryFilters(query, expected, label) {
@@ -1006,6 +1149,22 @@ function assertValidationStopped(scenario) {
     actionQueries(scenario, "admin", "merch_products", "update").length,
     0,
     "validation reached a trusted write",
+  );
+}
+
+function assertMediaValidationStopped(scenario) {
+  assert.equal(scenario.adminClientCalls, 1, "media validation skipped admin availability");
+  assert.equal(scenario.mediaInspections, 1, "media validation did not inspect one file");
+  assert.equal(scenario.storageUploads.length, 0, "invalid media reached storage");
+  assert.equal(
+    actionQueries(scenario, "seller", "merch_products", "insert").length,
+    0,
+    "invalid media reached product insertion",
+  );
+  assert.equal(
+    actionQueries(scenario, "admin", "merch_products", "update").length,
+    0,
+    "invalid media reached a trusted write",
   );
 }
 
@@ -1089,7 +1248,11 @@ function assertCleanupQueries(scenario) {
 function assertFailClosedInsert(scenario) {
   const inserts = actionQueries(scenario, "seller", "merch_products", "insert");
   assert.equal(inserts.length, 1);
-  assert.equal(inserts[0].payload.seller_id, testIds.actor);
+  assert.equal(
+    inserts[0].payload.seller_id,
+    testIds.actor,
+    "forged seller ID reached the parameterized insert",
+  );
   assert.equal(inserts[0].payload.status, "pending_review");
   assert.equal(inserts[0].payload.is_indexable, false);
   assert.equal(inserts[0].payload.is_official, false);
@@ -1171,19 +1334,29 @@ async function runMerchActionContracts(actions) {
     assertNoSensitiveOutput(scenario, location, [hostileUrl]);
   });
 
-  for (const acceptanceValue of [undefined, "true"]) {
+  for (const acceptanceValue of [
+    undefined,
+    "true",
+    "yes",
+    "1",
+    "ON",
+    new File(["on"], "acceptance.txt", { type: "text/plain" }),
+  ]) {
     await withScenario({}, async (scenario) => {
       const location = await redirectedBy(
         actions.createMerchProduct,
-        validCreateForm({
-          seller_checkout_terms_accepted: acceptanceValue,
-        }),
+        formWithEntry(
+          validCreateForm(),
+          "seller_checkout_terms_accepted",
+          acceptanceValue,
+        ),
       );
       assert.equal(
         location,
         homeRedirect(
           "Confirm the seller checkout responsibilities before submitting Merch.",
         ),
+        "seller acceptance accepted a value other than exact on",
       );
       assertValidationStopped(scenario);
       assertNoSensitiveOutput(scenario, location, [
@@ -1191,6 +1364,199 @@ async function runMerchActionContracts(actions) {
         forgedAcceptanceVersion,
         forgedAcceptanceTimestamp,
       ]);
+    });
+  }
+
+  await withScenario({}, async (scenario) => {
+    const location = await redirectedBy(
+      actions.createMerchProduct,
+      validCreateForm(hostileMerchText),
+    );
+    assert.equal(location, homeRedirect("Merch submitted for admin review."));
+    const payload = productInsertPayload(scenario);
+    for (const [name, value] of Object.entries(hostileMerchText)) {
+      assert.equal(payload[name], value, `${name} was not preserved as parameter data`);
+    }
+    assertModuleValue(scenario.logs, []);
+    assertNoSensitiveOutput(scenario, location, Object.values(hostileMerchText));
+  });
+
+  for (const [formName, payloadName, maxLength] of [
+    ["title", "title", 120],
+    ["description", "description", 4000],
+    ["ships_from_city", "ships_from_city", 80],
+    ["ships_from_region", "ships_from_region", 80],
+    ["fulfillment_notes", "fulfillment_notes", 1000],
+    ["return_policy", "return_policy", 1000],
+  ]) {
+    await withScenario({}, async (scenario) => {
+      const oversized = "x".repeat(maxLength) + "<script>overflow</script>";
+      const location = await redirectedBy(
+        actions.createMerchProduct,
+        validCreateForm({ [formName]: oversized }),
+      );
+      assert.equal(location, homeRedirect("Merch submitted for admin review."));
+      assert.equal(
+        productInsertPayload(scenario)[payloadName],
+        "x".repeat(maxLength),
+        `${formName} must remain bounded to ${maxLength} characters`,
+      );
+    });
+  }
+
+  await withScenario({}, async (scenario) => {
+    const fileValue = new File(["hostile"], "../field<script>.txt", {
+      type: "text/html",
+    });
+    const formData = validCreateForm();
+    for (const name of [
+      "title",
+      "description",
+      "category",
+      "ships_from_city",
+      "ships_from_region",
+      "fulfillment_notes",
+      "return_policy",
+    ]) {
+      formData.set(name, fileValue);
+    }
+    const location = await redirectedBy(actions.createMerchProduct, formData);
+    assert.equal(location, homeRedirect("Merch submitted for admin review."));
+    const payload = productInsertPayload(scenario);
+    assert.equal(
+      payload.category,
+      "other",
+      "category allowlist accepted a File-valued seller enum",
+    );
+    for (const name of [
+      "title",
+      "description",
+      "ships_from_city",
+      "ships_from_region",
+      "fulfillment_notes",
+      "return_policy",
+    ]) {
+      assert.equal(payload[name], "[object File]");
+    }
+    assert.equal(JSON.stringify(payload).includes(fileValue.name), false);
+  });
+
+  for (const [categoryInput, expectedCategory] of [
+    ["official", "official"],
+    [" apparel ", "apparel"],
+    ["APPAREL", "other"],
+    ["' OR category.not.is.null --", "other"],
+    ["<img src=x onerror=alert(6)>", "other"],
+    ["x".repeat(200), "other"],
+  ]) {
+    await withScenario({}, async (scenario) => {
+      const location = await redirectedBy(
+        actions.createMerchProduct,
+        validCreateForm({ category: categoryInput }),
+      );
+      assert.equal(location, homeRedirect("Merch submitted for admin review."));
+      assert.equal(
+        productInsertPayload(scenario).category,
+        expectedCategory,
+        "category allowlist accepted an unexpected seller enum",
+      );
+    });
+  }
+
+  for (const value of [
+    "-1",
+    "NaN",
+    "Infinity",
+    "1e309",
+    "1 OR 1=1",
+    "<script>35</script>",
+    new File(["35"], "price.txt", { type: "text/plain" }),
+  ]) {
+    await withScenario({}, async (scenario) => {
+      const location = await redirectedBy(
+        actions.createMerchProduct,
+        formWithEntry(validCreateForm(), "price", value),
+      );
+      assert.equal(
+        location,
+        homeRedirect("Add a valid Merch price."),
+        "non-finite or malformed price reached the product insert",
+      );
+      assertValidationStopped(scenario);
+    });
+  }
+
+  for (const value of [
+    "-1",
+    "NaN",
+    "Infinity",
+    "1e309",
+    "1 OR 1=1",
+    "<script>12</script>",
+    new File(["12"], "inventory.txt", { type: "text/plain" }),
+  ]) {
+    await withScenario({}, async (scenario) => {
+      const location = await redirectedBy(
+        actions.createMerchProduct,
+        formWithEntry(validCreateForm(), "inventory_quantity", value),
+      );
+      assert.equal(
+        location,
+        homeRedirect("Add at least 1 Merch item in inventory."),
+        "non-finite or malformed inventory reached the product insert",
+      );
+      assertValidationStopped(scenario);
+    });
+  }
+
+  await withScenario({}, async (scenario) => {
+    const location = await redirectedBy(
+      actions.createMerchProduct,
+      validCreateForm({
+        inventory_quantity: "999999999999",
+        price: "99999999999999999999",
+      }),
+    );
+    assert.equal(location, homeRedirect("Merch submitted for admin review."));
+    const payload = productInsertPayload(scenario);
+    assert.equal(payload.price_cents, 500000, "price overflow must stay capped");
+    assert.equal(
+      payload.inventory_quantity,
+      100000,
+      "inventory overflow must stay capped",
+    );
+  });
+
+  await withScenario({}, async (scenario) => {
+    const location = await redirectedBy(
+      actions.createMerchProduct,
+      validCreateForm({ inventory_quantity: "2.9e1", price: "1e2" }),
+    );
+    assert.equal(location, homeRedirect("Merch submitted for admin review."));
+    const payload = productInsertPayload(scenario);
+    assert.equal(payload.price_cents, 10000);
+    assert.equal(payload.inventory_quantity, 29);
+  });
+
+  for (const value of [
+    undefined,
+    "true",
+    "1",
+    "yes",
+    "ON",
+    new File(["on"], "shipping.txt", { type: "text/plain" }),
+  ]) {
+    await withScenario({}, async (scenario) => {
+      const location = await redirectedBy(
+        actions.createMerchProduct,
+        formWithEntry(validCreateForm(), "shipping_required", value),
+      );
+      assert.equal(location, homeRedirect("Merch submitted for admin review."));
+      assert.equal(
+        productInsertPayload(scenario).shipping_required,
+        false,
+        "shipping toggle accepted a value other than exact on",
+      );
     });
   }
 
@@ -1211,6 +1577,95 @@ async function runMerchActionContracts(actions) {
       ),
     );
     assertValidationStopped(scenario);
+  });
+
+  await withScenario({}, async (scenario) => {
+    const hostileMediaUrl = "https://evil.example/product.png\r\nX-Test: injected";
+    const location = await redirectedBy(
+      actions.createMerchProduct,
+      formWithEntry(validCreateForm(), "media", hostileMediaUrl),
+    );
+    assert.equal(
+      location,
+      homeRedirect("Merch needs a product photo, GIF, or short video."),
+    );
+    assert.equal(scenario.adminClientCalls, 1);
+    assert.equal(scenario.mediaInspections, 0);
+    assert.equal(scenario.storageUploads.length, 0);
+    assert.equal(
+      actionQueries(scenario, "seller", "merch_products", "insert").length,
+      0,
+    );
+    assertNoSensitiveOutput(scenario, location, [hostileMediaUrl]);
+  });
+
+  for (const file of [
+    new File(
+      ["<script>alert(8)</script>"],
+      "../evil.png\r\nContent-Type: text/html",
+      { type: "image/png" },
+    ),
+    new File(["not a movie"], "../../evil.mp4", { type: "video/mp4" }),
+  ]) {
+    await withScenario({ realMediaValidation: true }, async (scenario) => {
+      const location = await redirectedBy(
+        actions.createMerchProduct,
+        validCreateForm({ media: file }),
+      );
+      assert.equal(
+        location,
+        homeRedirect(
+          "The file could not be verified as a supported image or video.",
+        ),
+        "invalid media bytes bypassed real metadata validation",
+      );
+      assertMediaValidationStopped(scenario);
+      assertNoSensitiveOutput(scenario, location, [file.name, file.type]);
+    });
+  }
+
+  await withScenario({ realMediaValidation: true }, async (scenario) => {
+    const oversizedImage = pngFile(
+      "../../oversized<script>.png",
+      "image/png",
+      10 * 1024 * 1024 + 1,
+    );
+    const location = await redirectedBy(
+      actions.createMerchProduct,
+      validCreateForm({ media: oversizedImage }),
+    );
+    assert.equal(
+      location,
+      homeRedirect("Images can be up to 10 MB after optimization."),
+    );
+    assertMediaValidationStopped(scenario);
+    assertNoSensitiveOutput(scenario, location, [oversizedImage.name]);
+  });
+
+  await withScenario({ realMediaValidation: true }, async (scenario) => {
+    const hostileFilename = "..\\..\\<img src=x onerror=alert(9)>.png";
+    const validBytesWithFalseMime = pngFile(
+      hostileFilename,
+      "text/html",
+    );
+    const location = await redirectedBy(
+      actions.createMerchProduct,
+      validCreateForm({ media: validBytesWithFalseMime }),
+    );
+    assert.equal(location, homeRedirect("Merch submitted for admin review."));
+    assert.equal(scenario.storageUploads.length, 1);
+    const upload = scenario.storageUploads[0];
+    assert.equal(
+      upload.path.includes(hostileFilename),
+      false,
+      "hostile original filename reached the generated storage path",
+    );
+    assert.equal(upload.path.includes(".."), false);
+    assert.equal(upload.path.startsWith(`${testIds.actor}/merch/${productId}/`), true);
+    assert.equal(upload.path.endsWith(".png"), true);
+    assert.equal(upload.options.contentType, "image/png");
+    assert.equal(upload.file, validBytesWithFalseMime);
+    assertNoSensitiveOutput(scenario, location, [hostileFilename, "text/html"]);
   });
 
   await withScenario(
@@ -1352,6 +1807,7 @@ async function runMerchActionContracts(actions) {
       assert.equal(
         location,
         homeRedirect("Could not prepare seller checkout. Please try again."),
+        "zero-row trusted create was treated as seller checkout success",
       );
       assertFailClosedInsert(scenario);
       assertCleanupQueries(scenario);
@@ -1588,6 +2044,106 @@ async function runMerchActionContracts(actions) {
     assertValidationStopped(scenario);
   });
 
+  for (const unsafeReturnPath of [
+    "https://evil.example/steal",
+    "//evil.example/steal",
+    "\\evil.example\\steal",
+    `/merch/${productId}\r\nX-Test: injected`,
+    `/merch/${productId}\u0000suffix`,
+    "javascript:alert(10)",
+  ]) {
+    await withScenario(
+      {
+        editProduct: {
+          id: productId,
+          inventory_reserved: 0,
+          is_official: false,
+          profiles: verifiedProfile,
+          seller_id: testIds.actor,
+          status: "pending_review",
+        },
+      },
+      async (scenario) => {
+        const location = await redirectedBy(
+          actions.editMerchProduct,
+          validEditForm({ return_path: unsafeReturnPath }),
+        );
+        assert.equal(
+          location,
+          editRedirect("Merch product updated."),
+          "unsafe edit return target escaped the fixed product fallback",
+        );
+        assert.equal(location.includes("\r"), false);
+        assert.equal(location.includes("\n"), false);
+        assert.equal(location.includes("\u0000"), false);
+        assertNoSensitiveOutput(scenario, location, [unsafeReturnPath]);
+      },
+    );
+  }
+
+  await withScenario(
+    {
+      editProduct: {
+        id: productId,
+        inventory_reserved: 0,
+        is_official: false,
+        profiles: verifiedProfile,
+        seller_id: testIds.actor,
+        status: "pending_review",
+      },
+    },
+    async (scenario) => {
+      const safeReturnPath = `/merch/${productId}?tab=details#edit`;
+      const location = await redirectedBy(
+        actions.editMerchProduct,
+        validEditForm({ return_path: safeReturnPath }),
+      );
+      assert.equal(
+        location,
+        `/merch/${productId}?tab=details&message=${encodeURIComponent(
+          "Merch product updated.",
+        )}#edit`,
+      );
+      assert.equal(scenario.revalidatedPaths.includes(`/merch/${productId}`), true);
+    },
+  );
+
+  for (const hostileProductId of [
+    "' OR id.not.is.null --",
+    "id.eq." + testIds.other,
+    testIds.other,
+    new File([testIds.other], "product-id.txt", { type: "text/plain" }),
+  ]) {
+    await withScenario({ editProduct: null }, async (scenario) => {
+      const formData = formWithEntry(
+        validEditForm(),
+        "product_id",
+        hostileProductId,
+      );
+      const location = await redirectedBy(actions.editMerchProduct, formData);
+      assert.equal(location, editRedirect("Merch product was not found."));
+      const lookups = actionQueries(
+        scenario,
+        "seller",
+        "merch_products",
+        "select",
+      );
+      assert.equal(lookups.length, 1);
+      assertQueryFilters(
+        lookups[0],
+        [
+          {
+            column: "id",
+            operator: "eq",
+            value: String(hostileProductId),
+          },
+        ],
+        "forged product ID escaped exact parameter filtering",
+      );
+      assert.equal(scenario.admin.queries.length, 0);
+    });
+  }
+
   for (const options of [
     {
       editProductError: { message: providerSecrets.lookup },
@@ -1710,6 +2266,7 @@ async function runMerchActionContracts(actions) {
         editRedirect(
           "Could not update Merch product. It may be gone or owned by another account.",
         ),
+        "zero-row trusted edit was treated as Merch update success",
       );
       const updates = actionQueries(
         scenario,
@@ -2322,6 +2879,282 @@ function syntheticModule(context, identifier, exports) {
     { context, identifier: `stub:${identifier}` },
   );
 }
+
+async function renderSellerCheckoutDialogBoundary(sellerName) {
+  const transpiled = ts.transpileModule(sellerCheckoutDialogSource, {
+    compilerOptions: {
+      jsx: ts.JsxEmit.ReactJSX,
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2022,
+    },
+    fileName: "src/app/merch/seller-checkout-dialog.tsx",
+    reportDiagnostics: true,
+  });
+  const errors = (transpiled.diagnostics ?? []).filter(
+    (diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error,
+  );
+  assert.equal(errors.length, 0, "Seller checkout dialog boundary must transpile");
+
+  function TestIcon() {
+    return null;
+  }
+
+  const context = vm.createContext({ console });
+  const stubs = {
+    "@capacitor/core": {
+      Capacitor: {
+        isNativePlatform() {
+          return false;
+        },
+      },
+    },
+    "lucide-react": {
+      ExternalLink: TestIcon,
+      X: TestIcon,
+    },
+    react: {
+      useCallback(callback) {
+        return callback;
+      },
+      useEffect() {},
+      useRef() {
+        return { current: null };
+      },
+      useState(initialValue) {
+        return [initialValue === false ? true : initialValue, () => {}];
+      },
+    },
+    "react/jsx-runtime": {
+      Fragment,
+      jsx,
+      jsxs,
+    },
+  };
+  const modules = new Map();
+  const dialogModule = new vm.SourceTextModule(transpiled.outputText, {
+    context,
+    identifier: "test:seller-checkout-dialog-boundary",
+  });
+  await dialogModule.link((specifier) => {
+    if (modules.has(specifier)) return modules.get(specifier);
+    assert.ok(
+      Object.hasOwn(stubs, specifier),
+      `Missing seller checkout dialog boundary stub for ${specifier}`,
+    );
+    const stubModule = syntheticModule(context, specifier, stubs[specifier]);
+    modules.set(specifier, stubModule);
+    return stubModule;
+  });
+  await dialogModule.evaluate();
+
+  return renderToStaticMarkup(
+    dialogModule.namespace.SellerCheckoutDialog({
+      checkoutUrl: validLiveUrl,
+      sellerName,
+    }),
+  );
+}
+
+const hostileSellerName =
+  'Seller </strong><img src=x onerror="alert(11)"><script>alert(12)</script>\r\n';
+const hostileSellerMarkup =
+  await renderSellerCheckoutDialogBoundary(hostileSellerName);
+const escapedSellerName = renderToStaticMarkup(hostileSellerName);
+assert.equal(
+  hostileSellerMarkup.split(escapedSellerName).length - 1,
+  3,
+  "hostile seller name was not rendered three times as escaped React text",
+);
+assert.equal(hostileSellerMarkup.includes("<img src=x"), false);
+assert.equal(hostileSellerMarkup.includes("<script>alert(12)</script>"), false);
+assert.equal(
+  hostileSellerMarkup.includes(`href="${validLiveUrl}"`),
+  true,
+  "seller name changed the validated checkout link sink",
+);
+console.log("PASS hostile seller name is inert at the React render boundary");
+
+async function renderMerchProductTextBoundary() {
+  const transpiled = ts.transpileModule(merchPageSource, {
+    compilerOptions: {
+      jsx: ts.JsxEmit.ReactJSX,
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2022,
+    },
+    fileName: "src/app/merch/[id]/page.tsx",
+    reportDiagnostics: true,
+  });
+  const errors = (transpiled.diagnostics ?? []).filter(
+    (diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error,
+  );
+  assert.equal(errors.length, 0, "Merch product text boundary must transpile");
+
+  const product = {
+    ...hostileMerchText,
+    category: "other",
+    currency: "USD",
+    id: productId,
+    inventory_quantity: 12,
+    inventory_reserved: 0,
+    is_official: false,
+    merch_product_media: [],
+    moderation_status: "active",
+    price_cents: 3500,
+    seller_id: testIds.actor,
+    shipping_required: true,
+    status: "active",
+  };
+  const profile = {
+    ...verifiedProfile,
+    display_name: "Verified Seller",
+    id: testIds.actor,
+    username: "verified-seller",
+  };
+  const normal = createSupabaseDouble({
+    claims: { sub: testIds.actor },
+    execute(query) {
+      if (query.table === "merch_products" && query.operation === "select") {
+        return { data: product, error: null };
+      }
+      if (query.table === "saved_items" && query.operation === "select") {
+        return { data: null, error: null };
+      }
+      throw new Error(
+        `Unexpected Merch text boundary query: ${String(query.operation)} ${query.table}`,
+      );
+    },
+  });
+  const admin = createSupabaseDouble({
+    execute(query) {
+      if (query.table === "merch_products" && query.operation === "select") {
+        return {
+          data: {
+            external_checkout_url: submittedUrl,
+            seller_checkout_terms_accepted_at: "2026-08-02T12:00:00.000Z",
+            seller_checkout_terms_version: SELLER_CHECKOUT_TERMS_VERSION,
+          },
+          error: null,
+        };
+      }
+      throw new Error(
+        `Unexpected Merch text admin query: ${String(query.operation)} ${query.table}`,
+      );
+    },
+  });
+
+  function EmptyComponent() {
+    return null;
+  }
+  const context = vm.createContext({ console, process, URL });
+  const stubs = {
+    "@/app/actions": {
+      archiveMerchProduct: "/test/archive-merch",
+      editMerchProduct: "/test/edit-merch",
+    },
+    "@/app/content-report-form": { ContentReportForm: EmptyComponent },
+    "@/app/media-lightbox": { MediaLightbox: EmptyComponent },
+    "@/app/merch/seller-checkout-dialog": {
+      SellerCheckoutDialog: EmptyComponent,
+    },
+    "@/app/merch/seller-checkout-fields": {
+      SellerCheckoutFields: EmptyComponent,
+    },
+    "@/app/notification-bell-link": {
+      NotificationBellLink: EmptyComponent,
+    },
+    "@/app/protected-video": { ProtectedVideo: EmptyComponent },
+    "@/app/saved-item-button": { SavedItemButton: EmptyComponent },
+    "@/app/share-actions": { ShareActions: EmptyComponent },
+    "@/lib/merch/seller-checkout": {
+      sellerCheckoutLinksEnabled() {
+        return true;
+      },
+      sellerCheckoutPurchaseReadiness() {
+        return { ready: true, reason: null, url: submittedUrl };
+      },
+    },
+    "@/lib/public-profile-hydration": {
+      async loadPublicProfileMap() {
+        return new Map([[testIds.actor, profile]]);
+      },
+    },
+    "@/lib/route-ids": { isUuid: () => true },
+    "@/lib/site": {
+      brandShareImage: "/share.png",
+      brandShareImageAlt: "TheTattooCore",
+      metadataKeywords: () => [],
+      seoKeywordGroups: { merch: [] },
+      shareImage: () => ({ alt: "Merch", url: "/share.png" }),
+      siteKeywords: [],
+      siteName: "TheTattooCore",
+      siteUrl: "https://thetattoocore.com",
+    },
+    "@/lib/supabase/admin": { createAdminClient: () => admin.client },
+    "@/lib/supabase/server": { createClient: async () => normal.client },
+    "@/lib/verification": { isVerifiedProfessional },
+    "next/link": { default: "a" },
+    "next/navigation": {
+      notFound() {
+        throw new Error("Unexpected notFound");
+      },
+    },
+    "react/jsx-runtime": { Fragment, jsx, jsxs },
+  };
+  for (const icon of [
+    "ArrowLeft",
+    "BadgeCheck",
+    "ImageIcon",
+    "Pencil",
+    "ShieldCheck",
+    "Trash2",
+  ]) {
+    (stubs["lucide-react"] ??= {})[icon] = EmptyComponent;
+  }
+  const modules = new Map();
+  const pageModule = new vm.SourceTextModule(transpiled.outputText, {
+    context,
+    identifier: "test:merch-product-text-boundary",
+  });
+  await pageModule.link((specifier) => {
+    if (modules.has(specifier)) return modules.get(specifier);
+    assert.ok(
+      Object.hasOwn(stubs, specifier),
+      `Missing Merch text boundary stub for ${specifier}`,
+    );
+    const stubModule = syntheticModule(context, specifier, stubs[specifier]);
+    modules.set(specifier, stubModule);
+    return stubModule;
+  });
+  await pageModule.evaluate();
+  const element = await pageModule.namespace.default({
+    params: Promise.resolve({ id: productId }),
+    searchParams: Promise.resolve({}),
+  });
+  return renderToStaticMarkup(element);
+}
+
+const hostileMerchMarkup = await renderMerchProductTextBoundary();
+for (const [name, value] of Object.entries(hostileMerchText)) {
+  assert.equal(
+    hostileMerchMarkup.includes(renderToStaticMarkup(value)),
+    true,
+    `${name} was not escaped at the Merch detail React boundary`,
+  );
+}
+for (const activeMarkup of [
+  "<script>alert(1)</script>",
+  "<svg onload=alert(2)>",
+  "<img src=x onerror=alert(3)>",
+  "<script>alert(4)</script>",
+  "<img src=x onerror=alert(5)>",
+]) {
+  assert.equal(
+    hostileMerchMarkup.includes(activeMarkup),
+    false,
+    `hostile listing markup became active HTML: ${activeMarkup}`,
+  );
+}
+console.log("PASS hostile listing text is inert at the Merch React boundary");
 
 let adminMerchPageBoundaryScenario = null;
 
@@ -3008,15 +3841,6 @@ sourceContract(
       "disputes",
       "purchase support",
     ].every((term) => sellerCheckoutDialogSource.toLowerCase().includes(term)),
-);
-sourceContract(
-  "seller checkout keeps hostile seller text out of HTML and URL sinks",
-  sellerCheckoutDialogSource.includes("{sellerName}") &&
-    !sellerCheckoutDialogSource.includes("dangerouslySetInnerHTML") &&
-    !sellerCheckoutDialogSource.includes("innerHTML") &&
-    !sellerCheckoutDialogSource.includes("insertAdjacentHTML") &&
-    !sellerCheckoutDialogSource.includes("href={sellerName}") &&
-    !sellerCheckoutDialogSource.includes("url: sellerName"),
 );
 sourceContract(
   "seller checkout web anchor is protected and preserves the validated URL unchanged",

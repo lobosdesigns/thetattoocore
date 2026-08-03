@@ -178,6 +178,8 @@ function redirectWithMessage({
 function cleanReturnPath(value: FormDataEntryValue | null, fallback: string) {
   const path = cleanText(value, 220) || fallback;
 
+  if (/[\u0000-\u001f\u007f]/.test(path)) return fallback;
+
   if (!path.startsWith("/") || path.startsWith("//") || path.includes("://") || path.includes("\\")) {
     return fallback;
   }
