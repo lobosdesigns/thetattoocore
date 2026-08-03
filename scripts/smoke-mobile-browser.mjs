@@ -128,17 +128,59 @@ const routes = [
   },
   {
     path: "/help/merch-products-orders",
-    textIncludes: ["How to set up Merch products and handle orders", "What if a package has a problem?"],
+    textExcludes: [
+      "How to set up Merch products and handle orders",
+      "When should I mark a Merch order fulfilled?",
+      "seller order card",
+      "tracking number",
+    ],
+    textIncludes: [
+      "How to set up seller-owned Merch checkout",
+      "What if a package has a problem?",
+      "Buyers contact the seller for receipts, shipping, returns, refunds, disputes, and purchase support.",
+      "Use TTC Support only for listing-safety reports.",
+      "Keep historical TTC order rows available in Settings only",
+    ],
     titleIncludes: "Help Center",
   },
   {
     path: "/help/order-refunds-disputes",
-    textIncludes: ["Order support, refunds, and disputes", "What happens if there is a dispute?"],
+    textExcludes: [
+      "Order support, refunds, and disputes",
+      "How do I ask for order help?",
+      "How are refunds reviewed?",
+      "What if the seller does not deliver?",
+      "pause seller payout release",
+      "Buyer order support path",
+    ],
+    textIncludes: [
+      "Purchase support, refunds, and disputes",
+      "What happens if there is a dispute?",
+      "For a new external purchase, use the seller's checkout receipt or support contact",
+      "Use TTC Support to report listing safety",
+      "For a historical TTC order row",
+      "Never treat return from the seller's external checkout as a TTC payment success state.",
+    ],
     titleIncludes: "Help Center",
   },
   {
     path: "/help/seller-payouts-payment-safety",
-    textIncludes: ["Seller payouts and payment safety", "Should I send payout details to support?"],
+    textExcludes: [
+      "Seller payouts and payment safety",
+      "Who can set up seller payouts?",
+      "How are TTC fees handled?",
+      "How do refunds and disputes affect payouts?",
+      "Should I send payout details to support?",
+      "seller payout setup",
+      "Seller payout readiness",
+    ],
+    textIncludes: [
+      "Seller checkout and payment safety",
+      "Should I send private payment details to TTC?",
+      "Create a live Payment Link inside your own payment account.",
+      "handling payment, taxes, shipping, returns, refunds, disputes, and purchase support",
+      "Use TTC Support only for listing-safety or account-access issues",
+    ],
     titleIncludes: "Help Center",
   },
   { path: "/privacy", textIncludes: "support@thetattoocore.com", titleIncludes: "Privacy" },
@@ -146,7 +188,17 @@ const routes = [
   { path: "/search?q=ceocore", textIncludes: "@ceocore", titleIncludes: "Search" },
   {
     path: "/search?q=shirts&type=merch",
-    textIncludes: ["Merch", "Merch checkout stays review-controlled", "Filter"],
+    textExcludes: [
+      "Merch checkout stays review-controlled",
+      "use Support for order, refund, seller, or product-safety questions that need private review.",
+    ],
+    textIncludes: [
+      "Merch",
+      "reviewed seller-owned Payment Link",
+      "The seller handles payment, receipts, shipping, returns, refunds, disputes, and purchase support.",
+      "TTC Support handles listing-safety reports and explicitly historical TTC orders.",
+      "Filter",
+    ],
     titleIncludes: "Search",
   },
   { path: "/messages", textIncludes: "Sign in", titleIncludes: "Sign in" },
@@ -335,6 +387,11 @@ function routeTextIncludes(route) {
   return Array.isArray(route.textIncludes) ? route.textIncludes : [route.textIncludes];
 }
 
+function routeTextExcludes(route) {
+  if (!route.textExcludes) return [];
+  return Array.isArray(route.textExcludes) ? route.textExcludes : [route.textExcludes];
+}
+
 async function checkRoute(portNumber, url, route) {
   let tab;
   let client;
@@ -455,6 +512,11 @@ async function checkRoute(portNumber, url, route) {
     for (const requiredText of routeTextIncludes(route)) {
       if (!String(value.text || "").includes(requiredText)) {
         reasons.push(`page text did not include "${requiredText}"`);
+      }
+    }
+    for (const retiredText of routeTextExcludes(route)) {
+      if (String(value.text || "").includes(retiredText)) {
+        reasons.push(`page text included retired text "${retiredText}"`);
       }
     }
     if (overflow > 2) {
