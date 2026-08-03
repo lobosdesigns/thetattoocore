@@ -2,6 +2,19 @@
 
 Use this after signing in to MacinCloud and App Store Connect.
 
+## Current Build Evidence Boundary - August 2, 2026
+
+- Checked-in Android source candidate: `1.0.5 (6)`.
+- Checked-in iOS source candidate: `1.0 (5)`.
+- Repository source identity is not signed-artifact, upload, console-selection, served-track, or installed-device proof.
+- Exact current App Review identity: **UNKNOWN**.
+- Exact current TestFlight identity: **UNKNOWN**.
+- Exact current Google Play Production identity: **UNKNOWN**.
+- Exact current Google Play Closed testing - Alpha identity: **UNKNOWN**.
+- Exact current installed Android identity: **UNKNOWN**.
+- Exact current installed iOS identity: **UNKNOWN**.
+- A separately authorized read-only signed-in console/device verification is required before QA or release claims. Do not upload, select, submit, promote, install, or change an artifact during that verification.
+
 ## 1. Move The Project To The Mac
 
 Copy or pull the repo so this folder exists on the Mac:
@@ -49,9 +62,9 @@ In Xcode:
 - Confirm bundle identifier: `com.thetattoocore.app`.
 - Confirm display name: `TheTattooCore`.
 - Confirm version: `1.0`.
-- Confirm build matches the checked-in Xcode `CURRENT_PROJECT_VERSION` and the App Store Connect/TestFlight build selected for review.
-- The native smoke guard derives the checked-in Xcode version/build and verifies this handoff stays aligned with the current TestFlight status line.
-- Confirm the next internal TestFlight candidate is build `5`, shown as TestFlight build `1.0 (5)`, and do not replace build `3` on the App Store version already in review.
+- Confirm the archive source matches checked-in iOS source candidate `1.0 (5)`. Source identity does not establish the App Store Connect or TestFlight selection.
+- The native smoke guard derives only the checked-in Xcode version/build. Separately verify the exact current App Review and TestFlight identities read-only before choosing any upload or selection action.
+- Treat build `5` as the source candidate only. Do not call it uploaded, selected, available, or installed without separate console/device evidence and explicit authorization.
 - Confirm `GoogleService-Info.plist` belongs to the `App` target, Push Notifications is enabled, and the signed archive resolves `aps-environment` to `production`.
 - Keep messaging auto-initialization and production delivery off until explicit member opt-in, token registration, notification delivery, tap routing, and opt-out pass on build `5`.
 - Generate Xcode's aggregate Privacy Report from the next archive. Confirm the TTC app manifest declares Device ID as collected, linked to the member, used for app functionality, and not used for tracking, and confirm valid manifests are present for Capacitor, Cordova, and native messaging dependencies. Keep the report private.
@@ -94,4 +107,8 @@ After upload processing:
 
 This Windows machine cannot run Xcode, CocoaPods, or Apple upload tooling. The upload must happen on the Mac after Apple/MacinCloud sign-in and any 2FA prompts are complete.
 
-On July 18, 2026, Xcode Organizer uploaded iOS version `1.0`, build `3`, to App Store Connect. App Store Connect shows build `1.0 (3)` as attached to the TTC Internal Testers group and available for internal TestFlight testing. Build `4` remains available to internal testers as historical notification-capability evidence. Checked-in build `5` is the replacement candidate containing the reviewed opt-out lifecycle fixes; it must pass a fresh signed archive and device QA before upload, and it must not replace build `3` on the App Store version already in review.
+Do not begin an archive, upload, TestFlight assignment, or App Review selection from this checklist until separate authorization follows the read-only identity verification above.
+
+## Historical Apple Baseline - July 18-24, 2026 (Non-Operative)
+
+The dated baseline recorded an Organizer upload of iOS `1.0 (3)` and later internal notification-capability evidence for `1.0 (4)`. Preserve that private console and device evidence as history only. It does not establish any current App Review, TestFlight, or installed-device identity and cannot authorize replacement, resubmission, or upload work.

@@ -2,6 +2,31 @@
 
 Use this before native wrapper work, Google Play Production or controlled Alpha testing, TestFlight, or any production launch push. Run it on at least one Android phone and one actual iPhone/TestFlight device for release evidence. An iPhone-sized browser viewport is useful for layout scouting only and does not replace native iOS proof. Use safe sample content only.
 
+## Current Build Evidence Boundary - August 2, 2026
+
+- Checked-in Android source candidate: `1.0.5 (6)`.
+- Checked-in iOS source candidate: `1.0 (5)`.
+- Repository source identity is not signed-artifact, upload, console-selection, served-track, or installed-device proof.
+- Exact current App Review identity: **UNKNOWN**.
+- Exact current TestFlight identity: **UNKNOWN**.
+- Exact current Google Play Production identity: **UNKNOWN**.
+- Exact current Google Play Closed testing - Alpha identity: **UNKNOWN**.
+- Exact current installed Android identity: **UNKNOWN**.
+- Exact current installed iOS identity: **UNKNOWN**.
+- A separately authorized read-only signed-in console/device verification is required before QA or release claims. Do not upload, select, submit, promote, install, or change an artifact during that verification.
+
+## Seller-Owned Merch Handoff - August 2, 2026
+
+Do not run live seller checkout until the protected migration, deployment, exact
+gate enablement, one seller-supplied live link, and this QA pass are separately
+authorized. When authorized, record only pass/fail and private evidence locations:
+
+- Web: open an approved product detail, confirm the seller-responsibility disclosure, open the external browser tab, return to TTC, and confirm there is no false success state, TTC receipt, or TTC order row.
+- Android phone: from the exact Google Play build under review, confirm the protected control opens the external browser through the native handoff, Back returns to the same product safely, and there is no false success state.
+- TestFlight iPad: from the exact TestFlight build under review, confirm the protected control opens the external browser, returning restores the TTC product without a TTC success claim, and there is no false success state.
+- On all three surfaces, confirm the seller name and responsibility for payment, taxes, shipping, returns, refunds, disputes, and purchase support are visible before leaving TTC. Do not record the seller link, buyer data, transaction details, or provider account identifiers in repo-safe evidence.
+- Rollback: restore `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false`, confirm the public purchase control disappears on web, Android phone, and TestFlight iPad, and confirm historical TTC order support remains readable.
+
 ## Setup
 
 - Run `npm.cmd run smoke:public` against production and confirm public routes, private redirects, public fallback detail pages, metadata, and safety-copy checks pass.
@@ -9,7 +34,7 @@ Use this before native wrapper work, Google Play Production or controlled Alpha 
 - Run `npm.cmd run smoke:mobile:narrow` against production and confirm the same route matrix passes at 320x568 without document overflow before store screenshots or wrapper QA.
 - Run `npm.cmd run smoke:mobile:ios` against production as an iPhone Safari-shaped scouting pass. This is useful for route, overflow, and error checks, but it does not replace the actual iPhone/TestFlight evidence below.
 - Confirm the build points at `https://thetattoocore.com/login`.
-- Confirm the public Google Play Production listing offers Install or Update for the exact public release `1.0.3 (4)`, then verify the installed Android app came from Production and record its release/build number and install source.
+- After separate read-only authorization, record the exact Google Play Production and Alpha identities and independently record the installed Android identity. Keep all three unknown until verified; a source candidate or prior screenshot is not served-track or install proof.
 - Only for Alpha controlled QA, confirm the selected Google Play account belongs to the configured tester community, use the private web tester join link with that same account, and confirm opt-in before opening the Android join link.
 - Run `npm.cmd run qa:android-device:open-link` with the unlocked Android test phone connected. Confirm both TTC domains report verified/enabled and the safe `/messages` link opens the production app instead of a browser or chooser.
 - Treat a missing Production listing, wrong served build, or unverified install source as a release blocker. An unconfirmed web opt-in blocks Alpha controlled-QA evidence only; a mismatched Alpha account or unpropagated tester-community membership does not invalidate a separately proven Production install.
@@ -17,13 +42,13 @@ Use this before native wrapper work, Google Play Production or controlled Alpha 
 - Open Admin > Media Ops and confirm the Beta QA launch checklist is visible for auth, two-user DMs, mobile posting/media, verification review, controlled launch payments, and safe store screenshots.
 - Confirm Support, Help, Child Safety Standards, Privacy, and Terms links open from logged-out and logged-in surfaces.
 - Open Help Center on mobile, search for "getting started", and confirm the first-run guide explains account type, profile setup, privacy, content rules, main sections, verification, and Support.
-- Open Help Center on mobile, search for "beta app", and confirm the beta app testing guide explains in-app login/signup/reset, media upload, notifications, DMs, booking, Merch, checkout return paths, and safe bug reporting.
+- Open Help Center on mobile, search for "beta app", and confirm the beta app testing guide explains in-app login/signup/reset, media upload, notifications, DMs, booking, Merch, intentional external seller-checkout return, no false success state, and safe bug reporting.
 - Open Help Center on mobile, search for "saved", and confirm the Search/Saved guide explains usernames, broader terms like tattooers, guest spots, and shirts, privacy-safe results, and saved search shortcuts.
 - Open the Help Center privacy/safety/support guide on mobile and confirm it explains reports, blocks, account deletion requests, support boundaries, and private account issues.
 - Open the Booking guide and confirm it explains deposit confirmation, TTC fee visibility, private calendar-note limits, and refund-review expectations.
 - Open the Ads guide and confirm it explains 4U/Gossip placements, Merch-only ads, ad credits, review rules, keyword safety, and payment status.
-- Open the Merch guide and confirm it explains private buyer shipping details, tracking, seller fulfillment timing, missing/damaged/wrong/delayed/returned package support, and refund-review expectations.
-- Open the Order Support guide and confirm it explains missing, damaged, wrong, delayed, returned, disputed, and seller-non-delivery orders without telling members to post private evidence publicly.
+- Open the Merch guide and confirm it explains seller-owned Payment Links, product/fulfillment/return readiness, seller responsibility, external purchase-data boundaries, and TTC listing-safety support.
+- Open the Purchase Support guide and confirm buyers contact the seller for receipts, shipping, returns, refunds, disputes, and purchase support without posting private evidence publicly.
 - Open the Verification guide and confirm it explains document privacy, why approval matters, unlocked tools, and resubmission after rejection.
 - Confirm public app copy uses `support@thetattoocore.com` or final company contact details, not personal owner contact data.
 - Confirm the browser/install prompt does not block vertical scrolling after the user ignores it.
@@ -69,9 +94,10 @@ Use this before native wrapper work, Google Play Production or controlled Alpha 
 - Create, edit, archive, and view a Gig.
 - Create, edit, archive, and view a Merch product.
 - Open the Merch storefront on mobile and confirm the Merch Help and Seller Tools links are visible without horizontal overflow.
-- Run controlled launch checkout for Merch and verify success, receipt, buyer history, seller history, admin payments, and webhook status.
-- Open a Merch product detail page before checkout and confirm the Merch Help link is visible near checkout guidance.
-- Confirm checkout remains launch-controlled until production payment, tax, refund, dispute, shipping, and payout policy is approved.
+- With the gate false, confirm no public seller checkout control renders and no protected seller link appears in page source, cards, search, saved items, or profiles.
+- After separate authorization only, run the web, Android phone, and TestFlight iPad handoff matrix above; confirm external browser return never creates a false TTC success, receipt, order, payment, webhook, or inventory state.
+- Open a Merch product detail page and confirm the Merch Help link and seller-responsibility disclosure are visible near the protected checkout control.
+- Confirm checkout remains gated until seller payment, tax, shipping, return, refund, dispute, purchase-support, Privacy, exact-build store-policy, and rollback review are approved.
 
 ## Messaging
 
@@ -220,8 +246,8 @@ passing console/log review.
 
 Use this Windows probe before claiming Android real-device evidence. A connected
 USB cable is not enough: the device must appear in `adb devices -l` as an
-authorized `device`, and the installed package must match the active Google
-Play candidate build.
+authorized `device`, and the installed package must match the separately
+verified Google Play track identity selected for this QA pass.
 
 By default, the probe compares the installed package against the Android
 `versionName` and `versionCode` checked into
@@ -232,7 +258,8 @@ the private release shell before rerunning the probe.
 
 Before certifying the checked-in candidate, clear both override variables. An
 override may inspect another selected track, but it must not be used as passing
-evidence for candidate `1.0.3 (4)`.
+evidence for checked-in source candidate `1.0.5 (6)` unless the served and
+installed identities were independently verified first.
 
 For a repo-safe status summary from this machine, run:
 
@@ -241,7 +268,8 @@ npm.cmd run qa:android-device
 ```
 
 To make the command fail until an authorized device is visible and the TTC
-package is installed for the active Google Play candidate build, run:
+package matches the separately verified Google Play track identity chosen for
+this QA pass, run:
 
 ```powershell
 npm.cmd run qa:android-device:required

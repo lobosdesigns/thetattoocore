@@ -5,7 +5,6 @@ import {
   ArrowLeft,
   BadgeCheck,
   ImageIcon,
-  Package,
   Pencil,
   ShieldCheck,
   Trash2,
@@ -13,17 +12,19 @@ import {
 import { archiveMerchProduct, editMerchProduct } from "@/app/actions";
 import { ContentReportForm } from "@/app/content-report-form";
 import { MediaLightbox } from "@/app/media-lightbox";
+import { SellerCheckoutDialog } from "@/app/merch/seller-checkout-dialog";
+import { SellerCheckoutFields } from "@/app/merch/seller-checkout-fields";
 import { NotificationBellLink } from "@/app/notification-bell-link";
 import { ProtectedVideo } from "@/app/protected-video";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { ShareActions } from "@/app/share-actions";
 import {
-  calculatePlatformFeeCents,
-  platformFeePercentLabel,
-} from "@/lib/payments/fees";
+  sellerCheckoutLinksEnabled,
+  sellerCheckoutPurchaseReadiness,
+} from "@/lib/merch/seller-checkout";
 import { loadPublicProfileMap } from "@/lib/public-profile-hydration";
 import { isUuid } from "@/lib/route-ids";
-import { stripeCheckoutCreationEnabled } from "@/lib/stripe/release-gates";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
   brandShareImage,
@@ -81,6 +82,12 @@ type MerchProduct = {
 type MerchPageProps = {
   params: Promise<{ id: string }>;
   searchParams?: Promise<{ message?: string }>;
+};
+
+type SellerCheckoutRecord = {
+  external_checkout_url: string | null;
+  seller_checkout_terms_accepted_at: string | null;
+  seller_checkout_terms_version: string | null;
 };
 
 function mediaUrl(bucket: string, path: string) {
@@ -288,12 +295,7 @@ export default async function MerchProductPage({
   const media = product.merch_product_media[0];
   const mediaSrc = media ? mediaUrl(media.storage_bucket, media.storage_path) : null;
   const available = product.inventory_quantity - product.inventory_reserved;
-  const estimatedPlatformFeeCents = calculatePlatformFeeCents(product.price_cents);
-  const estimatedSingleItemTotalCents =
-    product.price_cents + estimatedPlatformFeeCents;
-  const isOwnProduct = claims?.sub === product.profiles?.id;
-  const checkoutFlow = product.is_official ? "official_merch" : "marketplace_merch";
-  const checkoutCreationEnabled = stripeCheckoutCreationEnabled(checkoutFlow);
+  const isOwnProduct = claims?.sub === product.seller_id;
   if (
     !product.is_official &&
     !isOwnProduct &&
@@ -305,6 +307,62 @@ export default async function MerchProductPage({
   ) {
     notFound();
   }
+
+  const canReadSellerCheckout =
+    !product.is_official &&
+    (isOwnProduct || sellerCheckoutLinksEnabled(process.env));
+  let sellerCheckout: SellerCheckoutRecord = {
+    external_checkout_url: null,
+    seller_checkout_terms_accepted_at: null,
+    seller_checkout_terms_version: null,
+  };
+
+  if (canReadSellerCheckout) {
+    try {
+      const adminClient = createAdminClient();
+
+      if (adminClient) {
+        const { data: checkoutRow, error: checkoutError } = await adminClient
+          .from("merch_products")
+          .select(
+            "external_checkout_url, seller_checkout_terms_accepted_at, seller_checkout_terms_version",
+          )
+          .eq("id", product.id)
+          .eq("seller_id", product.seller_id)
+          .maybeSingle<SellerCheckoutRecord>();
+
+        if (!checkoutError && checkoutRow) {
+          sellerCheckout = checkoutRow;
+        }
+      }
+    } catch {
+      sellerCheckout = {
+        external_checkout_url: null,
+        seller_checkout_terms_accepted_at: null,
+        seller_checkout_terms_version: null,
+      };
+    }
+  }
+
+  const sellerVerified = isVerifiedProfessional(product.profiles);
+  const sellerCheckoutUrl = sellerCheckout.external_checkout_url;
+  const checkoutReadiness = sellerCheckoutPurchaseReadiness({
+    externalCheckoutUrl: sellerCheckout.external_checkout_url,
+    fulfillmentNotes: product.fulfillment_notes,
+    inventoryQuantity: product.inventory_quantity,
+    inventoryReserved: product.inventory_reserved,
+    isOfficial: product.is_official,
+    moderationStatus: product.moderation_status,
+    returnPolicy: product.return_policy,
+    sellerCheckoutTermsAcceptedAt:
+      sellerCheckout.seller_checkout_terms_accepted_at,
+    sellerCheckoutTermsVersion: sellerCheckout.seller_checkout_terms_version,
+    sellerVerified,
+    shippingRequired: product.shipping_required,
+    shipsFromCity: product.ships_from_city,
+    shipsFromRegion: product.ships_from_region,
+    status: product.status,
+  });
 
   return (
     <main className="ttc-page min-h-screen overflow-x-hidden">
@@ -444,7 +502,7 @@ export default async function MerchProductPage({
                   : "Sold out"}
                 {product.inventory_reserved > 0 && isOwnProduct ? (
                   <span className="block text-xs font-medium text-[var(--muted-strong)]">
-                    {Intl.NumberFormat("en-US").format(product.inventory_reserved)} reserved in active checkout
+                    {Intl.NumberFormat("en-US").format(product.inventory_reserved)} reserved in legacy TTC checkout records
                   </span>
                 ) : null}
               </p>
@@ -526,7 +584,7 @@ export default async function MerchProductPage({
                         {product.inventory_reserved > 0 ? (
                           <span className="mt-1 block text-[11px] normal-case leading-4 text-[var(--muted-strong)]">
                             {Intl.NumberFormat("en-US").format(product.inventory_reserved)} unit(s)
-                            are reserved in active checkout, so inventory cannot
+                            are reserved in legacy TTC checkout records, so inventory cannot
                             be lowered below that amount.
                           </span>
                         ) : null}
@@ -567,8 +625,10 @@ export default async function MerchProductPage({
                         className="mt-1 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 py-3 text-sm text-[var(--foreground)]"
                         defaultValue={product.fulfillment_notes ?? ""}
                         maxLength={1000}
+                        minLength={10}
                         name="fulfillment_notes"
                         placeholder="Shipping timeline, pickup option, made-to-order timing."
+                        required
                         rows={4}
                       />
                     </label>
@@ -578,11 +638,14 @@ export default async function MerchProductPage({
                         className="mt-1 w-full rounded-md border border-[var(--card-rim)] bg-[var(--paper-soft)] px-3 py-3 text-sm text-[var(--foreground)]"
                         defaultValue={product.return_policy ?? ""}
                         maxLength={1000}
+                        minLength={10}
                         name="return_policy"
                         placeholder="Set buyer expectations for returns or refund review."
+                        required
                         rows={4}
                       />
                     </label>
+                    <SellerCheckoutFields defaultUrl={sellerCheckoutUrl} />
                     <button className="h-10 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
                       Save changes
                     </button>
@@ -642,65 +705,29 @@ export default async function MerchProductPage({
             </section>
 
             <section className="ttc-card rounded-md p-4">
-              {claims?.sub && available > 0 && !isOwnProduct ? (
-                checkoutCreationEnabled ? (
-                <form action="/api/merch/checkout" method="post">
-                  <input name="product_id" type="hidden" value={product.id} />
-                  <input
-                    name="return_to"
-                    type="hidden"
-                    value={`/merch/${product.id}`}
-                  />
-                  <label className="block">
-                    <span className="text-sm font-medium">Quantity</span>
-                    <input
-                      className="mt-2 h-11 w-full rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] px-3 text-sm outline-none focus:border-[var(--foreground)]"
-                      defaultValue="1"
-                      max={Math.min(available, 10)}
-                      min="1"
-                      name="quantity"
-                      type="number"
-                    />
-                  </label>
-                  <button className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
-                    <Package className="size-4" />
-                    Checkout
-                  </button>
-                </form>
-                ) : (
-                  <p className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3 text-sm text-[var(--muted)]">
-                    Purchasing is temporarily unavailable for this product.
-                  </p>
-                )
-              ) : claims?.sub && isOwnProduct ? (
+              {isOwnProduct ? (
                 <p className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3 text-sm text-[var(--muted)]">
                   This is your merch product.
                 </p>
-              ) : claims?.sub ? (
+              ) : available <= 0 ? (
                 <p className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3 text-sm text-[var(--muted)]">
                   This merch product is sold out.
                 </p>
+              ) : checkoutReadiness.ready &&
+                available > 0 &&
+                sellerVerified &&
+                product.status === "active" &&
+                product.moderation_status === "active" &&
+                product.profiles ? (
+                <SellerCheckoutDialog
+                  checkoutUrl={checkoutReadiness.url}
+                  sellerName={product.profiles.display_name}
+                />
               ) : (
-                <Link
-                  className="flex h-11 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]"
-                  href={`/login?return_to=${encodeURIComponent(`/merch/${product.id}`)}`}
-                >
-                  Sign in to buy
-                </Link>
-              )}
-              <p className="mt-3 text-xs leading-5 text-[var(--muted-strong)]">
-                Checkout includes a transparent {platformFeePercentLabel} TTC
-                platform fee. Estimated fee on one item is{" "}
-                {money(estimatedPlatformFeeCents, product.currency)}, making one
-                item {money(estimatedSingleItemTotalCents, product.currency)}
-                before any shipping, tax, or discount. Orders are confirmed after
-                payment status updates.
-              </p>
-              {product.shipping_required ? (
-                <p className="mt-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_88%,transparent)] p-2 text-xs leading-5 text-[var(--muted)]">
-                  Shipping address is collected during checkout for this product.
+                <p className="rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-3 text-sm text-[var(--muted)]">
+                  Purchasing is temporarily unavailable for this product.
                 </p>
-              ) : null}
+              )}
               <Link
                 className="mt-3 flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_94%,transparent)] px-4 text-sm font-semibold"
                 href="/help/merch-products-orders"

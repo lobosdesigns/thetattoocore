@@ -1,978 +1,445 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
-import {
-  paymentPilotCandidatePolicyBlockers,
-  paymentPilotCandidateSourcePaths,
-  readPaymentPilotCandidateSources,
-} from "./payment-pilot-candidate-policy.mjs";
+import { requiredFalseStringBindingsSafety } from "./lib/wrangler-config-safety.mjs";
 
 const generator = readFileSync("scripts/generate-private-release-handoff.mjs", "utf8");
 const paymentReadiness = readFileSync("docs/PAYMENT_PRODUCTION_READINESS.md", "utf8");
 const packageJson = readFileSync("package.json", "utf8");
-const commerceLaunch = readFileSync("src/lib/commerce-launch.ts", "utf8");
-const envExample = readFileSync(".env.example", "utf8");
-const stripeReleaseGates = readFileSync("src/lib/stripe/release-gates.ts", "utf8");
-const bookingCheckout = readFileSync("src/app/api/bookings/checkout/route.ts", "utf8");
-const merchCheckout = readFileSync("src/app/api/merch/checkout/route.ts", "utf8");
-const stripeConnectOnboarding = readFileSync(
-  "src/app/api/stripe/connect/onboarding/route.ts",
-  "utf8",
+const wranglerFixtureSource =
+  process.argv.includes("--test-fixture") &&
+  process.env.TTC_PAYMENT_GATE_WRANGLER_FIXTURE_SOURCE;
+const wranglerConfig =
+  typeof wranglerFixtureSource === "string"
+    ? wranglerFixtureSource
+    : readFileSync("wrangler.jsonc", "utf8");
+const currentPaymentReadiness = section(
+  paymentReadiness,
+  "## Current Position - August 2, 2026",
+  "## Historical TTC Checkout Position (Preserved)",
 );
 
-function adPurchasesDisabledInSource(source) {
-  return (
-    source.match(
-      /^\s*export const AD_PURCHASES_AVAILABLE = (true|false);\s*$/m,
-    )?.[1] === "false"
-  );
-}
-
-const selectedPilotFlow = "Official TTC Merch checkout";
-const excludedPilotFlows = [
-  "Marketplace Merch checkout",
-  "Booking deposit",
-  "Ads checkout",
-  "Seller payout readiness",
-];
-const requiredFlows = [
-  selectedPilotFlow,
-  ...excludedPilotFlows,
-];
-
-const preauthorizationEvidenceColumns = [
-  "Expected mode checked",
-  "Server key mode checked",
-  "Webhook endpoint/events checked",
-  "Admin reconciliation",
-  "Refund/dispute/payout gate",
-];
-const postTransactionEvidenceColumn = "Post-transaction production proof";
-const requiredEvidenceColumns = [
-  "Release candidate",
-  "Release switch state",
-  "Private gate proof filename or location",
-  ...preauthorizationEvidenceColumns,
-  postTransactionEvidenceColumn,
-  "Result",
-];
-const requiredDashboardAreas = [
-  "Account verification",
-  "API and webhook mode",
-  "Release switches",
-  "Post-transaction production proof",
-];
-const requiredPaymentBlockers = [
-  "Production account activation",
-  "Production app mode preflight",
-  "Official Merch policy and fulfillment approval",
-];
-const requiredNativePolicyBlockers = [
-  {
-    blocker: "Native physical-goods classification and review evidence",
-    platform: "Apple",
-  },
-  {
-    blocker: "Native physical-goods classification and review evidence",
-    platform: "Google Play",
-  },
-];
-const defaultPrivateEvidencePath = "private-release-handoff/release-handoff-template.md";
-const fixtureRoot = resolve("scripts/fixtures");
-const fixtureMarker = "SANITIZED PAYMENT GO-LIVE TEST FIXTURE - NOT RELEASE EVIDENCE";
-const candidateSourceFixtureMarker =
-  "SANITIZED PAYMENT CANDIDATE SOURCE TEST FIXTURE - NOT RELEASE EVIDENCE";
-const DAY_MS = 24 * 60 * 60 * 1000;
+const DEFAULT_EVIDENCE_PATH = "private-release-handoff/release-handoff-template.md";
+const FIXTURE_MARKER =
+  "<!-- TTC_SANITIZED_SELLER_LINK_ROLLOUT_FIXTURE -->";
 const MAX_EVIDENCE_AGE_DAYS = 45;
-const COMMIT_PATTERN = /^[0-9a-f]{7,40}$/;
-const privateProofPlaceholders = new Set([
-  "-",
+const DAY_MS = 24 * 60 * 60 * 1000;
+const COMMIT_PATTERN = /^[0-9a-f]{7,40}$/i;
+const FIXTURE_CANDIDATE_PATTERN = /^fixture-[A-Za-z0-9._-]{7,120}$/;
+const requiredSteps = [
+  "1. Approved migration",
+  "2. First inactive Worker upload",
+  "3. Deploy while disabled",
+  "4. Private seller link review",
+  "5. Second inactive upload and approval",
+  "6. Cross-platform QA",
+  "7. Rollback",
+];
+const requiredFalseBindings = [
+  "STRIPE_EXPECTED_LIVEMODE",
+  "TTC_SELLER_CHECKOUT_LINKS_ENABLED",
+  "TTC_NATIVE_PUSH_DELIVERY_ENABLED",
+  "STRIPE_CHECKOUT_CREATION_ENABLED",
+  "STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED",
+  "STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED",
+  "STRIPE_BOOKING_CHECKOUT_ENABLED",
+  "STRIPE_CONNECT_ONBOARDING_ENABLED",
+  "STRIPE_MERCH_DESTINATION_CHARGES_ENABLED",
+];
+const retiredActiveInstructions = [
+  "Official TTC Merch checkout",
+  "Marketplace Merch checkout",
+  "Seller payout readiness",
+  "Official TTC Merch is Armed",
+  "verify:payment-go-live",
+  "verify:payment-production-evidence",
+];
+const prohibitedEvidencePatterns = [
+  /https:\/\/buy[.]stripe[.]com\//i,
+  /\bacct_[A-Za-z0-9]+\b/,
+  /\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]+\b/,
+  /\bwhsec_[A-Za-z0-9]+\b/,
+  /\bpi_[A-Za-z0-9]+\b/,
+  /\bcs_(?:live|test)_[A-Za-z0-9]+\b/,
+];
+const incompleteValues = new Set([
+  "",
   "blocked",
-  "fixture-only",
+  "fail",
+  "failed",
   "n/a",
   "na",
-  "none",
-  "not available",
-  "not recorded",
   "pending",
   "tbd",
   "todo",
   "unknown",
 ]);
 
-function envDefaultsFalse(source, key) {
-  return new RegExp(`^${key}=false\\s*$`, "m").test(source);
+function cleanCell(value = "") {
+  return value.trim().replace(/^`|`$/g, "").replace(/\s+/g, " ");
 }
 
-function disabledPilotFlowSourceProofs({
-  bookingCheckoutSource,
-  commerceLaunchSource,
-  envExampleSource,
-  merchCheckoutSource,
-  releaseGatesSource,
-  stripeConnectOnboardingSource,
-}) {
-  const exactGateParser = releaseGatesSource.includes('return value === "true";');
-  const checkoutMasterDefaultsFalse = envDefaultsFalse(
-    envExampleSource,
-    "STRIPE_CHECKOUT_CREATION_ENABLED",
+function normalize(value = "") {
+  return cleanCell(value).toLowerCase();
+}
+
+function containsInOrder(source, snippets) {
+  let cursor = 0;
+  for (const snippet of snippets) {
+    const index = source.indexOf(snippet, cursor);
+    if (index < 0) return false;
+    cursor = index + snippet.length;
+  }
+  return true;
+}
+
+function section(source, heading, nextHeading) {
+  const start = source.indexOf(heading);
+  if (start < 0) return "";
+  const end = nextHeading
+    ? source.indexOf(nextHeading, start + heading.length)
+    : -1;
+  return source.slice(start, end < 0 ? undefined : end);
+}
+
+function markdownTable(sectionSource, firstColumn) {
+  const lines = sectionSource.split(/\r?\n/);
+  const tableStart = lines.findIndex(
+    (line) => cleanCell(line.split("|")[1] ?? "") === firstColumn,
   );
+  if (tableStart < 0) return null;
 
-  return {
-    "Ads checkout": adPurchasesDisabledInSource(commerceLaunchSource),
-    "Booking deposit":
-      exactGateParser &&
-      checkoutMasterDefaultsFalse &&
-      envDefaultsFalse(envExampleSource, "STRIPE_BOOKING_CHECKOUT_ENABLED") &&
-      releaseGatesSource.includes(
-        'booking: "STRIPE_BOOKING_CHECKOUT_ENABLED"',
-      ) &&
-      bookingCheckoutSource.includes(
-        'stripeCheckoutCreationEnabled("booking")',
-      ),
-    "Marketplace Merch checkout":
-      exactGateParser &&
-      checkoutMasterDefaultsFalse &&
-      envDefaultsFalse(
-        envExampleSource,
-        "STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED",
-      ) &&
-      releaseGatesSource.includes(
-        'marketplace_merch: "STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED"',
-      ) &&
-      merchCheckoutSource.includes(
-        'product.is_official ? "official_merch" : "marketplace_merch"',
-      ) &&
-      merchCheckoutSource.includes(
-        "stripeCheckoutCreationEnabled(checkoutFlow)",
-      ),
-    "Seller payout readiness":
-      exactGateParser &&
-      envDefaultsFalse(
-        envExampleSource,
-        "STRIPE_CONNECT_ONBOARDING_ENABLED",
-      ) &&
-      envDefaultsFalse(
-        envExampleSource,
-        "STRIPE_MERCH_DESTINATION_CHARGES_ENABLED",
-      ) &&
-      stripeConnectOnboardingSource.includes(
-        "if (!stripeConnectOnboardingEnabled())",
-      ) &&
-      merchCheckoutSource.includes(
-        "if (!stripeMerchDestinationChargesEnabled())",
-      ),
-  };
-}
-
-const currentDisabledPilotFlowSourceProofs = disabledPilotFlowSourceProofs({
-  bookingCheckoutSource: bookingCheckout,
-  commerceLaunchSource: commerceLaunch,
-  envExampleSource: envExample,
-  merchCheckoutSource: merchCheckout,
-  releaseGatesSource: stripeReleaseGates,
-  stripeConnectOnboardingSource: stripeConnectOnboarding,
-});
-
-function pass(label) {
-  console.log(`PASS ${label}`);
-}
-
-function fail(label, message) {
-  console.error(`FAIL ${label}`);
-  if (message) console.error(`  ${message}`);
-  process.exitCode = 1;
-}
-
-function sectionBetween(source, startHeading, endHeading) {
-  const start = source.indexOf(startHeading);
-  if (start < 0) return null;
-
-  const end = source.indexOf(endHeading, start + startHeading.length);
-  if (end < 0) return null;
-
-  return source.slice(start, end);
-}
-
-function markdownCells(line) {
-  const trimmed = line.trim();
-  if (!trimmed.startsWith("|")) return [];
-
-  return trimmed
-    .replace(/^\|/, "")
-    .replace(/\|$/, "")
-    .split("|")
-    .map((cell) => cell.trim());
-}
-
-function markdownTable(section, firstColumn) {
-  if (!section) return null;
-
-  const lines = section.split(/\r?\n/);
-  const headerIndex = lines.findIndex(
-    (line) => markdownCells(line)[0] === firstColumn,
-  );
-  if (headerIndex < 0) return null;
-
-  const columns = markdownCells(lines[headerIndex]);
+  const cells = (line) =>
+    line
+      .trim()
+      .replace(/^\|/, "")
+      .replace(/\|$/, "")
+      .split("|")
+      .map(cleanCell);
+  const headers = cells(lines[tableStart]);
   const rows = [];
 
-  for (const line of lines.slice(headerIndex + 1)) {
-    const cells = markdownCells(line);
-    if (!cells.length) {
+  for (const line of lines.slice(tableStart + 1)) {
+    if (!line.trim().startsWith("|")) {
       if (rows.length) break;
       continue;
     }
-    if (cells.every((cell) => /^:?-{3,}:?$/.test(cell))) continue;
-
+    const values = cells(line);
+    if (values.every((value) => /^:?-{3,}:?$/.test(value))) continue;
     rows.push(
-      Object.fromEntries(columns.map((column, index) => [column, cells[index] ?? ""])),
+      Object.fromEntries(headers.map((header, index) => [header, values[index] ?? ""])),
     );
   }
-
-  return { columns, rows };
+  return { headers, rows };
 }
 
-function stateBlocker(scope, value, { allowNotApplicable = false } = {}) {
-  const state = value.trim().toLowerCase();
-  if (state === "passed") return null;
-  if (allowNotApplicable && state === "n/a") return null;
-  if (!state) return `${scope}: missing`;
-  if (state === "pending" || state === "blocked") return `${scope}: ${state}`;
-  if (state === "n/a") return `${scope}: n/a is not allowed`;
-
-  return `${scope}: must be exactly passed`;
-}
-
-function privateProofBlocker(scope, value, { allowFixtureOnly = false } = {}) {
-  const proofLocation = value.trim();
-  const normalizedProofLocation = proofLocation.toLowerCase();
-
-  if (!proofLocation) return `${scope}: missing`;
-  if (allowFixtureOnly && normalizedProofLocation === "fixture-only") return null;
-  if (privateProofPlaceholders.has(normalizedProofLocation)) {
-    return `${scope}: placeholder is not allowed`;
+function uniqueRow(table, column, value, blockers, area) {
+  const rows = table?.rows.filter(
+    (row) => normalize(row[column]) === normalize(value),
+  ) ?? [];
+  if (rows.length !== 1) {
+    blockers.push(`${area}: ${value} row must appear exactly once`);
   }
-
-  return null;
+  return rows[0];
 }
 
-function paymentEvidenceDateBlocker(scope, value, referenceTimestamp) {
-  const attemptDate = value.trim();
-  if (!attemptDate) return `${scope}: missing`;
-
-  const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(attemptDate);
-  const isIsoTimestamp =
-    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})$/.test(
-      attemptDate,
-    );
-  if (!isDateOnly && !isIsoTimestamp) return `${scope}: invalid date`;
-
-  const attemptTimestamp = Date.parse(
-    isDateOnly ? `${attemptDate}T00:00:00Z` : attemptDate,
+function sourceContractIsSafe({ generatorSource, packageSource }) {
+  const rollout = section(
+    generatorSource,
+    "## Seller-Owned Merch Rollout Evidence",
+    "## Seller-Link Rollout Log",
   );
-  if (!Number.isFinite(attemptTimestamp)) return `${scope}: invalid date`;
-
-  const ageDays = (referenceTimestamp - attemptTimestamp) / DAY_MS;
-  if (ageDays < 0) return `${scope}: date cannot be in the future`;
-  if (ageDays > MAX_EVIDENCE_AGE_DAYS) {
-    return `${scope}: date must be within ${MAX_EVIDENCE_AGE_DAYS} days`;
-  }
-
-  return null;
+  return (
+    rollout.includes("seller-owned Payment Link") &&
+    rollout.includes("seller handles purchase support") &&
+    rollout.includes("external browser") &&
+    rollout.includes("no false TTC payment, order, receipt, or success state") &&
+    containsInOrder(rollout, requiredSteps) &&
+    requiredFalseBindings.every((key) => rollout.includes(`${key}=false`)) &&
+    retiredActiveInstructions.every(
+      (instruction) => !generatorSource.includes(instruction),
+    ) &&
+    packageSource.includes(
+      '"smoke:seller-link-rollout": "node scripts/smoke-payment-cutover-evidence.mjs"',
+    ) &&
+    packageSource.includes(
+      '"verify:seller-link-rollout-evidence": "npm run smoke:env && npm run test:seller-link-rollout-evidence && node scripts/smoke-payment-cutover-evidence.mjs --strict"',
+    ) &&
+    !packageSource.includes('"smoke:payment-cutover"') &&
+    !packageSource.includes('"verify:payment-go-live"') &&
+    !packageSource.includes('"verify:payment-production-evidence"')
+  );
 }
 
-function releaseCandidatesMatch(recorded, expected) {
-  const normalizedRecorded = recorded.trim().toLowerCase();
-  const normalizedExpected = expected.trim().toLowerCase();
-  if (
-    !COMMIT_PATTERN.test(normalizedRecorded) ||
-    !COMMIT_PATTERN.test(normalizedExpected)
-  ) {
+function packageCurrentCompositesAreSafe(source) {
+  const parsed = JSON.parse(source);
+  const activeScripts = Object.entries(parsed.scripts ?? {}).filter(
+    ([name]) => !name.startsWith("legacy:"),
+  );
+  const retiredCommandNames = [
+    "smoke:payment-cutover",
+    "verify:payment-go-live",
+    "verify:payment-production-evidence",
+    "test:payment-go-live-gate",
+  ];
+  return (
+    retiredCommandNames.every((name) => !(name in (parsed.scripts ?? {}))) &&
+    activeScripts.every(
+      ([, command]) =>
+        !command.includes("smoke:payment-cutover") &&
+        !command.includes("test:payment-go-live-gate"),
+    )
+  );
+}
+
+function wranglerHasRequiredFalseBindings(source) {
+  return requiredFalseStringBindingsSafety(source, requiredFalseBindings).ok;
+}
+
+function parseArgs(argv) {
+  const options = new Map();
+  const flags = new Set();
+  const valueOptions = new Set([
+    "--evidence",
+    "--release-candidate",
+    "--reference-date",
+  ]);
+  const flagOptions = new Set(["--strict", "--test-fixture"]);
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const argument = argv[index];
+    if (flagOptions.has(argument)) {
+      if (flags.has(argument)) throw new Error(`${argument} may appear only once`);
+      flags.add(argument);
+      continue;
+    }
+    if (!valueOptions.has(argument)) throw new Error(`unknown option ${argument}`);
+    if (options.has(argument)) throw new Error(`${argument} may appear only once`);
+    const value = argv[index + 1] ?? "";
+    if (!value || value.startsWith("--")) throw new Error(`${argument} requires a value`);
+    options.set(argument, value);
+    index += 1;
+  }
+  return { flags, options };
+}
+
+function gitCommitExists(candidate) {
+  try {
+    return (
+      execFileSync("git", ["cat-file", "-t", candidate], {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      }).trim() === "commit"
+    );
+  } catch {
     return false;
   }
-  if (normalizedRecorded === normalizedExpected) return true;
-
-  return (
-    (normalizedRecorded.startsWith(normalizedExpected) ||
-      normalizedExpected.startsWith(normalizedRecorded))
-  );
 }
 
-function validateStrictEvidence(
-  source,
-  expectedReleaseCandidate,
-  {
-    allowFixtureOnly = false,
-    candidatePolicyBlockers = [],
-    disabledFlowSourceProofs = {},
-    phase = "preauthorization",
-    referenceTimestamp = Date.now(),
-  } = {},
-) {
-  const blockers = [...candidatePolicyBlockers];
-  const currentBlockersTable = markdownTable(
-    sectionBetween(
-      source,
-      "## Current Console Blockers To Clear",
-      "## Store Console Evidence",
-    ),
-    "Platform",
+function strictEvidenceBlockers({
+  evidencePath,
+  expectedCandidate,
+  referenceDate,
+  testFixture,
+}) {
+  const blockers = [];
+  const resolvedEvidence = resolve(evidencePath);
+  const fixtureRoot = resolve("scripts/fixtures");
+  const fixtureRelative = relative(fixtureRoot, resolvedEvidence);
+  const fixturePathIsSafe =
+    Boolean(fixtureRelative) &&
+    !fixtureRelative.startsWith("..") &&
+    !isAbsolute(fixtureRelative);
+
+  if (!existsSync(resolvedEvidence)) return ["Private seller-link evidence is missing"];
+  if (testFixture && !fixturePathIsSafe) {
+    return ["Sanitized fixture path must stay under scripts/fixtures"];
+  }
+  if (!testFixture && fixturePathIsSafe) {
+    return ["Sanitized fixtures cannot approve a live seller-link rollout"];
+  }
+  if (
+    (testFixture && !FIXTURE_CANDIDATE_PATTERN.test(expectedCandidate)) ||
+    (!testFixture && !COMMIT_PATTERN.test(expectedCandidate))
+  ) {
+    return ["Release candidate format is invalid for this evidence mode"];
+  }
+  if (!testFixture && !gitCommitExists(expectedCandidate)) {
+    return ["Live release candidate does not resolve to a local Git commit"];
+  }
+
+  const markdown = readFileSync(resolvedEvidence, "utf8");
+  const hasMarker = markdown.includes(FIXTURE_MARKER);
+  if (testFixture && !hasMarker) blockers.push("Sanitized fixture marker is missing");
+  if (!testFixture && hasMarker) {
+    blockers.push("Sanitized fixtures cannot approve a live seller-link rollout");
+  }
+  if (prohibitedEvidencePatterns.some((pattern) => pattern.test(markdown))) {
+    blockers.push("Private evidence must not contain a seller link, account ID, payment ID, or secret");
+  }
+
+  const releaseTable = markdownTable(section(markdown, "## Release Candidate", "## Current Console Blockers To Clear"), "Field");
+  const webDeploy = uniqueRow(
+    releaseTable,
+    "Field",
+    "Web deploy version",
+    blockers,
+    "Release Candidate",
   );
-  const paymentEvidenceTable = markdownTable(
-    sectionBetween(
-      source,
-      "## Payment And Commerce Evidence",
-      "## Payment Dashboard Readiness Log",
-    ),
-    "Flow",
+  if (normalize(webDeploy?.Value) !== normalize(expectedCandidate)) {
+    blockers.push("Release Candidate: web deploy does not match the requested release candidate");
+  }
+
+  const rolloutTable = markdownTable(
+    section(markdown, "## Seller-Owned Merch Rollout Evidence", "## Seller-Link Rollout Log"),
+    "Step",
   );
-  const dashboardLogTable = markdownTable(
-    sectionBetween(
-      source,
-      "## Payment Dashboard Readiness Log",
-      "## Native Push Evidence",
-    ),
-    "Attempt date/time",
-  );
-
-  if (!currentBlockersTable) {
-    blockers.push("Current Console Blockers To Clear payment table: missing");
-  } else {
-    const requiredBlockers = [
-      ...requiredNativePolicyBlockers,
-      ...requiredPaymentBlockers.map((blocker) => ({
-        blocker,
-        platform: "Payments",
-      })),
-    ];
-
-    for (const { blocker: blockerName, platform } of requiredBlockers) {
-      const row = currentBlockersTable.rows.find(
-        (candidate) =>
-          candidate.Platform === platform && candidate.Blocker === blockerName,
-      );
-      if (!row) {
-        blockers.push(`${platform} blocker / ${blockerName}: missing`);
-        continue;
-      }
-
-      const blocker = stateBlocker(
-        `${platform} blocker / ${blockerName} / Result`,
-        row.Result ?? "",
-      );
-      if (blocker) blockers.push(blocker);
-
-      const proofBlocker = privateProofBlocker(
-        `${platform} blocker / ${blockerName} / Private proof filename or location`,
-        row["Private proof filename or location"] ?? "",
-        { allowFixtureOnly },
-      );
-      if (proofBlocker) blockers.push(proofBlocker);
+  const requiredColumns = [
+    "Step",
+    "Required private evidence",
+    "Expected state",
+    "Result",
+    "Private proof filename or location",
+    "Proof date",
+  ];
+  for (const column of requiredColumns) {
+    if (!rolloutTable?.headers.includes(column)) {
+      blockers.push(`Seller-Owned Merch Rollout Evidence: ${column} column is missing`);
     }
   }
 
-  if (!paymentEvidenceTable) {
-    blockers.push("Payment And Commerce Evidence table: missing");
-  } else {
-    for (const column of requiredEvidenceColumns) {
-      if (!paymentEvidenceTable.columns.includes(column)) {
-        blockers.push(`Payment And Commerce Evidence / ${column}: column missing`);
-      }
+  const referenceTimestamp = Date.parse(`${referenceDate}T00:00:00Z`);
+  for (const step of requiredSteps) {
+    const row = uniqueRow(
+      rolloutTable,
+      "Step",
+      step,
+      blockers,
+      "Seller-Owned Merch Rollout Evidence",
+    );
+    if (normalize(row?.Result) !== "passed") {
+      blockers.push(`Seller-Owned Merch Rollout Evidence: ${step} must be passed`);
     }
-
-    for (const flow of requiredFlows) {
-      const row = paymentEvidenceTable.rows.find((candidate) => candidate.Flow === flow);
-      if (!row) {
-        blockers.push(`Payment flow / ${flow}: missing`);
-        continue;
-      }
-
-      const recordedReleaseCandidate = row["Release candidate"] ?? "";
-      const releaseState = recordedReleaseCandidate.trim().toLowerCase();
-      if (!releaseState) {
-        blockers.push(`Payment flow / ${flow} / Release candidate: missing`);
-      } else if (releaseState === "pending" || releaseState === "blocked") {
-        blockers.push(`Payment flow / ${flow} / Release candidate: ${releaseState}`);
-      } else if (
-        !releaseCandidatesMatch(recordedReleaseCandidate, expectedReleaseCandidate)
-      ) {
-        blockers.push(
-          `Payment flow / ${flow} / Release candidate: stale or mismatched`,
-        );
-      }
-
-      const gateProofBlocker = privateProofBlocker(
-        `Payment flow / ${flow} / Private gate proof filename or location`,
-        row["Private gate proof filename or location"] ?? "",
-        { allowFixtureOnly },
-      );
-      if (gateProofBlocker) blockers.push(gateProofBlocker);
-
-      if (excludedPilotFlows.includes(flow)) {
-        if ((row["Release switch state"] ?? "").trim().toLowerCase() !== "blocked") {
-          blockers.push(
-            `Payment flow / ${flow} / Release switch state: must be exactly blocked while the flow is excluded`,
-          );
-        }
-        if (!disabledFlowSourceProofs[flow]) {
-          blockers.push(
-            `Payment flow / ${flow}: n/a requires candidate source gates and fail-closed defaults`,
-          );
-        }
-
-        for (const column of [
-          ...preauthorizationEvidenceColumns,
-          postTransactionEvidenceColumn,
-          "Result",
-        ]) {
-          if ((row[column] ?? "").trim().toLowerCase() !== "n/a") {
-            blockers.push(
-              `Payment flow / ${flow} / ${column}: must be exactly n/a while the flow is excluded`,
-            );
-          }
-        }
-        continue;
-      }
-
-      const requiredReleaseState =
-        phase === "post-transaction" ? "enabled" : "armed";
-      if (
-        (row["Release switch state"] ?? "").trim().toLowerCase() !==
-        requiredReleaseState
-      ) {
-        blockers.push(
-          `Payment flow / ${flow} / Release switch state: must be exactly ${requiredReleaseState} for ${phase}`,
-        );
-      }
-
-      for (const column of preauthorizationEvidenceColumns) {
-        const blocker = stateBlocker(
-          `Payment flow / ${flow} / ${column}`,
-          row[column] ?? "",
-        );
-        if (blocker) blockers.push(blocker);
-      }
-
-      const postTransactionState = (row[postTransactionEvidenceColumn] ?? "")
-        .trim()
-        .toLowerCase();
-      if (phase === "post-transaction") {
-        const blocker = stateBlocker(
-          `Payment flow / ${flow} / ${postTransactionEvidenceColumn}`,
-          postTransactionState,
-        );
-        if (blocker) blockers.push(blocker);
-      } else if (!["pending", "passed"].includes(postTransactionState)) {
-        blockers.push(
-          `Payment flow / ${flow} / ${postTransactionEvidenceColumn}: must be pending or passed for preauthorization`,
-        );
-      }
-
-      const resultBlocker = stateBlocker(
-        `Payment flow / ${flow} / Result`,
-        row.Result ?? "",
-      );
-      if (resultBlocker) blockers.push(resultBlocker);
+    const proof = cleanCell(row?.["Private proof filename or location"] ?? "");
+    if (incompleteValues.has(normalize(proof))) {
+      blockers.push(`Seller-Owned Merch Rollout Evidence: ${step} private proof is required`);
+    } else if (!testFixture && /fixture|sample|placeholder/i.test(proof)) {
+      blockers.push(`Seller-Owned Merch Rollout Evidence: ${step} proof cannot use fixture placeholders`);
     }
-  }
-
-  if (!dashboardLogTable) {
-    blockers.push("Payment Dashboard Readiness Log table: missing");
-  } else {
-    for (const area of requiredDashboardAreas) {
-      const row = dashboardLogTable.rows.find((candidate) => candidate.Area === area);
-      if (!row) {
-        blockers.push(`Payment dashboard / ${area}: missing`);
-        continue;
+    const proofDate = cleanCell(row?.["Proof date"] ?? "");
+    const proofTimestamp = /^\d{4}-\d{2}-\d{2}$/.test(proofDate)
+      ? Date.parse(`${proofDate}T00:00:00Z`)
+      : Number.NaN;
+    if (!Number.isFinite(proofTimestamp)) {
+      blockers.push(`Seller-Owned Merch Rollout Evidence: ${step} proof date must use YYYY-MM-DD`);
+    } else {
+      const ageDays = (referenceTimestamp - proofTimestamp) / DAY_MS;
+      if (ageDays < 0) {
+        blockers.push(`Seller-Owned Merch Rollout Evidence: ${step} proof date cannot be in the future`);
+      } else if (ageDays > MAX_EVIDENCE_AGE_DAYS) {
+        blockers.push(
+          `Seller-Owned Merch Rollout Evidence: ${step} proof date must be within ${MAX_EVIDENCE_AGE_DAYS} days`,
+        );
       }
-
-      const postTransactionArea = area === "Post-transaction production proof";
-      const dashboardState = (row.Result ?? "").trim().toLowerCase();
-      if (
-        postTransactionArea &&
-        phase === "preauthorization" &&
-        dashboardState === "pending"
-      ) {
-        continue;
-      }
-
-      const attemptDateBlocker = paymentEvidenceDateBlocker(
-        `Payment dashboard / ${area} / Attempt date/time`,
-        row["Attempt date/time"] ?? "",
-        referenceTimestamp,
-      );
-      if (attemptDateBlocker) blockers.push(attemptDateBlocker);
-
-      const blocker = stateBlocker(
-        `Payment dashboard / ${area} / Result`,
-        dashboardState,
-      );
-      if (blocker) blockers.push(blocker);
-
-      const proofBlocker = privateProofBlocker(
-        `Payment dashboard / ${area} / Private proof filename or location`,
-        row["Private proof filename or location"] ?? "",
-        { allowFixtureOnly },
-      );
-      if (proofBlocker) blockers.push(proofBlocker);
     }
   }
 
   return blockers;
 }
 
-function optionState(args, name) {
-  const equalsPrefix = `${name}=`;
-  const values = [];
-  let missingValue = false;
+const sourceMutants = [
+  {
+    generatorSource: `${generator}\nEnable Official TTC Merch checkout and seller payout readiness for release.`,
+    packageSource: packageJson,
+  },
+  {
+    generatorSource: generator,
+    packageSource: packageJson.replace(
+      '"smoke:seller-link-rollout"',
+      '"smoke:payment-cutover"',
+    ),
+  },
+  {
+    generatorSource: generator,
+    packageSource: packageJson.replace(
+      '"verify:seller-link-rollout-evidence": "npm run smoke:env && ',
+      '"verify:seller-link-rollout-evidence": "',
+    ),
+  },
+];
+const checks = [
+  {
+    label: "seller-link rollout evidence replaces the retired TTC payment pilot",
+    ok:
+      sourceContractIsSafe({
+        generatorSource: generator,
+        packageSource: packageJson,
+      }) && sourceMutants.every((mutant) => !sourceContractIsSafe(mutant)),
+  },
+  {
+    label: "current package composites exclude retired TTC payment go-live commands",
+    ok: packageCurrentCompositesAreSafe(packageJson),
+  },
+  {
+    label: "seller-link rollout source requires every Wrangler safety binding false",
+    ok: wranglerHasRequiredFalseBindings(wranglerConfig),
+  },
+  {
+    label: "payment readiness documents the seller-owned controlled rollout",
+    ok:
+      currentPaymentReadiness.includes("## Controlled Seller-Link Rollout Sequence - Current And Operative") &&
+      currentPaymentReadiness.includes("npm.cmd run verify:seller-link-rollout-evidence") &&
+      !currentPaymentReadiness.includes("npm.cmd run verify:payment-go-live") &&
+      !currentPaymentReadiness.includes("npm.cmd run verify:payment-production-evidence"),
+  },
+];
 
-  for (let index = 0; index < args.length; index += 1) {
-    const arg = args[index];
-    if (arg.startsWith(equalsPrefix)) {
-      const value = arg.slice(equalsPrefix.length).trim();
-      if (value) values.push(value);
-      else missingValue = true;
-      continue;
-    }
-    if (arg !== name) continue;
-
-    const value = args[index + 1]?.trim();
-    if (value && !value.startsWith("--")) values.push(value);
-    else missingValue = true;
+let failures = 0;
+for (const check of checks) {
+  if (check.ok) console.log(`PASS ${check.label}`);
+  else {
+    failures += 1;
+    console.error(`FAIL ${check.label}`);
   }
-
-  return { missingValue, values };
 }
 
-function currentGitReleaseCandidate() {
-  return execFileSync("git", ["rev-parse", "HEAD"], {
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "ignore"],
-  }).trim();
+let parsedArgs;
+try {
+  parsedArgs = parseArgs(process.argv.slice(2));
+} catch (error) {
+  failures += 1;
+  console.error(`FAIL seller-link rollout options: ${error instanceof Error ? error.message : "invalid options"}`);
 }
 
-function gitReleaseCandidateExists(candidate) {
-  try {
-    execFileSync(
-      "git",
-      ["rev-parse", "--verify", "--quiet", `${candidate}^{commit}`],
-      {
-        encoding: "utf8",
-        stdio: ["ignore", "ignore", "ignore"],
-      },
-    );
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function gitFileAtCandidate(candidate, path) {
-  try {
-    return execFileSync("git", ["show", `${candidate}:${path}`], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
+if (parsedArgs?.flags.has("--strict")) {
+  const testFixture = parsedArgs.flags.has("--test-fixture");
+  const referenceDateOption = parsedArgs.options.get("--reference-date") ?? "";
+  if (referenceDateOption && !testFixture) {
+    failures += 1;
+    console.error("FAIL seller-link rollout options: --reference-date is fixture-only");
+  } else {
+    const referenceDate = referenceDateOption || new Date().toISOString().slice(0, 10);
+    const candidate =
+      parsedArgs.options.get("--release-candidate") ??
+      process.env.TTC_RELEASE_CANDIDATE ??
+      "";
+    const blockers = strictEvidenceBlockers({
+      evidencePath:
+        parsedArgs.options.get("--evidence") ?? DEFAULT_EVIDENCE_PATH,
+      expectedCandidate: candidate,
+      referenceDate,
+      testFixture,
     });
-  } catch {
-    return "";
-  }
-}
-
-function fixturePathIsSafe(path) {
-  const pathFromFixtureRoot = relative(fixtureRoot, path);
-
-  return (
-    Boolean(pathFromFixtureRoot) &&
-    !pathFromFixtureRoot.startsWith("..") &&
-    !isAbsolute(pathFromFixtureRoot)
-  );
-}
-
-function readCandidateSourceFixture(path, expectedReleaseCandidate) {
-  if (!existsSync(path)) {
-    return { blockers: ["Candidate source fixture: missing"], sources: null };
-  }
-
-  let fixture;
-  try {
-    fixture = JSON.parse(readFileSync(path, "utf8"));
-  } catch {
-    return {
-      blockers: ["Candidate source fixture: invalid JSON"],
-      sources: null,
-    };
-  }
-
-  if (fixture.fixtureMarker !== candidateSourceFixtureMarker) {
-    return {
-      blockers: ["Candidate source fixture: sanitized marker missing"],
-      sources: null,
-    };
-  }
-  if (
-    String(fixture.releaseCandidate ?? "").trim().toLowerCase() !==
-    expectedReleaseCandidate
-  ) {
-    return {
-      blockers: ["Candidate source fixture: release candidate mismatch"],
-      sources: null,
-    };
-  }
-
-  const sourceByPath = fixture.sources ?? {};
-  const missingPaths = Object.values(paymentPilotCandidateSourcePaths).filter(
-    (sourcePath) => !Array.isArray(sourceByPath[sourcePath]),
-  );
-  if (missingPaths.length > 0) {
-    return {
-      blockers: [
-        `Candidate source fixture: missing source paths ${missingPaths.join(", ")}`,
-      ],
-      sources: null,
-    };
-  }
-
-  const invalidPath = Object.values(paymentPilotCandidateSourcePaths).find(
-    (sourcePath) =>
-      !sourceByPath[sourcePath].every((line) => typeof line === "string"),
-  );
-  if (invalidPath) {
-    return {
-      blockers: [`Candidate source fixture: invalid source for ${invalidPath}`],
-      sources: null,
-    };
-  }
-
-  return {
-    blockers: [],
-    sources: readPaymentPilotCandidateSources(
-      expectedReleaseCandidate,
-      (_candidate, sourcePath) => sourceByPath[sourcePath].join("\n"),
-    ),
-  };
-}
-
-function runStrictEvidenceGate() {
-  const args = process.argv.slice(2);
-  const testFixtureMode = args.includes("--test-fixture");
-  const evidenceOption = optionState(args, "--evidence");
-  const candidateSourceFixtureOption = optionState(
-    args,
-    "--candidate-source-fixture",
-  );
-  const phaseOption = optionState(args, "--phase");
-  const releaseCandidateOption = optionState(args, "--release-candidate");
-  const referenceDateOption = optionState(args, "--reference-date");
-  const optionNames = new Set([
-    "--strict",
-    "--test-fixture",
-    "--candidate-source-fixture",
-    "--evidence",
-    "--phase",
-    "--release-candidate",
-    "--reference-date",
-  ]);
-  const unknownOptions = args.filter((arg, index) => {
-    if (!arg.startsWith("--")) return false;
-    if (arg.includes("=")) return !optionNames.has(arg.slice(0, arg.indexOf("=")));
-    if (optionNames.has(arg)) return false;
-    return index === 0 || !optionNames.has(args[index - 1]);
-  });
-
-  if (unknownOptions.length) {
-    return unknownOptions.map((option) => `Strict command option ${option}: unknown`);
-  }
-  if (evidenceOption.missingValue) {
-    return ["Strict command option --evidence: missing path"];
-  }
-  if (candidateSourceFixtureOption.missingValue) {
-    return ["Strict command option --candidate-source-fixture: missing path"];
-  }
-  if (releaseCandidateOption.missingValue) {
-    return ["Strict command option --release-candidate: missing value"];
-  }
-  if (phaseOption.missingValue) {
-    return ["Strict command option --phase: missing value"];
-  }
-  if (referenceDateOption.missingValue) {
-    return ["Strict command option --reference-date: missing value"];
-  }
-  if (evidenceOption.values.length > 1) {
-    return ["Strict command option --evidence: duplicate values"];
-  }
-  if (candidateSourceFixtureOption.values.length > 1) {
-    return ["Strict command option --candidate-source-fixture: duplicate values"];
-  }
-  if (releaseCandidateOption.values.length > 1) {
-    return ["Strict command option --release-candidate: duplicate values"];
-  }
-  if (phaseOption.values.length > 1) {
-    return ["Strict command option --phase: duplicate values"];
-  }
-  if (referenceDateOption.values.length > 1) {
-    return ["Strict command option --reference-date: duplicate values"];
-  }
-  if (!testFixtureMode && referenceDateOption.values.length) {
-    return ["Strict command option --reference-date: test fixtures only"];
-  }
-  if (!testFixtureMode && candidateSourceFixtureOption.values.length) {
-    return [
-      "Strict command option --candidate-source-fixture: test fixtures only",
-    ];
-  }
-  if (testFixtureMode && !candidateSourceFixtureOption.values.length) {
-    return [
-      "Strict command option --candidate-source-fixture: required for test fixtures",
-    ];
-  }
-
-  const phase = phaseOption.values[0] ?? "preauthorization";
-  if (!["preauthorization", "post-transaction"].includes(phase)) {
-    return [
-      "Strict command option --phase: must be preauthorization or post-transaction",
-    ];
-  }
-
-  const referenceDate = referenceDateOption.values[0];
-  const referenceTimestamp = referenceDate
-    ? /^\d{4}-\d{2}-\d{2}$/.test(referenceDate)
-      ? Date.parse(`${referenceDate}T23:59:59.999Z`)
-      : Number.NaN
-    : Date.now();
-  if (!Number.isFinite(referenceTimestamp)) {
-    return ["Strict command option --reference-date: invalid date"];
-  }
-
-  const evidencePath = resolve(
-    evidenceOption.values[0] ?? defaultPrivateEvidencePath,
-  );
-  const expectedReleaseCandidate =
-    releaseCandidateOption.values[0] ??
-    (testFixtureMode
-      ? "0123456789abcdef0123456789abcdef01234567"
-      : currentGitReleaseCandidate());
-  if (!expectedReleaseCandidate) {
-    return ["Strict command release candidate: missing"];
-  }
-  const normalizedExpectedReleaseCandidate = expectedReleaseCandidate
-    .trim()
-    .toLowerCase();
-  if (!COMMIT_PATTERN.test(normalizedExpectedReleaseCandidate)) {
-    return [
-      "Strict command release candidate: must be a 7-40 character Git commit ID",
-    ];
-  }
-  if (
-    !testFixtureMode &&
-    releaseCandidateOption.values.length &&
-    !gitReleaseCandidateExists(normalizedExpectedReleaseCandidate)
-  ) {
-    return [
-      "Strict command release candidate: does not resolve to a local Git commit",
-    ];
-  }
-  if (!existsSync(evidencePath)) {
-    return ["Private payment evidence file: missing"];
-  }
-
-  const evidence = readFileSync(evidencePath, "utf8");
-  const isMarkedFixture = evidence.includes(fixtureMarker);
-  if (testFixtureMode && !fixturePathIsSafe(evidencePath)) {
-    return ["Sanitized fixture path: must stay under scripts/fixtures"];
-  }
-  if (testFixtureMode && !isMarkedFixture) {
-    return ["Sanitized fixture marker: missing"];
-  }
-  if (!testFixtureMode && isMarkedFixture) {
-    return ["Private payment evidence file: test fixtures cannot approve go-live"];
-  }
-
-  let candidateSources;
-  if (testFixtureMode) {
-    const candidateSourceFixturePath = resolve(
-      candidateSourceFixtureOption.values[0],
-    );
-    if (!fixturePathIsSafe(candidateSourceFixturePath)) {
-      return ["Candidate source fixture path: must stay under scripts/fixtures"];
+    if (blockers.length) {
+      failures += 1;
+      for (const blocker of blockers) console.error(`BLOCKER ${blocker}`);
+      console.error(`FAIL strict seller-link rollout evidence (${blockers.length} blocker${blockers.length === 1 ? "" : "s"})`);
+    } else {
+      console.log(
+        `PASS ${testFixture ? "sanitized fixture validates" : "private evidence completes"} the seller-link rollout gate`,
+      );
     }
-    const fixtureResult = readCandidateSourceFixture(
-      candidateSourceFixturePath,
-      normalizedExpectedReleaseCandidate,
-    );
-    if (fixtureResult.blockers.length > 0) return fixtureResult.blockers;
-    candidateSources = fixtureResult.sources;
-  } else {
-    candidateSources = readPaymentPilotCandidateSources(
-      normalizedExpectedReleaseCandidate,
-      gitFileAtCandidate,
-    );
-  }
-
-  return validateStrictEvidence(evidence, normalizedExpectedReleaseCandidate, {
-    allowFixtureOnly: testFixtureMode,
-    candidatePolicyBlockers: paymentPilotCandidatePolicyBlockers(
-      candidateSources.merchCheckoutSource,
-    ),
-    disabledFlowSourceProofs: disabledPilotFlowSourceProofs(candidateSources),
-    phase,
-    referenceTimestamp,
-  });
-}
-
-const paymentEvidenceSection = generator.slice(
-  generator.indexOf("## Payment And Commerce Evidence"),
-  generator.indexOf("## Payment Dashboard Readiness Log"),
-);
-const dashboardLogSection = generator.slice(
-  generator.indexOf("## Payment Dashboard Readiness Log"),
-  generator.indexOf("## Native Push Evidence"),
-);
-const readinessEvidenceSection = paymentReadiness.slice(
-  paymentReadiness.indexOf("## Production Evidence Pack"),
-  paymentReadiness.indexOf("## Draft Seller Payout Release Policy"),
-);
-const currentBlockersSection = generator.slice(
-  generator.indexOf("## Current Console Blockers To Clear"),
-  generator.indexOf("## Store Console Evidence"),
-);
-
-if (
-  packageJson.includes('"smoke:payment-cutover": "node scripts/smoke-payment-cutover-evidence.mjs"') &&
-  packageJson.includes("npm run smoke:payments && npm run smoke:payment-cutover && npm run smoke:pwa && npm run smoke:security")
-) {
-  pass("payment cutover guard is wired into payment release verification");
-} else {
-  fail("payment cutover guard is wired into payment release verification");
-}
-
-const missingColumns = requiredEvidenceColumns.filter(
-  (column) => !paymentEvidenceSection.includes(column),
-);
-if (!missingColumns.length) {
-  pass("private payment evidence matrix has required repo-safe columns");
-} else {
-  fail(
-    "private payment evidence matrix has required repo-safe columns",
-    `missing columns: ${missingColumns.join(", ")}`,
-  );
-}
-
-const missingFlows = requiredFlows.filter((flow) => !paymentEvidenceSection.includes(`| ${flow} |`));
-if (!missingFlows.length) {
-  pass("private payment evidence matrix covers launch payment flows");
-} else {
-  fail(
-    "private payment evidence matrix covers launch payment flows",
-    `missing flows: ${missingFlows.join(", ")}`,
-  );
-}
-
-const excludedTemplateRows = excludedPilotFlows.map(
-  (flow) =>
-    `| ${flow} | pending | blocked | | n/a | n/a | n/a | n/a | n/a | n/a | n/a |`,
-);
-if (
-  excludedTemplateRows.every((row) => paymentEvidenceSection.includes(row)) &&
-  Object.values(currentDisabledPilotFlowSourceProofs).every(Boolean) &&
-  dashboardLogSection.includes(
-    "| | Post-transaction production proof | Record a genuine authorized customer sale and reconciliation only after separate launch approval | pending | | |",
-  )
-) {
-  pass("private handoff keeps excluded flows and post-transaction proof fail closed");
-} else {
-  fail("private handoff keeps excluded flows and post-transaction proof fail closed");
-}
-
-if (
-  currentBlockersSection.includes("| Payments | Production account activation |") &&
-  currentBlockersSection.includes("Production account activation is complete") &&
-  currentBlockersSection.includes("Marketplace Connect setup remains separate from the official Merch pilot | passed |") &&
-  currentBlockersSection.includes("| Payments | Marketplace Connect setup |") &&
-  currentBlockersSection.includes("Excluded from the official Merch pilot; seller onboarding and destination-charge routing remain blocked | n/a |") &&
-  currentBlockersSection.includes("| Payments | Production app mode preflight |") &&
-  currentBlockersSection.includes("expected mode Needs review and server key mode Test") &&
-  currentBlockersSection.includes("live endpoint and rotated signing secret passed a signed non-money 200 probe") &&
-  currentBlockersSection.includes("checkout remains blocked until the live server key and expected mode are matched | blocked |") &&
-  currentBlockersSection.includes("| Payments | Official Merch policy and fulfillment approval |") &&
-  currentBlockersSection.includes("US shipping, tax, fulfillment, refund/dispute, support, and legal review must pass before the official Merch flow is armed | blocked |")
-) {
-  pass("private handoff separates official Merch readiness from marketplace Connect");
-} else {
-  fail("private handoff separates official Merch readiness from marketplace Connect");
-}
-
-const requiredReadinessText = [
-  "Repo-safe summary fields are limited to release candidate, test flow, live/test mode result",
-  "Keep payment intent IDs, checkout session IDs, webhook event IDs, refund IDs, dispute IDs, seller account IDs",
-  "Complete the applicable phase privately against one release candidate",
-  "Every Payments, Apple, and Google Play blocker and Payment Dashboard row required to pass in the selected phase must name a non-placeholder private proof filename or location",
-  "Dashboard evidence must be dated no more than 45 days",
-  "cannot be future-dated",
-  "Official TTC Merch checkout is the only selected pilot flow",
-  "preauthorization evidence does not require a production transaction",
-  "post-transaction production evidence",
-  "Excluded rows may use `n/a` only when their Release switch state is `blocked`",
-  "candidate source gates and fail-closed defaults",
-];
-const missingReadinessText = requiredReadinessText.filter(
-  (snippet) => !readinessEvidenceSection.includes(snippet),
-);
-if (!missingReadinessText.length) {
-  pass("payment readiness docs keep repo-safe cutover evidence boundaries explicit");
-} else {
-  fail(
-    "payment readiness docs keep repo-safe cutover evidence boundaries explicit",
-    `missing text: ${missingReadinessText.join(" | ")}`,
-  );
-}
-
-const forbiddenUnboundedRequests = [
-  "store payment IDs",
-  "store dashboard screenshots",
-  "store buyer addresses",
-  "store seller account details",
-  "store bank details",
-  "store card details",
-  "store webhook secrets",
-  "store raw exports",
-];
-const forbiddenHits = forbiddenUnboundedRequests.filter((snippet) =>
-  paymentReadiness.toLowerCase().includes(snippet),
-);
-if (!forbiddenHits.length) {
-  pass("payment cutover evidence avoids requesting sensitive identifiers in repo docs");
-} else {
-  fail(
-    "payment cutover evidence avoids requesting sensitive identifiers in repo docs",
-    `sensitive evidence requested in repo docs: ${forbiddenHits.join(", ")}`,
-  );
-}
-
-if (!process.exitCode && process.argv.includes("--strict")) {
-  let strictBlockers;
-
-  try {
-    strictBlockers = runStrictEvidenceGate();
-  } catch {
-    strictBlockers = ["Strict payment evidence could not be read safely"];
-  }
-
-  if (strictBlockers.length) {
-    for (const blocker of strictBlockers) {
-      console.error(`BLOCKER ${blocker}`);
-    }
-    fail(
-      "strict payment go-live evidence gate",
-      `${strictBlockers.length} required payment evidence blocker${strictBlockers.length === 1 ? "" : "s"}`,
-    );
-  } else if (process.argv.includes("--test-fixture")) {
-    pass("sanitized payment go-live fixture validates strict gate (not release evidence)");
-  } else {
-    pass("strict payment go-live evidence is complete for the selected release candidate");
   }
 }
 
-if (process.exitCode) {
-  process.exit(process.exitCode);
-}
+if (failures > 0) process.exit(1);

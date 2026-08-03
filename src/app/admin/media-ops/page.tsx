@@ -61,24 +61,24 @@ const betaQaLaunchChecks = [
   "Run the two-user DM pass: search a connected profile, send text, send a photo/GIF, open the notification, reply, and confirm read/delivered markers.",
   "Create 4U, Gossip, Story, Stuff, Gig, and Merch test content on mobile; confirm crop tools, media viewer, comments, edit/delete, reports, and Load more behavior.",
   "Submit artist, studio, and vendor verification with safe dummy documents; approve and reject from Admin > Verification.",
-  "Run Merch, ad, and booking-deposit controlled checkout flows; confirm Admin > Payments reconciliation before any closeout decision.",
+  "Review the seller-owned Payment Link, buyer disclosure, external-browser open and return, and seller fulfillment/support duties for Merch. Test ad and booking-deposit payments separately, and use Admin > Payments only for historical TTC seller-payout reconciliation.",
   "Prepare store screenshots from safe sample accounts only: no private DMs, license documents, nudity, real payment data, or personal owner contact details.",
 ] as const;
 const storeSubmissionChecks = [
   "Confirm Terms, Privacy, Support, account deletion, 18+ signup, no-visible-nudity policy, and company support contact copy match the live build.",
   "Complete store data-safety/privacy answers from current app behavior only, including public profiles, DMs, notifications, verification documents, payments, and Merch orders.",
   "Capture screenshots from clean sample accounts with safe tattoo/media examples, visible Help access, and no private messages, license evidence, bank details, real addresses, or owner personal contact info.",
-  "Run a native-wrapper auth pass so login, signup, email confirmation, reset links, Help, Support, Terms, Privacy, and checkout-return routes stay inside the app experience.",
-  "Finish production payment policy review for Merch, ads, booking deposits, refunds, disputes, seller payouts, platform fees, taxes, and app-store payment rules before public sales.",
-  "Archive the real-device QA evidence: mobile overflow pass, Story composer pass, DM two-user pass, verification submission pass, Merch checkout test pass, and admin queue review pass.",
+  "Run a native-wrapper auth pass so login, signup, email confirmation, reset links, Help, Support, Terms, and Privacy stay inside the app; confirm the seller link intentionally opens an external browser and returns without a false TTC success state.",
+  "Finish policy review for seller-owned Merch disclosures and seller payment, tax, shipping, return, refund, dispute, receipt, and purchase-support duties. Review ads and booking deposits as separate TTC-controlled payment flows.",
+  "Archive the real-device QA evidence: mobile overflow pass, Story composer pass, DM two-user pass, verification submission pass, Merch seller-link handoff pass, and admin queue review pass.",
 ] as const;
 const betaEvidencePack = [
   ["Smoke results", "Save the latest lint, build, public-route smoke, mobile smoke, and payment guard results with the deployed version."],
   ["Native install proof", "Save Android internal-test and iOS TestFlight install screenshots showing release track, version, and build number for the exact build under review."],
   ["Real-device clips", "Capture mobile clips for signup, profile save, 4U/Gossip posting, Story creation, DMs, Search, notifications, comments, and Help."],
-  ["Commerce proof", "Capture controlled Merch checkout, seller payout guidance, fulfillment, refund-review request, ad funding, ad credits, and booking deposit return flows."],
+  ["Commerce proof", "Capture seller-link review, buyer disclosure, external-browser open/return with no false success, seller fulfillment/support duties, historical TTC seller-payout reconciliation, ad funding, ad credits, and booking deposit return flows."],
   ["Trust proof", "Capture report handling, block/delete controls, verification approval/rejection, Help question moderation, data request review, and no-visible-nudity policy copy."],
-  ["Store handoff", "Keep app screenshots, support/legal links, age-rating notes, data-safety notes, and native auth/checkout return checks together before review upload."],
+  ["Store handoff", "Keep app screenshots, support/legal links, age-rating notes, and data-safety notes together before review upload. Preserve the old labels checkout returns, native auth/checkout return checks, Admin > Payments reconciliation, and production payment policy review only in dated historical evidence; current proof uses the seller-link external-browser return and historical TTC reconciliation wording."],
 ] as const;
 const helpTutorialReadiness = [
   ["Screenshot coverage", "Use the Help launch checklist totals to see which priority guides still need safe sample-account screenshots."],
@@ -96,23 +96,23 @@ const betaReleaseStatus: {
   tone: BetaReleaseTone;
 }[] = [
   {
-    body: "Closed-testing Alpha release 1.0.3 (4) is installed on the current Android tester device. Continue the beta tester checklist on that exact build.",
+    body: "Checked-in Android source candidate 1.0.5 (6) does not prove an uploaded, served, or installed Alpha build. Record the exact current track identity only after separately authorized read-only console and device verification. Last dated baseline: Closed-testing Alpha release 1.0.3 (4), with the historical status Closed test installed.",
     href: "/help/beta-app-testing",
     icon: CheckCircle2,
     label: "Google Play",
-    status: "Closed test installed",
-    tone: "ready",
-  },
-  {
-    body: "Build 1.0 (4) is assigned to TTC Internal Testers for notification and full real-device QA. App Review remains on build 1.0 (3), so do not replace the submitted build unless review requires it.",
-    href: "/help/beta-app-testing",
-    icon: CheckCircle2,
-    label: "Apple TestFlight",
-    status: "Build 4 install pending",
+    status: "Console identity unknown",
     tone: "watch",
   },
   {
-    body: "Keep real purchases gated until seller payouts, refunds, disputes, tax/shipping rules, checkout returns, and app-store policy review pass.",
+    body: "Checked-in iOS source candidate 1.0 (5) does not prove a TestFlight upload or App Review selection. Verify both exact current identities read-only before assigning exact-build QA or release status. Last dated baseline recorded Build 1.0 (4) and the historical statements App Review remains on build 1.0 (3) and Build 4 install pending.",
+    href: "/help/beta-app-testing",
+    icon: CheckCircle2,
+    label: "Apple TestFlight",
+    status: "Console identities unknown",
+    tone: "watch",
+  },
+  {
+    body: "Keep the seller-link gate false until one seller-owned Payment Link, disclosure, external-browser return, seller duties, exact-device QA, legal review, and gate-off rollback are approved.",
     href: "/help/seller-payouts-payment-safety",
     icon: ShieldCheck,
     label: "Payments",
@@ -121,10 +121,10 @@ const betaReleaseStatus: {
   },
 ] as const;
 const betaNextActions = [
-  "Continue iOS build 1.0 (4) testing through TTC Internal Testers and keep Android Closed testing - Alpha 1.0.3 (4) on the current review phone.",
-  "Preserve iOS App Review build 1.0 (3) while build 1.0 (4) is used only for controlled TestFlight QA.",
+  "Treat Android 1.0.5 (6) and iOS 1.0 (5) as checked-in source candidates only; do not claim either is uploaded, selected, served, or installed.",
+  "Obtain separately authorized read-only App Review, TestFlight, Google Play Production, Alpha, and installed-device identity evidence before exact-build QA or release claims.",
   "Run real-device auth checks: login, signup, email confirmation, reset password, and support/legal links stay inside the app.",
-  "Run two-user DM, notifications, posting, Stories, comments, profile edit, verification upload, Merch browsing, booking request, and test checkout passes.",
+  "Run two-user DM, notifications, posting, Stories, comments, profile edit, verification upload, Merch browsing, seller-link external-browser return, booking request, and separate ad/booking payment passes.",
   "Save safe screenshots or short clips for any failed flow before changing code so the fix can be retested against the exact issue.",
 ] as const;
 

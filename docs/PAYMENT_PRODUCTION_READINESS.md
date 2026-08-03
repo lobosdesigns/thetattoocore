@@ -1,8 +1,54 @@
 # Payment Production Readiness
 
-Stripe checkout is wired for controlled launch testing across Merch, ads, and accepted booking deposits. Keep production commerce gated until the items below are finished and reviewed.
+## Current Position - August 2, 2026
 
-## Current Position
+- Seller-owned Stripe Payment Links are the selected physical-goods model. TTC does not create the new merchandise payment, order, tax, shipping, refund, dispute, payout, or receipt record.
+- The seller processes payment and handles shipping, taxes, returns, refunds, disputes, and purchase support. TTC reviews listings and handles listing-safety reports.
+- TTC Checkout, Connect, and destination-charge controls remain false and historical: `STRIPE_EXPECTED_LIVEMODE=false`, `STRIPE_CHECKOUT_CREATION_ENABLED=false`, `STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED=false`, `STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED=false`, `STRIPE_BOOKING_CHECKOUT_ENABLED=false`, `STRIPE_CONNECT_ONBOARDING_ENABLED=false`, and `STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false`.
+- The new optional server gate starts fail closed at `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false`. Setting it to exact `true` is a separate release action and does not occur in this implementation task.
+- No migration, production change, live seller URL, deployment, or native upload has occurred. Historical `merch_orders`, Stripe events, refunds, disputes, Connect records, and reconciliation views remain available for support and audit.
+- The controlled sequence below is mandatory for any later seller-link release. Each approval and private proof is a future release gate, not work completed by this documentation change.
+- Rollback proof must show that restoring `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false` removes the public purchase control without deleting the protected listing link or historical records. Existing TTC Checkout, Connect, destination-charge, and native-delivery switches remain false.
+- No current store or installed-device identity was verified or changed by this work.
+
+## Current Build Evidence Boundary - August 2, 2026
+
+- Checked-in Android source candidate: `1.0.5 (6)`.
+- Checked-in iOS source candidate: `1.0 (5)`.
+- Repository source identity is not signed-artifact, upload, console-selection, served-track, or installed-device proof.
+- Exact current App Review identity: **UNKNOWN**.
+- Exact current TestFlight identity: **UNKNOWN**.
+- Exact current Google Play Production identity: **UNKNOWN**.
+- Exact current Google Play Closed testing - Alpha identity: **UNKNOWN**.
+- Exact current installed Android identity: **UNKNOWN**.
+- Exact current installed iOS identity: **UNKNOWN**.
+- A separately authorized read-only signed-in console/device verification is required before QA or release claims. Do not upload, select, submit, promote, install, or change an artifact during that verification.
+
+The dated position above supersedes the former TTC-owned Merch pilot as the
+selected physical-goods model. The controlled sequence immediately below is
+current and operative. Later sections explicitly marked historical preserve
+prior readiness and dashboard evidence for audit only; they are not approval to
+revive that pilot.
+
+## Controlled Seller-Link Rollout Sequence - Current And Operative
+
+1. Apply the protected seller-checkout migration only after exact owner approval; do not change production data by any other path.
+2. Build and upload an inactive Worker version with `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false`, then prove that version also has `STRIPE_EXPECTED_LIVEMODE=false`, `STRIPE_CHECKOUT_CREATION_ENABLED=false`, `STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED=false`, `STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED=false`, `STRIPE_BOOKING_CHECKOUT_ENABLED=false`, `STRIPE_CONNECT_ONBOARDING_ENABLED=false`, `STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false`, and `TTC_NATIVE_PUSH_DELIVERY_ENABLED=false`.
+3. Deploy that verified Worker version while `TTC_SELLER_CHECKOUT_LINKS_ENABLED` remains false; confirm no seller purchase control is public.
+4. Have one seller provide one live seller Payment Link through the protected workflow, and review the link and seller disclosures privately without placing the URL or seller account data in repo-safe output.
+5. After explicit owner approval to enable seller links, prepare a second inactive Worker upload and prove only `TTC_SELLER_CHECKOUT_LINKS_ENABLED` changes to true while every old TTC payment switch and `TTC_NATIVE_PUSH_DELIVERY_ENABLED` remain false; deploy only that inspected version.
+6. Run web, Android phone, and TestFlight iPad QA for disclosure, external-browser open and return, and no false TTC payment, receipt, order, webhook, inventory, or success state.
+7. Rollback by restoring `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false`, upload and inspect the rollback version, deploy it, and confirm the public purchase control is removed while protected and historical records remain.
+
+Use `npm.cmd run smoke:seller-link-rollout` for the repo-safe source/template
+contract. Use `npm.cmd run verify:seller-link-rollout-evidence --
+--release-candidate <commit-sha>` only with the ignored private handoff after
+the separately approved operational steps are complete. The strict command
+fails closed on missing, stale, future-dated, placeholder, or `UNKNOWN`
+evidence and never accepts a seller URL, account identifier, payment ID, or
+secret as repo-safe proof.
+
+## Historical TTC Checkout Position (Preserved)
 
 - Stripe Checkout is the shared gateway path for Merch, prepaid ad campaigns, and accepted booking deposits.
 - Webhook event dedupe, retry-safe status transitions, failed/expired checkout handling, buyer/seller/advertiser alerts, dispute audit logging, and Admin > Payments visibility are wired.
@@ -20,7 +66,7 @@ Stripe checkout is wired for controlled launch testing across Merch, ads, and ac
 - July 24, 2026 current dashboard state: Production account activation and Connect configuration are complete, including the business profile, both identity workflows, marketplace integration choices, and the owner-accepted platform agreement. The live endpoint covers the exact 12 required events, its rotated signing secret remains private, and a signed synthetic non-money event returned `200` with the expected fail-closed mode response. The server payment key remains in test mode, expected live mode remains unset, checkout and seller onboarding remain blocked, and no money moved. Live-money cutover remains blocked pending live key/mode alignment, webhook mode/event proof, Admin reconciliation, controlled purchase/refund proof, refund/dispute procedure approval, payout gate approval, and native checkout policy review in the private handoff.
 - Non-official Merch destination-charge wiring is staged behind `STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false` by default and still requires matching payment mode plus a ready connected seller account. Keep the release switch off until the payout timing, refund, dispute, reserve, and legal policy decisions below are approved and tested.
 
-## Current Controlled Launch Scope
+## Historical TTC-Owned Pilot Scope (Preserved)
 
 - The operating sequence is web-first for US-only, TTC-owned physical Merch; this is not technical native isolation because the iOS and Android wrappers load the production web app.
 - [Apple App Review Guidelines 3.1.3(e)](https://developer.apple.com/app-store/review/guidelines/) directs apps selling physical goods or services consumed outside the app to use payment methods other than In-App Purchase. [Google Play Payments policy section 3](https://support.google.com/googleplay/android-developer/answer/9858738) states that Play Billing must not be used when payment is primarily for physical goods. Both policies classify payments for physical goods outside store billing, but they do not prove approval for TheTattooCore's exact native builds.
@@ -34,7 +80,7 @@ Stripe checkout is wired for controlled launch testing across Merch, ads, and ac
 - The separate go-live approval requires legal and payment-policy review.
 - Do not claim the pilot is approved, deployed, or live.
 
-## Must Finish Before Real Money
+## Historical TTC-Owned Pilot Gates (Preserved)
 
 - Stripe Connect Express onboarding is started for artists, studios, and vendors, with payout readiness stored in `stripe_connect_accounts` and webhook sync support for Stripe account status updates.
 - Use secure seller payout onboarding for seller payout details; do not collect bank, routing, card, or debit payout credentials in TTC forms.
@@ -50,7 +96,11 @@ Stripe checkout is wired for controlled launch testing across Merch, ads, and ac
 - Create admin procedures for refunds, partial refunds, failed payments, expired checkouts, fulfilled orders, seller non-delivery, and advertiser campaign credits.
 - Confirm public support, terms, privacy, and checkout copy explain launch-controlled or production status accurately.
 
-## Production Switch Checklist
+## Historical TTC-Owned Pilot Operations - Non-Operative
+
+Do not execute these historical TTC-owned pilot instructions. They preserve the former launch design, evidence requirements, and reconciliation policy for audit use only; the current seller-owned rollout sequence above supersedes them.
+
+### Historical TTC-Owned Production Switch Checklist - Non-Operative
 
 - Replace test payment keys with live keys only after the full policy review is complete.
 - Run `npm.cmd run verify:payment-release` before any live-money cutover so lint, production build, environment mode checks, payment flow guards, private cutover-evidence rows, app install and alert fallback guards, security headers, private handoff-template validation, readiness docs, public checkout/status routes, and Android-profile plus iOS-profile mobile checkout/account route smoke are verified together on the release candidate. This is a code-and-template preflight, not approval to promote real-money checkout.
@@ -77,7 +127,7 @@ Stripe checkout is wired for controlled launch testing across Merch, ads, and ac
 - Confirm payment disputes and chargebacks create admin audit entries before any production payout, fulfillment, booking, or advertiser-credit decisions are made.
 - Confirm failed, expired, refunded, partially refunded, and disputed orders cannot accidentally activate fulfillment or ads.
 
-## Production Evidence Pack
+### Historical TTC-Owned Production Evidence Pack - Non-Operative
 
 Keep this evidence private and attach it to the release handoff before any live-money launch. Do not include raw secret values, bank details, card details, private buyer addresses, full admin exports, webhook event IDs, refund IDs, dispute IDs, seller account IDs, checkout session IDs, payment intent IDs, or provider dashboard screenshots that expose sensitive account data.
 
@@ -105,7 +155,7 @@ non-placeholder private gate-state proof is named, and candidate source gates an
 
 Repo-safe summary fields are limited to release candidate, test flow, live/test mode result, webhook event coverage result, Admin > Payments reconciliation result, refund/dispute review status, seller payout review status, native checkout policy status, reviewer initials or role, review date, and pass/fail/blocker status. Keep payment intent IDs, checkout session IDs, webhook event IDs, refund IDs, dispute IDs, seller account IDs, customer emails, buyer names, shipping addresses, seller onboarding account details, dashboard screenshots, bank/card details, webhook secrets, and raw console exports in the private release handoff only.
 
-## Live-Money Cutover Preflight Matrix
+### Historical TTC-Owned Live-Money Cutover Preflight Matrix - Non-Operative
 
 Complete the applicable phase privately against one release candidate. Before launch, Official TTC Merch must be `armed` and every excluded flow must be `blocked`; a production transaction is not preauthorization evidence. After launch, record the first genuine sale through `verify:payment-production-evidence` without reopening excluded flows.
 
@@ -117,7 +167,7 @@ Complete the applicable phase privately against one release candidate. Before la
 | Booking deposit checkout | Excluded; booking checkout switch remains blocked. | `n/a` while blocked. | `n/a` while blocked. | No paid booking closeout starts. | Deposit cancellation, refund, dispute, and payout policy require separate approval. | `blocked`; all non-gate evidence remains `n/a`. |
 | Seller payout readiness | Excluded; hosted onboarding and destination-charge routing remain blocked. | `n/a` while blocked. | `n/a` while blocked. | No marketplace fulfillment or payout release starts. | Onboarding, reserve, refund-window, dispute-freeze, and seller-suspension rules require separate approval. | `blocked`; all non-gate evidence remains `n/a`. |
 
-## Draft Seller Payout Release Policy
+### Historical TTC-Owned Draft Seller Payout Release Policy - Non-Operative
 
 Do not release production seller payouts until this policy is finalized, reviewed, and reflected in Terms, seller onboarding, and support articles.
 
@@ -129,7 +179,7 @@ Do not release production seller payouts until this policy is finalized, reviewe
 - Keep a reserve/holdback option for new sellers, high-risk categories, unusually large orders, repeated refund requests, or open moderation/payment investigations.
 - Official TTC merch can use a separate internal fulfillment process, but it still needs order, refund, and dispute logging.
 
-## Draft Shipping And Tax Procedure
+### Historical TTC-Owned Draft Shipping And Tax Procedure - Non-Operative
 
 Before live Merch checkout, decide whether shipping and tax are platform-calculated, seller-provided, or limited to a narrow launch rule.
 
@@ -140,7 +190,7 @@ Before live Merch checkout, decide whether shipping and tax are platform-calcula
 - Tax handling must be reviewed before production: decide nexus, marketplace facilitator responsibility, taxable categories, exemptions, and receipt language.
 - Written Support and Help Center paths cover missing, damaged, wrong, delayed, or returned packages; keep them current before live checkout is promoted.
 
-## Draft Refund And Dispute Procedure
+### Historical TTC-Owned Draft Refund And Dispute Procedure - Non-Operative
 
 Refunds and disputes should stay admin-reviewed until the operational pattern is proven.
 
@@ -152,7 +202,7 @@ Refunds and disputes should stay admin-reviewed until the operational pattern is
 - Disputed orders should freeze fulfillment changes, seller payouts, ad credits tied to the payment, and any manual closeout until the dispute is resolved.
 - Repeat seller non-delivery, unsafe goods, counterfeit goods, or payment abuse should trigger seller suspension review.
 
-## Draft Booking Deposit Procedure
+## Separate Booking Deposit Procedure
 
 Booking deposits need separate rules from Merch because they are tied to appointments and artist/studio calendars.
 

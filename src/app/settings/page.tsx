@@ -144,8 +144,8 @@ export default async function SettingsPage() {
         ? {
             ...group,
             description:
-              "Orders, seller tools, payout readiness, fulfillment, and support handoffs.",
-            label: "Orders and payouts",
+              "Merch, seller checkout, historical orders, fulfillment, and support.",
+            label: "Merch and orders",
           }
         : group,
     ),

@@ -101,16 +101,23 @@
     },
     {
       "form_factor": "narrow",
-      "label": "TheTattooCore payout readiness preview",
+      "label": "TheTattooCore seller Payment Link preview",
       "sizes": "540x960",
-      "src": "/screenshots/mobile-payout-safe.png",
+      "src": "/screenshots/mobile-seller-payment-link-safe.png",
       "type": "image/png"
     },
     {
       "form_factor": "narrow",
-      "label": "TheTattooCore order support preview",
+      "label": "TheTattooCore seller purchase support preview",
       "sizes": "540x960",
-      "src": "/screenshots/mobile-order-support-safe.png",
+      "src": "/screenshots/mobile-seller-purchase-support-safe.png",
+      "type": "image/png"
+    },
+    {
+      "form_factor": "narrow",
+      "label": "TheTattooCore listing safety preview",
+      "sizes": "540x960",
+      "src": "/screenshots/mobile-listing-safety-safe.png",
       "type": "image/png"
     },
     {

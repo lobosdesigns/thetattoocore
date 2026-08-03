@@ -139,24 +139,24 @@ const paymentDisputeAuditTypes = [
   "booking_payment_dispute",
 ] as const;
 const productionPaymentGates = [
-  "Choose a documented payout policy before real seller payouts.",
-  "Finish tax, shipping-rate, refund, dispute, and chargeback procedures before public Merch orders.",
+  "Keep legacy TTC Merch Checkout, Connect onboarding, and destination-charge controls disabled for the seller-link release.",
+  "For seller-owned Merch, TTC reviews listing and link safety; the seller handles payment, tax, shipping, returns, refunds, disputes, receipts, fulfillment, and purchase support.",
   "Finish booking refund, cancellation, appointment-confirmation, and deposit payout procedures before taking real appointment deposits.",
-  "Keep seller payout details inside a secure onboarding flow; do not collect bank or card payout data in TTC forms.",
-  "Review platform fees, app-store rules, and payment policy before turning on production purchases.",
+  "Keep historical Connect and seller payout evidence in admin-only review; do not collect bank or card payout data in TTC forms.",
+  "No TTC platform fee applies to seller-owned Merch. Review ad and booking platform fees, app-store rules, and payment policy as separate TTC-controlled flows.",
 ] as const;
 const paymentOpsRunbooks = [
   {
     steps: [
-      "Confirm seller is verified, active, and not marketplace-suspended.",
-      "Confirm payout setup is ready and product/order has no refund, dispute, safety, or non-delivery flag.",
-      "Confirm fulfillment proof exists: tracking, pickup note, or clear handoff note.",
+      "Use this only for an existing historical TTC order and its retained Connect evidence.",
+      "Confirm the legacy payout status and product/order have no refund, dispute, safety, or non-delivery conflict.",
+      "Confirm historical fulfillment proof exists: tracking, pickup note, or clear handoff note.",
     ],
-    title: "Seller payout release",
+    title: "Legacy TTC seller payout review",
   },
   {
     steps: [
-      "Freeze payout release and fulfillment closeout while refund or dispute review is open.",
+      "For historical TTC Merch rows, freeze legacy payout release and fulfillment closeout while refund or dispute review is open.",
       "Check order status, buyer reason, seller notes, tracking, support messages, and payment audit entries.",
       "Record whether any approved refund is full, partial, seller-funded, platform-funded, shipping-only, or goodwill.",
     ],
@@ -174,17 +174,15 @@ const paymentOpsRunbooks = [
 const paymentReconciliationChecks = [
   "Search the payment reference in Admin > Payments before changing an order, ad, or booking state.",
   "Confirm the webhook receipt, payment audit row, user-facing status, and admin queue status all describe the same outcome.",
-  "For delayed or async payment success, reconcile the success event before fulfillment, ad delivery, booking closeout, or payout release.",
-  "For failed or expired checkout, confirm fulfillment, ad delivery, booking deposit state, and seller payout release all stay closed.",
-  "For refunded, partially refunded, or disputed payments, confirm payout release and fulfillment closeout remain frozen until admin review is complete.",
+  "For delayed or async payment success, reconcile the success event before fulfillment, ad delivery, booking closeout, or legacy TTC seller payout review.",
+  "For failed or expired checkout, confirm fulfillment, ad delivery, booking deposit state, and legacy TTC seller payout release all stay closed.",
+  "For refunded, partially refunded, or disputed payments, confirm legacy TTC seller payout release and fulfillment closeout remain frozen until admin review is complete.",
   "Record private support context in audit/admin notes instead of public comments, profiles, product descriptions, or DMs.",
 ] as const;
 const sellerPayoutQaChecks = [
-  "Use a verified artist, studio, or vendor test account; unverified users should see the verification-required payout notice.",
-  "Start setup from Settings > Orders/Payouts and confirm the member leaves TTC only for the secure payout setup flow.",
-  "Complete seller identity and payout test details inside the secure setup flow; API or browser-automation shortcuts do not count as a completed seller test.",
-  "Return from setup and confirm the payout setup card shows complete, saved-needs-more, expired, or retry guidance beside the button.",
-  "Open Admin > Merch with the seller payout filter and confirm the seller is ready, incomplete, or not started before approving checkout.",
+  "Treat existing Connect status, onboarding events, and payout records as legacy TTC checkout evidence only.",
+  "Do not direct a seller to the retired TTC payout setup flow for seller-owned Payment Links.",
+  "Confirm all legacy Merch and Connect release switches remain blocked before seller-link QA.",
   "Confirm no TTC form, DM, comment, support note, screenshot, or admin note asks for raw bank, routing, card, debit, tax, or identity credential details.",
 ] as const;
 
@@ -361,6 +359,10 @@ function auditTypeFilter(value: string | string[] | undefined) {
     : null;
 }
 
+function legacyMerchRoutingReady(destinationChargesEnabled: boolean) {
+  return !destinationChargesEnabled;
+}
+
 function eventTypeLabel(value: string) {
   if (value === "checkout.session.completed") return "Checkout paid";
   if (value === "checkout.session.async_payment_succeeded") return "Delayed payment paid";
@@ -373,7 +375,7 @@ function eventTypeLabel(value: string) {
   if (value === "charge.dispute.funds_withdrawn") return "Funds withdrawn";
   if (value === "charge.dispute.funds_reinstated") return "Funds reinstated";
   if (value === "refund.failed") return "Refund failed";
-  if (value === "account.updated") return "Seller payout readiness updated";
+  if (value === "account.updated") return "Legacy TTC seller payout readiness updated";
 
   return value;
 }
@@ -775,7 +777,10 @@ export default async function AdminPaymentsPage({
   const modeMismatch = stripeCheckoutModeMismatch();
   const checkoutPreflight = stripeCheckoutPreflight();
   const webhookSecretReady = stripeWebhookSigningSecretConfigured();
-  const merchDestinationChargesReady = stripeMerchDestinationChargesEnabled();
+  const merchDestinationChargesEnabled = stripeMerchDestinationChargesEnabled();
+  const merchDestinationChargesReady = legacyMerchRoutingReady(
+    merchDestinationChargesEnabled,
+  );
   const checkoutCreationMasterEnabled = stripeCheckoutCreationMasterEnabled();
   const checkoutReleaseSwitches = [
     {
@@ -838,9 +843,9 @@ export default async function AdminPaymentsPage({
       ready: !modeMismatch && expectedLivemode !== null && keyLivemode !== null,
     },
     {
-      detail: merchDestinationChargesReady
-        ? "Seller transfer routing is enabled for approved connected Merch sellers."
-        : "Seller transfer routing remains disabled pending final payout approval.",
+      detail: merchDestinationChargesEnabled
+        ? "Legacy TTC checkout controls unexpectedly report seller transfer routing enabled."
+        : "Legacy TTC checkout controls: Merch seller routing remains disabled for the seller-link release.",
       label: "Merch seller routing",
       ready: merchDestinationChargesReady,
     },
@@ -909,9 +914,9 @@ export default async function AdminPaymentsPage({
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
               Retry before reconciling payments, issuing refunds, changing
-              fulfillment or ad credits, closing booking deposits, or releasing
-              seller payouts. No payment decisions should be made from partial
-              information.
+              fulfillment or ad credits, closing booking deposits, or performing
+              legacy TTC seller-payout reconciliation. No payment decisions
+              should be made from partial information.
             </p>
             <Link
               className="mt-4 inline-flex min-h-10 items-center justify-center rounded-md border border-[var(--foreground)] bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)]"
@@ -1051,7 +1056,7 @@ export default async function AdminPaymentsPage({
                         className="font-semibold text-[var(--foreground)] underline-offset-4 hover:underline"
                         href="/admin/merch?order_status=pending_checkout"
                       >
-                        Stale pending Merch checkouts over 24h
+                        Legacy TTC pending Merch checkouts over 24h
                       </Link>
                       :{" "}
                       <span className="font-bold text-[var(--foreground)]">
@@ -1570,11 +1575,12 @@ export default async function AdminPaymentsPage({
                 </section>
 
                 <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
-                  <h2 className="text-lg font-bold">Release switches</h2>
+                  <h2 className="text-lg font-bold">Legacy TTC checkout controls</h2>
                   <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                    Sanitized configured and effective states only. Armed means a
-                    flow is configured while checkout creation remains blocked.
-                    Legal and evidence gates remain separate.
+                    Checkout, Connect, webhook, and order evidence stays visible
+                    for historical reconciliation. These controls remain disabled
+                    for the seller-link release. Sanitized states never expose
+                    private values.
                   </p>
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
                     {checkoutReleaseSwitches.map((releaseSwitch) => (
@@ -1605,8 +1611,9 @@ export default async function AdminPaymentsPage({
                     Production payment gates
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                    Checkout stays review-controlled. Keep real commerce
-                    gated until these items are handled.
+                    Seller-owned Merch stays behind listing/link review and its
+                    separate gate. The checks below keep legacy TTC evidence,
+                    ads, and booking deposits in their correct review paths.
                   </p>
                   <ul className="mt-3 space-y-2 text-sm leading-6 text-[var(--muted)]">
                     {productionPaymentGates.map((gate) => (
@@ -1646,7 +1653,7 @@ export default async function AdminPaymentsPage({
                       className="inline-flex text-sm font-semibold underline"
                       href="/help/seller-payouts-payment-safety"
                     >
-                      Seller payout guide
+                      Seller checkout guide
                     </Link>
                     <Link
                       className="inline-flex text-sm font-semibold underline"
@@ -1658,10 +1665,10 @@ export default async function AdminPaymentsPage({
                 </section>
 
                 <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
-                  <h2 className="text-lg font-bold">Seller payout QA pass</h2>
+                  <h2 className="text-lg font-bold">Legacy seller payout evidence</h2>
                   <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                    Run this before wider Merch seller onboarding, payout
-                    release decisions, or app-review commerce screenshots.
+                    Use this only to reconcile historical TTC checkout and
+                    Connect records. It is not the current seller setup path.
                   </p>
                   <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-[var(--muted)]">
                     {sellerPayoutQaChecks.map((check) => (
@@ -1677,7 +1684,7 @@ export default async function AdminPaymentsPage({
                   <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
                     Use this before manual closeout, refund decisions, ad
                     credits, fulfillment changes, booking deposit updates, or
-                    payout release.
+                    legacy TTC seller-payout reconciliation.
                   </p>
                   <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-[var(--muted)]">
                     {paymentReconciliationChecks.map((check) => (
@@ -1687,7 +1694,7 @@ export default async function AdminPaymentsPage({
                 </section>
 
                 <section className="ttc-card rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-5">
-                  <h2 className="text-lg font-bold">Merch order states</h2>
+                  <h2 className="text-lg font-bold">Legacy TTC Merch order states</h2>
                   <div className="mt-3 space-y-2">
                     {merchStatusCounts.length ? (
                       merchStatusCounts.map(([status, count]) => (
@@ -1706,7 +1713,7 @@ export default async function AdminPaymentsPage({
                       ))
                     ) : (
                       <p className="text-sm text-[var(--muted)]">
-                        No Merch orders found.
+                        No historical TTC Merch orders found.
                       </p>
                     )}
                   </div>

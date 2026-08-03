@@ -1,5 +1,126 @@
 # Codex Recovery Handoff
 
+## 2026-08-02 Seller-Owned Merch Checkout Release Candidate
+
+Status: **IMPLEMENTATION READY FOR CONTROLLED ROLLOUT**. This status is not
+`LIVE`, deployed, migrated, enabled, store-submitted, or physical-device QA
+complete.
+
+### Candidate Identity
+
+- Branch: `codex/stripe-live-foundation`.
+- Task 1-7 implementation/evidence head:
+  `0735b6803ef35ce5c318cfd39c6e365c3adb605b`.
+- Public-contract smoke fix:
+  `89fabfe215e597a09a2a660daca0000f26cb0f7b`.
+- Mobile-contract smoke fix and pre-handoff candidate:
+  `cd11b0fd7669a23f2280192e84a78dd999fc7de4`.
+- `89fabfe2` changes only the public smoke contract and PWA screenshot
+  manifest. `cd11b0fd` changes only the mobile smoke contract.
+
+### Layered Verification
+
+- On `89fabfe2`: `git diff --check`,
+  `npm.cmd run test:seller-checkout`,
+  `npm.cmd run test:merch-checkout-route`,
+  `npm.cmd run smoke:payments`, `npm.cmd run smoke:security`,
+  `npm.cmd run smoke:env`, `npm.cmd run smoke:docs`,
+  `npm.cmd run smoke:admin`, `npm.cmd run smoke:native`,
+  `npm.cmd run lint`, and the controlled production build all passed.
+- Focused evidence included 12 seller link/action contracts, 5 disposable
+  PostgreSQL seller-checkout contracts, 4 fixed Merch 410 contracts, 93 direct
+  payment guards, 60 direct security guards, 55 environment checks, 168
+  documentation checks, 38 direct admin guards plus the complete admin
+  authorization/idempotency suites, and native loader/wrapper/URL/session
+  contracts.
+- The controlled build produced 66 static pages and passed without exposing
+  the validated public URL or publishable configuration values. Warnings were
+  recorded separately: the configured `serverActions` experiment notice, one
+  middleware deprecation warning, and two experimental Edge runtime warnings.
+  Lint had no warnings or errors.
+- On `89fabfe2`, local `smoke:public` passed against
+  `http://127.0.0.1:3018`; no changed public smoke ran against production.
+- On committed `cd11b0fd`, source accounting retained all 64 mobile route
+  entries; lint, `git diff --check`, and default `smoke:mobile` passed.
+- On `cd11b0fd`, one fresh local server served both remaining profiles:
+  `smoke:mobile:narrow` passed at 320x568 in 212.3 seconds and
+  `smoke:mobile:ios` passed with the iPhone Safari profile in 210.1 seconds.
+  Each ran once with a 900000 ms timeout. Cleanup left zero server/browser/test
+  processes, zero listeners on port 3018, and no `SMOKE_BASE_URL`.
+- The four Task 8 boundary audits passed again on `cd11b0fd`: no caller reads
+  terms version/timestamp, no checkout URL exists on product cards, no internal
+  Merch checkout command or Connect dependency exists in Merch activation, and
+  the only fee/transfer matches are historical admin refund reconciliation.
+
+### Security And Data Boundary
+
+- Seller checkout accepts only a canonical live
+  `https://buy.stripe.com/<identifier>` URL. URL/control/SQL-shaped fixtures,
+  forged seller/product/status fields, cross-owner writes, and zero-row writes
+  fail closed without leaking protected values or claiming success.
+- Create/edit actions use authenticated owner identity, verified-professional
+  checks, exact product ID plus seller ID filters, a fixed
+  `seller-checkout-v1` version, and `null` caller timestamp input. The
+  database trigger replaces attempted timestamps with statement time.
+- Protected checkout columns are not available to anonymous/authenticated
+  direct reads. Product cards neither select nor render the protected URL.
+- Merch activation requires moderator authorization, seller verification,
+  moderation, inventory, fulfillment/return details, current accepted terms,
+  and a valid live URL. Official TTC Merch activation remains blocked.
+
+### Migration And Gates
+
+- Migration
+  `supabase/migrations/20260802130000_seller_owned_merch_checkout.sql` exists
+  in source but has **not been applied** to production or any shared database.
+- All nine committed gates remain exact false:
+  - `STRIPE_EXPECTED_LIVEMODE=false`
+  - `STRIPE_CHECKOUT_CREATION_ENABLED=false`
+  - `STRIPE_OFFICIAL_MERCH_CHECKOUT_ENABLED=false`
+  - `STRIPE_MARKETPLACE_MERCH_CHECKOUT_ENABLED=false`
+  - `STRIPE_BOOKING_CHECKOUT_ENABLED=false`
+  - `STRIPE_CONNECT_ONBOARDING_ENABLED=false`
+  - `STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false`
+  - `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false`
+  - `TTC_NATIVE_PUSH_DELIVERY_ENABLED=false`
+- Production code/config/data/secrets are unchanged. No deploy, inactive
+  upload, migration, payment activation, live-money test, or production smoke
+  occurred.
+- App Store Connect, Google Play, Stripe, and browser/store consoles were not
+  accessed or changed. Current console, store-build, Android-device, and
+  TestFlight iPad identities remain **UNKNOWN**.
+- No seller live link, seller payment identifier, customer record, or
+  production data was created, reviewed, or changed.
+
+### Exact Future Approvals Still Required
+
+1. Separately approve applying
+   `20260802130000_seller_owned_merch_checkout.sql`, then run read-only
+   schema, grant, trigger, and RLS proof.
+2. Separately approve an inactive Worker upload with the seller-link gate false;
+   inspect it and prove all nine gates above remain false.
+3. Separately approve production deployment of the reviewed commit with the
+   seller-link gate false, followed by public/internal no-side-effect smoke.
+4. Have one verified seller supply their own live physical-product Payment Link,
+   fulfillment terms, return policy, and ship-from details. TTC must not create
+   or alter that seller data.
+5. Moderate that listing and prove its purchase control remains hidden while
+   `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false`.
+6. With explicit owner approval, prepare and inspect a second inactive upload
+   that changes only `TTC_SELLER_CHECKOUT_LINKS_ENABLED=true`; deploy only the
+   inspected version after approval.
+7. Run authorized live web smoke, then physical-device QA on one Android phone
+   and the TestFlight iPad. Both must open the system browser, return cleanly,
+   and never show a false TTC payment-success state.
+8. Prove rollback by restoring only
+   `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false` and confirming the public purchase
+   control disappears while protected and historical records remain.
+
+Android phone and TestFlight iPad physical-device QA remain required. No TTC
+live-key cutover, Connect onboarding, destination charge, marketplace fee,
+official TTC Merch sale, native artifact build/upload, or store resubmission is
+authorized by this handoff.
+
 ## Original Project Goal
 
 Continue the final release audit for TheTattooCore from the protected

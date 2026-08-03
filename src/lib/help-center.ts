@@ -54,7 +54,7 @@ export const helpCategories = [
     description:
       "Merch product setup, seller review, Stuff listings, public browsing, approved buyer interactions, fulfillment, refunds, and dispute basics.",
     title: "Merch And Stuff",
-    topics: ["Merch setup", "Seller payouts", "Stuff listings", "Order support"],
+    topics: ["Merch setup", "Seller checkout", "Stuff listings", "Purchase support"],
   },
   {
     description:
@@ -147,7 +147,7 @@ export const helpArticles = [
       },
       {
         answer:
-          "Treat reload loops, failed signup or email confirmation, broken login/reset links, mobile horizontal overflow, broken posting, broken DMs, unsafe public exposure, and confusing checkout or payout steps as launch blockers.",
+          "Treat reload loops, failed signup or email confirmation, broken login/reset links, mobile horizontal overflow, broken posting, broken DMs, unsafe public exposure, and confusing seller-checkout handoffs as launch blockers.",
         question: "What counts as a beta blocker?",
       },
       {
@@ -215,16 +215,16 @@ export const helpArticles = [
   {
     category: "Account And Profile",
     description:
-      "Use this guide when testing the beta app wrapper so login, signup, links, media upload, notifications, Help, and checkout return paths stay inside the app experience.",
+      "Use this guide when testing the beta app wrapper so login, signup, links, media upload, notifications, and Help behave correctly, while seller checkout deliberately opens the external browser and returns without a false TTC success state.",
     faqs: [
       {
         answer:
-          "Use the invite link from the app testing program, install the beta app, then start from the Login screen. If the app opens a browser unexpectedly during login, signup, reset password, Help, Support, or checkout return, record it as a blocker.",
+          "Use the invite link from the app testing program, install the beta app, then start from the Login screen. An unexpected browser handoff during login, signup, reset password, Help, or Support is a blocker; seller checkout is the intentional external-browser exception.",
         question: "How should I start beta app testing?",
       },
       {
         answer:
-          "Check signup, login, email confirmation, reset password, profile save, posting, Stories, comments, DMs, Search, notifications, Help, Support, verification upload, Merch browsing, booking requests, and test checkout return paths.",
+          "Check signup, login, email confirmation, reset password, profile save, posting, Stories, comments, DMs, Search, notifications, Help, Support, verification upload, Merch browsing, booking requests, and seller-checkout external-browser return with no false success state.",
         question: "What should I test first?",
       },
       {
@@ -239,7 +239,7 @@ export const helpArticles = [
       },
       {
         answer:
-          "Mark it as urgent. Include the page, action, whether it happened after login, signup, reset, confirmation, Help, Support, or checkout return, and a safe screenshot that does not show private account details.",
+          "Mark it as urgent. Include the page, action, whether it happened after login, signup, reset, confirmation, Help, Support, or seller-checkout return, and a safe screenshot that does not show private account details.",
         question: "What if a beta link opens outside the app?",
       },
     ],
@@ -281,7 +281,7 @@ export const helpArticles = [
       "Save a profile with avatar, banner, bio, links, location, language, and light or dark mode, then review the public profile on mobile.",
       "Create safe sample 4U, Gossip, Story, Stuff, Gig, and Merch content where your role allows it. Test crop tools, media viewer, comments, reports, edit/delete, and Load more behavior.",
       "Run the two-user DM pass: search a connected profile, send text, send safe media, open the notification, reply, and confirm delivered/read markers.",
-      "Test booking request, accepted booking, deposit copy, calendar download, Merch browsing, order-support guide access, and test checkout return paths without using real money or private credentials.",
+      "Test booking request, accepted booking, deposit copy, calendar download, Merch browsing, purchase-support guide access, and seller-checkout external-browser return without exposing private credentials or claiming TTC purchase success.",
       "Report issues with safe screenshots or short clips only. Keep private messages, license documents, payment details, addresses, and admin-only views out of public bug reports.",
     ],
     tutorialMedia: [
@@ -644,7 +644,7 @@ export const helpArticles = [
   {
     category: "Merch And Stuff",
     description:
-      "Set up products, prepare order support, and understand review before taking orders.",
+      "Create reviewed Merch products with a seller-owned Payment Link and understand seller responsibility for payment, fulfillment, returns, refunds, disputes, and purchase support.",
     faqs: [
       {
         answer:
@@ -653,32 +653,32 @@ export const helpArticles = [
       },
       {
         answer:
-          "Approved public products can be browsed by fans. Seller tools and fulfillment controls require the right account access.",
+          "Approved public products can be browsed by fans. When the seller-link gate and listing readiness both pass, the product detail page can open the seller's external checkout.",
         question: "Can fans buy Merch?",
       },
       {
         answer:
-          "Sellers should finish account approval, product review, payout setup, fulfillment notes, and return/refund expectations before treating Merch as ready for orders. Checkout can stay closed until both the product and seller readiness checks pass.",
+          "Sellers should finish account approval, product review, a live Payment Link, fulfillment notes, ship-from details when required, and return/refund expectations. Checkout stays closed until the seller and product readiness checks pass.",
         question: "What should sellers finish before taking orders?",
       },
       {
         answer:
-          "Mark an order fulfilled only after the item is shipped, ready for pickup, or handed off. Add carrier, tracking number, or a clear tracking link when you have one so the buyer and support team can understand the handoff.",
-        question: "When should I mark a Merch order fulfilled?",
+          "The seller processes payment and handles shipping, taxes, returns, refunds, disputes, and purchase support in the seller's own systems. New external purchases do not create a TTC order row.",
+        question: "Who handles a new Merch purchase?",
       },
       {
         answer:
-          "Buyer shipping details are private order information. They appear only in seller/admin fulfillment areas and should never be copied into public posts, screenshots, comments, or profile details.",
-        question: "Where can I use buyer shipping details?",
+          "TTC stores the seller's listing link and acceptance record but does not receive new external purchase card, shipping, receipt, or transaction data. Never copy buyer or payment details into public posts, screenshots, comments, or profiles.",
+        question: "What purchase data does TTC receive?",
       },
       {
         answer:
-          "Refund requests go to review. Support checks the order, seller fulfillment, buyer reason, and payment status before any money movement is approved. Sellers should write clear return/refund notes before submitting products so buyers know what to expect.",
+          "Buyers contact the seller for receipts, shipping, returns, refunds, disputes, and purchase support. TTC Support handles listing-safety reports, not the seller's external transaction.",
         question: "How do Merch refunds work?",
       },
       {
         answer:
-          "Use Support for missing, damaged, wrong, delayed, or returned packages. Include your username, the order or product link, what happened, and any private photos or tracking details that help support review the issue.",
+          "Contact the seller for a missing, damaged, wrong, delayed, or returned package. Report the listing to TTC if it is unsafe, prohibited, misleading, fraudulent, or part of repeated seller abuse.",
         question: "What if a package has a problem?",
       },
     ],
@@ -687,13 +687,13 @@ export const helpArticles = [
       "merch seller",
       "orders",
       "package",
-      "payout setup",
+      "payment link",
       "refunds",
       "shipping",
       "tracking",
       "wrong item",
     ],
-    lastReviewed: "July 16, 2026",
+    lastReviewed: "August 2, 2026",
     relatedSlugs: [
       "verification-documents",
       "order-refunds-disputes",
@@ -702,15 +702,13 @@ export const helpArticles = [
     ],
     slug: "merch-products-orders",
     steps: [
-      "Open Settings and choose Merch and payout tools.",
-      "Add a title, description, price, clear product media, and a return/refund note buyers can understand.",
+      "Open Settings and choose Merch and orders.",
+      "Add a title, description, price, clear product media, a live Payment Link, and a return/refund note buyers can understand.",
       "If the product ships, add the ship-from city and state/region plus fulfillment notes with timing, pickup, made-to-order, or handoff details.",
-      "Submit the product for review before it appears publicly.",
-      "Finish seller payout setup through the secure payout setup flow before order payouts are expected; checkout can remain closed until seller readiness is complete.",
-      "Watch orders, fulfillment status, refund requests, and support questions from Settings.",
-      "For each paid order, use the seller order card to review the private shipping address, then mark the item fulfilled only after shipping, pickup, or handoff is ready.",
-      "Add tracking carrier, tracking number, or a tracking link when available. If there is no tracking, use a clear fulfillment note before marking the order complete.",
-      "Use Admin or Support for missing, damaged, wrong, delayed, or returned packages, payment-reference lookup, refund review, seller non-delivery review, or dispute review.",
+      "Accept the seller responsibility disclosure and submit the product for review; public checkout remains closed until moderation and the release gate both pass.",
+      "Use your own payment and order records to fulfill the purchase and contact the buyer. TTC does not receive new external card, shipping, receipt, or transaction data.",
+      "Buyers contact the seller for receipts, shipping, returns, refunds, disputes, and purchase support. Use TTC Support only for listing-safety reports.",
+      "Keep historical TTC order rows available in Settings only for their existing receipt, fulfillment, and refund-review support.",
     ],
     tutorialMedia: [
       {
@@ -721,46 +719,46 @@ export const helpArticles = [
         title: "Merch product setup",
       },
       {
-        assetSrc: "/screenshots/mobile-merch-help-shortcut-safe.png",
+        assetSrc: "/screenshots/mobile-listing-safety-safe.png",
         description:
-          "Show where sellers can find Merch setup, order support, and payout safety guides without opening private order or payout details.",
+          "Show where sellers can find Merch setup, purchase support, and seller checkout safety without exposing a Payment Link or private order details.",
         kind: "screenshot",
-        title: "Merch guide shortcut",
+        title: "Listing and seller link guide",
       },
       {
         assetSrc: "/tutorial-clips/mobile-merch-fulfillment-safe.mp4",
         description:
-          "Short clip of reviewing a paid order, adding tracking, and marking fulfillment with safe sample shipping data.",
+          "Historical support clip for a legacy TTC order row, clearly separated from new seller-owned purchases.",
         kind: "short_clip",
-        title: "Fulfill a Merch order",
+        title: "Historical TTC order support",
       },
     ],
-    title: "How to set up Merch products and handle orders",
+    title: "How to set up seller-owned Merch checkout",
   },
   {
     category: "Merch And Stuff",
     description:
-      "Know what buyers and sellers should do when an order, package, refund request, dispute, or seller non-delivery issue needs private review.",
+      "Know where to get receipts, shipping, return, refund, dispute, and purchase help for seller-owned checkout, while preserving support for historical TTC orders.",
     faqs: [
       {
         answer:
-      "Use Support or the order tools from Settings. Include the order or product link, what happened, and safe evidence such as tracking, package photos, or seller messages. Do not post private shipping, payment, or identity details in public comments.",
-        question: "How do I ask for order help?",
+          "Contact the seller using the support information shown at external checkout or on the seller's receipt. Do not post private shipping, payment, or identity details in public comments.",
+        question: "How do I ask for purchase help?",
       },
       {
         answer:
-          "Refunds stay in manual review. Support checks payment status, fulfillment proof, tracking or handoff notes, buyer reason, seller response, content safety, and dispute risk before any refund decision.",
-        question: "How are refunds reviewed?",
+          "The seller handles returns and refunds for new external purchases under the policy shown on the listing and at checkout. TTC cannot issue a refund for a transaction it did not process.",
+        question: "Who handles a return or refund?",
       },
       {
         answer:
-          "If an order becomes a payment dispute or chargeback, admin review should pause seller payout release, fulfillment closeout, and any manual account credit decisions until the issue is resolved.",
+          "Contact the seller first, then use the payment provider or card issuer process when appropriate. Report the listing to TTC separately if it is unsafe, prohibited, misleading, or fraudulent.",
         question: "What happens if there is a dispute?",
       },
       {
         answer:
-          "Report seller non-delivery through Support with the order link and any safe evidence. Repeat non-delivery, unsafe goods, counterfeit goods, or payment abuse can trigger seller review or suspension.",
-        question: "What if the seller does not deliver?",
+          "Historical TTC test/order support rows remain visible in Settings for receipt, fulfillment, refund-review, and audit needs. Those rows are not evidence that a new external purchase succeeded inside TTC.",
+        question: "What about an older TTC order row?",
       },
     ],
     keywords: [
@@ -777,7 +775,7 @@ export const helpArticles = [
       "tracking",
       "wrong item",
     ],
-    lastReviewed: "July 17, 2026",
+    lastReviewed: "August 2, 2026",
     relatedSlugs: [
       "merch-products-orders",
       "seller-payouts-payment-safety",
@@ -785,76 +783,71 @@ export const helpArticles = [
     ],
     slug: "order-refunds-disputes",
     steps: [
-      "Open Settings and find the order when available, then check payment, fulfillment, tracking, pickup, handoff, or refund-review status.",
-      "For missing, damaged, wrong, delayed, returned, or seller non-delivery issues, contact Support with the order or product link and a short explanation.",
+      "For a new external purchase, use the seller's checkout receipt or support contact for payment, shipping, returns, refunds, disputes, and purchase help.",
+      "Use TTC Support to report listing safety, prohibited goods, misleading claims, fraud patterns, or repeated seller abuse; do not send raw card data or account credentials.",
       "Keep private shipping addresses, payment references, buyer contact details, identity documents, and bank or card details out of public comments, posts, and DMs.",
-      "Sellers should add tracking, a tracking link, or a clear pickup/handoff note before marking a paid item fulfilled.",
-      "Buyers should request refund review from Settings when the order is eligible, then watch for support follow-up instead of sending repeated public messages.",
-      "Admins should compare payment status, fulfillment proof, buyer reason, seller response, safety reports, and dispute records before closing a refund, dispute, or payout decision.",
+      "For a historical TTC order row, open Settings and use the existing receipt, fulfillment, or refund-review tools when available.",
+      "Never treat return from the seller's external checkout as a TTC payment success state.",
     ],
     tutorialMedia: [
       {
-        assetSrc: "/screenshots/mobile-order-support-safe.png",
+        assetSrc: "/screenshots/mobile-seller-purchase-support-safe.png",
         description:
-          "Show the buyer order card with safe sample order status, fulfillment status, and refund-review action without real shipping details.",
+          "Show that the seller handles purchase support, TTC handles listing safety, and historical TTC order records remain a separate legacy support path.",
         kind: "screenshot",
-        title: "Buyer order support path",
+        title: "Seller purchase support",
       },
       {
         assetSrc: "/tutorial-clips/mobile-order-refund-review-safe.mp4",
         description:
-          "Short clip of a seller adding tracking or handoff proof and an admin reviewing the order support path with safe sample data.",
+          "Historical TTC refund-review example with safe sample data; it is not the new external purchase workflow.",
         kind: "short_clip",
         title: "Fulfillment and refund review",
       },
     ],
-    title: "Order support, refunds, and disputes",
+    title: "Purchase support, refunds, and disputes",
   },
   {
     category: "Merch And Stuff",
     description:
-      "Understand seller payout setup, checkout readiness, TTC fees, fulfillment review, refunds, and why real-money flows stay gated until policy review is complete.",
+      "Understand seller-owned Payment Link setup, checkout readiness, buyer disclosure, payment safety, and listing review.",
     faqs: [
       {
         answer:
-          "Verified artists, studios, vendors, and official TTC sellers can use seller payout setup when those tools are available for their account. TTC forms should never ask for raw bank, routing, card, or debit payout credentials.",
-        question: "Who can set up seller payouts?",
+          "A verified artist, studio, or vendor creates a live Payment Link in the seller's own payment account, then adds only that public link to the product. TTC never asks for the seller's payment-account login, secret key, bank details, or card credentials.",
+        question: "Who creates the checkout link?",
       },
       {
         answer:
-          "Checkout can stay closed when the seller is not verified, payout setup is incomplete, the product still needs review, buyer-support details are missing, inventory is unavailable, or payment/refund/dispute rules still require review.",
+          "Checkout stays closed when the release gate is false, the seller is not verified, the product needs review, the live link is invalid, fulfillment or return details are incomplete, inventory is unavailable, or the seller has not accepted the current responsibility terms.",
         question: "Why is checkout not open on my product?",
       },
       {
         answer:
-          "TTC records a small platform fee where checkout is available. The buyer should see fee-related checkout guidance before paying, and the seller/admin views should keep payment status and order status clear.",
-        question: "How are TTC fees handled?",
+          "TTC does not add a Merch transaction fee to the new external seller-owned purchase. The seller controls the Payment Link price and is responsible for any provider costs, taxes, shipping charges, and customer disclosures.",
+        question: "Does TTC add a fee to the purchase?",
       },
       {
         answer:
-          "Refunds and disputes stay in private support review. Support checks the order, fulfillment proof, buyer reason, payment status, and safety/moderation issues before any decision.",
-        question: "How do refunds and disputes affect payouts?",
+          "The seller processes payment and handles shipping, taxes, returns, refunds, disputes, and purchase support. Buyers contact the seller for receipts, shipping, returns, refunds, disputes, and purchase support. TTC handles listing-safety reports.",
+        question: "Who handles purchase problems?",
       },
       {
         answer:
-          "No. Use the secure payout setup flow only. Never send bank, routing, card, debit, tax, or identity documents through public comments, DMs, profile fields, or screenshots.",
-        question: "Should I send payout details to support?",
+          "No. Add only the canonical public Payment Link to the protected product field. Never send bank, routing, card, debit, tax, identity, login, API key, or webhook details through TTC comments, DMs, profile fields, support messages, or screenshots.",
+        question: "Should I send private payment details to TTC?",
       },
     ],
     keywords: [
-      "bank",
       "checkout closed",
       "dispute",
-      "fees",
       "merchant",
+      "payment link",
       "payment safety",
-      "payout",
-      "payouts",
       "refund",
-      "seller payout",
       "seller readiness",
     ],
-    lastReviewed: "July 17, 2026",
+    lastReviewed: "August 2, 2026",
     relatedSlugs: [
       "merch-products-orders",
       "order-refunds-disputes",
@@ -864,30 +857,15 @@ export const helpArticles = [
     ],
     slug: "seller-payouts-payment-safety",
     steps: [
-      "Finish profile setup, email confirmation, 18+ confirmation, and artist/studio/vendor verification before expecting seller payout tools.",
-      "Create or update Merch products with clear product media, inventory, ship-from region, fulfillment notes, and return/refund expectations.",
-      "Use seller payout setup from Settings when eligible. TTC stores readiness status only, not raw payout credentials.",
-      "Watch the payout status chip in Settings and seller/admin review areas. A product can remain closed until seller payout readiness and product review both pass.",
-      "Fulfill paid orders only after payment is marked paid and the item is shipped, ready for pickup, or otherwise handed off according to the product notes.",
-      "Use Support for refund, dispute, package, seller non-delivery, or payout-readiness questions. Include the product or order link, but keep private payment credentials out of messages and screenshots.",
+      "Finish profile setup, email confirmation, 18+ confirmation, and artist/studio/vendor verification.",
+      "Create a live Payment Link inside your own payment account. Keep account credentials, secret keys, customer data, and private dashboard details out of TTC.",
+      "Create or update the Merch product with clear media, inventory, ship-from details when required, fulfillment notes, return terms, and the public Payment Link.",
+      "Accept the seller responsibility terms and submit the product for review. A product remains closed until moderation and the exact release gate pass.",
+      "Confirm the buyer disclosure names you as the party handling payment, taxes, shipping, returns, refunds, disputes, and purchase support before checkout opens.",
+      "Use your own records to support the purchase. Use TTC Support only for listing-safety or account-access issues, without sharing private payment credentials or customer data.",
     ],
-    tutorialMedia: [
-      {
-        assetSrc: "/screenshots/mobile-payout-safe.png",
-        description:
-          "Show the Settings seller payout card, readiness chips, and secure setup button without exposing private payout details.",
-        kind: "screenshot",
-        title: "Seller payout readiness",
-      },
-      {
-        assetSrc: "/tutorial-clips/mobile-payment-safety-safe.mp4",
-        description:
-          "Short clip of checking product review, payout readiness, order status, and the Help guide before contacting support.",
-        kind: "short_clip",
-        title: "Payment safety walkthrough",
-      },
-    ],
-    title: "Seller payouts and payment safety",
+    tutorialMedia: [],
+    title: "Seller checkout and payment safety",
   },
   {
     category: "Posting And Safety",

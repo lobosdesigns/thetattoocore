@@ -8,6 +8,13 @@ Starting commit: `4dfeb8f362ee433deaecc522b2bb792b761d5814`
 
 Scope: branch-local v1.1.0 readiness QA. No deployment, merge, tag, production migration, or production configuration change was performed.
 
+## Current Seller-Link QA Interpretation - August 2, 2026
+
+- Seller-owned Payment Links are the current Merch model. TTC reviews listing and link safety; the seller processes payment and handles tax, shipping, returns, refunds, disputes, receipts, and purchase support.
+- Current release evidence must cover listing disclosure, intentional external-browser open and return on web, Android phone, and TestFlight iPad, and no false TTC payment, order, receipt, or success state.
+- Admin payment rows are relevant only for historical TTC seller-payout reconciliation. They do not prove a new seller-owned external purchase.
+- The prior TTC Checkout and seller-payout results in this July 30 report are historical, non-operative evidence. They do not authorize Checkout, Connect, a Merch platform fee, a payout release, or a seller-link rollout.
+
 ## Summary
 
 Phase 8.5 branch-local automated QA passed after validating the required build, smoke, security, admin, disposable database, PWA, native-wrapper, and browser viewport checks. No reproducible branch-local cross-platform defect was found, so no source fix or regression test was added.
@@ -50,7 +57,7 @@ All listed branch-local viewport checks used `SMOKE_BASE_URL=http://127.0.0.1:41
 - Search: pass for empty/common/hostile/profile/merch query coverage in smoke and contract tests.
 - Profile: pass for `/u/ceocore`, tab anchors, followers, and following branch-locally.
 - Shop and studio-related profile surfaces: pass through profile/shop-link guards and public route smoke coverage.
-- Merch: pass for storefront, product fallback, checkout success, guarded checkout, seller payout gates, and payment guards.
+- Merch: the July 30 branch pass covered the former storefront, product fallback, TTC checkout, and seller-payout guards. That is historical TTC-owned checkout evidence only and is non-operative for the current seller-link release.
 - Gigs: pass for public fallback and admin queue guard coverage.
 - Messaging: pass for inbox, selected thread route, recipient prefill, pagination/read-position guards, blocked-member filters, notifications, and disposable DB contracts.
 - Notification center: pass for signed-out route, notification-open URL safety, blocked actor filtering, stale target cleanup, and push contract guards.
@@ -156,6 +163,7 @@ Run this only with safe test accounts and synthetic media. Keep raw screenshots,
 - Safari portrait and landscape, plus split-view/narrow window if practical.
 - Installed PWA portrait and landscape: safe areas, status bar, keyboard, modal/lightbox, booking, messaging, admin denial, tablet breakpoints.
 - Upload/photo picker with synthetic portrait, landscape, tall, wide, unsupported, and corrupt files where each surface allows testing.
+- On the exact TestFlight build after its identity is re-verified, open one privately reviewed seller link in the external browser, return to the app, and confirm no TTC payment, order, receipt, or success state appears.
 
 ### Android Phone
 
@@ -163,6 +171,7 @@ Run this only with safe test accounts and synthetic media. Keep raw screenshots,
 - Installed PWA: start URL, offline shell, keyboard, safe-area/bottom navigation, back-button behavior, rotation, modal/lightbox.
 - Camera/photo picker and uploads with synthetic files.
 - Booking, messaging, notification fallback, and admin denial.
+- On the exact Google Play build after its track identity is re-verified, open one privately reviewed seller link in the external browser, return to the app, and confirm the seller disclosure remains clear with no false TTC success state.
 
 ### Android Tablet
 
@@ -174,7 +183,7 @@ Run this only with safe test accounts and synthetic media. Keep raw screenshots,
 1. Two Phase 8 additive migrations require controlled release application.
 2. CSP remains Report-Only unless certification explicitly approves enforcement.
 3. Rate limiting remains isolate-local until a globally durable design is approved.
-4. Seller payout release remains disabled.
+4. Keep `TTC_SELLER_CHECKOUT_LINKS_ENABLED=false` until the protected migration, private seller-link review, disclosure, web/Android/TestFlight iPad external-browser QA, no-false-success evidence, and gate-off rollback are separately approved.
 5. Every-minute scheduled-job idempotency, overlap safety, and observability require final certification review.
 6. Physical-device results must be clearly separated from browser emulation.
 7. Any unresolved blocker/high-severity QA defects prevent Phase 9.

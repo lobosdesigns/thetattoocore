@@ -60,7 +60,7 @@ const sections = [
   },
   {
     body:
-      "Merch, ads, and booking deposits can create checkout, order, receipt, fulfillment, refund, dispute, and support records. Checkout stays review-controlled, and payment questions are handled through private account or support review. TheTattooCore uses a secure checkout flow where available and does not collect raw payment or payout credentials in member forms.",
+      "For new external Merch purchases, the seller is the merchant. The seller processes payment and handles shipping, taxes, returns, refunds, disputes, and purchase support. TTC stores the seller's listing link and acceptance record, but does not receive new external purchase card, shipping, receipt, or transaction data. Historical TTC order payment questions are handled through private account or support review. Ads and booking deposits remain separate gated TTC payment flows that use a secure checkout flow, and TTC does not collect raw payment or payout credentials in app forms. TTC handles listing review and listing-safety reports.",
     title: "Commerce And Payments",
   },
   {
@@ -90,7 +90,7 @@ const sections = [
   },
   {
     body:
-      "Some records may need to be kept for safety, fraud prevention, moderation audits, account deletion review, marketplace disputes, payment records, legal holds, or professional verification history. Public examples, help screenshots, and support images should avoid private DMs, verification documents, personal emails, real payment data, sensitive content, and copyrighted tattoo art.",
+      "Some records may need to be kept for safety, fraud prevention, moderation audits, account deletion review, marketplace disputes, payment records, legal holds, or professional verification history. Historical TTC test orders and payment audits remain subject to those retention and review needs even though new seller-owned purchases happen outside TTC. Public examples, help screenshots, and support images should avoid private DMs, verification documents, personal emails, real payment data, sensitive content, and copyrighted tattoo art.",
     title: "Retention And Review",
   },
 ];

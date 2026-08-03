@@ -1,42 +1,36 @@
-# SANITIZED PAYMENT GO-LIVE TEST FIXTURE - NOT RELEASE EVIDENCE
+# Sanitized Seller-Link Rollout Evidence Fixture
 
-This file contains no dashboard, account, payment, customer, seller, or secret
-data. It exists only to prove the strict parser's passing path.
+<!-- TTC_SANITIZED_SELLER_LINK_ROLLOUT_FIXTURE -->
+
+This fixture contains aliases only. It is not release evidence and cannot
+approve a live seller link, deployment, configuration change, or store action.
+
+## Release Candidate
+
+| Field | Value |
+| --- | --- |
+| Web deploy version | fixture-seller-link-release |
 
 ## Current Console Blockers To Clear
 
 | Platform | Blocker | Current handoff value | Result | Private proof filename or location |
 | --- | --- | --- | --- | --- |
-| Apple | Native physical-goods classification and review evidence | Sanitized exact-build reviewer-note fixture proof | passed | fixture-only |
-| Google Play | Native physical-goods classification and review evidence | Sanitized exact-build classification fixture proof | passed | fixture-only |
-| Payments | Production account activation | Sanitized fixture proof | passed | fixture-only |
-| Payments | Marketplace Connect setup | Excluded fixture flow | n/a | fixture-only |
-| Payments | Production app mode preflight | Sanitized fixture proof | passed | fixture-only |
-| Payments | Official Merch policy and fulfillment approval | Sanitized fixture proof | passed | fixture-only |
+| Merch | Seller-link rollout | Fixture only | passed | fixture-proof |
 
-## Store Console Evidence
+## Seller-Owned Merch Rollout Evidence
 
-Fixture section boundary.
-
-## Payment And Commerce Evidence
-
-| Flow | Release candidate | Release switch state | Private gate proof filename or location | Expected mode checked | Server key mode checked | Webhook endpoint/events checked | Admin reconciliation | Refund/dispute/payout gate | Post-transaction production proof | Result |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Official TTC Merch checkout | 0123456789abcdef0123456789abcdef01234567 | armed | fixture-only | passed | passed | passed | passed | passed | pending | passed |
-| Marketplace Merch checkout | 0123456789abcdef0123456789abcdef01234567 | blocked | fixture-only | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| Booking deposit | 0123456789abcdef0123456789abcdef01234567 | blocked | fixture-only | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| Ads checkout | 0123456789abcdef0123456789abcdef01234567 | blocked | fixture-only | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| Seller payout readiness | 0123456789abcdef0123456789abcdef01234567 | blocked | fixture-only | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-
-## Payment Dashboard Readiness Log
-
-| Attempt date/time | Area | Visible readiness item | Result | Private proof filename or location | Next owner |
+| Step | Required private evidence | Expected state | Result | Private proof filename or location | Proof date |
 | --- | --- | --- | --- | --- | --- |
-| 2026-07-22T12:00:00Z | Account verification | Sanitized fixture proof | passed | fixture-only | fixture |
-| 2026-07-22T12:00:00Z | API and webhook mode | Sanitized fixture proof | passed | fixture-only | fixture |
-| 2026-07-22T12:00:00Z | Release switches | Sanitized fixture proof | passed | fixture-only | fixture |
-| | Post-transaction production proof | Recorded only after a genuine authorized sale | pending | | fixture |
+| 1. Approved migration | Sanitized fixture | No public seller link | passed | fixture-migration-proof | 2026-08-02 |
+| 2. First inactive Worker upload | Sanitized fixture | All release gates false | passed | fixture-first-upload-proof | 2026-08-02 |
+| 3. Deploy while disabled | Sanitized fixture | Seller link hidden | passed | fixture-disabled-deploy-proof | 2026-08-02 |
+| 4. Private seller link review | Sanitized fixture | Gate still false | passed | fixture-link-review-proof | 2026-08-02 |
+| 5. Second inactive upload and approval | Sanitized fixture | Only seller-link gate may change | passed | fixture-second-upload-proof | 2026-08-02 |
+| 6. Cross-platform QA | Sanitized fixture | Seller handles purchase support | passed | fixture-device-qa-proof | 2026-08-02 |
+| 7. Rollback | Sanitized fixture | Gate false | passed | fixture-rollback-proof | 2026-08-02 |
 
-## Native Push Evidence
+## Seller-Link Rollout Log
 
-Fixture section boundary.
+| Attempt date/time | Area | Required proof | Result | Private proof filename or location | Next owner |
+| --- | --- | --- | --- | --- | --- |
+| 2026-08-02 | Fixture | Sanitized fixture | passed | fixture-proof | fixture-owner |

@@ -52,14 +52,39 @@ function markdownSection(markdown, heading, nextHeading) {
 
 const currentStoreConsoleSnapshot = markdownSection(
   source.readiness,
-  "## Current Store Console Snapshot",
-  "## Public Distribution Blocker Matrix",
+  "## Current Store Identity Status - Verification Required",
+  "### Historical TTC-Owned Marketplace Payment Evidence - July 24, 2026 (Non-Operative)",
 );
 const currentBlockerMatrix = markdownSection(
   source.readiness,
   "## Public Distribution Blocker Matrix",
   "## Before Public Distribution Or Any Replacement Submission",
 );
+
+function currentStoreBoundaryIsSafe(markdown) {
+  const currentIdentity = markdownSection(
+    markdown,
+    "## Current Store Identity Status - Verification Required",
+    "### Historical TTC-Owned Marketplace Payment Evidence - July 24, 2026 (Non-Operative)",
+  );
+  return (
+    currentIdentity.includes("Exact current App Review identity: **UNKNOWN**") &&
+    currentIdentity.includes("Exact current TestFlight identity: **UNKNOWN**") &&
+    currentIdentity.includes("Exact current Google Play Production identity: **UNKNOWN**") &&
+    currentIdentity.includes("Exact current Google Play Closed testing - Alpha identity: **UNKNOWN**")
+  );
+}
+
+const currentStoreBoundaryMutants = [
+  source.readiness.replaceAll(
+    "Exact current App Review identity: **UNKNOWN**",
+    "Exact current App Review identity: 1.0 (3) Waiting for Review",
+  ),
+  source.readiness.replaceAll(
+    "Exact current Google Play Production identity: **UNKNOWN**",
+    "Exact current Google Play Production identity: 1.0.3 (4) Active",
+  ),
+];
 
 function hasOrderedScriptSteps(scriptName, expectedSteps) {
   const steps = String(packageScripts[scriptName] ?? "")
@@ -249,13 +274,13 @@ const expectedScreenshotNames = {
     "mobile-gossip-safe-1080x1920.png",
     "mobile-help-support-1080x1920.png",
     "mobile-home-1080x1920.png",
+    "mobile-listing-safety-safe-1080x1920.png",
     "mobile-login-signup-1080x1920.png",
-    "mobile-merch-help-shortcut-safe-1080x1920.png",
     "mobile-merch-safe-1080x1920.png",
-    "mobile-order-support-safe-1080x1920.png",
-    "mobile-payout-safe-1080x1920.png",
     "mobile-privacy-safety-safe-1080x1920.png",
     "mobile-profile-search-1080x1920.png",
+    "mobile-seller-payment-link-safe-1080x1920.png",
+    "mobile-seller-purchase-support-safe-1080x1920.png",
     "mobile-stories-safe-1080x1920.png",
     "mobile-verification-safe-1080x1920.png",
   ],
@@ -267,13 +292,13 @@ const expectedScreenshotNames = {
     "mobile-gossip-safe-1242x2688.png",
     "mobile-help-support-1242x2688.png",
     "mobile-home-1242x2688.png",
+    "mobile-listing-safety-safe-1242x2688.png",
     "mobile-login-signup-1242x2688.png",
-    "mobile-merch-help-shortcut-safe-1242x2688.png",
     "mobile-merch-safe-1242x2688.png",
-    "mobile-order-support-safe-1242x2688.png",
-    "mobile-payout-safe-1242x2688.png",
     "mobile-privacy-safety-safe-1242x2688.png",
     "mobile-profile-search-1242x2688.png",
+    "mobile-seller-payment-link-safe-1242x2688.png",
+    "mobile-seller-purchase-support-safe-1242x2688.png",
     "mobile-stories-safe-1242x2688.png",
     "mobile-verification-safe-1242x2688.png",
   ],
@@ -547,12 +572,18 @@ const checks = [
       source.readme.includes("Reviewer account status: test account created and sign-in validated") &&
       source.readme.includes("Final reviewer access status: confirm the selected Apple build and Google release track") &&
       source.readme.includes("Screenshot draft status: generated no-alpha PNG derivatives are format-validated drafts only") &&
-      source.readme.includes("They are not authorization to replace submitted assets") &&
-      source.readme.includes("During active review, preserve the submitted build and accepted screenshot sets") &&
+      source.readme.includes("They are not upload, acceptance, selected-build, or review evidence") &&
+      source.readme.includes("Exact current App Review, TestFlight, Google Play Production/Alpha") &&
+      source.readme.includes("are **UNKNOWN** until separately authorized read-only console/device verification") &&
+      source.readme.includes("Current Merch screenshot concepts: show a seller-owned Payment Link") &&
+      source.readme.includes("seller handles purchase support") &&
+      source.readme.includes("TTC listing safety support") &&
+      source.readme.includes("historical TTC order records") &&
+      source.readme.includes("no false TTC payment, order, receipt, or success state") &&
       !source.readme.includes("use upload-ready") &&
       source.screenshotInventory.includes("Format-validated draft derivatives generated from the safe mobile set") &&
-      source.screenshotInventory.includes("Generated derivatives are not authorization to replace submitted assets") &&
-      source.screenshotInventory.includes("unless console rejection or selected-build QA proves a mismatch") &&
+      source.screenshotInventory.includes("Generated derivatives are not upload, acceptance, selected-build, or review") &&
+      source.screenshotInventory.includes("console acceptance state are **UNKNOWN**") &&
       source.readme.includes("Contact phone: keep console-only/private") &&
       source.readme.includes("## Private Console Evidence Template") &&
       source.readme.includes("| Build selection | Apple build number, Google release track") &&
@@ -576,34 +607,36 @@ const checks = [
       blockedPrivateEvidenceTerms.every((term) => !source.readme.toLowerCase().includes(term)),
   },
   {
+    label: "store guard rejects candidate-as-served and hard-coded current review assertions",
+    ok:
+      currentStoreBoundaryIsSafe(source.readiness) &&
+      currentStoreBoundaryMutants.every(
+        (mutant) => !currentStoreBoundaryIsSafe(mutant),
+      ),
+  },
+  {
     label: "store readiness docs keep current console blockers guarded",
     ok:
-      source.readiness.includes("Apple iOS `1.0` build `1.0 (3)` remains in App Review with automatic release selected") &&
-      source.readiness.includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
-      source.readiness.includes("screenshot validation, category/pricing, privacy/data safety, age/content rating, declarations, applicable tester evidence, and exact-build device QA") &&
-      source.readiness.includes("Closed testing - Alpha is Active with API 36 release `1.0.3 (4)`") &&
-      source.readiness.includes("existing Google Group community") &&
-      source.readiness.includes("authorized Android 16 review phone installed exact Alpha build `1.0.3 (4)`") &&
-      source.readiness.includes("One exact Android Alpha build `1.0.3 (4)` Google Play install is verified") &&
-      source.readiness.includes("organization account is not subject to the personal-account 12-tester/14-day production-access rule") &&
-      currentStoreConsoleSnapshot.includes("active public production release at 100% across 177 countries/regions") &&
-      currentStoreConsoleSnapshot.includes("Publishing overview confirms the production update was published") &&
-      !currentStoreConsoleSnapshot.includes("Production `1.0.1 (2)` remains the served public build") &&
-      !currentStoreConsoleSnapshot.includes("production change in review") &&
-      !currentStoreConsoleSnapshot.includes("awaiting final submit-for-review confirmation") &&
-      currentBlockerMatrix.includes("Google Play production serves `1.0.3 (4)` publicly at 100% across 177 countries/regions") &&
-      !currentBlockerMatrix.includes("production `1.0.1 (2)` remains live") &&
-      !currentBlockerMatrix.includes("submitted for production full-rollout review") &&
-      !currentBlockerMatrix.includes("14-day production-access evidence still needs eligible tester opt-in/install proof") &&
-      source.readiness.includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&
-      source.readiness.includes("preserve build `1.0 (3)` as the submitted App Review build") &&
-      currentStoreConsoleSnapshot.includes("preserve the active Alpha for controlled QA") &&
+      source.readiness.includes("Checked-in Android source candidate: `1.0.5 (6)`") &&
+      source.readiness.includes("Checked-in iOS source candidate: `1.0 (5)`") &&
+      source.readiness.includes("Repository source identity is not signed-artifact, upload, console-selection, served-track, or installed-device proof") &&
+      currentStoreConsoleSnapshot.includes("Exact current App Review identity: **UNKNOWN**") &&
+      currentStoreConsoleSnapshot.includes("Exact current TestFlight identity: **UNKNOWN**") &&
+      currentStoreConsoleSnapshot.includes("Exact current Google Play Production identity: **UNKNOWN**") &&
+      currentStoreConsoleSnapshot.includes("Exact current Google Play Closed testing - Alpha identity: **UNKNOWN**") &&
+      currentStoreConsoleSnapshot.includes("Last evidence-backed console/device baseline (July 24, 2026)") &&
+      currentStoreConsoleSnapshot.includes("historical and does not prove today's") &&
+      currentStoreConsoleSnapshot.includes("perform read-only signed-in verification") &&
+      currentStoreConsoleSnapshot.includes("make no upload, selection, submission, or metadata change") &&
+      currentBlockerMatrix.includes("identities are UNKNOWN") &&
+      currentBlockerMatrix.includes("checked-in candidates `1.0.5 (6)` and `1.0 (5)` are source identities only") &&
+      currentBlockerMatrix.includes("Every exact identity must be re-verified before QA or release claims") &&
+      currentBlockerMatrix.includes("seller-link external-browser return with no false TTC success") &&
+      currentBlockerMatrix.includes("TTC does not process the new external purchase or seller payout") &&
+      !currentStoreConsoleSnapshot.includes("must remain") &&
+      !currentStoreConsoleSnapshot.includes("currently serves") &&
       source.readiness.includes("Age 18+ override") &&
-      source.readiness.includes("Monitor App Review and internal build `1.0 (4)` install/QA results") &&
-      source.readiness.includes("group-member opt-in/install proof and 14-day production-access tester evidence if required") &&
       currentBlockerMatrix.includes("applicable tester evidence") &&
-      source.readiness.includes("build selection, reviewer access, entity/contact details, screenshot validation") &&
-      source.readiness.includes("Do not store credentials, private phone numbers, account-owner data, or console identifiers in repo docs") &&
       source.dataSafetyPrep.includes("Google Play Data Safety must be current before closed testing, open testing, or production release") &&
       source.dataSafetyPrep.includes("Apps active only on Google Play internal testing are currently exempt") &&
       source.screenshotPrep.includes("Track each store asset set separately") &&
@@ -663,9 +696,12 @@ const checks = [
       source.screenshotInventory.includes("public/screenshots/mobile-booking-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-ads-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-merch-safe.png") &&
-      source.screenshotInventory.includes("public/screenshots/mobile-merch-help-shortcut-safe.png") &&
-      source.screenshotInventory.includes("public/screenshots/mobile-payout-safe.png") &&
-      source.screenshotInventory.includes("public/screenshots/mobile-order-support-safe.png") &&
+      source.screenshotInventory.includes("public/screenshots/mobile-seller-payment-link-safe.png") &&
+      source.screenshotInventory.includes("public/screenshots/mobile-seller-purchase-support-safe.png") &&
+      source.screenshotInventory.includes("public/screenshots/mobile-listing-safety-safe.png") &&
+      !source.screenshotInventory.includes("public/screenshots/mobile-merch-help-shortcut-safe.png") &&
+      !source.screenshotInventory.includes("public/screenshots/mobile-payout-safe.png") &&
+      !source.screenshotInventory.includes("public/screenshots/mobile-order-support-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-privacy-safety-safe.png") &&
       source.screenshotInventory.includes("public/screenshots/mobile-help-support.png") &&
       source.screenshotInventory.includes("## Screenshot Replacement Status") &&
@@ -678,14 +714,12 @@ const checks = [
       source.screenshotPrep.includes("2752 or 2048 x 2732 portrait PNG/JPEG files") &&
       source.screenshotInventory.includes("Safe draft only; not submission-ready until real-device capture and Play Console upload validation are recorded privately.") &&
       source.screenshotInventory.includes("Safe draft only; not submission-ready until Play Console feature-graphic validation is recorded privately.") &&
-      source.screenshotInventory.includes("App Store Connect accepted an iPhone set for submitted build `1.0 (3)`") &&
-      source.screenshotInventory.includes("exact mapping to these generated files and final real-device confirmation remain unverified privately") &&
-      !source.screenshotInventory.includes("not submission-ready until real-device capture and App Store Connect upload validation") &&
-      source.screenshotInventory.includes("App Store Connect accepted this set for submitted build `1.0 (3)`") &&
-      source.screenshotInventory.includes("final real-device iPad capture confirmation remains pending privately") &&
-      !source.screenshotInventory.includes("not submission-ready until App Store Connect iPad upload validation") &&
+      source.screenshotInventory.includes("current uploaded filenames, selected build, acceptance, and review state are **UNKNOWN**") &&
+      source.screenshotInventory.includes("exact current App Review build, uploaded screenshot sets, and") &&
+      source.screenshotInventory.includes("console acceptance state are **UNKNOWN**") &&
+      !source.screenshotInventory.includes("submitted build `1.0 (3)`") &&
+      !source.screenshotInventory.includes("During active review") &&
       source.screenshotInventory.includes("Replace generated draft assets with final real-device screenshots") &&
-      source.screenshotInventory.includes("Merch guide shortcut screenshot is covered by") &&
       !source.screenshotInventory.includes("Generated placeholder ready") &&
       source.screenshotInventory.includes("4U, Gossip, Stuff, Gigs, Merch") &&
       source.screenshotInventory.includes("verification, booking, privacy/safety, Help, and Support") &&
@@ -695,8 +729,12 @@ const checks = [
       source.screenshotInventory.includes("license documents") &&
       source.screenshotInventory.includes("visible nudity") &&
       source.screenshotInventory.includes("infrastructure/provider names") &&
-      source.screenshotInventory.includes("Merch guide shortcut") &&
-      source.screenshotInventory.includes("seller payout setup details"),
+      source.screenshotInventory.includes("seller-owned Payment Link") &&
+      source.screenshotInventory.includes("opens in the external browser") &&
+      source.screenshotInventory.includes("seller handles purchase support") &&
+      source.screenshotInventory.includes("TTC Support for listing safety") &&
+      source.screenshotInventory.includes("historical TTC") &&
+      source.screenshotInventory.includes("no false TTC payment, order, receipt, or success state"),
   },
   {
     label: "store screenshot selected upload sets fit current console count caps",
@@ -722,7 +760,7 @@ const checks = [
       source.screenshotInventory.includes("## Upload-Selected Screenshot Sets") &&
       source.screenshotInventory.includes("Current Google Play phone cap: 4 to 8 screenshots") &&
       source.screenshotInventory.includes("Current App Store screenshot cap: 1 to 10 screenshots") &&
-      source.screenshotInventory.includes("selected 13-inch iPad set") &&
+      source.screenshotInventory.includes("13-inch iPad draft set") &&
       source.screenshotInventory.includes("## Console Upload Validation Packet") &&
       source.screenshotInventory.includes("Create one private packet for each store asset set before public review") &&
       source.screenshotInventory.includes("selected build or release track") &&

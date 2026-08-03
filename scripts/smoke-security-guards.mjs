@@ -61,6 +61,9 @@ const mailRedactionTest = readFileSync("scripts/test-mail-redaction.mjs", "utf8"
 const adminActions = readFileSync("src/app/admin/actions.ts", "utf8");
 const stripeWebhook = readFileSync("src/app/api/stripe/webhook/route.ts", "utf8");
 const packageJson = readFileSync("package.json", "utf8");
+const packageScripts = JSON.parse(packageJson).scripts;
+const expectedSecuritySmoke =
+  "npm run test:seller-checkout && npm run test:csp-headers && node --no-warnings --experimental-loader ./scripts/server-only-test-loader.mjs --experimental-default-type=module scripts/test-mail-redaction.mjs && node scripts/smoke-security-guards.mjs";
 const publicSmoke = readFileSync("scripts/smoke-public-routes.mjs", "utf8");
 const mobileSmoke = readFileSync("scripts/smoke-mobile-browser.mjs", "utf8");
 const urls = readFileSync("src/lib/urls.ts", "utf8");
@@ -780,9 +783,11 @@ const checks = [
       publicSmoke.includes('redirectIncludes: "/login"') &&
       publicSmoke.includes("Sign%20in%20to%20pay%20a%20booking%20deposit.") &&
       publicSmoke.includes("return_to=%2Faccount%23booking-settings") &&
-      publicSmoke.includes('redirectIncludesAny: ["/login", "/merch"]') &&
-      publicSmoke.includes("Checkout+is+temporarily+unavailable") &&
-      publicSmoke.includes("Sign+in+to+buy+merch") &&
+      publicSmoke.includes("status: [410]") &&
+      publicSmoke.includes('bodyEquals: \'{"error":"Merch checkout is unavailable."}\'') &&
+      publicSmoke.includes('locationEquals: ""') &&
+      !publicSmoke.includes('redirectIncludesAny: ["/login", "/merch"]') &&
+      !publicSmoke.includes("Sign+in+to+buy+merch") &&
       publicSmoke.includes("Payment webhook failed.") &&
       publicSmoke.includes("Payment updates are not configured."),
   },
@@ -856,9 +861,7 @@ const checks = [
       stripeWebhook.includes('console.error("Payment email failed.");') &&
       mailRedactionTest.includes("TTC_MAIL_REDACTION_SENTINEL") &&
       mailRedactionTest.includes('assert.equal("cause" in error, false)') &&
-      packageJson.includes(
-        '"smoke:security": "npm run test:csp-headers && node --no-warnings --experimental-loader ./scripts/server-only-test-loader.mjs --experimental-default-type=module scripts/test-mail-redaction.mjs && node scripts/smoke-security-guards.mjs"',
-      ),
+      packageScripts["smoke:security"] === expectedSecuritySmoke,
   },
   {
     label: "service-role Supabase client is server-only",
@@ -959,8 +962,12 @@ const checks = [
       !accountPage.includes("unsafeAccountMessageTerms") &&
       accountPage.includes('"Account update could not be shown. Please try again or contact Support."') &&
       accountPage.includes("const accountMessage = safeStatusMessage(") &&
-      accountPage.includes("accountMessage && !payoutSetupNotice") &&
-      accountPage.includes("accountMessage ??") &&
+      accountPage.includes("params.message,") &&
+      accountPage.includes("{accountMessage ? (") &&
+      accountPage.includes("{accountMessage}") &&
+      !accountPage.includes("payoutSetupNotice") &&
+      !accountPage.includes("payout_status") &&
+      !accountPage.includes("payout_issue") &&
       !accountPage.includes("{params.message}") &&
       !accountPage.includes("params.message ??"),
   },
@@ -987,8 +994,13 @@ const checks = [
       accountPage.includes("{showSellerTools ? (") &&
       accountPage.includes("{showAdvertisingSettings ? (") &&
       accountPage.includes("Profile") &&
-      accountPage.includes("Merch and payouts") &&
-      accountPage.includes("Retry payout setup") &&
+      accountPage.includes("Merch and orders") &&
+      accountPage.includes("Merch, seller checkout, historical orders, fulfillment, and support.") &&
+      !accountPage.includes("Merch and payouts") &&
+      !accountPage.includes("Retry payout setup") &&
+      !accountPage.includes("stripeConnectOnboardingEnabled") &&
+      !accountPage.includes('from("stripe_connect_accounts")') &&
+      !accountPage.includes('action="/api/stripe/connect/onboarding"') &&
       accountPage.includes('href="/help/seller-payouts-payment-safety"') &&
       accountSettingsWorkspace.includes("Choose the area you need") &&
       accountSettingsWorkspace.includes('href="/settings"') &&

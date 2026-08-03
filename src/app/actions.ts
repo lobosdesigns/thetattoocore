@@ -14,6 +14,10 @@ import {
   type NotificationPreferenceProfile,
 } from "@/lib/notifications";
 import { insertNotifications } from "@/lib/notification-write";
+import {
+  SELLER_CHECKOUT_TERMS_VERSION,
+  validateSellerCheckoutUrl,
+} from "@/lib/merch/seller-checkout";
 import { calculatePlatformFeeCents } from "@/lib/payments/fees";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -173,6 +177,8 @@ function redirectWithMessage({
 
 function cleanReturnPath(value: FormDataEntryValue | null, fallback: string) {
   const path = cleanText(value, 220) || fallback;
+
+  if (/[\u0000-\u001f\u007f]/.test(path)) return fallback;
 
   if (!path.startsWith("/") || path.startsWith("//") || path.includes("://") || path.includes("\\")) {
     return fallback;
@@ -1403,7 +1409,7 @@ async function uploadMerchMedia({
   });
 
   if (error) {
-    console.error("Merch media storage upload failed.", error);
+    console.error("Merch media storage upload failed.");
     throw new Error("Could not upload Merch media.");
   }
 
@@ -1412,6 +1418,67 @@ async function uploadMerchMedia({
     mediaType: metadata.mediaType,
     path,
   };
+}
+
+async function cleanupCreatedMerchProduct({
+  adminClient,
+  productId,
+  supabase,
+  userId,
+}: {
+  adminClient: NonNullable<ReturnType<typeof createAdminClient>>;
+  productId: string;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  userId: string;
+}) {
+  let deletedProduct: { id: string } | null = null;
+  let deleteError = true;
+
+  try {
+    const result = await supabase
+      .from("merch_products")
+      .delete()
+      .eq("id", productId)
+      .eq("seller_id", userId)
+      .select("id")
+      .maybeSingle<{ id: string }>();
+    deletedProduct = result.data;
+    deleteError = Boolean(result.error);
+  } catch {
+    deleteError = true;
+  }
+
+  if (deleteError || !deletedProduct) {
+    let cleanedProduct: { id: string } | null = null;
+    let cleanupError = true;
+
+    try {
+      const result = await adminClient
+        .from("merch_products")
+        .update({
+          external_checkout_url: null,
+          is_indexable: false,
+          seller_checkout_terms_accepted_at: null,
+          seller_checkout_terms_version: null,
+          status: "archived",
+        })
+        .eq("id", productId)
+        .eq("seller_id", userId)
+        .select("id")
+        .maybeSingle<{ id: string }>();
+      cleanedProduct = result.data;
+      cleanupError = Boolean(result.error);
+    } catch {
+      cleanupError = true;
+    }
+
+    if (cleanupError || !cleanedProduct) {
+      console.error("Merch pending-row cleanup failed.");
+      return false;
+    }
+  }
+
+  return true;
 }
 
 async function uploadCommentMedia({
@@ -2886,7 +2953,6 @@ export async function createMerchProduct(formData: FormData) {
   const description = cleanText(formData.get("description"), 4000);
   const rawCategory = cleanText(formData.get("category"), 40);
   const category = MERCH_CATEGORIES.has(rawCategory) ? rawCategory : "other";
-  const media = mediaFromForm(formData, "media");
   const priceCents = cleanMoneyCents(formData.get("price"));
   const inventoryInput = cleanText(formData.get("inventory_quantity"), 12);
   const inventoryNumber = inventoryInput ? Number(inventoryInput) : NaN;
@@ -2898,6 +2964,11 @@ export async function createMerchProduct(formData: FormData) {
   const shipsFromRegion = cleanText(formData.get("ships_from_region"), 80);
   const fulfillmentNotes = cleanText(formData.get("fulfillment_notes"), 1000);
   const returnPolicy = cleanText(formData.get("return_policy"), 1000);
+  const checkoutResult = validateSellerCheckoutUrl(
+    formData.get("external_checkout_url"),
+  );
+  const sellerAcceptedCheckoutTerms =
+    formData.get("seller_checkout_terms_accepted") === "on";
 
   if (title.length < 3) {
     redirect(homeMessage("Merch title needs at least 3 characters.", "merch"));
@@ -2921,10 +2992,10 @@ export async function createMerchProduct(formData: FormData) {
     );
   }
 
-  if (shippingRequired && fulfillmentNotes.length < 10) {
+  if (fulfillmentNotes.length < 10) {
     redirect(
       homeMessage(
-        "Add fulfillment notes for shipped Merch, including timing or pickup details.",
+        "Add fulfillment notes for Merch, including timing, shipping, or pickup details.",
         "merch",
       ),
     );
@@ -2935,6 +3006,53 @@ export async function createMerchProduct(formData: FormData) {
       homeMessage("Add a short return or refund note for Merch buyers.", "merch"),
     );
   }
+
+  if (!checkoutResult.ok) {
+    let message: string;
+
+    switch (checkoutResult.code) {
+      case "required":
+        message = "Add a live Stripe Payment Link for this Merch product.";
+        break;
+      case "too_long":
+        message = "Stripe Payment Link must be 500 characters or fewer.";
+        break;
+      case "test_link":
+        message = "Use a live Stripe Payment Link, not a test link.";
+        break;
+      case "invalid":
+      default:
+        message = "Add a valid Stripe Payment Link from buy.stripe.com.";
+        break;
+    }
+
+    redirect(homeMessage(message, "merch"));
+  }
+
+  if (!sellerAcceptedCheckoutTerms) {
+    redirect(
+      homeMessage(
+        "Confirm the seller checkout responsibilities before submitting Merch.",
+        "merch",
+      ),
+    );
+  }
+
+  const adminClient = (() => {
+    try {
+      return createAdminClient();
+    } catch {
+      return null;
+    }
+  })();
+
+  if (!adminClient) {
+    redirect(
+      homeMessage("Seller checkout is unavailable. Please try again.", "merch"),
+    );
+  }
+
+  const media = mediaFromForm(formData, "media");
 
   if (!media) {
     redirect(homeMessage("Merch needs a product photo, GIF, or short video.", "merch"));
@@ -2970,9 +3088,43 @@ export async function createMerchProduct(formData: FormData) {
     .single<{ id: string }>();
 
   if (error || !product) {
-    console.error("Merch product submit failed.", error);
+    console.error("Merch product submit failed.");
     redirect(
       homeMessage("Could not submit Merch for review. Please try again.", "merch"),
+    );
+  }
+
+  let checkoutProduct: { id: string } | null = null;
+  let checkoutError = true;
+
+  try {
+    const result = await adminClient
+      .from("merch_products")
+      .update({
+        external_checkout_url: checkoutResult.url,
+        seller_checkout_terms_accepted_at: null,
+        seller_checkout_terms_version: SELLER_CHECKOUT_TERMS_VERSION,
+      })
+      .eq("id", product.id)
+      .eq("seller_id", userId)
+      .select("id")
+      .maybeSingle<{ id: string }>();
+    checkoutProduct = result.data;
+    checkoutError = Boolean(result.error);
+  } catch {
+    checkoutError = true;
+  }
+
+  if (checkoutError || !checkoutProduct) {
+    console.error("Merch checkout setup failed.");
+    await cleanupCreatedMerchProduct({
+      adminClient,
+      productId: product.id,
+      supabase,
+      userId,
+    });
+    redirect(
+      homeMessage("Could not prepare seller checkout. Please try again.", "merch"),
     );
   }
 
@@ -2986,9 +3138,14 @@ export async function createMerchProduct(formData: FormData) {
       supabase,
       userId,
     });
-  } catch (error) {
-    console.error("Merch media upload failed.", error);
-    await supabase.from("merch_products").delete().eq("id", product.id).eq("seller_id", userId);
+  } catch {
+    console.error("Merch media upload failed.");
+    await cleanupCreatedMerchProduct({
+      adminClient,
+      productId: product.id,
+      supabase,
+      userId,
+    });
     redirect(
       homeMessage(
         "Could not upload Merch media. Please try again.",
@@ -3009,9 +3166,14 @@ export async function createMerchProduct(formData: FormData) {
   });
 
   if (mediaError) {
-    console.error("Merch media attach failed.", mediaError);
+    console.error("Merch media attach failed.");
     await supabase.storage.from(MERCH_BUCKET).remove([upload.path]);
-    await supabase.from("merch_products").delete().eq("id", product.id).eq("seller_id", userId);
+    await cleanupCreatedMerchProduct({
+      adminClient,
+      productId: product.id,
+      supabase,
+      userId,
+    });
     redirect(
       homeMessage(
         "Media uploaded but could not attach to the Merch product. Please try again.",
@@ -3466,6 +3628,11 @@ export async function editMerchProduct(formData: FormData) {
   const shipsFromRegion = cleanText(formData.get("ships_from_region"), 80);
   const fulfillmentNotes = cleanText(formData.get("fulfillment_notes"), 1000);
   const returnPolicy = cleanText(formData.get("return_policy"), 1000);
+  const checkoutResult = validateSellerCheckoutUrl(
+    formData.get("external_checkout_url"),
+  );
+  const sellerAcceptedCheckoutTerms =
+    formData.get("seller_checkout_terms_accepted") === "on";
 
   if (!productId) {
     redirect(homeMessage("Choose a Merch product first.", "merch"));
@@ -3498,6 +3665,70 @@ export async function editMerchProduct(formData: FormData) {
     );
   }
 
+  if (shippingRequired && (!shipsFromCity || !shipsFromRegion)) {
+    redirect(
+      redirectWithMessage({
+        message: "Add the city and state/region this Merch ships from.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  if (fulfillmentNotes.length < 10) {
+    redirect(
+      redirectWithMessage({
+        message:
+          "Add fulfillment notes for Merch, including timing, shipping, or pickup details.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  if (returnPolicy.length < 10) {
+    redirect(
+      redirectWithMessage({
+        message: "Add a short return or refund note for Merch buyers.",
+        path: returnPath,
+      }),
+    );
+  }
+
+  if (!checkoutResult.ok) {
+    let message: string;
+
+    switch (checkoutResult.code) {
+      case "required":
+        message = "Add a live Stripe Payment Link for this Merch product.";
+        break;
+      case "too_long":
+        message = "Stripe Payment Link must be 500 characters or fewer.";
+        break;
+      case "test_link":
+        message = "Use a live Stripe Payment Link, not a test link.";
+        break;
+      case "invalid":
+      default:
+        message = "Add a valid Stripe Payment Link from buy.stripe.com.";
+        break;
+    }
+
+    redirect(
+      redirectWithMessage({
+        message,
+        path: returnPath,
+      }),
+    );
+  }
+
+  if (!sellerAcceptedCheckoutTerms) {
+    redirect(
+      redirectWithMessage({
+        message: "Confirm the seller checkout responsibilities before saving Merch.",
+        path: returnPath,
+      }),
+    );
+  }
+
   const { data: product, error: productError } = await supabase
     .from("merch_products")
     .select(
@@ -3514,7 +3745,7 @@ export async function editMerchProduct(formData: FormData) {
     }>();
 
   if (productError || !product) {
-    console.error("Merch product edit lookup failed.", productError);
+    console.error("Merch product edit lookup failed.");
     redirect(
       redirectWithMessage({
         message: "Merch product was not found.",
@@ -3559,35 +3790,13 @@ export async function editMerchProduct(formData: FormData) {
     );
   }
 
-  if (shippingRequired && (!shipsFromCity || !shipsFromRegion)) {
-    redirect(
-      redirectWithMessage({
-        message: "Add the city and state/region this Merch ships from.",
-        path: returnPath,
-      }),
-    );
-  }
-
-  if (shippingRequired && fulfillmentNotes.length < 10) {
-    redirect(
-      redirectWithMessage({
-        message:
-          "Add fulfillment notes for shipped Merch, including timing or pickup details.",
-        path: returnPath,
-      }),
-    );
-  }
-
-  if (returnPolicy.length < 10) {
-    redirect(
-      redirectWithMessage({
-        message: "Add a short return or refund note for Merch buyers.",
-        path: returnPath,
-      }),
-    );
-  }
-
-  const adminClient = createAdminClient();
+  const adminClient = (() => {
+    try {
+      return createAdminClient();
+    } catch {
+      return null;
+    }
+  })();
 
   if (!adminClient) {
     redirect(
@@ -3607,10 +3816,13 @@ export async function editMerchProduct(formData: FormData) {
     .update({
       category,
       description: description || null,
+      external_checkout_url: checkoutResult.url,
       fulfillment_notes: fulfillmentNotes || null,
       inventory_quantity: inventoryQuantity,
-      is_indexable: nextStatus === "active",
+      is_indexable: false,
       price_cents: priceCents,
+      seller_checkout_terms_accepted_at: null,
+      seller_checkout_terms_version: SELLER_CHECKOUT_TERMS_VERSION,
       shipping_required: shippingRequired,
       ships_from_city: shipsFromCity || null,
       ships_from_region: shipsFromRegion || null,
@@ -3621,11 +3833,13 @@ export async function editMerchProduct(formData: FormData) {
     })
     .eq("id", productId)
     .eq("seller_id", userId)
+    .eq("status", product.status)
+    .eq("is_official", false)
     .select("id")
     .maybeSingle<{ id: string }>();
 
   if (error || !updatedProduct) {
-    console.error("Merch product update failed.", error);
+    console.error("Merch product update failed.");
     redirect(
       redirectWithMessage({
         message: "Could not update Merch product. It may be gone or owned by another account.",

@@ -46,11 +46,7 @@ import {
   titleCaseStatus,
 } from "@/lib/status-labels";
 import { createClient } from "@/lib/supabase/server";
-import {
-  stripeCheckoutCreationEnabled,
-  stripeConnectOnboardingEnabled,
-} from "@/lib/stripe/release-gates";
-import { stripeCheckoutPreflight } from "@/lib/stripe/server";
+import { stripeCheckoutCreationEnabled } from "@/lib/stripe/release-gates";
 import { supportEmail } from "@/lib/site";
 import { safeStatusMessage } from "@/lib/status-message";
 import { verificationEligibleAccountTypes } from "@/lib/verification";
@@ -113,17 +109,6 @@ type BookingCalendarConnection = {
   sync_direction: string;
   updated_at: string;
 };
-type SellerPayoutAccount = {
-  charges_enabled: boolean;
-  details_submitted: boolean;
-  disabled_reason: string | null;
-  last_synced_at: string | null;
-  livemode: boolean;
-  onboarding_started_at: string | null;
-  payouts_enabled: boolean;
-  requirements_currently_due: string[];
-};
-
 const adminRoles = ["moderator", "admin", "owner"];
 const adPageSize = 25;
 const bookingPageSize = 25;
@@ -157,16 +142,16 @@ const bookingCalendarPrepItems = [
 ] as const;
 const merchSellerReadinessItems = [
   [
-    "Seller payout path",
-    "Seller payout setup uses a secure flow. TTC forms never ask for raw bank, routing, card, or debit payout numbers.",
+    "Seller checkout link",
+    "Sellers add their own live Payment Link when creating or editing a product.",
   ],
   [
-    "Fulfillment gate",
-    "Mark items fulfilled only after a paid order is ready for shipping, pickup, or handoff.",
+    "Seller responsibility",
+    "The seller processes payment and handles shipping, taxes, returns, refunds, disputes, and purchase support.",
   ],
   [
-    "Review trail",
-    "Refunds, disputes, and unusual order issues stay in private admin review.",
+    "TTC responsibility",
+    "TTC reviews the listing and handles listing-safety reports; it does not manage the new external purchase.",
   ],
 ] as const;
 
@@ -212,15 +197,6 @@ function merchSupportMailto(orderId: string, role: "buyer" | "seller") {
   );
 
   return `mailto:${supportEmail}?subject=${subject}&body=${body}`;
-}
-
-function sellerProfileKind(accountType?: string | null, role?: string | null) {
-  return accountType === "studio" ||
-    accountType === "vendor" ||
-    role === "owner" ||
-    role === "admin"
-    ? "Company or organization seller profile"
-    : "Individual seller profile";
 }
 
 function bookingLimitHref({
@@ -572,8 +548,6 @@ export default async function AccountPage({
     bookings?: string | string[];
     message?: string | string[];
     orders?: string | string[];
-    payout_issue?: string | string[];
-    payout_status?: string | string[];
   }>;
 }) {
   const params = await searchParams;
@@ -624,10 +598,6 @@ export default async function AccountPage({
   );
   const role = profile?.role as string | undefined;
   const isOwnerAccount = role === "owner";
-  const sellerProfileKindLabel = sellerProfileKind(
-    profile?.account_type as string | undefined,
-    role,
-  );
   const { data: verificationRequests } = await supabase
     .from("license_verification_requests")
     .select(
@@ -798,19 +768,7 @@ export default async function AccountPage({
         title: string;
       }[]
     >();
-  const sellerPayoutMode = stripeCheckoutPreflight();
-  const { data: sellerPayoutAccount } = sellerPayoutMode.ready
-    ? await supabase
-        .from("stripe_connect_accounts")
-        .select(
-          "livemode, charges_enabled, payouts_enabled, details_submitted, disabled_reason, requirements_currently_due, onboarding_started_at, last_synced_at",
-        )
-        .eq("profile_id", claims.sub)
-        .eq("livemode", sellerPayoutMode.actual)
-        .maybeSingle<SellerPayoutAccount>()
-    : { data: null };
   const bookingCheckoutEnabled = stripeCheckoutCreationEnabled("booking");
-  const sellerPayoutOnboardingEnabled = stripeConnectOnboardingEnabled();
   const { data: incomingBookings } = await (() => {
     let query = supabase
       .from("booking_requests")
@@ -990,19 +948,6 @@ export default async function AccountPage({
     Boolean(canSubmitLicense) && !isLicenseVerified && !hasPendingVerification;
   const canSubmitAds =
     canSubmitLicense && isLicenseVerified && !profile?.suspended_at && !profile?.banned_at;
-  const canSetupSellerPayouts =
-    canSubmitAds &&
-    Boolean(
-      profile?.account_type &&
-        ["artist", "studio", "vendor"].includes(profile.account_type as string),
-    );
-  const sellerPayoutReady = Boolean(
-    sellerPayoutMode.ready &&
-      sellerPayoutAccount?.livemode === sellerPayoutMode.actual &&
-      sellerPayoutAccount.charges_enabled &&
-      sellerPayoutAccount.payouts_enabled &&
-      sellerPayoutAccount.details_submitted,
-  );
   const isProfessionalAccount = Boolean(
     profile?.account_type &&
       ["artist", "studio", "vendor"].includes(profile.account_type as string),
@@ -1014,8 +959,7 @@ export default async function AccountPage({
     canSubmitAds || visibleAdCampaigns.length || adCreditBalanceCents > 0,
   );
   const showSellerTools = Boolean(
-    canSetupSellerPayouts ||
-      sellerPayoutAccount ||
+    isProfessionalAccount ||
       visibleMerchSales.length ||
       visibleMerchProducts.length,
   );
@@ -1036,10 +980,10 @@ export default async function AccountPage({
     },
     {
       body: showSellerTools
-        ? "Buyer orders, seller sales, payout readiness, fulfillment, support handoffs, and product review status."
-        : "Buyer orders, receipts, support handoffs, refunds, and delivery status.",
+        ? "Merch, seller checkout, historical orders, fulfillment, and support."
+        : "Historical TTC orders, receipts, refund review, and delivery support.",
       id: "order-settings",
-      label: showSellerTools ? "Merch and payouts" : "Orders",
+      label: showSellerTools ? "Merch and orders" : "Orders",
       status: showSellerTools ? "Seller tools" : "Buyer",
     },
     {
@@ -1069,40 +1013,6 @@ export default async function AccountPage({
         ]
       : []),
   ];
-  const payoutStatusParam = Array.isArray(params.payout_status)
-    ? params.payout_status[0]
-    : params.payout_status;
-  const payoutIssueParam = Array.isArray(params.payout_issue)
-    ? params.payout_issue[0]
-    : params.payout_issue;
-  const payoutSetupNotice = payoutStatusParam
-    ? {
-        issue: payoutIssueParam?.replace(/[^a-zA-Z0-9:_-]/g, "_").slice(0, 120) ?? null,
-        tone:
-          payoutStatusParam === "complete"
-            ? "success"
-            : payoutStatusParam === "needs_more"
-              ? "warning"
-              : "error",
-        title:
-          payoutStatusParam === "complete"
-            ? "Payout setup complete"
-            : payoutStatusParam === "needs_more"
-              ? "Payout setup saved"
-              : payoutStatusParam === "needs_verification"
-                ? "Verification required"
-                : payoutStatusParam === "expired"
-                  ? "Setup link expired"
-                  : "Payout setup needs attention",
-        body:
-          accountMessage ??
-          (payoutStatusParam === "complete"
-            ? "Seller payout setup is ready."
-            : payoutStatusParam === "needs_more"
-              ? "More details may still be needed before payouts are active."
-              : "Payout setup could not continue. Try again or use the payout safety guide."),
-      }
-    : null;
   const isFirstProfile = !profile;
   const normalizedProfile = profile
     ? {
@@ -1145,47 +1055,10 @@ export default async function AccountPage({
           </div>
         </div>
 
-        {accountMessage && !payoutSetupNotice ? (
+        {accountMessage ? (
           <p className="ttc-surface mb-4 rounded-md border px-4 py-3 text-sm font-medium">
             {accountMessage}
           </p>
-        ) : null}
-
-        {payoutSetupNotice ? (
-          <section
-            className={`mb-4 rounded-lg border p-4 text-sm ${
-              payoutSetupNotice.tone === "success"
-                ? "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))]"
-                : payoutSetupNotice.tone === "warning"
-                  ? "border-[color-mix(in_srgb,var(--gold)_48%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))]"
-                  : "border-[color-mix(in_srgb,var(--danger)_34%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))]"
-            }`}
-          >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="font-bold text-[var(--foreground)]">
-                  {payoutSetupNotice.title}
-                </p>
-                <p className="mt-1 leading-6 text-[var(--muted)]">
-                  {payoutSetupNotice.body}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <a
-                  className="inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-[var(--foreground)] px-4 font-bold text-[var(--background)]"
-                  href="#order-settings"
-                >
-                  Open payouts
-                </a>
-                <Link
-                  className="inline-flex h-10 shrink-0 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_92%,transparent)] px-4 font-bold text-[var(--foreground)]"
-                  href="/help/seller-payouts-payment-safety"
-                >
-                  Payout help
-                </Link>
-              </div>
-            </div>
-          </section>
         ) : null}
 
         <AccountSetupGuide isFirstProfile={isFirstProfile} />
@@ -2600,16 +2473,17 @@ export default async function AccountPage({
               <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
                 Merch
               </p>
-              <h2 className="text-xl font-bold">Orders</h2>
+              <h2 className="text-xl font-bold">Merch and orders</h2>
             </div>
             <span className="w-fit rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1 text-xs font-semibold">
               Latest {visibleMerchOrders.length || orderLimit}
             </span>
           </div>
           <p className="text-sm leading-6 text-[var(--muted-strong)]">
-            Merch checkout stays review-controlled while seller and order
-            safety checks are active. Use this page for buyer orders, seller
-            products, fulfillment, refund review, and payout readiness.
+            Existing rows below are historical TTC order support records from
+            the retired TTC checkout flow. They remain available for receipts,
+            fulfillment, and refund review. New seller-owned purchases are
+            handled by the seller and do not create TTC order rows.
           </p>
           {visibleMerchOrders.length ? (
             <div className="mt-4 grid gap-3">
@@ -2680,7 +2554,7 @@ export default async function AccountPage({
                     <p className="text-xs text-[var(--muted-strong)]">
                       Subtotal{" "}
                       {money(order.subtotal_cents, order.currency)}
-                      {" "}+ TTC fee{" "}
+                      {" "}+ historical TTC fee{" "}
                       {money(order.platform_fee_cents, order.currency)}
                       {order.shipping_cents > 0
                         ? ` + shipping ${money(order.shipping_cents, order.currency)}`
@@ -2780,17 +2654,17 @@ export default async function AccountPage({
                 <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
                   Seller view
                 </p>
-                <h3 className="text-lg font-bold">Merch sales</h3>
+                <h3 className="text-lg font-bold">Historical TTC sales</h3>
               </div>
               <span className="w-fit rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-2 py-1 text-xs font-semibold">
                 Latest {visibleMerchSales.length || orderLimit}
               </span>
             </div>
             <p className="text-sm leading-6 text-[var(--muted-strong)]">
-              Sales show paid or pending checkout items that belong to your
-              products. Mark paid line items fulfilled only after shipping or
-              handoff is complete. Refunds, disputes, and unusual order issues
-              stay in private support review.
+              These legacy rows show paid or pending items created by the
+              retired TTC checkout flow. Keep using them for fulfillment and
+              refund-review support. New external purchases stay with the seller
+              and do not appear in this list.
             </p>
             <div className="mt-4 grid gap-3 lg:grid-cols-3">
               {merchSellerReadinessItems.map(([title, body]) => (
@@ -2806,119 +2680,25 @@ export default async function AccountPage({
               ))}
             </div>
             <div className="mt-4 rounded-lg border border-[color-mix(in_srgb,var(--gold)_28%,var(--card-rim))] bg-[color-mix(in_srgb,var(--paper-warm)_92%,var(--gold)_8%)] p-4">
-              {payoutSetupNotice ? (
-                <div
-                  className={`mb-4 rounded-md border px-3 py-2 text-sm leading-6 ${
-                    payoutSetupNotice.tone === "success"
-                      ? "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))]"
-                      : payoutSetupNotice.tone === "warning"
-                        ? "border-[color-mix(in_srgb,var(--gold)_48%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))]"
-                        : "border-[color-mix(in_srgb,var(--danger)_34%,var(--card-rim))] bg-[color-mix(in_srgb,var(--danger)_10%,var(--paper-warm))]"
-                  }`}
+              <p className="text-sm leading-6 text-[var(--muted)]">
+                Add your own live Payment Link when creating or editing a
+                product. TTC reviews the listing, but the seller processes the
+                purchase and owns customer support for the external order.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link
+                  className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)]"
+                  href="/merch/new"
                 >
-                  <p className="font-bold">{payoutSetupNotice.title}</p>
-                  <p className="mt-1 text-[var(--muted)]">{payoutSetupNotice.body}</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {canSetupSellerPayouts &&
-                    !sellerPayoutReady &&
-                    sellerPayoutOnboardingEnabled ? (
-                      <form action="/api/stripe/connect/onboarding" method="post">
-                        <PendingSubmitButton
-                          className="h-9 rounded-md bg-[var(--foreground)] px-3 text-xs font-bold text-[var(--background)]"
-                          pendingLabel="Opening setup"
-                        >
-                          Retry payout setup
-                        </PendingSubmitButton>
-                      </form>
-                    ) : null}
-                    <Link
-                      className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-3 text-xs font-bold"
-                      href="/help/seller-payouts-payment-safety"
-                    >
-                      Read payout guide
-                    </Link>
-                  </div>
-                  {role && adminRoles.includes(role) && payoutSetupNotice.issue ? (
-                    <p className="mt-2 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_90%,transparent)] px-2 py-1 text-xs font-semibold text-[var(--muted-strong)]">
-                      Operator code: {payoutSetupNotice.issue}
-                    </p>
-                  ) : null}
-                </div>
-              ) : null}
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="text-xs font-bold uppercase text-[var(--muted-strong)]">
-                    Seller payout setup
-                  </p>
-                  <h4 className="mt-1 text-base font-bold">
-                    {sellerPayoutReady
-                      ? "Payout setup ready"
-                      : sellerPayoutAccount
-                        ? "Payout setup needs review"
-                        : "Set up seller payouts"}
-                  </h4>
-                  <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
-                    {canSetupSellerPayouts
-                      ? "Use the secure setup flow for seller payout details. TTC stores payout readiness status only, not bank or card credentials."
-                      : "Verified artist, studio, or vendor status is required before seller payout setup opens."}
-                  </p>
-                </div>
-                <span
-                  className={`w-fit rounded-md border px-2 py-1 text-xs font-semibold ${
-                    sellerPayoutReady
-                      ? "border-[color-mix(in_srgb,#34a853_38%,var(--card-rim))] bg-[color-mix(in_srgb,#34a853_12%,var(--paper-warm))] text-[color-mix(in_srgb,#1f7a38_78%,var(--foreground))]"
-                      : "border-[color-mix(in_srgb,var(--gold)_45%,var(--card-rim))] bg-[color-mix(in_srgb,var(--gold)_13%,var(--paper-warm))] text-[color-mix(in_srgb,var(--gold)_70%,var(--foreground))]"
-                  }`}
+                  Add Merch product
+                </Link>
+                <Link
+                  className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-4 text-sm font-bold"
+                  href="/help/seller-payouts-payment-safety"
                 >
-                  {sellerPayoutReady ? "Ready" : "Setup needed"}
-                </span>
+                  Seller checkout and payment safety
+                </Link>
               </div>
-              {sellerPayoutAccount ? (
-                <div className="mt-3 grid gap-2 text-xs leading-5 text-[var(--muted-strong)] sm:grid-cols-3">
-                  <p className="sm:col-span-3">
-                    Seller profile: {sellerProfileKindLabel}
-                  </p>
-                  <p>
-                    Payout status:{" "}
-                    {sellerPayoutReady
-                      ? "Ready"
-                      : sellerPayoutAccount.details_submitted
-                        ? "Needs review"
-                        : "Needs more details"}
-                  </p>
-                  {sellerPayoutAccount.requirements_currently_due.length ? (
-                    <p className="sm:col-span-3">
-                      More details may be required before payouts are ready.
-                    </p>
-                  ) : null}
-                </div>
-              ) : null}
-              {canSetupSellerPayouts ? (
-                sellerPayoutOnboardingEnabled ? (
-                <form
-                  action="/api/stripe/connect/onboarding"
-                  className="mt-4"
-                  method="post"
-                >
-                  <PendingSubmitButton
-                    className="flex h-10 w-full items-center justify-center rounded-md bg-[var(--foreground)] px-4 text-sm font-bold text-[var(--background)] sm:w-fit"
-                    pendingLabel="Opening setup"
-                  >
-                    {sellerPayoutAccount ? "Continue payout setup" : "Start payout setup"}
-                  </PendingSubmitButton>
-                </form>
-                ) : (
-                  <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] p-3 text-sm text-[var(--muted)]">
-                    Payment setup is temporarily unavailable.
-                  </p>
-                )
-              ) : null}
-              <Link
-                className="mt-3 inline-flex text-sm font-semibold underline"
-                href="/help/seller-payouts-payment-safety"
-              >
-                Seller payout and payment safety guide
-              </Link>
             </div>
             <div className="mt-6 border-t border-[var(--card-rim)] pt-5">
               <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">

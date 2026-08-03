@@ -1,5 +1,29 @@
 # Store Listing Draft
 
+## Current Commerce Position - August 2, 2026
+
+Merch uses seller-owned external checkout only after a reviewed listing and the
+separate server release gate are enabled. The seller processes payment and
+handles taxes, shipping, returns, refunds, disputes, receipts, and purchase
+support. TTC handles listing review and listing-safety reports. Do not add this
+seller-owned external checkout claim to submitted store metadata until the
+protected migration, deployment, exact-build web/Android/TestFlight iPad QA,
+store-policy review, and rollback proof are separately approved. This draft
+does not establish or change any current store or installed-device identity.
+
+## Current Build Evidence Boundary - August 2, 2026
+
+- Checked-in Android source candidate: `1.0.5 (6)`.
+- Checked-in iOS source candidate: `1.0 (5)`.
+- Repository source identity is not signed-artifact, upload, console-selection, served-track, or installed-device proof.
+- Exact current App Review identity: **UNKNOWN**.
+- Exact current TestFlight identity: **UNKNOWN**.
+- Exact current Google Play Production identity: **UNKNOWN**.
+- Exact current Google Play Closed testing - Alpha identity: **UNKNOWN**.
+- Exact current installed Android identity: **UNKNOWN**.
+- Exact current installed iOS identity: **UNKNOWN**.
+- A separately authorized read-only signed-in console/device verification is required before QA or release claims. Do not upload, select, submit, promote, install, or change an artifact during that verification.
+
 ## App Name
 
 TheTattooCore
@@ -62,7 +86,7 @@ Members and reviewers can use the Help Center for plain-language guides on Searc
 - Gossip discussion posts for longer community threads
 - Stuff for verified professional body-art listings
 - Gigs for jobs, conventions, guest spots, and shop opportunities
-- Merch for safe fan-facing artist, vendor, studio, and official TTC products
+- Merch for safe fan-facing artist, vendor, and studio products, with seller-owned checkout only when a reviewed listing is ready
 - DMs for booking questions, collaboration, and marketplace conversations
 - Profile pages with banner photo, bio, avatar, social links, website links, and studio links
 - Reporting, blocking, moderation, and 18+ account gates
@@ -91,4 +115,4 @@ Do not show visible provider, server, hosting, database, storage, mail-server, p
 
 ## Submission Notes
 
-Native Android and iOS beta wrappers are started in `native/thetattoocore-mobile` for Google Play internal testing and Apple TestFlight. Before public submission, complete real-device QA, final legal review, production payment decisions, app-store-safe screenshots, and a current policy review for user-generated content, 18+ positioning, Stuff/Merch/Gigs features, and review-controlled checkout.
+Native Android and iOS beta wrappers are started in `native/thetattoocore-mobile` for Google Play testing and Apple TestFlight. Before any replacement submission, complete real-device QA, final legal review, seller-owned physical-goods policy review, app-store-safe screenshots, and a current policy review for user-generated content, 18+ positioning, and Stuff/Merch/Gigs features. Keep the public seller-checkout gate off until separately approved.

@@ -2,6 +2,19 @@
 
 Use this before creating Android or iOS wrapper projects. The goal is a thin, policy-safe app shell around the production web app, not a separate native product with duplicated business logic.
 
+## Current Build Evidence Boundary - August 2, 2026
+
+- Checked-in Android source candidate: `1.0.5 (6)`.
+- Checked-in iOS source candidate: `1.0 (5)`.
+- Repository source identity is not signed-artifact, upload, console-selection, served-track, or installed-device proof.
+- Exact current App Review identity: **UNKNOWN**.
+- Exact current TestFlight identity: **UNKNOWN**.
+- Exact current Google Play Production identity: **UNKNOWN**.
+- Exact current Google Play Closed testing - Alpha identity: **UNKNOWN**.
+- Exact current installed Android identity: **UNKNOWN**.
+- Exact current installed iOS identity: **UNKNOWN**.
+- A separately authorized read-only signed-in console/device verification is required before QA or release claims. Do not upload, select, submit, promote, install, or change an artifact during that verification.
+
 ## App Shell Position
 
 - Start URL: `https://thetattoocore.com/login`.
@@ -13,7 +26,7 @@ Use this before creating Android or iOS wrapper projects. The goal is a thin, po
 ## Allowed Navigation
 
 - Allow `https://thetattoocore.com` and same-origin app routes.
-- Allow checkout only through the current review-controlled checkout flow, then return to safe internal app routes.
+- Keep TTC routes internal. A reviewed seller-owned Payment Link intentionally opens in the external browser; returning must restore a safe TTC product route without a TTC payment, order, receipt, or success claim.
 - Allow support, Child Safety Standards, privacy, terms, account deletion instructions, and public shared content routes.
 - Block or open externally any unexpected third-party destinations.
 - Keep all login return paths internal and reject protocol-relative or external return paths.
@@ -50,7 +63,7 @@ console screenshots, device tokens, signing details, or tester account data.
 | --- | --- | --- |
 | Firebase project | Project exists for TheTattooCore with Android and iOS apps registered for `com.thetattoocore.app`. | `pending`, `created`, or `needs retry`; no project IDs, sender IDs, API keys, or console screenshots. |
 | Android app config | Android app config file added only to the private build environment and excluded from git. | Record package name, release track, build version, and pass/fail only. |
-| iOS app config | Checked-in build `1.0 (4)` references the ignored private app config in the `App` target and enables Push Notifications with environment-specific entitlements. The Mac build path must supply the production-bundle config and refresh signing before archive. Automatic token creation and delivery stay off. | Record bundle ID, TestFlight build, device date, and pass/fail only; no team IDs or provisioning details. |
+| iOS app config | Checked-in iOS source candidate `1.0 (5)` references the ignored private app-config path in the `App` target. Source does not prove that private configuration, signing, TestFlight selection, or an installed build is current. Automatic token creation and delivery stay off. | Record bundle ID, separately verified TestFlight build, device date, and pass/fail only; no team IDs or provisioning details. |
 | Device token registration | Signed-in Android and iOS devices register and refresh tokens without storing tokens in repo notes. | Record platform, build, tester alias, preference state, and pass/fail only. |
 | Delivery and tap routing | Alerts deliver for the tested categories and open the matching in-app route. | Record category, route family, device, date, and pass/fail only; keep raw notification payloads private. |
 | Preference controls | Per-device opt-out, quiet hours, and category preferences stop delivery as expected. | Record tested preference, platform, build, and pass/fail only. |
@@ -106,7 +119,7 @@ evidence privately using the matrix above.
 - The iOS `PrivacyInfo.xcprivacy` file covers only the thin native wrapper and bundled native SDK behavior. It declares the app-owned installation and delivery token identifiers as Device ID, linked to the member, used for app functionality, and not used for tracking. Do not use this narrow manifest as the App Store App Privacy answer source; complete the broader questionnaire from the live TTC web/app data flows in `docs/DATA_SAFETY_PREP.md`.
 - Before the next iOS archive upload, generate Xcode's aggregate Privacy Report and confirm valid manifests are present for the TTC app plus Capacitor, Cordova, and native messaging dependencies. Keep the report and any dependency identifiers in the private release handoff.
 - Age-rating answers must be checked against `docs/AGE_RATING_PREP.md`.
-- Real payments, seller payouts, taxes, shipping, refunds, disputes, and app-store commerce rules must pass `docs/PAYMENT_PRODUCTION_READINESS.md` before production commerce is promoted in native builds.
+- Before seller-owned Payment Links are exposed in a native wrapper, the seller-link rollout, external-browser return QA, physical-goods classification, seller shipping/tax/return/refund/dispute/purchase-support duties, listing-safety review, and rollback evidence in `docs/PAYMENT_PRODUCTION_READINESS.md` must pass. Legacy TTC payout records are reconciliation history only, not a current seller onboarding or payout gate.
 
 ## QA Before Internal Testing
 
@@ -175,10 +188,13 @@ public-submission build.
 
 | Release path | Checked-in compile/target SDK | Required action | Repo-safe result |
 | --- | ---: | --- | --- |
-| Current Google Play Production and Alpha | Active Production release `1.0.3 (4)` and Alpha release `1.0.4 (5)` are `36 / 36` | Use Production for normal install and release evidence; use Alpha for controlled QA. Collect explicit opt-in, token-registration, delivery, tap, opt-out, and applicable participation evidence while global delivery stays off. | Record release track, version code/name, test date, device model, and pass/fail only. |
-| Authorized Android review phone | Installed Google Play Production `1.0.3 (4)` targets API 36 | Required package probe, verified App Links, production-link launch, retained-session landing, and system-bar framing passed. Continue controlled notification QA only after explicit member opt-in. | Record installed build, permission state, device date, and pass/fail only. |
-| Previous Google Play baseline | `36 / 36`; version code `3` / version name `1.0.2` | Preserve its completed historical evidence, but do not keep it in the active alert allowlist after exact Play-installed build 4 passed. | Record historical build and result only; do not treat it as current release evidence. |
-| Checked-in replacement candidate | `1.0.5 (6)` at `36 / 36` | Sign a fresh upload bundle and rerun wrapper plus real-device QA before selecting a track. | Record API `36 / 36` rebuild proof, version code/name, device QA date, and pass/fail only. |
+| Checked-in Android source candidate | `1.0.5 (6)` at `36 / 36` | Treat this as source identity only. Re-verify Production, Alpha, and installed-device identities before choosing any build or QA action. | Record API `36 / 36` source proof only; do not label it uploaded, served, selected, or installed. |
+| Current Google Play Production and Alpha | **UNKNOWN** | With separate read-only authorization, record each exact track identity before QA. Do not upload, promote, or select a release during verification. | Record verified track, version code/name, date, and pass/fail privately. |
+| Current installed Android build | **UNKNOWN** | Verify independently on the authorized device after the track identity is known. A source version or prior screenshot is not install proof. | Record installed version/build, install source, device date, and pass/fail privately. |
+
+### Historical Google Play Baseline - July 24, 2026 (Non-Operative)
+
+The dated baseline recorded Production `1.0.3 (4)`, Alpha `1.0.4 (5)`, and an earlier authorized-phone install. Preserve that evidence privately for history only. It does not establish any current served, selected, or installed identity and cannot authorize a release or QA claim.
 
 Never reuse a version code that Google Play has already served.
 
@@ -202,7 +218,7 @@ cd android
 
 Android SDK and JDK 21 are configured on this Windows machine. For a Google Play upload build, load the local signing environment variables from the private Desktop recovery note, then run `.\gradlew.bat bundleRelease`. The signed upload bundle is `native/thetattoocore-mobile/android/app/build/outputs/bundle/release/app-release.aab`. Keep `android/local.properties`, `android/keystores/`, and all keystore recovery notes out of git.
 
-Android release bundling fails closed before compilation unless all private upload-signing inputs are present, the referenced signing file is readable, and the ignored Android app configuration file is present and nonempty. The failure message names only the missing input category. The production app configuration is not processed for the side-by-side `.qa` debug package, so `assembleDebug` remains available without release signing or a separate QA app registration. The checked-in Play replacement is version code `5`; never reuse version code `4`.
+Android release bundling fails closed before compilation unless all private upload-signing inputs are present, the referenced signing file is readable, and the ignored Android app configuration file is present and nonempty. The failure message names only the missing input category. The production app configuration is not processed for the side-by-side `.qa` debug package, so `assembleDebug` remains available without release signing or a separate QA app registration. The checked-in Android source candidate uses version code `6`; this source value does not establish that code `6` has been uploaded or served. Before any future build or upload, separately verify the current Play track identities and choose a version code that has not been uploaded.
 
 iOS on Mac:
 

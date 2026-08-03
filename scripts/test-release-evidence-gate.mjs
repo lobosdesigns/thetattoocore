@@ -56,6 +56,23 @@ function writeVariant(name, transform) {
   return path;
 }
 
+const unknownCurrentAppReviewFixture = writeVariant(
+  "unknown-current-app-review.md",
+  (source) =>
+    source.replace(
+      "| Current App Review version/build | App Review 1.0 (5) |",
+      "| Current App Review version/build | UNKNOWN |",
+    ),
+);
+const candidateOnlyAsServedFixture = writeVariant(
+  "candidate-only-as-served.md",
+  (source) =>
+    source.replace(
+      "| Current TestFlight version/build | TestFlight 1.0 (5) |",
+      "| Current TestFlight version/build | Checked-in iOS source candidate 1.0 (5); no console proof |",
+    ),
+);
+
 const missingProofFixture = writeVariant("missing-proof.md", (source) =>
   source.replace("fixture-tester-install-proof", ""),
 );
@@ -75,26 +92,26 @@ const mixedAndroidBuildFixture = writeVariant(
   "mixed-android-build.md",
   (source) =>
     source.replace(
-      "| Android release track and version/build | Closed testing - Alpha 1.0.5 (6) |",
-      "| Android release track and version/build | Closed testing - Alpha 1.0.5 (6) plus stale 1.0.3 (4) |",
+      "| Current Google Play Alpha version/build | Closed testing - Alpha 1.0.5 (6) |",
+      "| Current Google Play Alpha version/build | Closed testing - Alpha 1.0.5 (6) plus stale 1.0.3 (4) |",
     ),
 );
 const mixedPrefixedAndroidBuildFixture = writeVariant(
   "mixed-prefixed-android-build.md",
   (source) =>
     source.replace(
-      "| Android release track and version/build | Closed testing - Alpha 1.0.5 (6) |",
-      "| Android release track and version/build | Closed testing - Alpha 1.0.5 (6) plus stale v1.0 (4) |",
+      "| Current Google Play Alpha version/build | Closed testing - Alpha 1.0.5 (6) |",
+      "| Current Google Play Alpha version/build | Closed testing - Alpha 1.0.5 (6) plus stale v1.0 (4) |",
     ),
 );
 const duplicateAndroidCandidateFixture = writeVariant(
   "duplicate-android-candidate.md",
   (source) =>
     source.replace(
-      "| Android release track and version/build | Closed testing - Alpha 1.0.5 (6) |",
+      "| Android checked-in source candidate | 1.0.5 (6) |",
       [
-        "| Android release track and version/build | Closed testing - Alpha 1.0.5 (6) |",
-        "| Android release track and version/build | Closed testing - Alpha 1.0.3 (4) |",
+        "| Android checked-in source candidate | 1.0.5 (6) |",
+        "| Android checked-in source candidate | 1.0.3 (4) |",
       ].join("\n"),
     ),
 );
@@ -102,37 +119,47 @@ const mismatchedIosCandidateFixture = writeVariant(
   "mismatched-ios-candidate.md",
   (source) =>
     source.replace(
-      "| iOS TestFlight version/build | 1.0 (5) |",
-      "| iOS TestFlight version/build | 1.0 (4) |",
+      "| Current TestFlight version/build | TestFlight 1.0 (5) |",
+      "| Current TestFlight version/build | TestFlight 1.0 (4) |",
     ),
 );
 const mixedAppReviewFixture = writeVariant(
   "mixed-app-review.md",
   (source) =>
     source.replace(
-      "| Apple | App Review monitoring and response evidence | App Store Connect iOS App Version 1.0 build 1.0 (3) | passed | fixture-proof |",
-      "| Apple | App Review monitoring and response evidence | App Store Connect iOS App Version 1.0 build 1.0 (3) plus stale 1.0 (2) | passed | fixture-proof |",
+      "| Apple | App Review monitoring and response evidence | App Store Connect iOS App Version 1.0 build 1.0 (5) | passed | fixture-proof |",
+      "| Apple | App Review monitoring and response evidence | App Store Connect iOS App Version 1.0 build 1.0 (5) plus stale 1.0 (3) | passed | fixture-proof |",
     ),
 );
 const mismatchedAppReviewFixture = writeVariant(
   "mismatched-app-review.md",
   (source) =>
     source.replace(
-      "| Apple | App Review monitoring and response evidence | App Store Connect iOS App Version 1.0 build 1.0 (3) | passed | fixture-proof |",
+      "| Apple | App Review monitoring and response evidence | App Store Connect iOS App Version 1.0 build 1.0 (5) | passed | fixture-proof |",
       "| Apple | App Review monitoring and response evidence | App Store Connect iOS App Version 1.0 build 1.0 (4) | passed | fixture-proof |",
     ),
 );
 const productionTrackFixture = writeVariant("production-track.md", (source) =>
-  source.replace(
-    "| Android release track and version/build | Closed testing - Alpha 1.0.5 (6) |",
-    "| Android release track and version/build | Google Play Production 1.0.5 (6) Active |",
-  ),
+  source
+    .replace(
+      "| Current Google Play Production version/build | Production 1.0.3 (4) |",
+      "| Current Google Play Production version/build | Production 1.0.5 (6) Active |",
+    )
+    .replace(
+      "| Current Google Play Alpha version/build | Closed testing - Alpha 1.0.5 (6) |",
+      "| Current Google Play Alpha version/build | Alpha 1.0.4 (5) |",
+    ),
 );
 const unknownTrackFixture = writeVariant("unknown-track.md", (source) =>
-  source.replace(
-    "| Android release track and version/build | Closed testing - Alpha 1.0.5 (6) |",
-    "| Android release track and version/build | Candidate 1.0.5 (6) |",
-  ),
+  source
+    .replace(
+      "| Current Google Play Production version/build | Production 1.0.3 (4) |",
+      "| Current Google Play Production version/build | No active release verified |",
+    )
+    .replace(
+      "| Current Google Play Alpha version/build | Closed testing - Alpha 1.0.5 (6) |",
+      "| Current Google Play Alpha version/build | No active release verified |",
+    ),
 );
 const staleRealDeviceDateFixture = writeVariant(
   "stale-real-device-date.md",
@@ -266,6 +293,46 @@ function runGate(args, env = {}, cwd = undefined) {
 
 const checks = [
   {
+    label: "release evidence fails closed when current App Review identity is unknown",
+    result: runGate([
+      "--test-fixture",
+      "--reference-date",
+      fixtureReferenceDate,
+      "--verbose",
+      "--evidence",
+      unknownCurrentAppReviewFixture,
+      "--release-candidate",
+      fixtureCandidate,
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes("current App Review identity cannot be UNKNOWN")
+      );
+    },
+  },
+  {
+    label: "release evidence rejects candidate-only state presented as served evidence",
+    result: runGate([
+      "--test-fixture",
+      "--reference-date",
+      fixtureReferenceDate,
+      "--verbose",
+      "--evidence",
+      candidateOnlyAsServedFixture,
+      "--release-candidate",
+      fixtureCandidate,
+    ]),
+    verify(result) {
+      return (
+        result.status === 1 &&
+        result.stderr.includes(
+          "current TestFlight identity must come from separately supplied private evidence",
+        )
+      );
+    },
+  },
+  {
     label: "release evidence accepts a matching explicit candidate",
     result: runGate([
       "--test-fixture",
@@ -373,7 +440,7 @@ const checks = [
       return (
         result.status === 1 &&
         result.stderr.includes(
-          "Android build must be exact build 1.0.5 (6)",
+          "current Google Play Alpha identity must contain at most one exact build",
         )
       );
     },
@@ -394,7 +461,7 @@ const checks = [
       return (
         result.status === 1 &&
         result.stderr.includes(
-          "Android build must be exact build 1.0.5 (6)",
+          "current Google Play Alpha identity must contain at most one exact build",
         )
       );
     },
@@ -415,13 +482,13 @@ const checks = [
       return (
         result.status === 1 &&
         result.stderr.includes(
-          "Android release track and version/build row must appear exactly once",
+          "Android checked-in source candidate row must appear exactly once",
         )
       );
     },
   },
   {
-    label: "release evidence rejects a mismatched iOS TestFlight candidate",
+    label: "release evidence rejects a mismatched current TestFlight identity",
     result: runGate([
       "--test-fixture",
       "--verbose",
@@ -436,7 +503,7 @@ const checks = [
       return (
         result.status === 1 &&
         result.stderr.includes(
-          "iOS TestFlight build must be exact build 1.0 (5)",
+          "current TestFlight identity must match checked-in source candidate 1.0 (5)",
         )
       );
     },
@@ -456,7 +523,9 @@ const checks = [
     verify(result) {
       return (
         result.status === 1 &&
-        result.stderr.includes("Apple App Review must remain on build 1.0 (3)")
+        result.stderr.includes(
+          "Apple App Review evidence must match the privately supplied current review identity",
+        )
       );
     },
   },
@@ -475,12 +544,14 @@ const checks = [
     verify(result) {
       return (
         result.status === 1 &&
-        result.stderr.includes("Apple App Review must remain on build 1.0 (3)")
+        result.stderr.includes(
+          "Apple App Review evidence must match the privately supplied current review identity",
+        )
       );
     },
   },
   {
-    label: "release evidence rejects an unidentified Android track",
+    label: "release evidence rejects current tracks without the source candidate",
     result: runGate([
       "--test-fixture",
       "--reference-date",
@@ -495,7 +566,7 @@ const checks = [
       return (
         result.status === 1 &&
         result.stderr.includes(
-          "Android release track must identify Alpha, closed testing, or production",
+          "current Google Play Production or Alpha evidence must identify the checked-in Android source candidate",
         )
       );
     },
@@ -783,7 +854,7 @@ const checks = [
       return (
         result.status === 1 &&
         result.stderr.includes(
-          "installed Android build must be exact build 1.0.5 (6)",
+          "installed Android evidence must match the privately supplied current installed identity",
         )
       );
     },
@@ -879,7 +950,7 @@ const checks = [
       return (
         result.status === 1 &&
         result.stderr.includes(
-          "Two-User DM Evidence: Android DM evidence must use exact build 1.0.5 (6)",
+          "Two-User DM Evidence: Android DM evidence must match the privately supplied current identity",
         )
       );
     },

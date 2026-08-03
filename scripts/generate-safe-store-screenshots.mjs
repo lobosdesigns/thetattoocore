@@ -1,10 +1,37 @@
 import path from "node:path";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import sharp from "sharp";
 
 const outDir = path.join(process.cwd(), "public", "screenshots");
 const generatedDir = path.join(process.cwd(), "native", "store-metadata", "generated");
 const shieldPath = path.join(process.cwd(), "public", "icons", "icon-512.png");
+const retiredScreenshotNames = [
+  "mobile-payout-safe",
+  "mobile-order-support-safe",
+  "mobile-merch-help-shortcut-safe",
+];
+
+for (const name of retiredScreenshotNames) {
+  rmSync(path.join(outDir, `${name}.png`), { force: true });
+  rmSync(
+    path.join(
+      generatedDir,
+      "google-play",
+      "phone-screenshots",
+      `${name}-1080x1920.png`,
+    ),
+    { force: true },
+  );
+  rmSync(
+    path.join(
+      generatedDir,
+      "apple-app-store",
+      "iphone-6-5",
+      `${name}-1242x2688.png`,
+    ),
+    { force: true },
+  );
+}
 
 function esc(value) {
   return String(value).replace(/[&<>]/g, (char) => ({
@@ -260,42 +287,42 @@ ${pill({ label: "Submit for review", w: 152, x: 70, y: 668 })}
 ${pill({ label: "Credit applied", w: 128, x: 238, y: 668 })}
 ${bottomNav()}
 `),
-  "mobile-payout-safe.png": header(`
+  "mobile-seller-payment-link-safe.png": header(`
 ${columns("Merch")}
 ${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}
-${text({ body: "Payout Readiness", size: 30, weight: 900, x: 52, y: 170 })}
-${text({ body: "Seller setup stays private and guided.", color: "#6f5e4c", size: 15, weight: 600, x: 52, y: 202 })}
+${text({ body: "Seller Payment Link", size: 30, weight: 900, x: 52, y: 170 })}
+${text({ body: "The seller adds their own purchase link.", color: "#6f5e4c", size: 15, weight: 600, x: 52, y: 202 })}
 ${rounded({ fill: "#f6f2eb", h: 86, r: 10, w: 436, x: 52, y: 244 })}
-${text({ body: "Profile and 18+ status", size: 16, weight: 900, x: 76, y: 282 })}
-${text({ body: "Complete before seller tools open.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 306 })}
+${text({ body: "Listing review", size: 16, weight: 900, x: 76, y: 282 })}
+${text({ body: "TTC reviews product and link safety.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 306 })}
 ${rounded({ fill: "#f6f2eb", h: 86, r: 10, w: 436, x: 52, y: 356 })}
-${text({ body: "Verification and product review", size: 16, weight: 900, x: 76, y: 394 })}
-${text({ body: "Products stay closed until ready.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 418 })}
+${text({ body: "Clear disclosure", size: 16, weight: 900, x: 76, y: 394 })}
+${text({ body: "Seller processes payment and support.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 418 })}
 ${rounded({ fill: "#f4ead8", h: 118, r: 10, stroke: "#e0c27a", w: 436, x: 52, y: 486 })}
-${text({ body: "Secure payout setup", color: "#7b5a15", size: 18, weight: 900, x: 76, y: 526 })}
-${text({ body: "Do not share payout credentials in", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 554 })}
-${text({ body: "messages, comments, or screenshots.", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 576 })}
-${pill({ label: "Setup status", w: 126, x: 70, y: 668 })}
-${pill({ label: "Help guide", w: 112, x: 212, y: 668 })}
+${text({ body: "External browser", color: "#7b5a15", size: 18, weight: 900, x: 76, y: 526 })}
+${text({ body: "The seller-owned Payment Link opens", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 554 })}
+${text({ body: "outside TTC for payment.", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 576 })}
+${pill({ label: "Listing safety", w: 126, x: 70, y: 668 })}
+${pill({ label: "Link review", w: 112, x: 212, y: 668 })}
 ${bottomNav()}
 `),
-  "mobile-order-support-safe.png": header(`
+  "mobile-seller-purchase-support-safe.png": header(`
 ${columns("Merch")}
 ${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}
-${text({ body: "Order Support", size: 31, weight: 900, x: 52, y: 170 })}
-${text({ body: "Private order help stays in Settings.", color: "#6f5e4c", size: 15, weight: 600, x: 52, y: 202 })}
+${text({ body: "Purchase Support", size: 31, weight: 900, x: 52, y: 170 })}
+${text({ body: "The seller handles purchase support.", color: "#6f5e4c", size: 15, weight: 600, x: 52, y: 202 })}
 ${rounded({ fill: "#f6f2eb", h: 86, r: 10, w: 436, x: 52, y: 244 })}
-${text({ body: "Order status", size: 16, weight: 900, x: 76, y: 282 })}
-${text({ body: "Paid - fulfillment pending", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 306 })}
+${text({ body: "Contact the seller", size: 16, weight: 900, x: 76, y: 282 })}
+${text({ body: "Shipping, tax, returns, and refunds.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 306 })}
 ${rounded({ fill: "#f6f2eb", h: 86, r: 10, w: 436, x: 52, y: 356 })}
-${text({ body: "Tracking or pickup note", size: 16, weight: 900, x: 76, y: 394 })}
-${text({ body: "Use safe sample handoff details.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 418 })}
+${text({ body: "Contact TTC", size: 16, weight: 900, x: 76, y: 394 })}
+${text({ body: "Report listing safety concerns.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 418 })}
 ${rounded({ fill: "#f4ead8", h: 118, r: 10, stroke: "#e0c27a", w: 436, x: 52, y: 486 })}
-${text({ body: "Refund review", color: "#7b5a15", size: 18, weight: 900, x: 76, y: 526 })}
-${text({ body: "Keep addresses and payment details", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 554 })}
-${text({ body: "out of public posts and DMs.", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 576 })}
-${pill({ label: "Request review", w: 136, x: 70, y: 668 })}
-${pill({ label: "Support", w: 90, x: 222, y: 668 })}
+${text({ body: "Historical TTC records", color: "#7b5a15", size: 18, weight: 900, x: 76, y: 526 })}
+${text({ body: "Older TTC order records remain", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 554 })}
+${text({ body: "available for legacy support.", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 576 })}
+${pill({ label: "Seller support", w: 126, x: 70, y: 668 })}
+${pill({ label: "Listing report", w: 118, x: 212, y: 668 })}
 ${bottomNav()}
 `),
   "mobile-merch-safe.png": header(`
@@ -311,43 +338,43 @@ ${rounded({ fill: "#f6f2eb", h: 84, r: 8, w: 436, x: 52, y: 410 })}
 ${text({ body: "Fulfillment note", size: 16, weight: 900, x: 76, y: 448 })}
 ${text({ body: "Shipping, pickup, or handoff timing.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 472 })}
 ${rounded({ fill: "#f4ead8", h: 112, r: 10, stroke: "#e0c27a", w: 436, x: 52, y: 526 })}
-${text({ body: "Review-controlled checkout", color: "#7b5a15", size: 18, weight: 900, x: 76, y: 568 })}
-${text({ body: "No buyer addresses or real payment data.", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 596 })}
+${text({ body: "Seller-owned Payment Link", color: "#7b5a15", size: 18, weight: 900, x: 76, y: 568 })}
+${text({ body: "Opens in the external browser.", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 596 })}
 ${pill({ label: "Submit for review", w: 152, x: 70, y: 668 })}
 ${pill({ label: "Help guide", w: 112, x: 238, y: 668 })}
 ${bottomNav()}
 `),
-  "mobile-merch-help-shortcut-safe.png": header(`
+  "mobile-listing-safety-safe.png": header(`
 ${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}
 ${text({ body: "Merch Help", size: 32, weight: 900, x: 52, y: 170 })}
-${text({ body: "Find seller setup guidance before checkout.", color: "#6f5e4c", size: 15, weight: 600, x: 52, y: 202 })}
+${text({ body: "Listing safety and seller link guidance.", color: "#6f5e4c", size: 15, weight: 600, x: 52, y: 202 })}
 ${rounded({ fill: "#f4ead8", h: 104, r: 10, stroke: "#e0c27a", w: 436, x: 52, y: 244 })}
-${text({ body: "Merch and seller help", color: "#7b5a15", size: 18, weight: 900, x: 76, y: 286 })}
-${text({ body: "Products, order support, refunds,", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 314 })}
-${text({ body: "fulfillment, and payout safety.", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 336 })}
+${text({ body: "Seller-owned purchase", color: "#7b5a15", size: 18, weight: 900, x: 76, y: 286 })}
+${text({ body: "Payment happens with the seller", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 314 })}
+${text({ body: "in the external browser.", color: "#7b5a15", size: 14, weight: 700, x: 76, y: 336 })}
 ${rounded({ fill: "#f6f2eb", h: 76, r: 10, w: 436, x: 52, y: 382 })}
-${text({ body: "Product setup guide", size: 16, weight: 900, x: 76, y: 418 })}
-${text({ body: "Title, media, price, inventory, review.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 440 })}
+${text({ body: "Listing safety review", size: 16, weight: 900, x: 76, y: 418 })}
+${text({ body: "Product, media, disclosure, and link.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 440 })}
 ${rounded({ fill: "#f6f2eb", h: 76, r: 10, w: 436, x: 52, y: 486 })}
-${text({ body: "Order support guide", size: 16, weight: 900, x: 76, y: 522 })}
-${text({ body: "Missing, damaged, delayed, returned.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 544 })}
+${text({ body: "Seller purchase support", size: 16, weight: 900, x: 76, y: 522 })}
+${text({ body: "Shipping, returns, refunds, disputes.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 544 })}
 ${rounded({ fill: "#f6f2eb", h: 76, r: 10, w: 436, x: 52, y: 590 })}
-${text({ body: "Payout safety guide", size: 16, weight: 900, x: 76, y: 626 })}
-${text({ body: "Keep seller credentials private.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 648 })}
+${text({ body: "No false TTC success", size: 16, weight: 900, x: 76, y: 626 })}
+${text({ body: "TTC does not create the new order.", color: "#6f5e4c", size: 14, weight: 700, x: 76, y: 648 })}
 ${pill({ label: "Open Help", w: 112, x: 70, y: 706 })}
-${pill({ label: "Seller tools", w: 126, x: 198, y: 706 })}
+${pill({ label: "Report listing", w: 126, x: 198, y: 706 })}
 ${bottomNav()}
 `),
   "mobile-help-support.png": header(`
 ${rounded({ fill: "#fffdf8", h: 640, r: 12, w: 484, x: 28, y: 120 })}
 ${text({ body: "Help Center", size: 32, weight: 900, x: 52, y: 170 })}
 ${text({ body: "Self-serve guides before contacting support.", color: "#6f5e4c", size: 15, weight: 600, x: 52, y: 202 })}
-${["Getting started", "Beta app testing", "Merch products and orders", "Booking appointments", "Verification documents", "Privacy and safety"].map((label, index) => `
+${["Getting started", "Beta app testing", "Merch listings and seller links", "Booking appointments", "Verification documents", "Privacy and safety"].map((label, index) => `
 ${rounded({ fill: index === 1 ? "#f4ead8" : "#f6f2eb", h: 52, r: 8, stroke: index === 1 ? "#e0c27a" : "#d8d0c4", w: 436, x: 52, y: 242 + index * 70 })}
 ${text({ body: label, color: index === 1 ? "#7b5a15" : "#14100d", size: 16, weight: 900, x: 76, y: 276 + index * 70 })}
 `).join("")}
-${text({ body: "Use support for private account, safety,", color: "#6f5e4c", size: 14, weight: 700, x: 52, y: 700 })}
-${text({ body: "payment, or verification questions.", color: "#6f5e4c", size: 14, weight: 700, x: 52, y: 722 })}
+${text({ body: "Seller handles purchase support.", color: "#6f5e4c", size: 14, weight: 700, x: 52, y: 700 })}
+${text({ body: "TTC handles listing safety.", color: "#6f5e4c", size: 14, weight: 700, x: 52, y: 722 })}
 ${bottomNav()}
 `),
   "mobile-privacy-safety-safe.png": header(`
@@ -375,17 +402,18 @@ ${bottomNav()}
 };
 
 for (const [name, svg] of Object.entries(pages)) {
-  await sharp(Buffer.from(svg))
+  const png = await sharp(Buffer.from(svg))
     .composite([{ input: await shield(42), left: 24, top: 20 }])
     .flatten({ background: "#f6f2eb" })
     .png({ compressionLevel: 9 })
-    .toFile(path.join(outDir, name));
+    .toBuffer();
+  writeFileSync(path.join(outDir, name), png);
 }
 
 async function exportDerivative({ destDir, height, sourceName, suffix, width }) {
   mkdirSync(destDir, { recursive: true });
   const baseName = sourceName.replace(/\.png$/, "");
-  await sharp(path.join(outDir, sourceName))
+  const png = await sharp(path.join(outDir, sourceName))
     .resize(width, height, {
       background: "#f6f2eb",
       fit: "contain",
@@ -393,7 +421,8 @@ async function exportDerivative({ destDir, height, sourceName, suffix, width }) 
     })
     .flatten({ background: "#f6f2eb" })
     .png({ compressionLevel: 9 })
-    .toFile(path.join(destDir, `${baseName}-${suffix}.png`));
+    .toBuffer();
+  writeFileSync(path.join(destDir, `${baseName}-${suffix}.png`), png);
 }
 
 const mobileSources = ["mobile-home.png", ...Object.keys(pages)].sort();

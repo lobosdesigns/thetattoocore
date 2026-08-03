@@ -112,13 +112,23 @@ export default async function MerchCheckoutSuccessPage({
         .eq("buyer_id", claims.sub)
         .maybeSingle<Order>()
     : { data: null };
-  const copy = statusCopy(order?.status);
+  const copy = order
+    ? statusCopy(order.status)
+    : {
+        heading: "No TTC order was found",
+        message:
+          "Seller-owned checkout purchases are confirmed and supported by the seller using the seller's receipt.",
+      };
 
   return (
     <main className="ttc-page min-h-screen">
       <section className="ttc-page-panel mx-auto flex min-h-screen w-full max-w-xl items-center px-4 py-10">
         <div className="ttc-card ttc-print-receipt w-full rounded-lg border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] p-6 text-center">
-          <CheckCircle2 className="mx-auto size-12 text-[var(--gold)]" />
+          {order ? (
+            <CheckCircle2 className="mx-auto size-12 text-[var(--gold)]" />
+          ) : (
+            <Package className="mx-auto size-12 text-[var(--gold)]" />
+          )}
           <h1 className="mt-4 text-2xl font-bold">{copy.heading}</h1>
           <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
             {copy.message}
@@ -216,7 +226,8 @@ export default async function MerchCheckoutSuccessPage({
             </div>
           ) : sessionId && !claims?.sub ? (
             <p className="mt-5 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_96%,transparent)] p-4 text-sm leading-6 text-[var(--muted)]">
-              Sign in with the buying account to view this order receipt.
+              Sign in with the buying account if you are trying to view a
+              historical TTC order receipt.
             </p>
           ) : null}
           <div className="ttc-print-hidden mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">

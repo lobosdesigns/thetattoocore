@@ -2,9 +2,8 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { isAbsolute, relative, resolve } from "node:path";
 
-const EXPECTED_ANDROID_BUILD = "1.0.5 (6)";
-const EXPECTED_IOS_TESTFLIGHT_BUILD = "1.0 (5)";
-const EXPECTED_IOS_REVIEW_BUILD = "1.0 (3)";
+const SOURCE_ANDROID_CANDIDATE = "1.0.5 (6)";
+const SOURCE_IOS_CANDIDATE = "1.0 (5)";
 const REQUIRED_LEGAL_REVIEW_AREAS = [
   "Terms and Privacy match submitted build",
   "Account deletion language and handling",
@@ -303,6 +302,7 @@ const incompleteValues = new Set([
   "pending",
   "tbd",
   "todo",
+  "unknown",
 ]);
 
 function isPassing(value) {
@@ -342,6 +342,45 @@ function requireExactBuild(area, item, value, expected) {
   if (builds.length !== 1 || normalize(builds[0]) !== normalize(expected)) {
     fail(area, item);
   }
+}
+
+function currentIdentityBuild(area, label, value) {
+  if (!hasValue(value)) {
+    fail(area, `current ${label} identity cannot be UNKNOWN`);
+    return "";
+  }
+
+  const normalizedValue = normalize(value);
+  if (
+    normalizedValue.includes("source candidate") ||
+    normalizedValue.includes("no console proof") ||
+    normalizedValue.includes("no device proof")
+  ) {
+    fail(
+      area,
+      `current ${label} identity must come from separately supplied private evidence`,
+    );
+    return "";
+  }
+
+  const builds = cleanCell(value).match(buildIdentityPattern) ?? [];
+  if (builds.length > 1) {
+    fail(area, `current ${label} identity must contain at most one exact build`);
+    return "";
+  }
+
+  return builds[0] ?? "";
+}
+
+function requireCurrentCandidateBuild(area, label, value, sourceCandidate) {
+  const build = currentIdentityBuild(area, label, value);
+  if (build && normalize(build) !== normalize(sourceCandidate)) {
+    fail(area, `current ${label} identity must match checked-in source candidate ${sourceCandidate}`);
+  }
+  if (!build && hasValue(value)) {
+    fail(area, `current ${label} identity must include one exact build`);
+  }
+  return build;
 }
 
 function requireExact(area, item, value, expected) {
@@ -388,6 +427,10 @@ function requireProofDate(area, item, value) {
   }
 }
 
+let currentAndroidBuild = SOURCE_ANDROID_CANDIDATE;
+let currentIosTestFlightBuild = SOURCE_IOS_CANDIDATE;
+let currentIosReviewBuild = SOURCE_IOS_CANDIDATE;
+
 const releaseCandidate = section("Release Candidate");
 if (releaseCandidate) {
   const webDeploy = requiredUniqueRow(
@@ -396,16 +439,52 @@ if (releaseCandidate) {
     "Web deploy version",
     "Release Candidate",
   );
-  const androidBuild = requiredUniqueRow(
+  const androidSourceCandidate = requiredUniqueRow(
     releaseCandidate,
     "Field",
-    "Android release track and version/build",
+    "Android checked-in source candidate",
     "Release Candidate",
   );
-  const iosBuild = requiredUniqueRow(
+  const iosSourceCandidate = requiredUniqueRow(
     releaseCandidate,
     "Field",
-    "iOS TestFlight version/build",
+    "iOS checked-in source candidate",
+    "Release Candidate",
+  );
+  const currentAppReview = requiredUniqueRow(
+    releaseCandidate,
+    "Field",
+    "Current App Review version/build",
+    "Release Candidate",
+  );
+  const currentTestFlight = requiredUniqueRow(
+    releaseCandidate,
+    "Field",
+    "Current TestFlight version/build",
+    "Release Candidate",
+  );
+  const currentPlayProduction = requiredUniqueRow(
+    releaseCandidate,
+    "Field",
+    "Current Google Play Production version/build",
+    "Release Candidate",
+  );
+  const currentPlayAlpha = requiredUniqueRow(
+    releaseCandidate,
+    "Field",
+    "Current Google Play Alpha version/build",
+    "Release Candidate",
+  );
+  const currentInstalledAndroid = requiredUniqueRow(
+    releaseCandidate,
+    "Field",
+    "Current installed Android version/build",
+    "Release Candidate",
+  );
+  const currentInstalledIpad = requiredUniqueRow(
+    releaseCandidate,
+    "Field",
+    "Current installed TestFlight iPad version/build",
     "Release Candidate",
   );
   const targetDate = requiredUniqueRow(
@@ -436,27 +515,62 @@ if (releaseCandidate) {
   );
   requireExactBuild(
     "Release Candidate",
-    "Android build must be exact build 1.0.5 (6)",
-    androidBuild?.Value,
-    EXPECTED_ANDROID_BUILD,
+    "Android source candidate must remain 1.0.5 (6)",
+    androidSourceCandidate?.Value,
+    SOURCE_ANDROID_CANDIDATE,
   );
-  const androidTrack = normalize(androidBuild?.Value);
+  requireExactBuild(
+    "Release Candidate",
+    "iOS source candidate must remain 1.0 (5)",
+    iosSourceCandidate?.Value,
+    SOURCE_IOS_CANDIDATE,
+  );
+
+  currentIosReviewBuild = requireCurrentCandidateBuild(
+    "Release Candidate",
+    "App Review",
+    currentAppReview?.Value,
+    SOURCE_IOS_CANDIDATE,
+  ) || SOURCE_IOS_CANDIDATE;
+  currentIosTestFlightBuild = requireCurrentCandidateBuild(
+    "Release Candidate",
+    "TestFlight",
+    currentTestFlight?.Value,
+    SOURCE_IOS_CANDIDATE,
+  ) || SOURCE_IOS_CANDIDATE;
+  const productionBuild = currentIdentityBuild(
+    "Release Candidate",
+    "Google Play Production",
+    currentPlayProduction?.Value,
+  );
+  const alphaBuild = currentIdentityBuild(
+    "Release Candidate",
+    "Google Play Alpha",
+    currentPlayAlpha?.Value,
+  );
+  currentAndroidBuild = requireCurrentCandidateBuild(
+    "Release Candidate",
+    "installed Android",
+    currentInstalledAndroid?.Value,
+    SOURCE_ANDROID_CANDIDATE,
+  ) || SOURCE_ANDROID_CANDIDATE;
+  requireCurrentCandidateBuild(
+    "Release Candidate",
+    "installed TestFlight iPad",
+    currentInstalledIpad?.Value,
+    SOURCE_IOS_CANDIDATE,
+  );
+
   if (
-    !["alpha", "closed testing", "production"].some((track) =>
-      androidTrack.includes(track),
+    ![productionBuild, alphaBuild].some(
+      (build) => normalize(build) === normalize(SOURCE_ANDROID_CANDIDATE),
     )
   ) {
     fail(
       "Release Candidate",
-      "Android release track must identify Alpha, closed testing, or production",
+      "current Google Play Production or Alpha evidence must identify the checked-in Android source candidate",
     );
   }
-  requireExactBuild(
-    "Release Candidate",
-    "iOS TestFlight build must be exact build 1.0 (5)",
-    iosBuild?.Value,
-    EXPECTED_IOS_TESTFLIGHT_BUILD,
-  );
   requireValue("Release Candidate", "store-review target date", targetDate?.Value);
   requirePassing(
     "Release Candidate",
@@ -518,9 +632,9 @@ if (blockers) {
   );
   requireExactBuild(
     "Current Console Blockers",
-    "Apple App Review must remain on build 1.0 (3)",
+    "Apple App Review evidence must match the privately supplied current review identity",
     appleReview?.["Current handoff value"],
-    EXPECTED_IOS_REVIEW_BUILD,
+    currentIosReviewBuild,
   );
 }
 
@@ -612,9 +726,9 @@ if (testerInstall) {
     );
     requireExactBuild(
       "Google Play Tester Install Evidence",
-      "installed Android build must be exact build 1.0.5 (6)",
+      "installed Android evidence must match the privately supplied current installed identity",
       passingInstall["Installed release/version/build"],
-      EXPECTED_ANDROID_BUILD,
+      currentAndroidBuild,
     );
     requireValue(
       "Google Play Tester Install Evidence",
@@ -637,8 +751,8 @@ if (testerInstall) {
 const reviewerAccess = section("Reviewer Access");
 if (reviewerAccess) {
   for (const [platform, expectedBuild] of [
-    ["Apple", EXPECTED_IOS_REVIEW_BUILD],
-    ["Google Play", EXPECTED_ANDROID_BUILD],
+    ["Apple", currentIosReviewBuild],
+    ["Google Play", currentAndroidBuild],
   ]) {
     const row = rowBy(reviewerAccess, "Platform", platform);
     requireValue("Reviewer Access", `${platform} tester alias`, row?.["Tester alias"]);
@@ -673,8 +787,8 @@ if (reviewerAccess) {
 const realDeviceQa = section("Real-Device QA");
 if (realDeviceQa) {
   for (const [platform, expectedBuild] of [
-    ["Android", EXPECTED_ANDROID_BUILD],
-    ["iOS", EXPECTED_IOS_TESTFLIGHT_BUILD],
+    ["Android", currentAndroidBuild],
+    ["iOS", currentIosTestFlightBuild],
   ]) {
     const row = rowBy(realDeviceQa, "Platform", platform);
     for (const column of [
@@ -751,13 +865,13 @@ if (realDeviceQa) {
 const dmEvidence = section("Two-User DM Evidence");
 if (dmEvidence) {
   for (const [platform, expectedBuild] of [
-    ["Android", EXPECTED_ANDROID_BUILD],
-    ["iOS", EXPECTED_IOS_TESTFLIGHT_BUILD],
+    ["Android", currentAndroidBuild],
+    ["iOS", currentIosTestFlightBuild],
   ]) {
     const row = rowBy(dmEvidence, "Platform", platform);
     requireExactBuild(
       "Two-User DM Evidence",
-      `${platform} DM evidence must use exact build ${expectedBuild}`,
+      `${platform} DM evidence must match the privately supplied current identity`,
       row?.["Build or release version"],
       expectedBuild,
     );
