@@ -5,6 +5,10 @@ const config: CapacitorConfig = {
   appName: "TheTattooCore",
   android: {
     adjustMarginsForEdgeToEdge: "auto",
+    appendUserAgent: " TTCNative/Android",
+  },
+  ios: {
+    appendUserAgent: " TTCNative/iOS",
   },
   plugins: {
     Browser: {

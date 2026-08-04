@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Home } from "lucide-react";
 import { NativeAwareSignOutForm } from "../native-aware-signout-form";
@@ -30,11 +31,15 @@ import {
   updateBookingSlot,
 } from "./actions";
 import { AdCampaignForm } from "./ad-campaign-form";
+import { AdCreditPurchaseOptions } from "./ad-credit-purchase-options";
 import { AccountSettingsWorkspace, type AccountSettingsTab } from "./account-settings-workspace";
 import { LicenseDocumentInput } from "./license-document-input";
 import { ProfileForm } from "./profile-form";
 import { PendingSubmitButton } from "../pending-submit-button";
-import { AD_PURCHASES_AVAILABLE } from "@/lib/commerce-launch";
+import {
+  adPurchaseSurfaceEnabled,
+  adPurchaseSurfaceFromUserAgent,
+} from "@/lib/commerce-launch";
 import { countryOptions, languageOptions } from "@/lib/localization";
 import {
   accountDeletionStatusLabel,
@@ -630,6 +635,11 @@ export default async function AccountPage({
   }>;
 }) {
   const params = await searchParams;
+  const requestHeaders = await headers();
+  const adPurchaseSurface = adPurchaseSurfaceFromUserAgent(
+    requestHeaders.get("user-agent"),
+  );
+  const adPurchaseEnabled = adPurchaseSurfaceEnabled(adPurchaseSurface);
   const accountMessage = safeStatusMessage(
     params.message,
     "Account update could not be shown. Please try again or contact Support.",
@@ -725,12 +735,15 @@ export default async function AccountPage({
     >();
   const { data: adCredits } = await supabase
     .from("ad_credit_ledger")
-    .select("amount_cents, used_cents, status")
+    .select("amount_cents, used_cents, status, credit_origin, expires_at")
     .eq("profile_id", claims.sub)
     .eq("status", "active")
+    .or("expires_at.is.null,expires_at.gte.now")
     .returns<
       {
         amount_cents: number;
+        credit_origin: "apple_iap" | "google_play" | "promo" | "stripe_web";
+        expires_at: string | null;
         status: string;
         used_cents: number;
       }[]
@@ -1050,13 +1063,33 @@ export default async function AccountPage({
     (outgoingBookings?.length ?? 0) > bookingLimit;
   const visibleAdCampaigns = (adCampaigns ?? []).slice(0, adLimit);
   const hasMoreAdCampaigns = (adCampaigns?.length ?? 0) > adLimit;
-  const adCreditBalanceCents = (adCredits ?? []).reduce(
+  const activeAdCredits = (adCredits ?? []).filter(
+    (credit) =>
+      credit.status === "active" &&
+      credit.amount_cents > credit.used_cents,
+  );
+  const purchasedAdCreditBalanceCents = activeAdCredits.reduce(
     (total, credit) =>
-      credit.status === "active"
+      credit.credit_origin === "promo"
+        ? total
+        : total + Math.max(0, credit.amount_cents - credit.used_cents),
+    0,
+  );
+  const promotionalAdCreditBalanceCents = activeAdCredits.reduce(
+    (total, credit) =>
+      credit.credit_origin === "promo"
         ? total + Math.max(0, credit.amount_cents - credit.used_cents)
         : total,
     0,
   );
+  const promotionalAdCreditExpiration = activeAdCredits
+    .filter(
+      (credit) => credit.credit_origin === "promo" && credit.expires_at !== null,
+    )
+    .map((credit) => credit.expires_at as string)
+    .sort()[0] ?? null;
+  const adCreditBalanceCents =
+    purchasedAdCreditBalanceCents + promotionalAdCreditBalanceCents;
   const canSubmitLicense =
     profile?.account_type &&
     verificationEligibleAccountTypes.includes(profile.account_type as string);
@@ -3453,7 +3486,7 @@ export default async function AccountPage({
               for admin review. Artist growth ads can run in 4U and Gossip.
               Stuff ads stay in Stuff. Merch ads stay in Merch.
             </p>
-            {!AD_PURCHASES_AVAILABLE ? (
+            {!adPurchaseEnabled ? (
               <p className="mt-4 rounded-md border border-[var(--card-rim)] bg-[color-mix(in_srgb,var(--paper-warm)_95%,transparent)] px-3 py-2 text-sm leading-6 text-[var(--muted)]">
                 Ad purchases are not available yet. You can still prepare and
                 submit campaigns for review.
@@ -3466,11 +3499,32 @@ export default async function AccountPage({
               <p className="mt-1 text-2xl font-bold">
                 {dollars(adCreditBalanceCents)}
               </p>
-              <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
-                Credits remain on your account and can be applied where ad
-                purchasing is available.
-              </p>
+              <div className="mt-2 grid gap-1 text-xs leading-5 text-[var(--muted)] sm:grid-cols-2">
+                <p>
+                  <span className="font-semibold text-[var(--foreground)]">
+                    Purchased credit
+                  </span>{" "}
+                  {dollars(purchasedAdCreditBalanceCents)}. Purchased credit does
+                  not expire.
+                </p>
+                <p>
+                  <span className="font-semibold text-[var(--foreground)]">
+                    Promotional credit
+                  </span>{" "}
+                  {dollars(promotionalAdCreditBalanceCents)}.
+                  {promotionalAdCreditExpiration
+                    ? ` Next expiration ${new Intl.DateTimeFormat("en-US", {
+                        dateStyle: "medium",
+                      }).format(new Date(promotionalAdCreditExpiration))}.`
+                    : " No active promotional credit expires."}
+                </p>
+              </div>
             </div>
+            <AdCreditPurchaseOptions
+              enabled={adPurchaseEnabled}
+              profileId={claims.sub}
+              surface={adPurchaseSurface}
+            />
             <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
               {advertisingStandards.map((standard) => (
                 <p
@@ -3536,8 +3590,10 @@ export default async function AccountPage({
                         {dollars(campaign.daily_budget_cents)} daily cap
                       </span>
                       <span className="rounded-md bg-[color-mix(in_srgb,var(--paper-soft)_92%,transparent)] px-2 py-1">
-                        {dollars(campaign.prepaid_amount_cents)} prepaid /{" "}
-                        {dollars(campaign.platform_fee_cents)} TTC fee
+                        {dollars(campaign.prepaid_amount_cents)} credit funded /{" "}
+                        {campaign.platform_fee_cents > 0
+                          ? `${dollars(campaign.platform_fee_cents)} historical fee`
+                          : "no extra TTC fee"}
                       </span>
                     </div>
                     <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
@@ -3555,10 +3611,11 @@ export default async function AccountPage({
                         </div>
                       ))}
                     </div>
-                    {AD_PURCHASES_AVAILABLE &&
+                    {adPurchaseEnabled &&
                     !["paid", "waived", "checkout_started"].includes(
                       campaign.payment_status,
                     ) &&
+                    adCreditBalanceCents >= campaign.daily_budget_cents &&
                     campaign.daily_budget_cents > 0 ? (
                       <form action="/api/ads/checkout" className="mt-3" method="post">
                         <input
@@ -3572,11 +3629,20 @@ export default async function AccountPage({
                           value="/account#advertising-settings"
                         />
                         <button className="h-10 w-full rounded-md bg-[var(--foreground)] px-4 text-sm font-semibold text-[var(--background)]">
-                          {adCreditBalanceCents >= campaign.daily_budget_cents
-                            ? `Use ${dollars(campaign.daily_budget_cents)} ad credit`
-                            : `Pay ${dollars(campaign.daily_budget_cents)} ad budget`}
+                          Use {dollars(campaign.daily_budget_cents)} ad credit
                         </button>
                       </form>
+                    ) : null}
+                    {adPurchaseEnabled &&
+                    !["paid", "waived", "checkout_started"].includes(
+                      campaign.payment_status,
+                    ) &&
+                    campaign.daily_budget_cents > adCreditBalanceCents ? (
+                      <p className="mt-3 text-xs leading-5 text-[var(--muted)]">
+                        Add {dollars(
+                          campaign.daily_budget_cents - adCreditBalanceCents,
+                        )} more ad credit to fund this campaign.
+                      </p>
                     ) : null}
                   </article>
                 );

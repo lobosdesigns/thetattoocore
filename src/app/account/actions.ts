@@ -877,6 +877,8 @@ export async function submitAdCampaign(formData: FormData) {
       keywords,
       language: language || null,
       name,
+      platform_fee_cents: 0,
+      prepaid_amount_cents: 0,
       region: cleanText(formData.get("region"), 80) || null,
       status: "pending_review",
       target_url: targetUrl,
@@ -2113,7 +2115,7 @@ export async function requestBookingRefundReview(formData: FormData) {
 
   const { data: booking } = await supabase
     .from("booking_requests")
-    .select("id, artist_id, client_id, title, status, payment_status, stripe_payment_intent_id")
+    .select("id, artist_id, client_id, title, status, payment_status")
     .eq("id", bookingId)
     .maybeSingle<{
       artist_id: string;
@@ -2121,7 +2123,6 @@ export async function requestBookingRefundReview(formData: FormData) {
       id: string;
       payment_status: string;
       status: string;
-      stripe_payment_intent_id: string | null;
       title: string;
     }>();
 
@@ -2131,8 +2132,7 @@ export async function requestBookingRefundReview(formData: FormData) {
 
   if (
     booking.status !== "deposit_paid" ||
-    booking.payment_status !== "paid" ||
-    !booking.stripe_payment_intent_id
+    booking.payment_status !== "paid"
   ) {
     redirect(bookingPath("Only paid booking deposits can request refund review."));
   }
@@ -2141,6 +2141,24 @@ export async function requestBookingRefundReview(formData: FormData) {
 
   if (!admin) {
     redirect(bookingPath("Refund review requests need owner tools enabled first."));
+  }
+
+  const { data: paymentIdentity, error: paymentIdentityError } = await admin
+    .from("booking_requests")
+    .select("stripe_payment_intent_id")
+    .eq("id", booking.id)
+    .eq("client_id", booking.client_id)
+    .eq("artist_id", booking.artist_id)
+    .eq("status", "deposit_paid")
+    .eq("payment_status", "paid")
+    .maybeSingle<{ stripe_payment_intent_id: string | null }>();
+
+  if (paymentIdentityError) {
+    console.error("Booking refund payment lookup failed.");
+    redirect(bookingPath("Could not request refund review. Please try again."));
+  }
+  if (!paymentIdentity?.stripe_payment_intent_id) {
+    redirect(bookingPath("Only paid booking deposits can request refund review."));
   }
 
   const { data: existingReviewRequest } = await admin
@@ -2165,7 +2183,6 @@ export async function requestBookingRefundReview(formData: FormData) {
     actor_id: claims.sub,
     event_type: "booking_refund_review_requested",
     metadata: {
-      payment_intent_id: booking.stripe_payment_intent_id,
       reason: reason || null,
       requester_role: booking.client_id === claims.sub ? "client" : "artist",
     },

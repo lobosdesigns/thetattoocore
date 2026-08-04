@@ -64,6 +64,14 @@ production behavior:
 - `TTC_NATIVE_PUSH_DELIVERY_ENABLED`: server-only native delivery/outbox gate; keep `false` until the trusted sender, private credentials, platform capabilities, and Android/iOS delivery evidence pass.
 - `TTC_WEB_PUSH_REGISTRATION_ENABLED`: server-only browser subscription write gate; enable only when browser delivery is independently ready.
 - `TTC_SELLER_CHECKOUT_LINKS_ENABLED`: optional server release gate; keep `false` by default. Exact `true` may expose approved seller-owned Payment Links only after the protected migration, deployment approval, seller-supplied live-link review, real-device QA, and rollback proof are complete.
+- `TTC_WEB_AD_PURCHASES_ENABLED`, `TTC_IOS_AD_PURCHASES_ENABLED`, and `TTC_ANDROID_AD_PURCHASES_ENABLED`: independent server-only ad-credit purchase gates. Keep every gate `false` until its provider configuration, signed lifecycle notifications, sandbox or licensed-tester purchase, refund/revocation, recovery, and rollback evidence pass.
+- `APPLE_APP_STORE_BUNDLE_ID` and `APPLE_APP_STORE_APP_ID`: fixed Apple application identity used for server-side StoreKit transaction verification.
+- `APPLE_APP_STORE_ALLOW_SANDBOX`: explicit Apple verification-mode switch. Production configuration keeps it `false`; a separately controlled sandbox runtime may set exact `true` for TestFlight/StoreKit QA.
+- `APPLE_APP_STORE_ROOT_CA_PEM`: server-only trusted Apple root certificate chain used by the App Store Server Library. Keep the certificate binding out of client bundles and committed source.
+- `GOOGLE_PLAY_PACKAGE_NAME`: fixed Android package identity used for Google Play Developer API verification.
+- `GOOGLE_PLAY_ALLOW_TEST_PURCHASES`: explicit Google purchase-mode switch. Production configuration keeps it `false`; enable only in an isolated licensed-tester QA runtime.
+- `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`: server-only Google Play Developer API service account credential. Never place it in Android assets or browser-visible configuration.
+- `GOOGLE_PLAY_PUBSUB_AUDIENCE`, `GOOGLE_PLAY_PUBSUB_SERVICE_ACCOUNT_EMAIL`, and `GOOGLE_PLAY_PUBSUB_SUBSCRIPTION`: exact authenticated Real-time Developer Notifications push identity. Missing or mismatched values reject the notification before lifecycle state changes.
 - `TTC_ANDROID_APP_LINK_PACKAGE_NAME`: Android package name used by the public app-link association route.
 - `TTC_ANDROID_APP_LINK_SHA256_CERT_FINGERPRINTS`: private deploy-time Google Play app-signing SHA-256 fingerprint list for `/.well-known/assetlinks.json`; keep the placeholder until final signing proof is ready.
 - `TTC_IOS_APP_LINK_APP_IDS`: private deploy-time Apple team/app identifier list for `/.well-known/apple-app-site-association`; keep the placeholder until Associated Domains proof is ready.

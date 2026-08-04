@@ -12,6 +12,14 @@ const files = {
   googleReleaseNotesInternal: "native/store-metadata/google-play/en-US/release-notes-internal.txt",
   googleShort: "native/store-metadata/google-play/en-US/short-description.txt",
   googleTitle: "native/store-metadata/google-play/en-US/title.txt",
+  androidAdPurchaseController:
+    "native/thetattoocore-mobile/android/app/src/main/java/com/thetattoocore/app/payments/TtcAdPurchasesController.java",
+  iosAdPurchasePlugin:
+    "native/thetattoocore-mobile/ios/App/App/TtcAdPurchasesPlugin.swift",
+  adCreditPackages: "src/lib/ads/credit-packages.ts",
+  envExample: ".env.example",
+  legalReviewPrep: "docs/LEGAL_REVIEW_PREP.md",
+  paymentReadiness: "docs/PAYMENT_PRODUCTION_READINESS.md",
   readiness: "docs/APP_STORE_READINESS.md",
   dataSafetyPrep: "docs/DATA_SAFETY_PREP.md",
   realDeviceQa: "docs/REAL_DEVICE_QA_CHECKLIST.md",
@@ -20,6 +28,7 @@ const files = {
   readme: "native/store-metadata/README.md",
   screenshotGenerator: "scripts/generate-safe-store-screenshots.mjs",
   screenshotInventory: "native/store-metadata/screenshot-inventory.md",
+  wranglerConfig: "wrangler.jsonc",
 };
 
 const read = (path) =>
@@ -41,6 +50,16 @@ const publicMetadataKeys = [
 ];
 const publicMetadataText = publicMetadataKeys.map((key) => source[key]).join("\n").toLowerCase();
 const storeScreenshotText = source.screenshotGenerator.toLowerCase();
+const adCreditProductIds = [
+  "ttc.adcredit.2500",
+  "ttc.adcredit.5000",
+  "ttc.adcredit.10000",
+];
+const adPurchaseGates = [
+  "TTC_WEB_AD_PURCHASES_ENABLED",
+  "TTC_IOS_AD_PURCHASES_ENABLED",
+  "TTC_ANDROID_AD_PURCHASES_ENABLED",
+];
 
 function markdownSection(markdown, heading, nextHeading) {
   const start = markdown.indexOf(heading);
@@ -613,6 +632,27 @@ const checks = [
       currentStoreBoundaryMutants.every(
         (mutant) => !currentStoreBoundaryIsSafe(mutant),
       ),
+  },
+  {
+    label: "paid-ad store products stay fixed, documented, and dark by default",
+    ok:
+      adCreditProductIds.every(
+        (productId) =>
+          source.adCreditPackages.includes(`\"${productId}\"`) &&
+          source.iosAdPurchasePlugin.includes(`\"${productId}\"`) &&
+          source.androidAdPurchaseController.includes(`\"${productId}\"`) &&
+          source.paymentReadiness.includes(`\`${productId}\``),
+      ) &&
+      adPurchaseGates.every(
+        (gate) =>
+          source.envExample.includes(`${gate}=false`) &&
+          source.wranglerConfig.includes(`\"${gate}\": \"false\"`) &&
+          source.legalReviewPrep.includes(`\`${gate}=false\``),
+      ) &&
+      source.legalReviewPrep.includes("Apple App Review Guidelines 3.1.3(g), checked August 3, 2026") &&
+      source.legalReviewPrep.includes("Google Play Payments policy sections 2 and 4, checked August 3, 2026") &&
+      source.paymentReadiness.includes("store products are not configured") &&
+      source.paymentReadiness.includes("each surface enablement remain separate approval gates"),
   },
   {
     label: "store readiness docs keep current console blockers guarded",

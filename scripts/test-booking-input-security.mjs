@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import vm from "node:vm";
+import ts from "typescript";
 
 const accountActions = readFileSync("src/app/account/actions.ts", "utf8");
 const appActions = readFileSync("src/app/actions.ts", "utf8");
@@ -165,6 +167,164 @@ assertIncludes(accountActions, "Keep refund review notes under 500 characters.",
 assertIncludes(accountActions, "if (error || !updatedBooking)", "duplicate lifecycle submissions stop before side effects");
 assertIncludes(accountActions, '["accept", "decline", "changes"].includes(decision)', "artist response decisions use a status allowlist");
 assertIncludes(accountActions, 'bookingDateTime(formData.get("scheduled_start_at"))', "reschedule timestamps use server-side date validation");
+
+const refundReviewStart = accountActions.indexOf(
+  "export async function requestBookingRefundReview",
+);
+const refundReviewEnd = accountActions.indexOf(
+  "export async function createBookingAppointmentType",
+  refundReviewStart,
+);
+const refundReviewAction = accountActions.slice(refundReviewStart, refundReviewEnd);
+assert.ok(refundReviewStart >= 0 && refundReviewEnd > refundReviewStart);
+assert.equal(
+  refundReviewAction.includes(
+    'status, payment_status, stripe_payment_intent_id',
+  ),
+  false,
+  "authenticated booking lookup excludes the private payment intent id",
+);
+for (const fragment of [
+  '.select("id, artist_id, client_id, title, status, payment_status")',
+  "if (!booking || ![booking.artist_id, booking.client_id].includes(claims.sub))",
+  "const admin = createAdminClient();",
+  '.from("booking_requests")',
+  '.select("stripe_payment_intent_id")',
+  '.eq("client_id", booking.client_id)',
+  '.eq("artist_id", booking.artist_id)',
+  '.eq("status", "deposit_paid")',
+  '.eq("payment_status", "paid")',
+]) {
+  assertIncludes(
+    refundReviewAction,
+    fragment,
+    "refund review authorizes through RLS before its service-only payment lookup",
+  );
+}
+assert.ok(
+  refundReviewAction.indexOf("const admin = createAdminClient();") <
+    refundReviewAction.indexOf('.select("stripe_payment_intent_id")'),
+  "private payment identity is read only through the service client",
+);
+assert.equal(
+  refundReviewAction.includes("payment_intent_id: paymentIdentity"),
+  false,
+  "refund-review audits do not copy private payment identifiers",
+);
+
+function sourceFunction(name, nextName) {
+  const declarationStart = accountActions.indexOf(`function ${name}(`);
+  const end = accountActions.indexOf(nextName, declarationStart);
+  assert.ok(declarationStart >= 0 && end > declarationStart, `extract ${name}`);
+  return accountActions.slice(declarationStart, end);
+}
+
+const directActionSource = [
+  'type Claims = { email?: string; sub: string };',
+  sourceFunction("accountPath", "function safeInternalReturnPath"),
+  sourceFunction("safeInternalReturnPath", "function bookingRedirectPath"),
+  sourceFunction("bookingRedirectPath", "function verificationPath"),
+  sourceFunction("cleanText", "function cleanUuid"),
+  sourceFunction("cleanUuid", "function cleanBoundedText"),
+  sourceFunction("cleanBoundedText", "function cleanProfileUsername"),
+  sourceFunction("bookingPath", "async function requireBookingManager"),
+  refundReviewAction,
+].join("\n");
+const directActionOutput = ts.transpileModule(directActionSource, {
+  compilerOptions: {
+    module: ts.ModuleKind.CommonJS,
+    target: ts.ScriptTarget.ES2022,
+  },
+  reportDiagnostics: true,
+});
+assert.equal(
+  (directActionOutput.diagnostics ?? []).filter(
+    (diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error,
+  ).length,
+  0,
+  "refund-review action harness transpiles",
+);
+
+function loadRefundReviewAction({ adminClient, memberClient, redirects }) {
+  const loaded = { exports: {} };
+  const wrapper = vm.runInThisContext(
+    `(function (exports, module, createClient, createAdminClient, redirect, revalidatePath) {${directActionOutput.outputText}\n})`,
+  );
+  wrapper(
+    loaded.exports,
+    loaded,
+    async () => memberClient,
+    () => adminClient,
+    (path) => {
+      redirects.push(path);
+      throw new Error(`REDIRECT:${path}`);
+    },
+    () => {},
+  );
+  return loaded.exports.requestBookingRefundReview;
+}
+
+function bookingForm(bookingId) {
+  const form = new FormData();
+  form.set("booking_id", bookingId);
+  form.set("refund_reason", "Please review this deposit.");
+  return form;
+}
+
+let memberClientCalls = 0;
+let adminClientCalls = 0;
+const malformedRedirects = [];
+const malformedAction = loadRefundReviewAction({
+  adminClient: null,
+  memberClient: null,
+  redirects: malformedRedirects,
+});
+await assert.rejects(
+  malformedAction(bookingForm("id.eq.00000000-0000-4000-8000-000000000101")),
+  /REDIRECT:/,
+);
+assert.equal(memberClientCalls, 0);
+assert.equal(adminClientCalls, 0);
+
+const hostileRedirects = [];
+const hostileMemberClient = {
+  auth: {
+    async getClaims() {
+      return { data: { claims: { sub: validUuid } } };
+    },
+  },
+  from() {
+    memberClientCalls += 1;
+    return {
+      select() {
+        return this;
+      },
+      eq() {
+        return this;
+      },
+      async maybeSingle() {
+        return { data: null };
+      },
+    };
+  },
+};
+const hostileAction = loadRefundReviewAction({
+  adminClient: {
+    from() {
+      adminClientCalls += 1;
+      throw new Error("privileged lookup must not run");
+    },
+  },
+  memberClient: hostileMemberClient,
+  redirects: hostileRedirects,
+});
+await assert.rejects(
+  hostileAction(bookingForm("00000000-0000-4000-8000-000000000102")),
+  /REDIRECT:/,
+);
+assert.equal(memberClientCalls, 1);
+assert.equal(adminClientCalls, 0);
+console.log("PASS hostile booking refund IDs stop before privileged lookup or audit");
 
 assertIncludes(bookingCheckout, "hasSupportedFormContentType(request)", "checkout rejects unsupported content types");
 assertIncludes(bookingCheckout, "hasSafeFormSize(request)", "checkout caps form body size before parsing");
