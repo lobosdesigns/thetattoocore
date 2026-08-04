@@ -32,7 +32,17 @@ export function ProtectedVideo({
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleLoadedMetadata = () => primeVideoPreview(video);
+
+    video.addEventListener("loadedmetadata", handleLoadedMetadata);
     primeVideoPreview(videoRef.current);
+
+    return () => {
+      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+    };
   }, [src]);
 
   function maybeStopClick(event: MouseEvent<HTMLVideoElement>) {

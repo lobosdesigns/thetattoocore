@@ -41,7 +41,13 @@ const checks = [
       protectedVideo.includes("videoPreviewTime") &&
       protectedVideo.includes("Math.min(0.1, duration / 2)") &&
       protectedVideo.includes("useRef<HTMLVideoElement>(null)") &&
+      protectedVideo.includes(
+        'video.addEventListener("loadedmetadata", handleLoadedMetadata)',
+      ) &&
       protectedVideo.includes("primeVideoPreview(videoRef.current)") &&
+      protectedVideo.includes(
+        'video.removeEventListener("loadedmetadata", handleLoadedMetadata)',
+      ) &&
       protectedVideo.includes("ref={videoRef}") &&
       protectedVideo.includes(
         "onLoadedMetadata={(event) => primeVideoPreview(event.currentTarget)}",
