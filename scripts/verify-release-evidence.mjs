@@ -4,7 +4,7 @@ import { isAbsolute, relative, resolve } from "node:path";
 
 const EXPECTED_ANDROID_BUILD = "1.0.4 (5)";
 const EXPECTED_IOS_TESTFLIGHT_BUILD = "1.0 (5)";
-const EXPECTED_IOS_REVIEW_BUILD = "1.0 (3)";
+const EXPECTED_IOS_REVIEW_BUILD = "1.0 (4)";
 const REQUIRED_LEGAL_REVIEW_AREAS = [
   "Terms and Privacy match submitted build",
   "Account deletion language and handling",
@@ -518,7 +518,7 @@ if (blockers) {
   );
   requireExactBuild(
     "Current Console Blockers",
-    "Apple App Review must remain on build 1.0 (3)",
+    "Apple App Review must remain on build 1.0 (4)",
     appleReview?.["Current handoff value"],
     EXPECTED_IOS_REVIEW_BUILD,
   );

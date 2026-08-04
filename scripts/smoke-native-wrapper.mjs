@@ -146,27 +146,26 @@ const androidApi36DocsReady =
   androidApi36SubmissionReady &&
   androidVersionCode === 5 &&
   androidVersionName === "1.0.4" &&
-  source.nativePrep.includes(
-    "Active Production and Alpha release `1.0.3 (4)` is `36 / 36`",
-  ) &&
-  source.nativePrep.includes("Checked-in replacement candidate") &&
+  source.nativePrep.includes("Reported Google Play Production and Alpha") &&
+  source.nativePrep.includes("external Alpha: reported `1.0.5 (6)`") &&
+  source.nativePrep.includes("Checked-in branch source candidate") &&
   source.nativePrep.includes("`1.0.4 (5)` at `36 / 36`") &&
-  source.nativePrep.includes("Record API `36 / 36` rebuild proof") &&
+  source.nativePrep.includes("Record API `36 / 36` source proof") &&
   source.nativePrep.includes("Previous Google Play baseline") &&
   source.nativePrep.includes("do not keep it in the active alert allowlist") &&
   source.mobileRunbook.includes(
-    "checked-in replacement `1.0.4 (5)` uses the same API 36 baseline",
+    "Reported Production `1.0.3 (4)`, reported external Alpha `1.0.5 (6)`, and checked-in replacement source `1.0.4 (5)` are three distinct identities",
   ) &&
   source.mobileRunbook.includes(
-    "Checked-in Android `1.0.4 (5)` and iOS `1.0 (5)` are replacement candidates",
+    "Android source on this branch is `1.0.4 (5)`; iOS source is `1.0 (5)`",
   ) &&
   source.readme.includes("checked-in release targets `36 / 36`") &&
   source.readme.includes(
-    "Google Play Production and Closed testing - Alpha both serve version code `4` / version name `1.0.3`",
+    "Google Play Production `1.0.3 (4)` and a distinct external Closed testing - Alpha `1.0.5 (6)`",
   ) &&
-  source.readme.includes("checked-in replacement candidate is `1.0.4 (5)`") &&
-  source.readme.includes("| Current Play Production release | `36 / 36`; active `4` / `1.0.3` |") &&
-  source.readme.includes("| Checked-in replacement candidate | `36 / 36`; `5` / `1.0.4` |") &&
+  source.readme.includes("checked-in branch source candidate remains `1.0.4 (5)`") &&
+  source.readme.includes("| Reported Play Production release | `36 / 36`; reported `4` / `1.0.3` |") &&
+  source.readme.includes("| Checked-in branch source candidate | `36 / 36`; `5` / `1.0.4` |") &&
   source.readme.includes("| Previous Play baseline | `36 / 36`; historical `3` / `1.0.2` |");
 const androidApi35InternalOnly =
   compileSdkVersion === 35 &&
@@ -396,7 +395,7 @@ const checks = [
       source.appLinkSmoke.includes("validateAndroidPayload") &&
       source.appLinkSmoke.includes("validateIosPayload") &&
       source.appLinkSmoke.includes("fail-closed until private identifiers are configured") &&
-      source.rootPackageJson.includes('"smoke:app-links": "node scripts/smoke-app-link-associations.mjs"') &&
+      source.rootPackageJson.includes('"smoke:app-links": "npm run test:app-link-routing && node scripts/smoke-app-link-associations.mjs"') &&
       source.rootPackageJson.includes("npm run smoke:native && npm run test:native-push-delivery && npm run smoke:native-push && npm run smoke:app-links && npm run smoke:handoff") &&
       source.nativePrep.includes("fail-closed `.well-known` association routes") &&
       source.nativePrep.includes("Run `npm.cmd run smoke:app-links` after deployment") &&
@@ -448,7 +447,7 @@ const checks = [
       source.nativePrep.includes("August 31, 2026") &&
       source.nativePrep.includes("Android 16 / API 36") &&
       source.mobileRunbook.includes(
-        "checked-in replacement `1.0.4 (5)` uses the same API 36 baseline",
+        "Reported Production `1.0.3 (4)`, reported external Alpha `1.0.5 (6)`, and checked-in replacement source `1.0.4 (5)` are three distinct identities",
       ) &&
       source.readme.includes("support@thetattoocore.com") &&
       source.readme.includes("Native permissions at first beta: none") &&
@@ -559,7 +558,7 @@ const checks = [
       source.nativePrep.includes("## Native Push Private Evidence Matrix") &&
       source.nativePrep.includes("| Firebase project | Project exists for TheTattooCore") &&
       source.nativePrep.includes("| Android app config | Android app config file added only to the private build environment") &&
-      source.nativePrep.includes("| iOS app config | Checked-in build `1.0 (4)` references the ignored private app config") &&
+      source.nativePrep.includes("| iOS app config | Checked-in source build `1.0 (5)` references the ignored private app config") &&
       source.nativePrep.includes("| Device token registration | Signed-in Android and iOS devices register and refresh tokens") &&
       source.nativePrep.includes("| Delivery and tap routing | Alerts deliver for the tested categories") &&
       source.nativePrep.includes("| Preference controls | Per-device opt-out, quiet hours, and category preferences stop delivery") &&
@@ -624,7 +623,7 @@ const checks = [
       source.readme.includes("Android release bundling fails closed") &&
       source.nativePrep.includes("Enable Firebase/FCM notification delivery only after") &&
       source.mobileRunbook.includes("Firebase project, native app config files") &&
-      source.readiness.includes("staged with global delivery off"),
+      source.readiness.includes("global delivery fail closed"),
     message: checkedInNativePushConfigFiles.length
       ? `Remove native push config from repo before public review: ${checkedInNativePushConfigFiles.join(", ")}`
       : undefined,
@@ -640,15 +639,13 @@ const checks = [
       (androidApi36DocsReady || androidApi35InternalOnly),
   },
   {
-    label: "native Android next upload uses a fresh Play version code",
+    label: "native Android source and new-upload version identities stay distinct",
     ok:
       androidApi36SubmissionReady &&
       androidVersionCode === 5 &&
       androidVersionName === "1.0.4" &&
-      source.readiness.includes(
-        "Google Play currently serves API 36 release `1.0.3 (4)` in public production and Closed testing - Alpha",
-      ) &&
-      source.readiness.includes("any replacement must increment above version code `4`") &&
+      source.readiness.includes("external Alpha `1.0.5 (6)`, and branch source candidate `1.0.4 (5)`") &&
+      source.readiness.includes("any newly uploaded replacement must use an unused version code above `6`") &&
       source.realDeviceQa.includes("versionName` and `versionCode` checked into"),
   },
   {
@@ -675,7 +672,7 @@ const checks = [
       !source.readme.includes("Run `npm run sync`") &&
       source.readme.includes("Confirm the mapped TTC icon/splash assets stay current") &&
       source.readiness.includes("Validate the existing beta wrapper") &&
-      source.readiness.includes("rebuild signed Android upload bundles") &&
+      source.readiness.includes("rebuild only when the selected artifact is proved unusable or a separately approved replacement is required") &&
       source.readiness.includes("Confirm the mapped native icon/splash assets remain current") &&
       !source.readiness.includes("Create and validate the beta wrapper") &&
       !source.readiness.includes("once Android/iOS packaging starts"),

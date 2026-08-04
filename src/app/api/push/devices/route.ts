@@ -9,6 +9,7 @@ import {
   nativePushQaBuildAllowed,
   nativePushQaRoleAllowed,
 } from "@/lib/native-push/qa-access";
+import { readBoundedRequestBytes } from "@/lib/http/bounded-request-body.mjs";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -23,16 +24,33 @@ type NativeDevicePayload = {
 };
 
 const maxActiveDevices = 10;
-function cleanString(value: unknown, maxLength: number) {
-  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
-}
+const maxNativeDeviceBodyBytes = 12_000;
+const controlCharacterPattern = /[\u0000-\u001f\u007f]/;
 
 function cleanRequiredString(value: unknown, maxLength: number) {
   if (typeof value !== "string") return null;
 
   const cleaned = value.trim();
 
-  return cleaned.length > 0 && cleaned.length <= maxLength ? cleaned : null;
+  return value.length <= maxLength &&
+    cleaned.length > 0 &&
+    !controlCharacterPattern.test(cleaned)
+    ? cleaned
+    : null;
+}
+
+function cleanRequiredOpaqueString(value: unknown, maxLength: number) {
+  if (
+    typeof value !== "string" ||
+    value.length === 0 ||
+    value.length > maxLength ||
+    value !== value.trim() ||
+    controlCharacterPattern.test(value)
+  ) {
+    return null;
+  }
+
+  return value;
 }
 
 function validToken(token: string) {
@@ -74,16 +92,16 @@ async function authenticatedProfile() {
 }
 
 async function readPayload(request: Request) {
-  const contentLength = Number(request.headers.get("content-length") ?? "0");
+  const body = await readBoundedRequestBytes(
+    request,
+    maxNativeDeviceBodyBytes,
+  );
 
-  if (Number.isFinite(contentLength) && contentLength > 12_000) return null;
+  if (!body.ok) return null;
 
   try {
-    const body = await request.text();
-
-    if (body.length > 12_000) return null;
-
-    return JSON.parse(body) as NativeDevicePayload;
+    const text = new TextDecoder("utf-8", { fatal: true }).decode(body.bytes);
+    return JSON.parse(text) as NativeDevicePayload;
   } catch {
     return null;
   }
@@ -109,9 +127,12 @@ export async function GET(request: Request) {
 
   const searchParams = new URL(request.url).searchParams;
   const platform = cleanPlatform(searchParams.get("platform"));
-  const installationId = cleanString(searchParams.get("installationId"), 36);
+  const installationId = cleanRequiredOpaqueString(
+    searchParams.get("installationId"),
+    36,
+  );
 
-  if (!platform || !validDeviceAlertUuid(installationId)) {
+  if (!platform || !installationId || !validDeviceAlertUuid(installationId)) {
     return NextResponse.json({ error: "Invalid device registration." }, { status: 400 });
   }
 
@@ -159,13 +180,15 @@ export async function POST(request: Request) {
   const appBuild = cleanRequiredString(payload?.appBuild, 40);
   const appVersion = cleanRequiredString(payload?.appVersion, 40);
   const platform = cleanPlatform(payload?.platform);
-  const installationId = cleanString(payload?.installationId, 36);
-  const token = cleanString(payload?.token, 4096);
+  const installationId = cleanRequiredOpaqueString(payload?.installationId, 36);
+  const token = cleanRequiredOpaqueString(payload?.token, 4096);
 
   if (
     !appBuild ||
     !appVersion ||
     !platform ||
+    !installationId ||
+    !token ||
     !validDeviceAlertUuid(installationId) ||
     !validToken(token)
   ) {
@@ -306,9 +329,9 @@ export async function DELETE(request: Request) {
 
   const payload = await readPayload(request);
   const platform = cleanPlatform(payload?.platform);
-  const installationId = cleanString(payload?.installationId, 36);
+  const installationId = cleanRequiredOpaqueString(payload?.installationId, 36);
 
-  if (!platform || !validDeviceAlertUuid(installationId)) {
+  if (!platform || !installationId || !validDeviceAlertUuid(installationId)) {
     return NextResponse.json({ error: "Invalid device registration." }, { status: 400 });
   }
 

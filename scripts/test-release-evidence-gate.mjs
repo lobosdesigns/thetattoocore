@@ -110,16 +110,16 @@ const mixedAppReviewFixture = writeVariant(
   "mixed-app-review.md",
   (source) =>
     source.replace(
-      "| Apple | App Review monitoring and response evidence | App Store Connect iOS App Version 1.0 build 1.0 (3) | passed | fixture-proof |",
-      "| Apple | App Review monitoring and response evidence | App Store Connect iOS App Version 1.0 build 1.0 (3) plus stale 1.0 (2) | passed | fixture-proof |",
+      "| Apple | App Review monitoring and response evidence | App Store Connect iOS App Version 1.0 build 1.0 (4) | passed | fixture-proof |",
+      "| Apple | App Review monitoring and response evidence | App Store Connect iOS App Version 1.0 build 1.0 (4) plus stale 1.0 (3) | passed | fixture-proof |",
     ),
 );
 const mismatchedAppReviewFixture = writeVariant(
   "mismatched-app-review.md",
   (source) =>
     source.replace(
-      "| Apple | App Review monitoring and response evidence | App Store Connect iOS App Version 1.0 build 1.0 (3) | passed | fixture-proof |",
       "| Apple | App Review monitoring and response evidence | App Store Connect iOS App Version 1.0 build 1.0 (4) | passed | fixture-proof |",
+      "| Apple | App Review monitoring and response evidence | App Store Connect iOS App Version 1.0 build 1.0 (3) | passed | fixture-proof |",
     ),
 );
 const productionTrackFixture = writeVariant("production-track.md", (source) =>
@@ -456,7 +456,7 @@ const checks = [
     verify(result) {
       return (
         result.status === 1 &&
-        result.stderr.includes("Apple App Review must remain on build 1.0 (3)")
+        result.stderr.includes("Apple App Review must remain on build 1.0 (4)")
       );
     },
   },
@@ -475,7 +475,7 @@ const checks = [
     verify(result) {
       return (
         result.status === 1 &&
-        result.stderr.includes("Apple App Review must remain on build 1.0 (3)")
+        result.stderr.includes("Apple App Review must remain on build 1.0 (4)")
       );
     },
   },

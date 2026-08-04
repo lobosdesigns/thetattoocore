@@ -265,9 +265,7 @@ const checks = [
       middlewareSource.includes('redirectUrl.protocol = "https:"') &&
       middlewareSource.includes("redirectUrl.hostname = canonicalHost") &&
       middlewareSource.includes('redirectUrl.port = ""') &&
-      middlewareSource.includes("NextResponse.redirect(redirectUrl, 308)") &&
-      middlewareSource.indexOf("const redirectUrl = canonicalRedirectUrl(request)") <
-        middlewareSource.indexOf('request.nextUrl.pathname === "/.well-known/assetlinks.json"'),
+      middlewareSource.includes("NextResponse.redirect(redirectUrl, 308)"),
   },
   {
     label: "Canonical redirect does not target local, preview, or unrelated hosts",

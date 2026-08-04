@@ -1,5 +1,19 @@
 # Legal Review Prep
 
+## Urgent Owner Decisions - August 4, 2026
+
+- App Store Connect iOS `1.0 (4)` is Waiting for Review with automatic
+  release selected. Build `1.0 (5)` is newer but is not the reviewed build.
+  Unless publishing build 4 automatically is intentional, the App Store owner
+  must switch the pending version to manual release before approval.
+- Before any Stripe provider onboarding, the business owner must decide who is
+  merchant of record, who owns the customer relationship, who pays processing
+  fees, who carries negative balances, and who funds and operates refunds and
+  disputes. See
+  `docs/release/v1.1.0-stripe-architecture-decision.md`.
+- These are owner/console/business actions. No repository change proves that
+  either decision has been completed.
+
 Use this private checklist before public App Store or Google Play review, production commerce promotion, wider beta expansion, or final Terms/Privacy updates. This is an evidence handoff for counsel or the approved business reviewer; it is not member-facing copy.
 
 ## Review Scope

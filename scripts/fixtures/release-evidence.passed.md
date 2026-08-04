@@ -17,7 +17,7 @@
 
 | Platform | Blocker | Current handoff value | Result | Private proof filename or location |
 | --- | --- | --- | --- | --- |
-| Apple | App Review monitoring and response evidence | App Store Connect iOS App Version 1.0 build 1.0 (3) | passed | fixture-proof |
+| Apple | App Review monitoring and response evidence | App Store Connect iOS App Version 1.0 build 1.0 (4) | passed | fixture-proof |
 | Apple | Submitted-build console field evidence | Saved | passed | fixture-proof |
 | Apple | Accessibility Nutrition Labels evidence | Voluntary and unclaimed | n/a | fixture-proof |
 | Google Play | Closed testing production-access evidence | Organization account requirement reviewed | n/a | fixture-proof |
@@ -59,7 +59,7 @@
 
 | Platform | Tester alias | Account state | Build or track validated | Private proof filename or location | Proof date | Result | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Apple | fixture-reviewer | email-confirmed | App Review 1.0 (3) | fixture-apple-reviewer-proof | 2026-07-23 | passed | Validated |
+| Apple | fixture-reviewer | email-confirmed | App Review 1.0 (4) | fixture-apple-reviewer-proof | 2026-07-23 | passed | Validated |
 | Google Play | fixture-reviewer | email-confirmed | Alpha 1.0.4 (5) | fixture-google-reviewer-proof | 2026-07-23 | passed | Validated |
 
 ## Real-Device QA

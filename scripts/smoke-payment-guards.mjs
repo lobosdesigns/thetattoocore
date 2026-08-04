@@ -107,9 +107,9 @@ const fees = readFileSync("src/lib/payments/fees.ts", "utf8");
 const statusLabels = readFileSync("src/lib/status-labels.ts", "utf8");
 const productPlan = readFileSync("docs/PRODUCT_PLAN.md", "utf8");
 const paymentReadiness = readFileSync("docs/PAYMENT_PRODUCTION_READINESS.md", "utf8");
-const currentPaymentDashboardState =
+const currentPaymentBoundary =
   paymentReadiness.match(
-    /^- July 24, 2026 current dashboard state:[^\r\n]*$/m,
+    /## Develop-Based Architecture Boundary - August 4, 2026[\s\S]*?(?=\n## Current Position)/,
   )?.[0] ?? "";
 const packageJson = readFileSync("package.json", "utf8");
 const paymentCutoverGate = readFileSync(
@@ -438,25 +438,19 @@ checks.push({
     : undefined,
 });
 checks.push({
-  label: "payment readiness keeps dashboard live-money blockers explicit",
+  label: "payment readiness keeps unverified live-money blockers explicit",
   ok:
-    currentPaymentDashboardState.includes("Production account activation and Connect configuration are complete") &&
-    currentPaymentDashboardState.includes("both identity workflows") &&
-    currentPaymentDashboardState.includes("owner-accepted platform agreement") &&
-    currentPaymentDashboardState.includes("signed synthetic non-money event returned `200`") &&
-    currentPaymentDashboardState.includes("server payment key remains in test mode") &&
-    currentPaymentDashboardState.includes("expected live mode remains unset") &&
-    currentPaymentDashboardState.includes("checkout and seller onboarding remain blocked") &&
-    currentPaymentDashboardState.includes("no money moved") &&
+    currentPaymentBoundary.includes("NOT READY FOR PAYMENT ACTIVATION") &&
+    currentPaymentBoundary.includes("does not have independent fail-closed release gates for booking") &&
+    currentPaymentBoundary.includes("seller onboarding") &&
+    currentPaymentBoundary.includes("Reported same-URL webhook destinations") &&
+    currentPaymentBoundary.includes("endpoint identifiers, source scopes, signing-secret mappings") &&
+    currentPaymentBoundary.includes("Those fields remain **UNVERIFIED**") &&
+    currentPaymentBoundary.includes("No account,") &&
+    currentPaymentBoundary.includes("Stripe setting was created or changed") &&
     paymentReadiness.includes("STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false") &&
     paymentReadiness.includes("immediate transfer to the connected seller balance") &&
-    currentPaymentDashboardState.includes("Live-money cutover remains blocked") &&
-    currentPaymentDashboardState.includes("webhook mode/event proof") &&
-    currentPaymentDashboardState.includes("Admin reconciliation") &&
-    currentPaymentDashboardState.includes("controlled purchase/refund proof") &&
-    currentPaymentDashboardState.includes("refund/dispute procedure") &&
-    currentPaymentDashboardState.includes("payout gate") &&
-    currentPaymentDashboardState.includes("native checkout policy review") &&
+    paymentReadiness.includes("Do not treat the historical `200` as current live-binding or architecture proof") &&
     paymentReadiness.includes("private handoff"),
 });
 checks.push({
@@ -718,7 +712,7 @@ checks.push({
     ) &&
     packageJson.includes('"test:stripe-checkout-sessions"') &&
     packageJson.includes(
-      '"smoke:payments": "npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && node scripts/smoke-payment-guards.mjs"',
+      '"smoke:payments": "npm run test:payment-webhook-config && npm run test:payment-request-body-bounds && npm run test:stripe-checkout-sessions && node scripts/smoke-payment-guards.mjs"',
     ),
 });
 checks.push({
@@ -1299,7 +1293,7 @@ checks.push({
     paymentReadiness.includes("account.updated") &&
     packageJson.includes('"test:payment-webhook-config"') &&
     packageJson.includes(
-      '"smoke:payments": "npm run test:payment-webhook-config && npm run test:stripe-checkout-sessions && node scripts/smoke-payment-guards.mjs"',
+      '"smoke:payments": "npm run test:payment-webhook-config && npm run test:payment-request-body-bounds && npm run test:stripe-checkout-sessions && node scripts/smoke-payment-guards.mjs"',
     ) &&
     adminPaymentsPage.includes("const paymentReconciliationChecks = [") &&
     adminPaymentsPage.includes("const sellerPayoutQaChecks = [") &&

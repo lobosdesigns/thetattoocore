@@ -232,7 +232,7 @@ the private release shell before rerunning the probe.
 
 Before certifying the checked-in candidate, clear both override variables. An
 override may inspect another selected track, but it must not be used as passing
-evidence for candidate `1.0.3 (4)`.
+evidence for candidate `1.0.4 (5)`.
 
 For a repo-safe status summary from this machine, run:
 

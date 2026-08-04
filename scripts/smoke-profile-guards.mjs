@@ -293,7 +293,10 @@ const checks = [
       profilePage.includes("!blockedProfileIds.has(follow.profiles.id)") &&
       profilePage.includes("!blockedProfileIds.has(artist.id)") &&
       profilePage.includes("followers={visibleFollowerPreview}") &&
-      profilePage.includes("const followPreviewProfileMap = await loadPublicProfileMap") &&
+      profilePage.includes("const visibleProfileLoader = claims?.sub") &&
+      profilePage.includes("? loadAuthenticatedProfileMap") &&
+      profilePage.includes(": loadPublicProfileMap") &&
+      profilePage.includes("const visibleProfileMap = await visibleProfileLoader") &&
       profilePage.includes("const hydratedFollowerPreview") &&
       profilePage.includes("artists={visibleLinkedArtists}"),
   },

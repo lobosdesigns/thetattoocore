@@ -52,7 +52,12 @@ import { SavedItemButton } from "./saved-item-button";
 import { SensitiveContentGate } from "./sensitive-content-gate";
 import { CompactShareButton } from "./share-actions";
 import { StoryCreateButton } from "./story-create-button";
+import { selectPublicSponsoredCampaign } from "@/lib/ads/sponsored-campaign-selection.mjs";
 import { countryLabel, languageLabel, normalizedLanguage } from "@/lib/localization";
+import {
+  loadAuthenticatedProfileMap,
+  loadPublicProfileMap,
+} from "@/lib/public-profile-hydration";
 import { siteName, siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 import { safeStatusMessage } from "@/lib/status-message";
@@ -136,6 +141,11 @@ type ThreadPostTag = {
   > | null;
 };
 
+type ThreadPostRow = Omit<ThreadPost, "profiles" | "thread_post_tags"> & {
+  author_id: string;
+  thread_post_tags: TaggedProfileIdRow[];
+};
+
 type GigTag = {
   profiles: Pick<
     Profile,
@@ -159,6 +169,19 @@ type MarketplaceListing = {
   profiles: Profile | null;
 };
 
+type MarketplaceListingRow = Omit<MarketplaceListing, "profiles"> & {
+  seller_id: string;
+};
+
+type TaggedProfileIdRow = {
+  tagged_profile_id: string | null;
+};
+
+type FeedPostRow = Omit<FeedPost, "feed_post_tags" | "profiles"> & {
+  author_id: string;
+  feed_post_tags: TaggedProfileIdRow[];
+};
+
 type MerchProduct = {
   category: string;
   created_at: string;
@@ -175,6 +198,10 @@ type MerchProduct = {
   return_policy: string | null;
   shipping_required: boolean;
   title: string;
+};
+
+type MerchProductRow = Omit<MerchProduct, "profiles"> & {
+  seller_id: string;
 };
 
 const merchCategoryFilters = [
@@ -215,6 +242,11 @@ type Gig = {
   is_sensitive: boolean;
   visibility: ContentVisibility;
   profiles: Profile | null;
+};
+
+type GigRow = Omit<Gig, "gig_tags" | "profiles"> & {
+  gig_tags: TaggedProfileIdRow[];
+  poster_id: string;
 };
 
 type StoryMedia = {
@@ -1536,9 +1568,9 @@ async function fetchSponsoredCampaign(
   const region = useLocal ? viewer?.region || null : null;
   let query = supabase
     .from("ad_campaigns")
-        .select(
-          "id, title, body, target_url, campaign_type, goal, bid_cents, city, region, country_code, language, keywords, profiles:profiles!ad_campaigns_advertiser_id_fkey(username, display_name, avatar_url, account_type, license_verified_at), ad_campaign_placements!inner(placement)",
-        )
+    .select(
+      "id, advertiser_id, title, body, target_url, campaign_type, goal, bid_cents, city, region, country_code, language, keywords, ad_campaign_placements!inner(placement)",
+    )
     .eq("status", "active")
     .in("payment_status", ["paid", "waived"])
     .eq("payment_dispute_hold", false)
@@ -1572,6 +1604,7 @@ async function fetchSponsoredCampaign(
     .limit(8)
     .returns<
       {
+        advertiser_id: string;
         bid_cents: number;
         body: string | null;
         campaign_type: "artist_growth" | "stuff_listing" | "merch_listing";
@@ -1581,28 +1614,24 @@ async function fetchSponsoredCampaign(
         id: string;
         keywords: string[];
         language: string | null;
-          profiles: Pick<
-            Profile,
-            "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"
-          > | null;
         region: string | null;
         target_url: string | null;
         title: string;
       }[]
     >();
 
-  const campaign = data
-    ?.map((item) => ({
-      item,
-      score:
-        item.bid_cents +
-        (countryCode && item.country_code === countryCode ? 250 : 0) +
-        (language && item.language === language ? 200 : 0) +
-        (region && item.region === region ? 150 : 0) +
-        (city && item.city === city ? 200 : 0),
-    }))
-    .sort((a, b) => b.score - a.score)[0]?.item;
-  if (!campaign) return null;
+  const advertiserProfileMap = await loadPublicProfileMap(
+    supabase,
+    (data ?? []).map((item) => item.advertiser_id),
+  );
+  const selectedCampaign = selectPublicSponsoredCampaign(data ?? [], advertiserProfileMap, {
+    city,
+    countryCode,
+    language,
+    region,
+  });
+  if (!selectedCampaign) return null;
+  const { advertiser, campaign } = selectedCampaign;
 
   const matchLabels = [
     countryCode && campaign.country_code === countryCode ? "Country match" : null,
@@ -1610,9 +1639,8 @@ async function fetchSponsoredCampaign(
     region && campaign.region === region ? "Region match" : null,
     city && campaign.city === city ? "City match" : null,
   ].filter(Boolean) as string[];
-
   return {
-    advertiser: campaign.profiles,
+    advertiser,
     body: campaign.body,
     campaign_type: campaign.campaign_type,
     city: campaign.city,
@@ -1736,7 +1764,7 @@ export default async function Home({
     let query = supabase
       .from("merch_products")
       .select(
-        "id, title, description, fulfillment_notes, return_policy, category, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, is_official, created_at, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, seller_id, title, description, fulfillment_notes, return_policy, category, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, is_official, created_at, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order)",
       )
       .eq("status", "active")
       .eq("moderation_status", "active");
@@ -1761,7 +1789,7 @@ export default async function Home({
         referencedTable: "merch_product_media",
       })
       .limit(merchFetchLimit)
-      .returns<MerchProduct[]>();
+      .returns<MerchProductRow[]>();
   })();
 
   const [
@@ -1783,7 +1811,7 @@ export default async function Home({
     supabase
       .from("feed_posts")
       .select(
-        "id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_post_tags(profiles:profiles!feed_post_tags_tagged_profile_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)), feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, deleted_at, post_comment_hides(hidden_by)), profiles:profiles!feed_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, author_id, caption, style_tags, location_label, visibility, is_sensitive, created_at, feed_post_tags(tagged_profile_id), feed_media(id, storage_bucket, storage_path, media_type, sort_order), post_likes(user_id), post_comments(id, deleted_at, post_comment_hides(hidden_by))",
       )
       .eq("is_published", true)
       .eq("moderation_status", "active")
@@ -1793,11 +1821,11 @@ export default async function Home({
         referencedTable: "feed_media",
       })
       .limit(feedFetchLimit)
-      .returns<FeedPost[]>(),
+      .returns<FeedPostRow[]>(),
     supabase
       .from("thread_posts")
       .select(
-        "id, body, visibility, is_sensitive, created_at, thread_post_tags(profiles:profiles!thread_post_tags_tagged_profile_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)), thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, deleted_at, thread_comment_hides(hidden_by)), profiles:profiles!thread_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, author_id, body, visibility, is_sensitive, created_at, thread_post_tags(tagged_profile_id), thread_media(id, storage_bucket, storage_path, media_type, sort_order), thread_likes(user_id), thread_comments(id, deleted_at, thread_comment_hides(hidden_by))",
       )
       .eq("moderation_status", "active")
       .order("created_at", { ascending: false })
@@ -1806,11 +1834,11 @@ export default async function Home({
         referencedTable: "thread_media",
       })
       .limit(gossipFetchLimit)
-      .returns<ThreadPost[]>(),
+      .returns<ThreadPostRow[]>(),
     supabase
       .from("marketplace_listings")
       .select(
-        "id, title, description, price_cents, currency, category, city, region, visibility, is_sensitive, created_at, marketplace_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!marketplace_listings_seller_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, seller_id, title, description, price_cents, currency, category, city, region, visibility, is_sensitive, created_at, marketplace_media(id, storage_bucket, storage_path, media_type, sort_order)",
       )
       .eq("status", "active")
       .eq("moderation_status", "active")
@@ -1820,11 +1848,11 @@ export default async function Home({
         referencedTable: "marketplace_media",
       })
       .limit(stuffFetchLimit)
-      .returns<MarketplaceListing[]>(),
+      .returns<MarketplaceListingRow[]>(),
     supabase
       .from("gigs")
       .select(
-        "id, title, description, category, city, region, country, starts_at, ends_at, compensation, contact_url, visibility, is_sensitive, created_at, gig_tags(profiles:profiles!gig_tags_tagged_profile_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)), gig_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!gigs_poster_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, poster_id, title, description, category, city, region, country, starts_at, ends_at, compensation, contact_url, visibility, is_sensitive, created_at, gig_tags(tagged_profile_id), gig_media(id, storage_bucket, storage_path, media_type, sort_order)",
       )
       .eq("status", "active")
       .eq("moderation_status", "active")
@@ -1834,12 +1862,12 @@ export default async function Home({
         referencedTable: "gig_media",
       })
       .limit(gigsFetchLimit)
-      .returns<Gig[]>(),
+      .returns<GigRow[]>(),
     merchProductsQuery,
     supabase
       .from("story_posts")
       .select(
-        "id, author_id, caption, visibility, created_at, expires_at, story_media(id, storage_bucket, storage_path, media_type, sort_order), story_reactions(count), story_views(count), profiles:profiles!story_posts_author_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+        "id, author_id, caption, visibility, created_at, expires_at, story_media(id, storage_bucket, storage_path, media_type, sort_order), story_reactions(count), story_views(count)",
       )
       .eq("moderation_status", "active")
       .gt("expires_at", new Date().toISOString())
@@ -1897,6 +1925,76 @@ export default async function Home({
     fetchSponsoredCampaign(supabase, "merch", currentProfile),
   ]);
 
+  const contentProfileLoader = claims?.sub
+    ? loadAuthenticatedProfileMap
+    : loadPublicProfileMap;
+  const publicProfileMap = await contentProfileLoader(supabase, [
+    ...(feedPosts ?? []).flatMap((post) => [
+      post.author_id,
+      ...post.feed_post_tags.map((tag) => tag.tagged_profile_id),
+    ]),
+    ...(threadPosts ?? []).flatMap((thread) => [
+      thread.author_id,
+      ...thread.thread_post_tags.map((tag) => tag.tagged_profile_id),
+    ]),
+    ...(listings ?? []).map((listing) => listing.seller_id),
+    ...(gigs ?? []).flatMap((gig) => [
+      gig.poster_id,
+      ...gig.gig_tags.map((tag) => tag.tagged_profile_id),
+    ]),
+    ...(merchProducts ?? []).map((product) => product.seller_id),
+    ...(storyPosts ?? []).map((story) => story.author_id),
+  ]);
+  const hydratedFeedPosts: FeedPost[] = (feedPosts ?? []).map(
+    ({ author_id: authorId, feed_post_tags: tags, ...post }) => ({
+      ...post,
+      feed_post_tags: tags.map(({ tagged_profile_id: taggedProfileId }) => ({
+        profiles: taggedProfileId
+          ? publicProfileMap.get(taggedProfileId) ?? null
+          : null,
+      })),
+      profiles: publicProfileMap.get(authorId) ?? null,
+    }),
+  );
+  const hydratedThreadPosts: ThreadPost[] = (threadPosts ?? []).map(
+    ({ author_id: authorId, thread_post_tags: tags, ...thread }) => ({
+      ...thread,
+      profiles: publicProfileMap.get(authorId) ?? null,
+      thread_post_tags: tags.map(({ tagged_profile_id: taggedProfileId }) => ({
+        profiles: taggedProfileId
+          ? publicProfileMap.get(taggedProfileId) ?? null
+          : null,
+      })),
+    }),
+  );
+  const hydratedListings: MarketplaceListing[] = (listings ?? []).map(
+    ({ seller_id: sellerId, ...listing }) => ({
+      ...listing,
+      profiles: publicProfileMap.get(sellerId) ?? null,
+    }),
+  );
+  const hydratedGigs: Gig[] = (gigs ?? []).map(
+    ({ gig_tags: tags, poster_id: posterId, ...gig }) => ({
+      ...gig,
+      gig_tags: tags.map(({ tagged_profile_id: taggedProfileId }) => ({
+        profiles: taggedProfileId
+          ? publicProfileMap.get(taggedProfileId) ?? null
+          : null,
+      })),
+      profiles: publicProfileMap.get(posterId) ?? null,
+    }),
+  );
+  const hydratedMerchProducts: MerchProduct[] = (merchProducts ?? []).map(
+    ({ seller_id: sellerId, ...product }) => ({
+      ...product,
+      profiles: publicProfileMap.get(sellerId) ?? null,
+    }),
+  );
+  const hydratedStories = (storyPosts ?? []).map((story) => ({
+    ...story,
+    profiles: publicProfileMap.get(story.author_id) ?? null,
+  }));
+
   const isSignedIn = Boolean(claims?.sub);
   const viewer = {
     isAdultConfirmed: Boolean(
@@ -1915,23 +2013,23 @@ export default async function Home({
       (notification) =>
         !notification.actor_id || !blockedProfileIds.has(notification.actor_id),
     ).length ?? 0;
-  const unblockedFeedPosts = (feedPosts ?? []).filter((post) =>
+  const unblockedFeedPosts = hydratedFeedPosts.filter((post) =>
     profileIsNotBlocked(post.profiles, blockedProfileIds),
   );
-  const unblockedThreadPosts = (threadPosts ?? []).filter((thread) =>
+  const unblockedThreadPosts = hydratedThreadPosts.filter((thread) =>
     profileIsNotBlocked(thread.profiles, blockedProfileIds),
   );
-  const unblockedListings = (listings ?? []).filter((listing) =>
+  const unblockedListings = hydratedListings.filter((listing) =>
     profileIsNotBlocked(listing.profiles, blockedProfileIds),
   );
-  const unblockedGigs = (gigs ?? []).filter((gig) =>
+  const unblockedGigs = hydratedGigs.filter((gig) =>
     profileIsNotBlocked(gig.profiles, blockedProfileIds),
   );
-  const unblockedMerchProducts = (merchProducts ?? []).filter((product) =>
+  const unblockedMerchProducts = hydratedMerchProducts.filter((product) =>
     product.is_official ||
     profileIsNotBlocked(product.profiles, blockedProfileIds),
   );
-  const unblockedStories = (storyPosts ?? []).filter((story) =>
+  const unblockedStories = hydratedStories.filter((story) =>
     profileIsNotBlocked(story.profiles, blockedProfileIds),
   );
   const rankingContext = buildRankingContext({

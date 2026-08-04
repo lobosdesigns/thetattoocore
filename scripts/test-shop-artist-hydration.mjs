@@ -40,7 +40,14 @@ assert(profilePage.includes('"id, username, display_name, avatar_url, account_ty
 assert(profilePage.includes("new Map(") && profilePage.includes(".map((artist) => [artist.id, artist])"), "linked artist rendering deduplicates by profile id");
 assert(profilePage.includes("artist.shop_profile_id === profile.id"), "linked artist rendering validates the relationship after hydration");
 assert(profilePage.includes("!blockedProfileIds.has(artist.id)"), "linked artist rendering respects block filtering");
-assert(hydration.includes('.from("public_profiles")') && hydration.includes("new Set(profileIds"), "shared public profile hydration uses curated public_profiles with id de-duping");
+assert(
+  hydration.includes('.from(profileTable)') &&
+    hydration.includes("new Set(profileIds") &&
+    hydration.includes('return loadProfileMap(supabase, profileIds, "public_profiles")') &&
+    hydration.includes("for (const batch of batches)") &&
+    !hydration.includes("Promise.all"),
+  "shared public profile hydration uses curated public_profiles with id de-duping and bounded batch concurrency",
+);
 assert(accessGuard.includes("profile page must read public profiles through public_profiles"), "public profile access guard enforces curated boundary");
 assert(accessGuard.includes("profile page must not fall back to public.profiles by username"), "public profile access guard prevents anonymous base profile fallback");
 const linkedArtistAnchor = profilePage.indexOf('.eq("shop_profile_id", profile.id)');

@@ -42,6 +42,7 @@ import { ProfileAvatar } from "@/app/profile-avatar";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { isInternalIndexingProfile } from "@/lib/profile-indexing";
 import {
+  loadAuthenticatedProfileMap,
   loadPublicProfileMap,
   type PublicProfileSummary,
 } from "@/lib/public-profile-hydration";
@@ -184,6 +185,14 @@ type FeedPostTag = {
   profiles: Pick<Profile, "display_name" | "id" | "username"> | null;
 };
 
+type TaggedProfileIdRow = {
+  tagged_profile_id: string | null;
+};
+
+type FeedPostRow = Omit<FeedPost, "feed_post_tags"> & {
+  feed_post_tags: TaggedProfileIdRow[];
+};
+
 type ThreadPost = {
   id: string;
   body: string;
@@ -197,8 +206,16 @@ type ThreadPostTag = {
   profiles: Pick<Profile, "display_name" | "id" | "username"> | null;
 };
 
+type ThreadPostRow = Omit<ThreadPost, "thread_post_tags"> & {
+  thread_post_tags: TaggedProfileIdRow[];
+};
+
 type GigTag = {
   profiles: Pick<Profile, "display_name" | "id" | "username"> | null;
+};
+
+type GigRow = Omit<Gig, "gig_tags"> & {
+  gig_tags: TaggedProfileIdRow[];
 };
 
 type ListingMedia = {
@@ -257,9 +274,13 @@ type MerchProduct = {
   is_official: boolean;
   merch_product_media: ListingMedia[];
   price_cents: number;
-  profiles: ShopProfile | null;
+  profiles: PublicProfileSummary | null;
   shipping_required: boolean;
   title: string;
+};
+
+type MerchProductRow = Omit<MerchProduct, "profiles"> & {
+  seller_id: string;
 };
 
 type StoryMedia = {
@@ -367,7 +388,10 @@ type FollowPreview = {
   created_at: string;
   follower_id?: string;
   following_id?: string;
-  profiles?: PublicProfileSummary | null;
+  profiles?: Pick<
+    PublicProfileSummary,
+    "account_type" | "avatar_url" | "display_name" | "id" | "license_verified_at" | "username"
+  > | null;
 };
 
 type LinkedArtist = Pick<
@@ -1676,11 +1700,11 @@ export default async function ProfilePage({
     { data: followingPreview },
     { data: viewerProfile },
     { data: blockRecord },
-    { data: posts },
-    { data: threads },
+    { data: postRows },
+    { data: threadRows },
     { data: listings },
-    { data: gigs },
-    { data: merchProducts },
+    { data: gigRows },
+    { data: merchProductRows },
     { data: savedProfile },
     { data: linkedArtists },
     { data: bookingSettings },
@@ -1759,7 +1783,7 @@ export default async function ProfilePage({
     supabase
       .from("feed_posts")
       .select(
-        "id, caption, created_at, is_sensitive, style_tags, visibility, feed_post_tags(profiles:profiles!feed_post_tags_tagged_profile_id_fkey(id, username, display_name)), feed_media(id, storage_bucket, storage_path, media_type, sort_order)",
+        "id, caption, created_at, is_sensitive, style_tags, visibility, feed_post_tags(tagged_profile_id), feed_media(id, storage_bucket, storage_path, media_type, sort_order)",
       )
       .eq("author_id", profile.id)
       .eq("is_published", true)
@@ -1770,15 +1794,15 @@ export default async function ProfilePage({
         referencedTable: "feed_media",
       })
       .limit(feedProfileLimit + 1)
-      .returns<FeedPost[]>(),
+      .returns<FeedPostRow[]>(),
     supabase
       .from("thread_posts")
-      .select("id, body, created_at, is_sensitive, visibility, thread_post_tags(profiles:profiles!thread_post_tags_tagged_profile_id_fkey(id, username, display_name))")
+      .select("id, body, created_at, is_sensitive, visibility, thread_post_tags(tagged_profile_id)")
       .eq("author_id", profile.id)
       .eq("moderation_status", "active")
       .order("created_at", { ascending: false })
       .limit(gossipProfileLimit + 1)
-      .returns<ThreadPost[]>(),
+      .returns<ThreadPostRow[]>(),
     supabase
       .from("marketplace_listings")
       .select(
@@ -1797,7 +1821,7 @@ export default async function ProfilePage({
     supabase
       .from("gigs")
       .select(
-        "id, title, description, category, city, region, country, starts_at, compensation, contact_url, created_at, is_sensitive, visibility, gig_tags(profiles:profiles!gig_tags_tagged_profile_id_fkey(id, username, display_name)), gig_media(id, storage_bucket, storage_path, media_type, sort_order)",
+        "id, title, description, category, city, region, country, starts_at, compensation, contact_url, created_at, is_sensitive, visibility, gig_tags(tagged_profile_id), gig_media(id, storage_bucket, storage_path, media_type, sort_order)",
       )
       .eq("poster_id", profile.id)
       .eq("status", "active")
@@ -1808,11 +1832,11 @@ export default async function ProfilePage({
         referencedTable: "gig_media",
       })
       .limit(gigsProfileLimit + 1)
-      .returns<Gig[]>(),
+      .returns<GigRow[]>(),
     supabase
       .from("merch_products")
       .select(
-        "id, title, description, category, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, is_official, created_at, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, avatar_url, account_type, license_verified_at)",
+        "id, seller_id, title, description, category, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, is_official, created_at, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order)",
       )
       .eq("seller_id", profile.id)
       .eq("status", "active")
@@ -1823,7 +1847,7 @@ export default async function ProfilePage({
         referencedTable: "merch_product_media",
       })
       .limit(merchProfileLimit + 1)
-      .returns<MerchProduct[]>(),
+      .returns<MerchProductRow[]>(),
     claims?.sub && claims.sub !== profile.id
       ? supabase
           .from("saved_items")
@@ -1897,6 +1921,56 @@ export default async function ProfilePage({
       .returns<StoryPost[]>(),
     getBlockedProfileIds({ supabase, userId: claims?.sub }),
   ]);
+
+  const visibleProfileLoader = claims?.sub
+    ? loadAuthenticatedProfileMap
+    : loadPublicProfileMap;
+  const visibleProfileMap = await visibleProfileLoader(supabase, [
+    ...(postRows ?? []).flatMap((post) =>
+      post.feed_post_tags.map((tag) => tag.tagged_profile_id),
+    ),
+    ...(threadRows ?? []).flatMap((thread) =>
+      thread.thread_post_tags.map((tag) => tag.tagged_profile_id),
+    ),
+    ...(gigRows ?? []).flatMap((gig) =>
+      gig.gig_tags.map((tag) => tag.tagged_profile_id),
+    ),
+    ...(merchProductRows ?? []).map((product) => product.seller_id),
+    ...(followerPreview ?? []).map((follow) => follow.follower_id),
+    ...(followingPreview ?? []).map((follow) => follow.following_id),
+  ]);
+  const posts: FeedPost[] = (postRows ?? []).map((post) => ({
+    ...post,
+    feed_post_tags: post.feed_post_tags.map((tag) => ({
+      profiles: tag.tagged_profile_id
+          ? visibleProfileMap.get(tag.tagged_profile_id) ?? null
+        : null,
+    })),
+  }));
+  const threads: ThreadPost[] = (threadRows ?? []).map((thread) => ({
+    ...thread,
+    thread_post_tags: thread.thread_post_tags.map((tag) => ({
+      profiles: tag.tagged_profile_id
+          ? visibleProfileMap.get(tag.tagged_profile_id) ?? null
+        : null,
+    })),
+  }));
+  const gigs: Gig[] = (gigRows ?? []).map((gig) => ({
+    ...gig,
+    gig_tags: gig.gig_tags.map((tag) => ({
+      profiles: tag.tagged_profile_id
+          ? visibleProfileMap.get(tag.tagged_profile_id) ?? null
+        : null,
+    })),
+  }));
+  const merchProducts: MerchProduct[] = (merchProductRows ?? []).map(
+    ({ seller_id: sellerId, ...product }) => ({
+      ...product,
+      profiles:
+        visibleProfileMap.get(sellerId) ??
+        (sellerId === profile.id ? profile : null),
+    }),
+  );
 
   const isOwnProfile = claims?.sub === profile.id;
   const blockedByViewer =
@@ -1978,23 +2052,16 @@ export default async function ProfilePage({
       (product) => product.is_official || isVerifiedProfessional(product.profiles),
     ).length > merchProfileLimit;
   const visibleStory = (activeStories ?? []).find(canShow);
-  const followPreviewProfileMap = await loadPublicProfileMap(
-    supabase,
-    [
-      ...(followerPreview ?? []).map((follow) => follow.follower_id),
-      ...(followingPreview ?? []).map((follow) => follow.following_id),
-    ],
-  );
   const hydratedFollowerPreview = (followerPreview ?? []).map((follow) => ({
     ...follow,
     profiles: follow.follower_id
-      ? (followPreviewProfileMap.get(follow.follower_id) ?? null)
+      ? (visibleProfileMap.get(follow.follower_id) ?? null)
       : null,
   }));
   const hydratedFollowingPreview = (followingPreview ?? []).map((follow) => ({
     ...follow,
     profiles: follow.following_id
-      ? (followPreviewProfileMap.get(follow.following_id) ?? null)
+      ? (visibleProfileMap.get(follow.following_id) ?? null)
       : null,
   }));
   const visibleFollowerPreview = hydratedFollowerPreview.filter(

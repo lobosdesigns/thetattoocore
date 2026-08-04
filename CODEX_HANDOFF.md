@@ -1,6 +1,41 @@
 # Codex Recovery Handoff
 
-## Original Project Goal
+## 2026-08-04 Develop-Based Public-Release Certification Recovery
+
+Status: **NOT READY**. The authoritative state is
+`docs/release/v1.1.0-public-release-certification.md`; it supersedes
+conflicting branch, dependency, migration, payment, native, store, deployment,
+rollback, and approval statements below.
+
+- The incorrectly based `release/v1.1.0-rc-certification` branch remains
+  preserved and untouched at `e9488e73b1013665e2cb244cddd75caaa9958ea6`
+  plus its original uncommitted tree.
+- Recovery continues only on
+  `release/v1.1.0-rc-certification-develop`, created from
+  `origin/develop@608abf0ff0869656292dbae138c104b3a5260b18`.
+- The external recovery artifact is
+  `C:\tmp\thetattoocore-v1.1.0-recovery-20260804-061044-29260`.
+- `npm.cmd ci` completed successfully without changing the lockfile or
+  tracked source. Verification outcomes are recorded in the ledger; its
+  remediation-commit field is populated only after that first commit exists.
+  The final documentation commit and pushed remote tip belong in the owner
+  report because a commit cannot contain its own object ID.
+- Main-only Stripe Connect, paid-ad, release-gate, and native build-6 commits
+  were not imported. Develop-compatible body bounds, native registration input
+  hardening, the association-route repair, and the public-profile migration
+  review were reconciled independently.
+- No deployment, production migration, feature-gate change, payment, push
+  activation, store action, merge, tag move, or shared-branch rewrite is
+  authorized by this handoff.
+
+## Superseded Historical Checkpoint Record
+
+Everything below this heading is preserved only as provenance from an earlier
+checkpoint. It is not current branch state, release evidence, or executable
+guidance. Use the recovery section above and the authoritative certification
+ledger for every current decision.
+
+### Original Project Goal (Historical)
 
 Continue the final release audit for TheTattooCore from the protected
 `backup-before-final-audit-2026-07-25` baseline. Repair verified defects in
@@ -11,7 +46,7 @@ verdict.
 The user stopped that audit and requested this recovery checkpoint before MCP
 installation. No deployment is authorized from this checkpoint.
 
-## Work Completed
+### Work Completed (Historical)
 
 - Confirmed repository `lobosdesigns/thetattoocore` and preserved the backup
   branch at commit `5ddf42c82c2f5a0677509bf45ef2a0561715ef0d`.
@@ -37,7 +72,7 @@ installation. No deployment is authorized from this checkpoint.
   submission, payment activation, or production-data change occurred.
 - The production dependency audit is clean with `npm audit --omit=dev`.
 
-## Work Partially Completed
+### Work Partially Completed (Historical)
 
 The current uncommitted work removes Node
 `MODULE_TYPELESS_PACKAGE_JSON` warnings from direct TypeScript contract tests.
@@ -65,7 +100,7 @@ Checkpoint validation passed:
 - Affected smoke suites run during implementation: native, native push
   delivery, admin, security, content, DM, and payments
 
-## Remaining Work
+### Remaining Work (Historical)
 
 1. Independently review the checkpointed TypeScript test-loader change.
 2. Resume the final release audit at the robots/indexing task.
@@ -80,7 +115,7 @@ Checkpoint validation passed:
 8. Do not deploy until every private/device/legal/payment gate passes and the
    verdict is explicitly `RELEASE READY`.
 
-## Known Errors And Blockers
+### Known Errors And Blockers (Historical)
 
 - The live evidence gate against
   `df40a672afb1713f0e705c376b9149dd0a6285cf` fails closed with 38 incomplete
@@ -111,7 +146,7 @@ Checkpoint validation passed:
 - `.gitignore` does not explicitly cover generic `*.key` files or Android
   `key.properties`. No such credential file is currently tracked.
 
-## Failed Approaches Not To Repeat
+### Failed Approaches Not To Repeat (Historical)
 
 - Do not retry Chrome browser control until the Codex Windows ACL issue is
   repaired; repeated attempts fail before browser discovery.
@@ -134,7 +169,7 @@ Checkpoint validation passed:
 - `adb` is not on this shell's PATH. Its installed executable is under the
   Android SDK platform-tools directory.
 
-## Important Files Changed
+### Important Files Changed (Historical)
 
 Current checkpoint files:
 
@@ -162,12 +197,12 @@ Earlier committed release-evidence work is primarily in:
 - `docs/MOBILE_APP_SUBMISSION_RUNBOOK.md`
 - `package-lock.json`
 
-## Database Migrations
+### Database Migrations (Historical)
 
 No database migration was created, edited, applied, rolled back, or rehearsed
 during this audit continuation. No production data was altered.
 
-## External Services Involved
+### External Services Involved (Historical)
 
 - GitHub: existing `origin` is
   `https://github.com/lobosdesigns/thetattoocore.git`.
@@ -186,7 +221,7 @@ during this audit continuation. No production data was altered.
 - MacCloud SSH: the personal skill is installed but was not used before this
   checkpoint.
 
-## Git State
+### Git State (Historical)
 
 - Source branch: `codex/final-audit-security-2026-07-25`
 - Checkpoint branch: `checkpoint/pre-mcp-install`
@@ -195,7 +230,7 @@ during this audit continuation. No production data was altered.
 - Git repository: initialized
 - Deleted files: none
 
-## Secret And Ignore Review
+### Secret And Ignore Review (Historical)
 
 No real password, token, service-role key, private key, or complete environment
 file was found in the checkpoint changes.
@@ -213,7 +248,7 @@ Git ignore verification passed for `.env`, `.env.local`, `node_modules`,
 native provider configuration files, JKS files, and keystores. Only
 `.env.example` is tracked among environment-shaped files.
 
-## Exact Recommended Next Step
+### Exact Recommended Next Step (Historical; Do Not Execute)
 
 After MCP installation, check out `checkpoint/pre-mcp-install`, read this file,
 and run `git status --short --branch`. First perform a read-only independent
@@ -222,7 +257,7 @@ robots/indexing audit, then Supabase and MacCloud SSH verification. Keep
 deployment disabled until the 38 private release-evidence requirements are
 cleared against the exact final commit.
 
-## Commands To Run And Test
+### Commands To Run And Test (Historical; Do Not Treat As Current)
 
 ```powershell
 npm.cmd run dev

@@ -14,6 +14,10 @@ import {
   supportEmail,
 } from "@/lib/site";
 import { safeStatusMessage } from "@/lib/status-message";
+import {
+  loadAuthenticatedProfileMap,
+  loadPublicProfileMap,
+} from "@/lib/public-profile-hydration";
 import { createClient } from "@/lib/supabase/server";
 
 type HelpArticlePageProps = {
@@ -42,21 +46,28 @@ type HelpArticleComment = {
   } | null;
 };
 
-type HelpArticleCommentRow = Omit<HelpArticleComment, "profiles"> & {
-  profiles:
-    | HelpArticleComment["profiles"]
-    | HelpArticleComment["profiles"][];
-};
+type HelpArticleCommentRow = Omit<HelpArticleComment, "profiles">;
 
 type BlockRow = {
   blocked_id: string;
   blocker_id: string;
 };
 
-function normalizeComment(row: HelpArticleCommentRow): HelpArticleComment {
+function normalizeComment(
+  row: HelpArticleCommentRow,
+  profileMap: Awaited<ReturnType<typeof loadPublicProfileMap>>,
+): HelpArticleComment {
+  const profile = profileMap.get(row.author_id);
+
   return {
     ...row,
-    profiles: Array.isArray(row.profiles) ? (row.profiles[0] ?? null) : row.profiles,
+    profiles: profile
+      ? {
+          avatar_url: profile.avatar_url ?? null,
+          display_name: profile.display_name,
+          username: profile.username,
+        }
+      : null,
   };
 }
 
@@ -150,7 +161,7 @@ export default async function HelpArticlePage({
     supabase
       .from("help_article_comments")
       .select(
-        "id, author_id, body, status, is_official_answer, is_pinned, created_at, profiles:profiles!help_article_comments_author_id_fkey(username, display_name, avatar_url)",
+        "id, author_id, body, status, is_official_answer, is_pinned, created_at",
       )
       .eq("article_slug", article.slug)
       .order("is_pinned", { ascending: false })
@@ -167,11 +178,19 @@ export default async function HelpArticlePage({
   const blockedHelpAuthorIds = viewerId
     ? blockedAuthorIds(blockResult.data ?? [], viewerId)
     : new Set<string>();
-  const allComments = commentResult.error
+  const commentRows = commentResult.error
     ? []
-    : ((commentResult.data ?? []) as unknown as HelpArticleCommentRow[])
-        .map(normalizeComment)
-        .filter((comment) => !blockedHelpAuthorIds.has(comment.author_id));
+    : ((commentResult.data ?? []) as unknown as HelpArticleCommentRow[]);
+  const commentProfileLoader = viewerId
+    ? loadAuthenticatedProfileMap
+    : loadPublicProfileMap;
+  const commentProfileMap = await commentProfileLoader(
+    supabase,
+    commentRows.map((comment) => comment.author_id),
+  );
+  const allComments = commentRows
+    .map((comment) => normalizeComment(comment, commentProfileMap))
+    .filter((comment) => !blockedHelpAuthorIds.has(comment.author_id));
   const comments = allComments.slice(0, visibleCommentLimit);
   const hasMoreComments = allComments.length > visibleCommentLimit;
 

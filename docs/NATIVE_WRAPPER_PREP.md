@@ -50,7 +50,7 @@ console screenshots, device tokens, signing details, or tester account data.
 | --- | --- | --- |
 | Firebase project | Project exists for TheTattooCore with Android and iOS apps registered for `com.thetattoocore.app`. | `pending`, `created`, or `needs retry`; no project IDs, sender IDs, API keys, or console screenshots. |
 | Android app config | Android app config file added only to the private build environment and excluded from git. | Record package name, release track, build version, and pass/fail only. |
-| iOS app config | Checked-in build `1.0 (4)` references the ignored private app config in the `App` target and enables Push Notifications with environment-specific entitlements. The Mac build path must supply the production-bundle config and refresh signing before archive. Automatic token creation and delivery stay off. | Record bundle ID, TestFlight build, device date, and pass/fail only; no team IDs or provisioning details. |
+| iOS app config | Checked-in source build `1.0 (5)` references the ignored private app config in the `App` target and enables Push Notifications with environment-specific entitlements. The Mac build path must supply the production-bundle config and refresh signing before archive. Automatic token creation and delivery stay off. | Record bundle ID, TestFlight build, device date, and pass/fail only; no team IDs or provisioning details. |
 | Device token registration | Signed-in Android and iOS devices register and refresh tokens without storing tokens in repo notes. | Record platform, build, tester alias, preference state, and pass/fail only. |
 | Delivery and tap routing | Alerts deliver for the tested categories and open the matching in-app route. | Record category, route family, device, date, and pass/fail only; keep raw notification payloads private. |
 | Preference controls | Per-device opt-out, quiet hours, and category preferences stop delivery as expected. | Record tested preference, platform, build, and pass/fail only. |
@@ -112,7 +112,7 @@ evidence privately using the matrix above.
 
 - Run `npm.cmd run verify` against the web app.
 - Run the full `docs/REAL_DEVICE_QA_CHECKLIST.md` on mobile web before packaging.
-- Before any Google Play submission or update on or after August 31, 2026, use the Android 16 / API 36 tooling now installed on this Windows machine and keep the Android wrapper `compileSdkVersion` and `targetSdkVersion` at 36. Rebuild and sign a fresh upload bundle, then rerun wrapper and real-device QA before selecting a Google Play submission/update track.
+- Before any Google Play submission or update on or after August 31, 2026, use the Android 16 / API 36 tooling now installed on this Windows machine and keep the Android wrapper `compileSdkVersion` and `targetSdkVersion` at 36. Inspect an existing branch-aligned artifact and the current console state first; rebuild and sign only if that artifact is proven unusable or a replacement is separately approved. Because external version code 6 is reported, an exact already-accepted build 5 may be selected only after verification, while any newly uploaded replacement must use an unused version code above `6`. Rerun wrapper and real-device QA before selecting a Google Play submission/update track.
 - Confirm `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/support`, `/child-safety-standards`, `/privacy`, `/terms`, `/messages`, `/notifications`, `/account`, public profiles, public posts, Stories, Stuff, Gigs, Merch, and booking/deposit routes do not reload-loop or overflow horizontally.
 - Confirm a valid checked **Stay signed in on this device** session resumes after fully closing and relaunching each app, while an unchecked session remains session-only through server and browser token refreshes.
 - Confirm the wrapper can cover the current WebView before backgrounding, revalidate the server session on foreground resume, keep stale private content concealed during offline and rapid-resume checks, and return to Sign in when the session is no longer valid.
@@ -169,16 +169,16 @@ or unverified association files as public-release proof for app links.
 
 ## Android Target Evidence Matrix
 
-Use this matrix before each Google Play release selection so the previously
-uploaded internal-test bundle is not confused with a freshly rebuilt
-public-submission build.
+Use this matrix before each Google Play release selection so a previously
+uploaded artifact is not confused with a verified branch-aligned artifact or a
+separately approved replacement artifact.
 
-| Release path | Checked-in compile/target SDK | Required action | Repo-safe result |
+| Release path | Release identity / target evidence | Required action | Repo-safe result |
 | --- | ---: | --- | --- |
-| Current Google Play Production and Alpha | Active Production and Alpha release `1.0.3 (4)` is `36 / 36` | Use Production for normal install and release evidence; retain the same exact Alpha build for controlled QA. Collect explicit opt-in, token-registration, delivery, tap, opt-out, and applicable participation evidence while global delivery stays off. | Record release track, version code/name, test date, device model, and pass/fail only. |
-| Authorized Android review phone | Installed Google Play Production `1.0.3 (4)` targets API 36 | Required package probe, verified App Links, production-link launch, retained-session landing, and system-bar framing passed. Continue controlled notification QA only after explicit member opt-in. | Record installed build, permission state, device date, and pass/fail only. |
+| Reported Google Play Production and Alpha | Production: `1.0.3 (4)` at `36 / 36`; external Alpha: reported `1.0.5 (6)`, with target and artifact identity not independently verified | Use Production for normal install and historical release evidence. Treat Alpha as reported console status only: Alpha exact bytes and Play upload-certificate registration are unproved, and it is not the branch source candidate. Collect explicit opt-in, token-registration, delivery, tap, opt-out, and applicable participation evidence only on an exact identified build while global delivery stays off. | Record release track, version code/name, evidence source, test date, device model, and pass/fail only. |
+| Historical authorized Android review phone evidence | Installed Google Play Production `1.0.3 (4)` targets API 36 | Required package probe, verified App Links, production-link launch, retained-session landing, and system-bar framing passed historically. Continue controlled notification QA only after explicit member opt-in and exact-build identification. | Record installed build, permission state, device date, and pass/fail only. |
 | Previous Google Play baseline | `36 / 36`; version code `3` / version name `1.0.2` | Preserve its completed historical evidence, but do not keep it in the active alert allowlist after exact Play-installed build 4 passed. | Record historical build and result only; do not treat it as current release evidence. |
-| Checked-in replacement candidate | `1.0.4 (5)` at `36 / 36` | Sign a fresh upload bundle and rerun wrapper plus real-device QA before selecting a track. | Record API `36 / 36` rebuild proof, version code/name, device QA date, and pass/fail only. |
+| Checked-in branch source candidate | `1.0.4 (5)` at `36 / 36` | Inspect and validate an existing branch-aligned `1.0.4 (5)` artifact first. Use it only if the exact artifact is already accepted in Play and passes verification; rebuild and sign only if it is proven unusable or the replacement is separately approved, and use an unused version code above reported external code 6 for any new upload. Rerun wrapper and real-device QA before selecting a track. | Record API `36 / 36` source proof, artifact hash and signing result when available, version code/name, console identity, device QA date, and pass/fail only. |
 
 Never reuse a version code that Google Play has already served.
 
@@ -202,7 +202,7 @@ cd android
 
 Android SDK and JDK 21 are configured on this Windows machine. For a Google Play upload build, load the local signing environment variables from the private Desktop recovery note, then run `.\gradlew.bat bundleRelease`. The signed upload bundle is `native/thetattoocore-mobile/android/app/build/outputs/bundle/release/app-release.aab`. Keep `android/local.properties`, `android/keystores/`, and all keystore recovery notes out of git.
 
-Android release bundling fails closed before compilation unless all private upload-signing inputs are present, the referenced signing file is readable, and the ignored Android app configuration file is present and nonempty. The failure message names only the missing input category. The production app configuration is not processed for the side-by-side `.qa` debug package, so `assembleDebug` remains available without release signing or a separate QA app registration. The checked-in Play replacement is version code `5`; never reuse version code `4`.
+Android release bundling fails closed before compilation unless all private upload-signing inputs are present, the referenced signing file is readable, and the ignored Android app configuration file is present and nonempty. The failure message names only the missing input category. The production app configuration is not processed for the side-by-side `.qa` debug package, so `assembleDebug` remains available without release signing or a separate QA app registration. Checked-in source is version code `5`, but external code `6` is reported. Build 5 is not a valid new upload after code 6; use it only if an exact already-accepted artifact is proven, and use an unused code above `6` for any new upload.
 
 iOS on Mac:
 

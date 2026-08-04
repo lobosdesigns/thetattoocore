@@ -84,12 +84,13 @@ function canonicalRedirectUrl(request: NextRequest) {
 export async function middleware(request: NextRequest) {
   const redirectUrl = canonicalRedirectUrl(request);
 
-  if (redirectUrl) {
+  if (redirectUrl && request.nextUrl.protocol !== "https:") {
     return applyPrivateAdminHeaders(
       request,
       applySecurityHeaders(NextResponse.redirect(redirectUrl, 308)),
     );
   }
+
   if (request.nextUrl.pathname === "/.well-known/assetlinks.json") {
     const payload = androidAssetLinksPayload();
 
@@ -105,6 +106,13 @@ export async function middleware(request: NextRequest) {
       payload
         ? associationJsonResponse(payload, "application/json")
         : unavailableAssociationResponse(),
+    );
+  }
+
+  if (redirectUrl) {
+    return applyPrivateAdminHeaders(
+      request,
+      applySecurityHeaders(NextResponse.redirect(redirectUrl, 308)),
     );
   }
 

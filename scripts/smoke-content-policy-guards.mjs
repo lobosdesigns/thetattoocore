@@ -625,7 +625,8 @@ const checks = [
       composer.includes('name="tagged_usernames"') &&
       composer.includes("Tag members: @artistname, @shopname") &&
       homePage.includes("function TaggedMemberLinks") &&
-      homePage.includes("feed_post_tags(profiles:profiles!feed_post_tags_tagged_profile_id_fkey") &&
+      homePage.includes("loadPublicProfileMap") &&
+      homePage.includes("feed_post_tags(tagged_profile_id)") &&
       postDetailPage.includes("function TaggedMemberLinks") &&
       postDetailPage.includes("loadPublicProfileMap") &&
       postDetailPage.includes("feed_post_tags(tagged_profile_id)") &&
@@ -829,7 +830,7 @@ const checks = [
       actions.includes('type === "feed_tag"') &&
       composer.includes("Tag members: @artistname, @shopname") &&
       composer.includes("canPostVerifiedGossipAudience") &&
-      homePage.includes("thread_post_tags(profiles:profiles!thread_post_tags_tagged_profile_id_fkey") &&
+      homePage.includes("thread_post_tags(tagged_profile_id)") &&
       homePage.includes("<TaggedMemberLinks tags={thread.thread_post_tags ?? []} />") &&
       homePage.includes('name="tagged_usernames"') &&
       threadDetailPage.includes("function TaggedMemberLinks") &&
@@ -837,7 +838,8 @@ const checks = [
       threadDetailPage.includes("thread_post_tags(tagged_profile_id)") &&
       threadDetailPage.includes("<TaggedMemberLinks tags={thread.thread_post_tags ?? []} />") &&
       threadDetailPage.includes('name="tagged_usernames"') &&
-      profilePage.includes("thread_post_tags(profiles:profiles!thread_post_tags_tagged_profile_id_fkey") &&
+      profilePage.includes("loadPublicProfileMap") &&
+      profilePage.includes("thread_post_tags(tagged_profile_id)") &&
       profilePage.includes("<TaggedMemberLinks tags={thread.thread_post_tags ?? []} />") &&
       notificationsPage.includes('| "thread_tag"') &&
       notificationsPage.includes('type === "feed_comment_tag"') &&
@@ -869,14 +871,14 @@ const checks = [
       gigRoute.includes("blockRelationshipExists") &&
       composer.includes('name="tagged_usernames"') &&
       composer.includes("Tag members: @artistname, @shopname") &&
-      homePage.includes("gig_tags(profiles:profiles!gig_tags_tagged_profile_id_fkey") &&
+      homePage.includes("gig_tags(tagged_profile_id)") &&
       homePage.includes("<TaggedMemberLinks tags={gig.gig_tags ?? []} />") &&
       gigsDetailPage.includes("function TaggedMemberLinks") &&
       gigsDetailPage.includes("loadPublicProfileMap") &&
       gigsDetailPage.includes("gig_tags(tagged_profile_id)") &&
       gigsDetailPage.includes("<TaggedMemberLinks tags={gig.gig_tags ?? []} />") &&
       gigsDetailPage.includes('name="tagged_usernames"') &&
-      profilePage.includes("gig_tags(profiles:profiles!gig_tags_tagged_profile_id_fkey") &&
+      profilePage.includes("gig_tags(tagged_profile_id)") &&
       profilePage.includes("<TaggedMemberLinks tags={gig.gig_tags ?? []} />") &&
       notificationsPage.includes('| "gig_tag"') &&
       notificationsPage.includes('type === "gig_tag"') &&

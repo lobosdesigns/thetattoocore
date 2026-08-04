@@ -1,12 +1,38 @@
 # Payment Production Readiness
 
-Stripe checkout is wired for controlled launch testing across Merch, ads, and accepted booking deposits. Keep production commerce gated until the items below are finished and reviewed.
+## Develop-Based Architecture Boundary - August 4, 2026
+
+Status: **NOT READY FOR PAYMENT ACTIVATION**.
+
+- Develop still creates legacy Accounts v1 Express accounts and uses its
+  existing platform-owned booking Checkout model. Main-only connected direct
+  charge, paid-ad, webhook-scope, and release-gate prerequisites were not
+  imported during recovery.
+- Request-body hardening was adapted without changing that architecture:
+  booking forms are streamed through a 4096-byte limit and Stripe webhook
+  signatures receive at most 1 MiB of exact raw bytes.
+- The conditional supported target and owner decisions are documented in
+  `docs/release/v1.1.0-stripe-architecture-decision.md`. No account,
+  onboarding link, webhook destination, API key, charge, refund, dispute, or
+  Stripe setting was created or changed.
+- Reported same-URL webhook destinations still lack repository-safe proof of
+  their endpoint identifiers, source scopes, signing-secret mappings, and
+  account-default API version. Those fields remain **UNVERIFIED**.
+
+Stripe checkout code exists across Merch, ads, and accepted booking deposits,
+but develop does not have independent fail-closed release gates for booking
+checkout or seller onboarding. Do not infer safety from historical dashboard or
+environment notes; keep every production commerce surface unavailable until the
+missing gates, owner architecture decisions, and current private evidence are
+finished and reviewed.
 
 ## Current Position
 
 - Stripe Checkout is the shared gateway path for Merch, prepaid ad campaigns, and accepted booking deposits.
 - Webhook event dedupe, retry-safe status transitions, failed/expired checkout handling, buyer/seller/advertiser alerts, dispute audit logging, and Admin > Payments visibility are wired.
-- Checkout routes fail closed before reserving ads, booking deposits, Merch orders, or inventory if the configured live/test checkout mode does not match the server payment key or the webhook signing secret is missing or malformed.
+- Merch and ad paths retain develop-era mode/release checks, but booking checkout
+  and Connect onboarding do not have independent release gates. Add and test
+  those gates before any live binding or mode could make the flows reachable.
 - Checkout Session creation uses a per-attempt idempotency key and one bounded network retry. If a created session cannot be attached to its local order, booking, or campaign, the app confirms that session is expired before releasing the local reservation; an unresolved creation or expiration keeps the reservation held for operator reconciliation instead of exposing a payable orphan.
 - Admin > Payments now includes short operator runbooks for seller payout release checks, refund/dispute review, and booking deposit review, plus a reconciliation checklist for webhook receipts, payment audit rows, user-facing status, admin queue status, fulfillment, ad delivery, booking deposits, and payout release.
 - Admin > Payments shows each webhook receipt as processed, retrying, or failed, includes attempt and lifecycle timestamps without raw error details, and raises payment-ops warnings for failed events or processing claims older than the retry lease.
@@ -14,10 +40,13 @@ Stripe checkout is wired for controlled launch testing across Merch, ads, and ac
 - A transparent 2% TTC platform fee is recorded in controlled launch checkout flows and booking deposit requests.
 - Merch order receipts, seller fulfillment updates, buyer refund-review requests, and guarded owner/admin full-refund controls are present. Approved destination-charge refunds reverse the seller transfer and refund the application fee when one exists; the signed payment webhook remains the order-status authority.
 - Production purchases, seller payout releases, and real ad spending should stay gated until policy, tax, payout, refund, dispute, and payment review is complete.
-- Ad purchases and ad-credit spending are globally fail closed in the current web release while campaign preparation and review remain available. Keep this gate closed until replacement native builds add reviewed platform-specific commerce controls.
-- July 22, 2026 dashboard inspection confirmed an active sandbox test connected account and an integration guide configured for marketplace destination charges, hosted onboarding, Express seller management, application fees, and platform loss liability. Account, email, business, identity, and production verification were still in progress at that inspection; the July 24 current state below supersedes those activation details. The production Admin payment preflight showed explicit mode `Needs review`, server payment key mode `Test`, webhook signing `Ready`, and checkout blocked until the expected mode was readable and matched. Live-money cutover remained blocked until those verification rows, webhook mode/event proof, Admin reconciliation, penny-test proof, refund/dispute procedure, payout gate, and native checkout policy review were recorded in the private handoff.
-- July 23, 2026 dashboard inspection confirmed an active live webhook destination at the production webhook URL with the exact 12 required checkout, delayed-payment, expiry, refund, dispute, and seller-account events listed below. The destination was imported from the reviewed test configuration; no signing secret, payment identifier, account identifier, or dashboard image is committed. At that inspection, production checkout was still in test mode and fail closed pending owner identity verification, the live signing-secret and server-key cutover, policy/legal approvals, Admin reconciliation, and an approved penny test.
-- July 24, 2026 current dashboard state: Production account activation and Connect configuration are complete, including the business profile, both identity workflows, marketplace integration choices, and the owner-accepted platform agreement. The live endpoint covers the exact 12 required events, its rotated signing secret remains private, and a signed synthetic non-money event returned `200` with the expected fail-closed mode response. The server payment key remains in test mode, expected live mode remains unset, checkout and seller onboarding remain blocked, and no money moved. Live-money cutover remains blocked pending live key/mode alignment, webhook mode/event proof, Admin reconciliation, controlled purchase/refund proof, refund/dispute procedure approval, payout gate approval, and native checkout policy review in the private handoff.
+- Historical notes below describe prior dashboard observations and gate states;
+  they were not revalidated in this recovery. Current endpoint identifiers,
+  event source scopes, signing-secret mappings, server-key mode, and account
+  default API version remain unverified.
+- Historical July 22, 2026 dashboard evidence reported an active sandbox test connected account and an integration guide configured for marketplace destination charges, hosted onboarding, Express seller management, application fees, and platform loss liability. It is not current-state proof. At that inspection, account, email, business, identity, and production verification were still in progress; Admin showed mode `Needs review`, a test server key, and a ready-looking signing-secret format.
+- Historical July 23, 2026 dashboard evidence reported one live webhook destination at the production URL with 12 selected events. It does not prove the current endpoint ID, source scope, signing-secret mapping, account mode, or event set.
+- Historical July 24, 2026 evidence reported production activation, Connect configuration, one 12-event endpoint, and a signed synthetic non-money `200` response while the server key remained in test mode and expected live mode was unset. Two same-URL destinations are now reported, one with 12 events and one with 14; neither endpoint identity/scope nor secret-to-environment mapping is proven. Do not treat the historical `200` as current live-binding or architecture proof.
 - Non-official Merch destination-charge wiring is staged behind `STRIPE_MERCH_DESTINATION_CHARGES_ENABLED=false` by default and still requires matching payment mode plus a ready connected seller account. Keep the release switch off until the payout timing, refund, dispute, reserve, and legal policy decisions below are approved and tested.
 
 ## Must Finish Before Real Money

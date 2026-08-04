@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import Stripe from "stripe";
+import { readBoundedRequestBytes } from "@/lib/http/bounded-request-body.mjs";
 import { sendHostgatorEmail } from "@/lib/mail/hostgator";
 import { insertNotifications } from "@/lib/notification-write";
 import { siteName, siteUrl, supportEmail } from "@/lib/site";
@@ -16,6 +17,8 @@ import { bookingPaidTransitionDecision } from "@/lib/stripe/checkout-session";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
+
+const maxStripeWebhookBodyBytes = 1_048_576;
 
 function stripeResponse(message: string, status = 200) {
   return NextResponse.json({ message }, { status });
@@ -1269,12 +1272,20 @@ export async function POST(request: Request) {
     return stripeResponse("Missing payment verification.", 400);
   }
 
-  const body = await request.text();
+  const body = await readBoundedRequestBytes(
+    request,
+    maxStripeWebhookBodyBytes,
+  );
+
+  if (!body.ok) {
+    return stripeResponse("Invalid payment update.", body.status);
+  }
+
   let event: Stripe.Event;
 
   try {
     event = await stripe.webhooks.constructEventAsync(
-      body,
+      Buffer.from(body.bytes),
       signature,
       webhookSecret,
       undefined,

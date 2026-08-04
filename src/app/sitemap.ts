@@ -22,6 +22,10 @@ type PublicMerch = {
   updated_at: string | null;
 };
 
+type PublicMerchRow = Omit<PublicMerch, "profiles"> & {
+  seller_id: string;
+};
+
 type PublicPost = {
   id: string;
   updated_at: string | null;
@@ -33,6 +37,7 @@ type PublicThread = {
 };
 
 const staticContentLastModified = new Date("2026-07-22T00:00:00.000Z");
+const publicProfileBatchSize = 100;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const dynamicFallbackLastModified = staticContentLastModified;
@@ -146,14 +151,44 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .returns<PublicGig[]>();
   const { data: merch } = await supabase
     .from("merch_products")
-    .select(
-      "id, is_official, updated_at, profiles:profiles!merch_products_seller_id_fkey(account_type, license_verified_at)",
-    )
+    .select("id, is_official, seller_id, updated_at")
     .eq("status", "active")
     .eq("moderation_status", "active")
     .order("updated_at", { ascending: false })
     .limit(500)
-    .returns<PublicMerch[]>();
+    .returns<PublicMerchRow[]>();
+  const merchSellerIds = [...new Set((merch ?? []).map((product) => product.seller_id))];
+  const merchSellerBatches = Array.from(
+    { length: Math.ceil(merchSellerIds.length / publicProfileBatchSize) },
+    (_, index) =>
+      merchSellerIds.slice(
+        index * publicProfileBatchSize,
+        (index + 1) * publicProfileBatchSize,
+      ),
+  );
+  const merchSellerProfileResults = await Promise.all(
+    merchSellerBatches.map((batch) =>
+      supabase
+        .from("public_profiles")
+        .select("id, account_type, license_verified_at")
+        .in("id", batch)
+        .returns<
+          { account_type: string; id: string; license_verified_at: string | null }[]
+        >(),
+    ),
+  );
+  const merchSellerProfiles = merchSellerProfileResults.flatMap(
+    ({ data }) => data ?? [],
+  );
+  const merchSellerProfileMap = new Map(
+    merchSellerProfiles.map((profile) => [profile.id, profile]),
+  );
+  const publicMerch: PublicMerch[] = (merch ?? []).map(
+    ({ seller_id: sellerId, ...product }) => ({
+      ...product,
+      profiles: merchSellerProfileMap.get(sellerId) ?? null,
+    }),
+  );
 
   return [
     ...routes,
@@ -190,7 +225,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
       url: `${siteUrl}/gigs/${gig.id}`,
     })),
-    ...(merch ?? [])
+    ...publicMerch
       .filter(
         (product) =>
           product.is_official || isVerifiedProfessional(product.profiles),

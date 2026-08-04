@@ -173,6 +173,24 @@ for (const sensitive of [
   }
 }
 
+const publicProfileHydrationSource = read("src/lib/public-profile-hydration.ts");
+for (const required of [
+  "export async function loadAuthenticatedProfileMap",
+  "publicProfileBatchSize = 100",
+  "Math.ceil(ids.length / publicProfileBatchSize)",
+  "for (const batch of batches)",
+  ".in(\"id\", batch)",
+  'return loadProfileMap(supabase, profileIds, "profiles")',
+  'return loadProfileMap(supabase, profileIds, "public_profiles")',
+]) {
+  if (!publicProfileHydrationSource.includes(required)) {
+    fail(`shared public profile hydration must batch large ID sets: ${required}`);
+  }
+}
+if (publicProfileHydrationSource.includes("Promise.all")) {
+  fail("shared profile hydration must not launch an unbounded number of profile batches concurrently.");
+}
+
 const profilePageSource = read("src/app/u/[username]/page.tsx");
 if (!profilePageSource.includes('.from("public_profiles")')) fail("profile page must read public profiles through public_profiles.");
 if (/fallbackProfileRow|privateProfileSelect|\.from\("profiles"\)\s*[\s\S]{0,160}\.eq\("username", cleanUsername\)/.test(profilePageSource)) {
@@ -192,6 +210,117 @@ if (sitemapSource.includes('.from("profiles")')) fail("sitemap must not read pub
 const threadQuery = sitemapSource.match(/const \{ data: threads \}[\s\S]*?\.returns<PublicThread\[\]>\(\);/);
 if (!threadQuery) fail("Unable to locate sitemap thread query.");
 if (threadQuery[0].includes('is_published')) fail("sitemap thread query must not reference nonexistent thread_posts.is_published.");
+
+const signedOutProfileEmbedContracts = [
+  {
+    path: "src/app/page.tsx",
+    required: [
+      "loadAuthenticatedProfileMap",
+      "loadPublicProfileMap",
+      "selectPublicSponsoredCampaign",
+      "const contentProfileLoader = claims?.sub",
+      "const advertiserProfileMap = await loadPublicProfileMap",
+      "const selectedCampaign = selectPublicSponsoredCampaign",
+      "feed_post_tags(tagged_profile_id)",
+      "thread_post_tags(tagged_profile_id)",
+      "gig_tags(tagged_profile_id)",
+      "publicProfileMap.get(authorId)",
+      "publicProfileMap.get(sellerId)",
+      "publicProfileMap.get(posterId)",
+      "publicProfileMap.get(story.author_id)",
+      "const { advertiser, campaign } = selectedCampaign",
+    ],
+    relationships: [
+      "ad_campaigns_advertiser_id_fkey",
+      "merch_products_seller_id_fkey",
+      "feed_post_tags_tagged_profile_id_fkey",
+      "feed_posts_author_id_fkey",
+      "thread_post_tags_tagged_profile_id_fkey",
+      "thread_posts_author_id_fkey",
+      "marketplace_listings_seller_id_fkey",
+      "gig_tags_tagged_profile_id_fkey",
+      "gigs_poster_id_fkey",
+      "story_posts_author_id_fkey",
+    ],
+  },
+  {
+    path: "src/app/merch/page.tsx",
+    required: [
+      "loadAuthenticatedProfileMap",
+      "loadPublicProfileMap",
+      "selectPublicSponsoredCampaign",
+      "const sellerProfileLoader = claims?.sub",
+      "const advertiserProfileMap = await loadPublicProfileMap",
+      "const selectedCampaign = selectPublicSponsoredCampaign",
+      "sellerProfileMap.get(sellerId)",
+      "const { advertiser, campaign } = selectedCampaign",
+    ],
+    relationships: ["ad_campaigns_advertiser_id_fkey", "merch_products_seller_id_fkey"],
+  },
+  {
+    path: "src/app/help/[slug]/page.tsx",
+    required: [
+      "loadAuthenticatedProfileMap",
+      "loadPublicProfileMap",
+      "const commentProfileLoader = viewerId",
+      "profileMap.get(row.author_id)",
+    ],
+    relationships: ["help_article_comments_author_id_fkey"],
+  },
+  {
+    path: "src/app/sitemap.ts",
+    required: [
+      '.from("public_profiles")',
+      "merchSellerBatches.map",
+      "merchSellerProfileMap.get(sellerId)",
+    ],
+    relationships: ["merch_products_seller_id_fkey"],
+  },
+  {
+    path: "src/app/u/[username]/page.tsx",
+    required: [
+      "loadAuthenticatedProfileMap",
+      "loadPublicProfileMap",
+      "const visibleProfileLoader = claims?.sub",
+      "feed_post_tags(tagged_profile_id)",
+      "thread_post_tags(tagged_profile_id)",
+      "gig_tags(tagged_profile_id)",
+      "visibleProfileMap.get(tag.tagged_profile_id)",
+      "visibleProfileMap.get(sellerId)",
+    ],
+    relationships: [
+      "feed_post_tags_tagged_profile_id_fkey",
+      "thread_post_tags_tagged_profile_id_fkey",
+      "gig_tags_tagged_profile_id_fkey",
+      "merch_products_seller_id_fkey",
+    ],
+  },
+];
+const unsafeSignedOutEmbeds = [];
+const missingSignedOutHydration = [];
+for (const contract of signedOutProfileEmbedContracts) {
+  const source = read(contract.path);
+  for (const relationship of contract.relationships) {
+    if (source.includes(`profiles:profiles!${relationship}`)) {
+      unsafeSignedOutEmbeds.push(`${contract.path}: ${relationship}`);
+    }
+  }
+  for (const required of contract.required) {
+    if (!source.includes(required)) {
+      missingSignedOutHydration.push(`${contract.path}: ${required}`);
+    }
+  }
+}
+if (unsafeSignedOutEmbeds.length) {
+  fail(
+    `Signed-out public profile hydration must not use protected profiles embeds:\n${unsafeSignedOutEmbeds.join("\n")}`,
+  );
+}
+if (missingSignedOutHydration.length) {
+  fail(
+    `Signed-out consumers must reconstruct public profile output shapes:\n${missingSignedOutHydration.join("\n")}`,
+  );
+}
 
 const searchSource = read("src/app/search/page.tsx");
 if (!/let publicProfileQuery = supabase\s*\.from\("public_profiles"\)/.test(searchSource)) {
@@ -259,7 +388,9 @@ for (const required of [
   "revokes anonymous direct access",
   "Supabase CLI was not installed",
   "Do not use supabase db push",
-  "Remaining direct public.profiles reads",
+  "Direct public.profiles read inventory requiring redesign",
+  "inventory, not certification that authenticated direct",
+  "reads are column-safe",
   "Remaining embedded profiles:profiles joins",
   "Before enforcing CSP, observe Report-Only violations",
   repairPath.split(path.sep).join("/"),

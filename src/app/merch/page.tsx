@@ -16,7 +16,12 @@ import { LogoLockup } from "@/app/logo-mark";
 import { ProfileAvatar } from "@/app/profile-avatar";
 import { SavedItemButton } from "@/app/saved-item-button";
 import { CompactShareButton } from "@/app/share-actions";
+import { selectPublicSponsoredCampaign } from "@/lib/ads/sponsored-campaign-selection.mjs";
 import { countryLabel, languageLabel } from "@/lib/localization";
+import {
+  loadAuthenticatedProfileMap,
+  loadPublicProfileMap,
+} from "@/lib/public-profile-hydration";
 import { createClient } from "@/lib/supabase/server";
 import {
   metadataKeywords,
@@ -88,6 +93,10 @@ type MerchProduct = {
   return_policy: string | null;
   shipping_required: boolean;
   title: string;
+};
+
+type MerchProductRow = Omit<MerchProduct, "profiles"> & {
+  seller_id: string;
 };
 
 const pageSize = 25;
@@ -235,7 +244,7 @@ async function fetchMerchSponsoredCampaign(
   let query = supabase
     .from("ad_campaigns")
     .select(
-      "id, title, body, target_url, campaign_type, goal, bid_cents, city, region, country_code, language, keywords, profiles:profiles!ad_campaigns_advertiser_id_fkey(username, display_name, avatar_url, account_type, license_verified_at), ad_campaign_placements!inner(placement)",
+      "id, advertiser_id, title, body, target_url, campaign_type, goal, bid_cents, city, region, country_code, language, keywords, ad_campaign_placements!inner(placement)",
     )
     .eq("status", "active")
     .in("payment_status", ["paid", "waived"])
@@ -268,6 +277,7 @@ async function fetchMerchSponsoredCampaign(
     .limit(8)
     .returns<
       {
+        advertiser_id: string;
         bid_cents: number;
         body: string | null;
         campaign_type: "artist_growth" | "stuff_listing" | "merch_listing";
@@ -277,29 +287,24 @@ async function fetchMerchSponsoredCampaign(
         id: string;
         keywords: string[];
         language: string | null;
-        profiles: Pick<
-          Profile,
-          "account_type" | "avatar_url" | "display_name" | "license_verified_at" | "username"
-        > | null;
         region: string | null;
         target_url: string | null;
         title: string;
       }[]
     >();
 
-  const campaign = data
-    ?.map((item) => ({
-      item,
-      score:
-        item.bid_cents +
-        (countryCode && item.country_code === countryCode ? 250 : 0) +
-        (language && item.language === language ? 200 : 0) +
-        (region && item.region === region ? 150 : 0) +
-        (city && item.city === city ? 200 : 0),
-    }))
-    .sort((first, second) => second.score - first.score)[0]?.item;
-
-  if (!campaign) return null;
+  const advertiserProfileMap = await loadPublicProfileMap(
+    supabase,
+    (data ?? []).map((item) => item.advertiser_id),
+  );
+  const selectedCampaign = selectPublicSponsoredCampaign(data ?? [], advertiserProfileMap, {
+    city,
+    countryCode,
+    language,
+    region,
+  });
+  if (!selectedCampaign) return null;
+  const { advertiser, campaign } = selectedCampaign;
 
   const matchLabels = [
     countryCode && campaign.country_code === countryCode ? "Country match" : null,
@@ -309,7 +314,7 @@ async function fetchMerchSponsoredCampaign(
   ].filter(Boolean) as string[];
 
   return {
-    advertiser: campaign.profiles,
+    advertiser,
     body: campaign.body,
     campaign_type: campaign.campaign_type,
     city: campaign.city,
@@ -458,7 +463,7 @@ export default async function MerchIndexPage({ searchParams }: MerchIndexProps) 
   let productQuery = supabase
     .from("merch_products")
     .select(
-      "id, title, description, fulfillment_notes, return_policy, category, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, is_official, created_at, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order), profiles:profiles!merch_products_seller_id_fkey(id, username, display_name, avatar_url, account_type, city, license_verified_at, region)",
+      "id, seller_id, title, description, fulfillment_notes, return_policy, category, price_cents, currency, inventory_quantity, inventory_reserved, shipping_required, is_official, created_at, merch_product_media(id, storage_bucket, storage_path, media_type, sort_order)",
     )
     .eq("status", "active")
     .eq("moderation_status", "active");
@@ -487,11 +492,23 @@ export default async function MerchIndexPage({ searchParams }: MerchIndexProps) 
       referencedTable: "merch_product_media",
     })
     .limit(fetchLimit)
-    .returns<MerchProduct[]>();
+    .returns<MerchProductRow[]>();
   const merchAd = await fetchMerchSponsoredCampaign(supabase, currentProfile);
-  const products = (productRows ?? []).filter(
-    (product) => product.is_official || isVerifiedProfessional(product.profiles),
+  const sellerProfileLoader = claims?.sub
+    ? loadAuthenticatedProfileMap
+    : loadPublicProfileMap;
+  const sellerProfileMap = await sellerProfileLoader(
+    supabase,
+    (productRows ?? []).map((product) => product.seller_id),
   );
+  const products: MerchProduct[] = (productRows ?? [])
+    .map(({ seller_id: sellerId, ...product }) => ({
+      ...product,
+      profiles: sellerProfileMap.get(sellerId) ?? null,
+    }))
+    .filter(
+      (product) => product.is_official || isVerifiedProfessional(product.profiles),
+    );
   const visibleProducts = products.slice(0, limit);
   const hasMore = products.length > limit || (productRows?.length ?? 0) === fetchLimit;
   const currentMerchPath = productHref({

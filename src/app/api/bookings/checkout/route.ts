@@ -1,4 +1,8 @@
 import { revalidatePath } from "next/cache";
+import {
+  readBoundedFormData,
+  requestContentLengthAllowed,
+} from "@/lib/http/bounded-request-body.mjs";
 import { checkRateLimit, noStoreRedirect } from "@/lib/http/reliability";
 import { platformFeeDescription } from "@/lib/payments/fees";
 import { siteName, siteUrl } from "@/lib/site";
@@ -29,6 +33,8 @@ type BookingRequest = {
   title: string;
   total_cents: number;
 };
+
+const maxBookingCheckoutBodyBytes = 4096;
 
 function safeInternalReturnPath(value: FormDataEntryValue | null) {
   const text = String(value ?? "")
@@ -64,9 +70,7 @@ function hasSupportedFormContentType(request: Request) {
 }
 
 function hasSafeFormSize(request: Request) {
-  const contentLength = Number(request.headers.get("content-length") ?? "0");
-
-  return Number.isFinite(contentLength) && contentLength <= 4096;
+  return requestContentLengthAllowed(request, maxBookingCheckoutBodyBytes);
 }
 
 function pathWithMessage(returnTo: string | null, message: string) {
@@ -162,7 +166,16 @@ export async function POST(request: Request) {
     return redirectWithMessage("Booking checkout could not open. Please try again.");
   }
 
-  const formData = await request.formData();
+  const parsedForm = await readBoundedFormData(
+    request,
+    maxBookingCheckoutBodyBytes,
+  );
+
+  if (!parsedForm.ok) {
+    return redirectWithMessage("Booking checkout could not open. Please try again.");
+  }
+
+  const formData = parsedForm.formData;
   const returnTo = safeInternalReturnPath(formData.get("return_to"));
 
   const supabase = await createClient();

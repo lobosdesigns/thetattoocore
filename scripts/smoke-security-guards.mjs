@@ -857,7 +857,7 @@ const checks = [
       mailRedactionTest.includes("TTC_MAIL_REDACTION_SENTINEL") &&
       mailRedactionTest.includes('assert.equal("cause" in error, false)') &&
       packageJson.includes(
-        '"smoke:security": "npm run test:csp-headers && node --no-warnings --experimental-loader ./scripts/server-only-test-loader.mjs --experimental-default-type=module scripts/test-mail-redaction.mjs && node scripts/smoke-security-guards.mjs"',
+        '"smoke:security": "npm run test:release-input-security && npm run test:csp-headers && node --no-warnings --experimental-loader ./scripts/server-only-test-loader.mjs --experimental-default-type=module scripts/test-mail-redaction.mjs && node scripts/smoke-security-guards.mjs"',
       ),
   },
   {

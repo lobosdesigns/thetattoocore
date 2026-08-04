@@ -313,9 +313,9 @@ const checks = [
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("August 31, 2026") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Android 16 / API 36") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("target Android 16 / API 36") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checked-in replacement `1.0.4 (5)` uses the same API 36 baseline") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("strict gate also checks the exact Android Alpha `1.0.4 (5)`, App Review `1.0 (3)`, TestFlight `1.0 (5)`") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("targetSdkVersion` set to 36") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("checked-in replacement source `1.0.4 (5)` are three distinct identities") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("This strict gate checks the branch candidates Android `1.0.4 (5)` and TestFlight `1.0 (5)`, the reported App Review build `1.0 (4)`") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("confirm the selected artifact targets API 36") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not request precise device location") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("do not prompt on first open") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Store Review Safety") &&
@@ -615,11 +615,13 @@ const checks = [
       mobileCurrentPosition.includes("wrapper work is active") &&
       !mobileCurrentPosition.includes("wrapper work is starting") &&
       mobileCurrentPosition.includes("Google Play Production") &&
-      mobileCurrentPosition.includes("API 36 release `1.0.3 (4)`") &&
+      mobileCurrentPosition.includes("release `1.0.3 (4)`") &&
       mobileCurrentPosition.includes("Closed testing - Alpha") &&
-      mobileCurrentPosition.includes("controlled QA") &&
-      mobileCurrentPosition.includes("authorized Android 16 review phone installed exact build `1.0.3 (4)`") &&
-      mobileCurrentPosition.includes("Do not upload version code `4` again") &&
+      mobileCurrentPosition.includes("external build `1.0.5 (6)`") &&
+      mobileCurrentPosition.includes("did not prove that the console artifact is byte-identical") &&
+      mobileCurrentPosition.includes("Checked-in Android source is the distinct replacement candidate `1.0.4 (5)`") &&
+      mobileCurrentPosition.includes("iOS `1.0 (4)` is reported `Waiting for Review` with automatic release") &&
+      mobileCurrentPosition.includes("Do not upload version code `4` or `6` again") &&
       googlePlayInstallHandoff.length > 0 &&
       packageJson.includes('"qa:android-device:open-test": "node scripts/android-device-qa-probe.mjs --open-test-join"') &&
       googlePlayInstallHandoff.includes("npm.cmd run qa:android-device:open-test") &&
@@ -633,8 +635,8 @@ const checks = [
       googlePlayInstallHandoff.includes("Alpha store listing") &&
       googlePlayInstallHandoff.includes("missing public Production listing") &&
       googlePlayInstallHandoff.includes("blocks only Alpha controlled-QA evidence") &&
-      firstNativeBuildSteps.includes("Google Play Production serves API 36 release `1.0.3 (4)` publicly") &&
-      firstNativeBuildSteps.includes("retained in Closed testing - Alpha for controlled QA") &&
+      firstNativeBuildSteps.includes("Google Play Production `1.0.3 (4)`, reported external Alpha `1.0.5 (6)`, and checked-in source candidate `1.0.4 (5)`") &&
+      firstNativeBuildSteps.includes("waiting for review with build `1.0 (4)`") &&
       staleAlphaFirstOperationalSnippets.every(
         (snippet) => !currentAndroidOperationalText.includes(snippet),
       ) &&
@@ -673,7 +675,7 @@ const checks = [
       docs["native/thetattoocore-mobile/README.md"].includes("authorized device") &&
       docs["native/thetattoocore-mobile/README.md"].includes("current Google Play Production release") &&
       docs["native/thetattoocore-mobile/README.md"].includes("Google Play Production and controlled Alpha testing") &&
-      docs["native/thetattoocore-mobile/README.md"].includes("Current Play Production release") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("Reported Play Production release") &&
       docs["native/thetattoocore-mobile/README.md"].includes("tester participation/duration evidence"),
   },
   {
@@ -744,8 +746,9 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("App/Universal Link handling") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play target API") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Android 16 / API 36") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Active Production and Alpha") &&
-      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("current API 36 baseline") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Reported Production") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("External Alpha is reported as `1.0.5 (6)`") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("source `1.0.4 (5)` declares `36 / 36`") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Google Play production access") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("current 12-testers-for-14-days gate") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("applies to newly created personal accounts") &&
@@ -1155,62 +1158,35 @@ const checks = [
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("## Required Before Public Distribution Or Any Replacement Submission") &&
       docs["docs/APP_STORE_READINESS.md"].includes("## Current Store Console Snapshot") &&
       docs["docs/APP_STORE_READINESS.md"].includes("| Surface | Repo-safe status | Next action | Private evidence location |") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("iOS App Version `1.0` build `1.0 (3)` was submitted for App Review") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("App Store Connect shows `Waiting for Review` and `1 Item Submitted`") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Signed notification-capability build `1.0 (4)` was uploaded separately to TestFlight") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Age 18+ override") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Closed testing - Alpha is Active with API 36 release `1.0.3 (4)`") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("existing Google Group community") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("organization account is not subject to the personal-account 12-tester/14-day production-access rule") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("authorized Android 16 review phone installed exact Alpha build `1.0.3 (4)`") &&
-      currentStoreConsoleSnapshot.includes("active public production release at 100% across 177 countries/regions") &&
-      currentStoreConsoleSnapshot.includes("Publishing overview confirms the production update was published") &&
-      !currentStoreConsoleSnapshot.includes("Production `1.0.1 (2)` remains the served public build") &&
-      !currentStoreConsoleSnapshot.includes("production change in review") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("all 11 Google App Content declarations are actioned") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("target age is 18 and over") &&
-      !docs["docs/APP_STORE_READINESS.md"].includes("awaiting final submit-for-review confirmation") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("no supported-device loss") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Monitor App Review and internal build `1.0 (4)` install/QA results") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("group-member opt-in/install proof and 14-day production-access tester evidence if required") &&
-      currentStoreConsoleSnapshot.includes(
-        "Current production-dashboard inspection confirms account activation and marketplace setup are complete",
-      ) &&
-      currentStoreConsoleSnapshot.includes(
-        "live webhook destination is active with the exact 12 required events",
-      ) &&
-      currentStoreConsoleSnapshot.includes(
-        "Keep the release switch off while completing the controlled live server-key and expected-mode cutover",
-      ) &&
-      docs["docs/APP_STORE_READINESS.md"].includes("private native-alert project and Android/Apple app registrations exist") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("service-only DM delivery outbox") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("before enabling global delivery or making store claims") &&
-      !docs["docs/APP_STORE_READINESS.md"].includes("TTC Firebase project has not been created yet") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Native pre-device verification passed") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("connected Android 16 phone is authorized") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("unsigned Release generic-iOS-device compile with Xcode 26.3") &&
-      !docs["docs/APP_STORE_READINESS.md"].includes("native Firebase/FCM delivery") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Complete the Native Push Private Evidence Matrix") &&
+      currentStoreConsoleSnapshot.includes("iOS `1.0 (4)` as `Waiting for Review` with automatic release") &&
+      currentStoreConsoleSnapshot.includes("Checked-in iOS `1.0 (5)` is newer but is not the reviewed build") &&
+      currentStoreConsoleSnapshot.includes("Production `1.0.3 (4)` and an external Closed testing - Alpha build `1.0.5 (6)`") &&
+      currentStoreConsoleSnapshot.includes("9D4D8634A933B9FB74B94FA587C3E125309623906A6B6066A155685EF4D9285D") &&
+      currentStoreConsoleSnapshot.includes("byte identity with Alpha") &&
+      currentStoreConsoleSnapshot.includes("Play upload-certificate registration are unproved") &&
+      currentStoreConsoleSnapshot.includes("Checked-in Android source is the distinct candidate `1.0.4 (5)`") &&
+      currentStoreConsoleSnapshot.includes("Independent booking and onboarding release gates are absent") &&
+      currentStoreConsoleSnapshot.includes("zero authorized devices") &&
+      currentStoreConsoleSnapshot.includes("cordova.variables.gradle") &&
+      !currentStoreConsoleSnapshot.includes("build `1.0 (3)` was submitted for App Review") &&
+      !currentStoreConsoleSnapshot.includes("Alpha remains Active with API 36 release `1.0.3 (4)`") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private release handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private payment handoff only") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Private native QA handoff only") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Store consoles") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Apple iOS `1.0` build `1.0 (3)` remains in App Review") &&
-      currentBlockerMatrix.includes("Closed testing - Alpha serves the same exact build to selected testers") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("13-inch iPad screenshots uploaded") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Content Rights") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Accessibility Nutrition Labels") &&
-      (docs["docs/APP_STORE_READINESS.md"].includes("Data Safety review") ||
-        docs["docs/APP_STORE_READINESS.md"].includes("Data Safety saved")) &&
-      docs["docs/APP_STORE_READINESS.md"].includes("One exact Android Alpha build `1.0.3 (4)` Google Play install is verified") &&
-      currentBlockerMatrix.includes("Google Play production serves `1.0.3 (4)` publicly at 100% across 177 countries/regions") &&
-      !currentBlockerMatrix.includes("production `1.0.1 (2)` remains live") &&
-      !currentBlockerMatrix.includes("submitted for production full-rollout review") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("applicable tester evidence") &&
+      currentBlockerMatrix.includes("Apple iOS `1.0 (4)` is reported in App Review with automatic release selected") &&
+      currentBlockerMatrix.includes("Google Play Production is reported on `1.0.3 (4)` and external Alpha on `1.0.5 (6)`") &&
+      currentBlockerMatrix.includes("Alpha/Desktop AAB byte match") &&
+      currentBlockerMatrix.includes("Production `www` association routing remains unchanged") &&
+      currentBlockerMatrix.includes("authoritative Play signing fingerprint and Apple Team ID are unavailable") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Legal and policy") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Final counsel-reviewed Terms/Privacy") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Real-device QA") &&
       docs["docs/APP_STORE_READINESS.md"].includes("full two-user DM read/reply pass") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Do not claim reusable tester accounts currently exist from repo-safe evidence") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("fresh exact-build Android `1.0.4 (5)` and iOS `1.0 (5)` captures") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("Reported Play Production `1.0.3 (4)`, external Alpha `1.0.5 (6)`, and App Review `1.0 (4)` evidence do not substitute") &&
+      !docs["docs/APP_STORE_READINESS.md"].includes("Reusable confirmed tester accounts exist") &&
+      !docs["docs/APP_STORE_READINESS.md"].includes("fresh exact-build Android `1.0.3 (4)` and iOS `1.0 (4)` captures") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Payments and payouts") &&
       docs["docs/APP_STORE_READINESS.md"].includes("small live-payment test after review") &&
       docs["docs/APP_STORE_READINESS.md"].includes(
@@ -1222,9 +1198,6 @@ const checks = [
       !docs["docs/APP_STORE_READINESS.md"].includes("hosted onboarding links") &&
       !docs["docs/APP_STORE_READINESS.md"].includes("provider review") &&
       docs["docs/APP_STORE_READINESS.md"].includes("Native wrapper") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Android API 36") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("Production App Links are verified and enabled") &&
-      docs["docs/APP_STORE_READINESS.md"].includes("iOS Universal Link and broader exact-build evidence remain incomplete") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Run `npm.cmd run smoke:app-links` after every deploy") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Run `npm.cmd run smoke:app-links` after deployment") &&
       docs["docs/STORE_LISTING_DRAFT.md"].includes("Child Safety Standards: https://thetattoocore.com/child-safety-standards") &&
@@ -1236,7 +1209,7 @@ const checks = [
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("## Native Push Private Evidence Matrix") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Firebase project | Project exists for TheTattooCore") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Android app config | Android app config file added only to the private build environment") &&
-      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| iOS app config | Checked-in build `1.0 (4)` references the ignored private app config") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| iOS app config | Checked-in source build `1.0 (5)` references the ignored private app config") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Device token registration | Signed-in Android and iOS devices register and refresh tokens") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Delivery and tap routing | Alerts deliver for the tested categories") &&
       docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Preference controls | Per-device opt-out, quiet hours, and category preferences stop delivery") &&
@@ -1247,6 +1220,26 @@ const checks = [
       !nativePushReadyClaimPattern.test(repoSafeSubmissionDocsText) &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Use the Native Push Private Evidence Matrix") &&
       docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Keep project IDs, sender IDs, API keys, app config files, device tokens, notification payloads, signing details, and console screenshots in the private release handoff only"),
+  },
+  {
+    label: "native release docs distinguish Production, external Alpha, and branch candidates",
+    ok:
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("| Reported Google Play Production and Alpha | Production: `1.0.3 (4)` at `36 / 36`; external Alpha: reported `1.0.5 (6)`") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Alpha exact bytes and Play upload-certificate registration are unproved") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Inspect and validate an existing branch-aligned `1.0.4 (5)` artifact first") &&
+      docs["docs/NATIVE_WRAPPER_PREP.md"].includes("any newly uploaded replacement must use an unused version code above `6`") &&
+      !docs["docs/NATIVE_WRAPPER_PREP.md"].includes("Active Production and Alpha release `1.0.3 (4)`") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("Google Play Production `1.0.3 (4)`") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("external Closed testing - Alpha `1.0.5 (6)`") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("byte identity with Alpha and Play upload-certificate registration are unproved") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("checked-in branch source candidate remains `1.0.4 (5)`") &&
+      docs["native/thetattoocore-mobile/README.md"].includes("any newly uploaded replacement must use an unused version code above `6`") &&
+      !docs["native/thetattoocore-mobile/README.md"].includes("Production and Closed testing - Alpha both serve version code `4`") &&
+      docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("unused version code above `6`") &&
+      !docs["docs/MOBILE_APP_SUBMISSION_RUNBOOK.md"].includes("Active Production and Alpha release `1.0.3 (4)` is the current API 36 baseline") &&
+      docs["docs/APP_STORE_READINESS.md"].includes("any newly uploaded replacement must use an unused version code above `6`") &&
+      docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("evidence for candidate `1.0.4 (5)`") &&
+      !docs["docs/REAL_DEVICE_QA_CHECKLIST.md"].includes("evidence for candidate `1.0.3 (4)`"),
   },
   {
     label: "full verification keeps focused DM, Android probe, and mobile guards in the chain",
