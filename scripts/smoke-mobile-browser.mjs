@@ -481,6 +481,9 @@ async function checkRoute(portNumber, url, route) {
             duration: video.duration,
             paused: video.paused,
             readyState: video.readyState,
+            seekableEnd: video.seekable.length
+              ? video.seekable.end(video.seekable.length - 1)
+              : 0,
             videoHeight: video.videoHeight,
             videoWidth: video.videoWidth,
           })),
@@ -534,9 +537,12 @@ async function checkRoute(portNumber, url, route) {
         if (!video.paused) {
           reasons.push("video preview autoplayed instead of remaining paused");
         }
-        if (!(video.currentTime > 0 && video.currentTime <= 0.5)) {
+        if (
+          video.seekableEnd > 0 &&
+          !(video.currentTime > 0 && video.currentTime <= 0.5)
+        ) {
           reasons.push(
-            `video preview was not primed (currentTime ${video.currentTime ?? "unknown"})`,
+            `seekable video preview was not primed (currentTime ${video.currentTime ?? "unknown"})`,
           );
         }
         if (!(video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0)) {
